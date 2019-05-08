@@ -64,84 +64,84 @@ void* OPS_PFEMSolver_Mumps()
     int maxiter = 100;
 
     while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* opt = OPS_GetString();
-	if (strcmp(opt, "-relax") == 0) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-relax") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetIntInput(&numdata, &relax) < 0) {
-		    opserr << "WARNING: failed to get relax\n";
-		    return 0;
-		}
-	    }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numdata, &relax) < 0) {
+                    opserr << "WARNING: failed to get relax\n";
+                    return 0;
+                }
+            }
 
-	} else if (strcmp(opt, "-err") == 0) {
+        } else if (strcmp(opt, "-err") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetIntInput(&numdata, &err) < 0) {
-		    opserr << "WARNING: failed to get err\n";
-		    return 0;
-		}
-	    }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numdata, &err) < 0) {
+                    opserr << "WARNING: failed to get err\n";
+                    return 0;
+                }
+            }
 
-	} else if (strcmp(opt, "-sym") == 0) {
+        } else if (strcmp(opt, "-sym") == 0) {
 
-	    sym = 1;
+            sym = 1;
 
-	} else if (strcmp(opt, "-print") == 0) {
+        } else if (strcmp(opt, "-print") == 0) {
 
-	    print = 1;
+            print = 1;
 
-	} else if (strcmp(opt, "-added-mass") == 0) {
+        } else if (strcmp(opt, "-added-mass") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetIntInput(&numdata, &add) < 0) {
-		    opserr << "WARNING: failed to get add\n";
-		    return 0;
-		}
-	    }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numdata, &add) < 0) {
+                    opserr << "WARNING: failed to get add\n";
+                    return 0;
+                }
+            }
 
-	} else if (strcmp(opt, "-ptol") == 0) {
+        } else if (strcmp(opt, "-ptol") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetDoubleInput(&numdata, &ptol) < 0) {
-		    opserr << "WARNING: failed to get ptol\n";
-		    return 0;
-		}
-	    }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetDoubleInput(&numdata, &ptol) < 0) {
+                    opserr << "WARNING: failed to get ptol\n";
+                    return 0;
+                }
+            }
 
-	} else if (strcmp(opt, "-Bitol") == 0) {
+        } else if (strcmp(opt, "-Bitol") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetDoubleInput(&numdata, &Bitol) < 0) {
-		    opserr << "WARNING: failed to get Bitol\n";
-		    return 0;
-		}
-	    }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetDoubleInput(&numdata, &Bitol) < 0) {
+                    opserr << "WARNING: failed to get Bitol\n";
+                    return 0;
+                }
+            }
 
-	} else if (strcmp(opt, "-pmaxiter") == 0) {
+        } else if (strcmp(opt, "-pmaxiter") == 0) {
 
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		if (OPS_GetIntInput(&numdata, &maxiter) < 0) {
-		    opserr << "WARNING: failed to get err\n";
-		    return 0;
-		}
-	    }
-	}
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numdata, &maxiter) < 0) {
+                    opserr << "WARNING: failed to get err\n";
+                    return 0;
+                }
+            }
+        }
     }
 
     PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,err,add,sym,print,
-						       ptol,maxiter,Bitol);
+                                                       ptol,maxiter,Bitol);
     return new PFEMLinSOE(*theSolver);
 }
 
 PFEMSolver_Mumps::PFEMSolver_Mumps(int r, int e, int a, int s, int p,
-				   double tol, int niter, double bitol)
-    :PFEMSolver(), theSOE(0),
+                                   double tol, int niter, double bitol)
+        :PFEMSolver(), theSOE(0),
 #ifdef _MUMPS
-     sid(),
+         sid(),
 #endif
-     relax(r), err(e), add(a), sym(s), print(p),
-     ptol(tol), Bitol(bitol), pmaxiter(niter)
+         relax(r), err(e), add(a), sym(s), print(p),
+         ptol(tol), Bitol(bitol), pmaxiter(niter)
 {
 #ifdef _MUMPS
     // mumps id
@@ -192,308 +192,308 @@ PFEMSolver_Mumps::solve()
 
     // numeric LU factorization of M
     if(Msize > 0) {
-	sid.job = JOB_FACTORIZATION;
-	dmumps_c(&sid);
+        sid.job = JOB_FACTORIZATION;
+        dmumps_c(&sid);
 
-	if(sid.info[0] != 0) {
-	    opserr<<"WARNING: failed to factorize -- PFEMSolver_Mumps::solve\n";
-	    return -1;
-	}
+        if(sid.info[0] != 0) {
+            opserr<<"WARNING: failed to factorize -- PFEMSolver_Mumps::solve\n";
+            return -1;
+        }
     }
 
     // structure and interface predictor : deltaV1 = M^{-1} * rsi
     std::vector<double> deltaV1;
     if(Msize > 0) {
-	deltaV1.assign(Msize,0.0);
+        deltaV1.assign(Msize,0.0);
 
-	// rsi
-	for(int i=0; i<size; i++) {        // row
-	    int rowtype = dofType(i);      // row type
-	    int rowid = dofID(i);          // row id
-	    if(rowtype == 2) {
-		deltaV1[rowid+Ssize] = B(i);   // rsi
-	    } else if(rowtype == 0) {
-		deltaV1[rowid] = B(i);         // rsi
-	    }
-	}
-	sid.rhs = &deltaV1[0];
-	sid.nrhs = 1;
-	sid.job = JOB_SOLUTION;
-	dmumps_c(&sid);
-	if(sid.info[0] != 0) {
-	    opserr<<"WARNING: failed to solve predictor -- PFEMSolver_Mumps::solve\n";
-	    return -1;
-	}
+        // rsi
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 2) {
+                deltaV1[rowid+Ssize] = B(i);   // rsi
+            } else if(rowtype == 0) {
+                deltaV1[rowid] = B(i);         // rsi
+            }
+        }
+        sid.rhs = &deltaV1[0];
+        sid.nrhs = 1;
+        sid.job = JOB_SOLUTION;
+        dmumps_c(&sid);
+        if(sid.info[0] != 0) {
+            opserr<<"WARNING: failed to solve predictor -- PFEMSolver_Mumps::solve\n";
+            return -1;
+        }
     }
 
     // fluid predictor: deltaVf1 = Mf^{-1} * rf
     std::vector<double> deltaVf1;
     if(Fsize > 0) {
-	deltaVf1.assign(Fsize,0.0);
+        deltaVf1.assign(Fsize,0.0);
 
-	// rf
-	for(int i=0; i<size; i++) {        // row
-	    int rowtype = dofType(i);      // row type
-	    int rowid = dofID(i);          // row id
-	    if(rowtype == 1) {
-		if(Mf(rowid) == 0) {
-		    opserr<<"WANING: Zero Mf at location "<<rowid<<" ";
-		    opserr<<" - PFEMLinSOE::solve()\n";
-		    return -1;
-		}
-		deltaVf1[rowid] = B(i)/Mf(rowid);         // rf
-	    }
-	}
+        // rf
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 1) {
+                if(Mf(rowid) == 0) {
+                    opserr<<"WANING: Zero Mf at location "<<rowid<<" ";
+                    opserr<<" - PFEMLinSOE::solve()\n";
+                    return -1;
+                }
+                deltaVf1[rowid] = B(i)/Mf(rowid);         // rf
+            }
+        }
     }
 
     // Gi, Gf
     cs* Gi = 0;
     cs* Gf = 0;
     if(Fsize > 0) {
-	Gf = cs_transpose(Gft, 1);
+        Gf = cs_transpose(Gft, 1);
     }
     if(Isize > 0) {
-	Gi = cs_transpose(Git, 1);
+        Gi = cs_transpose(Git, 1);
     }
 
     // solve for pressure
     std::vector<double> deltaP, rhsP;
     double mf = 1.0/Mf.Norm();
     if(Psize>0) {
-	deltaP.assign(Psize, 0.0);
-	rhsP.assign(Psize, 0.0);
+        deltaP.assign(Psize, 0.0);
+        rhsP.assign(Psize, 0.0);
 
-	// S = L + Git*Mi{-1}*Gi + Gft*Mf{-1}*Gf
-	cs* S = 0;
+        // S = L + Git*Mi{-1}*Gi + Gft*Mf{-1}*Gf
+        cs* S = 0;
 
-	// Gft*deltaVf1
-	if(Fsize > 0) {
-	    cs_gaxpy(Gft, &deltaVf1[0], &rhsP[0]);
-	}
+        // Gft*deltaVf1
+        if(Fsize > 0) {
+            cs_gaxpy(Gft, &deltaVf1[0], &rhsP[0]);
+        }
 
-	// Git*deltaVi1
-	if(Isize > 0) {
-	    cs_gaxpy(Git, &deltaV1[0]+Ssize, &rhsP[0]);
-	}
+        // Git*deltaVi1
+        if(Isize > 0) {
+            cs_gaxpy(Git, &deltaV1[0]+Ssize, &rhsP[0]);
+        }
 
-	// rp-Git*deltaVi1-Gft*deltaVf1
-	for(int i=0; i<size; i++) {        // row
-	    int rowtype = dofType(i);      // row type
-	    int rowid = dofID(i);          // row id
-	    if(rowtype == 3) {             // pressure
-		rhsP[rowid] = B(i)-rhsP[rowid];   // rp-Git*deltaVi1-Gft*deltaVf1
-	    }
-	}
-
-	// Git*Mi{-1}*Gi
-	if (Isize > 0) {
-	    Timer timer2;
-	    timer2.start();
-
-	    std::vector<int> irhs_ptr(Msize+1,1);
-	    std::vector<int> irhs_row(Isize*Isize);
-	    std::vector<double> rhs_val(Isize*Isize);
-
-	    for (int j=0; j<Isize; ++j) {
-		for (int i=0; i<Isize; ++i) {
-		    irhs_row[Isize*j+i] = i+Ssize+1;
-		}
-		irhs_ptr[j+1+Ssize] = (j+1)*Isize+1;
-	    }
-
-	    ICNTL(sid,20,3);
-	    ICNTL(sid,30,1);
-	    sid.nz_rhs = (int)rhs_val.size();
-	    sid.nrhs = Msize;
-	    sid.irhs_ptr = &irhs_ptr[0];
-	    sid.irhs_sparse = &irhs_row[0];
-	    sid.rhs_sparse = &rhs_val[0];
-
-        timer2.pause();
-        opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
-        timer2.start();
-
-	    sid.job = JOB_SOLUTION;
-	    dmumps_c(&sid);
-	    if(sid.info[0] != 0) {
-		opserr<<"info[1] = "<<sid.info[0]<<", info[2] ="<<sid.info[1]<<"\n";
-		opserr<<"WARNING: failed to solve Bi -- PFEMSolver_Mumps::solve\n";
-		return -1;
-	    }
-	    ICNTL(sid,20,0);
-	    ICNTL(sid,30,0);
-
-	    for (int j=Isize; j<Msize; ++j) {
-		irhs_ptr[j+1] -= 1;
-	    }
-	    for (int k=0; k<(int)irhs_row.size(); ++k) {
-		irhs_row[k] -= 1;
-		irhs_row[k] -= Ssize;
-	    }
-
-        timer2.pause();
-        opserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
-        timer2.start();
-
-        cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
-        int numignore = 0;
-        for (int j=0; j<Isize; ++j) {
-            for (int i=0; i<Isize; ++i) {
-                if (fabs(rhs_val[Isize*j+i]) > Bitol) {
-                    cs_entry(Bi1, i, j,rhs_val[Isize*j+i]);
-                } else {
-                    numignore++;
-                }
+        // rp-Git*deltaVi1-Gft*deltaVf1
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 3) {             // pressure
+                rhsP[rowid] = B(i)-rhsP[rowid];   // rp-Git*deltaVi1-Gft*deltaVf1
             }
         }
-	    cs* Bi = cs_compress(Bi1);
-	    cs_spfree(Bi1);
 
-	    cs* S1 = cs_multiply(Git, Bi);
-	    S = cs_multiply(S1, Gi);
-	    cs_spfree(S1);
-	    cs_spfree(Bi);
-	    timer2.pause();
-	    opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
-	}
+        // Git*Mi{-1}*Gi
+        if (Isize > 0) {
+            Timer timer2;
+            timer2.start();
 
-	// Gft*Mf{-1}*Gf
-	if(Fsize > 0) {
-	    for(int j=0; j<Fsize; j++) {
-		for(int k=Gft->p[j]; k<Gft->p[j+1]; k++) {
-		    Gft->x[k] /= Mf(j);
-		}
-	    }
-	    cs* S1 = cs_multiply(Gft, Gf);
-	    if(S == 0) {
-		S = S1;
-	    } else {
-		cs* S2 = cs_add(S, S1, 1.0, 1.0);
-		cs_spfree(S);
-		cs_spfree(S1);
-		S = S2;
-	    }
-	}
+            std::vector<int> irhs_ptr(Msize+1,1);
+            std::vector<int> irhs_row(Isize*Isize);
+            std::vector<double> rhs_val(Isize*Isize);
 
-	// S
-	if(S == 0) {
-	    S = L;
-	} else {
-	    cs* S1 = cs_add(S, L, 1.0, 1.0);
-	    cs_spfree(S);
-	    S = S1;
-	}
+            for (int j=0; j<Isize; ++j) {
+                for (int i=0; i<Isize; ++i) {
+                    irhs_row[Isize*j+i] = i+Ssize+1;
+                }
+                irhs_ptr[j+1+Ssize] = (j+1)*Isize+1;
+            }
 
-	// solve
-	if (S->nzmax > 0) {
+            ICNTL(sid,20,3);
+            ICNTL(sid,30,1);
+            sid.nz_rhs = (int)rhs_val.size();
+            sid.nrhs = Msize;
+            sid.irhs_ptr = &irhs_ptr[0];
+            sid.irhs_sparse = &irhs_row[0];
+            sid.rhs_sparse = &rhs_val[0];
+
+            timer2.pause();
+            opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
+            timer2.start();
+
+            sid.job = JOB_SOLUTION;
+            dmumps_c(&sid);
+            if(sid.info[0] != 0) {
+                opserr<<"info[1] = "<<sid.info[0]<<", info[2] ="<<sid.info[1]<<"\n";
+                opserr<<"WARNING: failed to solve Bi -- PFEMSolver_Mumps::solve\n";
+                return -1;
+            }
+            ICNTL(sid,20,0);
+            ICNTL(sid,30,0);
+
+            for (int j=Isize; j<Msize; ++j) {
+                irhs_ptr[j+1] -= 1;
+            }
+            for (int k=0; k<(int)irhs_row.size(); ++k) {
+                irhs_row[k] -= 1;
+                irhs_row[k] -= Ssize;
+            }
+
+            timer2.pause();
+            opserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
+            timer2.start();
+
+            cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
+            int numignore = 0;
+            for (int j=0; j<Isize; ++j) {
+                for (int i=0; i<Isize; ++i) {
+                    if (fabs(rhs_val[Isize*j+i]) > Bitol) {
+                        cs_entry(Bi1, i, j,rhs_val[Isize*j+i]);
+                    } else {
+                        numignore++;
+                    }
+                }
+            }
+            cs* Bi = cs_compress(Bi1);
+            cs_spfree(Bi1);
+
+            cs* S1 = cs_multiply(Git, Bi);
+            S = cs_multiply(S1, Gi);
+            cs_spfree(S1);
+            cs_spfree(Bi);
+            timer2.pause();
+            opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
+        }
+
+        // Gft*Mf{-1}*Gf
+        if(Fsize > 0) {
+            for(int j=0; j<Fsize; j++) {
+                for(int k=Gft->p[j]; k<Gft->p[j+1]; k++) {
+                    Gft->x[k] /= Mf(j);
+                }
+            }
+            cs* S1 = cs_multiply(Gft, Gf);
+            if(S == 0) {
+                S = S1;
+            } else {
+                cs* S2 = cs_add(S, S1, 1.0, 1.0);
+                cs_spfree(S);
+                cs_spfree(S1);
+                S = S2;
+            }
+        }
+
+        // S
+        if(S == 0) {
+            S = L;
+        } else {
+            cs* S1 = cs_add(S, L, 1.0, 1.0);
+            cs_spfree(S);
+            S = S1;
+        }
+
+        // solve
+        if (S->nzmax > 0) {
 #ifdef _AMGCL
-	    // solve
-	    amgcl::profiler<> prof;
-	    typedef
-		amgcl::make_solver<
-		    amgcl::amg<
-			amgcl::backend::builtin<double>,
-			amgcl::coarsening::smoothed_aggregation,
-			amgcl::relaxation::spai0
-			>,
-		amgcl::solver::lgmres<amgcl::backend::builtin<double> >
-		> Solver;
+            // solve
+            amgcl::profiler<> prof;
+            typedef
+            amgcl::make_solver<
+                    amgcl::amg<
+                            amgcl::backend::builtin<double>,
+                            amgcl::coarsening::smoothed_aggregation,
+                            amgcl::relaxation::spai0
+                    >,
+                    amgcl::solver::lgmres<amgcl::backend::builtin<double> >
+            > Solver;
 
 
-	    // parameter
-	    Solver::params prm;
-	    prm.solver.tol = ptol;
-	    prm.solver.maxiter = pmaxiter;
+            // parameter
+            Solver::params prm;
+            prm.solver.tol = ptol;
+            prm.solver.maxiter = pmaxiter;
 
-	    // setup
-	    prof.tic("setup");
-	    std::vector<std::ptrdiff_t> ptr(S->nzmax), num(S->nzmax);
-	    for (int i=0; i<S->nzmax; ++i) {
-	    	ptr[i] = S->p[i];
-	    	num[i] = S->i[i];
-	    }
-	    double* val = &(S->x[0]);
-	    Solver solve(amgcl::adapter::zero_copy(Psize,&ptr[0],&num[0],val),prm);
-	    prof.toc("setup");
+            // setup
+            prof.tic("setup");
+            std::vector<std::ptrdiff_t> ptr(S->nzmax), num(S->nzmax);
+            for (int i=0; i<S->nzmax; ++i) {
+                ptr[i] = S->p[i];
+                num[i] = S->i[i];
+            }
+            double* val = &(S->x[0]);
+            Solver solve(amgcl::adapter::zero_copy(Psize,&ptr[0],&num[0],val),prm);
+            prof.toc("setup");
 
-	    // solve
-	    int iters;
-	    double error;
-	    prof.tic("solve");
-	    std::tie(iters, error) = solve(rhsP, deltaP);
-	    prof.toc("solve");
+            // solve
+            int iters;
+            double error;
+            prof.tic("solve");
+            std::tie(iters, error) = solve(rhsP, deltaP);
+            prof.toc("solve");
 
-	    if (print) {
-		std::cout << solve << std::endl;
-		std::cout << "iters: " << iters << std::endl
-			  << "error: " << error << std::endl
-			  << prof << std::endl;
-	    }
+            if (print) {
+                std::cout << solve << std::endl;
+                std::cout << "iters: " << iters << std::endl
+                          << "error: " << error << std::endl
+                          << prof << std::endl;
+            }
 
-	    if (iters>=pmaxiter && error>ptol) {
-	    	opserr<<"WARNING: failed to solve pressure\n";
-	    	return -1;
-	    }
+            if (iters>=pmaxiter && error>ptol) {
+                opserr<<"WARNING: failed to solve pressure\n";
+                return -1;
+            }
 #endif
-	}
+        }
 
-	// release
-	if(S != L) cs_spfree(S);
+        // release
+        if(S != L) cs_spfree(S);
     }
 
     // structure and interface corrector : deltaV = deltaV1 + M^{-1}*G*deltaP
     std::vector<double> deltaV;
     if (Msize > 0) {
-	deltaV.assign(Msize, 0.0);
+        deltaV.assign(Msize, 0.0);
     }
     if(Isize > 0) {
-	// Gi*deltaP
-	if(Psize > 0) {
-	    cs_gaxpy(Gi, &deltaP[0], &deltaV[0]+Ssize);
-	}
-	cs_spfree(Gi);
+        // Gi*deltaP
+        if(Psize > 0) {
+            cs_gaxpy(Gi, &deltaP[0], &deltaV[0]+Ssize);
+        }
+        cs_spfree(Gi);
 
-	sid.rhs = &deltaV[0];
-	sid.nrhs = 1;
-	sid.job = JOB_SOLUTION;
-	dmumps_c(&sid);
-	if(sid.info[0] != 0) {
-	    opserr<<"WARNING: failed to solve corrector -- PFEMSolver_Mumps::solve\n";
-	    return -1;
-	}
+        sid.rhs = &deltaV[0];
+        sid.nrhs = 1;
+        sid.job = JOB_SOLUTION;
+        dmumps_c(&sid);
+        if(sid.info[0] != 0) {
+            opserr<<"WARNING: failed to solve corrector -- PFEMSolver_Mumps::solve\n";
+            return -1;
+        }
     }
     for (int i=0; i<Msize; ++i) {
-	deltaV[i] += deltaV1[i];
+        deltaV[i] += deltaV1[i];
     }
 
     // fluid corrector: deltaVf = deltaVf1 + Mf^{-1}*Gf*deltaP
     std::vector<double> deltaVf;
     if(Fsize > 0) {
-	deltaVf.assign(Fsize, 0.0);
-	if(Psize > 0) {
-	    cs_gaxpy(Gf, &deltaP[0], &deltaVf[0]);
+        deltaVf.assign(Fsize, 0.0);
+        if(Psize > 0) {
+            cs_gaxpy(Gf, &deltaP[0], &deltaVf[0]);
         }
-	cs_spfree(Gf);
-	for (int i=0; i<Fsize; ++i) {
-	    deltaVf[i] = deltaVf[i]/Mf(i) + deltaVf1[i];
-	}
+        cs_spfree(Gf);
+        for (int i=0; i<Fsize; ++i) {
+            deltaVf[i] = deltaVf[i]/Mf(i) + deltaVf1[i];
+        }
     }
 
     // copy to X
     X.Zero();
 
     for(int i=0; i<size; i++) {            // row
-	int rowtype = dofType(i);          // row type
-	int rowid = dofID(i);
-	if(rowtype == 0) {
-	    X(i) = deltaV[rowid];
-	} else if(rowtype == 2) {
-	    X(i) = deltaV[rowid+Ssize];
-	} else if(rowtype == 1) {
-	    X(i) = deltaVf[rowid];
-	} else if(rowtype == 3) {
-	    X(i) = deltaP[rowid];
-	}
+        int rowtype = dofType(i);          // row type
+        int rowid = dofID(i);
+        if(rowtype == 0) {
+            X(i) = deltaV[rowid];
+        } else if(rowtype == 2) {
+            X(i) = deltaV[rowid+Ssize];
+        } else if(rowtype == 1) {
+            X(i) = deltaVf[rowid];
+        } else if(rowtype == 3) {
+            X(i) = deltaP[rowid];
+        }
     }
 
     timer.pause();
@@ -513,7 +513,7 @@ int PFEMSolver_Mumps::setSize()
 
     // workspace relaxation: 20%
     if(relax <= 0) {
-	relax = 20;
+        relax = 20;
     }
     ICNTL(sid,14,relax);
 
@@ -545,18 +545,18 @@ int PFEMSolver_Mumps::setSize()
     sid.jcn = new int[sid.nz];
 
     for(int j=0; j<sid.n; j++) {
-	for(int k=M->p[j]; k<M->p[j+1]; k++) {
-	    sid.irn[k] = M->i[k]+1;
-	    sid.jcn[k] = j+1;
-	}
+        for(int k=M->p[j]; k<M->p[j+1]; k++) {
+            sid.irn[k] = M->i[k]+1;
+            sid.jcn[k] = j+1;
+        }
     }
 
     // call mumps
     sid.job = JOB_ANALYSIS;
     dmumps_c(&sid);
     if(sid.info[0] != 0) {
-	opserr<<"WARNING: failed to analyze -- PFEMSolver_Mumps::setSize\n";
-	return -1;
+        opserr<<"WARNING: failed to analyze -- PFEMSolver_Mumps::setSize\n";
+        return -1;
     }
 #endif
     return 0;
@@ -571,8 +571,8 @@ PFEMSolver_Mumps::sendSelf(int cTag, Channel &theChannel)
 
 int
 PFEMSolver_Mumps::recvSelf(int ctag,
-		  Channel &theChannel,
-		  FEM_ObjectBroker &theBroker)
+                           Channel &theChannel,
+                           FEM_ObjectBroker &theBroker)
 {
     // nothing to do
     return 0;
