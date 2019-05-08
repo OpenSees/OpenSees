@@ -68,7 +68,7 @@ OPS_Newmark(void)
     return 0;
   }
 
-  bool dispFlag = true;
+  int dispFlag = 1;
   double dData[2];
   int numData = 2;
   if (OPS_GetDouble(&numData, dData) != 0) {
@@ -86,9 +86,11 @@ OPS_Newmark(void)
       //      OPS_GetString(nextString, 10);
       nextString = OPS_GetString();
       if ((nextString[0] == 'D') || (nextString[0] == 'd')) 
-	dispFlag = true;
+	dispFlag = 1;
       else if ((nextString[0] == 'A') || (nextString[0] == 'a')) 
-	dispFlag = false;      
+	dispFlag = 3;      
+      else if ((nextString[0] == 'V') || (nextString[0] == 'v')) 
+	dispFlag = 2;      
     }    
     theIntegrator = new Newmark(dData[0], dData[1], dispFlag);
   }
@@ -102,7 +104,7 @@ OPS_Newmark(void)
 
 Newmark::Newmark()
     : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
-      displ(true), gamma(0), beta(0), 
+      displ(1), gamma(0), beta(0), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
@@ -114,7 +116,7 @@ Newmark::Newmark()
 }
 
 
-Newmark::Newmark(double _gamma, double _beta, bool dispFlag, bool aflag)
+Newmark::Newmark(double _gamma, double _beta, int dispFlag, bool aflag)
     : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
       displ(dispFlag), gamma(_gamma), beta(_beta), 
       c1(0.0), c2(0.0), c3(0.0), 
@@ -170,11 +172,15 @@ int Newmark::newStep(double deltaT)
     AnalysisModel *theModel = this->getAnalysisModel();
     
     // set the constants
-    if (displ == true)  {
+    if (displ == 1)  {
         c1 = 1.0;
         c2 = gamma/(beta*deltaT);
         c3 = 1.0/(beta*deltaT*deltaT);
-    } else  {
+    } else if (displ == 2) {
+	c1 = deltaT*beta/gamma;
+	c2 = 1.0;
+	c3 = 1.0/(gamma*deltaT);
+    } else if (displ == 3) {
         c1 = beta*deltaT*deltaT;
         c2 = gamma*deltaT;
         c3 = 1.0;
@@ -205,7 +211,7 @@ int Newmark::newStep(double deltaT)
     (*Utdot) = *Udot;  
     (*Utdotdot) = *Udotdot;
     
-    if (displ == true)  {    
+    if (displ == 1 || displ == 2)  {    
         // determine new velocities and accelerations at t+deltaT
         double a1 = (1.0 - gamma/beta); 
         double a2 = (deltaT)*(1.0 - 0.5*gamma/beta);
@@ -456,11 +462,17 @@ int Newmark::update(const Vector &deltaU)
     }
     
     //  determine the response at t+deltaT
-    if (displ == true)  {
+    if (displ == 1)  {
         (*U) += deltaU;
 
         Udot->addVector(1.0, deltaU, c2);
         Udotdot->addVector(1.0, deltaU, c3);
+    } else if (displ == 2) {
+
+	U->addVector(1.0, deltaU, c1);
+	(*Udot) += deltaU;
+	Udotdot->addVector(1.0, deltaU, c3);
+	
     } else  {
         U->addVector(1.0, deltaU, c1);        
         Udot->addVector(1.0, deltaU, c2);
@@ -484,10 +496,7 @@ int Newmark::sendSelf(int cTag, Channel &theChannel)
     Vector data(3);
     data(0) = gamma;
     data(1) = beta;
-    if (displ == true) 
-        data(2) = 1.0;
-    else
-        data(2) = 0.0;
+    data(2) = displ;
 
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
@@ -510,10 +519,7 @@ int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     
     gamma  = data(0);
     beta   = data(1);
-    if (data(2) == 1.0)
-        displ = true;
-    else
-        displ = false;
+    displ  = data(2);
 
     return 0;
 }
@@ -580,7 +586,7 @@ int Newmark::formEleResidual(FE_Element* theEle)
 	// c3 = 1.0/(beta*dt*dt)
 
 	// So, the constants can be computed as follows:
-	if (displ==false) {
+	if (displ != 1) {
 	    opserr << "ERROR: Newmark::formEleResidual() -- the implemented"
 		   << " scheme only works if the displ variable is set to true." << endln;
 	}
