@@ -17,11 +17,11 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision$
 // $Date$
-                                                                        
-                                                                        
+
+
 // Written: Minjie 
 
 #include <PFEMSolver_Mumps.h>
@@ -117,7 +117,7 @@ void* OPS_PFEMSolver_Mumps()
 		    return 0;
 		}
 	    }
-	    
+
 	} else if (strcmp(opt, "-pmaxiter") == 0) {
 
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -128,7 +128,7 @@ void* OPS_PFEMSolver_Mumps()
 	    }
 	}
     }
-    
+
     PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,err,add,sym,print,
 						       ptol,maxiter,Bitol);
     return new PFEMLinSOE(*theSolver);
@@ -205,7 +205,7 @@ PFEMSolver_Mumps::solve()
     std::vector<double> deltaV1;
     if(Msize > 0) {
 	deltaV1.assign(Msize,0.0);
-	
+
 	// rsi
 	for(int i=0; i<size; i++) {        // row
 	    int rowtype = dofType(i);      // row type
@@ -225,12 +225,12 @@ PFEMSolver_Mumps::solve()
 	    return -1;
 	}
     }
-    
+
     // fluid predictor: deltaVf1 = Mf^{-1} * rf
     std::vector<double> deltaVf1;
     if(Fsize > 0) {
 	deltaVf1.assign(Fsize,0.0);
-	    
+
 	// rf
 	for(int i=0; i<size; i++) {        // row
 	    int rowtype = dofType(i);      // row type
@@ -255,7 +255,7 @@ PFEMSolver_Mumps::solve()
     if(Isize > 0) {
 	Gi = cs_transpose(Git, 1);
     }
-    
+
     // solve for pressure
     std::vector<double> deltaP, rhsP;
     double mf = 1.0/Mf.Norm();
@@ -300,7 +300,7 @@ PFEMSolver_Mumps::solve()
 		}
 		irhs_ptr[j+1+Ssize] = (j+1)*Isize+1;
 	    }
-	    
+
 	    ICNTL(sid,20,3);
 	    ICNTL(sid,30,1);
 	    sid.nz_rhs = (int)rhs_val.size();
@@ -308,7 +308,11 @@ PFEMSolver_Mumps::solve()
 	    sid.irhs_ptr = &irhs_ptr[0];
 	    sid.irhs_sparse = &irhs_row[0];
 	    sid.rhs_sparse = &rhs_val[0];
-	    
+
+        timer2.pause();
+        opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
+        timer2.start();
+
 	    sid.job = JOB_SOLUTION;
 	    dmumps_c(&sid);
 	    if(sid.info[0] != 0) {
@@ -327,17 +331,21 @@ PFEMSolver_Mumps::solve()
 		irhs_row[k] -= Ssize;
 	    }
 
-	    cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
-	    int numignore = 0;
-	    for (int j=0; j<Isize; ++j) {
-		for (int i=0; i<Isize; ++i) {
-		    if (fabs(rhs_val[Isize*j+i]) > Bitol) {
-			cs_entry(Bi1, i, j,rhs_val[Isize*j+i]);
-		    } else {
-			numignore++;
-		    }
-		}
-	    }
+        timer2.pause();
+        opserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
+        timer2.start();
+
+        cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
+        int numignore = 0;
+        for (int j=0; j<Isize; ++j) {
+            for (int i=0; i<Isize; ++i) {
+                if (fabs(rhs_val[Isize*j+i]) > Bitol) {
+                    cs_entry(Bi1, i, j,rhs_val[Isize*j+i]);
+                } else {
+                    numignore++;
+                }
+            }
+        }
 	    cs* Bi = cs_compress(Bi1);
 	    cs_spfree(Bi1);
 
@@ -346,9 +354,9 @@ PFEMSolver_Mumps::solve()
 	    cs_spfree(S1);
 	    cs_spfree(Bi);
 	    timer2.pause();
-	    opserr<<"Bi time = "<<timer2.getReal()<<"\n";
+	    opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
 	}
-	
+
 	// Gft*Mf{-1}*Gf
 	if(Fsize > 0) {
 	    for(int j=0; j<Fsize; j++) {
@@ -376,7 +384,7 @@ PFEMSolver_Mumps::solve()
 	    S = S1;
 	}
 
-	// solve 
+	// solve
 	if (S->nzmax > 0) {
 #ifdef _AMGCL
 	    // solve
@@ -421,18 +429,18 @@ PFEMSolver_Mumps::solve()
 			  << "error: " << error << std::endl
 			  << prof << std::endl;
 	    }
-	    
+
 	    if (iters>=pmaxiter && error>ptol) {
 	    	opserr<<"WARNING: failed to solve pressure\n";
 	    	return -1;
 	    }
 #endif
 	}
-	
+
 	// release
 	if(S != L) cs_spfree(S);
     }
-    
+
     // structure and interface corrector : deltaV = deltaV1 + M^{-1}*G*deltaP
     std::vector<double> deltaV;
     if (Msize > 0) {
@@ -473,12 +481,12 @@ PFEMSolver_Mumps::solve()
 
     // copy to X
     X.Zero();
-    
+
     for(int i=0; i<size; i++) {            // row
 	int rowtype = dofType(i);          // row type
 	int rowid = dofID(i);
 	if(rowtype == 0) {
-	    X(i) = deltaV[rowid];            
+	    X(i) = deltaV[rowid];
 	} else if(rowtype == 2) {
 	    X(i) = deltaV[rowid+Ssize];
 	} else if(rowtype == 1) {
@@ -489,7 +497,7 @@ PFEMSolver_Mumps::solve()
     }
 
     timer.pause();
-    opserr<<"MUMPS solve time = "<<timer.getReal()<<"\n";
+    opserr<<"MUMPS total solve time = "<<timer.getReal()<<"\n";
 #endif
     return 0;
 }
@@ -563,7 +571,7 @@ PFEMSolver_Mumps::sendSelf(int cTag, Channel &theChannel)
 
 int
 PFEMSolver_Mumps::recvSelf(int ctag,
-		  Channel &theChannel, 
+		  Channel &theChannel,
 		  FEM_ObjectBroker &theBroker)
 {
     // nothing to do
@@ -571,7 +579,7 @@ PFEMSolver_Mumps::recvSelf(int ctag,
 }
 
 
-int 
+int
 PFEMSolver_Mumps::setLinearSOE(PFEMLinSOE& theSOE)
 {
     this->theSOE = &theSOE;
