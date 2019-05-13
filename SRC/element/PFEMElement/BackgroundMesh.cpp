@@ -72,7 +72,7 @@ int OPS_BgMesh()
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
                 "numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? "
-                "-freesurface?>\n";
+                "-freesurface? -velKernel <Quintic> <Cloest>>\n";
         return -1;
     }
 
@@ -224,6 +224,13 @@ int OPS_BgMesh()
 
         } else if (strcmp(opt, "-freesurface") == 0) {
             bgmesh.setFreeSurface();
+        } else if (strcmp(opt, "-velKernel") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need kernel name\n";
+                return -1;
+            }
+            const char* kname = OPS_GetString();
+            bgmesh.setKernel(kname);
         }
     }
 
@@ -248,7 +255,7 @@ BackgroundMesh::BackgroundMesh()
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), sptags()
+         freesurface(false), sptags(), kernel(1)
 {
 }
 
@@ -260,6 +267,19 @@ BackgroundMesh::~BackgroundMesh()
         }
     }
     recorders.clear();
+}
+
+void
+BackgroundMesh::setKernel(const char *k)
+{
+    if (strcmp(k, "Quintic") == 0) {
+        this->kernel = 1;
+    } else if (strcmp(k, "Cloest") == 0) {
+        this->kernel = 2;
+    } else {
+        opserr << "WARNING: kernel " << k;
+        opserr << " is unknown\n";
+    }
 }
 
 void
@@ -1190,6 +1210,7 @@ BackgroundMesh::gridNodes()
         // get information
         double wt = 0.0, pre = 0.0, pdot = 0.0;
         VDouble vel(ndm), accel(ndm);
+        double minDist = -1;
         for (int i=0; i<(int)pts.size(); ++i) {
 
             // get particle
@@ -1213,23 +1234,41 @@ BackgroundMesh::gridNodes()
             pre +=  pts[i]->getPressure() * w;
             pdot += pts[i]->getPdot() * w;
 
-            // add velocity
-            const VDouble& pvel = pts[i]->getVel();
-            for (int k=0; k<ndm; k++) {
-                vel[k] += w*pvel[k];
-            }
+            if (kernel == 1) {
+                // Quintic Kernel
 
-            // add acceleration
-            const VDouble& paccel = pts[i]->getAccel();
-            for (int k=0; k<ndm; k++) {
-                accel[k] += w*paccel[k];
+                // add velocity
+                const VDouble &pvel = pts[i]->getVel();
+                for (int k = 0; k < ndm; k++) {
+                    vel[k] += w * pvel[k];
+                }
+
+                // add acceleration
+                const VDouble &paccel = pts[i]->getAccel();
+                for (int k = 0; k < ndm; k++) {
+                    accel[k] += w * paccel[k];
+                }
+            } else if (kernel == 2) {
+
+                // Cloest Kernel
+                if (minDist < 0 || q < minDist) {
+                    minDist = q;
+                    const VDouble &pvel = pts[i]->getVel();
+                    const VDouble &paccel = pts[i]->getAccel();
+                    for (int k = 0; k < ndm; k++) {
+                        vel[k] = pvel[k];
+                        accel[k] = paccel[k];
+                    }
+                }
             }
         }
         if (wt > 0) {
             pre /= wt;
             pdot /= wt;
-            vel /= wt;
-            accel /= wt;
+            if (kernel == 1) {
+                vel /= wt;
+                accel /= wt;
+            }
         }
 
         // update pressure for structural nodes

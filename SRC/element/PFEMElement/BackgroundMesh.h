@@ -135,6 +135,7 @@ public:
     int setFile(const char* name);
     void setNumSub(int num) {numsub = num;}
     void addStructuralNodes(VInt& snodes);
+    void setKernel(const char* k);
 
     // remesh all
     int remesh(bool init=false);
@@ -218,6 +219,7 @@ private:
     std::set<int> structuralNodes;
     bool freesurface;
     VInt sptags;
+    int kernel; // 1 - QuinticKernel, 2 - CloestKernel
 };
 
 
