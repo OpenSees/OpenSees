@@ -764,7 +764,7 @@ BackgroundMesh::remesh(bool init)
     timer.start();
 #endif
     // add particles
-    if (addParticles(init) < 0) {
+    if (addParticles() < 0) {
         opserr << "WARNING: failed to add particles\n";
         return -1;
     }
@@ -1043,7 +1043,7 @@ BackgroundMesh::addStructure()
 // add the particle to the cell
 // add bnodes to the cell
 int
-BackgroundMesh::addParticles(bool init)
+BackgroundMesh::addParticles()
 {
     // for all particles
     TaggedObjectIter& meshes = OPS_getAllMesh();
@@ -2161,7 +2161,7 @@ BackgroundMesh::gridEles()
         for (int ii=0; ii<(int)indices.size(); ++ii) {
             for (int j=0; j<(int)indices.size()-1; ++j) {
                 for (int k=0; k<ndm; ++k) {
-                    if (fabs(indices[ii][k]-indices[j][k]) > 3) {
+                    if (abs(indices[ii][k]-indices[j][k]) > 3) {
                         large = true;
                         break;
                     }
