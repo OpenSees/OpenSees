@@ -156,7 +156,7 @@ public:
     int moveFixedParticles();
 
     // create grid nodes and elements
-    int addWall(const VDouble& lower, const VDouble& upper);
+    int addWall(const VDouble& low, const VDouble& up);
     int addStructure();
     int gridNodes();
     int gridFluid();

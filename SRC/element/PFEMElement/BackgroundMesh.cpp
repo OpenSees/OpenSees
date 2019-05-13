@@ -70,7 +70,9 @@ int OPS_BgMesh()
 
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
-	opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? -freesurface?>\n";
+	opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
+         "numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? "
+         "-freesurface?>\n";
 	return -1;
     }
 
@@ -504,7 +506,7 @@ BackgroundMesh::preNForTet(const VDouble& crds1, const VDouble& crds2,
 	vol += coeff[i][0];
     }
 
-    if (vol < 0 || fabs(vol) < 1e-15) {
+    if (vol < 0 || fabs(vol) < 1e-14) {
 	//opserr<<"vol "<<vol<<" <= 0\n";
 	return -1;
     }
@@ -848,10 +850,10 @@ BackgroundMesh::remesh(bool init)
 }
 
 int
-BackgroundMesh::addWall(const VDouble& lower, const VDouble& upper)
+BackgroundMesh::addWall(const VDouble& low, const VDouble& up)
 {
-    wlower.push_back(lower);
-    wupper.push_back(upper);
+    wlower.push_back(low);
+    wupper.push_back(up);
     return 0;
 }
 
@@ -980,8 +982,8 @@ BackgroundMesh::addStructure()
 		getCorners(indices[i], 1, corners);
 
 		for (int j=0; j<(int)corners.size(); ++j) {
-		    BNode& bnode = bnodes[corners[j]];
-		    bcell.bnodes.push_back(&bnode);
+		    BNode& bnd = bnodes[corners[j]];
+		    bcell.bnodes.push_back(&bnd);
 		    bcell.bindex.push_back(corners[j]);
 		}
 	    }
@@ -2815,13 +2817,13 @@ BackgroundMesh::findFreeSurface(const ID& freenodes)
 	getCorners(index,1,indices);
 	bool free = false;
 	for (int i=0; i<(int)indices.size(); ++i) {
-	    std::map<VInt,BCell>::iterator it = bcells.find(indices[i]);
-	    if (it == bcells.end()) {
+	    std::map<VInt,BCell>::iterator it2 = bcells.find(indices[i]);
+	    if (it2 == bcells.end()) {
 		free = true;
 		break;
 	    }
-	    if (it->second.type != FLUID) continue;
-	    if (it->second.pts.empty()) {
+	    if (it2->second.type != FLUID) continue;
+	    if (it2->second.pts.empty()) {
 		free = true;
 		break;
 	    }
