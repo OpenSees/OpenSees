@@ -2075,7 +2075,7 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 				// dfrOverdSigma = n - 0.5 * DoubleDot2_2_Contr(n, r) * mI1;
 				dfrOverdSigma.Zero(); dfrOverdSigma += mI1;
 				dfrOverdSigma *= (-0.5 * DoubleDot2_2_Contr(n, r));	dfrOverdSigma += n;
-				dfrOverdAlpha = -p * n;
+				// dfrOverdAlpha = -p * n;
 				dfrOverdAlpha = n; dfrOverdAlpha *= (-p);
 				lambda = fr / (DoubleDot2_2_Contr(dfrOverdSigma, dSigmaP) - DoubleDot2_2_Contr(dfrOverdAlpha, aBar));
 				// if (fabs(GetF(nStress - lambda * dSigmaP, nAlpha + lambda * aBar)) < fabs(fr))
@@ -2207,7 +2207,7 @@ PM4Sand::GetF(const Vector& nStress, const Vector& nAlpha)
 	return f;
 }
 /*************************************************************/
-// GetPSI() ---------------------------------------------------
+// GetKSI() ---------------------------------------------------
 double
 PM4Sand::GetKsi(const double& dr, const double& p)
 {

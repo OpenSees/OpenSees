@@ -1908,25 +1908,33 @@ PM4Silt::IntersectionFactor(const Vector& CurStress, const Vector& CurStrain, co
 {
 	double a = a0;
 	double f, f0, f1;
-	Vector dSigma(3), dSigma0(3), dSigma1(3), strainInc(3);
+	Vector dSigma(3), dSigma0(3), dSigma1(3), strainInc(3), tmp(3);
 
-	strainInc = NextStrain - CurStrain;
+	// strainInc = NextStrain - CurStrain;
+	strainInc += NextStrain;
+	strainInc -= CurStrain;
 
 	if (a0 < 0.0 || a1 > 1.0) {
 		opserr << "a0 = " << a0 << "a1 = " << a1 << endln;
 	}
 	//GetElasticModuli(CurStress, K, G, mzcum);
 	dSigma0 = a0 * DoubleDot4_2(mCe, strainInc);
-	f0 = GetF(CurStress + dSigma0, CurAlpha);
+	// f0 = GetF(CurStress + dSigma0, CurAlpha);
+	tmp.Zero(); tmp += CurStress; tmp += dSigma0;
+	f0 = GetF(tmp, CurAlpha);
 
 	dSigma1 = a1 * DoubleDot4_2(mCe, strainInc);
-	f1 = GetF(CurStress + dSigma1, CurAlpha);
+	// f1 = GetF(CurStress + dSigma1, CurAlpha);
+	tmp.Zero(); tmp += CurStress; tmp += dSigma1;
+	f1 = GetF(tmp, CurAlpha);
 
 	for (int i = 1; i <= 10; i++)
 	{
 		a = a1 - f1 * (a1 - a0) / (f1 - f0);
 		dSigma = a * DoubleDot4_2(mCe, strainInc);
-		f = GetF(CurStress + dSigma, CurAlpha);
+		// f = GetF(CurStress + dSigma, CurAlpha);
+		tmp.Zero(); tmp += CurStress; tmp += dSigma;
+		f = GetF(tmp, CurAlpha);
 		if (fabs(f) < mTolF)
 		{
 			// if (debugFlag) opserr << "Found alpha in " << i << " steps" << ", alpha = " << a << endln;
@@ -1968,10 +1976,11 @@ PM4Silt::IntersectionFactor_Unloading(const Vector& CurStress, const Vector& Cur
 	double a = 0.0, a0 = 0.0, a1 = 1.0, da;
 	double f, f0, f1, fs;
 	int nSub = 20;
-	Vector dSigma(3), dSigma0(3), dSigma1(3), strainInc(3);
+	Vector dSigma(3), dSigma0(3), dSigma1(3), strainInc(3), tmp(3);
 	bool flag = false;
 
-	strainInc = NextStrain - CurStrain;
+	// strainInc = NextStrain - CurStrain;
+	strainInc += NextStrain; strainInc -= CurStrain;
 
 	f0 = GetF(CurStress, CurAlpha);
 	fs = f0;
@@ -1984,7 +1993,9 @@ PM4Silt::IntersectionFactor_Unloading(const Vector& CurStress, const Vector& Cur
 		da = (a1 - a0) / nSub;
 		for (int k = 1; k < nSub; k++) {
 			a = a0 + da;
-			f = GetF(CurStress + a * dSigma, CurAlpha);
+			// f = GetF(CurStress + a * dSigma, CurAlpha);
+			tmp = dSigma; tmp *= a; tmp += CurStress;
+			f = GetF(tmp, CurAlpha);
 			if (f > mTolF)
 			{
 				a1 = a;
@@ -2023,6 +2034,7 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 	const Vector& CurFabric, double& NextVoidRatio)
 {
 	Vector dSigmaP(3), dfrOverdSigma(3), dfrOverdAlpha(3), n(3), R(3), alphaD(3), b(3), aBar(3), r(3);
+	Vector nAlpha(3), nStress(3), dSigma(3), tmp0(3), tmp1(3);
 	double lambda, D, K_p, Cka, h, p, fr, AlphaAlphaBDotN;
 	Matrix aC(3, 3);
 	// Vector CurStress = NextStress;
@@ -2051,26 +2063,36 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 			return;
 		}
 		else {
-			Vector nStress = NextStress;
-			Vector nAlpha = NextAlpha;
+			nStress = NextStress;
+			nAlpha = NextAlpha;
 			for (int i = 1; i <= maxIter; i++) {
-				r = GetDevPart(nStress) / p;
+				// r = GetDevPart(nStress) / p;
+				r = GetDevPart(nStress); r /= p;
 				GetStateDependent(nStress, nAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
 					, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 				aC = GetStiffness(mK, mG);
 				dSigmaP = DoubleDot4_2(aC, mDGamma * ToCovariant(R));
 				aBar = two3 * h * b;
-				dfrOverdSigma = n - 0.5 * DoubleDot2_2_Contr(n, r) * mI1;
-				dfrOverdAlpha = -p * n;
+				// dfrOverdSigma = n - 0.5 * DoubleDot2_2_Contr(n, r) * mI1;
+				dfrOverdSigma.Zero(); dfrOverdSigma += mI1;
+				dfrOverdSigma *= (-0.5 * DoubleDot2_2_Contr(n, r));	dfrOverdSigma += n;
+				// dfrOverdAlpha = -p * n;
+				dfrOverdAlpha = n; dfrOverdAlpha *= (-p);
 				lambda = fr / (DoubleDot2_2_Contr(dfrOverdSigma, dSigmaP) - DoubleDot2_2_Contr(dfrOverdAlpha, aBar));
-				if (fabs(GetF(nStress - lambda * dSigmaP, nAlpha + lambda * aBar)) < fabs(fr))
+				// if (fabs(GetF(nStress - lambda * dSigmaP, nAlpha + lambda * aBar)) < fabs(fr))
+				tmp0 = dSigmaP; tmp0 *= (-lambda); tmp0 += nStress;
+				tmp1 = aBar; tmp1 *= lambda; tmp1 += nAlpha;
+				if (fabs(GetF(tmp0, tmp1)) < fabs(fr))
 				{
-					nStress -= lambda * dSigmaP;
-					nAlpha += lambda * aBar;
+					// nStress -= lambda * dSigmaP;
+					tmp0 = dSigmaP; tmp0 *= lambda; nStress -= tmp0;
+					// nAlpha += lambda * aBar;
+					tmp0 = aBar; tmp0 *= lambda; nAlpha += tmp0;
 				}
 				else {
 					lambda = fr / DoubleDot2_2_Contr(dfrOverdSigma, dfrOverdSigma);
-					nStress -= lambda * dfrOverdSigma;
+					// nStress -= lambda * dfrOverdSigma;
+					tmp0 = dfrOverdSigma; tmp0 *= lambda; nStress -= tmp0;
 				}
 				fr = GetF(nStress, nAlpha);
 				if (fabs(fr) < mTolF) {
@@ -2107,82 +2129,15 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 					alpha_mid = 0.5 * (alpha_down + alpha_mid);
 				}
 
-				fr_old = GetF(mSigma + alpha_mid * dSigma, NextAlpha);
+				// fr_old = GetF(mSigma + alpha_mid * dSigma, NextAlpha);
+				tmp0 = dSigma; tmp0 *= alpha_mid; tmp0 += mSigma;
+				fr_old = GetF(tmp0, NextAlpha);
 				if (fabs(fr_old) < mTolF) {
-					NextStress = mSigma + alpha_mid * dSigma;
+					// NextStress = mSigma + alpha_mid * dSigma;
+					NextStress = dSigma; NextStress *= alpha_mid; NextStress += mSigma;
 					break;
 				}
 			}
-
-			// // stress state ouside yield surface
-			// double CurDr = (m_emax - NextVoidRatio) / (m_emax - m_emin);
-			// Vector nStress = NextStress;
-			// Vector nAlpha = NextAlpha;
-			// for (int i = 1; i <= maxIter; i++) {
-			// 	// Sloan, Abbo, Sheng 2001, Refined explicit integration of elastoplastic models with automatic 
-			// 	// error control
-			// 	r = GetDevPart(nStress) / p;
-			// 	GetStateDependent(nStress, nAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
-			// 		, mzpeak, mpzp, mMcur, CurDr, n, D, R, K_p, alphaD, Cka, h, b);
-			// 	dSigmaP = DoubleDot4_2(mCe, ToCovariant(R));
-			// 	aBar = h * b;
-			// 	dfrOverdSigma = n - 0.5 * DoubleDot2_2_Contr(n, r) * mI1;
-			// 	dfrOverdAlpha = -p * n;
-			// 	lambda = fr / (DoubleDot2_2_Contr(dfrOverdSigma, dSigmaP) - DoubleDot2_2_Contr(dfrOverdAlpha, aBar));
-			// 
-			// 	if (fabs(GetF(nStress - lambda * dSigmaP, nAlpha + lambda * aBar)) < fabs(fr))
-			// 	{
-			// 		nStress -= lambda * dSigmaP;
-			// 		nAlpha += lambda * aBar;
-			// 	}
-			// 	else {
-			// 		lambda = fr / DoubleDot2_2_Contr(dfrOverdSigma, dfrOverdSigma);
-			// 		if (fabs(GetF(nStress - lambda * dfrOverdSigma, nAlpha)) < fabs(fr))
-			// 			nStress -= lambda * dfrOverdSigma;
-			// 		else
-			// 		{
-			// 			if (debugFlag)
-			// 				opserr << "PM4Silt::StressCorrection() Couldn't decrease the yield function." << endln;
-			// 			return;
-			// 		}
-			// 	}
-			// 
-			// 	fr = GetF(nStress, nAlpha);
-			// 	if (fabs(fr) < mTolF) {
-			// 		NextStress = nStress;
-			// 		NextAlpha = nAlpha;
-			// 		break;
-			// 	}
-			// 
-			// 	if (i == maxIter) {
-			// 		if (debugFlag)
-			// 			opserr << "Still outside with f =  " << fr << endln;
-			// 		Vector dSigma = NextStress - CurStress;
-			// 		double alpha_up = 1.0;
-			// 		double alpha_mid = 0.5;
-			// 		double alpha_down = 0.0;
-			// 		double fr_old = GetF(CurStress + alpha_mid * dSigma, NextAlpha);
-			// 		for (int jj = 0; jj < maxIter; jj++) {
-			// 			if (fr_old < 0.0) {
-			// 				alpha_down = alpha_mid;
-			// 				alpha_mid = 0.5 * (alpha_up + alpha_mid);
-			// 			}
-			// 			else {
-			// 				alpha_up = alpha_mid;
-			// 				alpha_mid = 0.5 * (alpha_down + alpha_mid);
-			// 			}
-			// 
-			// 			fr_old = GetF(CurStress + alpha_mid * dSigma, NextAlpha);
-			// 			if (fabs(fr_old) < mTolF) {
-			// 				NextStress = CurStress + alpha_mid * dSigma;
-			// 				break;
-			// 			}
-			// 			// }
-			// 			if (jj == maxIter) opserr << "stress still outside!!" << endln;
-			// 		}
-			// 		p = 0.5 * GetTrace(nStress) + mresidualP;
-			// 	}
-			// }
 		}
 	}
 }
@@ -2244,12 +2199,12 @@ PM4Silt::GetF(const Vector& nStress, const Vector& nAlpha)
 	// PM4Silt's yield function
 	Vector s(3); s = GetDevPart(nStress);
 	double p = 0.5 * GetTrace(nStress);
-	s = s - p * nAlpha;
+	s -= p * nAlpha;
 	double f = GetNorm_Contr(s) - root12 * m_m * p;
 	return f;
 }
 /*************************************************************/
-// GetPSI() ---------------------------------------------------
+// GetKSI() ---------------------------------------------------
 double
 PM4Silt::GetKsi(const double& e, const double& p)
 {
@@ -2285,7 +2240,7 @@ PM4Silt::GetElasticModuli(const Vector& sigma, double &K, double &G, double &Mcu
 			G = G * F_consol;
 		}
 	}
-	m_nu = (m_nu == 0.5) ? 0.4999 : m_nu;
+	m_nu = (m_nu >= 0.5) ? 0.4999 : m_nu;
 	K = two3 * (1 + m_nu) / (1 - 2 * m_nu) * G;
 }
 void
@@ -2359,18 +2314,31 @@ PM4Silt::GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, co
 Vector
 PM4Silt::GetNormalToYield(const Vector &stress, const Vector &alpha)
 {
-	Vector devStress(3); devStress = GetDevPart(stress);
-	double p = 0.5 * GetTrace(stress);
+	// Vector devStress(3); devStress = GetDevPart(stress);
+	// double p = 0.5 * GetTrace(stress);
+	// Vector n(3);
+	// if (fabs(p) < small) {
+	// 	n.Zero();
+	// }
+	// else {
+	// 	n = devStress - p * alpha;
+	// 	double normN = GetNorm_Contr(n);
+	// 	normN = (normN < small) ? 1.0 : normN;
+	// 	n = n / normN;
+	// }
 	Vector n(3);
+	double p = 0.5 * GetTrace(stress);
 	if (fabs(p) < small) {
 		n.Zero();
 	}
 	else {
-		n = devStress - p * alpha;
+		n = alpha; n *= (-p);
+		n += GetDevPart(stress);
 		double normN = GetNorm_Contr(n);
 		normN = (normN < small) ? 1.0 : normN;
-		n = n / normN;
+		n /= normN;
 	}
+
 	return n;
 }
 /*************************************************************/
@@ -2457,7 +2425,7 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		// double Cdz = (1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum));
 		double Cwet = fmin(1.0, (1.0 / (1 + pow(0.02 / AlphaAlphaBDotN, 4.0)) + 1.0 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
 		double Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / (hp * Cdz * Cwet);
-		double Cin = 2.0 * Macauley(DoubleDot2_2_Contr(fabric, n)) * root12 / m_z_max;
+		double Cin = Macauley(DoubleDot2_2_Contr(fabric, n)) / root12 / m_z_max;
 		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - mAlpha_in, n) + Cin), 2.0), m_Ado) *
 			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.10);
 		// Apply a factor to D so it doesn't go very big when p is small
