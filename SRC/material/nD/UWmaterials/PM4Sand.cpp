@@ -20,7 +20,7 @@
 
 // Written: Long Chen, Pedro Arduino
 //          Nov 2016, University of Washington
-//          Modified Sep 2018
+//          Modified Jan 2019
 
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
@@ -1462,6 +1462,11 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		r = GetDevPart(NextStress);  r /= p;
 
 		temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
+		// if (temp4 < 0.0) {
+		// 	mKp = -0.5 * (2 * G - K * D *DoubleDot2_2_Contr(n, r));
+		// 	temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
+		// 	h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+		// }
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma1.Zero();
@@ -1534,6 +1539,11 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		// r = GetDevPart(NextStress + dSigma1) / p;
 		r = GetDevPart(tmp0); r /= p;
 		temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
+		// if (temp4 < 0.0) {
+		// 	mKp = -0.5 * (2 * G - K * D *DoubleDot2_2_Contr(n, r));
+		// 	temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
+		// 	h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+		// }
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma2.Zero();
@@ -1629,7 +1639,9 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			q = fmax(0.8 * sqrt(TolE / curStepError), 0.1);
 			if (dT == dT_min) {
 				// opserr << "reached dT_min\n";
-				NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+				NextElasticStrain -= tmp0;
 				NextStress = nStress;
 				NextAlpha = nAlpha;
 				Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
@@ -1640,9 +1652,8 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		}
 		else {
 			// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
-			NextElasticStrain = dPStrain1;
-			NextElasticStrain += dPStrain2;
-			NextElasticStrain *= 0.5;
+			tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+			NextElasticStrain -= tmp0;
 			NextStress = nStress;
 			NextAlpha = nAlpha;
 			NextFabric = nFabric;
