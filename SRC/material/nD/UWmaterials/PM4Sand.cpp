@@ -1264,6 +1264,8 @@ void PM4Sand::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	double CurVoidRatio, CurDr, Cka, h, p, dVolStrain, D, AlphaAlphaBDotN;
 	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3), dStrain(3);
 	Vector dSigma(3), dAlpha(3), dFabric(3);
+
+	this->GetElasticModuli(NextStress, K, G, mMcur, mzcum);
 	CurVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
 	CurDr = (m_emax - CurVoidRatio) / (m_emax - m_emin);
 	p = 0.5 * GetTrace(CurStress);
@@ -1283,7 +1285,7 @@ void PM4Sand::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	dDevStrain += dStrain;
 	// r = GetDevPart(CurStress) / p;
 	r = GetDevPart(NextStress);  r /= p;
-	double temp4 = mKp + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
+	double temp4 = mKp + 2 * G - K * D * DoubleDot2_2_Contr(n, r);
 	// if (temp4 < 0.0) {
 	// 	mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
 	// 	temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
@@ -1297,14 +1299,14 @@ void PM4Sand::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 		dPStrain = dDevStrain + dVolStrain * mI1;
 	}
 	else {
-		NextL = (2 * mG * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * mK * dVolStrain) / temp4;
+		NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
 		mDGamma = NextL;
 		if (NextL < 0) {
 			if (debugFlag) {
 				opserr << "NextL is smaller than 0\n";
 				opserr << "NextL = " << NextL << endln;
 			}
-			dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
+			dSigma = 2 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1;
 			dAlpha.Zero();
 			dFabric.Zero();
 			dPStrain.Zero();

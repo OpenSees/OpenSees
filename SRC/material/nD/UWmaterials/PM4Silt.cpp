@@ -887,7 +887,7 @@ PM4Silt::initialize(Vector initStress)
 
 	// check if initial stresses are inside bounding/dilatancy surface 
 	double Mcut = fmax(mMb, mMd);
-	double Mfin = sqrt(2) * GetNorm_Contr(GetDevPart(mSigma_n));
+	double Mfin = sqrt(2.0) * GetNorm_Contr(GetDevPart(mSigma_n));
 	Mfin = Mfin / p0;
 	if (Mfin > Mcut)
 	{
@@ -1283,26 +1283,34 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
 	double CurVoidRatio, Cka, h, p, dVolStrain, D, AlphaAlphaBDotN;
-	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3);
+	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3), dStrain(3);
 	Vector dSigma(3), dAlpha(3), dFabric(3);
 
+	this->GetElasticModuli(NextStress, K, G, mMcur, mzcum);
 	CurVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
 	p = 0.5 * GetTrace(CurStress);
 	p = p < m_Pmin ? m_Pmin : p;
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-	NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+	dStrain = NextStrain; dStrain -= CurStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
 	// using NextStress instead of CurStress to get correct n
-	GetStateDependent(NextStress, CurAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
-		, mzpeak, mpzp, mMcur, CurVoidRatio, n, D, R, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
-	dVolStrain = GetTrace(NextStrain - CurStrain);
-	dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
-	r = GetDevPart(CurStress) / p;
-	double temp4 = mKp + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
-	if (temp4 < 0.0) {
-		mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
-		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
-		h = 1.5 * mKp / (p * AlphaAlphaBDotN);
-	}
+	GetStateDependent(NextStress, CurAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum,
+		mzpeak, mpzp, mMcur, CurVoidRatio, n, D, R, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
+	// dVolStrain = GetTrace(NextStrain - CurStrain);
+	dVolStrain = GetTrace(dStrain);
+	// dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
+	dDevStrain = mI1;
+	dDevStrain *= (-1.0 * dVolStrain / 3.0);
+	dDevStrain += dStrain;
+	// r = GetDevPart(CurStress) / p;
+	r = GetDevPart(NextStress);  r /= p;
+	double temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+	// if (temp4 < 0.0) {
+	// 	mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
+	// 	temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+	// 	h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+	// }
 	if (fabs(temp4) < small) {
 		// Neutral loading
 		dSigma.Zero();
@@ -1311,14 +1319,14 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 		dPStrain = dDevStrain + dVolStrain * mI1;
 	}
 	else {
-		NextL = (2 * mG * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * mK * dVolStrain) / temp4;
+		NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
 		mDGamma = NextL;
 		if (NextL < 0) {
 			if (debugFlag) {
 				opserr << "NextL is smaller than 0\n";
 				opserr << "NextL = " << NextL << endln;
 			}
-			dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
+			dSigma = 2 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1;
 			// dAlpha = GetDevPart(NextStress + dSigma) / (0.5 * GetTrace(NextStress + dSigma))
 			// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
 			dAlpha.Zero();
@@ -1326,21 +1334,37 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 			dPStrain.Zero();
 		}
 		else {
-			dSigma = 2.0*mG*mIIcon*dDevStrain + mK*dVolStrain*mI1 - Macauley(NextL)*
-				(2.0 * mG * n + mK * D * mI1);
+			// dSigma = 2.0*mG*mIIcon*dDevStrain + mK*dVolStrain*mI1 - Macauley(NextL)*
+			// 	(2.0 * mG * n + mK * D * mI1);
+			Vector tmp0(n), tmp1(mI1), tmp2(mI1);
+			tmp0 *= (2.0 * G);
+			tmp1 *= (K * D); tmp1 += tmp0; tmp1 *= (-Macauley(NextL));
+			tmp2 *= (K * dVolStrain);
+			dSigma = ToContraviant(dDevStrain); dSigma *= (2.0 * G);
+			dSigma += tmp2; dSigma += tmp1;
 			// update fabric
 			if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
-				dFabric = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
-				NextFabric = CurFabric + dFabric;
+				// dFabric = m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
+				dFabric = n;
+				dFabric *= m_z_max;
+				dFabric += CurFabric;
+				dFabric *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 			}
 			// update alpha
-			dAlpha = two3 * NextL * h * b;
-			dPStrain = NextL * mIIco * R;
+			// dAlpha = two3 * NextL * h * b;
+			// dPStrain = NextL * mIIco * R;
+			dPStrain = ToCovariant(R);  dPStrain *= NextL;
+			dAlpha = b; dAlpha *= (two3 * NextL * h);
 		}
 	}
-	NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain) - dPStrain;
-	NextStress = CurStress + dSigma;
-	NextAlpha = CurAlpha + dAlpha;
+	// NextFabric = CurFabric + dFabric;
+	NextFabric = CurFabric; NextFabric += dFabric;
+	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain) - dPStrain;
+	NextElasticStrain -= dPStrain;
+	// NextStress = CurStress + dSigma;
+	NextStress = CurStress;  NextStress += dSigma;
+	// NextAlpha = CurAlpha + dAlpha;
+	NextAlpha = CurAlpha;  NextAlpha += dAlpha;
 	Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
 	// Stress_Correction(NextStress, NextAlpha, dAlpha, m_m, R, n, r);
 	return;
@@ -1368,7 +1392,7 @@ void PM4Silt::MaxStrainInc(const Vector& CurStress, const Vector& CurStrain, con
 		exp_int = &PM4Silt::ModifiedEuler;
 		break;
 	default:
-		exp_int = &PM4Silt::ForwardEuler;
+		exp_int = &PM4Silt::ModifiedEuler;
 		break;
 	}
 	Vector StrainInc(3); StrainInc = NextStrain;  StrainInc -= CurStrain;
@@ -1462,7 +1486,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		// r += GetDevPart(NextStress) / p;
 		r = GetDevPart(NextStress);  r /= p;
 
-		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+		temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
 		// if (temp4 < 0.0) {
 		// 	mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
 		// 	temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
@@ -2357,6 +2381,8 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	, const double &pzp, const double &Mcur, const double &CurVoidRatio, Vector &n, double &D, Vector &R, double &K_p
 	, Vector &alphaD, double &Cka, double &h, Vector &b, double &AlphaAlphaBDotN)
 {
+	Vector alphaD_alpha(3), alphaDr_alpha(3), alpha_mAlpha_in(3), alpha_mAlpha_in_true(3), alpha_mAlpha_p(3), minusFabric(3);
+	double Czpk1, Czpk2, Cpzp2, Cg1, Ckp, AlphaAlphaInDotN, AlphaAlphaInTrueDotN, Czin1, Crot1, Mdr;
 	double p = 0.5 * GetTrace(stress);
 	if (p <= m_Pmin) p = m_Pmin;
 	double ksi = GetKsi(CurVoidRatio, p);
@@ -2370,21 +2396,32 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		//loose of critical
 		mMb = m_Mc * exp(-1.0 * m_nbwet * ksi / m_lambda);
 	}
-	Vector alphaB = root12 * (mMb - m_m) * n;
-	alphaD = root12 * (mMd - m_m) * n;
-	double Czpk1 = zpeak / (zcum + m_z_max / 5.0);
-	double Czpk2 = zpeak / (zcum + m_z_max / 100.0);
-	double Cpzp2 = Macauley((pzp - p)) / (Macauley((pzp - p)) + m_Pmin);
-	double Cg1 = m_h0 / 200.0;
-	double Ckp = 2.0;
+	//Vector alphaB = root12 * (mMb - m_m) * n;
+	Vector alphaB(n);
+	alphaB *= (root12 * (mMb - m_m));
+	//alphaD = root12 * (mMd - m_m) * n;
+	alphaD = n; alphaD *= (root12 * (mMd - m_m));
 
-	b = alphaB - alpha;
+	Czpk1 = zpeak / (zcum + m_z_max / 5.0);
+	Czpk2 = zpeak / (zcum + m_z_max / 100.0);
+	Cpzp2 = Macauley((pzp - p)) / (Macauley((pzp - p)) + m_Pmin);
+	Cg1 = m_h0 / 200.0;
+	Ckp = 2.0;
+
+	//b = alphaB - alpha;
+	b = alphaB; b -= alpha;
 	AlphaAlphaBDotN = DoubleDot2_2_Contr(b, n);
-	double AlphaAlphaInDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in, n));
-	double AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in_true, n));
+	// double AlphaAlphaInDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in, n));
+	alpha_mAlpha_in = alpha; alpha_mAlpha_in -= mAlpha_in;
+	AlphaAlphaInDotN = Macauley(DoubleDot2_2_Contr(alpha_mAlpha_in, n));
+	// double AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in_true, n));
+	alpha_mAlpha_in_true = alpha; alpha_mAlpha_in_true -= mAlpha_in_true;
+	AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha_mAlpha_in_true, n));
 	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*AlphaAlphaInTrueDotN, 2)) * Cpzp2 * Czpk1;
 	// updataed K_p formulation following PM4Silt V1. mAlpha_in is the apparent back-stress ratio.
-	if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
+	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
+	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
+	if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
 		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
 		h = h * (AlphaAlphaInDotN + Cg1) / (AlphaAlphaInTrueDotN + Cg1);
@@ -2395,19 +2432,23 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	}
 
 	K_p = two3 * h * p * AlphaAlphaBDotN;
-	double Czin1 = Macauley(1.0 - exp(-2.0*fabs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max)));
+	Czin1 = Macauley(1.0 - exp(-2.0 * fabs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max)));
 	// rotated dilatancy surface
-	double temp = Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12;
-	double Crot1 = fmax((1.0 + 2 * temp / m_z_max * (1 - Czin1)), 1.0);
-	double Mdr = mMd / Crot1;
-	Vector alphaDr = root12 * (Mdr - m_m) * n;
+	minusFabric = fabric; minusFabric *= (-1.0);
+	double temp = Macauley(DoubleDot2_2_Contr(minusFabric, n)) * root12;
+	Crot1 = fmax((1.0 + 2 * temp / m_z_max * (1 - Czin1)), 1.0);
+	Mdr = mMd / Crot1;
+	// Vector alphaDr = root12 * (Mdr - m_m) * n;
+	alphaDr_alpha = n; alphaDr_alpha *= root12 * (Mdr - m_m); alphaDr_alpha -= alpha;
+	alphaD_alpha = alphaD; alphaD_alpha -= alpha;
 	// dilation
-	if (DoubleDot2_2_Contr(alphaDr - alpha, n) <= 0) {
-		double Cpzp = 1.0 / (1.0 + pow((2.5* p / mpzp), 5.0));
-		double Czin2 = (1 + Czin1*(zcum - zpeak) / (3.0 * m_z_max)) / (1 + 3.0 * Czin1*(zcum - zpeak) / (3.0 * m_z_max));
-		double Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max) * pow(1.0 - temp / zpeak, 3) * pow(m_ce, 2.0) * Cpzp * Czin1 + 1.0);
-		D = Ad * DoubleDot2_2_Contr(alphaD - alpha, n);
-		double Drot = Ad * temp / m_z_max * DoubleDot2_2_Contr(alphaDr - alpha, n) / 3.0;
+	if (DoubleDot2_2_Contr(alphaDr_alpha, n) <= 0) {
+		double Cpzp, Czin2, Ad, Drot;
+		Cpzp = 1.0 / (1.0 + pow((2.5* p / mpzp), 5.0));
+		Czin2 = (1 + Czin1*(zcum - zpeak) / (3.0 * m_z_max)) / (1 + 3.0 * Czin1*(zcum - zpeak) / (3.0 * m_z_max));
+		Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max) * pow(1.0 - temp / zpeak, 3) * pow(m_ce, 2.0) * Cpzp * Czin1 + 1.0);
+		D = Ad * DoubleDot2_2_Contr(alphaD_alpha, n);
+		Drot = Ad * temp / m_z_max * DoubleDot2_2_Contr(alphaDr_alpha, n) / 3.0;
 		if (D > Drot) {
 			D = D + (Drot - D)*Macauley(mMb - Mcur) / (Macauley(mMb - Mcur) + 0.01);
 		}
@@ -2417,19 +2458,19 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	}
 	else {
 		//contraction
+		double hp, Crot2, Cdz, Cwet, Adc, Cin, C_pmin;
 		// bound K_p to non - negative, following flac practice
 		K_p = fmax(0.0, K_p);
-		double hp = m_hpo * exp(-0.7 + 0.2 * pow(Macauley(3 - ksi / m_lambda), 2.0));
-		double Crot2 = 1 - Czpk2;
-		double Cdz = fmax((1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
+		hp = m_hpo * exp(-0.7 + 0.2 * pow(Macauley(3 - ksi / m_lambda), 2.0));
+		Crot2 = 1 - Czpk2;
+		Cdz = fmax((1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
 		// double Cdz = (1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum));
-		double Cwet = fmin(1.0, (1.0 / (1 + pow(0.02 / AlphaAlphaBDotN, 4.0)) + 1.0 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
-		double Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / (hp * Cdz * Cwet);
-		double Cin = Macauley(DoubleDot2_2_Contr(fabric, n)) / root12 / m_z_max;
-		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - mAlpha_in, n) + Cin), 2.0), m_Ado) *
-			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.10);
+		Cwet = fmin(1.0, (1.0 / (1 + pow(0.02 / AlphaAlphaBDotN, 4.0)) + 1.0 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
+		Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / (hp * Cdz * Cwet);
+		Cin = Macauley(DoubleDot2_2_Contr(fabric, n)) * sqrt(2.0) / m_z_max;
+		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha_mAlpha_in, n) + Cin), 2.0), m_Ado) *
+			DoubleDot2_2_Contr(alphaD_alpha, n) / (DoubleDot2_2_Contr(alphaD_alpha, n) + 0.10);
 		// Apply a factor to D so it doesn't go very big when p is small
-		double C_pmin;
 		if (p < m_Pmin * 2.0)
 		{
 			C_pmin = 0.0;
