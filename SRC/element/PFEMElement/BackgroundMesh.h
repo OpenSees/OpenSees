@@ -220,6 +220,7 @@ private:
     bool freesurface;
     VInt sptags;
     int kernel; // 1 - QuinticKernel, 2 - CloestKernel
+    int tsTag, loadPatternTag;
 };
 
 

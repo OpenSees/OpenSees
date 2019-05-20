@@ -51,6 +51,8 @@
 #include <fstream>
 #include <SP_Constraint.h>
 #include <Matrix.h>
+#include <ConstantSeries.h>
+#include <LoadPattern.h>
 
 int BackgroundMesh::FLUID = 1;
 int BackgroundMesh::STRUCTURE = 2;
@@ -255,7 +257,8 @@ BackgroundMesh::BackgroundMesh()
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), sptags(), kernel(1)
+         freesurface(false), sptags(), kernel(1),
+         tsTag(-1111), loadPatternTag(-1111)
 {
 }
 
@@ -670,7 +673,7 @@ BackgroundMesh::clearGrid()
 
     // remove sps
     for (int i=0; i<(int)sptags.size(); ++i) {
-        SP_Constraint* sp = domain->removeSP_Constraint(sptags[i]);
+        SP_Constraint* sp = domain->removeSP_Constraint(sptags[i], loadPatternTag);
         if (sp != 0) {
             delete sp;
         }
@@ -874,6 +877,29 @@ BackgroundMesh::addWall(const VDouble& low, const VDouble& up)
 {
     wlower.push_back(low);
     wupper.push_back(up);
+
+    // create load pattern
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+    if (domain->getLoadPattern(loadPatternTag) != 0) {
+        return 0;
+    }
+
+    ConstantSeries* series = new ConstantSeries(tsTag);
+    if (OPS_addTimeSeries(series) == false) {
+        opserr << "WARNING: failed to create a constant time series\n";
+        delete series;
+        return -1;
+    }
+    LoadPattern* pattern = new LoadPattern(loadPatternTag, 1.0);
+    pattern->setTimeSeries(series);
+
+    if (domain->addLoadPattern(pattern) == false) {
+        opserr<<"WARNING failed to add pattern to domain\n";
+        delete pattern;
+        return -1;
+    }
     return 0;
 }
 
@@ -1417,7 +1443,7 @@ BackgroundMesh::gridNodes()
             SP_Constraint* sp = new SP_Constraint(newsps[i]->getTag(), k, 0.0, true);
             if (sp != 0) {
                 // add to domain
-                if (domain->addSP_Constraint(sp) == false) {
+                if (domain->addSP_Constraint(sp, loadPatternTag) == false) {
                     opserr << "WARNING: failed to add sp to domain\n";
                     delete sp;
                     return -1;
