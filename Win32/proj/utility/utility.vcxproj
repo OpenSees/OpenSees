@@ -106,7 +106,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\utility\File.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\FileIter.cpp" />
-    <ClCompile Include="..\..\..\SRC\utility\NeesCentral.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\PeerNGA.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\SimulationInformation.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\StringContainer.cpp" />
