@@ -51,6 +51,10 @@
 #include <elementAPI.h>
 #include <string>
 #include <ElementIter.h>
+//added by SAJalali-done for InternalForce Recorder
+#define SECTION_RESPONSE_MZ		1
+#define SECTION_RESPONSE_P		2
+#define SECTION_RESPONSE_VY		3
 
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
@@ -224,6 +228,8 @@ ElasticBeam2d::ElasticBeam2d()
   :Element(0,ELE_TAG_ElasticBeam2d), 
   A(0.0), E(0.0), I(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
+  //added by SAJalali:
+  , numEleLoads(0), eleLoads(0), eleLoadFactors(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -245,6 +251,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
   :Element(tag,ELE_TAG_ElasticBeam2d), 
   A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
+  //added by SAJalali:
+  , numEleLoads(0), eleLoads(0), eleLoadFactors(0)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -273,6 +281,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
 			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm)
   :Element(tag,ELE_TAG_ElasticBeam2d), alpha(Alpha), d(depth), rho(r), cMass(cm),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
+  //added by SAJalali:
+  , numEleLoads(0), eleLoads(0), eleLoadFactors(0)
 {
   E = 1.0;
   rho = r;
@@ -321,6 +331,12 @@ ElasticBeam2d::~ElasticBeam2d()
 {
     if (theCoordTransf)
 	delete theCoordTransf;
+	//added by SAJalali
+	if (eleLoads != 0)
+	{
+		delete[] eleLoads;
+		delete[] eleLoadFactors;
+	}
 }
 
 int
@@ -522,12 +538,37 @@ ElasticBeam2d::zeroLoad(void)
   p0[1] = 0.0;
   p0[2] = 0.0;
 
+  //by SAJalali
+  numEleLoads = 0;
   return;
 }
 
 int 
 ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
+  //added by SAJalali: Start-done
+  
+  ElementalLoad ** theNextEleLoads = new ElementalLoad *[numEleLoads + 1];
+  double *theNextEleLoadFactors = new double[numEleLoads + 1];
+  for (int i = 0; i < numEleLoads; i++) {
+  	theNextEleLoads[i] = eleLoads[i];
+  	theNextEleLoadFactors[i] = eleLoadFactors[i];
+  }
+  if (eleLoads != 0)
+  {
+  	delete[] eleLoads;
+  	delete[] eleLoadFactors;
+  }
+  eleLoads = theNextEleLoads;
+  eleLoadFactors = theNextEleLoadFactors;
+  
+  
+  eleLoadFactors[numEleLoads] = loadFactor;
+  eleLoads[numEleLoads] = theLoad;
+  numEleLoads++;
+  //added by SAJalali: End-done
+
+
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
   double L = theCoordTransf->getInitialLength();
@@ -1055,6 +1096,28 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     theResponse =  new ElementResponse(this, 5, Vector(3));
   }
+  //added by SAJalali
+  else if (strcmp(argv[0], "internalForce") == 0 || strcmp(argv[0], "InternalForce") == 0)
+  {
+
+     if (argc > 1) {
+
+        double xi = atof(argv[1]);
+        if (xi >= 0 && xi <= 1) {
+           output.tag("InternalForce");
+           output.attr("xi", xi);
+
+           theResponse = new ElementResponse(this, 6, Vector(3));
+           Information &info = theResponse->getInformation();
+           info.theDouble = xi;
+           output.endTag();
+
+        }
+        else {
+           opserr << "WARNING! ElasticBeam2d::invalid section location: " << xi << " value must be in 0<= <=1 range" << endln;
+        }
+     }
+  }
   output.endTag(); // ElementOutput
   
   return theResponse;
@@ -1066,6 +1129,7 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
   double N, M1, M2, V;
   double L = theCoordTransf->getInitialLength();
   this->getResistingForce();
+  static Vector force(3);//SAJalali
 
   switch (responseID) {
   case 1: // stiffness
@@ -1096,6 +1160,12 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
   case 5:
     return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
 
+    //by SAJalali-done
+  case 6:
+     L = eleInfo.theDouble;
+     computeSectionForces(force, L);
+     eleInfo.setVector(force);
+     break;
   default:
     return -1;
   }
@@ -1140,5 +1210,177 @@ ElasticBeam2d::updateParameter (int parameterID, Information &info)
 	default:
 		return -1;
 	}
+}
+
+//by SAJalali
+void
+ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
+{
+   double L = theCoordTransf->getInitialLength();
+   double oneOverL = 1 / L;
+   int order = 3;
+   static ID code(3);
+   code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+   code(1) = SECTION_RESPONSE_VY;	// Mz is the second
+   code(2) = SECTION_RESPONSE_MZ;	// My is the third 
+   double xL1 = xi - 1;
+   double xL = xi;
+   sp.Zero();
+   for (int ii = 0; ii < order; ii++) {
+      switch (code(ii)) {
+      case SECTION_RESPONSE_P:
+         sp(ii) = q(0);
+         break;
+      case SECTION_RESPONSE_MZ:
+         sp(ii) = xL1 * q(1) + xL * q(2);
+         break;
+      case SECTION_RESPONSE_VY:
+         sp(ii) = oneOverL * (q(1) + q(2));
+         break;
+      default:
+         sp(ii) = 0.0;
+         break;
+      }
+   }
+   int type;
+
+   double x = xi * L;
+
+
+
+   for (int i = 0; i < numEleLoads; i++) {
+
+      double loadFactor = eleLoadFactors[i];
+      const Vector &data = eleLoads[i]->getData(type, loadFactor);
+
+      if (type == LOAD_TAG_Beam2dUniformLoad) {
+         double wa = data(1)*loadFactor;  // Axial
+         double wy = data(0)*loadFactor;  // Transverse
+
+         for (int ii = 0; ii < order; ii++) {
+
+            switch (code(ii)) {
+            case SECTION_RESPONSE_P:
+               sp(ii) += wa * (L - x);
+               break;
+            case SECTION_RESPONSE_MZ:
+               sp(ii) += wy * 0.5*x*(x - L);
+               break;
+            case SECTION_RESPONSE_VY:
+               sp(ii) += wy * (x - 0.5*L);
+               break;
+            default:
+               break;
+            }
+         }
+      }
+      else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+         double wa = data(1)*loadFactor;  // Axial
+         double wy = data(0)*loadFactor;  // Transverse
+         double a = data(2)*L;
+         double b = data(3)*L;
+
+         double Fa = wa * (b - a); // resultant axial load
+         double Fy = wy * (b - a); // resultant transverse load
+         double c = a + 0.5*(b - a);
+         double VI = Fy * (1 - c / L);
+         double VJ = Fy * c / L;
+
+         for (int ii = 0; ii < order; ii++) {
+
+            if (x <= a) {
+               switch (code(ii)) {
+               case SECTION_RESPONSE_P:
+                  sp(ii) += Fa;
+                  break;
+               case SECTION_RESPONSE_MZ:
+                  sp(ii) -= VI * x;
+                  break;
+               case SECTION_RESPONSE_VY:
+                  sp(ii) -= VI;
+                  break;
+               default:
+                  break;
+               }
+            }
+            else if (x >= b) {
+               switch (code(ii)) {
+               case SECTION_RESPONSE_MZ:
+                  sp(ii) += VJ * (x - L);
+                  break;
+               case SECTION_RESPONSE_VY:
+                  sp(ii) += VJ;
+                  break;
+               default:
+                  break;
+               }
+            }
+            else {
+               switch (code(ii)) {
+               case SECTION_RESPONSE_P:
+                  sp(ii) += Fa - wa * (x - a);
+                  break;
+               case SECTION_RESPONSE_MZ:
+                  sp(ii) += -VI * x + 0.5*wy*x*x + wy * a*(0.5*a - x);
+                  break;
+               case SECTION_RESPONSE_VY:
+                  sp(ii) += -VI + wy * (x - a);
+                  break;
+               default:
+                  break;
+               }
+            }
+         }
+      }
+      else if (type == LOAD_TAG_Beam2dPointLoad) {
+         double P = data(0)*loadFactor;
+         double N = data(1)*loadFactor;
+         double aOverL = data(2);
+
+         if (aOverL < 0.0 || aOverL > 1.0)
+            continue;
+
+         double a = aOverL * L;
+
+         double V1 = P * (1.0 - aOverL);
+         double V2 = P * aOverL;
+
+         for (int ii = 0; ii < order; ii++) {
+
+            if (x <= a) {
+               switch (code(ii)) {
+               case SECTION_RESPONSE_P:
+                  sp(ii) += N;
+                  break;
+               case SECTION_RESPONSE_MZ:
+                  sp(ii) -= x * V1;
+                  break;
+               case SECTION_RESPONSE_VY:
+                  sp(ii) -= V1;
+                  break;
+               default:
+                  break;
+               }
+            }
+            else {
+               switch (code(ii)) {
+               case SECTION_RESPONSE_MZ:
+                  sp(ii) -= (L - x)*V2;
+                  break;
+               case SECTION_RESPONSE_VY:
+                  sp(ii) += V2;
+                  break;
+               default:
+                  break;
+               }
+            }
+         }
+      }
+      else {
+         opserr << "ElasticBeam2d::computeSectionForces -- load type unknown for element with tag: " <<
+            this->getTag() << endln;
+      }
+   }
+
 }
 

@@ -97,6 +97,13 @@ class ElasticBeam2d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
+	 //added by SAJalali-done:Start
+	 void  computeSectionForces(Vector& sp, double xi);
+	 int numEleLoads;
+	 ElementalLoad **eleLoads;
+	 double *eleLoadFactors;
+	 //added by SAJalali-done:End
+
     double A,E,I;     // area, elastic modulus, moment of inertia
     double alpha, d;  // coeff. of thermal expansion, depth
     double rho;       // mass per unit length
