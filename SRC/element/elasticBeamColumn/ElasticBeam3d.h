@@ -97,7 +97,13 @@ class ElasticBeam3d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
-    double A,E,G,Jx,Iy,Iz;
+     //added by SAJalali:Start
+     void  computeSectionForces(Vector& sp, double xi);
+     int numEleLoads;
+     ElementalLoad **eleLoads;
+     double *eleLoadFactors;
+     //added by SAJalali:End
+     double A,E,G,Jx,Iy,Iz;
 
     double rho;
     int cMass;
