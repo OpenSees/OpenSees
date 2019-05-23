@@ -2655,7 +2655,7 @@ int OPS_neesUpload()
 	}
     }
 
-    simulationInfo->neesUpload(userName, userPasswd, projID, expID);
+    //simulationInfo->neesUpload(userName, userPasswd, projID, expID);
 
     return 0;
 }

@@ -576,6 +576,9 @@ TclTimeSeriesCommand(ClientData clientData,
 
 	
   else {
+    for (int i = 0; i < argc; i++)
+      opserr << argv[i] << ' ';
+    opserr << endln;
     // type of load pattern type unknown
     opserr << "WARNING unknown Series type " << argv[0] << " - ";
     opserr << " valid types: Linear, Rectangular, Path, Constant, Trig, Sine\n";
