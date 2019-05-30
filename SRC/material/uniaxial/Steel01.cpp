@@ -107,7 +107,9 @@ Steel01::Steel01
 {
    // Sets all history and state variables to initial values
    // History variables
-   CminStrain = 0.0;
+	Energy = 0;	//by SAJalali
+	
+	CminStrain = 0.0;
    CmaxStrain = 0.0;
    CshiftP = 1.0;
    CshiftN = 1.0;
@@ -137,6 +139,7 @@ Steel01::Steel01
 Steel01::Steel01():UniaxialMaterial(0,MAT_TAG_Steel01),
  fy(0.0), E0(0.0), b(0.0), a1(0.0), a2(0.0), a3(0.0), a4(0.0)
 {
+	Energy = 0;	//by SAJalali
 
 // AddingSensitivity:BEGIN /////////////////////////////////////
 	parameterID = 0;
@@ -346,6 +349,9 @@ int Steel01::commitState ()
    Cloading = Tloading;
 
    // State variables
+   //by SAJalali
+   Energy += 0.5*(Tstress + Cstress)*(Tstrain - Cstrain);
+
    Cstrain = Tstrain;
    Cstress = Tstress;
    Ctangent = Ttangent;

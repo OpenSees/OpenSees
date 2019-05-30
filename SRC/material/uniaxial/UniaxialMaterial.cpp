@@ -224,7 +224,12 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
        (strcmp(argv[0],"stressANDstrainANDtangent") == 0) ||
        (strstr(argv[0],"stressSensitivity") != 0) ||
        (strstr(argv[0],"strainSensitivity") != 0)||
-	  (strstr(argv[0], "TempElong") != 0)) {
+	  (strstr(argv[0], "TempElong") != 0)
+	  //by SAJalali
+	  || (strstr(argv[0], "energy") != 0) ||
+	  (strstr(argv[0], "Energy") != 0)
+	  
+	  ) {
     
     theOutput.tag("UniaxialMaterialOutput");
     theOutput.attr("matType", this->getClassType());
@@ -293,7 +298,13 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
 		theOutput.tag("ResponseType", "Elong11");
 		theResponse = new MaterialResponse(this, 7, Vector(2));
 	}
-    
+	// by SAJalali:
+	else if ((strcmp(argv[0], "energy") == 0) ||
+		(strcmp(argv[0], "Energy") == 0)) {
+		theOutput.tag("ResponseType", "energy");
+		theResponse = new MaterialResponse(this, 9, 0.0);
+	}
+
     theOutput.endTag();
   }
   
@@ -369,7 +380,11 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 		  tempData = infoData.getData();
 		  matInfo.setVector(tempData);
 		  return 0;
-  default:      
+	  //by SAJalali
+	  case 9:
+		  matInfo.setDouble(this->getEnergy());
+		  return 0;
+	  default:
     return -1;
   }
 }

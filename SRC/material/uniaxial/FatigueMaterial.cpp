@@ -180,6 +180,10 @@ FatigueMaterial::FatigueMaterial(int tag, UniaxialMaterial &material,
       " -- failed to get copy of material\n" ;
     exit(-1);
   }
+
+  //added by SAJalali
+  energy = 0;
+  CStress = 0;
 }
 
 FatigueMaterial::FatigueMaterial()
@@ -218,6 +222,9 @@ FatigueMaterial::FatigueMaterial()
   SR3 = 0;
   NC3 = 0;
 
+  //added by SAJalali
+  energy = 0;
+  CStress = 0;
 }
 
 FatigueMaterial::~FatigueMaterial()
@@ -640,7 +647,15 @@ FatigueMaterial::commitState(void)
     }
     
   }
-  
+
+  //added by SAJalali
+  if (!Cfailed)
+  {
+	  double TStress = getStress();
+	  energy += 0.5*(trialStrain - PS)*(TStress + CStress);
+	  CStress = TStress;
+  }
+
   PS = cSlope;            // Previous Slope
   EP = trialStrain;   // Keep track of previous strain
   

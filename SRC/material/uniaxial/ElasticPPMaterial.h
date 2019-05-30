@@ -69,7 +69,9 @@ class ElasticPPMaterial : public UniaxialMaterial
 
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
-    
+	//by SAJalali
+	virtual double getEnergy() { return EnergyP; };
+
   protected:
     
   private:
@@ -83,6 +85,8 @@ class ElasticPPMaterial : public UniaxialMaterial
     double commitStrain;     // last commited strain
     double commitStress;     // last commited stress
     double commitTangent;    // last committed  tangent
+
+	double EnergyP; //by SAJalali
 };
 
 
