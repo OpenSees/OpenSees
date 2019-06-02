@@ -106,11 +106,14 @@ extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
 extern  void *OPS_StressDensityMaterial(void);
+extern  void *OPS_J2Plasticity(void);
 extern  void *OPS_J2BeamFiber2dMaterial(void);
 extern  void *OPS_J2BeamFiber3dMaterial(void);
 extern  void *OPS_J2PlateFibreMaterial(void);
 extern  void *OPS_PlaneStressLayeredMaterial(void);
 extern  void *OPS_PlaneStressRebarMaterial(void);
+extern  void *OPS_PlateFiberMaterial(void);
+extern  void *OPS_BeamFiberMaterial(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
 
@@ -630,64 +633,13 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     // Check argv[1] for J2PlaneStrain material type
     else if ((strcmp(argv[1],"J2Plasticity") == 0)  ||
 	     (strcmp(argv[1],"J2") == 0)) {
-	if (argc < 9) {
-	    opserr << "WARNING insufficient arguments\n";
-	    printCommand(argc,argv);
-	    opserr << "Want: nDMaterial J2Plasticity tag? K? G? sig0? sigInf? delta? H? <eta?>" << endln;
-	    return TCL_ERROR;
-	}
 
-	int tag;
-	double K, G, sig0, sigInf, delta, H;
-	double eta = 0.0;
+      void *theMat = OPS_J2Plasticity();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
 
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid J2Plasticity tag" << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[3], &K) != TCL_OK) {
-	    opserr << "WARNING invalid K\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[4], &G) != TCL_OK) {
-	    opserr << "WARNING invalid G\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[5], &sig0) != TCL_OK) {
-	    opserr << "WARNING invalid sig0\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[6], &sigInf) != TCL_OK) {
-	    opserr << "WARNING invalid sigInf\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[7], &delta) != TCL_OK) {
-	    opserr << "WARNING invalid delta\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	if (Tcl_GetDouble(interp, argv[8], &H) != TCL_OK) {
-	    opserr << "WARNING invalid H\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	if (argc > 9 && Tcl_GetDouble(interp, argv[9], &eta) != TCL_OK) {
-	    opserr << "WARNING invalid eta\n";
-	    opserr << "nDMaterial J2Plasticity: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	theMaterial = new J2Plasticity (tag, 0, K, G, sig0, sigInf,
-					delta, H, eta);
     }
 
 	/////////////////////////////////////////////////////////////////
@@ -1309,35 +1261,12 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     
      else if (strcmp(argv[1],"PlateFiberMaterial") == 0 ||
 	      strcmp(argv[1],"PlateFiber") == 0) {
- 	if (argc < 4) {
- 	    opserr << "WARNING insufficient arguments\n";
- 	    printCommand(argc,argv);
- 	    opserr << "Want: nDMaterial PlateFiber tag? matTag?" << endln;
- 	    return TCL_ERROR;
- 	}
 
- 	int tag, matTag;
-
- 	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
- 	    opserr << "WARNING invalid nDMaterial PlateFiber tag" << endln;
- 	    return TCL_ERROR;
- 	}
-
- 	if (Tcl_GetInt (interp, argv[3], &matTag) != TCL_OK) {
- 	    opserr << "WARNING invalid matTag" << endln;
- 	    opserr << "PlateFiber: " << matTag << endln;
- 	    return TCL_ERROR;
- 	}
-
- 	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
- 	if (threeDMaterial == 0) {
- 	    opserr << "WARNING nD material does not exist\n";
- 	    opserr << "nD material: " << matTag;
- 	    opserr << "\nPlateFiber nDMaterial: " << tag << endln;
- 	    return TCL_ERROR;
- 	}
-
- 	theMaterial = new PlateFiberMaterial( tag, *threeDMaterial );
+       void *theMat = OPS_PlateFiberMaterial();
+       if (theMat != 0) 
+	 theMaterial = (NDMaterial *)theMat;
+       else 
+	 return TCL_ERROR;
      }
 
     // ----- Cap plasticity model ------    // Quan Gu & ZhiJian Qiu  2013
@@ -1716,35 +1645,12 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
      else if (strcmp(argv[1],"BeamFiberMaterial") == 0 ||
  	     strcmp(argv[1],"BeamFiber") == 0) {
- 	if (argc < 4) {
- 	    opserr << "WARNING insufficient arguments\n";
- 	    printCommand(argc,argv);
- 	    opserr << "Want: nDMaterial BeamFiber tag? matTag?" << endln;
- 	    return TCL_ERROR;
- 	}
 
- 	int tag, matTag;
-
- 	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
- 	    opserr << "WARNING invalid nDMaterial BeamFiber tag" << endln;
- 	    return TCL_ERROR;
- 	}
-
- 	if (Tcl_GetInt (interp, argv[3], &matTag) != TCL_OK) {
- 	    opserr << "WARNING invalid matTag" << endln;
- 	    opserr << "BeamFiber: " << matTag << endln;
- 	    return TCL_ERROR;
- 	}
-
-	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
- 	if (threeDMaterial == 0) {
- 	    opserr << "WARNING nD material does not exist\n";
- 	    opserr << "nD material: " << matTag;
- 	    opserr << "\nBeamFiber nDMaterial: " << tag << endln;
- 	    return TCL_ERROR;
- 	}
-
- 	theMaterial = new BeamFiberMaterial( tag, *threeDMaterial );
+       void *theMat = OPS_BeamFiberMaterial();
+       if (theMat != 0) 
+	 theMaterial = (NDMaterial *)theMat;
+       else 
+	 return TCL_ERROR;
      }
 
     else if (strcmp(argv[1],"Bidirectional") == 0) {
