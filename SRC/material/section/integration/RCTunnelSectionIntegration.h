@@ -62,7 +62,7 @@ class RCTunnelSectionIntegration : public SectionIntegration
 		    UniaxialMaterial *theSteel);
 
  private:
-  double d; // outer diameter
+  double d; // inner diameter
   double h; // lining thickness
   double Asinner; // bar area inner ring
   double Asouter; // bar area outer ring
