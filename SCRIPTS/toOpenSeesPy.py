@@ -3,15 +3,22 @@
 #  Date: June 2018
 #
 # Usage in a Python script
-#   exec(open(toOpenSeesPy.py).read())
+#   exec(open('toOpenSeesPy.py').read())
 #   ...
-#   toOpenSeesPy('model.tcl','model.py')
+#   outfile = open('model.py','w')
+#   toOpenSeesPy('model.tcl',outfile)
+#   toOpenSeesPy('anotherScript.tcl',outfile)
 #   ...
+#   outfile.close()
 #
 # - Assumes the OpenSees(.tcl) file defines the model line by line
 #   without any loops, conditionals, variables, expressions, etc.
 #   This is the format generated when you export a model from
 #   OpenSees Navigator and perhaps from other front-ends to OpenSees.
+#
+# - The calling Python script should open and close the file stream for
+#   for writing the converted .py file.  This allows you to call the
+#   converter on multiple Tcl files in sequence, as shown above. 
 #
 # - If your OpenSees(.tcl) file uses any loops, conditionals, variables,
 #   expressions, etc., you might be better off to port your OpenSees
