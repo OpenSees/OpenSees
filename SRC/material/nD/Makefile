@@ -22,6 +22,7 @@ OBJS       = NDMaterial.o \
 	$(DAMAGE_2P) $(PLAINCONCRETE) BeamFiberMaterial.o \
 	PlasticDamageConcretePlaneStress.o \
 	BeamFiberMaterial2d.o \
+	BeamFiberMaterial2dPS.o \
 	PlasticDamageConcrete3d.o \
 	LinearCap.o \
 	eig3.o \
