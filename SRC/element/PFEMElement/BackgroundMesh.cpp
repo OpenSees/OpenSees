@@ -74,7 +74,7 @@ int OPS_BgMesh()
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
                 "numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? "
-                "-freesurface? -velKernel <Quintic> <Cloest>>\n";
+                "-freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
 
@@ -233,6 +233,14 @@ int OPS_BgMesh()
             }
             const char* kname = OPS_GetString();
             bgmesh.setKernel(kname);
+
+        } else if (strcmp(opt, "-pKernel") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need kernel name\n";
+                return -1;
+            }
+            const char* kname = OPS_GetString();
+            bgmesh.setKernel(kname, true);
         }
     }
 
@@ -257,7 +265,7 @@ BackgroundMesh::BackgroundMesh()
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), sptags(), kernel(1),
+         freesurface(false), sptags(), kernel(1), pkernel(1),
          tsTag(-1111), loadPatternTag(-1111)
 {
 }
@@ -273,12 +281,21 @@ BackgroundMesh::~BackgroundMesh()
 }
 
 void
-BackgroundMesh::setKernel(const char *k)
+BackgroundMesh::setKernel(const char *k, bool pressure)
 {
     if (strcmp(k, "Quintic") == 0) {
-        this->kernel = 1;
+        if (pressure) {
+            this->pkernel = 1;
+        } else {
+            this->kernel = 1;
+        }
+
     } else if (strcmp(k, "Cloest") == 0) {
-        this->kernel = 2;
+        if (pressure) {
+            this->pkernel = 2;
+        } else {
+            this->kernel = 2;
+        }
     } else {
         opserr << "WARNING: kernel " << k;
         opserr << " is unknown\n";
@@ -1237,6 +1254,7 @@ BackgroundMesh::gridNodes()
         double wt = 0.0, pre = 0.0, pdot = 0.0;
         VDouble vel(ndm), accel(ndm);
         double minDist = -1;
+        bool ismin;
         for (int i=0; i<(int)pts.size(); ++i) {
 
             // get particle
@@ -1256,14 +1274,31 @@ BackgroundMesh::gridNodes()
             // add weight
             wt += w;
 
-            // add pressure
-            pre +=  pts[i]->getPressure() * w;
-            pdot += pts[i]->getPdot() * w;
+            // check minimum distance
+            if (minDist < 0 || q < minDist) {
+                ismin = true;
+                minDist = q;
+            } else {
+                ismin = false;
+            }
 
+            // add pressure
+            if (pkernel == 1) {
+                pre +=  pts[i]->getPressure() * w;
+                pdot += pts[i]->getPdot() * w;
+
+            } else if (pkernel == 2) {
+                // Cloest Kernel
+                if (ismin) {
+                    pre = pts[i]->getPressure();
+                    pdot = pts[i]->getPdot();
+                }
+            }
+
+            // add velocity
             if (kernel == 1) {
                 // Quintic Kernel
 
-                // add velocity
                 const VDouble &pvel = pts[i]->getVel();
                 for (int k = 0; k < ndm; k++) {
                     vel[k] += w * pvel[k];
@@ -1277,8 +1312,7 @@ BackgroundMesh::gridNodes()
             } else if (kernel == 2) {
 
                 // Cloest Kernel
-                if (minDist < 0 || q < minDist) {
-                    minDist = q;
+                if (ismin) {
                     const VDouble &pvel = pts[i]->getVel();
                     const VDouble &paccel = pts[i]->getAccel();
                     for (int k = 0; k < ndm; k++) {
@@ -1289,8 +1323,10 @@ BackgroundMesh::gridNodes()
             }
         }
         if (wt > 0) {
-            pre /= wt;
-            pdot /= wt;
+            if (pkernel == 1) {
+                pre /= wt;
+                pdot /= wt;
+            }
             if (kernel == 1) {
                 vel /= wt;
                 accel /= wt;
@@ -1327,7 +1363,7 @@ BackgroundMesh::gridNodes()
             continue;
         }
 
-        if (wt > 0 && !wall) {
+        if (((kernel == 1 && wt > 0) || kernel == 2) && !wall) {
             Vector vvel;
             toVector(vel, vvel);
             Vector vaccel;
@@ -1387,7 +1423,7 @@ BackgroundMesh::gridNodes()
             newpcs[j] = thePC;
 
         }
-        if (wt > 0) {
+        if (((pkernel == 1 && wt > 0) || pkernel == 2) && !wall) {
             Vector newvel = pnode->getVel();
             newvel.Zero();
             newvel(0) = pre;
@@ -2018,7 +2054,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
             VInt ind = findex[j];
             ind -= 1;
             VVInt indices;
-            getCorners(ind, 2, indices);
+            getCorners(ind, 1, indices);
             for (int k=0; k<(int)indices.size(); ++k) {
                 std::map<VInt,BCell>::iterator cellit = bcells.find(indices[k]);
                 if (cellit == bcells.end()) continue;
