@@ -127,7 +127,6 @@ int
 Mesh::clearNodes()
 {
     Domain* domain = OPS_GetDomain();
-    return 0;
 
     // clear nodes
     for (int i=0; i<newndtags.Size(); ++i) {
