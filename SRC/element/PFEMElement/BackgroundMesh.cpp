@@ -904,11 +904,7 @@ BackgroundMesh::addWall(const VDouble& low, const VDouble& up)
     }
 
     ConstantSeries* series = new ConstantSeries(tsTag);
-    if (OPS_addTimeSeries(series) == false) {
-        opserr << "WARNING: failed to create a constant time series\n";
-        delete series;
-        return -1;
-    }
+
     LoadPattern* pattern = new LoadPattern(loadPatternTag, 1.0);
     pattern->setTimeSeries(series);
 
@@ -1057,8 +1053,8 @@ BackgroundMesh::addStructure()
     // add wall nodes
     for (int i=0; i<(int)wlower.size(); ++i) {
         VInt wlow, wup;
-        lowerIndex(wlower[i], wlow);
-        lowerIndex(wupper[i], wup);
+        nearIndex(wlower[i], wlow);
+        nearIndex(wupper[i], wup);
         if (ndm ==2) {
             for (int j=wlow[0]; j<=wup[0]; ++j) {
                 for (int k=wlow[1]; k<=wup[1]; ++k) {
@@ -1220,27 +1216,11 @@ BackgroundMesh::gridNodes()
             opserr << "WARNING: bnode.size() = 0 -- gridNodes\n";
             continue;
         }
-        if (bnode.type[0] == STRUCTURE) {continue;}
+        // if (bnode.type[0] == STRUCTURE) {continue;}
 
         // coordinates
         VDouble crds;
         getCrds(index,crds);
-
-        // check if a wall
-        bool wall = false;
-        for (int i=0; i<(int)wlower.size(); ++i) {
-            bool wl = true;
-            for (int k=0; k<ndm; ++k) {
-                if (crds[k]<wlower[i][k]-0.1*bsize || crds[k]>wupper[i][k]+0.1*bsize) {
-                    wl = false;
-                    break;
-                }
-            }
-            if (wl) {
-                wall = true;
-                break;
-            }
-        }
 
         // get particles
         VParticle pts;
@@ -1349,6 +1329,24 @@ BackgroundMesh::gridNodes()
             continue;
         }
 
+        // check if a wall
+        bool wall = false;
+        for (int i=0; i<(int)wlower.size(); ++i) {
+            VInt wlow, wup;
+            nearIndex(wlower[i], wlow);
+            nearIndex(wupper[i], wup);
+            bool wl = true;
+            for (int k=0; k<ndm; ++k) {
+                if (index[k]<wlow[k] || index[k]>wup[k]) {
+                    wl = false;
+                    break;
+                }
+            }
+            if (wl) {
+                wall = true;
+                break;
+            }
+        }
 
         // create node
         Node* node = 0;
@@ -1434,8 +1432,6 @@ BackgroundMesh::gridNodes()
             pnode->setTrialAccel(newaccel);
             pnode->commitState();
         }
-
-
     }
 
     if (res < 0) {
