@@ -265,7 +265,7 @@ BackgroundMesh::BackgroundMesh()
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), sptags(), kernel(1), pkernel(1),
+         freesurface(false), sptags(), spndtags(), kernel(1), pkernel(1),
          tsTag(-1111), loadPatternTag(-1111)
 {
 }
@@ -696,6 +696,7 @@ BackgroundMesh::clearGrid()
         }
     }
     sptags.clear();
+    spndtags.clear();
 
     // remove cells
     for (std::map<VInt,BNode>::iterator it=bnodes.begin(); it!=bnodes.end(); ++it) {
@@ -1483,6 +1484,7 @@ BackgroundMesh::gridNodes()
 
                 // add sp tags
                 sptags.push_back(sp->getTag());
+                spndtags.insert(newsps[i]->getTag());
             }
         }
     }
@@ -1974,8 +1976,8 @@ BackgroundMesh::gridFSI(ID& freenodes)
         for (int j=0; j<(int)tri.size(); ++j) {
             if (ndtypes[tri[j]] == STRUCTURE) {
                 sindex.push_back(ndindex[tri[j]]);
-                // fluid = false;
-                // break;
+            } else if (spndtags.find(ndtags[tri[j]]) != spndtags.end()) {
+                sindex.push_back(ndindex[tri[j]]);
             } else {
                 findex.push_back(ndindex[tri[j]]);
             }

@@ -219,6 +219,7 @@ private:
     std::set<int> structuralNodes;
     bool freesurface;
     VInt sptags;
+    std::set<int> spndtags;
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
     int tsTag, loadPatternTag;
 };
