@@ -793,13 +793,13 @@ OpenSeesCommands::wipe()
 	theDatabase = 0;
     }
 
-    // wipe all meshes
-    OPS_clearAllMesh();
-
     // wipe domain
     if (theDomain != 0) {
 	theDomain->clearAll();
     }
+
+    // wipe all meshes
+    OPS_clearAllMesh();
 
     // time set to zero
     ops_Dt = 0.0;
