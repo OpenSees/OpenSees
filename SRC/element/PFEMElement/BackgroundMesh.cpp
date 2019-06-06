@@ -816,18 +816,6 @@ BackgroundMesh::remesh(bool init)
     timer.start();
 #endif
 
-    // create grid nodes
-    if (gridNodes() < 0) {
-        opserr << "WARNING: failed to create grid nodes\n";
-        return -1;
-    }
-
-#ifdef _LINUX
-    timer.pause();
-    opserr<<"time for grid nodes = "<<timer.getReal()<<"\n";
-    timer.start();
-#endif
-
     // move particles in fixed cells
     if (moveFixedParticles()) {
         opserr << "WARNING: failed to move particles in fixed cells";
@@ -837,6 +825,18 @@ BackgroundMesh::remesh(bool init)
 #ifdef _LINUX
     timer.pause();
     opserr<<"time for moving fixed particles = "<<timer.getReal()<<"\n";
+    timer.start();
+#endif
+
+    // create grid nodes
+    if (gridNodes() < 0) {
+        opserr << "WARNING: failed to create grid nodes\n";
+        return -1;
+    }
+
+#ifdef _LINUX
+    timer.pause();
+    opserr<<"time for grid nodes = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
@@ -1143,14 +1143,13 @@ BackgroundMesh::addParticles()
             // get bcell
             BCell& bcell = bcells[index];
 
-            // if initial check structure cell
-            if (bcell.type == STRUCTURE) {
-                rm[j] = 1;
-                continue;
-            }
-
             // add particles
             bcell.add(p);
+
+            // if initial check structure cell
+            if (bcell.type == STRUCTURE) {
+                continue;
+            }
 
             // add bnodes of the cell
             if (bcell.bnodes.empty()) {
@@ -1422,7 +1421,7 @@ BackgroundMesh::gridNodes()
             newpcs[j] = thePC;
 
         }
-        if (((pkernel == 1 && wt > 0) || pkernel == 2) && !wall) {
+        if ((pkernel == 1 && wt > 0) || pkernel == 2) {
             Vector newvel = pnode->getVel();
             newvel.Zero();
             newvel(0) = pre;
@@ -1525,7 +1524,8 @@ BackgroundMesh::moveFixedParticles()
         for (int i=0; i<(int)indices.size(); ++i) {
             std::map<VInt,BCell>::iterator cellit = bcells.find(indices[i]);
             if (cellit == bcells.end()) {
-                scores[i] = 1;
+                // empty cell
+                scores[i] = 2;
                 continue;
             }
             if (cellit->second.type == STRUCTURE) {
@@ -1638,28 +1638,45 @@ BackgroundMesh::moveFixedParticles()
 
         // get final scores
         VInt finalscores(scores.size(),0);
-        int order[] = {10,12,14,16,4,22,9,11,15,17,
-                       0,1,2,3,5,6,7,8,18,19,20,21,
-                       23,24,25,26,13};
-        for (int i=0; i<27; ++i) {
-            int j = order[i];
-            if (scores[j] > 0) {
-                for (int k=0; k<(int)cellmap[j].size(); ++k) {
-                    finalscores[j] += scores[cellmap[j][k]];
+        for (int j = 0; j < (int)finalscores.size(); ++j) {
+
+            // calculate score
+            for (int k = 0; k < (int)cellmap[j].size(); ++k) {
+                finalscores[j] += scores[cellmap[j][k]];
+            }
+
+            // not move to a structural cell
+            if (scores[j] < 0) {
+                // self is structure, score always < 0
+                finalscores[j] = -1;
+            } else {
+                // self is not a structure, but score always >= 0
+                if (finalscores[j] < 0) {
+                    finalscores[j] = 0;
                 }
             }
         }
+//        int order[] = {10,12,14,16,4,22,9,11,15,17,
+//                       0,1,2,3,5,6,7,8,18,19,20,21,
+//                       23,24,25,26,13};
+//        for (int i=0; i<27; ++i) {
+//            int j = order[i];
+//            if (scores[j] > 0) {
+//                for (int k=0; k<(int)cellmap[j].size(); ++k) {
+//                    finalscores[j] += scores[cellmap[j][k]];
+//                }
+//            }
+//        }
 
         // find the cell with highest score
-        int high = -1;
+        int high = -100;
         ind = index;
         for (int i=0; i<(int)finalscores.size(); ++i) {
-            if (high < scores[i]) {
-                high = scores[i];
+            if (high < finalscores[i]) {
+                high = finalscores[i];
                 ind = indices[i];
             }
         }
-        if (high < 0) continue;
 
         // move the particles
         VDouble crds;
@@ -1677,9 +1694,29 @@ BackgroundMesh::moveFixedParticles()
             pt->moveTo(newcrds,0.0);
 
             // add particles to the new cell
-            std::map<VInt,BCell>::iterator cellit = bcells.find(ind);
-            if (cellit != bcells.end()) {
-                cellit->second.pts.push_back(pt);
+            BCell& bcell = bcells[ind];
+            bcell.add(pt);
+            if (bcell.type == STRUCTURE) {
+                // still a structure!!
+                continue;
+            }
+
+            // if an empty cell
+            if (bcell.bnodes.empty()) {
+
+                // get corners
+                indices.clear();
+                getCorners(index,1,indices);
+
+                // set corners
+                for (int k=0; k<(int)indices.size(); ++k) {
+                    BNode& bnode = bnodes[indices[k]];
+                    if (bnode.size() == 0) {
+                        bnode.addNode(FLUID);
+                    }
+                    bcell.bnodes.push_back(&bnode);
+                    bcell.bindex.push_back(indices[k]);
+                }
             }
         }
 
