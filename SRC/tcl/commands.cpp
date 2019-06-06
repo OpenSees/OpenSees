@@ -1617,7 +1617,7 @@ getLoadFactor(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
   //  sprintf(interp->result,"%f",factor);
 
   char buffer [40];
-  sprintf(buffer,"%f", factor);
+  sprintf(buffer,"%35.20f", factor);
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;
