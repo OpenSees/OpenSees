@@ -327,13 +327,49 @@ QuadMesh::mesh() {
     int numquad = gen.getNumQuads();
     if (numquad == 0) return 0;
     ID elenodes(numquad * 4);
+    if (this->getNumEleNodes() == 4) {
 
-    for (int i = 0; i < numquad; i++) {
-        ID pts;
-        gen.getQuad(i, pts);
-        for (int j = 0; j < pts.Size(); ++j) {
-            elenodes(4 * i + j) = allndtags(pts(j));
+        for (int i = 0; i < numquad; i++) {
+            ID pts;
+            gen.getQuad(i, pts);
+            for (int j = 0; j < pts.Size(); ++j) {
+                elenodes(4 * i + j) = allndtags(pts(j));
+            }
         }
+    } else if (this->getNumEleNodes() == 2) {
+
+        elenodes.resize(numquad * 10);
+
+        for (int i = 0; i < numquad; i++) {
+            ID pts;
+            gen.getQuad(i, pts);
+            elenodes(10 * i) = allndtags(pts(0));
+            elenodes(10 * i + 1) = allndtags(pts(1));
+            elenodes(10 * i + 2) = allndtags(pts(1));
+            elenodes(10 * i + 3) = allndtags(pts(2));
+            elenodes(10 * i + 4) = allndtags(pts(2));
+            elenodes(10 * i + 5) = allndtags(pts(3));
+            elenodes(10 * i + 6) = allndtags(pts(3));
+            elenodes(10 * i + 7) = allndtags(pts(0));
+            elenodes(10 * i + 8) = allndtags(pts(0));
+            elenodes(10 * i + 9) = allndtags(pts(2));
+        }
+
+    } else if (this->getNumEleNodes() == 3) {
+
+        elenodes.resize(numquad * 6);
+
+        for (int i = 0; i < numquad; i++) {
+            ID pts;
+            gen.getQuad(i, pts);
+            elenodes(6 * i) = allndtags(pts(0));
+            elenodes(6 * i + 1) = allndtags(pts(1));
+            elenodes(6 * i + 2) = allndtags(pts(2));
+            elenodes(6 * i + 3) = allndtags(pts(0));
+            elenodes(6 * i + 4) = allndtags(pts(2));
+            elenodes(6 * i + 5) = allndtags(pts(3));
+        }
+
     }
     this->setEleNodes(elenodes);
 
