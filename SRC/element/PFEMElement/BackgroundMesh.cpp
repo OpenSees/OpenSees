@@ -73,7 +73,7 @@ int OPS_BgMesh()
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
-                "numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? "
+                "numl? locs? -numsub numsub? -structure numnodes? structuralNodes? "
                 "-freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
@@ -208,22 +208,6 @@ int OPS_BgMesh()
                 bgmesh.addStructuralNodes(snodes);
             }
 
-        } else if (strcmp(opt, "-wall") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 2*ndm) {
-                opserr << "WARNING: need wlower and wupper\n";
-                return -1;
-            }
-            VDouble wlower(ndm), wupper(ndm);
-            if (OPS_GetDoubleInput(&ndm, &wlower[0]) < 0) {
-                opserr << "WARNING: failed to get wlower\n";
-                return -1;
-            }
-            if (OPS_GetDoubleInput(&ndm, &wupper[0]) < 0) {
-                opserr << "WARNING: failed to get wupper\n";
-                return -1;
-            }
-            bgmesh.addWall(wlower,wupper);
-
         } else if (strcmp(opt, "-freesurface") == 0) {
             bgmesh.setFreeSurface();
         } else if (strcmp(opt, "-velKernel") == 0) {
@@ -260,13 +244,12 @@ int OPS_BgMesh()
 }
 
 BackgroundMesh::BackgroundMesh()
-        :lower(), upper(), wlower(), wupper(), bcells(),
+        :lower(), upper(), bcells(),
          tol(1e-10), meshtol(0.1), bsize(-1.0),
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), sptags(), spndtags(), kernel(1), pkernel(1),
-         tsTag(-1111), loadPatternTag(-1111)
+         freesurface(false), kernel(1), pkernel(1)
 {
 }
 
@@ -688,16 +671,6 @@ BackgroundMesh::clearGrid()
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return;
 
-    // remove sps
-    for (int i=0; i<(int)sptags.size(); ++i) {
-        SP_Constraint* sp = domain->removeSP_Constraint(sptags[i], loadPatternTag);
-        if (sp != 0) {
-            delete sp;
-        }
-    }
-    sptags.clear();
-    spndtags.clear();
-
     // remove cells
     for (std::map<VInt,BNode>::iterator it=bnodes.begin(); it!=bnodes.end(); ++it) {
         BNode& bnode = it->second;
@@ -890,33 +863,6 @@ BackgroundMesh::remesh(bool init)
     return 0;
 }
 
-int
-BackgroundMesh::addWall(const VDouble& low, const VDouble& up)
-{
-    wlower.push_back(low);
-    wupper.push_back(up);
-
-    // create load pattern
-    Domain* domain = OPS_GetDomain();
-    if (domain == 0) return 0;
-
-    if (domain->getLoadPattern(loadPatternTag) != 0) {
-        return 0;
-    }
-
-    ConstantSeries* series = new ConstantSeries(tsTag);
-
-    LoadPattern* pattern = new LoadPattern(loadPatternTag, 1.0);
-    pattern->setTimeSeries(series);
-
-    if (domain->addLoadPattern(pattern) == false) {
-        opserr<<"WARNING failed to add pattern to domain\n";
-        delete pattern;
-        return -1;
-    }
-    return 0;
-}
-
 // for each structural node
 // get current states
 // find nearest bnode
@@ -1051,47 +997,6 @@ BackgroundMesh::addStructure()
 
     }
 
-    // add wall nodes
-    for (int i=0; i<(int)wlower.size(); ++i) {
-        VInt wlow, wup;
-        nearIndex(wlower[i], wlow);
-        nearIndex(wupper[i], wup);
-        if (ndm ==2) {
-            for (int j=wlow[0]; j<=wup[0]; ++j) {
-                for (int k=wlow[1]; k<=wup[1]; ++k) {
-                    VInt ind(ndm);
-                    ind[0] = j;
-                    ind[1] = k;
-                    BNode& bnd = bnodes[ind];
-                    if (bnd.size() == 0) {
-                        bnd.addNode(FIXED);
-                    }
-                }
-
-            }
-
-        } else if (ndm == 3) {
-            for (int j=wlow[0]; j<=wup[0]; ++j) {
-                for (int k=wlow[1]; k<=wup[1]; ++k) {
-                    for (int l=wlow[2]; l<=wup[2]; ++l) {
-                        VInt ind(ndm);
-                        ind[0] = j;
-                        ind[1] = k;
-                        ind[2] = l;
-                        BNode& bnd = bnodes[ind];
-                        if (bnd.size() == 0) {
-                            bnd.addNode(FIXED);
-                        }
-                    }
-                }
-
-            }
-        }
-
-    }
-
-
-
     return 0;
 }
 
@@ -1199,7 +1104,6 @@ BackgroundMesh::gridNodes()
     int ndtag = Mesh::nextNodeTag();
     std::vector<Node*> newnodes(iters.size(),0), newpnodes(iters.size(), 0);
     std::vector<Pressure_Constraint*> newpcs(iters.size(), 0);
-    std::vector<Node*> newsps(iters.size(), 0);
 
     int res = 0;
 
@@ -1329,25 +1233,6 @@ BackgroundMesh::gridNodes()
             continue;
         }
 
-        // check if a wall
-        bool wall = false;
-        for (int i=0; i<(int)wlower.size(); ++i) {
-            VInt wlow, wup;
-            nearIndex(wlower[i], wlow);
-            nearIndex(wupper[i], wup);
-            bool wl = true;
-            for (int k=0; k<ndm; ++k) {
-                if (index[k]<wlow[k] || index[k]>wup[k]) {
-                    wl = false;
-                    break;
-                }
-            }
-            if (wl) {
-                wall = true;
-                break;
-            }
-        }
-
         // create node
         Node* node = 0;
         if (ndm == 2) {
@@ -1361,7 +1246,7 @@ BackgroundMesh::gridNodes()
             continue;
         }
 
-        if (((kernel == 1 && wt > 0) || kernel == 2) && !wall) {
+        if ((kernel == 1 && wt > 0) || kernel == 2) {
             Vector vvel;
             toVector(vel, vvel);
             Vector vaccel;
@@ -1374,17 +1259,8 @@ BackgroundMesh::gridNodes()
         // add to newnodes
         newnodes[j] = node;
 
-        // add to newsps
-        if (wall) {
-            newsps[j] = node;
-        }
-
         // set the bnode
-        if (wall) {
-            bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FIXED);
-        } else {
-            bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FLUID);
-        }
+        bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FLUID);
 
         // set pressure
         Pressure_Constraint* thePC = domain->getPressure_Constraint(node->getTag());
@@ -1467,24 +1343,6 @@ BackgroundMesh::gridNodes()
             opserr<<"WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
             delete newpcs[i];
             return -1;
-        }
-    }
-    for (int i=0; i<(int)newsps.size(); ++i) {
-        if (newsps[i] == 0) continue;
-        for (int k=0; k<ndm; ++k) {
-            SP_Constraint* sp = new SP_Constraint(newsps[i]->getTag(), k, 0.0, true);
-            if (sp != 0) {
-                // add to domain
-                if (domain->addSP_Constraint(sp, loadPatternTag) == false) {
-                    opserr << "WARNING: failed to add sp to domain\n";
-                    delete sp;
-                    return -1;
-                }
-
-                // add sp tags
-                sptags.push_back(sp->getTag());
-                spndtags.insert(newsps[i]->getTag());
-            }
         }
     }
 
@@ -2012,8 +1870,6 @@ BackgroundMesh::gridFSI(ID& freenodes)
         //bool fluid = true;
         for (int j=0; j<(int)tri.size(); ++j) {
             if (ndtypes[tri[j]] == STRUCTURE) {
-                sindex.push_back(ndindex[tri[j]]);
-            } else if (spndtags.find(ndtags[tri[j]]) != spndtags.end()) {
                 sindex.push_back(ndindex[tri[j]]);
             } else {
                 findex.push_back(ndindex[tri[j]]);
