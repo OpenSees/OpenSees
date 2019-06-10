@@ -407,14 +407,30 @@ TriMesh::mesh() {
     // get triangles
     int numtri = gen.getNumTriangles();
     if (numtri == 0) return 0;
-    ID elenodes(numtri * 3);
 
-    for (int i = 0; i < numtri; i++) {
-        int p1, p2, p3;
-        gen.getTriangle(i, p1, p2, p3);
-        elenodes(3 * i) = allndtags(p1);
-        elenodes(3 * i + 1) = allndtags(p2);
-        elenodes(3 * i + 2) = allndtags(p3);
+    ID elenodes;
+    if (this->getNumEleNodes() == 3) {
+        elenodes.resize(numtri * 3);
+
+        for (int i = 0; i < numtri; i++) {
+            int p1, p2, p3;
+            gen.getTriangle(i, p1, p2, p3);
+            elenodes(3 * i) = allndtags(p1);
+            elenodes(3 * i + 1) = allndtags(p2);
+            elenodes(3 * i + 2) = allndtags(p3);
+        }
+    } else if (this->getNumEleNodes() == 2) {
+        elenodes.resize(numtri * 6);
+        for (int i = 0; i < numtri; i++) {
+            int p1, p2, p3;
+            gen.getTriangle(i, p1, p2, p3);
+            elenodes(6 * i) = allndtags(p1);
+            elenodes(6 * i + 1) = allndtags(p2);
+            elenodes(6 * i + 2) = allndtags(p2);
+            elenodes(6 * i + 3) = allndtags(p3);
+            elenodes(6 * i + 4) = allndtags(p1);
+            elenodes(6 * i + 5) = allndtags(p3);
+        }
     }
     this->setEleNodes(elenodes);
 
@@ -578,10 +594,8 @@ TriMesh::remesh(double alpha) {
                 std::vector<int> &info = ndinfo[nds[j]];
                 for (int k = 0; k < (int) info.size() / 2; ++k) {
                     if (info[2 * k + 1] < id) {
-                        if (dynamic_cast<TriMesh *>(OPS_getMesh(info[2 * k])) != 0) {
-                            mtag = info[2 * k];
-                            id = info[2 * k + 1];
-                        }
+                        mtag = info[2 * k];
+                        id = info[2 * k + 1];
                     }
                 }
             }
