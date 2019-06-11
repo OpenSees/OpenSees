@@ -197,12 +197,12 @@ PFEMElement3DBubble::revertToLastCommit()
 
 int PFEMElement3DBubble::commitState()
 {
-    if (!dispon) {
-	if (updateJacobi() < 0) {
-	    opserr << "WARNING: failed to update Jacobi -- Bubble3D::commitState\n";
-	    return -1;
-	}
-    }
+//    if (!dispon) {
+//	if (updateJacobi() < 0) {
+//	    opserr << "WARNING: failed to update Jacobi -- Bubble3D::commitState\n";
+//	    return -1;
+//	}
+//    }
     return Element::commitState();
 }
 

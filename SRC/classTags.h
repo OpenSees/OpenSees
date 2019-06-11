@@ -379,6 +379,7 @@
 #define ND_TAG_FAPrestressedConcretePlaneStress  109
 #define ND_TAG_FAFourSteelPCPlaneStress  110
 #define ND_TAG_RAFourSteelPCPlaneStress  111
+#define ND_TAG_PressureDependMultiYield03		112
 
 #define ND_TAG_J2PlaneStrain                  3005
 #define ND_TAG_J2PlaneStress                  3006

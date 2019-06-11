@@ -934,6 +934,8 @@ PM4Silt::initialize()
 	mSig(1) = m_P_atm;
 	mSig(2) = 0.0;
 
+	mzcum = 0.0;
+	mzpeak = m_z_max / 100000.0;
 	GetElasticModuli(mSig, mK, mG);
 	mCe = mCep = mCep_Consistent = GetStiffness(mK, mG);
 
@@ -1316,7 +1318,8 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 		dSigma.Zero();
 		dAlpha.Zero();
 		dFabric.Zero();
-		dPStrain = dDevStrain + dVolStrain * mI1;
+		// dPStrain = dDevStrain + dVolStrain * mI1;
+		dPStrain = dStrain;
 	}
 	else {
 		NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
@@ -1446,7 +1449,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 	double dVolStrain, p, Cka, temp4, curStepError, q, stressNorm, h, D, AlphaAlphaBDotN;
 	Vector n(3), R1(3), R2(3), alphaD(3), dDevStrain(3), r(3), b(3), tmp0(3), tmp1(3), tmp2(3), alphaD_NextAlpha(3);
 	Vector nStress(3), nAlpha(3), nFabric(3);
-	Vector dSigma1(3), dSigma2(3), dAlpha1(3), dAlpha2(3), dAlpha(3), dFabric1(3), dFabric2(3), dPStrain1(3), dPStrain2(3);
+	Vector dSigma1(3), dSigma2(3), dAlpha1(3), dAlpha2(3), dFabric1(3), dFabric2(3), dPStrain1(3), dPStrain2(3);
 	double T = 0.0, dT = 1.0, dT_min = 1e-4, TolE = 1e-5;
 
 	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
@@ -1487,18 +1490,13 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		r = GetDevPart(NextStress);  r /= p;
 
 		temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
-		// if (temp4 < 0.0) {
-		// 	mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
-		// 	temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
-		// 	h = 1.5 * mKp / (p * AlphaAlphaBDotN);
-		// }
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma1.Zero();
 			dAlpha1.Zero();
 			dFabric1.Zero();
 			// dPStrain1 = dDevStrain + dVolStrain * mI1;
-			dPStrain1 = dDevStrain; dPStrain1 += dVolStrain * mI1;
+			dPStrain1 = tmp0;
 		}
 		else {
 			NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
@@ -1524,13 +1522,13 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma1 = ToContraviant(dDevStrain); dSigma1 *= (2.0 * G);
 				dSigma1 += tmp2; dSigma1 += tmp1;
 				// update fabric
-				// if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
+				// if (DoubleDot2_2_Contr(alphaD - NextAlpha, n) < 0.0) {
 				alphaD_NextAlpha = alphaD; alphaD_NextAlpha -= NextAlpha;
 				if (DoubleDot2_2_Contr(alphaD_NextAlpha, n) < 0.0) {
-					// dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
+					// dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + NextFabric);
 					dFabric1 = n;
 					dFabric1 *= m_z_max;
-					dFabric1 += CurFabric;
+					dFabric1 += NextFabric;
 					dFabric1 *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 				}
 				// dPStrain1 = NextL * ToCovariant(R1);
@@ -1573,7 +1571,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			dAlpha2.Zero();
 			dFabric2.Zero();
 			// dPStrain2 = dDevStrain + dVolStrain * mI1;
-			dPStrain2 = dDevStrain; dPStrain1 += dVolStrain * mI1;
+			dPStrain2 = dPStrain1;
 		}
 		else {
 			NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
@@ -1606,10 +1604,10 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				alphaD_NextAlpha = alphaD; alphaD_NextAlpha -= NextAlpha; alphaD_NextAlpha -= dAlpha1;
 				if (DoubleDot2_2_Contr(alphaD_NextAlpha, n) < 0.0) {
 					// Equation 57
-					//dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric + dFabric1);
+					//dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + NextFabric + dFabric1);
 					dFabric2 = n;
 					dFabric2 *= m_z_max;
-					dFabric2 += CurFabric;
+					dFabric2 += NextFabric;
 					dFabric2 += dFabric1;
 					dFabric2 *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 				}
@@ -2353,7 +2351,9 @@ PM4Silt::GetNormalToYield(const Vector &stress, const Vector &alpha)
 	Vector n(3);
 	double p = 0.5 * GetTrace(stress);
 	if (fabs(p) < small) {
-		n.Zero();
+		// n.Zero();
+		// change loading direction to simple shear when p is small
+		n(2) = root12;
 	}
 	else {
 		n = alpha; n *= (-p);
@@ -2362,7 +2362,6 @@ PM4Silt::GetNormalToYield(const Vector &stress, const Vector &alpha)
 		normN = (normN < small) ? 1.0 : normN;
 		n /= normN;
 	}
-
 	return n;
 }
 /*************************************************************/
@@ -2421,7 +2420,11 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	// updataed K_p formulation following PM4Silt V1. mAlpha_in is the apparent back-stress ratio.
 	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
 	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
-	if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
+	if (fabs(AlphaAlphaInDotN) < small) {
+		// adding this condition to avoid division by zero error
+		h = 1.0e10;
+	}
+	else if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
 		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
 		h = h * (AlphaAlphaInDotN + Cg1) / (AlphaAlphaInTrueDotN + Cg1);
@@ -2452,8 +2455,8 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		if (D > Drot) {
 			D = D + (Drot - D)*Macauley(mMb - Mcur) / (Macauley(mMb - Mcur) + 0.01);
 		}
-		if (p <= 2 * m_Pmin) {
-			D = -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin;
+		if (m_Pmin <= p && p <= 2 * m_Pmin) {
+			D = fmin(D, -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin);
 		}
 	}
 	else {

@@ -67,6 +67,7 @@
 #include <PressureIndependMultiYield.h>
 #include <PressureDependMultiYield.h>
 #include <PressureDependMultiYield02.h>
+#include <PressureDependMultiYield03.h>
 #include <FluidSolidPorousMaterial.h>
 
 #include <J2PlasticityThermal.h>   //added by L.Jiang [SIF]
@@ -1150,6 +1151,105 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
   }
 
+  // nDMaterial PressureDependMultiYield03  $tag  $nd  $rho  $refShearModul  $refBulkModul  
+  // $frictionAng  $peakShearStra  $refPress  $pressDependCoe  $PTAng  
+  // $mType $ca  $cb $cc $cd $ce $da $db $dc <$noYieldSurf=20 
+  // <$r1 $Gs1 …>  $liquefac1=1. $liquefac2=0. $pa=101 <$c=1.73>>
+  // PressureDependMultiYield03 (based on PressureDependMultiYield02). 
+	else if (strcmp(argv[1], "PressureDependMultiYield03") == 0) {
+		const int numParam = 18; 
+		const int totParam = 23; 
+		int tag;
+		double param[totParam];
+		param[numParam] = 20;
+		param[numParam + 1] = 1.;
+		param[numParam + 2] = 0.;
+		param[numParam + 3] = 101.;
+		param[numParam + 4] = 1.73;
+
+		char * arg[] = { "nd", "rho", "refShearModul","refBulkModul", "frictionAng",
+			"peakShearStra", "refPress", "pressDependCoe", "phaseTransformAngle", 
+			"mType","ca", "cb", "cc", "cd", "ce", "da", "db", "dc",
+			"numberOfYieldSurf (=20)", "liquefactionParam1=1.0", "liquefactionParam2=0.0",
+			"Atmospheric pressure (=101)", "cohesi (=1.73)" };
+
+		if (argc < (3 + numParam)) { // 3 refers to "nDMaterial PressureDependMultiYield03  $tag"
+			opserr << "WARNING insufficient arguments\n";
+			printCommand(argc, argv);
+			opserr << "Want: nDMaterial PressureDependMultiYield03 tag? " << arg[0];
+			opserr << "? " << "\n";
+			opserr << arg[1] << "? " << arg[2] << "? " << arg[3] << "? " << "\n";
+			opserr << arg[4] << "? " << arg[5] << "? " << arg[6] << "? " << "\n";
+			opserr << arg[7] << "? " << arg[8] << "? " << arg[9] << "? " << "\n";
+			opserr << arg[10] << "? " << arg[11] << "? " << arg[12] << "? " << "\n";
+			opserr << arg[13] << "? " << arg[14] << "? " << arg[15] << "? " << "\n";
+			opserr << arg[16] << "? " << arg[17] << "? " << arg[18] << "? " << "\n";
+			opserr << arg[19] << "? " << arg[20] << "? " << arg[21] << "? " << arg[22] << "? " << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid PressureDependMultiYield03 tag" << endln;
+			return TCL_ERROR;
+		}
+
+		int in = 22;
+		for (int i = 3; (i<argc && i<in); i++)
+			if (Tcl_GetDouble(interp, argv[i], &param[i - 3]) != TCL_OK) {
+				opserr << "WARNING invalid " << arg[i - 3] << "\n";
+				opserr << "nDMaterial PressureDependMultiYield03: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+		static double * gredu = 0;
+
+		// user defined yield surfaces
+		if (param[numParam] < 0 && param[numParam] > -100) {
+			param[numParam] = -int(param[numParam]);
+			gredu = new double[int(2 * param[numParam])];
+
+			for (int i = 0; i<2 * param[numParam]; i++)
+				if (Tcl_GetDouble(interp, argv[i + in], &gredu[i]) != TCL_OK) {
+					opserr << "WARNING invalid " << arg[i - 3] << "\n";
+					opserr << "nDMaterial PressureDependMultiYield03: " << tag << endln;
+					return TCL_ERROR;
+				}
+		}
+
+		if (gredu != 0) {
+			for (int i = in + int(2 * param[numParam]); i<argc; i++)
+				if (Tcl_GetDouble(interp, argv[i], &param[i - 3 - int(2 * param[numParam])]) != TCL_OK) {
+					opserr << "WARNING invalid " << arg[i - 3 - int(2 * param[numParam])] << "\n";
+					opserr << "nDMaterial PressureDependMultiYield03: " << tag << endln;
+					return TCL_ERROR;
+				}
+		}
+		else {
+			for (int i = in; i<argc; i++)
+				if (Tcl_GetDouble(interp, argv[i], &param[i - 3]) != TCL_OK) {
+					opserr << "WARNING invalid " << arg[i - 3 - int(2 * param[numParam])] << "\n";
+					opserr << "nDMaterial PressureDependMultiYield03: " << tag << endln;
+					return TCL_ERROR;
+				}
+		}
+
+
+		PressureDependMultiYield03 * temp =
+			new PressureDependMultiYield03(tag, param[0], param[1], param[2],
+				param[3], param[4], param[5],
+				param[6], param[7], param[8],
+				param[9], param[10], param[11],
+				param[12], param[13], param[14],
+				param[15], param[16], param[17], param[18], gredu,
+				param[19], param[20], param[21], param[22]);
+
+		theMaterial = temp;
+		if (gredu != 0) {
+			delete[] gredu;
+			gredu = 0;
+		}
+	}
+	
     // Fluid Solid Porous, by ZHY
     else if (strcmp(argv[1],"FluidSolidPorous") == 0) {
 
