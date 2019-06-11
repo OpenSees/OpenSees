@@ -49,6 +49,7 @@
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
 #include <RCCircularSectionIntegration.h>
+#include <RCTunnelSectionIntegration.h>
 #include <ParallelSection.h>
 #include <FiberSection2dThermal.h>
 #include <FiberSection3dThermal.h>
@@ -894,6 +895,74 @@ namespace {
 	return theSection;
     }
 
+    static void* OPS_RCTunnelSection()
+    {
+        if (OPS_GetNumRemainingInputArgs() < 13) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: section RCTunnelSection tag? concreteTag? steelTag? d? h? coverinner? coverouter? Asinner? Asouter? Nrings? Nwedges? Nbarsinner? Nbarsouter?\n";
+            return 0;
+        }
+
+	int idata[8];
+	double ddata[3];
+
+	int numdata = 3;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+
+	numdata = 6;
+	if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+
+	numdata = 4;
+	if (OPS_GetIntInput(&numdata, &idata[4]) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+	
+        int tag=idata[0], concreteTag=idata[1], steelTag=idata[2];
+        double d=ddata[0], h=ddata[1], coverinner=ddata[2], coverouter=ddata[3], Asinner=ddata[4], Asouter=ddata[5];
+        int nring=idata[3], nwedge=idata[4], nbarsinner=idata[5], nbarsouter=idata[6];
+
+        UniaxialMaterial *theConcrete = OPS_getUniaxialMaterial(concreteTag);
+        
+        if (theConcrete == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << concreteTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return 0;
+        }
+        
+        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+
+        if (theSteel == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << steelTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return 0;
+        }
+        
+        RCTunnelSectionIntegration rcsect(d, h, Asinner, Asouter, coverinner, coverouter,
+					  nring, nwedge, nbarsinner, nbarsouter);
+
+        int numFibers = rcsect.getNumFibers();
+
+        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+        rcsect.arrangeFibers(theMats, theConcrete, theSteel);
+
+        // Parsing was successful, allocate the section
+        SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+
+        delete [] theMats;
+
+	return theSection;
+    }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
@@ -924,6 +993,7 @@ namespace {
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
+	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
 
 	return 0;
     }

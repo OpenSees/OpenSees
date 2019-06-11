@@ -126,8 +126,6 @@ class SectionAggregator : public SectionForceDeformation
     static int codeArea[];
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
-    int parameterID;
-
     Vector dedh; // MHS hack
 // AddingSensitivity:END ///////////////////////////////////////////
 
