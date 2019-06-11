@@ -673,6 +673,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/MultiLinear.o \
 	$(FE)/material/uniaxial/HookGap.o \
 	$(FE)/material/uniaxial/HardeningMaterial.o \
+	$(FE)/material/uniaxial/HardeningMaterial2.o \
 	$(FE)/material/uniaxial/ParallelMaterial.o \
 	$(FE)/material/uniaxial/SeriesMaterial.o \
 	$(FE)/material/uniaxial/Neoprene.o \
