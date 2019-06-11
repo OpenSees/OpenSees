@@ -153,6 +153,10 @@ extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 
+#ifdef _HAVE_LHNMYS
+extern void* OPS_BeamColumnwLHNMYS(void);
+#endif
+
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 
@@ -518,6 +522,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
   }
+
+  #ifdef _HAVE_LHNMYS
+
+  else if (strcmp(argv[1],"beamColumnwLHNMYS") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_BeamColumnwLHNMYS();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
+  #endif
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
