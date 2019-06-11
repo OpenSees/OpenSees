@@ -18,9 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Written: Long Chen, Pedro Arduino
-//          Nov 2016, University of Washington
-//          Modified Sep 2018
+// Computational Geomechanics Group
+// Author: Long Chen, Pedro Arduino
+// University of Washington
+// Date:      Nov 2016
+// Last Modified: Sep 2018
 
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
