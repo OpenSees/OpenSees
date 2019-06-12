@@ -1535,6 +1535,7 @@ BackgroundMesh::moveFixedParticles()
                 ind = indices[i];
             }
         }
+        if (ind == index) continue;
 
         // move the particles
         VDouble crds;
@@ -1564,7 +1565,7 @@ BackgroundMesh::moveFixedParticles()
 
                 // get corners
                 indices.clear();
-                getCorners(index,1,indices);
+                getCorners(ind,1,indices);
 
                 // set corners
                 for (int k=0; k<(int)indices.size(); ++k) {
