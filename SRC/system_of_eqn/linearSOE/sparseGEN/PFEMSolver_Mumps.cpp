@@ -310,7 +310,7 @@ PFEMSolver_Mumps::solve()
             sid.rhs_sparse = &rhs_val[0];
 
             timer2.pause();
-            opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
+            // opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
             timer2.start();
 
             sid.job = JOB_SOLUTION;
@@ -332,7 +332,7 @@ PFEMSolver_Mumps::solve()
             }
 
             timer2.pause();
-            opserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
+            // pserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
             timer2.start();
 
             cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
@@ -354,7 +354,7 @@ PFEMSolver_Mumps::solve()
             cs_spfree(S1);
             cs_spfree(Bi);
             timer2.pause();
-            opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
+            // opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
         }
 
         // Gft*Mf{-1}*Gf
@@ -407,10 +407,12 @@ PFEMSolver_Mumps::solve()
 
             // setup
             prof.tic("setup");
-            std::vector<std::ptrdiff_t> ptr(S->nzmax), num(S->nzmax);
+            std::vector<std::ptrdiff_t> ptr(Psize+1), num(S->nzmax);
             for (int i=0; i<S->nzmax; ++i) {
-                ptr[i] = S->p[i];
                 num[i] = S->i[i];
+            }
+            for (int i = 0; i < Psize+1; ++i) {
+                ptr[i] = S->p[i];
             }
             double* val = &(S->x[0]);
             Solver solve(amgcl::adapter::zero_copy(Psize,&ptr[0],&num[0],val),prm);
