@@ -116,11 +116,11 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
 
   // 1. Concrete region
   double dr = h/Nrings;
-  double rinner = 0.5*d - h;
+  double rinner = 0.5*d;
   double Ainner = rinner*rinner*theta;
   double xinner = 2.0/3.0*rinner*sin(theta)/theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*d - h + (i+1)*dr;
+    double router = 0.5*d + (i+1)*dr;
     double Aouter = router*router*theta;
     double xouter = 2.0/3.0*router*sin(theta)/theta;
     double area = Aouter-Ainner;
@@ -138,7 +138,7 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
   }
 
   // 2. Inner steel bars
-  double xbar = 0.5*d - h + coverinner;
+  double xbar = 0.5*d + coverinner;
   theta = pi/Nbarsinner;
   twoTheta = 2.0*theta;
   double angle = theta;
@@ -151,7 +151,7 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
   }
 
   // 3. Outer steel bars
-  xbar = 0.5*d - coverouter;
+  xbar = 0.5*d + h - coverouter;
   theta = pi/Nbarsouter;
   twoTheta = 2.0*theta;
   angle = theta;
@@ -178,14 +178,14 @@ RCTunnelSectionIntegration::getFiberWeights(int nFibers, double *wt)
 
   int loc = 0;
 
-  //std::ofstream ofs ("areas.out", std::ofstream::out);
+  //std::ofstream ofs ("areasTunnel.out", std::ofstream::out);
 
   // 1. Concrete region
   double dr = h/Nrings;
-  double rinner = 0.5*d - h;
+  double rinner = 0.5*d;
   double Ainner = rinner*rinner*theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*d - h + (i+1)*dr;
+    double router = 0.5*d + (i+1)*dr;
     double Aouter = router*router*theta;
     double area = Aouter-Ainner;
     for (int j = 0; j < Nwedges; j++) {
@@ -322,22 +322,33 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
 
   static const double pi = 3.141592653589793;
 
+  // theta, Nrings, and Nwedges are constant
+  // when taking derivatives
   double theta = pi/Nwedges;
   double twoTheta = 2.0*theta;
 
   int loc = 0;
 
-  // 1. Core region
-  double drdh = dhdh/Nrings;
-  double rinner = 0.5*dddh - dhdh;
+  // 1. Concrete region
+  double dr = h/Nrings;
+  double ddrdh = dhdh/Nrings;
+  double rinner = 0.5*d;
+  double drinnerdh = 0.5*dddh;
   double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
   double xinner = 2.0/3.0*rinner*sin(theta)/theta;
+  double dxinnerdh = 2.0/3.0*drinnerdh*sin(theta)/theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*dddh - dhdh + (i+1)*drdh;
+    double router = 0.5*d + (i+1)*dr;
+    double drouterdh = 0.5*dddh + (i+1)*ddrdh;
     double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;
     double xouter = 2.0/3.0*router*sin(theta)/theta;
+    double dxouterdh = 2.0/3.0*drouterdh*sin(theta)/theta;
     double area = Aouter-Ainner;
-    double dxbardh = (xouter*Aouter-xinner*Ainner)/area;
+    double dareadh = dAouterdh-dAinnerdh;
+    double xbar = (xouter*Aouter-xinner*Ainner)/area;
+    double dxbardh = (area*(xouter*dAouterdh+dxouterdh*Aouter-xinner*dAinnerdh-dxinnerdh*Ainner)-(xouter*Aouter-xinner*Ainner)*dareadh)/(area*area);
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
@@ -346,11 +357,13 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
       loc++;
     }
     Ainner = Aouter;
+    dAinnerdh = dAouterdh;
     xinner = xouter;
+    dxinnerdh = dxouterdh;
   }  
 
   // 2. Inner steel bars
-  double dxbardh = 0.5*dddh - dhdh + dcoverinnerdh;
+  double dxbardh = 0.5*dddh + dcoverinnerdh;
   theta = pi/Nbarsinner;
   twoTheta = 2.0*theta;
   double angle = theta;
@@ -362,7 +375,7 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
   }
 
   // 3. Outer steel bars
-  dxbardh = 0.5*dddh - dcoverouterdh;
+  dxbardh = 0.5*dddh + dhdh - dcoverouterdh;
   theta = pi/Nbarsouter;
   twoTheta = 2.0*theta;
   angle = theta;
@@ -406,21 +419,30 @@ RCTunnelSectionIntegration::getWeightsDeriv(int nFibers, double *dwtsdh)
 
   static const double pi = 3.141592653589793;
 
+  // theta, Nrings, and Nwedges are contant
+  // when taking derivatives
   double theta = pi/Nwedges;
 
   int loc = 0;
 
   // 1. Concrete region
-  double drdh = dhdh/Nrings;
-  double rinner = 0.5*dddh - dhdh;
+  double dr = h/Nrings;
+  double ddrdh = dhdh/Nrings;
+  double rinner = 0.5*d;
+  double drinnerdh = 0.5*dddh;
   double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*dddh - dhdh + (i+1)*drdh;
+    double router = 0.5*d + (i+1)*dr;
+    double drouterdh = 0.5*dddh + (i+1)*ddrdh;
     double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;
     double area = Aouter-Ainner;
+    double dareadh = dAouterdh-dAinnerdh;
     for (int j = 0; j < Nwedges; j++)
-      dwtsdh[loc++] = area;
+      dwtsdh[loc++] = dareadh;
     Ainner = Aouter;
+    dAinnerdh = dAouterdh;
   }
 
   // 2. Inner steel bars
@@ -440,16 +462,16 @@ void
 RCTunnelSectionIntegration::Print(OPS_Stream &s, int flag)
 {
   s << "RC Circular Section" << endln;
-  s << " d = " << d;
+  s << " D_inner = " << d;
   s << " h = " << h;
-  s << " Asinner = " << Asinner;
-  s << " Asouter = " << Asouter;
-  s << " coverinner = " << coverinner;
-  s << " coverouter = " << coverouter << endln;
+  s << " As_inner = " << Asinner;
+  s << " As_outer = " << Asouter;
+  s << " cover_inner = " << coverinner;
+  s << " cover_outer = " << coverouter << endln;
   s << " Nrings = " << Nrings;
   s << " Nwedges = " << Nwedges;
-  s << " Nbarsinner = " << Nbarsinner;
-  s << " Nbarsouter = " << Nbarsouter << endln;
+  s << " Nbars_inner = " << Nbarsinner;
+  s << " Nbars_outer = " << Nbarsouter << endln;
 
   return;
 }

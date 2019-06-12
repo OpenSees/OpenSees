@@ -20,7 +20,7 @@
                                                                         
 // Written: Alborz Ghofrani, Pedro Arduino
 //            May 2013, University of Washington
-                                                                      
+// Last Modified: May 2019, Long Chen
 // Description: This file contains the implementation for the ManzariDafalias class.
 
 #include <ManzariDafalias.h>
@@ -860,11 +860,15 @@ void ManzariDafalias::integrate()
 	// I assume full elastic step and check if the new stress direction is "dramatically" 
 	// different from the stress path (in reference to the center of the yield surface). 
 	// Another method is to use the change in the stress direction.
-    Vector trialDirection(6);
+    Vector trialDirection(6), tmp(6);
 	// trialDirection = GetNormalToYield(mSigma_n + mCe*(mEpsilon - mEpsilon_n), mAlpha_n);
-	trialDirection = mCe * (mEpsilon - mEpsilon_n);
+	// trialDirection = mCe * (mEpsilon - mEpsilon_n);
+	tmp = mEpsilon; tmp -= mEpsilon_n;
+	trialDirection = mCe * tmp;
 
-    if (DoubleDot2_2_Contr(mAlpha_n - mAlpha_in_n, trialDirection) < 0.0)
+    // if (DoubleDot2_2_Contr(mAlpha_n - mAlpha_in_n, trialDirection) < 0.0)
+	tmp = mAlpha_n; tmp -= mAlpha_in_n;
+	if (DoubleDot2_2_Contr(tmp, trialDirection) < 0.0)
         mAlpha_in = mAlpha_n;
     else
         mAlpha_in = mAlpha_in_n;
@@ -896,12 +900,15 @@ void ManzariDafalias::elastic_integrator(const Vector& CurStress, const Vector& 
     Vector dStrain(6);
     
     // calculate elastic response
-    dStrain               = NextStrain - CurStrain;
+    // dStrain               = NextStrain - CurStrain;
+	dStrain = NextStrain; dStrain -= CurStrain;
     NextVoidRatio         = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-    NextElasticStrain     = CurElasticStrain + dStrain;
+    // NextElasticStrain     = CurElasticStrain + dStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
     GetElasticModuli(CurStress, NextVoidRatio, K, G); 
     aCep_Consistent       = aCep = aC = GetStiffness(K, G);
-    NextStress            = CurStress + DoubleDot4_2(aC,dStrain);
+    // NextStress            = CurStress + DoubleDot4_2(aC,dStrain);
+	NextStress = CurStress; NextStress += DoubleDot4_2(aC, dStrain);
 
     //update State variables
     double p = one3 * GetTrace(NextStress)+ m_Presidual;
@@ -955,15 +962,18 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
             break;
     }
     double elasticRatio, p, pn, f, fn;
-    Vector dSigma(6), dStrain(6);
+    Vector dSigma(6), dStrain(6), dElasStrain(6);
     bool   p_tr_pos = true;
 
     NextVoidRatio          = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-    dStrain                = NextStrain - CurStrain;
-    NextElasticStrain      = CurElasticStrain + dStrain;
+    // dStrain                = NextStrain - CurStrain;
+	dStrain = NextStrain; dStrain -= CurStrain;
+	// NextElasticStrain     = CurElasticStrain + dStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
     aC                     = GetStiffness(K, G);
     dSigma                 = DoubleDot4_2(aC, dStrain);
-    NextStress             = CurStress + dSigma;
+    // NextStress             = CurStress + dSigma;
+	NextStress = CurStress; NextStress += dSigma;
     f                      = GetF(NextStress, CurAlpha);
     p                      = one3 * GetTrace(NextStress) + m_Presidual;
 
@@ -1004,10 +1014,15 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
         } else if (fn < -mTolF) {
             // This is a transition from elastic to plastic
             elasticRatio = IntersectionFactor(CurStress, CurStrain, NextStrain, CurAlpha, 0.0, 1.0);
-            dSigma         = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
-            (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
-                CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio, 
-                G, K, aC, aCep, aCep_Consistent);
+            // dSigma         = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
+			dElasStrain = dStrain; dElasStrain *= elasticRatio;
+			dSigma = DoubleDot4_2(aC, dElasStrain);
+            // (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
+            //     CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio,
+            //     G, K, aC, aCep, aCep_Consistent);
+			(this->*exp_int)(CurStress + dSigma, CurStrain + dElasStrain, CurElasticStrain + dElasStrain,
+				CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio,
+				G, K, aC, aCep, aCep_Consistent);
 
         } else if (fabs(fn) < mTolF) {
 
@@ -1018,10 +1033,15 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
             } else {
                 // This is an elastic unloding followed by plastic loading
                 elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
-                dSigma         = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
-                (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
-                    CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio, 
-                    G, K, aC, aCep, aCep_Consistent);
+                // dSigma         = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
+				dElasStrain = dStrain; dElasStrain *= elasticRatio;
+				dSigma = DoubleDot4_2(aC, dElasStrain);
+                // (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
+                //     CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio,
+                //     G, K, aC, aCep, aCep_Consistent);
+				(this->*exp_int)(CurStress + dSigma, CurStrain + dElasStrain, CurElasticStrain + dElasStrain,
+					CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio,
+					G, K, aC, aCep, aCep_Consistent);
             }
         }
     }
@@ -1248,7 +1268,7 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
         double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) 
 {    
     double dVolStrain;
-    Vector n(6), d(6), b(6), R(6), dDevStrain(6), r(6); 
+    Vector n(6), d(6), b(6), R(6), dDevStrain(6), r(6), dStrain(6), tmp0(6), tmp1(6), tmp2(6), tmp3(6);
     double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0,A, B, C, D, p, Kp;
 
     double T = 0.0, dT = 1.0, dT_min = 1e-6 , TolE = 1e-4;
@@ -1259,7 +1279,9 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
     Matrix aCep1(6,6), aCep2(6,6), aCep_thisStep(6,6), aD(6,6);
     double temp4, curStepError, q = 1.0;
 
-    NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+    // NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+	dStrain = NextStrain; dStrain -= CurStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
 
     aC = GetStiffness(K, G);
     aD = GetCompliance(K, G);
@@ -1281,17 +1303,22 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 
     while (T < 1.0)
     {
-        NextVoidRatio     = m_e_init - (1 + m_e_init) * GetTrace(NextStrain + T * (NextStrain - CurStrain));
+        // NextVoidRatio     = m_e_init - (1 + m_e_init) * GetTrace(NextStrain + T * (NextStrain - CurStrain));
+		tmp0 = dStrain; tmp0 *= T; tmp0 += NextStrain;
+		NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(tmp0);
         
-        dVolStrain = dT * GetTrace(NextStrain - CurStrain);
-        dDevStrain = dT * GetDevPart(NextStrain - CurStrain);
+        // dVolStrain = dT * GetTrace(NextStrain - CurStrain);
+        // dDevStrain = dT * GetDevPart(NextStrain - CurStrain);
+		dVolStrain = dT * GetTrace(dStrain);
+		dDevStrain = dT * GetDevPart(dStrain);
 
         // Calc Delta 1
         p = one3 * GetTrace(NextStress) + m_Presidual;
         GetStateDependent(NextStress, NextAlpha, NextFabric, NextVoidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, 
                 b0, A, D, B, C, R);
 
-        r = GetDevPart(NextStress) / p;
+        // r = GetDevPart(NextStress) / p;
+		r = GetDevPart(NextStress); r /= p;
         Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
 
         temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
@@ -1319,17 +1346,33 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
                 dPStrain1.Zero();
                 mUseElasticTan = true;
             } else {
-                dSigma1   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
-                  (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
-                dAlpha1   = Macauley(NextDGamma) * two3 * h * b;
-                dFabric1  = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + CurFabric);
-                dPStrain1 = NextDGamma * ToCovariant(R);
+                // dSigma1   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+                //   (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+				tmp0 = mI1; tmp0 *= (K * dVolStrain);
+				tmp1 = n; tmp1 *= B;
+				tmp2 = mI1; tmp2 *= (-1.0 / 3.0); tmp2 += SingleDot(n, n); tmp2 *= C;
+				tmp1 -= tmp2; tmp1 *= (2.0 *G);
+				tmp3 = mI1; tmp3 *= (K * D); tmp1 += tmp3; tmp1 *= (-Macauley(NextDGamma));
+				dSigma1 = ToContraviant(dDevStrain); dSigma1 *= (2.0 * G);
+				dSigma1 += tmp0; dSigma1 += tmp1;
+
+                // dAlpha1   = Macauley(NextDGamma) * two3 * h * b;
+				dAlpha1 = b; dAlpha1 *= (Macauley(NextDGamma) * two3 * h);
+                // dFabric1  = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + NextFabric);
+				dFabric1 = n;
+				dFabric1 *= m_z_max;
+				dFabric1 += NextFabric;
+				dFabric1 *= -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0 * D);
+                // dPStrain1 = NextDGamma * ToCovariant(R);
+				dPStrain1 = ToCovariant(R); dPStrain1 *= NextDGamma;
             }
             aCep1 = GetElastoPlasticTangent(NextStress + dSigma1, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
         }
 
         // Calc Delta 2
-        p = one3 * GetTrace(NextStress + dSigma1) + m_Presidual;
+        // p = one3 * GetTrace(NextStress + dSigma1) + m_Presidual;
+		tmp0 = NextStress; tmp0 += dSigma1;    // tmp0 is NextStress + dSigma1 until calculating dSigma2
+		p = one3 * GetTrace(tmp0) + m_Presidual;
 
         if (p < m_Presidual)
         {
@@ -1339,10 +1382,14 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
             continue;
         }
             
-        GetStateDependent(NextStress + dSigma1, NextAlpha + dAlpha1, NextFabric + dFabric1, NextVoidRatio, alpha_in, n, d, b, 
-                Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
-
-        r = GetDevPart(NextStress + dSigma1) / p;
+        // GetStateDependent(NextStress + dSigma1, NextAlpha + dAlpha1, NextFabric + dFabric1, NextVoidRatio, alpha_in, n, d, b,
+        //         Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+		tmp1.Zero();  tmp1 += NextAlpha; tmp1 += dAlpha1;  // tmp1 is NextAlpha + dAlpha1 until calculating dSigma2
+		tmp2.Zero();  tmp2 += NextFabric; tmp2 += dFabric1;  // tmp2 is NextFabric + dFabric1 until calculating dSigma2
+		GetStateDependent(tmp0, tmp1, tmp2, NextVoidRatio, alpha_in, n, d, b,
+			Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        // r = GetDevPart(NextStress + dSigma1) / p;
+		r = GetDevPart(tmp0); r /= p;
         Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
         
         temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
@@ -1369,20 +1416,46 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
                 dPStrain2.Zero();
                 mUseElasticTan = true;
             } else {
-                dSigma2   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
-                  (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
-                dAlpha2   = Macauley(NextDGamma) * two3 * h * b;
-                dFabric2  = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + CurFabric + dFabric1);
-                dPStrain2 = NextDGamma * ToCovariant(R);
+                // dSigma2   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+                //   (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+				tmp0 = mI1; tmp0 *= (K * dVolStrain);
+				tmp1 = n; tmp1 *= B;
+				tmp2 = mI1; tmp2 *= (-1.0 / 3.0); tmp2 += SingleDot(n, n); tmp2 *= C;
+				tmp1 -= tmp2; tmp1 *= (2.0 *G);
+				tmp3 = mI1; tmp3 *= (K * D); tmp1 += tmp3; tmp1 *= (-Macauley(NextDGamma));
+				dSigma2 = ToContraviant(dDevStrain); dSigma2 *= (2.0 * G);
+				dSigma2 += tmp0; dSigma2 += tmp1;
+
+                // dAlpha2   = Macauley(NextDGamma) * two3 * h * b;
+				dAlpha2 = b; dAlpha2 *= (Macauley(NextDGamma) * two3 * h);
+                // dFabric2  = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + NextFabric + dFabric1);
+				dFabric2 = n;
+				dFabric2 *= m_z_max;
+				dFabric2 += NextFabric;
+				dFabric2 += dFabric1;
+				dFabric2 *= (-1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0 * D));
+                // dPStrain2 = NextDGamma * ToCovariant(R);
+				dPStrain2 = ToCovariant(R);  dPStrain2 *= NextDGamma;
             }
         }
         
         aCep2 = GetElastoPlasticTangent(NextStress + dSigma1, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
 
-        nStress = NextStress + 0.5 * (dSigma1 + dSigma2);
-        nAlpha  = NextAlpha  + 0.5 * (dAlpha1 + dAlpha2);
-        nFabric = NextFabric + 0.5 * (dFabric1 + dFabric2);
-        
+        // nStress = NextStress + 0.5 * (dSigma1 + dSigma2);
+        // nAlpha  = NextAlpha  + 0.5 * (dAlpha1 + dAlpha2);
+        // nFabric = NextFabric + 0.5 * (dFabric1 + dFabric2);
+		nStress = dSigma1;
+		nStress += dSigma2;
+		nStress *= 0.5;
+		nStress += NextStress;
+		nFabric = dFabric1;
+		nFabric += dFabric2;
+		nFabric *= 0.5;
+		nFabric += NextFabric;
+		nAlpha = dAlpha1;
+		nAlpha += dAlpha2;
+		nAlpha *= 0.5;
+		nAlpha += NextAlpha;
 
         p = one3 * GetTrace(nStress) + m_Presidual;
         
@@ -1395,11 +1468,13 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
         }
 
             double stressNorm = GetNorm_Contr(NextStress);
+			tmp0 = dSigma2; tmp0 -= dSigma1;
             if (stressNorm < 0.5)
-                curStepError = GetNorm_Contr(dSigma2 - dSigma1);
+                // curStepError = GetNorm_Contr(dSigma2 - dSigma1);
+				curStepError = GetNorm_Contr(tmp0);
             else 
-                curStepError = GetNorm_Contr(dSigma2 - dSigma1) / (2 * stressNorm);
-        
+                // curStepError = GetNorm_Contr(dSigma2 - dSigma1) / (2 * stressNorm);
+				curStepError = GetNorm_Contr(tmp0) / (2 * stressNorm);
         
         if (curStepError > TolE)
         {
@@ -1412,7 +1487,9 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
             if (dT == dT_min) {
                 mUseElasticTan = true;
 
-                NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+				NextElasticStrain -= tmp0;
                 NextStress = nStress;
                 double eta = sqrt(13.5) * GetNorm_Contr(GetDevPart(NextStress)) / GetTrace(NextStress);
                 if (eta > m_Mc)
@@ -1427,7 +1504,9 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
             if (debugFlag) 
                 opserr << "+++ Successful increment: T = " << T << ", dT = " << dT << endln;
 
-            NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+			// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+			tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+			NextElasticStrain -= tmp0;
             NextStress = nStress;
             NextAlpha  = nAlpha;
             NextFabric = nFabric;
@@ -1437,7 +1516,9 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
             
             T += dT;
 
-            aCep_thisStep = 0.5 * (aCep1 + aCep2);
+            // aCep_thisStep = 0.5 * (aCep1 + aCep2);
+			aCep_thisStep = aCep1; aCep_thisStep += aCep2;
+			aCep_thisStep *= 0.5;
             aCep_Consistent = aCep_thisStep * (aD * aCep_Consistent + T * mIImix);
         
             q = fmax(0.8 * sqrt(TolE / curStepError), 0.5);
@@ -4387,7 +4468,7 @@ ManzariDafalias::GetF(const Vector& nStress, const Vector& nAlpha)
     // Manzari's yield function
     Vector s(6); s = GetDevPart(nStress);
     double p = one3 * GetTrace(nStress) + m_Presidual;
-    s = s - p * nAlpha;
+    s -= p * nAlpha;
     return GetNorm_Contr(s) - root23 * m_m * p;
 }
 
@@ -4511,21 +4592,34 @@ ManzariDafalias::GetElastoPlasticTangent(const Vector& NextStress, const double&
 {    
     double p = one3 * GetTrace(NextStress) + m_Presidual;
     p = (p < small + m_Presidual) ? small + m_Presidual : p;
-    Vector r = GetDevPart(NextStress) / p;
+    // Vector r = GetDevPart(NextStress) / p;
+	Vector r = GetDevPart(NextStress); r /= p;
     double Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
     
     Matrix aC(6,6), aCep(6,6);
-    Vector temp1(6), temp2(6), R(6);
+    Vector temp0(6), temp1(6), temp2(6), R(6);
     double temp3;
 
     aC  = GetStiffness(K, G);
-    R = ToCovariant((B * n ) - (C * (SingleDot(n,n)-one3*mI1)) + (one3 * D * mI1));
+    // R = ToCovariant((B * n ) - (C * (SingleDot(n,n)-one3*mI1)) + (one3 * D * mI1));
+	temp0 = n; temp0 *= B;
+	temp1 = mI1; temp1 *= (-1.0 * one3); temp1 += SingleDot(n, n); temp1 *= C;
+	temp2 = mI1; temp2 *= (one3 * D);
+	temp0 -= temp1; temp0 += temp2;
+	R = ToCovariant(temp0);
+
     temp1 = DoubleDot4_2(aC, ToCovariant(R));
-    temp2 = DoubleDot2_4(ToCovariant(n - one3 * DoubleDot2_2_Contr(n,r) * mI1), aC);
+    // temp2 = DoubleDot2_4(ToCovariant(n - one3 * DoubleDot2_2_Contr(n,r) * mI1), aC);
+	temp0 = mI1; temp0 *= (-1.0 * one3 * DoubleDot2_2_Contr(n, r)); temp0 += n;
+	temp0 = ToCovariant(temp0);
+	temp2 = DoubleDot2_4(temp0, aC);
     temp3 = DoubleDot2_2_Contr(temp2, R) + Kp;
     if (fabs(temp3) < small) return aC;
     
-    aCep = (aC - (MacauleyIndex(NextDGamma) / temp3 * (Dyadic2_2(temp1, temp2))));
+    // aCep = (aC - (MacauleyIndex(NextDGamma) / temp3 * (Dyadic2_2(temp1, temp2))));
+	aCep = Dyadic2_2(temp1, temp2);
+	aCep *= (-1.0 * MacauleyIndex(NextDGamma) / temp3);
+	aCep += aC;
     return aCep;
 }
 
@@ -4533,7 +4627,7 @@ ManzariDafalias::GetElastoPlasticTangent(const Vector& NextStress, const double&
 Vector
 ManzariDafalias::GetNormalToYield(const Vector &stress, const Vector &alpha)
 {
-    Vector devStress(6); devStress = GetDevPart(stress);
+    // Vector devStress(6); devStress = GetDevPart(stress);
 
     double p = one3 * GetTrace(stress) + m_Presidual;
 
@@ -4542,10 +4636,15 @@ ManzariDafalias::GetNormalToYield(const Vector &stress, const Vector &alpha)
     {
         n.Zero();
     } else {
-        n = devStress - p * alpha;
-        double normN = GetNorm_Contr(n);
-        normN = (normN < small) ? 1.0 : normN;
-        n = n / normN;
+        // n = devStress - p * alpha;
+        // double normN = GetNorm_Contr(n);
+        // normN = (normN < small) ? 1.0 : normN;
+        // n = n / normN;
+		n = alpha; n *= (-p);
+		n += GetDevPart(stress);
+		double normN = GetNorm_Contr(n);
+		normN = (normN < small) ? 1.0 : normN;
+		n /= normN;
     }
 
     return n;
@@ -4589,6 +4688,7 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
                 , double &alphaDtheta, double &b0, double& A, double& D, double& B
                 , double& C, Vector& R)
 {
+	Vector tmp0(6), tmp1(6);
     double D_factor = 1.0;
     double p = one3 * GetTrace(stress) + m_Presidual;
     p = (p < small) ? small : p;
@@ -4596,7 +4696,9 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
     n = GetNormalToYield(stress, alpha);
 
     double AlphaAlphaInDotN;
-    AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+    // AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+	tmp0 = alpha; tmp0 -= alpha_in;
+	AlphaAlphaInDotN = DoubleDot2_2_Contr(tmp0, n);
 
     psi = GetPSI(e, p);
 
@@ -4608,9 +4710,10 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
 
     b0 = m_G0 * m_h0 * (1.0 - m_ch * e) / sqrt(p / m_P_atm);
     
-    d    = root23 * alphaDtheta * n - alpha;
-
-    b    = root23 * alphaBtheta * n - alpha;
+    // d    = root23 * alphaDtheta * n - alpha;
+	d = n; d *= (root23 * alphaDtheta); d -= alpha;
+    // b    = root23 * alphaBtheta * n - alpha;
+	b = n; b *= (root23 * alphaBtheta); b -= alpha;
         
 	if (fabs(AlphaAlphaInDotN) < small)
 		h = 1.0e10;
@@ -4635,7 +4738,11 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
 
     C = 3.0 * sqrt(1.5) * (1 - m_c)/ m_c * g(cos3Theta, m_c);
 
-    R = B * n - C * (SingleDot(n,n) - one3 * mI1) + one3 * D * mI1;
+    // R = B * n - C * (SingleDot(n,n) - one3 * mI1) + one3 * D * mI1;
+	R = n; R *= B;
+	tmp0 = mI1; tmp0 *= (-1.0 * one3); tmp0 += SingleDot(n, n); tmp0 *= C;
+	tmp1 = mI1; tmp1 *= (one3 * D);
+	R -= tmp0; R += tmp1;
 }
 
 int

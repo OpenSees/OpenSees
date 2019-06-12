@@ -354,6 +354,7 @@ ZHY_LIBS = $(FE)/material/nD/soil/FluidSolidPorousMaterial.o \
 	$(FE)/material/nD/soil/MultiYieldSurfaceClay.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield02.o \
+	$(FE)/material/nD/soil/PressureDependMultiYield03.o \
 	$(FE)/material/nD/soil/PressureIndependMultiYield.o \
 	$(FE)/material/nD/soil/T2Vector.o \
 	$(FE)/element/UP-ucsd/BrickUP.o \
@@ -854,6 +855,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlateRebarMaterialThermal.o \
 	$(FE)/material/nD/BeamFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial2d.o \
+	$(FE)/material/nD/BeamFiberMaterial2dPS.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticityPlaneStrain.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity3D.o \

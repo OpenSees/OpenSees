@@ -1145,8 +1145,13 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+<<<<<<< HEAD
+    <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+=======
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SPSW02.cpp">
       <Filter>uniaxial</Filter>
+>>>>>>> 5e204347393c2fa5ecc40a1d68d50be0e063d453
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

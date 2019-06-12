@@ -325,12 +325,10 @@ SectionAggregator::SectionAggregator():
 // destructor:
 SectionAggregator::~SectionAggregator()
 {
-   int i;
-
    if (theSection)
        delete theSection;
 
-   for (i = 0; i < numMats; i++)
+   for (int i = 0; i < numMats; i++)
        if (theAdditions[i])
 	   delete theAdditions[i];
 
