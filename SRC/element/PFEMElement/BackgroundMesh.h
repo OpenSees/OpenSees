@@ -214,7 +214,7 @@ private:
     VDouble locs;
     double currentTime;
     std::ofstream theFile;
-    std::set<int> structuralNodes;
+    std::set<VInt> structuralNodes;
     bool freesurface;
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
 };

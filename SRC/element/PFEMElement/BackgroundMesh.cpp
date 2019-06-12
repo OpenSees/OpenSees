@@ -321,9 +321,7 @@ BackgroundMesh::setFile(const char* name)
 void
 BackgroundMesh::addStructuralNodes(VInt& snodes)
 {
-    for (int i=0; i<(int)snodes.size(); ++i) {
-        structuralNodes.insert(snodes[i]);
-    }
+    structuralNodes.insert(snodes);
 }
 
 void
@@ -882,119 +880,124 @@ BackgroundMesh::addStructure()
 
     // add all structural nodes to the background
     int ndtag = Mesh::nextNodeTag();
-    for (std::set<int>::iterator it=structuralNodes.begin();
+    for (std::set<VInt>::iterator it=structuralNodes.begin();
          it!=structuralNodes.end(); ++it) {
 
-        // get node
-        Node* nd = domain->getNode(*it);
-        if (nd == 0) continue;
+        const VInt& snodes = *it;
 
-        // nodal data
-        const Vector& crds = nd->getCrds();
-        const Vector& disp = nd->getTrialDisp();
-        const Vector& vel = nd->getTrialVel();
-        const Vector& accel = nd->getTrialAccel();
+        for (int k = 0; k < (int) snodes.size(); ++k) {
 
-        if (crds.Size()!=ndm || disp.Size()<ndm) {
-            continue;
-        }
+            // get node
+            Node *nd = domain->getNode(snodes[k]);
+            if (nd == 0) continue;
 
-        // create pressure constraint
-        Pressure_Constraint* pc = domain->getPressure_Constraint(nd->getTag());
-        if(pc != 0) {
-            pc->setDomain(domain);
-        } else {
+            // nodal data
+            const Vector &crds = nd->getCrds();
+            const Vector &disp = nd->getTrialDisp();
+            const Vector &vel = nd->getTrialVel();
+            const Vector &accel = nd->getTrialAccel();
 
-            // create pressure node
-            Node* pnode = 0;
-            if (ndm == 2) {
-                pnode = new Node(ndtag++, 1, crds[0], crds[1]);
-            } else if (ndm == 3) {
-                pnode = new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
-            }
-            if (pnode == 0) {
-                opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
-                return -1;
-            }
-            if (domain->addNode(pnode) == false) {
-                opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
-                delete pnode;
-                return -1;
+            if (crds.Size() != ndm || disp.Size() < ndm) {
+                continue;
             }
 
-            pc = new Pressure_Constraint(nd->getTag(), pnode->getTag());
-            if(pc == 0) {
-                opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
-                return -1;
-            }
-            if (domain->addPressure_Constraint(pc) == false) {
-                opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
-                delete pc;
-                return -1;
-            }
-        }
+            // create pressure constraint
+            Pressure_Constraint *pc = domain->getPressure_Constraint(nd->getTag());
+            if (pc != 0) {
+                pc->setDomain(domain);
+            } else {
 
-        // nodal pressures
-        double pressure = pc->getPressure();
-        double pdot = pc->getPdot();
+                // create pressure node
+                Node *pnode = 0;
+                if (ndm == 2) {
+                    pnode = new Node(ndtag++, 1, crds[0], crds[1]);
+                } else if (ndm == 3) {
+                    pnode = new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
+                }
+                if (pnode == 0) {
+                    opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+                    return -1;
+                }
+                if (domain->addNode(pnode) == false) {
+                    opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+                    delete pnode;
+                    return -1;
+                }
 
-        // nodal crds
-        VDouble crdsn(ndm), vn(ndm), dvn(ndm);
-        for (int i=0; i<ndm; ++i) {
-            crdsn[i] = crds(i)+disp(i);
-            vn[i] = vel(i);
-            dvn[i] = accel(i);
-        }
-
-        // near index
-        VInt index;
-        nearIndex(crdsn, index);
-
-        // add structural node to the bnode
-        BNode& bnode = bnodes[index];
-
-        // check FIXED bnode
-        for (int i=0; i<(int)bnode.type.size(); ++i) {
-            if (bnode.type[i] == FIXED) {
-                bnode.clear();
-                break;
-            }
-        }
-
-        bnode.addNode(nd->getTag(),crdsn,vn,dvn,pressure,pdot,STRUCTURE);
-
-        // set fixed  bnodes
-        VInt ind = index;
-        ind -= 1;
-        VVInt indices;
-        getCorners(ind, 2, indices);
-        for (int i=0; i<(int)indices.size(); ++i) {
-            BNode& bnd = bnodes[indices[i]];
-            if (bnd.size() == 0) {
-                bnd.addNode(FIXED);
-            }
-        }
-
-        // set STRUCTURE cells
-        getCorners(ind, 1, indices);
-        for (int i=0; i<(int)indices.size(); ++i) {
-            BCell& bcell = bcells[indices[i]];
-            bcell.type = STRUCTURE;
-
-            // set corners
-            if (bcell.bnodes.empty()) {
-
-                VVInt corners;
-                getCorners(indices[i], 1, corners);
-
-                for (int j=0; j<(int)corners.size(); ++j) {
-                    BNode& bnd = bnodes[corners[j]];
-                    bcell.bnodes.push_back(&bnd);
-                    bcell.bindex.push_back(corners[j]);
+                pc = new Pressure_Constraint(nd->getTag(), pnode->getTag());
+                if (pc == 0) {
+                    opserr << "WARNING: no enough memory for Pressure_Constraint\n";
+                    return -1;
+                }
+                if (domain->addPressure_Constraint(pc) == false) {
+                    opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+                    delete pc;
+                    return -1;
                 }
             }
-        }
 
+            // nodal pressures
+            double pressure = pc->getPressure();
+            double pdot = pc->getPdot();
+
+            // nodal crds
+            VDouble crdsn(ndm), vn(ndm), dvn(ndm);
+            for (int i = 0; i < ndm; ++i) {
+                crdsn[i] = crds(i) + disp(i);
+                vn[i] = vel(i);
+                dvn[i] = accel(i);
+            }
+
+            // near index
+            VInt index;
+            nearIndex(crdsn, index);
+
+            // add structural node to the bnode
+            BNode &bnode = bnodes[index];
+
+            // check FIXED bnode
+            for (int i = 0; i < (int) bnode.type.size(); ++i) {
+                if (bnode.type[i] == FIXED) {
+                    bnode.clear();
+                    break;
+                }
+            }
+
+            bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot, STRUCTURE);
+
+            // set fixed  bnodes
+            VInt ind = index;
+            ind -= 1;
+            VVInt indices;
+            getCorners(ind, 2, indices);
+            for (int i = 0; i < (int) indices.size(); ++i) {
+                BNode &bnd = bnodes[indices[i]];
+                if (bnd.size() == 0) {
+                    bnd.addNode(FIXED);
+                }
+            }
+
+            // set STRUCTURE cells
+            getCorners(ind, 1, indices);
+            for (int i = 0; i < (int) indices.size(); ++i) {
+                BCell &bcell = bcells[indices[i]];
+                bcell.type = STRUCTURE;
+
+                // set corners
+                if (bcell.bnodes.empty()) {
+
+                    VVInt corners;
+                    getCorners(indices[i], 1, corners);
+
+                    for (int j = 0; j < (int) corners.size(); ++j) {
+                        BNode &bnd = bnodes[corners[j]];
+                        bcell.bnodes.push_back(&bnd);
+                        bcell.bindex.push_back(corners[j]);
+                    }
+                }
+            }
+
+        }
     }
 
     return 0;
