@@ -298,12 +298,12 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 int argc,
 				 bool echoTime, 
 				 Domain &theDom, 
-				 OPS_Stream &theOutputHandler,
+				 OPS_Stream &theOutput,
 				 double dT,
 				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
- theDomain(&theDom), theOutputHandler(&theOutputHandler),
+ theDomain(&theDom), theOutputHandler(&theOutput),
  echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
@@ -917,4 +917,15 @@ ElementRecorder::initialize(void)
   initializationDone = true;
 
   return 0;
+}
+//by SAJalali
+double ElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= data->Size())
+		return res;
+	res = (*data)(clmnId);
+	return res;
 }

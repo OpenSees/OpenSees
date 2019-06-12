@@ -422,6 +422,13 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
     opserr << "EnvelopeNodeRecorder::NodeRecorder - dataToStore " << dataToStore;
     opserr << "not recognized (disp, vel, accel, incrDisp, incrDeltaDisp)\n";
   }
+
+  if (dataFlag == 7 || dataFlag == 8 || dataFlag == 9) {
+    if (echoTime == true)
+      theOutputHandler.setAddCommon(2);
+    else
+      theOutputHandler.setAddCommon(1);
+  }
 }
 
 
@@ -1158,4 +1165,17 @@ EnvelopeNodeRecorder::initialize(void)
   initializationDone = true;
 
   return 0;
+}
+//added by SAJalali
+double EnvelopeNodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= data->noCols())
+		return res;
+	res = (*data)(2 - rowOffset, clmnId);
+	if (reset)
+		first = true;
+	return res;
 }

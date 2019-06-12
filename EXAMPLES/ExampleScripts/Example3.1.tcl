@@ -109,7 +109,7 @@ set np 5
 
 # Create the coulumns using Beam-column elements
 #               e            tag ndI ndJ nsecs secID transfTag
-set eleType dispBeamColumn
+set eleType forceBeamColumn
 element $eleType  1   1   3   $np    1       1 
 element $eleType  2   2   4   $np    1       1 
 

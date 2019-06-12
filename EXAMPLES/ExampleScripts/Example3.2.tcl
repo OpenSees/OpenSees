@@ -120,7 +120,7 @@ if {$ok != 0} {
 	# if the analysis fails try initial tangent iteration
 	if {$ok != 0} {
 	    puts "regular newton failed .. lets try an initail stiffness for this step"
-	    test NormDispIncr 1.0e-12  1000 
+	    test NormUnbalance 1.0  1000 5
 	    algorithm ModifiedNewton -initial
 	    set ok [analyze 1]
 	    if {$ok == 0} {puts "that worked .. back to regular newton"}
@@ -146,3 +146,4 @@ if {$ok == 0} {
 
 
 
+print -file out

@@ -30,9 +30,9 @@ using std::cerr;
 using std::ios;
 using std::setiosflags;
 
-StandardStream::StandardStream(int indent)
+StandardStream::StandardStream(int indent, bool echo)
   :OPS_Stream(OPS_STREAM_TAGS_FileStream), 
-   fileOpen(0), echoApplication(true),  indentSize(indent), numIndent(-1)
+   fileOpen(0), echoApplication(echo),  indentSize(indent), numIndent(-1)
 {
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+1];

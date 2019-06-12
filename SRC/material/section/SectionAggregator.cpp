@@ -42,7 +42,7 @@
 #include <SectionAggregator.h>
 #include <MaterialResponse.h>
 #include <ID.h>
-
+#include <FiberSection2d.h>			//by SAJalali
 #include <string.h>
 
 #include <classTags.h>
@@ -902,7 +902,14 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
     
     return this->SectionForceDeformation::setResponse(argv, argc, output);
   } 
-  
+  // by SAJalali
+  int num = numMats;
+  if (theSection != 0)
+	  num++;
+  if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
+	  return theResponse = new MaterialResponse(this, 8, Vector(num));
+  }
+
 
   if (theSection != 0)
     return theSection->setResponse(argv, argc, output);
@@ -911,6 +918,31 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
 
   return 0;
 }
+
+//by SAJalali
+int
+SectionAggregator::getResponse(int responseID, Information &sectInfo)
+{
+	FiberSection2d* sec = 0;
+	int num = numMats;
+	if (theSection != 0)
+		num++;
+	Vector res(num);
+	if (responseID == 8) {
+		for (int i = 0; i < numMats; i++)
+			res(i) = theAdditions[i]->getEnergy();
+		sec = (FiberSection2d*)theSection;
+		if (sec != 0)
+			res(numMats) = sec->getEnergy();
+		sectInfo.setVector(res);
+		//opserr << "energyVect=" << res << "\n";
+	}
+	else
+		return SectionForceDeformation::getResponse(responseID, sectInfo);
+
+	return 0;
+}
+
 
 void
 SectionAggregator::Print(OPS_Stream &s, int flag)

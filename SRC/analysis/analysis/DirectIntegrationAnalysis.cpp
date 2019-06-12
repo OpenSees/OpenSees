@@ -168,8 +168,6 @@ int
 DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 {
   int result = 0;
- // if (theEigenSOE != 0)
- //   theIntegrator->setEigenSOE(theEigenSOE);
 
   for (int i=0; i<numSteps; i++) {
     result = this->analyzeStep(dT);
@@ -188,9 +186,6 @@ DirectIntegrationAnalysis::analyzeStep(double dT)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
- // if (theEigenSOE != 0)
- //   theIntegrator->setEigenSOE(theEigenSOE);
-
 
   if (theAnalysisModel->analysisStep(dT) < 0) {
     opserr << "DirectIntegrationAnalysis::analyze() - the AnalysisModel failed";

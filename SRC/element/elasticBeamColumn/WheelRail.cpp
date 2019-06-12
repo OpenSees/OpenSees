@@ -23,7 +23,7 @@ Written by: Quan Gu_1,  Yongdou Liu_1, Wei Guo_23, Weiquan Li_1, Zhiwu Yu_23, Li
 #include <OPS_Globals.h>
 #include <OPS_Stream.h>
 
-#include <math.h>
+#include <cmath>
 
 #include <elementAPI.h>
 

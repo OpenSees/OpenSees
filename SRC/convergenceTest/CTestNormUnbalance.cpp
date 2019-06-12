@@ -29,6 +29,8 @@
 #include <EquiSolnAlgo.h>
 #include <LinearSOE.h>
 #include <elementAPI.h>
+#include <iostream>
+#include <fstream>
 
 void* OPS_CTestNormUnbalance()
 {
@@ -158,7 +160,30 @@ int CTestNormUnbalance::test(void)
         opserr << "\tNorm deltaX: " << theSOE->getX().pNorm(nType) << ", Norm deltaR: " << norm << endln;
         opserr << "\tdeltaX: " << theSOE->getX() << "\tdeltaR: " << x;
     }
-    
+
+    if (printFlag == 7) {
+      std::ofstream outDu;
+      std::ofstream outDp;
+
+      if (currentIter == 1) {
+	outDu.open ("dX.out",std::ios::out);
+	outDp.open ("dP.out", std::ios::out);
+      } else {
+	outDu.open ("dX.out",std::ios::app);
+	outDp.open ("dP.out", std::ios::app);
+      }
+      const Vector &Du = theSOE->getX();
+      const Vector &Dp = theSOE->getB();
+      for (int i=0; i<Du.Size(); i++) {
+	outDu << Du[i] << " ";
+	outDp << Dp[i] << " ";
+      }
+      outDu << "\n";
+      outDp << "\n";
+      outDu.close();
+      outDp.close();
+    }
+
     //
     // check if the algorithm converged
     //
@@ -170,7 +195,7 @@ int CTestNormUnbalance::test(void)
         if (printFlag != 0) {
             if (printFlag == 1 || printFlag == 4) 
                 opserr << endln;
-            else if (printFlag == 2 || printFlag == 6) {
+            else if (printFlag == 2 || printFlag == 6 || printFlag == 7) {
                 opserr << "CTestNormUnbalance::test() - iteration: " << currentIter;
                 opserr << " current Norm: " << norm << " (max: " << tol;
                 opserr << ", Norm deltaX: " << theSOE->getX().pNorm(nType) << ")\n";
