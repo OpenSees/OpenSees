@@ -225,14 +225,18 @@ int OPS_BgMesh()
             }
             const char* kname = OPS_GetString();
             bgmesh.setKernel(kname, true);
+        } else if (strcmp(opt, "-streamLine") == 0) {
+            bgmesh.setStreamLine(true);
         }
     }
 
     // turn off disp in PFEM elements
-    PFEMElement2DBubble::dispon = false;
-    PFEMElement3DBubble::dispon = false;
-    PFEMElement2DCompressible::dispon = false;
-    PFEMElement2Dmini::dispon = false;
+    if (bgmesh.isStreamLine()) {
+        PFEMElement2DBubble::dispon = false;
+        PFEMElement3DBubble::dispon = false;
+        PFEMElement2DCompressible::dispon = false;
+        PFEMElement2Dmini::dispon = false;
+    }
 
     // bg mesh
     if (bgmesh.remesh(true) < 0) {
@@ -249,7 +253,8 @@ BackgroundMesh::BackgroundMesh()
          numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), kernel(1), pkernel(1)
+         freesurface(false), streamline(false),
+         kernel(1), pkernel(1)
 {
 }
 
@@ -750,16 +755,29 @@ BackgroundMesh::remesh(bool init)
 #endif
 
     // move particles
-    if (moveParticles() < 0) {
-        opserr << "WARNING: failed to move particles\n";
-        return -1;
-    }
+    if (streamline) {
+        if (moveParticles() < 0) {
+            opserr << "WARNING: failed to move particles\n";
+            return -1;
+        }
 
 #ifdef _LINUX
-    timer.pause();
-    opserr<<"time for move particles = "<<timer.getReal()<<"\n";
-    timer.start();
+        timer.pause();
+        opserr << "time for move particles = " << timer.getReal() << "\n";
+        timer.start();
 #endif
+
+    } else {
+        if (moveParticlesInCell() < 0) {
+            opserr << "WARNING: failed to move particles in cell\n";
+            return -1;
+        }
+#ifdef _LINUX
+        timer.pause();
+        opserr << "time for move particles in cell = " << timer.getReal() << "\n";
+        timer.start();
+#endif
+    }
 
     // clear background
     clearBackground();
@@ -2852,5 +2870,189 @@ BackgroundMesh::findFreeSurface(const ID& freenodes)
         pc->setFreeSurf();
     }
 
+    return 0;
+}
+
+int
+BackgroundMesh::moveParticlesInCell()
+{
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+    int ndm = OPS_GetNDM();
+    double dt = domain->getCurrentTime() - currentTime;
+
+    // get current disp and velocity
+    for (std::map<VInt,BNode>::iterator it=bnodes.begin(); it!=bnodes.end(); ++it) {
+        BNode& bnode = it->second;
+        VInt& tags = bnode.tags;
+
+        for (int i=0; i<(int)bnode.size(); ++i) {
+            Node* nd = domain->getNode(tags[i]);
+            Pressure_Constraint* pc = domain->getPressure_Constraint(tags[i]);
+
+            if (pc != 0) {
+                bnode.pn[i] = pc->getPressure();
+                bnode.dpn[i] = pc->getPdot();
+            }
+            if (nd != 0) {
+                const Vector& crds = nd->getCrds();
+                const Vector& disp = nd->getTrialDisp();
+                const Vector& vel = nd->getTrialVel();
+                const Vector& accel = nd->getTrialAccel();
+                for (int j=0; j<ndm; ++j) {
+                    bnode.crdsj[i][j] = crds(j) + disp(j);
+                    bnode.vn[i][j] = vel(j);
+                    bnode.dvn[i][j] = accel(j);
+                }
+            }
+        }
+    }
+
+    // store cells in a vector
+    std::vector<BCell*> cells;
+    VVInt indices;
+    cells.reserve(bcells.size());
+    indices.reserve(bcells.size());
+    for (std::map<VInt,BCell>::iterator it=bcells.begin(); it!=bcells.end(); ++it) {
+        indices.push_back(it->first);
+        cells.push_back(&(it->second));
+    }
+
+    // move particles in each cell
+    int res = 0;
+#pragma omp parallel for
+    for (int j=0; j<(int)cells.size(); ++j) {
+
+        // check structure cell
+        if (cells[j]->type == STRUCTURE) continue;
+
+        // get states
+        VVDouble crdsn(cells[j]->bnodes.size());
+        VVDouble crdsj(cells[j]->bnodes.size());
+        VVDouble vj(cells[j]->bnodes.size());
+        VVDouble dvj(cells[j]->bnodes.size());
+        VDouble pj(cells[j]->bnodes.size());
+        VDouble dpj(cells[j]->bnodes.size());
+        for (int k = 0; k < (int) cells[j]->bnodes.size(); ++k) {
+            if (cells[j]->bnodes[k]->size() != 1) {
+                crdsn.clear();
+                break;
+            }
+            crdsn[k] = cells[j]->bnodes[k]->crdsn[0];
+            crdsj[k] = cells[j]->bnodes[k]->crdsj[0];
+            vj[k] = cells[j]->bnodes[k]->vn[0];
+            dvj[k] = cells[j]->bnodes[k]->dvn[0];
+            pj[k] = cells[j]->bnodes[k]->pn[0];
+            dpj[k] = cells[j]->bnodes[k]->dpn[0];
+        }
+        if (crdsn.empty()) continue;
+
+        // get particles in cell
+        const VParticle& pts = cells[j]->pts;
+
+        // move the particle
+        for (int i=0; i<(int)pts.size(); ++i) {
+
+            // set update state
+            if (pts[i] == 0) continue;
+            pts[i]->needUpdate(dt);
+
+            // get shape functions for pt
+            VDouble N;
+            const VDouble& pcrdsn = pts[i]->getCrds();
+            if (ndm == 2) {
+                double hx = crdsn[1][0]-crdsn[0][0];
+                double hy = crdsn[2][1]-crdsn[0][1];
+
+                getNForRect(crdsn[0][0], crdsn[0][1], hx, hy, pcrdsn[0], pcrdsn[1], N);
+                double temp = N[2];
+                N[2] = N[3];
+                N[3] = temp;
+
+            } else if (ndm == 3) {
+                double hx = crdsn[1][0]-crdsn[0][0];
+                double hy = crdsn[2][1]-crdsn[0][1];
+                double hz = crdsn[4][2]-crdsn[0][2];
+                getNForRect(crdsn[0][0],crdsn[0][1],crdsn[0][2],
+                            hx,hy,hz,pcrdsn[0],pcrdsn[1],pcrdsn[2],N);
+                double temp = N[2];
+                N[2] = N[3];
+                N[3] = temp;
+                temp = N[6];
+                N[6] = N[7];
+                N[7] = temp;
+            }
+
+            // interpolate new states
+            VDouble newpcrds, newpv, newpdv;
+            double newpp, newpdp;
+            interpolate(crdsj, N, newpcrds);
+            interpolate(vj, N, newpv);
+            interpolate(dvj, N, newpdv);
+            interpolate(pj, N, newpp);
+            interpolate(dpj, N, newpdp);
+
+
+            // move particles
+            pts[i]->moveTo(newpcrds, dt);
+            pts[i]->setVel(newpv);
+            pts[i]->setAccel(newpdv);
+            pts[i]->setPressure(newpp);
+            pts[i]->setPdot(newpdp);
+        }
+    }
+
+    if (res < 0) return -1;
+
+    return 0;
+}
+
+int
+BackgroundMesh::interpolate(const VVDouble& values, const VDouble& N, VDouble& newvalue)
+{
+    if (N.size() != values.size()) {
+        opserr << "WARNING: sizes of shape function and nodal values don't match\n";
+        return -1;
+    }
+    if (N.empty()) {
+        opserr << "WARNING: no shape functions\n";
+        return -1;
+    }
+    if (values[0].empty()) {
+        opserr << "WARNING: no nodal values\n";
+        return -1;
+    }
+
+    VDouble temp(values[0].size());
+    newvalue.assign(values[0].size(), 0.0);
+    for (int i = 0; i < (int) N.size(); ++i) {
+        if (values[i].size() != values[0].size()) {
+            opserr << "WARNING: dimensions of nodal values are different\n";
+            newvalue.clear();
+            return -1;
+        }
+        temp = values[i];
+        temp *= N[i];
+        newvalue += temp;
+    }
+    return 0;
+}
+
+int
+BackgroundMesh::interpolate(const VDouble& values, const VDouble& N, double& newvalue)
+{
+    if (N.size() != values.size()) {
+        opserr << "WARNING: sizes of shape function and nodal values don't match\n";
+        return -1;
+    }
+    if (N.empty()) {
+        opserr << "WARNING: no shape functions\n";
+        return -1;
+    }
+
+    newvalue = 0.0;
+    for (int i = 0; i < (int) N.size(); ++i) {
+        newvalue += values[i] * N[i];
+    }
     return 0;
 }

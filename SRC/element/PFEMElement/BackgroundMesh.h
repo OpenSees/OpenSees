@@ -51,17 +51,19 @@ private:
 
         VInt tags;
         VVDouble crdsn;
+        VVDouble crdsj;
         VVDouble vn;
         VVDouble dvn;
         VDouble pn;
         VDouble dpn;
         VInt type;
 
-        BNode():tags(),crdsn(),vn(),dvn(),pn(),dpn(),type(){}
+        BNode():tags(),crdsn(),crdsj(), vn(),dvn(),pn(),dpn(),type(){}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp) {
             tags.push_back(tag);
             crdsn.push_back(crds);
+            crdsj.push_back(crds);
             vn.push_back(v);
             dvn.push_back(dv);
             pn.push_back(p);
@@ -71,6 +73,7 @@ private:
         void clear() {
             tags.clear();
             crdsn.clear();
+            crdsj.clear();
             vn.clear();
             dvn.clear();
             pn.clear();
@@ -81,22 +84,12 @@ private:
             addNode(0,VDouble(),VDouble(),VDouble(),0,0,tp);
         }
         int size() const {return (int)tags.size();}
-        void getNode(int i, int& tag, VDouble& crds, VDouble& v,
-                     VDouble& dv, double& p, double& dp, int& tp) {
-            if (i<0 || i>=(int)tags.size()) return;
-            tag = tags[i];
-            crds = crdsn[i];
-            v = vn[i];
-            dv = dvn[i];
-            p = pn[i];
-            dp = dpn[i];
-            tp = type[i];
-        }
         void setNode(int i, int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp) {
             if (i<0 || i>=(int)tags.size()) return;
             tags[i] = tag;
             crdsn[i] = crds;
+            crdsj[i] = crds;
             vn[i] = v;
             dvn[i] = dv;
             pn[i] = p;
@@ -136,6 +129,8 @@ public:
     void setNumSub(int num) {numsub = num;}
     void addStructuralNodes(VInt& snodes);
     void setKernel(const char* k, bool = false);
+    void setStreamLine(bool flag) {streamline = flag;}
+    bool isStreamLine() const {return streamline;}
 
     // remesh all
     int remesh(bool init=false);
@@ -155,6 +150,7 @@ public:
     int moveParticles();
     int convectParticle(Particle* pt, VInt index, int nums);
     int moveFixedParticles();
+    int moveParticlesInCell();
 
     // create grid nodes and elements
     int addStructure();
@@ -194,6 +190,8 @@ public:
                            const VDouble& pns, const VDouble& dpns,
                            const VVDouble& crds,
                            const VInt& fixed, VDouble& pvel);
+    static int interpolate(const VVDouble& values, const VDouble& N, VDouble& newvalue);
+    static int interpolate(const VDouble& values, const VDouble& N, double& newvalue);
     static int solveLine(const VDouble& p1, const VDouble& dir,
                          int dim, double crd, double& k);
     static bool inEle(const VDouble& N);
@@ -216,6 +214,7 @@ private:
     std::ofstream theFile;
     std::set<VInt> structuralNodes;
     bool freesurface;
+    bool streamline; // use streamline integration for particles
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
 };
 
