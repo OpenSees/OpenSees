@@ -219,7 +219,7 @@ LinearCappedBackbone::recvSelf(int cTag, Channel &theChannel,
   
   // Check if the backbone is null; if so, get a new one
   if (theBackbone == 0) {
-    theBackbone = theBroker.getNewHystereticBackbone(classTags(0));
+    //theBackbone = theBroker.getNewHystereticBackbone(classTags(0));
     if (theBackbone == 0) {
       opserr << "LinearCappedBackbone::recvSelf -- could not get a HystereticBackbone" << endln;
       return -1;
@@ -229,7 +229,7 @@ LinearCappedBackbone::recvSelf(int cTag, Channel &theChannel,
   // the current one and get a new one of the right type
   if (theBackbone->getClassTag() != classTags(0)) {
     delete theBackbone;
-    theBackbone = theBroker.getNewHystereticBackbone(classTags(0));
+    //theBackbone = theBroker.getNewHystereticBackbone(classTags(0));
     if (theBackbone == 0) {
       opserr << "LinearCappedBackbone::recvSelf -- could not get a HystereticBackbone" << endln;
       return -1;
