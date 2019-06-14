@@ -42,7 +42,7 @@
 #include <elementAPI.h>
 
 void *
-OPS_DuctilityStiffnessDegradation(void)
+OPS_EnergyStiffnessDegradation(void)
 {
   StiffnessDegradation *theDegradation = 0;
 
