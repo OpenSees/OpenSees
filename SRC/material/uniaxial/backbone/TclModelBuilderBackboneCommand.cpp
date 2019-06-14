@@ -51,6 +51,7 @@ extern void *OPS_ArctangentBackbone(void);
 extern void *OPS_ManderBackbone(void);
 extern void *OPS_TrilinearBackbone(void);
 extern void *OPS_BilinearBackbone(void);
+extern void *OPS_MultilinearBackbone(void);
 
 static void printCommand(int argc, TCL_Char **argv)
 {
@@ -76,7 +77,7 @@ TclModelBuilderHystereticBackboneCommand(ClientData clienData,
   
   // Check argv[1] for backbone type
   if (strcmp(argv[1],"Bilinear") == 0) {
-    void *theBB = OPS_TrilinearBackbone();
+    void *theBB = OPS_BilinearBackbone();
     if (theBB != 0)
       theBackbone = (HystereticBackbone *)theBB;
     else
@@ -92,41 +93,11 @@ TclModelBuilderHystereticBackboneCommand(ClientData clienData,
   }
   
   else if (strcmp(argv[1],"Multilinear") == 0) {
-    if (argc < 5 || (argc-3)%2 != 0) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Multilinear tag? e1? s1? e2? s2? ..." << endln;
+    void *theBB = OPS_MultilinearBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    int numPoints = (argc-3)/2;
-    Vector e(numPoints);
-    Vector s(numPoints);
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    double def,force;
-    for (int i = 3, j = 0; i < argc; i++, j++) {
-      if (Tcl_GetDouble(interp, argv[i++], &def) != TCL_OK) {
-	opserr << "WARNING invalid hystereticBackbone Trilinear e" << endln;
-	return TCL_ERROR;
-      }
-      e(j) = def;
-      
-      if (Tcl_GetDouble(interp, argv[i], &force) != TCL_OK) {
-	opserr << "WARNING invalid hystereticBackbone Trilinear s" << endln;
-	return TCL_ERROR;
-      }
-      s(j) = force;
-    }
-    
-    // Parsing was successful, allocate the material
-    //theBackbone = new MultilinearBackbone (tag, numPoints, e, s);
-    theBackbone = 0;
   }
   
   else if (strcmp(argv[1],"Arctangent") == 0) {
