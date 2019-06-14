@@ -294,6 +294,9 @@ HystereticMaterial::positiveIncrement(double dStrain)
 
   TloadIndicator = 1;
 
+  if (TrotMax > POS_INF_STRAIN)
+    TrotMax = POS_INF_STRAIN;
+
 	TrotMax = (TrotMax > rot1p) ? TrotMax : rot1p;
 
 	double maxmom = posEnvlpStress(TrotMax);
@@ -378,6 +381,9 @@ HystereticMaterial::negativeIncrement(double dStrain)
 	}
 
   TloadIndicator = 2;
+
+  if (TrotMin < NEG_INF_STRAIN)
+    TrotMin = NEG_INF_STRAIN;
 
 	TrotMin = (TrotMin < rot1n) ? TrotMin : rot1n;
 
