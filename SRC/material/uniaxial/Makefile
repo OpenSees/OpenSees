@@ -26,6 +26,7 @@ OBJS       = UniaxialMaterial.o \
 	BilinearOilDamper.o \
 	Cast.o \
         HardeningMaterial.o \
+        HardeningMaterial2.o \
 	Concrete01.o \
 	Concrete02Thermal.o \
 	Steel02Thermal.o \
