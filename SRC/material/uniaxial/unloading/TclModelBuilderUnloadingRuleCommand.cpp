@@ -30,7 +30,8 @@
 
 #include <OPS_Globals.h>
 
-#include <TclModelBuilder.h>
+#include <tcl.h>
+#include <elementAPI.h>
 
 #include <TakedaUnloadingRule.h>
 #include <EnergyUnloadingRule.h>
@@ -43,10 +44,19 @@ extern void *OPS_EnergyUnloadingRule(void);
 extern void *OPS_ConstantUnloadingRule(void);
 extern void *OPS_KarsanUnloadingRule(void);
 
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
+
 int
-TclModelBuilderUnloadingRuleCommand(ClientData clienData,
+TclModelBuilderUnloadingRuleCommand(ClientData clientData,
 				    Tcl_Interp *interp,
-				    int argc, TCL_Char **argv)
+				    int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -55,6 +65,8 @@ TclModelBuilderUnloadingRuleCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a unloadingRule that will be added to the model builder
   UnloadingRule *theState = 0;
   

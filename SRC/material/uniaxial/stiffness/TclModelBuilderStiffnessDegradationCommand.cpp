@@ -43,10 +43,19 @@ extern void *OPS_EnergyStiffnessDegradation(void);
 extern void *OPS_ConstantStiffnessDegradation(void);
 extern void *OPS_PincheiraStiffnessDegradation(void);
 
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
+
 int
-TclModelBuilderStiffnessDegradationCommand(ClientData clienData,
+TclModelBuilderStiffnessDegradationCommand(ClientData clientData,
 					   Tcl_Interp *interp,
-					   int argc, TCL_Char **argv)
+					   int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -55,6 +64,8 @@ TclModelBuilderStiffnessDegradationCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a stiffnessDegradation that will be added to the model builder
   StiffnessDegradation *theState = 0;
   

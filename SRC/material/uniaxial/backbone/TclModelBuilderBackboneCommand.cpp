@@ -32,6 +32,7 @@
 #include <UniaxialMaterial.h>
 
 #include <tcl.h>
+#include <elementAPI.h>
 
 #include <TrilinearBackbone.h>
 #include <MultilinearBackbone.h>
@@ -53,6 +54,15 @@ extern void *OPS_TrilinearBackbone(void);
 extern void *OPS_BilinearBackbone(void);
 extern void *OPS_MultilinearBackbone(void);
 
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
+
 static void printCommand(int argc, TCL_Char **argv)
 {
   opserr << "Input command: ";
@@ -62,16 +72,18 @@ static void printCommand(int argc, TCL_Char **argv)
 } 
 
 int
-TclModelBuilderHystereticBackboneCommand(ClientData clienData,
+TclModelBuilderHystereticBackboneCommand(ClientData clientData,
 					 Tcl_Interp *interp,
-					 int argc, TCL_Char **argv)
+					 int argc, TCL_Char **argv, Domain *theDomain)
 {
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "WARNING insufficient number of hystereticBackbone arguments\n";
     opserr << "Want: hystereticBackbone type? tag? <specific hystereticBackbone args>" << endln;
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a hysteretic backbone that will be added to the model builder
   HystereticBackbone *theBackbone = 0;
   

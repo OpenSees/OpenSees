@@ -175,6 +175,11 @@ int OPS_getTangent();
 int OPS_getDampTangent();
 int OPS_LimitCurve();
 
+int OPS_hystereticBackbone();
+int OPS_stiffnessDegradation();
+int OPS_strengthDegradation();
+int OPS_unloadingRule();
+
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
 int OPS_updateMaterialStage();

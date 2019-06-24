@@ -47,6 +47,15 @@ extern void *OPS_ConstantStrengthDegradation(void);
 extern void *OPS_ACIStrengthDegradation(void);
 extern void *OPS_PetrangeliStrengthDegradation(void);
 
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
+
 static void printCommand(int argc, TCL_Char **argv)
 {
   opserr << "Input command: ";
@@ -56,9 +65,9 @@ static void printCommand(int argc, TCL_Char **argv)
 } 
 
 int
-TclModelBuilderStrengthDegradationCommand(ClientData clienData,
+TclModelBuilderStrengthDegradationCommand(ClientData clientData,
 					  Tcl_Interp *interp,
-					  int argc, TCL_Char **argv)
+					  int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -67,6 +76,8 @@ TclModelBuilderStrengthDegradationCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a strengthDegradation that will be added to the model builder
   StrengthDegradation *theState = 0;
   
@@ -172,7 +183,7 @@ TclModelBuilderStrengthDegradationCommand(ClientData clienData,
       return TCL_ERROR;
   }
 
-  else if (strcmp(argv[1],"Pegrangeli") == 0) {
+  else if (strcmp(argv[1],"Petrangeli") == 0) {
     void *theDegr = OPS_PetrangeliStrengthDegradation();
     if (theDegr != 0) 
       theState = (StrengthDegradation *)theDegr;

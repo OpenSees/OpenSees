@@ -59,6 +59,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <DamageModel.h>
 #include <FrictionModel.h>
 #include <HystereticBackbone.h>
+#include <StiffnessDegradation.h>
+#include <StrengthDegradation.h>
+#include <UnloadingRule.h>
 #include <YieldSurface_BC.h>
 #include <CyclicModel.h>
 #include <FileStream.h>
@@ -832,6 +835,9 @@ OpenSeesCommands::wipe()
 
     // wipe HystereticBackbone
     OPS_clearAllHystereticBackbone();
+    OPS_clearAllStiffnessDegradation();
+    OPS_clearAllStrengthDegradation();
+    OPS_clearAllUnloadingRule();
 
     // wipe YieldSurface_BC
     OPS_clearAllYieldSurface_BC();

@@ -165,8 +165,11 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
-	$(FE)/material/uniaxial/backbone/TclModelBuilderBackboneCommand.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
+	$(FE)/material/uniaxial/backbone/TclModelBuilderBackboneCommand.o \
+	$(FE)/material/uniaxial/stiffness/TclModelBuilderStiffnessDegradationCommand.o \
+	$(FE)/material/uniaxial/strength/TclModelBuilderStrengthDegradationCommand.o \
+	$(FE)/material/uniaxial/unloading/TclModelBuilderUnloadingRuleCommand.o \
 	$(FE)/material/nD/TclModelBuilderNDMaterialCommand.o \
 	$(FE)/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.o \
 	$(FE)/material/section/TclModelBuilderSectionCommand.o \
@@ -765,6 +768,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/SPSW02.o \
+	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \
@@ -774,6 +778,23 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
+	$(FE)/material/uniaxial/stiffness/StiffnessDegradation.o \
+	$(FE)/material/uniaxial/stiffness/ConstantStiffnessDegradation.o \
+	$(FE)/material/uniaxial/stiffness/DuctilityStiffnessDegradation.o \
+	$(FE)/material/uniaxial/stiffness/EnergyStiffnessDegradation.o \
+	$(FE)/material/uniaxial/stiffness/PincheiraStiffnessDegradation.o \
+	$(FE)/material/uniaxial/strength/StrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/ConstantStrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/DuctilityStrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/EnergyStrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/ACIStrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/PetrangeliStrengthDegradation.o \
+	$(FE)/material/uniaxial/strength/SectionStrengthDegradation.o \
+	$(FE)/material/uniaxial/unloading/UnloadingRule.o \
+	$(FE)/material/uniaxial/unloading/ConstantUnloadingRule.o \
+	$(FE)/material/uniaxial/unloading/TakedaUnloadingRule.o \
+	$(FE)/material/uniaxial/unloading/EnergyUnloadingRule.o \
+	$(FE)/material/uniaxial/unloading/KarsanUnloadingRule.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
