@@ -53,19 +53,21 @@ private:
         VVDouble crdsn;
         VVDouble crdsj;
         VVDouble vn;
+        VVDouble incrv;
         VVDouble dvn;
         VDouble pn;
         VDouble dpn;
         VInt type;
         VInt sid; // structure id, <0:fluid, >0:structure, =0:not in contact
 
-        BNode():tags(),crdsn(),crdsj(), vn(),dvn(),pn(),dpn(),type(){}
+        BNode():tags(),crdsn(),crdsj(), vn(),incrv(), dvn(),pn(),dpn(),type(){}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp, int id=-1) {
             tags.push_back(tag);
             crdsn.push_back(crds);
             crdsj.push_back(crds);
             vn.push_back(v);
+            incrv.push_back(v);
             dvn.push_back(dv);
             pn.push_back(p);
             dpn.push_back(dp);
@@ -77,6 +79,7 @@ private:
             crdsn.clear();
             crdsj.clear();
             vn.clear();
+            incrv.clear();
             dvn.clear();
             pn.clear();
             dpn.clear();
@@ -94,6 +97,7 @@ private:
             crdsn[i] = crds;
             crdsj[i] = crds;
             vn[i] = v;
+            incrv[i] = v;
             dvn[i] = dv;
             pn[i] = p;
             dpn[i] = dp;
@@ -136,6 +140,8 @@ public:
     void setStreamLine(bool flag) {streamline = flag;}
     bool isStreamLine() const {return streamline;}
     void setContactData(const VDouble& data);
+    bool isIncrVel() const { return incrVel;}
+    void setIncrVel(bool ivel) {incrVel = ivel;}
 
     // remesh all
     int remesh(bool init=false);
@@ -191,11 +197,11 @@ public:
     void clearGrid();
 
     // interpolate in a cell
-    static int interpolate(Particle* pt, const VVInt& index,
-                           const VVDouble& vels, const VVDouble& dvns,
-                           const VDouble& pns, const VDouble& dpns,
-                           const VVDouble& crds,
-                           const VInt& fixed, VDouble& pvel);
+    int interpolate(Particle* pt, const VVInt& index,
+                    const VVDouble& vels, const VVDouble& incrvels, const VVDouble& dvns,
+                    const VDouble& pns, const VDouble& dpns,
+                    const VVDouble& crds,
+                    const VInt& fixed, VDouble& pvel);
     static int interpolate(const VVDouble& values, const VDouble& N, VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N, double& newvalue);
     static int solveLine(const VDouble& p1, const VDouble& dir,
@@ -224,6 +230,7 @@ private:
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
     VDouble contactData;
     VInt contactEles, contactNodes;
+    bool incrVel;
 
     static const int contact_tag = -13746;
 };

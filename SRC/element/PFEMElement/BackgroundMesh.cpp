@@ -76,7 +76,7 @@ int OPS_BgMesh()
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
                 "numl? locs? -numsub numsub? -structure sid? ?numnodes? structuralNodes?"
                 "-contact K? thk? mu? beta? Dc?"
-                "-freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
+                " -incrVel? -freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
 
@@ -245,6 +245,8 @@ int OPS_BgMesh()
                 return -1;
             }
             bgmesh.setContactData(data);
+        } else if (strcmp(opt, "-incrVel") == 0) {
+            bgmesh.setIncrVel(true);
         }
     }
 
@@ -273,7 +275,7 @@ BackgroundMesh::BackgroundMesh()
          structuralNodes(),
          freesurface(false), streamline(true),
          kernel(2), pkernel(2), contactData(5),
-         contactEles(), contactNodes()
+         contactEles(), contactNodes(), incrVel(false)
 {
 }
 
@@ -2585,6 +2587,7 @@ BackgroundMesh::moveParticles()
                 const Vector& vel = nd->getTrialVel();
                 const Vector& accel = nd->getTrialAccel();
                 for (int j=0; j<ndm; ++j) {
+                    bnode.incrv[i][j] = vel(j) - bnode.vn[i][j];
                     bnode.vn[i][j] = vel(j);
                     bnode.dvn[i][j] = accel(j);
                 }
@@ -2651,7 +2654,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
     VVInt indices;
     VVDouble crds;
     VInt fixed;
-    VVDouble vels, dvns;
+    VVDouble vels, dvns, incrvels;
     VDouble pns, dpns;
 
     // convect in a cell
@@ -2683,6 +2686,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
             crds.assign(indices.size(),VDouble());
             fixed.assign(indices.size(),0);
             vels.assign(indices.size(),VDouble());
+            incrvels.assign(indices.size(),VDouble());
             dvns.assign(indices.size(),VDouble());
             pns.assign(indices.size(), 0.0);
             dpns.assign(indices.size(), 0.0);
@@ -2724,6 +2728,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
                     return -1;
                 }
                 vels[i] = bnode.vn[0];
+                incrvels[i] = bnode.incrv[0];
                 dvns[i] = bnode.dvn[0];
                 pns[i] = bnode.pn[0];
                 dpns[i] = bnode.dpn[0];
@@ -2732,7 +2737,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 
         // get particle velocity
         VDouble pvel;
-        if (interpolate(pt,indices,vels,dvns,pns,dpns,crds,fixed,pvel) < 0) {
+        if (interpolate(pt,indices,vels,incrvels,dvns,pns,dpns,crds,fixed,pvel) < 0) {
             opserr << "WARNING: failed to interpolate particle velocity";
             opserr << "-- BgMesh::convectParticle\n";
             return -1;
@@ -2822,7 +2827,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 
 int
 BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
-                            const VVDouble& vels, const VVDouble& dvns,
+                            const VVDouble& vels, const VVDouble& incrvels, const VVDouble& dvns,
                             const VDouble& pns, const VDouble& dpns,
                             const VVDouble& crds,
                             const VInt& fixed, VDouble& pvel)
@@ -2833,6 +2838,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     if (ndm == 2) {
         if (index.size() != 4) return 0;
         if (vels.size() != 4) return 0;
+        if (incrvels.size() != 4) return 0;
         if (pns.size() != 4) return 0;
         if (dpns.size() != 4) return 0;
         if (crds.size() != 4) return 0;
@@ -2840,6 +2846,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     } else if (ndm == 3) {
         if (index.size() != 8) return 0;
         if (vels.size() != 8) return 0;
+        if (incrvels.size() != 8) return 0;
         if (pns.size() != 8) return 0;
         if (dpns.size() != 8) return 0;
         if (crds.size() != 8) return 0;
@@ -2868,7 +2875,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
 
     // average velocity
     pvel.resize(ndm, 0.0);
-    VDouble pdvn(ndm);
+    VDouble pdvn(ndm), incrpvel(ndm);
     double ppre=0.0, pdp=0.0;
     double Nvsum = 0.0, Npsum = 0.0;
     for (int j=0; j<(int)vels.size(); ++j) {
@@ -2880,6 +2887,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (fixed[j] == 0) {
             for (int k=0; k<ndm; ++k) {
                 pvel[k] += N[j]*vels[j][k];
+                incrpvel[k] += N[j]*incrvels[j][k];
                 if (pt->isUpdated() == false) {
                     pdvn[k] += N[j]*dvns[j][k];
                 }
@@ -2910,7 +2918,11 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     }
 
     if (pt->isUpdated() == false) {
-        pt->setVel(pvel);
+        if (incrVel) {
+            pt->incrVel(incrpvel);
+        } else {
+            pt->setVel(pvel);
+        }
         pt->setAccel(pdvn);
         pt->setPressure(ppre);
         pt->setPdot(pdp);
