@@ -30,8 +30,8 @@
 
 class PythonStream : public StandardStream {
 public:
-    PythonStream(int indentSize = 2, bool echo = false)
-            : StandardStream(indentSize, echo), error(0), msg() {}
+    PythonStream(int indentSize = 2, bool echo = true, bool standard_echo = false)
+            : StandardStream(indentSize, standard_echo), error(0), msg(), echoApplication(echo) {}
 
     ~PythonStream() {}
 
@@ -40,83 +40,84 @@ public:
     }
 
     OPS_Stream &operator<<(char c) {
-        err_out(c);
-        return this->StandardStream::operator<<(c);
+        if (echoApplication) err_out(c);
+        return StandardStream::operator<<(c);
     }
 
     OPS_Stream &operator<<(unsigned char c) {
-        err_out(c);
-        return this->StandardStream::operator<<(c);
+        if (echoApplication) err_out(c);
+        return StandardStream::operator<<(c);
     }
 
     OPS_Stream &operator<<(signed char c) {
-        err_out(c);
-        return this->StandardStream::operator<<(c);
+        if (echoApplication) err_out(c);
+        return StandardStream::operator<<(c);
     }
 
     OPS_Stream &operator<<(const char *s) {
-        err_out(s);
-        return this->StandardStream::operator<<(s);
+        if (echoApplication) err_out(s);
+        return StandardStream::operator<<(s);
     }
 
     OPS_Stream &operator<<(const unsigned char *s) {
-        err_out(s);
-        return this->StandardStream::operator<<(s);
+        if (echoApplication) err_out(s);
+        return StandardStream::operator<<(s);
     }
 
     OPS_Stream &operator<<(const signed char *s) {
-        err_out(s);
-        return this->StandardStream::operator<<(s);
+        if (echoApplication) err_out(s);
+        return StandardStream::operator<<(s);
     }
 
     OPS_Stream &operator<<(int n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(unsigned int n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(long n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(unsigned long n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(short n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(unsigned short n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(bool b) {
-        err_out(b);
-        return this->StandardStream::operator<<(b);
+        if (echoApplication) err_out(b);
+        return StandardStream::operator<<(b);
     }
 
     OPS_Stream &operator<<(double n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(float n) {
-        err_out(n);
-        return this->StandardStream::operator<<(n);
+        if (echoApplication) err_out(n);
+        return StandardStream::operator<<(n);
     }
 
     OPS_Stream &operator<<(const void *p) {
         if (p != 0) {
-            return this->StandardStream::operator<<(p);
+            if (echoApplication) err_out(p);
+            return StandardStream::operator<<(p);
         }
         if (msg.empty()) {
             msg = "See stderr output";
@@ -138,6 +139,7 @@ private:
 
     PyObject *error;
     std::string msg;
+    bool echoApplication;
 };
 
 #endif
