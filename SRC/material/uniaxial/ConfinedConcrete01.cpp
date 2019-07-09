@@ -96,7 +96,12 @@ concreteType: 0-without silica fume
 
 */
 
-
+ConfinedConcrete01::ConfinedConcrete01()
+        :UniaxialMaterial(0, MAT_TAG_ConfinedConcrete01),
+         CminStrain(0.0), CendStrain(0.0),
+         Cstrain(0.0), Cstress(0.0)
+{
+}
 
 
 ConfinedConcrete01::ConfinedConcrete01(int tag, std::vector<double> *eps, std::vector<double> *sigmac) 
