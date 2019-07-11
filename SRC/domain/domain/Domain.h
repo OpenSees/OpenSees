@@ -231,6 +231,7 @@ class Domain
     virtual int setMass(const Matrix &mass, int nodeTag);
 
     virtual int calculateNodalReactions(int flag);
+	Recorder* getRecorder(int tag);	//by SAJalali
 
   protected:    
 

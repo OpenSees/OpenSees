@@ -20,7 +20,7 @@
 
 // Written: Long Chen, Pedro Arduino
 //          Nov 2016, University of Washington
-//          Modified Sep 2018
+//          Modified Jan 2019
 
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
@@ -910,6 +910,8 @@ PM4Sand::initialize()
 	mSig(1) = m_P_atm;
 	mSig(2) = 0.0;
 
+	mzcum = 0.0;
+	mzpeak = m_z_max / 100000.0;
 	GetElasticModuli(mSig, mK, mG);
 	mCe = mCep = mCep_Consistent = GetStiffness(mK, mG);
 
@@ -918,7 +920,8 @@ PM4Sand::initialize()
 
 int
 PM4Sand::setTrialStrain(const Vector &strain_from_element) {
-	mEpsilon = -1.0 * strain_from_element;   // -1.0 is for geotechnical sign convention
+	// mEpsilon = -1.0 * strain_from_element;   // -1.0 is for geotechnical sign convention
+	mEpsilon = strain_from_element; mEpsilon *= (-1.0);
 	integrate();
 	return 0;
 }
@@ -1012,19 +1015,22 @@ PM4Sand::getInitialTangent() {
 /*************************************************************/
 const Vector &
 PM4Sand::getStress() {
-	mSigma_r = -1.0 * (mSigma + mSigma_b);
+	// mSigma_r = -1.0 * (mSigma + mSigma_b);
+	mSigma_r = mSigma; mSigma_r += mSigma_b; mSigma_r *= (-1.0);
 	return  mSigma_r;  // -1.0 is for geotechnical sign convention
 }
 /*************************************************************/
 const Vector &
 PM4Sand::getStrain() {
-	mEpsilon_r = -1.0 * mEpsilon;   // -1.0 is for geotechnical sign convention
+	// mEpsilon_r = -1.0 * mEpsilon;   // -1.0 is for geotechnical sign convention
+	mEpsilon_r = mEpsilon; mEpsilon_r *= (-1.0);
 	return mEpsilon_r;
 }
 /*************************************************************/
 const Vector &
 PM4Sand::getElasticStrain() {
-	mEpsilonE_r = -1.0 * mEpsilonE;   // -1.0 is for geotechnical sign convention
+	// mEpsilonE_r = -1.0 * mEpsilonE;   // -1.0 is for geotechnical sign convention
+	mEpsilonE_r = mEpsilon; mEpsilonE_r *= (-1.0);
 	return mEpsilonE_r;
 }
 // -------------------------------------------------------------------------------------------------------
@@ -1258,65 +1264,88 @@ void PM4Sand::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
 	double CurVoidRatio, CurDr, Cka, h, p, dVolStrain, D, AlphaAlphaBDotN;
-	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3);
+	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3), dStrain(3);
 	Vector dSigma(3), dAlpha(3), dFabric(3);
 
+	this->GetElasticModuli(NextStress, K, G, mMcur, mzcum);
 	CurVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
 	CurDr = (m_emax - CurVoidRatio) / (m_emax - m_emin);
 	p = 0.5 * GetTrace(CurStress);
 	p = p < m_Pmin ? m_Pmin : p;
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-	NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+	dStrain = NextStrain; dStrain -= CurStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
 	// using NextStress instead of CurStress to get correct n
 	GetStateDependent(NextStress, CurAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
 		, mzpeak, mpzp, mMcur, CurDr, n, D, R, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
-	dVolStrain = GetTrace(NextStrain - CurStrain);
-	dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
-	r = GetDevPart(CurStress) / p;
-	double temp4 = mKp + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
-	if (temp4 < 0.0) {
-		mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
-		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
-		h = 1.5 * mKp / (p * AlphaAlphaBDotN);
-	}
+	// dVolStrain = GetTrace(NextStrain - CurStrain);
+	dVolStrain = GetTrace(dStrain);
+	// dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
+	dDevStrain = mI1;
+	dDevStrain *= (-1.0 * dVolStrain / 3.0);
+	dDevStrain += dStrain;
+	// r = GetDevPart(CurStress) / p;
+	r = GetDevPart(NextStress);  r /= p;
+	double temp4 = mKp + 2 * G - K * D * DoubleDot2_2_Contr(n, r);
+	// if (temp4 < 0.0) {
+	// 	mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
+	// 	temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+	// 	h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+	// }
 	if (fabs(temp4) < small) {
 		// Neutral loading
 		dSigma.Zero();
 		dAlpha.Zero();
 		dFabric.Zero();
-		dPStrain = dDevStrain + dVolStrain * mI1;
+		// dPStrain = dDevStrain + dVolStrain * mI1;
+		dPStrain = dStrain;
 	}
 	else {
-		NextL = (2 * mG * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * mK * dVolStrain) / temp4;
+		NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
 		mDGamma = NextL;
 		if (NextL < 0) {
 			if (debugFlag) {
 				opserr << "NextL is smaller than 0\n";
 				opserr << "NextL = " << NextL << endln;
 			}
-			dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-			// dAlpha = GetDevPart(NextStress + dSigma) / (0.5 * GetTrace(NextStress + dSigma))
-			// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+			dSigma = 2 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1;
 			dAlpha.Zero();
 			dFabric.Zero();
 			dPStrain.Zero();
 		}
 		else {
-			dSigma = 2.0*mG*mIIcon*dDevStrain + mK*dVolStrain*mI1 - Macauley(NextL)*
-				(2.0 * mG * n + mK * D * mI1);
+			// dSigma = 2.0*mG*mIIcon*dDevStrain + mK*dVolStrain*mI1 - Macauley(NextL)*
+			// 	(2.0 * mG * n + mK * D * mI1);
+			Vector tmp0(n), tmp1(mI1), tmp2(mI1);
+			tmp0 *= (2.0 * G);
+			tmp1 *= (K * D); tmp1 += tmp0; tmp1 *= (-Macauley(NextL));
+			tmp2 *= (K * dVolStrain);
+			dSigma = ToContraviant(dDevStrain); dSigma *= (2.0 * G);
+			dSigma += tmp2; dSigma += tmp1;
 			// update fabric
 			if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
-				dFabric = m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
+				// dFabric = m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
+				dFabric = n;
+				dFabric *= m_z_max;
+				dFabric += CurFabric;
+				dFabric *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 			}
 			// update alpha
-			dAlpha = two3 * NextL * h * b;
-			dPStrain = NextL * mIIco * R;
+			// dAlpha = two3 * NextL * h * b;
+			// dPStrain = NextL * mIIco * R;
+			dPStrain = ToCovariant(R);  dPStrain *= NextL;
+			dAlpha = b; dAlpha *= (two3 * NextL * h);
 		}
 	}
-	NextFabric = CurFabric + dFabric;
-	NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain) - dPStrain;
-	NextStress = CurStress + dSigma;
-	NextAlpha = CurAlpha + dAlpha;
+	// NextFabric = CurFabric + dFabric;
+	NextFabric = CurFabric; NextFabric += dFabric;
+	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain) - dPStrain;
+	NextElasticStrain -= dPStrain;
+	// NextStress = CurStress + dSigma;
+	NextStress = CurStress;  NextStress += dSigma;
+	// NextAlpha = CurAlpha + dAlpha;
+	NextAlpha = CurAlpha;  NextAlpha += dAlpha;
 	Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
 	// Stress_Correction(NextStress, NextAlpha, dAlpha, m_m, R, n, r);
 	return;
@@ -1344,7 +1373,7 @@ void PM4Sand::MaxStrainInc(const Vector& CurStress, const Vector& CurStrain, con
 		exp_int = &PM4Sand::ModifiedEuler;
 		break;
 	default:
-		exp_int = &PM4Sand::ForwardEuler;
+		exp_int = &PM4Sand::ModifiedEuler;
 		break;
 	}
 	Vector StrainInc(3); StrainInc = NextStrain - CurStrain;
@@ -1395,9 +1424,9 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
 	double NextDr, dVolStrain, p, Cka, temp4, curStepError, q, stressNorm, h, D, AlphaAlphaBDotN;
-	Vector n(3), R1(3), R2(3), alphaD(3), dDevStrain(3), r(3), b(3), tmp0(3), tmp1(3), tmp2(3);
+	Vector n(3), R1(3), R2(3), alphaD(3), dDevStrain(3), r(3), b(3), tmp0(3), tmp1(3), tmp2(3), alphaD_NextAlpha(3);
 	Vector nStress(3), nAlpha(3), nFabric(3);
-	Vector dSigma1(3), dSigma2(3), dAlpha1(3), dAlpha2(3), dAlpha(3), dFabric1(3), dFabric2(3), dPStrain1(3), dPStrain2(3);
+	Vector dSigma1(3), dSigma2(3), dAlpha1(3), dAlpha2(3), dFabric1(3), dFabric2(3), dPStrain1(3), dPStrain2(3);
 	double T = 0.0, dT = 1.0, dT_min = 1e-4, TolE = 1e-5;
 
 	// NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
@@ -1436,14 +1465,14 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			, mzpeak, mpzp, mMcur, NextDr, n, D, R1, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
 		// r += GetDevPart(NextStress) / p;
 		r = GetDevPart(NextStress);  r /= p;
-
 		temp4 = mKp + 2 * G - K * D *DoubleDot2_2_Contr(n, r);
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma1.Zero();
 			dAlpha1.Zero();
 			dFabric1.Zero();
-			dPStrain1 = dDevStrain + dVolStrain * mI1;
+			// dPStrain1 = dDevStrain + dVolStrain * mI1;
+			dPStrain1 = tmp0;
 		}
 		else {
 			NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
@@ -1456,6 +1485,8 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dAlpha1.Zero();
 				dFabric1.Zero();
 				dPStrain1.Zero();
+				// dSigma1.Zero();
+				// dPStrain1 = tmp0;
 			}
 			else {
 				// dSigma1 = 2.0 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1 - Macauley(NextL) *
@@ -1467,12 +1498,14 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma1 += tmp2; dSigma1 += tmp1;
 
 				// update fabric
-				if (DoubleDot2_2_Contr(alphaD - NextAlpha, n) < 0.0) {
+				// if (DoubleDot2_2_Contr(alphaD - NextAlpha, n) < 0.0) {
+				alphaD_NextAlpha = alphaD; alphaD_NextAlpha -= NextAlpha;
+				if (DoubleDot2_2_Contr(alphaD_NextAlpha, n) < 0.0) {
 					// Equation 57
-					// dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
+					// dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + NextFabric);
 					dFabric1 = n;
 					dFabric1 *= m_z_max;
-					dFabric1 += CurFabric;
+					dFabric1 += NextFabric;
 					dFabric1 *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 				}
 				// dPStrain1 = NextL * ToCovariant(R1);
@@ -1513,7 +1546,8 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			dSigma2.Zero();
 			dAlpha2.Zero();
 			dFabric2.Zero();
-			dPStrain2 = dDevStrain + dVolStrain * mI1;
+			// dPStrain2 = dDevStrain + dVolStrain * mI1;
+			dPStrain2 = dPStrain1;
 		}
 		else {
 			NextL = (2 * G * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * K * dVolStrain) / temp4;
@@ -1528,6 +1562,8 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dAlpha2.Zero();
 				dFabric2.Zero();
 				dPStrain2.Zero();
+				// dSigma2.Zero();
+				// dPStrain2 = dPStrain1;
 			}
 			else {
 				// dSigma2 = 2.0 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1 - Macauley(NextL)*
@@ -1537,14 +1573,15 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				tmp2 = mI1; tmp2 *= (K * dVolStrain);
 				dSigma2 = ToContraviant(dDevStrain); dSigma2 *= (2.0 * G);
 				dSigma2 += tmp2; dSigma2 += tmp1;
-
 				// update fabric
-				if (DoubleDot2_2_Contr(alphaD - (NextAlpha + dAlpha1), n) < 0.0) {
+				// if (DoubleDot2_2_Contr(alphaD - (NextAlpha + dAlpha1), n) < 0.0) {
+				alphaD_NextAlpha = alphaD; alphaD_NextAlpha -= NextAlpha; alphaD_NextAlpha -= dAlpha1;
+				if (DoubleDot2_2_Contr(alphaD_NextAlpha, n) < 0.0) {
 					// Equation 57
-					//dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric + dFabric1);
+					//dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + NextFabric + dFabric1);
 					dFabric2 = n;
 					dFabric2 *= m_z_max;
-					dFabric2 += CurFabric;
+					dFabric2 += NextFabric;
 					dFabric2 += dFabric1;
 					dFabric2 *= (-1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL) * MacauleyIndex(-D));
 				}
@@ -1601,7 +1638,9 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			q = fmax(0.8 * sqrt(TolE / curStepError), 0.1);
 			if (dT == dT_min) {
 				// opserr << "reached dT_min\n";
-				NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
+				tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+				NextElasticStrain -= tmp0;
 				NextStress = nStress;
 				NextAlpha = nAlpha;
 				Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
@@ -1612,9 +1651,8 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		}
 		else {
 			// NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
-			NextElasticStrain = dPStrain1;
-			NextElasticStrain += dPStrain2;
-			NextElasticStrain *= 0.5;
+			tmp0 = dPStrain1; tmp0 += dPStrain2; tmp0 *= 0.5;
+			NextElasticStrain -= tmp0;
 			NextStress = nStress;
 			NextAlpha = nAlpha;
 			NextFabric = nFabric;
@@ -2036,7 +2074,7 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 				// dfrOverdSigma = n - 0.5 * DoubleDot2_2_Contr(n, r) * mI1;
 				dfrOverdSigma.Zero(); dfrOverdSigma += mI1;
 				dfrOverdSigma *= (-0.5 * DoubleDot2_2_Contr(n, r));	dfrOverdSigma += n;
-				dfrOverdAlpha = -p * n;
+				// dfrOverdAlpha = -p * n;
 				dfrOverdAlpha = n; dfrOverdAlpha *= (-p);
 				lambda = fr / (DoubleDot2_2_Contr(dfrOverdSigma, dSigmaP) - DoubleDot2_2_Contr(dfrOverdAlpha, aBar));
 				// if (fabs(GetF(nStress - lambda * dSigmaP, nAlpha + lambda * aBar)) < fabs(fr))
@@ -2073,8 +2111,7 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 				opserr << "nStress = " << nStress;
 				opserr << "NextAlpha = " << NextAlpha;
 			}
-
-			// dSigma = NextStress - mSigma;
+			dSigma = NextStress - mSigma;
 			dSigma.Zero(); dSigma += NextStress; dSigma -= mSigma;
 			double alpha_up = 1.0;
 			double alpha_mid = 0.5;
@@ -2091,7 +2128,6 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 					alpha_up = alpha_mid;
 					alpha_mid = 0.5 * (alpha_down + alpha_mid);
 				}
-
 				// fr_old = GetF(mSigma + alpha_mid * dSigma, NextAlpha);
 				tmp0 = dSigma; tmp0 *= alpha_mid; tmp0 += mSigma;
 				fr_old = GetF(tmp0, NextAlpha);
@@ -2168,7 +2204,7 @@ PM4Sand::GetF(const Vector& nStress, const Vector& nAlpha)
 	return f;
 }
 /*************************************************************/
-// GetPSI() ---------------------------------------------------
+// GetKSI() ---------------------------------------------------
 double
 PM4Sand::GetKsi(const double& dr, const double& p)
 {
@@ -2295,7 +2331,9 @@ PM4Sand::GetNormalToYield(const Vector &stress, const Vector &alpha)
 	Vector n(3);
 	double p = 0.5 * GetTrace(stress);
 	if (fabs(p) < small) {
-		n.Zero();
+		// n.Zero();
+		// change loading direction to simple shear when p is small
+		n(2) = root12;
 	}
 	else {
 		n = alpha; n *= (-p);
@@ -2304,7 +2342,6 @@ PM4Sand::GetNormalToYield(const Vector &stress, const Vector &alpha)
 		normN = (normN < small) ? 1.0 : normN;
 		n /= normN;
 	}
-	
 	return n;
 }
 /*************************************************************/
@@ -2329,7 +2366,6 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	if (p <= m_Pmin) p = m_Pmin;
 	double ksi = GetKsi(CurDr, p);
 	n = GetNormalToYield(stress, alpha);
-
 	if (ksi <= 0.0) {
 		// dense of critical
 		mMb = m_Mc * exp(-1.0 * m_nb * ksi);
@@ -2370,7 +2406,11 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	// updataed K_p formulation following PM4Sand V3.1. mAlpha_in is the apparent back-stress ratio. 
 	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
 	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
-	if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
+	if (fabs(AlphaAlphaInDotN) < small) {
+		// adding this condition to avoid division by zero error
+		h = 1.0e10;
+	}
+	else if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
 		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
 		h = h * (AlphaAlphaInDotN + Cg1) / (AlphaAlphaInTrueDotN + Cg1);
@@ -2394,7 +2434,7 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		double Cpzp, Cpmin, Czin2, temp, Ad, Drot;
 		Cpzp = (pzp == 0.0) ? 1.0 : 1.0 / (1.0 + pow((2.5*p / pzp), 5.0));
 		Cpmin = 1.0 / (1.0 + pow((m_Pmin2 / p), 2));
-		Czin2 = (1 + Czin1*(zcum - zpeak) / 3.0 / m_z_max) / (1 + 3.0 * Czin1*(zcum - zpeak) / 3 / m_z_max);
+		Czin2 = (1 + Czin1*(zcum - zpeak) / 3.0 / m_z_max) / (1 + 3.0 * Czin1*(zcum - zpeak) / 3.0 / m_z_max);
 		// double temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12 / zpeak), 3);
 		temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(minusFabric, n)) * root12 / zpeak), 3);
 		Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max)* temp * pow(m_ce, 2)*Cpzp*Cpmin*Czin1 + 1.0);

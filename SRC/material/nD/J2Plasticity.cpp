@@ -94,7 +94,7 @@ void* OPS_J2Plasticity()
 	return 0;
     }
 
-    NDMaterial* mat = new J2Plasticity(tag,data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
+    NDMaterial* mat = new J2Plasticity(tag,0,data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
     if (mat == 0) {
 	opserr << "WARNING: failed to create J2Plasticity material\n";
 	return 0;

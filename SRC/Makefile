@@ -354,6 +354,7 @@ ZHY_LIBS = $(FE)/material/nD/soil/FluidSolidPorousMaterial.o \
 	$(FE)/material/nD/soil/MultiYieldSurfaceClay.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield02.o \
+	$(FE)/material/nD/soil/PressureDependMultiYield03.o \
 	$(FE)/material/nD/soil/PressureIndependMultiYield.o \
 	$(FE)/material/nD/soil/T2Vector.o \
 	$(FE)/element/UP-ucsd/BrickUP.o \
@@ -506,6 +507,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/feap/fElement.o \
 	$(FE)/element/feap/fElmt02.o \
 	$(FE)/element/dispBeamColumn/AxEqDispBeamColumn2d.o \
+	$(FE)/element/dispBeamColumn/TimoshenkoBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
@@ -761,6 +763,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
+	$(FE)/material/uniaxial/SPSW02.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \
@@ -852,6 +855,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlateRebarMaterialThermal.o \
 	$(FE)/material/nD/BeamFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial2d.o \
+	$(FE)/material/nD/BeamFiberMaterial2dPS.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticityPlaneStrain.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity3D.o \
@@ -948,6 +952,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/integration/SectionIntegration.o \
 	$(FE)/material/section/integration/RCSectionIntegration.o \
 	$(FE)/material/section/integration/RCCircularSectionIntegration.o \
+	$(FE)/material/section/integration/RCTunnelSectionIntegration.o \
 	$(FE)/material/section/integration/WideFlangeSectionIntegration.o \
 	$(FE)/material/section/integration/RCTBeamSectionIntegration.o \
 	$(FE)/material/section/integration/TubeSectionIntegration.o \

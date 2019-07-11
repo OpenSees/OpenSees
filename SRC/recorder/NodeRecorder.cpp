@@ -1273,3 +1273,14 @@ NodeRecorder::initialize(void)
 
   return 0;
 }
+//added by SAJalali
+double NodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= response.Size())
+		return res;
+	res = response(clmnId);
+	return res;
+}

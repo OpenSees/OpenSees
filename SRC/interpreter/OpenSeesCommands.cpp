@@ -839,6 +839,12 @@ OpenSeesCommands::wipe()
     // wipe CyclicModel
     OPS_clearAllCyclicModel();
 
+    if (reliability != 0) {
+      ReliabilityDomain* theReliabilityDomain = reliability->getDomain();
+      if (theReliabilityDomain != 0) {
+	//theReliabilityDomain->clearAll();
+      }
+    }
 }
 
 void
@@ -1720,6 +1726,7 @@ int OPS_resetModel()
     if (theTransientIntegrator != 0) {
 	theTransientIntegrator->revertToStart();
     }
+
     return 0;
 }
 
@@ -2648,7 +2655,7 @@ int OPS_neesUpload()
 	}
     }
 
-    simulationInfo->neesUpload(userName, userPasswd, projID, expID);
+    //simulationInfo->neesUpload(userName, userPasswd, projID, expID);
 
     return 0;
 }

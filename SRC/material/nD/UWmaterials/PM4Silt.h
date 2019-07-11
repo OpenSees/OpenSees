@@ -18,8 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Written: Long Chen, Pedro Arduino
-//          Sep 2018, University of Washington
+// Author: Long Chen, Pedro Arduino
+// Computational Geomechanics Group
+// University of Washington
+// Date:      Sep 2018
+// Last Modified: May 2019
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications

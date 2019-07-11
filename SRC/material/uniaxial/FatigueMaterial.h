@@ -86,9 +86,13 @@ class FatigueMaterial : public UniaxialMaterial
   int getResponse (int responseID, Information &matInformation);    
   bool hasFailed(void);  
 
- protected:
+  //by SAJalali
+  virtual double getEnergy(void) { return energy; }
+protected:
   
  private:
+	 double energy, CStress; //SAJalali
+
   UniaxialMaterial *theMaterial;
   
   double DI; //Damage index

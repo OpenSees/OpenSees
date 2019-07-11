@@ -45,6 +45,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ReliabilityDomain.h>
 #include <Domain.h>
 
+#include <ProbabilityTransformation.h>
+
 class OpenSeesReliabilityCommands
 {
 public:
@@ -54,10 +56,14 @@ public:
 
     ReliabilityDomain* getDomain();
 
+    void setProbabilityTransformation(ProbabilityTransformation *transform);
+    ProbabilityTransformation* getProbabilityTransformation() {return theProbabilityTransformation;}
     
 private:
 
     ReliabilityDomain* theDomain;
+
+    ProbabilityTransformation *theProbabilityTransformation;
 };
 
 #endif

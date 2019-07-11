@@ -134,7 +134,8 @@ Steel02::Steel02(int tag,
   Fy(_Fy), E0(_E0), b(_b), R0(_R0), cR1(_cR1), cR2(_cR2), a1(_a1), a2(_a2), a3(_a3), a4(_a4), 
   sigini(sigInit)
 {
-  konP = 0;
+	EnergyP = 0;	//by SAJalali
+	konP = 0;
   kon = 0;
   eP = E0;
   epsP = 0.0;
@@ -163,7 +164,8 @@ Steel02::Steel02(int tag,
   UniaxialMaterial(tag, MAT_TAG_Steel02),
   Fy(_Fy), E0(_E0), b(_b), R0(_R0), cR1(_cR1), cR2(_cR2), sigini(0.0)
 {
-  konP = 0;
+	EnergyP = 0;	//by SAJalali
+	konP = 0;
 
   // Default values for no isotropic hardening
   a1 = 0.0;
@@ -191,7 +193,8 @@ Steel02::Steel02(int tag, double _Fy, double _E0, double _b):
   UniaxialMaterial(tag, MAT_TAG_Steel02),
   Fy(_Fy), E0(_E0), b(_b), sigini(0.0)
 {
-  konP = 0;
+	EnergyP = 0;	//by SAJalali
+	konP = 0;
 
   // Default values for elastic to hardening transitions
   R0 = 15.0;
@@ -223,7 +226,8 @@ Steel02::Steel02(int tag, double _Fy, double _E0, double _b):
 Steel02::Steel02(void):
   UniaxialMaterial(0, MAT_TAG_Steel02)
 {
-  konP = 0;
+	EnergyP = 0;	//by SAJalali
+	konP = 0;
 }
 
 Steel02::~Steel02(void)
@@ -393,7 +397,10 @@ Steel02::commitState(void)
   epssrP = epsr;
   sigsrP = sigr;
   konP = kon;
-  
+
+  //by SAJalali
+  EnergyP += 0.5*(sig + sigP)*(eps - epsP);
+
   eP = e;
   sigP = sig;
   epsP = eps;
@@ -422,7 +429,8 @@ Steel02::revertToLastCommit(void)
 int 
 Steel02::revertToStart(void)
 {
-  eP = E0;
+	EnergyP = 0;	//by SAJalali
+	eP = E0;
   epsP = 0.0;
   sigP = 0.0;
   sig = 0.0;

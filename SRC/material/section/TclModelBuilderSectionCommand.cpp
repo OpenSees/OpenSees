@@ -33,6 +33,9 @@
 
 #include <TclModelBuilder.h>
 
+#include <tcl.h>
+#include <elementAPI.h>
+
 #include <ElasticMaterial.h>
 
 #include <ElasticSection2d.h>
@@ -82,6 +85,7 @@
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
 #include <RCCircularSectionIntegration.h>
+#include <RCTunnelSectionIntegration.h>
 //#include <RCTBeamSectionIntegrationUniMat.h>
 #include <TubeSectionIntegration.h>
 
@@ -93,6 +97,15 @@ using std::ifstream;
 
 #include <iostream>
 using std::ios;
+
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -129,6 +142,15 @@ int
 TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int argc,
 			       TCL_Char **argv, TclModelBuilder *theTclBuilder)
 {
+  // Make sure there is a minimum number of arguments
+    if (argc < 3) {
+	opserr << "WARNING insufficient number of section arguments\n";
+	opserr << "Want: section type? tag? <specific material args>" << endln;
+	return TCL_ERROR;
+    }
+
+    //OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
     // Pointer to a section that will be added to the model builder
     SectionForceDeformation *theSection = 0;
 
@@ -914,6 +936,125 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
         UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
 
         rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
+
+        // Parsing was successful, allocate the section
+        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+
+        delete [] theMats;
+    }
+
+    else if (strcmp(argv[1],"RCTunnelSection") == 0) {
+        if (argc < 15) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: section RCTunnelSection tag? concreteTag? steelTag? d? h? coverinner? coverouter? Asinner? Asouter? Nrings? Nwedges? Nbarsinner? Nbarsouter?" << endln;
+            return TCL_ERROR;
+        }
+        
+        int tag, concreteTag, steelTag;
+        double d, h, coverinner, coverouter, Asinner, Asouter;
+        int nring, nwedge, nbarinner, nbarouter;
+
+        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+            opserr << "WARNING invalid section RCTunnelSection tag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetInt(interp, argv[3], &concreteTag) != TCL_OK) {
+            opserr << "WARNING invalid section RCTunnelSection concreteTag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetInt(interp, argv[4], &steelTag) != TCL_OK) {
+            opserr << "WARNING invalid section RCTunnelSection steelTag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetDouble (interp, argv[5], &d) != TCL_OK) {
+            opserr << "WARNING invalid d" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;        
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetDouble (interp, argv[6], &h) != TCL_OK) {
+            opserr << "WARNING invalid h" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;        
+            return TCL_ERROR;
+        }       
+
+	if (Tcl_GetDouble (interp, argv[7], &coverinner) != TCL_OK) {
+            opserr << "WARNING invalid coverinner" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetDouble (interp, argv[8], &coverouter) != TCL_OK) {
+            opserr << "WARNING invalid coverouter" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+	if (Tcl_GetDouble (interp, argv[9], &Asinner) != TCL_OK) {
+            opserr << "WARNING invalid Asinner" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetDouble (interp, argv[10], &Asouter) != TCL_OK) {
+            opserr << "WARNING invalid Asouter" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[11], &nring) != TCL_OK) {
+            opserr << "WARNING invalid Nring" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }
+
+        if (Tcl_GetInt (interp, argv[12], &nwedge) != TCL_OK) {
+            opserr << "WARNING invalid nwedge" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[13], &nbarinner) != TCL_OK) {
+            opserr << "WARNING invalid nbarinner" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[14], &nbarouter) != TCL_OK) {
+            opserr << "WARNING invalid nbarouter" << endln;
+            opserr << "RCTunnelSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        UniaxialMaterial *theConcrete = OPS_getUniaxialMaterial(concreteTag);
+        
+        if (theConcrete == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << concreteTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+
+        if (theSteel == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << steelTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        RCTunnelSectionIntegration rcsect(d, h, Asinner, Asouter, coverinner, coverouter,
+					  nring, nwedge, nbarinner, nbarouter);
+
+        int numFibers = rcsect.getNumFibers();
+
+        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+        rcsect.arrangeFibers(theMats, theConcrete, theSteel);
 
         // Parsing was successful, allocate the section
         theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);

@@ -138,10 +138,8 @@ private:
 	std::size_t pos = msg.find('\n');
 	while (pos != std::string::npos) {
 	    std::string sub = msg.substr(0, pos+1);
-	    if (sub.empty()==false && sub!="\n") {
-		PyErr_SetString(message, sub.c_str());
-		PyErr_Print();
-	    }
+	    PyErr_SetString(message, sub.c_str());
+	    PyErr_Print();
 
 	    msg = msg.substr(pos+1);
 	    pos = msg.find('\n');

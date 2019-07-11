@@ -112,6 +112,9 @@ OBJS       = UniaxialMaterial.o \
 	StainlessECThermal.o \
 	SteelECThermal.o \
 	DamperMaterial.o \
+	MaterialState.o \
+	OOHystereticMaterial.o \
+	SPSW02.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
@@ -120,6 +123,9 @@ all:         $(OBJS)
 	@$(CD) $(FE)/material/uniaxial/snap; $(MAKE);
 	@$(CD) $(FE)/material/uniaxial/PY; $(MAKE);
 	@$(CD) $(FE)/material/uniaxial/backbone; $(MAKE);
+	@$(CD) $(FE)/material/uniaxial/stiffness; $(MAKE);
+	@$(CD) $(FE)/material/uniaxial/strength; $(MAKE);
+	@$(CD) $(FE)/material/uniaxial/unloading; $(MAKE);
 	@$(CD) $(FE)/material/uniaxial/limitState; $(MAKE);
 
 # Miscellaneous
@@ -136,6 +142,9 @@ spotless: clean
 	@$(CD) $(FE)/material/uniaxial/snap; $(MAKE) wipe;
 	@$(CD) $(FE)/material/uniaxial/PY; $(MAKE) wipe;
 	@$(CD) $(FE)/material/uniaxial/backbone; $(MAKE) wipe;
+	@$(CD) $(FE)/material/uniaxial/stiffness; $(MAKE) wipe;
+	@$(CD) $(FE)/material/uniaxial/strength; $(MAKE) wipe;
+	@$(CD) $(FE)/material/uniaxial/unloading; $(MAKE) wipe;
 	@$(CD) $(FE)/material/uniaxial/limitState; $(MAKE) wipe;
 
 wipe: spotless
