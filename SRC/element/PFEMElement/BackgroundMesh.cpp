@@ -669,6 +669,41 @@ BackgroundMesh::getNForRect(double x0, double y0, double z0,
     N[7] = (1-xl)*(1+yl)*(1+zl)/8.0;
 }
 
+void
+BackgroundMesh::clearAll() {
+
+    clearBackground();
+    lower.clear();
+    upper.clear();
+    bcells.clear();
+    bnodes.clear();
+    tol = 1e-10;
+    meshtol = 0.1;
+    bsize = -1.0;
+    numave = 1;
+    numsub = 4;
+
+    for (int i=0; i<(int)recorders.size(); ++i) {
+        if (recorders[i] != 0) {
+            delete recorders[i];
+        }
+    }
+    recorders.clear();
+    locs.clear();
+    currentTime = 0.0;
+    theFile.close();
+    structuralNodes.clear();
+    freesurface = false;
+    streamline = true;
+    kernel = 2;
+    pkernel = 2;
+    for (int i = 0; i<(int)contactData.size(); ++i) {
+        contactData[i] = 0.0;
+    }
+    contactEles.clear();
+    incrVel = false;
+}
+
 int
 BackgroundMesh::clearBackground()
 {
@@ -697,24 +732,6 @@ BackgroundMesh::clearGridEles()
         // remove elements
         group->clearEles();
     }
-
-    // remove contact elements
-    Domain* domain = OPS_GetDomain();
-    for (int i = 0; i < (int) contactEles.size(); ++i) {
-        Element* ele = domain->removeElement(contactEles[i]);
-        if (ele != 0) {
-            delete ele;
-        }
-    }
-    contactEles.clear();
-
-    for (int i = 0; i < (int) contactNodes.size(); ++i) {
-        Node* node = domain->removeNode(contactNodes[i]);
-        if (node != 0) {
-            delete node;
-        }
-    }
-    contactNodes.clear();
 
 }
 

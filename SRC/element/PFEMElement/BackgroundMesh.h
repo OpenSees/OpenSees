@@ -192,6 +192,7 @@ public:
 
 
     // clear all
+    void clearAll();
     int clearBackground();
     void clearGridEles();
     void clearGrid();
@@ -235,5 +236,6 @@ private:
     static const int contact_tag = -13746;
 };
 
+BackgroundMesh& OPS_getBgMesh();
 
 #endif

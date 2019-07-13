@@ -101,6 +101,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MumpsSolver.h>
 #include <MumpsSOE.h>
 #endif
+#include <BackgroundMesh.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -868,6 +869,7 @@ OpenSeesCommands::wipe()
 
     // wipe all meshes
     OPS_clearAllMesh();
+    OPS_getBgMesh().clearAll();
 
     // time set to zero
     ops_Dt = 0.0;
