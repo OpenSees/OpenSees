@@ -229,7 +229,7 @@ private:
     bool streamline; // use streamline integration for particles
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
     VDouble contactData;
-    VInt contactEles, contactNodes;
+    VInt contactEles;
     bool incrVel;
 
     static const int contact_tag = -13746;

@@ -39,7 +39,8 @@ public:
 
     PFEMContact2D(int tag, int nd1, int nd2, int nd3,
                   double kk, double thk,
-                  double m, double b, double dc);
+                  double m, double b, double dc,
+                  double a, double e, double rho);
 
     ~PFEMContact2D();
 
@@ -131,9 +132,9 @@ private:
 
     ID ntags;
     std::vector<Node *> nodes;
-    double kk, thk, mu, beta, Dc;
+    double kdoverAd, thk, mu, beta, Dc, alpha, E, rho;
     std::vector<int> ndf;
-    double signvt0;
+    double signvt0, F0;
     static Matrix K;
     static Vector P;
 };

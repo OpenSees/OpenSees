@@ -40,14 +40,14 @@ void *OPS_PFEMContact2D(const ID &info) {
 
     // data
     int idata[4];
-    double fdata[5];
+    double fdata[8];
 
     // regular element
     if (info.Size() == 0) {
         int numdata = OPS_GetNumRemainingInputArgs();
-        if (numdata < 9) {
+        if (numdata < 12) {
             opserr << "WARNING: insufficient number of arguments tag, nd1, "
-                      "nd2, nd3, K, thk, mu, beta, Dc\n";
+                      "nd2, nd3, kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
             return 0;
         }
 
@@ -62,15 +62,15 @@ void *OPS_PFEMContact2D(const ID &info) {
     // regular element or in a mesh
     if (info.Size() == 0 || info(0) == 1) {
         int numdata = OPS_GetNumRemainingInputArgs();
-        if (numdata < 4) {
-            opserr << "WARNING: insufficient number of arguments K, mu, beta, Dc\n";
+        if (numdata < 8) {
+            opserr << "WARNING: insufficient number of arguments kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
             return 0;
         }
 
-        // k, thk, mu, beta, Dc
-        numdata = 5;
+        // k, thk, mu, beta, Dc, alpha, E, rho
+        numdata = 8;
         if (OPS_GetDoubleInput(&numdata, &fdata[0]) < 0) {
-            opserr << "WARNING: failed to read K, thk, mu, beta, Dc\n";
+            opserr << "WARNING: failed to read kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
             return 0;
         }
     }
@@ -92,6 +92,9 @@ void *OPS_PFEMContact2D(const ID &info) {
         mdata(2) = fdata[2];
         mdata(3) = fdata[3];
         mdata(4) = fdata[4];
+        mdata(5) = fdata[5];
+        mdata(6) = fdata[6];
+        mdata(7) = fdata[7];
         return &meshdata;
 
     } else if (info.Size() > 0 && info(0) == 2) {
@@ -114,26 +117,31 @@ void *OPS_PFEMContact2D(const ID &info) {
         fdata[2] = mdata(2);
         fdata[3] = mdata(3);
         fdata[4] = mdata(4);
+        fdata[5] = mdata(5);
+        fdata[6] = mdata(6);
+        fdata[7] = mdata(7);
     }
 
     return new PFEMContact2D(idata[0], idata[1], idata[2], idata[3],
                              fdata[0], fdata[1], fdata[2], fdata[3],
-                             fdata[4]);
+                             fdata[4], fdata[5], fdata[6], fdata[7]);
 }
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMContact2D::PFEMContact2D()
         : Element(0, ELE_TAG_PFEMContact2D), ntags(3),
-          nodes(3), kk(0.0), mu(0.1), beta(0.3), Dc(0.0),
-          ndf(4), signvt0(0) {
+          nodes(3), kdoverAd(0.0), mu(0.1), beta(0.3), Dc(0.0),
+          alpha(0.5), E(0.0), rho(0.0), ndf(4), signvt0(0), F0(0) {
 }
 
 // for object
 PFEMContact2D::PFEMContact2D(int tag, int nd1, int nd2, int nd3,
-                             double k, double t, double m, double b, double dc)
+                             double k, double t, double m,
+                             double b, double dc, double a,
+                             double e, double r)
         : Element(tag, ELE_TAG_PFEMContact2D), ntags(3),
-          nodes(3), kk(k), thk(t), mu(m), beta(b), Dc(dc),
-          ndf(4), signvt0(0) {
+          nodes(3), kdoverAd(k), thk(t), mu(m), beta(b), Dc(dc),
+          alpha(a), E(e), rho(r), ndf(4), signvt0(0), F0(0) {
     ntags(0) = nd1;
     ntags(1) = nd2;
     ntags(2) = nd3;
@@ -172,15 +180,22 @@ PFEMContact2D::setDomain(Domain *theDomain) {
         ndf[i + 1] = ndf[i] + nodes[i]->getNumberDOF();
     }
 
+    // impact velocityies
     Vector vn, vj;
     getV(vn, signvt0, vj);
+    F0 = (vn(0) + vn(1)) / 2.0 - vn(2);
 
-    // get kk
+    // get kdoverAd
     double A, B, C, dx, dy, L;
     double x1, y1, x2, y2, x3, y3;
     getLine(A, B, C, dx, dy, x1, y1, x2, y2, x3, y3, L);
 
-    kk *= L*thk;
+    kdoverAd *= L * thk;
+    if (F0 > 0) {
+        F0 *= L * thk * sqrt(E * rho);
+    } else {
+        F0 = 0;
+    }
 }
 
 double
@@ -270,7 +285,14 @@ PFEMContact2D::getdD(double A, double B, double x3, double y3,
 double
 PFEMContact2D::getP(double D) {
 
-    if (inContact(D)) return kk * (Dc - D);
+    if (inContact(D)) {
+        double p = alpha * kdoverAd * (Dc - D);
+        if (p < F0) {
+            return p;
+        } else {
+            return F0;
+        }
+    }
     return 0.0;
 
 }
@@ -279,7 +301,14 @@ void
 PFEMContact2D::getdP(const Vector &dD, double D, Vector &dP) {
     dP = dD;
     if (inContact(D)) {
-        dP *= -kk;
+        double p = alpha * kdoverAd * (Dc - D);
+        if (p < F0) {
+            dP *= -kdoverAd * alpha;
+            return;
+        } else {
+            dP.Zero();
+            return;
+        }
     } else {
         dP.Zero();
     }

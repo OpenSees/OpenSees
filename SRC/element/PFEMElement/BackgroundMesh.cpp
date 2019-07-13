@@ -75,7 +75,7 @@ int OPS_BgMesh()
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
                 "numl? locs? -numsub numsub? -structure sid? ?numnodes? structuralNodes?"
-                "-contact K? thk? mu? beta? Dc?"
+                "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
                 " -incrVel? -freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
@@ -234,14 +234,14 @@ int OPS_BgMesh()
         } else if (strcmp(opt, "-no-streamLine") == 0) {
             bgmesh.setStreamLine(false);
         } else if (strcmp(opt, "-contact") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 5) {
-                opserr << "WARNING: need K, thk, mu, beta, Dc\n";
+            if (OPS_GetNumRemainingInputArgs() < 8) {
+                opserr << "WARNING: need kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
                 return -1;
             }
-            num = 5;
+            num = 8;
             VDouble data(num);
             if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
-                opserr << "WARNING: failed to get K, thk, mu, beta, Dc\n";
+                opserr << "WARNING: failed to get kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
                 return -1;
             }
             bgmesh.setContactData(data);
@@ -274,8 +274,8 @@ BackgroundMesh::BackgroundMesh()
          currentTime(0.0), theFile(),
          structuralNodes(),
          freesurface(false), streamline(true),
-         kernel(2), pkernel(2), contactData(5),
-         contactEles(), contactNodes(), incrVel(false)
+         kernel(2), pkernel(2), contactData(8),
+         contactEles(), incrVel(false)
 {
 }
 
@@ -2145,6 +2145,9 @@ BackgroundMesh::gridFSI(ID& freenodes)
     // get particle group tags
     std::map<int,ID> elenodes;
     int nextEletag = Mesh::nextEleTag();
+    VInt oldContactEles = contactEles;
+    VInt removedEles(oldContactEles.size(), 1);
+    contactEles.clear();
     for (int i=0; i<(int)elends.size(); ++i) {
 
         // no elenodes, no element
@@ -2158,17 +2161,37 @@ BackgroundMesh::gridFSI(ID& freenodes)
                     return -1;
                 }
 
+                // check if exists
+                bool created = false;
+                for (int j = 0; j < (int) oldContactEles.size(); ++j) {
+                    if (removedEles[j] == 0) continue;
+                    Element* ele = domain->getElement(oldContactEles[j]);
+                    if (ele == 0) continue;
+                    const ID& contactNodes = ele->getExternalNodes();
+                    if (contactNodes(0) == elends[i][0] &&
+                        contactNodes(1) == elends[i][1] &&
+                        contactNodes(2) == elends[i][2]) {
+                        created = true;
+                        removedEles[j] = 0;
+                        contactEles.push_back(oldContactEles[j]);
+                        break;
+                    }
+                }
+                if (created) continue;
+
                 if (contactData[0]<=0 || contactData[1]<=0 ||
                     contactData[2]<0 || contactData[3]<0 ||
-                    contactData[4]<=0) {
-                    opserr << "WARNING: contact data is not set\n";
+                    contactData[4]<=0 || contactData[6]<=0 ||
+                    contactData[7]<=0) {
+                    opserr << "WARNING: contact data is not correctly set\n";
                     return -1;
                 }
                 Element *ele = new PFEMContact2D(nextEletag, elends[i][0],
                                                  elends[i][1], elends[i][2],
                                                  contactData[0], contactData[1],
                                                  contactData[2], contactData[3],
-                                                 contactData[4]);
+                                                 contactData[4], contactData[5],
+                                                 contactData[6], contactData[7]);
                 if (ele == 0) {
                     opserr << "WARNING: failed to create contact element\n";
                     return -1;
@@ -2195,6 +2218,18 @@ BackgroundMesh::gridFSI(ID& freenodes)
         ID& nds = elenodes[gtags[i]];
         for (int j=0; j<(int)elends[i].size(); ++j) {
             nds[nds.Size()] = elends[i][j];
+        }
+    }
+
+    // remove old contact elements
+    for (int i = 0; i < (int) oldContactEles.size(); ++i) {
+        if (removedEles[i] == 1) {
+            opserr<<"old contact element "<<oldContactEles[i]<<": ";
+            Element *ele = domain->removeElement(oldContactEles[i]);
+            opserr<<ele->getExternalNodes()<<" is removed\n";
+            if (ele != 0) {
+                delete ele;
+            }
         }
     }
 
