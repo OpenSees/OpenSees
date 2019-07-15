@@ -121,6 +121,7 @@ public:
 	if (msg.empty()) {
 	    msg = "See stderr output";
 	}
+	msg.erase(msg.find_last_not_of("\n\r ") + 1);  // Strip extra newlines from the message
 	PyErr_SetString(error, msg.c_str());
 	return *this;
     }
