@@ -78,6 +78,8 @@ class Concrete01 : public UniaxialMaterial
   // AddingSensitivity:END ///////////////////////////////////////////
 
   int getVariable(const char *variable, Information &);
+  //by SAJalali
+  double getEnergy() { return EnergyP; }
 
  protected:
 
@@ -120,6 +122,9 @@ class Concrete01 : public UniaxialMaterial
   int parameterID;
   Matrix *SHVs;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  //by SAJalali
+  double EnergyP;
 };
 
 

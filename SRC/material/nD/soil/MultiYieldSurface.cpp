@@ -80,7 +80,7 @@ double secondOrderEqn(double A, double B, double C, int i)
     else opserr << " when moving active surface." <<endln;
     exit(-1);   
   }
-  if(fabs(C) < 1.0e-9) return 0;
+  if(C == 0) return 0;
   if(B == 0){
     if(C/A > 0){
       opserr << "FATAL:second_order_eqn: Complex roots.\n";

@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Computational Geomechanics Group
 // Author: Long Chen, Pedro Arduino
+// Computational Geomechanics Group
 // University of Washington
 // Date:      Sep 2018
 // Last Modified: May 2019

@@ -300,7 +300,7 @@ GmshRecorder::write_mesh()
     DEBUGSTREAM << " Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -424,7 +424,7 @@ GmshRecorder::write_node_data()
     DEBUGSTREAM << "GmshRecorder -- Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -539,7 +539,7 @@ GmshRecorder::write_eleupdatetime_now()
     DEBUGSTREAM << "GmshRecorder -- write_eleupdatetime_now---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -560,7 +560,7 @@ GmshRecorder::write_eleupdatetime_now()
 
     DEBUGSTREAM << "mshname = " << mshname.c_str() << endln;
 
-    if(! theFile.is_open())
+    if(not theFile.is_open())
     {
         if(write_binary_mode)
         {
@@ -663,7 +663,7 @@ GmshRecorder::write_element_data()
     DEBUGSTREAM << "GmshRecorder -- Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -824,7 +824,7 @@ GmshRecorder::write_element_graph()
     // DEBUGSTREAM << "Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -1017,7 +1017,7 @@ GmshRecorder::write_update_time_now()
     nproc = theMachineBroker->getNP();  
 #endif
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
         return -1;
     }
 

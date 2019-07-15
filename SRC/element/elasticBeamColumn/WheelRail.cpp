@@ -52,7 +52,7 @@ WheelRail::WheelRail(int pTag, double pDeltT, double pVel, double pInitLocation,
 	deltT = pDeltT;
 	vel = pVel;   
 	initLocation = pInitLocation;
-	wheelNodeNum = pNd1;   // è½®èŠ‚ç‚¹ç¼–å·
+	wheelNodeNum = pNd1;   // ÂÖ½Úµã±àºÅ
 
 	rollingRadiusWheel=pRWheel;
 	I=pI;
@@ -141,7 +141,7 @@ void
 WheelRail::setDomain(Domain *thePassedDomain)
 {
 	theDomain = thePassedDomain;
-	this->DomainComponent::setDomain(theDomain);//å°†ä¿¡æ¯å­˜å…¥domain
+	this->DomainComponent::setDomain(theDomain);//½«ĞÅÏ¢´æÈëdomain
 
 	theNodes = new Node *[numRailNodeList+1];
 	for(int i=0;i<numRailNodeList+1;i++){
@@ -217,9 +217,9 @@ int
 WheelRail::update(void)
 {
 	//-------------------------------------------get element resisting force-----------------------------
-	const Vector &disp1 = theNodes[0]->getTrialDisp();//è½®èŠ‚ç‚¹çš„ä½ç§»
-	const Vector &disp2 = theNodes[activeBeamIndex+1]->getTrialDisp();//è½®ä¸‹æ¢èŠ‚ç‚¹ä½ç§»
-	const Vector &disp3 = theNodes[activeBeamIndex+2]->getTrialDisp();//è½®ä¸‹æ¢èŠ‚ç‚¹ä½ç§»
+	const Vector &disp1 = theNodes[0]->getTrialDisp();//ÂÖ½ÚµãµÄÎ»ÒÆ
+	const Vector &disp2 = theNodes[activeBeamIndex+1]->getTrialDisp();//ÂÖÏÂÁº½ÚµãÎ»ÒÆ
+	const Vector &disp3 = theNodes[activeBeamIndex+2]->getTrialDisp();//ÂÖÏÂÁº½ÚµãÎ»ÒÆ
 
 	railDisp.Zero();
 	railDisp(0)=disp2(0)*shapFun1(0)+disp3(0)*shapFun1(1);
@@ -241,7 +241,7 @@ WheelRail::update(void)
 		deltaU=railDisp(1)-uF- disp1(1)+ theDeltaY;
 	}
 
-	//---æ±‚ç”±äºèµ«å…¹åŠ›äº§ç”Ÿçš„ç­‰æ•ˆèŠ‚ç‚¹è·è½½ï¼Œå‚è€ƒã€Šç»“æ„åŠ›å­¦1ã€‹ï¼ˆç¬¬äºŒç‰ˆï¼‰281é¡µï¼Œ
+	//---ÇóÓÉÓÚºÕ×ÈÁ¦²úÉúµÄµÈĞ§½ÚµãºÉÔØ£¬²Î¿¼¡¶½á¹¹Á¦Ñ§1¡·£¨µÚ¶ş°æ£©281Ò³£¬
 	P->Zero();
 	(*P)(activeDof(0))=-Fhz;
 	for(int i=0;i<4;i++)
@@ -257,7 +257,7 @@ WheelRail::update(void)
 		for(int i=0;i<4;i++)
 			dRdFH(i+1)=shapFun2(i);
 
-		double dDeltadFH = 2*G*pow(Fhz,-1/3.0)/3.0;//æ³¨æ˜ï¼šæš‚æ—¶æ”¾åœ¨getUfDeltaUï¼ˆï¼‰æ›´æ–°
+		double dDeltadFH = 2*G*pow(Fhz,-1/3.0)/3.0;//×¢Ã÷£ºÔİÊ±·ÅÔÚgetUfDeltaU£¨£©¸üĞÂ
 		double beamFlexibility = pow(a*b,3.0)/3/E/I/theEleLength/theEleLength/theEleLength;
 
 		dFHdU(0) = -1/(beamFlexibility+dDeltadFH);
@@ -429,8 +429,8 @@ WheelRail::setResponse(const char **argv, int argc, OPS_Stream &output)
 	output.attr(outputData,connectedExternalNodes[i]);
   }
 
-  /*/ è®°å½•æ¿€æ´»é‡
-      æ¿€æ´»è‡ªç”±åº¦ï¼ˆ5ä¸ªï¼‰ æ¿€æ´»å•å…ƒå·ï¼ˆ1ä¸ªï¼‰ commitedä½ç½®ï¼ˆ1ä¸ªï¼‰//*/
+  /*/ ¼ÇÂ¼¼¤»îÁ¿
+      ¼¤»î×ÔÓÉ¶È£¨5¸ö£© ¼¤»îµ¥ÔªºÅ£¨1¸ö£© commitedÎ»ÖÃ£¨1¸ö£©//*/
   if (strcmp(argv[0],"activeData") == 0 || strcmp(argv[0],"activeDatas") == 0) {
 	for(int i=0;i<5;i++)	
 		activeData(i)=activeDof(i);
@@ -439,16 +439,16 @@ WheelRail::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     theResponse =  new ElementResponse(this, 2, activeData);
   
-  /*/ è®°å½•æœ‰æ•ˆå•å…ƒèŠ‚ç‚¹åŠ›
-      Pï¼ˆ5ä¸ªï¼‰//*/
+  /*/ ¼ÇÂ¼ÓĞĞ§µ¥Ôª½ÚµãÁ¦
+      P£¨5¸ö£©//*/
   }    else if (strcmp(argv[0],"localForce") == 0 || strcmp(argv[0],"localForces") == 0) {
 	for(int i=0;i<5;i++) 
 		localActiveForce(i)=(*P)(activeDof(i));
 
     theResponse = new ElementResponse(this, 3, localActiveForce);
 
-  /*/ è®°å½•æ¥è§¦é‡
-      åµŒå…¥é‡ï¼ˆ1ä¸ªï¼‰uFï¼ˆ1ä¸ªï¼‰ Fhzï¼ˆ1ä¸ªï¼‰ theDeltaYï¼ˆ1ä¸ªï¼‰ uUnderWheelï¼ˆ3ä¸ªï¼‰//*/
+  /*/ ¼ÇÂ¼½Ó´¥Á¿
+      Ç¶ÈëÁ¿£¨1¸ö£©uF£¨1¸ö£© Fhz£¨1¸ö£© theDeltaY£¨1¸ö£© uUnderWheel£¨3¸ö£©//*/
   }    else if (strcmp(argv[0],"contactData") == 0 || strcmp(argv[0],"contactDatas") == 0) {
 
 	contactData(0)=this->deltaU;
@@ -473,8 +473,8 @@ WheelRail::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setMatrix(this->getTangentStiff());
     
   case 2: // activeData
- /*/ è®°å½•æ¿€æ´»é‡
-      æ¿€æ´»è‡ªç”±åº¦ï¼ˆ5ä¸ªï¼‰ æ¿€æ´»å•å…ƒå·ï¼ˆ1ä¸ªï¼‰ commitedä½ç½®ï¼ˆ1ä¸ªï¼‰//*/
+ /*/ ¼ÇÂ¼¼¤»îÁ¿
+      ¼¤»î×ÔÓÉ¶È£¨5¸ö£© ¼¤»îµ¥ÔªºÅ£¨1¸ö£© commitedÎ»ÖÃ£¨1¸ö£©//*/
 	for(int i=0;i<5;i++)
 		activeData(i)=activeDof(i);
 	activeData(5)=this->activeBeamIndex;
@@ -482,15 +482,15 @@ WheelRail::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(activeData);
     
   case 3:
-	/*/ è®°å½•æœ‰æ•ˆå•å…ƒèŠ‚ç‚¹åŠ›
-    Pï¼ˆ5ä¸ªï¼‰//*/
+	/*/ ¼ÇÂ¼ÓĞĞ§µ¥Ôª½ÚµãÁ¦
+    P£¨5¸ö£©//*/
 	for(int i=0;i<5;i++)
 		localActiveForce(i)=(*P)(activeDof(i));
 	return eleInfo.setVector(localActiveForce);
     
   case 4:
-	  /*/ è®°å½•æ¥è§¦é‡
-      åµŒå…¥é‡ï¼ˆ1ä¸ªï¼‰uFï¼ˆ1ä¸ªï¼‰ Fhzï¼ˆ1ä¸ªï¼‰ theDeltaYï¼ˆ1ä¸ªï¼‰ uUnderWheelï¼ˆ3ä¸ªï¼‰//*/
+	  /*/ ¼ÇÂ¼½Ó´¥Á¿
+      Ç¶ÈëÁ¿£¨1¸ö£©uF£¨1¸ö£© Fhz£¨1¸ö£© theDeltaY£¨1¸ö£© uUnderWheel£¨3¸ö£©//*/
 	contactData(0)=this->deltaU;
 	contactData(1)=this->uF;
 	contactData(2)=this->Fhz;
@@ -535,7 +535,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 	//The Newton-Bisection algorithm used to solve the Fhz that meets the Geometric equation
 	//between wheel and rail.	
 
-	//è¯¥ç‰›é¡¿äºŒåˆ†æ³•1 å¯è¡Œ
+	//¸ÃÅ£¶Ù¶ş·Ö·¨1 ¿ÉĞĞ
 	int maxIterT=30;double tol=1.0e-5;
 	double FHL=limits(0),FHH=limits(1);
 	double FHzi=0.5*(FHL+FHH);
@@ -566,7 +566,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 		FHzi=Fhz;
 
 	}
-	if (i>maxIterT)	opserr<<maxIterT<<"æ¬¡è¿­ä»£åå¤±è´¥ï¼";//previous process*/ 
+	if (i>maxIterT)	opserr<<maxIterT<<"´Îµü´úºóÊ§°Ü£¡";//previous process*/ 
 //===========================
 	/*
 	int maxIterT=30;double tol=1.0e-5;
@@ -599,7 +599,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 		FHzi=Fhz;
 
 	}
-	if (i>maxIterT)	opserr<<maxIterT<<"æ¬¡è¿­ä»£åå¤±è´¥ï¼";//previous process*/ 
+	if (i>maxIterT)	opserr<<maxIterT<<"´Îµü´úºóÊ§°Ü£¡";//previous process*/ 
 //========================================
 	/*
 	int maxIterT=15;double tol=1.0e-6;
@@ -634,7 +634,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 
 		i++;
 	}
-	if (i>=maxIterT)	opserr<<maxIterT<<"æ¬¡è¿­ä»£åå¤±è´¥ï¼";//revised on2018/9/4 by Yongdou Liu/*/
+	if (i>=maxIterT)	opserr<<maxIterT<<"´Îµü´úºóÊ§°Ü£¡";//revised on2018/9/4 by Yongdou Liu/*/
 
 }
 

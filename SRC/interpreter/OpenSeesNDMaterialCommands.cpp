@@ -5,7 +5,6 @@
 #include <elementAPI.h>
 #include <map>
 #include <MaterialStageParameter.h>
-
 #include <string.h>
 #include <Domain.h>
 
@@ -57,7 +56,9 @@ void* OPS_PlateFromPlaneStressMaterial();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
 void* OPS_BeamFiberMaterial();
-void* OPS_PM4Sand();
+void* OPS_BeamFiberMaterial2d();
+void* OPS_BeamFiberMaterial2dPS();
+void* OPS_PM4SandMaterial();
 
 namespace {
 
@@ -147,7 +148,9 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiber", &OPS_BeamFiberMaterial));
-	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_BeamFiberMaterial));
+	nDMaterialsMap.insert(std::make_pair("BeamFiber2d", &OPS_BeamFiberMaterial2d));
+	nDMaterialsMap.insert(std::make_pair("BeamFiber2dPS", &OPS_BeamFiberMaterial2dPS));
+	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_PM4SandMaterial));
 
 	return 0;
     }
@@ -243,7 +246,6 @@ OPS_updateMaterialStage()
 
     MaterialStageParameter *theParameter = new MaterialStageParameter(parTag, materialTag);
 
-
     if (theDomain->addParameter(theParameter) == false) {
 	opserr << "WARNING could not add updateMaterialStage - MaterialStageParameter to domain\n";
 	return -1;
@@ -251,7 +253,6 @@ OPS_updateMaterialStage()
 
     if (res == 0) {
 	res = theDomain->updateParameter(parTag, value);
-
 	theDomain->removeParameter(parTag);
     }
 

@@ -91,6 +91,8 @@ class FiberSection3d : public SectionForceDeformation
     const Vector & getSectionDeformationSensitivity(int gradIndex);
     // AddingSensitivity:END ///////////////////////////////////////////
 
+	//by SAJalali
+	double getEnergy() const;
 
 
   protected:

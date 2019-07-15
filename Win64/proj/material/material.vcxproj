@@ -14,7 +14,7 @@
     <ProjectGuid>{B3B28EAB-160F-635A-CD8A-4C4BAA55CF78}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -144,6 +144,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionGJThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.cpp" />
@@ -227,6 +228,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SPSW02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.cpp" />
@@ -577,6 +579,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SPSW02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.h" />

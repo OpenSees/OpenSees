@@ -35,6 +35,9 @@
 
 #include <OPS_Globals.h>
 
+//by SAJalali
+int OPS_recorderValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 int OpenSeesAppInit(Tcl_Interp *interp);
 
  int

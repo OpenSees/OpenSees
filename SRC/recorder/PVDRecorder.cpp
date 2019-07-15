@@ -1930,7 +1930,6 @@ PVDRecorder::getfilename(const char* name)
     std::size_t found = fname.find_last_of("/\\");
     if (found == std::string::npos) {
 	pathname = "./";
-
 	basename = fname;
 	return;
     }

@@ -506,7 +506,7 @@ NDMaterial * SimplifiedJ2::getCopy (const char *code)
 		return theJ2;
   }
 
-  return 0;
+  return NDMaterial::getCopy(code);
 }
 
 
