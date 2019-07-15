@@ -20,7 +20,6 @@
 #include <ElasticBeam2d.h>
 #include <Matrix.h>
 #include <Vector.h>
-
 class Channel;
 class UniaxialMaterial;
 
@@ -45,6 +44,7 @@ class WheelRail : public Element
     double getResidualOfDeltaU(double pFhz,double uWheel);
     void setDomain(Domain *theDomain);
     void getDeltaY();
+
     // public methods to set the state of the element    
     int commitState(void);
     int revertToLastCommit(void);        
@@ -59,13 +59,12 @@ class WheelRail : public Element
     double FalsePostionAlgorithm(Vector limits,double uWheel);
     void getActiveDof();
     void getShapeFuns();
-    
+
     void zeroLoad(void);	
     int addLoad(const Vector &addP);
     int addInertiaLoadToUnbalance(const Vector &accel);
     const Vector &getResistingForce(void);
     const Vector &getResistingForceIncInertia(void);            
-    
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
@@ -115,6 +114,7 @@ class WheelRail : public Element
     Vector * theDeltaYLocationList;
     
     static Vector contactData,localActiveForce,activeData;
+
 
 };
 

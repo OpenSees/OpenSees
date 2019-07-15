@@ -311,7 +311,6 @@ LysmerTriangle::getTangentStiff(void)
     // = 3 (damping but preserve elastic forces from springs after gravity analysis)
     if (stage == 1 || stage == 2)  
     {
-      double L = 0; // Actual length used
       if (element_length != 0)
         L = element_length;
       else

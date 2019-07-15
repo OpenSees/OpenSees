@@ -1277,7 +1277,8 @@ void PressureIndependMultiYield::deviatorScaling(T2Vector & stress, const MultiY
 		if (coeff < 1.e-13) coeff = 1.e-13;
 		devia.addVector(1.0, temp, coeff);
 		stress.setData(devia, stress.volume());
-		deviatorScaling(stress, surfaces, surfaceNum, count);  // recursive call
+		if (count < 10)
+			deviatorScaling(stress, surfaces, surfaceNum, count);  // recursive call
 	}
 
 	if (surfaceNum==numOfSurfaces && fabs(diff) > LOW_LIMIT) {
@@ -1542,12 +1543,12 @@ void PressureIndependMultiYield::updateActiveSurface(void)
 	if ( fabs(C) < LOW_LIMIT || fabs(C)/(t1 && t1) < LOW_LIMIT ) return;
 
 	// Added by Alborz Ghofrani UW to avoid solving quadratic equations with very small coefficients B and C
-	if ( (fabs(B) < 1.0e-10) && (fabs(C) < 1.0e-10) ){
+	if ( (fabs(B) < 1.0e-9) && (fabs(C) < 1.0e-10) ){
 		return;
 	}
 	// End Alborz Ghofrani UW
 
-	if (B > 0. || C < 0.) {
+	if (B > 1.0e-10 || C < -1.0e-10) {
 	  opserr << "FATAL:PressureIndependMultiYield::updateActiveSurface(): error in surface motion.\n"
 	       << "A= " <<A <<" B= " <<B <<" C= "<<C <<" (t1&&t1)= "<<(t1&&t1) <<endln;
 	  exit(-1);

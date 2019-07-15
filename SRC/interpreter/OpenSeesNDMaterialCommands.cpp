@@ -5,6 +5,7 @@
 #include <elementAPI.h>
 #include <map>
 #include <MaterialStageParameter.h>
+
 #include <string.h>
 #include <Domain.h>
 
@@ -242,6 +243,7 @@ OPS_updateMaterialStage()
 
     MaterialStageParameter *theParameter = new MaterialStageParameter(parTag, materialTag);
 
+
     if (theDomain->addParameter(theParameter) == false) {
 	opserr << "WARNING could not add updateMaterialStage - MaterialStageParameter to domain\n";
 	return -1;
@@ -249,6 +251,7 @@ OPS_updateMaterialStage()
 
     if (res == 0) {
 	res = theDomain->updateParameter(parTag, value);
+
 	theDomain->removeParameter(parTag);
     }
 

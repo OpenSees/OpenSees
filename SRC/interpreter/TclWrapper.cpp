@@ -1362,7 +1362,6 @@ static int Tcl_ops_addCorrelate(ClientData clientData, Tcl_Interp *interp, int a
 
     return TCL_OK;
 }
-
 static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1559,4 +1558,4 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
     addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
     addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
-}
+
