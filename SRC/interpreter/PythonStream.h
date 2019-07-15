@@ -32,12 +32,11 @@ class PythonStream : public StandardStream
 {
 public:
     PythonStream(int indentSize=2, bool echo=false)
-	:StandardStream(indentSize,echo), error(0), message(0), msg() {}
+	:StandardStream(indentSize,echo), error(0), msg() {}
     ~PythonStream() {}
     
-    void setError(PyObject* err, PyObject* msg) {
+    void setError(PyObject* err) {
 	error = err;
-	message = msg;
     }
 
     OPS_Stream& operator<<(char c) {
@@ -120,7 +119,7 @@ public:
 	    return this->StandardStream::operator<<(p);
 	}
 	if (msg.empty()) {
-	    msg = "See opensees.msg\n";
+	    msg = "See stderr output";
 	}
 	PyErr_SetString(error, msg.c_str());
 	return *this;
@@ -130,24 +129,13 @@ private:
 
     template<class T>
     void err_out(T err) {
-
 	std::stringstream ss;
 	ss << err;
-	msg += ss.str();
-
-	std::size_t pos = msg.find('\n');
-	while (pos != std::string::npos) {
-	    std::string sub = msg.substr(0, pos+1);
-	    PyErr_SetString(message, sub.c_str());
-	    PyErr_Print();
-
-	    msg = msg.substr(pos+1);
-	    pos = msg.find('\n');
-	}
+	msg = ss.str();
+	PySys_FormatStderr(msg.c_str());
     }
 
     PyObject* error;
-    PyObject* message;
     std::string msg;
 };
 
