@@ -33,6 +33,8 @@
 //            written by MOHD YASSIN (1993)
 //          adapted to FEDEAS material library
 //    by E. Spacone, G. Monti and F.C. Filippou (1994)
+//    Modified by Nasser A. Marafi (2018) to have strength and 
+//   stiffness deterioration as per Kunnath et al. (2009)
 //-----------------------------------------------------------------------
 
 #include <math.h>
