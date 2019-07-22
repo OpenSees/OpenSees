@@ -51,6 +51,10 @@
 #include <mpi.h>
 #endif
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 int OPS_loadConst()
 {
     Domain* theDomain = OPS_GetDomain();
@@ -1786,5 +1790,41 @@ int OPS_sdfResponse()
 	return -1;
     }
   
+    return 0;
+}
+
+int OPS_getNumThreads()
+{
+#ifdef _OPENMP
+    int num = omp_get_max_threads();
+    int numdata = 1;
+
+    if (OPS_SetIntOutput(&numdata,&num) < 0) {
+	opserr << "WARNING: failed to set output -- getNumThreads\n";
+	return -1;
+    }
+#endif
+
+    return 0;
+}
+
+int OPS_setNumThreads()
+{
+#ifdef _OPENMP
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING: need setNumThreads num\n";
+	return -1;
+    }
+    
+    int num;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata,&num) < 0) {
+	opserr << "WARNING: failed to set output -- getNumThreads\n";
+	return -1;
+    }
+
+    omp_set_num_threads(num);
+#endif
+
     return 0;
 }

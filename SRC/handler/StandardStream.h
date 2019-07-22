@@ -33,7 +33,7 @@ using std::ofstream;
 class StandardStream : public OPS_Stream
 {
  public:
-  StandardStream(int indentSize=2);
+  StandardStream(int indentSize=2, bool echo=true);
   ~StandardStream();
 
   int setFile(const char *fileName, openMode mode = OVERWRITE, bool echoApplication = true);

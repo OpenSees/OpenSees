@@ -43,7 +43,7 @@ class ElasticOrthotropicThreeDimensional : public ElasticOrthotropicMaterial
   public:
     ElasticOrthotropicThreeDimensional(int tag, double Ex, double Ey, 
 double Ez, double vxy, double vyz, double vzx, double Gxy, double Gyz, 
-double Gzx, double rho);
+double Gzx, double rho = 0.0);
     ElasticOrthotropicThreeDimensional();
     ~ElasticOrthotropicThreeDimensional();
 

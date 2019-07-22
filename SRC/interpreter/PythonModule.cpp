@@ -42,6 +42,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //
 
 #include "PythonModule.h"
+#include "PythonStream.h"
+
+// define opserr
+static PythonStream sserr;
+OPS_Stream *opserrPtr = &sserr;
 
 
 PythonModule::PythonModule()
@@ -190,12 +195,12 @@ PythonModule::runCommand(const char* cmd)
     return PyRun_SimpleString(cmd);
 }
 
-static PythonModule module;
+static PythonModule* module = 0;
 
 PyMethodDef* getmethodsFunc()
 {
-
-    PythonWrapper* wrapper = module.getWrapper();
+    module = new PythonModule;
+    PythonWrapper* wrapper = module->getWrapper();
     wrapper->addOpenSeesCommands();
     
     return wrapper->getMethods();
@@ -203,7 +208,7 @@ PyMethodDef* getmethodsFunc()
 
 void cleanupFunc()
 {
-    module.getCmds().wipe();
+    module->getCmds().wipe();
     // if (module != 0) {
     //     delete module;
     // }
@@ -280,11 +285,14 @@ initopensees(void)
         INITERROR;
     struct module_state *st = GETSTATE(module);
 
-    st->error = PyErr_NewException("opensees.Error", NULL, NULL);
+    st->error = PyErr_NewException("opensees.error", NULL, NULL);
+    PyObject* ops_msg = PyErr_NewException("opensees.msg", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(module);
         INITERROR;
     }
+
+    sserr.setError(st->error,ops_msg);
 
     Py_AtExit(cleanupFunc);
 

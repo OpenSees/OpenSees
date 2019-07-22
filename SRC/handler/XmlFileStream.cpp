@@ -306,8 +306,6 @@ XmlFileStream::tag(const char *tagName)
   char *newTag = new char[strlen(tagName) +1];
   strcpy(newTag, tagName);
 
-
-
   if (sendSelfCount != 0 && numTag != 0) {
     if (attributeMode == true) 
       (*xmlColumns)(numXMLTags) += 2;
@@ -1341,24 +1339,23 @@ XmlFileStream::mergeXML()
 
     for (int j=0; j<numColumns; j++) {
       char *data = 0;
-      int sizeData = 1;  // for terminating character
+      int sizeData = 0;  // for terminating character
       
       int numLines = (*xmlColumns)(j);
       for (int k=0; k<=numLines; k++) {
 	getline(theFile0, s);  
 	const char *s1 =  s.c_str();
 	int sizeNewData = int(strlen(s1)) + 1; // for newline
-	char *nextData = new char[sizeData + sizeNewData];
+	char *nextData = new char[sizeData + sizeNewData +1]; // for end char
 	if (data != 0) {
 	  strncpy(nextData, data, sizeData);
 	  delete [] data;
 	}
-
-	strncpy(&nextData[sizeData-1], s1, sizeNewData);
+	strncpy(&nextData[sizeData], s1, sizeNewData);
 	sizeData = sizeData + sizeNewData;
 	data = nextData;
-	data[sizeData-2] = '\n';
-	data[sizeData-1] = '\0';
+	data[sizeData-1] = '\n';
+	data[sizeData] = '\0';
       }
       static ID dataSize(1);
       dataSize(0) = sizeData;

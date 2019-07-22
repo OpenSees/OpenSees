@@ -84,6 +84,8 @@ class SectionAggregator : public SectionForceDeformation
 		 FEM_ObjectBroker &theBroker);
 
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
+	//by SAJalali
+	int getResponse(int responseID, Information &info);
 
     void Print(OPS_Stream &s, int flag =0);
 
@@ -124,8 +126,6 @@ class SectionAggregator : public SectionForceDeformation
     static int codeArea[];
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
-    int parameterID;
-
     Vector dedh; // MHS hack
 // AddingSensitivity:END ///////////////////////////////////////////
 

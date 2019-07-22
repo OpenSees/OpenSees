@@ -173,6 +173,9 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp">
+      <Filter>zeroLength</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
@@ -886,6 +889,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp">
       <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.cpp">
+      <Filter>dispBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

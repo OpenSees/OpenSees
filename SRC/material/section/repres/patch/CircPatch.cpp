@@ -51,9 +51,11 @@ void* OPS_CircPatch()
     double data[6];
     numData = 6;
     static Vector centerPos(2);
+    /*centerPos(0) = data[0];
+    centerPos(1) = data[1];*/
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
     centerPos(0) = data[0];
     centerPos(1) = data[1];
-    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
 
     return new CircPatch(idata[0],idata[1],idata[2],centerPos,
 			 data[2],data[3],data[4],data[5]);

@@ -1186,6 +1186,10 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     int count = 0;
     return theResponse = new MaterialResponse(this, 7, count);
   }
+  //by SAJalali
+  else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
+	  return theResponse = new MaterialResponse(this, 10, getEnergy());
+  }
 
 
   else {
@@ -1323,7 +1327,11 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
 
     return sectInfo.setInt(count);
   } 
-  
+  else  if (responseID == 10) {
+
+	  return sectInfo.setDouble(getEnergy());
+  }
+
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 
@@ -1569,3 +1577,24 @@ FiberSection3d::commitSensitivity(const Vector& defSens, int gradIndex, int numG
 // AddingSensitivity:END ///////////////////////////////////
 
 
+//by SAJalali
+double FiberSection3d::getEnergy() const
+{
+	static double fiberArea[10000];
+
+	if (sectionIntegr != 0) {
+		sectionIntegr->getFiberWeights(numFibers, fiberArea);
+	}
+	else {
+		for (int i = 0; i < numFibers; i++) {
+			fiberArea[i] = matData[2 * i + 1];
+		}
+	}
+	double energy = 0;
+	for (int i = 0; i < numFibers; i++)
+	{
+		double A = fiberArea[i];
+		energy += A * theMaterials[i]->getEnergy();
+	}
+	return energy;
+}

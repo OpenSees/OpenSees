@@ -92,6 +92,7 @@ extern  void *OPS_CorotTrussElement(void);
 extern  void *OPS_CorotTrussSectionElement(void);
 extern  void *OPS_ElasticTubularJoint(void);
 extern void *OPS_ZeroLengthContactNTS2D(void);
+extern void *OPS_ZeroLengthVG_HG(void);
 extern void *OPS_ZeroLengthInterface2D(void);
 extern "C" void *OPS_PY_Macro2D(void);
 extern void *OPS_SimpleContact2D(void);
@@ -151,6 +152,10 @@ extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
+
+#ifdef _HAVE_LHNMYS
+extern void* OPS_BeamColumnwLHNMYS(void);
+#endif
 
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
@@ -517,6 +522,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
   }
+
+  #ifdef _HAVE_LHNMYS
+
+  else if (strcmp(argv[1],"beamColumnwLHNMYS") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_BeamColumnwLHNMYS();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
+  #endif
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
@@ -1131,6 +1151,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
         opserr<<"tclelementcommand -- unable to create element of type : " <<argv[1]<<endln;
         return TCL_ERROR;
       }
+
+  }
+  
+  else if (strcmp(argv[1],"ZeroLengthVG_HG") == 0) {
+      Element *theEle = (Element*) OPS_ZeroLengthVG_HG();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
   }
 
   // if one of the above worked
@@ -1494,7 +1525,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     strcpy(tclFuncName, "OPS_");
 
     strcpy(&tclFuncName[4], argv[1]);
-    
+
+    opserr << "checking library: " << tclFuncName << endln;    
     int res = getLibraryFunction(argv[1], tclFuncName, &libHandle, (void **)&funcPtr);
     
     delete [] tclFuncName;

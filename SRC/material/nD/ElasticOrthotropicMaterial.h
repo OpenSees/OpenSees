@@ -39,13 +39,13 @@ class ElasticOrthotropicMaterial : public NDMaterial
     ElasticOrthotropicMaterial (int tag, int classTag, 
 	double Ex, double Ey, double Ez,
         double vxy, double vyz, double vzx,
-        double Gxy, double Gyz, double Gz, double rho = 0.0);
+        double Gxy, double Gyz, double Gzx, double rho = 0.0);
 
     // Called by clients
     ElasticOrthotropicMaterial (int tag, 
 	double Ex, double Ey, double Ez,
         double vxy, double vyz, double vzx,
-        double Gxy, double Gyz, double Gz, double rho = 0.0);
+        double Gxy, double Gyz, double Gzx, double rho = 0.0);
 
     // For parallel processing
     ElasticOrthotropicMaterial (void);
