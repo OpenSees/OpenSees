@@ -14,10 +14,9 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/material/uniaxial/limitState \
                -I$(FE)/material/uniaxial/limitState/limitCurve \
                -I$(FE)/material/uniaxial/backbone \
-               -I$(FE)/material/state \
-               -I$(FE)/material/state/stiffness \
-               -I$(FE)/material/state/unloading \
-               -I$(FE)/material/state/strength \
+               -I$(FE)/material/uniaxial/stiffness \
+               -I$(FE)/material/uniaxial/unloading \
+               -I$(FE)/material/uniaxial/strength \
                -I$(FE)/material/nD \
                -I$(FE)/material/nD/soil \
                -I$(FE)/material/nD/feap \

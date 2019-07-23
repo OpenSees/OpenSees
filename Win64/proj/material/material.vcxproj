@@ -47,7 +47,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\material\nD\stressDensityModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\material\uniaxial\stiffness;..\..\..\src\material\uniaxial\strength;..\..\..\src\material\uniaxial\unloading;..\..\..\src\material\nD\stressDensityModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL;_NO_NEW_RESTREPO;_HAVE_PSUMAT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -79,7 +79,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\src\material\nD\stressDensityModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\material\uniaxial\stiffness;..\..\..\src\material\uniaxial\strength;..\..\..\src\material\uniaxial\unloading;..\..\..\src\material\nD\stressDensityModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL;_NO_NEW_RESTREPO;_HAVE_PSUMAT;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -108,6 +108,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2dPS.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear5.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear7.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\DruckerPrager3DThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\DruckerPragerThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.cpp" />
@@ -131,6 +134,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\PlateFromPlaneStressMaterialThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlateRebarMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlateRebarMaterialThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield03.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.cpp" />
@@ -144,6 +148,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionGJThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.cpp" />
@@ -200,6 +205,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\InitStressMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\MaterialState.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Maxwell.cpp" />
     <ClCompile Include="..\..\..\Src\material\uniaxial\MinMaxMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented.cpp" />
@@ -208,6 +214,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPinching02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\MultiLinear.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\OriginCentered.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PD1.c" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ParallelMaterial.cpp" />
@@ -240,11 +247,31 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMPF.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\ConstantStiffnessDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\DuctilityStiffnessDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\EnergyStiffnessDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\PincheiraStiffnessDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\StiffnessDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\TclModelBuilderStiffnessDegradationCommand.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\ACIStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\ConstantStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\DuctilityStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\EnergyStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\PetrangeliStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\SectionStrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\TclModelBuilderStrengthDegradationCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\ConstantUnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\EnergyUnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\KarsanUnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TclModelBuilderUnloadingRuleCommand.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.cpp" />
@@ -460,6 +487,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\nD\AcousticMedium.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial2dPS.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear5.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear7.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\DruckerPrager3DThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\DruckerPragerThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.h" />
@@ -483,6 +513,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\PlateFromPlaneStressMaterialThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlateRebarMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlateRebarMaterialThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield03.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.h" />
@@ -496,6 +527,7 @@
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionGJThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.h" />
@@ -552,6 +584,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\InitStressMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\MaterialState.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Maxwell.h" />
     <ClInclude Include="..\..\..\Src\material\uniaxial\MinMaxMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented.h" />
@@ -560,6 +593,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ModIMKPinching02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\MultiLinear.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\OriginCentered.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ParallelMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PathIndependentMaterial.h" />
@@ -591,10 +625,27 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMPF.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\ConstantStiffnessDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\DuctilityStiffnessDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\EnergyStiffnessDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\PincheiraStiffnessDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\StiffnessDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\ACIStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\ConstantStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\DuctilityStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\EnergyStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\PetrangeliStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\SectionStrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TriMatrix.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\ConstantUnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\EnergyUnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\KarsanUnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.h" />

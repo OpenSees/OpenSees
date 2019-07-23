@@ -54,8 +54,8 @@ void* OPS_PFEMElement2DBubble(const ID &info)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
-    	opserr << "WARNING: domain is not created\n";
-    	return 0;
+        opserr << "WARNING: domain is not created\n";
+        return 0;
     }
 
     int idata[4];
@@ -64,81 +64,81 @@ void* OPS_PFEMElement2DBubble(const ID &info)
 
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
-	numdata = OPS_GetNumRemainingInputArgs();
-	if(numdata < 4) {
-	    opserr<<"WARNING: insufficient number of arguments: tag, nd1, nd2, nd3\n";
-	    return 0;
-	}
+        numdata = OPS_GetNumRemainingInputArgs();
+        if(numdata < 4) {
+            opserr<<"WARNING: insufficient number of arguments: tag, nd1, nd2, nd3\n";
+            return 0;
+        }
 
-	// tag, nd1, nd2, nd3
-	numdata = 4;
-	if(OPS_GetIntInput(&numdata,idata)<0) {
-	    opserr << "WARNING: failed to get tags\n";
-	    return 0;
-	}
+        // tag, nd1, nd2, nd3
+        numdata = 4;
+        if(OPS_GetIntInput(&numdata,idata)<0) {
+            opserr << "WARNING: failed to get tags\n";
+            return 0;
+        }
     }
 
     // regular element, or save data
     if (info.Size()==0 || info(0)==1) {
-	if(OPS_GetNumRemainingInputArgs() < 4) {
-	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
-	    return 0;
-	}
+        if(OPS_GetNumRemainingInputArgs() < 4) {
+            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
+            return 0;
+        }
 
-	// rho, mu, b1, b2, (thinknes,kappa)
-	numdata = OPS_GetNumRemainingInputArgs();
-	if(numdata > 6) numdata = 6;
-	if(OPS_GetDoubleInput(&numdata,data) < 0) {
-	    opserr << "WARNING: failed to get fluid properties\n";
-	    return 0;
-	}
+        // rho, mu, b1, b2, (thinknes,kappa)
+        numdata = OPS_GetNumRemainingInputArgs();
+        if(numdata > 6) numdata = 6;
+        if(OPS_GetDoubleInput(&numdata,data) < 0) {
+            opserr << "WARNING: failed to get fluid properties\n";
+            return 0;
+        }
     }
 
     // save/load data for different mesh
     static std::map<int, Vector> meshdata;
     if (info.Size()>0 && info(0)==1) {
-	if (info.Size() < 2) {
-	    opserr << "WARNING: need info -- inmesh, meshtag\n";
-	    return 0;
-	}
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
 
-	// save the data for a mesh
-	Vector& mdata = meshdata[info(1)];
-	mdata.resize(6);
-	for (int i=0; i<6; ++i) {
-	    mdata(i) = data[i];
-	}
-	return &meshdata;
+        // save the data for a mesh
+        Vector& mdata = meshdata[info(1)];
+        mdata.resize(6);
+        for (int i=0; i<6; ++i) {
+            mdata(i) = data[i];
+        }
+        return &meshdata;
 
     } else if (info.Size()>0 && info(0)==2) {
-	if (info.Size() < 6) {
-	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3\n";
-	    return 0;
-	}
+        if (info.Size() < 6) {
+            opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3\n";
+            return 0;
+        }
 
-	// get the data for a mesh
-	Vector& mdata = meshdata[info(1)];
-	if (mdata.Size() < 6) return 0;
+        // get the data for a mesh
+        Vector& mdata = meshdata[info(1)];
+        if (mdata.Size() < 6) return 0;
 
-	idata[0] = info(2);
-	for (int i=0; i<3; ++i) {
-	    idata[i+1] = info(3+i);
-	}
+        idata[0] = info(2);
+        for (int i=0; i<3; ++i) {
+            idata[i+1] = info(3+i);
+        }
 
-	for (int i=0; i<6; ++i) {
-	    data[i] = mdata(i);
-	}
+        for (int i=0; i<6; ++i) {
+            data[i] = mdata(i);
+        }
 
     }
 
     return new PFEMElement2DBubble(idata[0],idata[1],idata[2],idata[3],
-				   data[0],data[1],data[2],data[3],data[4],data[5]);
+                                   data[0],data[1],data[2],data[3],data[4],data[5]);
 }
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2DBubble::PFEMElement2DBubble()
-    :Element(0, ELE_TAG_PFEMElement2DBubble), ntags(6),
-     rho(0), mu(0), bx(0), by(0), J(0.0), dJ(6), numDOFs(),thickness(1.0), kappa(-1), parameterID(0)
+        :Element(0, ELE_TAG_PFEMElement2DBubble), ntags(6),
+         rho(0), mu(0), bx(0), by(0), J(0.0), dJ(6), numDOFs(),thickness(1.0), kappa(-1), parameterID(0)
 {
     for(int i=0;i<3;i++)
     {
@@ -154,9 +154,9 @@ PFEMElement2DBubble::PFEMElement2DBubble()
 PFEMElement2DBubble::PFEMElement2DBubble(int tag, int nd1, int nd2, int nd3,
                                          double r, double m, double b1, double b2,
                                          double thk, double ka)
-    :Element(tag, ELE_TAG_PFEMElement2DBubble), ntags(6),
-     rho(r), mu(m), bx(b1), by(b2), J(0.0), dJ(6), numDOFs(),
-     thickness(thk), kappa(ka), parameterID(0)
+        :Element(tag, ELE_TAG_PFEMElement2DBubble), ntags(6),
+         rho(r), mu(m), bx(b1), by(b2), J(0.0), dJ(6), numDOFs(),
+         thickness(thk), kappa(ka), parameterID(0)
 {
     ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
     ntags(1)=nd1; ntags(3)=nd2; ntags(5)=nd3;
@@ -218,10 +218,6 @@ PFEMElement2DBubble::revertToLastCommit()
 
 int PFEMElement2DBubble::commitState()
 {
-    if (!dispon) {
-	setJ();
-	setdJ();
-    }
     return Element::commitState();
 }
 
@@ -229,23 +225,23 @@ int
 PFEMElement2DBubble::update()
 {
     if (dispon) {
-	setJ();
+        setJ();
     }
 
     // this is the trick to check negative jacobian
     if((kappa==-2 && J<0) || (kappa!=-2 && fabs(J)<1e-15)) {
         opserr<<"WARING: element "<<this->getTag()<<" area is "<<J<<"\n";
-	for (int i=0; i<3; i++) {
-	    opserr << "node "<<nodes[2*i]->getTag()<<": \n";
-	    opserr << "coordinates - "<<nodes[2*i]->getCrds();
-	    opserr << "displacement - "<<nodes[2*i]->getTrialDisp();
-	}
+        for (int i=0; i<3; i++) {
+            opserr << "node "<<nodes[2*i]->getTag()<<": \n";
+            opserr << "coordinates - "<<nodes[2*i]->getCrds();
+            opserr << "displacement - "<<nodes[2*i]->getTrialDisp();
+        }
         opserr<<" -- PFEMElement2DBubble::update\n";
         return -1;
     }
 
     if (dispon) {
-	setdJ();
+        setdJ();
     }
 
     return 0;
@@ -276,7 +272,7 @@ PFEMElement2DBubble::getMass()
             }
         }
     }
-    //opserr<<"M = "<<K;
+
     return K;
 }
 
@@ -297,6 +293,7 @@ PFEMElement2DBubble::getDamp()
     // other matrices
     for(int a=0; a<3; a++) {
         for(int b=0; b<3; b++) {
+            // K
             K(numDOFs(2*a+1), numDOFs(2*b)) = G(2*b);   // GxT
             K(numDOFs(2*a+1), numDOFs(2*b)+1) = G(2*b+1); // GyT
 
@@ -306,7 +303,7 @@ PFEMElement2DBubble::getDamp()
             K(numDOFs(2*a+1), numDOFs(2*b+1)) = L(a,b);   // bubble
         }
     }
-    //opserr<<"K = "<<K;
+
     return K;
 }
 
@@ -396,7 +393,6 @@ PFEMElement2DBubble::getResistingForceIncInertia()
         P(numDOFs(2*i+1)) -= fp(i);
     }
 
-    //opserr<<"F = "<<F;
     return P;
 }
 
@@ -477,7 +473,7 @@ void
 PFEMElement2DBubble::setDomain(Domain *theDomain)
 {
     numDOFs.resize(7);
-    this->DomainComponent::setDomain(theDomain);
+    DomainComponent::setDomain(theDomain);
 
     if(theDomain == 0) {
         return;
@@ -506,29 +502,29 @@ PFEMElement2DBubble::setDomain(Domain *theDomain)
         // get pc
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
         if(thePCs[i] == 0) {
-	    opserr << "WARNING: failed to get PC -- PFEMElement2DBubble\n";
-	    return;
+            opserr << "WARNING: failed to get PC -- PFEMElement2DBubble\n";
+            return;
         }
-	thePCs[i]->setDomain(theDomain);
+        thePCs[i]->setDomain(theDomain);
 
         // connect
         thePCs[i]->connect(eletag);
 
         // get pressure node
-	nodes[2*i+1] = thePCs[i]->getPressureNode();
+        nodes[2*i+1] = thePCs[i]->getPressureNode();
         if (nodes[2*i+1] == 0) {
             opserr<<"WARNING: pressure node does not exist ";
             opserr<<"in PFEMElement2DBubble - setDomain() "<<eletag<<"\n ";
             return;
         }
-	ntags(2*i+1) = nodes[2*i+1]->getTag();
+        ntags(2*i+1) = nodes[2*i+1]->getTag();
         ndf += nodes[2*i+1]->getNumberDOF();
     }
     numDOFs(numDOFs.Size()-1) = ndf;
 
     if (!dispon) {
-	setJ();
-	setdJ();
+        setJ();
+        setdJ();
     }
 }
 
@@ -539,7 +535,8 @@ PFEMElement2DBubble::Print(OPS_Stream &s, int flag)
 }
 
 int
-PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
+PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fact,
+                                 const char **displayModes, int numModes)
 {
 
     // first set the quantity to be displayed at the nodes;
@@ -558,7 +555,7 @@ PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fac
     }
     */
 
-  static Vector values(3);
+    static Vector values(3);
 
     // now  determine the end points of the Tri31 based on
     // the display factor (a measure of the distorted image)
@@ -609,6 +606,12 @@ PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fac
     return error;
 }
 
+// C = [0 0 0 1 0 -1]
+//     [0 0 -1 0 1 0]
+//     [0 -1 0 0 0 1]
+//     [1 0 0 0 -1 0]
+//     [0 1 0 -1 0 0]
+//     [-1 0 1 0 0 0]
 void
 PFEMElement2DBubble::setC()
 {
@@ -621,6 +624,7 @@ PFEMElement2DBubble::setC()
     }
 }
 
+// J = x2y3−y2x3 + x3y1−x1y3 + x1y2-x2y1
 void
 PFEMElement2DBubble::setJ()
 {
@@ -629,13 +633,14 @@ PFEMElement2DBubble::setJ()
         const Vector& coord = nodes[2*a]->getCrds();
         const Vector& disp = nodes[2*a]->getTrialDisp();
         for(int i=0; i<2; i++) {
-	    x(2*a+i) = coord(i)+disp(i);
+            x(2*a+i) = coord(i)+disp(i);
         }
     }
 
     J = x(2)*x(5)-x(3)*x(4)+x(1)*x(4)-x(0)*x(5)+x(0)*x(3)-x(1)*x(2);
 }
 
+// dJ =[y2-y3,x3-x2,y3-y1,x1-x3,y1-y2] = [b1,c1,b2,c2,b3,c3]
 void
 PFEMElement2DBubble::setdJ()
 {
@@ -644,7 +649,7 @@ PFEMElement2DBubble::setdJ()
         const Vector& coord = nodes[2*a]->getCrds();
         const Vector& disp = nodes[2*a]->getTrialDisp();
         for(int i=0; i<2; i++) {
-	    x(2*a+i) = coord(i)+disp(i);
+            x(2*a+i) = coord(i)+disp(i);
         }
     }
 
@@ -655,7 +660,6 @@ PFEMElement2DBubble::setdJ()
 double
 PFEMElement2DBubble::getM() const
 {
-    //return (1.0/6.0+3.0/40.0)*rho*thickness*J;
     return rho*thickness*J/6.0;
 }
 
@@ -667,10 +671,9 @@ PFEMElement2DBubble::getMp() const
 }
 
 double
-PFEMElement2DBubble::getinvMbub() const
+PFEMElement2DBubble::getMbub() const
 {
-    //return 5040.0*ops_Dt/(rho*thickness*J*1863.0);
-    return 40.*ops_Dt/(9.*rho*J*thickness);
+    return 27.0*rho*J*thickness/120.0;
 }
 
 void
@@ -680,6 +683,8 @@ PFEMElement2DBubble::getK(Matrix& k) const
 
     k.resize(6,6);
     k.Zero();
+
+    if (mu <= 0) return;
 
     double dNdx[3], dNdy[3];
     for(int a=0; a<3; a++) {
@@ -704,18 +709,21 @@ PFEMElement2DBubble::getKbub(Matrix& kbub) const
     kbub.resize(2,2);
     kbub.Zero();
 
-    double dNdx[3], dNdy[3];
+    if (mu <= 0) return;
+
+    double b2 = 0, c2 = 0, bc = 0;
     for(int a=0; a<3; a++) {
-        dNdx[a] = dJ(2*a)/J;
-        dNdy[a] = dJ(2*a+1)/J;
+        b2 += dJ(2*a)*dJ(2*a);
+        c2 += dJ(2*a+1)*dJ(2*a+1);
+        bc += dJ(2*a)*dJ(2*a+1);
     }
 
-    for(int a=0; a<3; a++) {
-        kbub(0,0) += 81*mu*J*thickness/40.0*(2*dNdx[a]*dNdx[a]+dNdy[a]*dNdy[a]);
-        kbub(0,1) += 81*mu*J*thickness/40.0*(dNdx[a]*dNdy[a]);
-        kbub(1,0) += 81*mu*J*thickness/40.0*(dNdx[a]*dNdy[a]);
-        kbub(1,1) += 81*mu*J*thickness/40.0*(dNdx[a]*dNdx[a]+2*dNdy[a]*dNdy[a]);
-    }
+    double factor = 729.0*mu*thickness/(1080.0*J);
+
+    kbub(0,0) = factor*(4*b2+3*c2);
+    kbub(0,1) = factor*bc;
+    kbub(1,0) = factor*bc;
+    kbub(1,1) = factor*(4*c2+3*b2);
 }
 
 void
@@ -750,7 +758,7 @@ PFEMElement2DBubble::getF(Vector& f) const
     if(mu > 0) {
         Vector v(6);
         for(int a=0; a<3; a++) {
-            const Vector& vel = nodes[2*a]->getTrialVel();
+            const Vector& vel = nodes[2*a]->getVel();
             v(2*a) = vel(0);
             v(2*a+1) = vel(1);
         }
@@ -783,10 +791,21 @@ PFEMElement2DBubble::getL(Matrix& l) const
 {
     Matrix Gbub(2,3);
     getGbub(Gbub);
-    double invMbub = getinvMbub();
+    double Mbub = getMbub();
+
+    Matrix Kbub(2,2);
+    getKbub(Kbub);
+
+    if (ops_Dt > 0) {
+        Kbub(0,0) += Mbub/ops_Dt;
+        Kbub(1,1) += Mbub/ops_Dt;
+    }
+
+    Matrix invKbub(2,2);
+    Kbub.Invert(invKbub);
 
     l.resize(3,3);
-    l.addMatrixTransposeProduct(0.0, Gbub, Gbub, invMbub);
+    l.addMatrixTripleProduct(0.0, Gbub, invKbub, 1.0);
 }
 
 void
@@ -794,14 +813,26 @@ PFEMElement2DBubble::getFp(Vector& fp) const
 {
     Matrix Gbub(2,3);
     getGbub(Gbub);
-    double invMbub = getinvMbub();
+    double Mbub = getMbub();
+
+    Matrix Kbub(2,2);
+    getKbub(Kbub);
+
+    if (ops_Dt > 0) {
+        Kbub(0,0) += Mbub/ops_Dt;
+        Kbub(1,1) += Mbub/ops_Dt;
+    }
+
+    Matrix invKbub(2,2);
+    Kbub.Invert(invKbub);
+
     Vector Fbub(2);
     getFbub(Fbub);
 
     // bubble force
     fp.resize(3);
     fp.Zero();
-    fp.addMatrixTransposeVector(0.0, Gbub, Fbub, -invMbub);
+    fp.addMatrixTransposeVector(0.0, Gbub, invKbub*Fbub, -1.0);
 }
 
 int
@@ -839,20 +870,20 @@ int
 PFEMElement2DBubble::updateParameter (int passparameterID, Information &info)
 {
     switch (passparameterID) {
-    case 1:
-        mu = info.theDouble;
-        return 0;
-    case 2:
-        rho = info.theDouble;
-        return 0;
-    case 3:
-        bx = info.theDouble;
-        return 0;
-    case 4:
-        by = info.theDouble;
-        return 0;
-    default:
-        return -1;
+        case 1:
+            mu = info.theDouble;
+            return 0;
+        case 2:
+            rho = info.theDouble;
+            return 0;
+        case 3:
+            bx = info.theDouble;
+            return 0;
+        case 4:
+            by = info.theDouble;
+            return 0;
+        default:
+            return -1;
     }
 }
 
@@ -1079,7 +1110,7 @@ PFEMElement2DBubble::getdFp(Vector& dfp) const
     Matrix gb(2,3);
     getGbub(gb);
 
-    double invmb = getinvMbub();
+    double invmb = ops_Dt/getMbub();
 
     Vector fb(2);
     getFbub(fb);
@@ -1262,7 +1293,7 @@ PFEMElement2DBubble::getdFp(Matrix& dfp) const {
     Vector fb(2);
     getFbub(fb);
 
-    double invmb = getinvMbub();
+    double invmb = ops_Dt/getMbub();
 
     getdGbt(fb*invmb, dfp);
 
@@ -1281,7 +1312,7 @@ PFEMElement2DBubble::getdL(const Vector& p, Matrix& dl) const {
     Matrix gb(2,3);
     getGbub(gb);
 
-    double invmb = getinvMbub();
+    double invmb = ops_Dt/getMbub();
 
     getdGbt(gb*p*invmb, dl);
 

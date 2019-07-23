@@ -71,11 +71,12 @@ endif
 
 AMDdir    = $(HOME)/OpenSees/OTHER/AMD
 LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
-SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_5.1.1/SRC
 SUPERLU_DISTdir   = $(HOME)/OpenSees/OTHER/SuperLU_DIST_2.0/SRC
 ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
 UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
 METISdir       = $(HOME)/OpenSees/OTHER/METIS
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
 SRCdir       = $(HOME)/OpenSees/SRC
 
 DIRS        = $(BLASdir) \
@@ -87,7 +88,8 @@ DIRS        = $(BLASdir) \
 	$(ARPACKdir) \
 	$(UMFPACKdir) \
 	$(SRCdir) \
-	$(METISdir) 
+	$(METISdir) \
+	$(CSPARSEdir)
 
 
 DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
@@ -101,7 +103,8 @@ DIRS        = $(BLASdir) \
 	$(AMDdir) \
 	$(UMFPACKdir) \
 	$(SRCdir) \
-	$(METISdir)
+	$(METISdir) \
+	$(CSPARSEdir)
 
 DISTRIBUTED_SUPERLU_LIBRARY     = 
 
@@ -182,6 +185,7 @@ ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
 AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
+CSPARSE_LIBRARY = $(HOME)/lib/libCSparse.a
 TCL_LIBRARY = $(HOME)/tcl/lib/libtcl8.5.a
 
 
@@ -196,7 +200,8 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
 		$(ARPACK_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
-	        $(METIS_LIBRARY)
+	        $(METIS_LIBRARY) \
+		$(CSPARSE_LIBRARY)
 
 # %---------------------------------------------------------%
 # | SECTION 4: COMPILERS                                    |
@@ -405,10 +410,11 @@ MACHINE_NUMERICAL_LIBS  =  \
 	        $(CLBLAS_LIBRARY) \
 		$(BLAS_LIBRARY) \
 		$(CBLAS_LIBRARY) \
+		$(CSPARSE_LIBRARY) \
 		$(GRAPHIC_LIBRARY)\
 		$(FORTO) \
 		$(CUDA_LIB) \
-		-ldl /usr/lib/gcc/x86_64-redhat-linux/4.1.2/libgfortran.a
+		-ldl /usr/lib/gcc/x86_64-redhat-linux/4.8.2/libgfortran.a
 
 
 MACHINE_SPECIFIC_LIBS = $(AGL_OBJS) 
