@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef RJWatsonEQS3d_h
 #define RJWatsonEQS3d_h
 

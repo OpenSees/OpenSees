@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef RJWatsonEQS2d_h
 #define RJWatsonEQS2d_h
 

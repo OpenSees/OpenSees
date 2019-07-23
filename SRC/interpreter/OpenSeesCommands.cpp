@@ -2602,57 +2602,6 @@ int OPS_neesMetaData()
     return 0;
 }
 
-int OPS_neesUpload()
-{
-    if (cmds == 0) return 0;
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr << "WARNING neesUpload -user isername? -pass passwd? -proj projID? -exp expID? -title title? -description description\n";
-	return -1;
-    }
-    int projID =0;
-    int expID =0;
-    const char *userName =0;
-    const char *userPasswd =0;
-
-    SimulationInformation* simulationInfo = cmds->getSimulationInformation();
-    if (simulationInfo == 0) return -1;
-
-    int numdata = 1;
-    while (OPS_GetNumRemainingInputArgs() > 1) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-user") == 0) {
-	    userName = OPS_GetString();
-
-	} else if (strcmp(flag,"-pass") == 0) {
-	    userPasswd = OPS_GetString();
-
-	} else if (strcmp(flag,"-projID") == 0) {
-	    if (OPS_GetIntInput(&numdata, &projID) < 0) {
-		opserr << "WARNING neesUpload -invalid expID\n";
-		return -1;
-	    }
-
-	} else if (strcmp(flag,"-expID") == 0) {
-	    if (OPS_GetIntInput(&numdata, &expID) < 0) {
-		opserr << "WARNING neesUpload -invalid expID\n";
-		return -1;
-	    }
-
-	} else if (strcmp(flag,"-title") == 0) {
-	    simulationInfo->setTitle(OPS_GetString());
-
-	} else if (strcmp(flag,"-description") == 0) {
-	    simulationInfo->setDescription(OPS_GetString());
-
-	}
-    }
-
-    simulationInfo->neesUpload(userName, userPasswd, projID, expID);
-
-    return 0;
-}
-
 int OPS_defaultUnits()
 {
     if (OPS_GetNumRemainingInputArgs() < 8) {
