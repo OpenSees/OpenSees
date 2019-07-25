@@ -38,6 +38,13 @@
 #include <ElementIter.h>
 #include <vector>
 
+int Mesh::startNodeTag = 1;
+
+#ifdef _PARALLEL_INTERPRETERS
+
+#include <mpi.h>
+#endif
+
 void *OPS_ElasticBeam2d(const ID &info);
 
 void *OPS_ForceBeamColumn2d(const ID &info);
@@ -193,6 +200,10 @@ Mesh::nextNodeTag() {
         ndtag = node->getTag();
     }
 
+    if (startNodeTag > ndtag + 1) {
+        return startNodeTag;
+    }
+
     return ndtag + 1;
 }
 
@@ -307,6 +318,8 @@ Mesh::setEleArgs() {
         }
 
     } else if (strcmp(type, "PFEMElementCompressible") == 0) {
+        opserr << "WARNING: PFEMElementCompressible needs fix in TriMesh\n";
+        return -1;
         if (ndm == 2) {
             eleType = ELE_TAG_PFEMElement2DCompressible;
             if (OPS_PFEMElement2DCompressible(info) == 0) {
@@ -428,7 +441,6 @@ Mesh::newElements(const ID &elends) {
 
 
     int eletag = this->nextEleTag();
-    int nodetag = this->nextNodeTag();
 
     // create elements
     ID neweletags(elends.Size() / numelenodes);
@@ -441,7 +453,7 @@ Mesh::newElements(const ID &elends) {
         neweletags(i) = eletag + i;
 
         // info
-        ID info(numelenodes + 4);
+        ID info(numelenodes + 3);
         info(0) = 2; // load data
         info(1) = this->getTag(); // mesh tag
         info(2) = neweletags(i); // ele tag
@@ -449,7 +461,6 @@ Mesh::newElements(const ID &elends) {
             // get elenode
             info(3 + j) = elends(numelenodes * i + j);
         }
-        info(numelenodes + 3) = nodetag + i;
 
         // create element
         neweles[i] = (Element *) OPS_Func(info);
