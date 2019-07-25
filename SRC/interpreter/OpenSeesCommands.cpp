@@ -3040,9 +3040,9 @@ int OPS_systemSize()
 
 void* OPS_ParallelRCM() {
 
+#ifdef _PARALLEL_INTERPRETERS
     ParallelNumberer *theParallelNumberer = 0;
     if (cmds == 0) return theParallelNumberer;
-#ifdef _PARALLEL_INTERPRETERS
 
     MachineBroker* machine = cmds->getMachineBroker();
     Channel** channels = cmds->getChannels();
@@ -3055,15 +3055,18 @@ void* OPS_ParallelRCM() {
     theParallelNumberer->setProcessID(rank);
     theParallelNumberer->setChannels(numChannels, channels);
 
-#endif
     return theParallelNumberer;
+#else
+    return 0;
+#endif
+
 }
 
 void* OPS_ParallelNumberer() {
 
+#ifdef _PARALLEL_INTERPRETERS
     ParallelNumberer *theParallelNumberer = 0;
     if (cmds == 0) return theParallelNumberer;
-#ifdef _PARALLEL_INTERPRETERS
 
     MachineBroker* machine = cmds->getMachineBroker();
     Channel** channels = cmds->getChannels();
@@ -3075,16 +3078,18 @@ void* OPS_ParallelNumberer() {
     theParallelNumberer->setProcessID(rank);
     theParallelNumberer->setChannels(numChannels, channels);
 
-#endif
     return theParallelNumberer;
+#else
+    return 0;
+#endif
 }
 
 void* OPS_ParallelDisplacementControl() {
+#ifdef _PARALLEL_INTERPRETERS
     DistributedDisplacementControl *theDDC = 0;
     if (cmds == 0) {
         return theDDC;
     }
-#ifdef _PARALLEL_INTERPRETERS
     int idata[3];
     double ddata[3];
 
@@ -3131,9 +3136,11 @@ void* OPS_ParallelDisplacementControl() {
     int rank = machine->getPID();
     theDDC->setProcessID(rank);
     theDDC->setChannels(numChannels, channels);
+    return theDDC;
+#else
+    return 0;
 #endif
 
-    return theDDC;
 }
 
 void* OPS_MumpsSolver() {
@@ -3155,9 +3162,9 @@ void* OPS_MumpsSolver() {
         }
     }
 
+#ifdef _PARALLEL_INTERPRETERS
     MumpsParallelSOE* soe = 0;
 
-#ifdef _PARALLEL_INTERPRETERS
     MumpsParallelSolver *solver= new MumpsParallelSolver(icntl7, icntl14);
     soe = new MumpsParallelSOE(*solver);
 
@@ -3168,9 +3175,11 @@ void* OPS_MumpsSolver() {
     int rank = machine->getPID();
     soe->setProcessID(rank);
     soe->setChannels(numChannels, channels);
+    return soe;
+#else
+    return 0;
 #endif
 
-    return soe;
 }
 
 // Sensitivity:BEGIN /////////////////////////////////////////////
