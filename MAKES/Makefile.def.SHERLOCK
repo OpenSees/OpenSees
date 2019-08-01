@@ -1,6 +1,7 @@
 # module load scalapack
 # module load mumps
 # module load metis
+# module load parmetis
 # module load python (when building python)
 
 ############################################################################
