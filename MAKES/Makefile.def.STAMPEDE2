@@ -1,0 +1,494 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#            to use the OpenSees framework.
+#
+#   version created for TACC ranger & their Portland Group Compilers
+#
+#  Written: fmk
+#  Created: 02/2008
+#
+#
+############################################################################
+
+
+# you nooed load module petsc in .bashrc
+# in the .basrc_user, or .cshrc_user you need to add the following
+# module load petsc
+# PUT YOUR HOME DIRECTOREY HERE IF NOT THE DEFAULT ONE IN 
+
+#HOME  = /home1/00477/tg457427/
+
+BASE  = 
+
+FE    = $(HOME)/OpenSees/SRC
+
+#PROGRAMMING_MODE = SEQUENTIAL
+#PROGRAMMING_MODE = PARALLEL
+#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesSP
+endif
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesMP
+endif
+
+# %---------------------------------%
+# |  SECTION 2: MAKEFILE CONSTANTS  |
+# %---------------------------------%
+#
+# Specify the constants the are used as control structure variables in the Makefiles.
+
+OPERATING_SYSTEM = LINUX
+
+#DEBUG_MODE = DEBUG, NO_DEBUG
+DEBUG_MODE = NO_DEBUG
+
+RELIABILITY = NO_RELIABILITY
+
+GRAPHICS = NONE
+
+
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+AMDdir    = $(HOME)/OpenSees/OTHER/AMD
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+SRCdir       = $(HOME)/OpenSees/SRC
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_5.1.1/SRC
+SUPERLU_DISTdir   = $(HOME)/OpenSees/OTHER/SuperLU_DIST_4.3/SRC
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
+
+
+DIRS        = $(SUPERLUdir) \
+	$(SUPERLU_DISTdir) \
+	$(ARPACKdir) \
+	$(CBLASdir) \
+	$(UMFPACKdir) \
+	$(AMDdir) \
+	$(CSPARSEdir) \
+	$(METISdir) \
+	$(SRCdir) 
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+DIRS        = \
+	$(BLASdir) \
+	$(LAPACKdir) \
+	$(SUPERLUdir) \
+	$(ARPACKdir) \
+	$(CBLASdir) \
+	$(UMFPACKdir) \
+	$(METISdir) \
+	$(CSPARSEdir) \
+	$(AMDdir) \
+	$(SRCdir) 
+endif
+
+# %-------------------------------------------------------%
+# | SECTION 4: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk 
+# library!! 
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY          = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY     = $(HOME)/lib/libndarray.a  # BJ_UCD jeremic@@ucdavis.edu 
+MATMOD_LIBRARY      = $(HOME)/lib/libmatmod.a   # BJ_UCD jeremic@@ucdavis.edu 
+BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@@ucdavis.edu
+LAPACK_LIBRARY      = 
+BLAS_LIBRARY        = 
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+AMD_LIBRARY     = $(HOME)/lib/libAMD.a
+CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+CSPARSE_LIBRARY     = $(HOME)/lib/libCSparse.a 
+DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+DISTRIBUTED_SUPERLU_LIBRARY     = 
+LAPACK_LIBRARY      = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
+
+endif
+
+TCL_LIBRARY         = $(HOME)/tcl8.6/lib/libtcl8.6.a -lz
+#TCL_LIBRARY = -ltcl8.6
+TCL_INCLUDES = 
+
+GRAPHIC_LIBRARY     = 
+
+#RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
+RELIABILITY_LIBRARY = 
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+
+WIPE_LIBS	= $(FE_LIBRARY) \
+           $(NDARRAY_LIBRARY) \
+           $(MATMOD_LIBRARY) \
+           $(SUPERLU_LIBRARY) \
+           $(ARPACK_LIBRARY) \
+           $(AMD_LIBRARY) \
+           $(UMFPACK_LIBRARY) \
+           $(METIS_LIBRARY) \
+           $(LAPACK_LIBRARY) \
+           $(BLAS_LIBRARY) \
+           $(CBLAS_LIBRARY) \
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# ################################################### 
+# # Compilers
+# ################################################### 
+
+
+MPI_DIR = $(MPICH_HOME)/intel64
+MPI_BIN = $(MPI_DIR)/bin
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+#CC++            =  $(ICC_BIN)/icpc
+#CC              =  $(ICC_BIN)/icc
+
+#FC              =  $(IFC_BIN)/ifort
+CC++ = g++
+CC = gcc
+FC = gfortran
+
+F90              =  $(FC)
+LINKER           = $(CC++)
+ 
+else
+
+CC++            =  $(MPI_BIN)/mpicxx
+CC              =  $(MPI_BIN)/mpicc
+FC              =  $(MPI_BIN)/mpif90
+F90             =  $(MPI_BIN)/mpif90
+FORTRAN             =  $(FC)
+
+LINKER          =  $(CC++)
+
+endif
+
+AR		= ar 
+ARCH		= ar 
+
+ARFLAGS		= -q
+#ARCHFLAGS       = cqls
+ARCHFLAGS       = -v -q
+
+RANLIB		= ranlib
+
+RANLIBFLAGS     = 
+
+
+GRAPHIC_FLAG = -D_NOGRAPHICS
+PROGRAMMING_FLAG =
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+PROGRAMMING_FLAG = -D_PARALLEL_PROCESSING
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+PROGRAMMING_FLAG = -D_PARALLEL_INTERPRETERS
+endif
+
+#RELIABILITY_FLAG = -D_RELIABILITY
+RELIABILITY_FLAG =
+
+#DEBUG_FLAG = -D_G3DEBUG 
+#DEBUG_FLAG = -g -p -pg 
+#DEBUG_FLAG = -p -g
+DEBUG_FLAG = 
+
+PLAINCONCRETE_FLAG = -D_HAVE_PSUMAT
+MUMPS_FLAG = 
+PETSC_FLAG =
+
+#OPT_FLAG = -fPIC
+OPT_FLAG = -O2 
+#OPT_FLAG = -O0
+
+COMP_FLAG = -DMPICH_IGNORE_CXX_SEEK 
+
+C++FLAGS         = -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include $(PLAINCONCRETE_FLAG) -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
+		$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
+		-D_TCL85 -D_BLAS
+
+CFLAGS          =  -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG)$(PROGRAMMING_FLAG) $(OPT_FLAG) $(COMP_FLAG) -D_TCL85 -D_BLAS
+FFLAGS          =  $(OPT_FLAG) $(COMP_FLAG)
+LINKFLAGS       = 
+
+
+# Misc
+MAKE            = /usr/bin/gmake
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 6: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@@$(ECHO) "Unknown target $@@, try:  make help"
+#
+# %-----------------------------------------------%
+# |  Command to build .o files from source files. |
+# %-----------------------------------------------%
+#
+
+
+.cpp.o: 
+	@@$(ECHO) Making $@@ from $< $@@ with $(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+	@@$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+
+.C.o:
+	@@$(ECHO) Making $@@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+.c.o:
+	@@$(ECHO) Making $@@ from $<
+	$(CC) $(CFLAGS) -c  $< 
+
+.f.o:      
+	@@$(ECHO) Making $@@ from $<
+	$(FC) $(FFLAGS) -c  $< 
+
+.f77.o:      
+	@@$(ECHO) Making $@@ from $<
+	$(FC) $(FFLAGS) -c $< 
+
+.f90.o:      
+	@@$(ECHO) Making $@@ from $<
+	$(FC90) $(FFLAGS) -c $<
+
+# %---------------------------------------------------------%
+# | SECTION 7: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+                    -L$(HOME)/lib 
+
+
+# PETSC
+HAVEPETSC = NO
+PETSCINC =
+PETSC_LIB = 
+
+ifeq ($(PROGRAMMMING_MODE), SEQUENTIAL)
+HAVEPETSC = NO
+endif
+
+
+ifeq ($(HAVEPETSC), YES)
+
+PETSC = YES
+PETSC_FLAG = -D_PETSC
+PETSC_DIR = $(TACC_PETSC_DIR)
+
+BOPT = O
+
+PETSC_INC = -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) -D_PETSC 
+PETSC_LIB =  -L$(PETSC_DIR)/lib/libO_c++/$(PETSC_ARCH) \
+	$(FE)/system_of_eqn/linearSOE/petsc/PetscSOE.o \
+	$(FE)/system_of_eqn/linearSOE/petsc/PetscSolver.o \
+	$(FE)/system_of_eqn/linearSOE/petsc/PetscSparseSeqSolver.o \
+	-lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc \
+	-L/usr/X11/lib -lX11 -lGL
+
+endif
+
+
+MUMPS_INCLUDE =
+MUMPS_LIB = 
+
+
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+HAVEMUMPS = NO
+MUMPS_FLAG =
+MUMPS_LIB = 
+
+else
+
+
+MUMPS = YES
+MUMPS_FLAG = -D_MUMPS
+MUMPS_DIR = $(HOME)/MUMPS_5.0.0
+#MUMPS_DIR = $(TACC_PETSC_LIB)/..
+
+PLAT    = MPICHGM-INTEL80
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+
+SCALAP  = $(BLACSlib) $(SCALAPlib) $(BLACSlib) \
+
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+
+SCALAP  = \
+	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
+ 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
+	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
+	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
+	$(BLACSlib) $(SCALAPlib) $(BLACSlib)
+
+#
+#
+#	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
+#	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
+
+endif
+
+
+MUMPS_LIB = -L$(MUMPS_DIR)/lib \
+	-ldmumps -lmumps_common \
+	-lpord \
+	$(SCALAP) 
+
+MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
+
+endif
+
+MKL_LIB = $(MKLROOT)/lib/intel64
+
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+PARALLEL_LIB = 
+
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+
+PARALLEL_LIB = \
+        -Wl,-rpath,$(MKL_LIB) \
+	-L$(MKL_LIB) \
+	$(MKL_LIB)/libmkl_scalapack_lp64.a \
+	$(MKL_LIB)/libmkl_core.a \
+	$(MKL_LIB)/libmkl_blacs_intelmpi_lp64.a \
+	$(MKL_LIB)/libmkl_intel_lp64.a \
+	$(MKL_LIB)/libmkl_sequential.a \
+	$(MKL_LIB)/libmkl_core.a \
+	$(MKL_LIB)/libmkl_sequential.a \
+	$(MKL_LIB)/libmkl_core.a
+
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+
+PARALLEL_LIB = \
+        -Wl,-rpath,$(MKL_LIB) \
+	-L$(MKL_LIB) \
+	$(MKL_LIB)/libmkl_scalapack_lp64.a \
+	$(MKL_LIB)/libmkl_core.a \
+	$(MKL_LIB)/libmkl_blacs_intelmpi_lp64.a \
+	$(MKL_LIB)/libmkl_intel_lp64.a \
+	$(MKL_LIB)/libmkl_sequential.a \
+	$(MKL_LIB)/libmkl_core.a \
+	$(MKL_LIB)/libmkl_sequential.a \
+	$(MKL_LIB)/libmkl_core.a
+
+
+#	     $(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
+#	     $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
+#	     $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+
+endif
+
+
+HPM_LIB = 
+
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+  $(ARPACK_LIBRARY) \
+  $(SUPERLU_LIBRARY) \
+  $(UMFPACK_LIBRARY) \
+  $(AMD_LIBRARY) \
+  $(GRAPHIC_LIBRARY)\
+  $(RELIABILITY_LIBRARY) \
+  $(DISTRIBUTED_SUPERLU_LIBRARY) $(CSPARSE_LIBRARY) \
+  $(METIS_LIBRARY) $(PETSC_LIB) $(CBLAS_LIBRARY) \
+  $(LAPACK_LIBRARY) $(MUMPS_LIB) $(BLAS_LIBRARY) $(PARALLEL_LIB)
+
+#  $(DISTRIBUTED_SUPERLU_LIBRARY) $(METIS_LIBRARY) \
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+#MACHINE_SPECIFIC_LIBS = -mkl=sequential -static-intel -lifcore
+MACHINE_SPECIFIC_LIBS = -lpthread -lifcore -lgfortran -ldl
+
+
+else
+
+MACHINE_SPECIFIC_LIBS =  -static-intel -L$(IFC_LIB) -lifcore
+
+endif
+
+# %---------------------------------------------------------%
+# | SECTION 8: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+
+MACHINE_INCLUDES = -I$(MPICH_HOME)/include \
+	 -I/usr/local/BerkeleyDB.4.0/include \
+	-I/usr/include/mysql \
+	-I$(HOME)/include   \
+	-I$(UMFPACKdir) \
+	-I$(SUPERLUdir) \
+	-I$(SUPERLU_DISTdir) \
+	$(PETSC_INC) $(MUMPS_INCLUDE)
+
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+#TCL_INCLUDES = -I$(HOME)/include
+PYTHON_INCLUDES =-I/opt/apps/intel17/python3/3.6.3/include/python3.6m
+INCLUDES =  $(TCL_INCLUDES) $(PYTHON_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
+
