@@ -95,10 +95,10 @@ PythonModule::getInt(int *data, int numArgs)
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
 #if PY_MAJOR_VERSION >= 3
-        if (!PyLong_Check(o)) {
+        data[i] = PyLong_AsLong(o);
+        if (PyErr_Occurred()) {
             return -1;
         }
-        data[i] = PyLong_AS_LONG(o);
 #else
         if (!PyInt_Check(o)) {
             return -1;
@@ -120,10 +120,10 @@ PythonModule::getDouble(double *data, int numArgs)
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
-        if (!PyFloat_Check(o)) {
+        data[i] = PyFloat_AsDouble(o);
+        if (PyErr_Occurred()) {
             return -1;
         }
-        data[i] = PyFloat_AS_DOUBLE(o);
     }
 
     return 0;
