@@ -285,14 +285,15 @@ initopensees(void)
         INITERROR;
     struct module_state *st = GETSTATE(module);
 
-    st->error = PyErr_NewException("opensees.error", NULL, NULL);
-    PyObject* ops_msg = PyErr_NewException("opensees.msg", NULL, NULL);
+    st->error = PyErr_NewExceptionWithDoc("opensees.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(module);
         INITERROR;
     }
+    Py_INCREF(st->error);
+    PyModule_AddObject(module, "OpenSeesError", st->error);
 
-    sserr.setError(st->error,ops_msg);
+    sserr.setError(st->error);
 
     Py_AtExit(cleanupFunc);
 
