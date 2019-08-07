@@ -124,12 +124,10 @@ public:
             if (echoApplication) err_out(p);
             return StandardStream::operator<<(p);
         }
-        if (msg.empty()) {
-            if (echoApplication) {
-                msg = "See stderr output";
-            } else {
-                msg = "See log file";
-            }
+        if (echoApplication) {
+            msg = "See stderr output";
+        } else {
+            msg = "See log file";
         }
         msg.erase(msg.find_last_not_of("\n\r ") + 1);  // Strip extra newlines from the message
         PyErr_SetString(error, msg.c_str());
