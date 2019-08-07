@@ -39,6 +39,11 @@ public:
         error = err;
     }
 
+    int setFile(const char *fileName, openMode mode, bool echo) {
+        echoApplication = echo;
+        return StandardStream::setFile(fileName, mode, false);
+    }
+
     OPS_Stream &operator<<(char c) {
         if (echoApplication) err_out(c);
         return StandardStream::operator<<(c);
@@ -120,7 +125,11 @@ public:
             return StandardStream::operator<<(p);
         }
         if (msg.empty()) {
-            msg = "See stderr output";
+            if (echoApplication) {
+                msg = "See stderr output";
+            } else {
+                msg = "See log file";
+            }
         }
         msg.erase(msg.find_last_not_of("\n\r ") + 1);  // Strip extra newlines from the message
         PyErr_SetString(error, msg.c_str());
