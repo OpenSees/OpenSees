@@ -96,6 +96,7 @@
 #include <InitStrainMaterial.h>
 #include <Bond_SP01.h>
 #include <SimpleFractureMaterial.h>
+#include <ConfinedConcrete01.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -1239,6 +1240,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_SimpleFractureMaterial:
 	  return new SimpleFractureMaterial();
+
+        case MAT_TAG_ConfinedConcrete01:
+            return new ConfinedConcrete01();
 
 
 	default:

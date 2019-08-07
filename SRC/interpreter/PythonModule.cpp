@@ -50,43 +50,36 @@ OPS_Stream *opserrPtr = &sserr;
 
 
 PythonModule::PythonModule()
-    :wrapper(), cmds(this)
-{
+        : wrapper(), cmds(this) {
     // does nothing
 }
 
-PythonModule::~PythonModule()
-{
+PythonModule::~PythonModule() {
     // does nothing
 }
 
 int
-PythonModule::run()
-{
+PythonModule::run() {
     return 0;
 }
 
 int
-PythonModule::addCommand(const char *, Command &)
-{
+PythonModule::addCommand(const char *, Command &) {
     return -1;
 }
 
 int
-PythonModule::removeCommand(const char *)
-{
+PythonModule::removeCommand(const char *) {
     return -1;
 }
 
 int
-PythonModule::getNumRemainingInputArgs(void)
-{
+PythonModule::getNumRemainingInputArgs(void) {
     return wrapper.getNumberArgs() - wrapper.getCurrentArg();
 }
 
 int
-PythonModule::getInt(int *data, int numArgs)
-{
+PythonModule::getInt(int *data, int numArgs) {
     if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
         return -1;
     }
@@ -94,25 +87,17 @@ PythonModule::getInt(int *data, int numArgs)
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
-#if PY_MAJOR_VERSION >= 3
         data[i] = PyLong_AsLong(o);
         if (PyErr_Occurred()) {
             return -1;
         }
-#else
-        if (!PyInt_Check(o)) {
-            return -1;
-        }
-        data[i] = PyInt_AS_LONG(o);
-#endif
     }
 
     return 0;
 }
 
 int
-PythonModule::getDouble(double *data, int numArgs)
-{
+PythonModule::getDouble(double *data, int numArgs) {
     if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
         return -1;
     }
@@ -129,9 +114,8 @@ PythonModule::getDouble(double *data, int numArgs)
     return 0;
 }
 
-const char*
-PythonModule::getString()
-{
+const char *
+PythonModule::getString() {
     if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
         return 0;
     }
@@ -154,64 +138,56 @@ PythonModule::getString()
 }
 
 int
-PythonModule::getStringCopy(char **stringPtr)
-{
+PythonModule::getStringCopy(char **stringPtr) {
     return -1;
 }
 
 void
-PythonModule::resetInput(int cArg)
-{
+PythonModule::resetInput(int cArg) {
     wrapper.resetCommandLine(cArg);
 }
 
 int
-PythonModule::setInt(int* data, int numArgs)
-{
+PythonModule::setInt(int *data, int numArgs) {
     wrapper.setOutputs(data, numArgs);
 
     return 0;
 }
 
 int
-PythonModule::setDouble(double* data, int numArgs)
-{
+PythonModule::setDouble(double *data, int numArgs) {
     wrapper.setOutputs(data, numArgs);
 
     return 0;
 }
 
 int
-PythonModule::setString(const char* str)
-{
+PythonModule::setString(const char *str) {
     wrapper.setOutputs(str);
 
     return 0;
 }
 
 int
-PythonModule::runCommand(const char* cmd)
-{
+PythonModule::runCommand(const char *cmd) {
     return PyRun_SimpleString(cmd);
 }
 
-static PythonModule* module = 0;
+static PythonModule *module = 0;
 
-PyMethodDef* getmethodsFunc()
-{
+PyMethodDef *getmethodsFunc() {
     module = new PythonModule;
-    PythonWrapper* wrapper = module->getWrapper();
+    PythonWrapper *wrapper = module->getWrapper();
     wrapper->addOpenSeesCommands();
-    
+
     return wrapper->getMethods();
 }
 
-void cleanupFunc()
-{
+void cleanupFunc() {
     module->getCmds().wipe();
-    // if (module != 0) {
-    //     delete module;
-    // }
+    if (module != 0) {
+        delete module;
+    }
 }
 
 struct module_state {
@@ -236,30 +212,28 @@ static struct module_state _state;
 
 #if PY_MAJOR_VERSION >= 3
 
-static int opensees_traverse(PyObject *m, visitproc visit, void *arg)
-{
+static int opensees_traverse(PyObject *m, visitproc visit, void *arg) {
     Py_VISIT(GETSTATE(m)->error);
 
     return 0;
 }
 
-static int opensees_clear(PyObject *m)
-{
+static int opensees_clear(PyObject *m) {
     Py_CLEAR(GETSTATE(m)->error);
 
     return 0;
 }
 
 static struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT,
-    "opensees",
-    NULL,
-    sizeof(struct module_state),
-    getmethodsFunc(),
-    NULL,
-    opensees_traverse,
-    opensees_clear,
-    NULL
+        PyModuleDef_HEAD_INIT,
+        "opensees",
+        NULL,
+        sizeof(struct module_state),
+        getmethodsFunc(),
+        NULL,
+        opensees_traverse,
+        opensees_clear,
+        NULL
 };
 
 #define INITERROR return NULL
@@ -276,28 +250,28 @@ initopensees(void)
 #endif
 {
 #if PY_MAJOR_VERSION >= 3
-    PyObject *module = PyModule_Create(&moduledef);
+    PyObject *pymodule = PyModule_Create(&moduledef);
 #else
-    PyObject *module = Py_InitModule("opensees", getmethodsFunc());
+    PyObject *pymodule = Py_InitModule("opensees", getmethodsFunc());
 #endif
 
-    if (module == NULL)
+    if (pymodule == NULL)
         INITERROR;
-    struct module_state *st = GETSTATE(module);
+    struct module_state *st = GETSTATE(pymodule);
 
     st->error = PyErr_NewExceptionWithDoc("opensees.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
     if (st->error == NULL) {
-        Py_DECREF(module);
+        Py_DECREF(pymodule);
         INITERROR;
     }
     Py_INCREF(st->error);
-    PyModule_AddObject(module, "OpenSeesError", st->error);
+    PyModule_AddObject(pymodule, "OpenSeesError", st->error);
 
     sserr.setError(st->error);
 
     Py_AtExit(cleanupFunc);
 
 #if PY_MAJOR_VERSION >= 3
-    return module;
+    return pymodule;
 #endif
 }
