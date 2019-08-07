@@ -32,73 +32,81 @@
 
 #include "BackgroundDef.h"
 
-class Particle
-{
+class Particle {
 
 public:
     Particle();
+
     ~Particle();
 
-    void moveTo(const VDouble& coord, double subdt) {
-	this->coord = coord;
-	dt -= subdt;
-	if (dt < 0) dt = 0.0;
+    void moveTo(const VDouble &coord, double subdt) {
+        this->coord = coord;
+        dt -= subdt;
+        if (dt < 0) dt = 0.0;
     }
 
-    void move(const VDouble& disp, double subdt) {
-	this->coord += disp;
-	dt -= subdt;
-	if (dt < 0) dt = 0.0;
+    void move(const VDouble &disp, double subdt) {
+        this->coord += disp;
+        dt -= subdt;
+        if (dt < 0) dt = 0.0;
     }
 
-    void setVel(const VDouble& vel) {
-	if (!updated) {
-	    this->velocity = vel;
-	    updated = true;
-	}
+    void setVel(const VDouble &vel) {
+        if (!updated) {
+            this->velocity = vel;
+            updated = true;
+        }
     }
 
-    void incrVel(const VDouble& dv) {
-	if (!updated) {
-	    this->velocity += dv;
-	    updated = true;
-	}
+    void incrVel(const VDouble &dv) {
+        if (!updated) {
+            this->velocity += dv;
+            updated = true;
+        }
     }
 
     void setPressure(double p) {
-	pressure = p;
+        pressure = p;
     }
 
-    void setAccel(const VDouble& accel) {
-	this->accel = accel;
+    void setAccel(const VDouble &accel) {
+        this->accel = accel;
     }
 
     void setPdot(double pdot) {
-	this->pdot = pdot;
+        this->pdot = pdot;
     }
 
     void setGroupTag(int tag) {
-	this->gtag = tag;
+        this->gtag = tag;
     }
 
     void needUpdate(double dt) {
-	updated = false;
-	this->dt = dt;
+        updated = false;
+        this->dt = dt;
     }
 
     void setFixed() {
-	fixed = true;
+        fixed = true;
     }
 
-    const VDouble& getCrds() const {return coord;}
-    const VDouble& getVel() const {return velocity;}
-    const VDouble& getAccel() const {return accel;}
-    double getPressure() const {return pressure;}
-    double getPdot() const {return pdot;}
-    int getGroupTag() const {return gtag;}
-    bool isUpdated() const {return updated;}
-    bool isFixed() const {return fixed;}
-    double getDt() const {return dt;}
+    const VDouble &getCrds() const { return coord; }
+
+    const VDouble &getVel() const { return velocity; }
+
+    const VDouble &getAccel() const { return accel; }
+
+    double getPressure() const { return pressure; }
+
+    double getPdot() const { return pdot; }
+
+    int getGroupTag() const { return gtag; }
+
+    bool isUpdated() const { return updated; }
+
+    bool isFixed() const { return fixed; }
+
+    double getDt() const { return dt; }
 
 private:
     VDouble coord;

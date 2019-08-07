@@ -793,13 +793,13 @@ OpenSeesCommands::wipe()
 	theDatabase = 0;
     }
 
-    // wipe all meshes
-    OPS_clearAllMesh();
-
     // wipe domain
     if (theDomain != 0) {
 	theDomain->clearAll();
     }
+
+    // wipe all meshes
+    OPS_clearAllMesh();
 
     // time set to zero
     ops_Dt = 0.0;
@@ -1463,6 +1463,8 @@ int OPS_Integrator()
     } else if (strcmp(type,"CentralDifferenceNoDamping") == 0) {
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
+	} else if (strcmp(type, "ExplicitDifference") == 0) {
+        ti = (TransientIntegrator*)OPS_Explicitdifference();
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
     }
