@@ -22,7 +22,7 @@
 // Computational Geomechanics Group
 // University of Washington
 // Date:      Sep 2018
-// Last Modified: May 2019
+// Last Modified: Aug 2019
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
