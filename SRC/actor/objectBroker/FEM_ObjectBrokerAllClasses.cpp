@@ -61,7 +61,7 @@
 
 // uniaxial material model header files
 #include <BoucWenMaterial.h>		//SAJalali
-#include <SPSW02.h>			;//SAJalali
+#include <SPSW02.h>			//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
 #include <Elastic2Material.h>
@@ -188,6 +188,7 @@
 #include <ManzariDafalias3DRO.h>
 #include <ManzariDafaliasPlaneStrainRO.h>
 #include <PM4Sand.h>
+#include <PM4Silt.h>
 #include <InitialStateAnalysisWrapper.h>
 #include <stressDensity.h>
 #include <InitStressNDMaterial.h>
@@ -1432,6 +1433,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PM4Sand:
     return new PM4Sand();
+
+  case ND_TAG_PM4Silt:
+	return new PM4Silt();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
