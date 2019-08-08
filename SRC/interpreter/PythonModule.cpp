@@ -87,8 +87,13 @@ PythonModule::getInt(int *data, int numArgs) {
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
-        data[i] = PyLong_AsLong(o);
-        if (PyErr_Occurred()) {
+        if (PyLong_Check(o) || PyFloat_Check(o) || PyBool_Check(o)) {
+            PyErr_Clear();
+            data[i] = PyLong_AsLong(o);
+            if (PyErr_Occurred()) {
+                return -1;
+            }
+        } else {
             return -1;
         }
     }
@@ -105,8 +110,13 @@ PythonModule::getDouble(double *data, int numArgs) {
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
-        data[i] = PyFloat_AsDouble(o);
-        if (PyErr_Occurred()) {
+        if (PyLong_Check(o) || PyFloat_Check(o) || PyBool_Check(o)) {
+            PyErr_Clear();
+            data[i] = PyFloat_AsDouble(o);
+            if (PyErr_Occurred()) {
+                return -1;
+            }
+        } else {
             return -1;
         }
     }
