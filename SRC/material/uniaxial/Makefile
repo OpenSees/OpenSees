@@ -61,8 +61,10 @@ OBJS       = UniaxialMaterial.o \
 	SteelMP.o \
 	SmoothPSConcrete.o \
 	Steel02.o \
+	Steel02Fatigue.o \
 	GNGMaterial.o \
 	Concrete02.o \
+	Concrete02IS.o \
 	Steel03.o \
 	MultiLinear.o \
 	HookGap.o \
