@@ -28,7 +28,7 @@
 // Modified by: Won Lee
 // Created: 10/3/05
 // Modified from Concrete01.h (see details below)
-// Desctiption: This file contains the class definition for Concrete01WithSITC
+// Description: This file contains the class definition for Concrete01WithSITC
 // Description: Concrete01 model modified to include SITC effect (ref. Prof. 
 //	John Stanton of Univ. of Washington).  Use modified rules from his paper to include this 
 //	effect (J.F. Stanton and H.D. McNiven, "The Development of a Mathematical

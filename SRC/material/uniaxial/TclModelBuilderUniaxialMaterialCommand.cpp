@@ -1265,7 +1265,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     else if (strcmp(argv[1], "Concrete07") == 0) {
       // Check to see if there are enough arquements
       if (argc < 11) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	printCommand(argc, argv);
 	opserr << "Want: uniaxialMaterial Concrete07 tag? fpc? epsc0? Ec? fpt? epst0? xcrp? xcrn? r?\n";
 	return TCL_ERROR;

@@ -25,7 +25,7 @@
 // Written: NM (nmitra@u.washington.edu) 
 // Created: December 2005
 //
-// Description: This file contains the class defination for 
+// Description: This file contains the class definition for 
 // shear-panel material. The file is similar to the Pinching4 material but has a 
 // new strength damage calculations.
 

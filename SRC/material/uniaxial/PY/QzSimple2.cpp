@@ -297,7 +297,7 @@ void QzSimple2::getNearField(double zlast, double dz, double dz_old)
 	//
 	TNF_z = zlast + dz;
 
-	// Postive loading
+	// Positive loading
 	//
 	if(NFdz >= 0.0){
 		// Check if elastic using z < zinr
