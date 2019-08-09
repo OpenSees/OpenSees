@@ -213,6 +213,9 @@
 #define MAT_TAG_BoucWenOriginal                 96
 #define MAT_TAG_DamperMaterial                  97
 #define MAT_TAG_SPSW02			                98	//SAJalali
+#define MAT_TAG_Steel02Fatigue					99 //nassermarafi
+#define MAT_TAG_Concrete02IS					100 //nassermarafi
+#define MAT_TAG_ConfinedConcrete01              99
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206

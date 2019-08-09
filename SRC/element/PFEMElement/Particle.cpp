@@ -30,11 +30,9 @@
 #include "Particle.h"
 
 Particle::Particle()
-    :coord(),velocity(),accel(),pressure(0),pdot(0),gtag(0),
-     updated(false),dt(0.0),fixed(false)
-{
+        : coord(), velocity(), accel(), pressure(0), pdot(0), gtag(0),
+          updated(false), dt(0.0), fixed(false) {
 }
 
-Particle::~Particle()
-{
+Particle::~Particle() {
 }

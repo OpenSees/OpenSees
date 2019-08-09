@@ -22,7 +22,7 @@
 // Computational Geomechanics Group
 // University of Washington
 // Date:      Sep 2018
-// Last Modified: May 2019
+// Last Modified: Aug 2019
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
@@ -51,10 +51,10 @@ const double		PM4Silt::one3 = 1.0 / 3.0;
 const double		PM4Silt::two3 = 2.0 / 3.0;
 const double		PM4Silt::root23 = sqrt(2.0 / 3.0);
 const double		PM4Silt::small = 1e-10;
-const double		PM4Silt::maxStrainInc = 1e-6;
+const double		PM4Silt::maxStrainInc = 1e-5;
 const bool  		PM4Silt::debugFlag = false;
 const char unsigned	PM4Silt::mMaxSubStep = 10;
-char  unsigned		PM4Silt::me2p = 1;
+char  unsigned		PM4Silt::me2p = 0;
 
 Vector 			PM4Silt::mI1(3);
 Matrix  		PM4Silt::mIIco(3, 3);
@@ -109,7 +109,7 @@ OPS_PM4SiltMaterial(void)
 	oData[17] = 4.0;     // Ckaf
 	oData[18] = 0.01;    // m
 	oData[19] = 2.0;	 // CG_consol
-	oData[20] = 1;       // integration scheme
+	oData[20] = 5;       // integration scheme
 	oData[21] = 0;       // tangent type
 	oData[22] = 1.0e-7;	 // TolF
 	oData[23] = 1.0e-10;	// TolR
@@ -447,25 +447,23 @@ int PM4Silt::revertToStart(void)
 NDMaterial*
 PM4Silt::getCopy(void)
 {
-	opserr << "PM4Silt::getCopy -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	PM4Silt  *clone;
+	clone = new PM4Silt();
+	*clone = *this;
+	return clone;
 }
 
 const char*
 PM4Silt::getType(void) const
 {
-	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	return "PlaneStrain";
 }
 
 int
 PM4Silt::getOrder(void) const
 {
-	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+
+	return 3;
 }
 
 
@@ -2420,7 +2418,7 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	// updataed K_p formulation following PM4Silt V1. mAlpha_in is the apparent back-stress ratio.
 	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
 	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
-	if (fabs(AlphaAlphaInDotN) < small) {
+	if (fabs(AlphaAlphaBDotN) < small) {
 		// adding this condition to avoid division by zero error
 		h = 1.0e10;
 	}
