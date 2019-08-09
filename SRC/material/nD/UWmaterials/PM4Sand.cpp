@@ -18,9 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Written: Long Chen, Pedro Arduino
-//          Nov 2016, University of Washington
-//          Modified Jan 2019
+// Author: Long Chen, Pedro Arduino
+// Computational Geomechanics Group
+// University of Washington
+// Date:           Nov 2016
+// Last Modified:  Aug 2019
 
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
@@ -49,9 +51,9 @@ const double		PM4Sand::one3 = 1.0 / 3.0;
 const double		PM4Sand::two3 = 2.0 / 3.0;
 const double		PM4Sand::root23 = sqrt(2.0 / 3.0);
 const double		PM4Sand::small = 1e-10;
-const double		PM4Sand::maxStrainInc = 1e-6;
+const double		PM4Sand::maxStrainInc = 1e-5;
 const bool  		PM4Sand::debugFlag = false;
-char unsigned		PM4Sand::me2p = 1;
+char unsigned		PM4Sand::me2p = 0;
 
 Vector 			PM4Sand::mI1(3);
 Matrix  		PM4Sand::mIIco(3, 3);
@@ -106,7 +108,7 @@ OPS_PM4SandMaterial(void)
 	oData[17] = 0.01;    // m
 	oData[18] = -1;    // Fsed_min
 	oData[19] = -1;    //p_sdeo
-	oData[20] = 1;		// IntScheme
+	oData[20] = 5;		// IntScheme
 	oData[21] = 0;		// TanType
 	oData[22] = 1.0e-8;	// TolF
 	oData[23] = 1.0e-8;	// TolR
@@ -2406,7 +2408,7 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	// updataed K_p formulation following PM4Sand V3.1. mAlpha_in is the apparent back-stress ratio. 
 	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
 	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
-	if (fabs(AlphaAlphaInDotN) < small) {
+	if (fabs(AlphaAlphaBDotN) < small) {
 		// adding this condition to avoid division by zero error
 		h = 1.0e10;
 	}
