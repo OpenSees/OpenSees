@@ -21,8 +21,8 @@
  |                                                                          |
  +             Authors: Gang Wang  AND  Professor Nicholas Sitar            +
  |                                                                          |
- |         Department of Civil and Environmental Engineering                |
- +         University of California, Berkeley, CA 94720, USA                +
+ |             Department of Civil and Environmental Engineering            |
+ +             University of California, Berkeley, CA 94720, USA            +
  |                                                                          |
  |             Email: wang@ce.berkeley.edu (G.W.)                           |
  |                                                                          |
