@@ -65,7 +65,7 @@ class BWBN : public UniaxialMaterial
     double deltaShi;
     double lamda;
     
-    // History variables (trial and commited)
+    // History variables (trial and committed)
     double Tstrain, Cstrain;
     double Tz, Cz;
     double Te, Ce;

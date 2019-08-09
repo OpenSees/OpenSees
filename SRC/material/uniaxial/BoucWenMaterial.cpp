@@ -45,7 +45,7 @@ void* OPS_BoucWenMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 10) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: uniaxialMaterial BoucWen tag? alpha? ko? n? gamma?" << endln 
 	       << " beta? Ao? deltaA? deltaNu? deltaEta?" << endln;
 	return 0;

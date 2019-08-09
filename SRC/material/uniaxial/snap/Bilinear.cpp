@@ -119,7 +119,7 @@ Bilinear::Bilinear(int tag, Vector inputParam  ,DamageModel *strength,DamageMode
 	
 	if ( capDispPos < fyieldPos/elstk || capDispNeg > fyieldNeg/elstk )
     {
-		opserr << "Error: Bilinear::Bilinear  : Capping brach must be located outside the yield criteria\n" << "\a";
+		opserr << "Error: Bilinear::Bilinear  : Capping branch must be located outside the yield criteria\n" << "\a";
 		ErrorFlag =1;
     }
 	

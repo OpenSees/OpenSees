@@ -335,7 +335,7 @@ void PySimple1::getNearField(double ylast, double dy, double dy_old)
 	//
 	TNF_y = ylast + dy;
 
-	// Postive loading
+	// Positive loading
 	//
 	if(NFdy >= 0.0){
 		// Check if elastic using y < yinr

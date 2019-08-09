@@ -136,7 +136,7 @@ c
 
 c	---------------------------------
 
-c     Check whether low-cycle fatigue induced rupture has occured:
+c     Check whether low-cycle fatigue induced rupture has occurred:
 c
       if(d(14).gt.1.d-8.and.
      *hr(30).lt.-99.d0) then
