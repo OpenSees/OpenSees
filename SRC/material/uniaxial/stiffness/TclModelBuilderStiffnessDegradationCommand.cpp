@@ -38,18 +38,24 @@
 
 #include <string.h>
 
-static void printCommand(int argc, TCL_Char **argv)
-{
-  opserr << "Input command: ";
-  for (int i=0; i<argc; i++)
-    opserr << argv[i] << " ";
-  opserr << endln;
-} 
+extern void *OPS_DuctilityStiffnessDegradation(void);
+extern void *OPS_EnergyStiffnessDegradation(void);
+extern void *OPS_ConstantStiffnessDegradation(void);
+extern void *OPS_PincheiraStiffnessDegradation(void);
+
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
 
 int
-TclModelBuilderStiffnessDegradationCommand(ClientData clienData,
+TclModelBuilderStiffnessDegradationCommand(ClientData clientData,
 					   Tcl_Interp *interp,
-					   int argc, TCL_Char **argv)
+					   int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -58,101 +64,42 @@ TclModelBuilderStiffnessDegradationCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a stiffnessDegradation that will be added to the model builder
   StiffnessDegradation *theState = 0;
   
   // Check argv[1] for stiffnessDegradation type	
   if (strcmp(argv[1],"Ductility") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: stiffnessDegradation Ductility tag? alpha? beta?" << endln;
-      return TCL_ERROR;
-    }    
-    
-    int tag;
-    double a, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid stiffnessDegradation Ductility tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &a) != TCL_OK) {
-      opserr << "WARNING invalid alpha\n";
-      opserr << "stiffnessDegradation Ductility: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "stiffnessDegradation Ductility: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new DuctilityStiffnessDegradation (tag, a, b);
+      void *theDegr = OPS_DuctilityStiffnessDegradation();
+      if (theDegr != 0) 
+	theState = (StiffnessDegradation *)theDegr;
+      else 
+	return TCL_ERROR;
   }
   
   else if (strcmp(argv[1],"Energy") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: stiffnessDegradation Energy tag? Et? c?" << endln;
-      return TCL_ERROR;
-    }    
-    
-    int tag;
-    double c, et;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid stiffnessDegradation Energy tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &et) != TCL_OK) {
-      opserr << "WARNING invalid Et\n";
-      opserr << "stiffnessDegradation Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &c) != TCL_OK) {
-      opserr << "WARNING invalid c\n";
-      opserr << "stiffnessDegradation Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new EnergyStiffnessDegradation (tag, et, c);
+      void *theDegr = OPS_EnergyStiffnessDegradation();
+      if (theDegr != 0) 
+	theState = (StiffnessDegradation *)theDegr;
+      else 
+	return TCL_ERROR;
   }
   
   else if (strcmp(argv[1],"Constant") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: stiffnessDegradation Constant tag? alpha? beta?" << endln;
-      return TCL_ERROR;
-    }    
-    
-    int tag;
-    double a, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid stiffnessDegradation Constant tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &a) != TCL_OK) {
-      opserr << "WARNING invalid alpha\n";
-      opserr << "stiffnessDegradation Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "stiffnessDegradation Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new ConstantStiffnessDegradation (tag, a, b);
+      void *theDegr = OPS_ConstantStiffnessDegradation();
+      if (theDegr != 0) 
+	theState = (StiffnessDegradation *)theDegr;
+      else 
+	return TCL_ERROR;
+  }
+
+  else if (strcmp(argv[1],"Pincheira") == 0) {
+      void *theDegr = OPS_PincheiraStiffnessDegradation();
+      if (theDegr != 0) 
+	theState = (StiffnessDegradation *)theDegr;
+      else 
+	return TCL_ERROR;
   }
   
   else  {

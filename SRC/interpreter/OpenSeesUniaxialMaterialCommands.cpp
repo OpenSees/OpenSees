@@ -41,6 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <elementAPI.h>
 #include <map>
 #include <LimitCurve.h>
+#include <HystereticBackbone.h>
+#include <StiffnessDegradation.h>
+#include <StrengthDegradation.h>
+#include <UnloadingRule.h>
 
 // missing or incomplete uniaixal materials:
 // Fedeas
@@ -162,6 +166,28 @@ void* OPS_SteelMP();
 void* OPS_SmoothPSConcrete();
 void* OPS_UniaxialJ2Plasticity();
 
+void* OPS_ArctangentBackbone();
+void* OPS_BilinearBackbone();
+void* OPS_ManderBackbone();
+void* OPS_MultilinearBackbone();
+void* OPS_TrilinearBackbone();
+
+void* OPS_ConstantStiffnessDegradation();
+void* OPS_DuctilityStiffnessDegradation();
+void* OPS_EnergyStiffnessDegradation();
+void* OPS_PincheiraStiffnessDegradation();
+
+void *OPS_ConstantStrengthDegradation();
+void *OPS_DuctilityStrengthDegradation();
+void *OPS_EnergyStrengthDegradation();
+void *OPS_ACIStrengthDegradation();
+void *OPS_PetrangeliStrengthDegradation();
+
+void *OPS_ConstantUnloadingRule();
+void *OPS_TakedaUnloadingRule();
+void *OPS_EnergyUnloadingRule();
+void *OPS_KarsanUnloadingRule();
+
 namespace {
 
     static UniaxialMaterial *theTestingUniaxialMaterial = 0;
@@ -177,7 +203,6 @@ namespace {
 
 
     static OPS_ParsingFunctionMap uniaxialMaterialsMap;
-
 
     static int setUpUniaxialMaterials(void) {
 	uniaxialMaterialsMap.insert(std::make_pair("Elastic", &OPS_ElasticMaterial));
@@ -300,6 +325,58 @@ namespace {
 
 	return 0;
     }
+
+  static OPS_ParsingFunctionMap hystereticBackbonesMap;
+  
+  static int setUpHystereticBackbones(void)
+  {
+    hystereticBackbonesMap.insert(std::make_pair("Arctangent", &OPS_ArctangentBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("Bilinear", &OPS_BilinearBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("Mander", &OPS_ManderBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("Multilinear", &OPS_MultilinearBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("Trilinear", &OPS_TrilinearBackbone));
+    
+    return 0;
+  }
+
+  static OPS_ParsingFunctionMap stiffnessDegradationsMap;
+  
+  static int setUpStiffnessDegradations(void)
+  {
+    stiffnessDegradationsMap.insert(std::make_pair("Constant", &OPS_ConstantStiffnessDegradation));
+    stiffnessDegradationsMap.insert(std::make_pair("Ductility", &OPS_DuctilityStiffnessDegradation));
+    stiffnessDegradationsMap.insert(std::make_pair("Energy", &OPS_EnergyStiffnessDegradation));
+    stiffnessDegradationsMap.insert(std::make_pair("Pincheira", &OPS_PincheiraStiffnessDegradation));
+    
+    return 0;
+  }
+
+  static OPS_ParsingFunctionMap strengthDegradationsMap;
+  
+  static int setUpStrengthDegradations(void)
+  {
+    strengthDegradationsMap.insert(std::make_pair("Constant", &OPS_ConstantStrengthDegradation));
+    strengthDegradationsMap.insert(std::make_pair("Ductility", &OPS_DuctilityStrengthDegradation));
+    strengthDegradationsMap.insert(std::make_pair("Energy", &OPS_EnergyStrengthDegradation));
+    strengthDegradationsMap.insert(std::make_pair("ACI", &OPS_ACIStrengthDegradation));
+    strengthDegradationsMap.insert(std::make_pair("Petrangeli", &OPS_PetrangeliStrengthDegradation));
+    
+    return 0;
+  }
+
+  static OPS_ParsingFunctionMap unloadingRulesMap;
+  
+  static int setUpUnloadingRules(void)
+  {
+    unloadingRulesMap.insert(std::make_pair("Constant", &OPS_ConstantUnloadingRule));
+    unloadingRulesMap.insert(std::make_pair("Ductility", &OPS_TakedaUnloadingRule));
+    unloadingRulesMap.insert(std::make_pair("Takeda", &OPS_TakedaUnloadingRule));
+    unloadingRulesMap.insert(std::make_pair("Energy", &OPS_EnergyUnloadingRule));
+    unloadingRulesMap.insert(std::make_pair("Karsan", &OPS_KarsanUnloadingRule));
+    
+    return 0;
+  }
+
 
 }
 
@@ -547,4 +624,153 @@ int OPS_LimitCurve()
     }
 
     return 0;
+}
+
+
+int
+OPS_hystereticBackbone()
+{
+  static bool initDone = false;
+  if (initDone == false) {
+    setUpHystereticBackbones();
+    initDone = true;
+  }
+  
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr<<"WARNING too few arguments: hystereticBackbone type? tag? ...\n";
+    return -1;
+  }
+  
+  const char* matType = OPS_GetString();
+  
+  OPS_ParsingFunctionMap::const_iterator iter = hystereticBackbonesMap.find(matType);
+  if (iter == hystereticBackbonesMap.end()) {
+    opserr<<"WARNING hystereticBackbone type " << matType << " is unknown\n";
+    return -1;
+  }
+  
+  HystereticBackbone* theBackbone = (HystereticBackbone*) (*iter->second)();
+  if (theBackbone == 0) {
+    return -1;
+  }
+  
+  // Now add the material to the modelBuilder
+  if (OPS_addHystereticBackbone(theBackbone) == false) {
+    opserr<<"ERROR could not add HystereticBackbone\n";
+    delete theBackbone;
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+OPS_stiffnessDegradation()
+{
+  static bool initDone = false;
+  if (initDone == false) {
+    setUpStiffnessDegradations();
+    initDone = true;
+  }
+  
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr<<"WARNING too few arguments: stiffnessDegradation type? tag? ...\n";
+    return -1;
+  }
+  
+  const char* matType = OPS_GetString();
+  
+  OPS_ParsingFunctionMap::const_iterator iter = stiffnessDegradationsMap.find(matType);
+  if (iter == stiffnessDegradationsMap.end()) {
+    opserr<<"WARNING stiffnessDegradation type " << matType << " is unknown\n";
+    return -1;
+  }
+  
+  StiffnessDegradation* theBackbone = (StiffnessDegradation*) (*iter->second)();
+  if (theBackbone == 0) {
+    return -1;
+  }
+  
+  // Now add the material to the modelBuilder
+  if (OPS_addStiffnessDegradation(theBackbone) == false) {
+    opserr<<"ERROR could not add StiffnessDegradation\n";
+    delete theBackbone;
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+OPS_strengthDegradation()
+{
+  static bool initDone = false;
+  if (initDone == false) {
+    setUpStrengthDegradations();
+    initDone = true;
+  }
+  
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr<<"WARNING too few arguments: strengthDegradation type? tag? ...\n";
+    return -1;
+  }
+  
+  const char* matType = OPS_GetString();
+  
+  OPS_ParsingFunctionMap::const_iterator iter = strengthDegradationsMap.find(matType);
+  if (iter == strengthDegradationsMap.end()) {
+    opserr<<"WARNING strengthDegradation type " << matType << " is unknown\n";
+    return -1;
+  }
+  
+  StrengthDegradation* theBackbone = (StrengthDegradation*) (*iter->second)();
+  if (theBackbone == 0) {
+    return -1;
+  }
+  
+  // Now add the material to the modelBuilder
+  if (OPS_addStrengthDegradation(theBackbone) == false) {
+    opserr<<"ERROR could not add StrengthDegradation\n";
+    delete theBackbone;
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+OPS_unloadingRule()
+{
+  static bool initDone = false;
+  if (initDone == false) {
+    setUpUnloadingRules();
+    initDone = true;
+  }
+  
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr<<"WARNING too few arguments: unloadingRule type? tag? ...\n";
+    return -1;
+  }
+  
+  const char* matType = OPS_GetString();
+  
+  OPS_ParsingFunctionMap::const_iterator iter = unloadingRulesMap.find(matType);
+  if (iter == unloadingRulesMap.end()) {
+    opserr<<"WARNING unloadingRule type " << matType << " is unknown\n";
+    return -1;
+  }
+  
+  UnloadingRule* theBackbone = (UnloadingRule*) (*iter->second)();
+  if (theBackbone == 0) {
+    return -1;
+  }
+  
+  // Now add the material to the modelBuilder
+  if (OPS_addUnloadingRule(theBackbone) == false) {
+    opserr<<"ERROR could not add UnloadingRule\n";
+    delete theBackbone;
+    return -1;
+  }
+  
+  return 0;
 }

@@ -59,6 +59,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <DamageModel.h>
 #include <FrictionModel.h>
 #include <HystereticBackbone.h>
+#include <StiffnessDegradation.h>
+#include <StrengthDegradation.h>
+#include <UnloadingRule.h>
 #include <YieldSurface_BC.h>
 #include <CyclicModel.h>
 #include <FileStream.h>
@@ -832,6 +835,9 @@ OpenSeesCommands::wipe()
 
     // wipe HystereticBackbone
     OPS_clearAllHystereticBackbone();
+    OPS_clearAllStiffnessDegradation();
+    OPS_clearAllStrengthDegradation();
+    OPS_clearAllUnloadingRule();
 
     // wipe YieldSurface_BC
     OPS_clearAllYieldSurface_BC();
@@ -2489,19 +2495,37 @@ int OPS_modalDamping()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
+    }
+
+    int numModes = OPS_GetNumRemainingInputArgs();
+    if (numModes != 1 && numModes != numEigen) {
+      opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
+      opserr << "                     - same damping ratio will be applied to all modes\n";
     }
 
     double factor;
-    int numdata = 1;
-    if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
-	return -1;
-    }
-
     Vector modalDampingValues(numEigen);
-    for (int i=0; i<numEigen; i++) {
+    int numdata = 1;
+
+    //
+    // read in values and set factors
+    //
+    if (numModes == numEigen) {
+      for (int i = 0; i < numEigen; i++) {
+	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
+	  return -1;
+	}
+	modalDampingValues(i) = factor;
+      }
+    } else {
+      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	opserr << "WARNING modalDamping - could not read factor for all modes \n";
+	return -1;
+      }
+      for (int i = 0; i < numEigen; i++)
 	modalDampingValues(i) = factor;
     }
 
@@ -2525,14 +2549,14 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
     double factor;
     int numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	opserr << "WARNING modalDamping - could not read factor for all modes \n";
 	return -1;
     }
 
