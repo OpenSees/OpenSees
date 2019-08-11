@@ -81,7 +81,11 @@ class Steel02 : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-	//by SAJalali
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    
+    //by SAJalali
 	virtual double getEnergy() { return EnergyP; };
 
  protected:
