@@ -73,10 +73,12 @@ int OPS_BgMesh()
 
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
-        opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
-                "numl? locs? -numsub numsub? -structure sid? ?numnodes? structuralNodes?"
+        opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? "
+                "-wave wavefilename? numl? locs? -numsub numsub? "
+                "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                " -incrVel? -freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
+                "-incrVel? -freesurface? -fsiSquare? -no-streamLine?"
+                "-velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
 
@@ -247,6 +249,8 @@ int OPS_BgMesh()
             bgmesh.setContactData(data);
         } else if (strcmp(opt, "-incrVel") == 0) {
             bgmesh.setIncrVel(true);
+        } else if (strcmp(opt, "-fsiSquare") == 0) {
+            bgmesh.setFSITri(false);
         }
     }
 
@@ -275,7 +279,7 @@ BackgroundMesh::BackgroundMesh()
          structuralNodes(),
          freesurface(false), streamline(true),
          kernel(2), pkernel(2), contactData(8),
-         contactEles(), incrVel(false)
+         contactEles(), incrVel(false), fsiTri(true)
 {
 }
 
@@ -873,9 +877,13 @@ BackgroundMesh::remesh(bool init)
 #endif
 
     // move particles in fixed cells
-    if (moveFixedParticles()) {
-        opserr << "WARNING: failed to move particles in fixed cells";
-        return -1;
+    if (fsiTri) {
+
+    } else {
+        if (moveFixedParticles()) {
+            opserr << "WARNING: failed to move particles in fixed cells";
+            return -1;
+        }
     }
 
 #ifdef _LINUX
@@ -1155,7 +1163,7 @@ BackgroundMesh::addParticles()
 
             // if initial check structure cell
             if (bcell.type == STRUCTURE) {
-                continue;
+                if (!fsiTri) continue;
             }
 
             // add bnodes of the cell
@@ -1982,7 +1990,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
             }
         }
 
-        // if all structure
+        // if all structure, create contact elements
         if (sindex.size() == tri.size()) {
             VInt snds(tri.size()), sids(tri.size());
             for (int j = 0; j < (int) tri.size(); ++j) {
@@ -2057,18 +2065,40 @@ BackgroundMesh::gridFSI(ID& freenodes)
 
         // gather particles
         VParticle tripts;
-        for (int j=0; j<(int)findex.size(); ++j) {
-            VInt ind = findex[j];
-            ind -= 1;
-            VVInt indices;
-            getCorners(ind, 1, indices);
-            for (int k=0; k<(int)indices.size(); ++k) {
-                std::map<VInt,BCell>::iterator cellit = bcells.find(indices[k]);
+        if (fsiTri) {
+            std::set<VInt> partindices;
+            for (int j=0; j<(int)tri.size(); ++j) {
+                VInt ind = ndindex[tri[j]];
+                ind -= 1;
+                VVInt indices;
+                getCorners(ind, 1, indices);
+                for (int k=0; k<(int)indices.size(); ++k) {
+                    partindices.insert(indices[k]);
+                }
+            }
+            for (std::set<VInt>::iterator it=partindices.begin();
+                 it!=partindices.end(); ++it) {
+                VInt ind = *it;
+                std::map<VInt,BCell>::iterator cellit = bcells.find(ind);
                 if (cellit == bcells.end()) continue;
-                if (cellit->second.type == STRUCTURE) continue;
-                if (cellit->second.pts.empty()) continue;
                 const VParticle& pts = cellit->second.pts;
+                if (pts.empty()) continue;
                 tripts.insert(tripts.end(), pts.begin(), pts.end());
+            }
+        } else {
+            for (int j = 0; j < (int) findex.size(); ++j) {
+                VInt ind = findex[j];
+                ind -= 1;
+                VVInt indices;
+                getCorners(ind, 1, indices);
+                for (int k = 0; k < (int) indices.size(); ++k) {
+                    std::map<VInt, BCell>::iterator cellit = bcells.find(indices[k]);
+                    if (cellit == bcells.end()) continue;
+                    if (cellit->second.type == STRUCTURE) continue;
+                    if (cellit->second.pts.empty()) continue;
+                    const VParticle &pts = cellit->second.pts;
+                    tripts.insert(tripts.end(), pts.begin(), pts.end());
+                }
             }
         }
         if (tripts.empty()) {
@@ -2112,29 +2142,33 @@ BackgroundMesh::gridFSI(ID& freenodes)
             continue;
         }
 
-//	VParticle tripts;
-//	for (int j=0; j<(int)tripts.size(); ++j) {
-//
-//	    // get shape function
-//        const VDouble& pcrds = tripts[j]->getCrds();
-//        VDouble N;
-//        if (ndm == 2) {
-//            getNForTri(coeff,pcrds[0],pcrds[1],N);
-//	    } else if (ndm == 3) {
-//            getNForTet(tetcoeff,pcrds,N);
-//	    }
-//	    if (inEle(N)) {
-//            // in tri
-//            tripts.push_back(tripts[j]);
-//	    }
-//	}
-//
-//	if (tripts.empty()) continue;
+        VParticle newtripts;
+        if (fsiTri) {
+            for (int j = 0; j < (int) tripts.size(); ++j) {
+
+                // get shape function
+                const VDouble &pcrds = tripts[j]->getCrds();
+                VDouble N;
+                if (ndm == 2) {
+                    getNForTri(coeff, pcrds[0], pcrds[1], N);
+                } else if (ndm == 3) {
+                    getNForTet(tetcoeff, pcrds, N);
+                }
+                if (inEle(N)) {
+                    // in tri
+                    newtripts.push_back(tripts[j]);
+                }
+            }
+        } else {
+            newtripts = tripts;
+        }
+
+        if (newtripts.empty()) continue;
 
         // find the group of this mesh
         std::map<int,int> numpts;
-        for (int j=0; j<(int)tripts.size(); ++j) {
-            numpts[tripts[j]->getGroupTag()] += 1;
+        for (int j=0; j<(int)newtripts.size(); ++j) {
+            numpts[newtripts[j]->getGroupTag()] += 1;
         }
         int num=0;
         for (std::map<int,int>::iterator it=numpts.begin(); it!=numpts.end(); ++it) {

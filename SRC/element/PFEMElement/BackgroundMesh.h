@@ -142,6 +142,8 @@ public:
     void setContactData(const VDouble& data);
     bool isIncrVel() const { return incrVel;}
     void setIncrVel(bool ivel) {incrVel = ivel;}
+    bool isFSITri() const {return fsiTri;}
+    void setFSITri(bool fsi) {fsiTri = fsi;}
 
     // remesh all
     int remesh(bool init=false);
@@ -232,6 +234,7 @@ private:
     VDouble contactData;
     VInt contactEles;
     bool incrVel;
+    bool fsiTri; // move partiles in fsi area through triangles
 
     static const int contact_tag = -13746;
 };
