@@ -77,8 +77,7 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare?"
-                "-velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
+                "-incrVel? -freesurface? -fsiSquare?\n";
         return -1;
     }
 
@@ -218,21 +217,6 @@ int OPS_BgMesh()
 
         } else if (strcmp(opt, "-freesurface") == 0) {
             bgmesh.setFreeSurface();
-        } else if (strcmp(opt, "-velKernel") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need kernel name\n";
-                return -1;
-            }
-            const char* kname = OPS_GetString();
-            bgmesh.setKernel(kname);
-
-        } else if (strcmp(opt, "-pKernel") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need kernel name\n";
-                return -1;
-            }
-            const char* kname = OPS_GetString();
-            bgmesh.setKernel(kname, true);
         } else if (strcmp(opt, "-contact") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 8) {
                 opserr << "WARNING: need kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
@@ -273,8 +257,7 @@ BackgroundMesh::BackgroundMesh()
          numave(1), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false),
-         kernel(2), pkernel(2), contactData(8),
+         freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(true)
 {
 }
@@ -287,28 +270,6 @@ BackgroundMesh::~BackgroundMesh()
         }
     }
     recorders.clear();
-}
-
-void
-BackgroundMesh::setKernel(const char *k, bool pressure)
-{
-    if (strcmp(k, "Quintic") == 0) {
-        if (pressure) {
-            this->pkernel = 1;
-        } else {
-            this->kernel = 1;
-        }
-
-    } else if (strcmp(k, "Cloest") == 0) {
-        if (pressure) {
-            this->pkernel = 2;
-        } else {
-            this->kernel = 2;
-        }
-    } else {
-        opserr << "WARNING: kernel " << k;
-        opserr << " is unknown\n";
-    }
 }
 
 void
@@ -694,13 +655,12 @@ BackgroundMesh::clearAll() {
     theFile.close();
     structuralNodes.clear();
     freesurface = false;
-    kernel = 2;
-    pkernel = 2;
     for (int i = 0; i<(int)contactData.size(); ++i) {
         contactData[i] = 0.0;
     }
     contactEles.clear();
     incrVel = false;
+    fsiTri = true;
 }
 
 int
@@ -1259,54 +1219,26 @@ BackgroundMesh::gridNodes()
             }
 
             // add pressure
-            if (pkernel == 1) {
-                pre +=  pts[i]->getPressure() * w;
-                pdot += pts[i]->getPdot() * w;
-
-            } else if (pkernel == 2) {
-                // Cloest Kernel
-                if (ismin) {
-                    pre = pts[i]->getPressure();
-                    pdot = pts[i]->getPdot();
-                }
-            }
+            pre +=  pts[i]->getPressure() * w;
+            pdot += pts[i]->getPdot() * w;
 
             // add velocity
-            if (kernel == 1) {
+            const VDouble &pvel = pts[i]->getVel();
+            for (int k = 0; k < ndm; k++) {
+                vel[k] += w * pvel[k];
+            }
 
-                // Quintic Kernel
-                const VDouble &pvel = pts[i]->getVel();
-                for (int k = 0; k < ndm; k++) {
-                    vel[k] += w * pvel[k];
-                }
-
-                // add acceleration
-                const VDouble &paccel = pts[i]->getAccel();
-                for (int k = 0; k < ndm; k++) {
-                    accel[k] += w * paccel[k];
-                }
-            } else if (kernel == 2) {
-
-                // Cloest Kernel
-                if (ismin) {
-                    const VDouble &pvel = pts[i]->getVel();
-                    const VDouble &paccel = pts[i]->getAccel();
-                    for (int k = 0; k < ndm; k++) {
-                        vel[k] = pvel[k];
-                        accel[k] = paccel[k];
-                    }
-                }
+            // add acceleration
+            const VDouble &paccel = pts[i]->getAccel();
+            for (int k = 0; k < ndm; k++) {
+                accel[k] += w * paccel[k];
             }
         }
         if (wt > 0) {
-            if (pkernel == 1) {
-                pre /= wt;
-                pdot /= wt;
-            }
-            if (kernel == 1) {
-                vel /= wt;
-                accel /= wt;
-            }
+            pre /= wt;
+            pdot /= wt;
+            vel /= wt;
+            accel /= wt;
         }
 
         // update pressure for structural nodes
@@ -1338,7 +1270,7 @@ BackgroundMesh::gridNodes()
             continue;
         }
 
-        if ((kernel == 1 && wt > 0) || kernel == 2) {
+        if (wt > 0) {
             Vector vvel;
             toVector(vel, vvel);
             Vector vaccel;
@@ -1389,7 +1321,7 @@ BackgroundMesh::gridNodes()
             newpcs[j] = thePC;
 
         }
-        if ((pkernel == 1 && wt > 0) || pkernel == 2) {
+        if (wt > 0) {
             Vector newvel = pnode->getVel();
             newvel.Zero();
             newvel(0) = pre;

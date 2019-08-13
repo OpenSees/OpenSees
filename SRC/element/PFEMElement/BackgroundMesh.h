@@ -132,7 +132,6 @@ public:
     int setFile(const char* name);
     void setNumSub(int num) {numsub = num;}
     void addStructuralNodes(VInt& snodes, int sid);
-    void setKernel(const char* k, bool = false);
     void setContactData(const VDouble& data);
     bool isIncrVel() const { return incrVel;}
     void setIncrVel(bool ivel) {incrVel = ivel;}
@@ -189,7 +188,7 @@ public:
     // clear all
     void clearAll();
     int clearBackground();
-    void clearGridEles();
+    static void clearGridEles();
     void clearGrid();
 
     // interpolate in a cell
@@ -222,7 +221,6 @@ private:
     std::ofstream theFile;
     std::map<int, VInt> structuralNodes; // >0:structure, <0: fluid, 0:invalid, larger:debris
     bool freesurface;
-    int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
     VDouble contactData;
     VInt contactEles;
     bool incrVel;
