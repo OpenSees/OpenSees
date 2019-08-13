@@ -51,7 +51,6 @@ private:
 
         VInt tags;
         VVDouble crdsn;
-        VVDouble crdsj;
         VVDouble vn;
         VVDouble incrv;
         VVDouble dvn;
@@ -60,12 +59,11 @@ private:
         VInt type;
         VInt sid; // structure id, <0:fluid, >0:structure, =0:not in contact
 
-        BNode():tags(),crdsn(),crdsj(), vn(),incrv(), dvn(),pn(),dpn(),type(){}
+        BNode():tags(),crdsn(),vn(),incrv(), dvn(),pn(),dpn(),type(){}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp, int id=-1) {
             tags.push_back(tag);
             crdsn.push_back(crds);
-            crdsj.push_back(crds);
             vn.push_back(v);
             incrv.push_back(v);
             dvn.push_back(dv);
@@ -77,7 +75,6 @@ private:
         void clear() {
             tags.clear();
             crdsn.clear();
-            crdsj.clear();
             vn.clear();
             incrv.clear();
             dvn.clear();
@@ -95,7 +92,6 @@ private:
             if (i<0 || i>=(int)tags.size()) return;
             tags[i] = tag;
             crdsn[i] = crds;
-            crdsj[i] = crds;
             vn[i] = v;
             incrv[i] = v;
             dvn[i] = dv;
@@ -137,8 +133,6 @@ public:
     void setNumSub(int num) {numsub = num;}
     void addStructuralNodes(VInt& snodes, int sid);
     void setKernel(const char* k, bool = false);
-    void setStreamLine(bool flag) {streamline = flag;}
-    bool isStreamLine() const {return streamline;}
     void setContactData(const VDouble& data);
     bool isIncrVel() const { return incrVel;}
     void setIncrVel(bool ivel) {incrVel = ivel;}
@@ -163,7 +157,6 @@ public:
     int moveParticles();
     int convectParticle(Particle* pt, VInt index, int nums);
     int moveFixedParticles();
-    int moveParticlesInCell();
 
     // create grid nodes and elements
     int addStructure();
@@ -229,7 +222,6 @@ private:
     std::ofstream theFile;
     std::map<int, VInt> structuralNodes; // >0:structure, <0: fluid, 0:invalid, larger:debris
     bool freesurface;
-    bool streamline; // use streamline integration for particles
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
     VDouble contactData;
     VInt contactEles;
