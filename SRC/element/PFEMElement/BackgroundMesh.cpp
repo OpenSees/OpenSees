@@ -77,7 +77,7 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare?\n";
+                "-incrVel? -freesurface? -fsiSquare? -implicit?\n";
         return -1;
     }
 
@@ -113,6 +113,7 @@ int OPS_BgMesh()
     bgmesh.setRange(lower,upper);
 
     // get tolerance
+    bool dispon = false;
     while (OPS_GetNumRemainingInputArgs()>0) {
 
         const char* opt = OPS_GetString();
@@ -233,14 +234,16 @@ int OPS_BgMesh()
             bgmesh.setIncrVel(true);
         } else if (strcmp(opt, "-fsiSquare") == 0) {
             bgmesh.setFSITri(false);
+        } else if (strcmp(opt, "-implicit") == 0) {
+            dispon = true;
         }
     }
 
     // turn off disp in PFEM elements
-    PFEMElement2DBubble::dispon = false;
-    PFEMElement3DBubble::dispon = false;
-    PFEMElement2DCompressible::dispon = false;
-    PFEMElement2Dmini::dispon = false;
+    PFEMElement2DBubble::dispon = dispon;
+    PFEMElement3DBubble::dispon = dispon;
+    PFEMElement2DCompressible::dispon = dispon;
+    PFEMElement2Dmini::dispon = dispon;
 
     // bg mesh
     if (bgmesh.remesh(true) < 0) {
@@ -1186,15 +1189,15 @@ BackgroundMesh::gridNodes()
         maxind += numave;
         gatherParticles(minind,maxind,pts);
 
-        // get information
-        double wt = 0.0, pre = 0.0, pdot = 0.0;
-        VDouble vel(ndm), accel(ndm);
+        // find closest particle
+        VDouble wts(pts.size());
+        VDouble closeVel(ndm);
         double minDist = -1;
-        bool ismin;
         for (int i=0; i<(int)pts.size(); ++i) {
-
             // get particle
-            if (pts[i] == 0) continue;
+            if (pts[i] == 0) {
+                continue;
+            }
 
             // particle coordinates
             const VDouble& pcrds = pts[i]->getCrds();
@@ -1205,40 +1208,62 @@ BackgroundMesh::gridNodes()
             double q = normVDouble(dist) / (bsize);
 
             // weight for the particle
-            double w = QuinticKernel(q, bsize, ndm);
-
-            // add weight
-            wt += w;
+            wts[i] = QuinticKernel(q, bsize, ndm);
 
             // check minimum distance
             if (minDist < 0 || q < minDist) {
-                ismin = true;
                 minDist = q;
-            } else {
-                ismin = false;
+                closeVel = pts[i]->getVel();
+            }
+        }
+
+        // get information
+        double wt = 0.0, pre = 0.0, pdot = 0.0;
+        VDouble crdsn(ndm), vel(ndm), accel(ndm);
+        for (int i=0; i<(int)pts.size(); ++i) {
+
+            // get particle
+            if (pts[i] == 0 || wts[i] <= 0) {
+                continue;
+            }
+
+            // check velocity
+            const VDouble &pvel = pts[i]->getVel();
+            if (dotVDouble(closeVel, pvel) < 0) {
+                continue;
             }
 
             // add pressure
-            pre +=  pts[i]->getPressure() * w;
-            pdot += pts[i]->getPdot() * w;
+            pre +=  pts[i]->getPressure() * wts[i];
+            pdot += pts[i]->getPdot() * wts[i];
 
             // add velocity
-            const VDouble &pvel = pts[i]->getVel();
             for (int k = 0; k < ndm; k++) {
-                vel[k] += w * pvel[k];
+                vel[k] += wts[i] * pvel[k];
             }
 
             // add acceleration
             const VDouble &paccel = pts[i]->getAccel();
             for (int k = 0; k < ndm; k++) {
-                accel[k] += w * paccel[k];
+                accel[k] += wts[i] * paccel[k];
             }
+
+            // add displacement of last time step
+            const VDouble &pcrdsn = pts[i]->getCrdsn();
+            for (int k = 0; k < ndm; k++) {
+                crdsn[k] += wts[i] * pcrdsn[k];
+            }
+
+            wt += wts[i];
         }
+
+        // get nodal states
         if (wt > 0) {
             pre /= wt;
             pdot /= wt;
             vel /= wt;
             accel /= wt;
+            crdsn /= wt;
         }
 
         // update pressure for structural nodes
@@ -1260,9 +1285,9 @@ BackgroundMesh::gridNodes()
         // create node
         Node* node = 0;
         if (ndm == 2) {
-            node = new Node(ndtag+2*j, ndm, crds[0], crds[1]);
+            node = new Node(ndtag+2*j, ndm, 0.0, 0.0);
         } else if (ndm == 3) {
-            node = new Node(ndtag+2*j, ndm, crds[0], crds[1], crds[2]);
+            node = new Node(ndtag+2*j, ndm, 0.0, 0.0, 0.0);
         }
         if (node == 0) {
             opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
@@ -1271,12 +1296,20 @@ BackgroundMesh::gridNodes()
         }
 
         if (wt > 0) {
-            Vector vvel;
-            toVector(vel, vvel);
-            Vector vaccel;
-            toVector(accel, vaccel);
-            node->setTrialVel(vvel);
-            node->setTrialAccel(vaccel);
+            Vector vec;
+            toVector(crdsn, vec);
+            node->setTrialDisp(vec);
+            toVector(vel, vec);
+            node->setTrialVel(vec);
+            toVector(accel, vec);
+            node->setTrialAccel(vec);
+            node->commitState();
+            toVector(crds, vec);
+            node->setTrialDisp(vec);
+        } else {
+            Vector vec;
+            toVector(crds, vec);
+            node->setTrialDisp(vec);
             node->commitState();
         }
 
@@ -2827,7 +2860,8 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 
 int
 BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
-                            const VVDouble& vels, const VVDouble& incrvels, const VVDouble& dvns,
+                            const VVDouble& vels, const VVDouble& incrvels,
+                            const VVDouble& dvns,
                             const VDouble& pns, const VDouble& dpns,
                             const VVDouble& crds,
                             const VInt& fixed, VDouble& pvel)
