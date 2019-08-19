@@ -3028,9 +3028,9 @@ int OPS_systemSize()
 	return -1;
     }
 
-    double value = theSOE->getNumEqn();
+    int value = theSOE->getNumEqn();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetIntOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
