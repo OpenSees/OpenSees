@@ -98,6 +98,15 @@
     <Filter Include="nD\stressDensityModel">
       <UniqueIdentifier>{6e3e6f77-1c02-4196-ab9f-b240564e4535}</UniqueIdentifier>
     </Filter>
+    <Filter Include="uniaxial\unloading">
+      <UniqueIdentifier>{cfeb353b-633e-40df-8041-10723e20fede}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="uniaxial\strength">
+      <UniqueIdentifier>{94528adb-f297-46c7-be99-5546e1be10b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="uniaxial\stiffness">
+      <UniqueIdentifier>{58086fb9-1894-42ed-a138-38f3ac1480a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp">
@@ -1145,13 +1154,101 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp">
       <Filter>section\integration</Filter>
-=======
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SPSW02.cpp">
       <Filter>uniaxial</Filter>
->>>>>>> 5e204347393c2fa5ecc40a1d68d50be0e063d453
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear5.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear7.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02IS.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02Fatigue.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\ConstantUnloadingRule.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\EnergyUnloadingRule.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\KarsanUnloadingRule.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TclModelBuilderUnloadingRuleCommand.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.cpp">
+      <Filter>uniaxial\unloading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\ACIStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\ConstantStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\DuctilityStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\EnergyStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\PetrangeliStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\SectionStrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\TclModelBuilderStrengthDegradationCommand.cpp">
+      <Filter>uniaxial\strength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\ConstantStiffnessDegradation.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\DuctilityStiffnessDegradation.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\EnergyStiffnessDegradation.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\PincheiraStiffnessDegradation.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\StiffnessDegradation.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\TclModelBuilderStiffnessDegradationCommand.cpp">
+      <Filter>uniaxial\stiffness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\MaterialState.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2dPS.cpp">
+      <Filter>nD\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield03.cpp">
+      <Filter>nD\soilModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.cpp">
+      <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
