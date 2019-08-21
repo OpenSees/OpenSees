@@ -259,7 +259,7 @@ PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, doub
 	m_Su_rate = Su_rate;
 	m_G0 = G0;
 	m_hpo = hpo;
-	massDen = 1.5;
+	massDen = mDen;
 	m_Fsu = Fsu;
 	m_P_atm = P_atm;
 	m_nu = nu;
