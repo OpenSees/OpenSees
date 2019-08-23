@@ -52,7 +52,7 @@ ElasticIsotropic3DThermal::ElasticIsotropic3DThermal
 		  redfactors[i] = ConcreteRedfactors[i];
   }
   else {
-	  opserr << "ElasticIsotropic3DThermal " << this->getTag() << " recieves an invalid softening index" << endln;
+	  opserr << "ElasticIsotropic3DThermal " << this->getTag() << " receives an invalid softening index" << endln;
   }
 }
 

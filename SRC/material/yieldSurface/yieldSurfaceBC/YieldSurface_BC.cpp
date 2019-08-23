@@ -61,7 +61,7 @@ YieldSurface_BC::YieldSurface_BC(int tag, int classtag, YS_Evolution &model,
 
 // el-tawil unsym .. and probably others
 // cause problem by sending 0, 0 to the base class constructor
-// => tighly coupled - bad practice.
+// => tightly coupled - bad practice.
 // Since that is necessary... be aware
 YieldSurface_BC::YieldSurface_BC(int tag, int classtag, YS_Evolution &model,
 								double capx, double capy)
@@ -475,7 +475,7 @@ void YieldSurface_BC::toLocalSystem (Matrix &eleMatrix, double &x, double &y, do
 }
 
 //////////////////////////////////////////////////////////////////////
-// Transform to Element Syatem
+// Transform to Element System
 //////////////////////////////////////////////////////////////////////
 
 void YieldSurface_BC::toElementSystem(Vector &eleVector, double &x, bool dimensionalize, bool signMult)

@@ -498,7 +498,7 @@ TclModelBuilderYS_EvolutionModelCommand (ClientData clientData, Tcl_Interp *inte
 	}
 	else
 	{
-		opserr << "Unkown YS_Evolution type: " << argv[1] << endln;
+		opserr << "Unknown YS_Evolution type: " << argv[1] << endln;
 		return TCL_ERROR;
 	}
 

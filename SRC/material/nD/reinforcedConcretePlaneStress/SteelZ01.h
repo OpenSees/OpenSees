@@ -86,13 +86,13 @@ class SteelZ01 : public UniaxialMaterial
 	
 	double reverseFromTenEnvelopeStrain;  // Strain of reversed point from tensile envelope
     double reverseFromTenEnvelopeStress;  // Stress of reversed point from tensile envelope
-	double approachToComEnvelopeStrain;   // Strain of point when unloading path approachs to compression envelope
-	double approachToComEnvelopeStress;   // Stress of point when unloading path approachs to compression envelope
+	double approachToComEnvelopeStrain;   // Strain of point when unloading path approaches to compression envelope
+	double approachToComEnvelopeStress;   // Stress of point when unloading path approaches to compression envelope
     
     double reverseFromComEnvelopeStrain;  // Strain of reversed point from compressive envelope
     double reverseFromComEnvelopeStress;  // Stress of reversed point from compressive envelope
-	double approachToTenEnvelopeStrain;   // Strain of point when reloading path approachs to tensile envelope
-	double approachToTenEnvelopeStress;   // Stress of point when reloading path approachs to tensile envelope
+	double approachToTenEnvelopeStrain;   // Strain of point when reloading path approaches to tensile envelope
+	double approachToTenEnvelopeStress;   // Stress of point when reloading path approaches to tensile envelope
 
 	// History converged variables for hysteristic loop
 	double CreverseTopStrain[SIZE];    // array storing the strain and stress of top point of reverse loop
