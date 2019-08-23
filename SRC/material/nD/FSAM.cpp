@@ -11,24 +11,24 @@
 // Model (FSAM, Ulugtekin, 2010; Orakcal et al., 2012) which is a plane-stress 
 // constitutive model for simulating the behavior of RC panel elements under 
 // generalized, in-plane, reversed-cyclic loading conditions. The model assumes
-// perfect bond assumption between concrete and reinforcing steel bars. The 
-// reinforcing steel bars develop uniaxial stresses under strains in their 
-// longitudinal direction, the behavior of concrete is defined using stress–strain 
-// relationships in biaxial directions, the orientation of which is governed by 
-// the state of cracking in concrete, and also incorporates biaxial softening 
-// effects including compression softening and biaxial damage. For transfer of 
+// perfect bond assumption between concrete and reinforcing steel bars. The
+// reinforcing steel bars develop uniaxial stresses under strains in their
+// longitudinal direction, the behavior of concrete is defined using stress-strain
+// relationships in biaxial directions, the orientation of which is governed by
+// the state of cracking in concrete, and also incorporates biaxial softening
+// effects including compression softening and biaxial damage. For transfer of
 // shear stresses across the cracks, a friction-based elasto-plastic shear aggregate
 // interlock model is adopted, together with a linear elastic model for representing
 // dowel action on the reinforcing steel bars (Kolozvari, 2013).
 //
 // References:
-// 1) Orakcal, K., Massone L.M., Ulugtekin, D.,“Constitutive Modeling of Reinforced Concrete 
-// Panel Behavior under Cyclic Loading”, Proceedings of the 15th World Conference on 
+// 1) Orakcal, K., Massone L.M., Ulugtekin, D.,"Constitutive Modeling of Reinforced Concrete
+// Panel Behavior under Cyclic Loading", Proceedings of the 15th World Conference on
 // Earthquake Engineering, Lisbon, Portugal, 2012.
-// 2) Ulugtekin, D., “Analytical Modeling of Reinforced Concrete Panel Elements under 
-// Reversed Cyclic Loadings”, M.S. Thesis, Bogazici University, Istanbul, Turkey, 2010.
-// 3) Kolozvari K. (2013). “Analytical Modeling of Cyclic Shear-Flexure Interaction in 
-// Reinforced Concrete Structural Walls”, PhD Dissertation, University of California, Los Angeles.
+// 2) Ulugtekin, D., "Analytical Modeling of Reinforced Concrete Panel Elements under
+// Reversed Cyclic Loadings", M.S. Thesis, Bogazici University, Istanbul, Turkey, 2010.
+// 3) Kolozvari K. (2013). "Analytical Modeling of Cyclic Shear-Flexure Interaction in
+// Reinforced Concrete Structural Walls", PhD Dissertation, University of California, Los Angeles.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/material/nD/reinforcedConcretePlaneStress/FSAM.h
 //
@@ -809,13 +809,13 @@ const Vector& FSAM::getStrain()
 	return strain_vec;
 }
 
-// Get commited stress
+// Get committed stress
 const Vector& FSAM::getCommittedStress(void)
 {
 	return CStress;
 }
 
-// Get commited strain
+// Get committed strain
 const Vector& FSAM::getCommittedStrain(void)
 {
 	return CStrain;
@@ -1497,7 +1497,7 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	tangent_matrix(2,1) = dtxydey;
 	tangent_matrix(2,2) = dtxydgamma;
 
-	// if 1st interation calculate initial stiffness
+	// if 1st iteration calculate initial stiffness
 
 	if (first_iteration == 1) {
 		tangent_matrix = this->getInitialTangent();
