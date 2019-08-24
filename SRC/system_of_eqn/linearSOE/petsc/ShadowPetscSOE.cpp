@@ -290,7 +290,7 @@ ShadowPetscSOE::setSize(Graph &theGraph)
   MPI_Bcast(sendBuffer, 3, MPI_INT, 0, PETSC_COMM_WORLD);  
   result = theSOE.setSizeParallel(numRows, n, dnz, dnnz, onz, onnz);
 
-  // free up trhe memory used
+  // free up the memory used
   /*
   delete [] colA;
   delete [] rowStartA;

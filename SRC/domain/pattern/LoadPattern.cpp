@@ -670,7 +670,7 @@ LoadPattern::sendSelf(int cTag, Channel &theChannel)
     }
   }    
 
-  // if we get here we are successfull
+  // if we get here we are successful
   return 0;
 }
 
@@ -916,7 +916,7 @@ LoadPattern::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     }    
   }
 
-  // if we get here we are successfull
+  // if we get here we are successful
   return 0;
 }
 
@@ -990,7 +990,7 @@ LoadPattern::applyLoadSensitivity(double pseudoTime)
     while ((nodLoad = theNodalIter2()) != 0)
 	nodLoad->applyLoadSensitivity(loadFactor);
   
-  // Don't inlude element loads and sp constraints for now
+  // Don't include element loads and sp constraints for now
   /*
     ElementalLoad *eleLoad;
     ElementalLoadIter &theElementalIter = this->getElementalLoads();

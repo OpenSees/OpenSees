@@ -446,7 +446,7 @@ void SelectLoadInitialStaticAnalysis::recoverLoads()
 {
 	if(!modified){
 		opserr << "===== FATAL Error =====\n"; 
-		opserr << "It is attemped to recover loads\n"; 
+		opserr << "It is attempted to recover loads\n"; 
 		opserr << "although they are not modified \n"; 
 		exit(-1);
 	}
@@ -553,7 +553,7 @@ void SelectLoadInitialStaticAnalysis::constandrecoverLoads(double time=0.0)
     theDomain->setCommittedTime(time);
 	if(!modified){
 		opserr << "===== FATAL Error =====\n"; 
-		opserr << "It is attemped to recover loads\n"; 
+		opserr << "It is attempted to recover loads\n"; 
 		opserr << "although they are not modified \n"; 
 		exit(-1);
 	}

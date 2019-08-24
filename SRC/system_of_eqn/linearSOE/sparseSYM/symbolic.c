@@ -190,7 +190,7 @@ int symFactorization(int *fxadj, int *adjncy, int neq, int LSPARSE,
    begblk = (OFFDBLK **)  calloc(nblks+1, sizeof(OFFDBLK *)) ;
    assert(xblk && begblk != NULL) ;
          
-/* set up xblk index: the begining row/column of each block */      
+/* set up xblk index: the beginning row/column of each block */      
         
    pfblk( nblks, xblk, marker );
         
