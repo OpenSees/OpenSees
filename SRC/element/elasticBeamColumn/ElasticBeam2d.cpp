@@ -51,10 +51,6 @@
 #include <elementAPI.h>
 #include <string>
 #include <ElementIter.h>
-//added by SAJalali-done for InternalForce Recorder
-#define SECTION_RESPONSE_MZ		1
-#define SECTION_RESPONSE_P		2
-#define SECTION_RESPONSE_VY		3
 
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
