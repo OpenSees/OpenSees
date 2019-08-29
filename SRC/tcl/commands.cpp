@@ -52,6 +52,11 @@ extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
 
+extern void OPS_clearAllHystereticBackbone(void);
+extern void OPS_clearAllStiffnessDegradation(void);
+extern void OPS_clearAllStrengthDegradation(void);
+extern void OPS_clearAllUnloadingRule(void);
+
 
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
@@ -1354,6 +1359,11 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
+
+  OPS_clearAllHystereticBackbone();
+  OPS_clearAllStiffnessDegradation();
+  OPS_clearAllStrengthDegradation();
+  OPS_clearAllUnloadingRule();
 
   ops_Dt = 0.0;
 
@@ -8005,7 +8015,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     for (int i=0; i<numEigen; i++) {
       if (Tcl_GetDouble(interp, argv[1+i], &factor) != TCL_OK) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	opserr << "WARNING modalDamping - could not read factor for model " << i+1 << endln;
 	return TCL_ERROR;	        
       }        
       modalDampingValues[i] = factor;    
@@ -8014,7 +8024,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } else {
 
     if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-      opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+      opserr << "WARNING modalDamping - could not read factor for all modes \n";
       return TCL_ERROR;	        
     }        
 
@@ -8025,7 +8035,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, true);
 
-  opserr << "modalDamping Factors: " << modalDampingValues;
+  //opserr << "modalDamping Factors: " << modalDampingValues;
 
   return TCL_OK;
 }
