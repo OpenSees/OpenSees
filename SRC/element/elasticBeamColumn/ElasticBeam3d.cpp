@@ -1286,33 +1286,33 @@ ElasticBeam3d::computeSectionForces(Vector &sp, double xi)
    double oneOverL = 1 / L;
    int order = 6;
    static ID code(6);
-   code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-   code(1) = SECTION_RESPONSE_VY;	// Mz is the second
-   code(2) = SECTION_RESPONSE_VZ;	// My is the third 
-   code(3) = SECTION_RESPONSE_T;	// T is the fourth
-   code(4) = SECTION_RESPONSE_MY;	// My is the third 
-   code(5) = SECTION_RESPONSE_MZ;	// Mz is the second
+   code(0) = 2;	// P is the first quantity
+   code(1) = 3;	// Mz is the second
+   code(2) = 5;	// My is the third 
+   code(3) = 6;	// T is the fourth
+   code(4) = 4;	// My is the third 
+   code(5) = 1;	// Mz is the second
    sp.Zero();
    double xL1 = xi - 1;
    double xL = xi;
    for (int ii = 0; ii < order; ii++) {
       switch (code(ii)) {
-      case SECTION_RESPONSE_P:
+      case 2:
          sp(ii) = q(0);
          break;
-      case SECTION_RESPONSE_MZ:
+      case 1:
          sp(ii) = xL1 * q(1) + xL * q(2);
          break;
-      case SECTION_RESPONSE_VY:
+      case 3:
          sp(ii) = oneOverL * (q(1) + q(2));
          break;
-      case SECTION_RESPONSE_MY:
+      case 4:
          sp(ii) = xL1 * q(3) + xL * q(4);
          break;
-      case SECTION_RESPONSE_VZ:
+      case 5:
          sp(ii) = oneOverL * (q(3) + q(4));
          break;
-      case SECTION_RESPONSE_T:
+      case 6:
          sp(ii) = q(5);
          break;
       default:
@@ -1339,19 +1339,19 @@ ElasticBeam3d::computeSectionForces(Vector &sp, double xi)
          for (int ii = 0; ii < order; ii++) {
 
             switch (code(ii)) {
-            case SECTION_RESPONSE_P:
+            case 2:
                sp(ii) += wa * (L - x);
                break;
-            case SECTION_RESPONSE_MZ:
+            case 1:
                sp(ii) += wy * 0.5*x*(x - L);
                break;
-            case SECTION_RESPONSE_VY:
+            case 3:
                sp(ii) += wy * (x - 0.5*L);
                break;
-            case SECTION_RESPONSE_MY:
+            case 4:
                sp(ii) += wz * 0.5*x*(L - x);
                break;
-            case SECTION_RESPONSE_VZ:
+            case 5:
                sp(ii) += wz * (x - 0.5*L);
                break;
             default:
@@ -1380,19 +1380,19 @@ ElasticBeam3d::computeSectionForces(Vector &sp, double xi)
 
             if (x <= a) {
                switch (code(ii)) {
-               case SECTION_RESPONSE_P:
+               case 2:
                   sp(ii) += N;
                   break;
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) -= x * Vy1;
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) -= Vy1;
                   break;
-               case SECTION_RESPONSE_MY:
+               case 4:
                   sp(ii) += x * Vz1;
                   break;
-               case SECTION_RESPONSE_VZ:
+               case 5:
                   sp(ii) -= Vz1;
                   break;
                default:
@@ -1401,16 +1401,16 @@ ElasticBeam3d::computeSectionForces(Vector &sp, double xi)
             }
             else {
                switch (code(ii)) {
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) -= (L - x)*Vy2;
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) += Vy2;
                   break;
-               case SECTION_RESPONSE_MY:
+               case 4:
                   sp(ii) += (L - x)*Vz2;
                   break;
-               case SECTION_RESPONSE_VZ:
+               case 5:
                   sp(ii) += Vz2;
                   break;
                default:

@@ -1216,21 +1216,21 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
    double oneOverL = 1 / L;
    int order = 3;
    static ID code(3);
-   code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-   code(1) = SECTION_RESPONSE_VY;	// Mz is the second
-   code(2) = SECTION_RESPONSE_MZ;	// My is the third 
+   code(0) = 2;	// P is the first quantity
+   code(1) = 3;	// Mz is the second
+   code(2) = 1;	// My is the third 
    double xL1 = xi - 1;
    double xL = xi;
    sp.Zero();
    for (int ii = 0; ii < order; ii++) {
       switch (code(ii)) {
-      case SECTION_RESPONSE_P:
+      case 2:
          sp(ii) = q(0);
          break;
-      case SECTION_RESPONSE_MZ:
+      case 1:
          sp(ii) = xL1 * q(1) + xL * q(2);
          break;
-      case SECTION_RESPONSE_VY:
+      case 3:
          sp(ii) = oneOverL * (q(1) + q(2));
          break;
       default:
@@ -1256,13 +1256,13 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
          for (int ii = 0; ii < order; ii++) {
 
             switch (code(ii)) {
-            case SECTION_RESPONSE_P:
+            case 2:
                sp(ii) += wa * (L - x);
                break;
-            case SECTION_RESPONSE_MZ:
+            case 1:
                sp(ii) += wy * 0.5*x*(x - L);
                break;
-            case SECTION_RESPONSE_VY:
+            case 3:
                sp(ii) += wy * (x - 0.5*L);
                break;
             default:
@@ -1286,13 +1286,13 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
 
             if (x <= a) {
                switch (code(ii)) {
-               case SECTION_RESPONSE_P:
+               case 2:
                   sp(ii) += Fa;
                   break;
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) -= VI * x;
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) -= VI;
                   break;
                default:
@@ -1301,10 +1301,10 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
             }
             else if (x >= b) {
                switch (code(ii)) {
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) += VJ * (x - L);
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) += VJ;
                   break;
                default:
@@ -1313,13 +1313,13 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
             }
             else {
                switch (code(ii)) {
-               case SECTION_RESPONSE_P:
+               case 2:
                   sp(ii) += Fa - wa * (x - a);
                   break;
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) += -VI * x + 0.5*wy*x*x + wy * a*(0.5*a - x);
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) += -VI + wy * (x - a);
                   break;
                default:
@@ -1345,13 +1345,13 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
 
             if (x <= a) {
                switch (code(ii)) {
-               case SECTION_RESPONSE_P:
+               case 2:
                   sp(ii) += N;
                   break;
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) -= x * V1;
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) -= V1;
                   break;
                default:
@@ -1360,10 +1360,10 @@ ElasticBeam2d::computeSectionForces(Vector &sp, double xi)
             }
             else {
                switch (code(ii)) {
-               case SECTION_RESPONSE_MZ:
+               case 1:
                   sp(ii) -= (L - x)*V2;
                   break;
-               case SECTION_RESPONSE_VY:
+               case 3:
                   sp(ii) += V2;
                   break;
                default:
