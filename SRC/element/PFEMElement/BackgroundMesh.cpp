@@ -77,7 +77,8 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare? -implicit?\n";
+                "-incrVel? -freesurface? -fsiSquare? -implicit?"
+                "-boundLayerThickness boundThk?";
         return -1;
     }
 
@@ -236,6 +237,20 @@ int OPS_BgMesh()
             bgmesh.setFSITri(false);
         } else if (strcmp(opt, "-implicit") == 0) {
             dispon = true;
+        } else if (strcmp(opt, "-boundLayerThickness") == 0) {
+
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need thk\n";
+                return -1;
+            }
+            num = 1;
+            double thk = 0.3;
+            if (OPS_GetDoubleInput(&num, &thk) < 0) {
+                opserr << "WARNING: failed to get thk\n";
+                return -1;
+            }
+
+            bgmesh.setBoundThk(thk);
         }
     }
 
@@ -261,7 +276,8 @@ BackgroundMesh::BackgroundMesh()
          currentTime(0.0), theFile(),
          structuralNodes(),
          freesurface(false), contactData(8),
-         contactEles(), incrVel(false), fsiTri(true)
+         contactEles(), incrVel(false), fsiTri(true),
+         boundThk(0.05), contactReduceFactor(0.8)
 {
 }
 
@@ -2684,7 +2700,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
     }
 
     // get corners
-    VVInt indices;
+    VVInt indices, ndtags;
     VVDouble crds;
     VInt fixed;
     VVDouble vels, dvns, incrvels;
@@ -2716,6 +2732,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
             }
 
             // get corner coordinates, fixed, and velocities
+            ndtags.assign(indices.size(), VInt());
             crds.assign(indices.size(),VDouble());
             fixed.assign(indices.size(),0);
             vels.assign(indices.size(),VDouble());
@@ -2736,13 +2753,16 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
                 // get bnode
                 BNode& bnode = it->second;
 
+                // get node tags
+                ndtags[i] = bnode.tags;
+
                 // get fixed
                 for (int j=0; j<(int)bnode.size(); ++j) {
                     if (bnode.type[j] == FLUID) {
                         fixed[i] = 0;
                         break;
                     } else if (bnode.type[j] == FIXED) {
-                        fixed[i] = 2;
+                        fixed[i] = 0;
                         break;
                     } else if (bnode.type[j] == STRUCTURE) {
                         fixed[i] = 1;
@@ -2750,13 +2770,10 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
                     }
 
                 }
-                if (fixed[i] == 1) {
-                    continue;
-                }
 
                 // get vn and dvn
-                if (bnode.tags.size() != 1) {
-                    opserr << "WARNING: fluid bnode tags.size() != 1 ";
+                if (bnode.tags.size() < 1) {
+                    opserr << "WARNING: fluid bnode tags.size() < 1 ";
                     opserr << "-- BgMesh::convectParticle\n";
                     return -1;
                 }
@@ -2768,91 +2785,13 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
             }
         }
 
-        // get particle velocity
-        VDouble pvel;
-        if (interpolate(pt,indices,vels,incrvels,dvns,pns,dpns,crds,fixed,pvel) < 0) {
+        // get particle velocity and move
+        if (interpolate(pt,indices,vels,incrvels,dvns,pns,
+                        dpns,crds,fixed,ndtags,subdt) < 0) {
             opserr << "WARNING: failed to interpolate particle velocity";
             opserr << "-- BgMesh::convectParticle\n";
             return -1;
         }
-
-        // original->dest
-        VDouble pdest = pvel;
-        pdest *= subdt;
-        pdest += pcrds;
-
-        // check which boundary is fixed
-        VInt boundfix;
-        if (ndm == 2) {
-            boundfix.resize(4);
-            boundfix[0] = fixed[0] && fixed[3];
-            boundfix[1] = fixed[0] && fixed[1];
-            boundfix[2] = fixed[1] && fixed[2];
-            boundfix[3] = fixed[2] && fixed[3];
-
-        } else if (ndm == 3) {
-            boundfix.resize(6);
-            boundfix[0] = fixed[0] && fixed[3] && fixed[4] && fixed[7];
-            boundfix[1] = fixed[0] && fixed[1] && fixed[4] && fixed[5];
-            boundfix[2] = fixed[0] && fixed[1] && fixed[2] && fixed[3];
-            boundfix[3] = fixed[1] && fixed[2] && fixed[5] && fixed[6];
-            boundfix[4] = fixed[2] && fixed[3] && fixed[6] && fixed[7];
-            boundfix[5] = fixed[4] && fixed[5] && fixed[6] && fixed[7];
-        }
-
-        // xlow,ylow,zlow,xup,yup,zup
-        VDouble bound(boundfix.size());
-        if (ndm == 2) {
-            bound[0] = crds[0][0];
-            bound[1] = crds[0][1];
-            bound[2] = crds[2][0];
-            bound[3] = crds[2][1];
-
-        } else if (ndm == 3) {
-            bound[0] = crds[0][0];
-            bound[1] = crds[0][1];
-            bound[2] = crds[0][2];
-            bound[3] = crds[6][0];
-            bound[4] = crds[6][1];
-            bound[5] = crds[6][2];
-        }
-
-        // lower boundaries
-        for (int i=0; i<ndm; ++i) {
-            if (boundfix[i]==1 && pdest[i]<bound[i]+bsize*meshtol) {
-                double dist = bound[i] - pdest[i];
-                if (dist < bsize*meshtol) {
-                    dist = bsize*meshtol;
-                } else if (dist > (1-meshtol)*bsize) {
-                    dist = bsize*(1-meshtol);
-                }
-                pdest[i] = bound[i] + dist;
-            }
-        }
-
-        // upper boundaries
-        for (int i=ndm; i<2*ndm; ++i) {
-            if (boundfix[i]==1 && pdest[i-ndm]>bound[i]-bsize*meshtol) {
-                double dist = pdest[i-ndm] - bound[i];
-                if (dist < bsize*meshtol) {
-                    dist = bsize*meshtol;
-                } else if (dist > (1-meshtol)*bsize) {
-                    dist = bsize*(1-meshtol);
-                }
-                pdest[i-ndm] = bound[i] - dist;
-            }
-        }
-
-        // move the particles
-        pdest -= pcrds;
-        for (int i=0; i<ndm; ++i) {
-            if (pdest[i] > (1-meshtol)*bsize) {
-                pdest[i] = (1-meshtol)*bsize;
-            } else if (pdest[i] < -(1-meshtol)*bsize) {
-                pdest[i] = -(1-meshtol)*bsize;
-            }
-        }
-        pt->move(pdest,subdt);
     }
 
     return 0;
@@ -2864,9 +2803,12 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                             const VVDouble& dvns,
                             const VDouble& pns, const VDouble& dpns,
                             const VVDouble& crds,
-                            const VInt& fixed, VDouble& pvel)
+                            const VInt& fixed, const VVInt& ndtags,
+                            double dt)
 {
     int ndm = OPS_GetNDM();
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
 
     // check
     if (ndm == 2) {
@@ -2907,8 +2849,96 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                     hx,hy,hz,pcrds[0],pcrds[1],pcrds[2],N);
     }
 
-    // average velocity
-    pvel.resize(ndm, 0.0);
+    // get structural coordinates
+    VVDouble scoords;
+    for (int j=0; j<(int)fixed.size(); ++j) {
+        if (fixed[j] == 1) {
+            for (int i = 0; i < (int) ndtags[j].size(); ++i) {
+                Node* snode = domain->getNode(ndtags[j][i]);
+                if (snode != 0) {
+                    VDouble curr(ndm);
+                    const Vector& scrds = snode->getCrds();
+                    const Vector& sdisp = snode->getTrialDisp();
+                    for (int k = 0; k < ndm; ++k) {
+                        curr[k] = scrds(k) + sdisp(k);
+                    }
+                    scoords.push_back(curr);
+                }
+            }
+        }
+    }
+
+    // get walls
+    VVInt walls;
+    if (ndm == 2) {
+        for (int i = 0; i < (int) scoords.size(); ++i) {
+            for (int k = i + 1; k < (int) scoords.size(); ++k) {
+                VInt boundary(2);
+                boundary[0] = i;
+                boundary[1] = k;
+                walls.push_back(boundary);
+            }
+        }
+    } else if (ndm == 3) {
+        for (int i = 0; i < (int) scoords.size(); ++i) {
+            for (int m = i + 1; m < (int) scoords.size(); ++m) {
+                for (int k = m + 1; k < (int) scoords.size(); ++k) {
+                    VInt boundary(3);
+                    boundary[0] = i;
+                    boundary[1] = m;
+                    boundary[2] = k;
+                    walls.push_back(boundary);
+                }
+            }
+        }
+    }
+
+    // for each wall
+    bool inlayer = false;
+    for (int k = 0; k < (int)walls.size(); ++k) {
+
+        // get line or plane equations
+        VDouble xbnd(ndm), ybnd(ndm), zbnd(ndm);
+        for (int l = 0; l < ndm; ++l) {
+            xbnd[l] = scoords[walls[k][l]][0];
+            ybnd[l] = scoords[walls[k][l]][1];
+            if (ndm == 3) {
+                zbnd[l] = scoords[walls[k][l]][2];
+            }
+        }
+        VDouble boundir(ndm);
+        if (ndm == 2) {
+            boundir[0] = ybnd[1] - ybnd[0];
+            boundir[1] = xbnd[0] - xbnd[1];
+        } else if (ndm == 3) {
+            boundir[0] = ybnd[0] * zbnd[1] - ybnd[1] * zbnd[0];
+            boundir[1] = xbnd[1] * zbnd[0] - xbnd[0] * zbnd[1];
+            boundir[2] = xbnd[0] * ybnd[1] - xbnd[1] * ybnd[0];
+        }
+        boundir /= normVDouble(boundir);
+
+        double C = 0.0;
+        C -= boundir[0] * xbnd[0];
+        C -= boundir[1] * ybnd[0];
+        if (ndm == 3) {
+            C -= boundir[2] * zbnd[0];
+        }
+
+        // distance to wall
+        double dist = C;
+        for (int m = 0; m < ndm; ++m) {
+            dist += boundir[m] * pcrds[m];
+        }
+        dist = fabs(dist);
+
+        if (dist < boundThk*bsize) {
+            inlayer = true;
+            break;
+        }
+    }
+
+    // particle velocity
+    VDouble pvel(ndm);
     VDouble pdvn(ndm), incrpvel(ndm);
     double ppre=0.0, pdp=0.0;
     double Nvsum = 0.0, Npsum = 0.0;
@@ -2917,8 +2947,8 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         // no vel at this corner
         if (vels[j].empty()) continue;
 
-        // free point
-        if (fixed[j] == 0) {
+        // interpolate
+        if (fixed[j] == 0 || (fixed[j]==1 && inlayer)) {
             for (int k=0; k<ndm; ++k) {
                 pvel[k] += N[j]*vels[j][k];
                 incrpvel[k] += N[j]*incrvels[j][k];
@@ -2951,6 +2981,55 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         pdp = pt->getPdot();
     }
 
+    // check if pass boundary
+    for (int k = 0; k < (int)walls.size(); ++k) {
+
+        // get line or plane equations
+        VDouble xbnd(ndm), ybnd(ndm), zbnd(ndm);
+        for (int l = 0; l < ndm; ++l) {
+            xbnd[l] = scoords[walls[k][l]][0];
+            ybnd[l] = scoords[walls[k][l]][1];
+            if (ndm == 3) {
+                zbnd[l] = scoords[walls[k][l]][2];
+            }
+        }
+        VDouble boundir(ndm);
+        if (ndm == 2) {
+            boundir[0] = ybnd[1] - ybnd[0];
+            boundir[1] = xbnd[0] - xbnd[1];
+        } else if (ndm == 3) {
+            boundir[0] = ybnd[0] * zbnd[1] - ybnd[1] * zbnd[0];
+            boundir[1] = xbnd[1] * zbnd[0] - xbnd[0] * zbnd[1];
+            boundir[2] = xbnd[0] * ybnd[1] - xbnd[1] * ybnd[0];
+        }
+        boundir /= normVDouble(boundir);
+
+        // new location
+        VDouble newpcrds = pvel;
+        newpcrds *= dt;
+        newpcrds += pcrds;
+
+        // check if pass
+        VDouble sidedir1 = pcrds;
+        VDouble sidedir2 = newpcrds;
+        sidedir1[0] -= xbnd[0];
+        sidedir2[0] -= xbnd[0];
+        sidedir1[1] -= ybnd[0];
+        sidedir2[1] -= ybnd[0];
+        if (ndm == 3) {
+            sidedir1[2] -= zbnd[0];
+            sidedir2[2] -= zbnd[0];
+        }
+
+        if (dotVDouble(sidedir1, boundir) * dotVDouble(sidedir2, boundir) < 0) {
+            VDouble pvelt = boundir;
+            pvelt *= dotVDouble(pvel, boundir) *2;
+            pvel -= pvelt;
+            pvel *= contactReduceFactor;
+        }
+    }
+
+    // update particle
     if (pt->isUpdated() == false) {
         if (incrVel) {
             pt->incrVel(incrpvel);
@@ -2961,6 +3040,10 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         pt->setPressure(ppre);
         pt->setPdot(pdp);
     }
+
+    // original->dest
+    pvel *= dt;
+    pt->move(pvel, dt);
 
     return 0;
 }

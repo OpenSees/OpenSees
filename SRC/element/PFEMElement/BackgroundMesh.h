@@ -137,6 +137,7 @@ public:
     void setIncrVel(bool ivel) {incrVel = ivel;}
     bool isFSITri() const {return fsiTri;}
     void setFSITri(bool fsi) {fsiTri = fsi;}
+    void setBoundThk(double thk) {boundThk = thk;}
 
     // remesh all
     int remesh(bool init=false);
@@ -193,10 +194,12 @@ public:
 
     // interpolate in a cell
     int interpolate(Particle* pt, const VVInt& index,
-                    const VVDouble& vels, const VVDouble& incrvels, const VVDouble& dvns,
+                    const VVDouble& vels, const VVDouble& incrvels,
+                    const VVDouble& dvns,
                     const VDouble& pns, const VDouble& dpns,
                     const VVDouble& crds,
-                    const VInt& fixed, VDouble& pvel);
+                    const VInt& fixed, const VVInt& ndtags,
+                    double dt);
     static int interpolate(const VVDouble& values, const VDouble& N, VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N, double& newvalue);
     static int solveLine(const VDouble& p1, const VDouble& dir,
@@ -225,6 +228,8 @@ private:
     VInt contactEles;
     bool incrVel;
     bool fsiTri; // move partiles in fsi area through triangles
+    double boundThk;
+    double contactReduceFactor;
 
     static const int contact_tag = -13746;
 };
