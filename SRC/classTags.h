@@ -998,6 +998,7 @@
 #define RECORDER_TAGS_PVDRecorder               19
 #define RECORDER_TAGS_MPCORecorder               20
 #define RECORDER_TAGS_GmshRecorder               21
+#define RECORDER_TAGS_VTK_Recorder               22
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

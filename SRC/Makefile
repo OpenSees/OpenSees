@@ -426,7 +426,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
-	$(FE)/recorder/MPCORecorder.o 
+	$(FE)/recorder/MPCORecorder.o \
+	$(FE)/recorder/VTK_Recorder.o 
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
