@@ -1,0 +1,68 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.6"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Project",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "tet::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tet-Debug-c3bd9f2512bf9e82a98d.json",
+					"name" : "tet",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tetgen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tetgen-Debug-53550e9c38cde4753c6c.json",
+					"name" : "tetgen",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Git Projects/OpenSees.NET/OpenSees/OTHER/Tetgen/out/build/x64-Debug",
+		"source" : "C:/Git Projects/OpenSees.NET/OpenSees/OTHER/Tetgen"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
