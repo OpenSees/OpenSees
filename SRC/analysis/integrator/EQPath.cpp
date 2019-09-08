@@ -28,6 +28,7 @@
 //
 //Comprehensive evaluation of structural geometrical nonlinear solution techniques Part I : Formulation and characteristics of the methods
 //M.Rezaiee - Pajand, M.Ghalishooyan and M.Salehi - Ahmadabad
+//FULLTEXT : https://www.researchgate.net/publication/264146397_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_I_Formulation_and_characteristics_of_the_methods
 
 
 //Structural Engineeringand Mechanics   Volume 48, Number 6, December25 2013, pages 879 - 914
@@ -35,8 +36,9 @@
 //
 //Comprehensive evaluation of structural geometrical nonlinear solution techniques Part II : Comparing efficiencies of the methods
 //M.Rezaiee - Pajand, M.Ghalishooyan and M.Salehi - Ahmadabad
+//FULLTEXT : https://www.researchgate.net/publication/263361974_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_II_Comparing_efficiencies_of_the_methods
 
-#include <QuadraticMethod.h>
+#include <EQPath.h>
 #include <AnalysisModel.h>
 #include <LinearSOE.h>
 #include <Vector.h>
@@ -47,8 +49,8 @@
 #include "Node.h"
 #include "Element.h"
 
-QuadraticMethod::QuadraticMethod(double arcLen,int method)
-:StaticIntegrator(INTEGRATOR_TAGS_QuadraticMethod),
+EQPath::EQPath(double arcLen,int method)
+:StaticIntegrator(INTEGRATOR_TAGS_EQPath),
  arclen(arcLen), 
  uq(0),uq0(0), ur(0), du(0),du0(0),uqn(0), q(0),type(method),m(1),dl(0),changed(0),nitr(0)
  {
@@ -57,7 +59,7 @@ QuadraticMethod::QuadraticMethod(double arcLen,int method)
   
 }
 
-QuadraticMethod::~QuadraticMethod()
+EQPath::~EQPath()
 {
     // delete any vector object created
     if (uq != 0)
@@ -77,13 +79,13 @@ QuadraticMethod::~QuadraticMethod()
 }
 
 int
-QuadraticMethod::newStep(void)
+EQPath::newStep(void)
 {
     // get pointers to AnalysisModel and LinearSOE
     AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();    
     if (theModel == 0 || theLinSOE == 0) {
-	opserr << "WARNING QuadraticMethod::newStep() ";
+	opserr << "WARNING EQPath::newStep() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
 	return -1;
     }
@@ -96,7 +98,7 @@ QuadraticMethod::newStep(void)
     this->formTangent();
     theLinSOE->setB(*q);
     if (theLinSOE->solve() < 0) {
-      opserr << "QuadraticMethod::newStep(void) - failed in solver\n";
+      opserr << "EQPath::newStep(void) - failed in solver\n";
       return -1;
     }
 
@@ -139,7 +141,7 @@ QuadraticMethod::newStep(void)
     theModel->incrDisp(*du);    
     theModel->applyLoadDomain(currentLambda);    
     if (theModel->updateDomain() < 0) {
-      opserr << "QuadraticMethod::newStep - model failed to update for new dU\n";
+      opserr << "EQPath::newStep - model failed to update for new dU\n";
       return -1;
     }
     
@@ -155,12 +157,12 @@ QuadraticMethod::newStep(void)
 }
 
 int
-QuadraticMethod::update(const Vector &dU)
+EQPath::update(const Vector &dU)
 {
     AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();    
     if (theModel == 0 || theLinSOE == 0) {
-	opserr << "WARNING QuadraticMethod::update() ";
+	opserr << "WARNING EQPath::update() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
 	return -1;
     }
@@ -180,7 +182,7 @@ QuadraticMethod::update(const Vector &dU)
 		  double a = (*ur)^(*uq);
 		  double b = (*uq)^(*uq);
 		  if (b == 0) {
-			 opserr << "QuadraticMethod::update() - zero denominator\n";
+			 opserr << "EQPath::update() - zero denominator\n";
 			 return -1;
 		  }	  
 		  dLambda = -a/b;
@@ -190,7 +192,7 @@ QuadraticMethod::update(const Vector &dU)
 		  double a = (*du0)^(*ur);
 		  double b = (*du0)^(*uq);
 		  if (b == 0) {
-			 opserr << "QuadraticMethod::update() - zero denominator\n";
+			 opserr << "EQPath::update() - zero denominator\n";
 			 return -1;
 		  }
 
@@ -201,7 +203,7 @@ QuadraticMethod::update(const Vector &dU)
 		  double a = (*du)^(*ur);
 		  double b = (*du)^(*uq);
 		  if (b == 0) {
-			 opserr << "QuadraticMethod::update() - zero denominator\n";
+			 opserr << "EQPath::update() - zero denominator\n";
 			 return -1;
 		  }
 
@@ -220,7 +222,7 @@ QuadraticMethod::update(const Vector &dU)
 		  dLambda = 0;
 		  if (delta < 0)
 		  {
-			 opserr << "QuadraticMethod::update() - negetive denominator\n";
+			 opserr << "EQPath::update() - negetive denominator\n";
 			 return -1;
 		  }
 		  else if (delta == 0)
@@ -247,7 +249,7 @@ QuadraticMethod::update(const Vector &dU)
 		  double a = (*ur)^(*uq);
 		  double b = (*uq)^(*uq);
 		  if (b == 0) {
-			 opserr << "QuadraticMethod::update() - zero denominator\n";
+			 opserr << "EQPath::update() - zero denominator\n";
 			 return -1;
 		  }
 
@@ -271,7 +273,7 @@ QuadraticMethod::update(const Vector &dU)
 		  
 	   
 		  if (b == 0) {
-		  opserr << "QuadraticMethod::update() - zero denominator\n";
+		  opserr << "EQPath::update() - zero denominator\n";
 		  return -1;
 		  }
 		  dLambda = -a/b;
@@ -335,7 +337,7 @@ QuadraticMethod::update(const Vector &dU)
 		  double p2=(*du)^(*uq);
 		  double p3=(*ur)^(*uq);
 		  if (p1 == 0) {
-			 opserr << "QuadraticMethod::update() - zero denominator\n";
+			 opserr << "EQPath::update() - zero denominator\n";
 			 return -1;
 		  }
 
@@ -354,7 +356,7 @@ QuadraticMethod::update(const Vector &dU)
 		   }
 	   }
 	   else {
-		  opserr << "WARNING QuadraticMethod::update() ";
+		  opserr << "WARNING EQPath::update() ";
 		  opserr << "Unknown update method has been set\n";
 		  return -1;
 	   }
@@ -383,7 +385,7 @@ QuadraticMethod::update(const Vector &dU)
     theModel->applyLoadDomain(currentLambda);    
 
     if (theModel->updateDomain() < 0) {
-      opserr << "QuadraticMethod::update - model failed to update for new dU\n";
+      opserr << "EQPath::update - model failed to update for new dU\n";
       return -1;
     }
     
@@ -395,13 +397,13 @@ QuadraticMethod::update(const Vector &dU)
 }
 
 int 
-QuadraticMethod::domainChanged(void)
+EQPath::domainChanged(void)
 {
     // we first create the Vectors needed
     AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();    
     if (theModel == 0 || theLinSOE == 0) {
-	opserr << "WARNING QuadraticMethod::update() ";
+	opserr << "WARNING EQPath::update() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
 	return -1;
     }    
@@ -413,7 +415,7 @@ QuadraticMethod::domainChanged(void)
 	    delete uq;   // delete the old
 	uq = new Vector(size);
 	if (uq == 0 || uq->Size() != size) { // check got it
-	    opserr << "FATAL QuadraticMethod::domainChanged() - ran out of memory for";
+	    opserr << "FATAL EQPath::domainChanged() - ran out of memory for";
 	    opserr << " uq Vector of size " << size << endln;
 	    exit(-1);
 	}
@@ -424,7 +426,7 @@ QuadraticMethod::domainChanged(void)
 	    delete du;   // delete the old
 	du = new Vector(size);
 	if (du == 0 || du->Size() != size) { // check got it
-	    opserr << "FATAL QuadraticMethod::domainChanged() - ran out of memory for";
+	    opserr << "FATAL EQPath::domainChanged() - ran out of memory for";
 	    opserr << " du Vector of size " << size << endln;
 	    exit(-1);
 	}
@@ -436,7 +438,7 @@ QuadraticMethod::domainChanged(void)
 	    delete ur;   // delete the old
 	ur = new Vector(size);
 	if (ur == 0 || ur->Size() != size) { // check got it
-	    opserr << "FATAL QuadraticMethod::domainChanged() - ran out of memory for";
+	    opserr << "FATAL EQPath::domainChanged() - ran out of memory for";
 	    opserr << " deltaU Vector of size " << size << endln;
 	    exit(-1);
 	}
@@ -447,7 +449,7 @@ QuadraticMethod::domainChanged(void)
 	    delete q;  
 	q = new Vector(size);
 	if (q == 0 || q->Size() != size) { 
-	    opserr << "FATAL QuadraticMethod::domainChanged() - ran out of memory for";
+	    opserr << "FATAL EQPath::domainChanged() - ran out of memory for";
 	    opserr << " q Vector of size " << size << endln;
 	    exit(-1);
 	}
@@ -483,7 +485,7 @@ QuadraticMethod::domainChanged(void)
 }
 
 int
-QuadraticMethod::sendSelf(int cTag,
+EQPath::sendSelf(int cTag,
 		    Channel &theChannel)
 {
   Vector data(3);
@@ -492,7 +494,7 @@ QuadraticMethod::sendSelf(int cTag,
   data(2) = sign;
   
   if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
-      opserr << "QuadraticMethod::sendSelf() - failed to send the data\n";
+      opserr << "EQPath::sendSelf() - failed to send the data\n";
       return -1;
   }
   return 0;
@@ -500,12 +502,12 @@ QuadraticMethod::sendSelf(int cTag,
 
 
 int
-QuadraticMethod::recvSelf(int cTag,
+EQPath::recvSelf(int cTag,
 		    Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
   Vector data(3);
   if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
-      opserr << "QuadraticMethod::sendSelf() - failed to send the data\n";
+      opserr << "EQPath::sendSelf() - failed to send the data\n";
       return -1;
   }      
 
@@ -519,14 +521,14 @@ QuadraticMethod::recvSelf(int cTag,
 }
 
 void
-QuadraticMethod::Print(OPS_Stream &s, int flag)
+EQPath::Print(OPS_Stream &s, int flag)
 {
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0) {
 	double cLambda = theModel->getCurrentDomainTime();
-	s << "\t QuadraticMethod - currentLambda: " << cLambda <<"\n";
-	s << "\t QuadraticMethod - arcLength: " << arclen <<"\n";
-	s << "\t QuadraticMethod - sign: " << sign <<"\n";
+	s << "\t EQPath - currentLambda: " << cLambda <<"\n";
+	s << "\t EQPath - arcLength: " << arclen <<"\n";
+	s << "\t EQPath - sign: " << sign <<"\n";
     } else 
-	s << "\t QuadraticMethod - no associated AnalysisModel\n";
+	s << "\t EQPath - no associated AnalysisModel\n";
 }
