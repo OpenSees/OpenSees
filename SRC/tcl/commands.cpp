@@ -171,7 +171,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <HSConstraint.h>
 #include <MinUnbalDispNorm.h>
 #include <DisplacementControl.h>
-#include <QuadraticMethod.h>
+#include <EQPath.h>
 
 #include <PFEMIntegrator.h>
 #include<Integrator.h>//Abbas
@@ -4377,7 +4377,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		if (Tcl_GetInt(interp, argv[3], &type) != TCL_OK)
 		{
 			opserr << "WARNING integrator $arc_length $type \n";
-			opserr << "$type = 1 Minimum Residual Disp \n";
+			opserr << "$type = 1 Minimum Residual Displacement \n";
 			opserr << "$type = 2 Normal Plain \n";
 			opserr << "$type = 3 Update Normal Plain \n";
 			opserr << "$type = 4 Cylindrical Arc-Length \n";
@@ -4385,7 +4385,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 			return TCL_ERROR;
 		}
 
-		theStaticIntegrator = new QuadraticMethod(arcLength, type);
+		theStaticIntegrator = new EQPath(arcLength, type);
 
 		// if the analysis exists - we want to change the Integrator
 		if (theStaticAnalysis != 0)
