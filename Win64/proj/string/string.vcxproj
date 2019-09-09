@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC;..\..\..\SRC\actor\actor;..\..\..\src\string;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\string\debug/string.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\string\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\string\debug/</ObjectFileName>
@@ -79,7 +79,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC;..\..\..\SRC\actor\actor;..\..\..\src\string;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\..\..\obj\string\release/string.pch</PrecompiledHeaderOutputFile>

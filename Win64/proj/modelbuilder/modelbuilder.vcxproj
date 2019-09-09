@@ -49,7 +49,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\..\src\element\elasticBeamColumn;..\..\..\src\modelbuilder\tcl;..\..\..\src\coordTransformation;..\..\..\src\handler;..\..\..\src\domain\pattern;..\..\..\src\domain\load;..\..\..\src\actor\channel;..\..\..\src\domain\node;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\beam3d;..\..\..\src;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\modelbuilder;..\..\..\src\element\beam2d;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\modelbuilder\debug/modelbuilder.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\modelbuilder\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\modelbuilder\debug/</ObjectFileName>
@@ -78,7 +78,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\..\src\element\elasticBeamColumn;..\..\..\src\modelbuilder\tcl;..\..\..\src\coordTransformation;..\..\..\src\handler;..\..\..\src\domain\pattern;..\..\..\src\domain\load;..\..\..\src\actor\channel;..\..\..\src\domain\node;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\beam3d;..\..\..\src;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\modelbuilder;..\..\..\src\element\beam2d;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\modelbuilder\release/modelbuilder.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\modelbuilder\release/</AssemblerListingLocation>

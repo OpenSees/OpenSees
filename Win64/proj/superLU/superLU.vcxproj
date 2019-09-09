@@ -119,7 +119,7 @@
       <AdditionalIncludeDirectories>..\..\..\other\SuperLU_5.1.1\SRC;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NO_TIMER;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\superLU\debug/superLU.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\superLU\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\superLU\debug/</ObjectFileName>
@@ -148,7 +148,7 @@
       <AdditionalIncludeDirectories>..\..\..\other\SuperLU_5.1.1\SRC;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NO_TIMER;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\superLU\release/superLU.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\superLU\release/</AssemblerListingLocation>

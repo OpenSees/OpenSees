@@ -44,6 +44,9 @@
       <UniqueIdentifier>{e9c5a06b-73bb-47fc-b259-a5e177fc20fe}</UniqueIdentifier>
       <Extensions>.cpp; .h</Extensions>
     </Filter>
+    <Filter Include="pardiso">
+      <UniqueIdentifier>{723fd79e-0d4a-4e38-8be8-aebeea3e8a24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\DomainSolver.cpp">

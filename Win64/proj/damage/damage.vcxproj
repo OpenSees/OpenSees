@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\tagged\storage;..\..\..\src\damage;..\..\..\src\recorder\response;..\..\..\src\ndarray;..\..\..\src\modelbuilder;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\element;..\..\..\src\tagged;..\..\..\src\modelbuilder\tcl;..\..\..\src\handler;..\..\..\src\matrix;..\..\..\src\domain\component;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -76,7 +76,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\tagged\storage;..\..\..\src\damage;..\..\..\src\recorder\response;..\..\..\src\ndarray;..\..\..\src\modelbuilder;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\element;..\..\..\src\tagged;..\..\..\src\modelbuilder\tcl;..\..\..\src\handler;..\..\..\src\matrix;..\..\..\src\domain\component;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>

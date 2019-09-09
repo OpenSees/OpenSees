@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\nDarray;..\..\..\src\api;..\..\..\SRC\actor\actor;..\..\..\src\utility;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\utility\debug/utility.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\utility\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\utility\debug/</ObjectFileName>
@@ -79,7 +79,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\nDarray;..\..\..\src\api;..\..\..\SRC\actor\actor;..\..\..\src\utility;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\utility\release/utility.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\utility\release/</AssemblerListingLocation>

@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\tcl;..\..\..\src\handler;..\..\..\src\domain\node;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\renderer;..\..\..\src\matrix;..\..\..\src\utility;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\element;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_DEBUG;_LIB;_WGL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\renderer\debug/renderer.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\renderer\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\renderer\debug/</ObjectFileName>
@@ -79,7 +79,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\tcl;..\..\..\src\handler;..\..\..\src\domain\node;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\renderer;..\..\..\src\matrix;..\..\..\src\utility;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\element;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WGL;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\renderer\release/renderer.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\renderer\release/</AssemblerListingLocation>

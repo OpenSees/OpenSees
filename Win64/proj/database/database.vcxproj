@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC\api;..\..\..\src\package;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\actor;..\..\..\src\ndarray;..\..\..\src\handler;..\..\..\src\domain\domain;..\..\..\src\actor\objectbroker;..\..\..\src\matrix;..\..\..\src\actor\channel;..\..\..\src\database;..\..\..\src;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\database\release/database.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\database\release/</AssemblerListingLocation>
@@ -78,7 +78,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC\api;..\..\..\src\package;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\actor;..\..\..\src\ndarray;..\..\..\src\handler;..\..\..\src\domain\domain;..\..\..\src\actor\objectbroker;..\..\..\src\matrix;..\..\..\src\actor\channel;..\..\..\src\database;..\..\..\src;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\database\debug/database.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\database\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\database\debug/</ObjectFileName>

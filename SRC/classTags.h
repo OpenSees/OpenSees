@@ -266,6 +266,10 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+#define ND_TAG_ExternalNDMaterial 999901
+#define MAT_TAG_ExternalUniaxialMaterial 999901
+
+
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
 
@@ -718,6 +722,7 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -934,6 +939,7 @@
 #define LinSOE_TAGS_PFEMCompressibleLinSOE 28
 #define LinSOE_TAGS_PFEMQuasiLinSOE 29
 #define LinSOE_TAGS_PFEMDiaLinSOE 30
+#define LinSOE_TAGS_PARDISOGenLinSOE 99990
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
