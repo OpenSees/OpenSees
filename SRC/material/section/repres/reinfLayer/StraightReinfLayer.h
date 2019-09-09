@@ -32,7 +32,9 @@
 #define StraightReinfLayer_h 
 
 #include <ReinfLayer.h>
-
+#if _DLL
+#include <Vector.h>
+#endif
 class ReinfBar;
 
 class StraightReinfLayer : public ReinfLayer

@@ -118,10 +118,11 @@ SteelBRB::SteelBRB(int pTag, double pE,double pSigmaY0, double pSigmaY_T,double 
 	parameterID = 0;
 	SHVs = 0;
 // AddingSensitivity:END //////////////////////////////////////
+#if !_DLL
+	debug1 = new ofstream("stress_sens_debug.out");
 
- debug1 = new ofstream("stress_sens_debug.out");
-
- debug1->precision(16);
+	debug1->precision(16);
+#endif
 
 
 
@@ -132,9 +133,10 @@ SteelBRB::~SteelBRB()
 {
 
 //	opserr<<"SteelBRB::~SteelBRB() is called!"<<endln; 
-
-    debug1->close();
+#if !_DLL
+	debug1->close();
 	delete debug1;
+#endif
 }
 
 int 

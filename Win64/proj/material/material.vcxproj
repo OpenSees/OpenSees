@@ -205,6 +205,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\DruckerPragerThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ExternalNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber3d.cpp" />
@@ -283,6 +284,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMultiLinear.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp" />
@@ -585,6 +587,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\DruckerPragerThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber2d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber3d.h" />
@@ -659,6 +662,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticMultiLinear.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.h" />

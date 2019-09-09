@@ -32,7 +32,9 @@
 #define CircReinfLayer_h 
 
 #include <ReinfLayer.h>
-
+#if _DLL
+#include <Vector.h>
+#endif
 class ReinfBar;
 
 class CircReinfLayer : public ReinfLayer

@@ -17,14 +17,16 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.10 $
 // $Date: 2008-04-15 18:01:55 $
 // $Source: /usr/local/cvs/OpenSees/SRC/renderer/OpenGlDevice.h,v $
-                                                                        
-                                                                        
+
+
 #ifndef OpenGlDevice_H
 #define OpenGlDevice_H
+
+#if !_DLL
 
 #include <Device.h>
 
@@ -55,79 +57,79 @@ class AGL_Device;
 
 class OpenGlDevice
 {
- public:
-  OpenGlDevice();
-  virtual ~OpenGlDevice();  
+public:
+	OpenGlDevice();
+	virtual ~OpenGlDevice();
 
-  // Gets the width of the current window
-  virtual int GetWidth();
+	// Gets the width of the current window
+	virtual int GetWidth();
 
-  // Gets the height of the current window
-  virtual int GetHeight();
+	// Gets the height of the current window
+	virtual int GetHeight();
 
-  // Necessary when operating since the drawn
-  // image is buffered until this call is made.
-  virtual void STARTIMAGE();
-  virtual void ENDIMAGE();
+	// Necessary when operating since the drawn
+	// image is buffered until this call is made.
+	virtual void STARTIMAGE();
+	virtual void ENDIMAGE();
 
-  // Opens a window of the specified width & height.
-  virtual void WINOPEN(const char *title, int xLoc, int yLoc, int width, int height);
+	// Opens a window of the specified width & height.
+	virtual void WINOPEN(const char* title, int xLoc, int yLoc, int width, int height);
 
-  // Clears the currently opened window
-  virtual void CLEAR();
+	// Clears the currently opened window
+	virtual void CLEAR();
 
-  virtual void drawText(float x, float y, float z, char *text, int length, 
-			char horizontalJustify, char verticalJustify); 
+	virtual void drawText(float x, float y, float z, char* text, int length,
+		char horizontalJustify, char verticalJustify);
 
-  // to save the current image to a file of a specific type
-  int saveImage(const char *fileName, int type);  
+	// to save the current image to a file of a specific type
+	int saveImage(const char* fileName, int type);
 
- private:
-  void initWindow(void); // procedure called on construction of 1st Window
-  
-  // save image methods for specific file formats
-  int saveImageAsBMP(const char *fileName);  
-  int saveImageAsPNG(const char *fileName);  
+private:
+	void initWindow(void); // procedure called on construction of 1st Window
+
+	// save image methods for specific file formats
+	int saveImageAsBMP(const char* fileName);
+	int saveImageAsPNG(const char* fileName);
 
 #ifdef _GLX
 
-  // glx utility toolkit
-  Display *theDisplay;  // the display all Window objecs display on
-  Window theWindow;
-  int theScreen;        // the screen 
-  Colormap cmap;        // the colormap all X11 Window objects share   
-  GC theGC;
-  GLXContext cx;    
-  XSizeHints hints; // conatins the infor about where window is and its size
-                    //  static unsigned long foreground, background;
-  XEvent theEvent;
-  XVisualInfo *visual;
-  int swap_flag;
+	// glx utility toolkit
+	Display* theDisplay;  // the display all Window objecs display on
+	Window theWindow;
+	int theScreen;        // the screen 
+	Colormap cmap;        // the colormap all X11 Window objects share   
+	GC theGC;
+	GLXContext cx;
+	XSizeHints hints; // conatins the infor about where window is and its size
+					  //  static unsigned long foreground, background;
+	XEvent theEvent;
+	XVisualInfo* visual;
+	int swap_flag;
 
-  //  static XFontStruct *fontInfo;
-  XFontStruct *fontInfo;
-  //  static GLuint FontBase;
-  GLuint FontBase;
+	//  static XFontStruct *fontInfo;
+	XFontStruct* fontInfo;
+	//  static GLuint FontBase;
+	GLuint FontBase;
 
 #elif _WGL
 
-  // win32 stuff using wgl toolkit
-  HDC         theHDC;        // device context
-  HGLRC       theHRC;        // openGL context
-  HWND        theWND;        // the window
-  BITMAPINFO  info;
-  HBITMAP     theBitmap;
-  GLint	      viewport[4];
-  GLubyte     *bits;
-  long	      currentBitSize;
-  int xLoc;
-  int yLoc;
-  //  static GLuint FontBase;
-  GLuint FontBase;
+	// win32 stuff using wgl toolkit
+	HDC         theHDC;        // device context
+	HGLRC       theHRC;        // openGL context
+	HWND        theWND;        // the window
+	BITMAPINFO  info;
+	HBITMAP     theBitmap;
+	GLint	      viewport[4];
+	GLubyte* bits;
+	long	      currentBitSize;
+	int xLoc;
+	int yLoc;
+	//  static GLuint FontBase;
+	GLuint FontBase;
 
 #elif _AGL
 
-  AGL_Device *theDevice; 
+	AGL_Device* theDevice;
 
 #else
 
@@ -135,14 +137,53 @@ class OpenGlDevice
 
 
 
-  static int numWindows;
-  int winOpen;
-  int width, height;		// Width and height of our window
-  char *windowTitle;
+	static int numWindows;
+	int winOpen;
+	int width, height;		// Width and height of our window
+	char* windowTitle;
 };
 
+
+#else 
+class OpenGlDevice // dummy
+{
+public:
+	OpenGlDevice() {};
+	virtual ~OpenGlDevice() {};
+
+	// Gets the width of the current window
+	virtual int GetWidth() { return 0; };
+
+	// Gets the height of the current window
+	virtual int GetHeight() { return 0; };
+
+	// Necessary when operating since the drawn
+	// image is buffered until this call is made.
+	virtual void STARTIMAGE() { return; };
+	virtual void ENDIMAGE() { return; };
+
+	// Opens a window of the specified width & height.
+	virtual void WINOPEN(const char* title, int xLoc, int yLoc, int width, int height) { return; };;
+
+	// Clears the currently opened window
+	virtual void CLEAR() { return; };;
+
+	virtual void drawText(float x, float y, float z, char* text, int length,
+		char horizontalJustify, char verticalJustify) {
+		return;
+	};;
+
+	// to save the current image to a file of a specific type
+	int saveImage(const char* fileName, int type) { return 0; };;
+
+private:
+	void initWindow(void); // procedure called on construction of 1st Window
+
+	// save image methods for specific file formats
+	int saveImageAsBMP(const char* fileName) { return 0; };;
+	int saveImageAsPNG(const char* fileName) { return 0; };;
+};
+#endif
 #endif
 
 
-
-  

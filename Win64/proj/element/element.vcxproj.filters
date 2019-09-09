@@ -120,6 +120,9 @@
     <Filter Include="absorbentBoundaries">
       <UniqueIdentifier>{1b806f65-5bd2-4429-9294-d36935d459e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="externalElement">
+      <UniqueIdentifier>{2fcdf45b-d1f3-46f5-abd7-468ec25b7170}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -893,6 +896,9 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp">
+      <Filter>externalElement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1554,6 +1560,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h">
       <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\ExternalElement.h">
+      <Filter>externalElement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
