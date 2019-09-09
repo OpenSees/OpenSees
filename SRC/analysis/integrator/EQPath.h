@@ -82,4 +82,3 @@ class EQPath : public StaticIntegrator
 };
 
 #endif
-
