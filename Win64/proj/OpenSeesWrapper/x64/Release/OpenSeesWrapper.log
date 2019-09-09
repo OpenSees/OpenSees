@@ -1,0 +1,109 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(452,5): warning MSB8028: The intermediate directory (x64\Release\) contains files shared from another project (OpenSeesWrapper.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  stdafx.cpp
+  AcceleratorWrapper.cpp
+  AlgorithmsWrapper.cpp
+  LineSearchWrapper.cpp
+  AnalysisWrapper.cpp
+C:\Git Projects\OpenSees.NET\OpenSees\Win64\proj\OpenSeesWrapper\analysis\analysis\AnalysisWrapper.h(181,16): warning C4490:  'override': incorrect use of override specifier; 'OpenSees::Analysis::PFEMAnalysisAnalysisWrapper::Analyze' does not match a base ref class method
+C:\Git Projects\OpenSees.NET\OpenSees\Win64\proj\OpenSeesWrapper\analysis\analysis\AnalysisWrapper.h(181,16): message :  'new' or 'override' are only allowed when a matching base method from a ref class exists
+C:\Git Projects\OpenSees.NET\OpenSees\Win64\proj\OpenSeesWrapper\analysis\analysis\AnalysisWrapper.h(206,16): warning C4490:  'override': incorrect use of override specifier; 'OpenSees::Analysis::VariableTimeStepDirectIntegrationAnalysisWrapper::Analyze' does not match a base ref class method
+  ConstraintHandlerWrapper.cpp
+  IncrementalIntegratorWrapper.cpp
+  IntegratorWrapper.cpp
+  StaticIntegratorWrapper.cpp
+  TransientIntegratorWrapper.cpp
+  AnalysisModelWrapper.cpp
+  DOF_NumbererWrapper.cpp
+  AssemblyInfo.cpp
+  ConvergenceTestWrapper.cpp
+  DamageModelWrapper.cpp
+  DomainComponentWrapper.cpp
+  ConstraintWrapper.cpp
+  BaseDomainWrapper.cpp
+  DomainWrapper.cpp
+  GroudMotionWrapper.cpp
+  LoadWrapper.cpp
+  Generating Code...
+  Compiling...
+  NodeWrapper.cpp
+  LoadPatternWrapper.cpp
+  TimeSeriesWrapper.cpp
+  AdapterWrapper.cpp
+  BaseElementWrapper.cpp
+  BeamColumnWrapper.cpp
+  BeamIntegrationWrapper.cpp
+  BearingWrapper.cpp
+  BrickWrapper.cpp
+  CatenaryCableWrapper.cpp
+  CrdTransfWrapper.cpp
+  ElementWrapper.cpp
+  ExternalElementWrapper.cpp
+  OtherElementWrapper.cpp
+  Quad4FiberOverlayWrapper.cpp
+  SurfaceLoadWrapper.cpp
+C:\Git Projects\OpenSees.NET\OpenSees\Win64\proj\OpenSeesWrapper\analysis\analysis\AnalysisWrapper.h(206,16): message :  'new' or 'override' are only allowed when a matching base method from a ref class exists
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\TriSurfaceLoad.h(38,1): warning C4005:  'SL_NUM_NODE': macro redefinition
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\SurfaceLoad.h(39): message :  see previous definition of 'SL_NUM_NODE'
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\TriSurfaceLoad.h(42,1): warning C4005:  'SL_NUM_DOF': macro redefinition
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\SurfaceLoad.h(43): message :  see previous definition of 'SL_NUM_DOF'
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\TriSurfaceLoad.h(44,1): warning C4005:  'SL_NUM_DDOF': macro redefinition
+  QuadWrapper.cpp
+  ShellWrapper.cpp
+  TrussWrapper.cpp
+  ULBeamColumnWrapper.cpp
+C:\Git Projects\OpenSees.NET\OpenSees\src\element\surfaceLoad\SurfaceLoad.h(45): message :  see previous definition of 'SL_NUM_DDOF'
+  Generating Code...
+  Compiling...
+  CoupledZeroLengthWrapper.cpp
+  ZeroLengthElementWrapper.cpp
+  GraphNumbererWrapper.cpp
+  HandlerWrapper.cpp
+  MaterialWrapper.cpp
+  NDMaterialWrapper.cpp
+  FiberWrapper.cpp
+  SectionIntegrationWrapper.cpp
+  PatchWrapper.cpp
+  ReinfLayerWrapper.cpp
+  SectionRepresWrapper.cpp
+  SectionForceDeformationWrapper.cpp
+  LimitCurveWrapper.cpp
+  UniaxialMaterialWrapper.cpp
+  UniaxialMaterialWrapper_all.cpp
+  YieldSurfaceWrapper.cpp
+  IDWrapper.cpp
+  MatrixWrapper.cpp
+  VectorWrapper.cpp
+  OPS.cpp
+  Generating Code...
+  Compiling...
+  InformationWrapper.cpp
+  RecorderWrapper.cpp
+  ResponseWrapper.cpp
+  ResponseWrapper_all.cpp
+  ArpackSOEWrapper.cpp
+  BandGENWrapper.cpp
+  BandSPDWrapper.cpp
+  DiagonalWrapper.cpp
+  EigenSOEWrapper.cpp
+  EigenSolverWrapper.cpp
+  FullGENWrapper.cpp
+  LinearSOESolverWrapper.cpp
+  LinearSOEWrapper.cpp
+  ProfileSPDWrapper.cpp
+  SolverWrapper.cpp
+  SparseGENWrapper.cpp
+  SparseSYMWrapper.cpp
+  SYMBandEigenWrapper.cpp
+  SystemOfEqnWrapper.cpp
+  UmfpackGenWrapper.cpp
+  Generating Code...
+  Compiling...
+  TaggedObjectWrapper.cpp
+  Generating Code...
+C:\Git Projects\OpenSees.NET\OpenSees\Win64\proj\OpenSeesWrapper\elements\ULBeamColumn\ULBeamColumnWrapper.h(19,10): warning C4067:  unexpected tokens following preprocessor directive - expected a newline
+  .NETFramework,Version=v4.0.AssemblyAttributes.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1264,5): warning MSB8012: TargetPath(C:\Git Projects\OpenSees.NET\OpenSees\Win64\\bin\Release\OpenSees.NET.x64.dll.dll) does not match the Linker's OutputFile property value (C:\Git Projects\OpenSees.NET\OpenSees\Win64\bin\Release\OpenSees.NET.x64.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1266,5): warning MSB8012: TargetName(OpenSees.NET.x64.dll) does not match the Linker's OutputFile property value (OpenSees.NET.x64). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+     Creating library .\..\..\bin\Release\OpenSees.NET.x64.lib and object .\..\..\bin\Release\OpenSees.NET.x64.exp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  OpenSeesWrapper.vcxproj -> C:\Git Projects\OpenSees.NET\OpenSees\Win64\\bin\Release\OpenSees.NET.x64.dll.dll
