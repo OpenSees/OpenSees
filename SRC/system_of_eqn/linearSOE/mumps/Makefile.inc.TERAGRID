@@ -7,7 +7,7 @@
 #   Makefile.inc.generic
 #
 #   This defines some parameters dependent on your platform; you should
-#   look for the approriate file in the directory ./Make.inc/ and copy it
+#   look for the appropriate file in the directory ./Make.inc/ and copy it
 #   into a file called Makefile.inc. For example, from the MUMPS root
 #   directory, use 
 #   "cp Make.inc/Makefile.inc.generic ./Makefile.inc"
@@ -76,7 +76,7 @@ CL      = $(CC)
 # AR : Archive object in a library
 AR      = ar vr
 # RANLIB : generate index of an archive file
-#   (optionnal use "RANLIB = echo" in case of problem)
+#   (optional use "RANLIB = echo" in case of problem)
 RANLIB  = ranlib
 #RANLIB  = echo
 

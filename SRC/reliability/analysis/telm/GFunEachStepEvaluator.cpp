@@ -134,7 +134,7 @@ void GFunEachStepEvaluator::analyzeLSF(ReliabilityDomain* theRelib)
 			output << "\n";
 			output << "      Node";
 			output << " Direction";
-			output << "     Coeficient\n";
+			output << "     Coefficient\n";
 			thePFIters[lsf]->reset();
 			PerformanceFunctionCoeff* thePfCoeff;
 			while((thePfCoeff = (*thePFIters[lsf])()) != 0){
@@ -171,12 +171,12 @@ double GFunEachStepEvaluator::setLimitState
 	strcpy(lsf_forTokenizing,theExpression);
 	char tclAssignment[100];
 
-//  1st set all disp to zero and evaluate to have the constatn term //
+//  1st set all disp to zero and evaluate to have the constant term //
 	char *tokenPtr = strtok( lsf_forTokenizing, separators);
 	while ( tokenPtr != NULL ) {
 		strcpy(tempchar,tokenPtr);
 		if ( strncmp(tokenPtr, "ud", 2) == 0) {
-			opserr << "Performance Fucntion need to be \n";
+			opserr << "Performance Function need to be \n";
 			opserr << "a linear function of disp to apply \n";
 			opserr << "initial shape analysys \n";
 			opserr << "skip initial shape for this lsf \n";
@@ -190,7 +190,7 @@ double GFunEachStepEvaluator::setLimitState
 			Tcl_Eval( theTclInterp, tclAssignment);
 		}
 		else if ( strncmp(tokenPtr, "rec",3) == 0) {
-			opserr << "Performance Fucntion need to be \n";
+			opserr << "Performance Function need to be \n";
 			opserr << "a linear function of disp to apply \n";
 			opserr << "initial shape analysys \n";
 			opserr << "skip initial shape for this lsf \n";

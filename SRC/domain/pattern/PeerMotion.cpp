@@ -361,7 +361,7 @@ PeerMotion::sendSelf(int commitTag, Channel &theChannel)
       result = theChannel.sendVector(otherDbTag, commitTag, *thePath);
       if (result < 0) {
 	opserr << "PeerMotion::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result;  
       }
     }
@@ -406,7 +406,7 @@ PeerMotion::recvSelf(int commitTag, Channel &theChannel,
     result = theChannel.recvVector(otherDbTag, lastSendCommitTag, *thePath);    
     if (result < 0) {
       opserr << "PeerMotion::recvSelf() - ";
-      opserr << "channel failed to receive tha Path Vector\n";
+      opserr << "channel failed to receive the Path Vector\n";
       return result;  
     }
   }
