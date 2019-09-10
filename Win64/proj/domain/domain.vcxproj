@@ -14,18 +14,22 @@
     <ProjectGuid>{10BE1D68-585D-6B54-0C7F-0CF2962C52F1}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
+<<<<<<< HEAD
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+=======
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+>>>>>>> 0b82b5dd3f5e694d47a068c9dbb0eb4d9f6716ab
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -54,7 +58,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\recorder\response;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\element\elasticBeamColumn;..\..\..\src\material\section;..\..\..\src\material\uniaxial;..\..\..\src\element\zeroLength;..\..\..\src\actor\shadow;..\..\..\src\material\nD;..\..\..\src\material;..\..\..\src\element\brick;..\..\..\src\element;..\..\..\src\domain\pattern\drm;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\src\reliability\optimization;..\..\..\src\reliability\analysis\telm;..\..\..\src\actor\message;..\..\..\src\reliability\domain\component;..\..\..\src\reliability\domain\filter;..\..\..\src\handler;..\..\..\src\domain\groundMotion;..\..\..\src\analysis\fe_ele;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\database;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\graph\graph;..\..\..\src\modelbuilder;..\..\..\src\domain\domain\single;..\..\..\src\modelbuilder\tcl;..\..\..\src\tagged\storage;..\..\..\src\domain\constraints;..\..\..\src\domain\pattern;..\..\..\src\matrix;..\..\..\src\analysis\dof_grp;..\..\..\src\domain\domain;..\..\..\src\actor\channel;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\actor\objectBroker;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\domain\load;..\..\..\src\domain\node;..\..\..\src\renderer;..\..\..\src\nDarray;..\..\..\src\domain\region;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\integrator;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_RELIABILITY;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\domain\release/domain.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\domain\release/</AssemblerListingLocation>
@@ -83,7 +87,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\recorder\response\;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\element\elasticBeamColumn;..\..\..\src\material\section;..\..\..\src\material\uniaxial;..\..\..\src\element\zeroLength;..\..\..\src\actor\shadow;..\..\..\src\material\nD;..\..\..\src\material;..\..\..\src\element\brick;..\..\..\src\element;..\..\..\src\domain\pattern\drm;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\src\reliability\optimization;..\..\..\src\reliability\analysis\telm;..\..\..\src\actor\message;..\..\..\src\reliability\domain\filter;..\..\..\src\handler;..\..\..\src\domain\groundMotion;..\..\..\src\analysis\fe_ele;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\database;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\graph\graph;..\..\..\src\modelbuilder;..\..\..\src\domain\domain\single;..\..\..\src\modelbuilder\tcl;..\..\..\src\tagged\storage;..\..\..\src\domain\constraints;..\..\..\src\domain\pattern;..\..\..\src\matrix;..\..\..\src\analysis\dof_grp;..\..\..\src\domain\domain;..\..\..\src\actor\channel;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\actor\objectBroker;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\domain\load;..\..\..\src\domain\node;..\..\..\src\renderer;..\..\..\src\nDarray;..\..\..\src\domain\region;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\integrator;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_RELIABILITY;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\domain\debug/domain.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\domain\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\domain\debug/</ObjectFileName>
