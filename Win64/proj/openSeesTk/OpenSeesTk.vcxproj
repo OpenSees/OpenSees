@@ -14,11 +14,8 @@
     <ProjectName>OpenSeesTk</ProjectName>
     <ProjectGuid>{DEBED636-6061-42B1-B277-FAB92DF0E446}</ProjectGuid>
     <RootNamespace>OpenSeesTk5</RootNamespace>
-<<<<<<< HEAD
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
->>>>>>> 0b82b5dd3f5e694d47a068c9dbb0eb4d9f6716ab
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

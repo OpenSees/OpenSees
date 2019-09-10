@@ -14,11 +14,8 @@
     <ProjectGuid>{A6947A93-DFD1-060E-F426-AE10230F7861}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-<<<<<<< HEAD
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
->>>>>>> 0b82b5dd3f5e694d47a068c9dbb0eb4d9f6716ab
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -54,7 +51,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC\actor\message;..\..\..\SRC\actor\channel;..\..\..\SRC\database;..\..\..\SRC\nDarray;..\..\..\arc\objectbroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\handler\release/handler.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\handler\release/</AssemblerListingLocation>
@@ -82,7 +79,7 @@
       <AdditionalIncludeDirectories>..\..\..\SRC\actor\message;..\..\..\SRC\actor\channel;..\..\..\SRC\database;..\..\..\SRC\nDarray;..\..\..\arc\objectbroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\handler\debug/handler.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\handler\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\handler\debug/</ObjectFileName>

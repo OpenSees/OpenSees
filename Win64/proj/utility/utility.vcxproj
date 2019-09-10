@@ -14,11 +14,8 @@
     <ProjectGuid>{72CEB368-613B-3977-7BE6-0155A5F1DDBC}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-<<<<<<< HEAD
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
->>>>>>> 0b82b5dd3f5e694d47a068c9dbb0eb4d9f6716ab
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -54,7 +51,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\nDarray;..\..\..\src\api;..\..\..\SRC\actor\actor;..\..\..\src\utility;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\utility\debug/utility.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\utility\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\utility\debug/</ObjectFileName>
@@ -83,7 +80,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\nDarray;..\..\..\src\api;..\..\..\SRC\actor\actor;..\..\..\src\utility;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\handler;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\utility\release/utility.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\utility\release/</AssemblerListingLocation>

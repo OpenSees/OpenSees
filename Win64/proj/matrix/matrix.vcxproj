@@ -14,11 +14,8 @@
     <ProjectGuid>{A2422B53-1A88-CBC2-AAA3-3A727C91E852}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-<<<<<<< HEAD
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
-=======
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
->>>>>>> 0b82b5dd3f5e694d47a068c9dbb0eb4d9f6716ab
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -54,7 +51,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\matrix\release/matrix.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\matrix\release/</AssemblerListingLocation>
@@ -82,7 +79,7 @@
       <AdditionalIncludeDirectories>..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\matrix\debug/matrix.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\matrix\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\matrix\debug/</ObjectFileName>
