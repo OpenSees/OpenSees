@@ -372,7 +372,8 @@
 #define ND_TAG_CPlaneStrain   54
 #define ND_TAG_CPlaneStress2d   55
 #define ND_TAG_CThreeDimensional   55
-
+#define ND_TAG_StressDensityModel2D 56
+#define ND_TAG_StressDensityModel3D 57
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101

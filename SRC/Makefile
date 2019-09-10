@@ -1228,6 +1228,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/EQPath.o \
 	$(FE)/analysis/integrator/LoadPath.o \
 	$(FE)/analysis/integrator/ArcLength.o \
 	$(FE)/analysis/integrator/HSConstraint.o \
