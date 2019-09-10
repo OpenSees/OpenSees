@@ -1,0 +1,11 @@
+examples exp1..exp9 tcl files are provided by Aryan Rezaei Rad
+https://people.epfl.ch/aryan.rezaeirad?lang=en
+
+C# & matlab codes provided by M.Salehi opensees.net@gmail.com
+
+more example : 
+http://opensees.net 
+https://www.youtube.com/channel/UCDSKvQ-0jvZh660rGptlb2g
+https://github.com/imeg/OpenSees
+
+
