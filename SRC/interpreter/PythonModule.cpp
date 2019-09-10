@@ -167,15 +167,15 @@ PythonModule::resetInput(int cArg) {
 }
 
 int
-PythonModule::setInt(int *data, int numArgs) {
-    wrapper.setOutputs(data, numArgs);
+PythonModule::setInt(int *data, int numArgs, bool scalar) {
+    wrapper.setOutputs(data, numArgs, scalar);
 
     return 0;
 }
 
 int
-PythonModule::setDouble(double *data, int numArgs) {
-    wrapper.setOutputs(data, numArgs);
+PythonModule::setDouble(double *data, int numArgs, bool scalar) {
+    wrapper.setOutputs(data, numArgs, scalar);
 
     return 0;
 }
