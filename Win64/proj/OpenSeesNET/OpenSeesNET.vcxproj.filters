@@ -438,6 +438,12 @@
     <ClInclude Include="recorders\ResponseWrapper_all.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tcl\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcl\TclWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -684,6 +690,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="recorders\ResponseWrapper_all.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcl\TclWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

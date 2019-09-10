@@ -227,7 +227,7 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;tcl.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;superLU.lib;system.lib;tagged.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;proxy.lib;mkl_core.lib;mkl_core_dll.lib;mkl_rt.lib</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;tcl.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;superLU.lib;system.lib;tagged.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;proxy.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin\$(Configuration)\OpenSees.NET.x64.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\lib\debug;..\..\lib;C:\Program Files\Tcl\lib;C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2018.2.185\windows\mkl\lib\intel64_win</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -301,7 +301,7 @@
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;tcl.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;superLU.lib;system.lib;tagged.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;proxy.lib;mkl_core.lib;mkl_core_dll.lib;mkl_rt.lib</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;tcl.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;superLU.lib;system.lib;tagged.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;proxy.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin\$(Configuration)\OpenSees.NET.x64.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\lib\release;..\..\lib;C:\Program Files\Tcl\lib;C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2018.2.185\windows\mkl\lib\intel64_win</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -466,6 +466,8 @@
     <ClInclude Include="systems\UmfpackGenWrapper.h" />
     <ClInclude Include="taggeds\stdafx.h" />
     <ClInclude Include="taggeds\TaggedObjectWrapper.h" />
+    <ClInclude Include="tcl\stdafx.h" />
+    <ClInclude Include="tcl\TclWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="analysis\algorithms\AcceleratorWrapper.cpp" />
@@ -559,6 +561,7 @@
     <ClCompile Include="systems\SystemOfEqnWrapper.cpp" />
     <ClCompile Include="systems\UmfpackGenWrapper.cpp" />
     <ClCompile Include="taggeds\TaggedObjectWrapper.cpp" />
+    <ClCompile Include="tcl\TclWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />
