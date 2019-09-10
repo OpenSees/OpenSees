@@ -165,6 +165,7 @@ void* OPS_ShearPanelMaterial();
 void* OPS_SteelMP();
 void* OPS_SmoothPSConcrete();
 void* OPS_UniaxialJ2Plasticity();
+void* OPS_OOHystereticMaterial();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -322,6 +323,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("SteelMP", &OPS_SteelMP));
 	uniaxialMaterialsMap.insert(std::make_pair("SmoothPSConcrete", &OPS_SmoothPSConcrete));
 	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
+	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
 
 	return 0;
     }
