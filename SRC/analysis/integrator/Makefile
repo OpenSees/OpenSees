@@ -4,6 +4,7 @@ include ../../../Makefile.def
 
 OBJS       = AlphaOS.o \
     AlphaOS_TP.o \
+    EQPath.o \
     AlphaOSGeneralized.o \
     ExplicitDifference.o \
 	AlphaOSGeneralized_TP.o \

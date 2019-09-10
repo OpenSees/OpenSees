@@ -426,7 +426,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
-	$(FE)/recorder/MPCORecorder.o 
+	$(FE)/recorder/MPCORecorder.o \
+	$(FE)/recorder/VTK_Recorder.o 
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
@@ -1227,6 +1228,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/EQPath.o \
 	$(FE)/analysis/integrator/LoadPath.o \
 	$(FE)/analysis/integrator/ArcLength.o \
 	$(FE)/analysis/integrator/HSConstraint.o \
