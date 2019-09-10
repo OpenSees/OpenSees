@@ -739,6 +739,7 @@
 #define BEAM_INTEGRATION_TAG_NewtonCotes           4
 #define BEAM_INTEGRATION_TAG_Trapezoidal           5
 #define BEAM_INTEGRATION_TAG_CompositeSimpson           55
+#define BEAM_INTEGRATION_TAG_Simpson           56
 #define BEAM_INTEGRATION_TAG_Midpoint           6
 #define BEAM_INTEGRATION_TAG_UserDefined     7
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
