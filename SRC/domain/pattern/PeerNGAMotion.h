@@ -88,7 +88,7 @@ class PeerNGAMotion : public TimeSeries
 		double cFactor);
   
  private:
-  Vector *thePath;      // vector containg the data points
+  Vector *thePath;      // vector containing the data points
   double dT;
   int currentTimeLoc;   // current location in time
   double cFactor;       // additional factor on the returned load factor

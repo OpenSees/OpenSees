@@ -120,7 +120,7 @@ RigidBeam::RigidBeam(Domain &theDomain, int nR, int nC) {
     // create the ID to identify the constrained dof 
     ID id(numDOF);
 
-    // construct the tranformation matrix Ccr, where  Uc = Ccr Ur & set the diag, Ccr = I
+    // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag, Ccr = I
     Matrix mat(numDOF,numDOF);
     mat.Zero();
 

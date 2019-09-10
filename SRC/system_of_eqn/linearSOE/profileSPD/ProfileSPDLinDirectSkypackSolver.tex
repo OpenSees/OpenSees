@@ -4,7 +4,7 @@
 \noindent {\bf Files}   \\
 \indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSkypackSolver.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class ProfileSPDLinDirectSkypackSolver: public LinearSOESolver  \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -67,7 +67,7 @@ mCols} and {\em mRows} equal $0$, or {\em skypf2()}. {\em skysf2()} is
 a routine which uses the BLAS level 1 routines, {\em skypf2()} is a
 routine which uses BLAS levels 2 and 3. If {\em skypf2()}
 has been called, {\em invD} is set up. Once the matrix has been
-factored, {\em skyss()} is called. If the solution is sucessfully
+factored, {\em skyss()} is called. If the solution is successfully
 obtained, i.e. the {\em skyss()} routine returns $0$ in the INFO
 argument, $0$ is returned, otherwise it prints a warning message and
 returns INFO. The solve process changes $A$ and $X$. \\   
@@ -76,7 +76,7 @@ returns INFO. The solve process changes $A$ and $X$. \\
 Is responsible for setting the {\em block} information required by the
 SKYPACK routines (block[0]=1; block[1]=size, block[2]=1) and for
 creating space for the {\em invD} work array. Returns $0$ if
-successfull, otherwise a warning message is printed and a $-1$ is
+successful, otherwise a warning message is printed and a $-1$ is
 returned. \\
 
 \indent {\em  int sendSelf(int commitTag, Channel \&theChannel);} \\ 

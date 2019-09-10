@@ -108,7 +108,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     // create the ID to identify the constrained dof 
     ID id(3);
 
-    // construct the tranformation matrix Ccr, where  Uc = Ccr Ur & set the diag
+    // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag
     Matrix mat(3,3);
     mat.Zero();
     mat(0,0) = 1.0; mat(1,1) = 1.0; mat(2,2) = 1.0;

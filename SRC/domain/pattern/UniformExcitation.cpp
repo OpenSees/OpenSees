@@ -83,7 +83,7 @@ void* OPS_UniformExcitationPattern()
 	if ((strcmp(flag,"-vel0") == 0) || (strcmp(flag,"-initialVel") == 0)) {
 	
 	    if (OPS_GetDoubleInput(&numdata, &vel0) < 0) {
-		opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+		opserr << "WARNING invalid vel0: pattern type UniformExcitation\n";
 		return 0;
 	    }
 	}
@@ -91,7 +91,7 @@ void* OPS_UniformExcitationPattern()
 	else if ((strcmp(flag,"-fact") == 0) || (strcmp(flag,"-factor") == 0)) {
 	
 	    if (OPS_GetDoubleInput(&numdata, &fact) < 0) {
-		opserr << "WARNING invalid fact: pattern type UniformExciation\n";
+		opserr << "WARNING invalid fact: pattern type UniformExcitation\n";
 		return 0;
 	    }
 	}
@@ -101,7 +101,7 @@ void* OPS_UniformExcitationPattern()
 
 	    int tsTag;
 	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
-		opserr << "WARING invalid accel series tag\n";
+		opserr << "WARNING invalid accel series tag\n";
 		return 0;
 	    }
 	
@@ -117,7 +117,7 @@ void* OPS_UniformExcitationPattern()
 
 	    int tsTag;
 	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
-		opserr << "WARING invalid vel series tag\n";
+		opserr << "WARNING invalid vel series tag\n";
 		return 0;
 	    }
 	    velSeries = OPS_getTimeSeries(tsTag);
@@ -132,7 +132,7 @@ void* OPS_UniformExcitationPattern()
 
 	    int tsTag;
 	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
-		opserr << "WARING invalid disp series tag\n";
+		opserr << "WARNING invalid disp series tag\n";
 		return 0;
 	    }
 	

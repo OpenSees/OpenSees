@@ -151,7 +151,7 @@ int SafeGuardedZeroFindingAlgorithm::findZeroPoint(double x0)
 	
 	
 	if (maxIterNum>100) {
-		opserr<<"warning: SafeGuardedZeroFindingAlgorithm::findZeroPoint may couse member ";
+		opserr<<"warning: SafeGuardedZeroFindingAlgorithm::findZeroPoint may cause member ";
 		opserr<<" error since maxIterNum:"<<maxIterNum<<" exceed the limit 100..."<<endln;
 	}
 

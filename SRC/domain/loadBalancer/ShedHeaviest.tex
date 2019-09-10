@@ -4,7 +4,7 @@
 \noindent {\bf Files}   \\
 \indent \#include $<\tilde{ }$/domain/loadBalancer/ShedHeaviest.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class ShedHeaviest: public LoadBalancer \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -47,7 +47,7 @@ The heaviest loaded partition, {\em max}, is first determined by
 iterating through the Graph {\em theWeightedGraph} looking at the
 vertex weights. Then {\em releaseBoundary(max, theWieightedGraph,
 true, factorGreater)} is invoked on the
-DomainPartitioner {\em numRelease} times. Returns $0$ if successfull,
+DomainPartitioner {\em numRelease} times. Returns $0$ if successful,
 otherwise a negative number and a warning message are returned if
 either no link has been set to the DomainPartitioner or {\em
 releaseBoundary()} returns a negative number. \\
