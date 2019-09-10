@@ -112,7 +112,7 @@ MultiSupportPattern::addMotion(GroundMotion &theMotion, int tag)
 {
   // ensure no motion with given tag already added
   if (theMotionTags.getLocation(tag) >= 0) {
-    opserr << "MultiSupportPattern::addMotion - could not add new, motion wih same tag exists\n";
+    opserr << "MultiSupportPattern::addMotion - could not add new, motion with same tag exists\n";
     return -1;
   }    
 
@@ -233,7 +233,7 @@ MultiSupportPattern::sendSelf(int commitTag, Channel &theChannel)
     }
   }
 
-  // if we get here we are successfull
+  // if we get here we are successful
   return 0;
 }
 

@@ -336,7 +336,7 @@ PFEMLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != B.Size()) {
 	opserr << "WARNING BandGenLinSOE::setB() -";
-	opserr << " incomptable sizes " << B.Size() << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << B.Size() << " and " << v.Size() << endln;
 	return -1;
     }
     

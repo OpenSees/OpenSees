@@ -6,7 +6,7 @@ UNDER CONSTRUCTION
 \noindent {\bf Files}   \\
 \indent \#include $<$/domain/subdomain/Subdomain.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class Subdomain: public Domain, public Element  \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -156,7 +156,7 @@ as external nodes and have yet to be removed from the subdomain. \\
 {\em virtual int getNumDOF(void);}\\
 Returns the num of external dof associated with the subdomain, the number
 returned is the result of invoking {\em getNumExternalEqn()} on
-the DomainDecompAnalysis object assocaited with the Subdomain. If
+the DomainDecompAnalysis object associated with the Subdomain. If
 no Analysis yet associated with the Subdomain $0$ is returned. \\
 
 {\em virtual void commitState(void);}\\ 
@@ -175,7 +175,7 @@ diag elements. Returns a zero matrix of dimensions (1x1). \\
 {\em virtual const Matrix \&getDamp(void);    }\\
 For this class does nothing but print an error message. Subtypes may
 provide a condensed damping matrix, $T^tDT$ or a damping matrix
-corresponding to some comination of the condensed stifffness and mass
+corresponding to some combination of the condensed stifffness and mass
 matrices. Returns a zero matrix of dimensions (1x1). \\
 
 {\em virtual const Vector \&getResistingForce(void);}\\

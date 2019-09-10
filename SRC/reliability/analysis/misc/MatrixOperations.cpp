@@ -461,7 +461,7 @@ MatrixOperations::computeInverse()
 
 	Matrix &A = (*theMatrix);
 
-	// Return the invers matrix B such that A*B=I
+	// Return the inverse matrix B such that A*B=I
 	int sizeOfA = A.noCols();
 	Matrix B ( sizeOfA, sizeOfA );
 	Matrix AB ( sizeOfA, 2*sizeOfA );

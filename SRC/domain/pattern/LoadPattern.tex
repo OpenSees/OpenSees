@@ -16,7 +16,7 @@
 \noindent {\bf Description} \\ 
 \indent The LoadPattern class is a concrete base class. A
 LoadPattern is a container class for Load and SP\_Constraint
-objects. Each LoadPattern object is assocaited with a TimeSeries
+objects. Each LoadPattern object is associated with a TimeSeries
 object which, for a given pseudo time, will return the appropriate
 load factor to be applied to th load in the LoadPattern. \\
 
@@ -111,20 +111,20 @@ Returns an iter to the single-point constraints in the LoadPattern. \\
     
 \indent {\em  virtual NodalLoad *removeNodalLoad(int tag);}\\
 To remove the nodal load whose identifier is given by {\em tag} from
-the LoadPattern and sets the laods associated Domain object to
-$0$. Returns a pointer to the load if succesfully removed, otherwise
+the LoadPattern and sets the loads associated Domain object to
+$0$. Returns a pointer to the load if successfully removed, otherwise
 $0$ is returned. \\ 
 
 \indent {\em  virtual ElementalLoad *removeElementalLoad(int tag);}\\
 To remove the elemental load whose identifier is given by {\em tag} from
 the LoadPattern and set the loads associated Domain object to
-$0$. Returns a pointer to the load if succesfully removed, otherwise
+$0$. Returns a pointer to the load if successfully removed, otherwise
 $0$ is returned. \\ 
 
 \indent {\em  virtual SP\_Constraint *removeSP\_Constraint(int tag);}\\ 
 To remove the single-point constraint whose identifier is given by {\em tag} from
-the LoadPattern and st its associated Doman object to $0$. Returns a
-pointer to the load if succesfully removed, otherwise $0$ is
+the LoadPattern and st its associated Domain object to $0$. Returns a
+pointer to the load if successfully removed, otherwise $0$ is
 returned. \\ 
 
 \indent {\em  virtual void applyLoad(double pseudoTime = 0.0);}\\
