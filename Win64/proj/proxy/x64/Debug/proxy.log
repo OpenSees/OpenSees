@@ -1,0 +1,3 @@
+﻿  InformationProxy.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1445,5): warning MSB8012: TargetPath(C:\Git Projects\OpenSees.NET\Win64\x64\Debug\proxy.lib) does not match the Library's OutputFile property value (C:\Git Projects\OpenSees.NET\Win64\lib\debug\proxy.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+  proxy.vcxproj -> C:\Git Projects\OpenSees.NET\Win64\x64\Debug\proxy.lib

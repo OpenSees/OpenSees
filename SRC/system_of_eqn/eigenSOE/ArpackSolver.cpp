@@ -94,15 +94,16 @@ ArpackSolver::~ArpackSolver()
   sizeWork = 0;
 }
 
+#if !_DLL
 #ifdef _WIN32
 
-extern "C" int  DSAUPD(int *ido, char* bmat, 
-		       int *n, char *which,
-		       int *nev, 
-		       double *tol, double *resid, int *ncv, double *v, 
-		       int *ldv,
-		       int *iparam, int *ipntr, double *workd, double *workl,
-		       int *lworkl, int *info);
+extern "C" int  DSAUPD(int* ido, char* bmat,
+	int* n, char* which,
+	int* nev,
+	double* tol, double* resid, int* ncv, double* v,
+	int* ldv,
+	int* iparam, int* ipntr, double* workd, double* workl,
+	int* lworkl, int* info);
 #if _DLL
 extern "C" int  DSEUPD(bool* rvec, char* howmny,
 	long int* select, double* d, double* z,
@@ -113,27 +114,45 @@ extern "C" int  DSEUPD(bool* rvec, char* howmny,
 	int* ldv, int* iparam, int* ipntr, double* workd,
 	double* workl, int* lworkl, int* info);
 #else
-extern "C" int  DSEUPD(bool *rvec, char *howmny,
-		       logical *select, double *d, double *z,
-		       int *ldz, double *sigma, char *bmat,
-		       int 	*n, char *which,
-		       int *nev, double *tol, double *resid, int *ncv, 
-		       double *v,
-		       int *ldv, int *iparam, int *ipntr, double *workd, 
-		       double *workl, int *lworkl, int *info);
+extern "C" int  DSEUPD(bool* rvec, char* howmny,
+	logical* select, double* d, double* z,
+	int* ldz, double* sigma, char* bmat,
+	int* n, char* which,
+	int* nev, double* tol, double* resid, int* ncv,
+	double* v,
+	int* ldv, int* iparam, int* ipntr, double* workd,
+	double* workl, int* lworkl, int* info);
 #endif
 #else
 
-extern "C" int dsaupd_(int *ido, char* bmat, int *n, char *which, int *nev, 
-		       double *tol, double *resid, int *ncv, double *v, int *ldv,
-		       int *iparam, int *ipntr, double *workd, double *workl,
-		       int *lworkl, int *info);
+extern "C" int dsaupd_(int* ido, char* bmat, int* n, char* which, int* nev,
+	double* tol, double* resid, int* ncv, double* v, int* ldv,
+	int* iparam, int* ipntr, double* workd, double* workl,
+	int* lworkl, int* info);
 
-extern "C" int dseupd_(bool *rvec, char *howmny, logical *select, double *d, double *z,
-		       int *ldz, double *sigma, char *bmat, int *n, char *which,
-		       int *nev, double *tol, double *resid, int *ncv, double *v,
-		       int *ldv, int *iparam, int *ipntr, double *workd, 
-		       double *workl, int *lworkl, int *info);
+extern "C" int dseupd_(bool* rvec, char* howmny, logical* select, double* d, double* z,
+	int* ldz, double* sigma, char* bmat, int* n, char* which,
+	int* nev, double* tol, double* resid, int* ncv, double* v,
+	int* ldv, int* iparam, int* ipntr, double* workd,
+	double* workl, int* lworkl, int* info);
+#endif
+#else 
+extern "C" int  DSAUPD(int* ido, char* bmat,
+	int* n, char* which,
+	int* nev,
+	double* tol, double* resid, int* ncv, double* v,
+	int* ldv,
+	int* iparam, int* ipntr, double* workd, double* workl,
+	int* lworkl, int* info);
+
+extern "C" int  DSEUPD(bool* rvec, char* howmny,
+	long int* select, double* d, double* z,
+	int* ldz, double* sigma, char* bmat,
+	int* n, char* which,
+	int* nev, double* tol, double* resid, int* ncv,
+	double* v,
+	int* ldv, int* iparam, int* ipntr, double* workd,
+	double* workl, int* lworkl, int* info);
 #endif
 
 

@@ -3581,3 +3581,13 @@ Class OpenSees.Systems.Linears.UmfpackGenLinSolverWrapper: AutoLayout, AnsiClass
 Class OpenSees.Systems.Linears.UmfpackGenLinSOEWrapper: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :OpenSees.Systems.Linears.LinearSOEWrapper
     Void .ctor(OpenSees.Systems.Linears.UmfpackGenLinSolverWrapper): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class OpenSees.Tcl.TclWrapper: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Interfaces:
+    System.IDisposable
+  Methods:
+    Init(): PrivateScope, Public, HideBySig
+    TclEvalFile(String): PrivateScope, Public, HideBySig
+    TclEval(String): PrivateScope, Public, HideBySig
+    GetActiveDomain(): PrivateScope, Public, HideBySig
+    Dispose(): PrivateScope, Public, Final, Virtual, HideBySig

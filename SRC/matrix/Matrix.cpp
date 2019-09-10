@@ -326,38 +326,52 @@ Matrix::Assemble(const Matrix &V, const ID &rows, const ID &cols, double fact)
   return res;
 }
 
+#if !_DLL
 #ifdef _WIN32
-//#ifndef _DLL
-extern "C" int  DGESV(int *N, int *NRHS, double *A, int *LDA, 
-			      int *iPiv, double *B, int *LDB, int *INFO);
+#ifndef _DLL
+extern "C" int  DGESV(int* N, int* NRHS, double* A, int* LDA,
+	int* iPiv, double* B, int* LDB, int* INFO);
 
-extern "C" int  DGETRF(int *M, int *N, double *A, int *LDA, 
-			      int *iPiv, int *INFO);
+extern "C" int  DGETRF(int* M, int* N, double* A, int* LDA,
+	int* iPiv, int* INFO);
 
-extern "C" int  DGETRS(char *TRANS, unsigned int sizeT,
-			       int *N, int *NRHS, double *A, int *LDA, 
-			       int *iPiv, double *B, int *LDB, int *INFO);
+extern "C" int  DGETRS(char* TRANS, unsigned int sizeT,
+	int* N, int* NRHS, double* A, int* LDA,
+	int* iPiv, double* B, int* LDB, int* INFO);
 
-extern "C" int  DGETRI(int *N, double *A, int *LDA, 
-			      int *iPiv, double *Work, int *WORKL, int *INFO);
-//#endif
+extern "C" int  DGETRI(int* N, double* A, int* LDA,
+	int* iPiv, double* Work, int* WORKL, int* INFO);
+#endif
 #else
-extern "C" int dgesv_(int *N, int *NRHS, double *A, int *LDA, int *iPiv, 
-		      double *B, int *LDB, int *INFO);
+extern "C" int dgesv_(int* N, int* NRHS, double* A, int* LDA, int* iPiv,
+	double* B, int* LDB, int* INFO);
 
-extern "C" int dgetrs_(char *TRANS, int *N, int *NRHS, double *A, int *LDA, 
-		       int *iPiv, double *B, int *LDB, int *INFO);		       
+extern "C" int dgetrs_(char* TRANS, int* N, int* NRHS, double* A, int* LDA,
+	int* iPiv, double* B, int* LDB, int* INFO);
 
-extern "C" int dgetrf_(int *M, int *N, double *A, int *LDA, 
-		       int *iPiv, int *INFO);
+extern "C" int dgetrf_(int* M, int* N, double* A, int* LDA,
+	int* iPiv, int* INFO);
 
-extern "C" int dgetri_(int *N, double *A, int *LDA, 
-		       int *iPiv, double *Work, int *WORKL, int *INFO);
-extern "C" int dgerfs_(char *TRANS, int *N, int *NRHS, double *A, int *LDA, 
-		       double *AF, int *LDAF, int *iPiv, double *B, int *LDB, 
-		       double *X, int *LDX, double *FERR, double *BERR, 
-		       double *WORK, int *IWORK, int *INFO);
+extern "C" int dgetri_(int* N, double* A, int* LDA,
+	int* iPiv, double* Work, int* WORKL, int* INFO);
+extern "C" int dgerfs_(char* TRANS, int* N, int* NRHS, double* A, int* LDA,
+	double* AF, int* LDAF, int* iPiv, double* B, int* LDB,
+	double* X, int* LDX, double* FERR, double* BERR,
+	double* WORK, int* IWORK, int* INFO);
+#endif
+#else
+extern "C" int  DGESV(int* N, int* NRHS, double* A, int* LDA,
+	int* iPiv, double* B, int* LDB, int* INFO);
 
+extern "C" int  DGETRF(int* M, int* N, double* A, int* LDA,
+	int* iPiv, int* INFO);
+
+extern "C" int  DGETRS(char* TRANS, unsigned int sizeT,
+	int* N, int* NRHS, double* A, int* LDA,
+	int* iPiv, double* B, int* LDB, int* INFO);
+
+extern "C" int  DGETRI(int* N, double* A, int* LDA,
+	int* iPiv, double* Work, int* WORKL, int* INFO);
 #endif
 
 int
@@ -434,16 +448,20 @@ Matrix::Solve(const Vector &b, Vector &x) const
     int *iPIV = intWork;
     
 
+#if !_DLL
 #ifdef _WIN32
-//#ifndef _DLL
-    DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+#ifndef _DLL
+	DGESV(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+#endif
+#ifdef _DLL
+	opserr << "Matrix::Solve - not implemented in dll\n";
+	return -1;
+#endif
 #else
-    dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
+	dgesv_(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+#endif
+#else 
+	DGESV(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
 #endif
 
     return -abs(info);
@@ -529,30 +547,34 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
     
 	info = -1;
 
+#if !_DLL
 #ifdef _WIN32
-//#ifndef _DLL
-    DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+#ifndef _DLL
+	DGESV(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+#endif
+#ifdef _DLL
+	opserr << "Matrix::Solve - not implemented in dll\n";
+	return -1;
+#endif
 #else
-    dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
+	dgesv_(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
 
-    /*
-    // further correction if required
-    double Bptr[n*n];
-    for (int i=0; i<n*n; i++) Bptr[i] = b.data[i];
-    double *origData = data;
-    double Ferr[n];
-    double Berr[n];
-    double newWork[3*n];
-    int newIwork[n];
-    
-    dgerfs_("N",&n,&n,origData,&ldA,Aptr,&n,iPIV,Bptr,&ldB,Xptr,&ldB,
-	    Ferr, Berr, newWork, newIwork, &info);
-    */
+	/*
+	// further correction if required
+	double Bptr[n*n];
+	for (int i=0; i<n*n; i++) Bptr[i] = b.data[i];
+	double *origData = data;
+	double Ferr[n];
+	double Berr[n];
+	double newWork[3*n];
+	int newIwork[n];
+
+	dgerfs_("N",&n,&n,origData,&ldA,Aptr,&n,iPIV,Bptr,&ldB,Xptr,&ldB,
+		Ferr, Berr, newWork, newIwork, &info);
+	*/
+#endif
+#else
+	DGESV(&n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
 #endif
     return -abs(info);
 }
@@ -625,31 +647,35 @@ Matrix::Invert(Matrix &theInverse) const
     int *iPIV = intWork;
     
 
+#if !_DLL
 #ifdef _WIN32
-//#ifndef _DLL
-    DGETRF(&n,&n,Aptr,&ldA,iPIV,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
-    if (info != 0) 
-      return -abs(info);
+#ifndef _DLL
+	DGETRF(&n, &n, Aptr, &ldA, iPIV, &info);
+#endif
+#ifdef _DLL
+	opserr << "Matrix::Solve - not implemented in dll\n";
+	return -1;
+#endif
+	if (info != 0)
+		return -abs(info);
 
-//#ifndef _DLL
-    DGETRI(&n,Aptr,&ldA,iPIV,Wptr,&workSize,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+#ifndef _DLL
+	DGETRI(&n, Aptr, &ldA, iPIV, Wptr, &workSize, &info);
+#endif
+#ifdef _DLL
+	opserr << "Matrix::Solve - not implemented in dll\n";
+	return -1;
+#endif
 #else
-    dgetrf_(&n,&n,Aptr,&ldA,iPIV,&info);
-    if (info != 0) 
-      return -abs(info);
-    
-    dgetri_(&n,Aptr,&ldA,iPIV,Wptr,&workSize,&info);
-    
+	dgetrf_(&n, &n, Aptr, &ldA, iPIV, &info);
+	if (info != 0)
+		return -abs(info);
+
+	dgetri_(&n, Aptr, &ldA, iPIV, Wptr, &workSize, &info);
+
+#endif
+#else
+	DGETRI(&n, Aptr, &ldA, iPIV, Wptr, &workSize, &info);
 #endif
 
     return -abs(info);
