@@ -126,7 +126,7 @@ FullGenLinLapackSolver::solve(void)
     }
 #endif
     
-    // check if successfull
+    // check if successful
     if (info != 0) {
 	opserr << "WARNING FullGenLinLapackSolver::solve()";
 	opserr << " - lapack solver failed - " << info << " returned\n";

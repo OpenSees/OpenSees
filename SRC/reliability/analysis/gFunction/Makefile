@@ -6,7 +6,7 @@ OBJS       = 	BasicGFunEvaluator.o \
 	OpenSeesTclGFunEvaluator.o \
 	TclGFunEvaluator.o
 
-# Compilation contol
+# Compilation control
 all:         $(OBJS)
 
 # Miscellaneous

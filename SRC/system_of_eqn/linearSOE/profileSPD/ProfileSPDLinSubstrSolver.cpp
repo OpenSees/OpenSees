@@ -26,7 +26,7 @@
 // File: ~/system_of_eqn/linearSOE/ProfileSPD/ProfileSPDLinSubstrSolver.C
 //
 // Written: fmk 
-// Created: Febuary 1997
+// Created: February 1997
 // Revision: A
 //
 // Description: This file contains the implementation for ProfileSPDLinSubstrSolver

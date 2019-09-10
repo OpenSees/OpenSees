@@ -86,7 +86,7 @@ PathTimeSeriesThermal::PathTimeSeriesThermal(int tag,
 
   if ((numDataPoints % (numCols+1)) != 0) {
     opserr << "WARNING - PathTimeSeriesThermal::PathTimeSeriesThermal()";
-    opserr << " - num data entries in file NOT COMPATIABLE! " << fileName << endln;
+    opserr << " - num data entries in file NOT COMPATIBLE! " << fileName << endln;
   }
   numRows= numDataPoints/(numCols+1);
 
@@ -222,7 +222,7 @@ PathTimeSeriesThermal::WriteResults(double currentTime, const Vector& newData)
  // opserr<<"PathTimeSeries   "<<newData<<endln;
 #endif
   if (newData==0||newData.Size()<numCols) {
-    opserr<<"WARNING::PathTimeSeriesThermal recieved incompatible data when attempring to write the results"<<endln;
+    opserr<<"WARNING::PathTimeSeriesThermal received incompatible data when attempring to write the results"<<endln;
     return -1;
   }
   
@@ -300,7 +300,7 @@ PathTimeSeriesThermal::getFactors(double pseudoTime)
       time1 = time2;
       time2 = (*time)(currentTimeLoc+1);
     }
-    // if pseudo time greater than ending time reurn 0
+    // if pseudo time greater than ending time return 0
     if (pseudoTime > time2){
     for(int j=0;j<numCols;j++){
 		  (*CurrentFactors)(j)=0.0;
@@ -402,7 +402,7 @@ PathTimeSeriesThermal::sendSelf(int commitTag, Channel &theChannel)
 		result = theChannel.sendVector(dbTag1, commitTag, *thePath);
       if (result < 0) {
 	opserr << "PathTimeSeriesThermal::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result; 
 	
       }
@@ -412,7 +412,7 @@ PathTimeSeriesThermal::sendSelf(int commitTag, Channel &theChannel)
       result = theChannel.sendVector(dbTag2, commitTag, *time);
       if (result < 0) {
 	opserr << "PathTimeSeriesThermal::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result;  
       }
     }
@@ -460,13 +460,13 @@ PathTimeSeriesThermal::recvSelf(int commitTag, Channel &theChannel,
     result = theChannel.recvVector(dbTag1, lastSendCommitTag, *thePath);    
     if (result < 0) {
       opserr << "PathTimeSeriesThermal::recvSelf() - ";
-      opserr << "channel failed to receive tha Path Vector\n";
+      opserr << "channel failed to receive the Path Vector\n";
       return result;  
     }
     result = theChannel.recvVector(dbTag2, lastSendCommitTag, *time);    
     if (result < 0) {
       opserr << "PathTimeSeriesThermal::recvSelf() - ";
-      opserr << "channel failed to receive tha time Vector\n";
+      opserr << "channel failed to receive the time Vector\n";
       return result;  
     }
   }

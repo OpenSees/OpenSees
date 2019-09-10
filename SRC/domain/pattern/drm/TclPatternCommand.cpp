@@ -158,7 +158,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     currentArg++;
     if ((currentArg < argc) &&
         (Tcl_GetDouble(interp, argv[currentArg], &vel0) != TCL_OK)) {
-      opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+      opserr << "WARNING invalid vel0: pattern type UniformExcitation\n";
       return TCL_ERROR;
     }
 

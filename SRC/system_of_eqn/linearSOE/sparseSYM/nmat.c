@@ -236,7 +236,7 @@ int pfefct(int neqns, double **penv, double *diag)
  *****  pfsslv ..... generalized envelope symmetric solve  *****
  ***************************************************************
  
-   purpose - to solve a symmetric system usin gen envelope.
+   purpose - to solve a symmetric system using gen envelope.
  
    input parameters -
         neqns  - number of equations.
