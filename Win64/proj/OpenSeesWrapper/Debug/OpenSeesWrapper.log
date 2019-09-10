@@ -1,5 +1,0 @@
-﻿  .NETFramework,Version=v4.6.1.AssemblyAttributes.cpp
-     Creating library .\..\..\bin\OpenSeesWrapper.lib and object .\..\..\bin\OpenSeesWrapper.exp
-MSVCRTD.lib(initializers.obj) : warning LNK4098: defaultlib 'libcmt.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
-MSVCRTD.lib(initializers.obj) : warning LNK4098: defaultlib 'libcmtd.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
-  OpenSeesWrapper.vcxproj -> C:\trunk\Win32\proj\OpenSeesWrapper\.\..\..\bin\OpenSeesWrapper.dll

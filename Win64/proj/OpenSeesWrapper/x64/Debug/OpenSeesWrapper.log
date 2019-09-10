@@ -1,8 +1,0 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1264,5): warning MSB8012: TargetPath(C:\Git Projects\OpenSees.NET\OpenSees\Win64\\bin\Debug\OpenSees.NET.x64.dll.dll) does not match the Linker's OutputFile property value (C:\Git Projects\OpenSees.NET\OpenSees\Win64\bin\Debug\OpenSees.NET.x64.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1266,5): warning MSB8012: TargetName(OpenSees.NET.x64.dll) does not match the Linker's OutputFile property value (OpenSees.NET.x64). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
-  AcceleratorWrapper.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
-     Creating library .\..\..\bin\Debug\OpenSees.NET.x64.lib and object .\..\..\bin\Debug\OpenSees.NET.x64.exp
-LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
-MSVCRTD.lib(initializers.obj) : warning LNK4098: defaultlib 'libcmt.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
-proxy.lib(InformationProxy.obj) : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
-  OpenSeesWrapper.vcxproj -> C:\Git Projects\OpenSees.NET\OpenSees\Win64\\bin\Debug\OpenSees.NET.x64.dll.dll
