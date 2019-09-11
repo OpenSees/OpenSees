@@ -262,7 +262,7 @@ GFunVisualizationAnalysis::getCurrentAxes12Point(int i, int j)
 	}
 	else {
 
-		// Here the start point is actually given in the orginal space
+		// Here the start point is actually given in the original space
 
 	  //theReliabilityDomain->getStartPoint(iPoint);
 	  for (int j = 0; j < nrv; j++) {

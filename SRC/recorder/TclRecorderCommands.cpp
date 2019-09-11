@@ -55,9 +55,12 @@
  #include <PVDRecorder.h>
  #include <MPCORecorder.h>
  #include <GmshRecorder.h>
+ #include <VTK_Recorder.h>
 extern void* OPS_PVDRecorder();
 extern void* OPS_GmshRecorder();
 extern void* OPS_MPCORecorder();
+extern void* OPS_VTK_Recorder();
+
 
  #include <NodeIter.h>
  #include <ElementIter.h>
@@ -1823,20 +1826,24 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 (*theRecorder) = thePlotter;
  #endif
      } 
-	 else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
-	 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-	 (*theRecorder) = (Recorder*) OPS_PVDRecorder();
+     else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
-	 else if (strcmp(argv[1], "mpco") == 0) {
-		 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-		 (*theRecorder) = (Recorder*)OPS_MPCORecorder();
-		 if (theRecorder == 0) {
-			 return TCL_ERROR;
-		 }
-	 }
-    else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
-     OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-     (*theRecorder) = (Recorder*) OPS_GmshRecorder();
+     else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
+     }
+     else if (strcmp(argv[1], "mpco") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*)OPS_MPCORecorder();
+       if (theRecorder == 0) {
+	 return TCL_ERROR;
+       }
+     }
+     else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_GmshRecorder();
      }
     // else if (strcmp(argv[1],"gmshparallel") == 0 || strcmp(argv[1],"GMSHPARALLEL") == 0) {
     //  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);

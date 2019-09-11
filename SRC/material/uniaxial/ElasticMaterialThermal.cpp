@@ -1,3 +1,4 @@
+
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
@@ -421,26 +422,26 @@ ElasticMaterialThermal::commitSensitivity(double strainGradient,
 
 //Liming for updating the reduction factors////////////start
 double
-ElasticMaterialThermal::getElongTangent(double TempT, double &ET, double &Elong, double TempTmax)
+ElasticMaterialThermal::getElongTangent(double TempT, double& ET, double& Elong, double TempTmax)
 {
 	double ThermalElongation;
 	Temp = TempT;
 	if (softIndex != 0) {
-		 
-		for (int i = 0; i<13; i++) {
+
+		for (int i = 0; i < 13; i++) {
 			if (Temp <= 80 + 100 * i)
 			{
 				if (i == 0) {
-					Epos = E0*(1.0 - Temp*(1.0 - redfactors[0]) / 80);
-					Eneg = Eneg0*(1.0 - Temp*(1.0 - redfactors[0]) / 80);
+					Epos = E0 * (1.0 - Temp * (1.0 - redfactors[0]) / 80);
+					Eneg = Eneg0 * (1.0 - Temp * (1.0 - redfactors[0]) / 80);
 				}
 				else if (i == 12) {
 					opserr << "Warning:The temperature " << Temp << " for SteelECthermal is out of range\n";
 					return -1;
 				}
 				else {
-					Epos = E0*(redfactors[i - 1] - (Temp + 20 - 100 * i)*(redfactors[i - 1] - redfactors[i]) / 100);
-					Eneg = Eneg0*(redfactors[i - 1] - (Temp + 20 - 100 * i)*(redfactors[i - 1] - redfactors[i]) / 100);
+					Epos = E0 * (redfactors[i - 1] - (Temp + 20 - 100 * i) * (redfactors[i - 1] - redfactors[i]) / 100);
+					Eneg = Eneg0 * (redfactors[i - 1] - (Temp + 20 - 100 * i) * (redfactors[i - 1] - redfactors[i]) / 100);
 				}
 				break;
 			}
@@ -452,21 +453,21 @@ ElasticMaterialThermal::getElongTangent(double TempT, double &ET, double &Elong,
 				ThermalElongation = Temp * 1.2164e-5;
 			}
 			else if (Temp <= 730) {
-				ThermalElongation = -2.416e-4 + 1.2e-5 *(Temp + 20) + 0.4e-8 *(Temp + 20)*(Temp + 20);
+				ThermalElongation = -2.416e-4 + 1.2e-5 * (Temp + 20) + 0.4e-8 * (Temp + 20) * (Temp + 20);
 			}
 			else if (Temp <= 840) {
 				ThermalElongation = 11e-3;
 			}
 			else if (Temp <= 1180) {
-				ThermalElongation = -6.2e-3 + 2e-5*(Temp + 20);
+				ThermalElongation = -6.2e-3 + 2e-5 * (Temp + 20);
 			}
 		}
 		else if (softIndex == 2) {
 			if (Temp <= 1) {
-				ThermalElongation = Temp  * 9.213e-6;
+				ThermalElongation = Temp * 9.213e-6;
 			}
 			else if (Temp <= 680) {
-				ThermalElongation = -1.8e-4 + 9e-6 *(Temp + 20) + 2.3e-11 *(Temp + 20)*(Temp + 20)*(Temp + 20);
+				ThermalElongation = -1.8e-4 + 9e-6 * (Temp + 20) + 2.3e-11 * (Temp + 20) * (Temp + 20) * (Temp + 20);
 			}
 			else if (Temp <= 1180) {
 				ThermalElongation = 14e-3;
@@ -478,11 +479,8 @@ ElasticMaterialThermal::getElongTangent(double TempT, double &ET, double &Elong,
 	}
 	else {
 		ET = E0;
-		ThermalElongation = Alpha*TempT;
+		ThermalElongation = Alpha * TempT;
 	}
-	ET = Epos;
-	Elong = ThermalElongation;
-	return 0;
 }
 
 double

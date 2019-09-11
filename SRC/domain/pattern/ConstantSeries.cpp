@@ -69,7 +69,7 @@ OPS_ConstantSeries(void)
     if (numRemainingArgs > 1) {
       const char *argvS = OPS_GetString();
 	  if (argvS == 0) {
-		  opserr << "WARNING strig error in  ConstantSeries with tag: " << tag << endln;
+		  opserr << "WARNING string error in  ConstantSeries with tag: " << tag << endln;
 		return 0;
 	  }
       numData = 1;

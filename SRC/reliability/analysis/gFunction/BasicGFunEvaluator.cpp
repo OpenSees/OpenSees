@@ -101,7 +101,7 @@ BasicGFunEvaluator::setTclRandomVariables(const Vector &x)
   double xval;
   RandomVariable *theRV;
 	
-  // Set values of random variables in the Tcl intepreter
+  // Set values of random variables in the Tcl interpreter
   int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 
   int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
@@ -443,7 +443,7 @@ GFunEvaluator::setTclRandomVariables(const Vector &x)
   double xval;
   RandomVariable *theRV;
   
-  // Set values of random variables in the Tcl intepreter
+  // Set values of random variables in the Tcl interpreter
   int nrv = theReliabilityDomain->getNumberOfRandomVariables();
   //RandomVariableIter theRViter = theReliabilityDomain->getRandomVariables();
   //while ((theRV = theRViter()) != 0) {

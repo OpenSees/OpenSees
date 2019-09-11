@@ -93,7 +93,7 @@ class DistributedSparseGenRowLinSOE : public LinearSOE
     int rank;                // rank of current process
     int startRow;            // start row number of rows assigned to current process
     int endRow;              // end row number of rows assigned to current
-    int numRows;             // number of rows asigned to Process, 
+    int numRows;             // number of rows assigned to Process, 
                              //  first rows will be startRow through endRow; after that
                              //  come all rows not yet accounted for in rows that are in graph passed in setGraph
     ID rows;                 // the rows of A

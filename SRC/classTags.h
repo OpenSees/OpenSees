@@ -270,6 +270,10 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+#define ND_TAG_ExternalNDMaterial 999901
+#define MAT_TAG_ExternalUniaxialMaterial 999901
+
+
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
 
@@ -368,7 +372,8 @@
 #define ND_TAG_CPlaneStrain   54
 #define ND_TAG_CPlaneStress2d   55
 #define ND_TAG_CThreeDimensional   55
-
+#define ND_TAG_StressDensityModel2D 56
+#define ND_TAG_StressDensityModel3D 57
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
@@ -726,6 +731,7 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -910,6 +916,7 @@
 #define INTEGRATOR_TAGS_KRAlphaExplicit                 53
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 #define INTEGRATOR_TAGS_ExplicitDifference              55
+#define INTEGRATOR_TAGS_EQPath        					        56
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -941,6 +948,7 @@
 #define LinSOE_TAGS_PFEMCompressibleLinSOE 28
 #define LinSOE_TAGS_PFEMQuasiLinSOE 29
 #define LinSOE_TAGS_PFEMDiaLinSOE 30
+#define LinSOE_TAGS_PARDISOGenLinSOE 99990
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -998,6 +1006,7 @@
 #define RECORDER_TAGS_PVDRecorder               19
 #define RECORDER_TAGS_MPCORecorder               20
 #define RECORDER_TAGS_GmshRecorder               21
+#define RECORDER_TAGS_VTK_Recorder               22
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

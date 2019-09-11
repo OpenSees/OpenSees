@@ -6,7 +6,7 @@
 \noindent {\bf Files}   \\
 \indent \#include $<\tilde{ }$ProfileSPDLinSOE.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class ProfileSPDLinSOE: public LinearSOE \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -152,7 +152,7 @@ returned. \\
 
 \indent {\em int addA(const Matrix \&M, const ID \& loc,
 doublefact = 1.0) =0;} \\
-First tests that {\em loc} and {\em M} are of compatable sizes; if not
+First tests that {\em loc} and {\em M} are of compatible sizes; if not
 a warning message is printed and a $-1$ is returned. The LinearSOE
 object then assembles {\em fact} times the Matrix {\em 
 M} into the matrix $A$. The Matrix is assembled into $A$ at the
@@ -165,7 +165,7 @@ are performed. Returns $0$.  \\
 
 {\em int addB(const Vector \& V, const ID \& loc,
 double fact = 1.0) =0;} \\
-First tests that {\em loc} and {\em V} are of compatable sizes; if not
+First tests that {\em loc} and {\em V} are of compatible sizes; if not
 a warning message is printed and a $-1$ is returned. The LinearSOE
 object then assembles {\em fact} times the Vector {\em V} into
 the vector $b$. The Vector is assembled into $b$ at the locations
@@ -176,7 +176,7 @@ $1.0$ or $-1.0$, more efficient steps are performed. Returns $0$. \\
 
 
 {\em int setB(const Vector \& V, double fact = 1.0) =0;} \\
-First tests that {\em V} and the size of the system are of compatable
+First tests that {\em V} and the size of the system are of compatible
 sizes; if not a warning message is printed and a $-1$ is returned. The
 LinearSOE object then sets the vector {\em b} to be {\em fact} times
 the Vector {\em V}. If {\em fact} is equal to $0.0$, $1.0$ or $-1.0$,

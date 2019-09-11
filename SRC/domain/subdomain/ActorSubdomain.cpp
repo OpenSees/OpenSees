@@ -322,7 +322,7 @@ ActorSubdomain::run(void)
 	    delete theV;
 	    delete theI;
 		
-	    /* DONT BOTHER SENDING
+	    /* DON'T BOTHER SENDING
 	    if (numSP > 0) {
 	      theI = new ID(numSP);
 	      for (i = 0; i<numSP; i++) {

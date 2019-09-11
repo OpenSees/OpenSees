@@ -214,7 +214,7 @@ SymBandEigenSOE::addM(const Matrix &m, const ID &id, double fact)
   // check that m and id are of similar size
   int idSize = id.Size();    
   if (idSize != m.noRows() && idSize != m.noCols()) {
-    opserr << "WARING: SymBandEigenSOE::addM() -- Matrix and ID not of similar sizes!!\n";
+    opserr << "WARNING: SymBandEigenSOE::addM() -- Matrix and ID not of similar sizes!!\n";
     return -1;
   }
 

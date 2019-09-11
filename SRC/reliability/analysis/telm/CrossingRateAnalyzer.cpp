@@ -218,7 +218,7 @@ double CrossingRateAnalyzer::computeRate1()
 	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	// Get the 'dgdu' vector from the sensitivity evaluator
-	// (The returned matrix containes 'node#' 'dir#' 'dgdu' in rows)
+	// (The returned matrix contains 'node#' 'dir#' 'dgdu' in rows)
 
 	// This will go away -- MHS 10/7/2011
 	//Matrix DgDdispl = theGradGEvaluator->getDgDdispl();
