@@ -110,8 +110,9 @@ private:
         int type;
         std::vector<BNode*> bnodes;
         std::vector<VInt> bindex;
+        int sizeLevel;
 
-        BCell():pts(),type(FLUID),bnodes(),bindex(){}
+        BCell():pts(),type(FLUID),bnodes(),bindex(),sizeLevel(0) {}
         void add(Particle* pt) {pts.push_back(pt);}
     };
 
@@ -138,6 +139,10 @@ public:
     bool isFSITri() const {return fsiTri;}
     void setFSITri(bool fsi) {fsiTri = fsi;}
     void setBoundThk(double thk) {boundThk = thk;}
+    void addLargeSize(int numbasic,
+                      const VDouble& range_low,
+                      const VDouble& range_up);
+    int getSizeLevel(VInt& index);
 
     // remesh all
     int remesh(bool init=false);
@@ -148,14 +153,14 @@ public:
     void upperIndex(const VDouble& crds, VInt& index) const;
     void nearIndex(const VDouble& crds, VInt& index) const;
     void getCrds(const VInt& index, VDouble& crds) const;
-    void getCorners(const VInt& index, int num, VVInt& indices) const;
+    void getCorners(const VInt& index, int num, int level, VVInt& indices) const;
 
     // particles
     int addParticles();
     void gatherParticles(const VInt& minindex, const VInt& maxindex,
                          VParticle& pts, bool checkfsi=false);
     int moveParticles();
-    int convectParticle(Particle* pt, VInt index, int nums);
+    int convectParticle(Particle* pt, VInt index, int level, int nums);
     int moveFixedParticles();
 
     // create grid nodes and elements
@@ -230,6 +235,7 @@ private:
     bool fsiTri; // move partiles in fsi area through triangles
     double boundThk;
     double contactReduceFactor;
+    VVInt largesize;
 
     static const int contact_tag = -13746;
 };

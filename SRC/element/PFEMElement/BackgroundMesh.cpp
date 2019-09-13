@@ -78,7 +78,8 @@ int OPS_BgMesh()
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
                 "-incrVel? -freesurface? -fsiSquare? -implicit?"
-                "-boundLayerThickness boundThk?";
+                "-boundLayerThickness boundThk?"
+                "-largeSize? level? lower? upper?>";
         return -1;
     }
 
@@ -251,6 +252,28 @@ int OPS_BgMesh()
             }
 
             bgmesh.setBoundThk(thk);
+        } else if (strcmp(opt, "-largeSize") == 0) {
+            int numbasic = 2;
+            num = 1;
+            if (OPS_GetIntInput(&num, &numbasic) < 0) {
+                opserr << "WARNING: failed to get num of basic size\n";
+                return -1;
+            }
+            if (numbasic < 2) numbasic = 2;
+
+            VDouble range_low(ndm);
+            if (OPS_GetDoubleInput(&ndm, &range_low[0]) < 0) {
+                opserr << "WARNING: failed to get lower\n";
+                return -1;
+            }
+
+            VDouble range_up(ndm);
+            if (OPS_GetDoubleInput(&ndm, &range_up[0]) < 0) {
+                opserr << "WARNING: failed to get upper\n";
+                return -1;
+            }
+
+            bgmesh.addLargeSize(numbasic, range_low, range_up);
         }
     }
 
@@ -277,7 +300,8 @@ BackgroundMesh::BackgroundMesh()
          structuralNodes(),
          freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(true),
-         boundThk(0.05), contactReduceFactor(0.8)
+         boundThk(0.05), contactReduceFactor(0.8),
+         largesize()
 {
 }
 
@@ -335,6 +359,74 @@ BackgroundMesh::addStructuralNodes(VInt& snodes, int sid)
 }
 
 void
+BackgroundMesh::addLargeSize(int numbasic,
+                             const VDouble& range_low,
+                             const VDouble& range_up)
+{
+    int ndm = OPS_GetNDM();
+    VInt lsize(2*ndm+1);
+    lsize[0] = numbasic;
+
+    VInt low;
+    nearIndex(range_low, low);
+
+    VInt up;
+    nearIndex(range_up, up);
+
+    for (int i = 0; i < ndm; ++i) {
+        int l = low[i]/numbasic*numbasic;
+        int u = up[i]/numbasic*numbasic;
+        if (l < low[i]) {
+            l = low[i] + numbasic;
+        }
+
+        lsize[i+1] = l;
+        lsize[i+1+ndm] = u;
+    }
+
+    largesize.push_back(lsize);
+}
+
+int
+BackgroundMesh::getSizeLevel(VInt &index)
+{
+    int ndm = OPS_GetNDM();
+    VInt low(ndm), up(ndm);
+    int level = 1;
+    for (int i = 0; i < (int) largesize.size(); ++i) {
+
+        // get low and up index
+        for (int j = 0; j < ndm; ++j) {
+            low[j] = largesize[i][j+1];
+            up[j] = largesize[i][j+1+ndm];
+        }
+
+        // check if in the range
+        bool find = true;
+        for (int j = 0; j < ndm; ++j) {
+            if (index[j]<low[j] || index[j]>=up[j]) {
+                find = false;
+                break;
+            }
+        }
+
+        if (find) {
+            level = largesize[i][0];
+            break;
+        }
+    }
+
+    if (level > 1) {
+        for (int j = 0; j < ndm; ++j) {
+            index[j] /= level;
+            index[j] *= level;
+        }
+    }
+
+    return level;
+}
+
+void
 BackgroundMesh::getIndex(const VDouble& crds, double incr, VInt& index) const
 {
     index.resize(crds.size());
@@ -380,15 +472,16 @@ BackgroundMesh::getCrds(const VInt& index, VDouble& crds) const
 // -----
 // 0   1
 void
-BackgroundMesh::getCorners(const VInt& index, int num, VVInt& indices) const
+BackgroundMesh::getCorners(const VInt& index, int num, int level, VVInt& indices) const
 {
     int ndm = OPS_GetNDM();
     int counter = 0;
+    int tnum = num * level;
 
     if (ndm == 2) {
         indices.resize((num+1)*(num+1));
-        for (int j=index[1]; j<=index[1]+num; j+=1) {
-            for (int i=index[0]; i<=index[0]+num; i+=1) {
+        for (int j=index[1]; j<=index[1]+tnum; j+=level) {
+            for (int i=index[0]; i<=index[0]+tnum; i+=level) {
                 indices[counter].resize(ndm);
                 indices[counter][0] = i;
                 indices[counter][1] = j;
@@ -397,9 +490,9 @@ BackgroundMesh::getCorners(const VInt& index, int num, VVInt& indices) const
         }
     } else if (ndm == 3) {
         indices.resize((num+1)*(num+1)*(num+1));
-        for (int k=index[2]; k<=index[2]+num; k+=1) {
-            for (int j=index[1]; j<=index[1]+num; j+=1) {
-                for (int i=index[0]; i<=index[0]+num; i+=1) {
+        for (int k=index[2]; k<=index[2]+tnum; k+=level) {
+            for (int j=index[1]; j<=index[1]+tnum; j+=level) {
+                for (int i=index[0]; i<=index[0]+tnum; i+=level) {
                     indices[counter].resize(ndm);
                     indices[counter][0] = i;
                     indices[counter][1] = j;
@@ -1030,7 +1123,7 @@ BackgroundMesh::addStructure()
             VInt ind = index;
             ind -= 1;
             VVInt indices;
-            getCorners(ind, 2, indices);
+            getCorners(ind, 2, 1, indices);
             for (int i = 0; i < (int) indices.size(); ++i) {
                 BNode &bnd = bnodes[indices[i]];
                 if (bnd.size() == 0) {
@@ -1039,7 +1132,7 @@ BackgroundMesh::addStructure()
             }
 
             // set STRUCTURE cells
-            getCorners(ind, 1, indices);
+            getCorners(ind, 1, 1, indices);
             for (int i = 0; i < (int) indices.size(); ++i) {
                 BCell &bcell = bcells[indices[i]];
                 bcell.type = STRUCTURE;
@@ -1048,7 +1141,7 @@ BackgroundMesh::addStructure()
                 if (bcell.bnodes.empty()) {
 
                     VVInt corners;
-                    getCorners(indices[i], 1, corners);
+                    getCorners(indices[i], 1, 1, corners);
 
                     for (int j = 0; j < (int) corners.size(); ++j) {
                         BNode &bnd = bnodes[corners[j]];
@@ -1116,14 +1209,29 @@ BackgroundMesh::addParticles()
             }
             if (rm[j] == 1) continue;
 
+            // get size level
+            int level = getSizeLevel(index);
+
             // get bcell
             BCell& bcell = bcells[index];
+
+            // check size level
+            if (bcell.sizeLevel != 0 && bcell.sizeLevel!=level) {
+                opserr << "WARNING: regions with different mesh sizes"
+                          "are overlapping\n";
+                return -1;
+            }
+            bcell.sizeLevel = level;
 
             // add particles
             bcell.add(p);
 
             // if initial check structure cell
             if (bcell.type == STRUCTURE) {
+                if (level > 1) {
+                    opserr << "WARNING: structural cell should have finest mesh\n";
+                    return -1;
+                }
                 if (!fsiTri) continue;
             }
 
@@ -1132,7 +1240,7 @@ BackgroundMesh::addParticles()
 
                 // get corners
                 VVInt indices;
-                getCorners(index,1,indices);
+                getCorners(index,1,level,indices);
 
                 // set corners
                 for (int i=0; i<(int)indices.size(); ++i) {
@@ -1197,12 +1305,23 @@ BackgroundMesh::gridNodes()
         VDouble crds;
         getCrds(index,crds);
 
+        // get surrounding cells and highest level
+        VInt ind = index;
+        ind -= 1;
+        VVInt indices;
+        getCorners(index, 1, 1, indices);
+        int level = 0;
+        for (int k = 0; k < (int) indices.size(); ++k) {
+            int lv = getSizeLevel(indices[k]);
+            if (level < lv) level = lv;
+        }
+
         // get particles
         VParticle pts;
         VInt minind = index;
         VInt maxind = index;
-        minind -= numave;
-        maxind += numave;
+        minind -= numave * level;
+        maxind += numave * level;
         gatherParticles(minind,maxind,pts);
 
         // find closest particle
@@ -1221,10 +1340,10 @@ BackgroundMesh::gridNodes()
             // distance from particle to current location
             VDouble dist = pcrds;
             dist -= crds;
-            double q = normVDouble(dist) / (bsize);
+            double q = normVDouble(dist) / (bsize * level);
 
             // weight for the particle
-            wts[i] = QuinticKernel(q, bsize, ndm);
+            wts[i] = QuinticKernel(q, bsize * level, ndm);
 
             // check minimum distance
             if (minDist < 0 || q < minDist) {
@@ -1448,7 +1567,7 @@ BackgroundMesh::moveFixedParticles()
         VInt ind = index;
         VVInt indices;
         ind -= 1;
-        getCorners(ind, 2, indices);
+        getCorners(ind, 2, 1, indices);
 
         // give each cell a score
         VInt scores(indices.size());
@@ -1638,7 +1757,7 @@ BackgroundMesh::moveFixedParticles()
 
                 // get corners
                 indices.clear();
-                getCorners(ind,1,indices);
+                getCorners(ind,1,1,indices);
 
                 // set corners
                 for (int k=0; k<(int)indices.size(); ++k) {
@@ -2034,7 +2153,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
                 VInt ind = ndindex[tri[j]];
                 ind -= 1;
                 VVInt indices;
-                getCorners(ind, 1, indices);
+                getCorners(ind, 1, 1, indices);
                 for (int k=0; k<(int)indices.size(); ++k) {
                     partindices.insert(indices[k]);
                 }
@@ -2053,7 +2172,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
                 VInt ind = findex[j];
                 ind -= 1;
                 VVInt indices;
-                getCorners(ind, 1, indices);
+                getCorners(ind, 1, 1, indices);
                 for (int k = 0; k < (int) indices.size(); ++k) {
                     std::map<VInt, BCell>::iterator cellit = bcells.find(indices[k]);
                     if (cellit == bcells.end()) continue;
@@ -2509,28 +2628,40 @@ BackgroundMesh::record(bool init)
     theFile << timestamp << " ";
 
     // record wave height and velocity
-    for (int i=0; i<(int)locs.size(); i+=2) {
+    for (int i=0; i<(int)locs.size(); i+=ndm) {
 
         // lower index
-        VDouble crds(2);
-        crds[0] = locs[i];
-        crds[1] = locs[i+1];
+        VDouble crds(ndm);
+        for (int j = 0; j < ndm; ++j) {
+            crds[j] = locs[i+j];
+        }
 
         VInt index;
         this->lowerIndex(crds,index);
 
+        std::map<VInt,BCell>::iterator it = bcells.find(index);
+        int level = 1;
+        if (it != bcells.end()) {
+            level = it->second.sizeLevel;
+        }
+
         // shape function
         VDouble N;
-        this->getNForRect(index[0]*bsize,index[1]*bsize,
-                          bsize,bsize,
-                          crds[0],crds[1],N);
+        double hh = bsize * level;
+        if (ndm == 2) {
+            getNForRect(index[0] * bsize, index[1] * bsize,
+                        hh, hh, crds[0], crds[1], N);
+        } else if (ndm == 3) {
+            getNForRect(index[0] * bsize, index[1] * bsize, index[2] * bsize,
+                        hh, hh, hh, crds[0], crds[1], crds[2], N);
+        }
 
         // velocity
         VDouble vel(ndm);
 
         // get corners
         VVInt indices;
-        getCorners(index,1,indices);
+        getCorners(index,1,level,indices);
         for (int k=0; k<(int)indices.size(); ++k) {
 
             // get crds
@@ -2661,6 +2792,7 @@ BackgroundMesh::moveParticles()
 
         // get particles in cell
         const VParticle& pts = cells[j]->pts;
+        int level = cells[j]->sizeLevel;
 
         // move the particle
         for (int i=0; i<(int)pts.size(); ++i) {
@@ -2670,7 +2802,7 @@ BackgroundMesh::moveParticles()
             pts[i]->needUpdate(dt);
 
             // convect the particle
-            if (convectParticle(pts[i],indices[j],numsub) < 0) {
+            if (convectParticle(pts[i],indices[j],level,numsub) < 0) {
                 opserr << "WARNING: failed to convect particle";
                 opserr << " -- BgMesh::moveParticles\n";
                 res = -1;
@@ -2685,7 +2817,7 @@ BackgroundMesh::moveParticles()
 }
 
 int
-BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
+BackgroundMesh::convectParticle(Particle* pt, VInt index, int level, int nums)
 {
 
     Domain* domain = OPS_GetDomain();
@@ -2717,12 +2849,15 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
         VInt newIndex;
         lowerIndex(pcrds,newIndex);
 
+        int newlevel = getSizeLevel(newIndex);
+
         // update corners
         if (n==0 || newIndex != index) {
             index = newIndex;
+            level = newlevel;
 
             VVInt temp;
-            getCorners(index,1,temp);
+            getCorners(index,1,level,temp);
             indices = temp;
             indices[2] = temp[3];
             indices[3] = temp[2];
@@ -3074,7 +3209,7 @@ BackgroundMesh::findFreeSurface(const ID& freenodes)
         // get neighbors corners
         index -= 1;
         VVInt indices;
-        getCorners(index,1,indices);
+        getCorners(index,1,1,indices);
         bool free = false;
         for (int i=0; i<(int)indices.size(); ++i) {
             std::map<VInt,BCell>::iterator it2 = bcells.find(indices[i]);
