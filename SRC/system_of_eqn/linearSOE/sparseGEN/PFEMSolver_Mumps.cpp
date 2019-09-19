@@ -29,7 +29,9 @@
 #include <iostream>
 #include <cmath>
 #include <Timer.h>
+#ifdef _MUMPS
 #include <mpi.h>
+#endif
 #include <elementAPI.h>
 
 #ifdef _AMGCL
@@ -576,10 +578,10 @@ PFEMSolver_Mumps::setLinearSOE(PFEMLinSOE& theSOE)
     return 0;
 }
 
+#ifdef _MUMPS
 void
 PFEMSolver_Mumps::ICNTL(DMUMPS_STRUC_C& id, int I, int val)
 {
     id.icntl[I-1] = val;
 }
-
-
+#endif
