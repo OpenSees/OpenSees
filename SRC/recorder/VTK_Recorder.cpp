@@ -251,7 +251,7 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
   // open pvd file
   //
 
-  char filename[strlen(name)+5];
+  char *filename = new char[strlen(name) + 5];
   sprintf(filename, "%s.pvd",name);
   
   thePVDFile.close();
@@ -303,7 +303,7 @@ VTK_Recorder::record(int ctag, double timeStamp)
     // add a line to pvd file
     //
 
-    char filename[2*strlen(name)+26];
+    char *filename = new char[2*strlen(name)+26];
     sprintf(filename, "%s/%s%020d.vtu",name, name, counter);    
 
     thePVDFile << "<DataSet timestep=\"" << counter << "\" group=\"\" part=\"0\"";
@@ -349,7 +349,7 @@ VTK_Recorder::vtu()
     return -1;
   }
   
-  char filename[2*strlen(name)+26];
+  char *filename = new char[2*strlen(name)+26];
   sprintf(filename, "%s/%s%020d.vtu",name, name, counter);
   counter ++;
   
