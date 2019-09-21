@@ -52,7 +52,7 @@ class ShellDKGT : public Element {
 	     int node1,
 	     int node2,
 	     int node3,
-	     SectionForceDeformation &theMaterial ) ;
+	     SectionForceDeformation &theMaterial, double b1, double b2, double b3) ;
   
   //destructor 
   virtual ~ShellDKGT( ) ;
@@ -196,4 +196,8 @@ class ShellDKGT : public Element {
     // vector for applying loads
     Vector *load;
     Matrix *Ki;
+
+    double b[3];        // Body forces
+    double appliedB[3];     // Body forces applied with load
+    int applyLoad;
 } ; 
