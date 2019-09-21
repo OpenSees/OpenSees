@@ -30,7 +30,7 @@ void revrse(int n, int *v);
             component in the graph genrcm obtains the ordering
             by calling the subroutine rcm.
 
-  input parameters - 
+  input parameters -
             neqns - number of equations
             padj - the adjacency structure
   output parameter -
@@ -40,16 +40,16 @@ void revrse(int n, int *v);
                    numbered during the ordering process.  it is
                    initialized to 0 and set to -1 as each nod
 		   is numbered.
-            xls - the index bector for a vevel structure. the level
-                  structre is sotred in the currently unused spaces 
-		  in the permutation vectore perm.
-            work - a working vector 
+            xls - the index vector for a level structure. the level
+                  structure is sorted in the currently unused spaces
+		  in the permutation vector perm.
+            work - a working vector
   program routines -
-            fnroot, rcm 
+            fnroot, rcm
 *************************************************************************/
 
 void genrcm(int neqns, int **padj, int *perm, int *mask, int *xls, int *work)
-{  
+{
    int num, i, root, nlvl, ccsize;
    zeroi(neqns, work);
    zeroi(neqns, mask);
@@ -85,28 +85,28 @@ void genrcm(int neqns, int **padj, int *perm, int *mask, int *xls, int *work)
 	    component in the graph subrcm obtains the ordering
 	    by calling the subroutine rcm.
 
-  input parameters - 
+  input parameters -
             neqns - number of equations
 	    padj - the adjacency structure
 	    root - first trial root ( any node that lies
-			int the subgraph) 
-  output parameter - 
+			int the subgraph)
+  output parameter -
             perm - vector that contains the rcm ordering
   working parameters
             mask - is used to mark variables that have been
                    numbered during the ordering process.  it is
 		   initialized to 0 and set to -1 as each node
 		   is numbered.
-            xls - the index bector for a vevel structure. the level
-                  structre is sotred in the currently unused spaces 
-		  in the permutation vectore perm.
-            work - a working vector 
-  program routines - 
-            fnroot, rcm 
+            xls - the index vector for a level structure. the level
+                  structure is sorted in the currently unused spaces
+		  in the permutation vector perm.
+            work - a working vector
+  program routines -
+            fnroot, rcm
 *************************************************************************/
-void subrcm (int neqns, int root, int **padj, int *perm, 
+void subrcm (int neqns, int root, int **padj, int *perm,
 	     int *mask, int *xls, int *work)
-{  
+{
    int num, nlvl, ccsize ;
    zeroi(neqns, work) ;
 
@@ -120,7 +120,7 @@ void subrcm (int neqns, int root, int **padj, int *perm,
    ----------------------------------------------------------*/
    root = fnroot(root, padj, mask, &nlvl, xls, perm + num) ;
    ccsize = rcm(root, padj, mask, perm+num,xls, work) ;
-  
+
    num += ccsize ;
    if (num > neqns) return ;
    return ;
@@ -131,7 +131,7 @@ void subrcm (int neqns, int root, int **padj, int *perm,
 ********************  rcm . . . reverse cuthill mckee ******************
 ************************************************************************
 
-  purpose - rcm numbers a connected component spedified by 
+  purpose - rcm numbers a connected component specified by
             mask and root, using the rcm algorithm.  the
 	    numbering is to be started at the node root.
   input parameters -
@@ -140,8 +140,8 @@ void subrcm (int neqns, int root, int **padj, int *perm,
 	    node for the rcm ordering.
 	    padj - the adjacency structure
 
-  updated parameters - 
-            mask - only those nodes wiht nonnegarive inpu mask
+  updated parameters -
+            mask - only those nodes with nonnegative input mask
 	    values are considered by the routine.
 	    the nodes numbered by rcm will have their
 	    mask values set to zero.
@@ -154,19 +154,19 @@ void subrcm (int neqns, int root, int **padj, int *perm,
   working parameter -
             work - must be set to zero's before calling!!!!!!!!!
 	    deg - is a temporary vector used to hold the degree
-	    of the nodes in the section graph specified 
+	    of the nodes in the section graph specified
 	    by mask and root.
   program routines
             degree
 *************************************************************************/
-int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work) 
-{ 
+int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
+{
    int ccsize ;
    int i, lbegin, lvlend, lnbr, nbr, node, fnbr, k, l, lperm ;
    int *ptr ;
 
 /* ---------------------------------------
-   find the degrees of the nodes in the 
+   find the degrees of the nodes in the
    component specified by mask and root.
    --------------------------------------*/
    ccsize = ndegree(root, padj, mask, deg, perm, work) ;
@@ -175,7 +175,7 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
    lvlend &= 0 ;
    lnbr = 1 ;
 /* -----------------------------------------------------
-   lbegin and lvlend point to the begiinning adn
+   lbegin and lvlend point to the beginning and
    the end of the current level respectively.
    -----------------------------------------------------*/
    do
@@ -183,7 +183,7 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
       lbegin = lvlend ;
       lvlend = lnbr ;
       for (i = lbegin ; i < lvlend ; i++)
-      {  
+      {
 /*       ------------------------------------------
          for each node in current level . . .
          ----------------------------------------*/
@@ -204,7 +204,7 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
          if (fnbr < lnbr-1)
          {
 /*          ---------------------------------------------------
-            sort the neighbors of node in increasing 
+            sort the neighbors of node in increasing
             order by degree. linear insertion i sused.
             --------------------------------------------------*/
             k = fnbr ;
@@ -225,7 +225,7 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
    }  while(lnbr > lvlend ) ; /* end do */
 /* ----------------------------------------------------------
    we now haave the cuthill mckee ordering
-   now reverse it 
+   now reverse it
    --------------------------------------------------------*/
    revrse(ccsize, perm) ;
 
@@ -236,12 +236,12 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
 /**************************************************************************
 ******************** ndegree . . . degree in masked component **************
 ***************************************************************************
-        purpose - This routine computes the degrees of the nodes in the 
-                connected component speciified by mask and root.
+        purpose - This routine computes the degrees of the nodes in the
+                connected component specified by mask and root.
                 nodes for which mask is -1 are ignored.
 
         input parameter -
-                root - is the input node that defines the  component
+                root - is the input node that defines the component
                 padj - the adjacency structure
                 mask - specifies a section subgraph
                 work - must be initialized to zero before degree is
@@ -257,7 +257,7 @@ int rcm(int root, int **padj, int *mask, int *perm, int *deg, int *work)
                         component level by level.
 ************************************************************************/
 int ndegree(int root, int **padj, int *mask, int *deg, int *ls, int *work)
-{  
+{
    int ccsize ;
    int i, lbegin, lvlend, node, ideg, lvsize ;
    int *ptr ;
@@ -286,7 +286,7 @@ int ndegree(int root, int **padj, int *mask, int *deg, int *ls, int *work)
       for (i=lbegin ; i < lvlend ; i++)
       {  node = ls[i] ;
          ideg = 0 ;
-         for (ptr = padj[node] ; ptr < padj[node+1] ; ptr++)  
+         for (ptr = padj[node] ; ptr < padj[node+1] ; ptr++)
          {  if (mask[*ptr] < 0) continue ;
             ideg++ ;
             if (work[*ptr] < 0) continue ;
@@ -303,7 +303,7 @@ int ndegree(int root, int **padj, int *mask, int *deg, int *ls, int *work)
       lvsize = ccsize - lvlend ;
    }  while (lvsize > 0) ;
 /* ------------------------------------------------------
-   reset work to 0 
+   reset work to 0
    -----------------------------------------------------*/
    for (i=0;i<ccsize ; i++)
    {  node = ls[i] ;

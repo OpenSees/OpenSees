@@ -106,8 +106,8 @@ class ReinforcingSteel : public UniaxialMaterial
   double esup;  // natural Strain at Peak Stress
   double fsup;  // natural Peak Stress
   double Esup;  // natural peak stress Modulus
-  double Eypp;  // natural Yield Plateu Modulus
-  double fint;  // natural Stress yield plateu intersect
+  double Eypp;  // natural Yield Plateau Modulus
+  double fint;  // natural Stress yield plateau intersect
   double eyp;   // natural strain at yield
   double fyp;   // natural yield stress
 
@@ -145,7 +145,7 @@ class ReinforcingSteel : public UniaxialMaterial
   double RC2;
   double RC3;
 
-  // Menegotto-Pinto Equation paramenters
+  // Menegotto-Pinto Equation parameters
   double TR;
   double Tfch;
   double TQ;
@@ -161,7 +161,7 @@ class ReinforcingSteel : public UniaxialMaterial
   double rE1;
   double rE2;
 
-  // Converged Menegotto-Pinto Equation paramenters
+  // Converged Menegotto-Pinto Equation parameters
   double CR[LastRule_RS/2+1];
   double Cfch[LastRule_RS/2+1];
   double CQ[LastRule_RS/2+1];

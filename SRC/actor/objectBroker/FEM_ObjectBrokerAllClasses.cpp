@@ -61,7 +61,7 @@
 
 // uniaxial material model header files
 #include <BoucWenMaterial.h>		//SAJalali
-#include <SPSW02.h>			;//SAJalali
+#include <SPSW02.h>			//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
 #include <Elastic2Material.h>
@@ -96,6 +96,7 @@
 #include <InitStrainMaterial.h>
 #include <Bond_SP01.h>
 #include <SimpleFractureMaterial.h>
+#include <ConfinedConcrete01.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -188,8 +189,11 @@
 #include <ManzariDafalias3DRO.h>
 #include <ManzariDafaliasPlaneStrainRO.h>
 #include <PM4Sand.h>
+#include <PM4Silt.h>
 #include <InitialStateAnalysisWrapper.h>
+#if !_DLL
 #include <stressDensity.h>
+#endif
 #include <InitStressNDMaterial.h>
 
 // Fibers
@@ -1240,6 +1244,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
         case MAT_TAG_SimpleFractureMaterial:
 	  return new SimpleFractureMaterial();
 
+        case MAT_TAG_ConfinedConcrete01:
+            return new ConfinedConcrete01();
+
 
 	default:
 
@@ -1433,12 +1440,16 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PM4Sand:
     return new PM4Sand();
 
+  case ND_TAG_PM4Silt:
+	return new PM4Silt();
+
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
+#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-
+#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 

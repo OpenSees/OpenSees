@@ -219,6 +219,12 @@ int CTestPFEM::test(void)
 
     double normvrel = normv/normv0;
     double normprel = normp/normp0;
+    if (normv0 == 0) {
+        normvrel = 0.0;
+    }
+    if (normp0 == 0) {
+        normprel = 0.0;
+    }
 
     // record norms
     if(currentIter <= maxNumIter) {

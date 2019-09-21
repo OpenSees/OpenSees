@@ -506,6 +506,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+#if !_DLL
     else if ((strcmp(argv[1],"stressDensity") == 0) || (strcmp(argv[1],"StressDensity") == 0)) {
       
       void *theMat = OPS_StressDensityMaterial();
@@ -514,7 +515,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
-    
+#endif
     else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0) || (strcmp(argv[1],"ElasticIsotropic") == 0)) {
 
       void *theMat = OPS_ElasticIsotropicMaterial();
@@ -818,7 +819,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
 
-    // Pressure Independend Multi-yield, by ZHY
+    // Pressure Independent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureIndependMultiYield") == 0) {
 	const int numParam = 6;
 	const int totParam = 10;
@@ -880,7 +881,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
     }
 
-    // Pressure Independend Multi-yield, by Quan Gu
+    // Pressure Independent Multi-yield, by Quan Gu
     else if (strcmp(argv[1],"MultiYieldSurfaceClay") == 0) {
 		const int numParam = 6;
 		const int totParam = 10;
@@ -943,7 +944,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 	// ============
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield") == 0) {
 	const int numParam = 15;
 	const int totParam = 24;
@@ -1042,7 +1043,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
 	}
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield02") == 0) {
 	const int numParam = 13;
 	const int totParam = 26;

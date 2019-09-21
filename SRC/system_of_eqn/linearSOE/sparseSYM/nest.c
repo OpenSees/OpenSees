@@ -111,7 +111,7 @@ void gennd(int neqns, int **padj, int *mask, int *perm,
                         values set to zero.
 
         working parameters
-                xls, ls - level structur pair for level structure
+                xls, ls - level structure pair for level structure
                         found by fnroot
 
         routines called -
@@ -334,7 +334,7 @@ int rootls(int root, int **padj, int *mask, int *xls, int *ls)
    lvlend &= 0 ;
    ccsize = 1 ;
 /* ----------------------------------------------------------
-   lbegin is the pointer to the begining of the current level
+   lbegin is the pointer to the beginning of the current level
    and lvlend points to the end of this level
    ---------------------------------------------------------*/
    do

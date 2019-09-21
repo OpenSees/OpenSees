@@ -338,7 +338,7 @@ ItpackLinSOE::setB(const Vector &v, double fact)
 {
   if (v.Size() != size) {
     opserr << "WARNING ItpackLinSOE::setB() -";
-    opserr << " incomptable sizes " << size << " and " << v.Size() << endln;
+    opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
     return -1;
   }
   
@@ -390,7 +390,7 @@ ItpackLinSOE::setX(const Vector &x)
 {
   if (x.Size() != size) {
     opserr << "WARNING ItpackLinSOE::setX() -";
-    opserr << " incomptable sizes " << size << " and " << x.Size() << endln;
+    opserr << " incompatible sizes " << size << " and " << x.Size() << endln;
   }
   else {
     for (int i = 0; i < size; i++)

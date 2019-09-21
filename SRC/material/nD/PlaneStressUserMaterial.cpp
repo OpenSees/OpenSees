@@ -61,7 +61,7 @@ void* OPS_PlaneStressUserMaterial()
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 6) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: nDMaterial PlaneStressUserMaterial tag? nstatevs? nprops? prop1? ... propn?" << endln;
 	return 0;
     }

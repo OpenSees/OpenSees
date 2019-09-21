@@ -32,13 +32,14 @@
 #include <UniaxialMaterial.h>
 
 #include <tcl.h>
+#include <elementAPI.h>
 
 #include <TrilinearBackbone.h>
-//#include <MultilinearBackbone.h>
+#include <MultilinearBackbone.h>
 #include <ArctangentBackbone.h>
-//#include <CappedBackbone.h>
-//#include <MaterialBackbone.h>
-//#include <LinearCappedBackbone.h>
+#include <CappedBackbone.h>
+#include <MaterialBackbone.h>
+#include <LinearCappedBackbone.h>
 #include <ReeseSoftClayBackbone.h>
 #include <ReeseStiffClayBelowWS.h>
 #include <ReeseSandBackbone.h>
@@ -46,6 +47,21 @@
 #include <RaynorBackbone.h>
 
 #include <string.h>
+
+extern void *OPS_ArctangentBackbone(void);
+extern void *OPS_ManderBackbone(void);
+extern void *OPS_TrilinearBackbone(void);
+extern void *OPS_BilinearBackbone(void);
+extern void *OPS_MultilinearBackbone(void);
+
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
 
 static void printCommand(int argc, TCL_Char **argv)
 {
@@ -56,180 +72,52 @@ static void printCommand(int argc, TCL_Char **argv)
 } 
 
 int
-TclModelBuilderHystereticBackboneCommand(ClientData clienData,
+TclModelBuilderHystereticBackboneCommand(ClientData clientData,
 					 Tcl_Interp *interp,
-					 int argc, TCL_Char **argv)
+					 int argc, TCL_Char **argv, Domain *theDomain)
 {
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "WARNING insufficient number of hystereticBackbone arguments\n";
     opserr << "Want: hystereticBackbone type? tag? <specific hystereticBackbone args>" << endln;
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a hysteretic backbone that will be added to the model builder
   HystereticBackbone *theBackbone = 0;
   
   // Check argv[1] for backbone type
   if (strcmp(argv[1],"Bilinear") == 0) {
-    if (argc < 7) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Bilinear tag? e1? s1? e2? s2?" << endln;
+    void *theBB = OPS_BilinearBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    double e1, e2, s1, s2;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Bilinear tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &e1) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Bilinear e1" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &s1) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Bilinear s1" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[5], &e2) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Bilinear e2" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[6], &s2) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Bilinear s2" << endln;
-      return TCL_ERROR;
-    }
-    
-    // Parsing was successful, allocate the material
-    theBackbone = new TrilinearBackbone (tag, e1, s1, e2, s2);
   }
   
   else if (strcmp(argv[1],"Trilinear") == 0) {
-    if (argc < 9) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Trilinear tag? e1? s1? e2? s2? e3? s3?" << endln;
+    void *theBB = OPS_TrilinearBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    double e1, e2, e3, s1, s2, s3;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &e1) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear e1" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &s1) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear s1" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[5], &e2) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear e2" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[6], &s2) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear s2" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[7], &e3) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear e3" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[8], &s3) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear s3" << endln;
-      return TCL_ERROR;
-    }
-    
-    // Parsing was successful, allocate the material
-    theBackbone = new TrilinearBackbone (tag, e1, s1, e2, s2, e3, s3);
   }
   
   else if (strcmp(argv[1],"Multilinear") == 0) {
-    if (argc < 5 || (argc-3)%2 != 0) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Multilinear tag? e1? s1? e2? s2? ..." << endln;
+    void *theBB = OPS_MultilinearBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    int numPoints = (argc-3)/2;
-    Vector e(numPoints);
-    Vector s(numPoints);
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Trilinear tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    double def,force;
-    for (int i = 3, j = 0; i < argc; i++, j++) {
-      if (Tcl_GetDouble(interp, argv[i++], &def) != TCL_OK) {
-	opserr << "WARNING invalid hystereticBackbone Trilinear e" << endln;
-	return TCL_ERROR;
-      }
-      e(j) = def;
-      
-      if (Tcl_GetDouble(interp, argv[i], &force) != TCL_OK) {
-	opserr << "WARNING invalid hystereticBackbone Trilinear s" << endln;
-	return TCL_ERROR;
-      }
-      s(j) = force;
-    }
-    
-    // Parsing was successful, allocate the material
-    //theBackbone = new MultilinearBackbone (tag, numPoints, e, s);
-    theBackbone = 0;
   }
   
   else if (strcmp(argv[1],"Arctangent") == 0) {
-    if (argc < 6) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Arctangent tag? K1? gammaY? alpha?" << endln;
+    void *theBB = OPS_ArctangentBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    double K1, gammaY, alpha;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Arctangent tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &K1) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Arctangent K1" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &gammaY) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Arctangent gammaY" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[5], &alpha) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Arctangent alpha" << endln;
-      return TCL_ERROR;
-    }
-    
-    theBackbone = new ArctangentBackbone (tag, K1, gammaY, alpha);
   }
   
   else if (strcmp(argv[1],"ReeseSoftClay") == 0) {
@@ -350,37 +238,11 @@ TclModelBuilderHystereticBackboneCommand(ClientData clienData,
   }
 
   else if (strcmp(argv[1],"Mander") == 0) {
-    if (argc < 6) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: hystereticBackbone Mander tag? fc? epsc? Ec?" << endln;
+    void *theBB = OPS_ManderBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
       return TCL_ERROR;
-    }
-    
-    int tag;
-    double fc, epsc, Ec;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Mander tag" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &fc) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Mander fc" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &epsc) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Mander epsc" << endln;
-      return TCL_ERROR;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[5], &Ec) != TCL_OK) {
-      opserr << "WARNING invalid hystereticBackbone Mander Ec" << endln;
-      return TCL_ERROR;
-    }
-    
-    theBackbone = new ManderBackbone (tag, fc, epsc, Ec);
   }
   
   else if (strcmp(argv[1],"Raynor") == 0)

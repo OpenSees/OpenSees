@@ -24,8 +24,8 @@
 // Created: 01/04
 //
 // Description: This file contains the class definition for DisplacementPath.
-// DisplacementPath is an algorithmic class for perfroming a static analysis
-// using the user-defined displacment path.
+// DisplacementPath is an algorithmic class for performing a static analysis
+// using the user-defined displacement path.
 // For Detailed explanation of the model, please refer to the book
 // entitled "Unified Theory of Concrete Structures,"
 // by Thomas T.C. Hsu and Y.L. Mo, John Wiley & Sons, April 2010.

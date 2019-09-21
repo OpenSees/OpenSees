@@ -103,7 +103,16 @@ extern "C" int  DSAUPD(int *ido, char* bmat,
 		       int *ldv,
 		       int *iparam, int *ipntr, double *workd, double *workl,
 		       int *lworkl, int *info);
-
+#if _DLL
+extern "C" int  DSEUPD(bool* rvec, char* howmny,
+	long int* select, double* d, double* z,
+	int* ldz, double* sigma, char* bmat,
+	int* n, char* which,
+	int* nev, double* tol, double* resid, int* ncv,
+	double* v,
+	int* ldv, int* iparam, int* ipntr, double* workd,
+	double* workl, int* lworkl, int* info);
+#else
 extern "C" int  DSEUPD(bool *rvec, char *howmny,
 		       logical *select, double *d, double *z,
 		       int *ldz, double *sigma, char *bmat,
@@ -112,7 +121,7 @@ extern "C" int  DSEUPD(bool *rvec, char *howmny,
 		       double *v,
 		       int *ldv, int *iparam, int *ipntr, double *workd, 
 		       double *workl, int *lworkl, int *info);
-
+#endif
 #else
 
 extern "C" int dsaupd_(int *ido, char* bmat, int *n, char *which, int *nev, 
@@ -174,7 +183,11 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     eigenvalues = new double[nev];
     eigenvectors = new double[n * nev];
     resid = new double[n];
-    select = new logical[ncv];
+#if _DLL
+	select = new long int[ncv];
+#else
+	select = new logical[ncv];
+#endif
 
     for (int i=0; i<lworkl+1; i++)
 	   workl[i] = 0;
@@ -324,13 +337,13 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "IPARAM(7) must be 1,2,3,4,5.\n";
       break;
     case -11: 
-      opserr << "IPARAM(7) = 1 and BMAT = 'G' are incompatable.\n";
+      opserr << "IPARAM(7) = 1 and BMAT = 'G' are incompatible.\n";
       break;
     case -12: 
       opserr << "IPARAM(1) must be equal to 0 or 1.\n";
       break;
     case -13:
-      opserr << "NEV and WHICH = 'BE' are incompatable.\n";
+      opserr << "NEV and WHICH = 'BE' are incompatible.\n";
       break;
     case -9999:
       opserr << "Could not build an Arnoldi factorization.";

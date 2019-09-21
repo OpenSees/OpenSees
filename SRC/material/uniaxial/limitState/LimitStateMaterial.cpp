@@ -40,7 +40,7 @@
 // Option only available for 3 point specification. Behaves 
 // same as HystereticMaterial if no limit curve specified.
 //
-// All code specific to LimitStateMaterial seperated by ////////////////
+// All code specific to LimitStateMaterial separated by ////////////////
 
 #include <stdlib.h>
 
@@ -779,7 +779,7 @@ LimitStateMaterial::commitState(void)
 		////////////////////
 		// Check state of element relative to the limit state surface.
 		// Note that steps should be kept small to minimize error
-		// caused by commited state being far beyond limit state surface
+		// caused by committed state being far beyond limit state surface
 		int stateFlag = theCurve->checkElementState(Cstress);
 
 		// If beyond limit state surface for first time,
@@ -791,7 +791,7 @@ LimitStateMaterial::commitState(void)
 
 			// display warning if Cstrain = max strain experienced.
 			if (Cstrain != CrotMax && Cstrain != CrotMin) {
-//				g3ErrorHandler->warning("WARNING LimitStateMaterial - failure occured while not at peak in displacement",
+//				g3ErrorHandler->warning("WARNING LimitStateMaterial - failure occurred while not at peak in displacement",
 //						"History variables may not be correct. Need to reset history variables in commitState");
 			}
 
@@ -880,7 +880,7 @@ LimitStateMaterial::revertToStart(void)
 	Ttangent = E1p;
 
 	/////////////////
-	// set commited stateFlag to prior to failure
+	// set committed stateFlag to prior to failure
 	CstateFlag = 0;
 	// set axial load loss to zero
 	Ploss = 0.0;
@@ -1280,7 +1280,7 @@ LimitStateMaterial::getNewBackbone(int flag)
 		}
 		
 		// set new third corner point
-		if (flag == 3 && curveType == 1) { //if comming off surface
+		if (flag == 3 && curveType == 1) { //if coming off surface
 			if (Cstress > 0.0) {
 				mom3p = 10*mom2p;
 				//rot3p = rot2p + (mom3p-mom2p)/Eelasticp;

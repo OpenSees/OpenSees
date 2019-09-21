@@ -34,7 +34,9 @@
 #include <Graph.h>
 #include <Vertex.h>
 #include <VertexIter.h>
+#if !_DLL
 #include <f2c.h>
+#endif
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -464,7 +466,7 @@ DistributedBandSPDLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != size) {
 	opserr << "WARNING DistributedBandGenLinSOE::setB() -";
-	opserr << " incomptable sizes " << size << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
 	return -1;
     }
     

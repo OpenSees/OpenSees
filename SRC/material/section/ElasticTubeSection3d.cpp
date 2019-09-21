@@ -153,9 +153,9 @@ ElasticTubeSection3d::getSectionDeformation (void)
 const Vector &
 ElasticTubeSection3d::getStressResultant (void)
 {
-  double A = 3.14159*tw*(d-tw);
   double r1 = 0.5*d;
   double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
   double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
@@ -170,9 +170,9 @@ ElasticTubeSection3d::getStressResultant (void)
 const Matrix &
 ElasticTubeSection3d::getSectionTangent(void)
 {
-  double A = 3.14159*tw*(d-tw);
   double r1 = 0.5*d;
   double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
   double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
@@ -187,9 +187,9 @@ ElasticTubeSection3d::getSectionTangent(void)
 const Matrix &
 ElasticTubeSection3d::getInitialTangent(void)
 {
-  double A = 3.14159*tw*(d-tw);
   double r1 = 0.5*d;
   double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
   double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
   
@@ -204,9 +204,9 @@ ElasticTubeSection3d::getInitialTangent(void)
 const Matrix &
 ElasticTubeSection3d::getSectionFlexibility (void)
 {
-  double A = 3.14159*tw*(d-tw);
   double r1 = 0.5*d;
   double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
   double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
@@ -221,9 +221,9 @@ ElasticTubeSection3d::getSectionFlexibility (void)
 const Matrix &
 ElasticTubeSection3d::getInitialFlexibility(void)
 {
-  double A = 3.14159*tw*(d-tw);
   double r1 = 0.5*d;
   double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
   double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
@@ -336,18 +336,26 @@ ElasticTubeSection3d::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
+  }
 
-  if (strcmp(argv[0],"tw") == 0)
+  if (strcmp(argv[0],"tw") == 0 || strcmp(argv[0],"t") == 0) {
+    param.setValue(tw);    
     return param.addObject(2, this);
+  }
 
-  if (strcmp(argv[0],"d") == 0)
+  if (strcmp(argv[0],"d") == 0 || strcmp(argv[0],"D") == 0) {
+    param.setValue(d);    
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"G") == 0)
+  }
+  
+  if (strcmp(argv[0],"G") == 0) {
+    param.setValue(G);    
     return param.addObject(4, this);
-
+  }
+    
   return -1;
 }
 

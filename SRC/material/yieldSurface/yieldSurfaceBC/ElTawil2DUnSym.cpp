@@ -27,7 +27,7 @@ ElTawil2DUnSym::ElTawil2DUnSym
 	czPos(cz_pos), tyPos(ty_pos), czNeg(cz_neg), tyNeg(ty_neg), qy(0.005)
 {
 
-// This tight coupling with base-class can be a diaster to debug!
+// This tight coupling with base-class can be a disaster to debug!
 	if(yPosBal < 0 || yNegBal < 0)
 		opserr << "WARNING - ElTawil2DUnSym() - yBalance < 0" << endln;
 		
@@ -217,7 +217,7 @@ double ElTawil2DUnSym::getSurfaceDrift(double x, double y)
 {
 double phi;
 double a = 5;//10.277; //3.043;//4.29293; --> effects convergence
-// why isnt a = 10.77 here or 5 in getGradient
+// why isn't a = 10.77 here or 5 in getGradient
      double capx = capX;
      double capy = capY;
      

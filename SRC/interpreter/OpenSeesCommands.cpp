@@ -59,6 +59,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <DamageModel.h>
 #include <FrictionModel.h>
 #include <HystereticBackbone.h>
+#include <StiffnessDegradation.h>
+#include <StrengthDegradation.h>
+#include <UnloadingRule.h>
 #include <YieldSurface_BC.h>
 #include <CyclicModel.h>
 #include <FileStream.h>
@@ -98,6 +101,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
 #include <MPI_MachineBroker.h>
+#include <ParallelNumberer.h>
+#include <DistributedDisplacementControl.h>
+#include <MumpsParallelSOE.h>
+#include <MumpsParallelSolver.h>
 #endif
 
 
@@ -112,10 +119,25 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
      thePFEMAnalysis(0),
      theAnalysisModel(0), theTest(0), numEigen(0), theDatabase(0),
      theBroker(), theTimer(), theSimulationInfo(), theMachineBroker(0),
-     reliability(0)
+     theChannels(0), numChannels(0), reliability(0)
 {
 #ifdef _PARALLEL_INTERPRETERS
     theMachineBroker = new MPI_MachineBroker(&theBroker, 0, 0);
+    int rank = theMachineBroker->getPID();
+    int np = theMachineBroker->getNP();
+    if (rank == 0) {
+        theChannels = new Channel *[np-1];
+        numChannels = np-1;
+
+        for (int j=0; j<np-1; j++) {
+            Channel *otherChannel = theMachineBroker->getRemoteProcess();
+            theChannels[j] = otherChannel;
+        }
+    } else {
+        theChannels = new Channel *[1];
+        numChannels = 1;
+        theChannels[0] = theMachineBroker->getMyChannel();
+    }
 #endif
 
     cmds = this;
@@ -133,8 +155,12 @@ OpenSeesCommands::~OpenSeesCommands()
     cmds = 0;
 
 #ifdef _PARALLEL_INTERPRETERS
+    if (theChannels != 0) {
+        delete [] theChannels;
+    }
     if (theMachineBroker != 0) {
-	opserr << "Process "<<theMachineBroker->getPID() << " Terminating\n";
+        // called in cleanup function, opserr not working
+	std::cerr << "Process "<<theMachineBroker->getPID() << " Terminating\n";
 	theMachineBroker->shutdown();
 	delete theMachineBroker;
     }
@@ -793,13 +819,13 @@ OpenSeesCommands::wipe()
 	theDatabase = 0;
     }
 
-    // wipe all meshes
-    OPS_clearAllMesh();
-
     // wipe domain
     if (theDomain != 0) {
 	theDomain->clearAll();
     }
+
+    // wipe all meshes
+    OPS_clearAllMesh();
 
     // time set to zero
     ops_Dt = 0.0;
@@ -832,6 +858,9 @@ OpenSeesCommands::wipe()
 
     // wipe HystereticBackbone
     OPS_clearAllHystereticBackbone();
+    OPS_clearAllStiffnessDegradation();
+    OPS_clearAllStrengthDegradation();
+    OPS_clearAllUnloadingRule();
 
     // wipe YieldSurface_BC
     OPS_clearAllYieldSurface_BC();
@@ -1160,7 +1189,7 @@ int OPS_System()
     } else if (strcmp(type,"Petsc") == 0) {
 
     } else if (strcmp(type,"Mumps") == 0) {
-
+        theSOE = (LinearSOE*)OPS_MumpsSolver();
 
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
@@ -1197,8 +1226,15 @@ int OPS_Numberer()
 
     } else if (strcmp(type,"AMD") == 0) {
 
-    	AMD *theAMD = new AMD();
-    	theNumberer = new DOF_Numberer(*theAMD);
+        AMD *theAMD = new AMD();
+        theNumberer = new DOF_Numberer(*theAMD);
+    } else if (strcmp(type, "ParallelPlain") == 0) {
+
+        theNumberer = (DOF_Numberer*)OPS_ParallelNumberer();
+
+    } else if (strcmp(type, "ParallelRCM") == 0) {
+
+        theNumberer = (DOF_Numberer*)OPS_ParallelRCM();
 
     } else {
     	opserr<<"WARNING unknown numberer type "<<type<<"\n";
@@ -1330,6 +1366,10 @@ int OPS_Integrator()
     } else if (strcmp(type,"DisplacementControl") == 0) {
 
 	si = (StaticIntegrator*)OPS_DisplacementControlIntegrator();
+
+    } else if (strcmp(type,"ParallelDisplacementControl") == 0) {
+
+        si = (StaticIntegrator*)OPS_ParallelDisplacementControl();
 
     } else if (strcmp(type,"ArcLength") == 0) {
 	si = (StaticIntegrator*)OPS_ArcLength();
@@ -1463,6 +1503,8 @@ int OPS_Integrator()
     } else if (strcmp(type,"CentralDifferenceNoDamping") == 0) {
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
+	} else if (strcmp(type, "ExplicitDifference") == 0) {
+        ti = (TransientIntegrator*)OPS_Explicitdifference();
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
     }
@@ -2487,19 +2529,37 @@ int OPS_modalDamping()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
+    }
+
+    int numModes = OPS_GetNumRemainingInputArgs();
+    if (numModes != 1 && numModes != numEigen) {
+      opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
+      opserr << "                     - same damping ratio will be applied to all modes\n";
     }
 
     double factor;
-    int numdata = 1;
-    if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
-	return -1;
-    }
-
     Vector modalDampingValues(numEigen);
-    for (int i=0; i<numEigen; i++) {
+    int numdata = 1;
+
+    //
+    // read in values and set factors
+    //
+    if (numModes == numEigen) {
+      for (int i = 0; i < numEigen; i++) {
+	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
+	  return -1;
+	}
+	modalDampingValues(i) = factor;
+      }
+    } else {
+      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	opserr << "WARNING modalDamping - could not read factor for all modes \n";
+	return -1;
+      }
+      for (int i = 0; i < numEigen; i++)
 	modalDampingValues(i) = factor;
     }
 
@@ -2523,14 +2583,14 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
     double factor;
     int numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	opserr << "WARNING modalDamping - could not read factor for all modes \n";
 	return -1;
     }
 
@@ -2968,14 +3028,158 @@ int OPS_systemSize()
 	return -1;
     }
 
-    double value = theSOE->getNumEqn();
+    int value = theSOE->getNumEqn();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetIntOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
 
     return 0;
+}
+
+void* OPS_ParallelRCM() {
+
+#ifdef _PARALLEL_INTERPRETERS
+    ParallelNumberer *theParallelNumberer = 0;
+    if (cmds == 0) return theParallelNumberer;
+
+    MachineBroker* machine = cmds->getMachineBroker();
+    Channel** channels = cmds->getChannels();
+    int numChannels = cmds->getNumChannels();
+
+    int rank = machine->getPID();
+
+    RCM *theRCM = new RCM(false);
+    theParallelNumberer = new ParallelNumberer(*theRCM);
+    theParallelNumberer->setProcessID(rank);
+    theParallelNumberer->setChannels(numChannels, channels);
+
+    return theParallelNumberer;
+#else
+    return 0;
+#endif
+
+}
+
+void* OPS_ParallelNumberer() {
+
+#ifdef _PARALLEL_INTERPRETERS
+    ParallelNumberer *theParallelNumberer = 0;
+    if (cmds == 0) return theParallelNumberer;
+
+    MachineBroker* machine = cmds->getMachineBroker();
+    Channel** channels = cmds->getChannels();
+    int numChannels = cmds->getNumChannels();
+
+    int rank = machine->getPID();
+
+    theParallelNumberer = new ParallelNumberer;
+    theParallelNumberer->setProcessID(rank);
+    theParallelNumberer->setChannels(numChannels, channels);
+
+    return theParallelNumberer;
+#else
+    return 0;
+#endif
+}
+
+void* OPS_ParallelDisplacementControl() {
+#ifdef _PARALLEL_INTERPRETERS
+    DistributedDisplacementControl *theDDC = 0;
+    if (cmds == 0) {
+        return theDDC;
+    }
+    int idata[3];
+    double ddata[3];
+
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+        opserr << "WARNING integrator DistributedDisplacementControl node dof dU \n";
+        opserr << "<Jd minIncrement maxIncrement>\n";
+        return 0;
+    }
+
+    int num = 2;
+    if (OPS_GetIntInput(&num, &idata[0]) < 0) {
+        opserr << "WARNING: failed to get node and dof\n";
+        return 0;
+    }
+    num = 1;
+    if (OPS_GetDoubleInput(&num, &ddata[0]) < 0) {
+        opserr << "WARNING: failed to get dU\n";
+        return 0;
+    }
+    if (OPS_GetNumRemainingInputArgs() >= 3) {
+        num = 1;
+        if (OPS_GetIntInput(&num, &idata[2]) < 0) {
+            opserr << "WARNING: failed to get Jd\n";
+            return 0;
+        }
+        num = 2;
+        if (OPS_GetDoubleInput(&num, &ddata[1]) < 0) {
+            opserr << "WARNING: failed to get min and max\n";
+            return 0;
+        }
+    } else {
+        idata[2] = 1;
+        ddata[1] = ddata[0];
+        ddata[2] = ddata[0];
+    }
+
+    theDDC = new DistributedDisplacementControl(idata[0], idata[1]-1,
+                                                ddata[0], idata[2],
+                                                ddata[1], ddata[2]);
+    MachineBroker* machine = cmds->getMachineBroker();
+    Channel** channels = cmds->getChannels();
+    int numChannels = cmds->getNumChannels();
+
+    int rank = machine->getPID();
+    theDDC->setProcessID(rank);
+    theDDC->setChannels(numChannels, channels);
+    return theDDC;
+#else
+    return 0;
+#endif
+
+}
+
+void* OPS_MumpsSolver() {
+    int icntl14 = 20;
+    int icntl7 = 7;
+    while (OPS_GetNumRemainingInputArgs() > 2) {
+        const char* opt = OPS_GetString();
+        int num = 1;
+        if (strcmp(opt, "-ICNTL14") == 0) {
+            if (OPS_GetIntInput(&num, &icntl14) < 0) {
+                opserr << "WARNING: failed to get icntl14\n";
+                return 0;
+            }
+        } else if (strcmp(opt, "-ICNTL7") == 0) {
+            if (OPS_GetIntInput(&num, &icntl7) < 0) {
+                opserr << "WARNING: failed to get icntl7\n";
+                return 0;
+            }
+        }
+    }
+
+#ifdef _PARALLEL_INTERPRETERS
+    MumpsParallelSOE* soe = 0;
+
+    MumpsParallelSolver *solver= new MumpsParallelSolver(icntl7, icntl14);
+    soe = new MumpsParallelSOE(*solver);
+
+    MachineBroker* machine = cmds->getMachineBroker();
+    Channel** channels = cmds->getChannels();
+    int numChannels = cmds->getNumChannels();
+
+    int rank = machine->getPID();
+    soe->setProcessID(rank);
+    soe->setChannels(numChannels, channels);
+    return soe;
+#else
+    return 0;
+#endif
+
 }
 
 // Sensitivity:BEGIN /////////////////////////////////////////////
