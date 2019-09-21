@@ -504,6 +504,7 @@
 #define PATTERN_TAG_FirePattern           3
 #define PATTERN_TAG_PBowlLoading          4
 #define PATTERN_TAG_DRMLoadPattern        5
+#define PATTERN_TAG_H5DRM                 6
 
 #define LOAD_TAG_Beam2dUniformLoad        3
 #define LOAD_TAG_Beam2dPointLoad          4
@@ -710,10 +711,10 @@
 #define ELE_TAG_ForceBeamColumn3dThermal  172  //L.Jiang [SIF] //Still testing
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
-#define ELE_TAG_ShellANDeS                175   //L.Jiang [SIF]
+#define ELE_TAG_ShellANDeS                175 //by jaabell (UANDES)
 #define ELE_TAG_AxEqDispBeamColumn2d      178
-#define ELE_TAG_FourNodeTetrahedron       179
-#define ELE_TAG_TriSurfaceLoad            180
+#define ELE_TAG_FourNodeTetrahedron       179 //by jaabell (UANDES)
+#define ELE_TAG_TriSurfaceLoad            180 //by jaabell (UANDES) 
 #define ELE_TAG_QuadBeamEmbedContact      181
 #define ELE_TAG_EmbeddedBeamInterfaceL    182
 #define ELE_TAG_EmbeddedBeamInterfaceP    183

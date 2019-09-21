@@ -1141,6 +1141,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/drm/DRMLoadPatternWrapper.o \
 	$(FE)/domain/pattern/drm/DRMInputHandler.o \
 	$(FE)/domain/pattern/drm/PlaneDRMInputHandler.o \
+	$(FE)/domain/pattern/drm/H5DRM.o \
 	$(FE)/domain/groundMotion/GroundMotion.o \
 	$(FE)/domain/groundMotion/GroundMotionRecord.o \
 	$(FE)/domain/groundMotion/InterpolatedGroundMotion.o \
