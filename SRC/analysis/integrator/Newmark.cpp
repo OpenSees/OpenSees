@@ -235,18 +235,14 @@ int Newmark::newStep(double deltaT)
     if (init == 1) {
         // determine new velocities and accelerations at t+deltaT
         *Udot = *Utdot;
-        double a1 = (1.0 - gamma / beta);
-        double a2 = (deltaT) * (1.0 - 0.5 * gamma / beta);
-        Udot->addVector(a1, *Utdotdot, a2);
-        Udot->addVector(1.0, *U, c2);
-        Udot->addVector(1.0, *Ut, -c2);
+        Udot->addVector(1.0-gamma/beta, *Utdotdot, deltaT*(1.0-0.5*gamma/beta));
+        Udot->addVector(1.0, *U, gamma / (deltaT * beta));
+        Udot->addVector(1.0, *Ut, -gamma / (deltaT * beta));
 
         *Udotdot = *Utdotdot;
-        double a3 = -1.0 / (beta * deltaT);
-        double a4 = 1.0 - 0.5 / beta;
-        Udotdot->addVector(a4, *Utdot, a3);
-        Udotdot->addVector(1.0, *U, c3);
-        Udotdot->addVector(1.0, *Ut, -c3);
+        Udotdot->addVector(1.0-0.5/beta, *Utdot, -1.0 / (beta * deltaT));
+        Udotdot->addVector(1.0, *U, 1.0/(deltaT * deltaT * beta));
+        Udotdot->addVector(1.0, *Ut, -1.0/(deltaT * deltaT * beta));
 
         // set the trial response quantities
         theModel->setVel(*Udot);
@@ -255,16 +251,13 @@ int Newmark::newStep(double deltaT)
     } else if (init == 2) {
         // determine new displacements and accelerations at t+deltaT
         *U = *Ut;
-        double a1 = deltaT*(1-beta/gamma);
-        U->addVector(1.0, *Utdot, a1);
-        double a2 = deltaT*deltaT*(0.5-beta/gamma);
-        U->addVector(1.0, *Utdotdot, a2);
-        U->addVector(1.0, *Udot, c1);
+        U->addVector(1.0, *Utdot, deltaT*(1-beta/gamma));
+        U->addVector(1.0, *Udot, deltaT*beta/gamma);
+        U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta/gamma));
 
         *Udotdot = *Utdotdot;
-        double a3 = (1-1.0/gamma);
-        Udotdot->addVector(a3, *Udot, c3);
-        Udotdot->addVector(1.0, *Utdot, -c3);
+        Udotdot->addVector((1-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
+        Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
 
         // set the trial response quantities
         theModel->setDisp(*U);
@@ -273,16 +266,13 @@ int Newmark::newStep(double deltaT)
     } else  {
         // determine new displacements and velocities at t+deltaT
         *U = *Ut;
-        double a1 = (deltaT*deltaT/2.0);
         U->addVector(1.0, *Utdot, deltaT);
-        U->addVector(1.0, *Utdotdot, a1);
-        U->addVector(1.0, *Udotdot, c1);
-        U->addVector(1.0, *Utdotdot, -c1);
+        U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta));
+        U->addVector(1.0, *Udotdot, deltaT*deltaT*beta);
 
         *Udot = *Utdot;
-        Udot->addVector(1.0, *Utdotdot, deltaT);
-        Udot->addVector(1.0, *Udotdot, c2);
-        Udot->addVector(1.0, *Utdotdot, -c2);
+        Udot->addVector(1.0, *Utdotdot, deltaT*(1-gamma));
+        Udot->addVector(1.0, *Udotdot, deltaT*gamma);
 
         // set the trial response quantities
         theModel->setDisp(*U);
