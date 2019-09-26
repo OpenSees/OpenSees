@@ -1082,10 +1082,10 @@ bool H5DRM::drm_differentiate_displacements(double t)
             exit(-1);
         }
 
-        d1[2] = -d1[2];
-        d2[2] = -d2[2];
-        a1[2] = -a1[2];
-        a2[2] = -a2[2];
+        // d1[2] = -d1[2];
+        // d2[2] = -d2[2];
+        // a1[2] = -a1[2];
+        // a2[2] = -a2[2];
 
         
         DRMDisplacements(3 * local_pos + 0) = d1[0]*(1-dtau) + d2[0]*(dtau);
