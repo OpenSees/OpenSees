@@ -12,20 +12,20 @@
 ** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 /*----+----+----+----+----+----+----+----+----+----+----+----+----+----+----*
- |                                                                          | 
+ |                                                                          |
  |              MultiaxialCyclicPlasticity  NDMaterial                      |
  +                                                                          +
  |--------------------------------------------------------------------------|
  |                                                                          |
  +             Authors: Gang Wang  AND  Professor Nicholas Sitar            +
  |                                                                          |
- |			   Department of Civil and Environmental Engineering            |
- +			   Univeristy of California, Berkeley, CA 94720, USA            +
+ |             Department of Civil and Environmental Engineering            |
+ +             University of California, Berkeley, CA 94720, USA            +
  |                                                                          |
  |             Email: wang@ce.berkeley.edu (G.W.)                           |
- |                                                                          | 
+ |                                                                          |
  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----*/
 
 #include <MultiaxialCyclicPlasticityPlaneStrain.h>

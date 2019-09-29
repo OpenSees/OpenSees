@@ -12,27 +12,27 @@
 ** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
- 
+
+
 /*----+----+----+----+----+----+----+----+----+----+----+----+----+----+----*
- |                                                                          | 
+ |                                                                          |
  |              MultiaxialCyclicPlasticity  NDMaterial                      |
  +                                                                          +
  |--------------------------------------------------------------------------|
  |                                                                          |
  +             Authors: Gang Wang  AND  Professor Nicholas Sitar            +
  |                                                                          |
- |			   Department of Civil and Environmental Engineering            |
- +			   Univeristy of California, Berkeley, CA 94720, USA            +
+ |             Department of Civil and Environmental Engineering            |
+ +             University of California, Berkeley, CA 94720, USA            +
  |                                                                          |
  |             Email: wang@ce.berkeley.edu (G.W.)                           |
- +                                                                          + 
+ +                                                                          +
  |  Disclaimers:                                                            |
- |  (1) This is implemenation of MultiaxialCyclicPlasticity for clays       |
+ |  (1) This is implementation of MultiaxialCyclicPlasticity for clays      |
  +      Model References:                                                   +
  |      Borja R.I, Amies, A.P. Multiaxial Cyclic Plasticity Model for       |
  |            Clays, ASCE J. Geotech. Eng. Vol 120, No 6, 1051-1070         |
- +      Montans F.J, Borja R.I. Implicit J2-bounding Surface Plasticity     +    
+ +      Montans F.J, Borja R.I. Implicit J2-bounding Surface Plasticity     +
  |            using Prager's translation rule. Int. J. Numer. Meth. Engng.  |
  |            55:1129-1166, 2002                                            |
  +      Code References:                                                    +
@@ -44,7 +44,7 @@
  +                                                                          +
  |  Development History:                                                    |
  |  First Draft   -- April 2004                                             |
- +  Rewrite       -- Nov   2004                                             + 
+ +  Rewrite       -- Nov   2004                                             +
  |  Final Release --                                                        |
  |                                                                          | 
  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----*/
@@ -57,7 +57,7 @@
     nDMaterial MultiaxialCyclicPlasticity $tag, $rho, $K, $G,
 	                                      $Su , $Ho , $h, $m, $beta, $KCoeff
    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   where: 
+   where:
       tag   : tag for this material
 	  rho   : density
 	  K     : buck modulus
@@ -75,9 +75,9 @@
 #ifndef MultiaxialCyclicPlasticity_h
 #define MultiaxialCyclicPlasticity_h
 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <math.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include <Vector.h>
 #include <Matrix.h>
@@ -88,12 +88,12 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
 
 //-------------------Declarations-------------------------------
 
-  public : 
+  public :
 
   //null constructor
   MultiaxialCyclicPlasticity() ;
 
-				   
+
 //full constructor
   MultiaxialCyclicPlasticity(int    tag,
 			     int    classTag,
@@ -119,7 +119,7 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
   virtual NDMaterial* getCopy (const char *type);
 
   //swap history variables
-  virtual int commitState( ) ; 
+  virtual int commitState( ) ;
 
   //revert to last saved state
   virtual int revertToLastCommit( ) ;
@@ -128,8 +128,8 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
   virtual int revertToStart( ) ;
 
   //sending and receiving
-  virtual int sendSelf(int commitTag, Channel &theChannel) ;  
-  virtual int recvSelf(int commitTag, Channel &theChannel, 
+  virtual int sendSelf(int commitTag, Channel &theChannel) ;
+  virtual int recvSelf(int commitTag, Channel &theChannel,
 		       FEM_ObjectBroker &theBroker ) ;
 
   //print out material data
@@ -138,16 +138,16 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
   virtual NDMaterial *getCopy (void) ;
   virtual const char *getType (void) const ;
   virtual int getOrder (void) const ;
-    
+
   double getRho();
-  int updateParameter(int responseID, Information &eleInformation);	
+  int updateParameter(int responseID, Information &eleInformation);
   Vector& getMCPparameter(void);   // used for debug only
 
   protected :
 
 
   // Material parameter used for K0 condition
-  double K0;           //lateral earth pressure coefficient           
+  double K0;           //lateral earth pressure coefficient
   double bulk_K0;
   double shear_K0;
 
@@ -161,7 +161,7 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
   double m;			   //Exponential degradation parameter H=h*kappa^m
   double beta;         //integration parameter
   double eta ;         //viscosity   // not used now
- 
+
   // some flags
   int flagjustunload;       // not used
   int flagfirstload;        // very first loading, initialize so_n
@@ -170,7 +170,7 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
 
   int plasticflag;          // flags indicate stage of plasticity at current step
   int plasticflag_n;        // flags indicate stage of plasticity at t=n
-  
+
   // state variables
   double kappa; 	   //kappa at t=n
   double Psi;          //Psi   at t=n
@@ -180,11 +180,11 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
 
   //material input
   Matrix strain ;			     // strain @ t=n+1, input from element
-  //material response 
+  //material response
   Matrix stress ;			     // stress @ t=n+1, computed this step
   Matrix stress_n;			     // stress @ t=n;   stored before
   Matrix so;                     // unload deviatoric back stress
-  //memeory variables
+  //memory variables
   Matrix strain_n;               // strain @ t=n;   stored before
   Matrix backs_n;                // back stress for BS @ t=n+1
   Matrix backs;                  // back stress for BS @ t=n
@@ -192,14 +192,14 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
 
   double tangent[3][3][3][3] ;   // material tangent
   static double initialTangent[3][3][3][3] ;   //material tangent
-  static double IIdev[3][3][3][3] ; //rank 4 deviatoric 
-  static double IbunI[3][3][3][3] ; //rank 4 I bun I 
+  static double IIdev[3][3][3][3] ; //rank 4 deviatoric
+  static double IbunI[3][3][3][3] ; //rank 4 I bun I
 
 
   // element tag associated with this material; added method by Gang Wang
   int EleTag;
   static int MaterialStageID; // classwide tag
-  static int IncrFormulationFlag; 
+  static int IncrFormulationFlag;
 
 
   //parameters

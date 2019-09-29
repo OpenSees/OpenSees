@@ -30,7 +30,8 @@
 
 #include <OPS_Globals.h>
 
-#include <TclModelBuilder.h>
+#include <tcl.h>
+#include <elementAPI.h>
 
 #include <TakedaUnloadingRule.h>
 #include <EnergyUnloadingRule.h>
@@ -38,18 +39,24 @@
 
 #include <string.h>
 
-static void printCommand(int argc, TCL_Char **argv)
-{
-  opserr << "Input command: ";
-  for (int i=0; i<argc; i++)
-    opserr << argv[i] << " ";
-  opserr << endln;
-} 
+extern void *OPS_TakedaUnloadingRule(void);
+extern void *OPS_EnergyUnloadingRule(void);
+extern void *OPS_ConstantUnloadingRule(void);
+extern void *OPS_KarsanUnloadingRule(void);
+
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
 
 int
-TclModelBuilderUnloadingRuleCommand(ClientData clienData,
+TclModelBuilderUnloadingRuleCommand(ClientData clientData,
 				    Tcl_Interp *interp,
-				    int argc, TCL_Char **argv)
+				    int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -58,101 +65,42 @@ TclModelBuilderUnloadingRuleCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a unloadingRule that will be added to the model builder
   UnloadingRule *theState = 0;
   
   // Check argv[1] for unloadingRule type	
   if (strcmp(argv[1],"Ductility") == 0 || strcmp(argv[1],"Takeda") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: unloadingRule Takeda tag? C? beta?" << endln;
+    void *theDegr = OPS_TakedaUnloadingRule();
+    if (theDegr != 0) 
+      theState = (UnloadingRule *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double C, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid unloadingRule Takeda tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &C) != TCL_OK) {
-      opserr << "WARNING invalid C\n";
-      opserr << "unloadingRule Takeda: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "unloadingRule Takeda: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new TakedaUnloadingRule (tag, C, b);
   }
   
   else if (strcmp(argv[1],"Energy") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: unloadingRule Energy tag? Et? c?" << endln;
+    void *theDegr = OPS_EnergyUnloadingRule();
+    if (theDegr != 0) 
+      theState = (UnloadingRule *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double c, et;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid unloadingRule Energy tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &et) != TCL_OK) {
-      opserr << "WARNING invalid Et\n";
-      opserr << "unloadingRule Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &c) != TCL_OK) {
-      opserr << "WARNING invalid c\n";
-      opserr << "unloadingRule Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new EnergyUnloadingRule (tag, et, c);
   }
   
   else if (strcmp(argv[1],"Constant") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: unloadingRule Constant tag? alpha? beta?" << endln;
+    void *theDegr = OPS_ConstantUnloadingRule();
+    if (theDegr != 0) 
+      theState = (UnloadingRule *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double a, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid unloadingRule Constant tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &a) != TCL_OK) {
-      opserr << "WARNING invalid alpha\n";
-      opserr << "unloadingRule Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "unloadingRule Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new ConstantUnloadingRule (tag, a, b);
+  }
+
+  else if (strcmp(argv[1],"Karsan") == 0) {
+    void *theDegr = OPS_KarsanUnloadingRule();
+    if (theDegr != 0) 
+      theState = (UnloadingRule *)theDegr;
+    else 
+      return TCL_ERROR;
   }
   
   else  {

@@ -136,7 +136,7 @@ BandGenLinLapackSolver::solve(void)
 	dgbtrs_("N",&n,&kl,&ku,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
     }
 #endif
-    // check if successfull
+    // check if successful
     if (info != 0) {
       if (info > 0) {
 	opserr << "WARNING BandGenLinLapackSolver::solve() -";

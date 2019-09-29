@@ -196,7 +196,7 @@ protected:
 	double mC_MB;      // constant to calculate Mb for dense of critical states
 	double mMd;
 	double mMcur;       // current stress ratio
-	Vector mTracker;        // traker of internal varables;
+	Vector mTracker;        // tracker of internal variables;
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations

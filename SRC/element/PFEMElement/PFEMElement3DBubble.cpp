@@ -601,7 +601,7 @@ PFEMElement3DBubble::getF(Vector& f) const
     if(mu > 0) {
         Vector v(12);
         for(int a=0; a<4; a++) {
-            const Vector& vel = nodes[2*a]->getTrialVel();
+            const Vector& vel = nodes[2*a]->getVel();
             v(3*a) = vel(0);
             v(3*a+1) = vel(1);
 	    v(3*a+2) = vel(2);

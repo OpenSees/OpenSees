@@ -177,7 +177,7 @@ Crule(0.0), Cstrain(0.0), Cstress(0.0), Ctangent(0.0)
 
 }
 
-// Constructor for optional gradual gap closure: mon=0 (default), Gap=0 or 1 (optinal user-generated input, see Eplpf member function)
+// Constructor for optional gradual gap closure: mon=0 (default), Gap=0 or 1 (optional user-generated input, see Eplpf member function)
 ConcreteCM::ConcreteCM
 (int tag, double FPCC, double EPCC, double EC, double RC, double XCRN, double FT, double ET, double RT, double XCRP, int GAP, int DUMMY)
 :UniaxialMaterial(tag, MAT_TAG_ConcreteCM),
@@ -1344,7 +1344,7 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 
 				}	// if (Crule==1.0)	// or 5.0 or 7.0
 
-				else if (Crule==77.0)	{			// Continue on transiton 77 [Rules 77,1,5]
+				else if (Crule==77.0)	{			// Continue on transition 77 [Rules 77,1,5]
 
 					if (Tstrain>esrestn)	{		// Rule 77
 
@@ -1367,7 +1367,7 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 
 				}	// if (Crule==77.0)
 
-				else if (Crule==13.0)	{			// Continue on transiton 13 [Rules 13,7,1,5]
+				else if (Crule==13.0)	{			// Continue on transition 13 [Rules 13,7,1,5]
 
 					if (Tstrain>=Teunn)	{	// Rule 13
 

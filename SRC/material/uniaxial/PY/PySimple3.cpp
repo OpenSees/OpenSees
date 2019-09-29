@@ -174,7 +174,7 @@ PySimple3::setTrialStrain (double y, double yRate)
       P1 = Cp+ke*dy+((dashpot/tstep1)*dy)-((dashpot/tstep2)*dyELast);	
     }
   if (signdy!=0 && signdy != TLastYieldDir && sign(P1-Cp)!=signdy) {
-    P1 = Cp+(0.000001*signdy);	//this ensures that when the displacement reverses, the load does not continue in the previous direction. This would only occur in unusual situations where deceleration yielding or perhaps a load reversal had also occured during the previous step.	
+    P1 = Cp+(0.000001*signdy);	//this ensures that when the displacement reverses, the load does not continue in the previous direction. This would only occur in unusual situations where deceleration yielding or perhaps a load reversal had also occurred during the previous step.	
   }	
   Tp = P1;
   // 	Ttangent
@@ -226,7 +226,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  else {TpinUse = CpinLast;}				
 	  TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	  TdyE    = TyeTotal-CyeTotalUse;
-	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	  if(dy==0.0 && TdyE == 0.0){
 	    Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	  }
@@ -254,11 +254,11 @@ PySimple3::setTrialStrain (double y, double yRate)
       // viscoelastic force to decrease relative to Cp (this can only occur if the decrease in dashpot force is large
       // relative to the increase in force in the elastic component, so with a relatively large dashpot coeff. and large 
       // deceleration). This is somewhat counterituitive, because you would expect continuing to displace in the same
-      // dir. would keep increasing the load, but a large loss of damper force could cause the cummulative load to drop.
+      // dir. would keep increasing the load, but a large loss of damper force could cause the cumulative load to drop.
       // If this drop is large enough, yielding could occur in the opposite direction of displacement, so the previous 
       // if statements for re-assigning Tpin and Tyin won't work because they rely on sign(dy). Instead, need to use
       // the term sign(P1-Cp), where P1 is the viscoelastic predictor guess.
-      //	If sign(P1-Cp) and signdy have opposite signs, this condition has occured...
+      //	If sign(P1-Cp) and signdy have opposite signs, this condition has occurred...
 	
       if(signP != signdy && signP != 0 && dy == 0.0 && signP != CLastYieldDir)
 	// special case for dy = zero
@@ -269,7 +269,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  //Compute the change in viscoelastic displacement that occurs when the decrease in dashpot force causes P
 	  //	to drop from the current P to the yield surface. First compute time this takes by proportioning forces:
 	  TLastYieldDir = signP;
-	  pn1_a = TpinUse;									//lower bracket is current commited value of p
+	  pn1_a = TpinUse;									//lower bracket is current committed value of p
 	  pn1_b = (1.0-0.5*PYtolerance)*signP*pult;			//upper bracket is pult, but with opposite sign
 	  //...then don't change anything, just send in the regular values...
 	  CpUse = TpinUse;
@@ -280,7 +280,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  bump=Cp-TpinUse;
 	}
       else if(signP != signdy && signP != 0 && signP != CLastYieldDir)
-	//	Decleration yielding for a non-zero dy case, still flip the search direction:
+	//	Declaration yielding for a non-zero dy case, still flip the search direction:
 	{
 	  TpinUse = Cpalpha - pyield*signdy;
 	  Tyin = Cy + (TpinUse-Cp)/(-1.0*((Tp-Cp)/dy));
@@ -298,7 +298,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      TpinUse = Cpalpha + pyield*signdy;
 	      Tyin = Cy + (TpinUse-Cp)/((Tp-Cp)/dy);
 	    }
-	  pn1_a = Cp;											//lower bracket is current commited value of p
+	  pn1_a = Cp;											//lower bracket is current committed value of p
 	  if(signP == 0)
 	    {
 	      pn1_b = (1.0-0.5*PYtolerance)*CLastYieldDir*pult;			//upper bracket is pult
@@ -311,7 +311,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	}
 	
       // Bumping routine and update backstress
-      //If decleration yielding occured, bumped values have already been computed and this loop will not be entered.
+      //If declaration yielding occurred, bumped values have already been computed and this loop will not be entered.
       if((pn1_a < TpinUse && pn1_b > TpinUse) || (pn1_a > TpinUse && pn1_b < TpinUse)) // test to see if brackets are on opposite sides of yield surface
 	{
 	  pn1_a = TpinUse;
@@ -355,7 +355,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  Tp = pn1_a;
 	  TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	  TdyE    = TyeTotal-CyeTotalUse;
-	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	  if(dy==0.0 && TdyE == 0.0){
 	    Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	  }
@@ -368,7 +368,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  else{
 	    Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 	  }
-	  //check if decleration cause a decrease in force
+	  //check if declaration cause a decrease in force
 	  signP = sign(Tp-Cp);
 	  if(signP != signdy)
 	    {
@@ -386,7 +386,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  Tp = pn1_b;
 	  TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	  TdyE    = TyeTotal-CyeTotalUse;
-	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	  //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	  if(dy==0.0 && TdyE == 0.0){
 	    Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	  }
@@ -399,7 +399,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	  else{
 	    Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 	  }
-	  //check if decleration cause in decrease in force
+	  //check if declaration cause in decrease in force
 	  signP = sign(Tp-Cp);
 	  if(signP != signdy)
 	    {
@@ -424,7 +424,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      Tp = (1.0-0.5*PYtolerance)*TLastYieldDir*pult;	//keep consistent with other cases to avoid tiny fluctuations near the yield surface
 	      TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	      TdyE    = TyeTotal-CyeTotalUse;
-	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	      if(dy==0.0 && TdyE == 0.0){
 		Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	      }
@@ -437,7 +437,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      else{
 		Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 	      }
-	      //check if decleration cause in decrease in force
+	      //check if declaration cause in decrease in force
 	      signP = sign(Tp-Cp);
 	      if(signP != signdy)
 		{
@@ -468,7 +468,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      Tp = pn1_3;
 	      TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	      TdyE    = TyeTotal-CyeTotalUse;
-	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	      if(dy==0.0 && TdyE == 0.0){
 		Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	      }
@@ -481,7 +481,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      else{
 		Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 	      }
-	      //check if decleration causes in decrease in force
+	      //check if declaration causes in decrease in force
 	      signP = sign(Tp-Cp);
 	      if(signP != signdy)
 		{
@@ -502,7 +502,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      Tp = pn1_4;
 	      TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 	      TdyE    = TyeTotal-CyeTotalUse;
-	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+	      //for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 	      if(dy==0.0 && TdyE == 0.0){
 		Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 	      }
@@ -515,7 +515,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 	      else{
 		Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 	      }
-	      //check if decleration cause in decrease in force
+	      //check if declaration cause in decrease in force
 	      signP = sign(Tp-Cp);
 	      if(signP != signdy)
 		{
@@ -570,7 +570,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 		}
 		TyeTotal = (Tp-CpUse+ke*CyeTotalUse+dashpot*CyeTotalUse/tstep1+dashpot*dyELastUse/tstep2)/(ke+dashpot/tstep1);
 		TdyE    = TyeTotal-CyeTotalUse;
-		//for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occured)
+		//for tangent, consider entire increment (i.e. not just the post-bump behavior if first yield occurred)
 		if(dy==0.0 && TdyE == 0.0){
 		  Ttangent = 	1.0/((1.0/(ke)) + (1.0/(C*ke*((Tp-pult*sign(signdy))/(TpinUse-Tp)))));
 		}
@@ -583,7 +583,7 @@ PySimple3::setTrialStrain (double y, double yRate)
 		else{
 		  Ttangent = 	1.0/((1.0/(ke+dashpot*((1.0/tstep1)-(dyELast/(tstep2*TdyE))))) + (1.0/(C*ke*((Tp-pult*sign(Tp-Cp))/(TpinUse-Tp)))));
 		}
-		//check if decleration cause in decrease in force
+		//check if declaration cause in decrease in force
 		signP = sign(Tp-Cp);
 		if(signP != signdy)
 		  {

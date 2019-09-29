@@ -22,8 +22,8 @@
 // $Date: 2011-07-18 10:11:35 $
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam2dThermalAction.h,v $
 
-//Modified by Jian Zhang, [Univeristy of Edinburgh]
-//Modified by Panagiotis Kotsovinos, [Univeristy of Edinburgh]
+//Modified by Jian Zhang, [University of Edinburgh]
+//Modified by Panagiotis Kotsovinos, [University of Edinburgh]
 //Modified by Liming Jiang [http://openseesforfire.github.io]
 
 // Description: This file contains the class definition for Beam2dThermalAction.

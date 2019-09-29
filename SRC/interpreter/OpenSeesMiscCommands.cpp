@@ -1461,46 +1461,72 @@ int OPS_send()
     int np = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &np);
 
-    if (OPS_GetNumRemainingInputArgs()  < 3) {
-    	opserr << "WARNING: need send '-pid',pid, data\n";
+    if (OPS_GetNumRemainingInputArgs()  < 1) {
+    	opserr << "WARNING: need send <'-pid' pid> data\n";
     	return -1;
     }
 
     // get other pid
     const char *sdata = OPS_GetString();
     if (strcmp(sdata, "-pid") == 0) {
-
-    	int num = 1;
-    	if (OPS_GetIntInput(&num, &otherPID) < 0) {
-    	    opserr << "WARNING: failed to get pid\n";
-    	    return -1;
-    	}
-
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            int num = 1;
+            if (OPS_GetIntInput(&num, &otherPID) < 0) {
+                opserr << "WARNING: failed to get pid\n";
+                return -1;
+            }
+            if (otherPID<0 || otherPID>=np || otherPID==myPID) {
+                opserr << "WARNING: invalid pid "<<otherPID<<"\n";
+                return -1;
+            }
+        } else {
+            opserr << "WARNING: need pid\n";
+            return -1;
+        }
     } else {
-	opserr << "WARNING: must use '-pid'\n";
-	return -1;
+        opserr << "WARNING: -pid is required\n";
+        return -1;
     }
 
     // get data type
     int num = OPS_GetNumRemainingInputArgs();
-    MPI_Datatype datatype = MPI_INT;
+    if (num < 1) {
+        opserr << "WARNING: need data\n";
+        return -1;
+    }
+
     std::vector<int> idata(num);
     std::vector<double> ddata(num);
-    if (OPS_GetIntInput(&num, &idata[0]) < 0) {
-	OPS_ResetCurrentInputArg(-1);
-	datatype = MPI_DOUBLE;
+    sdata = OPS_GetString();
+    MPI_Datatype datatype = MPI_CHAR;
+    if (strcmp(sdata,"Invalid String Input!") == 0) {
+        OPS_ResetCurrentInputArg(-1);
+        datatype = MPI_DOUBLE;
+        int numdata = 1;
+        if (OPS_GetDoubleInput(&numdata, &ddata[0]) < 0) {
+            OPS_ResetCurrentInputArg(-1);
+            datatype = MPI_INT;
+            if (OPS_GetIntInput(&numdata, &idata[0]) < 0) {
+                opserr << "WARNING: failed to detect data type\n";
+                return -1;
+            }
+        }
+    }
 
-	if (OPS_GetDoubleInput(&num, &ddata[0]) < 0) {
-	    OPS_ResetCurrentInputArg(-1);
-	    datatype = MPI_CHAR;
-
-	    sdata = OPS_GetString();
-	    if (strcmp(sdata,"Invalid String Input!") == 0) {
-		opserr << "WARNING: Invalid String Input\n";
-		return -1;
-	    }
-
-	}
+    // get all data
+    if (num > 1 && datatype != MPI_CHAR) {
+        int numdata = num - 1;
+        if (datatype == MPI_DOUBLE) {
+            if (OPS_GetDoubleInput(&numdata, &ddata[1]) < 0) {
+                opserr << "WARNING: not all data is double\n";
+                return -1;
+            }
+        } else {
+            if (OPS_GetIntInput(&numdata, &idata[1]) < 0) {
+                opserr << "WARNING: not all data is int\n";
+                return -1;
+            }
+        }
     }
 
     // data length, 0-int, 1-double, 2-string
@@ -1508,36 +1534,28 @@ int OPS_send()
     void* buffer = 0;
     if (datatype == MPI_INT) {
 
-	msgLength[0] = num;
-	msgLength[1] = 0;
-	buffer = (void *) &idata[0];
+        msgLength[0] = num;
+        msgLength[1] = 0;
+        buffer = (void *) &idata[0];
 
     } else if (datatype == MPI_DOUBLE) {
 
-	msgLength[0] = num;
-	msgLength[1] = 1;
-	buffer = (void *) &ddata[0];
+        msgLength[0] = num;
+        msgLength[1] = 1;
+        buffer = (void *) &ddata[0];
 
     } else {
 
-	msgLength[0] = strlen(sdata)+1;
-	msgLength[1] = 2;
-	buffer = (void *) sdata;
+        msgLength[0] = strlen(sdata)+1;
+        msgLength[1] = 2;
+        buffer = (void *) sdata;
     }
 
     // send data to PID
-    if (otherPID > -1 && otherPID != myPID && otherPID < np) {
-
-	MPI_Send((void *)(&msgLength[0]), 2, MPI_INT, otherPID,
-		 0, MPI_COMM_WORLD);
-	MPI_Send(buffer, msgLength[0], datatype, otherPID,
-		 1, MPI_COMM_WORLD);
-
-    } else {
-	opserr << "WARNING: invalid pid "<<otherPID<<" to send\n";
-	return -1;
-    }
-
+    MPI_Send((void *)(&msgLength[0]), 2, MPI_INT, otherPID,
+             0, MPI_COMM_WORLD);
+    MPI_Send(buffer, msgLength[0], datatype, otherPID,
+             1, MPI_COMM_WORLD);
 
 #endif
     return 0;
@@ -1555,92 +1573,244 @@ int OPS_recv()
     int np = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &np);
 
-    if (OPS_GetNumRemainingInputArgs()  < 2) {
-    	opserr << "WARNING: need recv '-pid',pid\n";
-    	return -1;
+    if (OPS_GetNumRemainingInputArgs()  < 1) {
+        opserr << "WARNING: need recv '-pid' pid\n";
+        return -1;
     }
 
     // get other pid
     const char *sdata = OPS_GetString();
-
     if (strcmp(sdata, "-pid") == 0) {
+        if (OPS_GetNumRemainingInputArgs() < 1) {
+            opserr << "WANRING: need pid\n";
+            return -1;
+        }
+        int num = 1;
+        if (OPS_GetIntInput(&num, &otherPID) == 0) {
+            if (otherPID<0 || otherPID>=np || otherPID==myPID) {
+                opserr << "WARNING: invalid pid "<<otherPID<<"\n";
+                return -1;
+            }
+        } else {
+            OPS_ResetCurrentInputArg(-1);
 
-	int num = 1;
-	if (OPS_GetIntInput(&num, &otherPID) < 0) {
-	    opserr << "WARNING: failed to get pid\n";
-	    return -1;
-	}
+            sdata = OPS_GetString();
+            if (strcmp(sdata, "ANY") == 0) {
+                otherPID = -2;
+            } else {
+                opserr << "WARNING: Invalid pid\n";
+                return -1;
+            }
+        }
     } else {
-	opserr << "WARNING: must use '-pid'\n";
-	return -1;
+        opserr << "WARNING: -pid is required\n";
+        return -1;
     }
 
     // receive data
     MPI_Status status;
-    if (otherPID > -1 && otherPID != myPID && otherPID < np) {
 
 	// receive length and type
 	int msgLength[2] = {0,0};
-	MPI_Recv((void *)(&msgLength[0]), 2, MPI_INT, otherPID,
-		 0, MPI_COMM_WORLD, &status);
+	if (otherPID == -2) {
+        MPI_Recv((void *) (&msgLength[0]), 2, MPI_INT, MPI_ANY_SOURCE,
+                 0, MPI_COMM_WORLD, &status);
+    } else {
+        MPI_Recv((void *) (&msgLength[0]), 2, MPI_INT, otherPID,
+                 0, MPI_COMM_WORLD, &status);
+    }
 
-	// get type
-	MPI_Datatype datatype = MPI_INT;
-	char* gMsg = new char[msgLength[0]];
-	std::vector<int> idata(msgLength[0]);
-	std::vector<double> ddata(msgLength[0]);
-	void* buffer = 0;
-	if (msgLength[1] == 0) {
+	// get data
+    if (msgLength[0] > 0) {
 
-	    datatype = MPI_INT;
-	    buffer = (void *) &idata[0];
+        // get type
+        MPI_Datatype datatype = MPI_INT;
+        char* gMsg = new char[msgLength[0]];
+        std::vector<int> idata(msgLength[0]);
+        std::vector<double> ddata(msgLength[0]);
+        void* buffer = 0;
+        if (msgLength[1] == 0) {
 
-	} else if (msgLength[1] == 1) {
+            datatype = MPI_INT;
+            buffer = (void *) &idata[0];
 
-	    datatype = MPI_DOUBLE;
-	    buffer = (void *) &ddata[0];
+        } else if (msgLength[1] == 1) {
 
-	} else {
+            datatype = MPI_DOUBLE;
+            buffer = (void *) &ddata[0];
 
-	    datatype = MPI_CHAR;
-	    buffer = (void *) gMsg;
-	}
+        } else {
 
-	// receive data
-	if (msgLength[0] > 0) {
+            datatype = MPI_CHAR;
+            buffer = (void *) gMsg;
+        }
 
-	    MPI_Recv(buffer, msgLength[0], datatype, otherPID,
-		     1, MPI_COMM_WORLD, &status);
+        // receive data
+        if (otherPID == -2) {
+            MPI_Recv(buffer, msgLength[0], datatype, MPI_ANY_SOURCE,
+                     1, MPI_COMM_WORLD, &status);
+        } else {
+            MPI_Recv(buffer, msgLength[0], datatype, otherPID,
+                     1, MPI_COMM_WORLD, &status);
+        }
 
 	    // set oututs
 	    int res = 0;
 	    if (datatype == MPI_INT) {
 
-		res = OPS_SetIntOutput(&msgLength[0], &idata[0]);
+            res = OPS_SetIntOutput(&msgLength[0], &idata[0]);
 
 	    } else if (datatype == MPI_DOUBLE) {
 
-		res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0]);
+            res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0]);
 
 	    } else {
 
-		res = OPS_SetString(gMsg);
+            res = OPS_SetString(gMsg);
 
 	    }
 	    if (res < 0) {
-		opserr << "WARNING: failed to set results\n";
-		return -1;
+            opserr << "WARNING: failed to set results\n";
+            return -1;
 	    }
-	    delete gMsg;
+        delete [] gMsg;
 	}
 
-    } else {
-	opserr << "WARNING: invalid pid "<<otherPID<<"to receive \n";
-	return -1;
-    }
 
 #endif
 
+    return 0;
+}
+
+int OPS_Bcast() {
+
+#ifdef _PARALLEL_INTERPRETERS
+    // get ids
+    int myPID = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myPID);
+
+    int np = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+    int msgLength[2] = {0,0};
+    void* buffer = 0;
+    MPI_Datatype datatype;
+    if (myPID == 0) {
+
+        // send
+        int num = OPS_GetNumRemainingInputArgs();
+        if (num < 1) {
+            opserr << "WARNING: need data\n";
+            return -1;
+        }
+
+        std::vector<int> idata(num);
+        std::vector<double> ddata(num);
+        const char* sdata = OPS_GetString();
+        datatype = MPI_CHAR;
+        if (strcmp(sdata,"Invalid String Input!") == 0) {
+            OPS_ResetCurrentInputArg(-1);
+            datatype = MPI_DOUBLE;
+            int numdata = 1;
+            if (OPS_GetDoubleInput(&numdata, &ddata[0]) < 0) {
+                OPS_ResetCurrentInputArg(-1);
+                datatype = MPI_INT;
+                if (OPS_GetIntInput(&numdata, &idata[0]) < 0) {
+                    opserr << "WARNING: failed to detect data type\n";
+                    return -1;
+                }
+            }
+        }
+
+        // get all data
+        if (num > 1 && datatype != MPI_CHAR) {
+            int numdata = num - 1;
+            if (datatype == MPI_DOUBLE) {
+                if (OPS_GetDoubleInput(&numdata, &ddata[1]) < 0) {
+                    opserr << "WARNING: not all data is double\n";
+                    return -1;
+                }
+            } else {
+                if (OPS_GetIntInput(&numdata, &idata[1]) < 0) {
+                    opserr << "WARNING: not all data is int\n";
+                    return -1;
+                }
+            }
+        }
+
+        // data length, 0-int, 1-double, 2-string
+        if (datatype == MPI_INT) {
+
+            msgLength[0] = num;
+            msgLength[1] = 0;
+            buffer = (void *) &idata[0];
+
+        } else if (datatype == MPI_DOUBLE) {
+
+            msgLength[0] = num;
+            msgLength[1] = 1;
+            buffer = (void *) &ddata[0];
+
+        } else {
+
+            msgLength[0] = strlen(sdata)+1;
+            msgLength[1] = 2;
+            buffer = (void *) sdata;
+        }
+
+        MPI_Bcast((void *)(&msgLength[0]), 2, MPI_INT,  0, MPI_COMM_WORLD);
+        MPI_Bcast(buffer, msgLength[0], datatype, 0, MPI_COMM_WORLD);
+    } else {
+
+        // receive
+        MPI_Bcast((void *)(&msgLength[0]), 2, MPI_INT, 0, MPI_COMM_WORLD);
+        if (msgLength[0] > 0) {
+
+            // get type
+            datatype = MPI_INT;
+            char* gMsg = new char[msgLength[0]];
+            std::vector<int> idata(msgLength[0]);
+            std::vector<double> ddata(msgLength[0]);
+            if (msgLength[1] == 0) {
+
+                datatype = MPI_INT;
+                buffer = (void *) &idata[0];
+
+            } else if (msgLength[1] == 1) {
+
+                datatype = MPI_DOUBLE;
+                buffer = (void *) &ddata[0];
+
+            } else {
+
+                datatype = MPI_CHAR;
+                buffer = (void *) gMsg;
+            }
+            MPI_Bcast(buffer, msgLength[0], datatype, 0, MPI_COMM_WORLD);
+
+            // set oututs
+            int res = 0;
+            if (datatype == MPI_INT) {
+
+                res = OPS_SetIntOutput(&msgLength[0], &idata[0]);
+
+            } else if (datatype == MPI_DOUBLE) {
+
+                res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0]);
+
+            } else {
+
+                res = OPS_SetString(gMsg);
+
+            }
+            if (res < 0) {
+                opserr << "WARNING: failed to set results\n";
+                return -1;
+            }
+            delete [] gMsg;
+        }
+    }
+#endif
     return 0;
 }
 
@@ -1825,6 +1995,24 @@ int OPS_setNumThreads()
 
     omp_set_num_threads(num);
 #endif
+
+    return 0;
+}
+
+int OPS_setStartNodeTag() {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING: needs tag\n";
+        return -1;
+    }
+
+    int tag;
+    int num = 1;
+    if (OPS_GetIntInput(&num, &tag) < 0) {
+        opserr << "WARNING: failed to get tag\n";
+        return -1;
+    }
+
+    Mesh::setStartNodeTag(tag);
 
     return 0;
 }

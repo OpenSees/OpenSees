@@ -147,7 +147,7 @@ void* OPS_PathSeries()
 	numData = 1;
 	if(OPS_GetIntInput(&numData,&ntime) < 0) return 0;
 	    
-	// get time ponts
+	// get time points
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData < ntime) {
 	    opserr<<ntime<<" number of time points are required\n";
@@ -239,7 +239,7 @@ PathSeries::PathSeries(int tag,
    thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor),
    otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart)
 {
-  // create a copy of the vector containg path points
+  // create a copy of the vector containing path points
   if (prependZero == false) {
     thePath = new Vector(theLoadPath);
   } else {
@@ -446,7 +446,7 @@ PathSeries::sendSelf(int commitTag, Channel &theChannel)
       result = theChannel.sendVector(otherDbTag, commitTag, *thePath);
       if (result < 0) {
 	opserr << "PathSeries::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result;  
       }
     }
@@ -497,7 +497,7 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
     result = theChannel.recvVector(otherDbTag, lastSendCommitTag, *thePath);    
     if (result < 0) {
       opserr << "PathSeries::recvSelf() - ";
-      opserr << "channel failed to receive tha Path Vector\n";
+      opserr << "channel failed to receive the Path Vector\n";
       return result;  
     }
   }

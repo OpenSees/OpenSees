@@ -1758,10 +1758,10 @@ static PyObject *Py_ops_getPID(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    //if (OPS_getPID() < 0) {
-    // opserr<<(void*)0;
-    // return NULL;
-    //}
+    if (OPS_getPID() < 0) {
+     opserr<<(void*)0;
+     return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -1770,10 +1770,10 @@ static PyObject *Py_ops_getNP(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    //if (OPS_getNP() < 0) {
-    // opserr<<(void*)0;
-    // return NULL;
-    //   }
+    if (OPS_getNP() < 0) {
+     opserr<<(void*)0;
+     return NULL;
+       }
 
     return wrapper->getResults();
 }
@@ -1782,10 +1782,10 @@ static PyObject *Py_ops_barrier(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    //if (OPS_barrier() < 0) {
-    // opserr<<(void*)0;
-    // return NULL;
-    //}
+    if (OPS_barrier() < 0) {
+     opserr<<(void*)0;
+     return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -1794,10 +1794,10 @@ static PyObject *Py_ops_send(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    //if (OPS_send() < 0) {
-//     opserr<<(void*)0;
-//     return NULL;
-// }
+    if (OPS_send() < 0) {
+     opserr<<(void*)0;
+     return NULL;
+ }
 
     return wrapper->getResults();
 }
@@ -1806,10 +1806,22 @@ static PyObject *Py_ops_recv(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    //if (OPS_recv() < 0) {
-//     opserr<<(void*)0;
-//     return NULL;
-// }
+    if (OPS_recv() < 0) {
+     opserr<<(void*)0;
+     return NULL;
+ }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_Bcast(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Bcast() < 0) {
+        opserr<<(void*)0;
+        return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2078,6 +2090,66 @@ static PyObject *Py_ops_logFile(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_setStartNodeTag(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setStartNodeTag() < 0) {
+        opserr<<(void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_hystereticBackbone(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_hystereticBackbone() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_stiffnessDegradation(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_stiffnessDegradation() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_strengthDegradation(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_strengthDegradation() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_unloadingRule(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_unloadingRule() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -2224,6 +2296,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("barrier", &Py_ops_barrier);
     addCommand("send", &Py_ops_send);
     addCommand("recv", &Py_ops_recv);
+    addCommand("Bcast", &Py_ops_Bcast);
     addCommand("frictionModel", &Py_ops_frictionModel);
     addCommand("computeGradients", &Py_ops_computeGradients);
     addCommand("sensitivityAlgorithm", &Py_ops_sensitivityAlgorithm);
@@ -2248,6 +2321,11 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNumThreads", &Py_ops_getNumThreads);
     addCommand("setNumThreads", &Py_ops_setNumThreads);
     addCommand("logFile", &Py_ops_logFile);
+    addCommand("setStartNodeTag", &Py_ops_setStartNodeTag);
+    addCommand("hystereticBackbone", &Py_ops_hystereticBackbone);
+    addCommand("stiffnessDegradation", &Py_ops_stiffnessDegradation);
+    addCommand("strengthDegradation", &Py_ops_strengthDegradation);
+    addCommand("unloadingRule", &Py_ops_unloadingRule);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
