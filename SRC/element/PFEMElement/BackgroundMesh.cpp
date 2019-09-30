@@ -77,8 +77,9 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare? -implicit?"
-                "-boundLayerThickness boundThk?"
+                "-incrVel? -freesurface? -fsiSquare?"
+                //"-pressureOnce?"
+                "-boundLayerThickness boundThk? -fastAssembly"
                 "-largeSize? level? lower? upper?>";
         return -1;
     }
@@ -115,7 +116,6 @@ int OPS_BgMesh()
     bgmesh.setRange(lower,upper);
 
     // get tolerance
-    bool dispon = false;
     while (OPS_GetNumRemainingInputArgs()>0) {
 
         const char* opt = OPS_GetString();
@@ -230,14 +230,13 @@ int OPS_BgMesh()
             if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
                 opserr << "WARNING: failed to get kdoverAd, thk, mu, beta, Dc, alpha, E, rho\n";
                 return -1;
-            }
-            bgmesh.setContactData(data);
+            }            bgmesh.setContactData(data);
         } else if (strcmp(opt, "-incrVel") == 0) {
             bgmesh.setIncrVel(true);
         } else if (strcmp(opt, "-fsiSquare") == 0) {
             bgmesh.setFSITri(false);
-        } else if (strcmp(opt, "-implicit") == 0) {
-            dispon = true;
+//        } else if (strcmp(opt, "-pressureOnce") == 0) {
+//            bgmesh.setPressureOnce();
         } else if (strcmp(opt, "-boundLayerThickness") == 0) {
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -274,14 +273,16 @@ int OPS_BgMesh()
             }
 
             bgmesh.addLargeSize(numbasic, range_low, range_up);
+        } else if (strcmp(opt, "-fastAssembly") == 0) {
+            bgmesh.setFastAssembly();
         }
     }
 
-    // turn off disp in PFEM elements
-    PFEMElement2DBubble::dispon = dispon;
-    PFEMElement3DBubble::dispon = dispon;
-    PFEMElement2DCompressible::dispon = dispon;
-    PFEMElement2Dmini::dispon = dispon;
+    // turn off disp on in PFEM elements
+    PFEMElement2DBubble::dispon = bgmesh.isDispOn();
+    PFEMElement3DBubble::dispon = bgmesh.isDispOn();
+    PFEMElement2DCompressible::dispon = bgmesh.isDispOn();
+    PFEMElement2Dmini::dispon = bgmesh.isDispOn();
 
     // bg mesh
     if (bgmesh.remesh(true) < 0) {
@@ -301,7 +302,9 @@ BackgroundMesh::BackgroundMesh()
          freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(true),
          boundThk(0.05), contactReduceFactor(0.8),
-         largesize()
+         largesize(), dispon(true),
+         fastAssembly(false)
+//         pressureonce(false)
 {
 }
 
@@ -2668,11 +2671,11 @@ BackgroundMesh::record(bool init)
             getCrds(indices[k], crds);
 
             // check bnode
-            std::map<VInt,BNode>::iterator it = bnodes.find(indices[k]);
-            if (it == bnodes.end()) continue;
+            std::map<VInt,BNode>::iterator bit = bnodes.find(indices[k]);
+            if (bit == bnodes.end()) continue;
 
             // get bnode
-            BNode& bnode = it->second;
+            BNode& bnode = bit->second;
             if (bnode.vn.empty()) {
                 continue;
             }

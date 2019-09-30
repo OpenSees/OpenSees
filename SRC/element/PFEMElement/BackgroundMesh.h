@@ -126,7 +126,7 @@ public:
     void setMeshTol(double t) {meshtol = t;}
     double getMeshTol() const {return meshtol;}
     void setRange(const VDouble& l, const VDouble& u);
-    void setBasicSize(double size) {bsize = size;}
+    void setBasicSize(double size) {bsize = size; dispon= false;}
     void addRecorder(Recorder* recorder);
     int record(bool init=false);
     void setLocs(const VDouble& l) {this->locs = l;}
@@ -143,6 +143,11 @@ public:
                       const VDouble& range_low,
                       const VDouble& range_up);
     int getSizeLevel(VInt& index);
+//    void setPressureOnce() {pressureonce = true;}
+//    bool isPressureOnce() const {return pressureonce;}
+    bool isDispOn() const {return dispon;}
+    void setFastAssembly() {fastAssembly = true;}
+    bool isFastAssembly() const {return fastAssembly;}
 
     // remesh all
     int remesh(bool init=false);
@@ -236,6 +241,9 @@ private:
     double boundThk;
     double contactReduceFactor;
     VVInt largesize;
+    // bool pressureonce;
+    bool dispon;
+    bool fastAssembly;
 
     static const int contact_tag = -13746;
 };

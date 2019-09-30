@@ -172,8 +172,6 @@ int
 PFEMSolver_Mumps::solve()
 {
 #ifdef _MUMPS
-    Timer timer;
-    timer.start();
     cs* M = theSOE->M;
     cs* Gft = theSOE->Gft;
     cs* Git = theSOE->Git;
@@ -259,7 +257,6 @@ PFEMSolver_Mumps::solve()
 
     // solve for pressure
     std::vector<double> deltaP, rhsP;
-    double mf = 1.0/Mf.Norm();
     if(Psize>0) {
         deltaP.assign(Psize, 0.0);
         rhsP.assign(Psize, 0.0);
@@ -288,9 +285,6 @@ PFEMSolver_Mumps::solve()
 
         // Git*Mi{-1}*Gi
         if (Isize > 0) {
-            Timer timer2;
-            timer2.start();
-
             std::vector<int> irhs_ptr(Msize+1,1);
             std::vector<int> irhs_row(Isize*Isize);
             std::vector<double> rhs_val(Isize*Isize);
@@ -310,10 +304,6 @@ PFEMSolver_Mumps::solve()
             sid.irhs_sparse = &irhs_row[0];
             sid.rhs_sparse = &rhs_val[0];
 
-            timer2.pause();
-            // opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
-            timer2.start();
-
             sid.job = JOB_SOLUTION;
             dmumps_c(&sid);
             if(sid.info[0] != 0) {
@@ -331,10 +321,6 @@ PFEMSolver_Mumps::solve()
                 irhs_row[k] -= 1;
                 irhs_row[k] -= Ssize;
             }
-
-            timer2.pause();
-            // pserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
-            timer2.start();
 
             cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
             int numignore = 0;
@@ -354,15 +340,13 @@ PFEMSolver_Mumps::solve()
             S = cs_multiply(S1, Gi);
             cs_spfree(S1);
             cs_spfree(Bi);
-            timer2.pause();
-            // opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
         }
 
         // Gft*Mf{-1}*Gf
         if(Fsize > 0) {
-            for(int j=0; j<Fsize; j++) {
-                for(int k=Gft->p[j]; k<Gft->p[j+1]; k++) {
-                    Gft->x[k] /= Mf(j);
+            for(int j=0; j<Psize; j++) {
+                for(int k=Gf->p[j]; k<Gf->p[j+1]; k++) {
+                    Gf->x[k] /= Mf(Gf->i[k]);
                 }
             }
             cs* S1 = cs_multiply(Gft, Gf);
@@ -478,7 +462,7 @@ PFEMSolver_Mumps::solve()
         }
         cs_spfree(Gf);
         for (int i=0; i<Fsize; ++i) {
-            deltaVf[i] = deltaVf[i]/Mf(i) + deltaVf1[i];
+            deltaVf[i] = deltaVf[i] + deltaVf1[i];
         }
     }
 
@@ -498,9 +482,6 @@ PFEMSolver_Mumps::solve()
             X(i) = deltaP[rowid];
         }
     }
-
-    timer.pause();
-    opserr<<"MUMPS total solve time = "<<timer.getReal()<<"\n";
 #endif
     return 0;
 }
