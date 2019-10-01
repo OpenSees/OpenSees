@@ -237,7 +237,7 @@ OutCrossingAnalysis::analyze(void)
 
 
 					// Get the 'dgdu' vector from the sensitivity evaluator
-					// (The returned matrix containes 'node#' 'dir#' 'dgdu' in rows)
+					// (The returned matrix contains 'node#' 'dir#' 'dgdu' in rows)
 					
 					// This should be retooled -- MHS 10/7/2011
 					//const Matrix &DgDdispl = theGradGEvaluator->getDgDdispl();

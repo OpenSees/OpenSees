@@ -191,7 +191,7 @@ MPIDiagonalSolver::solve(void)
       *X++ = *B++ * *A++;
     //
 
-    /// Link ot ibm ESSL library in datastar or bluegene else uncomment above for loop 
+    /// Link to ibm ESSL library in datastar or bluegene else uncomment above for loop 
     /// for general case and comment below call 
     //    dvem(size, B,1,A,1,X,1);
     
@@ -270,7 +270,7 @@ MPIDiagonalSolver::intersectionsAB(ID& arrayA, int* arrayB, int sizeA, int sizeB
     }
   }
   /// so after the pass to intersectionsAB
-  /// storage aray contains : storage[i] for i in { 0,2,4,...} the locations on my rank pid that are to be updated from 
+  /// storage array contains : storage[i] for i in { 0,2,4,...} the locations on my rank pid that are to be updated from 
   /// the locations at storage[i] for i in {1,3,5,...} from the RHS i receive from myNeighbors[i]
   delete [] (theSOE->myActualNeighborsSharedDOFs).find(neighbor_pid)->second;
   (theSOE->myActualNeighborsSharedDOFs).find(neighbor_pid)->second =storage;

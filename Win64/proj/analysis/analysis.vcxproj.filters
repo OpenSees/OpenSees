@@ -362,6 +362,12 @@
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonHallM.cpp">
       <Filter>algorithm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">
@@ -684,6 +690,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonHallM.h">
       <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.h">
+      <Filter>integrator</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

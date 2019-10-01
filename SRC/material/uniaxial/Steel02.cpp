@@ -39,10 +39,10 @@
 
 #include <stdlib.h>
 #include <Steel02.h>
-#include <OPS_Globals.h>
 #include <float.h>
 #include <Channel.h>
-
+#include <Information.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 #include <OPS_Globals.h>
@@ -566,3 +566,78 @@ Steel02::Print(OPS_Stream &s, int flag)
     s << "\"sigini\": " << sigini << "}";
   }
 }
+
+// AddingSensitivity:BEGIN ///////////////////////////////////
+int
+Steel02::setParameter(const char **argv, int argc, Parameter &param)
+{
+
+  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
+    param.setValue(Fy);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E0);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"b") == 0) {
+    param.setValue(b);
+    return param.addObject(3, this);
+  }
+  if (strcmp(argv[0],"a1") == 0) {
+    param.setValue(a1);
+    return param.addObject(4, this);
+  }
+  if (strcmp(argv[0],"a2") == 0) {
+    param.setValue(a2);
+    return param.addObject(5, this);
+  }
+  if (strcmp(argv[0],"a3") == 0) {
+    param.setValue(a3);
+    return param.addObject(6, this);
+  }
+  if (strcmp(argv[0],"a4") == 0) {
+    param.setValue(a4);
+    return param.addObject(7, this);
+  }
+
+  return -1;
+}
+
+
+
+int
+Steel02::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->Fy = info.theDouble;
+    break;
+  case 2:
+    this->E0 = info.theDouble;
+    break;
+  case 3:
+    this->b = info.theDouble;
+    break;
+  case 4:
+    this->a1 = info.theDouble;
+    break;
+  case 5:
+    this->a2 = info.theDouble;
+    break;
+  case 6:
+    this->a3 = info.theDouble;
+    break;
+  case 7:
+    this->a4 = info.theDouble;
+    break;
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
+
+

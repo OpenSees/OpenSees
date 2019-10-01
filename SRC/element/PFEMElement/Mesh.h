@@ -92,6 +92,7 @@ public:
     // find the next available tag
     static int nextNodeTag();
     static int nextEleTag();
+    static void setStartNodeTag(int tag) {startNodeTag = tag;}
 
 private:
 
@@ -103,6 +104,8 @@ private:
     ID ndtags, newndtags, eletags, elenodes;
     int eleType;
     bool fluid;
+
+    static int startNodeTag;
 };
 
 bool OPS_addMesh(Mesh* msh);
