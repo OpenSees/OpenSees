@@ -77,8 +77,7 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare?"
-                //"-pressureOnce?"
+                "-incrVel? -freesurface? -fsiSquare? -pressureOnce?"
                 "-boundLayerThickness boundThk? -fastAssembly"
                 "-largeSize? level? lower? upper?>";
         return -1;
@@ -235,8 +234,8 @@ int OPS_BgMesh()
             bgmesh.setIncrVel(true);
         } else if (strcmp(opt, "-fsiSquare") == 0) {
             bgmesh.setFSITri(false);
-//        } else if (strcmp(opt, "-pressureOnce") == 0) {
-//            bgmesh.setPressureOnce();
+        } else if (strcmp(opt, "-pressureOnce") == 0) {
+            bgmesh.setPressureOnce();
         } else if (strcmp(opt, "-boundLayerThickness") == 0) {
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -302,9 +301,8 @@ BackgroundMesh::BackgroundMesh()
          freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(true),
          boundThk(0.05), contactReduceFactor(0.8),
-         largesize(), dispon(true),
+         largesize(), pressureonce(false), dispon(true),
          fastAssembly(false)
-//         pressureonce(false)
 {
 }
 

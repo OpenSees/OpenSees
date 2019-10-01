@@ -64,7 +64,7 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver)
     :LinearSOE(the_Solver, LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0)
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
     the_Solver.setLinearSOE(*this);
 }
@@ -74,7 +74,7 @@ PFEMLinSOE::PFEMLinSOE()
     :LinearSOE(LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0)
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -83,7 +83,7 @@ PFEMLinSOE::PFEMLinSOE(int classTag)
     :LinearSOE(classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0)
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -93,7 +93,7 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver, int classTag)
     :LinearSOE(the_Solver, classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0)
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -153,8 +153,15 @@ PFEMLinSOE::setSize(Graph &theGraph)
     // set matrix IDs
     result = this->setMatIDs(theGraph, Ssize, Fsize, Isize, Psize, Pisize);
 
-    // reset assembly flag
+    // reset flags
     assemblyFlag = 0;
+
+    BackgroundMesh& bgmesh = OPS_getBgMesh();
+    bool pressureonce = bgmesh.isPressureOnce();
+    stage = 0;
+    if (pressureonce) {
+        stage = 1;
+    }
     
     // invoke setSize() on the Solver    
     LinearSOESolver *the_Solver = this->getSolver();

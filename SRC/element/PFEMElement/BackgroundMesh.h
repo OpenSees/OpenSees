@@ -143,8 +143,8 @@ public:
                       const VDouble& range_low,
                       const VDouble& range_up);
     int getSizeLevel(VInt& index);
-//    void setPressureOnce() {pressureonce = true;}
-//    bool isPressureOnce() const {return pressureonce;}
+    void setPressureOnce() {pressureonce = true;}
+    bool isPressureOnce() const {return pressureonce;}
     bool isDispOn() const {return dispon;}
     void setFastAssembly() {fastAssembly = true;}
     bool isFastAssembly() const {return fastAssembly;}
@@ -241,7 +241,7 @@ private:
     double boundThk;
     double contactReduceFactor;
     VVInt largesize;
-    // bool pressureonce;
+    bool pressureonce;
     bool dispon;
     bool fastAssembly;
 
