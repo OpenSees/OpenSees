@@ -18,17 +18,17 @@
 **                                                                    **
 ** ****************************************************************** */
 
-#ifndef LinearElasticSpring_h
-#define LinearElasticSpring_h
+#ifndef Inerter_h
+#define Inerter_h
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
-// Created: 03/19
+// Created: 10/18
 // Revision: A
 //
-// Description: This file contains the class definition for LinearElasticSpring.
-// LinearElasticSpring is an element defined by two nodes and by a stiffness matrix
-// that can be full and does not be symmetric.
-// This LinearElasticSpring element will work in 1d, 2d or 3d problems.
+// Description: This file contains the class definition for Inerter.
+// An Inerter is an element defined by two nodes. Forces are proportional 
+// to the relative acceleration between the two nodes. The Inerter element
+// will work in 1d, 2d or 3d problems.
 
 #include "Element.h"
 #include <Matrix.h>
@@ -44,22 +44,22 @@ class Response;
 #endif
 
 
-class LinearElasticSpring : public Element
+class Inerter : public Element
 {
 public:
     // constructors
-    LinearElasticSpring(int tag, int dimension, int Nd1, int Nd2,
-        const ID &direction, const Matrix &stif,
+    Inerter(int tag, int dimension, int Nd1, int Nd2,
+        const ID &direction, const Matrix &inertia,
         const Vector y = 0, const Vector x = 0,
         const Vector Mratio = 0, int addRayleigh = 0,
-        const Matrix *damp = 0);
-    LinearElasticSpring();
+        const Matrix *damp = 0, double mass = 0.0);
+    Inerter();
     
     // destructor
-    ~LinearElasticSpring();
+    ~Inerter();
     
     // method to get class type
-    const char *getClassType() const {return "LinearElasticSpring";};
+    const char *getClassType() const {return "Inerter";};
     
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
@@ -79,6 +79,7 @@ public:
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
     const Matrix &getDamp();
+    const Matrix &getMass();
     
     void zeroLoad();
     int addLoad(ElementalLoad *theLoad, double loadFactor);
@@ -106,28 +107,30 @@ private:
     void setTranLocalBasic();
     void addPDeltaForces(Vector &pLocal);
     void addPDeltaStiff(Matrix &kLocal);
-
+    
     // private attributes - a copy for each object of the class
     int numDIM;                         // 1, 2, or 3 dimensions
-    int numDOF;                         // number of dof for LinearElasticSpring
-    ID connectedExternalNodes;          // contains the tag of the end node
-    Node *theNodes[2];                  // pointer to node
+    int numDOF;                         // number of dof for Inerter
+    ID connectedExternalNodes;          // contains the tags of the end nodes
+    Node *theNodes[2];                  // array of nodes
     
     // parameters
     int numDIR;         // number of directions
     ID dir;             // array of directions 0-5
-    Matrix kb;          // stiffness matrix in basic system
+    Matrix ib;          // inertia matrix in basic system
     Matrix *cb;         // damping matrix in basic system
     Vector x;           // local x direction
     Vector y;           // local y direction
-    Vector Mratio;      // p-delta moment distribution ratios
+	Vector Mratio;      // p-delta moment distribution ratios
     int addRayleigh;    // flag to add Rayleigh damping
+    double mass;        // total element mass (weight of inerter)
     double L;           // element length
     bool onP0;          // flag to indicate if the element is on P0
     
     Matrix trans;       // transformation matrix for orientation
     Vector ub;          // trial displacements in basic system
     Vector ubdot;       // trial velocities in basic system
+    Vector ubdotdot;    // trial acceleration in basic system
     Vector qb;          // measured forces in basic system
     Vector ul;          // displacements in local system
     Matrix Tgl;         // transformation matrix from global to local system
@@ -138,14 +141,14 @@ private:
     Vector *theLoad;    // pointer to the load vector
     
     // static data - single copy for all objects of the class
-    static Matrix LinearElasticSpringM2;   // class wide matrix for 2*2
-    static Matrix LinearElasticSpringM4;   // class wide matrix for 4*4
-    static Matrix LinearElasticSpringM6;   // class wide matrix for 6*6
-    static Matrix LinearElasticSpringM12;  // class wide matrix for 12*12
-    static Vector LinearElasticSpringV2;   // class wide Vector for size 2
-    static Vector LinearElasticSpringV4;   // class wide Vector for size 4
-    static Vector LinearElasticSpringV6;   // class wide Vector for size 6
-    static Vector LinearElasticSpringV12;  // class wide Vector for size 12
+    static Matrix InerterM2;   // class wide matrix for 2*2
+    static Matrix InerterM4;   // class wide matrix for 4*4
+    static Matrix InerterM6;   // class wide matrix for 6*6
+    static Matrix InerterM12;  // class wide matrix for 12*12
+    static Vector InerterV2;   // class wide Vector for size 2
+    static Vector InerterV4;   // class wide Vector for size 4
+    static Vector InerterV6;   // class wide Vector for size 6
+    static Vector InerterV12;  // class wide Vector for size 12
 };
 
 #endif

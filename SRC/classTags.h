@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: fmk
 // Revision: A
 //
@@ -625,7 +621,6 @@
 #define ELE_TAG_Adapter                 89
 #define ELE_TAG_ElastomericBearingBoucWen2d 90
 #define ELE_TAG_ElastomericBearingBoucWen3d 91
-
 #define ELE_TAG_FlatSliderSimple2d      92
 #define ELE_TAG_FlatSliderSimple3d      93
 #define ELE_TAG_FlatSlider2d            94
@@ -724,6 +719,7 @@
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
 #define ELE_TAG_LinearElasticSpring       190
+#define ELE_TAG_Inerter                   191
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

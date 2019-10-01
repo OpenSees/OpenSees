@@ -86,7 +86,7 @@ void* OPS_RJWatsonEQS3d()
     // materials
     UniaxialMaterial* mats[6] = { 0,0,0,0,0,0 };
     const char* type = OPS_GetString();
-    if (strcmp(type, "-P") == 0) {
+    if (strcmp(type, "-P") != 0) {
         opserr << "WARNING: want -P\n";
         return 0;
     }
@@ -103,7 +103,7 @@ void* OPS_RJWatsonEQS3d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-Vy") == 0) {
+    if (strcmp(type, "-Vy") != 0) {
         opserr << "WARNING: want -Vy\n";
         return 0;
     }
@@ -119,7 +119,7 @@ void* OPS_RJWatsonEQS3d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-Vz") == 0) {
+    if (strcmp(type, "-Vz") != 0) {
         opserr << "WARNING: want -Vz\n";
         return 0;
     }
@@ -135,7 +135,7 @@ void* OPS_RJWatsonEQS3d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-T") == 0) {
+    if (strcmp(type, "-T") != 0) {
         opserr << "WARNING: want -T\n";
         return 0;
     }
@@ -151,7 +151,7 @@ void* OPS_RJWatsonEQS3d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-My") == 0) {
+    if (strcmp(type, "-My") != 0) {
         opserr << "WARNING: want -My\n";
         return 0;
     }
@@ -167,7 +167,7 @@ void* OPS_RJWatsonEQS3d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-Mz") == 0) {
+    if (strcmp(type, "-Mz") != 0) {
         opserr << "WARNING: want -Mz\n";
         return 0;
     }

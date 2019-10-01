@@ -102,7 +102,7 @@ void* OPS_RJWatsonEQS2d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-Vy") == 0) {
+    if (strcmp(type, "-Vy") != 0) {
         opserr << "WARNING: want -Vy\n";
         return 0;
     }
@@ -118,7 +118,7 @@ void* OPS_RJWatsonEQS2d()
     }
     
     type = OPS_GetString();
-    if (strcmp(type, "-Mz") == 0) {
+    if (strcmp(type, "-Mz") != 0) {
         opserr << "WARNING: want -Mz\n";
         return 0;
     }

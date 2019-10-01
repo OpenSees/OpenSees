@@ -158,6 +158,7 @@ extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
 extern void *OPS_TwoNodeLink(void);
 extern void *OPS_LinearElasticSpring(void);
+extern void *OPS_Inerter(void);
 extern void *OPS_Adapter(void);
 extern void *OPS_Actuator(void);
 extern void *OPS_ActuatorCorot(void);
@@ -1141,6 +1142,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
         << argv[1] << endln;
       return TCL_ERROR;
     }
+  }
+
+  else if (strcmp(argv[1], "inerter") == 0) {
+  void *theEle = OPS_Inerter();
+  if (theEle != 0) {
+      theElement = (Element*)theEle;
+  }
+  else {
+      opserr << "tclelementcommand -- unable to create element of type : "
+          << argv[1] << endln;
+      return TCL_ERROR;
+  }
   }
 
   else if (strcmp(argv[1], "adapter") == 0) {

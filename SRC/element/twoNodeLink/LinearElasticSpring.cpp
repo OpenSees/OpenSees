@@ -208,7 +208,7 @@ void* OPS_LinearElasticSpring()
 LinearElasticSpring::LinearElasticSpring(int tag, int dim,
     int Nd1, int Nd2, const ID &direction, const Matrix &stif,
     const Vector _y, const Vector _x, const Vector Mr,
-    int addRay, const Matrix *_cb)
+    int addRay, const Matrix *damp)
     : Element(tag, ELE_TAG_LinearElasticSpring),
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
     numDIR(direction.Size()), dir(direction), kb(stif), cb(0),
@@ -273,8 +273,8 @@ LinearElasticSpring::LinearElasticSpring(int tag, int dim,
     }
     
     // initialize optional damping matrix
-    if (_cb != 0)
-        cb = new Matrix(*_cb);
+    if (damp != 0)
+        cb = new Matrix(*damp);
     
     // initialize response vectors in basic system
     ub.resize(numDIR);
@@ -469,22 +469,18 @@ int LinearElasticSpring::commitState()
 
 int LinearElasticSpring::revertToLastCommit()
 {
-    int errCode = 0;
-    
-    return errCode;
+    return 0;
 }
 
 
 int LinearElasticSpring::revertToStart()
 {   
-    int errCode = 0;
-    
     // reset trial history variables
     ub.Zero();
     ubdot.Zero();
     qb.Zero();
     
-    return errCode;
+    return 0;
 }
 
 
@@ -568,7 +564,7 @@ const Matrix& LinearElasticSpring::getDamp()
         factThis = 1.0;
     }
     
-    // now add damping from optional user input
+    // add damping from optional user input
     if (cb != 0) {
         // transform from basic to local system
         Matrix cl(numDOF,numDOF);
@@ -621,7 +617,7 @@ const Vector& LinearElasticSpring::getResistingForce()
     if (Mratio.Size() == 4)
         this->addPDeltaForces(ql);
     
-    // determine resisting forces in global system    
+    // determine resisting forces in global system
     theVector->addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     return *theVector;
@@ -630,7 +626,6 @@ const Vector& LinearElasticSpring::getResistingForce()
 
 const Vector& LinearElasticSpring::getResistingForceIncInertia()
 {
-    // this already includes damping forces from materials
     this->getResistingForce();
     
     // subtract external load
@@ -642,7 +637,7 @@ const Vector& LinearElasticSpring::getResistingForceIncInertia()
             theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
-    // now add damping forces from optional user input
+    // add damping forces from optional user input
     if (cb != 0) {
         // get damping forces
         Vector qdb(numDIR);
@@ -651,6 +646,8 @@ const Vector& LinearElasticSpring::getResistingForceIncInertia()
         // transform from basic to local system
         Vector qdl(numDOF);
         qdl.addMatrixTransposeVector(0.0, Tlb, qdb, 1.0);
+        
+        // SHOULD I ADD P-DELTA EFFECTS HERE????
         
         // transform from local to global system and add
         theVector->addMatrixTransposeVector(1.0, Tgl, qdl, 1.0);
@@ -705,6 +702,10 @@ int LinearElasticSpring::sendSelf(int commitTag, Channel &sChannel)
 int LinearElasticSpring::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
+    // delete dynamic memory
+    if (cb != 0)
+        delete cb;
+    
     // receive element parameters
     static Vector data(13);
     rChannel.recvVector(0, commitTag, data);
@@ -759,8 +760,14 @@ int LinearElasticSpring::recvSelf(int commitTag, Channel &rChannel,
             return -1;
         }
     }
+    // allocate memory for the damping matrix and receive it
     if ((bool)data(8) == true) {
-        // receive the damping matrix
+        cb = new Matrix(numDIR, numDIR);
+        if (cb == 0) {
+            opserr << "LinearElasticSpring::recvSelf() - "
+                << "failed to create damping matrix\n";
+            return -2;
+        }
         rChannel.recvMatrix(0, commitTag, *cb);
     }
     onP0 = false;
