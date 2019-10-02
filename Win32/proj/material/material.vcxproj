@@ -14,20 +14,20 @@
     <ProjectGuid>{CB4F32EF-D915-9B5C-EF80-28840A6A89D6}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -144,9 +144,14 @@
     <ClCompile Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BWBN.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02IS.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteCM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
@@ -228,6 +233,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02Fatigue.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02Thermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel03.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel2.cpp" />
@@ -523,9 +529,14 @@
     <ClInclude Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSpHD.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BWBN.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02IS.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteCM.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h" />
@@ -606,6 +617,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02Fatigue.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel03.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel2.h" />
