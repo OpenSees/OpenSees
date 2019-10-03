@@ -119,12 +119,12 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 //--- Adding Thermo-mechanical Sections:[BEGIN]   by UoE OpenSees Group ---//  
 #include <FiberSection2dThermal.h>
 #include <FiberSection3dThermal.h> //Added by L.Jiang [SIF] 2017
-#include <FiberSectionGJThermal.h> //Added by Liming, [SIF] 2017
+//#include <FiberSectionGJThermal.h> //Added by Liming, [SIF] 2017
 #include <MembranePlateFiberSectionThermal.h> //Added by Liming, [SIF] 2017
 #include <LayeredShellFiberSectionThermal.h> //Added by Liming, [SIF] 2017
 
 int TclCommand_addFiberSectionThermal (ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, TclModelBuilder *theBuilder);
-int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,int secTag, bool isTorsion, double GJ);
+int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,int secTag, UniaxialMaterial &theTorsion);
 //--- Adding Thermo-mechanical Sections: [END]   by UoE OpenSees Group ---//  
 
 
@@ -937,10 +937,39 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
         rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
 
+	UniaxialMaterial *torsion = 0;
+	const char* opt = OPS_GetString();
+	int numdata = 1;
+	bool deleteTorsion = false;
+	if (strcmp(opt, "-GJ") == 0) {
+	  double GJ;
+	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	    opserr << "WARNING: failed to read GJ\n";
+	    return 0;
+	  }
+	  torsion = new ElasticMaterial(0,GJ);
+	  deleteTorsion = true;
+	}
+	if (strcmp(opt, "-torsion") == 0) {
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}
+	if (torsion == 0) {
+	  opserr << "WARNING torsion not speified for RCCircularSection\n";
+	  opserr << "\nRCCircularSection section: " << tag << endln;
+	  return 0;
+	}
+
         // Parsing was successful, allocate the section
-        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
 
         delete [] theMats;
+	if (deleteTorsion)
+	  delete torsion;
     }
 
     else if (strcmp(argv[1],"RCTunnelSection") == 0) {
@@ -1056,10 +1085,39 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
         rcsect.arrangeFibers(theMats, theConcrete, theSteel);
 
+	UniaxialMaterial *torsion = 0;
+	const char* opt = OPS_GetString();
+	int numdata = 1;
+	bool deleteTorsion = false;
+	if (strcmp(opt, "-GJ") == 0) {
+	  double GJ;
+	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	    opserr << "WARNING: failed to read GJ\n";
+	    return 0;
+	  }
+	  torsion = new ElasticMaterial(0,GJ);
+	  deleteTorsion = true;
+	}
+	if (strcmp(opt, "-torsion") == 0) {
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}
+	if (torsion == 0) {
+	  opserr << "WARNING torsion not speified for RCCircularSection\n";
+	  opserr << "\nRCTunnelSection section: " << tag << endln;
+	  return 0;
+	}
+
         // Parsing was successful, allocate the section
-        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
 
         delete [] theMats;
+	if (deleteTorsion)
+	  delete torsion;
     }
 	
     else if (strcmp(argv[1],"RCTBeamSection2d") == 0 || strcmp(argv[1],"RCTBeamSectionUniMat2d") == 0) {
@@ -2032,11 +2090,11 @@ static bool currentSectionIsWarping = false;
     
 int
 buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-	     int secTag, bool isTorsion, double GJ);
+	     int secTag, UniaxialMaterial &theTorsion);
 
 int
 buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-		int secTag, bool isTorsion, double GJ, 
+		int secTag, UniaxialMaterial &theTorsion,
 		int NStrip1, double t1, int NStrip2, double t2, int NStrip3, double t3);
 
 int
@@ -2081,14 +2139,34 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     }	
 
     int brace = 3; // Start of recursive parse
-    double GJ = 1.0;
-    bool isTorsion = false;
+    double GJ;
+    UniaxialMaterial *torsion = 0;
+    bool deleteTorsion = false;
     if (strcmp(argv[3],"-GJ") == 0) {
       if (Tcl_GetDouble(interp, argv[4], &GJ) != TCL_OK) {
 	opserr << "WARNING invalid GJ";
 	return TCL_ERROR;
       }
-      isTorsion = true;
+      deleteTorsion = true;
+      torsion = new ElasticMaterial(0, GJ);
+
+      brace = 5;
+    }
+    int torsionTag = 0;
+    if (strcmp(argv[3],"-torsion") == 0) {
+      if (Tcl_GetInt(interp, argv[4], &torsionTag) != TCL_OK) {
+	opserr << "WARNING invalid torsionTag";
+	return TCL_ERROR;
+      }
+
+      torsion = OPS_getUniaxialMaterial(torsionTag);
+      if (torsion == 0) {
+	opserr << "WARNING uniaxial material does not exist\n";
+	opserr << "uniaxial material: " << torsionTag; 
+	opserr << "\nFiberSection3d: " << secTag << endln;
+	return TCL_ERROR;
+      }
+
       brace = 5;
     }
 
@@ -2098,13 +2176,22 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }
 
+    if (torsion == 0) {
+      opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
+      opserr << "\nFiberSection3d: " << secTag << endln;
+      return TCL_ERROR;
+    }
+
     // build the fiber section (for analysis)
-    if (buildSection(interp, theTclModelBuilder, secTag, isTorsion, GJ) != TCL_OK) {
+    if (buildSection(interp, theTclModelBuilder, secTag, *torsion) != TCL_OK) {
 	opserr << "WARNING - error constructing the section\n";
 	return TCL_ERROR;
     }
     
 //    currentSectionTag = 0;
+
+    if (deleteTorsion)
+      delete torsion;
 
     return TCL_OK;
 }
@@ -2145,13 +2232,32 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 
     int brace = 3; // Start of recursive parse
     double GJ = 1.0;
-    bool isTorsion = false;
+    bool deleteTorsion = false;
+    UniaxialMaterial *torsion = 0;
     if (strcmp(argv[3],"-GJ") == 0) {
       if (Tcl_GetDouble(interp, argv[4], &GJ) != TCL_OK) {
-	opserr <<  "WARNING invalid GJ";
+	opserr << "WARNING invalid GJ";
 	return TCL_ERROR;
       }
-      isTorsion = true;
+      torsion = new ElasticMaterial(0, GJ); // Is this gonna be a memory leak? MHS
+
+      brace = 5;
+    }
+    int torsionTag = 0;
+    if (strcmp(argv[3],"-torsion") == 0) {
+      if (Tcl_GetInt(interp, argv[4], &torsionTag) != TCL_OK) {
+	opserr << "WARNING invalid torsionTag";
+	return TCL_ERROR;
+      }
+
+      torsion = OPS_getUniaxialMaterial(torsionTag);
+      if (torsion == 0) {
+	opserr << "WARNING uniaxial material does not exist\n";
+	opserr << "uniaxial material: " << torsionTag; 
+	opserr << "\nFiberSection3d: " << secTag << endln;
+	return TCL_ERROR;
+      }
+
       brace = 5;
     }
 
@@ -2190,7 +2296,6 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
       }
 
-      //isTorsion = true;
       brace = 10; //may be 5
     }
 
@@ -2202,14 +2307,22 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
     }
 
+    if (torsion == 0) {
+      opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
+      opserr << "\nFiberSectionInt3d: " << secTag << endln;
+      return TCL_ERROR;
+    }
 
     // build the fiber section (for analysis)
-    if (buildSectionInt(interp, theTclModelBuilder, secTag, isTorsion, GJ, NStrip1, t1, NStrip2, t2, NStrip3, t3) != TCL_OK) {
+    if (buildSectionInt(interp, theTclModelBuilder, secTag, *torsion, NStrip1, t1, NStrip2, t2, NStrip3, t3) != TCL_OK) {
 	opserr << "WARNING - error constructing the section\n";
 	return TCL_ERROR;
     }
 
 //    currentSectionTag = 0;
+
+    if (deleteTorsion)
+      delete torsion;
 
     return TCL_OK;
 }
@@ -3081,7 +3194,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 // build the section
 int 
 buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-	     int secTag, bool isTorsion, double GJ)
+	     int secTag, UniaxialMaterial &theTorsion)
 {
    SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
    if (sectionRepres == 0) 
@@ -3308,14 +3421,8 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 SectionForceDeformation *section = 0;
 	 if (currentSectionIsND)
 	   section = new NDFiberSection3d(secTag, numFibers, fiber);
-	 else if (isTorsion) {
-           ElasticMaterial theGJ(0, GJ);
-           //FiberSection3d theFS(0, numFibers, fiber);
-           //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
-           section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
-	 }
 	 else
-	   section = new FiberSection3d(secTag, numFibers, fiber);
+	   section = new FiberSection3d(secTag, numFibers, fiber, theTorsion);
    
 	 // Delete fibers
 	 for (i = 0; i < numFibers; i++)
@@ -3358,7 +3465,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 // build the section Interaction
 int 
 buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-	     int secTag, bool isTorsion, double GJ, int NStrip1, double t1, int NStrip2, double t2, int NStrip3, double t3)
+		int secTag, UniaxialMaterial &theTorsion, int NStrip1, double t1, int NStrip2, double t2, int NStrip3, double t3)
 {
    SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
    if (sectionRepres == 0) 
@@ -3566,14 +3673,7 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 }
 	
 	 SectionForceDeformation *section = 0;
-	 if (isTorsion) {
-           ElasticMaterial theGJ(0, GJ);
-           //FiberSection3d theFS(0, numFibers, fiber);
-           //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
-           section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
-	 }
-	 else
-	   section = new FiberSection3d(secTag, numFibers, fiber);
+	 section = new FiberSection3d(secTag, numFibers, fiber, theTorsion);
    
 	 // Delete fibers
 	 for (i = 0; i < numFibers; i++)
@@ -3641,9 +3741,10 @@ TclCommand_addUCFiberSection (ClientData clientData, Tcl_Interp *interp, int arg
       section = section2d;
       //SectionForceDeformation *section = new FiberSection(secTag, 0, 0);
     } else if (NDM == 3) {
-      ElasticMaterial theGJ(0, 1e10);
-      section3d = new FiberSection3d(secTag, 0, 0, &theGJ);
+      UniaxialMaterial *theGJ = new ElasticMaterial(0, 1e10);
+      section3d = new FiberSection3d(secTag, 0, 0, *theGJ);
       section = section3d;
+      delete theGJ;
     } 
 
     if (section == 0) {
@@ -3752,33 +3853,64 @@ int TclCommand_addFiberSectionThermal(ClientData clientData, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	int brace = 3; // Start of recursive parse
-	double GJ = 1.0;
-	bool isTorsion = false;
-	if (strcmp(argv[3], "-GJ") == 0) {
-		if (Tcl_GetDouble(interp, argv[4], &GJ) != TCL_OK) {
-			opserr << "WARNING invalid GJ";
-			return TCL_ERROR;
-		}
-		isTorsion = true;
-		brace = 5;
-	}
+   int brace = 3; // Start of recursive parse
+    double GJ = 1.0;
+    bool deleteTorsion = false;
+    UniaxialMaterial *torsion = 0;
+    if (strcmp(argv[3],"-GJ") == 0) {
+      if (Tcl_GetDouble(interp, argv[4], &GJ) != TCL_OK) {
+	opserr << "WARNING invalid GJ";
+	return TCL_ERROR;
+      }
+      torsion = new ElasticMaterial(0, GJ);
+
+      brace = 5;
+    }
+    int torsionTag = 0;
+    if (strcmp(argv[3],"-torsion") == 0) {
+      if (Tcl_GetInt(interp, argv[4], &torsionTag) != TCL_OK) {
+	opserr << "WARNING invalid torsionTag";
+	return TCL_ERROR;
+      }
+
+      torsion = OPS_getUniaxialMaterial(torsionTag);
+      if (torsion == 0) {
+	opserr << "WARNING uniaxial material does not exist\n";
+	opserr << "uniaxial material: " << torsionTag; 
+	opserr << "\nFiberSection3d: " << secTag << endln;
+	return TCL_ERROR;
+      }
+
+      brace = 5;
+    }
+
 	// parse the information inside the braces (patches and reinforcing layers)
 	if (Tcl_Eval(interp, argv[brace]) != TCL_OK) {
 		opserr << "WARNING - error reading information in { } \n";
 		return TCL_ERROR;
 	}
+
+	if (torsion == 0) {
+	  opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
+	  opserr << "\nFiberSectionThermal3d: " << secTag << endln;
+	  return TCL_ERROR;
+	}
+
 	// build the fiber section (for analysis)
-	if (buildSectionThermal(interp, theTclModelBuilder, secTag, isTorsion, GJ) != TCL_OK) {
+	if (buildSectionThermal(interp, theTclModelBuilder, secTag, *torsion) != TCL_OK) {
 		opserr << "WARNING - error constructing the section\n";
 		return TCL_ERROR;
 	}
 	//    currentSectionTag = 0;
+
+	if (deleteTorsion)
+	  delete torsion;
+
 	return TCL_OK;
 }
 
 ///--Adding function for building FiberSectionThermal:[BEGIN] by UoE OpenSees Group --///  
-int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder, int secTag, bool isTorsion, double GJ)
+int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder, int secTag, UniaxialMaterial &theTorsion)
 {
 	SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
 	if (sectionRepres == 0)
@@ -3953,10 +4085,7 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 			//SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 
 			SectionForceDeformation *section = 0;
-			if (isTorsion)
-				section = new FiberSectionGJThermal(secTag, numFibers, fiber, GJ);
-			else
-				section = new FiberSection3dThermal(secTag, numFibers, fiber);
+			section = new FiberSection3dThermal(secTag, numFibers, fiber);
 
 			// Delete fibers
 			for (i = 0; i < numFibers; i++)
