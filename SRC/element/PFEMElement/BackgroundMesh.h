@@ -138,7 +138,7 @@ public:
     void setIncrVel(bool ivel) {incrVel = ivel;}
     bool isFSITri() const {return fsiTri;}
     void setFSITri(bool fsi) {fsiTri = fsi;}
-    void setBoundThk(double thk) {boundThk = thk;}
+    void setBoundReduceFactor(double factor) {boundReduceFactor = factor;}
     void addLargeSize(int numbasic,
                       const VDouble& range_low,
                       const VDouble& range_up);
@@ -146,7 +146,7 @@ public:
     void setPressureOnce() {pressureonce = true;}
     bool isPressureOnce() const {return pressureonce;}
     bool isDispOn() const {return dispon;}
-    void setFastAssembly() {fastAssembly = true;}
+    void setFastAssembly(bool flag) {fastAssembly = flag;}
     bool isFastAssembly() const {return fastAssembly;}
 
     // remesh all
@@ -220,6 +220,11 @@ public:
     int findFreeSurface(const ID& freenodes);
     void setFreeSurface() {freesurface = true;}
 
+    // wall
+    void getWall(VDouble& dir, double& dist, const VDouble& xbnd,
+                 const VDouble& ybnd, const VDouble& zbnd,
+                 const VDouble pcrds);
+
 private:
 
     VInt lower, upper;
@@ -238,8 +243,7 @@ private:
     VInt contactEles;
     bool incrVel;
     bool fsiTri; // move partiles in fsi area through triangles
-    double boundThk;
-    double contactReduceFactor;
+    double boundReduceFactor;
     VVInt largesize;
     bool pressureonce;
     bool dispon;

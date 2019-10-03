@@ -78,7 +78,7 @@ int OPS_BgMesh()
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
                 "-incrVel? -freesurface? -fsiSquare? -pressureOnce?"
-                "-boundLayerThickness boundThk? -fastAssembly"
+                "-boundReduceFactor factor? -allAssembly"
                 "-largeSize? level? lower? upper?>";
         return -1;
     }
@@ -236,20 +236,20 @@ int OPS_BgMesh()
             bgmesh.setFSITri(false);
         } else if (strcmp(opt, "-pressureOnce") == 0) {
             bgmesh.setPressureOnce();
-        } else if (strcmp(opt, "-boundLayerThickness") == 0) {
+        } else if (strcmp(opt, "-boundReduceFactor") == 0) {
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need thk\n";
+                opserr << "WARNING: need factor\n";
                 return -1;
             }
             num = 1;
-            double thk = 0.3;
-            if (OPS_GetDoubleInput(&num, &thk) < 0) {
-                opserr << "WARNING: failed to get thk\n";
+            double factor = 0.5;
+            if (OPS_GetDoubleInput(&num, &factor) < 0) {
+                opserr << "WARNING: failed to get factor\n";
                 return -1;
             }
 
-            bgmesh.setBoundThk(thk);
+            bgmesh.setBoundReduceFactor(factor);
         } else if (strcmp(opt, "-largeSize") == 0) {
             int numbasic = 2;
             num = 1;
@@ -272,8 +272,8 @@ int OPS_BgMesh()
             }
 
             bgmesh.addLargeSize(numbasic, range_low, range_up);
-        } else if (strcmp(opt, "-fastAssembly") == 0) {
-            bgmesh.setFastAssembly();
+        } else if (strcmp(opt, "-allAssembly") == 0) {
+            bgmesh.setFastAssembly(false);
         }
     }
 
@@ -300,9 +300,9 @@ BackgroundMesh::BackgroundMesh()
          structuralNodes(),
          freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(true),
-         boundThk(0.05), contactReduceFactor(0.8),
+         boundReduceFactor(0.01),
          largesize(), pressureonce(false), dispon(true),
-         fastAssembly(false)
+         fastAssembly(true)
 {
 }
 
@@ -1038,7 +1038,9 @@ BackgroundMesh::addStructure()
         for (int k = 0; k < (int) snodes.size(); ++k) {
 
             // check if already there
-            if (allnodes.find(snodes[k]) != allnodes.end()) {
+            std::pair<std::set<int>::iterator,bool> res=
+                    allnodes.insert(snodes[k]);
+            if (res.second == false) {
                 continue;
             }
 
@@ -2965,7 +2967,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (fixed.size() != 8) return 0;
     }
 
-    const VDouble& pcrds = pt->getCrds();
+    VDouble pcrds = pt->getCrds();
     if ((int)pcrds.size() != ndm) {
         opserr << "WARNING: pcrds.size() != ndm -- BgMesh::interpolate\n";
         return -1;
@@ -2986,9 +2988,10 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     }
 
     // get structural coordinates
-    VVDouble scoords;
+    VVDouble scoords, scoordsn;
     for (int j=0; j<(int)fixed.size(); ++j) {
         if (fixed[j] == 1) {
+            BNode& bnode = bnodes[index[j]];
             for (int i = 0; i < (int) ndtags[j].size(); ++i) {
                 Node* snode = domain->getNode(ndtags[j][i]);
                 if (snode != 0) {
@@ -2999,6 +3002,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                         curr[k] = scrds(k) + sdisp(k);
                     }
                     scoords.push_back(curr);
+                    scoordsn.push_back(bnode.crdsn[i]);
                 }
             }
         }
@@ -3029,50 +3033,6 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         }
     }
 
-    // for each wall
-    bool inlayer = false;
-    for (int k = 0; k < (int)walls.size(); ++k) {
-
-        // get line or plane equations
-        VDouble xbnd(ndm), ybnd(ndm), zbnd(ndm);
-        for (int l = 0; l < ndm; ++l) {
-            xbnd[l] = scoords[walls[k][l]][0];
-            ybnd[l] = scoords[walls[k][l]][1];
-            if (ndm == 3) {
-                zbnd[l] = scoords[walls[k][l]][2];
-            }
-        }
-        VDouble boundir(ndm);
-        if (ndm == 2) {
-            boundir[0] = ybnd[1] - ybnd[0];
-            boundir[1] = xbnd[0] - xbnd[1];
-        } else if (ndm == 3) {
-            boundir[0] = ybnd[0] * zbnd[1] - ybnd[1] * zbnd[0];
-            boundir[1] = xbnd[1] * zbnd[0] - xbnd[0] * zbnd[1];
-            boundir[2] = xbnd[0] * ybnd[1] - xbnd[1] * ybnd[0];
-        }
-        boundir /= normVDouble(boundir);
-
-        double C = 0.0;
-        C -= boundir[0] * xbnd[0];
-        C -= boundir[1] * ybnd[0];
-        if (ndm == 3) {
-            C -= boundir[2] * zbnd[0];
-        }
-
-        // distance to wall
-        double dist = C;
-        for (int m = 0; m < ndm; ++m) {
-            dist += boundir[m] * pcrds[m];
-        }
-        dist = fabs(dist);
-
-        if (dist < boundThk*bsize) {
-            inlayer = true;
-            break;
-        }
-    }
-
     // particle velocity
     VDouble pvel(ndm);
     VDouble pdvn(ndm), incrpvel(ndm);
@@ -3084,7 +3044,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (vels[j].empty()) continue;
 
         // interpolate
-        if (fixed[j] == 0 || (fixed[j]==1 && inlayer)) {
+        if (fixed[j] == 0) {
             for (int k=0; k<ndm; ++k) {
                 pvel[k] += N[j]*vels[j][k];
                 incrpvel[k] += N[j]*incrvels[j][k];
@@ -3117,10 +3077,14 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         pdp = pt->getPdot();
     }
 
-    // check if pass boundary
+    // particle displacement
+    VDouble newpdisp = pvel;
+    newpdisp *= dt;
     for (int k = 0; k < (int)walls.size(); ++k) {
 
-        // get line or plane equations
+        // get current wall
+        VDouble boundir;
+        double dist;
         VDouble xbnd(ndm), ybnd(ndm), zbnd(ndm);
         for (int l = 0; l < ndm; ++l) {
             xbnd[l] = scoords[walls[k][l]][0];
@@ -3129,39 +3093,64 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                 zbnd[l] = scoords[walls[k][l]][2];
             }
         }
-        VDouble boundir(ndm);
-        if (ndm == 2) {
-            boundir[0] = ybnd[1] - ybnd[0];
-            boundir[1] = xbnd[0] - xbnd[1];
-        } else if (ndm == 3) {
-            boundir[0] = ybnd[0] * zbnd[1] - ybnd[1] * zbnd[0];
-            boundir[1] = xbnd[1] * zbnd[0] - xbnd[0] * zbnd[1];
-            boundir[2] = xbnd[0] * ybnd[1] - xbnd[1] * ybnd[0];
+        getWall(boundir, dist, xbnd, ybnd, zbnd, pcrds);
+
+        // get previous wall
+        VDouble boundirn;
+        double distn;
+        for (int l = 0; l < ndm; ++l) {
+            xbnd[l] = scoordsn[walls[k][l]][0];
+            ybnd[l] = scoordsn[walls[k][l]][1];
+            if (ndm == 3) {
+                zbnd[l] = scoordsn[walls[k][l]][2];
+            }
         }
-        boundir /= normVDouble(boundir);
+        getWall(boundirn, distn, xbnd, ybnd, zbnd, pcrds);
 
-        // new location
-        VDouble newpcrds = pvel;
-        newpcrds *= dt;
-        newpcrds += pcrds;
+        // check if particle is between the two walls
+        if (dotVDouble(boundir, boundirn) < 0) {
 
-        // check if pass
-        VDouble sidedir1 = pcrds;
-        VDouble sidedir2 = newpcrds;
-        sidedir1[0] -= xbnd[0];
-        sidedir2[0] -= xbnd[0];
-        sidedir1[1] -= ybnd[0];
-        sidedir2[1] -= ybnd[0];
-        if (ndm == 3) {
-            sidedir1[2] -= zbnd[0];
-            sidedir2[2] -= zbnd[0];
+            VDouble temp = boundir;
+            temp *= dist;
+
+            pt->move(temp, 0.0);
+
+            temp = boundir;
+            temp *= distn;
+
+            pt->move(temp, 0.0);
+
+            boundir *= -1.0;
+            dist = distn;
+
+            pcrds = pt->getCrds();
         }
 
-        if (dotVDouble(sidedir1, boundir) * dotVDouble(sidedir2, boundir) < 0) {
-            VDouble pvelt = boundir;
-            pvelt *= dotVDouble(pvel, boundir) *2;
-            pvel -= pvelt;
-            pvel *= contactReduceFactor;
+        // check if particle is moving toward the current wall
+        if (dotVDouble(pvel, boundir) > 0) {
+            // vertical disp
+            VDouble vdisp = boundir;
+            double newdist = dotVDouble(newpdisp, boundir);
+            vdisp *= newdist;
+
+            double percent = dist / bsize;
+            if (percent > boundReduceFactor) {
+                percent = boundReduceFactor;
+            }
+
+            // if vertical disp larger than allowed
+            if (newdist > percent*dist) {
+
+                // horizontal disp
+                newpdisp -= vdisp;
+
+                // new vertical disp
+                vdisp = boundir;
+                vdisp *= percent * dist;
+
+                // new disp
+                newpdisp += vdisp;
+            }
         }
     }
 
@@ -3178,8 +3167,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     }
 
     // original->dest
-    pvel *= dt;
-    pt->move(pvel, dt);
+    pt->move(newpdisp, dt);
 
     return 0;
 }
@@ -3387,4 +3375,48 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
 void
 BackgroundMesh::setContactData(const VDouble& data) {
     contactData = data;
+}
+
+void
+BackgroundMesh::getWall(VDouble& dir, double& dist, const VDouble& xbnd,
+                        const VDouble& ybnd, const VDouble& zbnd,
+                        const VDouble pcrds)
+{
+    int ndm = OPS_GetNDM();
+
+    // get line or plane equations
+    dir.resize(ndm);
+    if (ndm == 2) {
+        dir[0] = ybnd[1] - ybnd[0];
+        dir[1] = xbnd[0] - xbnd[1];
+    } else if (ndm == 3) {
+        dir[0] = ybnd[0] * zbnd[1] - ybnd[1] * zbnd[0];
+        dir[1] = xbnd[1] * zbnd[0] - xbnd[0] * zbnd[1];
+        dir[2] = xbnd[0] * ybnd[1] - xbnd[1] * ybnd[0];
+    }
+    dir /= normVDouble(dir);
+
+    VDouble sidedir1 = pcrds;
+    sidedir1[0] -= xbnd[0];
+    sidedir1[1] -= ybnd[0];
+    if (ndm == 3) {
+        sidedir1[2] -= zbnd[0];
+    }
+    if (dotVDouble(sidedir1, dir) > 0) {
+        dir *= -1.0;
+    }
+
+    double C = 0.0;
+    C -= dir[0] * xbnd[0];
+    C -= dir[1] * ybnd[0];
+    if (ndm == 3) {
+        C -= dir[2] * zbnd[0];
+    }
+
+    // distance to wall
+    dist = C;
+    for (int m = 0; m < ndm; ++m) {
+        dist += dir[m] * pcrds[m];
+    }
+    dist = fabs(dist);
 }
