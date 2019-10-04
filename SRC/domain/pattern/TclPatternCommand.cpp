@@ -66,7 +66,9 @@
 #include <PlaneDRMInputHandler.h>
 #include <DRMLoadPatternWrapper.h>
 
+#ifdef _H5DRM
 #include <H5DRM.h>
+#endif
 
 #include <string.h>
 
@@ -796,6 +798,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
   }// end else if DRMLoadPattern
 
   ///////// ///////// ///////// //////// //////  // DRMLoadPattern add END
+#ifdef _H5DRM
  else if ((strcmp(argv[1],"H5DRM") == 0) ||
      (strcmp(argv[1],"h5drm") == 0) ) {
 
@@ -824,7 +827,8 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
 
     theDomain->addLoadPattern(thePattern);
     return TCL_OK;
-  }
+ }
+#endif
 
   else {
       opserr << "WARNING unknown pattern type " << argv[1];

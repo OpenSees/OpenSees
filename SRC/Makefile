@@ -132,7 +132,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/uniaxial/limitState/TclLimitState.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
-
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
@@ -154,12 +153,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/brick/TclTwenty_Node_BrickCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
-
-
-
-
-
-
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
@@ -180,13 +173,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
 	$(FE)/domain/component/TclParameterCommands.o \
 	$(FE)/domain/region/TclRegionCommands.o \
-
-
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
-
-
-
-
 	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o \
 	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o \
 	$(FE)/api/elementAPI_TCL.o
@@ -523,7 +510,6 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumnInt/FiberSection2dInt.o \
 	$(FE)/element/dispBeamColumnInt/LinearCrdTransf2dInt.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
-
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
@@ -586,6 +572,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDepMultiLinear.o \
 	$(FE)/element/twoNodeLink/LinearElasticSpring.o \
 	$(FE)/element/twoNodeLink/TwoNodeLink.o \
+	$(FE)/element/twoNodeLink/Inerter.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/triangle/Tri31.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
@@ -646,17 +633,17 @@ else
 	DAMAGE_2P =
 endif
 
-ifdef DAMAGE2P_FLAG
-	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o \
-	$(FE)/material/nD/Concrete.o $(FE)/material/nD/CPlaneStress.o $(FE)/material/nD/CPlaneStress2d.o $(FE)/material/nD/CPlaneStrain.o $(FE)/material/nD/CThreeDimensional.o 
-else
-	DAMAGE_2P =
-endif
 
 ifdef PLAINCONCRETE_FLAG
 	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
 else
 	PLAINCONCRETE = 
+endif
+
+ifdef H5DRM_FLAG
+	H5DRM = $(FE)/domain/pattern/drm/H5DRM.o \
+else
+	H5DRM = 
 endif
 
 #	$(FE)/material/nD/Faria1998PlaneStress.o \
@@ -676,6 +663,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
 	$(FE)/material/uniaxial/ElasticBilin.o \
+	$(FE)/material/uniaxial/ElasticPowerFunc.o \
 	$(FE)/material/uniaxial/MultiLinear.o \
 	$(FE)/material/uniaxial/HookGap.o \
 	$(FE)/material/uniaxial/HardeningMaterial.o \
@@ -1168,8 +1156,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/drm/DRMLoadPattern.o \
 	$(FE)/domain/pattern/drm/DRMLoadPatternWrapper.o \
 	$(FE)/domain/pattern/drm/DRMInputHandler.o \
-	$(FE)/domain/pattern/drm/PlaneDRMInputHandler.o \
-	$(FE)/domain/pattern/drm/H5DRM.o \
+	$(FE)/domain/pattern/drm/PlaneDRMInputHandler.o $(H5DRM) \
 	$(FE)/domain/groundMotion/GroundMotion.o \
 	$(FE)/domain/groundMotion/GroundMotionRecord.o \
 	$(FE)/domain/groundMotion/InterpolatedGroundMotion.o \

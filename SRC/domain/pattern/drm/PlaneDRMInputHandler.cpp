@@ -342,8 +342,6 @@ void PlaneDRMInputHandler::populateBuffers()
 void PlaneDRMInputHandler::getMotions(Element* eletag, double time, Vector& U, Vector& Ud, Vector& Udd)
 {
   
-
-
 //  int tg = eletag->getTag();
 
   if (time > numSteps*deltaT)
