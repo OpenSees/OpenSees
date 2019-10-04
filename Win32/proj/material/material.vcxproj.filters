@@ -92,6 +92,9 @@
     <Filter Include="yieldSurface\plasticHardening">
       <UniqueIdentifier>{408dfebe-e65f-4f59-9922-fd5d18a547f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="nD\matCMM">
+      <UniqueIdentifier>{400c3f45-f6c3-4549-8899-3c834d5fdce3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="nD\stressDensityModel">
       <UniqueIdentifier>{7807b2c7-44af-49af-b5cc-17663de879fc}</UniqueIdentifier>
     </Filter>
@@ -103,6 +106,9 @@
     </Filter>
     <Filter Include="uniaxial\unloading">
       <UniqueIdentifier>{01a8e2d2-64d7-437f-8fb6-53b9e38569b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nD\UWmaterials">
+      <UniqueIdentifier>{e764b8c8-af42-4b82-8709-56ac255f2b0c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +122,6 @@
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp">
@@ -281,12 +284,6 @@
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Pinching4Material.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp">
@@ -505,9 +502,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\ArctangentBackbone.cpp">
       <Filter>uniaxial\backbone</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\BackboneMaterial.cpp">
-      <Filter>uniaxial\backbone</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\HystereticBackbone.cpp">
       <Filter>uniaxial\backbone</Filter>
     </ClCompile>
@@ -535,25 +529,10 @@
     <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\CapPlasticity.cpp">
       <Filter>nD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\ConcreteS.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.cpp">
       <Filter>nD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\CycLiqCP.cpp">
@@ -574,15 +553,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\CycLiqCPSPPlaneStrain.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -592,31 +562,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp">
       <Filter>nD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\NDMaterial.cpp">
@@ -650,9 +596,6 @@
       <Filter>nD\elasticIsotropic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicThreeDimensional.cpp">
-      <Filter>nD\elasticIsotropic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\PressureDependentElastic3D.cpp">
       <Filter>nD\elasticIsotropic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\J2AxiSymm.cpp">
@@ -708,9 +651,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\PlateFiberMaterial.cpp">
       <Filter>nD\wrappers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\FeapMaterial.cpp">
-      <Filter>nD\feap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\feap\FeapMaterial01.cpp">
       <Filter>nD\feap</Filter>
@@ -818,12 +758,6 @@
       <Filter>section</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSection.cpp">
-      <Filter>section</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\section\fiber\NDFiber2d.cpp">
-      <Filter>section</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\section\fiber\NDFiber3d.cpp">
       <Filter>section</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\NDFiberSection2d.cpp">
@@ -1034,9 +968,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp">
       <Filter>uniaxial\py_tz_qz</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber3d.cpp">
       <Filter>nD\j2Plasticity</Filter>
     </ClCompile>
@@ -1123,12 +1054,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp">
       <Filter>uniaxial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp">
-      <Filter>nD\j2Plasticity</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp">
       <Filter>uniaxial</Filter>
@@ -1253,6 +1178,150 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp">
       <Filter>uniaxial\backbone</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BraceMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Neoprene.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PrestressedSteelMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SecantConcrete.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
+      <Filter>uniaxial\snap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ExternalNDMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticPowerFunc.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\fiber\NDFiber2d.cpp">
+      <Filter>section\fiber</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\fiber\NDFiber3d.cpp">
+      <Filter>section\fiber</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\TimoshenkoSection3d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\WFFiberSection2d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\WSection2d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp">
+      <Filter>uniaxial\LimitState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BackboneMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete05.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticBDMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKBilin.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPinching.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp">
+      <Filter>uniaxial\fedeas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\FeapMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PressureDependentElastic3D.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp">
+      <Filter>nD\matCMM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1265,9 +1334,6 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.h">
-      <Filter>uniaxial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h">
@@ -1424,12 +1490,6 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Pinching4Material.h">
-      <Filter>uniaxial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.h">
-      <Filter>uniaxial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.h">
@@ -1630,9 +1690,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\ArctangentBackbone.h">
       <Filter>uniaxial\backbone</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\BackboneMaterial.h">
-      <Filter>uniaxial\backbone</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\HystereticBackbone.h">
       <Filter>uniaxial\backbone</Filter>
     </ClInclude>
@@ -1657,25 +1714,10 @@
     <ClInclude Include="..\..\..\SRC\material\nD\AcousticMedium.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.h">
-      <Filter>nD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\CapPlasticity.h">
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ConcreteS.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.h">
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\CycLiqCP.h">
@@ -1696,15 +1738,6 @@
     <ClInclude Include="..\..\..\SRC\material\nD\CycLiqCPSPPlaneStrain.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.h">
-      <Filter>nD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
@@ -1714,31 +1747,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\InitStressNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h">
-      <Filter>nD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h">
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\NDMaterial.h">
@@ -1769,9 +1778,6 @@
       <Filter>nD\elasticIsotropic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicThreeDimensional.h">
-      <Filter>nD\elasticIsotropic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\PressureDependentElastic3D.h">
       <Filter>nD\elasticIsotropic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\J2AxiSymm.h">
@@ -1824,9 +1830,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlateFiberMaterial.h">
       <Filter>nD\wrappers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\FeapMaterial.h">
-      <Filter>nD\feap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\feap\FeapMaterial01.h">
       <Filter>nD\feap</Filter>
@@ -1931,12 +1934,6 @@
       <Filter>section</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\MembranePlateFiberSection.h">
-      <Filter>section</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\section\fiber\NDFiber2d.h">
-      <Filter>section</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\section\fiber\NDFiber3d.h">
       <Filter>section</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\NDFiberSection2d.h">
@@ -2135,9 +2132,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.h">
       <Filter>uniaxial\py_tz_qz</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h">
-      <Filter>nD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber3d.h">
       <Filter>nD\j2Plasticity</Filter>
     </ClInclude>
@@ -2224,12 +2218,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h">
       <Filter>uniaxial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h">
-      <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h">
-      <Filter>nD\j2Plasticity</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h">
       <Filter>uniaxial</Filter>
@@ -2344,6 +2332,150 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.h">
       <Filter>uniaxial\backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BraceMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Neoprene.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\PrestressedSteelMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SecantConcrete.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
+      <Filter>uniaxial\snap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticPowerFunc.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\fiber\NDFiber2d.h">
+      <Filter>section\fiber</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\fiber\NDFiber3d.h">
+      <Filter>section\fiber</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\TimoshenkoSection3d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\WFFiberSection2d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\WSection2d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.h">
+      <Filter>uniaxial\LimitState</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BackboneMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete05.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticBDMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKBilin.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPinching.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.h">
+      <Filter>uniaxial\fedeas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\FeapMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PressureDependentElastic3D.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h">
+      <Filter>nD\matCMM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h">
+      <Filter>nD\UWmaterials</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

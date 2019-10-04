@@ -1,264 +1,125 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\predicates.cxx" />
-    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\tetgen.cxx" />
-    <ClCompile Include="..\..\..\OTHER\Triangle\triangle.c" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Mesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\MINI.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMeshGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4Thermal.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC9.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGT.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\WrapperElement.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\CorotTruss.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\CorotTruss2.cpp" />
-    <ClCompile Include="..\..\..\Src\element\truss\CorotTrussSection.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\Truss.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\Truss2.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\truss\TrussSection.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\feap\TclFeapElementCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\feap\fElement.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\feap\fElmt02.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\CoupledZeroLength.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\TclZeroLength.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthImpact3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthInterface2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthND.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthRocking.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthSection.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\beamWithHinges\TclBeamWithHingesBuilder.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransf2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransf3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\CrdTransf.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\LinearCrdTransf2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\LinearCrdTransf3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\PDeltaCrdTransf2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\PDeltaCrdTransf3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\coordTransformation\TclGeomTransfCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\ConstantPressureVolumeQuad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\EnhancedQuad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuad3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuadWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\TclFourNodeQuadCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\TclElasticBeamCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\BbarBrick.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\BbarBrickWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\Brick.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\TclBrickCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\TclTwenty_Node_BrickCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\Twenty_Node_Brick.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\brick\shp3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\BeamColumnJoint2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\BeamColumnJoint3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\ElasticTubularJoint.cpp" />
-    <ClCompile Include="..\..\..\Src\element\joint\Joint2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\Joint3D.cpp" />
-    <ClCompile Include="..\..\..\Src\element\joint\MP_Joint2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\MP_Joint3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\TclBeamColumnJointCommand.cpp" />
-    <ClCompile Include="..\..\..\Src\element\joint\TclJoint2dCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\joint\TclJoint3dCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\BilinearCyclic.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\CyclicModel.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\Elastic2DGNL.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\Inelastic2DYS01.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\Inelastic2DYS02.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\Inelastic2DYS03.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\InelasticYS2DGNL.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\LinearCyclic.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\QuadraticCyclic.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\TclCyclicModelCommands.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\TclElement2dGNL.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\TclElement2dYS.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\updatedLagrangianBeamColumn\UpdatedLagrangianBeam2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumn2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumn3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\TclForceBeamColumnCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\BeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\FixedLocationBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\HingeEndpointBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\HingeMidpointBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\HingeRadauBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\HingeRadauTwoBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\LegendreBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\LobattoBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\LowOrderBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\MidDistanceBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\NewtonCotesBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\RadauBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\RegularizedHingeIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\TrapezoidalBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\UserDefinedBeamIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\UserDefinedHingeIntegration.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\nonlinearBeamColumn\matrixutil\MatrixUtil.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\BBarBrickUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\BBarFourNodeQuadUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\BrickUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\FourNodeQuadUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\Nine_Four_Node_QuadUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\TclFourNodeQuadUPCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\Twenty_Eight_Node_BrickUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UP-ucsd\shp3dv.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\DispBeamColumn2dInt.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\FiberSection2dInt.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\LinearCrdTransf2dInt.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\TclDispBeamColumnIntCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\GenericClient.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\GenericCopy.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\TclGenericClientCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\TclGenericCopyCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TclTwoNodeLinkCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\Actuator.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\ActuatorCorot.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\Adapter.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclActuatorCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclActuatorCorotCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclAdapterCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingUFRP2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericX.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\HDR.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\LeadRubberX.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingBoucWenCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingPlasticityCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingUFRPCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\FlatSliderSimple2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\FlatSliderSimple3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\MultiFP2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\RJWatsonEQS2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\RJWatsonEQS3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\SingleFPSimple2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\SingleFPSimple3d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TFP_Bearing.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TFP_Bearing2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TPB1D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclFlatSliderCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclRJWatsonEQSCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclSingleFPCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulum.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\Coulomb.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\FrictionModel.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\FrictionResponse.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\TclModelBuilderFrictionModelCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\VelNormalFrcDep.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\VelPressureDep.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\pyMacro\PY_Macro2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\surfaceLoad\SurfaceLoad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamContact2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamContact2Dp.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamContact3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamContact3Dp.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamEndContact3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\BeamEndContact3Dp.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\Brick8FiberOverlay.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\PileToe3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\Quad4FiberOverlay.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SSPbrick.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SSPbrickUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SSPquad.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SSPquadUP.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SimpleContact2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\UWelements\SimpleContact3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\triangle\Tri31.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\R3vectors.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI1.C" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\KikuchiBearing.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\MultipleNormalSpring.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8dc53ba4-a20a-4427-bf11-babe5c15d07e}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{4c774e8e-ce1c-4ee6-a77b-796f64208534}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="truss">
+      <UniqueIdentifier>{4d6200e6-10d3-4c65-9db2-8f4a128940f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="feap">
+      <UniqueIdentifier>{d6824d8c-f5f0-449c-bc5c-4a55c342871e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zeroLength">
+      <UniqueIdentifier>{c2413ced-fd89-47ec-a53c-7c50d9fbeda0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="beamWithHinges">
+      <UniqueIdentifier>{95c7eb42-420e-4ebb-9712-0482c73a001b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="crdTransf">
+      <UniqueIdentifier>{db97fed4-cb21-4af2-a581-225349957f04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quad">
+      <UniqueIdentifier>{59b81d90-87a0-4a4b-a9c5-18d28dd3042a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="elasticBeamColumn">
+      <UniqueIdentifier>{76b08a0c-6603-44ab-a9ab-0a7d7e6d2a8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="brick">
+      <UniqueIdentifier>{16f81571-87c3-4448-8bca-9305cf114483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dispBeamColumn">
+      <UniqueIdentifier>{8035f8de-4409-40dd-86bf-4a2b940a4a15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="joint">
+      <UniqueIdentifier>{33c5b810-f197-4bf6-b6f1-bb4f417867dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ulBeamColumn">
+      <UniqueIdentifier>{3f3077a6-1e37-491e-899e-b5f6fd7b2c41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="forceBeamColumn">
+      <UniqueIdentifier>{1ef69e6e-4d94-49bc-8bbb-a5cc9134a52b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="forceBeamColumn\beamIntegration">
+      <UniqueIdentifier>{c7b2f79d-b62a-4d66-b614-7ea05cad8aa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nonlinearBeamColumn">
+      <UniqueIdentifier>{1611a2ae-725f-481e-ba94-013664af7bb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nonlinearBeamColumn\matrixutil">
+      <UniqueIdentifier>{608c6a97-eb5c-49d8-8b43-f44d9aac6eb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nonlinearBeamColumn\quadrule">
+      <UniqueIdentifier>{dc875f73-4900-4ae7-a177-34d5a3f51385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="up">
+      <UniqueIdentifier>{34b2aa0b-78b0-4d40-a9c5-459062d2f200}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dispBeamColumnInt">
+      <UniqueIdentifier>{9fa61ba6-4a0d-419a-9757-c26843b63dbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="generic">
+      <UniqueIdentifier>{8835abac-54af-40b7-a9cb-01c1b0c1002d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="twoNodeLink">
+      <UniqueIdentifier>{f7afb4ff-8b91-4c4c-8013-ee37063f770b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="adapter">
+      <UniqueIdentifier>{77b7081d-75e4-4e7b-a201-33ff4cb77c42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="elastomericBearing">
+      <UniqueIdentifier>{b4905908-3711-4bd7-8ad7-de7f01b668d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="frictionBearing">
+      <UniqueIdentifier>{301140e6-b43e-4fa5-a933-9b2ffa1a66a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="frictionBearing\frictionModel">
+      <UniqueIdentifier>{af576cab-4129-41e3-87a4-e15de1de56c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pyMacro">
+      <UniqueIdentifier>{295b84c9-249b-459e-9834-ba15b4e56ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="surfaceLoad">
+      <UniqueIdentifier>{c4fc2b62-f666-4933-b1bc-0335ea53fb76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UWelements">
+      <UniqueIdentifier>{9717ffed-3174-4878-b385-940a387626a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="triangle">
+      <UniqueIdentifier>{c1f531f9-4544-47ae-9c69-19ed46dd3e98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shell">
+      <UniqueIdentifier>{40ea145c-9bb4-4070-bfd4-f83f708d0c0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pfem">
+      <UniqueIdentifier>{00e72745-28b6-47a8-b8e1-04f2a25c02c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUelements">
+      <UniqueIdentifier>{5098eaf3-05b5-4c65-8a81-a2b545b7482b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XMUelements">
+      <UniqueIdentifier>{24473406-20f3-4a25-9f2b-1e4f17b774a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mvlem">
+      <UniqueIdentifier>{192f6adf-59e2-4e68-8259-4093172b605a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="componentElement">
+      <UniqueIdentifier>{3c5b233e-0ad7-418e-bf3b-9ad6e0c6e47c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="catenaryCable">
+      <UniqueIdentifier>{1da57574-6bdf-44c2-b363-afb3d416e9ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tetrahedron">
+      <UniqueIdentifier>{9ea02351-3bae-4523-b1f6-2a3ea9a7a393}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="absorbentBoundaries">
+      <UniqueIdentifier>{1b806f65-5bd2-4429-9294-d36935d459e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -996,9 +857,6 @@
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.cpp">
       <Filter>twoNodeLink</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\Inerter.cpp">
-      <Filter>twoNodeLink</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1665,9 +1523,6 @@
       <Filter>dispBeamColumn</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.h">
-      <Filter>twoNodeLink</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\Inerter.h">
       <Filter>twoNodeLink</Filter>
     </ClInclude>
   </ItemGroup>
