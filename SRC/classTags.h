@@ -731,6 +731,7 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_ComponentElement2d       190
 #define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1

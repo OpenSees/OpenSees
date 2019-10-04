@@ -399,10 +399,10 @@ VTK_Recorder::vtu()
     for (auto i : theNodeTags) {
       Node *theNode=theDomain->getNode(i);
       const Vector &output=theNode->getDisp();
-      int numCrd = output.Size();
-      for (int i=0; i<numCrd; i++) 
+      int numDOF = output.Size();
+      for (int i=0; i<numDOF; i++) 
 	theFileVTU << output(i) << " ";
-      for (int i=numCrd; i<maxNDF; i++)
+      for (int i=numDOF; i<maxNDF; i++)
 	theFileVTU << 0.0 << " ";
       theFileVTU << "\n";
     }
@@ -410,13 +410,13 @@ VTK_Recorder::vtu()
   }
 
   if (outputData.disp2 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp2\" NumberOfComponents=\"" << 2 << "\" format=\"ascii\">\n";
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
     for (auto i : theNodeTags) {
       Node *theNode=theDomain->getNode(i);
       const Vector &output=theNode->getDisp();
       for (int i=0; i<2; i++) 
 	theFileVTU << output(i) << " ";
-      theFileVTU << "\n";
+      theFileVTU << "0. \n";
     }
     theFileVTU<<"\n</DataArray>\n";
   }
@@ -432,6 +432,97 @@ VTK_Recorder::vtu()
     }
     theFileVTU<<"\n</DataArray>\n";
   }
+
+
+  //
+  // node vel
+  //
+
+  if (outputData.vel == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Vel\" NumberOfComponents=\"" << maxNDF << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getVel();
+      int numDOF = output.Size();
+      for (int i=0; i<numDOF; i++) 
+	theFileVTU << output(i) << " ";
+      for (int i=numDOF; i<maxNDF; i++)
+	theFileVTU << 0.0 << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.vel2 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Vel2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getVel();
+      for (int i=0; i<2; i++) 
+	theFileVTU << output(i) << " ";
+      theFileVTU << "0. \n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.vel3 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Vel3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getVel();
+      for (int i=0; i<3; i++) 
+	theFileVTU << output(i) << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+
+  //
+  // node accel
+  //
+
+  if (outputData.accel == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Accel\" NumberOfComponents=\"" << maxNDF << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getAccel();
+      int numDOF = output.Size();
+      for (int i=0; i<numDOF; i++) 
+	theFileVTU << output(i) << " ";
+      for (int i=numDOF; i<maxNDF; i++)
+	theFileVTU << 0.0 << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.accel2 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Accel2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getAccel();
+      for (int i=0; i<2; i++) 
+	theFileVTU << output(i) << " ";
+      theFileVTU << "0. \n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.accel3 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Accel3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getAccel();
+      for (int i=0; i<3; i++) 
+	theFileVTU << output(i) << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+
+
 
 
   // 
@@ -976,6 +1067,7 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_MultipleShearSpring] = VTK_LINE;
     vtktypes[ELE_TAG_MultipleNormalSpring] = VTK_LINE;
     vtktypes[ELE_TAG_KikuchiBearing] = VTK_LINE;
+    vtktypes[ELE_TAG_ComponentElement2d] = VTK_LINE;
     vtktypes[ELE_TAG_YamamotoBiaxialHDR] = VTK_LINE;
     vtktypes[ELE_TAG_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
