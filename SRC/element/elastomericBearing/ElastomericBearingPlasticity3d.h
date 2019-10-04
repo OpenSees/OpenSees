@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef ElastomericBearingPlasticity3d_h
 #define ElastomericBearingPlasticity3d_h
 

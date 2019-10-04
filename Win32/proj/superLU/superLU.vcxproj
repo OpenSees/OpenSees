@@ -10,93 +10,22 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\colamd.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcolumn_bmod.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcolumn_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcopy_to_ucol.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ddiagonal.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgscon.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsequ.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsisx.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsitrf.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsrfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgssv.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgssvx.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgstrf.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgstrs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlacon2.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlangs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlaqgs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dldperm.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmach.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmemory.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmyblas2.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpanel_bmod.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpanel_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpivotgrowth.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpivotL.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpruneL.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadhb.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadrb.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadtriple.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsnode_bmod.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsnode_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsp_blas2.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsp_blas3.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dutil.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\get_perm_c.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\heap_relax_snode.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dcolumn_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dcopy_to_ucol.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_ddrop_row.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dpanel_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dpivotL.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dsnode_dfs.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_heap_relax_snode.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_relax_snode.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\input_error.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\lsame.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mark_relax.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mc64ad.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\memory.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mmd.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\qselect.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\relax_snode.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\smach.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_coletree.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_ienv.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_preorder.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\superlu_timer.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\util.c" />
-    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\xerbla.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\colamd.h" />
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_Cnames.h" />
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_ddefs.h" />
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_util.h" />
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\superlu_enum_consts.h" />
-    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\supermatrix.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2C9BDDE-7418-88DF-CFF2-F82A013DBE22}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -172,6 +101,75 @@
       <Path>.\..\..\obj\superLU\release\$(MSBuildProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\colamd.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcolumn_bmod.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcolumn_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dcopy_to_ucol.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ddiagonal.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgscon.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsequ.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsisx.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsitrf.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgsrfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgssv.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgssvx.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgstrf.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dgstrs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlacon2.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlangs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dlaqgs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dldperm.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmach.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmemory.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dmyblas2.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpanel_bmod.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpanel_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpivotgrowth.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpivotL.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dpruneL.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadhb.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadrb.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dreadtriple.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsnode_bmod.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsnode_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsp_blas2.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dsp_blas3.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\dutil.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\get_perm_c.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\heap_relax_snode.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dcolumn_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dcopy_to_ucol.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_ddrop_row.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dpanel_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dpivotL.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_dsnode_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_heap_relax_snode.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\ilu_relax_snode.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\input_error.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\lsame.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mark_relax.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mc64ad.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\memory.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\mmd.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\qselect.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\relax_snode.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\smach.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_coletree.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_ienv.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\sp_preorder.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\superlu_timer.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\util.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\xerbla.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\colamd.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_Cnames.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_ddefs.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\slu_util.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\superlu_enum_consts.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\supermatrix.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -22,7 +22,6 @@
     <ProjectGuid>{71832CB0-ED48-1CAF-ECB3-B9AD954D38E5}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -207,6 +206,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.cpp" />
@@ -317,6 +317,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.h" />

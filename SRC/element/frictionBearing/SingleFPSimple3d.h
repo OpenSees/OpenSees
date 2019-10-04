@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef SingleFPSimple3d_h
 #define SingleFPSimple3d_h
 

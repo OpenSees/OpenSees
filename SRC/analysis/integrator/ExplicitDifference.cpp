@@ -12,17 +12,16 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
-TransientIntegrator * OPS_Explicitdifference(void)
+
+void* OPS_Explicitdifference(void)
 {
 	TransientIntegrator *theIntegrator = 0;
 	theIntegrator = new Explicitdifference();
-
 
 	if (theIntegrator == 0)
 		opserr << "WARNING - out of memory creating Explicitdifference integrator\n";
 
 	return theIntegrator;
-
 }
 
 

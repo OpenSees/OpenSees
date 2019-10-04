@@ -45,6 +45,7 @@
 #include <R3vectors.h>
 #include <Renderer.h>
 #include <ElementResponse.h>
+#include <ElementalLoad.h>
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -226,6 +227,12 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(false)
   wg[1] = 1.0;
   wg[2] = 1.0;
   wg[3] = 1.0;
+
+  applyLoad = 0;
+
+  appliedB[0] = 0.0;
+  appliedB[1] = 0.0;
+  appliedB[2] = 0.0;
 }
 
 
@@ -273,6 +280,12 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
   wg[2] = 1.0;
   wg[3] = 1.0;
 
+  applyLoad = 0;
+
+  appliedB[0] = 0.0;
+  appliedB[1] = 0.0;
+  appliedB[2] = 0.0;
+
  }
 //******************************************************************
 
@@ -317,6 +330,12 @@ void  ShellMITC4::setDomain( Domain *theDomain )
        opserr << "ShellMITC4::setDomain - node " << connectedExternalNodes(i);
        opserr << " NEEDS 6 dof - GARBAGE RESULTS or SEGMENTATION FAULT WILL FOLLOW\n";
      }       
+     init_disp[i][0] = nodeDisp(0);
+     init_disp[i][1] = nodeDisp(1);
+     init_disp[i][2] = nodeDisp(2);
+     init_disp[i][3] = nodeDisp(3);
+     init_disp[i][4] = nodeDisp(4);
+     init_disp[i][5] = nodeDisp(5);
   }
 
   //compute drilling stiffness penalty parameter
@@ -933,6 +952,11 @@ void  ShellMITC4::zeroLoad( )
 {
   if (load != 0)
     load->Zero();
+  applyLoad = 0;
+
+  appliedB[0] = 0.0;
+  appliedB[1] = 0.0;
+  appliedB[2] = 0.0;
 
   return ;
 }
@@ -941,8 +965,25 @@ void  ShellMITC4::zeroLoad( )
 int 
 ShellMITC4::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-  opserr << "ShellMITC4::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+  // opserr << "ShellMITC4::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+  // return -1;
+  int type;
+  const Vector &data = theLoad->getData(type, loadFactor);
+
+  if (type == LOAD_TAG_SelfWeight) {
+      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      applyLoad = 1;
+      appliedB[0] += loadFactor*data(0);
+      appliedB[1] += loadFactor*data(1);
+      appliedB[2] += loadFactor*data(2);
+      // opserr << "loadfactor = " << loadFactor << endln;
+      // opserr << "      data = " << data;
+      // opserr << "      b    = " << b   ;
+      return 0;
+  } else {
+    opserr << "ShellMITC4::addLoad() - ele with tag: " << this->getTag() << " does not deal with load type: " << type << "\n";
   return -1;
+  }
 }
 
 
@@ -1366,7 +1407,15 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
 
       //nodal "displacements" 
-      const Vector &ul = nodePointers[j]->getTrialDisp( ) ;
+      const Vector &ul_tmp = nodePointers[j]->getTrialDisp( ) ;
+      static Vector ul(6); ul.Zero();
+
+      ul(0) = ul_tmp(0) - init_disp[j][0];
+      ul(1) = ul_tmp(1) - init_disp[j][1];
+      ul(2) = ul_tmp(2) - init_disp[j][2];
+      ul(3) = ul_tmp(3) - init_disp[j][3];
+      ul(4) = ul_tmp(4) - init_disp[j][4];
+      ul(5) = ul_tmp(5) - init_disp[j][5];
 
       //compute the strain
       //strain += (BJ*ul) ; 
@@ -1485,6 +1534,50 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
   } //end for i gauss loop 
   
+
+  if(applyLoad == 1)
+  {
+      const int numberGauss = 4 ;
+      const int nShape = 3 ;
+      const int numberNodes = 4 ;
+      const int massIndex = nShape - 1 ;
+      double temp, rhoH;
+      //If defined, apply self-weight
+      static Vector momentum(ndf) ;
+      double ddvol = 0;
+      for ( i = 0; i < numberGauss; i++ ) {
+
+          //get shape functions    
+          shape2d( sg[i], tg[i], xl, shp, xsj ) ;
+
+          //volume element to also be saved
+          ddvol = wg[i] * xsj ;  
+
+
+          //node loop to compute accelerations
+          momentum.Zero( ) ;
+          momentum(0) = appliedB[0];
+          momentum(1) = appliedB[1];
+          momentum(2) = appliedB[2];
+
+            
+          //density
+          rhoH = materialPointers[i]->getRho() ;
+
+          //multiply acceleration by density to form momentum
+          momentum *= rhoH ;
+
+
+          //residual and tangent calculations node loops
+          for ( j=0, jj=0; j<numberNodes; j++, jj+=ndf ) {
+
+            temp = shp[massIndex][j] * ddvol ;
+
+            for ( p = 0; p < 3; p++ )
+              resid( jj+p ) += ( temp * momentum(p) ) ;
+          }
+      }
+  }
   return ;
 }
 
@@ -1597,13 +1690,18 @@ ShellMITC4::updateBasis( )
   //get two vectors (v1, v2) in plane of shell by 
   // nodal coordinate differences
 
-  const Vector &coor0 = nodePointers[0]->getCrds( ) + nodePointers[0]->getTrialDisp();
-
-  const Vector &coor1 = nodePointers[1]->getCrds( ) + nodePointers[1]->getTrialDisp();
-
-  const Vector &coor2 = nodePointers[2]->getCrds( ) + nodePointers[2]->getTrialDisp();
-  
-  const Vector &coor3 = nodePointers[3]->getCrds( ) + nodePointers[3]->getTrialDisp();
+  Vector id0(6), id1(6), id2(6), id3(6); 
+  for (int dof = 0; dof < 6; ++dof)
+  {
+    id0(dof) = init_disp[0][dof];
+    id1(dof) = init_disp[1][dof];
+    id2(dof) = init_disp[2][dof];
+    id3(dof) = init_disp[3][dof];
+  }
+  const Vector &coor0 = nodePointers[0]->getCrds( ) + nodePointers[0]->getTrialDisp() - id0;
+  const Vector &coor1 = nodePointers[1]->getCrds( ) + nodePointers[1]->getTrialDisp() - id1;
+  const Vector &coor2 = nodePointers[2]->getCrds( ) + nodePointers[2]->getTrialDisp() - id2;
+  const Vector &coor3 = nodePointers[3]->getCrds( ) + nodePointers[3]->getTrialDisp() - id3;
 
   v1.Zero( ) ;
   //v1 = 0.5 * ( coor2 + coor1 - coor3 - coor0 ) ;
@@ -2034,12 +2132,22 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
     return res;
   }
 
-  static Vector vectData(5);
+  static Vector vectData(5+6*4);
   vectData(0) = Ktt;
   vectData(1) = alphaM;
   vectData(2) = betaK;
   vectData(3) = betaK0;
   vectData(4) = betaKc;
+
+  int pos = 0;
+  for (int node = 0; node < 4; ++node)
+  {
+    for (int dof = 0; dof < 6; ++dof)
+    {
+      vectData(5+pos) = init_disp[node][dof];
+      pos ++;
+    }
+  }
 
   res += theChannel.sendVector(dataTag, commitTag, vectData);
   if (res < 0) {
@@ -2085,7 +2193,7 @@ int  ShellMITC4::recvSelf (int commitTag,
   else
     doUpdateBasis = false;
 
-  static Vector vectData(5);
+  static Vector vectData(5 + 6*4);
   res += theChannel.recvVector(dataTag, commitTag, vectData);
   if (res < 0) {
     opserr << "WARNING ShellMITC4::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -2097,6 +2205,18 @@ int  ShellMITC4::recvSelf (int commitTag,
   betaK = vectData(2);
   betaK0 = vectData(3);
   betaKc = vectData(4);
+  
+  
+  int pos = 0;
+  for (int node = 0; node < 4; ++node)
+  {
+    for (int dof = 0; dof < 6; ++dof)
+    {
+      init_disp[node][dof] = vectData(5+pos);
+      pos ++;
+    }
+  }
+
 
   int i;
 

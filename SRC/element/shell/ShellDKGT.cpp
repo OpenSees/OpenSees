@@ -27,6 +27,9 @@
 // Three node flat shell element with membrane and drill DOF
 // Ref: Plate Bending Part - DKT, thin plate element
 //      Membrane Part - GT9, a membrane element with drilling DOF
+//
+
+/// Jose Abell added support for self weight 
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -54,6 +57,8 @@ using namespace std;
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+
+#include <ElementalLoad.h>
 
 #define min(a,b) ( (a)<(b) ? (a):(b) )
 
@@ -90,8 +95,22 @@ OPS_ShellDKGT(void)
     return 0;
   }
   
+
+    double b_data[3] = {0, 0, 0};
+
+    int num_remaining_args = OPS_GetNumRemainingInputArgs();
+    if (num_remaining_args > 3) {
+        num_remaining_args = 3;
+    }
+    if (num_remaining_args > 0) {
+        if (OPS_GetDoubleInput(&num_remaining_args, b_data) < 0) {
+            opserr << "WARNING: invalid double b_data\n";
+            return 0;
+        }
+    }
+
   theElement = new ShellDKGT(iData[0], iData[1], iData[2], iData[3],
-			       *theSection);
+                               *theSection, b_data[0], b_data[1], b_data[2]);
 
   return theElement;
 }
@@ -147,6 +166,10 @@ connectedExternalNodes(3), load(0), Ki(0)
   wg[1] =wg2;
   wg[2] =wg2;
   wg[3] =wg2;
+
+    b[0] = 0;
+    b[1] = 0;
+    b[2] = 0;
  
 }
 
@@ -157,7 +180,7 @@ ShellDKGT::ShellDKGT(  int tag,
                          int node1,
                          int node2,
    	                     int node3,
-	                     SectionForceDeformation &theMaterial ) :
+                       SectionForceDeformation &theMaterial, double b1, double b2, double b3 ) :
 Element( tag, ELE_TAG_ShellDKGT ),
 connectedExternalNodes(3), load(0), Ki(0)
 {
@@ -198,6 +221,10 @@ connectedExternalNodes(3), load(0), Ki(0)
   wg[2] = wg2;
   wg[3] = wg2;
   
+
+    b[0] = b1;
+    b[1] = b2;
+    b[2] = b3;
 
  }
 //******************************************************************
@@ -815,6 +842,10 @@ void  ShellDKGT::zeroLoad( )
   if (load != 0)
     load->Zero();
  
+    appliedB[0] = 0.0;
+    appliedB[1] = 0.0;
+    appliedB[2] = 0.0;
+
   return ;
 }
 
@@ -822,6 +853,18 @@ void  ShellDKGT::zeroLoad( )
 int 
 ShellDKGT::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
+    int type;
+    const Vector &data = theLoad->getData(type, loadFactor);
+
+    if (type == LOAD_TAG_SelfWeight) {
+        // added compatibility with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+        applyLoad = 1;
+        appliedB[0] += loadFactor * data(0) ;
+        appliedB[1] += loadFactor * data(1) ;
+        appliedB[2] += loadFactor * data(2) ;
+        return 0;
+    }
+
   opserr << "ShellDKGT::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
   return -1;
 }
@@ -1261,7 +1304,10 @@ ShellDKGT::formResidAndTangent( int tang_flag )
 			residJ.addMatrixVector(0.0,TmatTran,residJ1,1.0);
 
 			for(p=0; p<ndf; p++)
+            {
 				resid(jj+p) += residJ(p);
+            }
+
 
 			//BJtranD = BJtran *dd;
 			//BJtranD.addMatrixProduct(0.0,BJtran,dd,1.0);
@@ -1311,6 +1357,50 @@ ShellDKGT::formResidAndTangent( int tang_flag )
 	}//end for i gauss loop
 
 	
+      if(applyLoad == 1)
+      {
+          const int numberGauss = 4 ;
+          const int nShape = 3 ;
+          const int numberNodes = 4 ;
+          const int massIndex = nShape - 1 ;
+          double temp, rhoH;
+          //If defined, apply self-weight
+          static Vector momentum(ndf) ;
+          double ddvol = 0;
+          for ( i = 0; i < numberGauss; i++ ) {
+
+              //get shape functions    
+              // shape2d( sg[i], tg[i], xl, shp, xsj ) ;
+              shape2d( sg[i], tg[i], qg[i], xl, shp, xsj, sx) ;
+
+              //volume element to also be saved
+              ddvol = wg[i] * xsj ;  
+
+
+              //node loop to compute accelerations
+              momentum.Zero( ) ;
+              momentum(0) = appliedB[0];
+              momentum(1) = appliedB[1];
+              momentum(2) = appliedB[2];
+
+                
+              //density
+              rhoH = materialPointers[i]->getRho() ;
+
+              //multiply acceleration by density to form momentum
+              momentum *= rhoH ;
+
+
+              //residual and tangent calculations node loops
+              for ( j=0, jj=0; j<numberNodes; j++, jj+=ndf ) {
+
+                temp = shp[massIndex][j] * ddvol ;
+
+                for ( p = 0; p < 3; p++ )
+                  resid( jj+p ) += ( temp * momentum(p) ) ;
+              }
+          }
+      }
 
 	return;
 
