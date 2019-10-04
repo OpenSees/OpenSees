@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 4945 $
-// $Date: 2012-07-27 16:05:47 -0700 (Fri, 27 Jul 2012) $
-// $URL: svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/element/elastomericBearing/ElastomericBearingBoucWen2d.h $
-
 #ifndef ElastomericBearingBoucWen2d_h
 #define ElastomericBearingBoucWen2d_h
 

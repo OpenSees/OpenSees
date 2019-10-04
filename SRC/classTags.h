@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: fmk
 // Revision: A
 //
@@ -207,15 +203,16 @@
 #define MAT_TAG_ConcreteCM                      90
 #define MAT_TAG_SteelMPF                        91
 #define MAT_TAG_ElasticMaterialThermal          92   //L.Jiang [SIF]
-#define MAT_TAG_SteelECThermal			93   //L.Jiang [SIF]
+#define MAT_TAG_SteelECThermal                  93   //L.Jiang [SIF]
 #define MAT_TAG_StainlessECThermal              94   //L.Jiang [SIF]
-#define MAT_TAG_ConcreteECThermal		95   //L.Jiang [SIF]
+#define MAT_TAG_ConcreteECThermal               95   //L.Jiang [SIF]
 #define MAT_TAG_BoucWenOriginal                 96
 #define MAT_TAG_DamperMaterial                  97
-#define MAT_TAG_SPSW02			                98	//SAJalali
-#define MAT_TAG_Steel02Fatigue					99 //nassermarafi
-#define MAT_TAG_Concrete02IS					100 //nassermarafi
-#define MAT_TAG_ConfinedConcrete01              99
+#define MAT_TAG_SPSW02                          98   //SAJalali
+#define MAT_TAG_Steel02Fatigue                  99 //nassermarafi
+#define MAT_TAG_Concrete02IS                    100 //nassermarafi
+#define MAT_TAG_ConfinedConcrete01              101
+#define MAT_TAG_ElasticPowerFunc                102
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
@@ -634,7 +631,6 @@
 #define ELE_TAG_Adapter                 89
 #define ELE_TAG_ElastomericBearingBoucWen2d 90
 #define ELE_TAG_ElastomericBearingBoucWen3d 91
-
 #define ELE_TAG_FlatSliderSimple2d      92
 #define ELE_TAG_FlatSliderSimple3d      93
 #define ELE_TAG_FlatSlider2d            94
@@ -732,6 +728,8 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_LinearElasticSpring       190
+#define ELE_TAG_Inerter                   191
 #define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1

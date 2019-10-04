@@ -14,20 +14,18 @@
     <ProjectGuid>{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -130,6 +128,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\response\FiberResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\MaterialResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\Response.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\VTK_Recorder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
@@ -157,6 +156,7 @@
     <ClInclude Include="..\..\..\SRC\recorder\response\FiberResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\MaterialResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\Response.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\VTK_Recorder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

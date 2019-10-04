@@ -132,7 +132,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/uniaxial/limitState/TclLimitState.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
-	$(FE)/element/elasticBeamColumn/TclElasticBeamCommand.o \
+
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
@@ -154,12 +154,12 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/brick/TclTwenty_Node_BrickCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
-	$(FE)/element/adapter/TclActuatorCommand.o \
-	$(FE)/element/adapter/TclActuatorCorotCommand.o \
-	$(FE)/element/adapter/TclAdapterCommand.o \
-	$(FE)/element/generic/TclGenericClientCommand.o \
-	$(FE)/element/generic/TclGenericCopyCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingBoucWenCommand.o \
+
+
+
+
+
+
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
@@ -180,13 +180,13 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
 	$(FE)/domain/component/TclParameterCommands.o \
 	$(FE)/domain/region/TclRegionCommands.o \
-	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
-	$(FE)/element/frictionBearing/TclRJWatsonEQSCommand.o \
+
+
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
-	$(FE)/element/frictionBearing/TclFlatSliderCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingUFRPCommand.o \
-	$(FE)/element/frictionBearing/TclSingleFPCommand.o \
+
+
+
+
 	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o \
 	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o \
 	$(FE)/api/elementAPI_TCL.o
@@ -523,7 +523,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumnInt/FiberSection2dInt.o \
 	$(FE)/element/dispBeamColumnInt/LinearCrdTransf2dInt.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
-	$(FE)/element/elasticBeamColumn/WheelRail.o \
+
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
@@ -575,15 +575,16 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/FlatSliderSimple3d.o \
 	$(FE)/element/frictionBearing/SingleFPSimple2d.o \
 	$(FE)/element/frictionBearing/SingleFPSimple3d.o \
+	$(FE)/element/frictionBearing/RJWatsonEQS2d.o \
+	$(FE)/element/frictionBearing/RJWatsonEQS3d.o \
 	$(FE)/element/frictionBearing/frictionModel/Coulomb.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionModel.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionResponse.o \
 	$(FE)/element/frictionBearing/frictionModel/VelNormalFrcDep.o \
-	$(FE)/element/frictionBearing/RJWatsonEQS2d.o \
-	$(FE)/element/frictionBearing/RJWatsonEQS3d.o \
 	$(FE)/element/frictionBearing/frictionModel/VelPressureDep.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDependent.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDepMultiLinear.o \
+	$(FE)/element/twoNodeLink/LinearElasticSpring.o \
 	$(FE)/element/twoNodeLink/TwoNodeLink.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/triangle/Tri31.o \
