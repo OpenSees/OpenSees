@@ -12,6 +12,7 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
+
 void* OPS_Explicitdifference(void)
 {
 	TransientIntegrator *theIntegrator = 0;
