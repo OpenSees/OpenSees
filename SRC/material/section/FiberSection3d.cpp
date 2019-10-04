@@ -61,22 +61,42 @@ void* OPS_FiberSection3d()
     int tag;
     if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
     
-    double GJ = 0.0;
-    ElasticMaterial *torsion = 0;
-    if (OPS_GetNumRemainingInputArgs() >= 2) {
-        const char* opt = OPS_GetString();
-        if (strcmp(opt, "-GJ") == 0) {
-            if (OPS_GetDoubleInput(&numData, &GJ) < 0) return 0;
-            torsion = new ElasticMaterial(0, GJ);
-        }
+    UniaxialMaterial *torsion = 0;
+    const char* opt = OPS_GetString();
+    numData = 1;
+    bool deleteTorsion = false;
+    if (strcmp(opt, "-GJ") == 0) {
+      double GJ;
+      if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	opserr << "WARNING: failed to read GJ\n";
+	return 0;
+      }
+      torsion = new ElasticMaterial(0,GJ);
+      deleteTorsion = true;
+    }
+    if (strcmp(opt, "-torsion") == 0) {
+      int torsionTag;
+      if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	opserr << "WARNING: failed to read torsion\n";
+	return 0;
+      }
+      torsion = OPS_getUniaxialMaterial(torsionTag);
+    }
+    if (torsion == 0) {
+      opserr << "WARNING torsion not speified for FiberSection\n";
+      opserr << "\nFiberSection3dThermal section: " << tag << endln;
+      return 0;
     }
     
     int num = 30;
-    return new FiberSection3d(tag, num, torsion);
+    SectionForceDeformation *section = new FiberSection3d(tag, num, *torsion);
+    if (deleteTorsion)
+      delete torsion;
+    return section;
 }
 
 // constructors:
-FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMaterial *torsion): 
+FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMaterial &torsion): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
@@ -122,16 +142,9 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
     zBar = QyBar/Abar;
   }
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
-  if (theTorsion == 0) {
+  theTorsion = torsion.getCopy();
+  if (theTorsion == 0)
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
-  }
 
   s = new Vector(sData, 4);
   ks = new Matrix(kData, 4, 4);
@@ -150,7 +163,7 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
   code(3) = SECTION_RESPONSE_T;
 }
 
-FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion): 
+FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion): 
     SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
     numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
     QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
@@ -178,16 +191,9 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion):
 	}
     }
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
-  if (theTorsion == 0) {
-    opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
-  }
+    theTorsion = torsion.getCopy();
+    if (theTorsion == 0) 
+      opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
 
     s = new Vector(sData, 4);
     ks = new Matrix(kData, 4, 4);
@@ -207,7 +213,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion):
 }
 
 FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
-			       SectionIntegration &si, UniaxialMaterial *torsion):
+			       SectionIntegration &si, UniaxialMaterial &torsion):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
@@ -257,16 +263,9 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   yBar = QzBar/Abar;  
   zBar = QyBar/Abar;  
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
-  if (theTorsion == 0) {
+  theTorsion = torsion.getCopy();
+  if (theTorsion == 0)
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
-  }
 
   s = new Vector(sData, 4);
   ks = new Matrix(kData, 4, 4);
@@ -474,9 +473,11 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
   kData[8] = kData[2];
   kData[9] = kData[6];
  
-  res += theTorsion->setTrial(d3, stress, tangent);
-  sData[3] = stress;
-  kData[15] = tangent;
+  if (theTorsion != 0) {
+    res += theTorsion->setTrial(d3, stress, tangent);
+    sData[3] = stress;
+    kData[15] = tangent;
+  }
 
   return res;
 }
@@ -532,7 +533,8 @@ FiberSection3d::getInitialTangent(void)
   kInitialData[8] = kInitialData[2];
   kInitialData[9] = kInitialData[6];
 
-  kInitialData[15] = theTorsion->getInitialTangent();
+  if (theTorsion != 0)
+    kInitialData[15] = theTorsion->getInitialTangent();
 
   return kInitial;
 }
@@ -641,7 +643,8 @@ FiberSection3d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  err += theTorsion->commitState();
+  if (theTorsion != 0)
+    err += theTorsion->commitState();
 
   return err;
 }
@@ -709,8 +712,11 @@ FiberSection3d::revertToLastCommit(void)
   kData[8] = kData[2];
   kData[9] = kData[6];
 
-  err += theTorsion->revertToLastCommit();
-  kData[15] = theTorsion->getTangent();
+  if (theTorsion != 0) {
+    err += theTorsion->revertToLastCommit();
+    kData[15] = theTorsion->getTangent();
+  } else
+    kData[15] = 0.0;
 
   return err;
 }
@@ -779,9 +785,14 @@ FiberSection3d::revertToStart(void)
   kData[8] = kData[2];
   kData[9] = kData[6];
 
-  err += theTorsion->revertToStart();
-  kData[15] = theTorsion->getTangent();
-  sData[3] = theTorsion->getStress();
+  if (theTorsion != 0) {
+    err += theTorsion->revertToStart();
+    kData[15] = theTorsion->getTangent();
+    sData[3] = theTorsion->getStress();
+  } else {
+    kData[15] = 0.0;
+    sData[3] = 0.0;
+  }
 
   return err;
 }
@@ -792,13 +803,16 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
   int res = 0;
 
   // create an id to send objects tag and numFibers, 
-  //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(3);
+  //     size 5 so no conflict with matData below if just 2 fibers
+  static ID data(5);
   data(0) = this->getTag();
   data(1) = numFibers;
+  data(2) = (theTorsion != 0) ? 1 : 0;
   int dbTag = this->getDbTag();
-  theTorsion->setDbTag(dbTag);
-  data(2) = theTorsion->getClassTag();
+  if (theTorsion != 0) {
+    theTorsion->setDbTag(dbTag);
+    data(3) = theTorsion->getClassTag();
+  }
 
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
@@ -806,7 +820,8 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }    
 
-  theTorsion->sendSelf(commitTag, theChannel);
+  if (theTorsion != 0)
+    theTorsion->sendSelf(commitTag, theChannel);
 
   if (numFibers != 0) {
     
@@ -852,7 +867,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
+  static ID data(5);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
@@ -864,15 +879,16 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
    
   this->setTag(data(0));
 
-  if (theTorsion == 0) {	
-	  int cTag = data(2);
-	  theTorsion = theBroker.getNewUniaxialMaterial(cTag);
-	  theTorsion->setDbTag(dbTag);
-  } 
-  if (theTorsion == 0) {
-	    opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
-		return -1;
+  if (data(2) == 1 && theTorsion == 0) {	
+    int cTag = data(3);
+    theTorsion = theBroker.getNewUniaxialMaterial(cTag);
+    if (theTorsion == 0) {
+      opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
+      return -1;
+    }
+    theTorsion->setDbTag(dbTag);
   }
+
   if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
 	   opserr << "FiberSection3d::recvSelf - torsion failed to recvSelf \n";
        return -2;
