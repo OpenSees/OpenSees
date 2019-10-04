@@ -666,6 +666,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ElasticPowerFunc.o \
 	$(FE)/material/uniaxial/MultiLinear.o \
 	$(FE)/material/uniaxial/HookGap.o \
+	$(FE)/material/uniaxial/UVCuniaxial.o \
 	$(FE)/material/uniaxial/HardeningMaterial.o \
 	$(FE)/material/uniaxial/HardeningMaterial2.o \
 	$(FE)/material/uniaxial/ParallelMaterial.o \
@@ -792,6 +793,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
 	$(DAMAGE_2P) $(FE)/material/nD/WrapperNDMaterial.o \
+	$(FE)/material/nD/UVCplanestress.o \
+	$(FE)/material/nD/UVCmultiaxial.o \
 	$(FE)/material/nD/J2Plasticity.o \
 	$(FE)/material/nD/J2PlaneStress.o \
 	$(FE)/material/nD/J2PlaneStrain.o \
