@@ -130,7 +130,7 @@ UVCplanestress::UVCplanestress(int tag, double E, double poissonRatio,
   double sy0, double qInf, double b,
   double dInf, double a,
   std::vector<double> cK, std::vector<double> gammaK)
-  : NDMaterial(tag, ND_TAG_RESSCppLabPS),
+  : NDMaterial(tag, ND_TAG_UVCplanestress),
   elasticModulus(E),
   poissonRatio(poissonRatio),
   initialYield(sy0),
@@ -184,7 +184,7 @@ UVCplanestress::UVCplanestress(int tag, double E, double poissonRatio,
 /* ----------------------------------------------------------------------------------------------------------------- */
 
 UVCplanestress::UVCplanestress()
-  : NDMaterial(0, ND_TAG_RESSCppLabPS),
+  : NDMaterial(0, ND_TAG_UVCplanestress),
   elasticModulus(0.),
   poissonRatio(0.),
   initialYield(0.),
