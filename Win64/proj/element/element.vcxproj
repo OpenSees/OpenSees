@@ -22,7 +22,6 @@
     <ProjectGuid>{8062B50D-A609-33D0-8223-81D898DE05D5}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -80,8 +79,6 @@
       <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeTypeInfo>
-      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\debug/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\debug/</ObjectFileName>
@@ -111,8 +108,6 @@
       <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>
-      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\debug/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\debug/</ObjectFileName>
@@ -143,8 +138,6 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>
-      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\release/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\release/</ObjectFileName>
@@ -173,8 +166,6 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>
-      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\release/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\release/</ObjectFileName>
@@ -252,6 +243,8 @@
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\Inerter.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.cpp" />
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp" />
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.cpp" />
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.cpp" />
@@ -304,7 +297,6 @@
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\TclElasticBeamCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\brick\BbarBrick.cpp" />
     <ClCompile Include="..\..\..\SRC\element\brick\BbarBrickWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\brick\Brick.cpp" />
@@ -384,16 +376,10 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\TclDispBeamColumnIntCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\generic\GenericClient.cpp" />
     <ClCompile Include="..\..\..\SRC\element\generic\GenericCopy.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\TclGenericClientCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\generic\TclGenericCopyCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TclTwoNodeLinkCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\Actuator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\ActuatorCorot.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\Adapter.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclActuatorCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclActuatorCorotCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\adapter\TclAdapterCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity2d.cpp" />
@@ -402,9 +388,6 @@
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericX.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\HDR.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\LeadRubberX.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingBoucWenCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingPlasticityCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingUFRPCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FlatSliderSimple2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FlatSliderSimple3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\MultiFP2d.cpp" />
@@ -415,9 +398,6 @@
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\TFP_Bearing.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\TFP_Bearing2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\TPB1D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclFlatSliderCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclRJWatsonEQSCommand.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TclSingleFPCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulum.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\Coulomb.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\frictionModel\FrictionModel.cpp" />
@@ -472,6 +452,7 @@
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h" />
     <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Element.h" />
@@ -516,6 +497,8 @@
     <ClInclude Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h" />
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\Inerter.h" />
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.h" />
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h" />
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.h" />
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.h" />

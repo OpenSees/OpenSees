@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef FlatSliderSimple2d_h
 #define FlatSliderSimple2d_h
 

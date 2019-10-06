@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Manish Kumar (mkumar2@buffalo.edu)
 // Created: 02/12
 // Revision: A
@@ -1027,7 +1023,7 @@ void HDR::Print(OPS_Stream &s, int flag)
         s << "D1: "<< D1 << " D2: " << D2 << " L: " << L << " Tr: " << Tr << " n: " << n << " A: " << A << endln;
         s << "MATERIAL PROPERTIES" << endln;
         s << "G: " << G << " kc: " << kc << " ac: " << ac << " PhiM: " << PhiM << " shearDistI: " << shearDistI << " mass: " << mass << endln;
-        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n" << endln;
+        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION" << endln;
         s << "a1: " << a1 << " a2: " << a2 << " a3: " << a3 <<endln;
         s << "b1: " << b1 << " b2: " << b2 << " b3: " << b3 <<endln;
         s << "c1: " << c1 << " c2: " << c2 << " c3: " << c3 << " c4: " << c4 << endln;

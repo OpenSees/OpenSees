@@ -5,10 +5,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 4945 $
-// $Date: 2015-10-12 18:46:30 $
-// $URL: 
-
 #ifndef ElastomericBearingBoucWenMod3d_h
 #define ElastomericBearingBoucWenMod3d_h
 

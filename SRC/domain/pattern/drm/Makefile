@@ -1,12 +1,18 @@
 include ../../../../Makefile.def
 
+ifdef H5DRM_FLAG
+  	H5_FILE = H5DRM.p
+else
+	H5_FIle = 
+endif
+
 OBJS       = Mesh3DSubdomain.o \
 	GeometricBrickDecorator.o \
 	DRMBoundaryLayerDecorator.o \
 	DRMLoadPattern.o \
 	DRMLoadPatternWrapper.o \
 	DRMInputHandler.o \
-	PlaneDRMInputHandler.o
+	PlaneDRMInputHandler.o $(H5_FILE)
 
 all:         $(OBJS)
 

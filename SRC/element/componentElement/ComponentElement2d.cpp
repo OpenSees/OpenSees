@@ -47,8 +47,6 @@
 Vector ComponentElement2d::P(6);
 Matrix ComponentElement2d::K(6,6);
 
-#define ELE_TAG_ComponentElement2d 40
-
 void *
 OPS_ComponentElement2d(void)
 {

@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef RJWatsonEQS2d_h
 #define RJWatsonEQS2d_h
 
@@ -30,12 +26,13 @@
 // Revision: A
 //
 // Description: This file contains the class definition for RJWatsonEQS2d.
-// RJWatsonEQS2d (R.J. Watson EradiQuake System) is a friction slider
-// element with mass energy regulator (MER) polyurethane springs defined
-// by two nodes.  This simplified version uses a unidirectional plasticity
-// model to simulate the shear behavior and two uniaxial material models
-// to simulate the axial and moment behaviors. The total P-Delta moment
-// is fully distributed to the sliding surface end node of the element.
+// RJWatsonEQS2d (R.J. Watson EradiQuake System) is a two-node friction
+// slider element with mass energy regulator (MER) polyurethane springs.
+// This simplified version uses a unidirectional plasticity model to
+// simulate the sliding shear behavior and three uniaxial material models
+// to simulate the axial, MER spring shear resistance, and moment behaviors.
+// The total P-Delta moment is fully distributed to the sliding surface end
+// node of the element.
 
 #include <Element.h>
 #include <Matrix.h>

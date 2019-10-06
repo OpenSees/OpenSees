@@ -160,6 +160,7 @@ extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenOriginal(void);
 extern void *OPS_GNGMaterial(void);
 extern void *OPS_OOHystereticMaterial(void);
+extern void* OPS_ElasticPowerFunc(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -438,7 +439,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-/*
+    }
+    else if (strcmp(argv[1], "ElasticPowerFunc") == 0) {
+    void* theMat = OPS_ElasticPowerFunc();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+    else
+        return TCL_ERROR;
+    /*
 	} else if (strcmp(argv[1],"HoehlerStanton") == 0) {
       void *theMat = OPS_HoehlerStanton();
       if (theMat != 0) 

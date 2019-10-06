@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef SingleFPSimple2d_h
 #define SingleFPSimple2d_h
 

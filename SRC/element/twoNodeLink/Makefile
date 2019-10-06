@@ -1,7 +1,7 @@
 
 include ../../../Makefile.def
-OBJS       = TwoNodeLink.o \
-	TclTwoNodeLinkCommand.o
+OBJS       = LinearElasticSpring.o \
+    TwoNodeLink.o Inerter.o
 
 # Compilation control
 
