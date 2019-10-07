@@ -131,7 +131,7 @@ UVCmultiaxial::UVCmultiaxial(int tag, double E, double poissonRatio,
   double sy0, double qInf, double b,
   double dInf, double a,
   std::vector<double> cK, std::vector<double> gammaK)
-  : NDMaterial(tag, ND_TAG_RESSCppLabMA),
+  : NDMaterial(tag, ND_TAG_UVCmultiaxial),
   elasticModulus(E),
   poissonRatio(poissonRatio),
   initialYield(sy0),
@@ -178,7 +178,7 @@ UVCmultiaxial::UVCmultiaxial(int tag, double E, double poissonRatio,
 /* ----------------------------------------------------------------------------------------------------------------- */
 
 UVCmultiaxial::UVCmultiaxial()
-  : NDMaterial(0, ND_TAG_RESSCppLabMA),
+  : NDMaterial(0, ND_TAG_UVCmultiaxial),
   elasticModulus(0.),
   poissonRatio(0.),
   initialYield(0.),
