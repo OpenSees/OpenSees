@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>OpenSeesPy36</ProjectName>
+    <ProjectGuid>{5E3E057B-AE7B-434B-9FC1-C238893D901E}</ProjectGuid>
+    <RootNamespace>OpenSeesPy5</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\bin\py36</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\openseesPy36\release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\bin\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\openseesPy\debug\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.pyd</TargetExt>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">opensees</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TypeLibraryName>.\..\..\bin\OpenSeesPy.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\src\material\uniaxial\unloading;..\..\..\src\material\uniaxial\stiffness;..\..\..\src\material\uniaxial\strength;..\..\..\src\element\tetrahedron;..\..\..\src\element\PFEMElement;..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\components;..\..\..\src\actor\machineBroker;..\..\..\src\material\section\integration;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\repres\cell;..\..\..\src\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\material\section\repres\patch;..\..\..\other\CSPARSE;..\..\..\src\recorder\response;..\..\..\src\material\section\fiber;..\..\..\src\element\shell;..\..\..\src\material\uniaxial\backbone;..\..\..\src\domain\groundMotion;..\..\..\src\element\brick;..\..\..\src\element\frictionBearing\frictionModel;..\..\..\src\element\UWelements;..\..\..\src\material\uniaxial\limitState\limitCurve;..\..\..\src\domain\region;..\..\..\src\element\fourNodeQuad;..\..\..\src\reliability\analysis\telm;..\..\..\src\element\forceBeamColumn;..\..\..\src\api;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\material\uniaxial\py;..\..\..\src\damage;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\matrix;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\cg;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\database;..\..\..\src\element\updatedLagrangianBeamColumn;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl\include;c:\Program Files\Python36\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WGL;_RELIABILITY;_WIN32;_WIN64;_FORTRAN;WIN32;WIN64;_CONSOLE;BUILD_tcl;_TCL85;_NO_NEW_RESTREPO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\openseesPy36\release\OpenSeesPy.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\openseesPy36\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\openseesPy36\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\openseesPy36\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\bin\py36\opensees.pyd</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\Program Files\Python36\libs;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ProgramDatabaseFile>.\..\..\bin\py36\OpenSeesPy.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <BuildLog>
+      <Path>.\..\..\obj\openseesPy36\release\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TypeLibraryName>.\..\..\bin\OpenSeesPy.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\element\tetrahedron;..\..\..\src\element\PFEMElement;..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\components;..\..\..\src\actor\machineBroker;..\..\..\src\material\section\integration;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\repres\cell;..\..\..\src\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\material\section\repres\patch;..\..\..\other\CSPARSE;..\..\..\src\recorder\response;..\..\..\src\material\section\fiber;..\..\..\src\element\shell;..\..\..\src\material\uniaxial\backbone;..\..\..\src\domain\groundMotion;..\..\..\src\element\brick;..\..\..\src\element\frictionBearing\frictionModel;..\..\..\src\element\UWelements;..\..\..\src\material\uniaxial\limitState\limitCurve;..\..\..\src\domain\region;..\..\..\src\element\fourNodeQuad;..\..\..\src\reliability\analysis\telm;..\..\..\src\element\forceBeamColumn;..\..\..\src\api;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\material\uniaxial\py;..\..\..\src\damage;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\matrix;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src;..\..\..\src\tagged;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\cg;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\database;..\..\..\src\element\updatedLagrangianBeamColumn;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl\include;c:\Program Files\Python36\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WGL;_RELIABILITY;_WIN32;_WIN64;_FORTRAN;WIN32;WIN64;_CONSOLE;BUILD_tcl;_TCL85;_NO_NEW_RESTREPO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\openseesPy\debug\OpenSeesPy.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\openseesPy\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\openseesPy\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\openseesPy\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\bin\opensees.pyd</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\Program Files\Python36\libs;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\bin\OpenSeesPy.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <BuildLog>
+      <Path>.\..\..\obj\openseesPy\debug\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\classTags.h" />
+    <ClInclude Include="..\..\..\SRC\interpreter\DL_Interpreter.h" />
+    <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesCommands.h" />
+    <ClInclude Include="..\..\..\SRC\interpreter\PythonModule.h" />
+    <ClInclude Include="..\..\..\SRC\interpreter\PythonWrapper.h" />
+    <ClInclude Include="..\..\..\SRC\OPS_Globals.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\actor\actor.vcxproj">
+      <Project>{d9026bc0-b5bf-3be9-e9cb-3491638f2c38}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\analysis\analysis.vcxproj">
+      <Project>{71832cb0-ed48-1caf-ecb3-b9ad954d38e5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cblas\cblas.vcxproj">
+      <Project>{310dc5fa-1613-d953-4008-15056952e467}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\convergence\convergence.vcxproj">
+      <Project>{63511522-ebef-1468-ad6b-0f365ca756a9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cssparse\cssparse.vcxproj">
+      <Project>{542b4ec8-400f-4be5-a0a1-a53e8830606c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\damage\damage.vcxproj">
+      <Project>{0775a4b2-93d2-4440-83b7-c1df58021602}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\database\database.vcxproj">
+      <Project>{2b908396-b6b4-c511-d0e2-87620530aaa2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\domain\domain.vcxproj">
+      <Project>{10be1d68-585d-6b54-0c7f-0cf2962c52f1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\element\element.vcxproj">
+      <Project>{8062b50d-a609-33d0-8223-81d898de05d5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\graph\graph.vcxproj">
+      <Project>{771cf0b5-a9ed-0cba-dcc2-94ee2ff499e8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\handler\handler.vcxproj">
+      <Project>{a6947a93-dfd1-060e-f426-ae10230f7861}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\material\material.vcxproj">
+      <Project>{b3b28eab-160f-635a-cd8a-4c4baa55cf78}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\matrix\matrix.vcxproj">
+      <Project>{a2422b53-1a88-cbc2-aaa3-3a727c91e852}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\modelbuilder\modelbuilder.vcxproj">
+      <Project>{d4304671-12ad-a3ab-e4c8-90005c96311c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\optimization\optimization.vcxproj">
+      <Project>{d1c15272-e650-4be0-9daf-b79f984d623d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\recorder\recorder.vcxproj">
+      <Project>{5bb0e918-ce81-7129-15f5-2a3470e92427}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\reliability\reliability.vcxproj">
+      <Project>{85f9e3f0-a6e0-6a77-9683-7150b4be5a09}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\renderer\renderer.vcxproj">
+      <Project>{c7780c72-e360-ab77-79d6-f5ceb52c2f00}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\string\string.vcxproj">
+      <Project>{767a7605-a645-c010-dcdd-f981dd6e0a61}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\superLU\superLU.vcxproj">
+      <Project>{931a4de5-3af2-18c7-6370-37e5deda392a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system\system.vcxproj">
+      <Project>{e68180c9-479c-a9c1-3832-cef06b7f9d8c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\tagged\tagged.vcxproj">
+      <Project>{3285d0ef-7169-f5be-c3ac-3752aaebb765}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\utility\utility.vcxproj">
+      <Project>{72ceb368-613b-3977-7be6-0155a5f1ddbc}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\interpreter\DL_Interpreter.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesBeamIntegrationCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesCrdTransfCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesElementCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesFrictionModelCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesMiscCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesNDMaterialCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesOutputCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesParameterCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesPatternCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesSectionCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesTimeSeriesCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesUniaxialMaterialCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\PythonModule.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\PythonWrapper.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSeesPy36.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
