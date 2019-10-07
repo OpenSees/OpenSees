@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 12/11
 // Revision: A
@@ -59,7 +55,6 @@ void *OPS_ElasticMultiLinear()
     double strainData[64];
     double stressData[64];
     double eta = 0.0;
-    //char paraStr[8];
     const char *paraStr;
     
     int numData = 1;
@@ -97,7 +92,6 @@ void *OPS_ElasticMultiLinear()
     
     // get stress data points
     paraStr = OPS_GetString();
-    //    OPS_GetString(paraStr,7);
     if (strcmp(paraStr,"-stress") == 0)  {
         if (OPS_GetDoubleInput(&numData, stressData) != 0)  {
             opserr << "WARNING invalid stressPoints\n";
@@ -128,7 +122,8 @@ ElasticMultiLinear::ElasticMultiLinear(int tag,
     const Vector &strainPts, const Vector &stressPts, double et)
     : UniaxialMaterial(tag, MAT_TAG_ElasticMultiLinear),
     strainPoints(strainPts), stressPoints(stressPts), eta(et),
-    trialID(0), trialIDmin(0), trialIDmax(0), initTangent(0.0),
+    trialID(0), trialIDmin(0), trialIDmax(0),
+    numDataPoints(2), initTangent(0.0),
     trialStrain(0.0), trialStrainRate(0.0),
     trialStress(0.0), trialTangent(0.0)
 {
@@ -148,8 +143,9 @@ ElasticMultiLinear::ElasticMultiLinear(int tag,
 
 ElasticMultiLinear::ElasticMultiLinear()
     : UniaxialMaterial(0 ,MAT_TAG_ElasticMultiLinear),
-    strainPoints(1), stressPoints(1), eta(0.0),
-    trialID(0), trialIDmin(0), trialIDmax(0), initTangent(0.0),
+    strainPoints(2), stressPoints(2), eta(0.0),
+    trialID(0), trialIDmin(0), trialIDmax(0),
+    numDataPoints(2), initTangent(0.0),
     trialStrain(0.0), trialStrainRate(0.0),
     trialStress(0.0), trialTangent(0.0)
 {
