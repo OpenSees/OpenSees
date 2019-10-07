@@ -127,7 +127,7 @@ void* OPS_UVCuniaxial(void) {
 UVCuniaxial::UVCuniaxial(int tag, double E, double sy0, double qInf, double b,
   double dInf, double a,
   std::vector<double> cK, std::vector<double> gammaK)
-  : UniaxialMaterial(tag, MAT_TAG_RESSCppLab),
+  : UniaxialMaterial(tag, MAT_TAG_UVCuniaxial),
   elasticModulus(E),
   yieldStress(sy0),
   qInf(qInf),

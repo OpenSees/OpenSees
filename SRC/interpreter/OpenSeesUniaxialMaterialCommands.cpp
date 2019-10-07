@@ -114,6 +114,7 @@ void* OPS_MinMaxMaterial();
 void* OPS_TensionOnlyMaterial();
 void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
+void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
@@ -264,7 +265,8 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilin", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilinear", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticMultiLinear", &OPS_ElasticMultiLinear));
-	uniaxialMaterialsMap.insert(std::make_pair("MultiLinear", &OPS_MultiLinear));
+    uniaxialMaterialsMap.insert(std::make_pair("ElasticPowerFunc", &OPS_ElasticPowerFunc));
+    uniaxialMaterialsMap.insert(std::make_pair("MultiLinear", &OPS_MultiLinear));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStrainMaterial", &OPS_InitStrainMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStrain", &OPS_InitStrainMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStressMaterial", &OPS_InitStressMaterial));
