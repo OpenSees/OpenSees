@@ -128,6 +128,8 @@
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UVCmultiaxial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UVCplanestress.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
@@ -284,6 +286,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TclModelBuilderUnloadingRuleCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.cpp" />
@@ -534,6 +537,8 @@
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UVCmultiaxial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UVCplanestress.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
@@ -685,6 +690,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\KarsanUnloadingRule.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.h" />
