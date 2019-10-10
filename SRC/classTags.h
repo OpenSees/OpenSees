@@ -214,6 +214,7 @@
 #define MAT_TAG_ConfinedConcrete01              101
 #define MAT_TAG_ElasticPowerFunc                102
 #define MAT_TAG_UVCuniaxial                     103
+#define MAT_TAG_IMKBilin                        104
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
