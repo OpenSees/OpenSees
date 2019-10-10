@@ -347,7 +347,9 @@ void UVCmultiaxial::calculateStiffness(double consistParam, double stressRelativ
     double yieldStress, isotropicModulus, kinematicModulus, eK, beta, theta_1, theta_2, theta_3,
       id2OutId2, nOutN, alphaOutN;
     // 2nd order identity tensor
-    std::vector<double> id2 = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+    std::vector<double> id2(6);
+    id2[0] = id2[1] = id2[2] = 1.0;
+    id2[3] = id2[4] = id2[5] = 1.0;
     // Symmetric 4th order identity tensor
     Matrix id4 = Matrix(N_DIMS, N_DIMS);
     for (unsigned int i = 0; i < N_DIRECT; ++i)
