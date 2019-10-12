@@ -151,7 +151,9 @@ void* OPS_AxialCurve()
     }
     // Parsing was successful, allocate the limit curve
     // Subtract one from dof and perpDirn for C indexing
-    // return new AxialCurve(interp, tag, eleTag, theDomain, Fsw, //SDK
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return 0;
+    //return new AxialCurve(interp, tag, eleTag, theDomain, Fsw, //SDK
     // 			  Kdeg, Fres, defType, forType, ndI, ndJ, dof-1, perpDirn-1,
     // 			  delta, eleRemove);
 }
@@ -263,11 +265,11 @@ AxialCurve::checkElementState(double springForce)
 			}
 		}
 
-		dP = 0;			//zero change in axial load
-		double deform;	// value of deformation parameter from element
-		double force;	// value of force parameter from element
-//		double Ps;		// axial load at shear failure - for now assumed to be current axial load (Commented out by Terje)
-		int result;		//junk variable
+		dP = 0;          //zero change in axial load
+		double deform;   // value of deformation parameter from element
+		double force;    // value of force parameter from element
+//		double Ps;       // axial load at shear failure - for now assumed to be current axial load (Commented out by Terje)
+		int result = 0;  //junk variable
 
 
 		// Based on "defType" and "forType" calculate 

@@ -45,7 +45,7 @@ void *OPS_ElasticPowerFunc()
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc < 5) {
         opserr << "WARNING incorrect num args want: uniaxialMaterial ";
-        opserr << "ElasticPowerFunc tag -coeff c1 c2 ... ";
+        opserr << "ElasticPowerFunc tag <eta> -coeff c1 c2 ... ";
         opserr << "-exp e1 e2 ... ";
         opserr << "(with at least one pair of (ci,ei) values)\n";
         return 0;

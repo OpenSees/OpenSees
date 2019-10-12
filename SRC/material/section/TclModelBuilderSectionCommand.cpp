@@ -2104,6 +2104,7 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     int secTag;
     int maxNumPatches = 30; 
     int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
     
     if (argc < 4) 
 	return TCL_ERROR;
@@ -2176,7 +2177,7 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }
 
-    if (torsion == 0) {
+    if (NDM == 3 && torsion == 0) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSection3d: " << secTag << endln;
       return TCL_ERROR;
@@ -2204,6 +2205,7 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
     int secTag;
     int maxNumPatches = 30; 
     int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
     
     if (argc < 4) 
 	return TCL_ERROR;
@@ -2307,7 +2309,7 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
     }
 
-    if (torsion == 0) {
+    if (NDM == 3 && torsion == 0) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSectionInt3d: " << secTag << endln;
       return TCL_ERROR;
@@ -3830,6 +3832,7 @@ int TclCommand_addFiberSectionThermal(ClientData clientData, Tcl_Interp *interp,
 	int secTag;
 	int maxNumPatches = 30;
 	int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
 
 	if (argc < 4)
 		return TCL_ERROR;
@@ -3890,7 +3893,7 @@ int TclCommand_addFiberSectionThermal(ClientData clientData, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if (torsion == 0) {
+	if (NDM == 3 && torsion == 0) {
 	  opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
 	  opserr << "\nFiberSectionThermal3d: " << secTag << endln;
 	  return TCL_ERROR;
