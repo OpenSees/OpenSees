@@ -58,7 +58,7 @@ SensitivityAlgorithm::~SensitivityAlgorithm()
 {
 
 }
-/*
+
 int 
 SensitivityAlgorithm::computeSensitivities(void)
 {
@@ -146,7 +146,7 @@ SensitivityAlgorithm::computeSensitivities(void)
 
 	return 0;
 }
-*/
+
 
 /*
 bool 
