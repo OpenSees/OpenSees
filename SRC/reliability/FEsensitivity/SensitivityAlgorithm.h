@@ -50,7 +50,7 @@ class SensitivityAlgorithm
 		       int analysisTypeTag);
 
   ~SensitivityAlgorithm();
-  int computeSensitivities(void);
+  //int computeSensitivities(void);
 //  bool shouldComputeAtEachStep(void);
 //  int sensitivityDomainChanged(void) {return 0;}
   // This method needs to go -- MHS
