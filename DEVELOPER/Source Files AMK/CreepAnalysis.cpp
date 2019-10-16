@@ -205,19 +205,19 @@ CreepAnalysis::analyze(int numSteps)
 	}    
 
 // AddingSensitivity:BEGIN ////////////////////////////////////
-#ifdef _RELIABILITY
-	if (theSensitivityAlgorithm != 0) {
-		result = theSensitivityAlgorithm->computeSensitivities();
-		if (result < 0) {
-			opserr << "CreepAnalysis::analyze() - the SensitivityAlgorithm failed";
-			opserr << " at iteration: " << i << " with domain at load factor ";
-			opserr << the_Domain->getCurrentTime() << endln;
-			the_Domain->revertToLastCommit();	    
-			theIntegrator->revertToLastStep();
-			return -5;
-		}    
-	}
-#endif
+//#ifdef _RELIABILITY
+	//if (theSensitivityAlgorithm != 0) {
+		//result = theSensitivityAlgorithm->computeSensitivities();
+		//if (result < 0) {
+			//opserr << "CreepAnalysis::analyze() - the SensitivityAlgorithm failed";
+			//opserr << " at iteration: " << i << " with domain at load factor ";
+			//opserr << the_Domain->getCurrentTime() << endln;
+			//the_Domain->revertToLastCommit();	    
+			//theIntegrator->revertToLastStep();
+			//return -5;
+		//}    
+	//}
+//#endif
 // AddingSensitivity:END //////////////////////////////////////
 
 	result = theIntegrator->commit();
