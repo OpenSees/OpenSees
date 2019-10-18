@@ -2,7 +2,10 @@
 include ../../../Makefile.def
 OBJS       = ActuatorCorot.o \
 	Actuator.o \
-	Adapter.o
+	Adapter.o \
+	TclActuatorCommand.o \
+	TclActuatorCorotCommand.o \
+	TclAdapterCommand.o
 
 # Compilation control
 

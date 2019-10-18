@@ -10,8 +10,11 @@ OBJS       = FlatSliderSimple2d.o \
 	TPB1D.o \
 	TripleFrictionPendulum.o \
 	MultiFP2d.o \
-    RJWatsonEQS2d.o \
-    RJWatsonEQS3d.o
+	RJWatsonEQS2d.o \
+	RJWatsonEQS3d.o \
+	TclFlatSliderCommand.o \
+	TclRJWatsonEQSCommand.o \
+	TclSingleFPCommand.o
 
 # Compilation control
 

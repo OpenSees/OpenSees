@@ -641,7 +641,7 @@ else
 endif
 
 ifdef H5DRM_FLAG
-	H5DRM = $(FE)/domain/pattern/drm/H5DRM.o \
+	H5DRM = $(FE)/domain/pattern/drm/H5DRM.o
 else
 	H5DRM = 
 endif
@@ -792,7 +792,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
-	$(DAMAGE_2P) $(FE)/material/nD/WrapperNDMaterial.o \
+	$(DAMAGE_2P) $(H5DRM) $(FE)/material/nD/WrapperNDMaterial.o \
 	$(FE)/material/nD/UVCplanestress.o \
 	$(FE)/material/nD/UVCmultiaxial.o \
 	$(FE)/material/nD/J2Plasticity.o \
@@ -1159,7 +1159,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/drm/DRMLoadPattern.o \
 	$(FE)/domain/pattern/drm/DRMLoadPatternWrapper.o \
 	$(FE)/domain/pattern/drm/DRMInputHandler.o \
-	$(FE)/domain/pattern/drm/PlaneDRMInputHandler.o $(H5DRM) \
+	$(FE)/domain/pattern/drm/PlaneDRMInputHandler.o \
 	$(FE)/domain/groundMotion/GroundMotion.o \
 	$(FE)/domain/groundMotion/GroundMotionRecord.o \
 	$(FE)/domain/groundMotion/InterpolatedGroundMotion.o \
