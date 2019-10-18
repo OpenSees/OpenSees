@@ -575,7 +575,32 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"ModIMKPeakOriented") == 0) {
+    }
+    else if (strcmp(argv[1], "IMKBilin") == 0) {
+      void *theMat = OPS_IMKBilin();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPeakOriented") == 0) {
+      void *theMat = OPS_IMKPeakOriented();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPinching") == 0) {
+      void *theMat = OPS_IMKPinching();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "ModIMKPeakOriented") == 0) {
       void *theMat = OPS_ModIMKPeakOriented();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
