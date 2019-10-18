@@ -27,7 +27,9 @@
 //
 // Description: This file contains the class definition for 
 // ElasticPowerFunc. ElasticPowerFunc provides the abstraction
-// of an elastic uniaxial material with a power function behavior.
+// of an elastic uniaxial material with a power function behavior
+// according to y = c1*sgn(x)*|x|^e1 + c2*sgn(x)*|x|^e2 + ...
+//                + cn*sgn(x)*|x|^en
 
 #include <UniaxialMaterial.h>
 
@@ -36,8 +38,8 @@ class ElasticPowerFunc : public UniaxialMaterial
 public:
     // constructor
     ElasticPowerFunc(int tag,
-		       const Vector &strainPoints, 
-		       const Vector &stressPoints,
+		       const Vector &coeff, 
+		       const Vector &exp,
                double eta = 0.0);    
     ElasticPowerFunc();    
 
@@ -69,14 +71,13 @@ public:
 protected:
 
 private:
-    Vector strainPoints;     // strain points on multi-linear curve
-    Vector stressPoints;     // stress points on multi-linear curve
+    double sgn(double x);
+    
+    Vector coefficients;     // coefficients in power function y = c1*x^e1 + c2*x^e2 + ...
+    Vector exponents;        // exponents in power function y = c1*x^e1 + c2*x^e2 + ...
     double eta;              // damping tangent modulus
-    int trialID;             // trial ID into strain, stress arrays
-    int trialIDmin;          // minimum of trial ID
-    int trialIDmax;          // maximum of trial ID
-    int numDataPoints;       // number of data points defining curve
-    double initTangent;      // initial tangent (on positive side)
+    int numTerms;            // number of power function terms
+    double initTangent;      // initial tangent
     double trialStrain;      // trial strain
     double trialStrainRate;  // trial strain rate
     double trialStress;      // trial stress

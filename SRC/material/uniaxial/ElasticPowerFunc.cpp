@@ -19,7 +19,7 @@
 ** ****************************************************************** */
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
-// Created: 12/11
+// Created: 10/19
 // Revision: A
 //
 // Description: This file contains the implementation of the
@@ -43,19 +43,18 @@ void *OPS_ElasticPowerFunc()
     UniaxialMaterial *theMaterial = 0;
     
     int argc = OPS_GetNumRemainingInputArgs();
-    if (argc < 7) {
+    if (argc < 5) {
         opserr << "WARNING incorrect num args want: uniaxialMaterial ";
-        opserr << "ElasticPowerFunc tag -strain strainPoints ";
-        opserr << "-stress stressPoints  ";
-        opserr << "(with at least two stress-strain points)\n";
+        opserr << "ElasticPowerFunc tag -coeff c1 c2 ... ";
+        opserr << "-exp e1 e2 ... ";
+        opserr << "(with at least one pair of (ci,ei) values)\n";
         return 0;
     }
     
     int tag[1];
-    double strainData[64];
-    double stressData[64];
+    double coeffData[64];
+    double expData[64];
     double eta = 0.0;
-    //char paraStr[8];
     const char *paraStr;
     
     int numData = 1;
@@ -75,40 +74,43 @@ void *OPS_ElasticPowerFunc()
         argc--;
     }
     
-    // get strain data points
+    // get coefficient values
     numData = (argc - 3)/2;
     paraStr = OPS_GetString();
-    if (strcmp(paraStr,"-strain") == 0)  {
-        if (OPS_GetDoubleInput(&numData,strainData) != 0)  {
-            opserr << "WARNING invalid strainPoints\n";
+    if (strcmp(paraStr,"-coeff") == 0 ||
+        strcmp(paraStr, "-coefficient") == 0 ||
+        strcmp(paraStr, "-coefficients") == 0)  {
+        if (OPS_GetDoubleInput(&numData,coeffData) != 0)  {
+            opserr << "WARNING invalid coefficients\n";
             opserr << "uniaxialMaterial ElasticPowerFunc: " << tag[0] << endln;
             return 0;
         }
     } else  {
-        opserr << "WARNING expecting -strain but got " << paraStr << endln;
+        opserr << "WARNING expecting -coeff but got " << paraStr << endln;
         opserr << "uniaxialMaterial ElasticPowerFunc: " << tag[0] << endln;
         return 0;
     }
-    Vector strainPts(strainData,numData);
+    Vector coefficients(coeffData,numData);
     
-    // get stress data points
+    // get exponent values
     paraStr = OPS_GetString();
-    //    OPS_GetString(paraStr,7);
-    if (strcmp(paraStr,"-stress") == 0)  {
-        if (OPS_GetDoubleInput(&numData, stressData) != 0)  {
-            opserr << "WARNING invalid stressPoints\n";
+    if (strcmp(paraStr,"-exp") == 0 ||
+        strcmp(paraStr, "-exponent") == 0 ||
+        strcmp(paraStr, "-exponents") == 0)  {
+        if (OPS_GetDoubleInput(&numData, expData) != 0)  {
+            opserr << "WARNING invalid exponents\n";
             opserr << "uniaxialMaterial ElasticPowerFunc: " << tag[0] << endln;
             return 0;
         }
     } else  {
-        opserr << "WARNING expecting -stress but got " << paraStr << endln;
+        opserr << "WARNING expecting -exp but got " << paraStr << endln;
         opserr << "uniaxialMaterial ElasticPowerFunc: " << tag[0] << endln;
         return 0;
     }
-    Vector stressPts(stressData,numData);
+    Vector exponents(expData,numData);
     
     // Parsing was successful, allocate the material
-    theMaterial = new ElasticPowerFunc(tag[0], strainPts, stressPts, eta);
+    theMaterial = new ElasticPowerFunc(tag[0], coefficients, exponents, eta);
     
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type ";
@@ -121,20 +123,19 @@ void *OPS_ElasticPowerFunc()
 
 
 ElasticPowerFunc::ElasticPowerFunc(int tag,
-    const Vector &strainPts, const Vector &stressPts, double et)
+    const Vector &coeff, const Vector &exp, double et)
     : UniaxialMaterial(tag, MAT_TAG_ElasticPowerFunc),
-    strainPoints(strainPts), stressPoints(stressPts), eta(et),
-    trialID(0), trialIDmin(0), trialIDmax(0), initTangent(0.0),
+    coefficients(coeff), exponents(exp), eta(et),
+    numTerms(1), initTangent(0.0),
     trialStrain(0.0), trialStrainRate(0.0),
     trialStress(0.0), trialTangent(0.0)
 {
-    numDataPoints = strainPoints.Size();
-    if (numDataPoints != stressPoints.Size())  {
+    numTerms = coefficients.Size();
+    if (numTerms != exponents.Size())  {
         opserr << "ElasticPowerFunc::ElasticPowerFunc() "
-            << "- strain and stress arrays do not have same length.\n";
+            << "- coefficient and exponent arrays do not have same length.\n";
         exit(-1);        
     }
-    trialIDmax = numDataPoints - 2;
     
     this->revertToStart();
     
@@ -144,8 +145,8 @@ ElasticPowerFunc::ElasticPowerFunc(int tag,
 
 ElasticPowerFunc::ElasticPowerFunc()
     : UniaxialMaterial(0 ,MAT_TAG_ElasticPowerFunc),
-    strainPoints(1), stressPoints(1), eta(0.0),
-    trialID(0), trialIDmin(0), trialIDmax(0), initTangent(0.0),
+    coefficients(1), exponents(1), eta(0.0),
+    numTerms(1), initTangent(0.0),
     trialStrain(0.0), trialStrainRate(0.0),
     trialStress(0.0), trialTangent(0.0)
 {
@@ -164,33 +165,22 @@ int ElasticPowerFunc::setTrialStrain(double strain, double strainRate)
     trialStrain = strain;
     trialStrainRate = strainRate;
     
-    // find the current interval
-    double eps1 = strainPoints(trialID);
-    double eps2 = strainPoints(trialID+1);
-    if (trialStrain >= eps2 && trialID < trialIDmax)  {
-        while (trialStrain >= eps2 && trialID < trialIDmax)  {
-            trialID++;
-            eps1 = eps2;
-            eps2 = strainPoints(trialID+1);
-        }
-    } else if (trialStrain < eps1 && trialID > trialIDmin)  {
-        while (trialStrain <= eps1 && trialID > trialIDmin)  {
-            trialID--;
-            eps2 = eps1;
-            eps1 = strainPoints(trialID);
-        }
-    }
-    double sig1 = stressPoints(trialID);
-    double sig2 = stressPoints(trialID+1);
-    
-    // get the tangent for the selected interval
-    trialTangent = (sig2-sig1)/(eps2-eps1);
-    
-    // get the stress for the selected interval
-    trialStress = sig1 + trialTangent*(trialStrain-eps1) + eta*trialStrainRate;
-    if (fabs(trialStress) < trialTangent*DBL_EPSILON)
-        trialStress = 0.0;
+    // get the stress and tangent
+    trialStress = 0.0;
+    trialTangent = 0.0;
+    for (int i = 0; i < numTerms; i++)  {
+        if (exponents(i) >= 0.0 || trialStrain != 0.0)
+            trialStress += coefficients(i) * sgn(trialStrain) * pow(fabs(trialStrain), exponents(i));
+        else
+            trialStress += 0.0;
 
+        if (exponents(i) >= 1.0 || trialStrain != 0.0)
+            trialTangent += coefficients(i) * exponents(i) * pow(fabs(trialStrain), exponents(i) - 1.0);
+        else
+            trialTangent += coefficients(i) * pow(DBL_EPSILON, exponents(i) - 1.0);
+    }
+    trialStress += eta*trialStrainRate;
+    
     return 0;
 }
 
@@ -209,32 +199,16 @@ int ElasticPowerFunc::revertToLastCommit()
 
 int ElasticPowerFunc::revertToStart()
 {
-    trialID = 0;
     trialStrain = 0.0;
     trialStrainRate = 0.0;
     trialStress = 0.0;
-    
-    // find the current interval
-    double eps1 = strainPoints(trialID);
-    double eps2 = strainPoints(trialID+1);
-    if (trialStrain >= eps2 && trialID < trialIDmax)  {
-        while (trialStrain >= eps2 && trialID < trialIDmax)  {
-            trialID++;
-            eps1 = eps2;
-            eps2 = strainPoints(trialID+1);
-        }
-    } else if (trialStrain < eps1 && trialID > trialIDmin)  {
-        while (trialStrain <= eps1 && trialID > trialIDmin)  {
-            trialID--;
-            eps2 = eps1;
-            eps1 = strainPoints(trialID);
-        }
+    trialTangent = 0.0;
+    for (int i = 0; i < numTerms; i++) {
+        if (exponents(i)>=1.0)
+            trialTangent += coefficients(i) * exponents(i) * pow(0.0, exponents(i) - 1.0);
+        else
+            trialTangent += coefficients(i) * pow(DBL_EPSILON, exponents(i) - 1.0);
     }
-    double sig1 = stressPoints(trialID);
-    double sig2 = stressPoints(trialID+1);
-    
-    // get the tangent for the selected interval
-    trialTangent = (sig2-sig1)/(eps2-eps1);
     
     return 0;
 }
@@ -243,7 +217,7 @@ int ElasticPowerFunc::revertToStart()
 UniaxialMaterial *ElasticPowerFunc::getCopy()
 {
     ElasticPowerFunc *theCopy =
-        new ElasticPowerFunc(this->getTag(), strainPoints, stressPoints, eta);
+        new ElasticPowerFunc(this->getTag(), coefficients, exponents, eta);
     
     return theCopy;
 }
@@ -252,17 +226,15 @@ UniaxialMaterial *ElasticPowerFunc::getCopy()
 int ElasticPowerFunc::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    static Vector data(6);
+    static Vector data(4);
     data(0) = this->getTag();
-    data(1) = trialIDmin;
-    data(2) = trialIDmax;
-    data(3) = numDataPoints;
-    data(4) = initTangent;
-    data(5) = eta;
+    data(1) = numTerms;
+    data(2) = initTangent;
+    data(3) = eta;
     
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
-    res += theChannel.sendVector(this->getDbTag(), cTag, strainPoints);
-    res += theChannel.sendVector(this->getDbTag(), cTag, stressPoints);
+    res += theChannel.sendVector(this->getDbTag(), cTag, coefficients);
+    res += theChannel.sendVector(this->getDbTag(), cTag, exponents);
     if (res < 0) 
         opserr << "ElasticPowerFunc::sendSelf() - failed to send data.\n";
     
@@ -274,23 +246,21 @@ int ElasticPowerFunc::recvSelf(int cTag, Channel &theChannel,
     FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector data(6);
+    static Vector data(4);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) 
         opserr << "ElasticPowerFunc::recvSelf() - failed to recv data.\n";
     else {
         this->setTag((int)data(0));
-        trialIDmin    = (int)data(1);
-        trialIDmax    = (int)data(2);
-        numDataPoints = (int)data(3);
-        initTangent   = data(4);
-        eta           = data(5);
+        numTerms    = (int)data(1);
+        initTangent = data(2);
+        eta         = data(3);
         
         // receive the strain and stress arrays
-        strainPoints.resize(numDataPoints);
-        stressPoints.resize(numDataPoints);
-        res += theChannel.recvVector(this->getDbTag(), cTag, strainPoints);
-        res += theChannel.recvVector(this->getDbTag(), cTag, stressPoints);
+        coefficients.resize(numTerms);
+        exponents.resize(numTerms);
+        res += theChannel.recvVector(this->getDbTag(), cTag, coefficients);
+        res += theChannel.recvVector(this->getDbTag(), cTag, exponents);
         if (res < 0) 
             opserr << "ElasticPowerFunc::recvSelf() - failed to recv arrays.\n";
     }
@@ -303,8 +273,8 @@ void ElasticPowerFunc::Print(OPS_Stream &s, int flag)
 {
 	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
 		s << "ElasticPowerFunc tag: " << this->getTag() << endln;
-		s << "Input Parameter: strainPoints: " << strainPoints << endln;
-		s << "Input Parameter: stressPoints: " << stressPoints << endln;
+		s << "Input Parameter: coefficients: " << coefficients << endln;
+		s << "Input Parameter: exponents: " << exponents << endln;
 		s << "Input Parameter: eta: " << eta << endln;
 		s << "Current State: strain: " << trialStrain << " stress: ";
 		s << trialStress << " tangent: " << trialTangent << endln;
@@ -314,16 +284,27 @@ void ElasticPowerFunc::Print(OPS_Stream &s, int flag)
 		s << "\t\t\t{";
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"ElasticPowerFunc\", ";
-		s << "\"strainPoints\": [";
-		int numPts = strainPoints.Size();
+		s << "\"coefficients\": [";
+		int numPts = coefficients.Size();
 		for (int i = 0; i < numPts-1; i++)
-			s << strainPoints(i) << ", ";
-		s << strainPoints(numPts - 1) << "], ";
-		s << "\"stressPoints\": [";
-		numPts = stressPoints.Size();
+			s << coefficients(i) << ", ";
+		s << coefficients(numPts - 1) << "], ";
+		s << "\"exponents\": [";
+		numPts = exponents.Size();
 		for (int i = 0; i < numPts-1; i++)
-			s << stressPoints(i) << ", ";
-		s << stressPoints(numPts - 1) << "], ";
+			s << exponents(i) << ", ";
+		s << exponents(numPts - 1) << "], ";
 		s << "\"eta\": " << eta << "}";
 	}
+}
+
+
+double ElasticPowerFunc::sgn(double x)
+{
+    if (x > 0)
+        return 1.0;
+    else if (x < 0)
+        return -1.0;
+    else
+        return 0.0;
 }

@@ -857,6 +857,12 @@
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.cpp">
       <Filter>twoNodeLink</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\Inerter.cpp">
+      <Filter>twoNodeLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1524,6 +1530,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.h">
       <Filter>twoNodeLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\Inerter.h">
+      <Filter>twoNodeLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\ExternalElement.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

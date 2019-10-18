@@ -213,7 +213,8 @@
 #define MAT_TAG_Concrete02IS                    100 //nassermarafi
 #define MAT_TAG_ConfinedConcrete01              101
 #define MAT_TAG_ElasticPowerFunc                102
-#define MAT_TAG_RESSCppLab                      103
+#define MAT_TAG_UVCuniaxial                     103
+#define MAT_TAG_IMKBilin                        104
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
@@ -371,8 +372,8 @@
 #define ND_TAG_CThreeDimensional   55
 #define ND_TAG_StressDensityModel2D 56
 #define ND_TAG_StressDensityModel3D 57
-#define ND_TAG_RESSCppLabMA 58
-#define ND_TAG_RESSCppLabPS 59
+#define ND_TAG_UVCmultiaxial  58
+#define ND_TAG_UVCplanestress 59
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101

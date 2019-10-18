@@ -160,7 +160,8 @@ extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenOriginal(void);
 extern void *OPS_GNGMaterial(void);
 extern void *OPS_OOHystereticMaterial(void);
-extern void* OPS_ElasticPowerFunc(void);
+extern void *OPS_ElasticPowerFunc(void);
+extern void *OPS_UVCuniaxial(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -449,11 +450,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     else if (strcmp(argv[1], "ElasticPowerFunc") == 0) {
-    void* theMat = OPS_ElasticPowerFunc();
-    if (theMat != 0)
+      void* theMat = OPS_ElasticPowerFunc();
+      if (theMat != 0)
         theMaterial = (UniaxialMaterial*)theMat;
-    else
+      else
         return TCL_ERROR;
+    }
     /*
 	} else if (strcmp(argv[1],"HoehlerStanton") == 0) {
       void *theMat = OPS_HoehlerStanton();
@@ -462,7 +464,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 */
-    } else if ((strcmp(argv[1],"RambergOsgood") == 0) || (strcmp(argv[1],"RambergOsgoodSteel") == 0)) {
+    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
+      void *theMat = OPS_UVCuniaxial();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+    else if ((strcmp(argv[1],"RambergOsgood") == 0) || (strcmp(argv[1],"RambergOsgoodSteel") == 0)) {
       void *theMat = OPS_RambergOsgoodSteel();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -574,7 +583,32 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"ModIMKPeakOriented") == 0) {
+    }
+    else if (strcmp(argv[1], "IMKBilin") == 0) {
+      void *theMat = OPS_IMKBilin();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPeakOriented") == 0) {
+      void *theMat = OPS_IMKPeakOriented();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPinching") == 0) {
+      void *theMat = OPS_IMKPinching();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "ModIMKPeakOriented") == 0) {
       void *theMat = OPS_ModIMKPeakOriented();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -1510,8 +1544,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
-
-	else if (strcmp(argv[1],"Pinching4") == 0) {
+    
+    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
+        void* theMat = OPS_UVCuniaxial();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+    else
+        return TCL_ERROR;
+    }
+    
+    else if (strcmp(argv[1],"Pinching4") == 0) {
 		if (argc != 42 && argc != 31 ) {
 			opserr << "WARNING insufficient arguments\n";
 			printCommand(argc,argv);
