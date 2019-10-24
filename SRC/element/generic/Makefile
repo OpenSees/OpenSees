@@ -1,7 +1,9 @@
 include ../../../Makefile.def
 
 OBJS       = GenericClient.o \
-	GenericCopy.o
+	GenericCopy.o \
+	TclGenericClientCommand.o \
+	TclGenericCopyCommand.o
 
 all:         $(OBJS)
 
