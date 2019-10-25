@@ -18,20 +18,44 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
- // Written: AMK
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Developed by:
+ // Adam M. Knaack (adam.knaack@schaefer-inc.com) 
+ // Schaefer-Inc, Cincinnati, Ohio, USA
+ // Nikola D. Tosic (ntosic@imk.grf.bg.ac.rs)
+ // Department for Materials and Structure, Faculty of Civil Engineering, University of Belgrade, Serbia
+ // Yahya C. Kurama (ykurama@nd.edu)
+ // Department of Civil and Environmental Engineering and Earth Sciences, College of Engineering, University of Notre Dame, Notre Dame, Indiana, USA
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
  // Created: 2012
- //
- // Description: This file contains the implementation of TDConcrete. 
+ // Last updated: 2019
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Description: This file contains the source code of TDConcrete. 
  // TDConcrete is a time-dependent concrete material model that calculates
  // creep and shrinkage strains.
  /*-------------------------------
  ! Concrete Compression - Linear
- ! Concrete Tension - Tamai et al. (1988) "Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete"
+ ! Concrete Tension - Tamai, S., Shima, H., Izumo, J., Okamura, H. 1988. Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete, Concrete Library of JSCE, No. 11, 117-129.
  ! Concrete Creep - Linear superposition of creep coefficient, ACI 209 time function
  ! Concrete Shrinkage - ACI 209 time function
  -------------------------------*/
- //
- // The framework for this code was originally modified from Concrete02.
+ // Detailed descriptions of the model and its implementation can be found in the following:
+ // (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
+ //     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+ // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
+ //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
+ // A manual describing the use of the model and sample files can be found at:
+ // ***Mendeley Data Link***(will be added later; ntosic)
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+ //----------------------------------------------------------------------------------------------------------------------------
+
 
 
 #include <iostream>

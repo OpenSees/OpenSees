@@ -18,22 +18,42 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.8 $
-// $Date: 2009-05-11 21:32:27 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/analysis/CreepAnalysis.h,v $
+//----------------------------------------------------------------------------------------------------------------------------
+ // Developed by:
+ // Adam M. Knaack (adam.knaack@schaefer-inc.com) 
+ // Schaefer-Inc, Cincinnati, Ohio, USA
+ // Nikola D. Tosic (ntosic@imk.grf.bg.ac.rs)
+ // Department for Materials and Structure, Faculty of Civil Engineering, University of Belgrade, Serbia
+ // Yahya C. Kurama (ykurama@nd.edu)
+ // Department of Civil and Environmental Engineering and Earth Sciences, College of Engineering, University of Notre Dame, Notre Dame, Indiana, USA
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Created: 2012
+ // Last updated: 2019
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Description: This file contains the source code of CreepAnalysis. 
+ // CreepAnalysis is an analysis procedure that calculates time-dependent
+ // concrete creep and shrinkage strains.
+ //---------------------------------------------------------------------------------------------------------------------------- 
+ // Detailed descriptions of the model and its implementation can be found in the following:
+ // (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
+ //     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+ // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
+ //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
+ // A manual describing the use of the model and sample files can be found at:
+ // ***Mendeley Data Link***(will be added later; ntosic)
+ //----------------------------------------------------------------------------------------------------------------------------
+
+ //----------------------------------------------------------------------------------------------------------------------------
+ // Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+ //----------------------------------------------------------------------------------------------------------------------------
                                                                         
                                                                         
 #ifndef CreepAnalysis_h
 #define CreepAnalysis_h
-
-// Written: fmk 
-// Revision: A
-//
-// Description: This file contains the interface for the CreepAnalysis
-// class. CreepAnalysis is a subclass of Analysis, it is used to perform 
-// a Creep analysis on the FE\_Model.
-//
-// What: "@(#) CreepAnalysis.h, revA"
 
 #include <Analysis.h>
 
