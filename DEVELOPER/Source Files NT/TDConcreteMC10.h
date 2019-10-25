@@ -18,20 +18,43 @@
 **                                                                    **
 ** ****************************************************************** */
    
- // Written: NT
- // Created: 2019
- //
- // Description: This file contains the class definition for TDConcreteMC10. 
- // TDConcreteMC10 is a time-dependent concrete material model that calculates
- // creep and shrinkage strains.
- /*-------------------------------
- ! Concrete Compression - Linear
- ! Concrete Tension - Tamai et al. (1988) "Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete"
- ! Concrete Creep - Linear superposition of creep coefficient, Model Code 2010 time function
- ! Concrete Shrinkage - Model Code 2010 time function
- -------------------------------*/
- //
- // The framework for this code was originally modified from Concrete02.
+//----------------------------------------------------------------------------------------------------------------------------
+// Developed by:
+// Nikola D. Tosic (ntosic@imk.grf.bg.ac.rs)
+// Department for Materials and Structure, Faculty of Civil Engineering, University of Belgrade, Serbia
+// Adam M. Knaack (adam.knaack@schaefer-inc.com) 
+// Schaefer-Inc, Cincinnati, Ohio, USA
+// Yahya C. Kurama (ykurama@nd.edu)
+// Department of Civil and Environmental Engineering and Earth Sciences, College of Engineering, University of Notre Dame, Notre Dame, Indiana, USA
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Created: 2019
+// Last updated: 2019
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Description: This file contains the source code of TDConcreteMC10. 
+// TDConcreteMC10 is a time-dependent concrete material model that calculates
+// creep and shrinkage strains.
+/*-------------------------------
+! Concrete Compression - Linear
+! Concrete Tension - Tamai, S., Shima, H., Izumo, J., Okamura, H. 1988. Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete, Concrete Library of JSCE, No. 11, 117-129.
+! Concrete Creep - Linear superposition of creep coefficient, Model Code 2010 time function
+! Concrete Shrinkage - Model Code 2010 time function
+-------------------------------*/
+// Detailed descriptions of the model and its implementation can be found in the following:
+// (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
+//     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+// (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
+//     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
+// A manual describing the use of the model and sample files can be found at:
+// ***Mendeley Data Link***(will be added later; ntosic)
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+//----------------------------------------------------------------------------------------------------------------------------
 
 #ifndef TDConcreteMC10_h
 #define TDConcreteMC10_h 
@@ -42,7 +65,7 @@
 class TDConcreteMC10 : public UniaxialMaterial //ntosic: changed name
 {
   public:
-    TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _phidc, double _tcast);
+    TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem);
 
     TDConcreteMC10(void);
 
@@ -118,10 +141,10 @@ class TDConcreteMC10 : public UniaxialMaterial //ntosic: changed name
 	double phibb; //ntosic
 	double phida; //ntosic
 	double phidb; //ntosic
-	double phidc; //ntosic
     double sigCr; // stress that creep curve is based on //ntosic: CHANGE?
     double beta;
     double tcast;
+	double cem; //ntosic
 
     // hstvP : Concerete HISTORY VARIABLES last committed step
     double ecminP;  //  hstP(1)

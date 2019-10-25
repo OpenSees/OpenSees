@@ -18,20 +18,44 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
- // Written: NT
- // Created: 2019
- //
- // Description: This file contains the implementation of TDConcreteMC10NL. 
- // TDConcreteMC10 is a time-dependent concrete material model that calculates
- // creep and shrinkage strains.
- /*-------------------------------
- ! Concrete Compression - Nonlinear with linear softening
- ! Concrete Tension - Tamai et al. (1988) "Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete"
- ! Concrete Creep - Linear superposition of creep coefficient, Model Code 2010 time function
- ! Concrete Shrinkage - Model Code 2010 time function
- -------------------------------*/
- //
- // The framework for this code was originally modified from Concrete02.
+//----------------------------------------------------------------------------------------------------------------------------
+// Developed by:
+// Nikola D. Tosic (ntosic@imk.grf.bg.ac.rs)
+// Department for Materials and Structure, Faculty of Civil Engineering, University of Belgrade, Serbia
+// Adam M. Knaack (adam.knaack@schaefer-inc.com) 
+// Schaefer-Inc, Cincinnati, Ohio, USA
+// Yahya C. Kurama (ykurama@nd.edu)
+// Department of Civil and Environmental Engineering and Earth Sciences, College of Engineering, University of Notre Dame, Notre Dame, Indiana, USA
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Created: 2019
+// Last updated: 2019
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Description: This file contains the source code of TDConcreteMC10NL. 
+// TDConcreteMC10NL is a time-dependent concrete material model that calculates
+// creep and shrinkage strains.
+/*-------------------------------
+! Concrete Compression - Non-linear with linear softening
+! Concrete Tension - Tamai, S., Shima, H., Izumo, J., Okamura, H. 1988. Average Stress-Strain Relationship in Post Yield Range of Steel Bar in Concrete, Concrete Library of JSCE, No. 11, 117-129.
+! Concrete Creep - Linear superposition of creep coefficient, Model Code 2010 time function
+! Concrete Shrinkage - Model Code 2010 time function
+-------------------------------*/
+// Detailed descriptions of the model and its implementation can be found in the following:
+// (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
+//     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+// (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
+//     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
+// A manual describing the use of the model and sample files can be found at:
+// ***Mendeley Data Link***(will be added later; ntosic)
+//----------------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------------
+// Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+//----------------------------------------------------------------------------------------------------------------------------
+
 
 
 #include <iostream>
@@ -119,9 +143,9 @@ using namespace std; //Added by AMK for debugging
 //-----------------------------------------------------------------------
 
 
-TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _phidc, double _tcast): 
+TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem): 
   UniaxialMaterial(tag, 0), //Changed by ntosic (from TDConcrete by AMK)
-  fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), tcr(_tcr), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), phidc(_phidc), tcast(_tcast)
+  fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), tcr(_tcr), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -181,7 +205,7 @@ TDConcreteMC10NL::~TDConcreteMC10NL(void)
 UniaxialMaterial*
 TDConcreteMC10NL::getCopy(void)
 {
-  TDConcreteMC10NL *theCopy = new TDConcreteMC10NL(this->getTag(), fc, fcu, epscu, ft, Ec, Ecm, beta, age, epsba, epsbb, epsda, epsdb, tcr, phiba, phibb, phida, phidb, phidc, tcast); //ntosic
+  TDConcreteMC10NL *theCopy = new TDConcreteMC10NL(this->getTag(), fc, fcu, epscu, ft, Ec, Ecm, beta, age, epsba, epsbb, epsda, epsdb, tcr, phiba, phibb, phida, phidb, tcast, cem); //ntosic
   
   return theCopy;
 }
@@ -243,12 +267,13 @@ TDConcreteMC10NL::setCreepDryingStrain(double time, double stress)
 
 }
 //ntosic
-double 
+double
 TDConcreteMC10NL::setPhiBasic(double time, double tp)
-{	
+{
 	// ntosic: Model Code 2010 Equations
 	double tmtp = time - tp;
-	double phiBasic = phiba * log((pow(phibb,2) * tmtp) + 1);	
+	double tpa = tcr * pow(9.0 / (2.0 + pow(tcr, 1.2)) + 1.0, cem);
+	double phiBasic = phiba * log(pow(30.0 / tpa + 0.035, 2.0) * (tmtp / phibb) + 1.0);
 	return phiBasic;
 }
 //ntosic
@@ -257,7 +282,8 @@ TDConcreteMC10NL::setPhiDrying(double time, double tp)
 {
 	// ntosic: Model Code 2010 Equations
 	double tmtp = time - tp;
-	double phiDrying = phida * pow(tmtp, phidc) / pow(phidb + tmtp, phidc);
+	double tpa = tcr * pow(9.0 / (2.0 + pow(tcr, 1.2)) + 1.0, cem);
+	double phiDrying = phida / (0.1 + pow(tpa, 0.2)) * pow(tmtp, 1.0 / (2.3 + 3.5 / pow(tpa, 0.5))) / pow(phidb + tmtp, 1.0 / (2.3 + 3.5 / pow(tpa, 0.5)));
 	return phiDrying;
 }
 //ntosic
@@ -607,7 +633,7 @@ TDConcreteMC10NL::revertToStart(void)
 int 
 TDConcreteMC10NL::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(19); //ntosic
+  static Vector data(20); //ntosic
   data(0) =fc;
   data(1) =fcu;
   data(2) = epscu;
@@ -625,8 +651,9 @@ TDConcreteMC10NL::sendSelf(int commitTag, Channel &theChannel)
   data(14) =phibb; //ntosic
   data(15) =phida; //ntosic
   data(16) =phidb; //ntosic
-  data(17) =phidc; //ntosic  
-  data(18) = this->getTag();
+  data(17) =tcast; //ntosic
+  data(18) =cem; //ntosic
+  data(19) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10NL::sendSelf() - failed to sendSelf\n";
@@ -640,7 +667,7 @@ TDConcreteMC10NL::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(19); //ntosic
+  static Vector data(20); //ntosic
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10NL::recvSelf() - failed to recvSelf\n";
@@ -664,8 +691,9 @@ TDConcreteMC10NL::recvSelf(int commitTag, Channel &theChannel,
   phibb = data(14);  //ntosic 
   phida = data(15); //ntosic
   phidb = data(16); //ntosic
-  phidc = data(17); //ntosic 
-  this->setTag(data(18));
+  tcast = data(17); //ntosic
+  cem = data(18); //ntosic
+  this->setTag(data(19));
 
   e = eP;
   sig = sigP;
