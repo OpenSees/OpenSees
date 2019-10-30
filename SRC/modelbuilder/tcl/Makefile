@@ -132,12 +132,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/brick/TclTwenty_Node_BrickCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
-	$(FE)/element/adapter/TclActuatorCommand.o \
-	$(FE)/element/adapter/TclActuatorCorotCommand.o \
-	$(FE)/element/adapter/TclAdapterCommand.o \
-	$(FE)/element/generic/TclGenericClientCommand.o \
-	$(FE)/element/generic/TclGenericCopyCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingBoucWenCommand.o \
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
@@ -158,13 +152,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
 	$(FE)/domain/component/TclParameterCommands.o \
 	$(FE)/domain/region/TclRegionCommands.o \
-	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
-	$(FE)/element/frictionBearing/TclRJWatsonEQSCommand.o \
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
-	$(FE)/element/frictionBearing/TclFlatSliderCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingUFRPCommand.o \
-	$(FE)/element/frictionBearing/TclSingleFPCommand.o \
 	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o \
 	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o \
 	$(FE)/api/elementAPI_TCL.o

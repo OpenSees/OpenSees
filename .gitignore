@@ -40,6 +40,7 @@
 *.pdb
 .vs
 obj
+*.exp
 
 # OTHER
 Makefile.def

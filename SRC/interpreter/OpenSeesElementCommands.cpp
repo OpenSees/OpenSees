@@ -67,7 +67,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
 
-// no 'beamWithHinges', 'GenericClient', 'GenericCopy', 'flBrick', 'Adapter'
+// no 'beamWithHinges', 'flBrick'
 
 void* OPS_ZeroLengthND();
 void* OPS_ZeroLengthSection();
@@ -178,8 +178,11 @@ void* OPS_Inelastic2DYS03();
 void* OPS_Elastic2DGNL();
 void* OPS_BeamColumnJoint2d();
 void* OPS_BeamColumnJoint3d();
+void* OPS_Adapter();
 void* OPS_Actuator();
 void* OPS_ActuatorCorot();
+void* OPS_GenericClient();
+void* OPS_GenericCopy();
 void* OPS_FlatSliderSimple2d();
 void* OPS_FlatSliderSimple3d();
 void* OPS_SingleFPSimple2d();
@@ -191,6 +194,8 @@ void* OPS_ElastomericBearingPlasticity3d();
 void* OPS_ElastomericBearingBoucWen2d();
 void* OPS_ElastomericBearingBoucWen3d();
 void* OPS_ElastomericBearingUFRP2d();
+void* OPS_Inerter();
+void* OPS_LinearElasticSpring();
 void* OPS_TwoNodeLink();
 void* OPS_MultipleShearSpring();
 void* OPS_MultipleNormalSpring();
@@ -414,7 +419,9 @@ namespace {
 	functionMap.insert(std::make_pair("multipleNormalSpring", &OPS_MultipleNormalSpring));
 	functionMap.insert(std::make_pair("MSS", &OPS_MultipleShearSpring));
 	functionMap.insert(std::make_pair("multipleShearSpring", &OPS_MultipleShearSpring));
-	functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
+    functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
+    functionMap.insert(std::make_pair("linearElasicSpring", &OPS_LinearElasticSpring));
+    functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
 	functionMap.insert(std::make_pair("ElastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
@@ -422,8 +429,11 @@ namespace {
 	functionMap.insert(std::make_pair("RJWatsonEqsBearing", &OPS_RJWatsonEqsBearing));
 	functionMap.insert(std::make_pair("singleFPBearing", &OPS_SingleFPBearing));
 	functionMap.insert(std::make_pair("flatSliderBearing", &OPS_FlatSliderBearing));
-	functionMap.insert(std::make_pair("corotActuator", &OPS_ActuatorCorot));
+	functionMap.insert(std::make_pair("adapter", &OPS_Adapter));
 	functionMap.insert(std::make_pair("actuator", &OPS_Actuator));
+	functionMap.insert(std::make_pair("corotActuator", &OPS_ActuatorCorot));
+	functionMap.insert(std::make_pair("genericClient", &OPS_GenericClient));
+	functionMap.insert(std::make_pair("genericCopy", &OPS_GenericCopy));
 	functionMap.insert(std::make_pair("beamColumnJoint", &OPS_BeamColumnJoint));
 	functionMap.insert(std::make_pair("elastic2dGNL", &OPS_Elastic2DGNL));
 	functionMap.insert(std::make_pair("element2dGNL", &OPS_Elastic2DGNL));

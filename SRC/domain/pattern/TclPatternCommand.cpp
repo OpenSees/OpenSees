@@ -66,6 +66,10 @@
 #include <PlaneDRMInputHandler.h>
 #include <DRMLoadPatternWrapper.h>
 
+#ifdef _H5DRM
+#include <H5DRM.h>
+#endif
+
 #include <string.h>
 
 #include <SimulationInformation.h>
@@ -794,6 +798,37 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
   }// end else if DRMLoadPattern
 
   ///////// ///////// ///////// //////// //////  // DRMLoadPattern add END
+#ifdef _H5DRM
+ else if ((strcmp(argv[1],"H5DRM") == 0) ||
+     (strcmp(argv[1],"h5drm") == 0) ) {
+
+
+    int tag = 0;
+    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+      opserr << "WARNING insufficient number of arguments - want: pattern ";
+      opserr << "H5DRM tag filename factor\n";
+      return TCL_ERROR;
+    }
+
+    std::string filename = argv[3];
+
+    double factor=1.0;
+    if (Tcl_GetDouble(interp, argv[4], &factor) != TCL_OK) {
+      opserr << "WARNING insufficient number of arguments - want: pattern ";
+      opserr << "H5DRM " << patternID << " filename factor\n";
+      return TCL_ERROR;
+    }
+    
+    opserr << "Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+
+    thePattern = new H5DRM(tag, filename, factor);
+
+    opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+
+    theDomain->addLoadPattern(thePattern);
+    return TCL_OK;
+ }
+#endif
 
   else {
       opserr << "WARNING unknown pattern type " << argv[1];

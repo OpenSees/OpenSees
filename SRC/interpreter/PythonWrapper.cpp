@@ -1273,18 +1273,6 @@ static PyObject *Py_ops_defaultUnits(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_neesUpload(PyObject *self, PyObject *args)
-{
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-    if (OPS_neesUpload() < 0) {
-	opserr<<(void*)0;
-	return NULL;
-    }
-
-    return wrapper->getResults();
-}
-
 static PyObject *Py_ops_stripXML(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2250,7 +2238,6 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("record", &Py_ops_record);
     addCommand("metaData", &Py_ops_metaData);
     addCommand("defaultUnits", &Py_ops_defaultUnits);
-    addCommand("neesUpload", &Py_ops_neesUpload);
     addCommand("stripXML", &Py_ops_stripXML);
     addCommand("convertBinaryToText", &Py_ops_convertBinaryToText);
     addCommand("convertTextToBinary", &Py_ops_convertTextToBinary);

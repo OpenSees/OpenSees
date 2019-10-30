@@ -274,5 +274,8 @@ int CTestRelativeNormDispIncr::recvSelf(int cTag, Channel &theChannel,
         nType = (int) x(3);
         norms.resize(maxNumIter);
     }
+
+    printFlag = 0;
+
     return res;
 }

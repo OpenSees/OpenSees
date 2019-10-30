@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef TwoNodeLink_h
 #define TwoNodeLink_h
 
@@ -122,7 +118,7 @@ private:
     UniaxialMaterial **theMaterials;    // array of uniaxial materials
     
     // parameters
-    int numDir;         // number of directions
+    int numDIR;         // number of directions
     ID *dir;            // array of directions 0-5
     Matrix trans;       // transformation matrix for orientation
     Vector x;           // local x direction

@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: fmk
 // Revision: A
 //
@@ -207,16 +203,18 @@
 #define MAT_TAG_ConcreteCM                      90
 #define MAT_TAG_SteelMPF                        91
 #define MAT_TAG_ElasticMaterialThermal          92   //L.Jiang [SIF]
-#define MAT_TAG_SteelECThermal			93   //L.Jiang [SIF]
+#define MAT_TAG_SteelECThermal                  93   //L.Jiang [SIF]
 #define MAT_TAG_StainlessECThermal              94   //L.Jiang [SIF]
-#define MAT_TAG_ConcreteECThermal		95   //L.Jiang [SIF]
+#define MAT_TAG_ConcreteECThermal               95   //L.Jiang [SIF]
 #define MAT_TAG_BoucWenOriginal                 96
 #define MAT_TAG_DamperMaterial                  97
-#define MAT_TAG_SPSW02			                98	//SAJalali
-#define MAT_TAG_Steel02Fatigue					99 //nassermarafi
-#define MAT_TAG_Concrete02IS					100 //nassermarafi
-#define MAT_TAG_ConfinedConcrete01              99
-
+#define MAT_TAG_SPSW02                          98   //SAJalali
+#define MAT_TAG_Steel02Fatigue                  99 //nassermarafi
+#define MAT_TAG_Concrete02IS                    100 //nassermarafi
+#define MAT_TAG_ConfinedConcrete01              101
+#define MAT_TAG_ElasticPowerFunc                102
+#define MAT_TAG_UVCuniaxial                     103
+#define MAT_TAG_IMKBilin                        104
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
@@ -374,6 +372,8 @@
 #define ND_TAG_CThreeDimensional   55
 #define ND_TAG_StressDensityModel2D 56
 #define ND_TAG_StressDensityModel3D 57
+#define ND_TAG_UVCmultiaxial  58
+#define ND_TAG_UVCplanestress 59
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
@@ -512,6 +512,7 @@
 #define PATTERN_TAG_FirePattern           3
 #define PATTERN_TAG_PBowlLoading          4
 #define PATTERN_TAG_DRMLoadPattern        5
+#define PATTERN_TAG_H5DRM                 6
 
 #define LOAD_TAG_Beam2dUniformLoad        3
 #define LOAD_TAG_Beam2dPointLoad          4
@@ -633,7 +634,6 @@
 #define ELE_TAG_Adapter                 89
 #define ELE_TAG_ElastomericBearingBoucWen2d 90
 #define ELE_TAG_ElastomericBearingBoucWen3d 91
-
 #define ELE_TAG_FlatSliderSimple2d      92
 #define ELE_TAG_FlatSliderSimple3d      93
 #define ELE_TAG_FlatSlider2d            94
@@ -718,10 +718,10 @@
 #define ELE_TAG_ForceBeamColumn3dThermal  172  //L.Jiang [SIF] //Still testing
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
-#define ELE_TAG_ShellANDeS                175   //L.Jiang [SIF]
+#define ELE_TAG_ShellANDeS                175 //by jaabell (UANDES)
 #define ELE_TAG_AxEqDispBeamColumn2d      178
-#define ELE_TAG_FourNodeTetrahedron       179
-#define ELE_TAG_TriSurfaceLoad            180
+#define ELE_TAG_FourNodeTetrahedron       179 //by jaabell (UANDES)
+#define ELE_TAG_TriSurfaceLoad            180 //by jaabell (UANDES) 
 #define ELE_TAG_QuadBeamEmbedContact      181
 #define ELE_TAG_EmbeddedBeamInterfaceL    182
 #define ELE_TAG_EmbeddedBeamInterfaceP    183
@@ -731,6 +731,9 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_ComponentElement2d       192
+#define ELE_TAG_LinearElasticSpring       190
+#define ELE_TAG_Inerter                   191
 #define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1
@@ -745,6 +748,7 @@
 #define BEAM_INTEGRATION_TAG_NewtonCotes           4
 #define BEAM_INTEGRATION_TAG_Trapezoidal           5
 #define BEAM_INTEGRATION_TAG_CompositeSimpson           55
+#define BEAM_INTEGRATION_TAG_Simpson           56
 #define BEAM_INTEGRATION_TAG_Midpoint           6
 #define BEAM_INTEGRATION_TAG_UserDefined     7
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
