@@ -82,9 +82,13 @@ def toOpenSeesPy(infile, outfile):
             outfile.write('ops.element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
             continue
 
+        # Change print to printModel
+        if info[0] == 'print':
+            info[0] = 'printModel'
+        
         # For everything else, have to do the first one before loop because of the commas
         if isfloat(info[1]):        
-            outfile.write('ops.%s(%s' % (info[0],info[1]))
+            outfile.write('ops.%s(%s' % (info[0],info[1]))            
         else:
             outfile.write('ops.%s(\'%s\'' % (info[0],info[1]))
         # Now loop through the rest with preceding commas
