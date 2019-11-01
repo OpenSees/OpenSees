@@ -269,7 +269,7 @@ TDConcreteMC10::setPhiBasic(double time, double tp)
 {	
 	// ntosic: Model Code 2010 Equations
 	double tmtp = time - tp;
-	double tpa = tcr * pow(9.0 / (2.0 + pow(tcr, 1.2)) + 1.0, cem);
+	double tpa = tp * pow(9.0 / (2.0 + pow(tp, 1.2)) + 1.0, cem);
 	double phiBasic = phiba * log(pow(30.0 / tpa + 0.035, 2.0) * (tmtp / phibb) + 1.0);
 	return phiBasic;
 }
@@ -279,7 +279,7 @@ TDConcreteMC10::setPhiDrying(double time, double tp)
 {
 	// ntosic: Model Code 2010 Equations
 	double tmtp = time - tp;
-	double tpa = tcr * pow(9.0 / (2.0 + pow(tcr, 1.2)) + 1.0, cem);
+	double tpa = tp * pow(9.0 / (2.0 + pow(tp, 1.2)) + 1.0, cem);
 	double phiDrying = phida / (0.1 + pow(tpa,0.2)) * pow(tmtp, 1.0 / (2.3 + 3.5 / pow(tpa, 0.5))) / pow(phidb + tmtp, 1.0 / (2.3 + 3.5/pow(tpa,0.5)));
 	return phiDrying;
 }
