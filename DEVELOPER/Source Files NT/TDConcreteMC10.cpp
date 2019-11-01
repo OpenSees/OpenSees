@@ -107,10 +107,10 @@ using namespace std; //Added by AMK for debugging
 		
 			numArgs = OPS_GetNumRemainingInputArgs();
 			//ntosic
-			if (numArgs == 18) {
+			if (numArgs == 17) {
 				//TDConcreteMC10(int tag, double _fc, double _epsc0, double _fcu,
 				//double _epscu, double _tcr, double _ft, double _Ets, double _Ec, double _age, double _epsshu)
-				double dData[17];
+				double dData[16];
 			
 				//Collect material tag:
 				numData = 1;
@@ -120,7 +120,7 @@ using namespace std; //Added by AMK for debugging
 				}
 			
 				//Collect input parameters: 
-				numData = 17; //ntosic
+				numData = 16; //ntosic
 				if (OPS_GetDoubleInput(&numData, dData) != 0) {
 					opserr << "WARNING: invalid material property definition\n";
 					return 0;
@@ -128,7 +128,7 @@ using namespace std; //Added by AMK for debugging
 			
 				//Create a new materiadouble 
 				//ntosic
-				theMaterial = new TDConcreteMC10(iData,dData[0],dData[1],dData[2],dData[3],dData[4],dData[5],dData[6],dData[7],dData[8],dData[9],dData[10],dData[11], dData[12], dData[13], dData[14], dData[15], dData[16]);
+				theMaterial = new TDConcreteMC10(iData,dData[0],dData[1],dData[2],dData[3],dData[4],dData[5],dData[6],dData[7],dData[8],dData[9],dData[10],dData[11], dData[12], dData[13], dData[14], dData[15]);
                 if (theMaterial == 0) {
 					opserr << "WARNING: could not create uniaxialMaterial of type TDConcreteMC10 \n";
 					return 0;
@@ -142,9 +142,9 @@ using namespace std; //Added by AMK for debugging
 //-----------------------------------------------------------------------
 
 
-TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem): 
+TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem): 
   UniaxialMaterial(tag, 0), //Changed by ntosic (from TDConcrete by AMK)
-  fc(_fc), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), tcr(_tcr), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
+  fc(_fc), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -202,7 +202,7 @@ TDConcreteMC10::~TDConcreteMC10(void)
 UniaxialMaterial*
 TDConcreteMC10::getCopy(void)
 {
-  TDConcreteMC10 *theCopy = new TDConcreteMC10(this->getTag(), fc, ft, Ec, Ecm, beta, age, epsba, epsbb, epsda, epsdb, tcr, phiba, phibb, phida, phidb, tcast, cem); //ntosic
+  TDConcreteMC10 *theCopy = new TDConcreteMC10(this->getTag(), fc, ft, Ec, Ecm, beta, age, epsba, epsbb, epsda, epsdb, phiba, phibb, phida, phidb, tcast, cem); //ntosic
   
   return theCopy;
 }
@@ -630,7 +630,7 @@ TDConcreteMC10::revertToStart(void)
 int 
 TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(17); //ntosic
+  static Vector data(16); //ntosic
   data(0) =ft;    
   data(1) =Ec;
   data(2) =Ecm;  //ntosic 
@@ -639,15 +639,14 @@ TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
   data(5) =epsba; //ntosic   
   data(6) =epsbb; //ntosic   
   data(7) =epsda; //ntosic
-  data(8) =epsdb; //ntosic
-  data(9) =tcr;   
-  data(10) =phiba; //ntosic
-  data(11) =phibb; //ntosic
-  data(12) =phida; //ntosic
-  data(13) =phidb; //ntosic
-  data(14) =tcast; //ntosic
-  data(15) =cem; //ntosic
-  data(16) = this->getTag();
+  data(8) =epsdb; //ntosic 
+  data(9) =phiba; //ntosic
+  data(10) =phibb; //ntosic
+  data(11) =phida; //ntosic
+  data(12) =phidb; //ntosic
+  data(13) =tcast; //ntosic
+  data(14) =cem; //ntosic
+  data(15) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::sendSelf() - failed to sendSelf\n";
@@ -661,7 +660,7 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(17); //ntosic
+  static Vector data(16); //ntosic
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::recvSelf() - failed to recvSelf\n";
@@ -676,15 +675,14 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
   epsba = data(5);  //ntosic 
   epsbb = data(6);  //ntosic 
   epsda = data(7); //ntosic
-  epsdb = data(8); //ntosic  
-  tcr = data(9);   
-  phiba = data(10);  //ntosic
-  phibb = data(11);  //ntosic 
-  phida = data(12); //ntosic
-  phidb = data(13); //ntosic 
-  tcast = data(14); //ntosic
-  cem = data(15); //ntosic
-  this->setTag(data(16));
+  epsdb = data(8); //ntosic    
+  phiba = data(9);  //ntosic
+  phibb = data(10);  //ntosic 
+  phida = data(11); //ntosic
+  phidb = data(12); //ntosic 
+  tcast = data(13); //ntosic
+  cem = data(14); //ntosic
+  this->setTag(data(15));
 
   e = eP;
   sig = sigP;
@@ -718,33 +716,48 @@ TDConcreteMC10::Tens_Envlp (double epsc, double &sigc, double &Ect)
 !    Ect  = tangent concrete modulus
 !-----------------------------------------------------------------------*/
   
-  double Ec0 = Ec;
-  double eps0 = ft/Ec0;
-  double epsu = ft*(1.0/Ets+1.0/Ec0);
-  double b = beta;
-  // USE THIS ONE
-  if (epsc<=eps0) {
-    sigc = epsc*Ec0;
-    Ect  = Ec0;
-  } else {
-    Ect = -b*eps0*ft/pow(epsc,2)*pow(eps0/epsc,b-1.0);
-    sigc = ft*pow(eps0/epsc,b);
-  }
-   
-  
-  //THiS IS FOR TESTING LINEAR
-  //sigc = epsc*Ec0;
-  //Ect = Ec0;
-    
-    /*
-    if (epsc<=epsu) {
-      Ect  = -Ets;
-      sigc = ft-Ets*(epsc-eps0);
-    } else {
-      Ect  = 1.0e-10;
-      sigc = 1.0e-10;
-    }
-    */
+	double Ec0 = Ec;
+	double Ets = 0.1 * Ec; //ntosic: maximum tensile strain is 10 times the strain at cracking
+	double eps0 = ft / Ec0;
+	double epsu = ft * (1.0 / Ets + 1.0 / Ec0);
+	double b = beta;
+	// USE THIS ONE
+	if (epsc <= eps0) {
+		sigc = epsc * Ec0;
+		Ect = Ec0;
+	}
+	else {
+		if (epsc <= epsu) {
+			Ect = -b * eps0*ft / pow(epsc, 2)*pow(eps0 / epsc, b - 1.0);
+			sigc = ft * pow(eps0 / epsc, b);
+		}
+		else {
+			Ect = 1.0e-10;
+			sigc = 1.0e-10;
+		}
+
+	}
+
+	//if (epsc <= eps0) {
+		//sigc = epsc * Ec0;
+		//Ect = Ec0;
+	//}
+	//else {
+		//Ect = -b * eps0*ft / pow(epsc, 2)*pow(eps0 / epsc, b - 1.0);
+		//sigc = ft * pow(eps0 / epsc, b);
+	//}
+	  //THiS IS FOR TESTING LINEAR
+	//sigc = epsc*Ec0;
+	//Ect = Ec0;
+	 /*
+	  if (epsc<=epsu) {
+		Ect  = -Ets;
+		sigc = ft-Ets*(epsc-eps0);
+	  } else {
+		Ect  = 1.0e-10;
+		sigc = 1.0e-10;
+	  }
+	  */
     
   return;
 }

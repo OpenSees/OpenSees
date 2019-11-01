@@ -65,7 +65,7 @@
 class TDConcreteMC10NL : public UniaxialMaterial //ntosic: changed name
 {
   public:
-    TDConcreteMC10NL(int tag, double _fc, double _fcu, double _espcu, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _tcr, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem);
+    TDConcreteMC10NL(int tag, double _fc, double _fcu, double _espcu, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem);
 
     TDConcreteMC10NL(void);
 
@@ -125,7 +125,6 @@ class TDConcreteMC10NL : public UniaxialMaterial //ntosic: changed name
     double epsc0; // strain at compression strength          : mp(2)
     double fcu;   // stress at ultimate (crushing) strain    : mp(3)
     double epscu; // ultimate (crushing) strain              : mp(4)       
-    double tcr;   // creep relationship age
     double ft;    // concrete tensile strength               : mp(6)
     //	double ftT;	//Time dependent strength (tension)
     double Ets;   // tension stiffening slope                : mp(7)
