@@ -524,7 +524,7 @@ TDConcreteMC10::commitState(void)
   DSIG_i[count+1] = sig-sigP;
   
   //Secant Stiffness for determination of creep strain:
-      if (fabs(eps_m/sig)>Ec) { //ntosic: should this be sig/eps_m
+      if (fabs(sig/eps_m)>Ec) { //ntosic: originaly was eps_m/sig
           E_i[count+1] = Ec;
       } else {
           E_i[count+1] = fabs(sig/eps_m); //ADDED 7/22
@@ -717,7 +717,7 @@ TDConcreteMC10::Tens_Envlp (double epsc, double &sigc, double &Ect)
 !-----------------------------------------------------------------------*/
   
 	double Ec0 = Ec;
-	double Ets = 0.1 * Ec; //ntosic: maximum tensile strain is 10 times the strain at cracking
+	double Ets = 0.01 * Ec; //ntosic: maximum tensile strain is 10 times the strain at cracking
 	double eps0 = ft / Ec0;
 	double epsu = ft * (1.0 / Ets + 1.0 / Ec0);
 	double b = beta;
@@ -732,8 +732,8 @@ TDConcreteMC10::Tens_Envlp (double epsc, double &sigc, double &Ect)
 			sigc = ft * pow(eps0 / epsc, b);
 		}
 		else {
-			Ect = 1.0e-10;
-			sigc = 1.0e-10;
+			Ect = -1.0e-3;
+			sigc = 1.0e-3;
 		}
 
 	}
