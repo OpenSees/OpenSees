@@ -147,9 +147,9 @@ TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, doub
   fc(_fc), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
 {
   ecminP = 0.0;
+  ecmaxP = 0.0; //ntosic
   deptP = 0.0;
 
-	sigCr = fabs(sigCr); //ntosic: CHANGE?
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -371,7 +371,7 @@ TDConcreteMC10::setTrialStrain(double trialStrain, double strainRate)
         		//} else {
 				if (iter < 1) {
                     eps_crb = setCreepBasicStrain(t,sig); 
-					eps_crd = setCreepDryingStrain(t, sig);
+					eps_crd = setCreepDryingStrain(t,sig);
 				}
         		eps_m = eps_total - eps_crb - eps_crd - eps_shb - eps_shd; //ntosic
         		sig = setStress(eps_m, e);
@@ -524,7 +524,7 @@ TDConcreteMC10::commitState(void)
   DSIG_i[count+1] = sig-sigP;
   
   //Secant Stiffness for determination of creep strain:
-      if (fabs(sig/eps_m)>Ec) { //ntosic: originaly was eps_m/sig
+      if (fabs(eps_m/sig)>Ec) { //ntosic: originaly was eps_m/sig
           E_i[count+1] = Ec;
       } else {
           E_i[count+1] = fabs(sig/eps_m); //ADDED 7/22
@@ -596,7 +596,8 @@ TDConcreteMC10::revertToLastCommit(void)
 	eps_crd = epsP_crd; //ntosic
 	eps_m = epsP_m;  
     
-  ecmin = ecminP;;
+  ecmin = ecminP;
+  ecmax = ecmaxP; //ntosic
   dept = deptP;
   
   e = eP;
@@ -609,6 +610,7 @@ int
 TDConcreteMC10::revertToStart(void)
 {
   ecminP = 0.0;
+  ecmaxP = 0.0; //ntosic
   deptP = 0.0;
 
 	eP = Ec;
@@ -630,7 +632,7 @@ TDConcreteMC10::revertToStart(void)
 int 
 TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(16); //ntosic
+  static Vector data(21); //ntosic
   data(0) =ft;    
   data(1) =Ec;
   data(2) =Ecm;  //ntosic 
@@ -644,9 +646,14 @@ TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
   data(10) =phibb; //ntosic
   data(11) =phida; //ntosic
   data(12) =phidb; //ntosic
-  data(13) =tcast; //ntosic
-  data(14) =cem; //ntosic
-  data(15) = this->getTag();
+  data(13) =cem; //ntosic
+  data(14) =ecminP; //ntosic
+  data(15) =ecmaxP; //ntosic
+  data(16) =deptP; //ntosic
+  data(17) =epsP; //ntosic
+  data(18) =sigP; //ntosic
+  data(19) =eP; //ntosic
+  data(20) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::sendSelf() - failed to sendSelf\n";
@@ -660,7 +667,7 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(16); //ntosic
+  static Vector data(21); //ntosic
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::recvSelf() - failed to recvSelf\n";
@@ -680,9 +687,14 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
   phibb = data(10);  //ntosic 
   phida = data(11); //ntosic
   phidb = data(12); //ntosic 
-  tcast = data(13); //ntosic
-  cem = data(14); //ntosic
-  this->setTag(data(15));
+  cem = data(13); //ntosic
+  ecminP = data(14); //ntosic
+  ecmaxP = data(15); //ntosic
+  deptP = data(16); //ntosic
+  epsP = data(17); //ntosic
+  sigP = data(18); //ntosic
+  eP = data(19); //ntosic
+  this->setTag(data(20));
 
   e = eP;
   sig = sigP;
@@ -717,7 +729,6 @@ TDConcreteMC10::Tens_Envlp (double epsc, double &sigc, double &Ect)
 !-----------------------------------------------------------------------*/
   
 	double Ec0 = Ec;
-	double Ets = 0.01 * Ec; //ntosic: maximum tensile strain is 10 times the strain at cracking
 	double eps0 = ft / Ec0;
 	double epsu = ft * (1.0 / Ets + 1.0 / Ec0);
 	double b = beta;
@@ -727,26 +738,11 @@ TDConcreteMC10::Tens_Envlp (double epsc, double &sigc, double &Ect)
 		Ect = Ec0;
 	}
 	else {
-		if (epsc <= epsu) {
-			Ect = -b * eps0*ft / pow(epsc, 2)*pow(eps0 / epsc, b - 1.0);
-			sigc = ft * pow(eps0 / epsc, b);
-		}
-		else {
-			Ect = -1.0e-3;
-			sigc = 1.0e-3;
-		}
-
+		Ect = -b * eps0*ft / pow(epsc, 2)*pow(eps0 / epsc, b - 1.0);
+		sigc = ft * pow(eps0 / epsc, b);
 	}
 
-	//if (epsc <= eps0) {
-		//sigc = epsc * Ec0;
-		//Ect = Ec0;
-	//}
-	//else {
-		//Ect = -b * eps0*ft / pow(epsc, 2)*pow(eps0 / epsc, b - 1.0);
-		//sigc = ft * pow(eps0 / epsc, b);
-	//}
-	  //THiS IS FOR TESTING LINEAR
+	//THiS IS FOR TESTING LINEAR
 	//sigc = epsc*Ec0;
 	//Ect = Ec0;
 	 /*
