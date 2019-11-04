@@ -77,8 +77,9 @@ int OPS_BgMesh()
                 "-wave wavefilename? numl? locs? -numsub numsub? "
                 "-structure sid? ?numnodes? structuralNodes?"
                 "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-                "-incrVel? -freesurface? -fsiSquare? -pressureOnce?"
-                "-boundReduceFactor factor? -allAssembly"
+                "-incrVel? -setVel? -freesurface? -fsiSquare? -fsiTri?"
+                "-pressureOnce? -pressureExact? -kernelClose? -kernelAll?"
+                "-boundReduceFactor factor? -allAssembly? -fastAssembly?"
                 "-largeSize? level? lower? upper?>";
         return -1;
     }
@@ -232,10 +233,16 @@ int OPS_BgMesh()
             }            bgmesh.setContactData(data);
         } else if (strcmp(opt, "-incrVel") == 0) {
             bgmesh.setIncrVel(true);
+        } else if (strcmp(opt, "-setVel") == 0) {
+            bgmesh.setIncrVel(false);
         } else if (strcmp(opt, "-fsiSquare") == 0) {
             bgmesh.setFSITri(false);
+        } else if (strcmp(opt, "-fsiTri") == 0) {
+            bgmesh.setFSITri(true);
         } else if (strcmp(opt, "-pressureOnce") == 0) {
-            bgmesh.setPressureOnce();
+            bgmesh.setPressureOnce(true);
+        } else if (strcmp(opt, "-pressureExact") == 0) {
+            bgmesh.setPressureOnce(false);
         } else if (strcmp(opt, "-boundReduceFactor") == 0) {
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -274,6 +281,12 @@ int OPS_BgMesh()
             bgmesh.addLargeSize(numbasic, range_low, range_up);
         } else if (strcmp(opt, "-allAssembly") == 0) {
             bgmesh.setFastAssembly(false);
+        } else if (strcmp(opt, "-fastAssembly") == 0) {
+            bgmesh.setFastAssembly(true);
+        } else if (strcmp(opt, "-kernelClose") == 0) {
+            bgmesh.setKernelClose(true);
+        } else if (strcmp(opt, "-kernelAll") == 0) {
+            bgmesh.setKernelClose(false);
         }
     }
 
@@ -293,16 +306,16 @@ int OPS_BgMesh()
 }
 
 BackgroundMesh::BackgroundMesh()
-        :lower(), upper(), bcells(),
+        :lower(), upper(), bcells(), bnodes(),
          tol(1e-10), meshtol(0.1), bsize(-1.0),
-         numave(1), numsub(4), recorders(),locs(),
+         numave(2), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
          freesurface(false), contactData(8),
-         contactEles(), incrVel(false), fsiTri(true),
-         boundReduceFactor(0.01),
+         contactEles(), incrVel(false), fsiTri(false),
+         boundReduceFactor(0.5),
          largesize(), pressureonce(false), dispon(true),
-         fastAssembly(true)
+         fastAssembly(true), kernelClose(false)
 {
 }
 
@@ -754,7 +767,7 @@ BackgroundMesh::clearAll() {
     tol = 1e-10;
     meshtol = 0.1;
     bsize = -1.0;
-    numave = 1;
+    numave = 2;
     numsub = 4;
 
     for (int i=0; i<(int)recorders.size(); ++i) {
@@ -773,7 +786,13 @@ BackgroundMesh::clearAll() {
     }
     contactEles.clear();
     incrVel = false;
-    fsiTri = true;
+    fsiTri = false;
+    boundReduceFactor = 0.5;
+    largesize.clear();
+    pressureonce = false;
+    dispon = true;
+    fastAssembly = true;
+    kernelClose = false;
 }
 
 int
@@ -1302,7 +1321,7 @@ BackgroundMesh::gridNodes()
             opserr << "WARNING: bnode.size() = 0 -- gridNodes\n";
             continue;
         }
-        // if (bnode.type[0] == STRUCTURE) {continue;}
+//        if (bnode.type[0] == STRUCTURE) {continue;}
 
         // coordinates
         VDouble crds;
@@ -1367,7 +1386,7 @@ BackgroundMesh::gridNodes()
 
             // check velocity
             const VDouble &pvel = pts[i]->getVel();
-            if (dotVDouble(closeVel, pvel) < 0) {
+            if (kernelClose && dotVDouble(closeVel, pvel) < 0) {
                 continue;
             }
 
@@ -2148,6 +2167,18 @@ BackgroundMesh::gridFSI(ID& freenodes)
         }
         if (outside) continue;
 
+        // point coordinates
+        VVDouble ptcrds(tri.size());
+        for (int j=0; j<(int)tri.size(); ++j) {
+            ptcrds[j].resize(ndm);
+            int mark;
+            if (ndm == 2) {
+                gen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], mark);
+            } else if (ndm == 3) {
+                tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], ptcrds[j][2], mark);
+            }
+        }
+
         // gather particles
         VParticle tripts;
         if (fsiTri) {
@@ -2195,17 +2226,6 @@ BackgroundMesh::gridFSI(ID& freenodes)
         }
 
         // in-element check
-        VVDouble ptcrds(tri.size());
-        for (int j=0; j<(int)tri.size(); ++j) {
-            ptcrds[j].resize(ndm);
-            int mark;
-            if (ndm == 2) {
-                gen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], mark);
-            } else if (ndm == 3) {
-                tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], ptcrds[j][2], mark);
-            }
-        }
-
         VDouble coeff;
         VVDouble tetcoeff;
         bool zerovol = false;
@@ -3128,29 +3148,30 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
 
         // check if particle is moving toward the current wall
         if (dotVDouble(pvel, boundir) > 0) {
-            // vertical disp
-            VDouble vdisp = boundir;
+
+            // vertical
+            VDouble vdisp = boundir, vvel = boundir;
             double newdist = dotVDouble(newpdisp, boundir);
+            double newvel = dotVDouble(pvel, boundir);
+//            double vmag = normVDouble(pvel);
             vdisp *= newdist;
+            vvel *= newvel;
 
-            double percent = dist / bsize;
-            if (percent > boundReduceFactor) {
-                percent = boundReduceFactor;
-            }
+            double percent = dist / bsize * boundReduceFactor;
 
-            // if vertical disp larger than allowed
-            if (newdist > percent*dist) {
+            // horizontal disp
+            newpdisp -= vdisp;
+            pvel -= vvel;
 
-                // horizontal disp
-                newpdisp -= vdisp;
+            // new vertical disp
+            vdisp *= percent;
+            vvel *= percent;
 
-                // new vertical disp
-                vdisp = boundir;
-                vdisp *= percent * dist;
-
-                // new disp
-                newpdisp += vdisp;
-            }
+            // new disp
+            newpdisp += vdisp;
+            pvel += vvel;
+//            pvel /= normVDouble(pvel);
+//            pvel *= vmag;
         }
     }
 

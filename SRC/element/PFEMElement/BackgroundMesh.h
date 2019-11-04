@@ -143,11 +143,13 @@ public:
                       const VDouble& range_low,
                       const VDouble& range_up);
     int getSizeLevel(VInt& index);
-    void setPressureOnce() {pressureonce = true;}
+    void setPressureOnce(bool flag) {pressureonce = flag;}
     bool isPressureOnce() const {return pressureonce;}
     bool isDispOn() const {return dispon;}
     void setFastAssembly(bool flag) {fastAssembly = flag;}
     bool isFastAssembly() const {return fastAssembly;}
+    void setKernelClose(bool flag) {kernelClose = flag;}
+    bool isKernelClose() const {return kernelClose;}
 
     // remesh all
     int remesh(bool init=false);
@@ -248,6 +250,7 @@ private:
     bool pressureonce;
     bool dispon;
     bool fastAssembly;
+    bool kernelClose;
 
     static const int contact_tag = -13746;
 };
