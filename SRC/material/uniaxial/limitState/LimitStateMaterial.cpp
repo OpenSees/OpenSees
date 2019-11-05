@@ -114,6 +114,7 @@ void* OPS_LimiStateMaterial()
     }
 
     double beta = 0.0;
+    numdata = 1;
     if (argc == 20 || argc == 16 || argc >= 22 ) {
 	if (OPS_GetDoubleInput(&numdata,&beta) < 0) {
 	    opserr << "WARNING invalid beta\n";
