@@ -11,8 +11,6 @@
 #include <Channel.h>
 #include <Information.h>
 #include <Parameter.h>
-
-#include <elementAPI.h>
 #include <OPS_Globals.h>
 
 #include "classTags.h"
@@ -22,8 +20,8 @@ static int numUVCmultiaxial = 0;
 // OPS_GetString() function: causes crash with .dll
 void* OPS_UVCmultiaxial(void) {
   if (numUVCmultiaxial == 0) {
-    //std::cout << "Using the UVCmultiaxial material, see "
-    //  "https://www.epfl.ch/labs/resslab/resslab-tools/" << std::endl;
+    opserr << "Using the UVCmultiaxial material, see "
+      "https://www.epfl.ch/labs/resslab/resslab-tools/" << endln;
     numUVCmultiaxial++;
   }
   NDMaterial* theMaterial = 0;
@@ -228,7 +226,7 @@ UVCmultiaxial::~UVCmultiaxial() {
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-int UVCmultiaxial::returnMapping(){
+int UVCmultiaxial::returnMapping() {
   // Initialize all the variables
   int ret_val = 0;
   bool converged = true;
@@ -250,7 +248,8 @@ int UVCmultiaxial::returnMapping(){
   double eK;
   double kinematicModulus;
   double aDotN;
-  double pMultNumer, pMultDenom;
+  double pMultNumer = 0.;
+  double pMultDenom;
 
   // Elastic trial step
   alpha.Zero();
@@ -326,11 +325,11 @@ int UVCmultiaxial::returnMapping(){
 
   // Warn the user if the algorithm did not converge
   if (iterationNumber >= MAXIMUM_ITERATIONS - 1) {
-    std::cerr << "UVCmultiaxial::returnMapping return mapping in UVCmultiaxial did not converge!" << endln;
-    std::cerr << "\tDelta epsilon 11 = " << strainTrial[0] - strainConverged[0] << std::endl;
-    std::cerr << "\tDelta epsilon 22 = " << strainTrial[1] - strainConverged[1] << std::endl;
-    std::cerr << "\tDelta epsilon 12 = " << strainTrial[3] - strainConverged[3] << std::endl;
-    std::cerr << "\tExiting with yield function = " << pMultNumer << " > " << RETURN_MAP_TOL << std::endl;
+    opserr << "UVCmultiaxial::returnMapping return mapping in UVCmultiaxial did not converge!" << endln;
+    opserr << "\tDelta epsilon 11 = " << strainTrial[0] - strainConverged[0] << endln;
+    opserr << "\tDelta epsilon 22 = " << strainTrial[1] - strainConverged[1] << endln;
+    opserr << "\tDelta epsilon 12 = " << strainTrial[3] - strainConverged[3] << endln;
+    opserr << "\tExiting with yield function = " << pMultNumer << " > " << RETURN_MAP_TOL << endln;
     ret_val = -1;
   }
 
@@ -348,7 +347,9 @@ void UVCmultiaxial::calculateStiffness(double consistParam, double stressRelativ
     double yieldStress, isotropicModulus, kinematicModulus, eK, beta, theta_1, theta_2, theta_3,
       id2OutId2, nOutN, alphaOutN;
     // 2nd order identity tensor
-    std::vector<double> id2 = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+    std::vector<double> id2(6);
+    id2[0] = id2[1] = id2[2] = 1.0;
+    id2[3] = id2[4] = id2[5] = 0.0;
     // Symmetric 4th order identity tensor
     Matrix id4 = Matrix(N_DIMS, N_DIMS);
     for (unsigned int i = 0; i < N_DIRECT; ++i)
@@ -395,7 +396,7 @@ void UVCmultiaxial::calculateStiffness(double consistParam, double stressRelativ
 * @param v new total strain vector.
 * @return 0 if successful, -1 if return mapping did not converge.
 */
-int UVCmultiaxial::setTrialStrain(const Vector &v) {
+int UVCmultiaxial::setTrialStrain(const Vector& v) {
   int rm_convergence;
   // Reset the trial state
   revertToLastCommit();
@@ -419,7 +420,7 @@ int UVCmultiaxial::setTrialStrain(const Vector &v) {
 *
 * Note that this material model is rate independent.
 */
-int UVCmultiaxial::setTrialStrain(const Vector &v, const Vector &r) {
+int UVCmultiaxial::setTrialStrain(const Vector& v, const Vector& r) {
 
   // Reset the trial state
   revertToLastCommit();
@@ -440,7 +441,7 @@ int UVCmultiaxial::setTrialStrain(const Vector &v, const Vector &r) {
 * @param v strain increment vector
 * @return 0 if successful
 */
-int UVCmultiaxial::setTrialStrainIncr(const Vector &v) {
+int UVCmultiaxial::setTrialStrainIncr(const Vector& v) {
 
   // Reset the trial state
   revertToLastCommit();
@@ -464,7 +465,7 @@ int UVCmultiaxial::setTrialStrainIncr(const Vector &v) {
 *
 * Note that this material model is rate independent.
 */
-int UVCmultiaxial::setTrialStrainIncr(const Vector &v, const Vector &r) {
+int UVCmultiaxial::setTrialStrainIncr(const Vector& v, const Vector& r) {
 
   // Reset the trial state
   revertToLastCommit();
@@ -481,25 +482,25 @@ int UVCmultiaxial::setTrialStrainIncr(const Vector &v, const Vector &r) {
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-const Vector &UVCmultiaxial::getStrain() {
+const Vector& UVCmultiaxial::getStrain() {
   return strainTrial;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-const Vector &UVCmultiaxial::getStress() {
+const Vector& UVCmultiaxial::getStress() {
   return stressTrial;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-const Matrix &UVCmultiaxial::getTangent() {
+const Matrix& UVCmultiaxial::getTangent() {
   return stiffnessTrial;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-const Matrix &UVCmultiaxial::getInitialTangent() {
+const Matrix& UVCmultiaxial::getInitialTangent() {
   // todo: can make more efficient by changing this to elasticMatrix and removing stiffnessInitial as a variable
   return stiffnessInitial;
 }
@@ -601,7 +602,7 @@ NDMaterial* UVCmultiaxial::getCopy() {
 *
 * This is called by the continuum elements.
 */
-NDMaterial* UVCmultiaxial::getCopy(const char *code) {
+NDMaterial* UVCmultiaxial::getCopy(const char* code) {
   if (strcmp(code, getType()) == 0) {
     UVCmultiaxial* theCopy;
     theCopy = new UVCmultiaxial(this->getTag(), elasticModulus, poissonRatio,
@@ -612,7 +613,7 @@ NDMaterial* UVCmultiaxial::getCopy(const char *code) {
   }
   else {
     // todo: change to opserr
-    std::cerr << "UVCmultiaxial::getCopy invalid NDMaterial type, expecting " << code << std::endl;
+    opserr << "UVCmultiaxial::getCopy invalid NDMaterial type, expecting " << code << endln;
     return 0;
   }
 }
@@ -625,7 +626,7 @@ NDMaterial* UVCmultiaxial::getCopy(const char *code) {
 * @param theChannel
 * @return 0 if successful
 */
-int UVCmultiaxial::sendSelf(int commitTag, Channel &theChannel) {
+int UVCmultiaxial::sendSelf(int commitTag, Channel& theChannel) {
 
   /*
   static Vector data(26);  // enough space for 4 backstresses
@@ -677,8 +678,8 @@ int UVCmultiaxial::sendSelf(int commitTag, Channel &theChannel) {
 * @param theBroker
 * @return 0 if successful
 */
-int UVCmultiaxial::recvSelf(int commitTag, Channel &theChannel,
-  FEM_ObjectBroker &theBroker) {
+int UVCmultiaxial::recvSelf(int commitTag, Channel& theChannel,
+  FEM_ObjectBroker& theBroker) {
   /*
   static Vector data(26);
 
@@ -732,7 +733,7 @@ int UVCmultiaxial::recvSelf(int commitTag, Channel &theChannel,
 * @param flag is 2 for standard output, 25000 for JSON output
 (see OPS_Globals.h)
 */
-void UVCmultiaxial::Print(OPS_Stream &s, int flag) {
+void UVCmultiaxial::Print(OPS_Stream& s, int flag) {
 
   // todo: change these back when not only .dll
   // if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
@@ -770,7 +771,6 @@ void UVCmultiaxial::Print(OPS_Stream &s, int flag) {
 void UVCmultiaxial::calculateElasticStiffness() {
   double id2OutId2;
   // 2nd order identity tensor
-  //std::vector<double> id2 = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
   std::vector<double> id2(6);
   id2[0] = id2[1] = id2[2] = 1.0;
   id2[3] = id2[4] = id2[5] = 0.0;
@@ -819,7 +819,7 @@ double UVCmultiaxial::calculateYieldStress() {
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 
-double UVCmultiaxial::calculateIsotropicModulus(){
+double UVCmultiaxial::calculateIsotropicModulus() {
   double sigmaY1, sigmaY2;
   sigmaY1 = qInf * (1. - exp(-bIso * strainPEqTrial));
   sigmaY2 = dInf * (1. - exp(-aIso * strainPEqTrial));

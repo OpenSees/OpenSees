@@ -117,24 +117,30 @@ void* OPS_VTK_Recorder()
 
 	if(strcmp(type, "disp") == 0) {
 	    outputData.disp = true;
+	    /*
 	} else if(strcmp(type, "disp2") == 0) {
-	    outputData.disp2 = true;
+	  outputData.disp2 = true;
 	} else if(strcmp(type, "disp3") == 0) {
-	    outputData.disp3 = true;
+	  outputData.disp3 = true;
+	    */
 
 	} else if(strcmp(type, "vel") == 0) {
 	    outputData.vel = true;
+	    /*
 	} else if(strcmp(type, "vel2") == 0) {
 	    outputData.vel2 = true;
 	} else if(strcmp(type, "vel3") == 0) {
 	    outputData.vel3 = true;
+	    */
 
 	} else if(strcmp(type, "accel") == 0) {
 	    outputData.accel = true;
+	    /*
 	} else if(strcmp(type, "accel2") == 0) {
 	    outputData.accel2 = true;
 	} else if(strcmp(type, "accel3") == 0) {
 	    outputData.accel3 = true;
+	    */
 
 	} else if(strcmp(type, "reaction") == 0) {
 	    outputData.reaction = true;
@@ -409,31 +415,6 @@ VTK_Recorder::vtu()
     theFileVTU<<"\n</DataArray>\n";
   }
 
-  if (outputData.disp2 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getDisp();
-      for (int i=0; i<2; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "0. \n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-  if (outputData.disp3 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getDisp();
-      for (int i=0; i<3; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "\n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-
   //
   // node vel
   //
@@ -453,31 +434,6 @@ VTK_Recorder::vtu()
     theFileVTU<<"\n</DataArray>\n";
   }
 
-  if (outputData.vel2 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Vel2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getVel();
-      for (int i=0; i<2; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "0. \n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-  if (outputData.vel3 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Vel3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getVel();
-      for (int i=0; i<3; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "\n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-
   //
   // node accel
   //
@@ -496,34 +452,6 @@ VTK_Recorder::vtu()
     }
     theFileVTU<<"\n</DataArray>\n";
   }
-
-  if (outputData.accel2 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Accel2\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getAccel();
-      for (int i=0; i<2; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "0. \n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-  if (outputData.accel3 == true) {
-    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Accel3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
-    for (auto i : theNodeTags) {
-      Node *theNode=theDomain->getNode(i);
-      const Vector &output=theNode->getAccel();
-      for (int i=0; i<3; i++) 
-	theFileVTU << output(i) << " ";
-      theFileVTU << "\n";
-    }
-    theFileVTU<<"\n</DataArray>\n";
-  }
-
-
-
-
 
   // 
   // switch to element data
