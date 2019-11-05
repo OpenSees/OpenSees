@@ -22,8 +22,8 @@ static int numUVCmultiaxial = 0;
 // OPS_GetString() function: causes crash with .dll
 void* OPS_UVCmultiaxial(void) {
   if (numUVCmultiaxial == 0) {
-    std::cout << "Using the UVCmultiaxial material, see "
-      "https://www.epfl.ch/labs/resslab/resslab-tools/" << std::endl;
+    //std::cout << "Using the UVCmultiaxial material, see "
+    //  "https://www.epfl.ch/labs/resslab/resslab-tools/" << std::endl;
     numUVCmultiaxial++;
   }
   NDMaterial* theMaterial = 0;
@@ -770,7 +770,10 @@ void UVCmultiaxial::Print(OPS_Stream &s, int flag) {
 void UVCmultiaxial::calculateElasticStiffness() {
   double id2OutId2;
   // 2nd order identity tensor
-  std::vector<double> id2 = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+  //std::vector<double> id2 = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+  std::vector<double> id2(6);
+  id2[0] = id2[1] = id2[2] = 1.0;
+  id2[3] = id2[4] = id2[5] = 0.0;
   // Symmetric 4th order identity tensor
   Matrix id4 = Matrix(N_DIMS, N_DIMS);
   for (unsigned int i = 0; i < N_DIRECT; ++i)
