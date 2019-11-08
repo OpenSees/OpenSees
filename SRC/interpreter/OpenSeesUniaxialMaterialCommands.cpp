@@ -495,7 +495,7 @@ int OPS_getStrain()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &strain) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
 	opserr<<"failed to set strain\n";
 	return -1;
     }
@@ -515,7 +515,7 @@ int OPS_getStress()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &stress) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
 	opserr<<"failed to set stress\n";
 	return -1;
     }
@@ -535,7 +535,7 @@ int OPS_getTangent()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &tangent) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
 	opserr<<"failed to set tangent\n";
 	return -1;
     }
@@ -555,7 +555,7 @@ int OPS_getDampTangent()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &tangent) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
 	opserr<<"failed to set damp tangent\n";
 	return -1;
     }

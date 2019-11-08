@@ -1415,7 +1415,7 @@ int OPS_getPID()
 #endif
 
     int size = 1;
-    if (OPS_SetIntOutput(&size, &pid) < 0) {
+    if (OPS_SetIntOutput(&size, &pid, true) < 0) {
 	opserr << "WARNING: failed to set pid\n";
 	return -1;
     }
@@ -1432,7 +1432,7 @@ int OPS_getNP()
 #endif
 
     int size = 1;
-    if (OPS_SetIntOutput(&size, &nump) < 0) {
+    if (OPS_SetIntOutput(&size, &nump, true) < 0) {
 	opserr << "WARNING: failed to set np\n";
 	return -1;
     }
@@ -1658,11 +1658,11 @@ int OPS_recv()
 	    int res = 0;
 	    if (datatype == MPI_INT) {
 
-            res = OPS_SetIntOutput(&msgLength[0], &idata[0]);
+            res = OPS_SetIntOutput(&msgLength[0], &idata[0], false);
 
 	    } else if (datatype == MPI_DOUBLE) {
 
-            res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0]);
+            res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0], false);
 
 	    } else {
 
@@ -1792,11 +1792,11 @@ int OPS_Bcast() {
             int res = 0;
             if (datatype == MPI_INT) {
 
-                res = OPS_SetIntOutput(&msgLength[0], &idata[0]);
+                res = OPS_SetIntOutput(&msgLength[0], &idata[0], false);
 
             } else if (datatype == MPI_DOUBLE) {
 
-                res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0]);
+                res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0], false);
 
             } else {
 
@@ -1955,7 +1955,7 @@ int OPS_sdfResponse()
 
     double output[] = {umax, u, up, amax, tamax};
     numdata = 5;
-    if (OPS_SetDoubleOutput(&numdata,output) < 0) {
+    if (OPS_SetDoubleOutput(&numdata,output, false) < 0) {
 	opserr << "WARNING: failed to set output -- sdfResponse\n";
 	return -1;
     }
@@ -1969,7 +1969,7 @@ int OPS_getNumThreads()
     int num = omp_get_max_threads();
     int numdata = 1;
 
-    if (OPS_SetIntOutput(&numdata,&num) < 0) {
+    if (OPS_SetIntOutput(&numdata,&num,true) < 0) {
 	opserr << "WARNING: failed to set output -- getNumThreads\n";
 	return -1;
     }
