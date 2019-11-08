@@ -35,6 +35,7 @@
 #include <cmath>
 #include <Timer.h>
 #include <elementAPI.h>
+#include <vector>
 
 #ifdef _AMGCL
 #include <amgcl/adapter/crs_tuple.hpp>
