@@ -49,6 +49,7 @@
 #include <Node.h>
 #include <NodeIter.h>
 #include <ConstraintHandler.h>
+#include <vector>
 
 
 #include <MapOfTaggedObjects.h>
@@ -304,12 +305,14 @@ AnalysisModel::getDOFGraph(void)
     
     DOF_Group *dofPtr =0;
     DOF_GrpIter &theDOFs = this->getDOFs();
+    int numdofs = 0;
     while ((dofPtr = theDOFs()) != 0) {
       const ID &id = dofPtr->getID();
       int size = id.Size();
       for (int i=0; i<size; i++) {
 	int dofTag = id(i);
 	if (dofTag >= START_EQN_NUM) {
+	    if (dofTag+1 > numdofs) numdofs = dofTag+1;
 	  Vertex *vertexPtr = myDOFGraph->getVertexPtr(dofTag);
 	  if (vertexPtr == 0) {
 	    Vertex *vertexPtr = new Vertex(dofTag, dofTag);      
@@ -326,35 +329,50 @@ AnalysisModel::getDOFGraph(void)
 	}
       }
     }
-    
+
     // now add the edges, by looping over the FE_elements, getting their
     // IDs and adding edges between DOFs for equation numbers >= START_EQN_NUM
-    
+
     FE_Element *elePtr =0;
     FE_EleIter &eleIter = this->getFEs();
     int cnt = 0;
-    
+      std::vector<ID> graph(numdofs);
     while((elePtr = eleIter()) != 0) {
-      const ID &id = elePtr->getID();
-      cnt++;
-      int size = id.Size();
-      for (int i=0; i<size; i++) {
-	int eqn1 = id(i);
-	
-	// if eqnNum of DOF is a valid eqn number add an edge
-	// to all other DOFs with valid eqn numbers.
-	
-	if (eqn1 >=START_EQN_NUM) {
-	  for (int j=i+1; j<size; j++) {
-	    int eqn2 = id(j);
-	    if (eqn2 >=START_EQN_NUM)
-	      myDOFGraph->addEdge(eqn1-START_EQN_NUM+START_VERTEX_NUM,
-				  eqn2-START_EQN_NUM+START_VERTEX_NUM);
-	  }
-	}
-      }
+        const ID &id = elePtr->getID();
+        cnt++;
+        int size = id.Size();
+        for (int i = 0; i < size; i++) {
+            int eqn1 = id(i);
+
+            // if eqnNum of DOF is a valid eqn number add an edge
+            // to all other DOFs with valid eqn numbers.
+
+            if (eqn1 >= START_EQN_NUM) {
+                for (int j = i + 1; j < size; j++) {
+                    int eqn2 = id(j);
+                    if (eqn2 >= START_EQN_NUM) {
+                        graph[eqn1 - START_EQN_NUM + START_VERTEX_NUM].insert(
+                                eqn2 - START_EQN_NUM + START_VERTEX_NUM);
+                        graph[eqn2 - START_EQN_NUM + START_VERTEX_NUM].insert(
+                                eqn1 - START_EQN_NUM + START_VERTEX_NUM);
+                    }
+                }
+            }
+        }
     }
-  }    
+
+      for (int i = 0; i < numdofs; ++i) {
+
+          if (graph[i].Size()==0) continue;
+          Vertex *vertex = myDOFGraph->getVertexPtr(i);
+          if (vertex == 0) {
+              opserr << "WARNING: one vertex not in graph\n";
+              return *myDOFGraph;
+          }
+          vertex->setAdjacency(graph[i]);
+      }
+
+  }
 
   return *myDOFGraph;
 }
