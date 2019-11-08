@@ -497,10 +497,14 @@ int OPS_getRVTags()
   while ((theRV = rvIter()) != 0)
     rvTags.push_back(theRV->getTag());
 
-  int size = (int)rvTags.size();
-  int *data = &rvTags[0];
+  int size = 0;
+  int *data = 0;
+  if (!rvTags.empty()) {
+      size = (int)rvTags.size();
+      data = &rvTags[0];
+  }
 
-  if (OPS_SetIntOutput(&size,data) < 0) {
+  if (OPS_SetIntOutput(&size,data,false) < 0) {
     opserr << "ERROR: failed to set outputs in getRVTags" << endln;
     return -1;
   }
@@ -532,7 +536,7 @@ int OPS_getRVMean()
   }
 
   double mean = rv->getMean();
-  if (OPS_SetDoubleOutput(&numData, &mean) < 0) {
+  if (OPS_SetDoubleOutput(&numData, &mean, true) < 0) {
     opserr << "ERROR: getMean - failed to set double output\n";
     return -1;
   }
@@ -564,7 +568,7 @@ int OPS_getRVStdv()
   }
 
   double stdv = rv->getStdv();
-  if (OPS_SetDoubleOutput(&numData, &stdv) < 0) {
+  if (OPS_SetDoubleOutput(&numData, &stdv, true) < 0) {
     opserr << "ERROR: getStdv - failed to set double output\n";
     return -1;
   }
@@ -602,7 +606,7 @@ int OPS_getRVPDF()
   }
 
   double pdf = rv->getPDFvalue(x);
-  if (OPS_SetDoubleOutput(&numData, &pdf) < 0) {
+  if (OPS_SetDoubleOutput(&numData, &pdf, true) < 0) {
     opserr << "ERROR: getPDF - failed to set double output\n";
     return -1;
   }
@@ -640,7 +644,7 @@ int OPS_getRVCDF()
   }
 
   double cdf = rv->getCDFvalue(x);
-  if (OPS_SetDoubleOutput(&numData, &cdf) < 0) {
+  if (OPS_SetDoubleOutput(&numData, &cdf, true) < 0) {
     opserr << "ERROR: getCDF - failed to set double output\n";
     return -1;
   }
@@ -678,7 +682,7 @@ int OPS_getRVInverseCDF()
   }
 
   double invcdf = rv->getInverseCDFvalue(p);
-  if (OPS_SetDoubleOutput(&numData, &invcdf) < 0) {
+  if (OPS_SetDoubleOutput(&numData, &invcdf, true) < 0) {
     opserr << "ERROR: getInverseCDF - failed to set double output\n";
     return -1;
   }
@@ -808,7 +812,7 @@ int OPS_transformUtoX()
   Vector x(nrv);
   theTransf->transform_u_to_x(u, x);
 
-  if (OPS_SetDoubleOutput(&nrv, &x[0]) < 0) {
+  if (OPS_SetDoubleOutput(&nrv, &x[0], false) < 0) {
     opserr << "ERROR: failed to set output in transformUtoX" << endln;
     return -1;
   }
