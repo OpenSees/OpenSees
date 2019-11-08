@@ -535,10 +535,11 @@ int Newmark::update(const Vector &deltaU)
 
 int Newmark::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(3);
+    Vector data(4);
     data(0) = gamma;
     data(1) = beta;
     data(2) = displ;
+    data(3) = init;
 
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
@@ -552,7 +553,7 @@ int Newmark::sendSelf(int cTag, Channel &theChannel)
 
 int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(3);
+    Vector data(4);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING Newmark::recvSelf() - could not receive data\n";
         gamma = 0.5; beta = 0.25; 
@@ -562,6 +563,7 @@ int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     gamma  = data(0);
     beta   = data(1);
     displ  = data(2);
+    init  = data(3);
 
     return 0;
 }
