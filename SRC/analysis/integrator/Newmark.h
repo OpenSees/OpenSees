@@ -48,7 +48,7 @@ class Newmark : public TransientIntegrator
 public:
     // constructors
     Newmark();
-    Newmark(double gamma, double beta, int disp = 1, bool aflag=false);
+    Newmark(double gamma, double beta, int disp = 1, bool aflag=false, int init = 1);
 
     // destructor
     ~Newmark();
@@ -85,6 +85,7 @@ public:
     
 protected:
     int displ;      // a flag indicating whether displ(1), vel(2) or accel(3) increments
+    int init;  // 1-disp, 2-vel, 3-accel
     double gamma;
     double beta;
     
@@ -104,6 +105,8 @@ protected:
     //////////////////////
     
 private:
+    int populateU();
+    int populateUn();
 };
 
 #endif
