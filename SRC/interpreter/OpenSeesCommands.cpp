@@ -964,6 +964,13 @@ int OPS_GetNDM()
     return cmds->getNDM();
 }
 
+int OPS_Error(char *errorMessage, int length)
+{
+    opserr << errorMessage;
+    opserr << endln;
+    return 0;
+}
+
 int OPS_ResetCurrentInputArg(int cArg)
 {
     if (cArg == 0) {
