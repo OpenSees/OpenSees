@@ -1124,48 +1124,9 @@ int OPS_System()
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
 
-	    } else if (strcmp(type, "-laplace") == 0) {
-
-	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Laplace();
-	    } else if (strcmp(type, "-lumpM") == 0) {
-	    	theSOE = (LinearSOE*)OPS_PFEMSolver_LumpM();		
-
-	    // } else if(strcmp(type, "-umfpack") == 0) {
-
-	    // 	theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
-
-	    // } else if(strcmp(type, "-diag") == 0) {
-
-	    // 	theSOE = (LinearSOE*)OPS_PFEMDiaSolver();
-
-	    // } else if(strcmp(type, "-egen") == 0) {
-
-	    //  theSOE = (LinearSOE*)OPS_EgenSolver();
-
-	    } else if (strcmp(type,"-mumps") ==0) {
-// #ifdef _PARALLEL_INTERPRETERS
-// 	    int relax = 20;
-// 	    if (argc > 3) {
-// 		if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
-// 		    opserr<<"WARNING: failed to read relax\n";
-// 		    return TCL_ERROR;
-// 		}
-// 	    }
-// 	    PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
-// 	    theSOE = new PFEMLinSOE(*theSolver);
-// #endif
-	    } else if (strcmp(type,"-quasi-mumps")==0) {
-// #ifdef _PARALLEL_INTERPRETERS
-// 	    int relax = 20;
-// 	    if (argc > 3) {
-// 		if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
-// 		    opserr<<"WARNING: failed to read relax\n";
-// 		    return TCL_ERROR;
-// 		}
-// 	    }
-// 	    PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
-// 	    theSOE = new PFEMCompressibleLinSOE(*theSolver);
-// #endif
+	    } else if(strcmp(type, "-mumps") == 0) {
+		
+	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
 
 	    }
 	}

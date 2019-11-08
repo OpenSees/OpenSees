@@ -121,6 +121,10 @@ PFEMLinSOE::setSize(Graph &theGraph)
 {
     int result = 0;
     int size = theGraph.getNumVertex();
+    if (size <= 0) {
+	opserr << "WARNING: size<=0 -- PFEMLinSOE::setSize\n";
+	return -1;
+    }
 
     // resize vectors
     B.resize(size);
