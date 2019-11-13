@@ -1492,6 +1492,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	     strcmp(argv[1],"fiberSec") == 0 ||
 	     strcmp(argv[1],"NDFiberWarping") == 0 ||
 	     strcmp(argv[1],"NDFiber") == 0)
+
 	return TclCommand_addFiberSection (clientData, interp, argc, argv,
 					   theTclBuilder);
 
@@ -2139,6 +2140,7 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     }	
 
     int brace = 3; // Start of recursive parse
+
     double GJ;
     UniaxialMaterial *torsion = 0;
     bool deleteTorsion = false;
@@ -2176,7 +2178,8 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }
 
-    if (torsion == 0) {
+    int NDM = theTclModelBuilder->getNDM();  
+    if (torsion == 0 && NDM > 3) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSection3d: " << secTag << endln;
       return TCL_ERROR;
