@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <elementAPI.h>
 
 #include <vector>
+#include <ID.h>
 
 #include <RandomVariable.h>
 #include <RandomVariableIter.h>
@@ -792,11 +793,21 @@ int OPS_transformUtoX()
   ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
   int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 
+  if (OPS_GetNumRemainingInputArgs() < nrv) {
+    opserr << "ERROR: transformUtoX insufficient # args" << endln;
+    return -1;
+  }
+  if (OPS_GetNumRemainingInputArgs() > nrv && OPS_GetNumRemainingInputArgs() < 2*nrv) {
+    opserr << "ERROR: transformUtoX insufficient # rv tags" << endln;
+    return -1;
+  }
+
   int numData = 1;
   double val;
   Vector u(nrv);
   int loc = 0;
-  while (OPS_GetNumRemainingInputArgs() > 0) {
+  // Read in u-values
+  while (loc < nrv && OPS_GetNumRemainingInputArgs() > 0) {
     if (OPS_GetDoubleInput(&numData,&val) < 0) {
       OPS_ResetCurrentInputArg(-1);
       break;
@@ -804,11 +815,38 @@ int OPS_transformUtoX()
     u(loc) = val;
     loc++;
   }
-  
-  Vector x(nrv);
-  theTransf->transform_u_to_x(u, x);
 
-  if (OPS_SetDoubleOutput(&nrv, &x[0]) < 0) {
+  ID rvIndex(nrv);
+  // Initialize the index to be sequential (default)
+  for (int i = 0; i < nrv; i++)
+    rvIndex(i) = i;
+
+  int rvTag;
+  loc = 0;
+  // Now read in rv tags and get their indices
+  while (loc < nrv && OPS_GetNumRemainingInputArgs() > 0) {
+    if (OPS_GetIntInput(&numData,&rvTag) < 0) {
+      OPS_ResetCurrentInputArg(-1);
+      break;
+    }
+    rvIndex(loc) = theReliabilityDomain->getRandomVariableIndex(rvTag);
+    loc++;
+  }
+  
+  // Map in
+  Vector uSorted(nrv);
+  for (int i = 0; i < nrv; i++)
+    uSorted(rvIndex(i)) = u(i);
+
+  Vector x(nrv);
+  theTransf->transform_u_to_x(uSorted, x);
+
+  // Map out
+  Vector xSorted(nrv);
+  for (int i = 0; i < nrv; i++)
+    xSorted(i) = x(rvIndex(i));
+
+  if (OPS_SetDoubleOutput(&nrv, &xSorted[0]) < 0) {
     opserr << "ERROR: failed to set output in transformUtoX" << endln;
     return -1;
   }
