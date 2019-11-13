@@ -2527,7 +2527,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
        }
      }
 
-	 if (flag == OPS_PRINT_CURRENTSTATE) {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
        s << "\nElement: " << this->getTag() << " Type: ForceBeamColumn3d ";
        s << "\tConnected Nodes: " << connectedExternalNodes ;
        s << "\tNumber of Sections: " << numSections;
@@ -2556,11 +2556,11 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	 << P        << " " << MZ2 << " " << -VY+p0[2] << " " 
 	 << MY2 << " " <<  VZ+p0[4] << " " << -T << endln;
 
-       if (flag == 1) { 
-	 for (int i = 0; i < numSections; i++)
-	   s << "\numSections "<<i<<" :" << *sections[i];
+       for (int i = 0; i < numSections; i++) {
+	 //opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
+	 sections[i]->Print(s,flag);
        }
-     }
+    }
 
 	 if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		 s << "\t\t\t{";
