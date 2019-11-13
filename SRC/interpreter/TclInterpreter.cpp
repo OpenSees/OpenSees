@@ -560,14 +560,14 @@ TclInterpreter::resetInput(int cArg)
 }
 
 int
-TclInterpreter::setInt(int* data, int numArgs)
+TclInterpreter::setInt(int* data, int numArgs, bool scalar)
 {
     wrapper.setOutputs(interp, data, numArgs);
     return 0;
 }
 
 int
-TclInterpreter::setDouble(double* data, int numArgs)
+TclInterpreter::setDouble(double* data, int numArgs, bool scalar)
 {
     wrapper.setOutputs(interp, data, numArgs);
     return 0;

@@ -128,9 +128,6 @@ void* OPS_Joint2D()
 		opserr << "\nJoint2D element: " << Joint2DId << endln;
 		return 0;
 	    }
-
-	    opserr << "There is a bug in Joint2D constructor -- fix later\n";
-	    return 0;
 	}
     
 	else			// if ( (argc-argStart) == 12  )
@@ -309,9 +306,6 @@ void* OPS_Joint2D()
 		opserr << "\nJoint2D element: " << Joint2DId << endln;
 		return 0;
 	    }
-
-	    opserr << "There is a bug in Joint2D constructor -- fix later\n";
-	    return 0;
 	}
       
 	else			// if ( (argc-argStart) == 18  )
