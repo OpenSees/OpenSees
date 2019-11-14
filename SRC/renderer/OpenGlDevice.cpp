@@ -21,7 +21,8 @@
 // $Revision: 1.23 $
 // $Date: 2009-05-16 00:24:58 $
 // $Source: /usr/local/cvs/OpenSees/SRC/renderer/OpenGlDevice.cpp,v $
-                                                                        
+      
+#if !_DLL
                                                                         
 #include <OpenGlDevice.h>
 //#include <OPS_Globals.h>
@@ -1029,5 +1030,4 @@ OpenGlDevice::saveImageAsPNG(const char *fileName)
   return 0;
 }
 
-
-
+#endif

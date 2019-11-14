@@ -84,7 +84,7 @@
 //outOLD
 //outOLD      int *p_maxa;         // array of diagonal location pointers (MAXA)
 //outOLD
-//outOLD      long int total_numb;      // total nubmer of elements in skymatrix
+//outOLD      long int total_numb;      // total number of elements in skymatrix
 //outOLD
 //outOLD      int square_dim;      // dimension of a system ( as square matrix )
 //outOLD
@@ -141,7 +141,7 @@ class skymatrix
 //outOLD
 //outOLD//......    nDarray deep_copy( ); // make an image
 //outOLD
-//outOLD//      int operator==( skymatrix & rval);  // skymatrix comparisson
+//outOLD//      int operator==( skymatrix & rval);  // skymatrix comparison
 //outOLD//                                             // returns 1 if they are same
 //outOLD//                                             // returns 0 if they are not
 //outOLD
@@ -172,13 +172,13 @@ class skymatrix
 
     private:
       void error(char *msg1, char *msg2 = "") const; // private function
-//outOLD// this one is the same as mval except that it is more convinient
+//outOLD// this one is the same as mval except that it is more convenient
 //outOLD// to overload operator (row,col).
 //outOLD      double & operator( )(int , int ) const;
       double & mval(int , int ) const;
 // full_val inline function allows you to treat skymatrix as if it is full
 // float matrix. The function will calculate position inside sky matrix
-// and return appropriate number if row and col are bellow skyline or
+// and return appropriate number if row and col are below skyline or
 // return zero (0) if row and col are above sky line
       double full_val (int , int ) const;
 

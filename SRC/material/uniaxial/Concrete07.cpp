@@ -660,7 +660,7 @@ void Concrete07::determineTrialState(double dStrain)
 				eron = TReloadStrain;
 				fron = TReloadStress;
 				Enewns = (funn-fron)/(eunn-eron);
-				
+
 				Ttangent = Enewns;
 				Tstress = Ttangent * (Tstrain - eron) + fron;
 
@@ -931,7 +931,7 @@ void Concrete07::determineTrialState(double dStrain)
 				double ea;				// target strain on rule 9;
 				double Ea;				// slope at target point (ea,fa)
 				double Enewp;			// reloading stiffness in tension;
-				
+
 				TUnloadStrain = er;
 				TUnloadStress = fr;
 				TUnloadStiffness = Ctangent;
@@ -1836,7 +1836,7 @@ int Concrete07::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& t
 		this->setTag(0);
 	}
 
-	else 
+	else
 	{
 		this->setTag(int(data(0)));
 

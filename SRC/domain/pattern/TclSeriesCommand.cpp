@@ -216,7 +216,7 @@ TclTimeSeriesCommand(ClientData clientData,
       } 
 
       else if (strcmp(argv[endMarker],"-file") == 0) {
-	// allow user to specify the file name containg time and data points
+	// allow user to specify the file name containing time and data points
 	endMarker++;
 	if (endMarker != argc) {
 	  fileName = endMarker; // argv[endMarker];
@@ -224,7 +224,7 @@ TclTimeSeriesCommand(ClientData clientData,
       }
 
       else if (strcmp(argv[endMarker],"-filePath") == 0) {
-	// allow user to specify the file name containg the data points
+	// allow user to specify the file name containing the data points
 	endMarker++;
 	if (endMarker != argc) {
 	  filePathName = endMarker; // argv[endMarker];
@@ -232,7 +232,7 @@ TclTimeSeriesCommand(ClientData clientData,
       }
 
       else if (strcmp(argv[endMarker],"-fileTime") == 0) {
-	// allow user to specify the file name containg the data points
+	// allow user to specify the file name containing the data points
 	endMarker++;
 	if (endMarker != argc) {
 	  fileTimeName = endMarker; // argv[endMarker];

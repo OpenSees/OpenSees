@@ -27,7 +27,7 @@
 
 //
 // Description: This file contains the class definition for DisplacementPath.
-// DisplacementPath is an algorithmic class for perfroming a static analysis
+// DisplacementPath is an algorithmic class for performing a static analysis
 // using the user-defined displacement path.
 // Revised based on DisplacementControl
 // For Detailed explanation of the model, please refer to the book
@@ -68,7 +68,7 @@ class DisplacementPath : public StaticIntegrator
     int theNode;          // the node that is being followed
     int theDof;           // the dof at the node being followed
     Vector *theIncrementVector; // the vector containing the increment for each step
-    Domain *theDomain;    // the domain containing the noe being followed
+    Domain *theDomain;    // the domain containing the node being followed
     int theDofID;         // the system level id of the dof being followed
     
     Vector *deltaUhat, *deltaUbar, *deltaU, *deltaUstep;

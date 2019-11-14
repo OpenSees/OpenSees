@@ -254,7 +254,7 @@ int SymSparseLinSOE::addA(const Matrix &in_m, const ID &in_id, double fact)
    // check that m and id are of similar size
    if (idSize != in_m.noRows() && idSize != in_m.noCols()) {
        opserr << "SymSparseLinSOE::addA() ";
-       opserr << " - Matrix and ID not of similiar sizes\n";
+       opserr << " - Matrix and ID not of similar sizes\n";
        return -1;
    }
 
@@ -481,7 +481,7 @@ SymSparseLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != size) {
 	opserr << "WARNING SymSparseLinSOE::setB() -";
-	opserr << " incomptable sizes " << size << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
 	return -1;
     }
     

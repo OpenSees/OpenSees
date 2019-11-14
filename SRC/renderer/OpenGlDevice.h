@@ -26,6 +26,50 @@
 #ifndef OpenGlDevice_H
 #define OpenGlDevice_H
 
+#if _DLL
+
+class OpenGlDevice // dummy
+{
+public:
+	OpenGlDevice() {};
+	virtual ~OpenGlDevice() {};
+
+	// Gets the width of the current window
+	virtual int GetWidth() { return 0; };
+
+	// Gets the height of the current window
+	virtual int GetHeight() { return 0; };
+
+	// Necessary when operating since the drawn
+	// image is buffered until this call is made.
+	virtual void STARTIMAGE() { return ; };
+	virtual void ENDIMAGE() { return ; };
+
+	// Opens a window of the specified width & height.
+	virtual void WINOPEN(const char* title, int xLoc, int yLoc, int width, int height) { return ; };;
+
+	// Clears the currently opened window
+	virtual void CLEAR() { return ; };;
+
+	virtual void drawText(float x, float y, float z, char* text, int length,
+		char horizontalJustify, char verticalJustify) {
+		return ;
+	};;
+
+	// to save the current image to a file of a specific type
+	int saveImage(const char* fileName, int type) { return 0; };;
+
+private:
+	void initWindow(void); // procedure called on construction of 1st Window
+
+	// save image methods for specific file formats
+	int saveImageAsBMP(const char* fileName) { return 0; };;
+	int saveImageAsPNG(const char* fileName) { return 0; };;
+};
+
+#else 
+
+
 #include <Device.h>
 
 #ifdef _GLX
@@ -140,7 +184,7 @@ class OpenGlDevice
   int width, height;		// Width and height of our window
   char *windowTitle;
 };
-
+#endif
 #endif
 
 

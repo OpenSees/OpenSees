@@ -147,7 +147,7 @@ class DruckerPragerThermal : public NDMaterial
   //plasticity integration routine
   void plastic_integrator(void);
   
-  double Kiso(double alpha1);		// isotropic hardening functon
+  double Kiso(double alpha1);		// isotropic hardening function
   double Kisoprime(double alpha1);	//
   double T(double alpha2);
   double deltaH(double dGamma);

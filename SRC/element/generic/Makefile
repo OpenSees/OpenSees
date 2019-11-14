@@ -5,7 +5,6 @@ OBJS       = GenericClient.o \
 	TclGenericClientCommand.o \
 	TclGenericCopyCommand.o
 
-
 all:         $(OBJS)
 
 # Miscellaneous

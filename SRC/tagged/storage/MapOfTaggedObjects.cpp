@@ -78,22 +78,11 @@ MapOfTaggedObjects::addComponent(TaggedObject *newComponent)
     int tag = newComponent->getTag();
 
     // check if the ele already in map, if not we add
-    theEle = theMap.find(tag);
-    if (theEle == theMap.end()) {
-	theMap.insert(MAP_TAGGED_TYPE(tag,newComponent));
-		      
-	// check if sucessfully added 
-	theEle = theMap.find(tag);
-	if (theEle == theMap.end()) {
-	  opserr << "MapOfTaggedObjects::addComponent - map STL failed to add object with tag : " << 
-	    newComponent->getTag() << "\n";
-	  return false;
-	}
-    }
-    
+    std::pair<MAP_TAGGED_ITERATOR,bool> res = theMap.insert(MAP_TAGGED_TYPE(tag,newComponent));
+    if (res.second == false) {
+
     // if ele already there map cannot add even if allowMultiple is true
     // as the map template does not allow multiple entries wih the same tag
-    else {	
       opserr << "MapOfTaggedObjects::addComponent - not adding as one with similar tag exists, tag: " <<
 	newComponent->getTag() << "\n";
       return false;

@@ -137,7 +137,16 @@ PythonModule::getString() {
         return 0;
     }
 
-    return PyUnicode_AsUTF8(o);
+    PyObject* space = PyUnicode_FromString(" ");
+    PyObject* empty = PyUnicode_FromString("");
+    PyObject* newo = PyUnicode_Replace(o, space, empty, -1);
+    const char* res = PyUnicode_AsUTF8(newo);
+
+    Py_DECREF(newo);
+    Py_DECREF(space);
+    Py_DECREF(empty);
+
+    return res;
 #else
     if (!PyString_Check(o)) {
         return 0;
@@ -158,15 +167,15 @@ PythonModule::resetInput(int cArg) {
 }
 
 int
-PythonModule::setInt(int *data, int numArgs) {
-    wrapper.setOutputs(data, numArgs);
+PythonModule::setInt(int *data, int numArgs, bool scalar) {
+    wrapper.setOutputs(data, numArgs, scalar);
 
     return 0;
 }
 
 int
-PythonModule::setDouble(double *data, int numArgs) {
-    wrapper.setOutputs(data, numArgs);
+PythonModule::setDouble(double *data, int numArgs, bool scalar) {
+    wrapper.setOutputs(data, numArgs, scalar);
 
     return 0;
 }

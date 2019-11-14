@@ -3,18 +3,18 @@ include ../../../Makefile.def
 OBJS       = FlatSliderSimple2d.o \
 	FlatSliderSimple3d.o \
 	SingleFPSimple2d.o \
-	FPBearingPTV.o \
 	SingleFPSimple3d.o \
+	FPBearingPTV.o \
 	TFP_Bearing.o \
 	TFP_Bearing2d.o \
-	TclFlatSliderCommand.o \
-	TclSingleFPCommand.o \
 	TPB1D.o \
 	TripleFrictionPendulum.o \
 	MultiFP2d.o \
-    RJWatsonEQS2d.o \
-    RJWatsonEQS3d.o \
-    TclRJWatsonEQSCommand.o
+	RJWatsonEQS2d.o \
+	RJWatsonEQS3d.o \
+	TclFlatSliderCommand.o \
+	TclRJWatsonEQSCommand.o \
+	TclSingleFPCommand.o
 
 # Compilation control
 

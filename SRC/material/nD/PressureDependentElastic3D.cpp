@@ -21,7 +21,7 @@
 //#
 //#
 //# DATE:              07July2001
-//# UPDATE HISTORY:    22Nov2002 small fixes, formating...
+//# UPDATE HISTORY:    22Nov2002 small fixes, formatting...
 //                     10/11 fmk removed tensor class references & fixed error
 //#
 //#

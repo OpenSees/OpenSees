@@ -31,6 +31,8 @@
 #define QuadPatch_h 
 
 #include <Patch.h>
+#include <Matrix.h>
+#include <Vector.h>
 
 class Cell;
 class Matrix;
