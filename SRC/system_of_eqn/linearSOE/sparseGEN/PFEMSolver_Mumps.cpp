@@ -28,6 +28,7 @@
 #include <PFEMLinSOE.h>
 #include <iostream>
 #include <cmath>
+#include <vector>
 #include <Timer.h>
 #ifdef _MUMPS
 #include <mpi.h>
