@@ -398,6 +398,15 @@ int
 PM4Silt::commitState(void)
 {
 	Vector n(3), R(3), dFabric(3);
+	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
+
+	// Bounding surface correction
+	if (mMcur > mMb) {
+		double p = 0.5 * GetTrace(mSigma);
+		Vector r = (mSigma - p * mI1) * (mMb / mMcur / p);;
+		mSigma = p * mI1 + r * p;
+		mAlpha = r * (mMb - m_m) / mMb;
+	}
 
 	mAlpha_in_n = mAlpha_in;
 	mAlpha_n = mAlpha;
@@ -417,7 +426,6 @@ PM4Silt::commitState(void)
 	mDGamma_n = mDGamma;
 	mVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
 
-	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
 	mCe = GetStiffness(mK, mG);
 	mCep = GetElastoPlasticTangent(mSigma_n, mCe, R, n, mKp);
 	mCep_Consistent = mCe;
