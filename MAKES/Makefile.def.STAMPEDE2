@@ -123,6 +123,7 @@ CSPARSE_LIBRARY     = $(HOME)/lib/libCSparse.a
 DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
 DISTRIBUTED_SUPERLU_LIBRARY     = 
 LAPACK_LIBRARY      = $(HOME)/lib/libLapack.a
 BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
@@ -172,11 +173,16 @@ ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
 #CC++            =  $(ICC_BIN)/icpc
 #CC              =  $(ICC_BIN)/icc
-
 #FC              =  $(IFC_BIN)/ifort
+
 CC++ = g++
 CC = gcc
 FC = gfortran
+
+OPT_FLAG = -O2
+
+COMP_FLAG = -DMPICH_IGNORE_CXX_SEEK 
+
 
 F90              =  $(FC)
 LINKER           = $(CC++)
@@ -191,7 +197,20 @@ FORTRAN             =  $(FC)
 
 LINKER          =  $(CC++)
 
+#OPT_FLAG = -fPIC
+#OPT_FLAG = -O2 -xCORE-AVX2 -axCORE-AVX512,MIC-AVX512
+
 endif
+
+C++FLAGS         = $(PLAINCONCRETE_FLAG) -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
+		$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
+		-D_TCL85 -D_BLAS 
+
+CFLAGS          =  $(RELIABILITY_FLAG) $(DEBUG_FLAG)$(PROGRAMMING_FLAG) $(OPT_FLAG) $(COMP_FLAG) -D_TCL85 -D_BLAS
+FFLAGS          =  $(OPT_FLAG) $(COMP_FLAG)
+LINKFLAGS       =
+
+
 
 AR		= ar 
 ARCH		= ar 
@@ -227,20 +246,6 @@ DEBUG_FLAG =
 PLAINCONCRETE_FLAG = -D_HAVE_PSUMAT
 MUMPS_FLAG = 
 PETSC_FLAG =
-
-#OPT_FLAG = -fPIC
-OPT_FLAG = -O2 
-#OPT_FLAG = -O0
-
-COMP_FLAG = -DMPICH_IGNORE_CXX_SEEK 
-
-C++FLAGS         = -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include $(PLAINCONCRETE_FLAG) -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
-		$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
-		-D_TCL85 -D_BLAS
-
-CFLAGS          =  -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG)$(PROGRAMMING_FLAG) $(OPT_FLAG) $(COMP_FLAG) -D_TCL85 -D_BLAS
-FFLAGS          =  $(OPT_FLAG) $(COMP_FLAG)
-LINKFLAGS       = 
 
 
 # Misc
@@ -459,8 +464,12 @@ MACHINE_NUMERICAL_LIBS  = -lm \
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
 #MACHINE_SPECIFIC_LIBS = -mkl=sequential -static-intel -lifcore
-MACHINE_SPECIFIC_LIBS = -lpthread -lifcore -lgfortran -ldl
+MACHINE_SPECIFIC_LIBS = -lpthread -lgfortran -ldl
 
+#MACHINE_SPECIFIC_LIBS = /usr/lib/x86_64-redhat-linux6E/lib64/libpthread.a -lgfortran \
+#/usr/lib/x86_64-redhat-linux6E/lib64/libdl.a \
+#/usr/lib/x86_64-redhat-linux6E/lib64/libc.a \
+#/usr/lib/x86_64-redhat-linux6E/lib64/libm.a -static-libgcc
 
 else
 
