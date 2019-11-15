@@ -1052,6 +1052,7 @@ SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Mumps.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMQuasiLinSOE.o \
