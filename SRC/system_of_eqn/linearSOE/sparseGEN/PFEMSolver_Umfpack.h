@@ -49,7 +49,7 @@ class PFEMLinSOE;
 class PFEMSolver_Umfpack : public PFEMSolver
 {
 public:
-    PFEMSolver_Umfpack(double tol, int niter, int p);
+    PFEMSolver_Umfpack(double tol=1e-4, int niter=100, int p=0);
     virtual ~PFEMSolver_Umfpack();
 
     int solve();
