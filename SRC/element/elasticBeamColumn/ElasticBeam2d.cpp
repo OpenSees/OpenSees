@@ -551,7 +551,7 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[2] += M;
   }
 
-  if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+  else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
     double waa = data(2)*loadFactor;  // Axial
     double wab = data(3)*loadFactor;  // Axial
     double wya = data(0)*loadFactor;  // Transverse
