@@ -81,7 +81,7 @@ void* OPS_ZeroLengthContact2D()
     }
 
     const char* type = OPS_GetString();
-    if (strcmp(type,"-normal") == 0) {
+    if (strcmp(type,"-normal") != 0) {
 	opserr << "ZeroLengthContact2D:: expecting "<<
 	    "- element ZeroLengthContact2D eleTag? iNode? jNode? Kn? Kt? fs? -normal Nx? Ny? \n" ;
 	return 0;

@@ -66,6 +66,7 @@ OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \
 	SuperLU.o \
 	PFEMSolver.o \
 	PFEMSolver_Umfpack.o \
+	PFEMSolver_Mumps.o \
 	PFEMLinSOE.o \
 	PFEMCompressibleSolver.o \
 	PFEMCompressibleLinSOE.o \
