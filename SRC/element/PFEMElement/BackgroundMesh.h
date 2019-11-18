@@ -169,6 +169,9 @@ public:
     int moveParticles();
     int convectParticle(Particle* pt, VInt index, int level, int nums);
     int moveFixedParticles();
+    int inlet();
+    void addInlet(const VDouble& crds, const VDouble& vel);
+    void setInletNum(const VInt& num) {inletNum = num;}
 
     // create grid nodes and elements
     int addStructure();
@@ -246,6 +249,9 @@ private:
     bool incrVel;
     bool fsiTri; // move partiles in fsi area through triangles
     double boundReduceFactor;
+    VVInt inletLoc;
+    VVDouble inletVel;
+    VInt inletNum;
     VVInt largesize;
     bool pressureonce;
     bool dispon;

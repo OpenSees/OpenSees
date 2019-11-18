@@ -80,6 +80,7 @@ int OPS_BgMesh()
                 "-incrVel? -setVel? -freesurface? -fsiSquare? -fsiTri?"
                 "-pressureOnce? -pressureExact? -kernelClose? -kernelAll?"
                 "-boundReduceFactor factor? -allAssembly? -fastAssembly?"
+                "-inlet crds? vel? -inletNum nump?"
                 "-largeSize? level? lower? upper?>";
         return -1;
     }
@@ -287,6 +288,29 @@ int OPS_BgMesh()
             bgmesh.setKernelClose(true);
         } else if (strcmp(opt, "-kernelAll") == 0) {
             bgmesh.setKernelClose(false);
+        } else if (strcmp(opt, "-inlet") == 0) {
+            VDouble crds(ndm), vel(ndm);
+            if (OPS_GetNumRemainingInputArgs() < 2 * ndm) {
+                opserr << "WARNING: need crds and vel\n";
+                return -1;
+            }
+            if (OPS_GetDoubleInput(&ndm, &crds[0]) < 0) {
+                opserr << "WARNING: failed to get inlet coordinates\n";
+                return -1;
+            }
+            if (OPS_GetDoubleInput(&ndm, &crds[0]) < 0) {
+                opserr << "WARNING: failed to get inlet velocity\n";
+                return -1;
+            }
+            bgmesh.addInlet(crds, vel);
+        } else if (strcmp(opt, "-inletNum") == 0) {
+
+            VInt nump(ndm);
+            if (OPS_GetIntInput(&ndm, &nump[0]) < 0) {
+                opserr << "WARNING: failed to get inlet number of particles\n";
+                return -1;
+            }
+            bgmesh.setInletNum(nump);
         }
     }
 
@@ -313,7 +337,7 @@ BackgroundMesh::BackgroundMesh()
          structuralNodes(),
          freesurface(false), contactData(8),
          contactEles(), incrVel(false), fsiTri(false),
-         boundReduceFactor(0.5),
+         boundReduceFactor(0.5), inletLoc(), inletVel(), inletNum(),
          largesize(), pressureonce(false), dispon(true),
          fastAssembly(true), kernelClose(false)
 {
@@ -399,6 +423,16 @@ BackgroundMesh::addLargeSize(int numbasic,
     }
 
     largesize.push_back(lsize);
+}
+
+void
+BackgroundMesh::addInlet(const VDouble &crds, const VDouble &vel)
+{
+    VInt ind;
+    nearIndex(crds, ind);
+
+    inletLoc.push_back(ind);
+    inletVel.push_back(vel);
 }
 
 int
@@ -1284,7 +1318,118 @@ BackgroundMesh::addParticles()
     return 0;
 }
 
+int
+BackgroundMesh::inlet()
+{
+    // check nump
+    if (inletNum.empty()) {
+        return 0;
+    }
+    int nump = 1;
+    for (int i = 0; i < (int) inletNum.size(); ++i) {
+        nump *= inletNum[i];
+    }
+    if (nump <= 0) {
+        opserr << "WARNING: inlet number of particles for one cell is not correctly set\n";
+        return -1;
+    }
 
+    // get group
+    ParticleGroup* group = 0;
+    TaggedObjectIter& meshes = OPS_getAllMesh();
+    Mesh* mesh = 0;
+    while((mesh = dynamic_cast<Mesh*>(meshes())) != 0) {
+        group = dynamic_cast<ParticleGroup *>(mesh);
+        if (group != 0) {
+            break;
+        }
+    }
+    if (group == 0) {
+        opserr << "WARNING: no particle group is defined\n";
+        return -1;
+    }
+
+    // for each inlet location
+    for (int i = 0; i < (int) inletLoc.size(); ++i) {
+
+        // get bcell
+        BCell& bcell = bcells[inletLoc[i]];
+
+        // get size level
+        int level = getSizeLevel(inletLoc[i]);
+        if (bcell.sizeLevel != 0 && bcell.sizeLevel!=level) {
+            opserr << "WARNING: regions with different mesh sizes"
+                      "are overlapping\n";
+            return -1;
+        }
+        bcell.sizeLevel = level;
+
+        if (bcell.type == STRUCTURE) {
+            opserr << "WARNING: inlet boundary overlapps with structure\n";
+            return -1;
+        }
+
+        // add bnodes of the cell
+        if (bcell.bnodes.empty()) {
+
+            // get corners
+            VVInt indices;
+            getCorners(inletLoc[i],1,level,indices);
+
+            // set corners
+            for (int j=0; j<(int)indices.size(); ++j) {
+                BNode& bnode = bnodes[indices[j]];
+                if (bnode.size() == 0) {
+                    bnode.addNode(FLUID);
+                }
+                bcell.bnodes.push_back(&bnode);
+                bcell.bindex.push_back(indices[j]);
+            }
+        }
+
+        // create and add particles
+        int numneed = nump - bcell.pts.size();
+        int count = 0;
+        VDouble crds(inletNum.size());
+
+        Particle* particle = 0;
+        if (inletNum.size() == 2) {
+            int sizex = bsize / (inletNum[0]+1);
+            int sizey = bsize / (inletNum[1]+1);
+            for (int j = 0; j < inletNum[0]; ++j) {
+                for (int k = 0; k < inletNum[1]; ++k) {
+                    if (count >= numneed) break;
+                    getCrds(inletLoc[i], crds);
+                    crds[0] += sizex / 2.0 + j * sizex;
+                    crds[1] += sizey / 2.0 + k * sizey;
+
+                    group->addParticle(crds, inletVel[i], 0.0);
+                    particle = group->getParticle(group->numParticles()-1);
+                }
+            }
+        } else if (inletNum.size() == 3) {
+            int sizex = bsize / (inletNum[0]+1);
+            int sizey = bsize / (inletNum[1]+1);
+            int sizez = bsize / (inletNum[2]+1);
+            for (int j = 0; j < inletNum[0]; ++j) {
+                for (int k = 0; k < inletNum[1]; ++k) {
+                    for (int l = 0; l < inletNum[2]; ++l) {
+                        if (count >= numneed) break;
+                        getCrds(inletLoc[i], crds);
+                        crds[0] += sizex / 2.0 + j * sizex;
+                        crds[1] += sizey / 2.0 + k * sizey;
+                        crds[2] += sizez / 2.0 + l * sizez;
+
+                        group->addParticle(crds, inletVel[i], 0.0);
+                        particle = group->getParticle(group->numParticles() - 1);
+                    }
+                }
+            }
+        }
+        bcell.add(particle);
+    }
+    return 0;
+}
 
 int
 BackgroundMesh::gridNodes()
