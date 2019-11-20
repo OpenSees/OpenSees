@@ -66,7 +66,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <UserDefinedRV.h>
 #include <LaplaceRV.h>
 #include <ParetoRV.h>
+#ifdef PY_VERSION
 #include <PythonRV.h>
+#endif
 
 #include <AllIndependentTransformation.h>
 #include <NatafProbabilityTransformation.h>
@@ -440,7 +442,8 @@ int OPS_randomVariable()
     }
 
     else if (strcmp(dist,"python") == 0) {
-      if (filename == 0 || functionname == 0) {
+#ifdef PY_VERSION
+        if (filename == 0 || functionname == 0) {
 	opserr << "ERROR: PythonRV filename or functionname not specified" << endln;
 	return -1;
       }
@@ -448,6 +451,7 @@ int OPS_randomVariable()
 	theRandomVariable = new PythonRV(tag, parameters, filename, functionname);
       else
 	theRandomVariable = new PythonRV(tag, mean, stdv, filename, functionname);
+#endif
     }
     
     else {
