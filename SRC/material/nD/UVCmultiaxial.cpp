@@ -296,7 +296,7 @@ int UVCmultiaxial::returnMapping() {
     strainPEqTrial = strainPEqConverged + sqrt(2. / 3.) * consistParam;
 
     // Check convergence
-    if (abs(pMultNumer) < RETURN_MAP_TOL) {
+    if (fabs(pMultNumer) < RETURN_MAP_TOL) {
       converged = true;
     }
   }
