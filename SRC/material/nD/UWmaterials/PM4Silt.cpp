@@ -401,7 +401,7 @@ PM4Silt::commitState(void)
 	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
 
 	// Bounding surface correction
-	if (mMcur > mMb) {
+	if (mMcur > mMb && me2p) {
 		double p = 0.5 * GetTrace(mSigma);
 		Vector r = (mSigma - p * mI1) * (mMb / mMcur / p);;
 		mSigma = p * mI1 + r * p;
