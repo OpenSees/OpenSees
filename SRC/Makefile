@@ -203,10 +203,10 @@ KJE_LIBS = $(FE)/material/uniaxial/limitState/LimitStateMaterial.o \
 # the files that make up the FE_LIBRARY
 GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthSection.o \
-	$(FE)/element/zeroLength/CoupledZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthND.o \
 	$(FE)/element/zeroLength/ZeroLengthVG_HG.o \
 	$(FE)/element/zeroLength/ZeroLengthImpact3D.o
+	#$(FE)/element/zeroLength/CoupledZeroLength.o \
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \

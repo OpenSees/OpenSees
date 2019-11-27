@@ -8,10 +8,10 @@ OBJS       = ZeroLength.o \
 	ZeroLengthContactNTS2D.o \
 	ZeroLengthInterface2D.o \
 	ZeroLengthRocking.o \
-	CoupledZeroLength.o \
 	ZeroLengthImpact3D.o \
 	ZeroLengthVG_HG.o \
 	TclZeroLength.o
+#	CoupledZeroLength.o \
 
 
 #
