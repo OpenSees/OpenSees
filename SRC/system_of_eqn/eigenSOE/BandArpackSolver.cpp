@@ -316,13 +316,13 @@ BandArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 	   opserr << "IPARAM(7) must be 1,2,3,4,5.\n";
 	   break;
          case -11: 
-	   opserr << "IPARAM(7) = 1 and BMAT = 'G' are incompatable.\n";
+	   opserr << "IPARAM(7) = 1 and BMAT = 'G' are incompatible.\n";
 	   break;
          case -12: 
 	   opserr << "IPARAM(1) must be equal to 0 or 1.\n";
 	   break;
          case -13:
-	   opserr << "NEV and WHICH = 'BE' are incompatable.\n";
+	   opserr << "NEV and WHICH = 'BE' are incompatible.\n";
 	   break;
          case -9999:
 	   opserr << "Could not build an Arnoldi factorization.";

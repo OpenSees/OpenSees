@@ -194,7 +194,7 @@ int OPS_GetIntInput(int *numData, int*data)
 }
 
 extern "C" 
-int OPS_SetIntOutput(int *numData, int *data)
+int OPS_SetIntOutput(int *numData, int *data, bool scalar)
 {
     int numArgs = *numData;
     char buffer[40];
@@ -205,7 +205,7 @@ int OPS_SetIntOutput(int *numData, int *data)
   return 0;  
 }
 
-extern "C" 
+extern "C"
 int OPS_GetDoubleInput(int *numData, double *data)
 {
   int size = *numData;
@@ -221,7 +221,7 @@ int OPS_GetDoubleInput(int *numData, double *data)
 }
 
 extern "C" 
-int OPS_SetDoubleOutput(int *numData, double *data)
+int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
 {
     int numArgs = *numData;
     char buffer[40];

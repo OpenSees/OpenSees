@@ -68,8 +68,8 @@ class DL_Interpreter
     virtual void resetInput(int cArg);
 
     // methods for interpreters to output results
-    virtual int setInt(int *, int numArgs);
-    virtual int setDouble(double *, int numArgs);
+    virtual int setInt(int *, int numArgs, bool scalar);
+    virtual int setDouble(double *, int numArgs, bool scalar);
     virtual int setString(const char*);
 
     // methods to run a command in the interpreter

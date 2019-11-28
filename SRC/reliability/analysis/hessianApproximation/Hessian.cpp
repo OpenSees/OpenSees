@@ -122,7 +122,7 @@ int  Hessian::setHessianToIdentity(int size){
 	return 0;
 };
 
-// Perturb in standard normal space by full pertubation..
+// Perturb in standard normal space by full perturbation..
 int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoint)
 {
     Matrix jacobian_x_u(sizeOfHessian,sizeOfHessian);
@@ -460,7 +460,7 @@ const Matrix &
 Hessian::getHessianInPhysicalSpace()
 {
 	
-  opserr<<"Hessian in physical space is not accurate at all! and will be unuseful."<<endln;
+  opserr<<"Hessian in physical space is not accurate at all! and will be useless."<<endln;
   return * theHessianInPhysicalSpace;
 }
 

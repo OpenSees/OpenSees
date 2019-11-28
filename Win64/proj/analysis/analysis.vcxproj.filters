@@ -364,6 +364,11 @@
     </ClCompile>
     <ClCompile Include="..\..\..\DEVELOPER\Source Files AMK\CreepAnalysis.cpp">
       <Filter>analysis</Filter>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp">
+      <Filter>integrator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -690,6 +695,11 @@
     </ClInclude>
     <ClInclude Include="..\..\..\DEVELOPER\Source Files AMK\CreepAnalysis.h">
       <Filter>analysis</Filter>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.h">
+      <Filter>integrator</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

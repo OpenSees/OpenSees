@@ -114,6 +114,7 @@ void* OPS_MinMaxMaterial();
 void* OPS_TensionOnlyMaterial();
 void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
+void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
@@ -165,6 +166,11 @@ void* OPS_ShearPanelMaterial();
 void* OPS_SteelMP();
 void* OPS_SmoothPSConcrete();
 void* OPS_UniaxialJ2Plasticity();
+void* OPS_OOHystereticMaterial();
+void* OPS_UVCuniaxial();
+void* OPS_IMKBilin();
+void* OPS_IMKPinching();
+void* OPS_IMKPeakOriented();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -263,7 +269,8 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilin", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilinear", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticMultiLinear", &OPS_ElasticMultiLinear));
-	uniaxialMaterialsMap.insert(std::make_pair("MultiLinear", &OPS_MultiLinear));
+    uniaxialMaterialsMap.insert(std::make_pair("ElasticPowerFunc", &OPS_ElasticPowerFunc));
+    uniaxialMaterialsMap.insert(std::make_pair("MultiLinear", &OPS_MultiLinear));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStrainMaterial", &OPS_InitStrainMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStrain", &OPS_InitStrainMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStressMaterial", &OPS_InitStressMaterial));
@@ -322,6 +329,11 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("SteelMP", &OPS_SteelMP));
 	uniaxialMaterialsMap.insert(std::make_pair("SmoothPSConcrete", &OPS_SmoothPSConcrete));
 	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
+	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
+	uniaxialMaterialsMap.insert(std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
+	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
+	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
 
 	return 0;
     }
@@ -483,7 +495,7 @@ int OPS_getStrain()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &strain) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
 	opserr<<"failed to set strain\n";
 	return -1;
     }
@@ -503,7 +515,7 @@ int OPS_getStress()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &stress) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
 	opserr<<"failed to set stress\n";
 	return -1;
     }
@@ -523,7 +535,7 @@ int OPS_getTangent()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &tangent) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
 	opserr<<"failed to set tangent\n";
 	return -1;
     }
@@ -543,7 +555,7 @@ int OPS_getDampTangent()
 
     int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &tangent) < 0) {
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
 	opserr<<"failed to set damp tangent\n";
 	return -1;
     }

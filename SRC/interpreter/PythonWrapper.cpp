@@ -95,30 +95,36 @@ PythonWrapper::getMethods()
 }
 
 void
-PythonWrapper::setOutputs(int* data, int numArgs)
+PythonWrapper::setOutputs(int* data, int numArgs, bool scalar)
 {
-    if (numArgs == 0) return;
-    if (numArgs == 1) {
-	currentResult = Py_BuildValue("i", data[0]);
-	return ;
-    }
-    currentResult = PyList_New(numArgs);
-    for (int i=0; i<numArgs; i++) {
-	PyList_SET_ITEM(currentResult, i, Py_BuildValue("i", data[i]));
+    if (numArgs < 0) numArgs = 0;
+
+    if (scalar) {
+        if (numArgs > 0) {
+            currentResult = Py_BuildValue("i", data[0]);
+        }
+    } else {
+        currentResult = PyList_New(numArgs);
+        for (int i = 0; i < numArgs; i++) {
+            PyList_SET_ITEM(currentResult, i, Py_BuildValue("i", data[i]));
+        }
     }
 }
 
 void
-PythonWrapper::setOutputs(double* data, int numArgs)
+PythonWrapper::setOutputs(double* data, int numArgs, bool scalar)
 {
-    if (numArgs == 0) return;
-    if (numArgs == 1) {
-	currentResult = Py_BuildValue("d", data[0]);
-	return ;
-    }
-    currentResult = PyList_New(numArgs);
-    for (int i=0; i<numArgs; i++) {
-	PyList_SET_ITEM(currentResult, i, Py_BuildValue("d", data[i]));
+    if (numArgs < 0) numArgs = 0;
+
+    if (scalar) {
+        if (numArgs > 0) {
+            currentResult = Py_BuildValue("d", data[0]);
+        }
+    } else {
+        currentResult = PyList_New(numArgs);
+        for (int i = 0; i < numArgs; i++) {
+            PyList_SET_ITEM(currentResult, i, Py_BuildValue("d", data[i]));
+        }
     }
 }
 
@@ -1273,18 +1279,6 @@ static PyObject *Py_ops_defaultUnits(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_neesUpload(PyObject *self, PyObject *args)
-{
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-    if (OPS_neesUpload() < 0) {
-	opserr<<(void*)0;
-	return NULL;
-    }
-
-    return wrapper->getResults();
-}
-
 static PyObject *Py_ops_stripXML(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2250,7 +2244,6 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("record", &Py_ops_record);
     addCommand("metaData", &Py_ops_metaData);
     addCommand("defaultUnits", &Py_ops_defaultUnits);
-    addCommand("neesUpload", &Py_ops_neesUpload);
     addCommand("stripXML", &Py_ops_stripXML);
     addCommand("convertBinaryToText", &Py_ops_convertBinaryToText);
     addCommand("convertTextToBinary", &Py_ops_convertTextToBinary);

@@ -70,7 +70,7 @@ class SP_Constraint : public DomainComponent
     int nodeTag;     // to identify the node in the model
     int dofNumber;   // identifies which of the nodes dof is constrrained 
     double valueR;   // the reference value
-    double valueC;   // if constant = the reference value, if not contant =
+    double valueC;   // if constant = the reference value, if not constant =
 	             // the reference value * load factor
     bool isConstant; // flag indicating if constant
     int  loadPatternTag;    

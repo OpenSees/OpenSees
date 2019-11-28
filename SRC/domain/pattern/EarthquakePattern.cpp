@@ -249,7 +249,7 @@ EarthquakePattern::sendSelf(int commitTag, Channel &theChannel)
       return -1;
     }
 
-  // if get here successfull
+  // if get here successful
   return 0;
 }
 
@@ -342,7 +342,7 @@ EarthquakePattern::recvSelf(int commitTag, Channel &theChannel,
     }    
   }
 
-  // if get here successfull
+  // if get here successful
   return 0;
 }
 

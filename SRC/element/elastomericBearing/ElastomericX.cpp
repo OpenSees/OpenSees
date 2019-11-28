@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Manish Kumar (mkumar2@buffalo.edu)
 // Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
 // Created: 02/29/2012
@@ -1081,7 +1077,7 @@ void ElastomericX::Print(OPS_Stream &s, int flag)
         s << "D1: " << D1 << " D2: " << D2 << " L: " << L << " Tr: " << Tr << " S: " << S <<" A: " << A << endln;
         s << "MATERIAL PROPERTIES" << endln;
         s << "G: " << G << " kc: " << kc << " ac: " << ac << " PhiM: " << PhiM << " shearDistI: " << shearDistI << " mass: " << mass << endln;
-        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n" << endln;
+        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION" << endln;
         s << "k0: " << k0 << " ke: " << ke << " qYield: " << qYield << " Fcrmin: " << Fcrmin << endln;
         s << "MECHANICAL PROPERTIES: VERTICAL MOTION"<<endln;
         s << "Ec: " << Ec << " Kv0: " << Kv0 << " Kv: " << Kv << " uc: " << uc << " Fcr: " << Fcr << " Fcrn: " << Fcrn << " ucr: " << ucr << " umax: " << umax << endln;

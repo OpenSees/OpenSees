@@ -1276,14 +1276,17 @@ void MultiYieldSurfaceClay::setUpSurfaces (double * gredu)
 	
 	  double stressInc = peakShear / numOfSurfaces;
 
+#if !_DLL
 	  ofstream out("init_surface.out");
-	  out <<"strain             stress"<<endln;
-
+	  out << "strain             stress" << endln;
+#endif
 	  for (int ii=1; ii<=numOfSurfaces; ii++){
         stress1 = ii * stressInc; 
 				stress2 = stress1 + stressInc;
         strain1 = stress1 * refStrain / (refShearModulus * refStrain - stress1);
-        out<<strain1<<"      "<<stress1<<endln;
+#if !_DLL
+		out << strain1 << "      " << stress1 << endln;
+#endif
 
 		strain2 = stress2 * refStrain / (refShearModulus * refStrain - stress2);
         if (frictionAngle > 0.) size = 3. * stress1 / sqrt(2.) / coneHeight;
@@ -1304,7 +1307,9 @@ void MultiYieldSurfaceClay::setUpSurfaces (double * gredu)
 			temp.Zero();
         committedSurfaces[ii] = MultiYieldSurface(temp,size,plast_modul);
 		}  // ii
+#if !_DLL
 	  out.close();
+#endif
 	} 
 		else {  //user defined surfaces
 			if (frictionAngle > 0) {   // ignore user defined frictionAngle 

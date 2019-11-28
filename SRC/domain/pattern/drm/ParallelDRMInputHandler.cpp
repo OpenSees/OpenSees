@@ -395,7 +395,7 @@ void PlaneDRMInputHandler::getMotions(Element* eletag, double time, Vector& U, V
     handle_elementAtface4(eletag, time, U, Ud, Udd);
     break;
   default:
-    opserr << " SHOULDNT SEE THIS \n";
+    opserr << " SHOULDN'T SEE THIS \n";
     break;
   }
 }

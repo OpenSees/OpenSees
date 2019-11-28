@@ -296,10 +296,10 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 		// Evaluate limit-state function unless it has been done in 
 		// a trial step by the "stepSizeAlgorithm"
 		if (evaluationInStepSize == 0) {
-			/////// modifed by K Fujimura//////////////////
+			/////// modified by K Fujimura//////////////////
 			if(!fdf) theGFunEvaluator->activateSensitivty();
 			else theGFunEvaluator->inactivateSensitivty();
-			/////// modifed by K Fujimura//////////////////
+			/////// modified by K Fujimura//////////////////
 			result = theGFunEvaluator->runAnalysis();
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
 			gFunctionValue_old = gFunctionValue;

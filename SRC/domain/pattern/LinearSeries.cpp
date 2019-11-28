@@ -17,19 +17,19 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.3 $
 // $Date: 2010-02-04 00:34:10 $
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/LinearSeries.cpp,v $
-                                                                        
-                                                                        
-// Written: fmk 
+
+
+// Written: fmk
 // Created: 07/99
 // Revision: A
 //
 // Purpose: This file contains the class definition for LinearSeries.
 // LinearSeries is a concrete class. A LinearSeries object provides
-// a linear time series. the factor is given by the pseudoTime and 
+// a linear time series. the factor is given by the pseudoTime and
 // a constant factor provided in the constructor.
 //
 // What: "@(#) LinearSeries.C, revA"
@@ -54,7 +54,7 @@ OPS_LinearSeries(void)
   int numData = 0;
 
   if (numRemainingArgs != 0) {
-  
+
     if (numRemainingArgs == 1 || numRemainingArgs == 3) {
       numData = 1;
       if (OPS_GetIntInput(&numData, &tag) != 0) {
@@ -67,12 +67,12 @@ OPS_LinearSeries(void)
     if (numRemainingArgs > 1) {
       const char *argvS = OPS_GetString();
 	   if (argvS == 0) {
-		  opserr << "WARNING strig error in  LinearSeries with tag: " << tag << endln;
+		  opserr << "WARNING string error in LinearSeries with tag: " << tag << endln;
 		return 0;
 	  }
       numData = 1;
       if (OPS_GetDouble(&numData, &cFactor) != 0) {
-	opserr << "WARNING invalid factor in  LinearSeries with tag: " << tag << endln;
+	opserr << "WARNING invalid factor in LinearSeries with tag: " << tag << endln;
 	return 0;
       }
     }
@@ -130,8 +130,8 @@ LinearSeries::sendSelf(int commitTag, Channel &theChannel)
 }
 
 
-int 
-LinearSeries::recvSelf(int commitTag, Channel &theChannel, 
+int
+LinearSeries::recvSelf(int commitTag, Channel &theChannel,
 		       FEM_ObjectBroker &theBroker)
 {
   int dbTag = this->getDbTag();
@@ -144,7 +144,7 @@ LinearSeries::recvSelf(int commitTag, Channel &theChannel,
   }
   cFactor = data(0);
 
-  return 0;    
+  return 0;
 }
 
 

@@ -121,6 +121,8 @@ extern  void *OPS_BeamFiberMaterial2d(void);
 extern  void *OPS_BeamFiberMaterial2dPS(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
+extern void* OPS_UVCmultiaxial(void);
+extern void* OPS_UVCplanestress(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -398,6 +400,24 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+    else if ((strcmp(argv[1],"UVCplanestress") == 0)){
+
+      void *theMat = OPS_UVCplanestress();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"UVCmultiaxial") == 0)){
+
+      void *theMat = OPS_UVCmultiaxial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
 	  else if ((strcmp(argv[1],"MaterialCMM") == 0)){
 
       void *theMat = OPS_MaterialCMM();
@@ -506,6 +526,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+#if !_DLL
     else if ((strcmp(argv[1],"stressDensity") == 0) || (strcmp(argv[1],"StressDensity") == 0)) {
       
       void *theMat = OPS_StressDensityMaterial();
@@ -514,7 +535,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
-    
+#endif
     else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0) || (strcmp(argv[1],"ElasticIsotropic") == 0)) {
 
       void *theMat = OPS_ElasticIsotropicMaterial();

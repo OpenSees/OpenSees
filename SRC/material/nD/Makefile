@@ -87,6 +87,8 @@ OBJS       = NDMaterial.o \
 	J2ThreeDimensionalThermal.o \
 	PlateFiberMaterialThermal.o \
 	PlateFromPlaneStressMaterialThermal.o \
+	UVCmultiaxial.o	\
+	UVCplanestress.o \
 	PlateRebarMaterialThermal.o
 
 
@@ -105,7 +107,7 @@ tidy:
 	@$(RM) $(RMFLAGS) Makefile.bak *~ #*# core
 
 clean: tidy
-	@$(RM) $(RMFLAGS) $(OBJS) *.o
+	@$(RM) $(RMFLAGS) $(OBJS) *.o *.mod
 	@$(RM) $(RMFLAGS) .inslog*
 	@$(RM) $(RMFLAGS) tca.map
 

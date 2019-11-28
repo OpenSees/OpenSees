@@ -40,6 +40,15 @@
 *.pdb
 .vs
 obj
+*.exp
+
+# CLion
+.gitignore
+.idea
+cmake-build-debug
+cmake-build-release
+CMakeLists.txt
+.dropbox.attr
 
 # OTHER
 Makefile.def

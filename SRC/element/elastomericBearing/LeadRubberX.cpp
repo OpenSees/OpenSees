@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Manish Kumar (mkumar2@buffalo.edu)
 // Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
 // Created: 02/12
@@ -1135,7 +1131,7 @@ void LeadRubberX::Print(OPS_Stream &s, int flag)
         s << "MATERIAL PROPERTIES" << endln;
         s << "G: " << G << " kc: " << kc << " ac: " << ac << " PhiM: " << PhiM << " shearDistI: " << shearDistI << " mass: " << mass << endln;
         s << " qL: " << qL << " cL: " << cL << " kS: " << kS << " aS: " << aS << endln;
-        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n" << endln;
+        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION" << endln;
         s << "k0: " << k0 << " ke: " << ke << " qYield: " << qYield << " DeltaT: " << TL_commit << " Fcrmin: " << Fcrmin << endln;
         s << "MECHANICAL PROPERTIES: VERTICAL MOTION" << endln;
         s << "Kv: "<< Kv << " Fc: " << Fc << " Fcr: " << Fcr << " Fcn: " << Fcn << " umax: " << umax << endln;

@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision$
-// $Date$
-// $URL$
-                                                                        
 // Written: fmk
 // Revision: A
 //
@@ -64,6 +60,7 @@
 #include <SPSW02.h>			//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
+#include <ElasticPowerFunc.h>
 #include <Elastic2Material.h>
 #include <ElasticPPMaterial.h>
 #include <ParallelMaterial.h>
@@ -191,7 +188,9 @@
 #include <PM4Sand.h>
 #include <PM4Silt.h>
 #include <InitialStateAnalysisWrapper.h>
+#if !_DLL
 #include <stressDensity.h>
+#endif
 #include <InitStressNDMaterial.h>
 
 // Fibers
@@ -266,6 +265,8 @@
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
 #include <TwoNodeLink.h>
+#include <LinearElasticSpring.h>
+#include <Inerter.h>
 
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
@@ -765,6 +766,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			
       
+    case ELE_TAG_LinearElasticSpring:
+        return new LinearElasticSpring();
+
+    case ELE_TAG_Inerter:
+        return new Inerter();
+
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
       
@@ -1066,18 +1073,21 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_BoucWen:
 		return new BoucWenMaterial(); // SAJalali
 	case MAT_TAG_ElasticMaterial:
-	     return new ElasticMaterial(); // values set in recvSelf
+	     return new ElasticMaterial();
 
 	case MAT_TAG_Elastic2Material:  
 	     return new Elastic2Material(); 
 	     
 	case MAT_TAG_ElasticPPMaterial:  
-	     return new ElasticPPMaterial(); // values set in recvSelf
+	     return new ElasticPPMaterial();
 
 	case MAT_TAG_ElasticMultiLinear:  
-	     return new ElasticMultiLinear(); // values set in recvSelf
+	     return new ElasticMultiLinear();
 	     	     
-	case MAT_TAG_ParallelMaterial:  
+    case MAT_TAG_ElasticPowerFunc:
+        return new ElasticPowerFunc();
+
+    case MAT_TAG_ParallelMaterial:
 	     return new ParallelMaterial();
 
 	case MAT_TAG_Concrete01:  
@@ -1444,9 +1454,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
+#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-
+#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 

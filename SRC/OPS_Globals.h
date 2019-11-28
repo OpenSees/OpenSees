@@ -28,10 +28,14 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "3.0.3"
+#define OPS_VERSION "3.1.0"
 
+#ifdef _WIN32
 #ifndef _WIN64
 #define WIN_ARCH "32-Bit"
+#else
+#define WIN_ARCH "64-Bit"
+#endif
 #else
 #define WIN_ARCH "64-Bit"
 #endif

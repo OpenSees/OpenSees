@@ -5,10 +5,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 5634 $
-// $Date: 2015-10-12 18:46:30 $
-// $URL: 
-
 // Written: Ping Tan ��Guangzhou University, China��
 // Created: 2015-10-12 18:46:30
 // Revision: A
