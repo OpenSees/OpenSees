@@ -313,6 +313,7 @@ int PFEMElement3DBubble::updateMatrix()
     getFp(Fp);
     getF(F);
 
+    return 0;
 }
 
 int
