@@ -373,6 +373,10 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\TclModelBuilderStrengthDegradationCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcrete.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp" />
@@ -775,6 +779,10 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\PetrangeliStrengthDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\SectionStrengthDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcrete.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TriMatrix.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.h" />

@@ -197,6 +197,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonHallM.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\Analysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\CreepAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.cpp" />
@@ -308,6 +309,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonHallM.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\CreepAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.h" />
