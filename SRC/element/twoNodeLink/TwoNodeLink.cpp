@@ -82,6 +82,7 @@ void* OPS_TwoNodeLink()
         int mattag;
         numdata = 1;
         if (OPS_GetIntInput(&numdata, &mattag) < 0) {
+            OPS_ResetCurrentInputArg(-1);
             break;
         }
         UniaxialMaterial* mat = OPS_getUniaxialMaterial(mattag);
