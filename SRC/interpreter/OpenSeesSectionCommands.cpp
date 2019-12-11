@@ -941,7 +941,7 @@ namespace {
         }
 
 	int idata[8];
-	double ddata[3];
+	double ddata[6];
 
 	int numdata = 3;
 	if (OPS_GetIntInput(&numdata, idata) < 0) {

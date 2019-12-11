@@ -33,7 +33,7 @@
 
 #include <Channel.h>
 #include <elementAPI.h>
-
+#include <Matrix.h>
 #include <OPS_Globals.h>
 #include <map>
 #include <vector>
@@ -68,6 +68,7 @@ bool read_scalar_double_dataset_into_double(const hid_t& h5drm_dataset, std::str
 bool read_double_dataset_into_vector(const hid_t& h5drm_dataset, std::string dataset_name, Vector& result);
 bool read_double_dataset_into_matrix(const hid_t& h5drm_dataset, std::string dataset_name, Matrix& result);
 bool read_int_dataset_into_array(const hid_t& h5drm_dataset, std::string dataset_name, int *& result);
+
 inline void convert_h5drmcrd_to_ops_crd(Vector&v );
 inline void convert_h5drmcrd_to_ops_crd(Matrix&xyz );
 
@@ -248,7 +249,8 @@ void H5DRM::intitialize()
     // last_integration_time = tstart;
     last_integration_time = theDomain->getCurrentTime();
 
-    xyz *= crd_scale;
+
+	xyz *= crd_scale;
     drmbox_x0 *= crd_scale;
     drmbox_xmax *= crd_scale;
     drmbox_xmin *= crd_scale;
@@ -573,7 +575,7 @@ void H5DRM::clean_all_data()
 
     hid_t obj_id_list[H5DRM_MAX_RETURN_OPEN_OBJS];
     hsize_t n_obj_open = 10;
-    while (id_drm_file > 0 and n_obj_open > 0)
+    while (id_drm_file > 0 && n_obj_open > 0)
     {
         int n_objects_closed = 0;
         n_obj_open = H5Fget_obj_count(id_drm_file, H5F_OBJ_DATASET | H5F_OBJ_GROUP | H5F_OBJ_ATTR | H5F_OBJ_LOCAL );
@@ -649,7 +651,7 @@ H5DRM::setDomain(Domain *theDomain)
 void
 H5DRM::applyLoad(double time)
 {
-    if (not is_initialized)
+    if (! is_initialized)
     {
         intitialize();
     }
@@ -1160,7 +1162,9 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
         int data_pos = station_id2data_pos[station_id];
         int local_pos = nodetag2local_pos[nodeTag];
 
-        double v[3][Nt];
+
+        //FMK double v[3][Nt];
+		double *v = new double[3 * Nt];
 
         hsize_t start[2]  = {(hsize_t) data_pos , (hsize_t)i1};
         hsize_t stride[2] = {1                  , 1};
@@ -1209,95 +1213,131 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
             exit(-1);
         }
 
-        for (hsize_t i = 0; i <  Nt; ++i)
-        {
-            double v0 = v[0][i];
-            double v1 = v[1][i];
-            v[0][i] = v0;
-            v[1][i] = v1;
-            v[2][i] = -v[2][i];
+		for (hsize_t i = 0; i < Nt; ++i)
+		{
+			/* FMK
+			 double v0 = v[0][i];
+			 double v1 = v[1][i];
+			 v[0][i] = v0;
+			 v[1][i] = v1;
+			 v[2][i] = -v[2][i];
+			*/
+			double v0 = v[0 + i * 3];     
+			double v1 = v[1 + i * 3];    
+			v[0 + i * 3] = v0;            
+			v[1 + i * 3] = v1;            
+			v[2 + i * 3] = -v[2 + i * Nt];
         }
 
 
-        for (hsize_t i = 0; i <  Nt; ++i)
-        {
-            double dtau = 0;
-            double tau_1 = tstart + i * dt;
-            double tau_2 = tstart + (i + 1) * dt;
-            tau_1 = tau_1 > t1 ? tau_1 : t1;
-            tau_2 = tau_2 < t2 ? tau_2 : t2;
-            dtau = tau_2 - tau_1;
+		for (hsize_t i = 0; i < Nt; ++i)
+		{
+			double dtau = 0;
+			double tau_1 = tstart + i * dt;
+			double tau_2 = tstart + (i + 1) * dt;
+			tau_1 = tau_1 > t1 ? tau_1 : t1;
+			tau_2 = tau_2 < t2 ? tau_2 : t2;
+			dtau = tau_2 - tau_1;
 
-            if (dtau <= 0)
-                continue;
+			if (dtau <= 0)
+				continue;
 
 
 
-            if (DEBUG_DRM_INTEGRATION)
-            {
-                fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-            }
+			if (DEBUG_DRM_INTEGRATION)
+			{
+				/* FMK
+				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+				******/
+				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * Nt], v[0 + (i + 1)*3]);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * Nt], v[1 + (i + 1)*3]);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * Nt], v[2 + (i + 1)*3]);
 
-            double u1 = DRMDisplacements(3 * local_pos + 0);
-            double u2 = DRMDisplacements(3 * local_pos + 1);
-            double u3 = DRMDisplacements(3 * local_pos + 2);
-            double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
-            double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
-            double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+			}
 
-            DRMDisplacements(3 * local_pos + 0) += du1;
-            DRMDisplacements(3 * local_pos + 1) += du2;
-            DRMDisplacements(3 * local_pos + 2) += du3;
+			double u1 = DRMDisplacements(3 * local_pos + 0);
+			double u2 = DRMDisplacements(3 * local_pos + 1);
+			double u3 = DRMDisplacements(3 * local_pos + 2);
+			/* FMK
+			double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
+			double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
+			double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+			******/
+			double du1 = (v[0 + i * 3] + v[0 + (i + 1)*3]) * (dir * dtau / 2);
+			double du2 = (v[1 + i * 3] + v[1 + (i + 1)*3]) * (dir * dtau / 2);
+			double du3 = (v[2 + i * 3] + v[2 + (i + 1)*3]) * (dir * dtau / 2);
 
-            if (DEBUG_DRM_INTEGRATION)
-            {
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0) );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1) );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2) );
-            }
+			DRMDisplacements(3 * local_pos + 0) += du1;
+			DRMDisplacements(3 * local_pos + 1) += du2;
+			DRMDisplacements(3 * local_pos + 2) += du3;
 
-            // bool found_nan = false;
-            if (isnan(u1) || isnan(du1) ||
-                    isnan(u2) || isnan(du2) ||
-                    isnan(u3) || isnan(du3) ||
-                    isnan(dt) || isnan(dtau) )
-            {
-                H5DRMerror << "NAN Detected!!! \n";
-                H5DRMerror << "    nodeTag = " << nodeTag << endln;
-                H5DRMerror << "    local_pos = " << local_pos << endln;
-                printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i,  dtau, tau_1, tau_2, dt, local_pos, dir );
-                printf("        u1 = %f du1 = %f \n", u1, du1);
-                printf("        u2 = %f du2 = %f \n", u2, du2);
-                printf("        u3 = %f du3 = %f \n", u3, du3);
-                printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-                printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-                printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-                exit(-1);
-            }
+			if (DEBUG_DRM_INTEGRATION)
+			{
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0));
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1));
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2));
+			}
 
-        }
+			// bool found_nan = false;
+			if (isnan(u1) || isnan(du1) ||
+				isnan(u2) || isnan(du2) ||
+				isnan(u3) || isnan(du3) ||
+				isnan(dt) || isnan(dtau))
+			{
+				H5DRMerror << "NAN Detected!!! \n";
+				H5DRMerror << "    nodeTag = " << nodeTag << endln;
+				H5DRMerror << "    local_pos = " << local_pos << endln;
+				printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+				printf("        u1 = %f du1 = %f \n", u1, du1);
+				printf("        u2 = %f du2 = %f \n", u2, du2);
+				printf("        u3 = %f du3 = %f \n", u3, du3);
+				/* FMK
+				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+				*/
+				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * 3], v[0 + (i + 1)*3]);
+				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * 3], v[1 + (i + 1)*3]);
+				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * 3], v[2 + (i + 1)*3]);
+				exit(-1);
+			}
+
+		}
 
         int eval_i = (int) (t2 - t1) / dt;
 
-
+		/*FMK
         DRMAccelerations(3 * local_pos + 0) = (v[0][eval_i] - v[0][eval_i + 1]) / dt;
-        DRMAccelerations(3 * local_pos + 1) = (v[1][eval_i] - v[1][eval_i + 1]) / dt;
+        DRMAccelerations(3 * local_pos + 1) = (v[1][eval_i*] - v[1][eval_i + 1]) / dt;
         DRMAccelerations(3 * local_pos + 2) = (v[2][eval_i] - v[2][eval_i + 1]) / dt;
-
+		*/
+		DRMAccelerations(3 * local_pos + 0) = (v[0*eval_i*3] - v[0 + (eval_i + 1)*3]) / dt;
+		DRMAccelerations(3 * local_pos + 1) = (v[1*eval_i*3] - v[1 + (eval_i + 1)*3]) / dt;
+		DRMAccelerations(3 * local_pos + 2) = (v[2*eval_i*3] - v[2 + (eval_i + 1)*3]) / dt;
         if (DEBUG_DRM_INTEGRATION)
         {
-            fprintf(fptr, "eval_i = %d \n", eval_i );
+			fprintf(fptr, "eval_i = %d \n", eval_i);
+			/* FMK
             fprintf(fptr, "     v[0][eval_i] = %f  v[0][eval_i+1] = %f\n",  v[0][eval_i], v[0][eval_i + 1] );
             fprintf(fptr, "     v[1][eval_i] = %f  v[1][eval_i+1] = %f\n",  v[1][eval_i], v[1][eval_i + 1] );
             fprintf(fptr, "     v[2][eval_i] = %f  v[2][eval_i+1] = %f\n",  v[2][eval_i], v[2][eval_i + 1] );
+			*****/
+			fprintf(fptr, "     v[0][eval_i] = %f  v[0][eval_i+1] = %f\n", v[0 * eval_i*3], v[0 + (eval_i + 1)*3]);
+			fprintf(fptr, "     v[1][eval_i] = %f  v[1][eval_i+1] = %f\n", v[1 * eval_i*3], v[1 + (eval_i + 1)*3]);
+			fprintf(fptr, "     v[2][eval_i] = %f  v[2][eval_i+1] = %f\n", v[2 * eval_i*3], v[2 + (eval_i + 1)*3]);
+
             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 0) = %f\n",  DRMAccelerations(3 * local_pos + 0) );
             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 1) = %f\n",  DRMAccelerations(3 * local_pos + 1) );
             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 2) = %f\n",  DRMAccelerations(3 * local_pos + 2) );
 
         }
+
+		// FMK
+		delete []v;
     }
 
 
@@ -1378,7 +1418,7 @@ H5DRM::ComputeDRMLoads(double t)
                 }
             }
 
-            if ( nB != 0 and nE != 0 )
+            if ( nB != 0 && nE != 0 )
             {
                 //Mass and stiffness matrices
                 Matrix Me = theElement->getMass();
@@ -1559,8 +1599,7 @@ H5DRM::Print(ostream & s, int flag)
 
 // method to obtain a blank copy of the LoadPattern
 LoadPattern *
-H5DRM::getCopy(void)
-{
+H5DRM::getCopy(void){
     return new H5DRM(this->getTag(), HDF5filename);
 }
 
@@ -1670,7 +1709,8 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 {
 
     H5DRMout << "node_matching_BruteForce - Begin!\n";
-
+    //opserr << xyz.noCols() << " " << xyz.noRows() << " " << drmbox_x0.Size() << "\n";
+	//opserr << xyz;
     char debugfilename[100];
     sprintf(debugfilename, "debugdrmbruteforce.%d.txt", myrank);
     FILE * fptrdrm;
@@ -1683,16 +1723,22 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
     Node* node_ptr = 0;
     int drmtag = NDRM_points;
     int local_pos = 0;
+	// int counter = 0;
+	// opserr << xyz;
+
     while ((node_ptr = node_iter()) != 0)
     {
         int tag = node_ptr->getTag();
         const Vector& node_xyz  =  node_ptr->getCrds();
         double dmin = std::numeric_limits<double>::infinity();
         int ii_station_min = 0;
+	
+		//opserr << "dmin: " << dmin << " dTol: " << d_tol <<  "\n";
 
         if (DEBUG_NODE_MATCHING)
             fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] + drmbox_x0[0], node_xyz[1] + drmbox_x0[1], node_xyz[2] + drmbox_x0[2]);
-        Vector station_xyz(3);
+        
+		Vector station_xyz(3);
         for (int ii = 0; ii < xyz.noRows(); ++ii)
         {
             station_xyz(0) = xyz(ii, 0);
@@ -1705,8 +1751,16 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
                 ii_station_min = ii;
             }
         }
+
+		/*
+		counter++;
+		if (counter <= 10)
+			 opserr << tag << " " << counter << " dmin:" << dmin << " " << ii_station_min << "\n";
+		*/
+
         if (fabs(dmin) < d_tol)
         {
+			//opserr << "dmin:" << dmin << " " << ii_station_min << "\n";
             int station_id = ii_station_min;
             static Vector station_xyz(3);
             for (int dir = 0; dir < 3; ++dir)
@@ -1790,7 +1844,8 @@ bool read_int_dataset_into_id(const hid_t & h5drm_dataset, std::string dataset_n
     hid_t id_memspace  = H5Screate_simple(1, &dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    int d[dim];
+    // FMK int d[dim];
+	int *d = new int[dim];
 
     H5Dread( id_dataset, H5T_NATIVE_INT, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim);
@@ -1802,6 +1857,9 @@ bool read_int_dataset_into_id(const hid_t & h5drm_dataset, std::string dataset_n
     H5Sclose(id_dataspace);
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
+
+	//FMK
+	delete[]d;
 
     return true;
 }
@@ -1824,7 +1882,8 @@ bool read_double_dataset_into_vector(const hid_t & h5drm_dataset, std::string da
     hid_t id_memspace  = H5Screate_simple(1, &dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    double d[dim];
+    //double d[dim];
+	double *d = new double[dim];
 
     H5Dread( id_dataset, H5T_NATIVE_DOUBLE, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim);
@@ -1837,6 +1896,8 @@ bool read_double_dataset_into_vector(const hid_t & h5drm_dataset, std::string da
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
 
+	//FMK
+	delete[]d;
     return true;
 }
 
@@ -1886,22 +1947,31 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
     hid_t id_memspace  = H5Screate_simple(2, dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    double d[dim[0]][dim[1]];
+    //FMK double d[dim[0]][dim[1]];
 
+	std::cerr << dim[0] << " " << dim[1] << "\n";
+
+	double *d = new double[dim[0] * dim[1]];
+		
     H5Dread( id_dataset, H5T_NATIVE_DOUBLE, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim[0], dim[1]);
+	//result.setData(d, dim[0], dim[1]);
+	
     for (hsize_t i = 0; i < dim[0]; ++i)
     {
         for (hsize_t j = 0; j < dim[1]; ++j)
         {
-            result(i, j) = d[i][j];
+            //FMK result(i, j) = d[i][j];
+			result(i, j) = d[i * dim[1] + j];
         }
     }
-
+	
     H5Sclose(id_dataspace);
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
 
+	// FMK
+	delete[]d;
     return true;
 }
 

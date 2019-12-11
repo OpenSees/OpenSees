@@ -95,30 +95,36 @@ PythonWrapper::getMethods()
 }
 
 void
-PythonWrapper::setOutputs(int* data, int numArgs)
+PythonWrapper::setOutputs(int* data, int numArgs, bool scalar)
 {
-    if (numArgs == 0) return;
-    if (numArgs == 1) {
-	currentResult = Py_BuildValue("i", data[0]);
-	return ;
-    }
-    currentResult = PyList_New(numArgs);
-    for (int i=0; i<numArgs; i++) {
-	PyList_SET_ITEM(currentResult, i, Py_BuildValue("i", data[i]));
+    if (numArgs < 0) numArgs = 0;
+
+    if (scalar) {
+        if (numArgs > 0) {
+            currentResult = Py_BuildValue("i", data[0]);
+        }
+    } else {
+        currentResult = PyList_New(numArgs);
+        for (int i = 0; i < numArgs; i++) {
+            PyList_SET_ITEM(currentResult, i, Py_BuildValue("i", data[i]));
+        }
     }
 }
 
 void
-PythonWrapper::setOutputs(double* data, int numArgs)
+PythonWrapper::setOutputs(double* data, int numArgs, bool scalar)
 {
-    if (numArgs == 0) return;
-    if (numArgs == 1) {
-	currentResult = Py_BuildValue("d", data[0]);
-	return ;
-    }
-    currentResult = PyList_New(numArgs);
-    for (int i=0; i<numArgs; i++) {
-	PyList_SET_ITEM(currentResult, i, Py_BuildValue("d", data[i]));
+    if (numArgs < 0) numArgs = 0;
+
+    if (scalar) {
+        if (numArgs > 0) {
+            currentResult = Py_BuildValue("d", data[0]);
+        }
+    } else {
+        currentResult = PyList_New(numArgs);
+        for (int i = 0; i < numArgs; i++) {
+            PyList_SET_ITEM(currentResult, i, Py_BuildValue("d", data[i]));
+        }
     }
 }
 

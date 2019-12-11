@@ -305,7 +305,7 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	for (int i=0; i<numEigen; i++) {
 	    data[i] = eigenvalues(i);
 	}
-	OPS_SetDoubleOutput(&numEigen, data);
+	OPS_SetDoubleOutput(&numEigen, data, false);
 	delete [] data;
     }
 
@@ -318,7 +318,7 @@ int* OPS_GetNumEigen()
     if (cmds == 0) return 0;                                                    
     numEigen = cmds->getNumEigen();                                             
     int numdata = 1;                                                            
-    if (OPS_SetIntOutput(&numdata, &numEigen) < 0) {                            
+    if (OPS_SetIntOutput(&numdata, &numEigen, true) < 0) {
         opserr << "WARNING failed to set output\n";                             
         return 0;                                                               
     }                                                                           
@@ -904,12 +904,11 @@ int OPS_GetIntInput(int *numData, int*data)
     return interp->getInt(data, *numData);
 }
 
-int OPS_SetIntOutput(int *numData, int*data)
+int OPS_SetIntOutput(int *numData, int*data, bool scalar)
 {
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
-    if (numData == 0 || data == 0) return -1;
-    return interp->setInt(data, *numData);
+    return interp->setInt(data, *numData, scalar);
 }
 
 int OPS_GetDoubleInput(int *numData, double *data)
@@ -920,12 +919,11 @@ int OPS_GetDoubleInput(int *numData, double *data)
     return interp->getDouble(data, *numData);
 }
 
-int OPS_SetDoubleOutput(int *numData, double *data)
+int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
 {
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
-    if (numData == 0 || data == 0) return -1;
-    return interp->setDouble(data, *numData);
+    return interp->setDouble(data, *numData, scalar);
 }
 
 const char * OPS_GetString(void)
@@ -962,6 +960,13 @@ int OPS_GetNDM()
 {
     if (cmds == 0) return 0;
     return cmds->getNDM();
+}
+
+int OPS_Error(char *errorMessage, int length)
+{
+    opserr << errorMessage;
+    opserr << endln;
+    return 0;
 }
 
 int OPS_ResetCurrentInputArg(int cArg)
@@ -1119,48 +1124,9 @@ int OPS_System()
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
 
-	    } else if (strcmp(type, "-laplace") == 0) {
-
-	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Laplace();
-	    } else if (strcmp(type, "-lumpM") == 0) {
-	    	theSOE = (LinearSOE*)OPS_PFEMSolver_LumpM();		
-
-	    // } else if(strcmp(type, "-umfpack") == 0) {
-
-	    // 	theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
-
-	    // } else if(strcmp(type, "-diag") == 0) {
-
-	    // 	theSOE = (LinearSOE*)OPS_PFEMDiaSolver();
-
-	    // } else if(strcmp(type, "-egen") == 0) {
-
-	    //  theSOE = (LinearSOE*)OPS_EgenSolver();
-
-	    } else if (strcmp(type,"-mumps") ==0) {
-// #ifdef _PARALLEL_INTERPRETERS
-// 	    int relax = 20;
-// 	    if (argc > 3) {
-// 		if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
-// 		    opserr<<"WARNING: failed to read relax\n";
-// 		    return TCL_ERROR;
-// 		}
-// 	    }
-// 	    PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
-// 	    theSOE = new PFEMLinSOE(*theSolver);
-// #endif
-	    } else if (strcmp(type,"-quasi-mumps")==0) {
-// #ifdef _PARALLEL_INTERPRETERS
-// 	    int relax = 20;
-// 	    if (argc > 3) {
-// 		if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
-// 		    opserr<<"WARNING: failed to read relax\n";
-// 		    return TCL_ERROR;
-// 		}
-// 	    }
-// 	    PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
-// 	    theSOE = new PFEMCompressibleLinSOE(*theSolver);
-// #endif
+	    } else if(strcmp(type, "-mumps") == 0) {
+		
+	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
 
 	    }
 	}
@@ -1668,7 +1634,7 @@ int OPS_analyze()
     }
 
     int numdata = 1;
-    if (OPS_SetIntOutput(&numdata, &result) < 0) {
+    if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
 	opserr<<"WARNING failed to set output\n";
 	return -1;
     }
@@ -1836,7 +1802,7 @@ int OPS_printA()
 		int size = A->noRows() * A->noCols();
 		if (size >0) {
 		    double& ptr = (*A)(0,0);
-		    if (OPS_SetDoubleOutput(&size, &ptr) < 0) {
+		    if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
 			opserr << "WARNING: printA - failed to set output\n";
 			return -1;
 		    }
@@ -1844,7 +1810,21 @@ int OPS_printA()
 	    } else {
 		*output << *A;
 	    }
+	} else {
+        int size = 0;
+        double *ptr = 0;
+        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
 	}
+    } else {
+        int size = 0;
+        double *ptr = 0;
+        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
     }
 
     // close the output file
@@ -1891,14 +1871,28 @@ int OPS_printB()
 	    int size = b.Size();
 	    if (size > 0) {
 		double &ptr = b(0);
-		if (OPS_SetDoubleOutput(&size, &ptr) < 0) {
+		if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
 		    opserr << "WARNING: printb - failed to set output\n";
 		    return -1;
 		}
+	    } else {
+            size = 0;
+            double *ptr2 = 0;
+            if (OPS_SetDoubleOutput(&size, ptr2, false) < 0) {
+                opserr << "WARNING: printA - failed to set output\n";
+                return -1;
+            }
 	    }
 	} else {
 	    *output << b;
 	}
+    } else {
+        int size = 0;
+        double *ptr = 0;
+        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
     }
 
     // close the output file
@@ -2371,7 +2365,7 @@ int OPS_getCTestNorms()
 	    data[i] = norms(i);
 	}
 
-	if (OPS_SetDoubleOutput(&numdata, data) < 0) {
+	if (OPS_SetDoubleOutput(&numdata, data, false) < 0) {
 	    opserr << "WARNING failed to set test norms\n";
 	    delete [] data;
 	    return -1;
@@ -2392,7 +2386,7 @@ int OPS_getCTestIter()
     if (theTest != 0) {
 	int res = theTest->getNumTests();
 	int numdata = 1;
-	if (OPS_SetIntOutput(&numdata, &res) < 0) {
+	if (OPS_SetIntOutput(&numdata, &res, true) < 0) {
 	    opserr << "WARNING failed to set test iter\n";
 	    return -1;
 	}
@@ -2885,7 +2879,7 @@ int OPS_totalCPU()
 
     double value = theAlgorithm->getTotalTimeCPU();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
@@ -2904,7 +2898,7 @@ int OPS_solveCPU()
 
     double value = theAlgorithm->getSolveTimeCPU();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
@@ -2923,7 +2917,7 @@ int OPS_accelCPU()
 
     double value = theAlgorithm->getAccelTimeCPU();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
@@ -2942,7 +2936,7 @@ int OPS_numFact()
 
     double value = theAlgorithm->getNumFactorizations();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
@@ -2961,7 +2955,7 @@ int OPS_numIter()
 
     int value = theAlgorithm->getNumIterations();
     int numdata = 1;
-    if (OPS_SetIntOutput(&numdata, &value) < 0) {
+    if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
@@ -2980,7 +2974,7 @@ int OPS_systemSize()
 
     int value = theSOE->getNumEqn();
     int numdata = 1;
-    if (OPS_SetIntOutput(&numdata, &value) < 0) {
+    if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
