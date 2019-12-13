@@ -34,6 +34,7 @@ all:
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/reliability; $(MAKE);
 	@$(CD) $(FE)/optimization; $(MAKE);
+	@$(CD) $(FE)/string; $(MAKE);
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(MATRIX_LIBS) 
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(ELE_LIBS) 
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(MATERIAL_LIBS)
@@ -91,6 +92,7 @@ all:
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
+	@$(CD) $(FE)/string; $(MAKE);
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(MATRIX_LIBS) 
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(ELE_LIBS) 
 	@$(AR) $(ARFLAGS) $(FE_LIBRARY) $(MATERIAL_LIBS)
@@ -1352,6 +1354,7 @@ wipe: spotless
 	@$(CD) $(FE)/api; $(MAKE) wipe;
 	@$(CD) $(FE)/interpreter; $(MAKE) wipe;
 	@$(CD) $(FE)/damage; $(MAKE) wipe;
+	@$(CD) $(FE)/string; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
