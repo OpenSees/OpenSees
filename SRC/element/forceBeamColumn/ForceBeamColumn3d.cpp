@@ -3446,7 +3446,7 @@ ForceBeamColumn3d::getResistingForceSensitivity(int gradNumber)
   // dAdh^T q
     P = crdTransf->getGlobalResistingForceShapeSensitivity(Se, dp0dhVec, gradNumber);
     // k dAdh u
-    const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity(gradNumber);
+    const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity();
     dqdh.addMatrixVector(1.0, kv, dAdh_u, 1.0);
   }
 
