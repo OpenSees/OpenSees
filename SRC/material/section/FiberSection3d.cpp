@@ -83,8 +83,8 @@ void* OPS_FiberSection3d()
       torsion = OPS_getUniaxialMaterial(torsionTag);
     }
     if (torsion == 0) {
-      opserr << "WARNING torsion not speified for FiberSection\n";
-      opserr << "\nFiberSection3dThermal section: " << tag << endln;
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
       return 0;
     }
     
