@@ -50,6 +50,9 @@ cmake-build-release
 CMakeLists.txt
 .dropbox.attr
 
+# VSCode
+.vscode
+
 # OTHER
 Makefile.def
 PlainConcrete.f
@@ -71,3 +74,5 @@ Faria1998PlaneStress2d.cpp
 Faria1998PlaneStress2d.h
 Faria1998ThreeDimensional.cpp
 Faria1998ThreeDimensional.h
+SRC/interpreter/pythonInterpreter
+SRC/interpreter/tclInterpreter

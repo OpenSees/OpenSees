@@ -2172,17 +2172,17 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
       brace = 5;
     }
 
+    int NDM = theTclModelBuilder->getNDM();  
+    if (torsion == 0 && NDM == 3) {
+      opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
+      opserr << "\nFiberSection3d: " << secTag << endln;
+      return TCL_ERROR;
+    }
+
     // parse the information inside the braces (patches and reinforcing layers)
     if (Tcl_Eval(interp, argv[brace]) != TCL_OK) {
 	opserr << "WARNING - error reading information in { } \n";
 	return TCL_ERROR;
-    }
-
-    int NDM = theTclModelBuilder->getNDM();  
-    if (torsion == 0 && NDM > 3) {
-      opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
-      opserr << "\nFiberSection3d: " << secTag << endln;
-      return TCL_ERROR;
     }
 
     // build the fiber section (for analysis)
