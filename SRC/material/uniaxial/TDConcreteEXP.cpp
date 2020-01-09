@@ -49,7 +49,7 @@
  // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
  //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
  // A manual describing the use of the model and sample files can be found at:
- // ***Mendeley Data Link***(will be added later; ntosic)
+ // <https://data.mendeley.com/datasets/z4gxnhchky/1>
  //----------------------------------------------------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------------------------------------------------
