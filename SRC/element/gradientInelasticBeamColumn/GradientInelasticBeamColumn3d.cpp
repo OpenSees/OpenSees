@@ -221,61 +221,61 @@ GradientInelasticBeamColumn3d::~GradientInelasticBeamColumn3d()
 	// Delete Vector and Matrix Pointers
 	if (B_q != 0)
 		delete B_q;
-
+	
 	if (B_Q != 0)
 		delete B_Q;
-
+	
 	if (H != 0)
 		delete H;
-
+	
 	if (H_init != 0)
 		delete H_init;
-
+	
 	if (H_inv != 0)
 		delete H_inv;
-
+	
 	if (hh != 0)
 		delete hh;
-
+	
 	if (B_q_H_inv_init != 0)
 		delete B_q_H_inv_init;
-
+	
 	if (J != 0)
 		delete J;
-
+	
 	if (J_init != 0)
 		delete J_init;
-
+	
 	if (J_commit != 0)
 		delete J_commit;
-
+	
 	if (flex_ms_init != 0)
 		delete flex_ms_init;
-
+	
 	if (trial_change != 0)
 		delete trial_change;
-
+	
 	if (max_trial_change != 0)
 		delete max_trial_change;
-
+	
 	if (d_tot != 0)
 		delete d_tot;
-
+	
 	if (d_tot_commit != 0)
 		delete d_tot_commit;
-
+	
 	if (d_nl_tot != 0)
 		delete d_nl_tot;
-
+	
 	if (d_nl_tot_commit != 0)
 		delete d_nl_tot_commit;
-
+	
 	if (F_ms != 0)
 		delete F_ms;
-
+	
 	if (F_ms_commit != 0)
 		delete F_ms_commit;
-
+	
 	if (K0 != 0)
 		delete K0;
 	
@@ -286,18 +286,18 @@ GradientInelasticBeamColumn3d::~GradientInelasticBeamColumn3d()
 				delete sections[i];
 		delete[] sections;
 	}
-
+	
 	// Delete Beam Integration Pointer and Coordinate Transformation Pointer
 	if (beamIntegr != 0)
 		delete beamIntegr;
-
+	
 	if (crdTransf != 0)
 		delete crdTransf;
-
+	
 	// Delete Analysis Arrays
 	if (d_sec != 0)
 		delete[] d_sec;
-
+	
 	if (d_sec_commit != 0)
 		delete[] d_sec_commit;
 }
@@ -605,14 +605,17 @@ GradientInelasticBeamColumn3d::commitState(void)
 		d_sec_commit[i] = d_sec[i];
 	}
 
-	d_tot_commit = d_tot;
-	d_nl_tot_commit = d_nl_tot;
+	*d_tot_commit = *d_tot;
+	*d_nl_tot_commit = *d_nl_tot;
 
-	F_ms_commit = F_ms;
+	*F_ms_commit = *F_ms;
 
 	// Commit Coordinate Transformation Object
 	if ((err = crdTransf->commitState()))
 		opserr << "WARNING! GradientInelasticBeamColumn3d::commitState() - element: " << this->getTag() << " - coordinate transformation object failed to commit\n";
+
+	// Commit Jacobian Matrix
+	*J_commit = *J;
 
 	// Commit Element State Variables
 	Q_commit = Q;
@@ -797,7 +800,7 @@ GradientInelasticBeamColumn3d::update(void)
 
 	// Initialize Previous Sub-step Variables
 	d_tot_prev = *d_tot_commit;
-	d_nl_tot_prev =* d_nl_tot_commit;
+	d_nl_tot_prev = *d_nl_tot_commit;
 	Q_prev = Q_commit;
 	F_ms_prev = *F_ms_commit; // B_Q * Q_commit;
 
