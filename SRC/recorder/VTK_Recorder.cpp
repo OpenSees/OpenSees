@@ -117,15 +117,14 @@ void* OPS_VTK_Recorder()
 
 	if(strcmp(type, "disp") == 0) {
 	    outputData.disp = true;
-	    /*
 	} else if(strcmp(type, "disp2") == 0) {
 	  outputData.disp2 = true;
 	} else if(strcmp(type, "disp3") == 0) {
 	  outputData.disp3 = true;
-	    */
 
 	} else if(strcmp(type, "vel") == 0) {
 	    outputData.vel = true;
+
 	    /*
 	} else if(strcmp(type, "vel2") == 0) {
 	    outputData.vel2 = true;
@@ -410,6 +409,38 @@ VTK_Recorder::vtu()
 	theFileVTU << output(i) << " ";
       for (int i=numDOF; i<maxNDF; i++)
 	theFileVTU << 0.0 << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.disp2 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp2\" NumberOfComponents=\"" << 2 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getDisp();
+      int numDOF = output.Size();
+      for (int i=0; i<2; i++) 
+	if (i < numDOF) 
+	  theFileVTU << output(i) << " ";
+	else
+	  theFileVTU << 0.0 << " ";
+      theFileVTU << "\n";
+    }
+    theFileVTU<<"\n</DataArray>\n";
+  }
+
+  if (outputData.disp3 == true) {
+    theFileVTU<<"<DataArray type=\"Float32\" Name=\"Disp3\" NumberOfComponents=\"" << 3 << "\" format=\"ascii\">\n";
+    for (auto i : theNodeTags) {
+      Node *theNode=theDomain->getNode(i);
+      const Vector &output=theNode->getDisp();
+      int numDOF = output.Size();
+      for (int i=0; i<3; i++) 
+	if (i < numDOF) 
+	  theFileVTU << output(i) << " ";
+	else
+	  theFileVTU << 0.0 << " ";
       theFileVTU << "\n";
     }
     theFileVTU<<"\n</DataArray>\n";
