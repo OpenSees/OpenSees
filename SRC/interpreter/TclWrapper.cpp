@@ -461,6 +461,14 @@ static int Tcl_ops_getTime(ClientData clientData, Tcl_Interp *interp, int argc, 
     return TCL_OK;
 }
 
+static int Tcl_ops_setCreep(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_setCreep() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_eleResponse(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1523,6 +1531,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"equalDOF", &Tcl_ops_equalDOF);
     addCommand(interp,"nodeEigenvector", &Tcl_ops_nodeEigenvector);
     addCommand(interp,"getTime", &Tcl_ops_getTime);
+    addCommand(interp,"setCreep", &Tcl_ops_setCreep);
     addCommand(interp,"eleResponse", &Tcl_ops_eleResponse);
     addCommand(interp,"sp", &Tcl_ops_SP);
     addCommand(interp,"fixX", &Tcl_ops_fixX);
