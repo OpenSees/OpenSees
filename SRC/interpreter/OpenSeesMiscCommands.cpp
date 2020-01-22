@@ -128,6 +128,27 @@ int OPS_rayleighDamping()
     return 0;
 }
 
+int OPS_setCreep()
+{
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING illegal command - setCreep value? \n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int newFlag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &newFlag) < 0) {
+	opserr << "WARNING reading creep value - setCreep value? \n";
+	return -1;
+    } else {
+	theDomain->setCreep(newFlag);
+    }
+    return 0;
+}
+
 int OPS_setTime()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {

@@ -830,6 +830,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "loadConst", &setLoadConst,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
+    Tcl_CreateCommand(interp, "setCreep", &setCreep,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "setTime", &setTime,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);     
     Tcl_CreateCommand(interp, "getTime", &getTime,
@@ -1563,6 +1565,22 @@ setLoadConst(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   return TCL_OK;
 }
 
+int 
+setCreep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+      opserr << "WARNING illegal command - setCreep value? \n";
+      return TCL_ERROR;
+  }
+  int newFlag;
+  if (Tcl_GetInt(interp, argv[1], &newFlag) != TCL_OK) {
+      opserr << "WARNING reading creep value - setCreep newFlag? \n";
+      return TCL_ERROR;
+  } else {
+      theDomain.setCreep(newFlag);
+  }
+  return TCL_OK;
+}
 
 int 
 setTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
