@@ -63,6 +63,9 @@ int
 setLoadConst(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+setCreep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 setTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 

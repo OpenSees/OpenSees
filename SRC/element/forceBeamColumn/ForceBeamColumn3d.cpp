@@ -3485,7 +3485,7 @@ ForceBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
   dqdh.addMatrixVector(1.0, kv, dvdh, 1.0);  // A dudh
 
   if (crdTransf->isShapeSensitivity()) {
-    //const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity();
+    //const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity(gradNumber);
     //dqdh.addMatrixVector(1.0, kv, dAdh_u, 1.0);  // dAdh u
   }
 
