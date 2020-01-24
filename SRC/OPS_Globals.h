@@ -68,6 +68,7 @@ class Element;
 extern double   ops_Dt;                // current delta T for current domain doing an update
 extern double   ops_Creep;			   // added by AMK as a flag for creep analysis
 // extern double  *ops_Gravity;        // gravity factors for current domain undergoing an update
+extern int ops_Creep;
 extern Domain  *ops_TheActiveDomain;   // current domain undergoing an update
 extern Element *ops_TheActiveElement;  // current element undergoing an update
 
