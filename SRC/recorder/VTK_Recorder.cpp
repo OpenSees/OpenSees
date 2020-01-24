@@ -35,6 +35,9 @@
 #include <ID.h>
 #include <Vector.h>
 #include <Matrix.h>
+#include <Channel.h>
+#include <Message.h>
+
 #include <classTags.h>
 #include <iostream>
 
@@ -224,10 +227,11 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
      indentlevel(0), 
      quota('\"'), 
      theDomain(0),
-     echoTimeFlag(true), 
      nextTimeStampToRecord(0),
      deltaT(0), 
-     counter(0)
+     counter(0),
+     initializationDone(false),
+     sendSelfCount(0)
 {
   outputData = outData;
 
@@ -280,9 +284,27 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
 }
 
 VTK_Recorder::VTK_Recorder()
-  :Recorder(RECORDER_TAGS_VTK_Recorder)
+  :Recorder(RECORDER_TAGS_VTK_Recorder),
+   indentsize(0), 
+   precision(0),
+   indentlevel(0), 
+   quota('\"'), 
+   theDomain(0),
+   nextTimeStampToRecord(0),
+   deltaT(0), 
+   counter(0),
+   initializationDone(false),
+   sendSelfCount(0)   
 {
+  name = NULL;
 
+  //
+  // set all the possible VTK types for use in init
+  //
+
+  VTK_Recorder::setVTKType();
+
+  initDone = false;
 }
 
 
@@ -299,6 +321,11 @@ VTK_Recorder::~VTK_Recorder()
 int
 VTK_Recorder::record(int ctag, double timeStamp)
 {
+  if (initializationDone == false) {
+    this->initialize();
+    initializationDone = true;
+  }
+
   if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
     
     if (deltaT != 0.0) 
@@ -309,10 +336,16 @@ VTK_Recorder::record(int ctag, double timeStamp)
     //
 
     char *filename = new char[2*strlen(name)+26];
-    sprintf(filename, "%s/%s%020d.vtu",name, name, counter);    
 
-    thePVDFile << "<DataSet timestep=\"" << counter << "\" group=\"\" part=\"0\"";
-    thePVDFile << " file=\"" << filename << "\"/>\n";
+    // process p0 writes the pvd file, part for each process including itself 0
+    if (sendSelfCount >= 0) {
+      for (int i=0; i<= sendSelfCount; i++) {
+	sprintf(filename, "%s/%s%d%020d.vtu",name, name, i, counter);    
+	thePVDFile << "<DataSet timestep=\"" << counter << "\" group=\"\" part=\"" << i 
+		   <<"\"" << " file=\"" << filename << "\"/>\n";
+      }
+    }
+
 
     //
     // write vtu file
@@ -341,7 +374,6 @@ int
 VTK_Recorder::setDomain(Domain& domain)
 {
   theDomain = &domain;
-  this->initialize();
   return 0;
 }
 
@@ -355,7 +387,12 @@ VTK_Recorder::vtu()
   }
   
   char *filename = new char[2*strlen(name)+26];
-  sprintf(filename, "%s/%s%020d.vtu",name, name, counter);
+  if (sendSelfCount < 0) {
+    sprintf(filename, "%s/%s%d%020d.vtu",name, name, -sendSelfCount, counter);    
+  } else {
+    sprintf(filename, "%s/%s%d%020d.vtu",name, name, 0, counter);    
+  }
+  
   counter ++;
   
   std::ofstream theFileVTU;
@@ -847,13 +884,101 @@ VTK_Recorder::indent() {
 int
 VTK_Recorder::sendSelf(int commitTag, Channel &theChannel)
 {
-    return 0;
+  sendSelfCount++;
+
+  static ID idData(2+14+1);
+  int fileNameLength = 0;
+  if (name != 0)
+    fileNameLength = strlen(name);
+
+  opserr << "filenameLength: " << fileNameLength << "\n";
+
+  idData(0) = fileNameLength;
+  idData(1) = -sendSelfCount; // -sendSelfCount indicates a process other than P0
+  idData(2) = outputData.disp;
+  idData(3) = outputData.disp2;
+  idData(4) = outputData.disp3;
+  idData(5) = outputData.vel;
+  idData(6) = outputData.vel2;
+  idData(7) = outputData.vel3;
+  idData(8) = outputData.accel;
+  idData(9) = outputData.accel2;
+  idData(10) = outputData.accel3;
+  idData(11) = outputData.reaction;
+  idData(12) = outputData.reaction2;
+  idData(13) = outputData.reaction3;
+  idData(14) = outputData.mass;
+  idData(15) = outputData.unbalancedLoad;
+
+  idData(16) = precision;
+
+  if (theChannel.sendID(0, commitTag, idData) < 0) {
+    opserr << "FileStream::sendSelf() - failed to send id data\n";
+    return -1;
+  }
+
+  if (fileNameLength != 0) {
+    Message theMessage(name, fileNameLength);
+    if (theChannel.sendMsg(0, commitTag, theMessage) < 0) {
+      opserr << "FileStream::sendSelf() - failed to send message\n";
+      return -1;
+    }
+  }
+
+  return 0;
 }
 
 int
 VTK_Recorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    return 0;
+  static ID idData(2+14+1);
+  if (theChannel.recvID(0, commitTag, idData) < 0) {
+    opserr << "FileStream::recvSelf() - failed to recv id data\n";
+    return -1;
+  }
+
+  int fileNameLength = idData(0);
+  sendSelfCount = idData(1);
+
+  outputData.disp = idData(2);
+  outputData.disp2 = idData(3);
+  outputData.disp3 = idData(4);
+  outputData.vel = idData(5);
+  outputData.vel2 = idData(6);
+  outputData.vel3 = idData(7);
+  outputData.accel = idData(8);
+  outputData.accel2 = idData(9);
+  outputData.accel3 = idData(10);
+  outputData.reaction = idData(11);
+  outputData.reaction2 = idData(12);
+  outputData.reaction3 = idData(13);
+  outputData.mass = idData(14);
+  outputData.unbalancedLoad = idData(15);
+
+  precision = idData(16);
+
+  if (fileNameLength != 0) {
+    if (name != 0)
+      delete [] name;
+
+    name = new char[fileNameLength+1];
+
+    if (name == 0) {
+      opserr << "FileStream::recvSelf() - out of memory\n";
+      return -1;
+    }
+
+    Message theMessage(name, fileNameLength);
+    if (theChannel.recvMsg(0, commitTag, theMessage) < 0) {
+      opserr << "FileStream::recvSelf() - failed to recv message\n";
+      return -1;
+    }
+    
+    name[fileNameLength]='\0';
+    opserr << "name: " << name;
+  }
+
+  return 0;
 }
 
 void
@@ -1047,7 +1172,6 @@ VTK_Recorder::setVTKType()
 int
 VTK_Recorder::initialize()
 {
-
   theNodeMapping.clear();
   theEleMapping.clear();
   theNodeTags.clear();

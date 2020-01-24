@@ -335,7 +335,7 @@ int UVCplanestress::returnMapping() {
     strainPEqTrial = strainPEqConverged + sqrt(2. / 3.) * consistParam * fBar;
 
     // Check convergence
-    if (abs(yieldFunction) < RETURN_MAP_TOL) {
+    if (fabs(yieldFunction) < RETURN_MAP_TOL) {
       converged = true;
     }
   }
@@ -363,7 +363,7 @@ int UVCplanestress::returnMapping() {
   calculateStiffness(consistParam, fBar, stressRelative);
 
   // Warn the user if the algorithm did not converge and return -1
-  if (iterationNumber >= MAXIMUM_ITERATIONS && abs(yieldFunction) > RETURN_MAP_TOL) {
+  if (iterationNumber >= MAXIMUM_ITERATIONS && fabs(yieldFunction) > RETURN_MAP_TOL) {
     opserr << "UVCplanestress::returnMapping return mapping in UVCplanestress did not converge!" << endln;
     opserr << "\tDelta epsilon 11 = " << strainTrial[0] - strainConverged[0] << endln;
     opserr << "\tDelta epsilon 22 = " << strainTrial[1] - strainConverged[1] << endln;
