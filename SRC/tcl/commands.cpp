@@ -233,7 +233,6 @@ extern void *OPS_WilsonTheta(void);
 #include <BackwardEuler.h>
 
 // analysis
-#include <CreepAnalysis.h> //Added by AMK
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
@@ -517,7 +516,6 @@ DOF_Numberer *theNumberer =0;
 LinearSOE *theSOE =0;
 EigenSOE *theEigenSOE =0;
 StaticAnalysis *theStaticAnalysis = 0;
-CreepAnalysis *theCreepAnalysis = 0; //Added by AMK
 DirectIntegrationAnalysis *theTransientAnalysis = 0;
 VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
 int numEigen = 0;
@@ -573,7 +571,6 @@ FEM_ObjectBrokerAllClasses theBroker;
 
 // init the global variabled defined in OPS_Globals.h
 // double        ops_Dt = 1.0;
-double		 ops_Creep = 0; //Added by AMK (ntosic: check whether to reactivate this section)
 // Element    *ops_TheActiveElement = 0;
 // bool          ops_InitialStateAnalysis = false; // McGann, U.Washington
 
@@ -1087,7 +1084,6 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     theStaticIntegrator =0;
     theTransientIntegrator =0;
     theStaticAnalysis =0;
-	theCreepAnalysis = 0; //Added by AMK
     theTransientAnalysis =0;    
     theVariableTimeStepTransientAnalysis =0;    
     theTest = 0;
@@ -1396,7 +1392,6 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   theStaticIntegrator =0;
   theTransientIntegrator =0;
   theStaticAnalysis =0;
-  theCreepAnalysis = 0; //Added by AMK
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;    
 
@@ -1435,14 +1430,6 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       delete theStaticAnalysis;
   }
 
-  //Added by AMK for the Creep Analysis:
-//--------------------------------------	
-  if (theCreepAnalysis != 0) {
-	  theCreepAnalysis->clearAll();
-	  delete theCreepAnalysis;
-  }
-  //--------------------------------------
-
   if (theTransientAnalysis != 0) {
       theTransientAnalysis->clearAll();
       delete theTransientAnalysis;  
@@ -1460,7 +1447,6 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theStaticIntegrator =0;
   theTransientIntegrator =0;
   theStaticAnalysis =0;
-  theCreepAnalysis = 0; //Added by AMK
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;   
   //  theSensitivityAlgorithm=0; 
@@ -1552,12 +1538,6 @@ initializeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
     theTransientAnalysis->initialize();
   else if (theStaticAnalysis != 0)
     theStaticAnalysis->initialize();
-  
-  //Added by AMK:
-  //----------------------------------
-  else if (theCreepAnalysis != 0)
-	  theCreepAnalysis->initialize();
-  //----------------------------------
 
   theDomain.initialize();
 
@@ -1882,22 +1862,6 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       return TCL_ERROR;	      
 
     result = theStaticAnalysis->analyze(numIncr);
-	
-	// Added by AMK:	
- //----------------------------------------------------------------
-  }
-  else if (theCreepAnalysis != 0) {
-	  if (argc < 2) {
-		  opserr << "WARNING creep analysis: analysis numincr?\n";
-		  return TCL_ERROR;
-	  }
-	  int numIncr;
-
-	  if (Tcl_GetInt(interp, argv[1], &numIncr) != TCL_OK)
-		  return TCL_ERROR;
-
-	  result = theCreepAnalysis->analyze(numIncr);
-	  //----------------------------------------------------------------
 
 #ifdef _PFEM
   } else if(thePFEMAnalysis != 0) {
@@ -2351,13 +2315,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
     }
-	//Added by AMK:
-	//------------------------------------
-	if (theCreepAnalysis != 0) {
-		delete theCreepAnalysis;
-		theCreepAnalysis = 0;
-	}
-	//------------------------------------
+
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
@@ -2430,62 +2388,6 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
-
-// Added by AMK:
-//--------------------------------------------------------------------------------
-	}
-	else if (strcmp(argv[1], "Creep") == 0) {
-		// make sure all the components have been built,
-		// otherwise print a warning and use some defaults
-		if (theAnalysisModel == 0)
-			theAnalysisModel = new AnalysisModel();
-
-		if (theTest == 0)
-			theTest = new CTestNormUnbalance(1.0e-6, 25, 0);
-
-		if (theAlgorithm == 0) {
-			opserr << "WARNING analysis Creep - no Algorithm yet specified, \n";
-			opserr << " NewtonRaphson default will be used\n";
-
-			theAlgorithm = new NewtonRaphson(*theTest);
-		}
-		if (theHandler == 0) {
-			opserr << "WARNING analysis Creep - no ConstraintHandler yet specified, \n";
-			opserr << " PlainHandler default will be used\n";
-			theHandler = new PlainHandler();
-		}
-		if (theNumberer == 0) {
-			opserr << "WARNING analysis Creep - no Numberer specified, \n";
-			opserr << " RCM default will be used\n";
-			RCM *theRCM = new RCM(false);
-			theNumberer = new DOF_Numberer(*theRCM);
-		}
-		if (theStaticIntegrator == 0) {
-			opserr << "WARNING analysis Creep - no Integrator specified, \n";
-			opserr << " StaticIntegrator default will be used\n";
-			theStaticIntegrator = new LoadControl(1, 1, 1, 1);
-		}
-		if (theSOE == 0) {
-			opserr << "WARNING analysis Creep - no LinearSOE specified, \n";
-			opserr << " ProfileSPDLinSOE default will be used\n";
-			ProfileSPDLinSolver *theSolver;
-			theSolver = new ProfileSPDLinDirectSolver();
-#ifdef _PARALLEL_PROCESSING
-			theSOE = new DistributedProfileSPDLinSOE(*theSolver);
-#else
-			theSOE = new ProfileSPDLinSOE(*theSolver);
-#endif
-		}
-
-		theCreepAnalysis = new CreepAnalysis(theDomain,
-			*theHandler,
-			*theNumberer,
-			*theAnalysisModel,
-			*theAlgorithm,
-			*theSOE,
-			*theStaticIntegrator,
-			theTest);
-//--------------------------------------------------------------------------------
 
 #ifdef _PFEM
     } else if(strcmp(argv[1], "PFEM") == 0) {
@@ -4406,13 +4308,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theStaticIntegrator = new LoadControl(dLambda, numIter, minIncr, maxIncr);       
 
   // if the analysis exists - we want to change the Integrator
-   
-	// Added by AMK:
-  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
 
   if (theStaticAnalysis != 0)
     theStaticAnalysis->setIntegrator(*theStaticIntegrator);
@@ -4433,12 +4328,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theStaticIntegrator = new ArcLength(arcLength,alpha);       
 
   // if the analysis exists - we want to change the Integrator
-	// Added by AMK:
-	  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
 
   if (theStaticAnalysis != 0)
     theStaticAnalysis->setIntegrator(*theStaticIntegrator);
@@ -4458,12 +4347,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theStaticIntegrator = new ArcLength1(arcLength,alpha);       
 
   // if the analysis exists - we want to change the Integrator
- // Added by AMK:
-	  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------	
 
   if (theStaticAnalysis != 0)
     theStaticAnalysis->setIntegrator(*theStaticIntegrator);
@@ -4500,12 +4383,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		      	theStaticIntegrator = new HSConstraint(arcLength, psi_u, psi_f, u_ref);       
 	}
     // if the analysis exists - we want to change the Integrator
-	//Added by AMK  
-	//------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
+
     if (theStaticAnalysis != 0)
     	theStaticAnalysis->setIntegrator(*theStaticIntegrator);
   }
@@ -4544,12 +4422,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theStaticIntegrator = new MinUnbalDispNorm(lambda11,numIter,minlambda,maxlambda,signFirstStepMethod);
 
       // if the analysis exists - we want to change the Integrator
-	  // Added by AMK:
-	  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
+
       if (theStaticAnalysis != 0)
 	theStaticAnalysis->setIntegrator(*theStaticIntegrator);
   }
@@ -4589,12 +4462,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		theStaticIntegrator = new EQPath(arcLength, type);
 
 		// if the analysis exists - we want to change the Integrator
-		// Added by AMK:
-	  //------------------------------------------------------------------------------
-		if (theCreepAnalysis != 0) {
-			theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-		}
-		//------------------------------------------------------------------------------
 
 		if (theStaticAnalysis != 0)
 			theStaticAnalysis->setIntegrator(*theStaticIntegrator);
@@ -4654,12 +4521,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 #endif
 
       // if the analysis exists - we want to change the Integrator
-	  // Added by AMK:
-	  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
 
       if (theStaticAnalysis != 0) 
 	theStaticAnalysis->setIntegrator(*theStaticIntegrator);
@@ -5212,12 +5073,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	  theTransientIntegrator = new Newmark1(gamma,beta,alphaM,betaK,betaKi, betaKc);
 
       // if the analysis exists - we want to change the Integrator
-	  // Added by AMK:
-	  //------------------------------------------------------------------------------
-	  if (theCreepAnalysis != 0) {
-		  theCreepAnalysis->setIntegrator(*theStaticIntegrator);
-	  }
-	  //------------------------------------------------------------------------------
+
 	  if (theTransientAnalysis != 0)
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }

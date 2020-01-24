@@ -368,9 +368,6 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp">
       <Filter>integrator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\analysis\analysis\CreepAnalysis.cpp">
-      <Filter>analysis</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">
@@ -699,9 +696,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.h">
       <Filter>integrator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\analysis\analysis\CreepAnalysis.h">
-      <Filter>analysis</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
