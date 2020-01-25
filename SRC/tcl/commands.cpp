@@ -2310,15 +2310,37 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }    
 
-    // delete the old analysis
+    //
+    // do nothing if request is for the same analysis type!
+    //
+
+    if ((strcmp(argv[1],"Static") == 0) && (theStaticAnalysis != 0))
+      return TCL_OK;
+
+    if (((strcmp(argv[1],"VariableTimeStepTransient") == 0) ||
+	(strcmp(argv[1],"TransientWithVariableTimeStep") == 0) ||
+	 (strcmp(argv[1],"VariableTransient") == 0)) && 
+	(theVariableTimeStepTransientAnalysis != 0))
+      return TCL_OK;
+
+    if ((strcmp(argv[1],"Transient") == 0) && (theTransientAnalysis != 0))
+      return TCL_OK;
+
+    //
+    // analysis changing .. delete the old analysis
+    //
+
     if (theStaticAnalysis != 0) {
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
+	opserr << "WARNING: analysis .. existing StaticAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
+
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
 	theVariableTimeStepTransientAnalysis = 0;
+	opserr << "WARNING: analysis .. existing TransientAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
     
     // check argv[1] for type of SOE and create it

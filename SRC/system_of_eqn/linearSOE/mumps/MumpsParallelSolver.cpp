@@ -78,29 +78,34 @@ MumpsParallelSolver::initializeMumps()
     return 0;
   }
   else {
-    if (init == false) {
-      id.job = -1;
-      
-      id.par = 1; // host involved in calcs
-      id.sym = theMumpsSOE->matType;
 
+    if (init == true) {
+      id.job=-2; 
+      dmumps_c(&id); /* Terminate instance */
+      init = false;
+    } 
+
+    id.job = -1;
+      
+    id.par = 1; // host involved in calcs
+    id.sym = theMumpsSOE->matType;
+    
 #ifdef _OPENMPI    
-      //    id.comm_fortran=-987654;
-      id.comm_fortran = 0;
+    //    id.comm_fortran=-987654;
+    id.comm_fortran = 0;
 #else
-      id.comm_fortran = MPI_COMM_WORLD;
+    id.comm_fortran = MPI_COMM_WORLD;
 #endif
       
-      id.ICNTL(5) = 0; id.ICNTL(18) = 3;
-      
-      dmumps_c(&id);
-      
-      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      MPI_Comm_size(MPI_COMM_WORLD, &np);
-      
-      init = true;
-    }
+    id.ICNTL(5) = 0; id.ICNTL(18) = 3;
     
+    dmumps_c(&id);
+    
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &np);
+    
+    init = true;
+
     // parallel solver; distributed i/p matrix A
     id.ICNTL(5) = 0; id.ICNTL(18) = 3;
     
@@ -267,8 +272,8 @@ MumpsParallelSolver::solve(void)
 int
 MumpsParallelSolver::setSize(void)
 {
-	needsSetSize = true;
-	return 0;
+  needsSetSize = true;
+  return 0;
 }
 
 int
