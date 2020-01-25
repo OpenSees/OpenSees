@@ -45,11 +45,180 @@
 #include <Information.h>
 #include <ElementResponse.h>
 
+#include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
+#include <SimpsonBeamIntegration.h>
+#include <LobattoBeamIntegration.h>
+#include <LegendreBeamIntegration.h>
+
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+
+// Method to Read Command Arguments
+void* OPS_GradientInelasticBeamColumn3d()
+{
+	// Necessary Arguments
+	if (OPS_GetNumRemainingInputArgs() < 11) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - insufficient arguments\n";
+		opserr << "Want: eleTag? iNode? jNode? numIntgrPts? endSecTag1? intSecTag? endSecTag2? secLR1? secLR2? lc? transfTag?\n" <<
+			"<-constH> <-integration integrType?> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
+		return 0;
+	}
+
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();
+	if (ndm != 3 || ndf != 6) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - ndm must be 3 and ndf must be 6\n";
+		return 0;
+	}
+
+	// inputs: 
+	int iData[7];
+	int numData = 7;
+	if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid tags or numIntgrPts\n";
+		return 0;
+	}
+
+	double dData[3];
+	numData = 3;
+	if (OPS_GetDoubleInput(&numData, &dData[0]) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid secLR or lc\n";
+		return 0;
+	}
+
+	int transfTag;
+	if (OPS_GetIntInput(&numData, &transfTag) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid transfTag\n";
+		return 0;
+	}
+
+	// Optional Arguments
+	int maxIter = 50;
+	double minTol = 1E-10, maxTol = 1E-8;
+	bool correctionControl = false;
+	bool constH = false;
+	double maxEpsInc = 0.0, maxPhiInc = 0.0;
+	const char* integrType = "Simpson";
+
+	numData = 1;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* word = OPS_GetString();
+
+		if (strcmp(word, "-constH") == 0)
+			constH = true;
+		else if (strcmp(word, "-iter") == 0) {
+			if (OPS_GetNumRemainingInputArgs() > 2) {
+				if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxIter\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &minTol) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid minTol\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &maxTol) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxTol\n";
+					return 0;
+				}
+			}
+			else {
+				opserr << "WARNING! gradientInelasticBeamColumn3d - need maxIter? minTol? maxTol? after -iter \n";
+				return 0;
+			}
+		}
+		else if (strcmp(word, "-integration") == 0) {
+			if (OPS_GetNumRemainingInputArgs() > 0)
+				integrType = OPS_GetString();
+			else {
+				opserr << "WARNING! gradientInelasticBeamColumn3d - need integrType? after -integration \n";
+				return 0;
+			}
+		}
+		else if (strcmp(word, "-corControl") == 0) {
+			correctionControl = true;
+
+			if (OPS_GetNumRemainingInputArgs() > 1) {
+				if (OPS_GetDoubleInput(&numData, &maxEpsInc) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxEpsInc\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &maxPhiInc) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxPhiInc\n";
+					return 0;
+				}
+			}
+		}
+	}
+
+	// check transf
+	CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
+	if (theTransf == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - CrdTransf with tag " << transfTag << " not found\n";
+		return 0;
+	}
+
+	// check beam integrataion
+	BeamIntegration* beamIntegr = 0;
+
+	if (strcmp(integrType, "Lobatto") == 0)
+		beamIntegr = new LobattoBeamIntegration;
+	else if (strcmp(integrType, "Legendre") == 0)
+		beamIntegr = new LegendreBeamIntegration;
+	else if (strcmp(integrType, "Simpson") == 0)
+		beamIntegr = new SimpsonBeamIntegration;
+	else if (strcmp(integrType, "NewtonCotes") == 0) {
+		if (iData[3] > 20) {
+			opserr << "WARNING! gradientInelasticBeamColumn3d - Newton-Cotes integration method\n" <<
+				"number of integration points must be less than 20\n" <<
+				"use Simpson integration method instead!\n";
+			beamIntegr = new SimpsonBeamIntegration;
+		}
+
+		beamIntegr = new NewtonCotesBeamIntegration;
+	}
+	else if (strcmp(integrType, "Trapezoidal") == 0)
+		beamIntegr = new TrapezoidalBeamIntegration;
+	else {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - integration type " << integrType << " is not available\n";
+		return 0;
+	}
+
+	if (beamIntegr == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - failed to create beam integration\n";
+		return 0;
+	}
+
+	// check sections
+	SectionForceDeformation* endSection1 = OPS_getSectionForceDeformation(iData[4]);
+
+	if (!endSection1) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << iData[4] << " not found\n";
+		return 0;
+	}
+
+	SectionForceDeformation* intSection = OPS_getSectionForceDeformation(iData[5]);
+
+	if (!intSection) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << iData[5] << " not found\n";
+		return 0;
+	}
+
+	SectionForceDeformation* endSection2 = OPS_getSectionForceDeformation(iData[6]);
+
+	if (!endSection2) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << iData[6] << " not found\n";
+		return 0;
+	}
+
+	Element* theEle = new GradientInelasticBeamColumn3d(iData[0], iData[1], iData[2], iData[3], &endSection1, &intSection, &endSection2,
+		dData[0], dData[1], *beamIntegr, *theTransf, dData[2], minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
+
+	return theEle;
+}
 
 // Initialize Class Wide Variables
 Matrix GradientInelasticBeamColumn3d::theMatrix(12, 12);
