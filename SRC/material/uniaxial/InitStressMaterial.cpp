@@ -32,6 +32,8 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <OPS_Globals.h>
 
@@ -76,20 +78,9 @@ OPS_InitStressMaterial(void)
   return theMaterial;
 }
 
-
-InitStressMaterial::InitStressMaterial(int tag, 
-				       UniaxialMaterial &material,
-				       double sigini)
-  :UniaxialMaterial(tag,MAT_TAG_InitStress), theMaterial(0),
-   epsInit(0.0), sigInit(sigini)
+int
+InitStressMaterial::findInitialStrain(void)
 {
-  theMaterial = material.getCopy();
-
-  if (theMaterial == 0) {
-    opserr <<  "InitStressMaterial::InitStressMaterial -- failed to get copy of material\n";
-    exit(-1);
-  }
-
   // determine the initial strain
   double tol=1e-12;
   double dSig = sigInit;
@@ -111,11 +102,29 @@ InitStressMaterial::InitStressMaterial(int tag,
   if ((fabs(tStress-sigInit) < tol)) 
     theMaterial->setTrialStrain(epsInit);
   else {
-    opserr << "WARNING: InitStressMaterial - could not find initStrain to within tol for material: " << tag;
+    opserr << "WARNING: InitStressMaterial - could not find initStrain to within tol for material: " << theMaterial->getTag();
     opserr << " wanted sigInit: " << sigInit << " using tStress: " << theMaterial->getStress() << endln;
+    return -1;
   }
 
-  theMaterial->commitState();
+  return 0;
+}
+
+InitStressMaterial::InitStressMaterial(int tag, 
+				       UniaxialMaterial &material,
+				       double sigini)
+  :UniaxialMaterial(tag,MAT_TAG_InitStress), theMaterial(0),
+   epsInit(0.0), sigInit(sigini)
+{
+  theMaterial = material.getCopy();
+
+  if (theMaterial == 0) {
+    opserr <<  "InitStressMaterial::InitStressMaterial -- failed to get copy of material\n";
+    exit(-1);
+  }
+
+  if (this->findInitialStrain() == 0)
+    theMaterial->commitState();
 }
 
 InitStressMaterial::InitStressMaterial()
@@ -284,7 +293,26 @@ InitStressMaterial::Print(OPS_Stream &s, int flag)
 int 
 InitStressMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
+  if (strcmp(argv[0],"sig0") == 0 || strcmp(argv[0],"f0") == 0 || strcmp(argv[0],"F0") == 0) {
+    param.setValue(sigInit);
+    return param.addObject(1, this);
+  }
   return theMaterial->setParameter(argv, argc, param);
+}
+
+int
+InitStressMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->sigInit = info.theDouble;
+    this->findInitialStrain();
+    break;
+  }
+
+  return 0;
 }
 
 double
