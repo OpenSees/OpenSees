@@ -96,6 +96,7 @@ OutputData::operator=(const OutputData &other)
 
 std::map<int,VTK_Recorder::VtkType> VTK_Recorder::vtktypes;
 
+
 void* OPS_VTK_Recorder()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -891,8 +892,6 @@ VTK_Recorder::sendSelf(int commitTag, Channel &theChannel)
   if (name != 0)
     fileNameLength = strlen(name);
 
-  opserr << "filenameLength: " << fileNameLength << "\n";
-
   idData(0) = fileNameLength;
   idData(1) = -sendSelfCount; // -sendSelfCount indicates a process other than P0
   idData(2) = outputData.disp;
@@ -975,7 +974,6 @@ VTK_Recorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
     }
     
     name[fileNameLength]='\0';
-    opserr << "name: " << name;
   }
 
   return 0;
@@ -987,7 +985,7 @@ VTK_Recorder::setVTKType()
     if (vtktypes.empty() == false) {
 	return;
     }
-    vtktypes[ELE_TAG_Subdomain] = VTK_POLY_VERTEX;
+    //    vtktypes[ELE_TAG_Subdomain] = VTK_POLY_VERTEX;
     vtktypes[ELEMENT_TAGS_WrapperElement] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ElasticBeam2d] = VTK_LINE;
     vtktypes[ELE_TAG_ModElasticBeam2d] = VTK_LINE;
@@ -1217,12 +1215,15 @@ VTK_Recorder::initialize()
   
   numElement = 0;
   int offset = 0;
+  std::map<int,VTK_Recorder::VtkType>::iterator it;
   while ((theElement = theElements()) != 0) {
     int eleTag = theElement->getTag();
     int classTag = theElement->getClassTag();
-    theEleMapping[eleTag]=numElement;
-    int vtkType = vtktypes[classTag];    
-    if (vtkType != 0) {
+    it = vtktypes.find(classTag);
+    if (it != vtktypes.end()) {
+      int vtkType = vtktypes[classTag];    
+      //      if (vtkType != 0) {
+      theEleMapping[eleTag]=numElement;
       theEleTags.push_back(eleTag);
       theEleClassTags.push_back(classTag);
       theEleVtkTags.push_back(vtkType);
@@ -1232,7 +1233,8 @@ VTK_Recorder::initialize()
       theEleVtkOffsets.push_back(offset);
       numElement++;
     } else {
-      opserr << "VTK_Recorder::init Element: " << eleTag << " of unknown vtk type\n";
+      if (classTag != ELE_TAG_Subdomain)
+	opserr << "VTK_Recorder::init Element: " << eleTag << " of unknown vtk type\n";
     }
   }
 
