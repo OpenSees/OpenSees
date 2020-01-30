@@ -1152,8 +1152,8 @@ void* OPS_NonlinearBeamColumn()
     }
 
     int ndf = OPS_GetNDF();
-    if(ndm != 2 || ndf != 3) {
-	opserr<<"ndm must be 2 and ndf must be 3\n";
+    if (!(ndm == 2 && ndf == 3) && !(ndm == 3 && ndf == 6)) {
+	opserr<<"(ndm,ndf) must be (2,3) or (3,6)\n";
 	return 0;
     }
 

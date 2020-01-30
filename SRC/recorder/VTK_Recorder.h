@@ -100,10 +100,9 @@ public:
   
  private:
   int indentsize, precision, indentlevel;
-  char quota;    
+  char quota;   
   Domain *theDomain;
-  bool echoTimeFlag;   
-  int dataFlag;        
+
   double nextTimeStampToRecord;
   double deltaT;
   
@@ -143,6 +142,9 @@ public:
   int numElement;
   int maxNDM;
   int maxNDF;
+
+  bool initializationDone;
+  int sendSelfCount;
 };
 
 #endif
