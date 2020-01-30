@@ -203,6 +203,8 @@ void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
 void* OPS_CatenaryCableElement();
+void* OPS_GradientInelasticBeamColumn2d();
+void* OPS_GradientInelasticBeamColumn3d();
 
 namespace {
 
@@ -226,6 +228,16 @@ namespace {
 	    return OPS_ForceBeamColumn2d(info);
 	} else {
 	    return OPS_ForceBeamColumn3d();
+	}
+    }
+
+    static void* OPS_ElasticForceBeamColumn()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    return OPS_ElasticForceBeamColumn2d();
+	} else {
+	    return OPS_ElasticForceBeamColumn3d();
 	}
     }
 
@@ -411,6 +423,17 @@ namespace {
 	return OPS_Tri31(info);
     }
 
+  static void* OPS_GradientInelasticBeamColumn()
+  {
+    int ndm = OPS_GetNDM();
+    if (ndm == 2) {
+      return OPS_GradientInelasticBeamColumn2d();
+    }
+    else {
+      return OPS_GradientInelasticBeamColumn3d();
+    }
+  }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
@@ -574,6 +597,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
+	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
 
 	return 0;
     }
