@@ -573,8 +573,8 @@ GradientInelasticBeamColumn3d::setDomain(Domain *theDomain)
 				(*B_q)(4, j * secOrder + i) = w * x / L;
 				break;
 			case SECTION_RESPONSE_VY:
-				(*B_Q)(j * secOrder + i, 1) = (*B_Q)(j * secOrder + i, 2) = 1.0 / L;
-				(*B_q)(1, j * secOrder + i) = (*B_q)(2, j * secOrder + i) = w / L;
+				(*B_Q)(j * secOrder + i, 1) = (*B_Q)(j * secOrder + i, 2) = -1.0 / L;
+				(*B_q)(1, j * secOrder + i) = (*B_q)(2, j * secOrder + i) = -w / L;
 				break;
 			case SECTION_RESPONSE_VZ:
 				(*B_Q)(j * secOrder + i, 3) = (*B_Q)(j * secOrder + i, 4) = 1.0 / L;
