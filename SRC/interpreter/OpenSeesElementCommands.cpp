@@ -241,16 +241,6 @@ namespace {
 	}
     }
 
-    static void* OPS_ElasticForceBeamColumn()
-    {
-	int ndm = OPS_GetNDM();
-	if(ndm == 2) {
-	    return OPS_ElasticForceBeamColumn2d();
-	} else {
-	    return OPS_ElasticForceBeamColumn3d();
-	}
-    }
-
     static void* OPS_ElasticBeam()
     {
 	int ndm = OPS_GetNDM();
