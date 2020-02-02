@@ -66,6 +66,7 @@ terms specified in this license.
 
 #include <string.h>
 
+
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -238,11 +239,14 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
 	fprintf(stderr,"\n\n");
 	fprintf(stderr,"         OpenSees -- Open System For Earthquake Engineering Simulation\n");
 	fprintf(stderr,"                 Pacific Earthquake Engineering Research Center\n");
-	fprintf(stderr,"                        Version %s %s\n\n", OPS_VERSION, WIN_ARCH);
+	fprintf(stderr,"                        Version %s%s %s\n\n", OPS_VERSION, OPS_CDM_ver, WIN_ARCH);
 	
 	fprintf(stderr,"      (c) Copyright 1999-2016 The Regents of the University of California\n");
 	fprintf(stderr,"                              All Rights Reserved\n");
 	fprintf(stderr,"  (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
+    fprintf(stderr, " Modified by: Codi McKee (Texas A&M University)\n\n");
+
+    
       }
 #ifdef _PARALLEL_INTERPRETERS
     }

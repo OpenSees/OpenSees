@@ -81,16 +81,16 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)_CDM</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)_CDM</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)_CDM</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)_CDM</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -118,7 +118,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees_CDM.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories);c:\libx64</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -159,7 +159,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees_CDM.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories);c:\libx64</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -201,7 +201,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees_CDM.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories);c:\libx64</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -245,7 +245,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees_CDM.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories);c:\libx64</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>

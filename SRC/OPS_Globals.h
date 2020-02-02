@@ -29,6 +29,7 @@
 
 
 #define OPS_VERSION "3.1.0"
+#define OPS_CDM_ver ".CDM.1"
 
 #ifdef _WIN32
 #ifndef _WIN64
