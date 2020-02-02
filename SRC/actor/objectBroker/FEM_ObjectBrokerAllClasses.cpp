@@ -73,6 +73,7 @@
 #include <OriginCentered.h>
 #include <Steel01.h>
 #include <Steel02.h>
+#include <Steel02_CDM.h> // C McKee
 #include <Steel2.h>
 #include <FatigueMaterial.h>
 #include <ReinforcingSteel.h>
@@ -1114,6 +1115,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
+
+	case MAT_TAG_Steel02_CDM:
+		return new Steel02_CDM();
 
 	case MAT_TAG_Steel2:  
 	     return new Steel2();

@@ -76,6 +76,7 @@ void* OPS_EPPGapMaterial();
 void* OPS_ENTMaterial();
 void* OPS_Steel01();
 void* OPS_Steel02();
+void* OPS_Steel02_CDM(); // C McKee
 void* OPS_Steel03();
 void* OPS_Concrete01();
 void* OPS_Steel4();
