@@ -90,6 +90,7 @@ void* OPS_GradientInelasticBeamColumn2d()
 		return 0;
 	}
 
+	numData = 1;
 	int transfTag;
 	if (OPS_GetIntInput(&numData, &transfTag) < 0) {
 		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid transfTag\n";
