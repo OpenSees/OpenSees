@@ -46,7 +46,6 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/componentElement; $(MAKE);
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE);
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
-	@$(CD) $(FE)/element/filip; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
 
 # Miscellaneous
@@ -92,7 +91,6 @@ spotless: clean
 	@$(CD) $(FE)/element/componentElement; $(MAKE) wipe;
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE) wipe;
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;
-	@$(CD) $(FE)/element/filip; $(MAKE) wipe;
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
 
