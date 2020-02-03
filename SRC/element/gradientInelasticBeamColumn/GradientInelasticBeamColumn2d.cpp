@@ -62,9 +62,9 @@ void* OPS_GradientInelasticBeamColumn2d()
 {
 	// Necessary Arguments
 	if (OPS_GetNumRemainingInputArgs() < 11) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - insufficient arguments\n";
-		opserr << "Want: eleTag? iNode? jNode? numIntgrPts? endSecTag1? intSecTag? endSecTag2? secLR1? secLR2? lc? transfTag?\n" <<
-			"<-constH> <-integration integrType?> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - insufficient arguments\n" <<
+			"         Want: eleTag? iNode? jNode? numIntgrPts? endSecTag1? intSecTag? endSecTag2? secLR1? secLR2? lc? transfTag?\n" <<
+			"         <-constH> <-integration integrType?> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
 		return 0;
 	}
 
@@ -152,6 +152,9 @@ void* OPS_GradientInelasticBeamColumn2d()
 					return 0;
 				}
 			}
+			else
+				opserr << "WARNING! gradientInelasticBeamColumn2d - no max. correction increments set\n" <<
+					"         -> setting them automatically|\n";
 		}
 	}
 
@@ -169,13 +172,20 @@ void* OPS_GradientInelasticBeamColumn2d()
 		beamIntegr = new LobattoBeamIntegration;
 	else if (strcmp(integrType, "Legendre") == 0)
 		beamIntegr = new LegendreBeamIntegration;
-	else if (strcmp(integrType, "Simpson") == 0)
+	else if (strcmp(integrType, "Simpson") == 0) {
+		if (((iData[3] - 1) % 2) != 0) {
+			opserr << "WARNING! gradientInelasticBeamColumn2d - Simpson integration method\n" <<
+				"         number of integration points must be odd -> adding one IP!\n";
+
+			iData[3]++;
+		}
+
 		beamIntegr = new SimpsonBeamIntegration;
+	}
 	else if (strcmp(integrType, "NewtonCotes") == 0) {
 		if (iData[3] > 20) {
 			opserr << "WARNING! gradientInelasticBeamColumn2d - Newton-Cotes integration method\n" <<
-				"number of integration points must be less than 20\n" <<
-				"use Simpson integration method instead!\n";
+				"         number of integration points must be less than 20 -> using Simpson method!\n";
 			beamIntegr = new SimpsonBeamIntegration;
 		}
 
