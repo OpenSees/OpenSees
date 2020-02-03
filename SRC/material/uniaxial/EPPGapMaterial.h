@@ -89,6 +89,9 @@ class EPPGapMaterial : public UniaxialMaterial
     int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
 
+	//by SAJalali
+	virtual double getEnergy() { return Energy; }
+
   protected:
     
   private:
@@ -109,6 +112,10 @@ class EPPGapMaterial : public UniaxialMaterial
     int parameterID;
     Matrix *SHVs;
 // AddingSensitivity:END ///////////////////////////////////////////
+
+	//added by SAJalali
+	double commitStress;      // prev. trial stress
+	double Energy, EnergyP;
 };
 
 

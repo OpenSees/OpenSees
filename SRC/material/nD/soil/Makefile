@@ -7,7 +7,8 @@ OBJS       = FluidSolidPorousMaterial.o \
 	TclUpdateMaterialStageCommand.o \
 	PressureIndependMultiYield.o \
 	T2Vector.o \
-	PressureDependMultiYield02.o
+	PressureDependMultiYield02.o \
+	PressureDependMultiYield03.o
 
 all:	$(OBJS)
 

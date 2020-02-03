@@ -97,10 +97,10 @@ MultiLinear::MultiLinear(int tag, const Vector &s, const Vector &e)
     }
   }
 
-  data(0,0) = -e(0);      // neg yeild strain
-  data(0,1) = e(0);       // pos yeild strain
+  data(0,0) = -e(0);      // neg yield strain
+  data(0,1) = e(0);       // pos yield strain
   data(0,2) = -s(0);      // neg yield stress
-  data(0,3) = s(0);       // pos yeild stress
+  data(0,3) = s(0);       // pos yield stress
   data(0,4) = s(0)/e(0); // slope
   data(0,5) = e(0);      // dist - (0-1)/2
 
@@ -165,7 +165,7 @@ MultiLinear::setTrialStrain(double strain, double strainRate)
       tSlope = numSlope-1;
     tStress = data(tSlope,2) + (tStrain-data(tSlope,0))*data(tSlope,4);
     tTangent = data(tSlope,4);    
-  } else { // serach pos side of data
+  } else { // search pos side of data
     tSlope = 1;
     while (tSlope < numSlope && tStrain > data(tSlope,1))
       tSlope++;

@@ -49,10 +49,11 @@
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
 #include <RCCircularSectionIntegration.h>
+#include <RCTunnelSectionIntegration.h>
 #include <ParallelSection.h>
 #include <FiberSection2dThermal.h>
 #include <FiberSection3dThermal.h>
-#include <FiberSectionGJThermal.h>
+//#include <FiberSectionGJThermal.h>
 #include <MembranePlateFiberSectionThermal.h>
 #include <LayeredShellFiberSectionThermal.h>
 
@@ -95,7 +96,7 @@ namespace {
 
     static FiberSection2dThermal* theActiveFiberSection2dThermal = 0;
     static FiberSection3dThermal* theActiveFiberSection3dThermal = 0;
-    static FiberSectionGJThermal* theActiveFiberSectionGJThermal = 0;
+  //static FiberSectionGJThermal* theActiveFiberSectionGJThermal = 0;
 
     static bool initDone = false;
 
@@ -149,26 +150,39 @@ namespace {
 	    return 0;
 	}
 
-	double GJ = 0.0;
-	isTorsion = false;
-	if (OPS_GetNumRemainingInputArgs() >= 2) {
-	    const char* opt = OPS_GetString();
-	    if (strcmp(opt, "-GJ") == 0) {
-		if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
-		    opserr << "WARNING: failed to read GJ\n";
-		    return 0;
-		}
-		isTorsion = true;
-	    }
+	UniaxialMaterial *torsion = 0;
+	const char* opt = OPS_GetString();
+	numData = 1;
+	bool deleteTorsion = false;
+	if (strcmp(opt, "-GJ") == 0) {
+	  double GJ;
+	  if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	    opserr << "WARNING: failed to read GJ\n";
+	    return 0;
+	  }
+	  torsion = new ElasticMaterial(0,GJ);
+	  deleteTorsion = true;
+	}
+	if (strcmp(opt, "-torsion") == 0) {
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}
+	if (torsion == 0) {
+	  opserr << "WARNING torsion not speified for FiberSection\n";
+	  opserr << "\nFiberSection3dThermal section: " << tag << endln;
+	  return 0;
 	}
 
 	int num = 30;
 
-	if (isTorsion) {
-	    return new FiberSectionGJThermal(tag,num,GJ);
-	} else {
-	    return new FiberSection3d(tag, num);
-	}
+	SectionForceDeformation *theSec = new FiberSection3dThermal(tag,num);
+	if (deleteTorsion)
+	  delete torsion;
+	return theSec;
     }
 
     static void* OPS_FiberSection()
@@ -196,12 +210,7 @@ namespace {
 	} else if(ndm == 3) {
 	    bool isTorsion = false;
 	    theSec = OPS_FiberSection3dThermal(isTorsion);
-	    if (isTorsion) {
-		theActiveFiberSectionGJThermal = (FiberSectionGJThermal*)theSec;
-	    } else {
-		theActiveFiberSection3dThermal = (FiberSection3dThermal*)theSec;
-	    }
-
+	    theActiveFiberSection3dThermal = (FiberSection3dThermal*)theSec;
 	}
 
 	return theSec;
@@ -820,9 +829,9 @@ namespace {
 
     static void* OPS_RCCircularSection()
     {
-        if (OPS_GetNumRemainingInputArgs() < 11) {
+        if (OPS_GetNumRemainingInputArgs() < 13) {
             opserr << "WARNING insufficient arguments\n";
-            opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel?\n";
+            opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel? -GJ GJ <or> -torsion matTag\n";
             return 0;
         }
 
@@ -886,10 +895,136 @@ namespace {
 
         rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
 
+	UniaxialMaterial *torsion = 0;
+	const char* opt = OPS_GetString();
+	numdata = 1;
+	bool deleteTorsion = false;
+	if (strcmp(opt, "-GJ") == 0) {
+	  double GJ;
+	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	    opserr << "WARNING: failed to read GJ\n";
+	    return 0;
+	  }
+	  torsion = new ElasticMaterial(0,GJ);
+	  deleteTorsion = true;
+	}
+	if (strcmp(opt, "-torsion") == 0) {
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}
+	if (torsion == 0) {
+	  opserr << "WARNING torsion not speified for RCCircularSection\n";
+	  opserr << "\nRCCircularSection section: " << tag << endln;
+	  return 0;
+	}
+
         // Parsing was successful, allocate the section
-        SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+        SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
+	if (deleteTorsion)
+	  delete torsion;
 
         delete [] theMats;
+
+	return theSection;
+    }
+
+    static void* OPS_RCTunnelSection()
+    {
+        if (OPS_GetNumRemainingInputArgs() < 13) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: section RCTunnelSection tag? concreteTag? steelTag? d? h? coverinner? coverouter? Asinner? Asouter? Nrings? Nwedges? Nbarsinner? Nbarsouter?\n";
+            return 0;
+        }
+
+	int idata[8];
+	double ddata[6];
+
+	int numdata = 3;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+
+	numdata = 6;
+	if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+
+	numdata = 4;
+	if (OPS_GetIntInput(&numdata, &idata[4]) < 0) {
+	    opserr << "WARNING invalid section RCTunnelSection input\n";
+	    return 0;
+	}
+	
+        int tag=idata[0], concreteTag=idata[1], steelTag=idata[2];
+        double d=ddata[0], h=ddata[1], coverinner=ddata[2], coverouter=ddata[3], Asinner=ddata[4], Asouter=ddata[5];
+        int nring=idata[3], nwedge=idata[4], nbarsinner=idata[5], nbarsouter=idata[6];
+
+        UniaxialMaterial *theConcrete = OPS_getUniaxialMaterial(concreteTag);
+        
+        if (theConcrete == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << concreteTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return 0;
+        }
+        
+        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+
+        if (theSteel == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << steelTag; 
+            opserr << "\nRCTunnelSection section: " << tag << endln;
+            return 0;
+        }
+        
+        RCTunnelSectionIntegration rcsect(d, h, Asinner, Asouter, coverinner, coverouter,
+					  nring, nwedge, nbarsinner, nbarsouter);
+
+        int numFibers = rcsect.getNumFibers();
+
+        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+        rcsect.arrangeFibers(theMats, theConcrete, theSteel);
+
+	UniaxialMaterial *torsion = 0;
+	const char* opt = OPS_GetString();
+	numdata = 1;
+	bool deleteTorsion = false;
+	if (strcmp(opt, "-GJ") == 0) {
+	  double GJ;
+	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	    opserr << "WARNING: failed to read GJ\n";
+	    return 0;
+	  }
+	  torsion = new ElasticMaterial(0,GJ);
+	  deleteTorsion = true;
+	}
+	if (strcmp(opt, "-torsion") == 0) {
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}
+	if (torsion == 0) {
+	  opserr << "WARNING torsion not speified for RCCircularSection\n";
+	  opserr << "\nRCTunnelSection section: " << tag << endln;
+	  return 0;
+	}
+
+        // Parsing was successful, allocate the section
+        SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
+
+        delete [] theMats;
+	if (deleteTorsion)
+	  delete torsion;
 
 	return theSection;
     }
@@ -924,6 +1059,7 @@ namespace {
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
+	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
 
 	return 0;
     }
@@ -939,7 +1075,7 @@ int OPS_Section()
 
     theActiveFiberSection2dThermal = 0;
     theActiveFiberSection3dThermal = 0;
-    theActiveFiberSectionGJThermal = 0;
+    //theActiveFiberSectionGJThermal = 0;
 
     if (initDone == false) {
 	setUpFunctions();
@@ -975,7 +1111,7 @@ int OPS_Section()
 
 	theActiveFiberSection2dThermal = 0;
 	theActiveFiberSection3dThermal = 0;
-	theActiveFiberSectionGJThermal = 0;
+	//theActiveFiberSectionGJThermal = 0;
 	delete theSection;
 	return -1;
     }
@@ -993,8 +1129,7 @@ int OPS_Fiber()
 
 	theFiber = (UniaxialFiber2d*) OPS_UniaxialFiber2d();
 
-    } else if (theActiveFiberSection3d != 0 || theActiveFiberSection3dThermal!=0 ||
-	theActiveFiberSectionGJThermal != 0) {
+    } else if (theActiveFiberSection3d != 0 || theActiveFiberSection3dThermal!=0) {
 
 	theFiber = (UniaxialFiber3d*) OPS_UniaxialFiber3d();
 
@@ -1041,9 +1176,6 @@ int OPS_Fiber()
 
 	res = theActiveFiberSection3dThermal->addFiber(*theFiber);
 
-    } else if (theActiveFiberSectionGJThermal != 0) {
-
-	res = theActiveFiberSectionGJThermal->addFiber(*theFiber);
     }
 
     if (res < 0) {
@@ -1144,17 +1276,6 @@ int OPS_Patch()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3dThermal->addFiber(*theFiber);
-
-	} else if (theActiveFiberSectionGJThermal != 0) {
-
-	    material = OPS_getUniaxialMaterial(matTag);
-	    if (material == 0) {
-		opserr << "WARNING material "<<matTag<<" cannot be found\n";
-		delete thePatch;
-		return -1;
-	    }
-	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
-	    theActiveFiberSectionGJThermal->addFiber(*theFiber);
 
 	} else if (theActiveNDFiberSection2d != 0) {
 
@@ -1278,17 +1399,6 @@ int OPS_Layer()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3dThermal->addFiber(*theFiber);
-
-	} else if (theActiveFiberSectionGJThermal != 0) {
-
-	    material = OPS_getUniaxialMaterial(matTag);
-	    if (material == 0) {
-		opserr << "WARNING material "<<matTag<<" cannot be found\n";
-		delete theLayer;
-		return -1;
-	    }
-	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
-	    theActiveFiberSectionGJThermal->addFiber(*theFiber);
 
 	} else if (theActiveNDFiberSection2d != 0) {
 

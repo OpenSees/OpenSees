@@ -50,13 +50,18 @@ void* OPS_FluidSolidPorousMaterial();
 void* OPS_PlaneStress();
 void* OPS_PlaneStrain();
 void* OPS_CapPlasticity();
-void *OPS_SimplifiedJ2();
+void* OPS_SimplifiedJ2();
 void* OPS_PlateRebarMaterial();
 void* OPS_PlateFromPlaneStressMaterial();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
 void* OPS_BeamFiberMaterial();
-void* OPS_PM4Sand();
+void* OPS_BeamFiberMaterial2d();
+void* OPS_BeamFiberMaterial2dPS();
+void* OPS_PM4SandMaterial();
+void* OPS_UVCplanestress();
+void* OPS_UVCmultiaxial();
+
 
 namespace {
 
@@ -146,7 +151,11 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiber", &OPS_BeamFiberMaterial));
-	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_BeamFiberMaterial));
+	nDMaterialsMap.insert(std::make_pair("BeamFiber2d", &OPS_BeamFiberMaterial2d));
+	nDMaterialsMap.insert(std::make_pair("BeamFiber2dPS", &OPS_BeamFiberMaterial2dPS));
+	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_PM4SandMaterial));
+	nDMaterialsMap.insert(std::make_pair("UVCplanestress", &OPS_UVCplanestress));
+	nDMaterialsMap.insert(std::make_pair("UVCmultiaxial", &OPS_UVCmultiaxial));
 
 	return 0;
     }

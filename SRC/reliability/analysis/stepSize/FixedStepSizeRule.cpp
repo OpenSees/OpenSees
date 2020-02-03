@@ -58,7 +58,7 @@ FixedStepSizeRule::computeStepSize(const Vector &u,
 				   const Vector &d,
 				   int stepNumber, int reschk)
 {
-	// This method is in fact not neccesary for the fixed step size rule. The 
+	// This method is in fact not necessary for the fixed step size rule. The 
 	// user has already given the step size. BUT limit the maximum jump that can occur 
 
     Vector u_temp(u);

@@ -89,6 +89,8 @@ class FiberSection2d : public SectionForceDeformation
     int commitSensitivity(const Vector& sectionDeformationGradient,
 			  int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
+	//by SAJalali
+	double getEnergy() const;
 
   protected:
     

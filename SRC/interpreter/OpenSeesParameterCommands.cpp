@@ -86,7 +86,7 @@ OPS_Parameter()
 	    return -1;
 	}
 
-	if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+	if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 	    opserr << "WARING: parameter - failed to set parameter tag\n";
 	    return -1;
 	}
@@ -111,7 +111,7 @@ OPS_Parameter()
 	    return -1;
 	}
 
-	if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+	if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 	    opserr << "WARING: parameter - failed to set parameter tag\n";
 	    return -1;
 	}
@@ -151,7 +151,7 @@ OPS_Parameter()
 		    return -1;
 		}
 
-		if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+		if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 		    opserr << "WARING: parameter - failed to set parameter tag\n";
 		    return -1;
 		}
@@ -197,7 +197,7 @@ OPS_Parameter()
 		    return -1;
 		}
 
-		if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+		if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 		    opserr << "WARING: parameter - failed to set parameter tag\n";
 		    return -1;
 		}
@@ -352,7 +352,7 @@ OPS_Parameter()
 	theDomain->addParameter(newParameter);
     }
 
-    if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+    if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 	opserr << "WARING: parameter - failed to set parameter tag\n";
 	return -1;
     }
@@ -492,7 +492,7 @@ OPS_addToParameter()
 
     }
 
-    if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+    if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 	opserr << "WARING: parameter - failed to set parameter tag\n";
 	return -1;
     }
@@ -542,7 +542,7 @@ OPS_updateParameter()
 
     theDomain->updateParameter(paramTag, newValue);
 
-    if (OPS_SetIntOutput(&num, &paramTag) < 0) {
+    if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
 	opserr << "WARING: parameter - failed to set parameter tag\n";
 	return -1;
     }
@@ -564,12 +564,14 @@ int OPS_getParamTags()
 	tags.push_back(theParam->getTag());
     }
 
-    if (tags.empty()) return 0;
+    int size = 0;
+    int* data = 0;
+    if (!tags.empty()) {
+        size = (int) tags.size();
+        data = &tags[0];
+    }
 
-    int size = (int)tags.size();
-    int* data = &tags[0];
-
-    if (OPS_SetIntOutput(&size, data) < 0) {
+    if (OPS_SetIntOutput(&size, data, false) < 0) {
 	opserr << "WARNING failed to set outputs\n";
 	return -1;
     }
@@ -604,7 +606,7 @@ int OPS_getParamValue()
 
     double value = theParam->getValue();
 
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }

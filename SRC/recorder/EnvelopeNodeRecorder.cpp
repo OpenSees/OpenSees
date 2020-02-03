@@ -1166,3 +1166,16 @@ EnvelopeNodeRecorder::initialize(void)
 
   return 0;
 }
+//added by SAJalali
+double EnvelopeNodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= data->noCols())
+		return res;
+	res = (*data)(2 - rowOffset, clmnId);
+	if (reset)
+		first = true;
+	return res;
+}

@@ -128,9 +128,6 @@ void* OPS_Joint2D()
 		opserr << "\nJoint2D element: " << Joint2DId << endln;
 		return 0;
 	    }
-
-	    opserr << "There is a bug in Joint2D constructor -- fix later\n";
-	    return 0;
 	}
     
 	else			// if ( (argc-argStart) == 12  )
@@ -309,9 +306,6 @@ void* OPS_Joint2D()
 		opserr << "\nJoint2D element: " << Joint2DId << endln;
 		return 0;
 	    }
-
-	    opserr << "There is a bug in Joint2D constructor -- fix later\n";
-	    return 0;
 	}
       
 	else			// if ( (argc-argStart) == 18  )
@@ -1310,7 +1304,12 @@ Response* Joint2D::setResponse(const char **argv, int argc, OPS_Stream &output)
       if (theSprings[materialNum] != 0)
 	return theSprings[materialNum]->setResponse(&argv[2], argc-2, output);
   }
-  
+  //by SAJalali
+  else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0))
+  {
+	  return new ElementResponse(this, 10, Vector(5));
+  }
+
   return 0;
   	
 }
@@ -1441,6 +1440,22 @@ int Joint2D::getResponse(int responseID, Information &eleInformation)
 		}
 		return 0;
 	
+	case 10:
+		//by SAJalali
+		if (eleInformation.theVector != 0)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				(*(eleInformation.theVector))(i) = 0.0;
+				if (theSprings[i] != NULL)
+				{
+					(*(eleInformation.theVector))(i) =
+						theSprings[i]->getEnergy();
+				}
+
+			}
+		}
+		return 0;
 	default:
 		return -1;
 	}

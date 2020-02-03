@@ -20,6 +20,7 @@
 #include <ElasticBeam2d.h>
 #include <Matrix.h>
 #include <Vector.h>
+#include <math.h>
 
 class Channel;
 class UniaxialMaterial;
@@ -30,9 +31,10 @@ class WheelRail : public Element
 {
   public:
     WheelRail(int pTag, double pDeltT, double pVel, double pInitLocation, int pNd1, 
-	      double pRWheel,double pI,double pE,double pA,CrdTransf *ptheCoordTransf,
-	      int pnLoad, Vector *pNodeList,
-	      Vector * pDeltaYList=0,Vector * pDeltaYLocationList=0);
+		double pRWheel,double pI,double pE,double pA,CrdTransf *ptheCoordTransf,int pnLoad,
+		Vector * pNodeList,
+		Vector * pDeltaYList=0,Vector * pDeltaYLocationList=0);
+
     ~WheelRail();
 
     const char *getClassType(void) const {return "WheelRail";};

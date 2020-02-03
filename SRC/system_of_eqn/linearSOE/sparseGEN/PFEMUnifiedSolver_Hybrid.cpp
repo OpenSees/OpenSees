@@ -215,7 +215,7 @@ PFEMUnifiedSolver_Hybrid::solve()
 	int lda = id.size_schur, Lwork=0;
 	status = cusolverDnDgetrf_bufferSize(handle,id.size_schur,id.size_schur,d_S,lda,&Lwork);
 	if(status != CUSOLVER_STATUS_SUCCESS) {
-	    opserr<<"WARING: failed to get GPU workspace size--PFEMUnifiedSolver_Hybrid::solve\n";
+	    opserr<<"WARNING: failed to get GPU workspace size--PFEMUnifiedSolver_Hybrid::solve\n";
 	    return -1;
 	}
 

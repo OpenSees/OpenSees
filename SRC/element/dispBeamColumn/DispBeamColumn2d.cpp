@@ -1621,7 +1621,12 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
   
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
-  
+
+  else if (strcmp(argv[0], "energy") == 0) //by SAJalali
+  {
+  return new ElementResponse(this, 10, 0.0);
+  }
+
   output.endTag();
 
   if (theResponse == 0)
@@ -1748,6 +1753,17 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     for (int i = 0; i < numSections; i++)
       weights(i) = wt[i]*L;
     return eleInfo.setVector(weights);
+  }
+  //by SAJalali
+  else if (responseID == 10) {
+	  double xi[maxNumSections];
+	  double L = crdTransf->getInitialLength();
+	  beamInt->getSectionWeights(numSections, L, xi);
+	  double energy = 0;
+	  for (int i = 0; i < numSections; i++) {
+		  energy += theSections[i]->getEnergy()*xi[i] * L;
+	  }
+	  return eleInfo.setDouble(energy);
   }
 
   else

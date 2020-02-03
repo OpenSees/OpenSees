@@ -36,9 +36,40 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <string.h>
+#include <elementAPI.h>
 
 Vector BeamFiberMaterial2d::stress(2);
 Matrix BeamFiberMaterial2d::tangent(2,2);
+
+void* OPS_BeamFiberMaterial2d()
+{
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    if (argc < 4) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial BeamFiber2d tag? matTag?" << endln;
+	return 0;
+    }
+
+    int tags[2];
+    int numdata = 2;
+    if (OPS_GetIntInput(&numdata, tags) < 0) {
+	opserr << "WARNING invalid nDMaterial BeamFiber2d tag or matTag" << endln;
+	return 0;
+    }
+
+    int tag = tags[0];
+    int matTag = tags[1];
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << matTag;
+	opserr << "\nBeamFiber2d nDMaterial: " << tag << endln;
+	return 0;
+    }
+
+    return new BeamFiberMaterial2d(tag, *threeDMaterial);
+}
 
 //      0  1  2  3  4  5
 // ND: 11 22 33 12 23 31
@@ -558,7 +589,7 @@ BeamFiberMaterial2d::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  // put tag and assocaited materials class and database tags into an id and send it
+  // put tag and associated materials class and database tags into an id and send it
   static ID idData(3);
   idData(0) = this->getTag();
   idData(1) = theMaterial->getClassTag();
@@ -601,7 +632,7 @@ BeamFiberMaterial2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 {
   int res = 0;
 
-  // recv an id containg the tag and associated materials class and db tags
+  // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
   res = theChannel.sendID(this->getDbTag(), commitTag, idData);
   if (res < 0) {

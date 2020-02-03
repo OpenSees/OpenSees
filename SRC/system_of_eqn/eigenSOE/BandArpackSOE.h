@@ -1,7 +1,7 @@
 // File: ~/system_of_eqn/eigenSOE/BandArpackSOE.h
 //
 // Written: Jun Peng 
-// Created: Febuary 1999
+// Created: February 1999
 // Revision: A
 //
 // Description: This file contains the class definition for BandArpackSOE

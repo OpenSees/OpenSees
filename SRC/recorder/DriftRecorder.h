@@ -64,6 +64,8 @@ class DriftRecorder: public Recorder
   int recvSelf(int commitTag, Channel &theChannel, 
 	       FEM_ObjectBroker &theBroker);
   
+  virtual double getRecordedValue(int clmnId, int rowOffset, bool reset); //added by SAJalali
+
  protected:
   
  private:	

@@ -78,7 +78,9 @@ class Clough : public UniaxialMaterial
   
   void recordInfo(int cond =0);
   
-  
+  //by SAJalali
+  double getEnergy();
+
  private:
   // Input parameters
   double elstk,fyieldPos,fyieldNeg,alpha,Resfac;		//	Properties
@@ -91,6 +93,9 @@ class Clough : public UniaxialMaterial
   
   double hsTrial[24], hsCommit[24], hsLastCommit[24];
   
+  //by SAJalali
+  double Energy;
+
 };
 
 #endif

@@ -18,8 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Written: Long Chen, Pedro Arduino
-//          Sep 2018, University of Washington
+// Author: Long Chen, Pedro Arduino
+// Computational Geomechanics Group
+// University of Washington
+// Date:      Sep 2018
+// Last Modified: May 2019
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
@@ -193,7 +196,7 @@ protected:
 	double mC_MB;      // constant to calculate Mb for dense of critical states
 	double mMd;
 	double mMcur;       // current stress ratio
-	Vector mTracker;        // traker of internal varables;
+	Vector mTracker;        // tracker of internal variables;
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations

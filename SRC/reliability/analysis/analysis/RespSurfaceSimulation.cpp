@@ -127,7 +127,7 @@ int RespSurfaceSimulation::runSimulationAnalysis()
 	double criterion = 1.0* exp( -0.5 * beta*beta);
 
 
-// -- tranlation to get second dp. for time variant case
+// -- translation to get second dp. for time variant case
 	
 	
 

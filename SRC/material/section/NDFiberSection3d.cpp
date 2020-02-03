@@ -298,6 +298,8 @@ NDFiberSection3d::addFiber(Fiber &newFiber)
 	  newMatData[3*i+2] = 0.0;
       }
 
+      sizeFibers = newSize;
+
       // set new memory
       if (theMaterials != 0) {
 	  delete [] theMaterials;

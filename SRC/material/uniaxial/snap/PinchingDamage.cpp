@@ -686,7 +686,7 @@ int PinchingDamage::setTrialStrain( double d, double strainRate)
 		flagDeg = 0;
 	}
 	
-	// Relationship between basic variables and hstory array for next cycle
+	// Relationship between basic variables and history array for next cycle
 	hsTrial[0] = d;
 	hsTrial[1] = f;
 	hsTrial[2] = ek;

@@ -257,7 +257,7 @@ ReinforcingSteel::updateHardeningLoactionParams()
   // ultimate stress in natural stress-strain
   fsup=Esup-(esup-eshp)*Esup; 
   
-  // strain hardedned slope, yield plateu slope, and intersect
+  // strain hardedned slope, yield plateau slope, and intersect
   Eshp=Esh*pow(1.0+eshLoc,2.0)+fshp - Esup;
   Eypp=(fshp-fyp)/(eshp-eyp);
   fint = fyp-Eypp*eyp;
@@ -394,7 +394,7 @@ ReinforcingSteel::getInitialTangent(void) {
   return Esp;
 }
 
-/***************** path dependent bahavior methods ***********/
+/***************** path dependent behavior methods ***********/
 int 
 ReinforcingSteel::commitState(void) {
 #ifdef HelpDebugMat
@@ -435,7 +435,9 @@ ReinforcingSteel::commitState(void) {
     Cfb[TBranchMem]   = Tfb;
     CEb[TBranchMem]   = TEb;
   }
-  
+  //by SAJalali
+  Energy += 0.5*(TStress + CStress)*(TStrain - CStrain);
+
   // commit trial state variables
   CStrain    = TStrain;  
   CStress    = TStress;
@@ -474,7 +476,8 @@ ReinforcingSteel::revertToLastCommit(void) {
 int 
 ReinforcingSteel::revertToStart(void)
 {
-  theBarFailed = 0;
+	Energy = 0;	// by SAJalali
+	theBarFailed = 0;
   
   THardFact = 1.0;
   CHardFact = 1.0;
@@ -560,8 +563,8 @@ ReinforcingSteel::getCopy(void)
   theCopy->esup         = esup;  // Natural Strain at Peak Stress
   theCopy->fsup         = fsup;  // Natural Peak Stress
   theCopy->Esup         = Esup;  // Natural Peak Stress Moduus
-  theCopy->Eypp         = Eypp;  // Natural Yield Plateu Modulus
-  theCopy->fint         = fint;  // Natural yield plateu intersect
+  theCopy->Eypp         = Eypp;  // Natural Yield Plateau Modulus
+  theCopy->fint         = fint;  // Natural yield plateau intersect
   theCopy->eyp          = eyp;   // Natural yield strain
   theCopy->fyp          = fyp;   // Natural yield stress
 
@@ -1374,7 +1377,7 @@ ReinforcingSteel::Rule1(int res)
   return res;
 }
 
-// Rule 2: Compresion Envelope Branch
+// Rule 2: Compression Envelope Branch
 int
 ReinforcingSteel::Rule2(int res)
 {
@@ -1478,7 +1481,7 @@ ReinforcingSteel::Rule2(int res)
 int
 ReinforcingSteel::Rule3(int res)
 {
-  if (TStrain-CStrain > 0.0) {	// reversal from brance 
+  if (TStrain-CStrain > 0.0) {	// reversal from branch 
 	if(Temin > CStrain-Teo_n) Temin=CStrain-Teo_n;
 
 	Tea=CStrain;

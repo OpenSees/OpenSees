@@ -37,7 +37,7 @@ FirstPassageAnalyzer::FirstPassageAnalyzer
 	if(analysisType==2){
 		if(passedFOSeriesSimulation==0){
 			opserr<<"Warning in FirstPassageAnalyzer\n";
-			opserr<<"FOSeriesSimulation object is requied\n";
+			opserr<<"FOSeriesSimulation object is required\n";
 			opserr<<"when analysisType==2\n";
 			opserr<<"default object is constructed\n";
 			theFOSeriesSimulation=new FOSeriesSimulation();

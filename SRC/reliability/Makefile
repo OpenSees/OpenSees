@@ -136,6 +136,7 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/domain/distributions/ShiftedRayleighRV.o \
 		$(FE)/reliability/domain/distributions/Type3SmallestValueRV.o \
 		$(FE)/reliability/domain/distributions/UserDefinedRV.o \
+		$(FE)/reliability/domain/distributions/PythonRV.o \
 		$(FE)/reliability/domain/functionEvaluator/FunctionEvaluator.o \
 		$(FE)/reliability/domain/functionEvaluator/TclEvaluator.o \
 		$(FE)/reliability/domain/performanceFunction/PerformanceFunction.o \

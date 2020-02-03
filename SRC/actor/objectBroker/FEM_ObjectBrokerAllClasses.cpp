@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision$
-// $Date$
-// $URL$
-                                                                        
 // Written: fmk
 // Revision: A
 //
@@ -60,8 +56,11 @@
 
 
 // uniaxial material model header files
+#include <BoucWenMaterial.h>		//SAJalali
+#include <SPSW02.h>			//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
+#include <ElasticPowerFunc.h>
 #include <Elastic2Material.h>
 #include <ElasticPPMaterial.h>
 #include <ParallelMaterial.h>
@@ -94,6 +93,7 @@
 #include <InitStrainMaterial.h>
 #include <Bond_SP01.h>
 #include <SimpleFractureMaterial.h>
+#include <ConfinedConcrete01.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -186,8 +186,11 @@
 #include <ManzariDafalias3DRO.h>
 #include <ManzariDafaliasPlaneStrainRO.h>
 #include <PM4Sand.h>
+#include <PM4Silt.h>
 #include <InitialStateAnalysisWrapper.h>
+#if !_DLL
 #include <stressDensity.h>
+#endif
 #include <InitStressNDMaterial.h>
 
 // Fibers
@@ -226,6 +229,7 @@
 #include <ConstantPressureVolumeQuad.h>
 #include <ElasticBeam2d.h>
 #include <ElasticBeam3d.h>
+#include <ModElasticBeam2d.h>			//SAJalali
 #include <ElasticTimoshenkoBeam2d.h>
 #include <ElasticTimoshenkoBeam3d.h>
 #include <ForceBeamColumn2d.h>
@@ -261,6 +265,8 @@
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
 #include <TwoNodeLink.h>
+#include <LinearElasticSpring.h>
+#include <Inerter.h>
 
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
@@ -329,6 +335,7 @@
 #include <EnvelopeElementRecorder.h>
 #include <DriftRecorder.h>
 #include <MPCORecorder.h>
+#include <VTK_Recorder.h>
 
 // mp_constraint header files
 #include <MP_Constraint.h>
@@ -669,7 +676,11 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ElasticBeam2d:
       return new ElasticBeam2d();
       
-    case ELE_TAG_ElasticBeam3d:
+	  //SAJalali
+	case ELE_TAG_ModElasticBeam2d:
+		return new ModElasticBeam2d();
+
+	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
       
     case ELE_TAG_ElasticTimoshenkoBeam2d:
@@ -756,6 +767,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			
       
+    case ELE_TAG_LinearElasticSpring:
+        return new LinearElasticSpring();
+
+    case ELE_TAG_Inerter:
+        return new Inerter();
+
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
       
@@ -1052,19 +1069,26 @@ UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
-	case MAT_TAG_ElasticMaterial:  
-	     return new ElasticMaterial(); // values set in recvSelf
+	case MAT_TAG_SPSW02:
+		return new SPSW02(); // SAJalali
+	case MAT_TAG_BoucWen:
+		return new BoucWenMaterial(); // SAJalali
+	case MAT_TAG_ElasticMaterial:
+	     return new ElasticMaterial();
 
 	case MAT_TAG_Elastic2Material:  
 	     return new Elastic2Material(); 
 	     
 	case MAT_TAG_ElasticPPMaterial:  
-	     return new ElasticPPMaterial(); // values set in recvSelf
+	     return new ElasticPPMaterial();
 
 	case MAT_TAG_ElasticMultiLinear:  
-	     return new ElasticMultiLinear(); // values set in recvSelf
+	     return new ElasticMultiLinear();
 	     	     
-	case MAT_TAG_ParallelMaterial:  
+    case MAT_TAG_ElasticPowerFunc:
+        return new ElasticPowerFunc();
+
+    case MAT_TAG_ParallelMaterial:
 	     return new ParallelMaterial();
 
 	case MAT_TAG_Concrete01:  
@@ -1228,6 +1252,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_SimpleFractureMaterial:
 	  return new SimpleFractureMaterial();
+
+        case MAT_TAG_ConfinedConcrete01:
+            return new ConfinedConcrete01();
 
 
 	default:
@@ -1422,12 +1449,16 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PM4Sand:
     return new PM4Sand();
 
+  case ND_TAG_PM4Silt:
+	return new PM4Silt();
+
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
+#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-
+#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -1742,7 +1773,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 	case RECORDER_TAGS_EnvelopeElementRecorder:  
 	     return new EnvelopeElementRecorder();
 
-		 case RECORDER_TAGS_DriftRecorder:  
+	case RECORDER_TAGS_VTK_Recorder:  
+	     return new VTK_Recorder();
+
+        case RECORDER_TAGS_DriftRecorder:  
 	     return new DriftRecorder();
 
         case RECORDER_TAGS_TclFeViewer:  

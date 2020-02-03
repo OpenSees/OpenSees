@@ -227,9 +227,14 @@ EPPGapMaterial::commitState(void)
        }
     }
 
-    commitStrain = trialStrain;
+	//added by SAJalali for energy recorder
+	EnergyP += 0.5*(commitStress + trialStress)*(trialStrain - commitStrain);
 
-    return 0;
+	commitStrain = trialStrain;
+
+	
+	commitStress = trialStress;	//added by SAJalali
+	return 0;
 }
 
 
@@ -237,6 +242,8 @@ int
 EPPGapMaterial::revertToLastCommit(void)
 {
     trialStrain = commitStrain;
+	
+	trialStress = commitStress;	//added by SAJalali
 
     return 0;
 }
@@ -249,6 +256,9 @@ EPPGapMaterial::revertToStart(void)
     trialStrain = 0.0;
     maxElasticYieldStrain = fy/E+gap;
     minElasticYieldStrain = gap;
+
+	//added by SAJalali
+	commitStress = 0;
 
 // AddingSensitivity:BEGIN /////////////////////////////////
     if (SHVs != 0) 

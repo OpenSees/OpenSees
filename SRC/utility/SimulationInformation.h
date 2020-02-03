@@ -73,8 +73,6 @@ class SimulationInformation
 
   void Print(OPS_Stream &s, int flag = 0) const;
   friend OPS_Stream &operator<<(OPS_Stream &s, const SimulationInformation &E);    
-  
-  int neesUpload(const char *username, const char *passwd, int projID, int expID);
 
  protected:
   

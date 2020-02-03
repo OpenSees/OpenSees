@@ -122,7 +122,7 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers):
   sTData[1] = 0.0;
   sTData[2] = 0.0;
 
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_T = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_T[i] = 0;
@@ -163,7 +163,7 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num):
   sTData[1] = 0.0;
   sTData[2] = 0.0;
 
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_T = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_T[i] = 0;
@@ -206,7 +206,7 @@ FiberSection3dThermal::FiberSection3dThermal():
   sTData[1] = 0.0;
   sTData[2] = 0.0;
 
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_T = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_T[i] = 0;
@@ -1391,7 +1391,7 @@ FiberSection3dThermal::determineFiberTemperature(const Vector& DataMixed, double
 			return 0;
 		}
 
-	//caculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
+	//calculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
 	//first for bottom flange if existing
 		if (  fiberLocy <= dataTempe[1])
 		{

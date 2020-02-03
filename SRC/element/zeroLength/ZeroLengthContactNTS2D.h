@@ -31,8 +31,8 @@
  |                                                                            |
  +        Authors: Roozbeh Geraili Mikola  AND   Nicholas Sitar               +
  |                                                                            |
- |		  Department of Civil and Environmental Engineering                   |
- +		  University of California, Berkeley, CA 94720, USA                   +
+ |        Department of Civil and Environmental Engineering                   |
+ +        University of California, Berkeley, CA 94720, USA                   +
  |                                                                            |
  |        Email: Roozbeh Geraili Mikola  (roozbehg@berkeley.edu)              |
  |               Nicholas Sitar          (sitar@ce.berkeley.edu)              |

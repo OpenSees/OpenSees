@@ -76,6 +76,7 @@ StaticAnalysis::StaticAnalysis(Domain &the_Domain,
 
     theIntegrator->setLinks(theModel, theLinSOE, theTest);
     theAlgorithm->setLinks(theModel, theStaticIntegrator, theLinSOE, theTest);
+    theSOE->setLinks(theModel);
 
     if (theTest != 0)
       theAlgorithm->setConvergenceTest(theTest);

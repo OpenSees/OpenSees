@@ -68,6 +68,7 @@ class NodeRecorder: public Recorder
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);
+	virtual double getRecordedValue(int clmnId, int rowOffset, bool reset); //added by SAJalali
 
   protected:
 
@@ -89,7 +90,7 @@ class NodeRecorder: public Recorder
     double nextTimeStampToRecord;
 
     // AddingSensitivity:BEGIN //////////////////////////////
-    int sensitivity;
+    int gradIndex;
     // AddingSensitivity:END ////////////////////////////////
 
     bool initializationDone;

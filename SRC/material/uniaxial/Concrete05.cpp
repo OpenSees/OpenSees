@@ -878,7 +878,7 @@ int Concrete05::setTrialStrain (double strain, double strainRate)
 
 			  }	// if (Crule==1.0)	// or 5.0 or 7.0
 
-			  else if (Crule==77.0)	{			// Continue on transiton 77 [Rules 77,1,5]
+			  else if (Crule==77.0)	{			// Continue on transition 77 [Rules 77,1,5]
 
 //				  opserr << "esrestn" << esrestn << "\n";
 //				  opserr << "espln" << espln << "\n";
@@ -898,7 +898,7 @@ int Concrete05::setTrialStrain (double strain, double strainRate)
 	  
 			  }	// if (Crule==77.0)
 
-			  else if (Crule==13.0)	{			// Continue on transiton 13 [Rules 13,7,1,5]
+			  else if (Crule==13.0)	{			// Continue on transition 13 [Rules 13,7,1,5]
 				  
 				  if (Tstrain>=Teunn)	{	// Rule 13
 					  r13f(Ted,Teunn,fnewn,Enewn);

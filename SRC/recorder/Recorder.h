@@ -57,6 +57,7 @@ class Recorder: public MovableObject, public TaggedObject
 			 FEM_ObjectBroker &theBroker);
 
     virtual void Print(OPS_Stream &s, int flag); 
+	virtual double getRecordedValue(int clmnId, int rowOffset, bool reset) { return 0; } //added by SAJalali
 
   protected:
     

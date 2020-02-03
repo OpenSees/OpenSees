@@ -52,6 +52,11 @@ extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
 
+extern void OPS_clearAllHystereticBackbone(void);
+extern void OPS_clearAllStiffnessDegradation(void);
+extern void OPS_clearAllStrengthDegradation(void);
+extern void OPS_clearAllUnloadingRule(void);
+
 
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
@@ -171,9 +176,13 @@ OPS_Stream *opserrPtr = &sserr;
 #include <HSConstraint.h>
 #include <MinUnbalDispNorm.h>
 #include <DisplacementControl.h>
+#include <EQPath.h>
 
 #include <PFEMIntegrator.h>
-#include<Integrator.h>//Abbas
+#include <Integrator.h>//Abbas
+
+//  recorders
+#include <Recorder.h> //SAJalali
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ModifiedNewton(void);
@@ -375,15 +384,6 @@ const char * getInterpPWD(Tcl_Interp *interp);
 
 #include <XmlFileStream.h>
 
-/*
-#include <SimulationInformation.h>
-extern SimulationInformation simulationInfo;
-extern char *simulationInfoOutputFilename;
-extern char *neesCentralProjID;
-extern char *neesCentralExpID;
-extern char *neesCentralUser;
-extern char *neesCentralPasswd;
-*/
 
 #include <Response.h>
 
@@ -564,10 +564,6 @@ SimulationInformation simulationInfo;
 SimulationInformation *theSimulationInfoPtr = 0;
 
 char *simulationInfoOutputFilename = 0;
-char *neesCentralProjID =0;
-char * neesCentralExpID =0;
-char *neesCentralUser =0;
-char *neesCentralPasswd =0;
 
 
 FE_Datastore *theDatabase  =0;
@@ -631,17 +627,12 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-int
-neesUpload(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
 peerNGA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
 defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-
-int
-neesMetaData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
 stripOpenSeesXML(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -816,7 +807,11 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 #endif
 	
     //Tcl_CreateObjCommand(interp, "interp", Tcl_InterpOpenSeesObjCmd, NULL, NULL);
-    Tcl_CreateObjCommand(interp, "pset", &OPS_SetObjCmd,
+	
+	Tcl_CreateCommand(interp, "recorderValue", &OPS_recorderValue,
+		(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); //by SAJalali
+
+	Tcl_CreateObjCommand(interp, "pset", &OPS_SetObjCmd,
 			 (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 	
     Tcl_CreateObjCommand(interp, "source", &OPS_SourceCmd,
@@ -835,6 +830,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "loadConst", &setLoadConst,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
+    Tcl_CreateCommand(interp, "setCreep", &setCreep,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "setTime", &setTime,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);     
     Tcl_CreateCommand(interp, "getTime", &getTime,
@@ -847,6 +844,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "analyze", &analyzeModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "print", &printModel, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "printModel", &printModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "printA", &printA, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -977,9 +976,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     Tcl_CreateCommand(interp, "record",  &record,(ClientData)NULL, NULL);
 
-    Tcl_CreateCommand(interp, "metaData",  &neesMetaData,(ClientData)NULL, NULL);
     Tcl_CreateCommand(interp, "defaultUnits", &defaultUnits,(ClientData)NULL, NULL);
-    Tcl_CreateCommand(interp, "neesUpload", &neesUpload,(ClientData)NULL, NULL);
     Tcl_CreateCommand(interp, "stripXML", &stripOpenSeesXML,(ClientData)NULL, NULL);
     Tcl_CreateCommand(interp, "convertBinaryToText", &convertBinaryToText,(ClientData)NULL, NULL);
     Tcl_CreateCommand(interp, "convertTextToBinary", &convertTextToBinary,(ClientData)NULL, NULL);
@@ -1368,6 +1365,11 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
 
+  OPS_clearAllHystereticBackbone();
+  OPS_clearAllStiffnessDegradation();
+  OPS_clearAllStrengthDegradation();
+  OPS_clearAllUnloadingRule();
+
   ops_Dt = 0.0;
 
 
@@ -1467,6 +1469,57 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   return TCL_OK;  
 }
 
+// by SAJalali
+int OPS_recorderValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+	// make sure at least one other argument to contain type of system
+
+	// clmnID starts from 1
+	if (argc < 3) {
+		opserr << "WARNING want - recorderValue recorderTag clmnID <rowOffset> <-reset>\n";
+		return TCL_ERROR;
+	}
+
+	int tag, rowOffset;
+	int dof = -1;
+
+	if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+		opserr << "WARNING recorderValue recorderTag? clmnID <rowOffset> <-reset> could not read recorderTag \n";
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+		opserr << "WARNING recorderValue recorderTag? clmnID - could not read clmnID \n";
+		return TCL_ERROR;
+	}
+	dof--;
+	rowOffset = 0;
+	int curArg = 3;
+	if (argc > curArg)
+	{
+		if (Tcl_GetInt(interp, argv[curArg], &rowOffset) != TCL_OK) {
+			opserr << "WARNING recorderValue recorderTag? clmnID <rowOffset> <-reset> could not read rowOffset \n";
+			return TCL_ERROR;
+		}
+		curArg++;
+	}
+	bool reset = false;
+	if (argc > curArg)
+	{
+		if (strcmp(argv[curArg], "-reset") == 0)
+			reset = true;
+		curArg++;
+	}
+	Recorder* theRecorder = theDomain.getRecorder(tag);
+	double res = theRecorder->getRecordedValue(dof, rowOffset, reset);
+	// now we copy the value to the tcl string that is returned
+	//sprintf(interp->result, "%35.8f ", res);
+	char buffer [40];
+	sprintf(buffer,"%35.8f", res);	
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+	
+	return TCL_OK;
+}
 
 int 
 resetModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1514,6 +1567,22 @@ setLoadConst(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   return TCL_OK;
 }
 
+int 
+setCreep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+      opserr << "WARNING illegal command - setCreep value? \n";
+      return TCL_ERROR;
+  }
+  int newFlag;
+  if (Tcl_GetInt(interp, argv[1], &newFlag) != TCL_OK) {
+      opserr << "WARNING reading creep value - setCreep newFlag? \n";
+      return TCL_ERROR;
+  } else {
+      theDomain.setCreep(newFlag);
+  }
+  return TCL_OK;
+}
 
 int 
 setTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1579,7 +1648,7 @@ getLoadFactor(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
   //  sprintf(interp->result,"%f",factor);
 
   char buffer [40];
-  sprintf(buffer,"%f", factor);
+  sprintf(buffer,"%35.20f", factor);
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;
@@ -2243,15 +2312,37 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }    
 
-    // delete the old analysis
+    //
+    // do nothing if request is for the same analysis type!
+    //
+
+    if ((strcmp(argv[1],"Static") == 0) && (theStaticAnalysis != 0))
+      return TCL_OK;
+
+    if (((strcmp(argv[1],"VariableTimeStepTransient") == 0) ||
+	(strcmp(argv[1],"TransientWithVariableTimeStep") == 0) ||
+	 (strcmp(argv[1],"VariableTransient") == 0)) && 
+	(theVariableTimeStepTransientAnalysis != 0))
+      return TCL_OK;
+
+    if ((strcmp(argv[1],"Transient") == 0) && (theTransientAnalysis != 0))
+      return TCL_OK;
+
+    //
+    // analysis changing .. delete the old analysis
+    //
+
     if (theStaticAnalysis != 0) {
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
+	opserr << "WARNING: analysis .. existing StaticAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
+
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
 	theVariableTimeStepTransientAnalysis = 0;
+	opserr << "WARNING: analysis .. existing TransientAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
     
     // check argv[1] for type of SOE and create it
@@ -2884,9 +2975,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-umfpack") == 0) {
-	  PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack();
-          theSOE = new PFEMLinSOE(*theSolver);
       } else if (strcmp(argv[2],"-mumps") ==0) {
 #ifdef _PARALLEL_INTERPRETERS
 	  int relax = 20;
@@ -4356,6 +4444,44 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theStaticAnalysis->setIntegrator(*theStaticIntegrator);
   }
 
+  else if (strcmp(argv[1], "EQPath") == 0) {
+		double arcLength;
+		int type;
+		int numIter;
+		if (argc != 4) {
+			opserr << "WARNING integrator EQPath $arc_length $type \n";
+			opserr << "REFS : \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.849	 \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.879	 \n";
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK)
+		{
+			opserr << "WARNING integrator EQPath $arc_length $type \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.849	 \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.879	 \n";
+			return TCL_ERROR;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[3], &type) != TCL_OK)
+		{
+			opserr << "WARNING integrator $arc_length $type \n";
+			opserr << "$type = 1 Minimum Residual Displacement \n";
+			opserr << "$type = 2 Normal Plain \n";
+			opserr << "$type = 3 Update Normal Plain \n";
+			opserr << "$type = 4 Cylindrical Arc-Length \n";
+
+			return TCL_ERROR;
+		}
+
+		theStaticIntegrator = new EQPath(arcLength, type);
+
+		// if the analysis exists - we want to change the Integrator
+		if (theStaticAnalysis != 0)
+			theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+  }	
   
   else if (strcmp(argv[1],"DisplacementControl") == 0) {
       int node;
@@ -7967,7 +8093,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     for (int i=0; i<numEigen; i++) {
       if (Tcl_GetDouble(interp, argv[1+i], &factor) != TCL_OK) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	opserr << "WARNING modalDamping - could not read factor for model " << i+1 << endln;
 	return TCL_ERROR;	        
       }        
       modalDampingValues[i] = factor;    
@@ -7976,7 +8102,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } else {
 
     if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-      opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+      opserr << "WARNING modalDamping - could not read factor for all modes \n";
       return TCL_ERROR;	        
     }        
 
@@ -7987,7 +8113,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, true);
 
-  opserr << "modalDamping Factors: " << modalDampingValues;
+  //opserr << "modalDamping Factors: " << modalDampingValues;
 
   return TCL_OK;
 }
@@ -8584,72 +8710,6 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
 
 int
-neesMetaData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-  if (argc < 2)
-    return -1;
-  
-  int count = 1;
-  while (count < argc) {
-    if ((strcmp(argv[count],"-title") == 0) || (strcmp(argv[count],"-Title") == 0) 
-	|| (strcmp(argv[count],"-TITLE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.setTitle(argv[count+1]);	
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-contact") == 0) || (strcmp(argv[count],"-Contact") == 0) 
-	       || (strcmp(argv[count],"-CONTACT") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.setContact(argv[count+1]);	
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-description") == 0) || (strcmp(argv[count],"-Description") == 0) 
-	       || (strcmp(argv[count],"-DESCRIPTION") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.setDescription(argv[count+1]);	
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-modelType") == 0) || (strcmp(argv[count],"-ModelType") == 0) 
-	       || (strcmp(argv[count],"-MODELTYPE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.addModelType(argv[count+1]);
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-analysisType") == 0) || (strcmp(argv[count],"-AnalysisType") == 0) 
-	       || (strcmp(argv[count],"-ANALYSISTYPE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.addAnalysisType(argv[count+1]);
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-elementType") == 0) || (strcmp(argv[count],"-ElementType") == 0) 
-	       || (strcmp(argv[count],"-ELEMENTTYPE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.addElementType(argv[count+1]);
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-materialType") == 0) || (strcmp(argv[count],"-MaterialType") == 0) 
-	       || (strcmp(argv[count],"-MATERIALTYPE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.addMaterialType(argv[count+1]);
-	count += 2;
-      }
-    } else if ((strcmp(argv[count],"-loadingType") == 0) || (strcmp(argv[count],"-LoadingType") == 0) 
-	       || (strcmp(argv[count],"-LOADINGTYPE") == 0)) {
-      if (count+1 < argc) {
-	simulationInfo.addLoadingType(argv[count+1]);
-	count += 2;
-      }
-    } else {
-      opserr << "WARNING unknown arg type: " << argv[count] << endln;
-      count++;
-    }
-  }
-  return TCL_OK;
-}
-
-
-
-int
 defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
     if (argc < 9) {
@@ -8851,55 +8911,6 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
 
 
-int 
-neesUpload(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-  if (argc < 10) { 
-    opserr << "WARNING neesUpload -user isername? -pass passwd? -proj projID? -exp expID?\n";
-    return TCL_ERROR;
-  }
-  int projID =0;
-  int expID =0;
-  const char *userName =0;
-  const char *userPasswd =0;
-
-  int currentArg = 1;
-  while (currentArg+1 < argc) {
-    if (strcmp(argv[currentArg],"-user") == 0) {
-      userName = argv[currentArg+1];
-      
-    } else if (strcmp(argv[currentArg],"-pass") == 0) {
-      userPasswd = argv[currentArg+1];
-
-    } else if (strcmp(argv[currentArg],"-projID") == 0) {
-      if (Tcl_GetInt(interp, argv[currentArg+1], &projID) != TCL_OK) {
-	opserr << "WARNING neesUpload -invalid expID\n";
-	return TCL_ERROR;	        
-      }
-      
-    } else if (strcmp(argv[currentArg],"-expID") == 0) {
-      if (Tcl_GetInt(interp, argv[currentArg+1], &expID) != TCL_OK) {
-	opserr << "WARNING neesUpload -invalid expID\n";
-	return TCL_ERROR;	        
-      }
-    
-    } else if (strcmp(argv[currentArg],"-title") == 0) {
-      simulationInfo.setTitle(argv[currentArg+1]);	
-      
-    } else if (strcmp(argv[currentArg],"-description") == 0) {
-      simulationInfo.setDescription(argv[currentArg+1]);	
-      
-    }
-
-    currentArg+=2;
-  }        
-
-  simulationInfo.neesUpload(userName, userPasswd, projID, expID);
-
-  return TCL_OK;
-}
-
-
 const char * getInterpPWD(Tcl_Interp *interp) {
   static char *pwd = 0;
 
@@ -8971,24 +8982,6 @@ OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     simulationInfoOutputFile << simulationInfo;
     simulationInfoOutputFile.close();
     simulationInfoOutputFilename = 0;
-  }
-
-  if (neesCentralProjID != 0) {
-    opserr << "UPLOADING To NEEScentral ...\n";
-    int pid =0;
-    int expid =0;
-    if (Tcl_GetInt(interp, neesCentralProjID, &pid) != TCL_OK) {
-      opserr << "WARNING neesUpload -invalid projID\n";
-      return TCL_ERROR;	        
-    }
-    if (neesCentralExpID != 0) 
-      if (Tcl_GetInt(interp, neesCentralExpID, &expid) != TCL_OK) {
-	opserr << "WARNING neesUpload -invalid projID\n";
-	return TCL_ERROR;	        
-      }
-    
-    simulationInfo.neesUpload(neesCentralUser, neesCentralPasswd, pid, expid);
-    neesCentralProjID = 0;
   }
 
   int returnCode = 0;
@@ -9383,36 +9376,6 @@ extern "C" int OpenSeesParseArgv(int argc, char **argv)
 	      simulationInfoOutputFilename = argv[currentArg+1];	    
 	    }			   
 	    currentArg+=2;
-	  } else if ((strcmp(argv[currentArg], "-upload") == 0) || (strcmp(argv[currentArg], "-UPLOAD") == 0)) {
-	    bool more = true;
-	    currentArg++;
-	    while (more == true && currentArg < argc) {
-	      
-	      if (strcmp(argv[currentArg],"-user") == 0) {
-		neesCentralUser = argv[currentArg+1];
-		currentArg += 2;
-
-	      } else if (strcmp(argv[currentArg],"-pass") == 0) {
-		neesCentralPasswd = argv[currentArg+1];
-		currentArg += 2;
-	      } else if (strcmp(argv[currentArg],"-projID") == 0) {
-		neesCentralProjID = argv[currentArg+1];
-		currentArg += 2;
-		
-	      } else if (strcmp(argv[currentArg],"-expID") == 0) {
-		neesCentralExpID = argv[currentArg+1];
-		currentArg += 2;
-    
-	      } else if (strcmp(argv[currentArg],"-title") == 0) {
-		simulationInfo.setTitle(argv[currentArg+1]);	
-		currentArg += 2;
-      
-	      } else if (strcmp(argv[currentArg],"-description") == 0) {
-		simulationInfo.setDescription(argv[currentArg+1]);	
-		currentArg += 2;      
-	      } else
-		more = false;
-	    }
 	  } else 
 	    currentArg++;
 	}

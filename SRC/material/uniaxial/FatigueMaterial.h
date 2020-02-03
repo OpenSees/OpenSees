@@ -86,9 +86,13 @@ class FatigueMaterial : public UniaxialMaterial
   int getResponse (int responseID, Information &matInformation);    
   bool hasFailed(void);  
 
- protected:
+  //by SAJalali
+  virtual double getEnergy(void) { return energy; }
+protected:
   
  private:
+	 double energy, CStress; //SAJalali
+
   UniaxialMaterial *theMaterial;
   
   double DI; //Damage index
@@ -123,10 +127,10 @@ class FatigueMaterial : public UniaxialMaterial
   // For recording strain ranges (SRXX) and Number of Cycles (NCXX)
   double SR1;  // Committed strain range at peak
   double NC1;  // Committed number of cycles at SR1 (i.e. 1.0 or 0.5)
-  double SR2;  // Committed strain range 2 at PSUEDO peak - there are potentially two ranges
-  double NC2;  // Committed number of cycles at SR2 2 (at PSUEDO peak) - there are potentially two ranges
-  double SR3;  // Committed strain range 3 at PSUEDO peak - there are potentially two ranges
-  double NC3;  // Committed number of cycles at SR2 3 (at PSUEDO peak) - there are potentially two ranges
+  double SR2;  // Committed strain range 2 at PSEUDO peak - there are potentially two ranges
+  double NC2;  // Committed number of cycles at SR2 2 (at PSEUDO peak) - there are potentially two ranges
+  double SR3;  // Committed strain range 3 at PSEUDO peak - there are potentially two ranges
+  double NC3;  // Committed number of cycles at SR2 3 (at PSEUDO peak) - there are potentially two ranges
   
 };
 

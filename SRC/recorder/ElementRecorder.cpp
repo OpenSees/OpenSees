@@ -918,3 +918,14 @@ ElementRecorder::initialize(void)
 
   return 0;
 }
+//by SAJalali
+double ElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= data->Size())
+		return res;
+	res = (*data)(clmnId);
+	return res;
+}

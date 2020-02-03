@@ -90,7 +90,9 @@ class UniaxialMaterial : public Material
     virtual double getRhoSensitivity        (int gradIndex);
     virtual int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
-    
+	//by SAJalali
+	virtual double getEnergy(void) { return 0; }
+
  protected:
     
  private:

@@ -76,7 +76,9 @@ class HystereticMaterial : public UniaxialMaterial
 	       FEM_ObjectBroker &theBroker);    
   
   void Print(OPS_Stream &s, int flag =0);
-  
+  //by SAJalali
+  double getEnergy() { return CenergyD; }
+
  protected:
   
  private:

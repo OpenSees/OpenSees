@@ -29,14 +29,14 @@
 
 /*----+----+----+----+----+----+----+----+----+----+----+----+----+----+------*
  |                                                                            |
- |                    ZeroLengthContactNTS2D element                        |
+ |                    ZeroLengthContactNTS2D element                          |
  +                                                                            +
  |----------------------------------------------------------------------------|
  |                                                                            |
  +        Authors: Roozbeh Geraili Mikola  AND  Professor Nicholas Sitar      +
  |                                                                            |
- |		  Department of Civil and Environmental Engineering                   |
- +		  University of California, Berkeley, CA 94720, USA                   +
+ |        Department of Civil and Environmental Engineering                   |
+ +        University of California, Berkeley, CA 94720, USA                   +
  |                                                                            |
  |        Email: roozbehg@berkeley.edu                                        |
  +                                                                            +

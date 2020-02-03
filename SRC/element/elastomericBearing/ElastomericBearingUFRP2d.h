@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 #ifndef ElastomericBearingUFRP2d_h
 #define ElastomericBearingUFRP2d_h
 

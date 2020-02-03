@@ -64,12 +64,12 @@ class ConcreteD : public UniaxialMaterial
 	double etap;
 //State Parameters
 	int	   CLoadState;  //load state 0 loading,1 unloading,2 reloading
-	double CStrain;     // last commited strain
-    double CStress;     // last commited stress
-    double CTangent;    // last commited tangent
-	double CSecant;     // last commited secant
-	double CDc;         // last commited damage parameter in compression
-	double CDt;         // last commited damage parameter in tenssion
+	double CStrain;     // last committed strain
+    double CStress;     // last committed stress
+    double CTangent;    // last committed tangent
+	double CSecant;     // last committed secant
+	double CDc;         // last committed damage parameter in compression
+	double CDt;         // last committed damage parameter in tenssion
 	double CDcp;
 	double CDtp;
 	double CEpp;        // last coomited plastic strain

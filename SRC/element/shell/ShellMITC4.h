@@ -22,7 +22,8 @@
 // $Date: 2011/03/10 22:51:21 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/shell/ShellMITC4.h,v $
 
-// Written: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
+// Original implementation: Ed "C++" Love
+// Reimplementation: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
 //
 // Bathe MITC 4 four node shell element with membrane and drill
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
@@ -149,6 +150,10 @@ class ShellMITC4 : public Element {
     double g2[3] ;
     double g3[3] ;
 
+    int applyLoad;
+    double appliedB[3];     // Body forces applied with load
+
+
     //compute local coordinates and basis
     void computeBasis( ) ;
     //start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
@@ -188,6 +193,7 @@ class ShellMITC4 : public Element {
     // vector for applying loads
     Vector *load;
     Matrix *Ki;
+    double init_disp[4][6];
 } ; 
 
 

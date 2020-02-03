@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/07
 // Revision: A
@@ -114,7 +110,6 @@ void* OPS_ActuatorCorot()
     // now create the actuator and add it to the Domain
     return new ActuatorCorot(tag, ndm, iNode, jNode, EA, ipPort,
 			     doRayleigh, rho);
-    
 }
 
 

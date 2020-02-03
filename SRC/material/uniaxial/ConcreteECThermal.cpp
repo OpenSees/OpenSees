@@ -380,7 +380,7 @@ ConcreteECThermal::getElongTangent(double TempT, double& ET, double& Elong, doub
 	 // epsc0 = epsc0T*strainRatio;
 	 // epscu = epscuT*strainRatio;
 
-  // caculation of thermal elongation
+  // calculation of thermal elongation
 	  if (Temp <= 1) {
 		  ThermalElongation = (Temp - 0) * 9.213e-6;
 	  }

@@ -90,16 +90,16 @@ class AxialSpHD : public UniaxialMaterial
   double bth;   // reduction rate after tensile hardening point (ratio to sce)
   double bcy;   // reduction rate after compressive yield point (ratio to sce, 0.0 <= bcy <= 1.0)
   double fcr;   // reversal point stress (fcy <= fcr <= 0.0)
-  double ath;   // tensile hardening point strain (ratio to tensile yeild strain, 1.0 <= ath)
+  double ath;   // tensile hardening point strain (ratio to tensile yield strain, 1.0 <= ath)
 
   // data for calculation
   double ste;   // tensile modulus
   double sty;   // tensile modulus after yield point
   double stp;
   double sth;   // tensile modulus after hardening point
-  double scy;   // compressive modulus after yeild point
-  double uty;   // tensile yeild strain
-  double ucy;   // compressive yeild strain
+  double scy;   // compressive modulus after yield point
+  double uty;   // tensile yield strain
+  double ucy;   // compressive yield strain
   double ucr;   // reversal point strain
   double utr;   // strain (related to reversal point)
   double ftr;   // stress (related to reversal point)

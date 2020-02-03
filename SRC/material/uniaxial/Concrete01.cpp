@@ -94,6 +94,7 @@ Concrete01::Concrete01
    CminStrain(0.0), CendStrain(0.0),
    Cstrain(0.0), Cstress(0.0) 
 {
+	EnergyP = 0;	//SAJalali
   // Make all concrete parameters negative
   if (fpc > 0.0)
     fpc = -fpc;
@@ -127,6 +128,7 @@ Concrete01::Concrete01():UniaxialMaterial(0, MAT_TAG_Concrete01),
  CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0),
  Cstrain(0.0), Cstress(0.0)
 {
+	EnergyP = 0;	//SAJalali
   // Set trial values
   this->revertToLastCommit();
   
@@ -404,6 +406,9 @@ int Concrete01::commitState ()
    CminStrain = TminStrain;
    CunloadSlope = TunloadSlope;
    CendStrain = TendStrain;
+
+   //added by SAJalali
+   EnergyP += 0.5*(Cstress + Tstress)*(Tstrain - Cstrain);
 
    // State variables
    Cstrain = Tstrain;

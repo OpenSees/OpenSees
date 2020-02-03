@@ -47,10 +47,10 @@ class FiberSection3d : public SectionForceDeformation
   public:
     FiberSection3d(); 
     FiberSection3d(int tag, int numFibers, Fiber **fibers, 
-		   UniaxialMaterial *torsion = 0);
-    FiberSection3d(int tag, int numFibers, UniaxialMaterial *torsion = 0);
+		   UniaxialMaterial &torsion);
+    FiberSection3d(int tag, int numFibers, UniaxialMaterial &torsion);
     FiberSection3d(int tag, int numFibers, UniaxialMaterial **mats,
-		   SectionIntegration &si, UniaxialMaterial *torsion = 0);
+		   SectionIntegration &si, UniaxialMaterial &torsion);
     ~FiberSection3d();
 
     const char *getClassType(void) const {return "FiberSection3d";};
@@ -91,6 +91,8 @@ class FiberSection3d : public SectionForceDeformation
     const Vector & getSectionDeformationSensitivity(int gradIndex);
     // AddingSensitivity:END ///////////////////////////////////////////
 
+	//by SAJalali
+	double getEnergy() const;
 
 
   protected:

@@ -34,15 +34,68 @@
 #include <iostream>
 #include <cmath>
 #include <Timer.h>
+#include <elementAPI.h>
+#include <vector>
+
+#ifdef _AMGCL
+#include <amgcl/adapter/crs_tuple.hpp>
+#include <amgcl/backend/builtin.hpp>
+#include <amgcl/make_solver.hpp>
+#include <amgcl/coarsening/smoothed_aggregation.hpp>
+#include <amgcl/solver/fgmres.hpp>
+#include <amgcl/solver/lgmres.hpp>
+#include <amgcl/solver/gmres.hpp>
+#include <amgcl/solver/cg.hpp>
+#include <amgcl/solver/bicgstab.hpp>
+#include <amgcl/relaxation/spai0.hpp>
+#include <amgcl/relaxation/ilu0.hpp>
+#include <amgcl/amg.hpp>
+#include <amgcl/profiler.hpp>
+#include <amgcl/adapter/zero_copy.hpp>
+#endif
+
 
 void* OPS_PFEMSolver_Umfpack()
 {
-    PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack();
+    int numdata = 1;
+    int print = 0;
+    double ptol = 1e-4;
+    int maxiter = 100;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* opt = OPS_GetString();
+	if (strcmp(opt, "-print") == 0) {
+
+	    print = 1;
+
+	} else if (strcmp(opt, "-ptol") == 0) {
+
+	    if (OPS_GetNumRemainingInputArgs() > 0) {
+		if (OPS_GetDoubleInput(&numdata, &ptol) < 0) {
+		    opserr << "WARNING: failed to get ptol\n";
+		    return 0;
+		}
+	    }
+
+	    
+	} else if (strcmp(opt, "-pmaxiter") == 0) {
+
+	    if (OPS_GetNumRemainingInputArgs() > 0) {
+		if (OPS_GetIntInput(&numdata, &maxiter) < 0) {
+		    opserr << "WARNING: failed to get err\n";
+		    return 0;
+		}
+	    }
+	}
+    }
+    
+    PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack(ptol,maxiter,print);
     return new PFEMLinSOE(*theSolver);
 }
 
-PFEMSolver_Umfpack::PFEMSolver_Umfpack()
-    :PFEMSolver(), Symbolic(0), theSOE(0)
+PFEMSolver_Umfpack::PFEMSolver_Umfpack(double tol, int niter, int p)
+    :PFEMSolver(), Symbolic(0), theSOE(0), print(p),
+     ptol(tol), pmaxiter(niter)
 {
 }
 
@@ -56,8 +109,8 @@ PFEMSolver_Umfpack::~PFEMSolver_Umfpack()
 int
 PFEMSolver_Umfpack::solve()
 {
-    // Timer timer;
-    // timer.start();
+    Timer timer;
+    timer.start();
     cs* M = theSOE->M;
     cs* Gft = theSOE->Gft;
     cs* Git = theSOE->Git;
@@ -239,20 +292,21 @@ PFEMSolver_Umfpack::solve()
     }
 
     // solve for pressure
-    Vector deltaP(Psize);
+    std::vector<double> deltaP, rhsP;
     if(Psize>0) {
-        double* deltaP_ptr = &deltaP(0);
+	deltaP.assign(Psize, 0.0);
+	rhsP.assign(Psize, 0.0);
 
         // Gft*deltaVf1
         if(Fsize > 0) {
             double* deltaVf1_ptr = &deltaVf1(0);
-            cs_gaxpy(Gft, deltaVf1_ptr, deltaP_ptr);
+            cs_gaxpy(Gft, deltaVf1_ptr, &rhsP[0]);
         }
 
         // Git*deltaVi1
         if(Isize > 0) {
             double* deltaVi1_ptr = &deltaV1(0) + Ssize;
-            cs_gaxpy(Git, deltaVi1_ptr, deltaP_ptr);
+            cs_gaxpy(Git, deltaVi1_ptr, &rhsP[0]);
         }
 
         // rp-Git*deltaVi1-Gft*deltaVf1
@@ -260,7 +314,7 @@ PFEMSolver_Umfpack::solve()
             int rowtype = dofType(i);      // row type
             int rowid = dofID(i);          // row id
             if(rowtype == 3) {             // pressure
-                deltaP(rowid) = B(i)-deltaP(rowid);   // rp-Git*deltaVi1-Gft*deltaVf1
+                rhsP[rowid] = B(i)-rhsP[rowid];   // rp-Git*deltaVi1-Gft*deltaVf1
             }
         }
 
@@ -294,64 +348,62 @@ PFEMSolver_Umfpack::solve()
 	// timer.pause();
 	//opserr<<"pressure setup  time = "<<timer.getReal()<<"\n";
 	// timer.start();
-	int* Sp = S->p;
-	int* Si = S->i;
-	double* Sx = S->x;
-	for (int j=0; j<Psize; j++) {
-	    ID col(0, Sp[j+1]-Sp[j]);
-	    Vector colval(Sp[j+1]-Sp[j]);
-	    ID col0(colval.Size());
-	    int index = 0;
-	    for (int k=Sp[j]; k<Sp[j+1]; k++) {
-		col.insert(Si[k]);
-		col0(index) = Si[k];
-		colval(index++) = Sx[k];
+	if (S->nzmax > 0) {
+#ifdef _AMGCL
+	    // solve
+	    amgcl::profiler<> prof;
+	    typedef
+		amgcl::make_solver<
+		    amgcl::amg<
+			amgcl::backend::builtin<double>,
+			amgcl::coarsening::smoothed_aggregation,
+			amgcl::relaxation::spai0
+			>,
+		amgcl::solver::lgmres<amgcl::backend::builtin<double> >
+		> Solver;
+
+
+	    // parameter
+	    Solver::params prm;
+	    prm.solver.tol = ptol;
+	    prm.solver.maxiter = pmaxiter;
+
+	    // setup
+	    prof.tic("setup");
+	    std::vector<std::ptrdiff_t> ptr(S->nzmax), num(S->nzmax);
+	    for (int i=0; i<S->nzmax; ++i) {
+	    	ptr[i] = S->p[i];
+	    	num[i] = S->i[i];
+	    }
+	    double* val = &(S->x[0]);
+	    Solver solve(amgcl::adapter::zero_copy(Psize,&ptr[0],&num[0],val),prm);
+	    prof.toc("setup");
+
+	    // solve
+	    int iters;
+	    double error;
+	    prof.tic("solve");
+	    std::tie(iters, error) = solve(rhsP, deltaP);
+	    prof.toc("solve");
+
+	    if (print) {
+		std::cout << solve << std::endl;
+		std::cout << "iters: " << iters << std::endl
+			  << "error: " << error << std::endl
+			  << prof << std::endl;
+	    }
+	    
+	    if (iters>=pmaxiter && error>ptol) {
+	    	opserr<<"WARNING: failed to solve pressure\n";
+	    	return -1;
 	    }
 
-	    index = 0;
-	    for (int k=Sp[j]; k<Sp[j+1]; k++) {
-		Si[k] = col[index++];
-		Sx[k] = colval(col0.getLocation(Si[k]));
+	    for (int i=0; i<Psize; ++i) {
+		
 	    }
 
+#endif
 	}
-
-	// symbolic analysis
-	void* Ssymbolic = 0;
-	int status = umfpack_di_symbolic(Psize,Psize,Sp,Si,Sx,&Ssymbolic,Control,Info);
-	// check error
-	if (status!=UMFPACK_OK) {
-	    opserr<<"WARNING: pressure symbolic analysis returns "<<status<<" -- PFEMSolver_Umfpack::setsize\n";
-	    return -1;
-	}
-	
-	// numerical analysis
-	void* SNumeric = 0;
-	status = umfpack_di_numeric(Sp,Si,Sx,Ssymbolic,&SNumeric,Control,Info);
-	umfpack_di_free_symbolic(&Ssymbolic);
-	
-	// check error
-	if (status!=UMFPACK_OK) {
-	    opserr<<"WARNING: pressure numeric analysis returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
-	    return -1;
-	}
-	
-	// solve
-	Vector soln(Psize);
-	double* soln_ptr = &soln(0);
-	status = umfpack_di_solve(UMFPACK_A,Sp,Si,Sx,soln_ptr,deltaP_ptr,SNumeric,Control,Info);
-	
-	// delete Numeric
-	if (SNumeric != 0) {
-	    umfpack_di_free_numeric(&SNumeric);
-	}
-	
-	// check error
-	if (status!=UMFPACK_OK) {
-	    opserr<<"WARNING: pressure solving returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
-	    return -1;
-	}
-	deltaP = soln;
 
 	cs_spfree(S);
     }
@@ -368,7 +420,7 @@ PFEMSolver_Umfpack::solve()
         Vector Gip(Isize);
         double* Gip_ptr = &Gip(0);
         if(Psize > 0) {
-            double* deltaP_ptr = &deltaP(0);
+            double* deltaP_ptr = &deltaP[0];
             cs_gaxpy(Gi, deltaP_ptr, Gip_ptr);
 
             // Msi^{-1}*Gi*deltaP
@@ -403,7 +455,7 @@ PFEMSolver_Umfpack::solve()
     if(Fsize > 0) {
         if(Psize > 0) {
             double* deltaVf_ptr = &deltaVf(0);
-            double* deltaP_ptr = &deltaP(0);
+            double* deltaP_ptr = &deltaP[0];
             cs_gaxpy(Gf, deltaP_ptr, deltaVf_ptr);
         }
 
@@ -419,7 +471,7 @@ PFEMSolver_Umfpack::solve()
         // Qt*deltaP
         if(Psize > 0) {
             double* deltaPi_ptr = &deltaPi(0);
-            double* deltaP_ptr = &deltaP(0);
+            double* deltaP_ptr = &deltaP[0];
             cs_gaxpy(Qt, deltaP_ptr, deltaPi_ptr);   // Qt*deltaP
         }
 
@@ -454,15 +506,15 @@ PFEMSolver_Umfpack::solve()
         } else if(rowtype == 1) {
             X(i) = deltaVf(rowid);
         } else if(rowtype == 3) {
-            X(i) = deltaP(rowid);
+            X(i) = deltaP[rowid];
         } else if(rowtype == 4) {
             X(i) = deltaPi(rowid);
         }
 
     }
     // opserr<<"dvi = "<<dvi.Norm()<<"\n";
-    // timer.pause();
-    // opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
+    timer.pause();
+    opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
 
     return 0;
 }

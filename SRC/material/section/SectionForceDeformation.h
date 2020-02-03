@@ -110,6 +110,7 @@ class SectionForceDeformation : public Material
   //--- Adding Thermal Functions:[END]   by UoE OpenSees Group ----//
 
   virtual const Vector& getThermalElong(void);
+  virtual double getEnergy() const { return 0; };		//by SAJalali
 
  protected:
   Matrix *fDefault;	// Default flexibility matrix

@@ -126,6 +126,8 @@ Clough::~Clough()
 
 int Clough::revertToStart()
 {
+	
+	Energy = 0;	//by SAJalali
 
 	dyieldPos = fyieldPos/elstk;
 	dyieldNeg = fyieldNeg/elstk;
@@ -685,7 +687,15 @@ int Clough::setTrialStrain( double d, double strainRate)
 
 int Clough::commitState()
 {
-  int i;
+	//by SAJalali
+	double sig1, sig2, eps1, eps2;
+	sig1 = hsLastCommit[1];
+	sig2 = hsTrial[1];
+	eps1 = hsLastCommit[0];
+	eps2 = hsTrial[0];
+	Energy += 0.5*(sig1 + sig2)*(eps2 - eps1);
+
+	int i;
   for( i=0; i<24; i++ ) hsLastCommit[i] = hsTrial[i];
   
   this->recordInfo();
@@ -875,4 +885,10 @@ void Clough::envelNegCap( double fy, double alphaNeg, double alphaCap,
 	}
     }
   return;
+}
+
+//by SAJalali
+double Clough::getEnergy()
+{
+	return Energy;
 }
