@@ -734,10 +734,11 @@
 #define ELE_TAG_ComponentElement2d       192
 #define ELE_TAG_LinearElasticSpring       190
 #define ELE_TAG_Inerter                   191
-// MSN:
 #define ELE_TAG_GradientInelasticBeamColumn2d	192
 #define ELE_TAG_GradientInelasticBeamColumn3d	193
 #define ELE_TAG_ExternalElement           99990  
+
+
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
