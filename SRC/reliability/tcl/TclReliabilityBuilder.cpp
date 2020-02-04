@@ -650,7 +650,7 @@ TclReliabilityBuilder::getReliabilityDomain()
 int 
 inputCheck()
 {
-	// Check that tagged objects are consequtive
+	// Check that tagged objects are consecutive
 	int i, num;
 	ReliabilityDomainComponent *component;
     
@@ -678,7 +678,7 @@ inputCheck()
      for (i=1; i<=num; i++) {
      component = theReliabilityDomain->getRandomVariablePositionerPtr(i);
      if (component == 0) {
-     opserr << "ERROR: Non-consequtive random variable positioner list." << endln;
+     opserr << "ERROR: Non-consecutive random variable positioner list." << endln;
      return TCL_ERROR;
      }
      }
@@ -1015,7 +1015,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 					return TCL_ERROR;
 				}
 				if (i>0 && x<=x_old) {
-					opserr << "ERROR: x-points to user-defined random variable must be consequtive!" << endln;
+					opserr << "ERROR: x-points to user-defined random variable must be consecutive!" << endln;
 					return TCL_ERROR;
 				}
 				temp_xPoints(i) = x;
@@ -1300,7 +1300,7 @@ TclReliabilityModelBuilder_correlateGroup(ClientData clientData, Tcl_Interp *int
 		return TCL_ERROR;
 	}
 
-	// Assume that previos corr. coeffs. have been added in order
+	// Assume that previous corr. coeffs. have been added in order
 	char theCorrelateCommand[50];
 	for (int i=firstRV; i<=lastRV; i++) {
 		for (int j=i+1; j<=lastRV; j++) {
@@ -7768,7 +7768,7 @@ TclReliabilityModelBuilder_runRandomVibrationAnalysis(ClientData clientData, Tcl
 //	=1 : design-point Analysis and outcrossing rate analysis 
 //	=2 : design-point Analysis and outcrossing rate analysis
 //							   and FO system first passage		
-	bool stationary = true;  // ture - stationary problem
+	bool stationary = true;  // true - stationary problem
 	bool print=false;
 	bool mirrorimage = false;
 	bool initialpoint = true;

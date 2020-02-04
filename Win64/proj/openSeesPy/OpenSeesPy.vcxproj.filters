@@ -52,6 +52,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">
@@ -70,6 +73,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\interpreter\PythonWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -22,7 +22,8 @@ all:  pythonmodule
 tcl: $(TclOBJS)
 	$(LINKER) $(LINKFLAGS) $(TclOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(TCL_LIBRARY) \
-	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
+	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) $(PARALLEL_LIB) \
+	$(INTERPRETER_LIBS_MPI_PARAMETERS) \
 	 -o tclInterpreter
 
 #PYTHON_LIBRARY = -framework Python
@@ -31,7 +32,8 @@ PYTHON_LIBRARY =
 python:  $(PythonOBJS)
 	$(LINKER) $(LINKFLAGS) $(PythonOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PYTHON_LIBRARY) \
-	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS)  \
+	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) $(PARALLEL_LIB) \
+	$(INTERPRETER_LIBS_MPI_PARAMETERS) \
 	 -o pythonInterpreter
 
 #	$(CC++) $(OS_FLAG) -dynamiclib $(INCLUDES) -Wl,-undefined,suppress,-flat_namespace pythonExample.cpp $(OUTSIDE_OBJS)  -current_version 1.0 -compatibility_version 1.0 -fvisibility=hidden -o fmkSum.dylib

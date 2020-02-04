@@ -325,7 +325,7 @@ PlaneStrainMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 {
   int res = 0;
 
-  // recv an id containg the tag and associated materials class and db tags
+  // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
   res = theChannel.sendID(this->getDbTag(), commitTag, idData);
   if (res < 0) {

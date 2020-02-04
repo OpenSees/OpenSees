@@ -167,7 +167,7 @@ class KikuchiAikenHDR : public UniaxialMaterial
   static double compABisection(double heq, double u, double min, double max, double lim, double tol);
 
 
-  //formulae to caluculate parameters
+  //formulae to calculate parameters
   double (*calcGeq)(double gm);
   double (*calcHeq)(double gm);
   double (*calcU)(double gm);

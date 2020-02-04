@@ -177,9 +177,9 @@ extern "C" int        OPS_Error(char *, int length);
 extern "C" int        OPS_GetNumRemainingInputArgs();
 extern "C" int        OPS_ResetCurrentInputArg(int cArg);
 extern "C" int        OPS_GetIntInput(int *numData, int*data);
-extern "C" int        OPS_SetIntOutput(int *numData, int*data);
+extern "C" int        OPS_SetIntOutput(int *numData, int*data, bool scalar);
 extern "C" int        OPS_GetDoubleInput(int *numData, double *data);
-extern "C" int        OPS_SetDoubleOutput(int *numData, double *data);
+extern "C" int        OPS_SetDoubleOutput(int *numData, double *data, bool scalar);
 extern "C" const char *OPS_GetString(void); // does a strcpy
 extern "C" int        OPS_SetString(const char*); 
 //extern "C" int        OPS_GetString(char *cArray, int sizeArray); // does a strcpy

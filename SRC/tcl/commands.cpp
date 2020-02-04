@@ -52,6 +52,11 @@ extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
 
+extern void OPS_clearAllHystereticBackbone(void);
+extern void OPS_clearAllStiffnessDegradation(void);
+extern void OPS_clearAllStrengthDegradation(void);
+extern void OPS_clearAllUnloadingRule(void);
+
 
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
@@ -171,6 +176,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <HSConstraint.h>
 #include <MinUnbalDispNorm.h>
 #include <DisplacementControl.h>
+#include <EQPath.h>
 
 #include <PFEMIntegrator.h>
 #include <Integrator.h>//Abbas
@@ -824,6 +830,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "loadConst", &setLoadConst,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
+    Tcl_CreateCommand(interp, "setCreep", &setCreep,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "setTime", &setTime,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);     
     Tcl_CreateCommand(interp, "getTime", &getTime,
@@ -836,6 +844,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "analyze", &analyzeModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "print", &printModel, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "printModel", &printModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "printA", &printA, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -1355,6 +1365,11 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
 
+  OPS_clearAllHystereticBackbone();
+  OPS_clearAllStiffnessDegradation();
+  OPS_clearAllStrengthDegradation();
+  OPS_clearAllUnloadingRule();
+
   ops_Dt = 0.0;
 
 
@@ -1552,6 +1567,22 @@ setLoadConst(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   return TCL_OK;
 }
 
+int 
+setCreep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+      opserr << "WARNING illegal command - setCreep value? \n";
+      return TCL_ERROR;
+  }
+  int newFlag;
+  if (Tcl_GetInt(interp, argv[1], &newFlag) != TCL_OK) {
+      opserr << "WARNING reading creep value - setCreep newFlag? \n";
+      return TCL_ERROR;
+  } else {
+      theDomain.setCreep(newFlag);
+  }
+  return TCL_OK;
+}
 
 int 
 setTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -2281,15 +2312,37 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }    
 
-    // delete the old analysis
+    //
+    // do nothing if request is for the same analysis type!
+    //
+
+    if ((strcmp(argv[1],"Static") == 0) && (theStaticAnalysis != 0))
+      return TCL_OK;
+
+    if (((strcmp(argv[1],"VariableTimeStepTransient") == 0) ||
+	(strcmp(argv[1],"TransientWithVariableTimeStep") == 0) ||
+	 (strcmp(argv[1],"VariableTransient") == 0)) && 
+	(theVariableTimeStepTransientAnalysis != 0))
+      return TCL_OK;
+
+    if ((strcmp(argv[1],"Transient") == 0) && (theTransientAnalysis != 0))
+      return TCL_OK;
+
+    //
+    // analysis changing .. delete the old analysis
+    //
+
     if (theStaticAnalysis != 0) {
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
+	opserr << "WARNING: analysis .. existing StaticAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
+
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
 	theVariableTimeStepTransientAnalysis = 0;
+	opserr << "WARNING: analysis .. existing TransientAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
     }
     
     // check argv[1] for type of SOE and create it
@@ -2922,9 +2975,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-umfpack") == 0) {
-	  PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack();
-          theSOE = new PFEMLinSOE(*theSolver);
       } else if (strcmp(argv[2],"-mumps") ==0) {
 #ifdef _PARALLEL_INTERPRETERS
 	  int relax = 20;
@@ -4394,6 +4444,44 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theStaticAnalysis->setIntegrator(*theStaticIntegrator);
   }
 
+  else if (strcmp(argv[1], "EQPath") == 0) {
+		double arcLength;
+		int type;
+		int numIter;
+		if (argc != 4) {
+			opserr << "WARNING integrator EQPath $arc_length $type \n";
+			opserr << "REFS : \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.849	 \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.879	 \n";
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK)
+		{
+			opserr << "WARNING integrator EQPath $arc_length $type \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.849	 \n";
+			opserr << " https://doi.org/10.12989/sem.2013.48.6.879	 \n";
+			return TCL_ERROR;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[3], &type) != TCL_OK)
+		{
+			opserr << "WARNING integrator $arc_length $type \n";
+			opserr << "$type = 1 Minimum Residual Displacement \n";
+			opserr << "$type = 2 Normal Plain \n";
+			opserr << "$type = 3 Update Normal Plain \n";
+			opserr << "$type = 4 Cylindrical Arc-Length \n";
+
+			return TCL_ERROR;
+		}
+
+		theStaticIntegrator = new EQPath(arcLength, type);
+
+		// if the analysis exists - we want to change the Integrator
+		if (theStaticAnalysis != 0)
+			theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+  }	
   
   else if (strcmp(argv[1],"DisplacementControl") == 0) {
       int node;
@@ -8005,7 +8093,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     for (int i=0; i<numEigen; i++) {
       if (Tcl_GetDouble(interp, argv[1+i], &factor) != TCL_OK) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	opserr << "WARNING modalDamping - could not read factor for model " << i+1 << endln;
 	return TCL_ERROR;	        
       }        
       modalDampingValues[i] = factor;    
@@ -8014,7 +8102,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } else {
 
     if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-      opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+      opserr << "WARNING modalDamping - could not read factor for all modes \n";
       return TCL_ERROR;	        
     }        
 
@@ -8025,7 +8113,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, true);
 
-  opserr << "modalDamping Factors: " << modalDampingValues;
+  //opserr << "modalDamping Factors: " << modalDampingValues;
 
   return TCL_OK;
 }

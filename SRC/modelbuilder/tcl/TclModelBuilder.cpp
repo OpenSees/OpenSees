@@ -117,11 +117,9 @@ extern const char * getInterpPWD(Tcl_Interp *interp);  //L.Jiang [SIF]
 
 #include <FrictionModel.h>
 
-#ifdef OO_HYSTERETIC
 #include <StiffnessDegradation.h>
 #include <UnloadingRule.h>
 #include <StrengthDegradation.h>
-#endif
 #include <HystereticBackbone.h>
 #include <BeamIntegration.h>
 
@@ -339,7 +337,6 @@ TclCommand_addFrictionModel(ClientData clientData,
 				 int argc,   
 				 TCL_Char **argv);
 
-#ifdef OO_HYSTERETIC
 int
 TclCommand_addStiffnessDegradation(ClientData clientData,
 				   Tcl_Interp *interp,
@@ -354,7 +351,6 @@ int
 TclCommand_addStrengthDegradation(ClientData clientData,
 				  Tcl_Interp *interp,
 				  int argc, TCL_Char **argv);
-#endif
 
 int
 TclCommand_addHystereticBackbone(ClientData clientData,
@@ -447,12 +443,6 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 {
   theSections  = new ArrayOfTaggedObjects(32);
   theSectionRepresents = new ArrayOfTaggedObjects(32);  
-#ifdef OO_HYSTERETIC
-  theStiffnessDegradations = new ArrayOfTaggedObjects(32);
-  theUnloadingRules = new ArrayOfTaggedObjects(32);
-  theStrengthDegradations = new ArrayOfTaggedObjects(32);
-#endif
-  //theHystereticBackbones= new ArrayOfTaggedObjects(32);
   theYieldSurface_BCs = new ArrayOfTaggedObjects(32);
   theCycModels = new ArrayOfTaggedObjects(32); //!!
   theYS_EvolutionModels = new ArrayOfTaggedObjects(32);
@@ -608,7 +598,6 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    TclCommand_addFrictionModel,
 		    (ClientData)NULL, NULL);
 
-#ifdef OO_HYSTERETIC
   Tcl_CreateCommand(interp, "stiffnessDegradation",
 		    TclCommand_addStiffnessDegradation,
 		    (ClientData)NULL, NULL);
@@ -620,7 +609,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   Tcl_CreateCommand(interp, "strengthDegradation",
 		    TclCommand_addStrengthDegradation,
 		    (ClientData)NULL, NULL);
-#endif
+
   Tcl_CreateCommand(interp, "hystereticBackbone",
 		    TclCommand_addHystereticBackbone,
 		    (ClientData)NULL, NULL);
@@ -687,13 +676,6 @@ TclModelBuilder::~TclModelBuilder()
   thePlasticMaterials->clearAll();
   theCycModels->clearAll();//!!
 
-#ifdef OO_HYSTERETIC
-  theStiffnessDegradations->clearAll();
-  theUnloadingRules->clearAll();
-  theStrengthDegradations->clearAll();
-#endif
-  // theHystereticBackbones->clearAll();
-
   // free up memory allocated in the constructor
   delete theSections;
   delete theSectionRepresents;
@@ -701,13 +683,6 @@ TclModelBuilder::~TclModelBuilder()
   delete theYS_EvolutionModels;
   delete thePlasticMaterials;
   delete theCycModels;//!!
-
-#ifdef OO_HYSTERETIC
-  delete theStiffnessDegradations;
-  delete theUnloadingRules;
-  delete theStrengthDegradations;
-#endif
-  // delete theHystereticBackbones;
 
   // set the pointers to 0 
   theTclDomain =0;
@@ -756,11 +731,9 @@ TclModelBuilder::~TclModelBuilder()
 
   Tcl_DeleteCommand(theInterp, "frictionModel");
 
-#ifdef OO_HYSTERETIC
   Tcl_DeleteCommand(theInterp, "unloadingRule");
   Tcl_DeleteCommand(theInterp, "stiffnessDegradation");
   Tcl_DeleteCommand(theInterp, "strengthDegradation");
-#endif
   Tcl_DeleteCommand(theInterp, "hystereticBackbone");
 
   Tcl_DeleteCommand(theInterp, "yieldSurface_BC");
@@ -796,80 +769,6 @@ TclModelBuilder::getNDF(void) const
 {
   return ndf;
 }
-
-#ifdef OO_HYSTERETIC
-int
-TclModelBuilder::addStiffnessDegradation(StiffnessDegradation &theDegr)
-{
-  bool result = theStiffnessDegradations->addComponent(&theDegr);
-  if (result == true)
-    return 0;
-  else {
-    opserr << "TclModelBuilder::addStiffnessDegradation() - failed to add StiffnessDegradation: " << theDegr;
-    return -1;
-  }
-}
-
-StiffnessDegradation*
-TclModelBuilder::getStiffnessDegradation(int tag)
-{
-  TaggedObject *mc = theStiffnessDegradations->getComponentPtr(tag);
-  if (mc == 0) 
-    return 0;
-
-  // do a cast and return
-  StiffnessDegradation *result = (StiffnessDegradation *)mc;
-  return result;
-}
-
-int
-TclModelBuilder::addUnloadingRule(UnloadingRule &theDegr)
-{
-  bool result = theUnloadingRules->addComponent(&theDegr);
-  if (result == true)
-    return 0;
-  else {
-    opserr << "TclModelBuilder::addUnloadingRule() - failed to add UnloadingRule: " << theDegr;
-    return -1;
-  }
-}
-
-UnloadingRule*
-TclModelBuilder::getUnloadingRule(int tag)
-{
-  TaggedObject *mc = theUnloadingRules->getComponentPtr(tag);
-  if (mc == 0) 
-    return 0;
-
-  // do a cast and return
-  UnloadingRule *result = (UnloadingRule *)mc;
-  return result;
-}
-
-int
-TclModelBuilder::addStrengthDegradation(StrengthDegradation &theDegr)
-{
-  bool result = theStrengthDegradations->addComponent(&theDegr);
-  if (result == true)
-    return 0;
-  else {
-    opserr << "TclModelBuilder::addStrengthDegradation() - failed to add StrengthDegradation: " << theDegr;
-    return -1;
-  }
-}
-
-StrengthDegradation*
-TclModelBuilder::getStrengthDegradation(int tag)
-{
-  TaggedObject *mc = theStrengthDegradations->getComponentPtr(tag);
-  if (mc == 0) 
-    return 0;
-
-  // do a cast and return
-  StrengthDegradation *result = (StrengthDegradation *)mc;
-  return result;
-}
-#endif
 
 /*
 int 
@@ -4570,64 +4469,56 @@ TclCommand_addRemoGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc
 				       theTclBuilder);
 }
 
-#ifdef OO_HYSTERETIC
 extern int
 TclModelBuilderStiffnessDegradationCommand(ClientData clientData,
 					   Tcl_Interp *interp,
-					   int argc, TCL_Char **argv,
-					   TclModelBuilder *theTclBuilder);
+					   int argc, TCL_Char **argv, Domain *theDomain);
 
 int
 TclCommand_addStiffnessDegradation(ClientData clientData,
 					Tcl_Interp *interp,
 					int argc, TCL_Char **argv)
 {
-  return TclModelBuilderStiffnessDegradationCommand(clientData, interp, 
-						    argc, argv, theTclBuilder);
+  return TclModelBuilderStiffnessDegradationCommand(clientData, interp, argc, argv, theTclDomain);
 }
 
 extern int
 TclModelBuilderUnloadingRuleCommand(ClientData clientData,
 				    Tcl_Interp *interp,
-				    int argc, TCL_Char **argv,
-				    TclModelBuilder *theTclBuilder);
+				    int argc, TCL_Char **argv, Domain *theDomain);
 
 int
 TclCommand_addUnloadingRule(ClientData clientData,
 				 Tcl_Interp *interp,
 				 int argc, TCL_Char **argv)
 {
-  return TclModelBuilderUnloadingRuleCommand(clientData, interp, 
-					     argc, argv, theTclBuilder);
+  return TclModelBuilderUnloadingRuleCommand(clientData, interp, argc, argv, theTclDomain);
 }
 
 extern int
 TclModelBuilderStrengthDegradationCommand(ClientData clientData,
 					  Tcl_Interp *interp,
-					  int argc, TCL_Char **argv,
-					  TclModelBuilder *theTclBuilder);
+					  int argc, TCL_Char **argv, Domain *theDomain);
 
 int
 TclCommand_addStrengthDegradation(ClientData clientData,
 				       Tcl_Interp *interp,
 				       int argc, TCL_Char **argv)
 {
-  return TclModelBuilderStrengthDegradationCommand(clientData, interp, 
-						   argc, argv, theTclBuilder);
+  return TclModelBuilderStrengthDegradationCommand(clientData, interp, argc, argv, theTclDomain);
 }
-#endif
 
 extern int
 TclModelBuilderHystereticBackboneCommand(ClientData clientData,
 					 Tcl_Interp *interp,
-					 int argc, TCL_Char **argv);
+					 int argc, TCL_Char **argv, Domain *theDomain);
 
 int
 TclCommand_addHystereticBackbone(ClientData clientData,
 				      Tcl_Interp *interp,
 				      int argc,	TCL_Char **argv)
 {
-  return TclModelBuilderHystereticBackboneCommand(clientData, interp, argc, argv);
+  return TclModelBuilderHystereticBackboneCommand(clientData, interp, argc, argv, theTclDomain);
 }
 
 /// added by ZHY

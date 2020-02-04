@@ -40,6 +40,22 @@
 
 #include <string.h>
 
+extern void *OPS_SectionStrengthDegradation(void);
+extern void *OPS_DuctilityStrengthDegradation(void);
+extern void *OPS_EnergyStrengthDegradation(void);
+extern void *OPS_ConstantStrengthDegradation(void);
+extern void *OPS_ACIStrengthDegradation(void);
+extern void *OPS_PetrangeliStrengthDegradation(void);
+
+#include <packages.h>
+
+extern int OPS_ResetInputNoBuilder(ClientData clientData, 
+				   Tcl_Interp *interp,  
+				   int cArg, 
+				   int mArg, 
+				   TCL_Char **argv, 
+				   Domain *domain);
+
 static void printCommand(int argc, TCL_Char **argv)
 {
   opserr << "Input command: ";
@@ -49,9 +65,9 @@ static void printCommand(int argc, TCL_Char **argv)
 } 
 
 int
-TclModelBuilderStrengthDegradationCommand(ClientData clienData,
+TclModelBuilderStrengthDegradationCommand(ClientData clientData,
 					  Tcl_Interp *interp,
-					  int argc, TCL_Char **argv)
+					  int argc, TCL_Char **argv, Domain *theDomain)
 {
   // Make sure there is a minimum number of arguments
   if (argc < 2) {
@@ -60,6 +76,8 @@ TclModelBuilderStrengthDegradationCommand(ClientData clienData,
     return TCL_ERROR;
   }
   
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+
   // Pointer to a strengthDegradation that will be added to the model builder
   StrengthDegradation *theState = 0;
   
@@ -134,101 +152,48 @@ TclModelBuilderStrengthDegradationCommand(ClientData clienData,
   }
   
   else if (strcmp(argv[1],"Ductility") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: strengthDegradation Ductility tag? alpha? beta?" << endln;
+    void *theDegr = OPS_DuctilityStrengthDegradation();
+    if (theDegr != 0) 
+      theState = (StrengthDegradation *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double a, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid strengthDegradation Ductility tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &a) != TCL_OK) {
-      opserr << "WARNING invalid alpha\n";
-      opserr << "strengthDegradation Ductility: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "strengthDegradation Ductility: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new DuctilityStrengthDegradation (tag, a, b);
   }
   
   else if (strcmp(argv[1],"Energy") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: strengthDegradation Energy tag? Et? c?" << endln;
+    void *theDegr = OPS_EnergyStrengthDegradation();
+    if (theDegr != 0) 
+      theState = (StrengthDegradation *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double c, et;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid strengthDegradation Energy tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &et) != TCL_OK) {
-      opserr << "WARNING invalid Et\n";
-      opserr << "strengthDegradation Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &c) != TCL_OK) {
-      opserr << "WARNING invalid c\n";
-      opserr << "strengthDegradation Energy: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new EnergyStrengthDegradation (tag, et, c);
   }
   
   else if (strcmp(argv[1],"Constant") == 0) {
-    if (argc < 5) {
-      opserr << "WARNING insufficient arguments\n";
-      printCommand(argc,argv);
-      opserr << "Want: strengthDegradation Constant tag? alpha? beta?" << endln;
+    void *theDegr = OPS_ConstantStrengthDegradation();
+    if (theDegr != 0) 
+      theState = (StrengthDegradation *)theDegr;
+    else 
       return TCL_ERROR;
-    }    
-    
-    int tag;
-    double a, b;
-    
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid strengthDegradation Constant tag" << endln;
-      return TCL_ERROR;		
-    }
-    
-    if (Tcl_GetDouble(interp, argv[3], &a) != TCL_OK) {
-      opserr << "WARNING invalid alpha\n";
-      opserr << "strengthDegradation Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    if (Tcl_GetDouble(interp, argv[4], &b) != TCL_OK) {
-      opserr << "WARNING invalid beta\n";
-      opserr << "strengthDegradation Constant: " << tag << endln;
-      return TCL_ERROR;	
-    }
-    
-    theState = new ConstantStrengthDegradation (tag, a, b);
+  }
+
+  else if (strcmp(argv[1],"ACI") == 0) {
+    void *theDegr = OPS_ACIStrengthDegradation();
+    if (theDegr != 0) 
+      theState = (StrengthDegradation *)theDegr;
+    else 
+      return TCL_ERROR;
+  }
+
+  else if (strcmp(argv[1],"Petrangeli") == 0) {
+    void *theDegr = OPS_PetrangeliStrengthDegradation();
+    if (theDegr != 0) 
+      theState = (StrengthDegradation *)theDegr;
+    else 
+      return TCL_ERROR;
   }
   
   else  {
     opserr << "WARNING unknown type of strengthDegradation: " << argv[1];
-    opserr << "\nValid types: Section, Energy, Constant\n";
+    opserr << "\nValid types: Section, Energy, Constant, Ductility, ACI, Petrangeli\n";
     return TCL_ERROR;
   }
   

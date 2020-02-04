@@ -216,7 +216,7 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
   }
   
 
-  // intitialize
+  // initialize
   initialStiff = (this->calcGeq)(trgStrain)*Cg*Ar/Hr;
 
 

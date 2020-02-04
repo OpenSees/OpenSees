@@ -30,7 +30,7 @@
 // Unloading and reloanding curve: stress-strain model proposed by D. Karsan, and J. Jirsa in 
 //                                 "Behavior of concrete under compressive loadings"
 //                                 Journal of the Structural Division, ASCE, Vol. 95, No. ST12, December, 1969
-// Tensile evelope strenght:       model has not tensile strenght
+// Tensile envelope strength:      model has no tensile strength
 //                                 
 
 
@@ -64,7 +64,7 @@ stRatio: fc/f'c
 epscuOption: 0-direct input of epscu
     1-Scott
     2-gamma
-epscu: input dependant upon epscuOption
+epscu: input dependent upon epscuOption
 nuOption: 0-constant
 		  1-variable, upper bound 0.5
           2-variable, no upper bound 
@@ -81,7 +81,7 @@ phis[]: transverse bar diameter or wrapping thickness
 S[] : spacing of transverse reinforcement
 fyh[]: yield strength of transverse reinforcement
 mueps[]: ductility factor of transverse reinforcement
-Es0[]: intial elastic modulus of transverse reinforcement
+Es0[]: initial elastic modulus of transverse reinforcement
 haRatio[]: hardening ratio of transverse reinforcement
 wrappingArea: full area of wrap (unrolled)
 
@@ -96,8 +96,13 @@ concreteType: 0-without silica fume
 
 */
 
+ConfinedConcrete01::ConfinedConcrete01()
+        :UniaxialMaterial(0, MAT_TAG_ConfinedConcrete01),
+         CminStrain(0.0), CendStrain(0.0),
+         Cstrain(0.0), Cstress(0.0)
+{
+}
 
-#define MAT_TAG_ConfinedConcrete01 0
 
 ConfinedConcrete01::ConfinedConcrete01(int tag, std::vector<double> *eps, std::vector<double> *sigmac) 
   :UniaxialMaterial(tag, MAT_TAG_ConfinedConcrete01),
@@ -1710,7 +1715,7 @@ OPS_ConfinedConcrete01Material()
        0-direct input of epscu
        1-Scott
        2-gamma
-    4.  epscu: input dependant upon epscuOption
+    4.  epscu: input dependent upon epscuOption
     5.  nuOption: 0-constant
 			  1-variable, upper bound 0.5
 			  2-variable, no upper bound 
@@ -1737,7 +1742,7 @@ OPS_ConfinedConcrete01Material()
     11. S[] : spacing of transverse reinforcement
     12. fyh[]: yield strength of transverse reinforcement
     13. mueps[]: ductility factor of transverse reinforcement
-    14. Es0[]: intial elastic modulus of transverse reinforcement
+    14. Es0[]: initial elastic modulus of transverse reinforcement
     15. haRatio[]: hardening ratio of transverse reinforcement
 
     ---TCL Command Reference----------------------------
@@ -1781,7 +1786,7 @@ OPS_ConfinedConcrete01Material()
   int epscuOption; //0-direct input of epscu
   // 1-Scott
   // 2-gamma
-  double epscu; // input dependant upon epscuOption
+  double epscu; // input dependent upon epscuOption
   int nuOption = 0;	// 0-constant
   // 1-variable, upper bound 0.5
   // 2-variable, no upper bound 

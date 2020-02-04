@@ -26,7 +26,7 @@
 // Created: December 2001
 // Updated: September 2004
 //
-// Description: This file contains the class defination for 
+// Description: This file contains the class definition for 
 // Pinching material which is defined by 4 points on the positive and 
 // negative envelopes and a bunch of damage parameters. The material accounts for
 // 3 types of damage rules : Strength degradation, Stiffness degradation, 

@@ -2094,7 +2094,7 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
             NextFabric.Extract(Delta, 12, 1.0);
             NextDGamma = Delta(18);
             NextDLambda = Delta(19);
-            // check if the results are acceptible
+            // check if the results are acceptable
             errFlag = Check(TrialStress, NextStress, CurAlpha, NextAlpha);
         } else {
             if (debugFlag) 
@@ -2133,11 +2133,11 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
             NextAlpha.Extract(Delta, 6, 1.0);
             NextFabric.Extract(Delta, 12, 1.0);
             NextDGamma = Delta(18);
-            // check if the results are acceptible
+            // check if the results are acceptable
             errFlag = Check(TrialStress, NextStress, CurAlpha, NextAlpha);
         }
 
-        // try the considerations to get an acceptible solution
+        // try the considerations to get an acceptable solution
         if (mScheme == INT_BackwardEuler)    // I can add the option for pure Backward Euler here.
         {
             // try different approaches and continue until a solution is found

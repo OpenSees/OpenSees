@@ -204,7 +204,7 @@ bool
 Subdomain::addExternalNode(Node *thePtr)
 {
 #ifdef _G3DEBUG
-  // check to see it has not alredy been added
+  // check to see it has not already been added
 	
   int nodTag = thePtr->getTag();
   TaggedObject *other = externalNodes->getComponentPtr(nodTag);

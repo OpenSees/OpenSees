@@ -27,7 +27,7 @@
 #define BandSPDLinSOE_h
 
 // Written: fmk 
-// Created: Febuary 1997
+// Created: February 1997
 //
 // Description: This file contains the class definition for BandSPDLinSOE
 // BandSPDLinSOE is a subclass of LinearSOE. It uses the LAPACK Upper storage

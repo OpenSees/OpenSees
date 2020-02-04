@@ -29,7 +29,7 @@
 // Created: 11/96
 // Revision: A
 //
-// Purpose: This file contains the implementaion for the Load class.
+// Purpose: This file contains the implementation for the Load class.
 //
 // What: "@(#) Load.C, revA"
 

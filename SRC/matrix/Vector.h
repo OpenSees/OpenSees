@@ -67,8 +67,26 @@ class Vector
     int addVector(double factThis, const Vector &other, double factOther);
     int addMatrixVector(double factThis, const Matrix &m, const Vector &v, double factOther); 
     int addMatrixTransposeVector(double factThis, const Matrix &m, const Vector &v, double factOther);
+#if _DLL
+	inline double* GetData() { return this->theData; }
+	void Print() {
+		opserr << "[";
+		for (int i = 0; i < this->sz; i++)
+		{
+			opserr << this->operator()(i) << ", ";
+		}
+		opserr << "]" << endln;
+	}
 
-    
+	void Print() const {
+		opserr << "[";
+		for (int i = 0; i < this->sz; i++)
+		{
+			opserr << this->operator()(i) << ", ";
+		}
+		opserr << "]" << endln;
+	}
+#endif
     // overloaded operators
     inline double operator()(int x) const;
     inline double &operator()(int x);

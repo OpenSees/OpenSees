@@ -137,7 +137,7 @@ Isolator2spring::getSectionTangent(void)
 const Matrix&
 Isolator2spring::getInitialTangent(void)
 {
-  // Intial tangent uses nominal properties of the isolator.  
+  // Initial tangent uses nominal properties of the isolator.  
   ks(0,0) = k1;
   ks(1,1) = kvo;
   ks(0,1) = ks(1,0) = 0.0;

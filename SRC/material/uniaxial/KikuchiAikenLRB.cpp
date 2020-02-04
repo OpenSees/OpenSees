@@ -733,7 +733,7 @@ KikuchiAikenLRB::compQ2MasingDerivertive(double u, double a, double b, double c,
   return alpha*u*keq*(2*a*exp(-a*(x1-x2))+b*exp(-c*(x1-x2))-b*c*(x1-x2)*exp(-c*(x1-x2)));
 }
 
-//bisection method to caluculate parameter "a"
+//bisection method to calculate parameter "a"
 double
 KikuchiAikenLRB::compABisection(double heq, double u, double min, double max, double tol, double lim)
 {

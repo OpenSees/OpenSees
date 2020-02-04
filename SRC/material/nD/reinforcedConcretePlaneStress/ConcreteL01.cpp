@@ -640,7 +640,7 @@ void ConcreteL01::envelope( )
 			TloadingState = 2;
 			double temp = (Tstrain/(zeta*epsc0)-1.0)/(4.0/zeta-1.0);
 			
-			// initialy descending branch
+			// initially descending branch
 			// Tstress = D * zeta * fpc * ( 1.0 - temp*temp );
 			// Ttangent = - D*2.0*fpc*temp/epsc0/(4.0/zeta-1.0);
 

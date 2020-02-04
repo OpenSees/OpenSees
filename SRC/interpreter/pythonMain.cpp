@@ -37,12 +37,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "PythonInterpreter.h"
 
-int main(int argc, char **argv) {
+#ifdef MS_WINDOWS
+int
+wmain(int argc, wchar_t **argv)
+{
   PythonInterpreter* theInterpreter = new PythonInterpreter(argc, argv);
   int res = theInterpreter->run();
-  
+
   delete theInterpreter;
   theInterpreter = 0;
   return res;
+    return Py_Main(argc, argv);
 }
+#else
+int
+main(int argc, char **argv)
+{
+    PythonInterpreter* theInterpreter = new PythonInterpreter(argc, argv);
+    int res = theInterpreter->run();
+
+    delete theInterpreter;
+    theInterpreter = 0;
+    return res;
+}
+#endif
+
 

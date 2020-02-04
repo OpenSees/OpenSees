@@ -137,7 +137,7 @@ CableMaterial::setTrialStrain(double strain, double strainRate)
   if (trialStrain < - Ps/E*10.0) 
     trialStress =  0.0; 
 
-  // if stress is in between then do itterations -- Bisection
+  // if stress is in between then do iterations -- Bisection
   dP = U_bound - L_bound;
     
   while (abs(dP)/U_bound > 0.00000001 && i < 100) {

@@ -327,7 +327,7 @@ Matrix::Assemble(const Matrix &V, const ID &rows, const ID &cols, double fact)
 }
 
 #ifdef _WIN32
-#ifndef _DLL
+//#ifndef _DLL
 extern "C" int  DGESV(int *N, int *NRHS, double *A, int *LDA, 
 			      int *iPiv, double *B, int *LDB, int *INFO);
 
@@ -340,7 +340,7 @@ extern "C" int  DGETRS(char *TRANS, unsigned int sizeT,
 
 extern "C" int  DGETRI(int *N, double *A, int *LDA, 
 			      int *iPiv, double *Work, int *WORKL, int *INFO);
-#endif
+//#endif
 #else
 extern "C" int dgesv_(int *N, int *NRHS, double *A, int *LDA, int *iPiv, 
 		      double *B, int *LDB, int *INFO);
@@ -435,13 +435,13 @@ Matrix::Solve(const Vector &b, Vector &x) const
     
 
 #ifdef _WIN32
-#ifndef _DLL
+//#ifndef _DLL
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-#endif
-#ifdef _DLL
-	opserr << "Matrix::Solve - not implemented in dll\n";
-	return -1;
-#endif
+//#endif
+//#ifdef _DLL
+//	opserr << "Matrix::Solve - not implemented in dll\n";
+//	return -1;
+//#endif
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 #endif
@@ -530,13 +530,13 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
 	info = -1;
 
 #ifdef _WIN32
-#ifndef _DLL
+//#ifndef _DLL
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-#endif
-#ifdef _DLL
-	opserr << "Matrix::Solve - not implemented in dll\n";
-	return -1;
-#endif
+//#endif
+//#ifdef _DLL
+//	opserr << "Matrix::Solve - not implemented in dll\n";
+//	return -1;
+//#endif
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 
@@ -626,23 +626,23 @@ Matrix::Invert(Matrix &theInverse) const
     
 
 #ifdef _WIN32
-#ifndef _DLL
+//#ifndef _DLL
     DGETRF(&n,&n,Aptr,&ldA,iPIV,&info);
-#endif
-#ifdef _DLL
-	opserr << "Matrix::Solve - not implemented in dll\n";
-	return -1;
-#endif
+//#endif
+//#ifdef _DLL
+//	opserr << "Matrix::Solve - not implemented in dll\n";
+//	return -1;
+//#endif
     if (info != 0) 
       return -abs(info);
 
-#ifndef _DLL
+//#ifndef _DLL
     DGETRI(&n,Aptr,&ldA,iPIV,Wptr,&workSize,&info);
-#endif
-#ifdef _DLL
-	opserr << "Matrix::Solve - not implemented in dll\n";
-	return -1;
-#endif
+//#endif
+//#ifdef _DLL
+//	opserr << "Matrix::Solve - not implemented in dll\n";
+//	return -1;
+//#endif
 #else
     dgetrf_(&n,&n,Aptr,&ldA,iPIV,&info);
     if (info != 0) 

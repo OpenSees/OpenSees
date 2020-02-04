@@ -124,6 +124,10 @@ public:
     Timer* getTimer() {return &theTimer;}
     SimulationInformation* getSimulationInformation() {return &theSimulationInfo;}
 
+    MachineBroker* getMachineBroker() {return theMachineBroker;}
+    Channel** getChannels() { return  theChannels;}
+    int getNumChannels() {return numChannels;}
+
     void wipeAnalysis();
     void wipe();
     int eigen(int typeSolver, double shift,
@@ -156,6 +160,8 @@ private:
     SimulationInformation theSimulationInfo;
 
     MachineBroker* theMachineBroker;
+    Channel **theChannels;
+    int numChannels;
 
     OpenSeesReliabilityCommands* reliability;
 
@@ -174,6 +180,11 @@ int OPS_getStress();
 int OPS_getTangent();
 int OPS_getDampTangent();
 int OPS_LimitCurve();
+
+int OPS_hystereticBackbone();
+int OPS_stiffnessDegradation();
+int OPS_strengthDegradation();
+int OPS_unloadingRule();
 
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
@@ -274,6 +285,7 @@ int OPS_loadConst();
 int OPS_calculateNodalReactions();
 int OPS_rayleighDamping();
 int OPS_setTime();
+int OPS_setCreep();
 int OPS_removeObject();
 int OPS_addNodalMass();
 int OPS_buildModel();
@@ -299,9 +311,11 @@ int OPS_getNP();
 int OPS_barrier();
 int OPS_send();
 int OPS_recv();
+int OPS_Bcast();
 int OPS_sdfResponse();
 int OPS_getNumThreads();
 int OPS_setNumThreads();
+int OPS_setStartNodeTag();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
@@ -341,7 +355,6 @@ int OPS_stopTimer();
 int OPS_modalDamping();
 int OPS_modalDampingQ();
 int OPS_neesMetaData();
-int OPS_neesUpload();
 int OPS_defaultUnits();
 int OPS_totalCPU();
 int OPS_solveCPU();
@@ -357,6 +370,13 @@ void* OPS_MillerNewton();
 void* OPS_SecantNewton();
 void* OPS_PeriodicNewton();
 void* OPS_NewtonLineSearch();
+
+void* OPS_ParallelNumberer();
+void* OPS_ParallelRCM();
+
+void* OPS_ParallelDisplacementControl();
+
+void* OPS_MumpsSolver();
 
 // Sensitivity:BEGIN /////////////////////////////////////////////
 int OPS_computeGradients();
@@ -386,6 +406,7 @@ void* OPS_PFEMSolver();
 void* OPS_PFEMCompressibleSolver();
 void* OPS_PFEMQuasiSolver();
 void* OPS_PFEMSolver_Umfpack();
+void* OPS_PFEMSolver_Mumps();
 void* OPS_PFEMSolver_Laplace();
 void* OPS_PFEMSolver_LumpM();
 void* OPS_SymSparseLinSolver();
@@ -456,6 +477,7 @@ void* OPS_WilsonTheta();
 void* OPS_CentralDifference();
 void* OPS_CentralDifferenceAlternative();
 void* OPS_CentralDifferenceNoDamping();
+void* OPS_Explicitdifference();
 
 void* OPS_LinearAlgorithm();
 void* OPS_NewtonRaphsonAlgorithm();
@@ -467,13 +489,12 @@ void* OPS_BFGS();
 
 // commands that changed or added:
 //
-//    missing : video, logFile, partition,
+//    missing : video, partition,
 //              reliability, wipeReliability,
 //              FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
 //              FirePattern, PySimple1Gen, TzSimple1Gen, Hfiber,
-//              stiffnessDegradation, unloadingRule, strengthDegradation,
 //              hystereticBackbone, updateMaterialStage, updateMaterials,
 //              loadPackage
 #endif

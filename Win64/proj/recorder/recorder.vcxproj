@@ -1,8 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug.DLL|x64">
+      <Configuration>Debug.DLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release.DLL|x64">
+      <Configuration>Release.DLL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -14,18 +22,28 @@
     <ProjectGuid>{5BB0E918-CE81-7129-15F5-2A3470E92427}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -33,16 +51,26 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.\..\..\lib\release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\recorder\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.\..\..\obj\recorder\release\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">.\..\..\lib\debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\recorder\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">.\..\..\obj\recorder\debug\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -51,6 +79,34 @@
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\recorder\release/recorder.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\recorder\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\recorder\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\recorder\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\recorder.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\recorder\release\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\domain\load;..\..\..\src\api;..\..\..\src\utility;..\..\..\src\actor\message;..\..\..\src\actor\objectBroker;..\..\..\src\modelbuilder\tcl;..\..\..\src\damage;..\..\..\src\domain\pattern;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\integrator;..\..\..\src\material\section\fiber;..\..\..\src\material;..\..\..\src\recorder\response;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\handler;..\..\..\src\renderer;..\..\..\src\tcl;..\..\..\src\actor\channel;..\..\..\src\modelbuilder;..\..\..\src\database;..\..\..\src\tagged;..\..\..\src\tagged\storage;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\PFEMElement;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\recorder;..\..\..\src\domain\node;..\..\..\src\nDarray;..\..\..\src\domain\region;..\..\..\src\domain\constraints;..\..\..\src\element\updatedlagrangianbeamcolumn;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldsurface\yieldSurfaceBC;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>.\..\..\obj\recorder\release/recorder.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\recorder\release/</AssemblerListingLocation>
@@ -101,6 +157,35 @@
       <Path>.\..\..\obj\recorder\debug\$(MSBuildProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\coordTransformation;..\..\..\src\domain\load;..\..\..\src\api;..\..\..\src\utility;..\..\..\src\actor\message;..\..\..\src\actor\objectBroker;..\..\..\src\modelbuilder\tcl;..\..\..\src\damage;..\..\..\src\domain\pattern;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\integrator;..\..\..\src\material\section\fiber;..\..\..\src\material;..\..\..\src\recorder\response;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\handler;..\..\..\src\renderer;..\..\..\src\tcl;..\..\..\src\actor\channel;..\..\..\src\modelbuilder;..\..\..\src\database;..\..\..\src\tagged;..\..\..\src\tagged\storage;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\PFEMElement;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\recorder;..\..\..\src\domain\node;..\..\..\src\nDarray;..\..\..\src\domain\region;..\..\..\src\domain\constraints;..\..\..\src\element\updatedlagrangianbeamcolumn;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldsurface\yieldSurfaceBC;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\recorder\debug/recorder.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\recorder\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\recorder\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\recorder\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\recorder.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\recorder\debug\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\recorder\AlgorithmIncrements.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\DamageRecorder.cpp" />
@@ -128,6 +213,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\response\FiberResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\MaterialResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\Response.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\VTK_Recorder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
@@ -155,6 +241,7 @@
     <ClInclude Include="..\..\..\SRC\recorder\response\FiberResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\MaterialResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\Response.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\VTK_Recorder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

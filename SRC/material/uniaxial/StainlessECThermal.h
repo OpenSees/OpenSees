@@ -145,7 +145,7 @@ class StainlessECThermal : public UniaxialMaterial
     // Calculates the trial state variables based on the trial strain
     void determineTrialState (double dStrain);
 	//
-	// determine the yield surface for the residual/inital stress, convert inital stress to inital strain
+	// determine the yield surface for the residual/initial stress, convert initial stress to initial strain
 	double determineYieldSurface(double sigini);
 	//
     // Determines if a load reversal has occurred based on the trial strain
