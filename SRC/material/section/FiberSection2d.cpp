@@ -1080,7 +1080,7 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
   }
 
   // Check if it belongs to the section integration
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     if (sectionIntegr != 0)
       return sectionIntegr->setParameter(&argv[1], argc-1, param);
     else
@@ -1088,7 +1088,7 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
   }
 
   int ok = 0;
-  
+
   for (int i = 0; i < numFibers; i++) {
     ok = theMaterials[i]->setParameter(argv, argc, param);
     if (ok != -1)
