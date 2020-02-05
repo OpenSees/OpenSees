@@ -46,6 +46,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/componentElement; $(MAKE);
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE);
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
+	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
 
 # Miscellaneous
