@@ -31,6 +31,163 @@
 #include <Parameter.h>
 #include <math.h>
 
+#include <elementAPI.h>
+#include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
+#include <NDMaterial.h>
+#include <FiberSection3d.h>
+#include <NDFiberSection3d.h>
+
+void* OPS_TubeSection()
+{
+  if (OPS_GetNumRemainingInputArgs() < 6) {
+    opserr << "WARNING insufficient arguments\n";
+    opserr << "Want: section Tube tag? matTag? D? t? nfw? nfr? <-nd shape?>" << endln;
+    return 0;
+  }
+  
+  int tag, matTag;
+  double D, t;
+  int nfw, nfr;
+  
+  SectionForceDeformation* theSection = 0;
+  
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "WARNING invalid section Tube tag" << endln;
+    return 0;
+  }
+  
+  if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+    opserr << "WARNING invalid section Tube matTag" << endln;
+    return 0;
+  }
+  
+  if (OPS_GetDoubleInput(&numdata, &D) < 0) {
+    opserr << "WARNING invalid D" << endln;
+    opserr << "Tube section: " << tag << endln;
+    return 0;
+  }
+  
+  if (OPS_GetDoubleInput(&numdata, &t) < 0) {
+    opserr << "WARNING invalid t" << endln;
+    opserr << "Tube section: " << tag << endln;
+    return 0;
+  }
+  
+  if (OPS_GetIntInput(&numdata, &nfw) < 0) {
+    opserr << "WARNING invalid nfw" << endln;
+    opserr << "Tube section: " << tag << endln;
+    return 0;
+  }
+  
+  if (OPS_GetIntInput(&numdata, &nfr) < 0) {
+    opserr << "WARNING invalid nfr" << endln;
+    opserr << "Tube section: " << tag << endln;
+    return 0;
+  }
+  
+  TubeSectionIntegration tubesect(D, t, nfw, nfr);
+  
+  int numFibers = tubesect.getNumFibers();
+  
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    
+    double shape = 1.0;
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+      if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
+	opserr << "WARNING invalid shape" << endln;
+	opserr << "Tube section: " << tag << endln;
+	return 0;
+      }
+    }
+    
+    NDMaterial *theSteel = OPS_getNDMaterial(matTag);
+    
+    if (theSteel == 0) {
+      opserr << "WARNING ND material does not exist\n";
+      opserr << "material: " << matTag;
+      opserr << "\nTube section: " << tag << endln;
+      return 0;
+    }
+    
+    NDMaterial **theMats = new NDMaterial *[numFibers];
+    
+    tubesect.arrangeFibers(theMats, theSteel);
+    
+    // Parsing was successful, allocate the section
+    theSection = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* flag = OPS_GetString();
+      if (strcmp(flag,"-nd") == 0) {
+	theSection = new NDFiberSection3d(tag, numFibers, theMats, tubesect, shape);
+      } else if (strcmp(flag,"-ndWarping") == 0) {
+	opserr << "TubeSection -- not implemented yet for fiber warping section" << endln;
+	theSection = 0;
+	//theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, tubesect, shape);
+      }
+    }
+    delete [] theMats;
+  }
+  else {
+    UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+    
+    if (theSteel == 0) {
+      opserr << "WARNING uniaxial material does not exist\n";
+      opserr << "material: " << matTag;
+      opserr << "\nTube section: " << tag << endln;
+      return 0;
+    }
+    
+    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+    
+    tubesect.arrangeFibers(theMats, theSteel);
+
+
+    UniaxialMaterial *torsion = 0;
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING torsion not specified for TubeSection\n";
+      opserr << "Use either -GJ $GJ or -torsion $matTag\n";
+      opserr << "\nTubeSection: " << tag << endln;
+      return 0;
+    }
+    const char* opt = OPS_GetString();
+    numdata = 1;
+    bool deleteTorsion = false;
+    if (strcmp(opt, "-GJ") == 0) {
+      double GJ;
+      if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	opserr << "WARNING: failed to read GJ\n";
+	return 0;
+      }
+      torsion = new ElasticMaterial(0,GJ);
+      deleteTorsion = true;
+    }
+    if (strcmp(opt, "-torsion") == 0) {
+      int torsionTag;
+      if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	opserr << "WARNING: failed to read torsion\n";
+	return 0;
+      }
+      torsion = OPS_getUniaxialMaterial(torsionTag);
+    }
+    if (torsion == 0) {
+      opserr << "WARNING torsion not speified for TubeSection\n";
+      opserr << "\nTubeSection section: " << tag << endln;
+      return 0;
+    }
+    
+    // Parsing was successful, allocate the section
+    theSection = new FiberSection3d(tag, numFibers, theMats, tubesect, *torsion);
+    
+    delete [] theMats;
+  }
+  
+  return theSection;
+}
+
+
+
 TubeSectionIntegration::TubeSectionIntegration(double DIAM,
 					       double T,
 					       int NFW,
