@@ -62,6 +62,12 @@ void* OPS_FiberSection3d()
     if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
     
     UniaxialMaterial *torsion = 0;
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "Use either -GJ $GJ or -torsion $matTag\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
+      return 0;
+    }
     const char* opt = OPS_GetString();
     numData = 1;
     bool deleteTorsion = false;

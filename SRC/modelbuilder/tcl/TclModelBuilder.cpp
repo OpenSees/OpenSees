@@ -1494,7 +1494,7 @@ TclCommand_addNDMaterial(ClientData clientData, Tcl_Interp *interp,
 
 extern int
 TclModelBuilderSectionCommand (ClientData clienData, Tcl_Interp *interp, int argc,
-				  TCL_Char **argv, TclModelBuilder *theTclBuilder);
+			       TCL_Char **argv, Domain *theDomain, TclModelBuilder *theTclBuilder);
 
 int
 TclCommand_addSection(ClientData clientData, Tcl_Interp *interp, 
@@ -1502,7 +1502,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
                           
 {
   return TclModelBuilderSectionCommand(clientData, interp, 
-				       argc, argv, theTclBuilder);
+				       argc, argv, theTclDomain, theTclBuilder);
 }
 
 
