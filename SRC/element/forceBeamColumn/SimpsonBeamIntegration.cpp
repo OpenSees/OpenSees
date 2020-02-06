@@ -23,6 +23,35 @@
 */
 
 #include <SimpsonBeamIntegration.h>
+#include <elementAPI.h>
+#include <ID.h>
+
+void* OPS_SimpsonBeamIntegration(int& integrationTag, ID& secTags)
+{
+	if (OPS_GetNumRemainingInputArgs() < 3) {
+		opserr << "insufficient arguments:integrationTag,secTag,N\n";
+		return 0;
+	}
+
+	// inputs: integrationTag,secTag,N
+	int iData[3];
+	int numData = 3;
+	if (OPS_GetIntInput(&numData, &iData[0]) < 0) return 0;
+
+	integrationTag = iData[0];
+	if (iData[2] > 0) {
+		secTags.resize(iData[2]);
+	}
+	else {
+		secTags = ID();
+	}
+
+	for (int i = 0; i < secTags.Size(); i++) {
+		secTags(i) = iData[1];
+	}
+
+	return new SimpsonBeamIntegration;
+}
 
 SimpsonBeamIntegration::SimpsonBeamIntegration() :
 BeamIntegration(BEAM_INTEGRATION_TAG_Simpson)
@@ -45,6 +74,9 @@ void
 SimpsonBeamIntegration::getSectionLocations(int numSections, double L,
 double *xi)
 {
+	if (((numSections - 1) % 2) != 0)
+		opserr << "WARNING! SimpsonBeamIntegration - number of integration points must be odd" << endln;
+
 	if (numSections > 1) {
 		xi[0] = -1.0;
 		xi[numSections - 1] = 1.0;
