@@ -107,6 +107,18 @@ extern int OPS_ResetInputNoBuilder(ClientData clientData,
 				   TCL_Char **argv, 
 				   Domain *domain);
 
+extern void *OPS_ElasticSection(void);
+extern void *OPS_ElasticWarpingShearSection2d();
+extern void *OPS_ElasticTubeSection3d(void);
+extern void *OPS_WFSection2d(void);
+extern void *OPS_RCCircularSection(void);
+extern void *OPS_RCSection2d(void);
+extern void *OPS_RCTBeamSection2d(void);
+extern void *OPS_RCTunnelSection(void);
+extern void *OPS_UniaxialSection(void);
+extern void *OPS_TubeSection(void);
+extern void *OPS_ParallelSection(void);
+
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 			    TCL_Char **argv, TclModelBuilder *theBuilder);
@@ -140,7 +152,7 @@ TclModelBuilderYS_SectionCommand(ClientData clientData, Tcl_Interp *interp, int 
 
 int
 TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int argc,
-			       TCL_Char **argv, TclModelBuilder *theTclBuilder)
+			       TCL_Char **argv, Domain *theDomain, TclModelBuilder *theTclBuilder)
 {
   // Make sure there is a minimum number of arguments
     if (argc < 3) {
@@ -149,7 +161,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
     }
 
-    //OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);	  
 
     // Pointer to a section that will be added to the model builder
     SectionForceDeformation *theSection = 0;
@@ -158,267 +170,38 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     
     // Check argv[1] for section type
     if (strcmp(argv[1],"Elastic") == 0) {
-      if (argc < 5) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section Elastic tag? E? A? Iz? <Iy? G? J?>" << endln;
+      void *theMat = OPS_ElasticSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
 	return TCL_ERROR;
-      }
-	
-	int tag;
-	double E, A, Iz, Iy, G, J, alphaY, alphaZ;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section Elastic tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E" << endln;
-	    opserr << "Elastic section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[4], &A) != TCL_OK) {
-	    opserr << "WARNING invalid A" << endln;
-	    opserr << "Elastic section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-	
-	if (Tcl_GetDouble (interp, argv[5], &Iz) != TCL_OK) {
-	    opserr << "WARNING invalid Iz" << endln;
-	    opserr << "Elastic section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-	
-	if (NDM == 2) {
-	  if (argc > 7) {
-	    if (Tcl_GetDouble (interp, argv[6], &G) != TCL_OK) {
-	      opserr << "WARNING invalid G" << endln;
-	      opserr << "Elastic section: " << tag << endln;	    	    
-	      return TCL_ERROR;
-	    }
-
-	    if (Tcl_GetDouble (interp, argv[7], &alphaY) != TCL_OK) {
-	      opserr << "WARNING invalid alpha" << endln;
-	      opserr << "Elastic section: " << tag << endln;	    	    
-	      return TCL_ERROR;
-	    }
-
-	    theSection = new ElasticShearSection2d(tag, E, A, Iz, G, alphaY);
-	  }
-	  else 
-	    theSection = new ElasticSection2d(tag, E, A, Iz);
-	} else {
-	  // 3D
-	  if (argc < 8) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section Elastic tag? E? A? Iz? Iy? G? J?" << endln;
-	    return TCL_ERROR;
-	  }
-
-	  if (Tcl_GetDouble (interp, argv[6], &Iy) != TCL_OK) {
-	    opserr << "WARNING invalid Iy" << endln;
-	    opserr << "Elastic section: " << tag << endln;
-	    return TCL_ERROR;
-	  }
-	       
-	  if (Tcl_GetDouble (interp, argv[7], &G) != TCL_OK) {
-	    opserr << "WARNING invalid G" << endln;
-	    opserr << "Elastic section: " << tag << endln;	    
-	    return TCL_ERROR;
-	  }
-
-	  if (Tcl_GetDouble (interp, argv[8], &J) != TCL_OK) {
-	    opserr << "WARNING invalid J" << endln;
-	    opserr << "Elastic section: " << tag << endln;	    
-	    return TCL_ERROR;
-	  }
-
-	  if (argc > 9) {
-	    if (Tcl_GetDouble (interp, argv[9], &alphaY) != TCL_OK) {
-	      opserr << "WARNING invalid alphaY" << endln;
-	      opserr << "Elastic section: " << tag << endln;	    
-	      return TCL_ERROR;
-	    }
-
-	    if (Tcl_GetDouble (interp, argv[10], &alphaZ) != TCL_OK) {
-	      opserr << "WARNING invalid alphaZ" << endln;
-	      opserr << "Elastic section: " << tag << endln;	    
-	      return TCL_ERROR;
-	    }
-
-	    theSection = new ElasticShearSection3d(tag, E, A, Iz, Iy,
-                                               G, J, alphaY, alphaZ);
-	  }
-	  else 
-	    theSection = new ElasticSection3d(tag, E, A, Iz, Iy, G, J);
-	}
     }	
 
     else if (strcmp(argv[1],"ElasticWarpingShear") == 0) {
-      if (argc < 11) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section ElasticWarpingShear tag? E? A? Iz? G? alpha? J? B? C?>" << endln;
+      void *theMat = OPS_ElasticWarpingShearSection2d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
 	return TCL_ERROR;
-      }
-	
-      int tag;
-      double E, A, Iz, G, alpha, J, B, C;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid section ElasticWarpingShearSection2d tag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
-	opserr << "WARNING invalid E" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[4], &A) != TCL_OK) {
-	opserr << "WARNING invalid A" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[5], &Iz) != TCL_OK) {
-	opserr << "WARNING invalid Iz" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[6], &G) != TCL_OK) {
-	opserr << "WARNING invalid G" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble (interp, argv[7], &alpha) != TCL_OK) {
-	opserr << "WARNING invalid alpha" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      if (Tcl_GetDouble (interp, argv[8], &J) != TCL_OK) {
-	opserr << "WARNING invalid J" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      if (Tcl_GetDouble (interp, argv[9], &B) != TCL_OK) {
-	opserr << "WARNING invalid B" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      if (Tcl_GetDouble (interp, argv[10], &C) != TCL_OK) {
-	opserr << "WARNING invalid C" << endln;
-	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      theSection = new ElasticWarpingShearSection2d(tag, E, A, Iz, G, alpha, J, B, C);
     }
     	
     // Check argv[1] for section type
     else if (strcmp(argv[1],"ElasticTube") == 0) {
-      if (argc < 7) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section ElasticTube tag? E? d? tw? G?" << endln;
+      void *theMat = OPS_ElasticTubeSection3d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
 	return TCL_ERROR;
-      }
-	
-	int tag;
-	double E, d, tw, G;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section Elastic tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E" << endln;
-	    opserr << "ElasticTube section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[4], &d) != TCL_OK) {
-	    opserr << "WARNING invalid d" << endln;
-	    opserr << "ElasticTube section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-	
-	if (Tcl_GetDouble (interp, argv[5], &tw) != TCL_OK) {
-	    opserr << "WARNING invalid tw" << endln;
-	    opserr << "ElasticTube section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[6], &G) != TCL_OK) {
-	    opserr << "WARNING invalid G" << endln;
-	    opserr << "ElasticTube section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}
-
-	theSection = new ElasticTubeSection3d(tag, E, d, tw, G);	
     }
 
     else if (strcmp(argv[1],"Generic1D") == 0 ||
 	     strcmp(argv[1],"Generic1d") == 0 ||
 	     strcmp(argv[1],"Uniaxial") == 0) {
-	if (argc < 5) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section Uniaxial tag? 1DTag? code?" << endln;
-	    return TCL_ERROR;
-	}
-
-	int tag, uniTag, code;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section Uniaxial tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetInt(interp, argv[3], &uniTag) != TCL_OK) {
-	    opserr << "WARNING invalid 1DTag" << endln;
-	    opserr << "Uniaxial section: " << tag << endln;	    
-	    return TCL_ERROR;		
-	}
-
-	if (strcmp(argv[4],"Mz") == 0)
-	    code = SECTION_RESPONSE_MZ;
-	else if (strcmp(argv[4],"P") == 0)
-	    code = SECTION_RESPONSE_P;
-	else if (strcmp(argv[4],"Vy") == 0)
-	    code = SECTION_RESPONSE_VY;
-	else if (strcmp(argv[4],"My") == 0)
-	    code = SECTION_RESPONSE_MY;
-	else if (strcmp(argv[4],"Vz") == 0)
-	    code = SECTION_RESPONSE_VZ;
-	else if (strcmp(argv[4],"T") == 0)
-	    code = SECTION_RESPONSE_T;
-	else {
-	    opserr << "WARNING invalid code" << endln;
-	    opserr << "Uniaxial section: " << tag << endln;
-	    return TCL_ERROR;		
-	}
-		
-	// Retrieve the uniaxial material from the model builder
-	UniaxialMaterial *theMat = OPS_getUniaxialMaterial(uniTag);
-	
-	if (theMat == 0) {
-	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "uniaxial material: " << uniTag; 
-	    opserr << "\nUniaxial section: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	// Parsing was successful, allocate the section
-	//theSection = new GenericSection1d (tag, *theMat, code);
-
-	UniaxialMaterial *theMats[1];
-	theMats[0] = theMat;
-	ID codeID(1);
-	codeID(0) = code;
-	theSection = new SectionAggregator(tag, 1, theMats, codeID);
+      void *theMat = OPS_UniaxialSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
     else if (strcmp(argv[1],"GenericND") == 0 || strcmp(argv[1],"GenericNd") == 0) {
@@ -486,118 +269,11 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     }	
 
     else if (strcmp(argv[1],"WFSection2d") == 0 || strcmp(argv[1],"WSection2d") == 0) {
-	if (argc < 10) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section WFSection2d tag? matTag? d? tw? bf? tf? nfdw? nftf? <-nd shape?>" << endln;
-	    return TCL_ERROR;
-	}
-	
-	int tag, matTag;
-	double d, tw, bf, tf;
-	int nfdw, nftf;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section WFSection2d tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-	    opserr << "WARNING invalid section WFSection2d matTag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble (interp, argv[4], &d) != TCL_OK) {
-	    opserr << "WARNING invalid d" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[5], &tw) != TCL_OK) {
-	    opserr << "WARNING invalid tw" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-	
-	if (Tcl_GetDouble (interp, argv[6], &bf) != TCL_OK) {
-	    opserr << "WARNING invalid bf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[7], &tf) != TCL_OK) {
-	    opserr << "WARNING invalid tf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetInt (interp, argv[8], &nfdw) != TCL_OK) {
-	    opserr << "WARNING invalid nfdw" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetInt (interp, argv[9], &nftf) != TCL_OK) {
-	    opserr << "WARNING invalid nftf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	WideFlangeSectionIntegration wfsect(d, tw, bf, tf, nfdw, nftf);
-
-	int numFibers = wfsect.getNumFibers();
-
-	if (argc > 10) {
-
-	  double shape = 1.0;
-	  if (argc > 11) {
-	    if (Tcl_GetDouble(interp, argv[11], &shape) != TCL_OK) {
-	      opserr << "WARNING invalid shape" << endln;
-	      opserr << "WFSection2d section: " << tag << endln;	    	    
-	      return TCL_ERROR;
-	    }
-	  }
-
-	  NDMaterial *theSteel = OPS_getNDMaterial(matTag);
-	
-	  if (theSteel == 0) {
-	    opserr << "WARNING ND material does not exist\n";
-	    opserr << "material: " << matTag; 
-	    opserr << "\nWFSection2d section: " << tag << endln;
-	    return TCL_ERROR;
-	  }
-		  
-	  NDMaterial **theMats = new NDMaterial *[numFibers];
-	  
-	  wfsect.arrangeFibers(theMats, theSteel);
-
-	  // Parsing was successful, allocate the section
-	  theSection = 0;
-	  if (strcmp(argv[10],"-nd") == 0)
-	    theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
-	  if (strcmp(argv[10],"-ndWarping") == 0)
-	    theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);
-
-	  delete [] theMats;	  
-	}
-	else {
-	  UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
-	
-	  if (theSteel == 0) {
-	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << matTag; 
-	    opserr << "\nWFSection2d section: " << tag << endln;
-	    return TCL_ERROR;
-	  }
-	  
-	  UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-	  
-	  wfsect.arrangeFibers(theMats, theSteel);
-	  
-	  // Parsing was successful, allocate the section
-	  theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
-
-	  delete [] theMats;
-	}
+      void *theMat = OPS_WFSection2d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
     else if (strcmp(argv[1],"Tube") == 0) {
@@ -704,686 +380,43 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     }    
 
     else if (strcmp(argv[1],"RCSection2d") == 0) {
-	if (argc < 15) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section RCSection2d tag? coreTag? coverTag? steelTag? d? b? cover? Atop? Abottom? Aside? nfcore? nfcover? nfs?" << endln;
-	    return TCL_ERROR;
-	}
-	
-	int tag, coreTag, coverTag, steelTag;
-	double d, b, cover, Atop, Abottom, Aside;
-	int nfcore, nfcover, nfs;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section RCSection2d tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetInt(interp, argv[3], &coreTag) != TCL_OK) {
-	    opserr << "WARNING invalid section RCSection2d coreTag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetInt(interp, argv[4], &coverTag) != TCL_OK) {
-	    opserr << "WARNING invalid section RCSection2d coverTag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetInt(interp, argv[5], &steelTag) != TCL_OK) {
-	    opserr << "WARNING invalid section RCSection2d steelTag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble (interp, argv[6], &d) != TCL_OK) {
-	    opserr << "WARNING invalid d" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[7], &b) != TCL_OK) {
-	    opserr << "WARNING invalid b" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
-	
-	if (Tcl_GetDouble (interp, argv[8], &cover) != TCL_OK) {
-	    opserr << "WARNING invalid cover" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[9], &Atop) != TCL_OK) {
-	    opserr << "WARNING invalid Atop" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[10], &Abottom) != TCL_OK) {
-	    opserr << "WARNING invalid Abottom" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble (interp, argv[11], &Aside) != TCL_OK) {
-	    opserr << "WARNING invalid Aside" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetInt (interp, argv[12], &nfcore) != TCL_OK) {
-	    opserr << "WARNING invalid nfcore" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetInt (interp, argv[13], &nfcover) != TCL_OK) {
-	    opserr << "WARNING invalid nfcover" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetInt (interp, argv[14], &nfs) != TCL_OK) {
-	    opserr << "WARNING invalid nfs" << endln;
-	    opserr << "RCSection2d section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
-	
-	if (theCore == 0) {
-	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << coreTag; 
-	    opserr << "\nRCSection2d section: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
-	
-	if (theCover == 0) {
-	    opserr << "WARNING uniaxial material does not exist\4n";
-	    opserr << "material: " << coverTag; 
-	    opserr << "\nRCSection2d section: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
-
-	if (theSteel == 0) {
-	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << steelTag; 
-	    opserr << "\nRCSection2d section: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	RCSectionIntegration rcsect(d, b, Atop, Abottom, Aside, cover, nfcore, nfcover, nfs);
-
-	int numFibers = rcsect.getNumFibers();
-
-	UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-
-	rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
-
-	// Parsing was successful, allocate the section
-	theSection = new FiberSection2d(tag, numFibers, theMats, rcsect);
-
-	delete [] theMats;
+      void *theMat = OPS_RCSection2d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
     else if (strcmp(argv[1],"RCCircularSection") == 0) {
-        if (argc < 13) {
-            opserr << "WARNING insufficient arguments\n";
-            opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover Nwedges? Nsteel?" << endln;
-            return TCL_ERROR;
-        }
-        
-        int tag, coreTag, coverTag, steelTag;
-        double d, cover, As;
-        int ncore, ncover, nwedge, nsteel;
-
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-            opserr << "WARNING invalid section RCCircularSection tag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetInt(interp, argv[3], &coreTag) != TCL_OK) {
-            opserr << "WARNING invalid section RCCircularSection coreTag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetInt(interp, argv[4], &coverTag) != TCL_OK) {
-            opserr << "WARNING invalid section RCCircularSection coverTag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetInt(interp, argv[5], &steelTag) != TCL_OK) {
-            opserr << "WARNING invalid section RCCircularSection steelTag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetDouble (interp, argv[6], &d) != TCL_OK) {
-            opserr << "WARNING invalid d" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;        
-            return TCL_ERROR;
-        }       
-
-	       if (Tcl_GetDouble (interp, argv[7], &cover) != TCL_OK) {
-            opserr << "WARNING invalid cover" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetDouble (interp, argv[8], &As) != TCL_OK) {
-            opserr << "WARNING invalid As" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[9], &ncore) != TCL_OK) {
-            opserr << "WARNING invalid Ncore" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }
-
-        if (Tcl_GetInt (interp, argv[10], &ncover) != TCL_OK) {
-            opserr << "WARNING invalid ncover" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[11], &nwedge) != TCL_OK) {
-            opserr << "WARNING invalid nwedge" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[12], &nsteel) != TCL_OK) {
-            opserr << "WARNING invalid nsteel" << endln;
-            opserr << "RCCircularSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
-        
-        if (theCore == 0) {
-            opserr << "WARNING uniaxial material does not exist\n";
-            opserr << "material: " << coreTag; 
-            opserr << "\nRCCircularSection section: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
-        
-        if (theCover == 0) {
-            opserr << "WARNING uniaxial material does not exist\4n";
-            opserr << "material: " << coverTag; 
-            opserr << "\nRCCircularSection section: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
-
-        if (theSteel == 0) {
-            opserr << "WARNING uniaxial material does not exist\n";
-            opserr << "material: " << steelTag; 
-            opserr << "\nRCCircularSection section: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        RCCircularSectionIntegration rcsect(d, As, cover, ncore, ncover, nwedge, nsteel);
-
-        int numFibers = rcsect.getNumFibers();
-
-        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-
-        rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
-
-	UniaxialMaterial *torsion = 0;
-	const char* opt = OPS_GetString();
-	int numdata = 1;
-	bool deleteTorsion = false;
-	if (strcmp(opt, "-GJ") == 0) {
-	  double GJ;
-	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
-	    opserr << "WARNING: failed to read GJ\n";
-	    return 0;
-	  }
-	  torsion = new ElasticMaterial(0,GJ);
-	  deleteTorsion = true;
-	}
-	if (strcmp(opt, "-torsion") == 0) {
-	  int torsionTag;
-	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
-	    opserr << "WARNING: failed to read torsion\n";
-	    return 0;
-	  }
-	  torsion = OPS_getUniaxialMaterial(torsionTag);
-	}
-	if (torsion == 0) {
-	  opserr << "WARNING torsion not speified for RCCircularSection\n";
-	  opserr << "\nRCCircularSection section: " << tag << endln;
-	  return 0;
-	}
-
-        // Parsing was successful, allocate the section
-        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
-
-        delete [] theMats;
-	if (deleteTorsion)
-	  delete torsion;
+      void *theMat = OPS_RCCircularSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
     else if (strcmp(argv[1],"RCTunnelSection") == 0) {
-        if (argc < 15) {
-            opserr << "WARNING insufficient arguments\n";
-            opserr << "Want: section RCTunnelSection tag? concreteTag? steelTag? d? h? coverinner? coverouter? Asinner? Asouter? Nrings? Nwedges? Nbarsinner? Nbarsouter?" << endln;
-            return TCL_ERROR;
-        }
-        
-        int tag, concreteTag, steelTag;
-        double d, h, coverinner, coverouter, Asinner, Asouter;
-        int nring, nwedge, nbarinner, nbarouter;
-
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-            opserr << "WARNING invalid section RCTunnelSection tag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetInt(interp, argv[3], &concreteTag) != TCL_OK) {
-            opserr << "WARNING invalid section RCTunnelSection concreteTag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetInt(interp, argv[4], &steelTag) != TCL_OK) {
-            opserr << "WARNING invalid section RCTunnelSection steelTag" << endln;
-            return TCL_ERROR;           
-        }
-
-        if (Tcl_GetDouble (interp, argv[5], &d) != TCL_OK) {
-            opserr << "WARNING invalid d" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;        
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetDouble (interp, argv[6], &h) != TCL_OK) {
-            opserr << "WARNING invalid h" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;        
-            return TCL_ERROR;
-        }       
-
-	if (Tcl_GetDouble (interp, argv[7], &coverinner) != TCL_OK) {
-            opserr << "WARNING invalid coverinner" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetDouble (interp, argv[8], &coverouter) != TCL_OK) {
-            opserr << "WARNING invalid coverouter" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-	if (Tcl_GetDouble (interp, argv[9], &Asinner) != TCL_OK) {
-            opserr << "WARNING invalid Asinner" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetDouble (interp, argv[10], &Asouter) != TCL_OK) {
-            opserr << "WARNING invalid Asouter" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[11], &nring) != TCL_OK) {
-            opserr << "WARNING invalid Nring" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }
-
-        if (Tcl_GetInt (interp, argv[12], &nwedge) != TCL_OK) {
-            opserr << "WARNING invalid nwedge" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[13], &nbarinner) != TCL_OK) {
-            opserr << "WARNING invalid nbarinner" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        if (Tcl_GetInt (interp, argv[14], &nbarouter) != TCL_OK) {
-            opserr << "WARNING invalid nbarouter" << endln;
-            opserr << "RCTunnelSection section: " << tag << endln;                
-            return TCL_ERROR;
-        }       
-
-        UniaxialMaterial *theConcrete = OPS_getUniaxialMaterial(concreteTag);
-        
-        if (theConcrete == 0) {
-            opserr << "WARNING uniaxial material does not exist\n";
-            opserr << "material: " << concreteTag; 
-            opserr << "\nRCTunnelSection section: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
-
-        if (theSteel == 0) {
-            opserr << "WARNING uniaxial material does not exist\n";
-            opserr << "material: " << steelTag; 
-            opserr << "\nRCTunnelSection section: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        RCTunnelSectionIntegration rcsect(d, h, Asinner, Asouter, coverinner, coverouter,
-					  nring, nwedge, nbarinner, nbarouter);
-
-        int numFibers = rcsect.getNumFibers();
-
-        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-
-        rcsect.arrangeFibers(theMats, theConcrete, theSteel);
-
-	UniaxialMaterial *torsion = 0;
-	const char* opt = OPS_GetString();
-	int numdata = 1;
-	bool deleteTorsion = false;
-	if (strcmp(opt, "-GJ") == 0) {
-	  double GJ;
-	  if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
-	    opserr << "WARNING: failed to read GJ\n";
-	    return 0;
-	  }
-	  torsion = new ElasticMaterial(0,GJ);
-	  deleteTorsion = true;
-	}
-	if (strcmp(opt, "-torsion") == 0) {
-	  int torsionTag;
-	  if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
-	    opserr << "WARNING: failed to read torsion\n";
-	    return 0;
-	  }
-	  torsion = OPS_getUniaxialMaterial(torsionTag);
-	}
-	if (torsion == 0) {
-	  opserr << "WARNING torsion not speified for RCCircularSection\n";
-	  opserr << "\nRCTunnelSection section: " << tag << endln;
-	  return 0;
-	}
-
-        // Parsing was successful, allocate the section
-        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
-
-        delete [] theMats;
-	if (deleteTorsion)
-	  delete torsion;
+      void *theMat = OPS_RCTunnelSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
     }
 	
     else if (strcmp(argv[1],"RCTBeamSection2d") == 0 || strcmp(argv[1],"RCTBeamSectionUniMat2d") == 0) {
-      if (argc < 20) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section RCTBeamSection2d tag? coreTag? coverTag? steelTag? d? bw? beff? hf? Atop? Abottom? flcov? wcov? Nflcover? Nwcover? Nflcore? Nwcore? NsteelTop?  NsteelBottom?" << endln;
-	return TCL_ERROR;
-      }
-      
-      int tag, coreTag, coverTag, steelTag;
-      double d, bw, beff, hf, Atop, Abottom, flcov, wcov;
-      int  Nflcover, Nwcover, Nflcore, Nwcore, NsteelTop, NsteelBottom;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid section RCTBeamSection2d tag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetInt(interp, argv[3], &coreTag) != TCL_OK) {
-	opserr << "WARNING invalid section RCTBeamSection2d coreTag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetInt(interp, argv[4], &coverTag) != TCL_OK) {
-	opserr << "WARNING invalid section RCTBeamSection2d coverTag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetInt(interp, argv[5], &steelTag) != TCL_OK) {
-	opserr << "WARNING invalid section RCTBeamSection2d steelTag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetDouble (interp, argv[6], &d) != TCL_OK) {
-	opserr << "WARNING invalid d" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[7], &bw) != TCL_OK) {
-	opserr << "WARNING invalid bw" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[8], &beff) != TCL_OK) {
-	opserr << "WARNING invalid beff" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[9], &hf) != TCL_OK) {
-	opserr << "WARNING invalid hf" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[10], &Atop) != TCL_OK) {
-	opserr << "WARNING invalid Atop" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble (interp, argv[11], &Abottom) != TCL_OK) {
-	opserr << "WARNING invalid Abottom" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[12], &flcov) != TCL_OK) {
-	opserr << "WARNING invalid flcover" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetDouble (interp, argv[13], &wcov) != TCL_OK) {
-	opserr << "WARNING invalid wcover" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetInt (interp, argv[14], &Nflcover) != TCL_OK) {
-	opserr << "WARNING invalid Nflcover" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetInt (interp, argv[15], &Nwcover) != TCL_OK) {
-	opserr << "WARNING invalid Nwcover" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetInt (interp, argv[16], &Nflcore) != TCL_OK) {
-	opserr << "WARNING invalid Nflcore" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-      
-      if (Tcl_GetInt (interp, argv[17], &Nwcore) != TCL_OK) {
-	opserr << "WARNING invalid Nwcore" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetInt (interp, argv[18], &NsteelTop) != TCL_OK) {
-	opserr << "WARNING invalid NsteelTop" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-
-      if (Tcl_GetInt (interp, argv[19], &NsteelBottom) != TCL_OK) {
-	opserr << "WARNING invalid NsteelBottom" << endln;
-	opserr << "RCTBeamSection2d section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }	
-            
-      UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
-      if (theSteel == 0) {
-	opserr << "WARNING uniaxial material does not exist\n";
-	opserr << "material: " << steelTag; 
-	opserr << "\nRCTBeamSection2d section: " << tag << endln;
-	return TCL_ERROR;
-      }
-
-      RCTBeamSectionIntegration
-	rctbeamsect(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
-		    Nflcover, Nwcover, Nflcore, Nwcore,
-		    NsteelTop, NsteelBottom);
-
-      if (strcmp(argv[1],"RCTBeamSectionUniMat2d") == 0) {
-	UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
-	if (theCore == 0) {
-	  opserr << "WARNING uniaxial material does not exist\n";
-	  opserr << "material: " << coreTag; 
-	  opserr << "\nRCTBeamSection2d section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-
-	UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
-	if (theCover == 0) {
-	  opserr << "WARNING uniaxial material does not exist\n";
-	  opserr << "material: " << coreTag; 
-	  opserr << "\nRCTBeamSection2d section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-
-	int numFibers = rctbeamsect.getNumFibers();
-
-	UniaxialMaterial **theUniMat = new UniaxialMaterial *[numFibers];
-
-	rctbeamsect.arrangeFibers(theUniMat, theCore, theCover, theSteel);
-
-	theSection = new FiberSection2d(tag, numFibers, theUniMat, rctbeamsect);
-
-	delete [] theUniMat;
-      } 
-      else {
-	NDMaterial *theCore = OPS_getNDMaterial(coreTag);
-	if (theCore == 0) {
-	  opserr << "WARNING uniaxial material does not exist\n";
-	  opserr << "material: " << coreTag; 
-	  opserr << "\nRCTBeamSection2d section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-
-	NDMaterial *theCover = OPS_getNDMaterial(coverTag);      
-	if (theCover == 0) {
-	  opserr << "WARNING uniaxial material does not exist\4n";
-	  opserr << "material: " << coverTag; 
-	  opserr << "\nRCTBeamSection2d section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-
-	int numCFibers = rctbeamsect.getNumFibers(concrete);
-	int numSFibers = rctbeamsect.getNumFibers(steel);
-
-	NDMaterial **theNDMat = new NDMaterial *[numCFibers];
-	UniaxialMaterial **theUniMat = new UniaxialMaterial *[numSFibers];
-
-	rctbeamsect.arrangeFibers(theUniMat, theNDMat, theCore, theCover, theSteel);
-
-	//theSection = new McftSection2dfiber(tag, theNDMat, theUniMat, rctbeamsect);
-
-
-
-	RCTBeamSectionIntegration
-	  steel(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
-		0, 0, 0, 0,
-		NsteelTop, NsteelBottom);
-	steel.arrangeFibers(theUniMat, theNDMat, 0, 0, theSteel);
-	FiberSection2d steelSec(0, numSFibers, theUniMat, steel);
-	
-	RCTBeamSectionIntegration
-	  concrete(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
-		   Nflcover, Nwcover, Nflcore, Nwcore,
-		   0, 0);
-	concrete.arrangeFibers(theUniMat, theNDMat, theCore, theCover, 0);
-	NDFiberSection2d concSec(0, numCFibers, theNDMat, concrete);
-	
-	
-
-	SectionForceDeformation *theSections[2];
-	theSections[1] = &steelSec;
-	theSections[0] = &concSec;
-	theSection = new ParallelSection(tag, 2, theSections);
-	
-
-
-	delete [] theNDMat;
-	delete [] theUniMat;
-      }
+      void *theMat = OPS_RCTBeamSection2d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;      
     }
 
     else if (strcmp(argv[1],"Parallel") == 0) {
-	if (argc < 4) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section Parallel tag? tag1? tag2? ..." << endln;
-	    return TCL_ERROR;
-	}
- 
-	int tag;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section Parallel tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	int numMaterials = argc-3;
-	
-	if (numMaterials == 0) {
-	    opserr << "WARNING no component section(s) provided\n";
-	    opserr << "section Parallel: " << tag << endln;
-	    return TCL_ERROR;
-	}
-    
-	// Create an array to hold pointers to component materials
-	SectionForceDeformation **theMats = new SectionForceDeformation *[numMaterials];
-	
-	// For each material get the tag and ensure it exists in model already
-	for (int i = 0; i < numMaterials; i++) {
-	    int tagI;
-	    if (Tcl_GetInt(interp, argv[i+3], &tagI) != TCL_OK) {
-		opserr << "WARNING invalid component tag\n";
-		opserr << "section Parallel: " << tag << endln;
-		return TCL_ERROR;
-	    }
-	    
-	    SectionForceDeformation *theMat = theTclBuilder->getSection(tagI);
-	    
-	    if (theMat == 0) {
-		opserr << "WARNING component section does not exist\n";
-		opserr << "Component section: " << argv[i+3]; 
-		opserr << "\tsection Parallel: " << tag << endln;
-		delete [] theMats;
-		return TCL_ERROR;
-	    }
-	    else
-		theMats[i] = theMat;
-	}	
-	
-	// Parsing was successful, allocate the material
-	theSection = new ParallelSection(tag, numMaterials, theMats);
-	
-	// Deallocate the temporary pointers
-	delete [] theMats;
+      void *theMat = OPS_ParallelSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;  
     }
 
     else if (strcmp(argv[1],"AddDeformation") == 0 || strcmp(argv[1],"Aggregator") == 0) {

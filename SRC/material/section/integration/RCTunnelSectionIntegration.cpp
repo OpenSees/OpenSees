@@ -31,6 +31,114 @@
 #include <Parameter.h>
 #include <math.h>
 
+#include <elementAPI.h>
+#include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
+#include <FiberSection3d.h>
+
+void* OPS_RCTunnelSection()
+{
+  if (OPS_GetNumRemainingInputArgs() < 13) {
+    opserr << "WARNING insufficient arguments\n";
+    opserr << "Want: section RCTunnelSection tag? concreteTag? steelTag? d? h? coverinner? coverouter? Asinner? Asouter? Nrings? Nwedges? Nbarsinner? Nbarsouter?\n";
+    return 0;
+  }
+  
+  int idata[8];
+  double ddata[6];
+  
+  int numdata = 3;
+  if (OPS_GetIntInput(&numdata, idata) < 0) {
+    opserr << "WARNING invalid section RCTunnelSection input\n";
+    return 0;
+  }
+  
+  numdata = 6;
+  if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+    opserr << "WARNING invalid section RCTunnelSection input\n";
+    return 0;
+  }
+  
+  numdata = 4;
+  if (OPS_GetIntInput(&numdata, &idata[4]) < 0) {
+    opserr << "WARNING invalid section RCTunnelSection input\n";
+    return 0;
+  }
+  
+  int tag=idata[0], concreteTag=idata[1], steelTag=idata[2];
+  double d=ddata[0], h=ddata[1], coverinner=ddata[2], coverouter=ddata[3], Asinner=ddata[4], Asouter=ddata[5];
+  int nring=idata[3], nwedge=idata[4], nbarsinner=idata[5], nbarsouter=idata[6];
+  
+  UniaxialMaterial *theConcrete = OPS_getUniaxialMaterial(concreteTag);
+  
+  if (theConcrete == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << concreteTag; 
+    opserr << "\nRCTunnelSection section: " << tag << endln;
+    return 0;
+  }
+  
+  UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+  
+  if (theSteel == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << steelTag; 
+    opserr << "\nRCTunnelSection section: " << tag << endln;
+    return 0;
+  }
+  
+  RCTunnelSectionIntegration rcsect(d, h, Asinner, Asouter, coverinner, coverouter,
+				    nring, nwedge, nbarsinner, nbarsouter);
+  
+  int numFibers = rcsect.getNumFibers();
+  
+  UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+  
+  rcsect.arrangeFibers(theMats, theConcrete, theSteel);
+  
+  UniaxialMaterial *torsion = 0;
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "WARNING torsion not specified for RCTunnelSection\n";
+    opserr << "Use either -GJ $GJ or -torsion $matTag\n";
+    opserr << "\nRCTunnelSection: " << tag << endln;
+    return 0;
+  }
+  const char* opt = OPS_GetString();
+  numdata = 1;
+  bool deleteTorsion = false;
+  if (strcmp(opt, "-GJ") == 0) {
+    double GJ;
+    if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+      opserr << "WARNING: failed to read GJ\n";
+      return 0;
+    }
+    torsion = new ElasticMaterial(0,GJ);
+    deleteTorsion = true;
+  }
+  if (strcmp(opt, "-torsion") == 0) {
+    int torsionTag;
+    if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+      opserr << "WARNING: failed to read torsion\n";
+      return 0;
+    }
+    torsion = OPS_getUniaxialMaterial(torsionTag);
+  }
+  if (torsion == 0) {
+    opserr << "WARNING torsion not speified for RCCircularSection\n";
+    opserr << "\nRCTunnelSection section: " << tag << endln;
+    return 0;
+  }
+  
+  // Parsing was successful, allocate the section
+  SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
+  
+  delete [] theMats;
+  if (deleteTorsion)
+    delete torsion;
+  
+  return theSection;
+}
+
 RCTunnelSectionIntegration::RCTunnelSectionIntegration(double D, double H,
 							   double ASin, double ASout,
 							   double COVERin, double COVERout,

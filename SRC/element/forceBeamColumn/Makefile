@@ -17,6 +17,7 @@ OBJS       = ForceBeamColumn2d.o ForceBeamColumn3d.o \
 	HingeRadauBeamIntegration.o \
 	HingeRadauTwoBeamIntegration.o \
 	UserDefinedBeamIntegration.o \
+	SimpsonBeamIntegration.o \
 	UserDefinedHingeIntegration.o \
 	DistHingeIntegration.o \
 	RegularizedHingeIntegration.o \
