@@ -1,0 +1,18 @@
+# -*- mode: makefile -*-
+#
+
+ifeq ($(RM),true)
+.SECONDARY: $(ex%.o) $(ex%f.o) $(ex%f90.o)
+endif
+
+ex%f90: ex%f90.o | chkopts
+	-${FLINKER} -o $@ $^  ${PETSC_LIB}
+ex%f: ex%f.o | chkopts
+	-${FLINKER} -o $@ $^  ${PETSC_LIB}
+ex%: ex%.o | chkopts
+	-${CLINKER} -o $@ $^  ${PETSC_LIB}
+	${DSYMUTIL} $@
+
+
+include ${PETSC_DIR}/lib/petsc/conf/test.common
+

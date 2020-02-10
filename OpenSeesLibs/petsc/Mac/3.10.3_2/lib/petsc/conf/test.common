@@ -1,0 +1,29 @@
+# -*- mode: makefile -*-
+#
+
+TESTMODE = testexamples
+ALLTESTS_CHECK_FAILURES = no
+ALLTESTS_MAKEFILE = gmakefile.test
+alltests:
+	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	+@if [ -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test ] ; then \
+            ALLTESTS_MAKEFILE=${PETSC_DIR}/share/petsc/examples/gmakefile.test ; \
+            ALLTESTSLOG=alltests.log ;\
+          else \
+            ALLTESTS_MAKEFILE=gmakefile.test; \
+            ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
+            ln -s $${ALLTESTSLOG} alltests.log ;\
+          fi; \
+          ${OMAKE} allgtest ALLTESTS_MAKEFILE=$${ALLTESTS_MAKEFILE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
+            cat $${ALLTESTSLOG} | egrep '(^not ok|not remade because of errors|^# No tests run)' | wc -l | grep '^[ ]*0$$' > /dev/null; \
+          fi;
+
+allgtest-tap:
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -f gmakefile.test test V=0
+
+allgtest:
+	+@MAKEFLAGS="-j$(MAKE_TEST_NP) -l$(MAKE_LOAD) $(MAKEFLAGS)" ${OMAKE} -k -f ${ALLTESTS_MAKEFILE} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)'
+
+cleantest:
+	+${OMAKE} -f ${ALLTESTS_MAKEFILE} cleantest

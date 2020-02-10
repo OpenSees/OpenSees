@@ -1,0 +1,17 @@
+prefix=/home/linuxbrew/.linuxbrew/Cellar/petsc/3.10.3_2
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${prefix}/lib
+ccompiler=mpicc
+cflags_extra=-fPIC  -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -g -O
+cflags_dep=-MMD -MP
+ldflag_rpath=-Wl,-rpath,
+fcompiler=mpif90
+fflags_extra=-fPIC -Wall -ffree-line-length-0 -Wno-unused-dummy-argument -g -O
+
+Name: PETSc
+Description: Library to solve ODEs and algebraic equations
+Version: 3.10.3
+Cflags:  -I${includedir}
+Libs: -L${libdir} -lpetsc
+Libs.private: -L/home/linuxbrew/.linuxbrew/opt/libevent/lib -L/home/linuxbrew/.linuxbrew/Cellar/open-mpi/4.0.1_1/lib -L/home/linuxbrew/.linuxbrew/Cellar/gcc/5.5.0_4/lib/gcc/x86_64-unknown-linux-gnu/5.5.0 -L/home/linuxbrew/.linuxbrew/Cellar/gcc/5.5.0_4/lib -L/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu -L/home/linuxbrew/.linuxbrew/lib -llapack -lblas -lm -lstdc++ -ldl -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lm -lgfortran -lm -lgcc_s -lquadmath -lpthread -lstdc++ -ldl

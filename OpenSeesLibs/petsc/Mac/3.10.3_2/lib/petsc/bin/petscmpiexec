@@ -1,0 +1,82 @@
+#! /bin/csh -f
+# $Id: petscmpiexec,v 1.3 2001/09/04 16:18:05 bsmith Exp $ 
+#
+#    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
+#  packages to run mpiexec
+#    Use PETSCVALGRIND_OPTIONS and MPI_BINDING from environment
+#
+if ($1 == '-h' | $1 == '--help') then
+  echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
+  exit
+endif
+
+set valgrind=0
+set debugger=0
+if ( x$1 == x"-valgrind" ) then
+  set valgrind = 1
+  echo $2
+  if ( x$2 == x"-debugger" ) then
+    set debugger=1
+    shift
+  endif
+  shift
+endif
+
+if ( $1 !=  "-n" ) then
+  echo "Error in  mpiexec command: must start with -n <numberprocessors> or -valgrind -n <numberprocessors>"
+  exit 1
+endif
+shift
+set np=$1
+shift
+
+set hosts=""
+if ( x$1 ==  x"-hosts" ) then
+  shift
+  set hosts="-hosts $1"
+  shift
+endif
+
+set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
+set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
+set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v "#MPIEXEC" | cut -f2 -d=`
+
+#echo $MPI_BUILD_HOME
+#echo $MPI_HOME
+
+#echo $run
+set trun = `echo ${run} | sed -e sz\$MPI_BUILD_HOMEz${MPI_BUILD_HOME}z`
+#echo $trun
+set nrun = `echo ${trun} | sed -e sz\$MPI_HOMEz${MPI_HOME}z`
+#echo $nrun
+set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
+#echo $qrun
+
+#echo $qrun $*
+
+if ! $?MPI_BINDING then
+  set MPI_BINDING=
+endif
+
+if ( ${valgrind} == "1" ) then
+  if ! $?PETSCVALGRIND_OPTIONS then
+    set PETSCVALGRIND_OPTIONS=
+  endif
+  set VALGRIND_CMD=`which valgrind`
+  set VALGRIND_OPTIONS="-q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes ${PETSCVALGRIND_OPTIONS}"
+  if ( ${debugger} == "1" ) then
+    set VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
+    set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --db-attach=yes"
+  endif
+  if ( `uname` == 'Darwin') then
+    set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --dsymutil=yes"
+  endif
+  $qrun -n $np $hosts ${VALGRIND_CMD} ${VALGRIND_OPTIONS} $*
+  if ( `uname` == 'Darwin') then
+    rm -rf *.dSYM
+    rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
+  endif
+else
+  $qrun -n $np $hosts ${MPI_BINDING} $*
+endif
+

@@ -1,0 +1,15 @@
+#%Module
+
+proc ModulesHelp { } {
+    puts stderr "This module sets the path and environment variables for petsc-3.10.3"
+    puts stderr "     see http://www.mcs.anl.gov/petsc/ for more information      "
+    puts stderr ""
+}
+module-whatis "PETSc - Portable, Extensible Toolkit for Scientific Computation"
+
+set petsc_dir   "/usr/local/Cellar/petsc/3.10.3_2"
+set petsc_arch  ""
+
+setenv PETSC_ARCH "$petsc_arch"
+setenv PETSC_DIR "$petsc_dir"
+prepend-path PATH "/usr/local/Cellar/petsc/3.10.3_2/bin"

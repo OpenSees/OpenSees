@@ -1,0 +1,22 @@
+# Copyright (c) 2010 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2016      IBM Corporation.  All rights reserved.
+#
+Name: Open MPI
+Description: Portable high-performance MPI implementation
+Version: 4.0.1
+URL: http://www.open-mpi.org/
+#
+prefix=/home/linuxbrew/.linuxbrew/Cellar/open-mpi/4.0.1_1
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+pkgincludedir=${includedir}/openmpi
+#
+# Note that -lopen-pal and all the EXTRA_LIBS are only necessary when
+# static linking (they're pulled in by libopen-rte.so's implicit
+# dependencies), so only list these in Libs.private.
+#
+Libs: -L${libdir} -L/home/linuxbrew/.linuxbrew/opt/libevent/lib    -Wl,-rpath -Wl,/home/linuxbrew/.linuxbrew/opt/libevent/lib -Wl,-rpath -Wl,${libdir} -Wl,--enable-new-dtags -lmpi
+Libs.private: -lopen-rte -lopen-pal -lm -ldl -levent -levent_pthreads -lutil  -lrt -lz
+#
+Cflags: -I${includedir}     -pthread 

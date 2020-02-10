@@ -1,0 +1,119 @@
+# -*- mode: makefile -*-
+#
+# The following variables specify PETSc related info, and can be picked up directly
+# by external packages (like TAO) or PETSc applications that do not use PETSc targets.
+#
+# PETSC_LIB_DIR          - (defined from $PETSC_DIR) determines where the PETSc libraries are built.
+# PETSC_CC_INCLUDES          - locations of include files
+# PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
+# PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
+#
+PETSC_LIB_DIR	     = /home/linuxbrew/.linuxbrew/Cellar/petsc/3.10.3_2/lib
+PETSCCONF_H          = /home/linuxbrew/.linuxbrew/Cellar/petsc/3.10.3_2/include/petscconf.h
+
+PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}
+PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
+PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
+PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
+#
+# The following variables are used by PETSc build targets. External Packages (like TAO) can
+# redefine them appropriately.
+#
+# INSTALL_LIB_DIR   - the location where the libraries are built.
+# [C,F]CPPFLAGS     - preprocessor flags for *.c, *.F preprocessing
+# [C,F]_SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
+#
+INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
+CCPPFLAGS	= ${PETSC_CCPPFLAGS}
+FCPPFLAGS	= ${PETSC_FCPPFLAGS}
+C_SH_LIB_PATH	= ${PETSC_C_SH_LIB_PATH}
+F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
+#
+# The following variables define PETSc compile procedures
+#
+PSOURCEC  = $(SOURCEC:%=`pwd`/%)
+PSOURCECXX= $(SOURCECXX:%=`pwd`/%)
+PSOURCECU = $(SOURCECU:%=`pwd`/%)
+PETSC_COMPILE           = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${PSOURCEC}
+PETSC_CXXCOMPILE        = ${CXX} -c ${CXX_FLAGS} ${CXXFLAGS} ${CCPPFLAGS}  ${PSOURCECXX}
+PETSC_COMPILE_SINGLE    = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}
+PETSC_CXXCOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CCPPFLAGS}
+PETSC_FCOMPILE          = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
+PETSC_CUCOMPILE         = ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${PSOURCECU}
+PETSC_CUCOMPILE_SINGLE  = ${CUDAC} -o $*.o ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"
+#
+# define OBJSC OBJSCXX and OBJSF OBJSCU
+OBJSC        = $(SOURCEC:.c=.o)
+OBJSCXX_TMP1 = $(SOURCECXX:.C=.o)
+OBJSCXX_TMP2 = $(OBJSCXX_TMP1:.cxx=.o)
+OBJSCXX      = $(OBJSCXX_TMP2:.cpp=.o)
+OBJSF_TMP1   = $(SOURCEF:.F=.o)
+OBJSF_TMP2   = $(OBJSF_TMP1:.F90=.o)
+OBJSF_TMP3   = $(OBJSF_TMP2:.F95=.o)
+OBJSF        = $(OBJSF_TMP3:.f=.o)
+OBJSCU       = $(SOURCECU:.cu=.o)
+#
+# The following additional variables are used by PETSc targets and should not be redefined
+#
+# LIBNAME    - library name
+# SOURCE     - source files
+# OBJS       - object files
+# SOURCEALL  - sources and includes
+# SOURCED    - sources/includes [but not fortran - for doc parsing?]
+#
+LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
+SOURCE     = ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEF}
+OBJS       = ${OBJSCU} ${OBJSC} ${OBJSF}
+SOURCEALL  = ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEF} ${SOURCEH}
+SOURCED    = ${SOURCECU} ${SOURCEC} ${SOURCECXX} ${SOURCEH}
+
+CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
+FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
+CXXLINKER = ${CXX_LINKER} ${CXX_LINKER_FLAGS} ${CXXFLAGS}
+#
+# Defines all libraries needed for using linear and nonlinear solvers,
+# and all lower level PETSc components (such as vectors and matrices).
+# The order of listing these libraries is important!
+#
+
+PETSC_SYS_LIB_BASIC            = -lpetscsys
+PETSC_VEC_LIB_BASIC            = -lpetscvec ${PETSC_SYS_LIB_BASIC}
+PETSC_MAT_LIB_BASIC            = -lpetscmat ${PETSC_VEC_LIB_BASIC}
+PETSC_DM_LIB_BASIC             = -lpetscdm ${PETSC_MAT_LIB_BASIC}
+PETSC_KSP_LIB_BASIC            = -lpetscksp ${PETSC_DM_LIB_BASIC}
+PETSC_SNES_LIB_BASIC           = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
+PETSC_TS_LIB_BASIC             = -lpetscts ${PETSC_SNES_LIB_BASIC}
+PETSC_TAO_LIB_BASIC            = -lpetsctao ${PETSC_SNES_LIB_BASIC}
+PETSC_LIB_BASIC                = -lpetsctao ${PETSC_TS_LIB_BASIC}
+PETSC_CONTRIB_BASIC            = -lpetsccontrib
+
+PETSC_SYS_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SYS_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_VEC_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_VEC_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_MAT_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_MAT_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_DM_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_KSP_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_SNES_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_TS_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_TAO_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TAO_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_LIB                = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC}      ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_CONTRIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
+
+PETSC_MIXED_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR}  -lpetscsnes -lpetscvec -lpetscsys -lpetscksp_single -lpetscmat_single -lpetscvec_single  -lpetscsys_single  ${PETSC_EXTERNAL_LIB_BASIC}
+
+#
+#  Escape codes to change the text color on xterms and terminals
+#
+PETSC_TEXT_HILIGHT = "\033[1;31m"
+PETSC_TEXT_NORMAL = "\033[0;39m\033[0;49m"
+
+PETSC_MAKE_STOP_ON_ERROR = -
+#
+# ----------------------------------------------------------------------------------------
+#
+# Some variables used to build shared libraries
+SHLIBS   = libpetscsys libpetscmat libpetscvec libpetscdm libpetscksp libpetscsnes libpetscts libpetsctao
+#
+# The following include files set customized site, optimization, and version
+# options.
+#
+include /home/linuxbrew/.linuxbrew/Cellar/petsc/3.10.3_2/lib/petsc/conf/petscvariables

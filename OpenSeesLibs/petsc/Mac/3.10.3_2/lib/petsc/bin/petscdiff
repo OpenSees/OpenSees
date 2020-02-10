@@ -1,0 +1,117 @@
+#! /bin/sh -f
+#
+#  Replaces floating point numbers with XXX and then does a diff
+#  
+#
+# Method to print out general and script specific options
+#
+print_usage() {
+
+cat >&2 <<EOF
+Usage: $0 [options] file1 file2
+Replaces floating point numbers with XXX and then does a diff
+
+OPTIONS
+  -m ................ mv file2 to file1 after diffing
+  -M ................ mv file2 to file1 after diffing if it is an alt file
+  -j ................ just use diff without modifying numbers
+  -h ................ print this message
+EOF
+  exit $1
+}
+
+# parse options -- using getopts because it is so easily extensible
+mvfile=false
+mvfile_ifalt=false
+justdiff=false
+diffargs=""
+while getopts "hjJ:mM" opt
+do
+  case $opt in
+    j ) justdiff=true ;;
+    J ) justdiff=true;  diffargs=$OPTARG;;
+    m ) mvfile=true;;
+    M ) mvfile_ifalt=true;;
+    h ) print_usage 0;;
+  esac
+done
+shift "$(( $OPTIND - 1 ))"
+
+if [ $# -lt 2 ]; then
+  echo Error! 
+  print_usage 1
+fi
+
+if [ "x${RM}" = "x" ]; then RM="rm"; fi
+if [ "x${SED}" = "x" ]; then SED="sed"; fi
+if [ "x${DIFF}" = "x" ]; then DIFF="diff -w";
+elif [ "`basename ${DIFF}`" = "petscdiff" ]; then DIFF="diff -w";
+fi
+
+if [ "x${1}" = "x-" ]; then
+    file1=`mktemp -t petscdiff.XXXXXX` ;
+    $(cat /dev/stdin > ${file1})
+elif [ -f ${1} ]; then
+    file1=${1}
+else 
+  if ${mvfile}; then
+    echo "mv'ing $2 --> $1"
+    mv "$2" "$1"
+    exit 0
+  else
+    echo Error! file1 check failed: "${1}"
+    exit 1
+  fi
+  if ${mvfile_ifalt}; then
+    echo "mvfile_ifalt"
+    if echo $1 | grep '_alt.out'; then 
+      echo "mv'ing $2 --> $1"
+      mv "$2" "$1"
+      exit 0
+    fi
+  fi
+fi
+
+if [ -f ${2} ]; then
+    file2=${2}
+else
+  echo Error! file2 check failed: "${2}"
+  exit 1
+fi
+
+if ! ${justdiff}; then
+    tmpA=`mktemp -t petscdiffA.XXXXXX` ;
+    tmpB=`mktemp -t petscdiffB.XXXXXX` ;
+
+    ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file1} | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpA}
+
+    ${SED} "s/< [0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file2} | ${SED} "s/[-]*[0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-]*[0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpB}
+    ${DIFF} ${tmpA} ${tmpB} > /dev/null
+    if [ $? -ne 0 ]; then
+      ${DIFF}  ${file1} ${file2}
+      err=1
+    else
+      err=0
+    fi
+    ${RM} -f ${tmpA} ${tmpB}
+else
+    ${DIFF} ${diffargs} ${file1} ${file2}
+    err=$?
+fi
+
+if [ "x${1}" = "x-" ]; then
+  ${RM} -f ${file1}
+fi
+
+if ${mvfile}; then
+  echo "mv'ing $file2 --> $file1"
+  mv "$file2" "$file1"
+fi
+if ${mvfile_ifalt}; then
+  if echo $file1 | grep '_alt.out'; then 
+    echo "mv'ing $file2 --> $file1"
+    mv "$file2" "$file1"
+  fi
+fi
+
+exit ${err};

@@ -1,0 +1,48 @@
+shared_install: 
+	-@echo "Now to install the libraries do:"
+	-@echo "make PETSC_DIR=/usr/local/Cellar/petsc/3.10.3_2  install"
+	-@echo "========================================="
+
+libc: ${LIBNAME}(${OBJSC})
+
+libcxx: ${LIBNAME}(${OBJSCXX})
+
+libcu: ${LIBNAME}(${OBJSCU})
+
+libf: ${OBJSF}
+	-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+shared_arch: shared_darwin
+
+.F.a: 
+	${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} $<
+	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
+	-${RM} $*.o
+
+.f.o .f90.o .f95.o: 
+	${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} -o $@ $<
+
+.f.a: 
+	${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} $<
+	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
+	-${RM} $*.o
+
+.F.o .F90.o .F95.o: 
+	${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} -o $@ $<
+
+libmesh-build: 
+
+libmesh-install: 
+
+mpi4py-build: 
+
+mpi4py-install: 
+
+petsc4py-build: 
+
+petsc4py-install: 
+
+slepc-build: 
+
+slepc-install: 
+

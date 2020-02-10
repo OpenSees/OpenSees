@@ -1,0 +1,12 @@
+prefix=/home/linuxbrew/.linuxbrew/Cellar/arpack/3.7.0_2/libexec
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: ARPACK-NG
+Description: Collection of Fortran77 subroutines designed to solve large scale eigenvalue problems
+Version: 3.7.0
+URL: https://github.com/opencollab/arpack-ng/
+Libs: -L${libdir} -larpack
+Libs.private:  -L/home/linuxbrew/.linuxbrew/opt/openblas/lib -lopenblas
+Cflags: -I${includedir}/arpack

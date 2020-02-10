@@ -1,0 +1,9 @@
+prefix=/home/linuxbrew/.linuxbrew/Cellar/scalapack/2.0.2_15
+libdir=/home/linuxbrew/.linuxbrew/Cellar/scalapack/2.0.2_15/lib
+
+Name: scalapack
+Description: SCALAPACK reference implementation
+Version: 2.0.2
+URL: http://www.netlib.org/scalapack/
+Libs: -L/home/linuxbrew/.linuxbrew/Cellar/scalapack/2.0.2_15/lib -lscalapack
+Requires: mpi lapack blas

@@ -1,0 +1,28 @@
+# There can be multiple blocks of configuration data, chosen by
+# compiler flags (using the compiler_args key to chose which block
+# should be activated.  This can be useful for multilib builds.  See the
+# multilib page at:
+#    https://github.com/open-mpi/ompi/wiki/compilerwrapper3264
+# for more information.
+
+project=Open MPI
+project_short=OMPI
+version=4.0.1
+language=Fortran
+compiler_env=FC
+compiler_flags_env=FCFLAGS
+compiler=gfortran
+preprocessor_flags=
+compiler_flags=-Wl,-flat_namespace -Wl,-commons,use_dylibs  -I${libdir}
+linker_flags=  
+# Note that per https://svn.open-mpi.org/trac/ompi/ticket/3422, we
+# intentionally only link in the MPI libraries (ORTE, OPAL, etc. are
+# pulled in implicitly) because we intend MPI applications to only use
+# the MPI API.
+libs=-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi
+libs_static=-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lopen-rte -lopen-pal  -lm  -lz
+dyn_lib_file=libmpi.dylib
+static_lib_file=libmpi.a
+required_file=
+includedir=${includedir}
+libdir=${libdir}
