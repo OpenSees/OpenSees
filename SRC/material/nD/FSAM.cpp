@@ -11,29 +11,30 @@
 // Model (FSAM, Ulugtekin, 2010; Orakcal et al., 2012) which is a plane-stress 
 // constitutive model for simulating the behavior of RC panel elements under 
 // generalized, in-plane, reversed-cyclic loading conditions. The model assumes
-// perfect bond assumption between concrete and reinforcing steel bars. The
-// reinforcing steel bars develop uniaxial stresses under strains in their
-// longitudinal direction, the behavior of concrete is defined using stress-strain
-// relationships in biaxial directions, the orientation of which is governed by
-// the state of cracking in concrete, and also incorporates biaxial softening
-// effects including compression softening and biaxial damage. For transfer of
+// perfect bond assumption between concrete and reinforcing steel bars. The 
+// reinforcing steel bars develop uniaxial stresses under strains in their 
+// longitudinal direction, the behavior of concrete is defined using stress–strain 
+// relationships in biaxial directions, the orientation of which is governed by 
+// the state of cracking in concrete, and also incorporates biaxial softening 
+// effects including compression softening and biaxial damage. For transfer of 
 // shear stresses across the cracks, a friction-based elasto-plastic shear aggregate
 // interlock model is adopted, together with a linear elastic model for representing
 // dowel action on the reinforcing steel bars (Kolozvari, 2013).
 //
 // References:
-// 1) Orakcal, K., Massone L.M., Ulugtekin, D.,"Constitutive Modeling of Reinforced Concrete
-// Panel Behavior under Cyclic Loading", Proceedings of the 15th World Conference on
+// 1) Orakcal, K., Massone L.M., Ulugtekin, D.,“Constitutive Modeling of Reinforced Concrete 
+// Panel Behavior under Cyclic Loading”, Proceedings of the 15th World Conference on 
 // Earthquake Engineering, Lisbon, Portugal, 2012.
-// 2) Ulugtekin, D., "Analytical Modeling of Reinforced Concrete Panel Elements under
-// Reversed Cyclic Loadings", M.S. Thesis, Bogazici University, Istanbul, Turkey, 2010.
-// 3) Kolozvari K. (2013). "Analytical Modeling of Cyclic Shear-Flexure Interaction in
-// Reinforced Concrete Structural Walls", PhD Dissertation, University of California, Los Angeles.
+// 2) Ulugtekin, D., “Analytical Modeling of Reinforced Concrete Panel Elements under 
+// Reversed Cyclic Loadings”, M.S. Thesis, Bogazici University, Istanbul, Turkey, 2010.
+// 3) Kolozvari K. (2013). “Analytical Modeling of Cyclic Shear-Flexure Interaction in 
+// Reinforced Concrete Structural Walls”, PhD Dissertation, University of California, Los Angeles.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/material/nD/reinforcedConcretePlaneStress/FSAM.h
 //
-// Rev: 1
+// Rev: 2
 
+// !!! REPLACE DLB_MIN with SMALL = 1e-30 !!!
 
 #include "FSAM.h"
 #include <UniaxialMaterial.h>
@@ -49,18 +50,17 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
-#include <string.h>
+// for creating concrete materials inside the panel element
+#include "Concrete0.h" 
+#include "Concrete01T.h" 
+#include "Concrete02.h" 
+//#include "Concrete02E.h" // !!! update OPS in GitHub version to match KK files 
+//#include "Concrete04.h"  // !!! update OPS in GitHub version to match KK files
+//#include "Concrete06.h" // !!! update OPS in GitHub version to match KK files
+//#include "Concrete07.h" // !!! update OPS in GitHub version to match KK files
+#include "ConcreteCM.h"
 
-#ifndef fmin
-#define fmin(a,b) ( ((a)<(b))?(a):(b) )
-#endif
-
-#ifndef fmax
-#define fmax(a,b) ( ((a)>(b))?(a):(b) )
-#endif
-
-#include "ConcreteCM.h" // for creating ConcreteCM inside the panel element
-
+//#include "OOHM.h" 
 
 static int numFSAMMaterials = 0;
 
@@ -77,8 +77,8 @@ OPS_Export void *OPS_FSAMMaterial()
 	int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
 	// Parse the script for material parameters
-	if (numRemainingArgs != 9) { // total # of input parameters
-		opserr << "Invalid #Args want: NDMaterial FSAM $mattag $Rho $Tag_UniaxialSteelX $Tag_UniaxialSteelY $Tag_UniaxialConcrete $rouX $rouY $nu $alfadow\n";
+	if (numRemainingArgs != 9 && numRemainingArgs != 10 && numRemainingArgs != 11) { // total # of input parameters
+		opserr << "Invalid #Args want: NDMaterial FSAM $mattag $Rho $Tag_UniaxialSteelX $Tag_UniaxialSteelY $Tag_UniaxialConcrete $rouX $rouY $nu $alfadow \n";
 		return 0;	
 	}
 
@@ -189,13 +189,55 @@ OPS_Export void *OPS_FSAMMaterial()
 		return 0;
 	}
 
+	int AggType = 0; // default aggregate interlock type
+	int CracBType = 20; // default aggregate interlock type
+
+	if (numRemainingArgs == 10) {
+		numData = 1;
+		if (OPS_GetIntInput(&numData, &AggType) != 0) {
+			opserr << "Invalid $gap parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;
+		}
+
+		if (AggType != 0 && AggType != 1 && AggType != 2 && AggType != 3 && AggType != 4) { // total # of input parameters
+			opserr << "Invalid $AggType parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;	
+		}
+
+	}
+
+	if (numRemainingArgs == 11) {
+		numData = 1;
+		if (OPS_GetIntInput(&numData, &AggType) != 0) {
+			opserr << "Invalid $AggType parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;
+		}
+
+		if (AggType != 0 && AggType != 1 && AggType != 2 && AggType != 3 && AggType != 4) { // total # of input parameters
+			opserr << "Invalid $AggType parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;	
+		}
+
+		numData = 1;
+		if (OPS_GetIntInput(&numData, &CracBType) != 0) {
+			opserr << "Invalid $CracBType parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;
+		}
+
+		if (CracBType != 10 && CracBType != 20) { // total # of input parameters
+			opserr << "Invalid $CracBType parameter for NDMaterial with tag  " << iData[0] << endln;
+			return 0;	
+		}
+
+	}
+
 	//Create the FSAM
 	theMaterial = new FSAM (tag, rho, 
 		theUniaxialMaterial1, theUniaxialMaterial2, 
 		theUniaxialMaterial3, theUniaxialMaterial4, 
 		theUniaxialMaterial5, theUniaxialMaterial6,
 		theUniaxialMaterial7, theUniaxialMaterial8,
-		dData[0], dData[1], dData[2], dData[3]);
+		dData[0], dData[1], dData[2], dData[3], AggType, CracBType);
 
 	if (theMaterial == 0) {
 		opserr << "WARNING ran out of memory creating material\n";
@@ -220,27 +262,38 @@ FSAM::FSAM (int tag,
 	double ROUX,            // Reinforcing ratio of Steel X
 	double ROUY,			// Reinforcing ratio of Steel X
 	double NU,				// Friction coefficient of shear aggregate interlock
-	double ALFADOW)			// Stiffness parameter of dowel action
+	double ALFADOW,			// Stiffness parameter of dowel action
+	int AGGTYPE,			// Aggragete interlock type
+	int BRACKBTYPE)			// CrackB type
 
 	: NDMaterial(tag, ND_TAG_FSAM), 
 	rho(RHO), roux(ROUX), rouy(ROUY),	
-	nu(NU), alfadow(ALFADOW),					
+	nu(NU), alfadow(ALFADOW), typeAggLock(AGGTYPE), typeCrackB(BRACKBTYPE),			
 	strain_vec(3), stress_vec(3), tangent_matrix(3,3), 
 	CStress(3), CStrain(3), 
 	CPanelConcStress(3), CPanelSteelStress(3), TPanelConcStress(3), TPanelSteelStress(3), 
 	CStrainStressSteel1(2), CStrainStressSteel2(2), TStrainStressSteel1(2), TStrainStressSteel2(2),
-	CStrainStressConc1(2), CStrainStressConc2(2), TStrainStressConc1(2), TStrainStressConc2(2), 
+	CStrainStressConcA1(2), CStrainStressConcA2(2), TStrainStressConcA1(2), TStrainStressConcA2(2), 
+	CStrainStressConcB1(2), CStrainStressConcB2(2), TStrainStressConcB1(2), TStrainStressConcB2(2), 
 	CStrainStressInterlock1(2), CStrainStressInterlock2(2), TStrainStressInterlock1(2), TStrainStressInterlock2(2),
-	CCrackingAngles(2), pi(3.1415926535)
+	CCrackingAngles(2), pi(3.1415926535),
+	cyclicCRstrain(1),
+	SMALL(1e-30)
 {
 
+	cyclicCRstrain(0) = 0.0;
+		
 	TeTaSt = 0.0; // Direction of horizontal reinforcement (fixed for now)
+	
+	crackAcriteria = 0;
+	crackBcriteria = 0;
 
 	// Material parameters
 	E0x = 0.0;
 	E0y = 0.0;
 
 	Ec = 0.0;
+	fpc = 0.0;
 	epcc = 0.0;
 	et = 0.0;
 
@@ -285,8 +338,8 @@ FSAM::FSAM (int tag,
 	// Shear Aggregate Interlock History Variables
 	// "Transfer" variables
 	Tau_Interlock = 0.0;
-	dTau_de12 = 0.0;
-	dTau_dfcnormal = 0.0;
+	dTau_de12 = SMALL;
+	dTau_dfcnormal = SMALL;
 
 	// Crack Slip
 	TeA12 = 0.0;
@@ -316,32 +369,37 @@ FSAM::FSAM (int tag,
 
 	// Fill arrays with zeros
 	for (int i = 0; i<3; i++) {
-	TPanelConcStress(i) = 0.0;
-	TPanelSteelStress(i) = 0.0;
-	
-	CPanelConcStress(i) = 0.0;
-	CPanelSteelStress(i) = 0.0;
+		TPanelConcStress(i) = 0.0;
+		TPanelSteelStress(i) = 0.0;
+
+		CPanelConcStress(i) = 0.0;
+		CPanelSteelStress(i) = 0.0;
 	}
 
 	for (int i =0; i<2; i++) {
-	TStrainStressSteel1(i) = 0.0; 
-	TStrainStressSteel2(i) = 0.0; 
-	TStrainStressConc1(i) = 0.0;
-	TStrainStressConc2(i) = 0.0; 
-	TStrainStressInterlock1(i) = 0.0;
-	TStrainStressInterlock2(i) = 0.0; 
+		TStrainStressSteel1(i) = 0.0; 
+		TStrainStressSteel2(i) = 0.0; 
+		TStrainStressConcA1(i) = 0.0;
+		TStrainStressConcA2(i) = 0.0; 
+		TStrainStressConcB1(i) = 0.0;
+		TStrainStressConcB2(i) = 0.0; 
+		TStrainStressInterlock1(i) = 0.0;
+		TStrainStressInterlock2(i) = 0.0; 
 
-	CStrainStressSteel1(i) = 0.0; 
-	CStrainStressSteel2(i) = 0.0; 
-	CStrainStressConc1(i) = 0.0;
-	CStrainStressConc2(i) = 0.0; 
-	CStrainStressInterlock1(i) = 0.0;
-	CStrainStressInterlock2(i) = 0.0;
-	CCrackingAngles(i) = 0.0;
+		CStrainStressSteel1(i) = 0.0; 
+		CStrainStressSteel2(i) = 0.0; 
+		CStrainStressConcA1(i) = 0.0;
+		CStrainStressConcA2(i) = 0.0; 
+		CStrainStressConcB1(i) = 0.0;
+		CStrainStressConcB2(i) = 0.0; 
+		CStrainStressInterlock1(i) = 0.0;
+		CStrainStressInterlock2(i) = 0.0;
+		CCrackingAngles(i) = 0.0;
 	}
 
 	// Allocate pointers for uniaxial materials ...................................................
-	theMaterial = new UniaxialMaterial *[8];
+	// !!! MAKE NUMBER OF MATERIALS FLEXIBLE DEPENDING ON TYPE OF AGGREGATE INTERLOCK !!!
+	theMaterial = new UniaxialMaterial *[10]; // Changed from [8] to add 2 OOHM !!!
 	if ( theMaterial == 0 ) {
 		opserr << " FSAM::FSAM - failed allocate material array\n";
 		exit(-1);
@@ -395,7 +453,7 @@ FSAM::FSAM (int tag,
 		exit(-1);
 	}
 
-	// get/set responses
+	// get/set responses based on concrete material type
 	theResponses = new Response *[2];  
 	if ( theResponses == 0) {
 		opserr << " FSAM::FSAM - failed allocate responses array\n";
@@ -404,70 +462,437 @@ FSAM::FSAM (int tag,
 
 	OPS_Stream *theDummyStream = new DummyStream();
 	const char **argv = new const char *[1];
-	argv[0] = "getCommittedCyclicCrackingConcreteStrain"; // to get committed concrete cyclic cracking strain from strut A2
-	theResponses[0] = theMaterial[5]->setResponse(argv, 1, *theDummyStream);
+
+	argv[0] = "getInputParameters"; // to get input parameters from concrete material
+	theResponses[0] = theMaterial[4]->setResponse(argv, 1, *theDummyStream);
 
 	if (theResponses[0] == 0) {
-			opserr << " FSAM::FSAM - failed to set appropriate materials tag: " << tag << "\n";
-			exit(-1);
+		opserr << " FSAM::FSAM - failed to set appropriate materials tag: " << tag << "\n";
+		exit(-1);
 	}
 
-	argv[0] = "getInputParameters"; // to get input parameters from ConcreteCM
-	theResponses[1] = theMaterial[4]->setResponse(argv, 1, *theDummyStream);
+	if (strcmp(cA1->getClassType(),"ConcreteCM") == 0) { // if ConcreteCM
+		argv[0] = "getCommittedCyclicCrackingConcreteStrain"; // to get committed concrete cyclic cracking strain from strut A2
+	}
+
+	theResponses[1] = theMaterial[5]->setResponse(argv, 1, *theDummyStream);
 
 	if (theResponses[1] == 0) {
-			opserr << " FSAM::FSAM - failed to set appropriate materials tag: " << tag << "\n";
-			exit(-1);
+		opserr << " FSAM::FSAM - failed to set appropriate materials tag: " << tag << "\n";
+		exit(-1);
 	}
 
 	delete theDummyStream;
 
-	// Get ConcreteCM material input variables
-	theResponses[1]->getResponse();
-	Information &theInfoInput = theResponses[1]->getInformation();
-	const Vector InputConc = theInfoInput.getData();
-
-	for (int i=0; i<InputConc.Size() ; i++)
-	ConcreteInput[i] = InputConc[i];
-
 	// Now create monotonic concrete materials for uncracked stage of behavior
-	// Concrete 1.1
-	// Instead of: theMaterial[2] = c1->getCopy(); we are creating monotonic ConcreteCM	
-	theMaterial[2] = new ConcreteCM(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
-		ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); // create monotonic concrete
+	// Concrete 1.1 ...................................................................
+	// Instead of: theMaterial[2] = c1->getCopy(); we are creating monotonic concrete materials	
+	if (strcmp(cA1->getClassType(),"ConcreteCM") == 0) {
 
-	// Check allocation    
-	if ( theMaterial[2] == 0 ) {
-		opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+		// Get ConcreteCM material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new ConcreteCM(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); // create monotonic concrete
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[4] -> getInitialTangent();
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Cracking strain for concrete
+		et = InputConc[7];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 1;		
+
+		} else if (strcmp(cA1->getClassType(),"Concrete0") == 0) {
+
+		// Get Concrete0 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete0(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], 1); 
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[2]; 
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[1];
+
+		// Cracking strain for concrete
+		et = InputConc[4];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;
+
+	} else if (strcmp(cA1->getClassType(),"Concrete01T") == 0) {
+
+		// Get Concrete01 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete01T(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], 1); 
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		} 
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[6];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;
+
+	} else if (strcmp(cA1->getClassType(),"Concrete02") == 0) {
+
+		// Get Concrete02 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete02(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[6]/Ec;
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;	
+
+	/*} else if (strcmp(cA1->getClassType(),"Concrete02E") == 0) {
+
+		// Get Concrete02 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete02E(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1);
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[6]/Ec;
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;	*/
+
+		/*} else if (strcmp(cA1->getClassType(),"Concrete04") == 0) {
+
+		// Get Concrete04 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete04(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[6];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;	
+		*/
+		/*
+	} else if (strcmp(cA1->getClassType(),"Concrete06") == 0) {
+
+		// Get Concrete04 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+
+		theMaterial[2] = new Concrete06(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); // create monotonic concrete !!!
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[7];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;	
+		*/
+		/*
+	} else if (strcmp(cA1->getClassType(),"Concrete07") == 0) {
+
+		// Get Concrete04 material input variables
+		theResponses[0]->getResponse();
+		Information &theInfoInput = theResponses[0]->getInformation();
+		const Vector InputConc = theInfoInput.getData();
+
+		for (int i=0; i<InputConc.Size() ; i++)
+			ConcreteInput[i] = InputConc[i];
+		
+		theMaterial[2] = new Concrete07(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], 1);
+
+		// Check allocation    
+		if ( theMaterial[2] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
+			exit(-1);
+		}
+
+		// Obtain some material properties used later in the FSAM model
+		// Young's modulus for concrete
+		Ec = theMaterial[2] -> getInitialTangent();
+
+		// Peak compressive stress for concrete
+		fpc = InputConc[1];
+
+		// Strain at peak compressive stress for concrete
+		epcc = InputConc[2];
+
+		// Cracking strain for concrete
+		et = InputConc[5];
+
+		// CrackingCriteria = 1 - strain based (original), 2 - stress based (flexible)
+		CrackingCriteria = 2;	
+		*/
+	} else {
+
+		//opserr << " FSAM::FSAM - unsupported concrete material used. Use ConcreteCM, Concrete0, Concrete01T, Concrete02, Concrete02E, Concrete04, Concrete06, Concrete07.\n";
+		opserr << " FSAM::FSAM - unsupported concrete material used. Use ConcreteCM, Concrete0, Concrete01T, and oncrete02.\n";
+
 		exit(-1);
+
 	}
 
-	// Concrete 1.2
+	// Concrete 1.2 ...................................................................
 	//Instead of: theMaterial[3] = c2->getCopy();  we are creating monotonic ConcreteCM	
-	theMaterial[3] = new ConcreteCM(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
-		ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); // create monotonic concrete
+	if (strcmp(cA1->getClassType(),"ConcreteCM") == 0) {
 
-	// Check allocation    
-	if ( theMaterial[3] == 0 ) {
-		opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+		theMaterial[3] = new ConcreteCM(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); 
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}
+
+	} else if (strcmp(cA1->getClassType(),"Concrete0") == 0) {
+
+		theMaterial[3] = new Concrete0(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}
+
+	} else if (strcmp(cA1->getClassType(),"Concrete01T") == 0) {
+
+		theMaterial[3] = new Concrete01T(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}
+
+	} else if (strcmp(cA1->getClassType(),"Concrete02") == 0) {
+
+		theMaterial[3] = new Concrete02(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}
+
+	/*} else if (strcmp(cA1->getClassType(),"Concrete02E") == 0) {
+
+		theMaterial[3] = new Concrete02E(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}*/
+
+	/*} else if (strcmp(cA1->getClassType(),"Concrete04") == 0) {
+
+		theMaterial[3] = new Concrete04(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}*/
+
+	/*} else if (strcmp(cA1->getClassType(),"Concrete06") == 0) {
+
+		theMaterial[3] = new Concrete06(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}*/
+
+	/*} else if (strcmp(cA1->getClassType(),"Concrete07") == 0) {
+
+		theMaterial[3] = new Concrete07(-2222, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], 
+			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], 1);
+
+		// Check allocation    
+		if ( theMaterial[3] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
+			exit(-1);
+		}*/
+
+	} else {
+		
+		opserr << " FSAM::FSAM - Unsupported concrete material used. Use ConcreteCM, Concrete01T, Concrete02, Concrete04, Concrete06, Concrete07.\n";
 		exit(-1);
+
 	}
-
-	// Obtain some material properties used later in the FSAM model
-	// Young's modulus for concrete
-	Ec = theMaterial[4] -> getInitialTangent();
-
-	// Strain at peak compressive stress for concrete
-	epcc = InputConc[2];
-
-	// Cracking strain for concrete
-	et = InputConc[7];
 
 	// Young's modulus for steel
 	E0x = theMaterial[0] -> getInitialTangent(); // Horizontal reinforcement
 	E0y = theMaterial[1] -> getInitialTangent(); // Vertical reinforcement
 
+	// Create Shear Aggregate Interlock Materials ........................................................................
+
+	/*//if (typeAggLock != 0) {
+		theMaterial[8] = new OOHM(-3333, 0.4*Ec, 1.0, typeAggLock, this); // create OOHM and send FSAM pointer to it
+
+		// Check allocation    
+		if ( theMaterial[8] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for OOHM 1\n";
+			exit(-1);
+		}
+
+		theMaterial[9] = new OOHM(-4444, 0.4*Ec, 1.0, typeAggLock, this); // create OOHM and send FSAM pointer to it
+
+		// Check allocation    
+		if ( theMaterial[9] == 0 ) {
+			opserr << " FSAM::FSAM - failed to get a copy for OOHM 2\n";
+			exit(-1);
+		}
+	// }
+	*/
 	this->revertToStart();
+
 }
 
 // Blank constructor
@@ -476,6 +901,7 @@ FSAM::FSAM():NDMaterial(0, ND_TAG_FSAM),
 	pi(3.1415926535)
 
 {
+
 	theMaterial = 0;
 	theResponses = 0;
 
@@ -524,8 +950,11 @@ NDMaterial* FSAM::getCopy(void)
 		roux, 
 		rouy, 
 		nu,
-		alfadow);
+		alfadow,
+		typeAggLock,
+		typeCrackB);
 	
+	// ANY OTHER VARIABLES !!! ???
 	return theCopy;
 }
 
@@ -547,8 +976,11 @@ NDMaterial* FSAM::getCopy(const char *type)
 		roux, 
 		rouy,
 		nu,
-		alfadow);
+		alfadow,
+		typeAggLock,
+		typeCrackB);
 
+	// ANY OTHER VARIABLES !!! ???
 	return theModel;
 }
 
@@ -560,7 +992,7 @@ void FSAM::Print(OPS_Stream &s, int flag)
 	// Input values
 	s << "density: " << rho << endln;
 	s << "roux: " << roux << ", rouy: " << rouy << endln;
-	s << "nu: " << nu  << ", alphadow: " << alfadow << endln;	
+	s << "nu: " << nu  << ", alphadow: " << alfadow << ", CrackingCriteria: " << CrackingCriteria << endln;	
 
 	// Output values
 	// Strain and stress of the uniaxial materials
@@ -591,7 +1023,7 @@ int FSAM::sendSelf(int commitTag, Channel &theChannel)
 	int dataTag = this->getDbTag();
 
 	// Packs its data into a Vector and sends this to theChannel
-	static Vector data(6);
+	static Vector data(8);
 
 	data(0) = this->getTag();
 	data(1) = rho;
@@ -599,6 +1031,8 @@ int FSAM::sendSelf(int commitTag, Channel &theChannel)
 	data(3) = rouy;
 	data(4) = nu;
 	data(5) = alfadow;
+	data(6) = typeAggLock;
+	data(7) = typeCrackB;
 
 	res += theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
@@ -651,7 +1085,7 @@ int FSAM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 	int dataTag = this->getDbTag();
 
 	// Quad creates a Vector, receives the Vector and then sets the internal data with the data in the Vector
-	static Vector data(16);
+	static Vector data(8);
 	res += theChannel.recvVector(dataTag, commitTag, data);
 	if (res < 0) {
 		opserr << "WARNING FSAM::recvSelf() - failed to receive Vector\n";
@@ -659,11 +1093,13 @@ int FSAM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 	}
 
 	this->setTag((int)data(0));
-	rho		= data(1);
-	roux	= data(2);
-	rouy	= data(3);
-	nu		= data(4);
-	alfadow = data(5);
+	rho			= data(1);
+	roux		= data(2);
+	rouy		= data(3);
+	nu			= data(4);
+	alfadow		= data(5);
+	typeAggLock = data(6);
+	typeCrackB	= data(7);
 
 	static ID idData(16); // idData(2 x # of uniaxial materials)
 
@@ -809,13 +1245,13 @@ const Vector& FSAM::getStrain()
 	return strain_vec;
 }
 
-// Get committed stress
+// Get commited stress
 const Vector& FSAM::getCommittedStress(void)
 {
 	return CStress;
 }
 
-// Get committed strain
+// Get commited strain
 const Vector& FSAM::getCommittedStrain(void)
 {
 	return CStrain;
@@ -846,16 +1282,28 @@ Vector FSAM::getStrainStressSteel2(void)
 	return CStrainStressSteel2;
 }
 
-// Concrete stresses along 1st strut
-Vector FSAM::getStrainStressConcrete1(void) 
+// Concrete stresses along A1 strut
+Vector FSAM::getStrainStressConcreteA1(void) 
 {
-	return CStrainStressConc1;
+	return CStrainStressConcA1;
 }
 
-// Concrete stresses along 2nd strut
-Vector FSAM::getStrainStressConcrete2(void) 
+// Concrete stresses along A2 strut
+Vector FSAM::getStrainStressConcreteA2(void) 
 {
-	return CStrainStressConc2;
+	return CStrainStressConcA2;
+}
+
+// Concrete stresses along B1 strut
+Vector FSAM::getStrainStressConcreteB1(void) 
+{
+	return CStrainStressConcB1;
+}
+
+// Concrete stresses along B2 strut
+Vector FSAM::getStrainStressConcreteB2(void) 
+{
+	return CStrainStressConcB2;
 }
 
 // Aggregate interlock stresses along 1st strut
@@ -874,6 +1322,18 @@ Vector FSAM::getStrainStressInterlock2(void)
 Vector FSAM::getCrackingAngles(void) 
 {
 	return CCrackingAngles;
+}
+
+// Cyclic cracking strain (for 2nd crack criterium)
+Vector FSAM::getCyclicCrackingStrain(void) 
+{
+	return cyclicCRstrain;
+}
+
+// Cyclic cracking strain (for 2nd crack criterium)
+double FSAM::getK0scaled(void) 
+{
+	return K0;
 }
 
 // Revert to start
@@ -962,15 +1422,15 @@ int FSAM::commitState(void)
 		Cprstrain2 = Tprstrain2;
 
 		// cracking criterium for 1st crack 
-		if ( fmax(Cprstrain1,Cprstrain2) >= et) {
-
+		if ( __max(Cprstrain1,Cprstrain2) >= et) {  
+		
 			// Initiate 1st crack
 			crackA = 1;
 
 			// Calculate Direction of 1st Concrete Strut
 			double extest = 0.5*(Tstrain[0] + Tstrain[1]) + 0.5*(Tstrain[0] - Tstrain[1] )*cos( 2.0*alpha_strain ) + 0.5*Tstrain[2]*sin(2.0*alpha_strain);
 
-			if (fabs(extest-Cprstrain1) < fabs(extest-Cprstrain2))
+			if (abs(extest-Cprstrain1) < abs(extest-Cprstrain2))
 			{
 				if (Cprstrain1 >= Cprstrain2) {
 					alfa_crackA = alpha_strain;
@@ -1013,13 +1473,13 @@ int FSAM::commitState(void)
 		CeA12 = TeA12;
 		Ctau_Interlock_A = Ttau_Interlock_A;
 
-		// Store committed values compressive strain in perpendicular direction (for 2nd cracking criterium)
+		// Store committed values of tensile strain in perpendicular direction (for 2nd cracking criterium)
 		CepsA2 = TepsA2;
 
 		}
 
 		// Commit State of Uniaxial Materials
-		for (int i=0; i < 8; i++)
+		for (int i=0; i < 10; i++) // changed from 8 to 10 to include OOHM
 		{
 			theMaterial[i]->commitState();
 		}
@@ -1044,23 +1504,50 @@ int FSAM::commitState(void)
 		CeA12 = TeA12;
 		Ctau_Interlock_A = Ttau_Interlock_A;
 
-		// Store committed values compressive strain in perpendicular direction (for 2nd cracking criterium)
+		// Store committed values tensile strain in perpendicular direction (for 2nd cracking criterium)
 		CepsA2 = TepsA2;
 
 		// Commit State of Uniaxial Materials
-		for (int i=0; i < 8; i++)
+		for (int i=0; i < 10; i++)  // changed from 8 to 10 to include OOHM
 		{
 			theMaterial[i]->commitState();
 		}
 
-		// Get Committed value of cyclic cracking strain for Concrete
-		theResponses[0]->getResponse();
-		Information &theInfoA2 = theResponses[0]->getInformation();
-		double eunpA2 = theInfoA2.theDouble;
-
 		// cracking criterium for 2nd crack .....................................
-		if (CepsA2 >= eunpA2) { //eA2 from the 1st crack
+		if (CrackingCriteria == 1) { // for ConcreteCM material
 
+			// Get Committed value of cyclic cracking strain for Concrete
+			theResponses[1]->getResponse();
+			Information &theInfoA2 = theResponses[1]->getInformation();
+			double eunpA2 = theInfoA2.theDouble;
+			cyclicCRstrain(0) = eunpA2;
+
+			if (CepsA2 >= eunpA2) { 
+				crackBcriteria = 1;
+			}
+
+		} else { // for all other concrete materials !!! two options considered (see below). Both give almost identical results !!!
+
+			if (typeCrackB == 10) {
+
+				if ( TStrainStressConcA2(1) >= 0.0) { // 1) stress goes into tension along 1st strut
+					crackBcriteria = 1;
+				}
+
+			} else if (typeCrackB == 20) {
+
+				if ( TStrainStressConcA2(0) >= et) {	// 2) strain exceeds mon. cr. strain along 1st strut
+					crackBcriteria = 1;
+				}
+
+			}
+
+		}
+
+		// Check if 2nd crack initiated
+		// if (CepsA2 >= eunpA2) { //eA2 from the 1st crack (old)
+		if (crackBcriteria == 1) { 
+		
 			// Initiate 2nd crack
 			crackB = 1; 
 
@@ -1090,7 +1577,7 @@ int FSAM::commitState(void)
 			Ctau_Interlock_B = Ttau_Interlock_B;
 
 			// Commit State of Uniaxial Materials
-			for (int i=0; i < 8; i++)
+			for (int i=0; i < 10; i++)  // changed from 8 to 10 to include OOHM
 			{
 				theMaterial[i]->commitState();
 			}
@@ -1120,7 +1607,7 @@ int FSAM::commitState(void)
 		Ctau_Interlock_B = Ttau_Interlock_B;
 
 		// Commit State of Uniaxial Materials
-		for (int i=0; i < 8; i++)
+		for (int i=0; i < 10; i++)  // changed from 8 to 10 to include OOHM
 		{
 			theMaterial[i]->commitState();
 		}
@@ -1154,11 +1641,17 @@ int FSAM::commitState(void)
 	CStrainStressSteel2(0) = TStrainStressSteel2(0); 
 	CStrainStressSteel2(1) = TStrainStressSteel2(1); 
 
-	CStrainStressConc1(0) = TStrainStressConc1(0);
-	CStrainStressConc1(1) = TStrainStressConc1(1);
+	CStrainStressConcA1(0) = TStrainStressConcA1(0);
+	CStrainStressConcA1(1) = TStrainStressConcA1(1);
 
-	CStrainStressConc2(0) = TStrainStressConc2(0);
-	CStrainStressConc2(1) = TStrainStressConc2(1);
+	CStrainStressConcA2(0) = TStrainStressConcA2(0);
+	CStrainStressConcA2(1) = TStrainStressConcA2(1);
+
+	CStrainStressConcB1(0) = TStrainStressConcB1(0);
+	CStrainStressConcB1(1) = TStrainStressConcB1(1);
+
+	CStrainStressConcB2(0) = TStrainStressConcB2(0);
+	CStrainStressConcB2(1) = TStrainStressConcB2(1);
 
 	CStrainStressInterlock1(0) = TStrainStressInterlock1(0);
 	CStrainStressInterlock1(1) = TStrainStressInterlock1(1);
@@ -1175,7 +1668,7 @@ int FSAM::commitState(void)
 // Revert to previously converged state
 int FSAM::revertToLastCommit(void)
 {
-	for (int i=0; i < 8; i++) {
+	for (int i=0; i < 10; i++) { // changed from 8 to 10 to include OOHM
 		theMaterial[i]->revertToLastCommit();
 	}
 
@@ -1346,8 +1839,8 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	fc1 = theMaterial[2]->getStress();
 	Ect1 = theMaterial[2]->getTangent();
 	
-	TStrainStressConc1(0) = ec1;
-	TStrainStressConc1(1) = fc1;
+	TStrainStressConcA1(0) = ec1;
+	TStrainStressConcA1(1) = fc1;
 
 	// Get softened concrete One 
 	betaf4(ec2, epcc, fc1, Cepscmax2);
@@ -1368,8 +1861,8 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	fc2 = theMaterial[3]->getStress();
 	Ect2 = theMaterial[3]->getTangent();
 
-	TStrainStressConc2(0) = ec2;
-	TStrainStressConc2(1) = fc2;
+	TStrainStressConcA2(0) = ec2;
+	TStrainStressConcA2(1) = fc2;
 
 	// Get Softened Concrete Two
 	betaf4(ec1, epcc, fc2, Cepscmax1);
@@ -1439,6 +1932,13 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	stress_vec(1) = fy;
 	stress_vec(2) = tauxy;
 
+	/*// DEBUG
+	if ( _isnan(fx) == 1 || _isnan(fy) == 1 || _isnan(tauxy) == 1 || fx >= DBL_MAX || fx <= -DBL_MAX || fy >= DBL_MAX || fy <= -DBL_MAX || tauxy >= DBL_MAX || tauxy <= -DBL_MAX ) { 
+
+		opserr << "PANEL NaN or INF FOUND \n";
+
+	} // */
+
 	// Calculate tangent_matrix
 	if (ex == ey) {
 		R = 1.0;
@@ -1451,6 +1951,18 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	dsxdex = ((pow((1.0 + sqrt(R)),2.0)*stifcu11F)/R + stifcu12F + stifcu21F + stifcu22F +
 		((2.0*(Fcu1F - Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) - sqrt(R)*(stifcu12F + stifcu21F - stifcu22F) - 2.0*R*stifcu22F)/pow(R,1.5))/4.0 + 
 		(4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+
+	/*// DEBUG
+	if ( (_isnan(dsxdex) == 1 || dsxdex >= DBL_MAX || dsxdex <= -DBL_MAX) && first_iteration != 1 ) { 
+
+		double try_1 = (pow((1.0 + sqrt(R)),2.0)*stifcu11F)/R + stifcu12F + stifcu21F + stifcu22F + ((2.0*(Fcu1F - Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) - sqrt(R)*(stifcu12F + stifcu21F - stifcu22F) - 2.0*R*stifcu22F)/pow(R,1.5);
+		double try_11 = (pow((1.0 + sqrt(R)),2.0)*stifcu11F)/R;
+		double try_12= stifcu12F + stifcu21F + stifcu22F + ((2.0*(Fcu1F - Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) - sqrt(R)*(stifcu12F + stifcu21F - stifcu22F) - 2.0*R*stifcu22F)/pow(R,1.5);
+		
+		double try_2 = (4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+		double try_3 = (4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+
+	} // */
 
 	dsxdey = (((-1.0 + R)*stifcu11F)/R + stifcu12F + stifcu21F + ((2.0*(-Fcu1F + Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) + 2.0*R*(stifcu12F - stifcu21F) + 
 		sqrt(R)*(stifcu12F + stifcu21F - stifcu22F))/pow(R,1.5) + stifcu22F)/4.0 + 
@@ -1497,7 +2009,7 @@ void FSAM::Stage1(double &ex, double &ey, double &gamma)
 	tangent_matrix(2,1) = dtxydey;
 	tangent_matrix(2,2) = dtxydgamma;
 
-	// if 1st iteration calculate initial stiffness
+	// if 1st interation calculate initial stiffness
 
 	if (first_iteration == 1) {
 		tangent_matrix = this->getInitialTangent();
@@ -1643,8 +2155,8 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 	fc1 = theMaterial[4]->getStress();
 	Ect1 = theMaterial[4]->getTangent();
 
-	TStrainStressConc1(0) = ec1;
-	TStrainStressConc1(1) = fc1;
+	TStrainStressConcA1(0) = ec1;
+	TStrainStressConcA1(1) = fc1;
 
 	// Get Softened Concrete A1 
 	betaf4(ec2, epcc, fc1, CepscmaxA2);
@@ -1661,8 +2173,8 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 	fc2 = theMaterial[5]->getStress();
 	Ect2 = theMaterial[5]->getTangent();
 
-	TStrainStressConc2(0) = ec2;
-	TStrainStressConc2(1) = fc2;
+	TStrainStressConcA2(0) = ec2;
+	TStrainStressConcA2(1) = fc2;
 
 	// Get Softened Concrete A2
 	betaf4(ec1, epcc, fc2, CepscmaxA1);
@@ -1674,12 +2186,64 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 	stifc21 = delbeta2 * fc2;
 	stifc22 = beta2 * Ect2;
 
-	// Shear Aggregate Interlock
-	InterLocker_improved(e1, fcmod1, TeA12, CeA12, epcc, Ec, Ctau_Interlock_A);
+	// Shear Aggregate Interlock ...........................................................
+	double dtAggde12;
+	double dtAggdfc1;
 
-	Ttau_Interlock_A = Tau_Interlock;
-	double dtAggde12 = dTau_de12;
-	double dtAggdfc1 = dTau_dfcnormal;
+	if (typeAggLock == 0) {
+
+		// ................................................. OLD
+		InterLocker_improved(e1, fcmod1, TeA12, CeA12, epcc, Ec, Ctau_Interlock_A);
+
+		Ttau_Interlock_A = Tau_Interlock;
+		dtAggde12 = dTau_de12;
+		dtAggdfc1 = dTau_dfcnormal;
+		// ................................................. OLD */
+
+	} else if (typeAggLock == 4) { // Linear Elastic Interlock
+
+		/*
+		InterLocker_LinearElastic(TeA12, Ec);
+
+		Ttau_Interlock_A = Tau_Interlock;
+		dtAggde12 = dTau_de12;
+		dtAggdfc1 = dTau_dfcnormal; // */
+
+
+		Ttau_Interlock_A = TeA12*0.4*Ec;
+		dtAggde12 = 0.4*Ec;
+		dtAggdfc1 = SMALL; // */
+
+	} else {
+
+		// ................................................. NEW
+		double scale;
+
+		if (fcmod1 == 0.0) {
+			scale = 1.0; // Scale factor
+		} else { 
+			scale = -fcmod1*nu; // Scale factor
+		}
+
+		K0 = abs(0.4*Ec/scale); // pass this to OOHM (temporary value)
+
+		theMaterial[8]->setTrialStrain( TeA12 );
+		double FAggA = theMaterial[8]->getStress(); // get Interlock Stress
+		double StifAggA = theMaterial[8]->getTangent(); // Esget Interlock Tangent
+
+		// Scaling
+		if (fcmod1 >= 0) {
+			Ttau_Interlock_A = 0;
+			dtAggde12 = 0;
+			dtAggdfc1 = 0;
+		} else {
+			Ttau_Interlock_A = scale*FAggA;
+			dtAggde12 = scale*StifAggA;
+			dtAggdfc1 = -nu*FAggA;
+		}
+
+		//..................................................NEW */
+	}
 
 	// Interlock Stress Strain One
 	TStrainStressInterlock1(0) = TeA12;
@@ -1746,7 +2310,7 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 	TPanelSteelStress(1) = fsty; 
 	TPanelSteelStress(2) = taustxy;
 
-	// Stress Super Position | CONCRETE + STEEL
+	// Stress Superposition | CONCRETE + STEEL
 	fx = fcx+fstx;
 	fy = fcy+fsty;
 	tauxy = taucxy+taustxy;
@@ -1754,6 +2318,13 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 	stress_vec(0) = fx;
 	stress_vec(1) = fy;
 	stress_vec(2) = tauxy;
+
+	/*// DEBUG
+	if ( _isnan(fx) == 1 || _isnan(fy) == 1 || _isnan(tauxy) == 1 || fx >= DBL_MAX || fx <= -DBL_MAX || fy >= DBL_MAX || fy <= -DBL_MAX || tauxy >= DBL_MAX || tauxy <= -DBL_MAX ) { 
+
+		opserr << "PANEL NaN or INF FOUND \n";
+
+	} // */
 
 	// Calculate tangent_matrix
 
@@ -1770,6 +2341,20 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 		(-4.0*dtAggde12 + stifcu11F - stifcu12F - stifcu21F + stifcu22F)*cos(4.0*alfacrA) - 
 		4.0*dtAggdfc1*(stifcu11F + stifcu12F + (stifcu11F - stifcu12F)*cos(2.0*alfacrA))*sin(2.0*alfacrA))/8.0 + 
 		(4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+
+	// DEBUG
+	if ( (_isnan(dsxdex) == 1 || dsxdex >= DBL_MAX || dsxdex <= -DBL_MAX)) { 
+
+		double try_1 = (pow((1.0 + sqrt(R)),2.0)*stifcu11F)/R + stifcu12F + stifcu21F + stifcu22F + ((2.0*(Fcu1F - Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) - sqrt(R)*(stifcu12F + stifcu21F - stifcu22F) - 2.0*R*stifcu22F)/pow(R,1.5);
+		double try_11 = (pow((1.0 + sqrt(R)),2.0)*stifcu11F)/R;
+		double try_12= stifcu12F + stifcu21F + stifcu22F + ((2.0*(Fcu1F - Fcu2F)*pow(gamma,2.0))/pow((ex - ey),3.0) - sqrt(R)*(stifcu12F + stifcu21F - stifcu22F) - 2.0*R*stifcu22F)/pow(R,1.5);
+		
+		double try_2 = (4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+		double try_3 = (4.0*(stifstxpF*roux - stifstypF*rouy)*cos(2.0*TeTaSt) + (stifstxpF*roux + stifstypF*rouy)*(3.0 + cos(4.0*TeTaSt)))/8.0;
+
+
+	} // */
+
 
 	dsxdey =  stifcu12F * pow(cos(alfacrA),4.0) - 2.0*dtAggdfc1*stifcu12F*pow(cos(alfacrA),3.0)*sin(alfacrA) + (-4.0*dtAggde12 + stifcu11F + stifcu22F)*pow(cos(alfacrA),2.0)*pow(sin(alfacrA),2.0) - 
 		2.0*dtAggdfc1*stifcu11F*cos(alfacrA)*pow(sin(alfacrA),3.0) + stifcu21F*pow(sin(alfacrA),4.0)+ 
@@ -2010,8 +2595,8 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	fcA1 = theMaterial[4]->getStress();
 	EctA1 = theMaterial[4]->getTangent();
 
-	TStrainStressConc1(0) = ecA1;
-	TStrainStressConc1(1) = fcA1;
+	TStrainStressConcA1(0) = ecA1;
+	TStrainStressConcA1(1) = fcA1;
 
 	// Get Softened Concrete A1 
 	betaf4(ecA2, epcc, fcA1, CepscmaxA2);
@@ -2028,8 +2613,8 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	fcA2 = theMaterial[5]->getStress();
 	EctA2 = theMaterial[5]->getTangent();
 
-	TStrainStressConc2(0) = ecA2;
-	TStrainStressConc2(1) = fcA2;
+	TStrainStressConcA2(0) = ecA2;
+	TStrainStressConcA2(1) = fcA2;
 
 	// Get Softened Concrete A2
 	betaf4(ecA1, epcc, fcA2, CepscmaxA1); 
@@ -2047,6 +2632,9 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	fcB1 = theMaterial[6]->getStress();
 	EctB1 = theMaterial[6]->getTangent();
 
+	TStrainStressConcB1(0) = ecB1;
+	TStrainStressConcB1(1) = fcB1;
+
 	// Get Softened Concrete B1 
 	betaf4(ecB2, epcc, fcB1, CepscmaxB2);
 	TepscmaxB2 = epsiloncmax;
@@ -2061,6 +2649,9 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	theMaterial[7]->setTrialStrain( ecB2 );
 	fcB2 = theMaterial[7]->getStress();
 	EctB2 = theMaterial[7]->getTangent();
+	
+	TStrainStressConcB2(0) = ecB2;
+	TStrainStressConcB2(1) = fcB2;
 
 	// Get Softened Concrete B2
 	betaf4(ecB1, epcc, fcB2, CepscmaxB1); 
@@ -2072,12 +2663,62 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	stifcB21 = delbetaB2 * fcB2;
 	stifcB22 = betaB2 * EctB2;
 
-	// Shear Aggregate Interlock - Strut A
-	InterLocker_improved(eA1, fcmodA1, TeA12, CeA12, epcc, Ec, Ctau_Interlock_A);
+	// Shear Aggregate Interlock  - Strut A ....................................................
+	double dtAggde12A;
+	double dtAggdfc1A;
 
-	Ttau_Interlock_A = Tau_Interlock;
-	double dtAggde12A = dTau_de12;
-	double dtAggdfc1A = dTau_dfcnormal;
+	if (typeAggLock == 0) {
+		// ................................................. OLD
+		InterLocker_improved(eA1, fcmodA1, TeA12, CeA12, epcc, Ec, Ctau_Interlock_A);
+
+		Ttau_Interlock_A = Tau_Interlock;
+		dtAggde12A = dTau_de12;
+		dtAggdfc1A = dTau_dfcnormal;
+
+		// ................................................. OLD */
+
+	} else if (typeAggLock == 4) { // Linear Elastic Interlock
+
+		/*
+		InterLocker_LinearElastic(TeA12, Ec);
+
+		Ttau_Interlock_A = Tau_Interlock;
+		dtAggde12A = dTau_de12;
+		dtAggdfc1A = dTau_dfcnormal; // */
+
+		
+		Ttau_Interlock_A = TeA12*0.4*Ec;
+		dtAggde12A = 0.4*Ec;
+		dtAggdfc1A = SMALL; // */
+
+	} else {
+		// ................................................. NEW
+		double scaleA;
+
+		if (fcmodA1 == 0.0) {
+			scaleA = 1.0; // Scale factor
+		} else { 
+			scaleA = -fcmodA1*nu; // Scale factor
+		}
+
+		K0 = abs(0.4*Ec/scaleA); // pass this to OOHM (temporary value)
+
+		theMaterial[8]->setTrialStrain( TeA12 );
+		double FAggA = theMaterial[8]->getStress(); // get Interlock Stress
+		double StifAggA = theMaterial[8]->getTangent(); // Esget Interlock Tangent
+
+		// Scaling
+		if (fcmodA1 >= 0) {
+			Ttau_Interlock_A = 0;
+			dtAggde12A = 0;
+			dtAggdfc1A = 0;
+		} else {
+			Ttau_Interlock_A = scaleA*FAggA;
+			dtAggde12A = scaleA*StifAggA;
+			dtAggdfc1A = -nu*FAggA;
+		}
+		//..................................................NEW */
+	}
 
 	// Interlock Stress Strain - Strut A
 	TStrainStressInterlock1(0) = TeA12;
@@ -2088,19 +2729,68 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	fcyA = ((0.0+fcmodA2)/2.0) - (((0.0-fcmodA2)/2.0)*cos(2.0*alfacrA))+(Ttau_Interlock_A*(sin(2.0*alfacrA)));
 	taucxyA = (((0.0-fcmodA2)/2.0)*sin(2.0*alfacrA)) + (((Ttau_Interlock_A*cos(2.0*alfacrA))));
 
-	stifcu11FA = 0.0;
-	stifcu12FA = 0.0;
+	stifcu11FA = SMALL;
+	stifcu12FA = SMALL;
 	stifcu21FA = stifcA21;
 	stifcu22FA = stifcA22;
-	Fcu1FA = 0.0;
+	Fcu1FA = SMALL;
 	Fcu2FA = fcmodA2;
 
-	// Shear Aggregate Interlock - Strut B
-	InterLocker_improved(eB1, fcmodB1, TeB12, CeB12, epcc, Ec, Ctau_Interlock_B);
+	// Shear Aggregate Interlock - Strut B ......................................
+	double dtAggde12B;
+	double dtAggdfc1B;
 
-	Ttau_Interlock_B = Tau_Interlock;
-	double dtAggde12B = dTau_de12;
-	double dtAggdfc1B = dTau_dfcnormal;
+	if (typeAggLock == 0) { // Original Interlock
+		// ................................................. OLD
+		InterLocker_improved(eB1, fcmodB1, TeB12, CeB12, epcc, Ec, Ctau_Interlock_B);
+
+		Ttau_Interlock_B = Tau_Interlock;
+		dtAggde12B = dTau_de12;
+		dtAggdfc1B = dTau_dfcnormal;
+		// ................................................. OLD */
+
+	} else if (typeAggLock == 4) { // Linear Elastic Interlock
+
+		/*
+		InterLocker_LinearElastic(TeB12, Ec);
+
+		Ttau_Interlock_B = Tau_Interlock;
+		dtAggde12B = dTau_de12;
+		dtAggdfc1B = dTau_dfcnormal; // */
+
+		
+		Ttau_Interlock_B = TeB12*0.4*Ec;
+		dtAggde12B = 0.4*Ec;
+		dtAggdfc1B = SMALL; // */
+
+	} else {
+		// ................................................. NEW
+		double scaleB;
+
+		if (fcmodB1 == 0.0) {
+			scaleB = 1.0; // Scale factor
+		} else { 
+			scaleB = -fcmodB1*nu; // Scale factor
+		}
+
+		K0 = abs(0.4*Ec/scaleB); // pass this to OOHM  (temporary value)
+
+		theMaterial[9]->setTrialStrain( TeB12 );
+		double FAggB = theMaterial[9]->getStress(); // get Interlock Stress
+		double StifAggB = theMaterial[9]->getTangent(); // Esget Interlock Tangent
+
+		// Scaling
+		if (fcmodB1 >= 0) {
+			Ttau_Interlock_B = 0;
+			dtAggde12B = 0;
+			dtAggdfc1B = 0;
+		} else {
+			Ttau_Interlock_B = scaleB*FAggB;
+			dtAggde12B = scaleB*StifAggB;
+			dtAggdfc1B = -nu*FAggB;
+		}
+		//..................................................NEW */
+	}
 
 	// Interlock Stress Strain - Strut B
 	TStrainStressInterlock2(0) = TeB12;
@@ -2111,11 +2801,11 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	fcyB = ((0.0+fcmodB2)/2.0) - (((0.0-fcmodB2)/2.0)*cos(2.0*alfacrB))+(Ttau_Interlock_B*(sin(2.0*alfacrB)));
 	taucxyB = (((0.0-fcmodB2)/2.0)*sin(2.0*alfacrB)) + (((Ttau_Interlock_B*cos(2.0*alfacrB))));
 
-	stifcu11FB = 0.0;
-	stifcu12FB = 0.0;
+	stifcu11FB = SMALL;
+	stifcu12FB = SMALL;
 	stifcu21FB = stifcB21;
 	stifcu22FB = stifcB22;
-	Fcu1FB = 0.0;
+	Fcu1FB = SMALL;
 	Fcu2FB = fcmodB2;
 
 	// CONCRETE Stress Superposition - Strut A + Strut B
@@ -2181,7 +2871,7 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	TPanelSteelStress(1) = fsty; 
 	TPanelSteelStress(2) = taustxy;
 
-	// Stress Super Position | CONCRETE + STEEL
+	// Stress Superposition | CONCRETE + STEEL
 	fx = fcx+fstx; // fx
 	fy = fcy+fsty; // fy
 	tauxy = taucxy+taustxy; // tauxy
@@ -2190,6 +2880,13 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 	stress_vec(1) = fy;
 	stress_vec(2) = tauxy;
 	
+	/*// DEBUG
+	if ( _isnan(fx) == 1 || _isnan(fy) == 1 || _isnan(tauxy) == 1 || fx >= DBL_MAX || fx <= -DBL_MAX || fy >= DBL_MAX || fy <= -DBL_MAX || tauxy >= DBL_MAX || tauxy <= -DBL_MAX ) { 
+
+		opserr << "PANEL NaN or INF FOUND \n";
+
+	} // */
+
 	// Calculate tangent_matrix
 	if (ex == ey) {
 		R = 1.0;
@@ -2283,7 +2980,7 @@ void FSAM::Stage3(double &ex, double &ey, double &gamma)
 
 }
 
-// Shear Aggregate Interlock Model
+// Shear Aggregate Interlock Model - Original
 void FSAM::InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double &e_cr_parallel, double &e_cr_parallel_old,  double &epc, double &Ec, double &Tau_Interlock_old)
 {
 
@@ -2294,27 +2991,27 @@ void FSAM::InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double
 		if (f_cr_normal >= 0.0) // interlock stress is zero when crack under tension
 		{
 			Tau_Interlock = 0.0;
-			dTau_de12 = 0.0;
-			dTau_dfcnormal = 0.0;
+			dTau_de12 = SMALL;
+			dTau_dfcnormal = SMALL;
 		}
 
 		else 
 		{
 			Tau_Interlock = Tau_Interlock_old+slope*(e_cr_parallel-e_cr_parallel_old);
 			dTau_de12 = slope;
-			dTau_dfcnormal = 0.0;
+			dTau_dfcnormal = SMALL;
 
 			if (Tau_Interlock > -(nu*f_cr_normal)) 
 			{
 				Tau_Interlock = -(nu*f_cr_normal);
-				dTau_de12 = 0.0;
+				dTau_de12 = SMALL;
 				dTau_dfcnormal = -nu;  // original
 				//dTau_dfcnormal = nu;
 			} 
 			else if (Tau_Interlock < (nu*f_cr_normal)) 
 			{
 				Tau_Interlock = (nu*f_cr_normal);
-				dTau_de12 = 0.0;
+				dTau_de12 = SMALL;
 				dTau_dfcnormal = nu;   //original
 				//dTau_dfcnormal = -nu;
 			}
@@ -2324,22 +3021,22 @@ void FSAM::InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double
 	else if (e_cr_parallel>e_cr_parallel_old)
 
 	{
-		if (f_cr_normal>=0)
+		if (f_cr_normal>=0.0)
 		{
-			Tau_Interlock=0;
-			dTau_de12=0;
-			dTau_dfcnormal=0;
+			Tau_Interlock=0.0;
+			dTau_de12=SMALL;
+			dTau_dfcnormal=SMALL;
 		}
 		else
 		{
 			Tau_Interlock = Tau_Interlock_old+slope*(e_cr_parallel-e_cr_parallel_old);
 			dTau_de12 = slope;
-			dTau_dfcnormal = 0.0;
+			dTau_dfcnormal = SMALL;
 
 			if (Tau_Interlock>-(nu*f_cr_normal))
 			{
 				Tau_Interlock = -(nu*f_cr_normal);
-				dTau_de12 = 0.0;
+				dTau_de12 = SMALL;
 				dTau_dfcnormal = -nu;  //original
 				//dTau_dfcnormal=nu;
 			}
@@ -2351,8 +3048,8 @@ void FSAM::InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double
 		if (f_cr_normal > 0.0)
 		{
 			Tau_Interlock = 0.0;
-			dTau_de12 = 0.0;
-			dTau_dfcnormal = 0.0;
+			dTau_de12 = SMALL;
+			dTau_dfcnormal = SMALL;
 		}
 
 		else
@@ -2360,17 +3057,28 @@ void FSAM::InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double
 		{
 			Tau_Interlock=Tau_Interlock_old+slope*(e_cr_parallel-e_cr_parallel_old);
 			dTau_de12=slope;
-			dTau_dfcnormal=0;
+			dTau_dfcnormal=SMALL;
 
-			if (Tau_Interlock<(nu*f_cr_normal))
+			if (Tau_Interlock < (nu*f_cr_normal))
 			{
-				Tau_Interlock=(nu*f_cr_normal);
-				dTau_de12=0;
-				dTau_dfcnormal=nu;   //original
+				Tau_Interlock = (nu*f_cr_normal);
+				dTau_de12 = SMALL;
+				dTau_dfcnormal = nu;   //original
 				//dTau_dfcnormal=-nu;
 			}
 		}
 	}
+
+}
+
+// Shear Aggregate Interlock Model - Linear Elastic 
+void FSAM::InterLocker_LinearElastic(double &e_cr_parallel, double &Ec)
+{
+	double slope = 0.4*Ec; // shear stiffness coefficient G (fixed value)
+ 
+	Tau_Interlock = slope*(e_cr_parallel);
+	dTau_de12 = slope;
+	dTau_dfcnormal = SMALL;
 
 }
 
@@ -2392,19 +3100,19 @@ void FSAM::betaf4(double &eo, double &epc, double &fc, double &epsmax)
 	double x_coeff;
 
 	double Kc=(0.27*(-eo/epc-0.37)); // Equation of Vecchio Model B
-
-	double beta_m=1/(1+Kc);
+		
+	double beta_m=1.0/(1.0+Kc);
 
 	double delbeta_m=pow(beta_m,2.0)*0.27/epc;
 
-	if ((beta_m>1)||(eo<0)){   
-		beta_m=1;
-		delbeta_m=0;
+	if ((beta_m > 1.0)||(eo < 0.0)){   
+		beta_m = 1.0;
+		delbeta_m = 0.0;
 	}
 
-	if (fc>0){
-		beta_m=1;
-		delbeta_m=0;
+	if (fc > 0.0){
+		beta_m = 1.0;
+		delbeta_m = 0.0;
 	}
 
 	//  Beta Damage
@@ -2417,21 +3125,22 @@ void FSAM::betaf4(double &eo, double &epc, double &fc, double &epsmax)
 
 	x_coeff=(epsiloncmax/epc);
 
-	if (x_coeff>1) {
-		x_coeff=1;
+	if (x_coeff > 1.0) {
+		x_coeff = 1.0;
 	}
 
-	if (x_coeff < 0) {
+	if (x_coeff < 0.0 & -1.0*x_coeff > 0.0001) { // !!! TO REMOVE NUMERICAL ERROR FOR ZERO LOAD !!!
+	//if (x_coeff < 0.0) { // !!! TO REMOVE NUMERICAL ERROR FOR ZERO LOAD !!!
 		//x_coeff=1;
-		x_coeff=0;
+		x_coeff = 0.0;
 		opserr << " Damage Coefficient ErRoR !\n";
-		exit(-1); // STOP
+		exit(-1); // STOP 
 	}
 
-	double beta_d=(1-(0.4*x_coeff));
+	double beta_d=(1.0-(0.4*x_coeff));
 
-	beta=(beta_m*beta_d);
-	delbeta=delbeta_m;
+	beta = (beta_m*beta_d);
+	delbeta = delbeta_m;
 }
 
 // Set Response
@@ -2481,47 +3190,80 @@ Response* FSAM::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
 
 		theResponse = new MaterialResponse(this, 106, data6);
 	
-	} else if (strcmp(argv[0],"strain_stress_concrete1") == 0 || strcmp(argv[0],"Strain_Stress_Concrete1") == 0) {
+	} else if (strcmp(argv[0],"strain_stress_concreteA1") == 0 || strcmp(argv[0],"Strain_Stress_ConcreteA1") == 0) {
 
 		Vector data7(2);
 		data7.Zero();
 
 		theResponse = new MaterialResponse(this, 107, data7);
 	
-	} else if (strcmp(argv[0],"strain_stress_concrete2") == 0 || strcmp(argv[0],"Strain_Stress_Concrete2") == 0) {
+	} else if (strcmp(argv[0],"strain_stress_concreteA2") == 0 || strcmp(argv[0],"Strain_Stress_ConcreteA2") == 0) {
 
 		Vector data8(2);
 		data8.Zero();
 
 		theResponse = new MaterialResponse(this, 108, data8);
 
-	} else if (strcmp(argv[0],"strain_stress_interlock1") == 0 || strcmp(argv[0],"Strain_Stress_Interlock1") == 0) {
+	} else if (strcmp(argv[0],"strain_stress_concreteB1") == 0 || strcmp(argv[0],"Strain_Stress_ConcreteB1") == 0) {
 
 		Vector data9(2);
 		data9.Zero();
 
 		theResponse = new MaterialResponse(this, 109, data9);
-
-	} else if (strcmp(argv[0],"strain_stress_interlock2") == 0 || strcmp(argv[0],"Strain_Stress_Interlock2") == 0) {
+	
+	} else if (strcmp(argv[0],"strain_stress_concreteB2") == 0 || strcmp(argv[0],"Strain_Stress_ConcreteB2") == 0) {
 
 		Vector data10(2);
 		data10.Zero();
 
 		theResponse = new MaterialResponse(this, 110, data10);
 
-	} else if (strcmp(argv[0],"cracking_angles") == 0 || strcmp(argv[0],"Cracking_Angles") == 0) {
+	} else if (strcmp(argv[0],"strain_stress_interlock1") == 0 || strcmp(argv[0],"Strain_Stress_Interlock1") == 0) {
 
 		Vector data11(2);
 		data11.Zero();
 
 		theResponse = new MaterialResponse(this, 111, data11);
+
+	} else if (strcmp(argv[0],"strain_stress_interlock2") == 0 || strcmp(argv[0],"Strain_Stress_Interlock2") == 0) {
+
+		Vector data12(2);
+		data12.Zero();
+
+		theResponse = new MaterialResponse(this, 112, data12);
+
+	} else if (strcmp(argv[0],"cracking_angles") == 0 || strcmp(argv[0],"Cracking_Angles") == 0) {
+
+		Vector data13(2);
+		data13.Zero();
+
+		theResponse = new MaterialResponse(this, 113, data13);
+
+	} else if (strcmp(argv[0],"cycliccrackingstrain") == 0 || strcmp(argv[0],"CyclicCrackingStrain") == 0) {
+
+		Vector data14(1);
+		data14.Zero();
+
+		theResponse = new MaterialResponse(this, 114, data14);
 	
+	} else if (strcmp(argv[0],"getK0scaled") == 0 || strcmp(argv[0],"getK0") == 0) {
+
+		double data15 = 0.0;
+		theResponse = new MaterialResponse(this, 115, data15);
+	
+	} else if (strcmp(argv[0],"getInputParameters") == 0) {
+
+		Vector data16(10);
+		data16.Zero();
+		theResponse = new MaterialResponse(this, 116, data16);
+
 	} else
 
 		return this->NDMaterial::setResponse(argv, argc, theOutput);
 
 	return theResponse;
 }
+
 
 // Get Response
 int FSAM::getResponse(int responseID, Information &matInfo)
@@ -2545,23 +3287,59 @@ int FSAM::getResponse(int responseID, Information &matInfo)
 		return matInfo.setVector(this->getStrainStressSteel2()); 
 
 	} else if (responseID == 107){
-		return matInfo.setVector(this->getStrainStressConcrete1());
+		return matInfo.setVector(this->getStrainStressConcreteA1());
 
 	} else if (responseID == 108){
-		return matInfo.setVector(this->getStrainStressConcrete2()); 
+		return matInfo.setVector(this->getStrainStressConcreteA2()); 
 
 	} else if (responseID == 109){
-		return matInfo.setVector(this->getStrainStressInterlock1()); 
+		return matInfo.setVector(this->getStrainStressConcreteB1());
 
 	} else if (responseID == 110){
-		return matInfo.setVector(this->getStrainStressInterlock2()); 
+		return matInfo.setVector(this->getStrainStressConcreteB2()); 
 
 	} else if (responseID == 111){
+		return matInfo.setVector(this->getStrainStressInterlock1()); 
+
+	} else if (responseID == 112){
+		return matInfo.setVector(this->getStrainStressInterlock2()); 
+
+	} else if (responseID == 113){
 		return matInfo.setVector(this->getCrackingAngles()); 
+
+	} else if (responseID == 114){
+		return matInfo.setVector(this->getCyclicCrackingStrain()); 
+
+	} else if (responseID == 115){
+		return matInfo.theDouble = this->getK0scaled();
+
+	} else 	if (responseID == 116) {
+		return matInfo.setVector(this->getInputParameters()); 
 
 	} else {
 
 	return 0;
 
 	}
+}
+
+// KK
+Vector FSAM::getInputParameters(void)
+{
+	Vector input_par(10); // size = max number of parameters (assigned + default)
+
+	input_par.Zero();
+
+	input_par(0) = this->getTag(); 
+	input_par(1) = rho; 
+	input_par(2) = fpc;
+	input_par(3) = roux;
+	input_par(4) = rouy;
+	input_par(5) = nu;
+	input_par(6) = alfadow;
+	input_par(7) = typeAggLock;
+	input_par(8) = typeCrackB;
+	input_par(9) = Ec; // added for quadWall element
+
+	return input_par;
 }

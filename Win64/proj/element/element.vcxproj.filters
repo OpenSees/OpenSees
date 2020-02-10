@@ -863,6 +863,21 @@
     <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\FourNodeMVLEM3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuadWall3d.cpp">
+      <Filter>quad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\TclFourNodeMVLEM3DCommand.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\FourNodeSFI_MVLEM3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\TclFourNodeSFI_MVLEM3DCommand.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1536,6 +1551,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\ExternalElement.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\FourNodeMVLEM3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuadWall3d.h">
+      <Filter>quad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\FourNodeSFI_MVLEM3D.h">
+      <Filter>mvlem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

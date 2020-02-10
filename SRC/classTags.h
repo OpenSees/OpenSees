@@ -225,7 +225,8 @@
 #define MAT_TAG_QzSimple2                    212
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
-
+#define MAT_TAG_Concrete0					 215 // CSUF
+#define MAT_TAG_Concrete01T					 216 // CSUF
 
 
 #define MAT_TAG_FedeasMaterial    1000
@@ -313,6 +314,7 @@
 #define SEC_TAG_MembranePlateFiberSectionThermal 34  // L.Jiang[SIF]
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
 #define SEC_TAG_BiaxialHysteretic 36
+#define SEC_TAG_ElasticMembranePlateSectionUncoupled 37 // CSUF
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
@@ -734,6 +736,9 @@
 #define ELE_TAG_ComponentElement2d       192
 #define ELE_TAG_LinearElasticSpring       190
 #define ELE_TAG_Inerter                   191
+#define ELE_TAG_FourNodeMVLEM3D			  200 // CSUF
+#define ELE_TAG_FourNodeSFI_MVLEM3D		  201 // CSUF
+#define ELE_TAG_FourNodeQuadWall3d		  202 // CSUF
 #define ELE_TAG_ExternalElement           99990  
 
 #define FRN_TAG_Coulomb            1

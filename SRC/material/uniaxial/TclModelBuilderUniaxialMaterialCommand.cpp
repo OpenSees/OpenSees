@@ -155,6 +155,8 @@ extern void *OPS_ViscousMaterial(void);
 extern void *OPS_SteelMPF(void); // K Kolozvari                                
 extern void *OPS_ConcreteCM(void); // K Kolozvari
 extern void *OPS_Bond_SP01(void); // K Kolozvari
+extern void *OPS_Concrete0(void); // CSUF
+extern void *OPS_Concrete01T(void); // CSUF
 extern void *OPS_Steel4(void);
 extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenOriginal(void);
@@ -717,13 +719,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         theMaterial = (UniaxialMaterial *)theMat;
       else
         return TCL_ERROR;
+
+    } else if (strcmp(argv[1], "Concrete0") == 0) { // CSUF          
+        void* theMat = OPS_Concrete0();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
+    } else if (strcmp(argv[1], "Concrete01T") == 0) { // CSUF          
+        void* theMat = OPS_Concrete01T();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
       
     } else if (strcmp(argv[1],"ResilienceLow") == 0) {
-      void *theMat = OPS_ResilienceLow();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
+          void *theMat = OPS_ResilienceLow();
+          if (theMat != 0) 
+	    theMaterial = (UniaxialMaterial *)theMat;
+          else 
+	    return TCL_ERROR;
 
     } else if (strcmp(argv[1],"ResilienceMaterialHR") == 0) {
       void *theMat = OPS_ResilienceMaterialHR();

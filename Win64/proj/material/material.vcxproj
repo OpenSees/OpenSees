@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\ElasticMembranePlateSectionUncoupled.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
@@ -263,7 +264,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CFSWSWP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CableMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Cast.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete0.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01T.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02IS.cpp" />
@@ -641,6 +644,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\ElasticMembranePlateSectionUncoupled.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
@@ -670,7 +674,9 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CFSWSWP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CableMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Cast.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete0.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01T.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02IS.h" />

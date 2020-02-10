@@ -1,0 +1,323 @@
+﻿  myCommands.cpp
+  TclModelBuilder.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,48): warning C4101: 'locY4': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,9): warning C4101: 'locY6': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,44): warning C4101: 't4': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,31): warning C4101: 'locY8': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,59): warning C4101: 'locY5': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,37): warning C4101: 'locY3': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,42): warning C4101: 'locY9': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,20): warning C4101: 'locY7': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,38): warning C4101: 't9': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,5): warning C4101: 't6': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,16): warning C4101: 't7': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,33): warning C4101: 't3': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2281,27): warning C4101: 't8': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(2280,55): warning C4101: 't5': unreferenced local variable
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(3307,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(3329,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(3332,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(3786,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(3884,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4221,79): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4223,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4239,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4240,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4241,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4244,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4246,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4391,79): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4393,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4404,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4405,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4406,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4409,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclModelBuilder.cpp(4411,1): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(90): message : see declaration of 'strcat'
+  TclSectionTester.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclSectionTester.cpp(200,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclSectionTester.cpp(221,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+  TclUniaxialMaterialTester.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclUniaxialMaterialTester.cpp(216,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\modelbuilder\tcl\TclUniaxialMaterialTester.cpp(235,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+  commands.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(26,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(69,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(70,32): error C2733: 'getline': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(27,32): message : see declaration of 'std::getline'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(75,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(76,32): error C2733: 'getline': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(27,32): message : see declaration of 'std::getline'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(81,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(82,32): error C2733: 'getline': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(27,32): message : see declaration of 'std::getline'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(271,12): error C2733: 'stoi': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(89,12): message : see declaration of 'std::stoi'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(294,13): error C2733: 'stol': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(112,13): message : see declaration of 'std::stol'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(317,22): error C2733: 'stoul': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(135,22): message : see declaration of 'std::stoul'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(340,18): error C2733: 'stoll': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(158,18): message : see declaration of 'std::stoll'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(363,27): error C2733: 'stoull': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(181,27): message : see declaration of 'std::stoull'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(386,14): error C2733: 'stof': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(204,14): message : see declaration of 'std::stof'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(408,15): error C2733: 'stod': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(226,15): message : see declaration of 'std::stod'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(430,20): error C2733: 'stold': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(248,20): message : see declaration of 'std::stold'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(453,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(485,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(486,57): error C2526: '_Integral_to_string': C linkage function cannot return C++ class 'std::basic_string<_Elem,std::char_traits<_Elem>,std::allocator<_Ty>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xlocnum(112): message : see declaration of 'std::basic_string<_Elem,std::char_traits<_Elem>,std::allocator<_Ty>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,46): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(508,55): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(508,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(512,47): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(512,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(516,56): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(516,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(520,52): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(520,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(524,61): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(524,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(528,49): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(528,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(535,48): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(535,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(536,47): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(539,54): warning C4190: 'to_string' has C-linkage specified, but returns UDT 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4448): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(539,26): error C2733: 'to_string': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(504,26): message : see declaration of 'std::to_string'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(540,47): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,48): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(548,57): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(548,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(552,49): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(552,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(556,58): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(556,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(560,54): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(560,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(564,63): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(564,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(568,51): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(568,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(575,50): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(575,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(576,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(579,56): warning C4190: 'to_wstring' has C-linkage specified, but returns UDT 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xstring(4449): message : see declaration of 'std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t>>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(579,27): error C2733: 'to_wstring': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(544,27): message : see declaration of 'std::to_wstring'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\string(580,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(23,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(374,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(380,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(438,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(439,6): error C2733: 'swap': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(375,6): message : see declaration of 'std::swap'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(444,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(502,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(503,6): error C2733: 'swap': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(375,6): message : see declaration of 'std::swap'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(508,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(572,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(573,6): error C2733: 'swap': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\sstream(375,6): message : see declaration of 'std::swap'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(47,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(49,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(51,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(53,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(57,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(173,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(286,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(406,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(519,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(526,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(616,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(687,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(694,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(700,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(706,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(712,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(720,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(787,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(794,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(800,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(806,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(812,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(820,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(883,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(890,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(896,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(902,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(908,1): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(935,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1027,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1028,90): warning C4190: '+' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1034,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1035,81): warning C4190: '+' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1035,25): error C2733: '+': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1028,25): message : see declaration of 'std::operator +'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1041,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1042,81): warning C4190: '+' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1042,25): error C2733: '+': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1028,25): message : see declaration of 'std::operator +'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1049,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1050,90): warning C4190: '-' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1056,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1057,81): warning C4190: '-' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1057,25): error C2733: '-': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1050,25): message : see declaration of 'std::operator -'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1063,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1064,81): warning C4190: '-' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1064,25): error C2733: '-': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1050,25): message : see declaration of 'std::operator -'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1071,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1072,90): warning C4190: '*' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1078,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1079,81): warning C4190: '*' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1079,25): error C2733: '*': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1072,25): message : see declaration of 'std::operator *'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1086,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1087,81): warning C4190: '*' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1087,25): error C2733: '*': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1072,25): message : see declaration of 'std::operator *'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1094,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1095,90): warning C4190: '/' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1101,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1102,81): warning C4190: '/' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1102,25): error C2733: '/': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1095,25): message : see declaration of 'std::operator /'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1109,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1110,81): warning C4190: '/' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1110,25): error C2733: '/': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1095,25): message : see declaration of 'std::operator /'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1117,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1118,62): warning C4190: '+' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1118,25): error C2733: '+': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1028,25): message : see declaration of 'std::operator +'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1123,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1124,62): warning C4190: '-' has C-linkage specified, but returns UDT 'std::complex<_Other>' which is incompatible with C
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(688): message : see declaration of 'std::complex<_Other>'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1124,25): error C2733: '-': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1050,25): message : see declaration of 'std::operator -'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1129,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1134,10): error C2894: templates cannot be declared to have 'C' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1135,27): error C2733: '==': you cannot overload a function with 'extern "C"' linkage
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\complex(1135,84): fatal error C1003: error count exceeds 100; stopping compilation
+  mpiParameterMain.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\mpiParameterMain.cpp(259,30): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\mpiParameterMain.cpp(269,38): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\mpiParameterMain.cpp(270,1): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(338): message : see declaration of 'strncpy'
+  TclFeViewer.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(309,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(309,34): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(309,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(324,52): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(324,46): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(324,41): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(324,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(328,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(328,34): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(338,67): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(350,69): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(588,36): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(588,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(588,26): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(626,38): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(626,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(626,26): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(664,38): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(664,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(664,26): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(705,48): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(705,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(705,38): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(705,33): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(738,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(738,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(827,36): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(827,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(827,26): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(869,48): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(869,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(869,38): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(869,33): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(905,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclFeViewer.cpp(924,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  tclMain.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\tclMain.cpp(290,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+  TclVideoPlayer.cpp
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclVideoPlayer.cpp(96,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclVideoPlayer.cpp(147,1): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(133): message : see declaration of 'strcpy'
+C:\Users\thato\Documents\GitHub\OpenSees\SRC\tcl\TclVideoPlayer.cpp(203,7): warning C4101: 'mode': unreferenced local variable
+  Generating Code...

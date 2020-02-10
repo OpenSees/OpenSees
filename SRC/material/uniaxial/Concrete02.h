@@ -48,11 +48,14 @@ class Concrete02 : public UniaxialMaterial
     Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 	     double _epscu, double _rat, double _ft, double _Ets);
 
+	Concrete02(int tag, double _fc, double _epsc0, double _fcu, // KK
+	     double _epscu, double _rat, double _ft, double _Ets, int MON);
+
     Concrete02(void);
 
     virtual ~Concrete02();
 
-    const char *getClassType(void) const {return "Concrete02";};    
+    const char *getClassType(void) const {return "Concrete02";};    // KK
     double getInitialTangent(void);
     UniaxialMaterial *getCopy(void);
 
@@ -73,6 +76,10 @@ class Concrete02 : public UniaxialMaterial
 
     int getVariable(const char *variable, Information &);
     
+	Response *setResponse (const char **argv, int argc, OPS_Stream &theOutputStream); // KK
+	int getResponse (int responseID, Information &matInformation);  // KK
+	Vector getInputParameters(void); // KK
+
  protected:
     
  private:
@@ -87,6 +94,7 @@ class Concrete02 : public UniaxialMaterial
     double rat;   // ratio between unloading slope at epscu and original slope : mp(5)
     double ft;    // concrete tensile strength               : mp(6)
     double Ets;   // tension stiffening slope                : mp(7)
+	int mon; // KK: switch to use monotonic envelopes only
 
     // hstvP : Concerete HISTORY VARIABLES last committed step
     double ecminP;  //  hstP(1)
@@ -100,7 +108,8 @@ class Concrete02 : public UniaxialMaterial
     double dept;   
     double sig;   
     double e;     
-    double eps;   
+    double eps;  
+
 };
 
 

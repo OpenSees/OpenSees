@@ -1331,6 +1331,15 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete0.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01T.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\ElasticMembranePlateSectionUncoupled.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2485,6 +2494,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete0.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01T.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\ElasticMembranePlateSectionUncoupled.h">
+      <Filter>section</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
