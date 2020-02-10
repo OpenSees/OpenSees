@@ -71,17 +71,29 @@
     <OutDir>.\..\..\bin\</OutDir>
     <IntDir>.\..\..\obj\parallelManyInterpreters\release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\..\..\bin\</OutDir>
     <IntDir>.\..\..\obj\parallelManyInterpreters\debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
