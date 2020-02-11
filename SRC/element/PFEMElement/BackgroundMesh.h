@@ -57,10 +57,11 @@ private:
         VDouble pn;
         VDouble dpn;
         VInt type;
+        VInt sid; // structure id, <0:fluid, >0:structure, =0:not in contact
 
         BNode():tags(),crdsn(),crdsj(), vn(),dvn(),pn(),dpn(),type(){}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
-                     const VDouble& dv, double p, double dp, int tp) {
+                     const VDouble& dv, double p, double dp, int tp, int id=-1) {
             tags.push_back(tag);
             crdsn.push_back(crds);
             crdsj.push_back(crds);
@@ -69,6 +70,7 @@ private:
             pn.push_back(p);
             dpn.push_back(dp);
             type.push_back(tp);
+            sid.push_back(id);
         }
         void clear() {
             tags.clear();
@@ -79,13 +81,14 @@ private:
             pn.clear();
             dpn.clear();
             type.clear();
+            sid.clear();
         }
         void addNode(int tp) {
             addNode(0,VDouble(),VDouble(),VDouble(),0,0,tp);
         }
         int size() const {return (int)tags.size();}
         void setNode(int i, int tag, const VDouble& crds, const VDouble& v,
-                     const VDouble& dv, double p, double dp, int tp) {
+                     const VDouble& dv, double p, double dp, int tp, int id=-1) {
             if (i<0 || i>=(int)tags.size()) return;
             tags[i] = tag;
             crdsn[i] = crds;
@@ -95,6 +98,7 @@ private:
             pn[i] = p;
             dpn[i] = dp;
             type[i] = tp;
+            sid[i] = id;
         }
 
     };
@@ -127,10 +131,11 @@ public:
     void setLocs(const VDouble& l) {this->locs = l;}
     int setFile(const char* name);
     void setNumSub(int num) {numsub = num;}
-    void addStructuralNodes(VInt& snodes);
+    void addStructuralNodes(VInt& snodes, int sid);
     void setKernel(const char* k, bool = false);
     void setStreamLine(bool flag) {streamline = flag;}
     bool isStreamLine() const {return streamline;}
+    void setContactData(const VDouble& data);
 
     // remesh all
     int remesh(bool init=false);
@@ -158,6 +163,7 @@ public:
     int gridFluid();
     int gridFSI(ID& freenodes);
     int gridEles();
+    static int createContact(const VInt& ndtags, const VInt& sids, VInt& elends);
 
     // particle kernel
     static double QuinticKernel(double q, double h, int ndm);
@@ -181,7 +187,7 @@ public:
 
     // clear all
     int clearBackground();
-    static void clearGridEles();
+    void clearGridEles();
     void clearGrid();
 
     // interpolate in a cell
@@ -212,10 +218,14 @@ private:
     VDouble locs;
     double currentTime;
     std::ofstream theFile;
-    std::set<VInt> structuralNodes;
+    std::map<int, VInt> structuralNodes; // >0:structure, <0: fluid, 0:invalid, larger:debris
     bool freesurface;
     bool streamline; // use streamline integration for particles
     int kernel, pkernel; // 1 - QuinticKernel, 2 - CloestKernel
+    VDouble contactData;
+    VInt contactEles, contactNodes;
+
+    static const int contact_tag = -13746;
 };
 
 

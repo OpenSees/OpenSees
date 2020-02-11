@@ -53,6 +53,7 @@
 #include <Matrix.h>
 #include <ConstantSeries.h>
 #include <LoadPattern.h>
+#include <PFEMContact2D.h>
 
 int BackgroundMesh::FLUID = 1;
 int BackgroundMesh::STRUCTURE = 2;
@@ -73,7 +74,8 @@ int OPS_BgMesh()
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
         opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? "
-                "numl? locs? -numsub numsub? -structure numnodes? structuralNodes? "
+                "numl? locs? -numsub numsub? -structure sid? ?numnodes? structuralNodes?"
+                "-contact K? thk? mu? beta? Dc?"
                 "-freesurface? -velKernel <Quintic> <Cloest> -pKernel <Quintic> <Cloest> >\n";
         return -1;
     }
@@ -185,12 +187,16 @@ int OPS_BgMesh()
                 bgmesh.setNumSub(numsub);
             }
         } else if (strcmp(opt, "-structure") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need numnodes\n";
+            if (OPS_GetNumRemainingInputArgs() < 2) {
+                opserr << "WARNING: need sid and numnodes\n";
                 return -1;
             }
-            int numnodes;
+            int sid, numnodes;
             num = 1;
+            if (OPS_GetIntInput(&num, &sid) < 0) {
+                opserr << "WARNING: failed to read sid\n";
+                return -1;
+            }
             if (OPS_GetIntInput(&num, &numnodes) < 0) {
                 opserr << "WARNING: failed to read numnodes\n";
                 return -1;
@@ -205,7 +211,7 @@ int OPS_BgMesh()
                     opserr << "WARNING: failed to read structural nodes\n";
                     return -1;
                 }
-                bgmesh.addStructuralNodes(snodes);
+                bgmesh.addStructuralNodes(snodes, sid);
             }
 
         } else if (strcmp(opt, "-freesurface") == 0) {
@@ -225,8 +231,20 @@ int OPS_BgMesh()
             }
             const char* kname = OPS_GetString();
             bgmesh.setKernel(kname, true);
-        } else if (strcmp(opt, "-streamLine") == 0) {
-            bgmesh.setStreamLine(true);
+        } else if (strcmp(opt, "-no-streamLine") == 0) {
+            bgmesh.setStreamLine(false);
+        } else if (strcmp(opt, "-contact") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 5) {
+                opserr << "WARNING: need K, thk, mu, beta, Dc\n";
+                return -1;
+            }
+            num = 5;
+            VDouble data(num);
+            if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
+                opserr << "WARNING: failed to get K, thk, mu, beta, Dc\n";
+                return -1;
+            }
+            bgmesh.setContactData(data);
         }
     }
 
@@ -250,11 +268,12 @@ int OPS_BgMesh()
 BackgroundMesh::BackgroundMesh()
         :lower(), upper(), bcells(),
          tol(1e-10), meshtol(0.1), bsize(-1.0),
-         numave(2), numsub(4), recorders(),locs(),
+         numave(1), numsub(4), recorders(),locs(),
          currentTime(0.0), theFile(),
          structuralNodes(),
-         freesurface(false), streamline(false),
-         kernel(1), pkernel(1)
+         freesurface(false), streamline(true),
+         kernel(2), pkernel(2), contactData(5),
+         contactEles(), contactNodes()
 {
 }
 
@@ -324,9 +343,13 @@ BackgroundMesh::setFile(const char* name)
 }
 
 void
-BackgroundMesh::addStructuralNodes(VInt& snodes)
+BackgroundMesh::addStructuralNodes(VInt& snodes, int sid)
 {
-    structuralNodes.insert(snodes);
+    VInt &curr = structuralNodes[sid];
+    for (int i = 0; i < (int) snodes.size(); ++i) {
+        curr.push_back(snodes[i]);
+    }
+
 }
 
 void
@@ -368,6 +391,12 @@ BackgroundMesh::getCrds(const VInt& index, VDouble& crds) const
 
 // get corners from index
 // count num+1 in each direction
+// 2   3
+// -----
+// |   |
+// |   |
+// -----
+// 0   1
 void
 BackgroundMesh::getCorners(const VInt& index, int num, VVInt& indices) const
 {
@@ -666,6 +695,25 @@ BackgroundMesh::clearGridEles()
         // remove elements
         group->clearEles();
     }
+
+    // remove contact elements
+    Domain* domain = OPS_GetDomain();
+    for (int i = 0; i < (int) contactEles.size(); ++i) {
+        Element* ele = domain->removeElement(contactEles[i]);
+        if (ele != 0) {
+            delete ele;
+        }
+    }
+    contactEles.clear();
+
+    for (int i = 0; i < (int) contactNodes.size(); ++i) {
+        Node* node = domain->removeNode(contactNodes[i]);
+        if (node != 0) {
+            delete node;
+        }
+    }
+    contactNodes.clear();
+
 }
 
 void
@@ -898,12 +946,19 @@ BackgroundMesh::addStructure()
 
     // add all structural nodes to the background
     int ndtag = Mesh::nextNodeTag();
-    for (std::set<VInt>::iterator it=structuralNodes.begin();
+    std::set<int> allnodes;
+    for (std::map<int, VInt>::iterator it=structuralNodes.begin();
          it!=structuralNodes.end(); ++it) {
 
-        const VInt& snodes = *it;
+        int sid = it->first;
+        const VInt& snodes = it->second;
 
         for (int k = 0; k < (int) snodes.size(); ++k) {
+
+            // check if already there
+            if (allnodes.find(snodes[k]) != allnodes.end()) {
+                continue;
+            }
 
             // get node
             Node *nd = domain->getNode(snodes[k]);
@@ -981,7 +1036,7 @@ BackgroundMesh::addStructure()
                 }
             }
 
-            bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot, STRUCTURE);
+            bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot, STRUCTURE, sid);
 
             // set fixed  bnodes
             VInt ind = index;
@@ -1038,6 +1093,13 @@ BackgroundMesh::addParticles()
         ParticleGroup* group = dynamic_cast<ParticleGroup*>(mesh);
         if (group == 0) {
             continue;
+        }
+
+        // check group tag
+        if (group->getTag() == contact_tag) {
+            opserr << "WARNING: the particle group tag " << contact_tag;
+            opserr << " is reserved for internal use. Please select a different one\n";
+            return -1;
         }
 
         // remove particles
@@ -1202,8 +1264,8 @@ BackgroundMesh::gridNodes()
 
             // add velocity
             if (kernel == 1) {
-                // Quintic Kernel
 
+                // Quintic Kernel
                 const VDouble &pvel = pts[i]->getVel();
                 for (int k = 0; k < ndm; k++) {
                     vel[k] += w * pvel[k];
@@ -1776,7 +1838,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
     }
 
     // add points
-    VInt ndtags, ndtypes;
+    VInt ndtags, ndtypes, ndsids;
     VVInt ndindex;
     VDouble min, max;
     for (std::map<VInt,BNode*>::iterator it=fsibnodes.begin(); it!=fsibnodes.end(); ++it) {
@@ -1787,10 +1849,12 @@ BackgroundMesh::gridFSI(ID& freenodes)
         VInt& tags = bnode->tags;
         VVDouble& crdsn = bnode->crdsn;
         VInt& type = bnode->type;
+        VInt& sid = bnode->sid;
 
         for (int i=0; i<(int)tags.size(); ++i) {
             ndtags.push_back(tags[i]);
             ndtypes.push_back(type[i]);
+            ndsids.push_back(sid[i]);
             ndindex.push_back(bindex);
 
             if (ndm == 2) {
@@ -1864,6 +1928,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
 
     VVInt elends(numele);
     VInt gtags(numele);
+
 #pragma omp parallel for
     for (int i=0; i<numele; ++i) {
 
@@ -1899,7 +1964,17 @@ BackgroundMesh::gridFSI(ID& freenodes)
         }
 
         // if all structure
-        if (sindex.size() == tri.size()) continue;
+        if (sindex.size() == tri.size()) {
+            VInt snds(tri.size()), sids(tri.size());
+            for (int j = 0; j < (int) tri.size(); ++j) {
+                snds[j] = ndtags[tri[j]];
+                sids[j] = ndsids[tri[j]];
+            }
+            if (createContact(snds, sids, elends[i]) == 0) {
+                gtags[i] = contact_tag;
+            }
+            continue;
+        }
 
         // get min and max ind
         VInt maxind = ndindex[tri[0]];
@@ -2067,10 +2142,52 @@ BackgroundMesh::gridFSI(ID& freenodes)
 
     // get particle group tags
     std::map<int,ID> elenodes;
+    int nextEletag = Mesh::nextEleTag();
     for (int i=0; i<(int)elends.size(); ++i) {
 
         // no elenodes, no element
         if (elends[i].empty()) continue;
+
+        // contact element
+        if (gtags[i] == contact_tag) {
+            if (ndm == 2) {
+                if (elends[i].size() != 3) {
+                    opserr << "WARNING: 2D contact should have 3 nodes\n";
+                    return -1;
+                }
+
+                if (contactData[0]<=0 || contactData[1]<=0 ||
+                    contactData[2]<0 || contactData[3]<0 ||
+                    contactData[4]<=0) {
+                    opserr << "WARNING: contact data is not set\n";
+                    return -1;
+                }
+                Element *ele = new PFEMContact2D(nextEletag, elends[i][0],
+                                                 elends[i][1], elends[i][2],
+                                                 contactData[0], contactData[1],
+                                                 contactData[2], contactData[3],
+                                                 contactData[4]);
+                if (ele == 0) {
+                    opserr << "WARNING: failed to create contact element\n";
+                    return -1;
+                }
+                if (domain->addElement(ele) == false) {
+                    opserr << "WARNING: failed to add element " << nextEletag << "\n";
+                    delete ele;
+                    return -1;
+                }
+                contactEles.push_back(nextEletag);
+                nextEletag += 1;
+
+            } else if (ndm == 3) {
+                if (elends[i].size() != 4) {
+                    opserr << "WARNING: 3D contact should have 4 nodes\n";
+                    return -1;
+                }
+                opserr << "WARNING: 3D contact element hasn't been developed\n";
+            }
+            continue;
+        }
 
         // if all nodes are fluid and fixed nodes
         ID& nds = elenodes[gtags[i]];
@@ -3055,4 +3172,88 @@ BackgroundMesh::interpolate(const VDouble& values, const VDouble& N, double& new
         newvalue += values[i] * N[i];
     }
     return 0;
+}
+
+int
+BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends)
+{
+    // check inputs
+    int ndm = OPS_GetNDM();
+    if (ndtags.size() != sids.size()) {
+        return 1;
+    }
+    if (ndm == 2) {
+        if (ndtags.size() != 3) {
+            opserr << "WARNING: 2D contact needs 3 nodes\n";
+            return -1;
+        }
+    } else if (ndm == 3) {
+        if (ndtags.size() != 4) {
+            opserr << "WARNING: 3D contact needs 4 nodes\n";
+            return -1;
+        }
+    }
+
+
+    // get groups
+    std::map<int, VInt> grp;
+    for (int i = 0; i < (int) sids.size(); ++i) {
+        grp[sids[i]].push_back(ndtags[i]);
+    }
+
+    if (grp.size() == 1) {
+        // from same structure
+        return 1;
+    }
+
+    // get slave node
+    int slave = 0;
+    int id = 0;
+    bool find = false;
+    for (std::map<int, VInt>::iterator it=grp.begin();
+         it!=grp.end(); ++it) {
+        VInt& nds = it->second;
+        if (nds.size() == 1) {
+            // slave node with largest sid
+            if (!find || (id < it->first)) {
+                id = it->first;
+                slave = nds[0];
+                find = true;
+            }
+        } else if (find && id < it->first) {
+            // if master nodes have larger sid
+            find = false;
+        }
+    }
+    if (!find) return 1;
+
+    // index for slave node
+    int index = 0;
+    for (int i = 0; i < (int) ndtags.size(); ++i) {
+        if (ndtags[i] == slave) {
+            index = i + 1;
+            if (index >= (int) ndtags.size()) {
+                index -= ndtags.size();
+            }
+            break;
+        }
+    }
+
+    // get master nodes
+    elends.clear();
+    for (int i = 0; i < (int) ndtags.size() - 1; ++i) {
+        elends.push_back(ndtags[index]);
+        index += 1;
+        if (index >= (int) ndtags.size()) {
+            index -= ndtags.size();
+        }
+    }
+    elends.push_back(slave);
+
+    return 0;
+}
+
+void
+BackgroundMesh::setContactData(const VDouble& data) {
+    contactData = data;
 }
