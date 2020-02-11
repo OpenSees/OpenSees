@@ -73,6 +73,7 @@ public:
 
     virtual int setEleArgs();
     virtual void* getEleArgs();
+    virtual bool hasEleArgs() {return eleType != 0;}
 
     virtual bool isFluid() const {return fluid;}
 
