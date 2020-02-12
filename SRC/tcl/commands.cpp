@@ -520,10 +520,8 @@ DirectIntegrationAnalysis *theTransientAnalysis = 0;
 VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
 int numEigen = 0;
 
-#define _PFEM
-#ifdef _PFEM
 static PFEMAnalysis* thePFEMAnalysis = 0;
-#endif
+
 // AddingSensitivity:BEGIN /////////////////////////////////////////////
 #ifdef _RELIABILITY
 static TclReliabilityBuilder *theReliabilityBuilder = 0;
@@ -535,9 +533,7 @@ ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
 // static NewmarkSensitivityIntegrator *theNSI = 0;
 // static NewNewmarkSensitivityIntegrator *theNNSI = 0;
-// #ifdef _PFEM
 // static PFEMSensitivityIntegrator* thePFEMSI = 0;
-// #endif
 
 //static SensitivityIntegrator *theSensitivityIntegrator = 0;
 //static NewmarkSensitivityIntegrator *theNSI = 0;
@@ -1452,9 +1448,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;   
   //  theSensitivityAlgorithm=0; 
-#ifdef _PFEM
   thePFEMAnalysis = 0;
-#endif
   theTest = 0;
 
 // AddingSensitivity:BEGIN /////////////////////////////////////////////////
@@ -1865,10 +1859,9 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     result = theStaticAnalysis->analyze(numIncr);
 
-#ifdef _PFEM
   } else if(thePFEMAnalysis != 0) {
       result = thePFEMAnalysis->analyze();
-#endif
+
   } else if (theTransientAnalysis != 0) {
     if (argc < 3) {
       opserr << "WARNING transient analysis: analysis numIncr? deltaT?\n";
@@ -2411,7 +2404,6 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
-#ifdef _PFEM
     } else if(strcmp(argv[1], "PFEM") == 0) {
 
         if(argc < 5) {
@@ -2472,7 +2464,6 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
                                            theTest,dtmax,dtmin,gravity,ratio);
 
         theTransientAnalysis = thePFEMAnalysis;
-#endif
 
     } else if (strcmp(argv[1],"Transient") == 0) {
 	// make sure all the components have been built,
@@ -2968,7 +2959,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   else if(strcmp(argv[1], "PFEM") == 0) {
-#ifdef _PFEM
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
@@ -3000,7 +2990,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
 #endif
       }
-#endif
   }
 
 #ifdef _CUSP
@@ -4624,7 +4613,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
-#ifdef _PFEM
   else if (strcmp(argv[1],"PFEM") == 0) {
     theTransientIntegrator = new PFEMIntegrator();
 
@@ -4632,7 +4620,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   } 
-#endif
   
   else if (strcmp(argv[1],"NewmarkExplicit") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkExplicit();
@@ -4848,7 +4835,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 // 		theReliabilityTransientAnalysis->setIntegrator(*theTransientIntegrator);
 //   }  
   
-// #ifdef _PFEM
 //   else if(strcmp(argv[1], "PFEMWithSensitivity") == 0) {
 //       int flag = 0;
 //       if(argc > 4) {
@@ -4868,7 +4854,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 //           theTransientAnalysis->setIntegrator(*theTransientIntegrator);
 //       }
 //   }
-// #endif 
 
 // #endif
   
