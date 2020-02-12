@@ -37,7 +37,6 @@
 #include <elementAPI.h>
 #include <vector>
 
-#ifdef _AMGCL
 #include <amgcl/adapter/crs_tuple.hpp>
 #include <amgcl/backend/builtin.hpp>
 #include <amgcl/make_solver.hpp>
@@ -52,7 +51,6 @@
 #include <amgcl/amg.hpp>
 #include <amgcl/profiler.hpp>
 #include <amgcl/adapter/zero_copy.hpp>
-#endif
 
 
 void* OPS_PFEMSolver_Umfpack()
@@ -82,7 +80,7 @@ void* OPS_PFEMSolver_Umfpack()
 
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
 		if (OPS_GetIntInput(&numdata, &maxiter) < 0) {
-		    opserr << "WARNING: failed to get err\n";
+		    opserr << "WARNING: failed to get max iteration for pressure\n";
 		    return 0;
 		}
 	    }
@@ -349,7 +347,7 @@ PFEMSolver_Umfpack::solve()
 	//opserr<<"pressure setup  time = "<<timer.getReal()<<"\n";
 	// timer.start();
 	if (S->nzmax > 0) {
-#ifdef _AMGCL
+        try {
 	    // solve
 	    amgcl::profiler<> prof;
 	    typedef
@@ -367,6 +365,9 @@ PFEMSolver_Umfpack::solve()
 	    Solver::params prm;
 	    prm.solver.tol = ptol;
 	    prm.solver.maxiter = pmaxiter;
+        // prm.precond.coarse_enough = 1;
+        // prm.precond.max_levels = maxlev;
+        // prm.precond.direct_coarse = false;
 
 	    // setup
 	    prof.tic("setup");
@@ -398,11 +399,67 @@ PFEMSolver_Umfpack::solve()
 	    	return -1;
 	    }
 
-	    for (int i=0; i<Psize; ++i) {
-		
-	    }
+        } catch (...) {
+            opserr << "Pressure: AMGCL solver failed -- Fall back to Umfpack solver\n";
+            int* Sp = S->p;
+            int* Si = S->i;
+            double* Sx = S->x;
+            for (int j=0; j<Psize; j++) {
+	            ID col(0, Sp[j+1]-Sp[j]);
+	            Vector colval(Sp[j+1]-Sp[j]);
+	            ID col0(colval.Size());
+	            int index = 0;
+	            for (int k=Sp[j]; k<Sp[j+1]; k++) {
+		            col.insert(Si[k]);
+		            col0(index) = Si[k];
+		            colval(index++) = Sx[k];
+                }
+                index = 0;
+                for (int k=Sp[j]; k<Sp[j+1]; k++) {
+		            Si[k] = col[index++];
+		            Sx[k] = colval(col0.getLocation(Si[k]));
+                }
+            }
 
-#endif
+            // symbolic analysis
+            void* Ssymbolic = 0;
+	        int status = umfpack_di_symbolic(Psize,Psize,Sp,Si,Sx,&Ssymbolic,Control,Info);
+	        // check error
+	        if (status!=UMFPACK_OK) {
+	            opserr<<"WARNING: pressure symbolic analysis returns "<<status<<" -- PFEMSolver_Umfpack::setsize\n";
+	            return -1;
+	        }
+
+            // numerical analysis
+            void* SNumeric = 0;
+	        status = umfpack_di_numeric(Sp,Si,Sx,Ssymbolic,&SNumeric,Control,Info);
+	        umfpack_di_free_symbolic(&Ssymbolic);
+
+            // check error
+	        if (status!=UMFPACK_OK) {
+	            opserr<<"WARNING: pressure numeric analysis returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
+	            return -1;
+	        }
+
+            // solve
+	        std::vector<double> soln(Psize);
+	        double* soln_ptr = &soln[0];
+            double* rhsP_ptr = &rhsP[0];
+	        status = umfpack_di_solve(UMFPACK_A,Sp,Si,Sx,soln_ptr,rhsP_ptr,SNumeric,Control,Info);
+
+            // delete Numeric
+	        if (SNumeric != 0) {
+	            umfpack_di_free_numeric(&SNumeric);
+	        }
+
+            // check error
+	        if (status!=UMFPACK_OK) {
+	            opserr<<"WARNING: pressure solving returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
+	            return -1;
+            }
+
+            deltaP = soln;
+        }
 	}
 
 	cs_spfree(S);
