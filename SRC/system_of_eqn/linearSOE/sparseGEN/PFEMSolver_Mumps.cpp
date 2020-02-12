@@ -35,7 +35,6 @@
 #endif
 #include <elementAPI.h>
 
-#ifdef _AMGCL
 #include <amgcl/adapter/crs_tuple.hpp>
 #include <amgcl/backend/builtin.hpp>
 #include <amgcl/make_solver.hpp>
@@ -50,7 +49,6 @@
 #include <amgcl/amg.hpp>
 #include <amgcl/profiler.hpp>
 #include <amgcl/adapter/zero_copy.hpp>
-#endif
 
 void* OPS_PFEMSolver_Mumps()
 {
@@ -387,7 +385,6 @@ PFEMSolver_Mumps::solve()
 
         // solve
         if (S->nzmax > 0) {
-#ifdef _AMGCL
             // solve
             amgcl::profiler<> prof;
             typedef
@@ -437,7 +434,6 @@ PFEMSolver_Mumps::solve()
                 opserr<<"WARNING: failed to solve pressure\n";
                 return -1;
             }
-#endif
         }
 
         // release
