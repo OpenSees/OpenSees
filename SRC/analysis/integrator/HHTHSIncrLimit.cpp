@@ -469,6 +469,11 @@ int HHTHSIncrLimit::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHTHSIncrLimit::getVel()
+{
+  return *Udot;
+}
 
 int HHTHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 {

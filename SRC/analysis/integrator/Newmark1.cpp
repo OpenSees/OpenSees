@@ -370,6 +370,12 @@ Newmark1::update(const Vector &deltaU)
   return 0;
 }    
 
+const Vector &
+Newmark1::getVel()
+{
+  return *Udot;
+}
+
 int
 Newmark1::sendSelf(int cTag, Channel &theChannel)
 {
