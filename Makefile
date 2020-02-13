@@ -91,6 +91,21 @@ endif
 	@$(ECHO) LIBRARIES BUILT ... NOW LINKING OpenSeesPy Module;
 	@$(CD) $(FE)/interpreter; $(MAKE) pythonmodule;
 
+pythonmain: 
+ifdef MKDIR
+	$(MKDIR) $(HOME)/bin
+	$(MKDIR) $(HOME)/lib
+endif
+	@( \
+	for f in $(DIRS); \
+	do \
+		$(CD) $$f; \
+		$(MAKE); \
+		$(CD) ..; \
+	done );
+	@$(ECHO) LIBRARIES BUILT ... NOW LINKING OpenSeesPy Module;
+	@$(CD) $(FE)/interpreter; $(MAKE) python;
+
 libs:
 	@( \
 	for f in $(DIRS); \
