@@ -612,6 +612,12 @@ int KRAlphaExplicit_TP::commit(void)
 }
 
 
+const Vector &
+KRAlphaExplicit_TP::getVel()
+{
+  return *Udot;
+}
+
 int KRAlphaExplicit_TP::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(4);

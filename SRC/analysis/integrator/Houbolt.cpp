@@ -353,6 +353,11 @@ int Houbolt::update(const Vector &deltaU)
     return 0;
 }    
 
+const Vector &
+Houbolt::getVel()
+{
+  return *Udot;
+}
 
 int Houbolt::sendSelf(int cTag, Channel &theChannel)
 {

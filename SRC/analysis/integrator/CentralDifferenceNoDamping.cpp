@@ -269,6 +269,12 @@ CentralDifferenceNoDamping::commit(void)
   return 0;
 }
 
+const Vector &
+CentralDifferenceNoDamping::getVel()
+{
+  return *Udot;
+}
+
 int
 CentralDifferenceNoDamping::sendSelf(int cTag, Channel &theChannel)
 {

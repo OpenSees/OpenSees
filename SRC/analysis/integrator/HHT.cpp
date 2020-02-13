@@ -424,6 +424,11 @@ int HHT::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHT::getVel()
+{
+  return *Udot;
+}
 
 int HHT::sendSelf(int cTag, Channel &theChannel)
 {

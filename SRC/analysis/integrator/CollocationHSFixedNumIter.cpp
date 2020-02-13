@@ -513,6 +513,12 @@ int CollocationHSFixedNumIter::commit(void)
 }
 
 
+const Vector &
+CollocationHSFixedNumIter::getVel()
+{
+  return *Udot;
+}
+
 int CollocationHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
     static Vector data(4);

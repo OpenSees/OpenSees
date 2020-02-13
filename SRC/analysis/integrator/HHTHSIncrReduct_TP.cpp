@@ -492,6 +492,11 @@ int HHTHSIncrReduct_TP::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHTHSIncrReduct_TP::getVel()
+{
+  return *Udot;
+}
 
 int HHTHSIncrReduct_TP::sendSelf(int cTag, Channel &theChannel)
 {
