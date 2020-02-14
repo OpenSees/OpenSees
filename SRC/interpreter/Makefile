@@ -22,7 +22,7 @@ tcl: $(TclOBJS)
 
 python:  $(PythonOBJS)
 	$(RM) $(RMFLAGS) openseespy;
-	$(LINKER) $(LINKFLAGS) -Wl,-rpath,\$$ORIGIN/../lib $(PythonOBJS) \
+	$(LINKER) $(LINKFLAGS) -Wl,-rpath,\$$ORIGIN/lib $(PythonOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PYTHON_LIBRARY) \
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) $(PARALLEL_LIB) \
 	$(INTERPRETER_LIBS_MPI_PARAMETERS) \
