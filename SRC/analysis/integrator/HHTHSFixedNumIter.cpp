@@ -537,6 +537,11 @@ int HHTHSFixedNumIter::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHTHSFixedNumIter::getVel()
+{
+  return *Udot;
+}
 
 int HHTHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
