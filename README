@@ -1,4 +1,5 @@
-The OpenSees source code repository.
+# OpenSees source code repository.
+
 This git repository contains all revisions to OpenSees source code since Version 2.3.2.
 
 Older revisions of the code are available upon request.
@@ -13,4 +14,9 @@ https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow
 For a brief introduction to using your new FORK we suggest:
 https://www.atlassian.com/git/tutorials/saving-changes
 
+## Documentation
+The documentation for OpenSees is being moved to a parellel github repo:
+https://github.com/OpenSees/OpenSeesDocumentation
 
+The documentation (in its present form) can be viewed in the browser using the following url:
+https://OpenSees.github.io/OpenSeesDocumentation
