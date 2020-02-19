@@ -1,5 +1,5 @@
 #ifndef Block3D_h
-#define Blcok3D_h 
+#define Block3D_h
 
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
