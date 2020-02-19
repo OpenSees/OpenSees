@@ -57,9 +57,11 @@ def isfloat(value):
 
 # Function that does the conversion
 #
-def toOpenSeesPy(infile, outfile):
-    outfile.write('\n\n')
-    infile = open(infile,'r')
+def toOpenSeesPy():
+    # outfile.write('\n\n')
+    filename = input("Enter filename: ")
+    outfile = open(filename + '.py', 'w')
+    infile = open(filename + '.tcl','r')
     for line in infile:
         info = line.split()
         N = len(info)
@@ -78,19 +80,23 @@ def toOpenSeesPy(infile, outfile):
             eleTag = info[2]
             Np = info[5]
             Np = 3
-            outfile.write('ops.beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
-            outfile.write('ops.element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
+            outfile.write('beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
+            outfile.write('element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
             continue
 
         # Change print to printModel
         if info[0] == 'print':
             info[0] = 'printModel'
+            
+        # Update wipe command
+        if info[0] == 'wipe;' or info[0] == 'wipe;\n':
+            info[0] = 'wipe()'
         
         # For everything else, have to do the first one before loop because of the commas
         if isfloat(info[1]):        
-            outfile.write('ops.%s(%s' % (info[0],info[1]))            
+            outfile.write('%s(%s' % (info[0],info[1]))            
         else:
-            outfile.write('ops.%s(\'%s\'' % (info[0],info[1]))
+            outfile.write('%s(\'%s\'' % (info[0],info[1]))
         # Now loop through the rest with preceding commas
         writeClose = True
         for i in range (2,N):
@@ -107,3 +113,8 @@ def toOpenSeesPy(infile, outfile):
         if writeClose:
             outfile.write(')\n')        
     infile.close()
+    outfile.close()
+
+
+if __name__ == '__main__':
+  toOpenSeesPy()
