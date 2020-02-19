@@ -437,7 +437,7 @@ namespace {
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
-	functionMap.insert(std::make_pair("ElastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
+	functionMap.insert(std::make_pair("elastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
 	functionMap.insert(std::make_pair("elastomericBearing", &OPS_ElastomericBearingPlasticity));
 	functionMap.insert(std::make_pair("RJWatsonEqsBearing", &OPS_RJWatsonEqsBearing));
 	functionMap.insert(std::make_pair("singleFPBearing", &OPS_SingleFPBearing));
