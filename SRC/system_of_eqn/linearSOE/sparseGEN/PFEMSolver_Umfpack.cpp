@@ -37,6 +37,7 @@
 #include <elementAPI.h>
 #include <vector>
 
+#ifdef _AMGCL
 #include <amgcl/adapter/crs_tuple.hpp>
 #include <amgcl/backend/builtin.hpp>
 #include <amgcl/make_solver.hpp>
@@ -51,6 +52,7 @@
 #include <amgcl/amg.hpp>
 #include <amgcl/profiler.hpp>
 #include <amgcl/adapter/zero_copy.hpp>
+#endif
 
 
 void* OPS_PFEMSolver_Umfpack()
@@ -347,6 +349,7 @@ PFEMSolver_Umfpack::solve()
 	//opserr<<"pressure setup  time = "<<timer.getReal()<<"\n";
 	// timer.start();
 	if (S->nzmax > 0) {
+#ifdef _AMGCL
         try {
 	    // solve
 	    amgcl::profiler<> prof;
@@ -398,9 +401,9 @@ PFEMSolver_Umfpack::solve()
 	    	opserr<<"WARNING: failed to solve pressure\n";
 	    	return -1;
 	    }
-
         } catch (...) {
             opserr << "Pressure: AMGCL solver failed -- Fall back to Umfpack solver\n";
+#endif
             int* Sp = S->p;
             int* Si = S->i;
             double* Sx = S->x;
@@ -459,7 +462,9 @@ PFEMSolver_Umfpack::solve()
             }
 
             deltaP = soln;
+#ifdef _AMGCL
         }
+#endif
 	}
 
 	cs_spfree(S);
