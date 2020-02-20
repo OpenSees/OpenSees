@@ -195,7 +195,7 @@ ifeq ($(DEBUG_MODE), DEBUG)
 
 C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn $(OS_FLAG) -D_HTTPS \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
-	$(PROGRAMMING_FLAG) -g -O0 -ffloat-store 
+	$(PROGRAMMING_FLAG) -g -O0 -ffloat-store -std=c++11
 CFLAGS          = -Wall -O0 -g
 FFLAGS          = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
 
@@ -208,7 +208,7 @@ else
 
 C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn -D_MACOSX -D_HTTPS \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
-	$(PROGRAMMING_FLAG) -O3 -ffloat-store -D_NO_PARALLEL_FILESYSTEM
+	$(PROGRAMMING_FLAG) -O3 -ffloat-store -D_NO_PARALLEL_FILESYSTEM -std=c++11
 CFLAGS          = -Wall -O2
 FFLAGS          = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
 
