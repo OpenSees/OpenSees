@@ -1331,7 +1331,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-<<<<<<< Updated upstream
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcrete.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1342,9 +1341,9 @@
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp">
-=======
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
->>>>>>> Stashed changes
       <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>

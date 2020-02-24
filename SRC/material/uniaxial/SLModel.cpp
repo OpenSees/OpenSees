@@ -2027,9 +2027,4 @@ void SLModel::BackBoneTen2Func(void)
   TemptSgmp = tSgmp - tEpsp2 * tEr2;
   tEpsy = -(tSgme - TemptSgmp) / (tEu - tEr2);
   tSgmy = tEu * tEpsy + tSgme;
-
-
 }
-
-
-
