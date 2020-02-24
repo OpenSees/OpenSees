@@ -78,6 +78,11 @@ def toOpenSeesPy():
     outfile.write('import math\n')  # for exponents
     
     for line in infile:
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
         #if ";" in line:
         line = line.replace(";", "")
 
@@ -86,9 +91,12 @@ def toOpenSeesPy():
             line = line.replace("[expr", "")
             line = line.replace("]", "")
             exprFlag = True
+<<<<<<< Updated upstream
 
         #if "$" in line:  # '$' denotes variables in TCL
         line = line.replace("$", "")
+=======
+>>>>>>> Stashed changes
         
         # if "#" in line:
             # line = convertLine(line, 'comment')
@@ -101,6 +109,10 @@ def toOpenSeesPy():
             if "\"" in line:  # don't add single quotes if double quotes already found
                 quotesFlag = True
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         info = line.split()
         N = len(info)
 
@@ -139,22 +151,47 @@ def toOpenSeesPy():
             else:
                 outfile.write('%s\'%s\'' % (info[0],info[1]))
         else:
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+            outfile.write('%s(\'%s\'' % (info[0],info[1]))
+        # Now loop through the rest with preceding commas
+=======
+>>>>>>> Stashed changes
             if isfloat(info[1]) or exprFlag == True:     
                 outfile.write('%s(%s' % (info[0],info[1]))     
             else:
                 outfile.write('%s(\'%s\'' % (info[0],info[1]))
             
+<<<<<<< Updated upstream
 		  
 	# Now loop through the rest with preceding commas
+=======
+	# Now loop through the rest with preceding commas
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         writeClose = True
         commentFlag = False
         for i in range (2,N):
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+            varFlag = False
+>>>>>>> Stashed changes
             if info[i] == "#":
                 if setFlag == False:
                     info[i] = ") " + info[i]
                 else:
                     info[i] = " " + info[i]
                 commentFlag = True
+<<<<<<< Updated upstream
+=======
+            if "$" in info[i]:
+                varFlag = True
+                info[i] = info[i].replace("$", "")
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             if info[i] == '{':
                 writeClose = True
                 break
@@ -164,10 +201,21 @@ def toOpenSeesPy():
             if commentFlag == True or setFlag == True:
                 outfile.write(info[i] + " ")
             else:
+<<<<<<< Updated upstream
                 if isfloat(info[i]) or exprFlag == True:
                     outfile.write(',%s' % info[i])
                 else:
                     outfile.write(',\'%s\'' % info[i])
+=======
+<<<<<<< Updated upstream
+                outfile.write(',\'%s\'' % info[i])
+=======
+                if isfloat(info[i]) or exprFlag == True or varFlag == True:
+                    outfile.write(',%s' % info[i])
+                else:
+                    outfile.write(',\'%s\'' % info[i])
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         if writeClose:
             if commentFlag == False and setFlag == False:
                 outfile.write(')\n')

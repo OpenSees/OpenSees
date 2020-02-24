@@ -100,7 +100,11 @@ set rouYw 0.003333; 	# Y web
 # uniaxialMaterial ConcreteCM $mattag  $fpcc  $epcc  $Ec  $rc  $xcrn   $ft  $et  $rt   $xcrp <-GapClose $gap>
 
 # unconfined
+<<<<<<< Updated upstream
 set fpc 6.2; 		# peak compressive stress
+=======
+set fpc -6.2; 		# peak compressive stress
+>>>>>>> Stashed changes
 set ec0 -0.0021;	# strain at peak compressive stress
 set ft 0.295;		# peak tensile stress
 set et 0.00008;		# strain at peak tensile stress
@@ -111,7 +115,11 @@ set ru 7;			# shape parameter - compression
 set rt 1.2;			# shape parameter - tension
 
 # confined
+<<<<<<< Updated upstream
 set fpcc 6.9036; 	# peak compressive stress
+=======
+set fpcc -6.9036; 	# peak compressive stress
+>>>>>>> Stashed changes
 set ec0c -0.0033;	# strain at peak compressive stress
 set Ecc 5091.3; 	# Young's modulus
 set xcrnc 1.0125;	# cracking strain - compression	
@@ -119,9 +127,15 @@ set rc 7.3049;		# shape parameter - compression
 
 # Build concrete materials
 # confined concrete
+<<<<<<< Updated upstream
 uniaxialMaterial ConcreteCM 3 -$fpcc  $ec0c  $Ecc $rc  $xcrnc  $ft  $et  $rt  $xcrp -GapClose 1; 
 # unconfined concrete
 uniaxialMaterial ConcreteCM 4 -$fpc   $ec0   $Ec  $ru  $xcrnu  $ft  $et  $rt  $xcrp -GapClose 1; 
+=======
+uniaxialMaterial ConcreteCM 3 $fpcc  $ec0c  $Ecc $rc  $xcrnc  $ft  $et  $rt  $xcrp -GapClose 1; 
+# unconfined concrete
+uniaxialMaterial ConcreteCM 4 $fpc   $ec0   $Ec  $ru  $xcrnu  $ft  $et  $rt  $xcrp -GapClose 1; 
+>>>>>>> Stashed changes
 
 
 # CONCRETE ........................................................
