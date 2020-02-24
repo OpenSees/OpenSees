@@ -49,101 +49,116 @@
 # Helper function to deterine if a variable is a floating point value or not
 #
 def isfloat(value):
-  try:
-    float(value)
-    return True
-  except ValueError:
-    return False
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+# Helper function to process specific parts of conversion
+#
+def convertLine(line, type='standard'):
+    if(type == 'comment'):  # for in-line comments; comments spanning an entire line already handled
+        line = line
+    elif(type == 'expr'):
+        line = line
+    elif(type == 'set'):
+        line = line
+    else:  # 'standard' command
+        line = line
+    return line
 
 # Function that does the conversion
 #
 def toOpenSeesPy():
     # outfile.write('\n\n')
-    filename = input("Enter filename: ")
+    filename = input("Enter filename (no extension): ")
     outfile = open(filename + '.py', 'w')
-    infile = open(filename + '.tcl','r')
+    infile = open(filename + '.tcl', 'r')
     for line in infile:
-      if ";" in line:
-        line = line.replace(";","")
+        if ";" in line:
+            line = line.replace(";", "")
+        if "#" in line:
+            line = line
 
-      setflag = 0
-      if "set" in line:
-        line = line.replace("set","")
-        setflag = 1
+        setflag = 0
+        if "set" in line:
+            line = line.replace("set","")
+            setflag = 1
 
-      info = line.split()
-      N = len(info)
+        info = line.split()
+        N = len(info)
 
-      # Ignore a close brace
-      if N > 0 and info[0][0] == '}':
-          continue
-      # Echo a comment line
-      if N < 2 or info[0][0] == '#':
-          outfile.write(line)        
-          continue
-      
-      # Needs to be a special case for now due to beam integration
-      if info[1] == 'forceBeamColumn' or info[1] == 'dispBeamColumn':
-          secTag = info[6]
-          eleTag = info[2]
-          Np = info[5]
-          Np = 3
-          outfile.write('beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
-          outfile.write('element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
-          continue
+        # Ignore a close brace
+        if N > 0 and info[0][0] == '}':
+            continue
+	# Echo a comment line
+        if N < 2 or info[0][0] == '#':
+            outfile.write(line)        
+            continue
+	  
+	# Needs to be a special case for now due to beam integration
+        if info[1] == 'forceBeamColumn' or info[1] == 'dispBeamColumn':
+            secTag = info[6]
+            eleTag = info[2]
+            Np = info[5]
+            Np = 3
+            outfile.write('beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
+            outfile.write('element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
+            continue
 
-      # Change print to printModel
-      if info[0] == 'print':
-          info[0] = 'printModel'
+	# Change print to printModel
+        if info[0] == 'print':
+            info[0] = 'printModel'
 
-      if setflag == 1:
-          info[0] = info[0] + " = "
-          
-      # Update wipe command
-      if info[0] == 'wipe' or info[0] == 'wipe;':
-          info[0] = 'wipe()'
-      
-      # For everything else, have to do the first one before loop because of the commas
-      if setflag == 0:
-        if isfloat(info[1]):        
-            outfile.write('%s(%s' % (info[0],info[1]))            
+        if setflag == 1:
+            info[0] = info[0] + " = "
+		  
+	# Update wipe command
+        if info[0] == 'wipe' or info[0] == 'wipe;':
+            info[0] = 'wipe()'
+	  
+	# For everything else, have to do the first one before loop because of the commas
+        if setflag == 0:
+            if isfloat(info[1]):        
+                outfile.write('%s(%s' % (info[0],info[1]))            
+            else:
+                outfile.write('%s(\'%s\'' % (info[0],info[1]))
         else:
-            outfile.write('%s(\'%s\'' % (info[0],info[1]))
-      else:
-        if isfloat(info[1]):        
-            outfile.write('%s%s' % (info[0],info[1]))            
-        else:
-            outfile.write('%s\'%s\'' % (info[0],info[1]))
-          
-      # Now loop through the rest with preceding commas
-      writeClose = True
-      commentflag = 0
-      for i in range (2,N):
-        if info[i] == "#":
-          if setflag == 0:
-            info[i] = ") " + info[i]
-            commentflag = 1
-          else:
-            info[i] = " " + info[i]
-            commentflag = 1
-        if info[i] == '{':
-            writeClose = True
-            break
-        if info[i] == '}':
-            writeClose = False                
-            break
-        if commentflag == 1 or setflag == 1:
-          outfile.write(info[i])
-        else:
-          if isfloat(info[i]):
-              outfile.write(',%s' % info[i])
-          else:
-              outfile.write(',\'%s\'' % info[i])
-      if writeClose:
-        if commentflag == 0 or setflag == 0:
-          outfile.write(')\n')
-        else:
-          outfile.write('\n')
+            if isfloat(info[1]):        
+                outfile.write('%s%s' % (info[0],info[1]))            
+            else:
+                outfile.write('%s\'%s\'' % (info[0],info[1]))
+		  
+	# Now loop through the rest with preceding commas
+        writeClose = True
+        commentflag = 0
+        for i in range (2,N):
+            if info[i] == "#":
+                if setflag == 0:
+                    info[i] = ") " + info[i]
+                    commentflag = 1
+                else:
+                    info[i] = " " + info[i]
+                    commentflag = 1
+            if info[i] == '{':
+                writeClose = True
+                break
+            if info[i] == '}':
+                writeClose = False                
+                break
+            if commentflag == 1 or setflag == 1:
+                outfile.write(info[i])
+            else:
+                if isfloat(info[i]):
+                    outfile.write(',%s' % info[i])
+                else:
+                    outfile.write(',\'%s\'' % info[i])
+        if writeClose:
+            if commentflag == 0 or setflag == 0:
+                outfile.write(')\n')
+            else:
+                outfile.write('\n')
     infile.close()
     outfile.close()
 

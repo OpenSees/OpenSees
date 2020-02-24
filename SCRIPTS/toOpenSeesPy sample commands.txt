@@ -1,0 +1,5 @@
+outfile = open("MVLEM_3d_Model.py", 'w')
+
+toOpenSeesPy('MVLEM_3d_Model.tcl', outfile)
+
+outfile.close()
