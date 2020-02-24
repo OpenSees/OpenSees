@@ -13,13 +13,8 @@ import math
 wipe()
 # Set Up Directories
 # modelName "RW2" 			# Model Name
-<<<<<<< Updated upstream
-# dataDir MVLEM_modelName	# Name of output folder
-#file mkdir dataDir
-=======
 # dataDir MVLEM_$modelName	# Name of output folder
 #file mkdir $dataDir
->>>>>>> Stashed changes
 
 # Create ModelBuilder for 2D element (with two-dimensions and 2 DOF/node)
 model('BasicBuilder','-ndm',3,'-ndf',6)
@@ -75,11 +70,7 @@ IDctrlDOF = 1
 # ------------------------------------------------------------------------
 
 # STEEL ...........................................................
-<<<<<<< Updated upstream
-# uniaxialMaterial SteelMPF mattag  fyp  fyn  E0  bp  bn   R0  a1  a2
-=======
 # uniaxialMaterial SteelMPF $mattag  $fyp  $fyn  $E0  $bp  $bn   $R0  $a1  $a2
->>>>>>> Stashed changes
 
 # steel Y boundary
 fyYbp = 57.3 # fy - tension 
@@ -100,30 +91,18 @@ a1 = 0.925 # curvature degradation parameter
 a2 = 0.0015 # curvature degradation parameter 
 
 # Build steel materials
-<<<<<<< Updated upstream
-uniaxialMaterial('SteelMPF',1,'fyYbp','fyYbn','Es','bybp','bybn','R0','a1','a2') # steel Y boundary 
-uniaxialMaterial('SteelMPF',2,'fyYwp','fyYwn','Es','bywp','bywn','R0','a1','a2') # steel Y web 
-=======
 uniaxialMaterial('SteelMPF',1,fyYbp,fyYbn,Es,bybp,bybn,R0,a1,a2) # steel Y boundary 
 uniaxialMaterial('SteelMPF',2,fyYwp,fyYwn,Es,bywp,bywn,R0,a1,a2) # steel Y web 
->>>>>>> Stashed changes
 
 # Set MVLEM Reinforcing Ratios
 rouYb = 0.029333 # Y boundary 
 rouYw = 0.003333 # Y web 
 
 # CONCRETE ........................................................
-<<<<<<< Updated upstream
-# uniaxialMaterial ConcreteCM mattag  fpcc  epcc  Ec  rc  xcrn   ft  et  rt   xcrp <-GapClose gap>
-
-# unconfined
-fpc = 6.2 # peak compressive stress 
-=======
 # uniaxialMaterial ConcreteCM $mattag  $fpcc  $epcc  $Ec  $rc  $xcrn   $ft  $et  $rt   $xcrp <-GapClose $gap>
 
 # unconfined
-fpc = -6.2 # peak compressive stress 
->>>>>>> Stashed changes
+fpc = 6.2 # peak compressive stress 
 ec0 = -0.0021 # strain at peak compressive stress 
 ft = 0.295 # peak tensile stress 
 et = 0.00008 # strain at peak tensile stress 
@@ -134,11 +113,7 @@ ru = 7 # shape parameter - compression
 rt = 1.2 # shape parameter - tension 
 
 # confined
-<<<<<<< Updated upstream
 fpcc = 6.9036 # peak compressive stress 
-=======
-fpcc = -6.9036 # peak compressive stress 
->>>>>>> Stashed changes
 ec0c = -0.0033 # strain at peak compressive stress 
 Ecc = 5091.3 # Young's modulus 
 xcrnc = 1.0125 # cracking strain - compression 
@@ -146,23 +121,13 @@ rc = 7.3049 # shape parameter - compression
 
 # Build concrete materials
 # confined concrete
-<<<<<<< Updated upstream
-uniaxialMaterial('ConcreteCM',3,'-fpcc','ec0c','Ecc','rc','xcrnc','ft','et','rt','xcrp','-GapClose',1)
+uniaxialMaterial('ConcreteCM',3,-fpcc,ec0c,Ecc,rc,xcrnc,ft,et,rt,xcrp,'-GapClose',1)
 # unconfined concrete
-uniaxialMaterial('ConcreteCM',4,'-fpc','ec0','Ec','ru','xcrnu','ft','et','rt','xcrp','-GapClose',1)
-
-
-# CONCRETE ........................................................
-#uniaxialMaterial Concrete02 matTag fpc epsc0 fpcu epsU lambda ft Ets
-=======
-uniaxialMaterial('ConcreteCM',3,fpcc,ec0c,Ecc,rc,xcrnc,ft,et,rt,xcrp,'-GapClose',1)
-# unconfined concrete
-uniaxialMaterial('ConcreteCM',4,fpc,ec0,Ec,ru,xcrnu,ft,et,rt,xcrp,'-GapClose',1)
+uniaxialMaterial('ConcreteCM',4,-fpc,ec0,Ec,ru,xcrnu,ft,et,rt,xcrp,'-GapClose',1)
 
 
 # CONCRETE ........................................................
 #uniaxialMaterial Concrete02 $matTag $fpc $epsc0 $fpcu $epsU $lambda $ft $Ets
->>>>>>> Stashed changes
 # unconfined
 #  fpc 6.2 		# peak compressive stress
 #  ec0 -0.0021	# strain at peak compressive stress
@@ -174,15 +139,6 @@ uniaxialMaterial('ConcreteCM',4,fpc,ec0,Ec,ru,xcrnu,ft,et,rt,xcrp,'-GapClose',1)
 #  ec0c -0.0033	# strain at peak compressive stress
 
 # Bould concrete materials
-<<<<<<< Updated upstream
-# uniaxialMaterial Concrete02 4 -fpc   ec0   -0.1*fpc -0.012 0.3 ft 100 # unconfined concrete
-# uniaxialMaterial Concrete02 3 -fpcc   ec0c   -0.1*fpcc -0.080 0.3 ft 100 # confined concrete
-
-# Combine concrete and steel
-nDMaterial('FSAM',101,0.0,2,1,3,0.0050,'rouYb',0.2,0.01)
-nDMaterial('FSAM',102,0.0,2,1,3,0.0025,0.0,0.2,0.01)
-nDMaterial('FSAM',103,0.0,2,2,4,0.0025,'rouYw',0.2,0.01)
-=======
 # uniaxialMaterial Concrete02 4 -$fpc   $ec0   -0.1*$fpc -0.012 0.3 $ft 100 # unconfined concrete
 # uniaxialMaterial Concrete02 3 -$fpcc   $ec0c   -0.1*$fpcc -0.080 0.3 $ft 100 # confined concrete
 
@@ -190,21 +146,10 @@ nDMaterial('FSAM',103,0.0,2,2,4,0.0025,'rouYw',0.2,0.01)
 nDMaterial('FSAM',101,0.0,2,1,3,0.0050,rouYb,0.2,0.01)
 nDMaterial('FSAM',102,0.0,2,1,3,0.0025,0.0,0.2,0.01)
 nDMaterial('FSAM',103,0.0,2,2,4,0.0025,rouYw,0.2,0.01)
->>>>>>> Stashed changes
 # ------------------------------
 #  Define SFI elements
 # ------------------------------
 
-<<<<<<< Updated upstream
-element('FourNodeSFI_MVLEM3D',11,1,2,12,11,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',21,11,12,22,21,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',31,21,22,32,31,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',41,31,32,42,41,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',51,41,42,52,51,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',61,51,52,62,61,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',71,61,62,72,71,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-element('FourNodeSFI_MVLEM3D',81,71,72,82,81,8,0.4,0.2,0.6,'-thick','t','t','t','t','t','t','t','t','-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
-=======
 element('FourNodeSFI_MVLEM3D',11,1,2,12,11,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
 element('FourNodeSFI_MVLEM3D',21,11,12,22,21,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
 element('FourNodeSFI_MVLEM3D',31,21,22,32,31,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
@@ -213,7 +158,6 @@ element('FourNodeSFI_MVLEM3D',51,41,42,52,51,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,
 element('FourNodeSFI_MVLEM3D',61,51,52,62,61,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
 element('FourNodeSFI_MVLEM3D',71,61,62,72,71,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
 element('FourNodeSFI_MVLEM3D',81,71,72,82,81,8,0.4,0.2,0.6,'-thick',t,t,t,t,t,t,t,t,'-width',7.5,1.5,7.5,7.5,7.5,7.5,1.5,7.5,'-mat',101,102,103,103,103,103,102,101)
->>>>>>> Stashed changes
 
 # ------------------------------
 # End of model generation
@@ -227,13 +171,8 @@ initialize()
 # ------------------------------
 
 # Nodal recorders
-<<<<<<< Updated upstream
-recorder('Node','-file','SFI_MVLEM_Dtop.out','-time','-node','IDctrlNode','-dof',1,'disp')
-#recorder Node -file dataDir/SFI_MVLEM_DOFs.out -time -node 1 2 3 4 -dof 1 2 3 disp
-=======
 recorder('Node','-file','SFI_MVLEM_Dtop.out','-time','-node',IDctrlNode,'-dof',1,'disp')
 #recorder Node -file $dataDir/SFI_MVLEM_DOFs.out -time -node 1 2 3 4 -dof 1 2 3 disp
->>>>>>> Stashed changes
 
 # Element recorders
 #recorder Element -file SFI_MVLEM_Fgl.out -time -ele 11 globalForce
@@ -256,11 +195,7 @@ recorder('Node','-file','SFI_MVLEM_Dtop.out','-time','-node',IDctrlNode,'-dof',1
 # ---------------------
 
 N = 85.0 # kips 
-<<<<<<< Updated upstream
-printModel('node','IDctrlNode')
-=======
 printModel('node',IDctrlNode)
->>>>>>> Stashed changes
 # -------------------------------------------------------
 # Set parameters for displacement controlled analysis
 # -------------------------------------------------------
