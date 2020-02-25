@@ -1363,7 +1363,7 @@ FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
-  int result = 0;
+  int result = -1;
 
   // A material parameter
   if (strstr(argv[0],"material") != 0) {
