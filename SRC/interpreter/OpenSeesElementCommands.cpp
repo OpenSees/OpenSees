@@ -172,6 +172,7 @@ void* OPS_ZeroLengthContact2D();
 void* OPS_ZeroLengthContact3D();
 void* OPS_Joint2D();
 void* OPS_Joint3D();
+void* OPS_LehighJoint2d();
 void* OPS_Inelastic2DYS01();
 void* OPS_Inelastic2DYS02();
 void* OPS_Inelastic2DYS03();
@@ -457,6 +458,8 @@ namespace {
 	functionMap.insert(std::make_pair("Joint3d", &OPS_Joint3D));
 	functionMap.insert(std::make_pair("Joint2D", &OPS_Joint2D));
 	functionMap.insert(std::make_pair("Joint2d", &OPS_Joint2D));
+	functionMap.insert(std::make_pair("LehighJoint2D", &OPS_LehighJoint2d));
+	functionMap.insert(std::make_pair("LehighJoint2d", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("zeroLengthContact2D", &OPS_ZeroLengthContact2D));
 	functionMap.insert(std::make_pair("zeroLengthContact3D", &OPS_ZeroLengthContact3D));
 	functionMap.insert(std::make_pair("zeroLengthRocking", &OPS_ZeroLengthRocking));

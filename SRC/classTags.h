@@ -633,6 +633,7 @@
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
+#define ELE_TAG_LehighJoint2d           8181
 #define ELE_TAG_Joint2D                 82
 #define ELE_TAG_Joint3D                 83
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
