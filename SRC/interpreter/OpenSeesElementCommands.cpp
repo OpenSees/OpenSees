@@ -203,6 +203,8 @@ void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
 void* OPS_CatenaryCableElement();
+void* OPS_GradientInelasticBeamColumn2d();
+void* OPS_GradientInelasticBeamColumn3d();
 
 namespace {
 
@@ -411,6 +413,17 @@ namespace {
 	return OPS_Tri31(info);
     }
 
+  static void* OPS_GradientInelasticBeamColumn()
+  {
+    int ndm = OPS_GetNDM();
+    if (ndm == 2) {
+      return OPS_GradientInelasticBeamColumn2d();
+    }
+    else {
+      return OPS_GradientInelasticBeamColumn3d();
+    }
+  }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
@@ -424,7 +437,7 @@ namespace {
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
-	functionMap.insert(std::make_pair("ElastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
+	functionMap.insert(std::make_pair("elastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
 	functionMap.insert(std::make_pair("elastomericBearing", &OPS_ElastomericBearingPlasticity));
 	functionMap.insert(std::make_pair("RJWatsonEqsBearing", &OPS_RJWatsonEqsBearing));
 	functionMap.insert(std::make_pair("singleFPBearing", &OPS_SingleFPBearing));
@@ -574,6 +587,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
+	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
 
 	return 0;
     }
@@ -1152,8 +1166,8 @@ void* OPS_NonlinearBeamColumn()
     }
 
     int ndf = OPS_GetNDF();
-    if(ndm != 2 || ndf != 3) {
-	opserr<<"ndm must be 2 and ndf must be 3\n";
+    if (!(ndm == 2 && ndf == 3) && !(ndm == 3 && ndf == 6)) {
+	opserr<<"(ndm,ndf) must be (2,3) or (3,6)\n";
 	return 0;
     }
 

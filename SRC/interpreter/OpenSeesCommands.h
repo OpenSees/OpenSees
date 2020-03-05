@@ -285,6 +285,7 @@ int OPS_loadConst();
 int OPS_calculateNodalReactions();
 int OPS_rayleighDamping();
 int OPS_setTime();
+int OPS_setCreep();
 int OPS_removeObject();
 int OPS_addNodalMass();
 int OPS_buildModel();

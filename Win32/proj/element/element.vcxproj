@@ -121,6 +121,10 @@
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
@@ -374,6 +378,9 @@
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />

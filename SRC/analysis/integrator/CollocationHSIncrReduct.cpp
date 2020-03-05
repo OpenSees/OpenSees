@@ -384,6 +384,12 @@ int CollocationHSIncrReduct::update(const Vector &deltaU)
 }
 
 
+const Vector &
+CollocationHSIncrReduct::getVel()
+{
+  return *Udot;
+}
+
 int CollocationHSIncrReduct::commit(void)
 {
     AnalysisModel *theModel = this->getAnalysisModel();

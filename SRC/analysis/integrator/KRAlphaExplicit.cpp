@@ -553,6 +553,11 @@ int KRAlphaExplicit::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+KRAlphaExplicit::getVel()
+{
+  return *Udot;
+}
 
 int KRAlphaExplicit::sendSelf(int cTag, Channel &theChannel)
 {

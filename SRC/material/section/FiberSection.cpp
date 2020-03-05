@@ -31,6 +31,7 @@
 // stress resultants are obtained by summing fiber contributions.
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <Channel.h>
 #include <Vector.h>
@@ -52,16 +53,19 @@ FiberSection::FiberSection(int tag, int num, Fiber **fibers):
 {
     theFibers = new Fiber *[numFibers];
 
-    if (theFibers == 0)
-		g3ErrorHandler->fatal("%s -- failed to allocate Fiber pointers",
-			"FiberSection::FiberSection");
+    if (theFibers == 0) {
+      opserr << "FiberSection::FiberSection -- failed to allocate Fiber pointers";
+      exit(-1);
+    }
 
     for (int i = 0; i < numFibers; i++) {
-		theFibers[i] = fibers[i]->getCopy();
+      theFibers[i] = fibers[i]->getCopy();
 
-		if (theFibers[i] == 0)
-			g3ErrorHandler->fatal("%s -- failed to get copy of Fiber",
-				"FiberSection::FiberSection");
+      if (theFibers[i] == 0) {
+	opserr << "FiberSection::FiberSection -- failed to get copy of Fiber";
+	exit(-1);
+      }
+			      
     }
 
 	order = theFibers[0]->getOrder();
@@ -97,10 +101,8 @@ FiberSection::FiberSection(int tag, int num):
 	theFibers = new Fiber *[sizeFibers];
 
 	if (theFibers == 0) {
-		g3ErrorHandler->fatal("%s -- failed to allocate Fiber pointers",
-			"FiberSection::FiberSection");
-
-		sizeFibers  = 0;
+	  opserr << "FiberSection::FiberSection -- failed to allocate Fiber pointers";
+	  exit(-1);
 	}
 
 	// zero the pointers
@@ -137,10 +139,8 @@ FiberSection::addFiber(Fiber &newFiber)
 		Fiber **newArray = new Fiber *[newSize]; 
 
 	    if (newArray == 0) {
-			g3ErrorHandler->fatal("%s -- failed to allocate Fiber pointers",
-				"FiberSection::addFiber");
-
-			sizeFibers  = 0;
+	      opserr << "FiberSection::addFiber -- failed to allocate Fiber pointers";
+	      exit(-1);
 
 			return -1;
 		}
@@ -216,6 +216,18 @@ FiberSection::getSectionTangent(void)
  
 	for (int i = 0; i < numFibers; i++)
 		ks->addMatrix(1.0, theFibers[i]->getFiberTangentStiffContr(), 1.0);
+
+	return *ks;
+}
+
+const Matrix&
+FiberSection::getInitialTangent(void)
+{
+	ks->Zero();
+ 
+	for (int i = 0; i < numFibers; i++)
+	  // Should be initial stiffness contribution
+	  ks->addMatrix(1.0, theFibers[i]->getFiberTangentStiffContr(), 1.0);
 
 	return *ks;
 }
@@ -326,18 +338,16 @@ FiberSection::sendSelf(int commitTag, Channel &theChannel)
 	// Send the data ID
 	res += theChannel.sendID(this->getDbTag(), commitTag, data);
 	if (res < 0) {
-		g3ErrorHandler->warning("%s -- failed to send data ID",
-			"FiberSection::sendSelf");
-		return res;
+	  opserr << "FiberSection::sendSelf -- failed to send data ID";
+	  return res;
 	}
 
 	if (order > 0) {
 		// Send the committed section deformations
 		res += theChannel.sendVector(this->getDbTag(), commitTag, *eCommit);
 		if (res < 0) {
-			g3ErrorHandler->warning("%s -- failed to send section deformations",
-				"FiberSection::sendSelf");
-			return res;
+		  opserr << "FiberSection::sendSelf -- failed to send section deformations";
+		  return res;
 		}
 	}
 
@@ -366,18 +376,16 @@ FiberSection::sendSelf(int commitTag, Channel &theChannel)
 		// Send the dbTags ID
 		res += theChannel.sendID(otherDbTag, commitTag, dbTags);
 		if (res < 0) {
-			g3ErrorHandler->warning("%s -- failed to send dbTags ID",
-				"FiberSection::sendSelf");
-			return res;
+		  opserr << "FiberSection::sendSelf -- failed to send dbTags ID";
+		  return res;
 		}
 
 		// Ask the fibers to send themselves
 		for (i = 0; i < numFibers; i++) {
 			res += theFibers[i]->sendSelf(commitTag, theChannel);
 			if (res < 0) {
-				g3ErrorHandler->warning("%s -- failed to send Fiber %d",
-					"FiberSection::sendSelf", i);
-				return res;
+			  opserr << "FiberSection::sendSelf -- failed to send Fiber %d";
+			  return res;
 			}
 		}
 	}
@@ -396,9 +404,8 @@ FiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 	// Receive the data ID
 	res += theChannel.recvID(this->getDbTag(), commitTag, data);
 	if (res < 0) {
-		g3ErrorHandler->warning("%s -- failed to receive data ID",
-			"FiberSection::recvSelf");
-		return res;
+	  opserr << "FiberSection::recvSelf -- failed to receive data ID";
+	  return res;
 	}
 
 	this->setTag(data(0));
@@ -444,9 +451,8 @@ FiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 		// Receive the committed section deformation
 		res += theChannel.recvVector(this->getDbTag(), commitTag, *eCommit);
 		if (res < 0) {
-			g3ErrorHandler->warning("%s -- failed to receive section deformations",
-				"FiberSection::recvSelf");
-			return res;
+		  opserr << "FiberSection::recvSelf -- failed to receive section deformations";
+		  return res;
 		}
 
 		*e = *eCommit;
@@ -459,9 +465,8 @@ FiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 		// Receive the dbTags ID
 		res += theChannel.recvID(otherDbTag, commitTag, dbTags);
 		if (res < 0) {
-			g3ErrorHandler->warning("%s -- failed to receive dbTags ID",
-				"FiberSection::recvSelf");
-			return res;
+		  opserr << "FiberSection::recvSelf -- failed to receive dbTags ID";
+		  return res;
 		}
 
 		int i;
@@ -469,9 +474,8 @@ FiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 		if (theFibers == 0) {
 			theFibers = new Fiber *[sizeFibers];
 			if (theFibers == 0) {
-				g3ErrorHandler->warning("%s -- failed to allocate Fiber pointers",
-					"FiberSection::recvSelf");
-				return -1;
+			  opserr << "FiberSection::recvSelf -- failed to allocate Fiber pointers";
+			  return -1;
 			}
 			for (i = 0; i < sizeFibers; i++)
 				theFibers[i] = 0;
@@ -492,18 +496,16 @@ FiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 
 			// Check if either allocation failed
 			if (theFibers[i] == 0) {
-				g3ErrorHandler->warning("%s -- could not get Fiber %d",
-					"FiberSection::recvSelf", i);
-				return -1;
+			  opserr << "FiberSection::recvSelf -- could not get Fiber %d";
+			  return -1;
 			}
 
 			// Now, receive the Fiber
 			theFibers[i]->setDbTag(dbTags(i));
 			res += theFibers[i]->recvSelf(commitTag, theChannel, theBroker);
 			if (res < 0) {
-				g3ErrorHandler->warning("%s -- could not receive Fiber %d",
-					"FiberSection::recvSelf", i);
-			 	return res;
+			  opserr << "FiberSection::recvSelf -- could not receive Fiber %d";
+			  return res;
 			}
 		}
 
@@ -533,18 +535,14 @@ FiberSection::Print(OPS_Stream &s, int flag)
 Response*
 FiberSection::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
-  // See if the response is one of the defaults
-  Response *res = SectionForceDeformation::setResponse(argv, argc, s);
-  if (theResponse != 0)
-    return theResponse;
-
+  Response *theResponse = 0;
 
   output.tag("SectionOutput");
   output.attr("secType", this->getClassType());
   output.attr("secTag", this->getTag());
 
   // Check if fiber response is requested
-  else if (strcmp(argv[0],"fiber") == 0) {
+  if (strcmp(argv[0],"fiber") == 0) {
     int key = 0;
     int passarg = 2;
     
@@ -586,7 +584,7 @@ FiberSection::setResponse(const char **argv, int argc, OPS_Stream &output)
   }
 
   output.endTag();
-  return theResponse;
+  return SectionForceDeformation::setResponse(argv,argc,output);
 }
 
 int 
