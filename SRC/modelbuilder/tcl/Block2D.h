@@ -1,5 +1,5 @@
 #ifndef Block2D_h
-#define Blcok2D_h 
+#define Block2D_h
 
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **

@@ -58,6 +58,8 @@ class CentralDifferenceAlternative : public TransientIntegrator
 
     int commit(void);
 
+    const Vector &getVel(void);
+    
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker);

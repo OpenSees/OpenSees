@@ -185,6 +185,11 @@ int BackwardEuler::newStep(double deltaT)
     return 0;
 }
 
+const Vector &
+BackwardEuler::getVel()
+{
+  return *Udot;
+}
 
 int BackwardEuler::revertToLastStep()
 {

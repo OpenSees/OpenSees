@@ -1198,7 +1198,7 @@ FiberSection3dThermal::setParameter(const char **argv, int argc, Parameter &para
     return -1;
 
 
-  int result = 0;
+  int result = -1;
 
   // A material parameter
   if (strstr(argv[0],"material") != 0) {

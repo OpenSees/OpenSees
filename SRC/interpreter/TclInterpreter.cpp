@@ -64,6 +64,10 @@ terms specified in this license.
 
 #include "TclInterpreter.h"
 #include <string.h>
+#include <StandardStream.h>
+
+StandardStream sserr;
+OPS_Stream *opserrPtr = &sserr;
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -229,7 +233,9 @@ TclInterpreter::TclInterpreter(int argc, char **argv)
 
   /* fmk - beginning of modifications for OpenSees */
   fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
-  fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- 3.0.0\n\n");
+  fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- ");
+  fprintf(stderr, OPS_VERSION);
+  fprintf(stderr, "\n\n");
   
   fprintf(stderr,"\t    (c) Copyright 1999,2000 The Regents of the University of California");
   fprintf(stderr,"\n\t\t\t\t All Rights Reserved\n");    

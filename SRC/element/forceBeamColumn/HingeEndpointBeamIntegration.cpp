@@ -194,15 +194,18 @@ HingeEndpointBeamIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"lpI") == 0)
+  if (strcmp(argv[0],"lpI") == 0) {
+    param.setValue(lpI);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"lpJ") == 0)
+  }
+  if (strcmp(argv[0],"lpJ") == 0) {
+    param.setValue(lpJ);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"lp") == 0)
+  }
+  if (strcmp(argv[0],"lp") == 0) {
+    param.setValue(lpI);
     return param.addObject(3, this);
-
+  }
   return -1;
 }
 

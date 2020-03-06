@@ -436,6 +436,11 @@ int GeneralizedAlpha::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+GeneralizedAlpha::getVel()
+{
+  return *Udot;
+}
 
 int GeneralizedAlpha::sendSelf(int cTag, Channel &theChannel)
 {

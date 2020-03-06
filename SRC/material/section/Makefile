@@ -1,6 +1,7 @@
 include ../../../Makefile.def
 
 OBJS       = SectionForceDeformation.o \
+	FiberSection.o \
 	ElasticSection2d.o ElasticSection3d.o \
 	ElasticShearSection2d.o ElasticShearSection3d.o \
 	ElasticBDShearSection2d.o \

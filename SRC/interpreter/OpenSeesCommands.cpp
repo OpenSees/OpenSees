@@ -1128,7 +1128,9 @@ int OPS_System()
 		
 	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
 
-	    }
+	    } else if (strcmp(type, "-umfpack") == 0) {
+	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
+        }
 	}
 
 

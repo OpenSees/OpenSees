@@ -54,7 +54,8 @@ public:
 		double rho,
 		double h,
 		double m,
-		double k_in,
+		double h0,
+		double chi,
 		double beta);
 
 
@@ -94,6 +95,8 @@ public:
 	virtual int updateParameter(int responseID, Information &info);
 	virtual int activateParameter(int paramID);
 
+	virtual const Matrix& getDampTangent();
+
 	virtual int setTrialStrain(const Vector &strain_from_element);
 	virtual int setTrialStrain(const Vector &v, const Vector &r);
 
@@ -121,6 +124,7 @@ protected:
 	double m_density;     // material density
 	double m_h_par;       // exponential hardening parameter
 	double m_m_par;       // exponential hardening parameter
+	double m_h0_par;
 	double m_beta;        // Integration scheme parameter beta = 0, explicit. beta = 1, implicit. beta = 0.5 mid point rule
 
 
@@ -136,12 +140,21 @@ protected:
 	//material response 
 	Vector m_stress_n;           //stress vector time n
 	Vector m_stress_np1;         //stress vector time n+1
+	Vector m_stress_vis_n;
+	Vector m_stress_vis_n1;
+	Vector m_stress_t_n1;
 	Matrix m_Cep;
 	Matrix m_Ce;
+
+	// viscous behavior
+	double m_chi;
+	Matrix m_D;
 
 	//material input
 	Vector m_strain_n;           //strain vector time n
 	Vector m_strain_np1;         //strain vector time n+1
+	Vector m_strainRate_n;
+	Vector m_strainRate_n1;
 
 	bool m_isElast2Plast;
 
@@ -152,6 +165,7 @@ protected:
 	void	integrate();
 	void	elastic_integrator();
 	void	plastic_integrator();
+	void    viscoElastic_integrator();
 
 	void    calcInitialTangent();
 
@@ -172,5 +186,4 @@ protected:
 	bool debugFlag;
 
 }; //end of J2CyclicBoundingSurface declarations
-
 #endif
