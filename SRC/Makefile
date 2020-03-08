@@ -766,8 +766,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/pyUCLA.o \
 	$(FE)/material/uniaxial/FatigueMaterial.o \
 	$(FE)/material/uniaxial/SAWSMaterial.o \
-	$(FE)/material/uniaxial/snap/Bilin.o \
-	$(FE)/material/uniaxial/snap/Bilin02.o \
+	$(FE)/material/uniaxial/Bilin.o \
+	$(FE)/material/uniaxial/Bilin02.o \
 	$(FE)/material/uniaxial/ConfinedConcrete01.o \
 	$(FE)/material/uniaxial/CableMaterial.o \
 	$(FE)/material/uniaxial/ENTMaterial.o \

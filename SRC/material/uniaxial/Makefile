@@ -5,6 +5,8 @@ OBJS       = UniaxialMaterial.o \
 	Elastic2Material.o \
 	ElasticPowerFunc.o \
 	UVCuniaxial.o \
+	Bilin.o \
+	Bilin02.o \
 	IMKBilin.o \
 	IMKPeakOriented.o \
 	IMKPinching.o \
