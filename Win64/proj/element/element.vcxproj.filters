@@ -878,6 +878,9 @@
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp">
+      <Filter>joint</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1560,6 +1563,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.h">
       <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h">
+      <Filter>joint</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

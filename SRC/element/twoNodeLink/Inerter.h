@@ -49,7 +49,7 @@ class Inerter : public Element
 public:
     // constructors
     Inerter(int tag, int dimension, int Nd1, int Nd2,
-        const ID &direction, const Matrix &inertia,
+        const ID &direction, const Matrix &inertance,
         const Vector y = 0, const Vector x = 0,
         const Vector Mratio = 0, int addRayleigh = 0,
         const Matrix *damp = 0, double mass = 0.0);
@@ -97,7 +97,7 @@ public:
     // public methods for element recorder
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
-
+    
 private:
     Etype elemType;
     
@@ -105,8 +105,8 @@ private:
     void setUp();
     void setTranGlobalLocal();
     void setTranLocalBasic();
-    void addPDeltaForces(Vector &pLocal);
-    void addPDeltaStiff(Matrix &kLocal);
+    void addPDeltaForces(Vector &pLocal, const Vector &qBasic);
+    void addPDeltaStiff(Matrix &kLocal, const Vector &qBasic);
     
     // private attributes - a copy for each object of the class
     int numDIM;                         // 1, 2, or 3 dimensions
@@ -117,13 +117,13 @@ private:
     // parameters
     int numDIR;         // number of directions
     ID dir;             // array of directions 0-5
-    Matrix ib;          // inertia matrix in basic system
+    Matrix ib;          // inertance matrix in basic system
     Matrix *cb;         // damping matrix in basic system
     Vector x;           // local x direction
     Vector y;           // local y direction
-	Vector Mratio;      // p-delta moment distribution ratios
+    Vector Mratio;      // p-delta moment distribution ratios
     int addRayleigh;    // flag to add Rayleigh damping
-    double mass;        // total element mass (weight of inerter)
+    double mass;        // total element mass (self weight of inerter)
     double L;           // element length
     bool onP0;          // flag to indicate if the element is on P0
     
@@ -131,7 +131,7 @@ private:
     Vector ub;          // trial displacements in basic system
     Vector ubdot;       // trial velocities in basic system
     Vector ubdotdot;    // trial acceleration in basic system
-    Vector qb;          // measured forces in basic system
+    Vector qb;          // resisting forces in basic system
     Vector ul;          // displacements in local system
     Matrix Tgl;         // transformation matrix from global to local system
     Matrix Tlb;         // transformation matrix from local to basic system
