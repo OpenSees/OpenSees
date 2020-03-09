@@ -1636,7 +1636,7 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
   
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     
     if (argc < 2)
       return -1;
@@ -1646,7 +1646,7 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 
   // Default, send to every object
   int ok = 0;
-  int result = 0;
+  int result = -1;
 
   for (int i = 0; i < numSections; i++) {
     ok = theSections[i]->setParameter(argv, argc, param);
