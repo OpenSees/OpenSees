@@ -63,58 +63,36 @@ OPS_Newmark(void)
   TransientIntegrator *theIntegrator = 0;
 
   int argc = OPS_GetNumRemainingInputArgs();
-  if (argc < 2) {
-    opserr << "WARNING - incorrect number of args want Newmark $gamma $beta "
-              "<-form type> <-init type>\n";
+  if (argc != 2 && argc != 4) {
+    opserr << "WARNING - incorrect number of args want Newmark $gamma $beta <-form $typeUnknown>\n";
     return 0;
   }
 
   int dispFlag = 1;
-  int init = 1;
   double dData[2];
   int numData = 2;
-  if (OPS_GetDouble(&numData, dData) < 0) {
-    opserr << "WARNING - invalid args want Newmark $gamma $beta\n";
+  if (OPS_GetDouble(&numData, dData) != 0) {
+    opserr << "WARNING - invalid args want Newmark $gamma $beta <-form $typeUnknown>\n";
     return 0;
   }
-
-  if (OPS_GetNumRemainingInputArgs() > 1) {
-      const char *nextString = OPS_GetString();
-      if (strcmp(nextString,"-form") == 0) {
-          nextString = OPS_GetString();
-          if ((nextString[0] == 'D') || (nextString[0] == 'd')) {
-              dispFlag = 1;
-              init = 1;
-          } else if ((nextString[0] == 'A') || (nextString[0] == 'a')) {
-              dispFlag = 3;
-              init = 3;
-          } else if ((nextString[0] == 'V') || (nextString[0] == 'v')) {
-              dispFlag = 2;
-              init = 2;
-          }
-      } else {
-          opserr << "WARNING: first option must be -form\n";
-          return 0;
-      }
-      if (OPS_GetNumRemainingInputArgs() > 1) {
-          nextString = OPS_GetString();
-          if (strcmp(nextString, "-init") == 0) {
-              nextString = OPS_GetString();
-              if ((nextString[0] == 'D') || (nextString[0] == 'd')) {
-                  init = 1;
-              } else if ((nextString[0] == 'A') || (nextString[0] == 'a')) {
-                  init = 3;
-              } else if ((nextString[0] == 'V') || (nextString[0] == 'v')) {
-                  init = 2;
-              }
-          }
-      } else {
-          opserr << "WARNING: second option must be -init\n";
-          return 0;
-      }
-      theIntegrator = new Newmark(dData[0], dData[1], dispFlag, false, init);
-  } else {
-      theIntegrator = new Newmark(dData[0], dData[1]);
+  
+  if (argc == 2)
+    theIntegrator = new Newmark(dData[0], dData[1]);
+  else {
+    //    char nextString[10];
+    const char *nextString = OPS_GetString();
+    //    OPS_GetString(nextString, 10);
+    if (strcmp(nextString,"-form") == 0) {
+      //      OPS_GetString(nextString, 10);
+      nextString = OPS_GetString();
+      if ((nextString[0] == 'D') || (nextString[0] == 'd')) 
+	dispFlag = 1;
+      else if ((nextString[0] == 'A') || (nextString[0] == 'a')) 
+	dispFlag = 3;      
+      else if ((nextString[0] == 'V') || (nextString[0] == 'v')) 
+	dispFlag = 2;      
+    }    
+    theIntegrator = new Newmark(dData[0], dData[1], dispFlag);
   }
 
   if (theIntegrator == 0)
@@ -126,7 +104,7 @@ OPS_Newmark(void)
 
 Newmark::Newmark()
     : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
-      displ(1), init(1), gamma(0), beta(0),
+      displ(1), gamma(0), beta(0), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
@@ -138,9 +116,9 @@ Newmark::Newmark()
 }
 
 
-Newmark::Newmark(double _gamma, double _beta, int dispFlag, bool aflag, int _init)
+Newmark::Newmark(double _gamma, double _beta, int dispFlag, bool aflag)
     : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
-      displ(dispFlag), init(_init), gamma(_gamma), beta(_beta),
+      displ(dispFlag), gamma(_gamma), beta(_beta), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
@@ -192,16 +170,16 @@ int Newmark::newStep(double deltaT)
 
     // get a pointer to the AnalysisModel
     AnalysisModel *theModel = this->getAnalysisModel();
-
+    
     // set the constants
     if (displ == 1)  {
         c1 = 1.0;
         c2 = gamma/(beta*deltaT);
         c3 = 1.0/(beta*deltaT*deltaT);
     } else if (displ == 2) {
-        c1 = deltaT*beta/gamma;
-        c2 = 1.0;
-        c3 = 1.0/(gamma*deltaT);
+	c1 = deltaT*beta/gamma;
+	c2 = 1.0;
+	c3 = 1.0/(gamma*deltaT);
     } else if (displ == 3) {
         c1 = beta*deltaT*deltaT;
         c2 = gamma*deltaT;
@@ -229,50 +207,30 @@ int Newmark::newStep(double deltaT)
 
     converged = true;
 
-    populateUn();
-    populateU();
+    (*Ut) = *U;        
+    (*Utdot) = *Udot;  
+    (*Utdotdot) = *Udotdot;
     
-    if (init == 1) {
+    if (displ == 1 || displ == 2)  {    
         // determine new velocities and accelerations at t+deltaT
-        *Udot = *Utdot;
-        Udot->addVector(1.0-gamma/beta, *Utdotdot, deltaT*(1.0-0.5*gamma/beta));
-        Udot->addVector(1.0, *U, gamma / (deltaT * beta));
-        Udot->addVector(1.0, *Ut, -gamma / (deltaT * beta));
-
-        *Udotdot = *Utdotdot;
-        Udotdot->addVector(1.0-0.5/beta, *Utdot, -1.0 / (beta * deltaT));
-        Udotdot->addVector(1.0, *U, 1.0/(deltaT * deltaT * beta));
-        Udotdot->addVector(1.0, *Ut, -1.0/(deltaT * deltaT * beta));
+        double a1 = (1.0 - gamma/beta); 
+        double a2 = (deltaT)*(1.0 - 0.5*gamma/beta);
+        Udot->addVector(a1, *Utdotdot, a2);
+        
+        double a3 = -1.0/(beta*deltaT);
+        double a4 = 1.0 - 0.5/beta;
+        Udotdot->addVector(a4, *Utdot, a3);
 
         // set the trial response quantities
         theModel->setVel(*Udot);
         theModel->setAccel(*Udotdot);
-
-    } else if (init == 2) {
-        // determine new displacements and accelerations at t+deltaT
-        *U = *Ut;
-        U->addVector(1.0, *Utdot, deltaT*(1-beta/gamma));
-        U->addVector(1.0, *Udot, deltaT*beta/gamma);
-        U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta/gamma));
-
-        *Udotdot = *Utdotdot;
-        Udotdot->addVector((1-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
-        Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
-
-        // set the trial response quantities
-        theModel->setDisp(*U);
-        theModel->setAccel(*Udotdot);
-
     } else  {
-        // determine new displacements and velocities at t+deltaT
-        *U = *Ut;
+        // determine new displacements and velocities at t+deltaT      
+        double a1 = (deltaT*deltaT/2.0);
         U->addVector(1.0, *Utdot, deltaT);
-        U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta));
-        U->addVector(1.0, *Udotdot, deltaT*deltaT*beta);
-
-        *Udot = *Utdot;
-        Udot->addVector(1.0, *Utdotdot, deltaT*(1-gamma));
-        Udot->addVector(1.0, *Udotdot, deltaT*gamma);
+        U->addVector(1.0, *Utdotdot, a1);
+        
+        Udot->addVector(1.0, *Utdotdot, deltaT);
 
         // set the trial response quantities
         theModel->setDisp(*U);
@@ -418,8 +376,8 @@ int Newmark::domainChanged()
 
             return -1;
         }
-    }
-
+    }        
+    
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
     DOF_GrpIter &theDOFs = myModel->getDOFs();
@@ -427,16 +385,16 @@ int Newmark::domainChanged()
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
-
+        
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();
+        const Vector &disp = dofPtr->getCommittedDisp();	
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);
+                (*U)(loc) = disp(i);		
             }
         }
-
+        
         const Vector &vel = dofPtr->getCommittedVel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
@@ -444,8 +402,8 @@ int Newmark::domainChanged()
                 (*Udot)(loc) = vel(i);
             }
         }
-
-        const Vector &accel = dofPtr->getCommittedAccel();
+        
+        const Vector &accel = dofPtr->getCommittedAccel();	
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -535,11 +493,10 @@ int Newmark::update(const Vector &deltaU)
 
 int Newmark::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(4);
+    Vector data(3);
     data(0) = gamma;
     data(1) = beta;
     data(2) = displ;
-    data(3) = init;
 
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
@@ -553,7 +510,7 @@ int Newmark::sendSelf(int cTag, Channel &theChannel)
 
 int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(4);
+    Vector data(3);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING Newmark::recvSelf() - could not receive data\n";
         gamma = 0.5; beta = 0.25; 
@@ -563,7 +520,6 @@ int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     gamma  = data(0);
     beta   = data(1);
     displ  = data(2);
-    init  = data(3);
 
     return 0;
 }
@@ -1081,94 +1037,3 @@ Newmark::computeSensitivities(void)
   return 0;
 }
 
-int
-Newmark::populateUn()
-{
-    AnalysisModel *myModel = this->getAnalysisModel();
-
-    // now go through and populate U, Udot and Udotdot by iterating through
-    // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
-    DOF_Group *dofPtr;
-    while ((dofPtr = theDOFs()) != 0) {
-        const ID &id = dofPtr->getID();
-        int idSize = id.Size();
-
-        int i;
-        const Vector &disp = dofPtr->getCommittedDisp();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*Ut)(loc) = disp(i);
-            }
-        }
-
-        const Vector &vel = dofPtr->getCommittedVel();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*Utdot)(loc) = vel(i);
-            }
-        }
-
-        const Vector &accel = dofPtr->getCommittedAccel();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*Utdotdot)(loc) = accel(i);
-            }
-        }
-    }
-
-    return 0;
-}
-
-int
-Newmark::populateU()
-{
-    AnalysisModel *myModel = this->getAnalysisModel();
-    Domain* domain = myModel->getDomainPtr();
-    if (domain == 0) return -1;
-
-    // now go through and populate U, Udot and Udotdot by iterating through
-    // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
-    DOF_Group *dofPtr;
-    while ((dofPtr = theDOFs()) != 0) {
-        const ID &id = dofPtr->getID();
-        int idSize = id.Size();
-        int nodetag = dofPtr->getNodeTag();
-        Node* node = domain->getNode(nodetag);
-        if (node == 0) {
-            opserr << "WARNING:" << node << "nodetag does not exist\n";
-            return -1;
-        }
-
-        int i;
-        const Vector &disp = node->getTrialDisp();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*U)(loc) = disp(i);
-            }
-        }
-
-        const Vector &vel = node->getTrialVel();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*Udot)(loc) = vel(i);
-            }
-        }
-
-        const Vector &accel = node->getTrialAccel();
-        for (i = 0; i < idSize; i++) {
-            int loc = id(i);
-            if (loc >= 0) {
-                (*Udotdot)(loc) = accel(i);
-            }
-        }
-    }
-
-    return 0;
-}
