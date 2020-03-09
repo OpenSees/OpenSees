@@ -154,6 +154,8 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BraceMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BWBN.cpp" />
@@ -180,7 +182,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PrestressedSteelMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SecantConcrete.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bond_SP01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenMaterial.cpp" />
@@ -276,6 +277,10 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\strength\TclModelBuilderStrengthDegradationCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcrete.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp" />
@@ -320,7 +325,6 @@
     <ClCompile Include="..\..\..\Src\material\uniaxial\Py\TzSimple1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\TzSimple1Gen.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\TzSimple2.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilinear.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Clough.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\CloughDamage.cpp" />
@@ -563,6 +567,8 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BraceMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BWBN.h" />
@@ -590,7 +596,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PrestressedSteelMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SecantConcrete.h" />
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Bond_SP01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenMaterial.h" />
@@ -681,6 +686,10 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\PetrangeliStrengthDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\SectionStrengthDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\strength\StrengthDegradation.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcrete.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TriMatrix.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.h" />
@@ -721,7 +730,6 @@
     <ClInclude Include="..\..\..\Src\material\uniaxial\Py\TzSimple1.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\TzSimple1Gen.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\TzSimple2.h" />
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilinear.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Clough.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\CloughDamage.h" />
