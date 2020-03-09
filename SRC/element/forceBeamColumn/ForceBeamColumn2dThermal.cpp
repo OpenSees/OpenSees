@@ -287,7 +287,7 @@ ForceBeamColumn2dThermal::~ForceBeamColumn2dThermal()
     delete Ki;
 
   if(Vsth0!=0)
-	  delete Vsth0;
+    delete [] Vsth0;
 }
 
 int
@@ -3031,11 +3031,12 @@ ForceBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &p
 
   int result = -1;
 
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
-  
+  }
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  if (strstr(argv[0],"sectionX") != 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
 
@@ -3059,7 +3060,7 @@ ForceBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &p
   }
 
   // If the parameter belongs to a section or lower
-  else if (strstr(argv[0],"section") != 0) {
+  if (strstr(argv[0],"section") != 0) {
     
     if (argc < 3)
       return -1;
@@ -3084,7 +3085,7 @@ ForceBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &p
     */
   }
   
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     
     if (argc < 2)
       return -1;
