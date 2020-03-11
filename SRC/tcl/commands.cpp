@@ -470,13 +470,12 @@ Domain theDomain;
 
 #endif
 
-extern int OPS_ResetInput(ClientData clientData, 
+extern int OPS_ResetInputNoBuilder(ClientData clientData,
 			  Tcl_Interp *interp,  
 			  int cArg, 
 			  int mArg, 
 			  TCL_Char **argv, 
-			  Domain *domain,
-			  TclModelBuilder *builder);
+			  Domain *domain);
 
 
 
@@ -3422,7 +3421,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
       if (strcmp(argv[1], solverCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);
+          OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 	void *theRes = (*(solverCommands->funcPtr))();
 	if (theRes != 0) {
 
@@ -3460,7 +3459,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	theSolverCommand->next = theExternalSolverCommands;
 	theExternalSolverCommands = theSolverCommand;
 	
-	OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -3645,7 +3644,7 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   EquiSolnAlgo *theNewAlgo = 0;
-  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
@@ -4284,7 +4283,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		  TCL_Char **argv)
 {
 
-  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 
   // make sure at least one other argument to contain integrator
   if (argc < 2) {
@@ -5117,7 +5116,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       if (strcmp(argv[2], integratorCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+          OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	void *theRes = (*(integratorCommands->funcPtr))();
 	if (theRes != 0) {
 	  theTransientIntegrator = (TransientIntegrator *)theRes;
@@ -5154,7 +5153,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theIntegratorCommand->next = theExternalTransientIntegratorCommands;
 	theExternalTransientIntegratorCommands = theIntegratorCommand;
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -5185,7 +5184,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       if (strcmp(argv[2], integratorCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	void *theRes = (*(integratorCommands->funcPtr))();
 	if (theRes != 0) {
 	  theStaticIntegrator = (StaticIntegrator *)theRes;
@@ -5222,7 +5221,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theIntegratorCommand->next = theExternalStaticIntegratorCommands;
 	theExternalStaticIntegratorCommands = theIntegratorCommand;
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -8210,7 +8209,7 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 int 
 addRegion(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-    OPS_ResetInput(clientData, interp, 1, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
   return TclAddMeshRegion(clientData, interp, argc, argv, theDomain);
 }
 
