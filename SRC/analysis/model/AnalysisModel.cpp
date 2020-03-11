@@ -343,12 +343,12 @@ AnalysisModel::getDOFGraph(void)
 	
 	// if eqnNum of DOF is a valid eqn number add an edge
 	// to all other DOFs with valid eqn numbers.
-	
+	myDOFGraph->startAddEdge();
 	if (eqn1 >=START_EQN_NUM) {
 	  for (int j=i+1; j<size; j++) {
 	    int eqn2 = id(j);
 	    if (eqn2 >=START_EQN_NUM)
-	      myDOFGraph->addEdge(eqn1-START_EQN_NUM+START_VERTEX_NUM,
+	      myDOFGraph->addEdgeFast(eqn1-START_EQN_NUM+START_VERTEX_NUM,
 				  eqn2-START_EQN_NUM+START_VERTEX_NUM);
 	  }
 	}
