@@ -137,8 +137,8 @@ void * OPS_MixedBeamColumn2d() {
   int iData[10];
   double dData[10];
   int sDataLength = 40;
-  char *sData  = new char[sDataLength];
-  char *sData2 = new char[sDataLength];
+  //char *sData  = new char[sDataLength];
+  //char *sData2 = new char[sDataLength];
   int numData;
 
   // Check the number of dimensions
@@ -199,10 +199,11 @@ void * OPS_MixedBeamColumn2d() {
 
   // Loop through remaining arguments to get optional input
   while ( OPS_GetNumRemainingInputArgs() > 0 ) {
-    if ( OPS_GetStringCopy(&sData) != 0 ) {
-      opserr << "WARNING invalid input";
-      return 0;
-    }
+    const char *sData = OPS_GetString();
+    //if ( OPS_GetStringCopy(&sData) != 0 ) {
+    //  opserr << "WARNING invalid input";
+    //  return 0;
+    //}
 
     if ( strcmp(sData,"-mass") == 0 ) {
       numData = 1;
@@ -213,10 +214,11 @@ void * OPS_MixedBeamColumn2d() {
       massDens = dData[0];
 
     } else if ( strcmp(sData,"-integration") == 0 ) {
-      if ( OPS_GetStringCopy(&sData2) != 0 ) {
-        opserr << "WARNING invalid input, want: -integration $intType";
-        return 0;
-      }
+      const char *sData2 = OPS_GetString();
+      //if ( OPS_GetStringCopy(&sData2) != 0 ) {
+      //  opserr << "WARNING invalid input, want: -integration $intType";
+      //  return 0;
+      //}
 
       if (strcmp(sData2,"Lobatto") == 0) {
         beamIntegr = new LobattoBeamIntegration();
@@ -243,7 +245,8 @@ void * OPS_MixedBeamColumn2d() {
       opserr << "WARNING invalid integration type, element: " << eleTag;
       return 0;
       }
-
+      delete [] sData2;
+      
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
         if (OPS_GetInt(&numData, &doRayleigh) != 0) {
@@ -257,6 +260,7 @@ void * OPS_MixedBeamColumn2d() {
     } else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
+    delete [] sData;
   }
 
   // Set the beam integration object if not in options
