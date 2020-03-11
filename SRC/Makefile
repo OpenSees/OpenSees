@@ -524,6 +524,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.o \
+	$(FE)/element/mixedBeamColumn/MixedBeamColumn2d.o \
+	$(FE)/element/mixedBeamColumn/MixedBeamColumn3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuadWithSensitivity.o \
