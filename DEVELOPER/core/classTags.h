@@ -269,6 +269,8 @@
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
 
+#define MAT_TAG_PluginUniaxialMaterial 8000
+
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
 #define SEC_TAG_Generic1d	                 5

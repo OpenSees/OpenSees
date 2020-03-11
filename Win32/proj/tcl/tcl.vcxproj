@@ -112,6 +112,7 @@
     <ClCompile Include="..\..\..\SRC\tcl\commands.cpp" />
     <ClCompile Include="..\..\..\SRC\api\elementAPI_TCL.cpp" />
     <ClCompile Include="..\..\..\SRC\modelbuilder\tcl\myCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\api\PluginFramework.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\api\elementAPI.h" />
@@ -123,6 +124,8 @@
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclSectionTester.h" />
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclUniaxialMaterialTester.h" />
     <ClInclude Include="..\..\..\SRC\tcl\TclVideoPlayer.h" />
+    <ClInclude Include="..\..\..\SRC\api\PluginFramework.h" />
+    <ClInclude Include="..\..\..\SRC\api\PluginFrameworkAPI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -179,7 +179,8 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
 	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o \
 	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o \
-	$(FE)/api/elementAPI_TCL.o
+	$(FE)/api/elementAPI_TCL.o \
+	$(FE)/api/PluginFramework.o
 
 
 skypack:
@@ -677,6 +678,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/UniaxialMaterial.o \
 	$(FE)/material/uniaxial/UniaxialJ2Plasticity.o \
 	$(FE)/material/uniaxial/WrapperUniaxialMaterial.o \
+	$(FE)/material/uniaxial/PluginUniaxialMaterial.o \
 	$(FE)/material/uniaxial/ElasticMaterial.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
 	$(FE)/material/uniaxial/ElasticMultiLinear.o \

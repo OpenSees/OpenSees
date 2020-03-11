@@ -295,6 +295,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PluginUniaxialMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\pyUCLA.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond2Material.cpp" />
@@ -703,6 +704,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\PluginUniaxialMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\pyUCLA.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond2Material.h" />
