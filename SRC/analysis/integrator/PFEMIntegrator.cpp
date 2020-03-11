@@ -765,14 +765,9 @@ PFEMIntegrator::populateU()
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         int nodetag = dofPtr->getNodeTag();
-        Node* node = domain->getNode(nodetag);
-        if (node == 0) {
-            opserr << "WARNING:" << node << "nodetag does not exist\n";
-            return -1;
-        }
 
         int i;
-        const Vector &disp = node->getTrialDisp();
+        const Vector &disp = dofPtr->getTrialDisp();
         for (i = 0; i < idSize; i++) {
             int loc = id(i);
             if (loc >= 0) {
@@ -780,7 +775,7 @@ PFEMIntegrator::populateU()
             }
         }
 
-        const Vector &vel = node->getTrialVel();
+        const Vector &vel = dofPtr->getTrialVel();
         for (i = 0; i < idSize; i++) {
             int loc = id(i);
             if (loc >= 0) {
@@ -788,7 +783,7 @@ PFEMIntegrator::populateU()
             }
         }
 
-        const Vector &accel = node->getTrialAccel();
+        const Vector &accel = dofPtr->getTrialAccel();
         for (i = 0; i < idSize; i++) {
             int loc = id(i);
             if (loc >= 0) {
