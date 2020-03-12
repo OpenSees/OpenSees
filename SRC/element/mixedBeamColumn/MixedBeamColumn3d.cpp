@@ -156,7 +156,7 @@ void * OPS_MixedBeamColumn3d() {
   int transfTag = iData[5];
 
   // Get the section
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(secTag);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);
   if (theSection == 0) {
     opserr << "WARNING section with tag " << secTag << "not found for element " << eleTag << endln;
     return 0;
@@ -168,7 +168,7 @@ void * OPS_MixedBeamColumn3d() {
   }
 
   // Get the coordinate transformation
-  CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+  CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
   if (theTransf == 0) {
     opserr << "WARNING geometric transformation with tag " << transfTag << "not found for element " << eleTag << endln;
     return 0;
