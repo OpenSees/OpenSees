@@ -49,13 +49,15 @@ class ElasticBeam2d : public Element
   public:
     ElasticBeam2d();        
     ElasticBeam2d(int tag, double A, double E, double I, 
-		  int Nd1, int Nd2, CrdTransf &theTransf, 
+		  int Nd1, int Nd2, CrdTransf &theTransf,
 		  double alpha = 0.0, double d = 0.0,
-		  double rho = 0.0, int cMass = 0);
+		  double rho = 0.0, int cMass = 0,
+		  int release = 0);
     ElasticBeam2d(int tag, int Nd1, int Nd2, 
-		  SectionForceDeformation& theSection, CrdTransf &theTransf, 
+		  SectionForceDeformation& theSection, CrdTransf &theTransf,
 		  double alpha = 0.0, double d = 0.0,
-		  double rho = 0.0, int cMass = 0);
+		  double rho = 0.0, int cMass = 0,
+		  int release = 0);
 
     ~ElasticBeam2d();
 
@@ -102,6 +104,8 @@ class ElasticBeam2d : public Element
     double rho;       // mass per unit length
     int cMass;        // consistent mass flag
 
+    int release;      // moment release 0=none, 1=I, 2=J, 3=I,J
+    
     static Matrix K;
     static Vector P;
     Vector Q;
