@@ -1249,6 +1249,11 @@ ElasticBeam2d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(rho);
     return param.addObject(4, this);
   }
+  // moment release
+  if (strcmp(argv[0],"release") == 0) {
+    param.setValue(release);
+    return param.addObject(5, this);
+  }  
   
   return -1;
 }
@@ -1270,7 +1275,12 @@ ElasticBeam2d::updateParameter (int parameterID, Information &info)
 		return 0;
 	case 4:
 		rho = info.theDouble;
-		return 0;		
+		return 0;
+	case 5:
+	  release = (int)info.theDouble;
+	  if (release < 0 || release > 3)
+	    release = 0;
+		return 0;				
 	default:
 		return -1;
 	}
