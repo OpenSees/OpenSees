@@ -245,7 +245,7 @@ void * OPS_MixedBeamColumn2d() {
       opserr << "WARNING invalid integration type, element: " << eleTag;
       return 0;
       }
-      delete [] sData2;
+      //delete [] sData2;
       
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
@@ -260,7 +260,7 @@ void * OPS_MixedBeamColumn2d() {
     } else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
-    delete [] sData;
+    //delete [] sData;
   }
 
   // Set the beam integration object if not in options
