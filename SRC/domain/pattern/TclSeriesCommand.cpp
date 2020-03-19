@@ -81,13 +81,12 @@ extern void *OPS_PeerNGAMotion(void);
 
 #include <TclModelBuilder.h>
 
-extern int OPS_ResetInput(ClientData clientData, 
+extern int OPS_ResetInputNoBuilder(ClientData clientData,
 			  Tcl_Interp *interp,  
 			  int cArg, 
 			  int mArg, 
 			  TCL_Char **argv, 
-			  Domain *domain,
-			  TclModelBuilder *builder);
+			  Domain *domain);
 
 
 TimeSeries *
@@ -98,7 +97,7 @@ TclTimeSeriesCommand(ClientData clientData,
 		     Domain *theDomain)
 {
   // note the 1 instead of usual 2
-  OPS_ResetInput(clientData, interp, 1, argc, argv, theDomain, 0);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, theDomain);
 			    
   TimeSeries *theSeries = 0;
 
