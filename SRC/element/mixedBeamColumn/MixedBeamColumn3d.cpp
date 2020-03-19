@@ -81,7 +81,7 @@ Matrix *MixedBeamColumn3d::nd2T = 0;
 
 // Documentation: Three Dimensional Mixed Beam Column Element
 // element MixedBeamColumn3d $tag $iNode $jNode $numIntgrPts $secTag $transfTag <-mass $massDens>
-//   <-integration $intType> <-doRayleigh $rFlag> <-geomLinear>
+//   <-integration $intType> <-doRayleigh $rFlag> <-geomNonlinear>
 //
 // Required Input Parameters:
 //   $tag                   integer tag identifying the element
@@ -99,7 +99,7 @@ Matrix *MixedBeamColumn3d::nd2T = 0;
 //       $rFlag             optional, default = 1
 //                              rFlag = 0 no rayleigh damping
 //                              rFlag = 1 include rayleigh damping (default)
-//   -geomLinear            perform analysis without internal geometric nonlinearity
+//   -geomNonlinear            perform analysis with internal geometric nonlinearity
 //
 //
 // References:
@@ -177,7 +177,7 @@ void * OPS_MixedBeamColumn3d() {
   // Set Default Values for Optional Input
   int doRayleigh = 1;
   double massDens = 0.0;
-  bool geomLinear = false;
+  bool geomLinear = true;
   BeamIntegration *beamIntegr = 0;
 
   // Loop through remaining arguments to get optional input
@@ -238,8 +238,8 @@ void * OPS_MixedBeamColumn3d() {
           return 0;
         }
 
-    } else if ( strcmp(sData,"-geomLinear") == 0 ) {
-      geomLinear = true;
+    } else if ( strcmp(sData,"-geomNonlinear") == 0 ) {
+      geomLinear = false;
 
     } else {
       opserr << "WARNING unknown option " << sData << "\n";
@@ -440,7 +440,7 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
 // CONSTRUCTOR FOR PARALLEL PROCESSING
 MixedBeamColumn3d::MixedBeamColumn3d():
   Element(0,ELE_TAG_MixedBeamColumn3d),
-  connectedExternalNodes(2), beamIntegr(0), numSections(0), sections(0), crdTransf(0), doRayleigh(0), geomLinear(false),
+  connectedExternalNodes(2), beamIntegr(0), numSections(0), sections(0), crdTransf(0), doRayleigh(0), geomLinear(true),
   rho(0.0), initialLength(0.0),
   itr(0), initialFlag(0),
   V(NDM_NATURAL), committedV(NDM_NATURAL),

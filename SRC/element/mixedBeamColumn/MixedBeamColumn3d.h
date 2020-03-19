@@ -46,9 +46,6 @@ class Response;
 class BeamIntegration;
 class SectionForceDeformation;
 
-
-#define ELE_TAG_MixedBeamColumn3d 30765
-
 class MixedBeamColumn3d : public Element
 {
   public:
