@@ -360,6 +360,12 @@ int NewmarkHSIncrReduct::update(const Vector &deltaU)
 }
 
 
+const Vector &
+NewmarkHSIncrReduct::getVel()
+{
+  return *Udot;
+}
+
 int NewmarkHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(3);

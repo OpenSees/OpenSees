@@ -286,9 +286,7 @@
 #include <SingleFPSimple3d.h>
 #include <TripleFrictionPendulum.h>
 
-#ifdef _PFEM
 #include <PFEMElement2D.h>
-#endif
 
 #include <LinearCrdTransf2d.h>
 #include <LinearCrdTransf3d.h>
@@ -335,6 +333,7 @@
 #include <EnvelopeElementRecorder.h>
 #include <DriftRecorder.h>
 #include <MPCORecorder.h>
+#include <VTK_Recorder.h>
 
 // mp_constraint header files
 #include <MP_Constraint.h>
@@ -446,9 +445,7 @@
 #include <NewmarkHSFixedNumIter.h>
 #include <NewmarkHSIncrLimit.h>
 #include <NewmarkHSIncrReduct.h>
-#ifdef _PFEM
 #include <PFEMIntegrator.h>
-#endif
 #include <TRBDF2.h>
 #include <TRBDF3.h>
 #include <WilsonTheta.h>
@@ -834,10 +831,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
-#ifdef _PFEM
+
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
-#endif
+
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
       opserr << " - no Element type exists for class tag " ;
@@ -1772,7 +1769,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 	case RECORDER_TAGS_EnvelopeElementRecorder:  
 	     return new EnvelopeElementRecorder();
 
-		 case RECORDER_TAGS_DriftRecorder:  
+	case RECORDER_TAGS_VTK_Recorder:  
+	     return new VTK_Recorder();
+
+        case RECORDER_TAGS_DriftRecorder:  
 	     return new DriftRecorder();
 
         case RECORDER_TAGS_TclFeViewer:  
@@ -2091,10 +2091,8 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
-#ifdef _PFEM	     	     
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
-#endif
 
     case INTEGRATOR_TAGS_TRBDF2:  
 	     return new TRBDF2();

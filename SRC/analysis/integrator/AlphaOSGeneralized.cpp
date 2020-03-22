@@ -219,6 +219,11 @@ int AlphaOSGeneralized::newStep(double _deltaT)
     return 0;
 }
 
+const Vector &
+AlphaOSGeneralized::getVel()
+{
+  return *Udot;
+}
 
 int AlphaOSGeneralized::revertToLastStep()
 {

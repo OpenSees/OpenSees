@@ -124,6 +124,15 @@ void* OPS_PFEMElement3DBubble(const ID &info)
 	    data[i] = mdata(i);
 	}
 
+    } else if (info.Size()>0 && info(0)==3) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+
+        // get the data for a mesh
+        Vector& mdata = meshdata[info(1)];
+        return &mdata;
     }
 
     return new PFEMElement3DBubble(idata[0],idata[1],idata[2],idata[3],idata[4],

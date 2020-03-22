@@ -446,6 +446,12 @@ int HHTHSIncrReduct::commit(void)
 }
 
 
+const Vector &
+HHTHSIncrReduct::getVel()
+{
+  return *Udot;
+}
+
 int HHTHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(5);

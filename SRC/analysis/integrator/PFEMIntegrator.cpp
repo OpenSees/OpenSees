@@ -476,6 +476,12 @@ int PFEMIntegrator::update(const Vector &deltaU)
 }    
 
 
+const Vector &
+PFEMIntegrator::getVel()
+{
+  return *Udot;
+}
+
 int PFEMIntegrator::sendSelf(int cTag, Channel &theChannel)
 {
 

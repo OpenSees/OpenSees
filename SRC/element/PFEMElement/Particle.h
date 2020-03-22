@@ -54,6 +54,7 @@ public:
     void setVel(const VDouble &vel) {
         if (!updated) {
             this->velocity = vel;
+            this->coordn = this->coord;
             updated = true;
         }
     }
@@ -61,6 +62,7 @@ public:
     void incrVel(const VDouble &dv) {
         if (!updated) {
             this->velocity += dv;
+            this->coordn = this->coord;
             updated = true;
         }
     }
@@ -92,6 +94,8 @@ public:
 
     const VDouble &getCrds() const { return coord; }
 
+    const VDouble &getCrdsn() const { return coordn; }
+
     const VDouble &getVel() const { return velocity; }
 
     const VDouble &getAccel() const { return accel; }
@@ -109,7 +113,7 @@ public:
     double getDt() const { return dt; }
 
 private:
-    VDouble coord;
+    VDouble coord, coordn;
     VDouble velocity;
     VDouble accel;
     double pressure, pdot;

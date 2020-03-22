@@ -363,6 +363,12 @@ int TRBDF2::update(const Vector &deltaU)
 }    
 
 
+const Vector &
+TRBDF2::getVel()
+{
+  return *Udot;
+}
+
 int TRBDF2::sendSelf(int cTag, Channel &theChannel)
 {
     return 0;

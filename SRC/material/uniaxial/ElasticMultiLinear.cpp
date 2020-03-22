@@ -45,7 +45,7 @@ void *OPS_ElasticMultiLinear()
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc < 7) {
         opserr << "WARNING incorrect num args want: uniaxialMaterial ";
-        opserr << "ElasticMultiLinear tag -strain strainPoints ";
+        opserr << "ElasticMultiLinear tag <eta> -strain strainPoints ";
         opserr << "-stress stressPoints  ";
         opserr << "(with at least two stress-strain points)\n";
         return 0;

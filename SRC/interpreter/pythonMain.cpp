@@ -34,15 +34,50 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
+#define PY_SSIZE_T_CLEAN
+#include <OPS_Globals.h>
+#include <Python.h>
+#include <iostream>
+#include "PythonModule.h"
 
-#include "PythonInterpreter.h"
+PyMODINIT_FUNC
+PyInit_opensees(void);
 
-int main(int argc, char **argv) {
-  PythonInterpreter* theInterpreter = new PythonInterpreter(argc, argv);
-  int res = theInterpreter->run();
-  
-  delete theInterpreter;
-  theInterpreter = 0;
-  return res;
+int main(int argc, char *argv[]) {
+    // find python libraries
+    wchar_t *program = Py_DecodeLocale(argv[0], NULL);
+    if (program == NULL) {
+        fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+        exit(1);
+    }
+    Py_SetProgramName(program);
+
+    // print opensees information
+    fprintf(stderr, "\n\n\t OpenSeesPy -- Open System For Earthquake Engineering Simulation");
+    fprintf(stderr, "\n\tPacific Earthquake Engineering Research Center -- ");
+    fprintf(stderr, OPS_VERSION);
+    fprintf(stderr, "\n\n");
+
+    fprintf(stderr, "\t    (c) Copyright 2015-2017 The Regents of the University of California");
+    fprintf(stderr, "\n\t\t\t\t All Rights Reserved\n\n\n");
+
+    // convert argv
+    wchar_t **wargv = new wchar_t *[argc];
+    for (int i = 0; i < argc; ++i) {
+        wargv[i] = Py_DecodeLocale(argv[i], NULL);
+    }
+
+    // import opensees module
+    PyImport_AppendInittab("opensees", &PyInit_opensees);
+
+    // call main python function
+    int ret = Py_Main(argc, wargv);
+
+    // free memories
+    PyMem_RawFree(program);
+    for (int i = 0; i < argc; ++i) {
+        PyMem_RawFree(wargv[i]);
+    }
+    delete[] wargv;
+    return ret;
 }
-

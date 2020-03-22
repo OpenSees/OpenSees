@@ -494,6 +494,11 @@ int HHTGeneralizedExplicit_TP::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHTGeneralizedExplicit_TP::getVel()
+{
+  return *Udot;
+}
 
 int HHTGeneralizedExplicit_TP::sendSelf(int cTag, Channel &theChannel)
 {

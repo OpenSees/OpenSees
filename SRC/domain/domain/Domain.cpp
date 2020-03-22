@@ -87,6 +87,7 @@
 Domain       *ops_TheActiveDomain = 0;
 double        ops_Dt = 0.0;
 bool          ops_InitialStateAnalysis = false;
+int           ops_Creep = 0;
 
 Domain::Domain()
 :theRecorders(0), numRecorders(0),
@@ -1751,6 +1752,17 @@ Domain::setCommittedTime(double newTime)
     dT = currentTime - committedTime;
 }
 
+void
+Domain::setCreep(int newCreep)
+{
+  ops_Creep = newCreep;
+}
+
+int
+Domain::getCreep(void) const
+{
+  return ops_Creep;
+}
 
 void
 Domain::applyLoad(double timeStep)

@@ -482,6 +482,12 @@ int HHTGeneralized_TP::commit(void)
 }
 
 
+const Vector &
+HHTGeneralized_TP::getVel()
+{
+  return *Udot;
+}
+
 int HHTGeneralized_TP::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(4);

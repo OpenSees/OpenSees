@@ -372,6 +372,12 @@ int ParkLMS3::update(const Vector &deltaU)
 }    
 
 
+const Vector &
+ParkLMS3::getVel()
+{
+  return *Udot;
+}
+
 int ParkLMS3::sendSelf(int cTag, Channel &theChannel)
 {
     // nothing to send
