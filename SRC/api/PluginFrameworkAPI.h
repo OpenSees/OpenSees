@@ -36,20 +36,17 @@ The jobs a plugin material should perform
 */
 enum PluginMaterialJobType
 {
-	PF_MAT_INITIALIZE = 0,
+	PF_MAT_GET_INIT_INFO = 0,
+	PF_MAT_INITIALIZE,
 	PF_MAT_FINALIZE,
 
 	PF_MAT_COMMIT = 100,
 	PF_MAT_REVERT,
 	PF_MAT_REVERT_TO_START,
+	PF_MAT_SERIALIZE,
+	PF_MAT_DESERIALIZE,
 
 	PF_MAT_COMPUTE = 200,
-
-	PF_MAT_SET_RESPONSE = 300,
-	PF_MAT_GET_RESPONSE,
-
-	// PARAMETERS 400
-	// VARIABLE 500
 
 	PF_MAT_GET_STRAIN = 600,
 	PF_MAT_GET_STRAIN_RATE,
@@ -59,7 +56,8 @@ enum PluginMaterialJobType
 	PF_MAT_GET_DAMP_TANGENT,
 	PF_MAT_GET_RHO,
 	PF_MAT_GET_ENERGY,
-	PF_MAT_GET_IS_FAILED
+	PF_MAT_GET_IS_FAILED,
+	PF_MAT_GET_RESPONSE
 };
 
 /**
@@ -104,7 +102,7 @@ When job = PF_MAT_INITIALIZE:
 	each record can be one of the following:
 	------------------------------------------------------------------------------
 	A|<name>|<default>
-	R|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
+	R|<id>|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
 	------------------------------------------------------------------------------
 	notes:
 	A = start of an input argument (material parameter) (double type assumed)

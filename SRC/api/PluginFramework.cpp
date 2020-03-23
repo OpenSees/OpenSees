@@ -401,25 +401,47 @@ int PluginMaterialDescriptor::parseMessage(const char* m)
 		}
 		else if (f0 == "R") {
 
-			// R|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
-			if (fields.size() < 3) {
-				opserr << "PluginMaterialDescriptor Error: the R record must have at least 2 fields";
+			// R|<id>|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
+			if (fields.size() < 4) {
+				opserr << "PluginMaterialDescriptor Error: the R record must have at least 3 fields";
 				return -1;
 			}
 
-			const std::string& name = fields[1];
+			int id;
+			if (!(std::stringstream(fields[1]) >> id)) {
+				opserr << "PluginMaterialDescriptor Error: Cannot get the response id from the R record";
+				return -1;
+			}
 
-			size_t nold = processed_responses.size();
+			const std::string& name = fields[2];
+
+			std::size_t nold = processed_responses.size();
 			processed_responses.insert(name);
 			if (nold == processed_responses.size()) {
 				opserr << "PluginMaterialDescriptor Error: the R records must have unique names";
 				return -1;
 			}
 
+			std::size_t ncomp;
+			if (!(std::stringstream(fields[3]) >> ncomp)) {
+				opserr << "PluginMaterialDescriptor Error: Cannot get the number of components from the R record";
+				return -1;
+			}
+			if (ncomp < 1) {
+				opserr << "PluginMaterialDescriptor Error: The R record must have at least 1 component";
+				return -1;
+			}
+			if (ncomp + 4 != fields.size()) {
+				opserr << "PluginMaterialDescriptor Error: Not enough components provided";
+				return -1;
+			}
+
 			PluginResponseDescriptor resp;
+			resp.id = id;
 			resp.name = name;
-			for (size_t j = 2; j < fields.size(); j++)
-				resp.components.push_back(fields[j]);
+			resp.components.resize(ncomp);
+			for (std::size_t j = 4; j < fields.size(); j++)
+				resp.components[j-4] = fields[j];
 
 			responses.push_back(resp);
 

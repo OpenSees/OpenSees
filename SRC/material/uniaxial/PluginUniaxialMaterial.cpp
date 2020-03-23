@@ -25,6 +25,10 @@
 #include <PluginUniaxialMaterial.h>
 #include <PluginFramework.h>
 #include <elementAPI.h>
+#include <ID.h>
+#include <Channel.h>
+#include <MaterialResponse.h>
+#include <actor/message/Message.h>
 #include <string>
 #include <exception>
 #include <limits>
@@ -76,18 +80,18 @@ OPS_PluginUniaxialMaterial(void)
 		return 0;
 	}
 
-	// call for initialization. Here the function must set initialization info for proper allocation
+	// call to get initialization info. Here the function must set initialization info for proper allocation
 	// (mat_type, n_param, n_state,  message)
 	int rcode = 0;
-	data->proc(data, PF_MAT_INITIALIZE, &rcode);
+	data->proc(data, PF_MAT_GET_INIT_INFO, &rcode);
 	if (rcode != 0) {
-		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_INITIALIZE\n";
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_GET_INIT_INFO\n";
 		delete data;
 		return 0;
 	}
 	if (data->mat_type != PF_MAT_TYPE_UNIAXIAL) {
 		opserr << 
-			"PluginUniaxialMaterial Error: Failed in job = PF_MAT_INITIALIZE.\n"
+			"PluginUniaxialMaterial Error: Failed in job = PF_MAT_GET_INIT_INFO.\n"
 			"mat_type (" << data->mat_type << ") not set correctly to PF_MAT_TYPE_UNIAXIAL (" << PF_MAT_TYPE_UNIAXIAL << ").\n"
 			"Make sure the plugin material you selected is a valid uniaxial material plugin";
 		delete data;
@@ -134,6 +138,15 @@ OPS_PluginUniaxialMaterial(void)
 		return 0;
 	}
 
+	// call for initialization. Here the function must initialize the sate of the plugin material
+	rcode = 0;
+	data->proc(data, PF_MAT_INITIALIZE, &rcode);
+	if (rcode != 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_INITIALIZE\n";
+		delete data;
+		return 0;
+	}
+
 	// create the new material with the current data, it will complete 
 	// the setup of pointers in data
 	PluginUniaxialMaterial* material = new PluginUniaxialMaterial(descriptor, data);
@@ -154,11 +167,6 @@ PluginUniaxialMaterial::PluginUniaxialMaterial(PluginMaterialDescriptor* descr, 
 	, m_descriptor(descr)
 	, m_data(d)
 {
-	// call revert to start to inizialize variable now that are properly allocated
-	if (revertToStart() != 0) {
-		opserr << "PluginUniaxialMaterial Error: Failed in revertToStart for first initialization\n";
-		exit(-1);
-	}
 }
 
 PluginUniaxialMaterial::~PluginUniaxialMaterial()
@@ -184,14 +192,78 @@ const char* PluginUniaxialMaterial::getClassType() const
 
 int PluginUniaxialMaterial::sendSelf(int commitTag, Channel& theChannel)
 {
-	// PF_TODO
-	return -1;
+	// serialize to string
+	int rcode = 0;
+	m_data->proc(m_data, PF_MAT_SERIALIZE, &rcode);
+	if (rcode != 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_SERIALIZE\n";
+		return -1;
+	}
+	if (m_data->message == 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_SERIALIZE\n";
+		return -1;
+	}
+
+	// copy message in a local string and reset the original pointer to 0
+	std::string msg_copy(m_data->message);
+	m_data->message = 0;
+
+	// get message size
+	int msg_data_size = static_cast<int>(msg_copy.size() + 1);
+
+	// send message size
+	ID idata(1);
+	idata(0) = msg_data_size;
+	if (theChannel.sendID(0, commitTag, idata) < 0) {
+		opserr << "PluginUniaxialMaterial::sendSelf() - failed to send message size\n";
+		return -1;
+	}
+
+	// send message
+	Message msg((char*)msg_copy.c_str(), msg_data_size);
+	if (theChannel.sendMsg(0, commitTag, msg) < 0) {
+		opserr << "PluginUniaxialMaterial::sendSelf() - failed to send message\n";
+		return -1;
+	}
+
+	// done
+	return 0;
 }
 
 int PluginUniaxialMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
-	// PF_TODO
-	return -1;
+	// recv message size
+	ID idata(1);
+	if (theChannel.recvID(0, commitTag, idata) < 0) {
+		opserr << "PluginUniaxialMaterial::recvSelf() - failed to recv message size\n";
+		return -1;
+	}
+	int msg_data_size = idata(0);
+
+	// recv message
+	std::vector<char> msg_data_chars(msg_data_size);
+	Message msg(msg_data_chars.data(), msg_data_size);
+	if (theChannel.recvMsg(0, commitTag, msg) < 0) {
+		opserr << "PluginUniaxialMaterial::recvSelf() - failed to recv message\n";
+		return -1;
+	}
+
+	// set the message pointer
+	m_data->message = msg_data_chars.data();
+
+	// deserialize from string
+	int rcode = 0;
+	m_data->proc(m_data, PF_MAT_DESERIALIZE, &rcode);
+	if (rcode != 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_DESERIALIZE\n";
+		return -1;
+	}
+	
+	// reset the original pointer to 0
+	m_data->message = 0;
+
+	// done
+	return 0;
 }
 
 int PluginUniaxialMaterial::setParameter(const char** argv, int argc, Parameter& param)
@@ -428,7 +500,7 @@ UniaxialMaterial* PluginUniaxialMaterial::getCopy()
 		return 0;
 	}
 
-	// call for initialization (PF_MAT_INITIALIZE) avoided here. Can copy those values
+	// call for initialization info (PF_MAT_GET_INIT_INFO) avoided here. Can copy those values
 	data->mat_type = m_data->mat_type;
 	data->n_param = m_data->n_param;
 
@@ -443,6 +515,15 @@ UniaxialMaterial* PluginUniaxialMaterial::getCopy()
 	for (int i = 0; i < m_data->n_param; i++)
 		data->param[i] = m_data->param[i];
 
+	// call for initialization. Here the function must initialize the sate of the plugin material
+	int rcode = 0;
+	data->proc(data, PF_MAT_INITIALIZE, &rcode);
+	if (rcode != 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_INITIALIZE\n";
+		delete data;
+		return 0;
+	}
+
 	// create the new material with the current data, it will complete 
 	// the setup of pointers in data
 	return new PluginUniaxialMaterial(m_descriptor, data);
@@ -450,14 +531,78 @@ UniaxialMaterial* PluginUniaxialMaterial::getCopy()
 
 Response* PluginUniaxialMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOutputStream)
 {
-	// PF_TODO
-	return 0;
+	if (argc < 1)
+		return 0;
+
+	std::string iarg(argv[0]);
+	for (std::size_t i = 0; i < m_descriptor->responses.size(); i++) {
+		const PluginResponseDescriptor& d = m_descriptor->responses[i];
+		if ((d.name == iarg) && (d.components.size() > 0)) {
+
+			theOutputStream.tag("NdMaterialOutput");
+			theOutputStream.attr("matType", this->getClassType());
+			theOutputStream.attr("matTag", this->getTag());
+
+			for(std::size_t j = 0; j < d.components.size(); j++)
+				theOutputStream.tag("ResponseType", d.components[j].c_str());
+
+			if (d.components.size() == 1) {
+				return new MaterialResponse(this, d.id, 0.0);
+			}
+			else {
+				return new MaterialResponse(this, d.id, Vector(static_cast<int>(d.components.size())));
+			}
+
+			theOutputStream.endTag();
+		}
+	}
+	
+	// call the base class implementation
+	return UniaxialMaterial::setResponse(argv, argc, theOutputStream);
 }
 
 int PluginUniaxialMaterial::getResponse(int responseID, Information& matInformation)
 {
-	// PF_TODO
-	return -1;
+	for (std::size_t i = 0; i < m_descriptor->responses.size(); i++) {
+		const PluginResponseDescriptor& d = m_descriptor->responses[i];
+		if (d.id == responseID) {
+
+			// set
+			m_data->response_id = responseID;
+			double value_scalar = 0.0;
+			Vector value_vector;
+			if (d.components.size() == 1) {
+				m_data->response = &value_scalar;
+			}
+			else {
+				value_vector.resize(d.components.size());
+				m_data->response = &value_vector(0);
+			}
+
+			// call
+			int rcode = 0;
+			m_data->proc(m_data, PF_MAT_GET_RESPONSE, &rcode);
+
+			// unset
+			m_data->response_id = 0;
+			m_data->response = 0;
+
+			// check
+			if (rcode != 0) {
+				opserr << "PluginUniaxialMaterial Error: Failed in job = PF_MAT_GET_RESPONSE\n";
+				exit(-1);
+			}
+
+			// done
+			if (d.components.size() == 1) 
+				return matInformation.setDouble(value_scalar);
+			else 
+				return matInformation.setVector(value_vector);
+		}
+	}
+
+	// call the base class implementation
+	return UniaxialMaterial::getResponse(responseID, matInformation);
 }
 
 int PluginUniaxialMaterial::getResponseSensitivity(int responseID, int gradIndex, Information& info)

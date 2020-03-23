@@ -103,6 +103,8 @@ Descriptor for a response
 class PluginResponseDescriptor
 {
 public:
+	/// response id
+	int id;
 	/// response name
 	std::string name;
 	/// all components, its length defined the size of the Vector of results
