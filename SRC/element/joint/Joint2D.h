@@ -33,6 +33,7 @@
 #ifndef Joint2D_h
 #define Joint2D_h
 
+#include <vector>
 #include <bool.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -67,11 +68,7 @@ public:
     UniaxialMaterial* springC,
     Domain* theDomain,
     int LrgDisp,
-    DamageModel& dmg1,
-    DamageModel& dmg2,
-    DamageModel& dmg3,
-    DamageModel& dmg4,
-    DamageModel& dmgC);
+    std::vector<DamageModel*> damageModels);
 
   ~Joint2D();
 

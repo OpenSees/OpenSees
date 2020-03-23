@@ -743,8 +743,7 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
   UniaxialMaterial* spring1, UniaxialMaterial* spring2,
   UniaxialMaterial* spring3, UniaxialMaterial* spring4,
   UniaxialMaterial* springC, Domain* theDomain, int LrgDisp,
-  DamageModel& dmg1, DamageModel& dmg2, DamageModel& dmg3,
-  DamageModel& dmg4, DamageModel& dmgC)
+  std::vector<DamageModel*> damageModels)
   :Element(tag, ELE_TAG_Joint2D),
   ExternalNodes(5), InternalConstraints(4),
   TheDomain(0), numDof(0), nodeDbTag(0), dofDbTag(0), theLoadSens(0)
@@ -902,17 +901,11 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
     return;
   }
   // Handle the damage models
-  if (&dmg1 == NULL) { theDamages[0] = NULL; }
-  else { theDamages[0] = dmg1.getCopy(); }
-  if (&dmg2 == NULL) { theDamages[1] = NULL; }
-  else { theDamages[1] = dmg2.getCopy(); }
-  if (&dmg3 == NULL) { theDamages[2] = NULL; }
-  else { theDamages[2] = dmg3.getCopy(); }
-  if (&dmg4 == NULL) { theDamages[3] = NULL; }
-  else { theDamages[3] = dmg4.getCopy(); }
-  if (&dmgC == NULL) { theDamages[4] = NULL; }
-  else { theDamages[4] = dmgC.getCopy(); }
-
+  i = 0;
+  for (auto it = damageModels.begin(); it != damageModels.end(); ++it, ++i) {
+    if (*it == NULL) { theDamages[i] = NULL; }
+    else { theDamages[i] = (*it)->getCopy(); }
+  }
   for (i = 0; i < 5; i++) if (theDamages[i] != NULL) theDamages[i]->revertToStart();
 
 }

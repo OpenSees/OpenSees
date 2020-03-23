@@ -32,6 +32,7 @@
 //
 // What: "@(#) TclModelBuilder.C, revA"
 
+#include <vector>
 #include <stdlib.h>
 #include <string.h>
 #include <Domain.h>
@@ -555,11 +556,13 @@ TclModelBuilder_addJoint2D(ClientData clientData, Tcl_Interp* interp,
 
     }
 
+    // Create the new material
+    std::vector<DamageModel*> damageModels{ DmgI, DmgJ, DmgK, DmgL, PanelDamage};
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
       MatI, MatJ, MatK, MatL, PanelMaterial,
       theTclDomain, LargeDisp,
-      *DmgI, *DmgJ, *DmgK, *DmgL, *PanelDamage);
+      damageModels);
 
     if (theJoint2D == 0) {
       opserr << "WARNING ran out of memory creating element\n";
