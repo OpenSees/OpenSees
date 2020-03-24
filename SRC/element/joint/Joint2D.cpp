@@ -49,7 +49,7 @@
 
 Matrix Joint2D::K(16, 16);
 Vector Joint2D::V(16);
-/*
+
 void* OPS_Joint2D()
 {
   Domain* theDomain = OPS_GetDomain();
@@ -240,7 +240,7 @@ void* OPS_Joint2D()
 
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      *MatI, *MatJ, *MatK, *MatL, *PanelMaterial,
+      MatI, MatJ, MatK, MatL, PanelMaterial,
       theDomain,
       LargeDisp);
 
@@ -540,11 +540,13 @@ void* OPS_Joint2D()
 
     }
 
+    // Create the new material
+    std::vector<DamageModel*> damageModels{ DmgI, DmgJ, DmgK, DmgL, PanelDamage };
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      *MatI, *MatJ, *MatK, *MatL, *PanelMaterial,
+      MatI, MatJ, MatK, MatL, PanelMaterial,
       theDomain, LargeDisp,
-      *DmgI, *DmgJ, *DmgK, *DmgL, *PanelDamage);
+      damageModels);
     return theJoint2D;
   }
   else
@@ -552,7 +554,6 @@ void* OPS_Joint2D()
     return 0;
   }
 }
-*/
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

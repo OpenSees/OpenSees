@@ -49,7 +49,7 @@
 Matrix Joint3D::K(45, 45);
 Vector Joint3D::V(45);
 
-/*
+
 void* OPS_Joint3D()
 {
     if (OPS_GetNDM() != 3 || OPS_GetNDF() != 6) {
@@ -166,7 +166,7 @@ void* OPS_Joint3D()
   // Using Joint3D constructor without damage
   theJoint3D = new Joint3D( Joint3DId,
           iNode,jNode,kNode,lNode,mNode,nNode,CenterNodeTag,
-          *MatX,*MatY,*MatZ, theDomain, LargeDisp);
+          MatX,MatY,MatZ, theDomain, LargeDisp);
 
   // if get here we have successfully created the element and added it to the domain
   return theJoint3D;
@@ -179,7 +179,7 @@ void* OPS_Joint3D()
     }
     return 0;
 }
-*/
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
