@@ -164,9 +164,10 @@ void* OPS_Joint3D()
     if (OPS_GetNumRemainingInputArgs() == 12 ) {
 
   // Using Joint3D constructor without damage
+      UniaxialMaterial* springModels[3] = { MatX, MatY, MatZ };
   theJoint3D = new Joint3D( Joint3DId,
           iNode,jNode,kNode,lNode,mNode,nNode,CenterNodeTag,
-          MatX,MatY,MatZ, theDomain, LargeDisp);
+          springModels, theDomain, LargeDisp);
 
   // if get here we have successfully created the element and added it to the domain
   return theJoint3D;
@@ -200,7 +201,7 @@ Joint3D::Joint3D()
 
 
 Joint3D::Joint3D(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6, int IntNodeTag,
-  UniaxialMaterial* springx, UniaxialMaterial* springy, UniaxialMaterial* springz,
+  UniaxialMaterial* springModels[],
   Domain* theDomain, int LrgDisp)
   :Element(tag, ELE_TAG_Joint3D), ExternalNodes(7), InternalConstraints(6),
   TheDomain(0), numDof(0), nodeDbTag(0), dofDbTag(0)
@@ -328,23 +329,23 @@ Joint3D::Joint3D(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6, 
 
   // make copy of the uniaxial materials for the element
 
-  if (springx == NULL) {
+  if (springModels[0] == NULL) {
     opserr << "ERROR Joint3D::Joint3D(): The rotational spring in y'z' plane does not exist ";
     exit(-1);
   }
-  else { theSprings[0] = (*springx).getCopy(); }
+  else { theSprings[0] = springModels[0]->getCopy(); }
 
-  if (springy == NULL) {
+  if (springModels[1] == NULL) {
     opserr << "ERROR Joint3D::Joint3D(): The rotational spring in x'z' plane does not exist ";
     exit(-1);
   }
-  else { theSprings[1] = (*springy).getCopy(); }
+  else { theSprings[1] = springModels[1]->getCopy(); }
 
-  if (springz == NULL) {
+  if (springModels[2] == NULL) {
     opserr << "ERROR Joint3D::Joint3D(): The rotational spring in x'y' plane does not exist ";
     exit(-1);
   }
-  else { theSprings[2] = (*springz).getCopy(); }
+  else { theSprings[2] = springModels[2]->getCopy(); }
 
   for (i = 0; i < 3; i++)
   {

@@ -238,9 +238,10 @@ void* OPS_Joint2D()
       }
     }
 
+    UniaxialMaterial* springModels[5] = { MatI, MatJ, MatK, MatL, PanelMaterial };
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      MatI, MatJ, MatK, MatL, PanelMaterial,
+      springModels,
       theDomain,
       LargeDisp);
 
@@ -541,10 +542,11 @@ void* OPS_Joint2D()
     }
 
     // Create the new material
-    std::vector<DamageModel*> damageModels{ DmgI, DmgJ, DmgK, DmgL, PanelDamage };
+    DamageModel* damageModels[5] = { DmgI , DmgJ, DmgK, DmgL, PanelDamage };
+    UniaxialMaterial* springModels[5] = { MatI, MatJ, MatK, MatL, PanelMaterial };
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      MatI, MatJ, MatK, MatL, PanelMaterial,
+      springModels,
       theDomain, LargeDisp,
       damageModels);
     return theJoint2D;
@@ -575,9 +577,8 @@ Joint2D::Joint2D()
 
 
 Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
-  UniaxialMaterial* spring1, UniaxialMaterial* spring2,
-  UniaxialMaterial* spring3, UniaxialMaterial* spring4,
-  UniaxialMaterial* springC, Domain* theDomain, int LrgDisp)
+  UniaxialMaterial* springModels[],
+  Domain* theDomain, int LrgDisp)
   :Element(tag, ELE_TAG_Joint2D),
   ExternalNodes(5), InternalConstraints(4),
   TheDomain(0), numDof(0), nodeDbTag(0), dofDbTag(0), theLoadSens(0)
@@ -684,17 +685,13 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
   }
 
   // make copy of the uniaxial materials for the element
-
-  if (spring1 == NULL) { fixedEnd[0] = 1;  theSprings[0] = NULL; }
-  else { fixedEnd[0] = 0; theSprings[0] = (*spring1).getCopy(); }
-  if (spring2 == NULL) { fixedEnd[1] = 1;  theSprings[1] = NULL; }
-  else { fixedEnd[1] = 0; theSprings[1] = (*spring2).getCopy(); }
-  if (spring3 == NULL) { fixedEnd[2] = 1;  theSprings[2] = NULL; }
-  else { fixedEnd[2] = 0; theSprings[2] = (*spring3).getCopy(); }
-  if (spring4 == NULL) { fixedEnd[3] = 1;  theSprings[3] = NULL; }
-  else { fixedEnd[3] = 0; theSprings[3] = (*spring4).getCopy(); }
-  if (springC == NULL) { opserr << "ERROR Joint2D::Joint2D(): The central node does not exist "; exit(-1); }
-  else { fixedEnd[4] = 0; theSprings[4] = (*springC).getCopy(); }
+  for (i = 0; i < 4; i++) {
+    if (springModels[i] == NULL) { theDamages[i] = NULL; }
+    else { theSprings[i] = springModels[i]->getCopy(); }
+  }
+  // Need to treat the central spring node differently
+  if (springModels[4] == NULL) { opserr << "ERROR Joint2D::Joint2D(): The central node does not exist "; exit(-1); }
+  else { fixedEnd[4] = 0; theSprings[4] = springModels[4]->getCopy(); }
 
 
   for (i = 0; i < 5; i++)
@@ -741,10 +738,9 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
 
 
 Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
-  UniaxialMaterial* spring1, UniaxialMaterial* spring2,
-  UniaxialMaterial* spring3, UniaxialMaterial* spring4,
-  UniaxialMaterial* springC, Domain* theDomain, int LrgDisp,
-  std::vector<DamageModel*> damageModels)
+  UniaxialMaterial* springModels[],
+  Domain* theDomain, int LrgDisp,
+  DamageModel* damageModels[])
   :Element(tag, ELE_TAG_Joint2D),
   ExternalNodes(5), InternalConstraints(4),
   TheDomain(0), numDof(0), nodeDbTag(0), dofDbTag(0), theLoadSens(0)
@@ -851,18 +847,13 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
   }
 
   // make copy of the uniaxial materials for the element
-
-  if (spring1 == NULL) { fixedEnd[0] = 1;  theSprings[0] = NULL; }
-  else { fixedEnd[0] = 0; theSprings[0] = (*spring1).getCopy(); }
-  if (spring2 == NULL) { fixedEnd[1] = 1;  theSprings[1] = NULL; }
-  else { fixedEnd[1] = 0; theSprings[1] = (*spring2).getCopy(); }
-  if (spring3 == NULL) { fixedEnd[2] = 1;  theSprings[2] = NULL; }
-  else { fixedEnd[2] = 0; theSprings[2] = (*spring3).getCopy(); }
-  if (spring4 == NULL) { fixedEnd[3] = 1;  theSprings[3] = NULL; }
-  else { fixedEnd[3] = 0; theSprings[3] = (*spring4).getCopy(); }
-  if (springC == NULL) { opserr << "ERROR Joint2D::Joint2D(): The central node does not exist "; exit(-1); }
-  else { fixedEnd[4] = 0; theSprings[4] = (*springC).getCopy(); }
-
+  for (i = 0; i < 4; i++) {
+    if (springModels[i] == NULL) { theDamages[i] = NULL; }
+    else { theSprings[i] = springModels[i]->getCopy(); }
+  }
+  // Need to treat the central spring node differently
+  if (springModels[4] == NULL) { opserr << "ERROR Joint2D::Joint2D(): The central node does not exist "; exit(-1); }
+  else { fixedEnd[4] = 0; theSprings[4] = springModels[4]->getCopy(); }
 
   for (i = 0; i < 5; i++)
   {
@@ -902,13 +893,15 @@ Joint2D::Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
     return;
   }
   // Handle the damage models
-  i = 0;
-  for (auto it = damageModels.begin(); it != damageModels.end(); ++it, ++i) {
-    if (*it == NULL) { theDamages[i] = NULL; }
-    else { theDamages[i] = (*it)->getCopy(); }
+  for (i = 0; i < 5; i++) {
+    if (damageModels[i] == NULL) {
+      theDamages[i] = NULL;
+    }
+    else {
+      theDamages[i] = damageModels[i]->getCopy();
+      theDamages[i]->revertToStart();
+    }
   }
-  for (i = 0; i < 5; i++) if (theDamages[i] != NULL) theDamages[i]->revertToStart();
-
 }
 
 

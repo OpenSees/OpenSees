@@ -52,23 +52,15 @@ public:
   Joint2D();
 
   Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
-    UniaxialMaterial* spring1,
-    UniaxialMaterial* spring2,
-    UniaxialMaterial* spring3,
-    UniaxialMaterial* spring4,
-    UniaxialMaterial* springC,
+    UniaxialMaterial* springModels[],
     Domain* theDomain,
     int LrgDisp);
 
   Joint2D(int tag, int nd1, int nd2, int nd3, int nd4, int IntNodeTag,
-    UniaxialMaterial* spring1,
-    UniaxialMaterial* spring2,
-    UniaxialMaterial* spring3,
-    UniaxialMaterial* spring4,
-    UniaxialMaterial* springC,
+    UniaxialMaterial* springModels[],
     Domain* theDomain,
     int LrgDisp,
-    std::vector<DamageModel*> damageModels);
+    DamageModel* damageModels[]);
 
   ~Joint2D();
 
