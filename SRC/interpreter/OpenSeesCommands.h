@@ -316,6 +316,7 @@ int OPS_sdfResponse();
 int OPS_getNumThreads();
 int OPS_setNumThreads();
 int OPS_setStartNodeTag();
+int OPS_partition();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
