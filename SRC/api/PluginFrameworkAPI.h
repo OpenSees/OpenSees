@@ -164,7 +164,7 @@ struct PluginMaterialData
 	double* strain;
 	double* strain_rate;
 	double* temperature;
-
+	double* lch;
 };
 
 #endif

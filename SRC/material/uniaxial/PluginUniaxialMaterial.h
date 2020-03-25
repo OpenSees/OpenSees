@@ -92,6 +92,8 @@ public:
 private:
 	PluginMaterialDescriptor* m_descriptor;
 	PluginMaterialData* m_data;
+	double m_lch;
+	bool m_lch_calculated;
 };
 
 #endif // PluginUniaxialMaterial_h

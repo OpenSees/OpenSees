@@ -25,6 +25,7 @@
 #include <PluginUniaxialMaterial.h>
 #include <PluginFramework.h>
 #include <elementAPI.h>
+#include <Element.h>
 #include <ID.h>
 #include <Channel.h>
 #include <MaterialResponse.h>
@@ -32,6 +33,28 @@
 #include <string>
 #include <exception>
 #include <limits>
+
+namespace details {
+
+	inline PluginMaterialDescriptor* getDescriptor(const std::string& plugin_library, const std::string& plugin_function)
+	{
+		PluginMaterialDescriptor* descriptor = 0;
+		try {
+			descriptor = PluginFramework::instance().getMaterialDescriptor(plugin_library, plugin_function);
+		}
+		catch (const std::exception & ex) {
+			opserr << "PluginUniaxialMaterial internal error while getting the requested procedure:\n"
+				<< ex.what() << "\n";
+			return 0;
+		}
+		catch (...) {
+			opserr << "PluginUniaxialMaterial unknown exception while getting the requested procedure:\n";
+			return 0;
+		}
+		return descriptor;
+	}
+
+}
 
 void*
 OPS_PluginUniaxialMaterial(void)
@@ -58,19 +81,9 @@ OPS_PluginUniaxialMaterial(void)
 	std::string plugin_function = OPS_GetString();
 	
 	// get plugin material descriptor
-	PluginMaterialDescriptor* descriptor = 0;
-	try {
-		descriptor = PluginFramework::instance().getMaterialDescriptor(plugin_library, plugin_function);
-	}
-	catch (const std::exception & ex) {
-		opserr << "PluginUniaxialMaterial internal error while getting the requested procedure:\n"
-			<< ex.what() << "\n";
+	PluginMaterialDescriptor* descriptor = details::getDescriptor(plugin_library, plugin_function);
+	if (descriptor == 0)
 		return 0;
-	}
-	catch (...) {
-		opserr << "PluginUniaxialMaterial unknown exception while getting the requested procedure:\n";
-		return 0;
-	}
 
 	// allocate the PluginMaterialData. now material data has the tag, the pointer to
 	// the procedure, and all data properly inizialized to zero
@@ -79,9 +92,10 @@ OPS_PluginUniaxialMaterial(void)
 		opserr << "PluginUniaxialMaterial Error: Failed to initialize material data\n";
 		return 0;
 	}
+	data->mat_type = PF_MAT_TYPE_UNIAXIAL;
 
 	// call to get initialization info. Here the function must set initialization info for proper allocation
-	// (mat_type, n_param, n_state,  message)
+	// (message)
 	int rcode = 0;
 	data->proc(data, PF_MAT_GET_INIT_INFO, &rcode);
 	if (rcode != 0) {
@@ -98,13 +112,6 @@ OPS_PluginUniaxialMaterial(void)
 		return 0;
 	}
 
-	// now we can allocate data for input arguments and state variables
-	if (PluginFramework::instance().allocateData(data) != 0) {
-		opserr << "PluginUniaxialMaterial Error: Failed to allocate material data\n";
-		delete data;
-		return 0;
-	}
-
 	// now we can parse the message and get information about this material plugin.
 	// information such as the input arguments, the available results/parameters/variables.
 	// note: do it only once for each plugin material type
@@ -112,20 +119,22 @@ OPS_PluginUniaxialMaterial(void)
 		opserr << 
 			"PluginUniaxialMaterial Error: message field is null.\n"
 			"Please you need to fill the message field to parse input arguments\n";
-		PluginFramework::instance().releaseData(data);
 		delete data;
 		return 0;
 	}
 	if (descriptor->parseMessage(data->message) != 0) {
 		opserr << "PluginUniaxialMaterial Error: Failed to parse message.\n";
-		PluginFramework::instance().releaseData(data);
 		delete data;
 		return 0;
 	}
 	data->message = 0; // don't need it anymore, the plugin is free to do whatever it likes
-	if (descriptor->arguments.size() != static_cast<std::size_t>(data->n_param)) {
-		opserr << "PluginUniaxialMaterial Error: n_param does not match the number of arguments (A records) in message.\n";
-		PluginFramework::instance().releaseData(data);
+
+	// get number of arguments for next allocation
+	data->n_param = static_cast<int>(descriptor->arguments.size()); 
+
+	// now we can allocate data for input arguments
+	if (PluginFramework::instance().allocateData(data) != 0) {
+		opserr << "PluginUniaxialMaterial Error: Failed to allocate material data\n";
 		delete data;
 		return 0;
 	}
@@ -159,6 +168,8 @@ PluginUniaxialMaterial::PluginUniaxialMaterial()
 	: UniaxialMaterial(0, MAT_TAG_PluginUniaxialMaterial)
 	, m_descriptor(0)
 	, m_data(0)
+	, m_lch(1.0)
+	, m_lch_calculated(false)
 {
 }
 
@@ -166,7 +177,11 @@ PluginUniaxialMaterial::PluginUniaxialMaterial(PluginMaterialDescriptor* descr, 
 	: UniaxialMaterial(d->tag, MAT_TAG_PluginUniaxialMaterial)
 	, m_descriptor(descr)
 	, m_data(d)
+	, m_lch(1.0)
+	, m_lch_calculated(false)
 {
+	// save a pointer to lch in m_data
+	m_data->lch = &m_lch;
 }
 
 PluginUniaxialMaterial::~PluginUniaxialMaterial()
@@ -298,6 +313,11 @@ int PluginUniaxialMaterial::getVariable(const char* variable, Information&)
 
 int PluginUniaxialMaterial::setTrialStrain(double strain, double strainRate)
 {
+	// compute lch only once
+	if (!m_lch_calculated && (ops_TheActiveElement != 0)) {
+		m_lch = ops_TheActiveElement->getCharacteristicLength();
+		m_lch_calculated = true;
+	}
 	// set
 	m_data->strain = &strain;
 	m_data->strain_rate = &strainRate;
@@ -511,7 +531,7 @@ UniaxialMaterial* PluginUniaxialMaterial::getCopy()
 		return 0;
 	}
 
-	// copy data param and state
+	// copy data param and state. parseTclCommand avoided here. Can copy those values
 	for (int i = 0; i < m_data->n_param; i++)
 		data->param[i] = m_data->param[i];
 
@@ -526,7 +546,10 @@ UniaxialMaterial* PluginUniaxialMaterial::getCopy()
 
 	// create the new material with the current data, it will complete 
 	// the setup of pointers in data
-	return new PluginUniaxialMaterial(m_descriptor, data);
+	PluginUniaxialMaterial* material = new PluginUniaxialMaterial(m_descriptor, data);
+
+	// done
+	return material;
 }
 
 Response* PluginUniaxialMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOutputStream)
