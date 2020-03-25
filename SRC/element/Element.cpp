@@ -681,11 +681,11 @@ double Element::getCharacteristicLength(void)
   for (int i=0; i<numNodes; i++) {
     Node *nodeI = theNodes[i];
     Vector iCoords = nodeI->getCrds();
-    int iDOF = nodeI->getNumberDOF();
+    int iDOF = iCoords.Size(); // nodeI->getNumberDOF(); // bugfix: Massimo Petracca 03/25/2020
     for (int j=i+1; j<numNodes; j++) {
       Node *nodeJ = theNodes[j];
       Vector jCoords = nodeJ->getCrds();      
-      int jDOF = nodeI->getNumberDOF();
+      int jDOF = jCoords.Size(); // nodeI->getNumberDOF(); // bugfix: Massimo Petracca 03/25/2020
       double ijLength = 0;
       for (int k=0; k<iDOF && k<jDOF; k++) {
 	ijLength += (jCoords(k)-iCoords(k))*(jCoords(k)-iCoords(k)); //Tesser
