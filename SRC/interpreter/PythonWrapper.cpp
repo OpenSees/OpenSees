@@ -2345,7 +2345,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("stiffnessDegradation", &Py_ops_stiffnessDegradation);
     addCommand("strengthDegradation", &Py_ops_strengthDegradation);
     addCommand("unloadingRule", &Py_ops_unloadingRule);
-    addCommand("parition", &Py_ops_partition);
+    addCommand("partition", &Py_ops_partition);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

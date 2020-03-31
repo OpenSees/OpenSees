@@ -490,8 +490,7 @@ void* OPS_BFGS();
 
 // commands that changed or added:
 //
-//    missing : video, partition,
-//              reliability, wipeReliability,
+//    missing : video,
 //              FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
