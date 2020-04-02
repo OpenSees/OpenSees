@@ -74,7 +74,7 @@ void* OPS_LinearElasticSpring()
     
     // dirs
     const char* type = OPS_GetString();
-    if (strcmp(type, "-dir") != 0) {
+    if (strcmp(type, "-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir dirs\n";
         return 0;
     }
@@ -121,7 +121,7 @@ void* OPS_LinearElasticSpring()
     Matrix *cb = 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new LinearElasticSpring(idata[0], ndm, idata[1], idata[2],
-            dirs[0], kb);
+            dirs, kb);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {

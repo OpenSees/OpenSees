@@ -80,7 +80,7 @@ void* OPS_Adapter()
     ID *dofs = new ID[numNodes];
     for (int i = 0; i < numNodes; i++) {
         type = OPS_GetString();
-        if (strcmp(type, "-dof") != 0) {
+        if (strcmp(type, "-dof") != 0 && strcmp(type, "-dir") != 0) {
             opserr << "WARNING expecting -dof dofNdi\n";
             return 0;
         }

@@ -99,7 +99,7 @@ void* OPS_TwoNodeLink()
     
     // dirs
     type = OPS_GetString();
-    if (strcmp(type, "-dir") != 0) {
+    if (strcmp(type, "-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir dirs\n";
         return 0;
     }
