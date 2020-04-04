@@ -95,7 +95,7 @@ void* OPS_Inerter()
     
     // inertance matrix terms
     type = OPS_GetString();
-    if (strcmp(type, "-inertance") != 0 && strcmp(type, "-inertia") != 0) {
+    if (strcmp(type, "-inertance") != 0 || strcmp(type, "-inertia") != 0) {
         opserr << "WARNING expecting -inertance ib\n";
         return 0;
     }
