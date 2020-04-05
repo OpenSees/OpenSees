@@ -383,4 +383,10 @@ PlateFromPlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_O
   
   return res;
 }
- 
+
+//cracking output - added by V.K. Papanikolaou [AUTh] - start
+const Vector& PlateFromPlaneStressMaterial::getCracking()
+{
+    return theMat->getCracking();  // getting damage from PlaneStressUser material
+}
+//cracking output - added by V.K. Papanikolaou [AUTh] - end

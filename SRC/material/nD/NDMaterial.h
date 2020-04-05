@@ -69,6 +69,10 @@ class NDMaterial : public Material
 	virtual const Vector& getTempAndElong(void);
 	//Added by L.Jiang, [SIF]
 
+    //cracking output - added by V.K. Papanikolaou [AUTh] - start
+    virtual const Vector& getCracking(void);
+    //cracking output - added by V.K. Papanikolaou [AUTh] - end
+
     virtual const Vector &getStress(void);
     virtual const Vector &getStrain(void);
 

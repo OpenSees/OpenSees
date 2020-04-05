@@ -208,8 +208,6 @@ NDMaterial::getStrain(void)
    return errVector;    
 }
 
-
-
 //Functions for obtaining and updating temperature-dependent information Added by L.Jiang [SIF]
 double
 NDMaterial::getThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
@@ -232,6 +230,15 @@ NDMaterial::getTempAndElong()
 	return errVector;
 }
 //end of adding thermo-mechanical functions, L.Jiang [SIF]
+
+//cracking output - added by V.K. Papanikolaou [AUTh] - start
+const Vector&
+NDMaterial::getCracking()
+{
+    opserr << "NDMaterial::getCracking -- subclass responsibility\n";
+    return errVector;
+}
+//cracking output - added by V.K. Papanikolaou [AUTh] - end
 
 Response*
 NDMaterial::setResponse (const char **argv, int argc, 
@@ -287,7 +294,8 @@ NDMaterial::setResponse (const char **argv, int argc,
     }      
     theResponse =  new MaterialResponse(this, 2, this->getStress());
   }
-  //Adding temperature and thermal expansion output,L.Jiang [SIF]
+
+  //adding temperature and thermal expansion output,L.Jiang [SIF]
   else if (strcmp(argv[0], "TempAndElong") == 0 || strcmp(argv[0], "TempAndElong") == 0) {
 	  const Vector &res = this->getTempAndElong();
 	  int size = res.Size();
@@ -299,12 +307,20 @@ NDMaterial::setResponse (const char **argv, int argc,
 	  theResponse = new MaterialResponse(this, 3, this->getTempAndElong());
 
   }
+  //end of adding output request,L.Jiang [SIF]
+
+  //cracking output - added by V.K. Papanikolaou [AUTh] - start
+  else if (strcmp(argv[0], "cracking") == 0 || strcmp(argv[0], "Cracking") == 0) {
+
+      theResponse = new MaterialResponse(this, 5, this->getCracking());  // getting damage from actual nD material
+  }
+  //cracking output - added by V.K. Papanikolaou [AUTh] - end
+
   else if (strcmp(argv[0], "Tangent") == 0 || strcmp(argv[0], "tangent") == 0) {
 	  const Matrix &res = this->getTangent();
 	  theResponse = new MaterialResponse(this, 4, this->getTangent());
 
   }
-  //end of adding output request,L.Jiang [SIF]
 
   output.endTag(); // NdMaterialOutput
 
@@ -320,7 +336,12 @@ NDMaterial::getResponse (int responseID, Information &matInfo)
     
   case 2:
     return matInfo.setVector(this->getStrain());
-    
+  
+  //cracking output - added by V.K. Papanikolaou [AUTh]
+  case 5:
+    return matInfo.setVector(this->getCracking());
+  //cracking output - added by V.K. Papanikolaou [AUTh]
+
   default:
     return -1;
   }

@@ -437,4 +437,28 @@ PlaneStressUserMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Object
 
   return res;
 }
- 
+
+//cracking output - added by V.K. Papanikolaou [AUTh] - start
+const Vector& PlaneStressUserMaterial::getCracking()
+{
+    static Vector vec = Vector(3);
+
+    vec(0) = statevdata[27];                          // crack 0/1 in direction 1
+
+    if ((vec(0) != 0) && (vec(0) != 1)) vec(0) = 0;   // clean unwanted values
+
+    vec(1) = statevdata[38];                          // crack 0/1 in direction 2
+
+    if ((vec(1) != 0) && (vec(1) != 1)) vec(1) = 0;   // clean unwanted values
+
+    vec(2) = statevdata[15]*180/3.14159;              // crack angle (degrees)
+
+    vec(2) = (int)(vec(2) * 100.0) / 100.0;           // round to 2 decimals    
+
+    if (vec(2) >= 360) vec(2) -= 360;                 // fix angle for over 360 degrees
+
+    if ((vec(0) == 0) && (vec(1) == 0)) vec(2) = 0;   // zero angle for no cracking
+
+    return vec;
+}
+//cracking output - added by V.K. Papanikolaou [AUTh] - end
