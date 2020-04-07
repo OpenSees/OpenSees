@@ -1480,6 +1480,15 @@ static int Tcl_ops_unloadingRule(ClientData clientData, Tcl_Interp *interp, int 
     return TCL_OK;
 }
 
+static int Tcl_ops_partition(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_partition() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 //////////////////////////////////////////////
 ////////////// Add Tcl commands //////////////
 //////////////////////////////////////////////
@@ -1656,4 +1665,5 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"strengthDegradation", &Tcl_ops_stiffnessDegradation);
     addCommand(interp,"stiffnessDegradation", &Tcl_ops_strengthDegradation);
     addCommand(interp,"unloadingRule", &Tcl_ops_unloadingRule);
+    addCommand(interp,"partition", &Tcl_ops_partition);
 }
