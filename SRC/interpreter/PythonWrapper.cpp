@@ -247,6 +247,18 @@ static PyObject *Py_ops_wipe(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_wipeReliability(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_wipeReliability() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_model(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2321,6 +2333,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getInverseCDF", &Py_ops_getRVInverseCDF);
     addCommand("correlate", &Py_ops_addCorrelate);
     addCommand("transformUtoX", &Py_ops_transformUtoX);
+    addCommand("wipeReliability", &Py_ops_wipeReliability);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
     addCommand("sdfResponse", &Py_ops_sdfResponse);
     addCommand("probabilityTransformation", &Py_ops_probabilityTransformation);

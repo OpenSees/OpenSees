@@ -29,6 +29,7 @@
 #include <ElementalLoadIter.h>
 #include <Element.h>
 #include <Parameter.h>
+#include <RandomVariable.h>
 #include <Node.h>
 #include <Pressure_Constraint.h>
 #include <TimeSeries.h>

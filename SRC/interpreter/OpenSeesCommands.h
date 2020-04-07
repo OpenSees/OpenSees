@@ -328,6 +328,7 @@ int OPS_getRVInverseCDF();
 int OPS_addCorrelate();
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
+int OPS_wipeReliability();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();

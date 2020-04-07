@@ -157,6 +157,14 @@ static int Tcl_ops_wipe(ClientData clientData, Tcl_Interp *interp, int argc,   T
     return TCL_OK;
 }
 
+static int Tcl_ops_wipeReliability(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_wipeReliability() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_model(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
