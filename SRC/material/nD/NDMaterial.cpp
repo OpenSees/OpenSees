@@ -292,7 +292,7 @@ NDMaterial::setResponse (const char **argv, int argc,
       for (int i=0; i<size; i++) 
 	output.tag("ResponseType","UnknownStrain");
     }      
-    theResponse =  new MaterialResponse(this, 2, this->getStress());
+    theResponse =  new MaterialResponse(this, 2, this->getStrain());
   }
 
   //adding temperature and thermal expansion output,L.Jiang [SIF]
