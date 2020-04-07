@@ -97,8 +97,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonLineSearch.h>
 #include <FileDatastore.h>
 #include <Mesh.h>
+#ifdef _MUMPS
 #include <MumpsSolver.h>
 #include <MumpsSOE.h>
+#endif
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -3169,6 +3171,7 @@ void* OPS_MumpsSolver() {
     }
 
 #ifdef _PARALLEL_INTERPRETERS
+#ifdef _MUMPS
     MumpsParallelSOE* soe = 0;
 
     MumpsParallelSolver *solver= new MumpsParallelSolver(icntl7, icntl14);
@@ -3182,10 +3185,13 @@ void* OPS_MumpsSolver() {
     soe->setProcessID(rank);
     soe->setChannels(numChannels, channels);
     return soe;
+#endif
 #else
+#ifdef _MUMPS
     MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
     theSOE = new MumpsSOE(*theSolver);
     return 0;
+#endif
 #endif
 
 }
