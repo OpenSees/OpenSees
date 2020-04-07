@@ -31,6 +31,7 @@
 #include <Element.h>
 #include <ElementIter.h>
 #include <Parameter.h>
+#include <RandomVariable.h>
 #include <Node.h>
 #include <NodeIter.h>
 #include <Pressure_Constraint.h>
