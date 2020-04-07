@@ -83,6 +83,7 @@ void* OPS_Inerter()
         int dir;
         numdata = 1;
         if (OPS_GetIntInput(&numdata, &dir) < 0) {
+            OPS_ResetCurrentInputArg(-1);
             break;
         }
         if (dir < 1 || ndf < dir) {
@@ -95,7 +96,7 @@ void* OPS_Inerter()
     
     // inertance matrix terms
     type = OPS_GetString();
-    if (strcmp(type, "-inertance") != 0 || strcmp(type, "-inertia") != 0) {
+    if (strcmp(type, "-inertance") != 0 && strcmp(type, "-inertia") != 0) {
         opserr << "WARNING expecting -inertance ib\n";
         return 0;
     }
@@ -121,7 +122,7 @@ void* OPS_Inerter()
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new Inerter(idata[0], ndm, idata[1], idata[2],
-            dirs[0], ib);
+            dirs, ib);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -241,6 +242,7 @@ Inerter::Inerter(int tag, int dim, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // check the number of directions
+    opserr << "numDIR = "<<numDIR<<"\n";
     if (numDIR < 1 || numDIR > 6)  {
         opserr << "Inerter::Inerter() - element: "
             << this->getTag() << " wrong number of directions\n";
