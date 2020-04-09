@@ -614,6 +614,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/TriGaussPoints.o \
 	$(FE)/element/PFEMElement/HigherOrder.o \
 	$(FE)/element/PFEMElement/Mesh.o \
+	$(FE)/element/PFEMElement/PFEMContact2D.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \

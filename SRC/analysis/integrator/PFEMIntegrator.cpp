@@ -52,6 +52,7 @@
 #include <LoadPattern.h>
 #include <FE_EleIter.h>
 #include <elementAPI.h>
+#include <PFEMLinSOE.h>
 
 void *
 OPS_PFEMIntegrator(void)
@@ -332,6 +333,71 @@ int PFEMIntegrator::revertToLastStep()
     }
 
     return 0;
+}
+
+int
+PFEMIntegrator::formTangent(int statFlag)
+{
+    int result = 0;
+    statusFlag = statFlag;
+
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theLinSOE == 0 || theModel == 0) {
+        opserr << "WARNING TransientIntegrator::formTangent() ";
+        opserr << "no LinearSOE or AnalysisModel has been set\n";
+        return -1;
+    }
+
+    // the loops to form and add the tangents are broken into two for
+    // efficiency when performing parallel computations
+
+    theLinSOE->zeroA();
+
+    // do modal damping
+    bool inclModalMatrix=theModel->inclModalDampingMatrix();
+    if (inclModalMatrix == true) {
+        const Vector *modalValues = theModel->getModalDampingFactors();
+        if (modalValues != 0) {
+            this->addModalDampingMatrix(modalValues);
+        }
+    }
+
+
+    // loop through the DOF_Groups and add the unbalance
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
+    DOF_Group *dofPtr;
+
+    while ((dofPtr = theDOFs()) != 0) {
+        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
+        if (soe != 0) {
+            if (soe->skipFluid() && soe->isFluidID(dofPtr->getID())) {
+                continue;
+            }
+        }
+
+        if (theLinSOE->addA(dofPtr->getTangent(this),dofPtr->getID()) <0) {
+            opserr << "TransientIntegrator::formTangent() - failed to addA:dof\n";
+            result = -1;
+        }
+    }
+
+    // loop through the FE_Elements getting them to add the tangent
+    FE_EleIter &theEles2 = theModel->getFEs();
+    FE_Element *elePtr;
+    while((elePtr = theEles2()) != 0)     {
+        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
+        if (soe != 0) {
+            if (soe->skipFluid() && soe->isFluidID(elePtr->getID())) {
+                continue;
+            }
+        }
+        if (theLinSOE->addA(elePtr->getTangent(this),elePtr->getID()) < 0) {
+            opserr << "TransientIntegrator::formTangent() - failed to addA:ele\n";
+            result = -2;
+        }
+    }
+    return result;
 }
 
 

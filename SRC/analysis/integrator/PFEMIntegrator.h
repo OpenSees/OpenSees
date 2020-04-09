@@ -57,6 +57,7 @@ public:
     int formNodTangent(DOF_Group *theDof);
     int formEleResidual(FE_Element* theEle);
     int formNodUnbalance(DOF_Group* theDof);
+    int formTangent(int statFlag);
 
     int domainChanged(void);
     int newStep(double deltaT);
