@@ -56,10 +56,10 @@ private:
         VVDouble dvn;
         VDouble pn;
         VDouble dpn;
-        VInt type;
+        int type;
         VInt sid; // structure id, <0:fluid, >0:structure, =0:not in contact
 
-        BNode():tags(),crdsn(),vn(),incrv(), dvn(),pn(),dpn(),type(){}
+        BNode():tags(),crdsn(),vn(),incrv(), dvn(),pn(),dpn(),type(FLUID){}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp, int id=-1) {
             tags.push_back(tag);
@@ -69,7 +69,7 @@ private:
             dvn.push_back(dv);
             pn.push_back(p);
             dpn.push_back(dp);
-            type.push_back(tp);
+            type = tp;
             sid.push_back(id);
         }
         void clear() {
@@ -80,26 +80,10 @@ private:
             dvn.clear();
             pn.clear();
             dpn.clear();
-            type.clear();
+            type = FLUID;
             sid.clear();
         }
-        void addNode(int tp) {
-            addNode(0,VDouble(),VDouble(),VDouble(),0,0,tp);
-        }
         int size() const {return (int)tags.size();}
-        void setNode(int i, int tag, const VDouble& crds, const VDouble& v,
-                     const VDouble& dv, double p, double dp, int tp, int id=-1) {
-            if (i<0 || i>=(int)tags.size()) return;
-            tags[i] = tag;
-            crdsn[i] = crds;
-            vn[i] = v;
-            incrv[i] = v;
-            dvn[i] = dv;
-            pn[i] = p;
-            dpn[i] = dp;
-            type[i] = tp;
-            sid[i] = id;
-        }
 
     };
 
