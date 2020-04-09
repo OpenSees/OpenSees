@@ -107,6 +107,7 @@ void* OPS_ElasticBeam2d(const ID &info)
     // options
     double mass = 0.0, alpha=0.0, depth=0.0;
     int cMass = 0;
+    int release = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string type = OPS_GetString();
 	if(type == "-alpha") {
@@ -117,6 +118,10 @@ void* OPS_ElasticBeam2d(const ID &info)
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
 		if(OPS_GetDoubleInput(&numData,&depth) < 0) return 0;
 	    }
+	} else if(type == "-release") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetIntInput(&numData,&release) < 0) return 0;
+	    }	    
 
 	} else if(type == "-mass") {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
@@ -141,10 +146,10 @@ void* OPS_ElasticBeam2d(const ID &info)
 	return 0;
       }
       return new ElasticBeam2d(iData[0],iData[1],iData[2],*theSection,
-			       *theTransf,alpha,depth,mass,cMass);
+			       *theTransf,alpha,depth,mass,cMass,release);
     } else {
       return new ElasticBeam2d(iData[0],data[0],data[1],data[2],iData[1],iData[2],
-			       *theTransf,alpha,depth,mass,cMass);
+			       *theTransf,alpha,depth,mass,cMass,release);
     }
 }
 
@@ -167,6 +172,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     // options
     double mass = 0.0, alpha=0.0, depth=0.0;
     int cMass = 0;
+    int release = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string type = OPS_GetString();
 	if(type == "-alpha") {
@@ -177,6 +183,10 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
 		if(OPS_GetDoubleInput(&numData,&depth) < 0) return -1;
 	    }
+	} else if(type == "-release") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetIntInput(&numData,&release) < 0) return -1;
+	    }	    
 
 	} else if(type == "-mass") {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
@@ -204,7 +214,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     eletags.resize(elenodes.Size()/2);
     for (int i=0; i<elenodes.Size()/2; i++) {
 	theEle = new ElasticBeam2d(--currTag,data[0],data[1],data[2],elenodes(2*i),elenodes(2*i+1),
-				   *theTransf,alpha,depth,mass,cMass);
+				   *theTransf,alpha,depth,mass,cMass,release);
 	if (theEle == 0) {
 	    opserr<<"WARING: run out of memory for creating element\n";
 	    return -1;
@@ -222,7 +232,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 
 ElasticBeam2d::ElasticBeam2d()
   :Element(0,ELE_TAG_ElasticBeam2d), 
-  A(0.0), E(0.0), I(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0),
+   A(0.0), E(0.0), I(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0), release(0),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   // does nothing
@@ -241,9 +251,10 @@ ElasticBeam2d::ElasticBeam2d()
 
 ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i, 
 			     int Nd1, int Nd2, CrdTransf &coordTransf,
-			     double Alpha, double depth, double r, int cm)
+			     double Alpha, double depth, double r, int cm,
+			     int rel)
   :Element(tag,ELE_TAG_ElasticBeam2d), 
-  A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm),
+   A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   connectedExternalNodes(0) = Nd1;
@@ -256,6 +267,10 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
     exit(01);
   }
 
+  // Make no release if input not 0, 1, 2, or 3
+  if (release < 0 || release > 3)
+    release = 0;
+  
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
@@ -270,8 +285,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
 }
 
 ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
-			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm)
-  :Element(tag,ELE_TAG_ElasticBeam2d), alpha(Alpha), d(depth), rho(r), cMass(cm),
+			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm, int rel)
+  :Element(tag,ELE_TAG_ElasticBeam2d), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   E = 1.0;
@@ -304,6 +319,10 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     exit(-1);
   }
 
+  // Make no release if input not 0, 1, 2, or 3
+  if (release < 0 || release > 3)
+    release = 0;
+  
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
@@ -437,22 +456,38 @@ ElasticBeam2d::getTangentStiff(void)
 
   double EoverL   = E/L;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
-  double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
-  
+
   // determine q = kv + q0
   q(0) = EAoverL*v(0);
-  q(1) = EIoverL4*v(1) + EIoverL2*v(2);
-  q(2) = EIoverL2*v(1) + EIoverL4*v(2);
-
+  kb(0,0) = EAoverL;  
+  if (release == 0) {
+    double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
+    double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    q(1) = EIoverL4*v(1) + EIoverL2*v(2);
+    q(2) = EIoverL2*v(1) + EIoverL4*v(2);
+    kb(1,1) = kb(2,2) = EIoverL4;
+    kb(2,1) = kb(1,2) = EIoverL2;    
+  }
+  if (release == 1) { // release I
+    q(1) = 0.0;
+    double EIoverL3 = 3.0*I*EoverL;
+    q(2) = EIoverL3*v(2);
+    kb(2,2) = EIoverL3;
+  }
+  if (release == 2) { // release J
+    q(2) = 0.0;
+    double EIoverL3 = 3.0*I*EoverL;
+    q(1) = EIoverL3*v(1);
+    kb(1,1) = EIoverL3;
+  }
+  if (release == 3) { // both I and J
+    q(1) = 0.0;
+    q(2) = 0.0;
+  }
   q(0) += q0[0];
   q(1) += q0[1];
   q(2) += q0[2];
   
-  kb(0,0) = EAoverL;
-  kb(1,1) = kb(2,2) = EIoverL4;
-  kb(2,1) = kb(1,2) = EIoverL2;
-
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
 
@@ -463,12 +498,20 @@ ElasticBeam2d::getInitialStiff(void)
 
   double EoverL   = E/L;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
-  double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
   
   kb(0,0) = EAoverL;
-  kb(1,1) = kb(2,2) = EIoverL4;
-  kb(2,1) = kb(1,2) = EIoverL2;
+  if (release == 0) {
+    double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
+    double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    kb(1,1) = kb(2,2) = EIoverL4;
+    kb(2,1) = kb(1,2) = EIoverL2;
+  }
+  if (release == 1) { // release I
+    kb(2,2) = 3.0*I*EoverL;
+  }
+  if (release == 2) { // release J
+    kb(1,1) = 3.0*I*EoverL;
+  }
   
   return theCoordTransf->getInitialGlobalStiffMatrix(kb);
 }
@@ -537,7 +580,6 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double wa = data(1)*loadFactor;  // Axial (+ve from node I to J)
 
     double V = 0.5*wt*L;
-    double M = V*L/6.0; // wt*L*L/12
     double P = wa*L;
 
     // Reactions in basic system
@@ -547,8 +589,20 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    q0[1] -= M;
-    q0[2] += M;
+    if (release == 0) {
+      double M = V*L/6.0; // wt*L*L/12
+      q0[1] -= M;
+      q0[2] += M;
+    }
+    if (release == 1) {
+      q0[2] += wt*L*L/8;
+    }
+    if (release == 2) {
+      q0[1] -= wt*L*L/8;
+    }
+    if (release == 3) {
+      // Nothing to do
+    }
   }
 
   else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
@@ -569,10 +623,9 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double wybpa = wya+wyb;
     double wybma = wyb-wya;
     double L2 = pow(L, 2.0);
-    double L3 = pow(L, 3.0);
 
-	// equivalent nodal forces
-	double Fyt = 0.5*wybpa*ba;
+    // equivalent nodal forces
+    double Fyt = 0.5*wybpa*ba;
     double V2 = (1.0/L)*(wya*ba*(a+0.5*ba)+0.5*wybma*ba*(a+(2.0/3.0)*ba));
     double V1 = Fyt-V2;
     double M1 = (0.5*z1*ba2) + (wybma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wybma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
@@ -615,10 +668,21 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= N*aOverL;
-    double M1 = -a * b2 * P * L2;
-    double M2 = a2 * b * P * L2;
-    q0[1] += M1;
-    q0[2] += M2;
+    if (release == 0) {
+      double M1 = -a * b2 * P * L2;
+      double M2 = a2 * b * P * L2;
+      q0[1] += M1;
+      q0[2] += M2;
+    }
+    if (release == 1) {
+      q0[2] += 0.5*P*a*b*L2*(a+L);
+    }
+    if (release == 2) {
+      q0[1] -= 0.5*P*a*b*L2*(b+L);
+    }
+    if (release == 3) {
+      // Nothing to do
+    }    
   }
   
   else if (type == LOAD_TAG_Beam2dTempLoad) {
@@ -748,14 +812,28 @@ ElasticBeam2d::getResistingForce()
 
   double EoverL   = E/L;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
-  double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
   
   // determine q = kv + q0
   q(0) = EAoverL*v(0);
-  q(1) = EIoverL4*v(1) + EIoverL2*v(2);
-  q(2) = EIoverL2*v(1) + EIoverL4*v(2);
-
+  if (release == 0) {
+    double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
+    double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    q(1) = EIoverL4*v(1) + EIoverL2*v(2);
+    q(2) = EIoverL2*v(1) + EIoverL4*v(2);
+  }
+  if (release == 1) {
+    q(1) = 0.0;
+    q(2) = 3.0*I*EoverL*v(2);
+  }
+  if (release == 2) {
+    q(1) = 3.0*I*EoverL*v(1);
+    q(2) = 0.0;
+  }
+  if (release == 3) {
+    q(1) = 0.0;
+    q(2) = 0.0;
+  }
+  
   q(0) += q0[0];
   q(1) += q0[1];
   q(2) += q0[2];
@@ -773,7 +851,7 @@ ElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-    static Vector data(16);
+    static Vector data(17);
     
     data(0) = A;
     data(1) = E; 
@@ -801,7 +879,8 @@ ElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
     data(13) = betaK;
     data(14) = betaK0;
     data(15) = betaKc;
-
+    data(16) = release;
+    
     // Send the data vector
     res += theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -824,7 +903,7 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 {
     int res = 0;
 	
-    static Vector data(16);
+    static Vector data(17);
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -842,7 +921,8 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
     betaK  = data(13);
     betaK0 = data(14);
     betaKc = data(15);
-
+    release = (int)data(16);
+    
     rho = data(3);
     cMass = (int)data(4);
     this->setTag((int)data(5));
@@ -900,6 +980,7 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
     s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+    s << "\trelease code:  " << release << endln;
     double P  = q(0);
     double M1 = q(1);
     double M2 = q(2);
@@ -920,6 +1001,7 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
 	s << "\"A\": "<< A << ", ";
     s << "\"Iz\": "<< I << ", ";
     s << "\"massperlength\": "<< rho << ", ";
+    s << "\"release\": "<< release << ", ";
     s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
   }
 }
@@ -1148,16 +1230,30 @@ ElasticBeam2d::setParameter(const char **argv, int argc, Parameter &param)
     return -1;
 
   // E of the beam interior
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-
+  }
   // A of the beam interior
-  if (strcmp(argv[0],"A") == 0)
+  if (strcmp(argv[0],"A") == 0) {
+    param.setValue(A);
     return param.addObject(2, this);
-  
+  }
   // I of the beam interior
-  if (strcmp(argv[0],"I") == 0)
+  if (strcmp(argv[0],"I") == 0) {
+    param.setValue(I);
     return param.addObject(3, this);
+  }
+  // mass per length
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
+    return param.addObject(4, this);
+  }
+  // moment release
+  if (strcmp(argv[0],"release") == 0) {
+    param.setValue(release);
+    return param.addObject(5, this);
+  }  
   
   return -1;
 }
@@ -1177,6 +1273,14 @@ ElasticBeam2d::updateParameter (int parameterID, Information &info)
 	case 3:
 		I = info.theDouble;
 		return 0;
+	case 4:
+		rho = info.theDouble;
+		return 0;
+	case 5:
+	  release = (int)info.theDouble;
+	  if (release < 0 || release > 3)
+	    release = 0;
+		return 0;				
 	default:
 		return -1;
 	}

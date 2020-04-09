@@ -26,13 +26,22 @@
 #include <Domain.h>
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
+#include <ElementalLoad.h>
 #include <ElementalLoadIter.h>
 #include <Element.h>
+#include <ElementIter.h>
 #include <Parameter.h>
+#include <RandomVariable.h>
 #include <Node.h>
+#include <NodeIter.h>
 #include <Pressure_Constraint.h>
 #include <TimeSeries.h>
 #include <SP_Constraint.h>
+#include <SP_ConstraintIter.h>
+#include <MP_Constraint.h>
+#include <MP_ConstraintIter.h>
+#include <NodalLoad.h>
+#include <NodalLoadIter.h>
 #include <Matrix.h>
 #include <MeshRegion.h>
 #include <StringContainer.h>
@@ -49,6 +58,7 @@
 
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
+#include <metis.h>
 #endif
 
 #ifdef _OPENMP
@@ -2035,5 +2045,303 @@ int OPS_setStartNodeTag() {
 
     Mesh::setStartNodeTag(tag);
 
+    return 0;
+}
+
+int OPS_partition() {
+#ifdef _PARALLEL_INTERPRETERS
+    // domain
+    Domain* domain = OPS_GetDomain();
+    if (domain ==0) {
+        return 0;
+    }
+
+    int pid = 0;
+    int np = 1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+    MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+    if (np == 1) return 0;
+
+    // parameters
+    int ncuts = 1;
+    int niter = 10;
+    int ufactor = 30;
+    int info = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        auto opt = OPS_GetString();
+        if (strcmp(opt, "-ncuts") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0 &&
+                OPS_GetIntInput(&num, &ncuts) < 0) {
+                opserr << "WARNING: failed to get ncuts\n";
+                return -1;
+            }
+            if (ncuts < 1) {
+                ncuts = 1;
+            }
+        } else if (strcmp(opt, "-niter") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0 &&
+                OPS_GetIntInput(&num, &niter) < 0) {
+                opserr << "WARNING: failed to get niter\n";
+                return -1;
+            }
+            if (niter < 1) {
+                niter = 10;
+            }
+        } else if (strcmp(opt, "-ufactor") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0 &&
+                OPS_GetIntInput(&num, &ncuts) < 0) {
+                opserr << "WARNING: failed to get ufactor\n";
+                return -1;
+            }
+            if (ufactor < 1) {
+                ufactor = 30;
+            }
+        } else if (strcmp(opt, "-info") == 0) {
+            info = METIS_DBG_INFO;
+        }
+    }
+
+
+    // map of node tag to index
+    std::map<int, idx_t> nind;
+    Node *nd = 0;
+    auto &nodes = domain->getNodes();
+    int index = 0;
+    while ((nd = nodes()) != 0) {
+        nind[nd->getTag()] = index++;
+    }
+
+    // check size
+    if (nind.empty()) {
+        opserr << "WARNING: no node is found on processorr "<<pid<<"\n";
+        return -1;
+    }
+
+    // number of nodes
+    idx_t nn = (idx_t)nind.size();
+
+    // check if all processors have same number
+    idx_t nn_max = 0;
+    if (MPI_Reduce(&nn, &nn_max, 1, MPI_INT,
+                   MPI_MAX, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
+        opserr << "WARNING: failed to get max nn\n";
+        return -1;
+    }
+    if (pid == 0) {
+        if (nn_max != nn) {
+            opserr << "WARNING: all processors should "
+                      "have the same mesh before partitioning";
+            return -1;
+        }
+    }
+
+    // pair of arrays storing the mesh
+    std::map<int, idx_t> eindex;
+    std::vector<idx_t> eptr;
+    std::vector<idx_t> eind;
+    std::vector<int> etag;
+
+    Element *ele = 0;
+    auto &eles = domain->getElements();
+    eptr.push_back(0);
+    index = 0;
+    while ((ele = eles()) != 0) {
+        const auto &elenodes = ele->getExternalNodes();
+        for (int i = 0; i < elenodes.Size(); ++i) {
+            eind.push_back(nind[elenodes(i)]);
+        }
+        eptr.push_back((idx_t)eind.size());
+        eindex[ele->getTag()] = index++;
+        etag.push_back(ele->getTag());
+    }
+
+    // check size
+    if (eptr.size() == 1) {
+        opserr << "WARNING: no element is found on processorr 0\n";
+        return -1;
+    }
+
+    // number of elements
+    idx_t ne = (idx_t)eptr.size() - 1;
+
+    // check if all processors have same number
+    idx_t ne_max = 0;
+    if (MPI_Reduce(&ne, &ne_max, 1, MPI_INT,
+                   MPI_MAX, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
+        opserr << "WARNING: failed to get max ne\n";
+        return -1;
+    }
+    if (pid == 0) {
+        if (ne_max != ne) {
+            opserr << "WARNING: all processors should "
+                      "have the same mesh before partitioning";
+            return -1;
+        }
+    }
+
+    // partition for elements
+    std::vector<idx_t> epart(ne);
+
+
+    // do partition on P0
+    if (pid == 0) {
+
+        // options
+        idx_t options[METIS_NOPTIONS];
+        METIS_SetDefaultOptions(options);
+        options[METIS_OPTION_PTYPE] = METIS_PTYPE_KWAY;
+        options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+        options[METIS_OPTION_NCUTS] = ncuts;
+        options[METIS_OPTION_NITER] = niter;
+        options[METIS_OPTION_NUMBERING] = 0;
+        options[METIS_OPTION_UFACTOR] = ufactor;
+        options[METIS_OPTION_DBGLVL] = info;
+
+        // number of parts to partition
+        idx_t nparts = np;
+
+        // total communications volume
+        idx_t objval;
+
+        // partition for nodes
+        std::vector<idx_t> npart(nn);
+
+        // call metis
+        auto res =
+            METIS_PartMeshNodal(&ne, &nn,
+                                &eptr[0], &eind[0], 
+                                NULL, NULL, &nparts, 
+                                NULL, options,
+                                &objval, 
+                                &epart[0], &npart[0]);
+
+        // check errors 
+        if (res == METIS_ERROR_INPUT) {
+            opserr << "WARNING: metis input error\n";
+            return -1;
+        } else if (res == METIS_ERROR_MEMORY) {
+            opserr << "WARNING: metis memory error\n";
+            return -1;
+        } else if (res == METIS_ERROR) {
+            opserr << "WARNING: metis error\n";
+            return -1;
+        }
+    }
+
+    // broadcast partitions
+    if (MPI_Bcast(&epart[0], ne, MPI_INT, 0, MPI_COMM_WORLD) !=
+        MPI_SUCCESS) {
+        opserr << "WARNING: failed to broadcast epart\n";
+        return -1;
+    }
+
+    // get nodes in current processor and remove elements
+    for (int i = 0; i < ne; ++i) {
+
+        // remove element
+        if (epart[i] != pid) {
+            Element* ele = domain->removeElement(etag[i]);
+            if (ele != 0) {
+                delete ele;
+            }
+            continue;
+        }
+
+        // get elenodes
+        Element *ele = domain->getElement(etag[i]);
+        const auto &elenodes = ele->getExternalNodes();
+        for (int j = 0; j < elenodes.Size(); ++j) {
+            nind[elenodes(j)] = -1;
+        }
+    }
+
+    // get nodes in current processor and remove mp
+    auto &mps = domain->getMPs();
+    MP_Constraint *mp = 0;
+    while ((mp = mps()) != 0) {
+        int rtag = mp->getNodeRetained();
+        int ctag = mp->getNodeConstrained();
+        auto &rid = nind[rtag];
+        auto &cid = nind[ctag];
+        if (rid == -1 || cid == -1) {
+            rid = -1;
+            cid = -1;
+        } else {
+            domain->removeMP_Constraint(mp->getTag());
+            delete mp;
+        }
+    }
+
+    // remove nodes
+    for (const auto& item: nind) {
+        int ndtag = item.first;
+        auto id = item.second;
+        if (id >= 0) {
+            auto node = domain->removeNode(ndtag);
+            if (node != 0) {
+                delete node;
+            }
+            auto pc = domain->removePressure_Constraint(ndtag);
+            if (pc != 0) {
+                delete pc;
+            }
+        }
+    }
+
+    // remove sps
+    auto& sps = domain->getSPs();
+    SP_Constraint* sp = 0;
+    while ((sp = sps()) != 0) {
+        int ndtag = sp->getNodeTag();
+        auto id = nind[ndtag];
+        if (id >= 0) {
+            domain->removeSP_Constraint(sp->getTag());
+            delete sp;
+        }
+    }
+
+    // go throug load patterns
+    auto& lps = domain->getLoadPatterns();
+    LoadPattern* lp = 0;
+    while ((lp = lps()) != 0) {
+        // remove nodal loads
+        auto& nloads = lp->getNodalLoads();
+        NodalLoad* nload = 0;
+        while ((nload = nloads()) != 0) {
+            int ndtag = nload->getNodeTag();
+            auto id = nind[ndtag];
+            if (id >= 0) {
+                lp->removeNodalLoad(nload->getTag());
+                delete nload;
+            }
+        }
+
+        // remove elemental loads
+        auto& eloads = lp->getElementalLoads();
+        ElementalLoad* eload = 0;
+        while ((eload = eloads()) != 0) {
+            int e = eload->getElementTag();
+            auto id = epart[eindex[e]];
+            if (id >= 0) {
+                lp->removeElementalLoad(eload->getTag());
+                delete eload;
+            }
+        }
+
+        // remove sps
+        auto& sps2 = lp->getSPs();
+        while ((sp = sps2()) != 0) {
+            int ndtag = sp->getNodeTag();
+            auto id = nind[ndtag];
+            if (id >= 0) {
+                lp->removeSP_Constraint(sp->getTag());
+                delete sp;
+            }
+        }
+    }
+
+#endif
     return 0;
 }

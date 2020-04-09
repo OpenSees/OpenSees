@@ -18,15 +18,13 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
+// $Revision $
 // $Date$
 
-// Written: Minjie Zhu (zhum@oregonstate.edu)
-//
-// Description: This file contains the class definition for PFEMElement3DBubble.
+// Written: Minjie Zhu
 
-#ifndef PFEMElement3DBubble_h
-#define PFEMElement3DBubble_h
+#ifndef PFEMContact2D_h
+#define PFEMContact2D_h
 
 #include <Matrix.h>
 #include <Vector.h>
@@ -35,32 +33,42 @@
 
 class Pressure_Constraint;
 
-class PFEMElement3DBubble : public Element
-{
+class PFEMContact2D : public Element {
 public:
-    PFEMElement3DBubble();
-    PFEMElement3DBubble(int tag, int nd1, int nd2, int nd3, int nd4,
-                        double r, double m, double b1, double b2, double b3,
-                        double ka=-1);
+    PFEMContact2D();
 
-    ~PFEMElement3DBubble();
+    PFEMContact2D(int tag, int nd1, int nd2, int nd3,
+                  double kk, double thk,
+                  double m, double b, double dc,
+                  double a, double e, double rho);
+
+    ~PFEMContact2D();
 
     // methods dealing with nodes and number of external dof
-    int getNumExternalNodes(void) const;
-    const ID &getExternalNodes(void);
-    Node **getNodePtrs(void);
-    int getNumDOF(void);
+    int getNumExternalNodes(void) const { return ntags.Size(); }
+
+    const ID &getExternalNodes(void) { return ntags; }
+
+    Node **getNodePtrs(void) { return &nodes[0]; }
+
+    int getNumDOF(void) { return ndf[3]; }
 
     // public methods to set the state of the element
-    int revertToLastCommit(void);
-    //int revertToStart(void);
+    int revertToLastCommit(void) { return 0; }
+
+    int revertToStart(void) { return Element::revertToStart(); }
+
     int update(void);
-    int commitState(void);
+
+    int commitState(void) { return Element::commitState(); }
 
     // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff(void);
+
     const Matrix &getInitialStiff(void);
+
     const Matrix &getDamp();
+
     const Matrix &getMass(void);
 
     // methods for applying loads
@@ -68,68 +76,69 @@ public:
 
     // methods for obtaining resisting force (force includes elemental loads)
     const Vector &getResistingForce(void);
+
     const Vector &getResistingForceIncInertia(void);
 
     // MovableObject
     const char *getClassType(void) const;
+
     int sendSelf(int commitTag, Channel &theChannel);
+
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
     // DomainComponent
     void setDomain(Domain *theDomain);
 
     // TaggedObject
-    void Print(OPS_Stream &s, int flag =0);
-    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
+    void Print(OPS_Stream &s, int flag = 0);
 
-    // sensitivity
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter (int parameterID, Information &info);
-    int activateParameter(int passedParameterID);
-
-    static bool dispon;
-
-    static double det(const Matrix& m);
-    static void cofactor(const Matrix& m, Matrix& mfact);
-
-protected:
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes = 0, int numModes = 0);
 
 private:
 
-    ID ntags; // Tags of nodes
-    std::vector<Node*> nodes; // pointers of nodes
-    std::vector<Pressure_Constraint*> thePCs;
-    double rho;  // density
-    double mu;   // viscocity
-    double bx;    // body force
-    double by;    // body force
-    double bz;    // body force
-    double J;
-    ID numDOFs;
-    double kappa;
-    int parameterID;
-    std::vector<double> dNdx, dNdy, dNdz;
+    double getLine(double &A, double &B, double &C,
+                   double &dx, double &dy,
+                   double &x1, double &y1,
+                   double &x2, double &y2,
+                   double &x3, double &y3,
+                   double &L);
 
+    static void getdL(double L, double dx, double dy, Vector &dL);
+
+    static void getdA(double L, double A, const Vector &dL, Vector &dA);
+
+    static void getdB(double L, double B, const Vector &dL, Vector &dB);
+
+    static void getdC(double L, double C, double x1, double y1,
+                      double x2, double y2, const Vector &dL,
+                      Vector &dC);
+
+    static void getdD(double A, double B, double x3, double y3,
+                      const Vector &dA,
+                      const Vector &dB,
+                      const Vector &dC,
+                      Vector &dD);
+
+    double getP(double D);
+
+    void getdP(const Vector &dD, double D, Vector &dP);
+
+    void getV(Vector &vn, double &vt, Vector &vj);
+
+    bool inContact(double D);
+
+
+private:
+
+    ID ntags;
+    std::vector<Node *> nodes;
+    double kdoverAd, thk, mu, beta, Dc, alpha, E, rho;
+    std::vector<int> ndf;
+    double signvt0, F0;
     static Matrix K;
     static Vector P;
-    Matrix M, D;
-    Vector F, Fp;
-
-    int updateJacobi();
-    int updateMatrix();
-
-    // responses
-    double getM() const;
-    double getMp() const;
-    void getG(Matrix& g) const;
-    void getK(Matrix& k) const;
-    void getGbub(Matrix& gbub)const;
-    double getinvMbub() const;
-    void getL(Matrix& l) const;
-    void getF(Vector& f) const;
-    void getFbub(Vector& fbub) const;
-    void getFp(Vector& fp) const;
-
 };
 
 #endif
+
+
