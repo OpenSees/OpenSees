@@ -31,6 +31,7 @@
 // Written by Terje Haukaas (haukaas@ce.berkeley.edu) 
 //
 
+#include <math.h> // for fmod
 #include <stdlib.h>
 #include <string.h>
 #include <fstream>
