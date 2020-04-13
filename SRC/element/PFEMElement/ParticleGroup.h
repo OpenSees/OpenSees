@@ -45,7 +45,7 @@ public:
     void addParticle(const VDouble& coord, const VDouble& vel, double p);
     void addParticle(const VDouble& coordn, const VDouble& coord,
                      const VDouble& vel,
-                     const VDouble& accel, double p, double pdot);
+                     const VDouble& accel, double p);
     void removeParticles(const VInt& rm);
     int numParticles() const {return (int)particles.size();}
     Particle* getParticle(int i) {

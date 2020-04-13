@@ -321,8 +321,7 @@ void ParticleGroup::addParticle(const VDouble &coordn,
                                 const VDouble &coord,
                                 const VDouble &vel,
                                 const VDouble &accel,
-                                double p,
-                                double pdot) {
+                                double p) {
     Particle *particle = new Particle;
     particles.push_back(particle);
 
@@ -330,7 +329,6 @@ void ParticleGroup::addParticle(const VDouble &coordn,
     particle->setVel(vel);
     particle->moveTo(coord, 0.0);
     particle->setPressure(p);
-    particle->setPdot(pdot);
     particle->setAccel(accel);
     particle->setGroupTag(this->getTag());
 }
@@ -380,7 +378,7 @@ int ParticleGroup::line(const VDouble &p1, const VDouble &p2, int num,
 int ParticleGroup::pointlist(VDouble &pointdata) {
     int ndm = OPS_GetNDM();
     pointdata.clear();
-    pointdata.reserve(particles.size() * (4 * ndm + 2));
+    pointdata.reserve(particles.size() * (4 * ndm + 1));
     for (auto particle : particles) {
         auto tag = particle->getTag();
         const auto& crdsn = particle->getCrdsn(); 
@@ -388,7 +386,6 @@ int ParticleGroup::pointlist(VDouble &pointdata) {
         const auto& vel = particle->getVel(); 
         const auto& accel = particle->getAccel(); 
         double p = particle->getPressure(); 
-        double pdot = particle->getPdot(); 
         pointdata.push_back(tag);
         for (int j = 0; j < ndm; ++j) {
             pointdata.push_back(crdsn[j]);
@@ -403,7 +400,6 @@ int ParticleGroup::pointlist(VDouble &pointdata) {
             pointdata.push_back(accel[j]);
         }
         pointdata.push_back(p);
-        pointdata.push_back(pdot);
     }
 
     return 0;
@@ -415,8 +411,7 @@ int ParticleGroup::pointlist(const VDouble &pointdata, int ndm) {
     VDouble vel(ndm);
     VDouble accel(ndm);
     double p0 = 0.0;
-    double pdot0 = 0.0;
-    for (int i = 0; i < (int)pointdata.size(); i += 4 * ndm + 2) {
+    for (int i = 0; i < (int)pointdata.size(); i += 4 * ndm + 1) {
         for (int j = 0; j < ndm; ++j) {
             crdsn[j] = pointdata[i + j];
         }
@@ -430,8 +425,7 @@ int ParticleGroup::pointlist(const VDouble &pointdata, int ndm) {
             accel[j] = pointdata[i + 3 * ndm + j];
         }
         p0 = pointdata[i + 4 * ndm];
-        pdot0 = pointdata[i + 4 * ndm + 1];
-        this->addParticle(crdsn, crds, vel, accel, p0, pdot0);
+        this->addParticle(crdsn, crds, vel, accel, p0);
     }
 
     return 0;
