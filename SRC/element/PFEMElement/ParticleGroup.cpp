@@ -382,13 +382,14 @@ int ParticleGroup::pointlist(VDouble &pointdata) {
     pointdata.clear();
     pointdata.reserve(particles.size() * (4 * ndm + 2));
     for (auto particle : particles) {
+        auto tag = particle->getTag();
         const auto& crdsn = particle->getCrdsn(); 
         const auto& crds = particle->getCrds(); 
         const auto& vel = particle->getVel(); 
         const auto& accel = particle->getAccel(); 
         double p = particle->getPressure(); 
         double pdot = particle->getPdot(); 
-
+        pointdata.push_back(tag);
         for (int j = 0; j < ndm; ++j) {
             pointdata.push_back(crdsn[j]);
         }
