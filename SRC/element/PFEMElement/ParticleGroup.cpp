@@ -64,6 +64,7 @@ int OPS_ParticleGroup() {
     int ndm = OPS_GetNDM();
     VDouble p1(ndm), p2(ndm), p3(ndm), p4(ndm);
     VDouble p5(ndm), p6(ndm), p7(ndm), p8(ndm);
+    VDouble pointdata;
     VInt nump(3);
     const char *geotype = OPS_GetString();
     if (strcmp(geotype, "quad") == 0) {
@@ -196,25 +197,25 @@ int OPS_ParticleGroup() {
             opserr << "WARNING: failed to get number of particles\n";
             return -1;
         }
-    } else if (strcmp(geotype, "point") == 0) {
-        if (OPS_GetNumRemainingInputArgs() < ndm) {
-            opserr << "WARNING: insufficient args\n";
-            return -1;
+    } else if (strcmp(geotype, "pointlist") == 0) {
+        int numdata = OPS_GetNumRemainingInputArgs();
+        if (numdata < ndm) {
+            group->pointlist(pointdata);
+            numdata = (int) pointdata.size(); 
+            if (OPS_SetDoubleOutput(&numdata, &pointdata[0], false) < 0) {
+                opserr << "WARNING: failed to set output\n";
+                return -1;
+            }
+            return 0;
         }
 
         // node coord
-        if (OPS_GetDoubleInput(&ndm, &p1[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for point\n";
+        pointdata.resize(numdata);
+        if (OPS_GetDoubleInput(&numdata, &pointdata[0]) < 0) {
+            opserr << "WARNING: failed to get cooridnates for points\n";
             return -1;
         }
-    } else if (strcmp(geotype, "file") == 0) {
-        if (OPS_GetNumRemainingInputArgs() < 2) {
-            opserr << "WARNING: need particle coordiantes file and velocity file\n";
-            return -1;
-        }
-        const char *crdsfile = OPS_GetString();
-        const char *velfile = OPS_GetString();
-        group->readfile(crdsfile, velfile);
+
     } else {
         opserr << "WARNING: unknown geometry type\n";
         return -1;
@@ -282,8 +283,8 @@ int OPS_ParticleGroup() {
         group->tri(p1, p2, p3, nump[0], nump[1], vel0, p0);
     } else if (strcmp(geotype, "line") == 0) {
         group->line(p1, p2, nump[0], vel0, p0);
-    } else if (strcmp(geotype, "point") == 0) {
-        group->point(p1, vel0, p0);
+    } else if (strcmp(geotype, "pointlist") == 0) {
+        group->pointlist(pointdata, ndm);
     }
 
     return 0;
@@ -313,6 +314,22 @@ void ParticleGroup::addParticle(const VDouble &coord, const VDouble &vel, double
     accel *= 0.0;
     particle->setAccel(accel);
 
+    particle->setGroupTag(this->getTag());
+}
+
+void ParticleGroup::addParticle(const VDouble &coordn,
+                                const VDouble &coord,
+                                const VDouble &vel,
+                                const VDouble &accel,
+                                double p) {
+    Particle *particle = new Particle;
+    particles.push_back(particle);
+
+    particle->moveTo(coordn, 0.0);
+    particle->setVel(vel);
+    particle->moveTo(coord, 0.0);
+    particle->setPressure(p);
+    particle->setAccel(accel);
     particle->setGroupTag(this->getTag());
 }
 
@@ -358,16 +375,58 @@ int ParticleGroup::line(const VDouble &p1, const VDouble &p2, int num,
     return 0;
 }
 
-int ParticleGroup::point(const VDouble &p1, const VDouble &vel0, double p0) {
-    VDouble crds(p1);
-    VDouble vel(p1.size());
-    for (int i = 0; i < (int) vel.size(); i++) {
-        if (i < (int) vel0.size()) {
-            vel[i] = vel0[i];
+int ParticleGroup::pointlist(VDouble &pointdata) {
+    int ndm = OPS_GetNDM();
+    pointdata.clear();
+    pointdata.reserve(particles.size() * (4 * ndm + 1));
+    for (auto particle : particles) {
+        auto tag = particle->getTag();
+        const auto& crdsn = particle->getCrdsn(); 
+        const auto& crds = particle->getCrds(); 
+        const auto& vel = particle->getVel(); 
+        const auto& accel = particle->getAccel(); 
+        double p = particle->getPressure(); 
+        pointdata.push_back(tag);
+        for (int j = 0; j < ndm; ++j) {
+            pointdata.push_back(crdsn[j]);
         }
+        for (int j = 0; j < ndm; ++j) {
+            pointdata.push_back(crds[j]);
+        }
+        for (int j = 0; j < ndm; ++j) {
+            pointdata.push_back(vel[j]);
+        }
+        for (int j = 0; j < ndm; ++j) {
+            pointdata.push_back(accel[j]);
+        }
+        pointdata.push_back(p);
     }
 
-    this->addParticle(crds, vel, p0);
+    return 0;
+}
+
+int ParticleGroup::pointlist(const VDouble &pointdata, int ndm) {
+    VDouble crdsn(ndm);
+    VDouble crds(ndm);
+    VDouble vel(ndm);
+    VDouble accel(ndm);
+    double p0 = 0.0;
+    for (int i = 0; i < (int)pointdata.size(); i += 4 * ndm + 1) {
+        for (int j = 0; j < ndm; ++j) {
+            crdsn[j] = pointdata[i + j];
+        }
+        for (int j = 0; j < ndm; ++j) {
+            crds[j] = pointdata[i + ndm + j];
+        }
+        for (int j = 0; j < ndm; ++j) {
+            vel[j] = pointdata[i + 2 * ndm + j];
+        }
+        for (int j = 0; j < ndm; ++j) {
+            accel[j] = pointdata[i + 3 * ndm + j];
+        }
+        p0 = pointdata[i + 4 * ndm];
+        this->addParticle(crdsn, crds, vel, accel, p0);
+    }
 
     return 0;
 }
@@ -510,33 +569,6 @@ ParticleGroup::cube(const VVDouble &pts, const VInt &num,
         for (unsigned int j = 0; j < crds.size(); ++j) {
             crds[j] += dirs[j];
         }
-    }
-
-    return 0;
-}
-
-int
-ParticleGroup::readfile(const char *crdsfile, const char *velfile) {
-    int ndm = OPS_GetNDM();
-    std::ifstream ifc(crdsfile), ifv(velfile);
-    while (ifc.good() && ifv.good()) {
-        std::string linec, linev;
-        std::getline(ifc, linec);
-        std::getline(ifv, linev);
-        std::istringstream ssc(linec);
-        std::istringstream ssv(linev);
-
-        VDouble pcrds(ndm), pvel(ndm);
-        for (int i = 0; i < ndm; ++i) {
-            if (ssc.good()) {
-                ssc >> pcrds[i];
-            }
-            if (ssv.good()) {
-                ssv >> pvel[i];
-            }
-        }
-
-        this->addParticle(pcrds, pvel, 0.0);
     }
 
     return 0;
