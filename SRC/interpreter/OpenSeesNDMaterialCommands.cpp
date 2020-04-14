@@ -10,6 +10,7 @@
 
 
 void* OPS_ElasticIsotropicMaterial();
+void* OPS_ElasticIsotropic3D();
 void* OPS_PlateFiberMaterial();
 void* OPS_ReinforcedConcretePlaneStressMaterial();
 void* OPS_InitStressNDMaterial();
@@ -121,7 +122,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("InitialStateAnalysisWrapper", &OPS_InitialStateAnalysisWrapperMaterial));
 	nDMaterialsMap.insert(std::make_pair("StressDensityModel", &OPS_StressDensityMaterial));
 	nDMaterialsMap.insert(std::make_pair("ElasticIsotropic", &OPS_ElasticIsotropicMaterial));
-	nDMaterialsMap.insert(std::make_pair("ElasticIsotropic3D", &OPS_ElasticIsotropicMaterial));
+	nDMaterialsMap.insert(std::make_pair("ElasticIsotropic3D", &OPS_ElasticIsotropic3D));
 	nDMaterialsMap.insert(std::make_pair("ElasticOrthotropic3D", &OPS_ElasticOrthotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("ElasticOrthotropic", &OPS_ElasticOrthotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("PressureDependentElastic3D", &OPS_PressureDependentElastic3D));
