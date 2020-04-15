@@ -369,8 +369,8 @@ extern void *OPS_WilsonTheta(void);
 // #include <PFEMSensitivityIntegrator.h>
 //#include <OrigSensitivityAlgorithm.h>
 //#include <NewSensitivityAlgorithm.h>
-#include <ReliabilityStaticAnalysis.h>
-#include <ReliabilityDirectIntegrationAnalysis.h>
+//#include <ReliabilityStaticAnalysis.h>
+//#include <ReliabilityDirectIntegrationAnalysis.h>
 // AddingSensitivity:END /////////////////////////////////////////////////
 #include <TclReliabilityBuilder.h>
 
@@ -527,8 +527,8 @@ static TclReliabilityBuilder *theReliabilityBuilder = 0;
 
 Integrator *theSensitivityAlgorithm = 0;
 Integrator *theSensitivityIntegrator = 0;
-ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
-ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
+//FMK RELIABILITY ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
+//FMK RELIABILITY ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
 // static NewmarkSensitivityIntegrator *theNSI = 0;
 // static NewNewmarkSensitivityIntegrator *theNNSI = 0;
@@ -1062,8 +1062,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     theSensitivityAlgorithm =0;
     theSensitivityIntegrator =0;
-    theReliabilityStaticAnalysis =0;
-    theReliabilityTransientAnalysis =0;    
+	//FMK RELIABILITY theReliabilityStaticAnalysis =0;
+    //FMK RELIABILITY theReliabilityTransientAnalysis =0;    
     // AddingSensitivity:END //////////////////////////////////
 
     theOptimizationBuilder = 0;
@@ -2625,7 +2625,9 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	//////////////////////////////////
     ////// added by K Fujimura ///////
-	//////////////////////////////////
+	
+	//FMK RELIABILITY
+	/*
     } else if (strcmp(argv[1],"ReliabilityStatic") == 0) {
 		// make sure all the components have been built,
 		// otherwise print a warning and use some defaults
@@ -2669,13 +2671,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
 
-		  /* This if-statement cannot stay -- MHS
-		  if(!theSensitivityAlgorithm->newAlgorithm()){
-		    opserr << "WARNING new sensitivity algorothm needs to be specified \n";
-		    opserr << "for reliability static analysis \n";
-		    return TCL_ERROR;
-		  }
-		  */
+		  //This if-statement cannot stay -- MHS
+		  //if(!theSensitivityAlgorithm->newAlgorithm()){
+		  //  opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		   // opserr << "for reliability static analysis \n";
+		   // return TCL_ERROR;
+		  //}
+		  
 
 		  //theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 		} else {
@@ -2731,13 +2733,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
 
-		  /* This if-statement must go -- MHS
-		  if(!theSensitivityAlgorithm->newAlgorithm()){
-		    opserr << "WARNING new sensitivity algorothm needs to be specified \n";
-		    opserr << "for reliability static analysis \n";
-		    return TCL_ERROR;
-		  }
-		  */
+		  //This if-statement must go -- MHS
+		  //if(!theSensitivityAlgorithm->newAlgorithm()){
+		   // opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		   // opserr << "for reliability static analysis \n";
+		   // return TCL_ERROR;
+		  //}
+		  
 
 			theReliabilityTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 		}else{
@@ -2745,6 +2747,8 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 			opserr << "ReliabilityStaticAnalysis with computeateachstep\n";
 			return TCL_ERROR;
 		}
+		FMK RELIABILITY
+	    *************************/
 // AddingSensitivity:END /////////////////////////////////
 #endif
 

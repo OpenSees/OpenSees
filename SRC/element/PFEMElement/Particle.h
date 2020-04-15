@@ -112,6 +112,8 @@ public:
 
     double getDt() const { return dt; }
 
+    size_t getTag() const {return tag;}
+
 private:
     VDouble coord, coordn;
     VDouble velocity;
@@ -121,6 +123,9 @@ private:
     bool updated;
     double dt;
     bool fixed;
+    size_t tag;
+
+    static size_t curr_tag;
 };
 
 

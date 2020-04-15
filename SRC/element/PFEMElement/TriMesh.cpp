@@ -443,6 +443,18 @@ TriMesh::mesh() {
     return 0;
 }
 
+
+// Every node may be in multiple mesh
+// Do triangulation of all nodes
+// For each triangle:
+//     If 3 nodes share 1 mesh, 
+//        use that mesh for the triangle
+//     If 3 nodes share multiple mesh, 
+//        use the mesh with eleArgs and lowest id
+//     If 3 nodes are in different mesh, 
+//        use the mesh with lowest id
+//     If the selected mesh id >= 0, skip triangle
+//     If the selected mesh has no eleArgs, skip triangle
 int
 TriMesh::remesh(double alpha) {
     if (OPS_GetNDM() != 2) {

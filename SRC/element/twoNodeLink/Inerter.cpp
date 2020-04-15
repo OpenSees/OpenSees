@@ -83,6 +83,7 @@ void* OPS_Inerter()
         int dir;
         numdata = 1;
         if (OPS_GetIntInput(&numdata, &dir) < 0) {
+            OPS_ResetCurrentInputArg(-1);
             break;
         }
         if (dir < 1 || ndf < dir) {
@@ -121,7 +122,7 @@ void* OPS_Inerter()
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new Inerter(idata[0], ndm, idata[1], idata[2],
-            dirs[0], ib);
+            dirs, ib);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {

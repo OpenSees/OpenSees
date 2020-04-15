@@ -316,6 +316,7 @@ int OPS_sdfResponse();
 int OPS_getNumThreads();
 int OPS_setNumThreads();
 int OPS_setStartNodeTag();
+int OPS_partition();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
@@ -328,6 +329,7 @@ int OPS_getRVInverseCDF();
 int OPS_addCorrelate();
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
+int OPS_wipeReliability();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
@@ -489,8 +491,7 @@ void* OPS_BFGS();
 
 // commands that changed or added:
 //
-//    missing : video, partition,
-//              reliability, wipeReliability,
+//    missing : video,
 //              FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
