@@ -1,0 +1,20 @@
+
+ __   __       __          __                   _       
+/ _ .|  \ _|_ /  \ _  _ _ (_  _ _ _  | _ |_ _ _(_ _  _ _
+\__)||__/  |  \__/|_)(-| )__)(-(-_)  || )|_(-| | (_|(_(-
+                  |                                     
+                                                  v2.7.1
+Analysis summary
+
+Interval 1 : Static - 11 steps
+Interval 2 : Static - 201 steps
+
+----------------
+
+WARNING invalid nodeId: C:/ActiveTcl/lib/reg1.3/tclreg13.dll - load nodeId 1 forces
+WARNING invalid nodeId: C:/ActiveTcl/lib/reg1.3/tclreg13.dll - load nodeId 1 forces
+Starting analysis at 23:35:27
+
+Running interval 1
+
+(1) Newton LF 0.10000 CTestNormDispIncr::test() - iteration: 1 current Norm: 0.000311527 (max: 0.001, Norm deltaR: 0.058029)
