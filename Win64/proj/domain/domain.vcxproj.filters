@@ -309,6 +309,9 @@
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -571,6 +574,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h">
       <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h">
+      <Filter>pattern\drm</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

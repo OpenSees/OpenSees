@@ -50,9 +50,7 @@ public:
   Joint3D();
 
   Joint3D(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6, int IntNodeTag,
-    UniaxialMaterial* springx,
-    UniaxialMaterial* springy,
-    UniaxialMaterial* springz,
+    UniaxialMaterial* springModels[],
     Domain* theDomain,
     int LrgDisp);
 

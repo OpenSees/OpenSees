@@ -123,6 +123,9 @@
     <Filter Include="gradientInelasticBeamColumn">
       <UniqueIdentifier>{a3a8f4b2-c477-4e7e-bb7e-03820985bf13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mixedBeamColumn">
+      <UniqueIdentifier>{01757374-de7e-4d75-aa0d-450317e0f184}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -881,6 +884,12 @@
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp">
       <Filter>joint</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp">
+      <Filter>mixedBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp">
+      <Filter>mixedBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1566,6 +1575,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h">
       <Filter>joint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.h">
+      <Filter>mixedBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h">
+      <Filter>mixedBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

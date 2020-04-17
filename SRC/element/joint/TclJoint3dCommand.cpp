@@ -195,9 +195,10 @@ TclModelBuilder_addJoint3D(ClientData clientData, Tcl_Interp* interp,
   if ((argc - argStart) == 12) {
 
     // Using Joint3D constructor without damage 
+    UniaxialMaterial* springModels[3] = { MatX, MatY, MatZ };
     theJoint3D = new Joint3D(Joint3DId,
       iNode, jNode, kNode, lNode, mNode, nNode, CenterNodeTag,
-      MatX, MatY, MatZ, theTclDomain, LargeDisp);
+      springModels, theTclDomain, LargeDisp);
 
     if (theJoint3D == 0) {
       opserr << "WARNING ran out of memory creating element\n";

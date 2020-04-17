@@ -255,9 +255,10 @@ TclModelBuilder_addJoint2D(ClientData clientData, Tcl_Interp* interp,
       }
     }
 
+    UniaxialMaterial* springModels[5] = { MatI, MatJ, MatK, MatL, PanelMaterial };
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      MatI, MatJ, MatK, MatL, PanelMaterial,
+      springModels,
       theTclDomain,
       LargeDisp);
 
@@ -557,10 +558,11 @@ TclModelBuilder_addJoint2D(ClientData clientData, Tcl_Interp* interp,
     }
 
     // Create the new material
-    std::vector<DamageModel*> damageModels{ DmgI, DmgJ, DmgK, DmgL, PanelDamage};
+    DamageModel* damageModels[5] = { DmgI , DmgJ, DmgK, DmgL, PanelDamage };
+    UniaxialMaterial* springModels[5] = { MatI, MatJ, MatK, MatL, PanelMaterial };
     theJoint2D = new Joint2D(Joint2DId,
       iNode, jNode, kNode, lNode, CenterNodeTag,
-      MatI, MatJ, MatK, MatL, PanelMaterial,
+      springModels,
       theTclDomain, LargeDisp,
       damageModels);
 

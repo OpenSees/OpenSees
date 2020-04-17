@@ -54,6 +54,8 @@ class PFEMLinSOE : public LinearSOE
 
     virtual ~PFEMLinSOE();
 
+    virtual int solve(void);
+
     virtual int getNumEqn(void) const;
     virtual int setSize(Graph& theGraph);
     virtual int addA(const Matrix &, const ID &, double fact = 1.0);
@@ -83,6 +85,11 @@ class PFEMLinSOE : public LinearSOE
     friend class PFEMSolver_Laplace;
     friend class PFEMSolver_LumpM;
 
+    virtual bool isFluidID(const ID& id) const;
+    virtual bool skipFluid() const;
+    virtual int getStage() const {return stage;}
+    virtual void setStage(int s) {stage = s;}
+
 private:
 
     virtual int setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int& Pisize);
@@ -93,6 +100,8 @@ private:
     cs* M, *Gft, *Git, *L, *Qt;
     Vector X, B, Mhat, Mf;
     ID dofType, dofID;
+    int assemblyFlag;
+    int stage;
 };
 
 #endif

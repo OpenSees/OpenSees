@@ -158,7 +158,6 @@ class MixedBeamColumn3d : public Element
     Matrix *commitedSectionFlexibility;
 
     // static data - single copy for all objects of the class
-    static int maxNumSections;
     static Matrix theMatrix;
     static Vector theVector;
     static double workArea[];
@@ -168,6 +167,7 @@ class MixedBeamColumn3d : public Element
 
     // These variable are always recomputed, so there is no need to store them for each instance of the element
     static Vector *sectionDefShapeFcn;
+    static Vector* sectionForceShapeFcn;
     static Matrix *nldhat;
     static Matrix *nd1;
     static Matrix *nd2;

@@ -682,6 +682,109 @@ TransformationDOF_Group::incrNodeAccel(const Vector &u)
   myNode->incrTrialAccel(*unbalance);
 }
 
+const Vector & 
+TransformationDOF_Group::getTrialDisp(void)
+{
+    const Vector &responseC = myNode->getTrialDisp();
+    
+    if (theMP == 0)
+	return responseC;
+    else {
+	int retainedNode = theMP->getNodeRetained();
+	Domain *theDomain = myNode->getDomain();
+	Node *retainedNodePtr = theDomain->getNode(retainedNode);
+	const Vector &responseR = retainedNodePtr->getTrialDisp();
+	const ID &retainedDOF = theMP->getRetainedDOFs();
+	const ID &constrainedDOF = theMP->getConstrainedDOFs();    	
+	int numCNodeDOF = myNode->getNumberDOF();
+	int numRetainedNodeDOF = retainedDOF.Size();
+
+	int loc = 0;
+	for (int i=0; i<numCNodeDOF; i++) {
+	    if (constrainedDOF.getLocation(i) < 0) {
+		(*modUnbalance)(loc) = responseC(i);
+		loc++;
+	    } 
+	}
+	for (int j=0; j<numRetainedNodeDOF; j++) {
+	    int dof = retainedDOF(j);
+	    (*modUnbalance)(loc) = responseR(dof);
+	    loc++;
+	}
+
+	return *modUnbalance;
+    }
+}
+
+const Vector & 
+TransformationDOF_Group::getTrialVel(void)
+{
+    const Vector &responseC = myNode->getTrialVel();
+    
+    if (theMP == 0)
+	return responseC;
+    else {
+	int retainedNode = theMP->getNodeRetained();
+	Domain *theDomain = myNode->getDomain();
+	Node *retainedNodePtr = theDomain->getNode(retainedNode);
+	const Vector &responseR = retainedNodePtr->getTrialVel();
+	const ID &retainedDOF = theMP->getRetainedDOFs();
+	const ID &constrainedDOF = theMP->getConstrainedDOFs();    	
+	int numCNodeDOF = myNode->getNumberDOF();
+	int numRetainedNodeDOF = retainedDOF.Size();
+
+	int loc = 0;
+	for (int i=0; i<numCNodeDOF; i++) {
+	    if (constrainedDOF.getLocation(i) < 0) {
+		(*modUnbalance)(loc) = responseC(i);
+		loc++;
+	    } 
+	}
+	for (int j=0; j<numRetainedNodeDOF; j++) {
+	    int dof = retainedDOF(j);
+	    (*modUnbalance)(loc) = responseR(dof);
+	    loc++;
+	}
+	
+	return *modUnbalance;
+    }
+}
+
+
+const Vector & 
+TransformationDOF_Group::getTrialAccel(void)
+{
+    const Vector &responseC = myNode->getTrialAccel();
+    
+    if (theMP == 0)
+	return responseC;
+    else {
+	int retainedNode = theMP->getNodeRetained();
+	Domain *theDomain = myNode->getDomain();
+	Node *retainedNodePtr = theDomain->getNode(retainedNode);
+	const Vector &responseR = retainedNodePtr->getTrialAccel();
+	const ID &retainedDOF = theMP->getRetainedDOFs();
+	const ID &constrainedDOF = theMP->getConstrainedDOFs();    	
+	int numCNodeDOF = myNode->getNumberDOF();
+	int numRetainedNodeDOF = retainedDOF.Size();
+
+	int loc = 0;
+	for (int i=0; i<numCNodeDOF; i++) {
+	    if (constrainedDOF.getLocation(i) < 0) {
+		(*modUnbalance)(loc) = responseC(i);
+		loc++;
+	    } 
+	}
+	for (int j=0; j<numRetainedNodeDOF; j++) {
+	    int dof = retainedDOF(j);
+	    (*modUnbalance)(loc) = responseR(dof);
+	    loc++;
+	}
+	
+	return *modUnbalance;
+    }
+}
+
 
 void
 TransformationDOF_Group::setEigenvector(int mode, const Vector &u)

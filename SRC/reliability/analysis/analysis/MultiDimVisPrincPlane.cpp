@@ -437,7 +437,8 @@ int MultiDimVisPrincPlane::analyze()
 
 				// 4.1 -- open file to write
 
-				itoa(ii+1,theStr,10);
+				//itoa(ii+1,theStr,10);
+				sprintf(theStr,"%d",ii+1);
 				strcat(fileName, theStr);
 				strcat(fileName, extension);
     			
@@ -537,7 +538,8 @@ int MultiDimVisPrincPlane::analyze()
 
 				// 4.1 -- open file to write
 
-				itoa(ii+1,theStr,10);
+				//itoa(ii+1,theStr,10);
+				sprintf(theStr,"%d",ii+1);
 				strcat(fileName, theStr);
 				strcat(fileName, extension);
 
