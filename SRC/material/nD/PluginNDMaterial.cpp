@@ -937,7 +937,7 @@ Response* PluginNDMaterial::setResponse(const char** argv, int argc, OPS_Stream&
 		const PluginResponseDescriptor& d = m_descriptor->responses[i];
 		if ((d.name == iarg) && (d.components.size() > 0)) {
 
-			theOutputStream.tag("NDMaterialOutput");
+			theOutputStream.tag("NdMaterialOutput");
 			theOutputStream.attr("matType", this->getClassType());
 			theOutputStream.attr("matTag", this->getTag());
 
