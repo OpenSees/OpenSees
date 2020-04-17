@@ -555,3 +555,14 @@ PlateFiberMaterial::setParameter(const char **argv, int argc,
 {
   return theMaterial->setParameter(argv, argc, param);
 }
+
+Response* PlateFiberMaterial::setResponse(const char** argv, int argc, OPS_Stream& s)
+{
+    // try with base class implementation, for responses such as stress, so that
+    // we have the correct size of the adapter.
+    // otherwise call the adaptee implementation
+    Response* r = NDMaterial::setResponse(argv, argc, s);
+    if (r == 0)
+        r = theMaterial->setResponse(argv, argc, s);
+    return r;
+}
