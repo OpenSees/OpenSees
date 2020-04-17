@@ -18,37 +18,38 @@
 **                                                                    **
 ** ****************************************************************** */
 
-#ifndef PluginUniaxialMaterial_h
-#define PluginUniaxialMaterial_h
+#ifndef PluginNDMaterial_h
+#define PluginNDMaterial_h
 
 // Written: Massimo Petracca 
 // Created: 02/2020
 // Revision: A
 //
-// Description: This file contains the PluginUniaxialMaterial wrapper
+// Description: This file contains the PluginNDMaterial wrapper
 
-#include <UniaxialMaterial.h>
+#include <NDMaterial.h>
 #include <PluginFrameworkAPI.h>
 
 class PluginMaterialDescriptor;
 
 /**
-The PluginUniaxialMaterial class is a wrapper for external materials
+The PluginNDMaterial class is a wrapper for external materials
 using the PluginFrameworkAPI
 */
-class PluginUniaxialMaterial : public UniaxialMaterial
+
+class PluginNDMaterial : public NDMaterial
 {
-	friend void* OPS_PluginUniaxialMaterial(void);
-	
+	friend void* OPS_PluginNDMaterial(void);
+
 	// constructor and destructor
 public:
-	PluginUniaxialMaterial();
-	PluginUniaxialMaterial(PluginMaterialDescriptor* descr, PluginMaterialData* d);
-	~PluginUniaxialMaterial();
+	PluginNDMaterial();
+	PluginNDMaterial(PluginMaterialDescriptor* descr, PluginMaterialData* d);
+	~PluginNDMaterial();
 
 	// from TaggedObject
 public:
-	void Print(OPS_Stream& s, int flag = 0);
+	virtual void Print(OPS_Stream& s, int flag = 0);
 
 	// from MovableObject
 public:
@@ -61,33 +62,36 @@ public:
 	int setVariable(const char* variable, Information& info);
 	int getVariable(const char* variable, Information& info);
 
-	// from UniaxialMaterial
+	// from NDMaterial
 public:
-	int setTrialStrain(double strain, double strainRate = 0);
-	int setTrialStrain(double strain, double temperature, double strainRate);
-	double getStrain();
-	double getStrainRate();
-	double getStress();
-	double getTangent();
-	double getInitialTangent();
-	double getDampTangent();
+	int setTrialStrain(const Vector& strain);
+	int setTrialStrain(const Vector& strain, const Vector& strainRate);
+	int setTrialStrainIncr(const Vector& strain);
+	int setTrialStrainIncr(const Vector& strain, const Vector& strainRate);
+	const Vector& getStrain();
+	const Vector& getStress();
+	const Matrix& getTangent();
+	const Matrix& getInitialTangent();
 	double getRho();
+	double getThermalTangentAndElongation(double& TempT, double& ET, double& Elong);
+	double setThermalTangentAndElongation(double& TempT, double& ET, double& Elong);
+	const Vector& getTempAndElong();
 	int commitState();
 	int revertToLastCommit();
 	int revertToStart();
-	UniaxialMaterial* getCopy();
+	NDMaterial* getCopy();
+	NDMaterial* getCopy(const char* code);
+	const char* getType() const;
+	int getOrder() const;
 	Response* setResponse(const char** argv, int argc, OPS_Stream& theOutputStream);
 	int getResponse(int responseID, Information& info);
-	int getResponseSensitivity(int responseID, int gradIndex, Information& info);
-	bool hasFailed();
-	double getStressSensitivity(int gradIndex, bool conditional);
-	double getStrainSensitivity(int gradIndex);
-	double getTangentSensitivity(int gradIndex);
-	double getInitialTangentSensitivity(int gradIndex);
-	double getDampTangentSensitivity(int gradIndex);
+	const Vector& getStressSensitivity(int gradIndex, bool conditional);
+	const Vector& getStrainSensitivity(int gradIndex);
+	const Matrix& getTangentSensitivity(int gradIndex);
+	const Matrix& getInitialTangentSensitivity(int gradIndex);
+	const Matrix& getDampTangentSensitivity(int gradIndex);
 	double getRhoSensitivity(int gradIndex);
-	int    commitSensitivity(double strainGradient, int gradIndex, int numGrads);
-	double getEnergy();
+	int commitSensitivity(const Vector& strainGradient, int gradIndex, int numGrads);
 
 private:
 	PluginMaterialDescriptor* m_descriptor;
@@ -96,4 +100,5 @@ private:
 	bool m_lch_calculated;
 };
 
-#endif // PluginUniaxialMaterial_h
+#endif // !PluginNDMaterial_h
+

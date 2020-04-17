@@ -139,6 +139,7 @@ extern  void *OPS_FSAMMaterial(void); // K Kolozvari
 extern void *OPS_Damage2p(void);
 #endif
 
+extern void* OPS_PluginNDMaterial(void); // PluginFramework - Massimo Petracca 03/2020
 
 NDMaterial *
 TclModelBuilder_addFeapMaterial(ClientData clientData, Tcl_Interp *interp,
@@ -320,6 +321,17 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       return TCL_ERROR;
     }
 #endif
+
+    // plugin nd material
+    else if (strcmp(argv[1], "plugin") == 0) {
+        void *theMat = OPS_PluginNDMaterial();
+        if (theMat != 0) {
+            theMaterial = (NDMaterial*)(theMat);
+        }
+        else {
+            return TCL_ERROR;
+        }
+    }
 
     else if ((strcmp(argv[1],"PrestressedConcretePlaneStress") == 0)){
 

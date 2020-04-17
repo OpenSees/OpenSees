@@ -43,12 +43,13 @@ enum PluginMaterialJobType
 	PF_MAT_COMMIT = 100,
 	PF_MAT_REVERT,
 	PF_MAT_REVERT_TO_START,
-	PF_MAT_SERIALIZE,
+
+	PF_MAT_SERIALIZE = 200,
 	PF_MAT_DESERIALIZE,
 
-	PF_MAT_COMPUTE = 200,
+	PF_MAT_COMPUTE = 300,
 
-	PF_MAT_GET_STRAIN = 600,
+	PF_MAT_GET_STRAIN = 400,
 	PF_MAT_GET_STRAIN_RATE,
 	PF_MAT_GET_STRESS,
 	PF_MAT_GET_TANGENT,
@@ -57,7 +58,25 @@ enum PluginMaterialJobType
 	PF_MAT_GET_RHO,
 	PF_MAT_GET_ENERGY,
 	PF_MAT_GET_IS_FAILED,
-	PF_MAT_GET_RESPONSE
+	PF_MAT_GET_RESPONSE,
+	PF_MAT_GET_THERMAL_TANG_ELONG,
+	PF_MAT_GET_TEMP_ELONG,
+
+	PF_MAT_GET_VARIABLE = 500,
+	PF_MAT_SET_VARIABLE,
+
+	PF_MAT_UPDATE_PARAMETER = 600,
+	PF_MAT_ACTIVATE_PARAMETER,
+
+	PF_MAT_GET_RESPONSE_SENSITIVITY = 700,
+	PF_MAT_GET_STRAIN_SENSITIVITY,
+	PF_MAT_GET_STRESS_SENSITIVITY,
+	PF_MAT_GET_TANGENT_SENSITIVITY,
+	PF_MAT_GET_INITIAL_TANGENT_SENSITIVITY,
+	PF_MAT_GET_DAMP_TANGENT_SENSITIVITY,
+	PF_MAT_GET_RHO_SENSITIVITY,
+	PF_MAT_COMMIT_SENSITIVITY
+
 };
 
 /**
@@ -65,9 +84,12 @@ Material types
 */
 
 #define PF_MAT_TYPE_UNIAXIAL 1
-#define PF_MAT_TYPE_ND_PLANE_STRAIN 2
-#define PF_MAT_TYPE_ND_PLANE_STRESS 3
-#define PF_MAT_TYPE_ND_3D 4
+#define PF_MAT_TYPE_ND_3D 2
+#define PF_MAT_TYPE_ND_PLANE_STRAIN 3
+#define PF_MAT_TYPE_ND_PLANE_STRESS 4
+#define PF_MAT_TYPE_ND_AXISYMMETRIC 5
+#define PF_MAT_TYPE_ND_PLATE_FIBER 6
+
 
 typedef struct PluginMaterialData PluginMaterialData;
 
@@ -102,7 +124,9 @@ When job = PF_MAT_INITIALIZE:
 	each record can be one of the following:
 	------------------------------------------------------------------------------
 	A|<name>|<default>
-	R|<id>|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
+	R|<id>|<name>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
+	P|<id>|<name>
+	V|<id>|<name>|<n_comp>
 	------------------------------------------------------------------------------
 	notes:
 	A = start of an input argument (material parameter) (double type assumed)
@@ -110,7 +134,12 @@ When job = PF_MAT_INITIALIZE:
 		The second field is optional and represents the default value 
 		(use it in cases the input argument is optional)
 	R = a response (result)
-		It must have at 1+N fields, the name and N component,
+		It must have at 2+N fields, the id, the name, and N component,
+	P = a parameter
+		It must have 2 fields, the id and the name
+	V = a variable
+		It must have 3 fields, the id, the name, and the number of components
+		
 	fields in a record are separated by '|'
 	------------------------------------------------------------------------------
 
@@ -151,7 +180,15 @@ struct PluginMaterialData
 	// note: response is not dynamically allocated but will point to existing
 	// data of proper size
 	int32_t response_id;
+	uint64_t response_size;
 	double* response;
+
+	// for sensitivity
+	double* sens_strain_gradient;
+	int32_t sens_grad_index;
+	int32_t sens_conditonal;
+	int32_t sens_num_grad;
+	int32_t sens_unused_placeholder; // for padding 8-bytes
 
 	// Parameters.
 	// Allocated only once by the PluginFramework after the plugin function
@@ -164,7 +201,8 @@ struct PluginMaterialData
 	double* strain;
 	double* strain_rate;
 	double* temperature;
-	double* lch;
+	double lch;
+	double dT;
 };
 
 #endif

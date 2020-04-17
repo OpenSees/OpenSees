@@ -62,7 +62,10 @@
 		return -1; \
 	}
 
-namespace details {
+#define ENUM_STR(X) #X
+#define CASE_ENUM_STR(X) case X : return ENUM_STR(X)
+
+namespace details_plugin_framework {
 
 	/**
 	common utilities
@@ -304,6 +307,8 @@ namespace details {
 
 }
 
+namespace details = details_plugin_framework;
+
 /**
 PluginArgumentDescriptor implementation
 */
@@ -356,6 +361,8 @@ int PluginMaterialDescriptor::parseMessage(const char* m)
 	// processed data, avoid duplicates
 	std::set<std::string> processed_arguments;
 	std::set<std::string> processed_responses;
+	std::set<std::string> processed_parameters;
+	std::set<std::string> processed_variables;
 
 	// process each record
 	for (std::size_t i = 0; i < records.size(); i++) {
@@ -401,9 +408,9 @@ int PluginMaterialDescriptor::parseMessage(const char* m)
 		}
 		else if (f0 == "R") {
 
-			// R|<id>|<name>|<n_comp>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
+			// R|<id>|<name>|<comp_1_name>|<comp_2_name>|...|<comp_N_name>
 			if (fields.size() < 4) {
-				opserr << "PluginMaterialDescriptor Error: the R record must have at least 3 fields";
+				opserr << "PluginMaterialDescriptor Error: the R record must have at least 3 fields (id, name, and at least 1 component)";
 				return -1;
 			}
 
@@ -422,17 +429,78 @@ int PluginMaterialDescriptor::parseMessage(const char* m)
 				return -1;
 			}
 
+			std::size_t ncomp = fields.size() - 3;
+
+			PluginResponseDescriptor resp;
+			resp.id = id;
+			resp.name = name;
+			resp.components.resize(ncomp);
+			for (std::size_t j = 3; j < fields.size(); j++)
+				resp.components[j-3] = fields[j];
+
+			responses.push_back(resp);
+
+		}
+		else if (f0 == "P") {
+
+			// P|<id>|<name>
+			if (fields.size() != 3) {
+				opserr << "PluginMaterialDescriptor Error: the P record must have 2 fields (id and name)";
+				return -1;
+			}
+
+			int id;
+			if (!(std::stringstream(fields[1]) >> id)) {
+				opserr << "PluginMaterialDescriptor Error: Cannot get the response id from the P record";
+				return -1;
+			}
+
+			const std::string& name = fields[2];
+
+			std::size_t nold = processed_parameters.size();
+			processed_parameters.insert(name);
+			if (nold == processed_parameters.size()) {
+				opserr << "PluginMaterialDescriptor Error: the P records must have unique names";
+				return -1;
+			}
+
+			PluginResponseDescriptor resp;
+			resp.id = id;
+			resp.name = name;
+
+			parameters.push_back(resp);
+
+		}
+		else if (f0 == "V") {
+
+			// V|<id>|<name>|<n_comp>
+			if (fields.size() != 4) {
+				opserr << "PluginMaterialDescriptor Error: the V record must have 3 fields (id, name and number of components)";
+				return -1;
+			}
+
+			int id;
+			if (!(std::stringstream(fields[1]) >> id)) {
+				opserr << "PluginMaterialDescriptor Error: Cannot get the response id from the V record";
+				return -1;
+			}
+
+			const std::string& name = fields[2];
+
+			std::size_t nold = processed_variables.size();
+			processed_variables.insert(name);
+			if (nold == processed_variables.size()) {
+				opserr << "PluginMaterialDescriptor Error: the V records must have unique names";
+				return -1;
+			}
+
 			std::size_t ncomp;
 			if (!(std::stringstream(fields[3]) >> ncomp)) {
-				opserr << "PluginMaterialDescriptor Error: Cannot get the number of components from the R record";
+				opserr << "PluginMaterialDescriptor Error: Cannot get the response number of components from the V record";
 				return -1;
 			}
 			if (ncomp < 1) {
-				opserr << "PluginMaterialDescriptor Error: The R record must have at least 1 component";
-				return -1;
-			}
-			if (ncomp + 4 != fields.size()) {
-				opserr << "PluginMaterialDescriptor Error: Not enough components provided";
+				opserr << "PluginMaterialDescriptor Error: number of components for the V record must be at least 1";
 				return -1;
 			}
 
@@ -440,10 +508,8 @@ int PluginMaterialDescriptor::parseMessage(const char* m)
 			resp.id = id;
 			resp.name = name;
 			resp.components.resize(ncomp);
-			for (std::size_t j = 4; j < fields.size(); j++)
-				resp.components[j-4] = fields[j];
 
-			responses.push_back(resp);
+			variables.push_back(resp);
 
 		}
 	}
@@ -520,6 +586,53 @@ PluginFramework& PluginFramework::instance()
 {
 	static PluginFramework _instance;
 	return _instance;
+}
+
+const char* PluginFramework::materialJobTypeToString(PluginMaterialJobType x)
+{
+	switch (x)
+	{
+		CASE_ENUM_STR(PF_MAT_GET_INIT_INFO);
+		CASE_ENUM_STR(PF_MAT_INITIALIZE);
+		CASE_ENUM_STR(PF_MAT_FINALIZE);
+
+		CASE_ENUM_STR(PF_MAT_COMMIT);
+		CASE_ENUM_STR(PF_MAT_REVERT);
+		CASE_ENUM_STR(PF_MAT_REVERT_TO_START);
+
+		CASE_ENUM_STR(PF_MAT_SERIALIZE);
+		CASE_ENUM_STR(PF_MAT_DESERIALIZE);
+
+		CASE_ENUM_STR(PF_MAT_COMPUTE);
+
+		CASE_ENUM_STR(PF_MAT_GET_STRAIN);
+		CASE_ENUM_STR(PF_MAT_GET_STRAIN_RATE);
+		CASE_ENUM_STR(PF_MAT_GET_STRESS);
+		CASE_ENUM_STR(PF_MAT_GET_TANGENT);
+		CASE_ENUM_STR(PF_MAT_GET_INITIAL_TANGENT);
+		CASE_ENUM_STR(PF_MAT_GET_DAMP_TANGENT);
+		CASE_ENUM_STR(PF_MAT_GET_RHO);
+		CASE_ENUM_STR(PF_MAT_GET_ENERGY);
+		CASE_ENUM_STR(PF_MAT_GET_IS_FAILED);
+		CASE_ENUM_STR(PF_MAT_GET_RESPONSE);
+
+		CASE_ENUM_STR(PF_MAT_GET_VARIABLE);
+		CASE_ENUM_STR(PF_MAT_SET_VARIABLE);
+
+		CASE_ENUM_STR(PF_MAT_UPDATE_PARAMETER);
+		CASE_ENUM_STR(PF_MAT_ACTIVATE_PARAMETER);
+
+		CASE_ENUM_STR(PF_MAT_GET_RESPONSE_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_STRAIN_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_STRESS_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_TANGENT_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_INITIAL_TANGENT_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_DAMP_TANGENT_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_GET_RHO_SENSITIVITY);
+		CASE_ENUM_STR(PF_MAT_COMMIT_SENSITIVITY);
+	default:
+		return "Unknown";
+	}
 }
 
 PluginMaterialDescriptor* PluginFramework::getMaterialDescriptor(const std::string& library_name, const std::string& function_name)
@@ -608,7 +721,15 @@ PluginMaterialData* PluginFramework::makeMaterialData(PluginMaterialProc p, int 
 	
 	// output parameter/response/variable
 	d->response_id = 0;
+	d->response_size = 0;
 	d->response = 0;
+
+	// for sensitivity
+	d->sens_strain_gradient = 0;
+	d->sens_grad_index = 0;
+	d->sens_conditonal = 0;
+	d->sens_num_grad = 0;
+	d->sens_unused_placeholder = 0;
 
 	// parameters and state variables
 	d->param = 0;
@@ -617,6 +738,8 @@ PluginMaterialData* PluginFramework::makeMaterialData(PluginMaterialProc p, int 
 	d->strain = 0;
 	d->strain_rate = 0;
 	d->temperature = 0;
+	d->lch = 1.0;
+	d->dT = 0.0;
 
 	return d;
 }

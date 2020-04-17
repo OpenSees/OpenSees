@@ -155,7 +155,8 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
 	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o \
 	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o \
-	$(FE)/api/elementAPI_TCL.o
+	$(FE)/api/elementAPI_TCL.o \
+	$(FE)/api/PluginFramework.o
 
 
 INTERPRETER_LIBS_MPI = $(FE)/tcl/tclMain.o \

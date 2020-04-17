@@ -390,6 +390,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\SimplifiedJ2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\TclModelBuilderNDMaterialCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\WrapperNDMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PluginNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicAxiSymm.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicBeamFiber.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterial.cpp" />
@@ -792,6 +793,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\PlateRebarMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\SimplifiedJ2.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\WrapperNDMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PluginNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicAxiSymm.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicBeamFiber.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterial.h" />

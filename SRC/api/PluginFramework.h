@@ -37,45 +37,110 @@
 #include <limits>
 #include <iomanip>
 
+
 /**
 The serializer utility used to serialize heterogeneous data in a string
 used to send/receive copies of plugin wrappers to/from processes 
 */
+#define fmt_double std::setprecision(std::numeric_limits<double>::digits10 + 1)
 class PluginSerializer
 {
 private:
 	std::stringstream ss;
+
+public:
+	struct darray_wrapper {
+		double* x;
+		size_t n;
+		darray_wrapper(double* _x, std::size_t _n)
+			: x(_x), n(_n)
+		{}
+	};
+
 public:
 	PluginSerializer() {}
 	PluginSerializer(const std::string& x)
 		: ss(x) {}
-	template<class T>
-	PluginSerializer& write(T x) {
+	inline std::string str()const {
+		return ss.str();
+	}
+	inline std::string remaining() {
+		auto pos = ss.tellg();
+		ss.seekg(0, ss.end);
+		auto n = ss.tellg() - pos - 1; // exclude last endline
+		ss.seekg(pos);
+		return ss.str().substr(ss.tellg(), n);
+	}
+	explicit operator bool() const {
+		return !ss.fail();
+	}
+	bool operator!() const {
+		return ss.fail();
+	}
+
+public:
+	inline PluginSerializer& operator << (const char* x) {
 		ss << x << '\n';
 		return *this;
 	}
-	PluginSerializer& write(double x) {
-		ss << std::setprecision(std::numeric_limits<double>::digits10 + 1) << x << '\n';
-		return *this;
-	}
-	PluginSerializer& write(const std::string& x) {
+	inline PluginSerializer& operator << (const std::string& x) {
 		ss << x << '\n';
 		return *this;
 	}
-	template<class T>
-	PluginSerializer& read(T& x) {
-		std::string _x;
-		std::getline(ss, _x, '\n');
-		std::stringstream _ss(_x);
-		_ss >> x;
+	inline PluginSerializer& operator << (bool x) {
+		ss << x << '\n';
 		return *this;
 	}
-	PluginSerializer& read(std::string& x) {
+	inline PluginSerializer& operator << (int x) {
+		ss << x << '\n';
+		return *this;
+	}
+	inline PluginSerializer& operator << (std::size_t x) {
+		ss << x << '\n';
+		return *this;
+	}
+	inline PluginSerializer& operator << (double x) {
+		ss << fmt_double << x << '\n';
+		return *this;
+	}
+	inline PluginSerializer& operator << (const darray_wrapper& x) {
+		if (x.n > 0) {
+			ss << fmt_double << x.x[0];
+			for (std::size_t i = 1; i < x.n; ++i)
+				ss << " " << fmt_double << x.x[i];
+		}
+		ss << '\n';
+		return *this;
+	}
+
+public:
+	inline PluginSerializer& operator >> (std::string& x) {
 		std::getline(ss, x, '\n');
 		return *this;
 	}
-	inline std::string str()const {
-		return ss.str();
+	inline PluginSerializer& operator >> (bool& x) {
+		ss >> x;
+		return *this;
+	}
+	inline PluginSerializer& operator >> (int& x) {
+		ss >> x;
+		return *this;
+	}
+	inline PluginSerializer& operator >> (std::size_t& x) {
+		ss >> x;
+		return *this;
+	}
+	inline PluginSerializer& operator >> (double& x) {
+		ss >> x;
+		return *this;
+	}
+	inline PluginSerializer& operator >> (darray_wrapper& x) {
+		for (std::size_t i = 0; i < x.n; ++i) {
+			ss >> x.x[i];
+		}
+		static std::string dummy;
+		std::getline(ss, dummy, '\n');
+		return *this;
 	}
 };
 
@@ -133,6 +198,10 @@ public:
 	std::vector<PluginArgumentDescriptor> arguments;
 	/// responses
 	std::vector<PluginResponseDescriptor> responses;
+	/// parameters
+	std::vector<PluginResponseDescriptor> parameters;
+	/// variables
+	std::vector<PluginResponseDescriptor> variables;
 private:
 	bool message_parsed;
 };
@@ -178,6 +247,9 @@ private:
 public:
 	~PluginFramework();
 	static PluginFramework& instance();
+	static const char* materialJobTypeToString(PluginMaterialJobType x);
+
+public:
 	///
 	/// \brief getMaterialDescriptor returns a pointer to the requested PluginMaterialDescriptor
 	/// \param library_name the plug-in library name

@@ -580,6 +580,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\WrapperNDMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PluginNDMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicAxiSymm.cpp">
       <Filter>nD\elasticIsotropic</Filter>
     </ClCompile>
@@ -1781,6 +1784,9 @@
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\WrapperNDMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PluginNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicAxiSymm.h">
