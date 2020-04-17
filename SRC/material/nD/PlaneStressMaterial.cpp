@@ -628,11 +628,17 @@ PlaneStressMaterial::setParameter(const char **argv, int argc,
 
 Response* PlaneStressMaterial::setResponse(const char** argv, int argc, OPS_Stream& s)
 {
-    // try with base class implementation, for responses such as stress, so that
-    // we have the correct size of the adapter.
-    // otherwise call the adaptee implementation
-    Response* r = NDMaterial::setResponse(argv, argc, s);
-    if (r == 0)
-        r = theMaterial->setResponse(argv, argc, s);
-    return r;
+    // for strain, stress and tangent use the base class implementation
+        // so that the output will be that of the adapter
+    if (strcmp(argv[0], "Tangent") == 0 ||
+        strcmp(argv[0], "tangent") == 0 ||
+        strcmp(argv[0], "stress") == 0 ||
+        strcmp(argv[0], "stresses") == 0 ||
+        strcmp(argv[0], "strain") == 0 ||
+        strcmp(argv[0], "strains") == 0
+        ) {
+        return NDMaterial::setResponse(argv, argc, s);
+    }
+    // otherwise, for other custom results, forward the call to the adaptee
+    return theMaterial->setResponse(argv, argc, s);
 }
