@@ -88,6 +88,8 @@
 #ifndef H5DRM_h
 #define H5DRM_h
 
+#ifdef _H5DRM
+
 #include <LoadPattern.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -232,5 +234,7 @@ private:
 
     std::vector<Plane*> planes;
 };
+
+#endif
 
 #endif

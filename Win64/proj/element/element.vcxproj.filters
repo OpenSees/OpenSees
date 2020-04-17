@@ -890,6 +890,9 @@
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp">
       <Filter>mixedBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1581,6 +1584,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h">
       <Filter>mixedBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
