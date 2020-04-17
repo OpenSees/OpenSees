@@ -327,7 +327,7 @@ PlaneStrainMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 
   // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
-  res = theChannel.sendID(this->getDbTag(), commitTag, idData);
+  res = theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
     opserr << "PlaneStrainMaterial::sendSelf() - failed to send id data\n";
     return res;
@@ -362,4 +362,15 @@ PlaneStrainMaterial::setParameter(const char **argv, int argc,
 				  Parameter &param)
 {
   return theMaterial->setParameter(argv, argc, param);
+}
+
+Response* PlaneStrainMaterial::setResponse(const char** argv, int argc, OPS_Stream& s)
+{
+    // try with base class implementation, for responses such as stress, so that
+    // we have the correct size of the adapter.
+    // otherwise call the adaptee implementation
+    Response* r = NDMaterial::setResponse(argv, argc, s);
+    if (r == 0)
+        r = theMaterial->setResponse(argv, argc, s);
+    return r;
 }
