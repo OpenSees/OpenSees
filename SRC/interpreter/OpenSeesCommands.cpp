@@ -3156,6 +3156,7 @@ void* OPS_ParallelDisplacementControl() {
 void* OPS_MumpsSolver() {
     int icntl14 = 20;
     int icntl7 = 7;
+    int matType = 0; // 0: unsymmetric, 1: symmetric positive definite, 2: symmetric general
     while (OPS_GetNumRemainingInputArgs() > 2) {
         const char* opt = OPS_GetString();
         int num = 1;
@@ -3169,6 +3170,15 @@ void* OPS_MumpsSolver() {
                 opserr << "WARNING: failed to get icntl7\n";
                 return 0;
             }
+        } else if (strcmp(opt, "-matrixType") == 0) {
+            if (OPS_GetIntInput(&num, &matType) < 0) {
+                opserr << "WARNING: failed to get -matrixType. Unsymmetric matrix assumed\n";
+                return 0;
+            }
+            if (matType < 0 || matType > 2) {
+                opserr << "Mumps Warning: wrong -matrixType value (" << matType << "). Unsymmetric matrix assumed\n";
+                matType = 0;
+            }
         }
     }
 
@@ -3177,7 +3187,7 @@ void* OPS_MumpsSolver() {
     MumpsParallelSOE* soe = 0;
 
     MumpsParallelSolver *solver= new MumpsParallelSolver(icntl7, icntl14);
-    soe = new MumpsParallelSOE(*solver);
+    soe = new MumpsParallelSOE(*solver, matType);
 
     MachineBroker* machine = cmds->getMachineBroker();
     Channel** channels = cmds->getChannels();
@@ -3191,8 +3201,8 @@ void* OPS_MumpsSolver() {
 #else
 #ifdef _MUMPS
     MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver);
-    return 0;
+    theSOE = new MumpsSOE(*theSolver, matType);
+    return theSOE;
 #endif
 #endif
 
