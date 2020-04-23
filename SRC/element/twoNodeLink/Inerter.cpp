@@ -83,6 +83,7 @@ void* OPS_Inerter()
         int dir;
         numdata = 1;
         if (OPS_GetIntInput(&numdata, &dir) < 0) {
+            OPS_ResetCurrentInputArg(-1);
             break;
         }
         if (dir < 1 || ndf < dir) {

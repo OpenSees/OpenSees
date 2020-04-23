@@ -256,6 +256,7 @@
     <ClInclude Include="..\..\..\SRC\classTags.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\DL_Interpreter.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesCommands.h" />
+    <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\PythonModule.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\PythonWrapper.h" />
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h" />

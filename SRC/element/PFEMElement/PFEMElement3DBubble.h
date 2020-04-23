@@ -112,8 +112,11 @@ private:
 
     static Matrix K;
     static Vector P;
+    Matrix M, D;
+    Vector F, Fp;
 
     int updateJacobi();
+    int updateMatrix();
 
     // responses
     double getM() const;

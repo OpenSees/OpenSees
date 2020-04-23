@@ -226,6 +226,7 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\MINI.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp" />
@@ -487,6 +488,7 @@
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\MINI.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\Particle.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.h" />

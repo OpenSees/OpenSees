@@ -35,9 +35,9 @@ OBJSm = OpenSeesCommandsPython.o OpenSeesUniaxialMaterialCommands.o PythonModelB
 pythonmodule: $(PythonModuleOBJS)
 	$(RM) $(RMFLAGS) opensees.so;
 	$(LINKER) $(LINKFLAGS) -Wl,-rpath,\$$ORIGIN/lib -shared $(PythonModuleOBJS) \
+	$(INTERPRETER_LIBS_MPI_PARAMETERS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PYTHON_LIBRARY) \
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) $(PARALLEL_LIB) \
-	$(INTERPRETER_LIBS_MPI_PARAMETERS) \
 	 -o opensees.so
 
 
