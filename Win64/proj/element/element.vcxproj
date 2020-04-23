@@ -230,7 +230,6 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.cpp" />
@@ -492,7 +491,6 @@
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMesh.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.h" />
