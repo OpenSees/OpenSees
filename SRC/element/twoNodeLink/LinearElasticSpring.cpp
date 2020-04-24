@@ -83,7 +83,12 @@ void* OPS_LinearElasticSpring()
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int dir;
         numdata = 1;
+        int numArgs = OPS_GetNumRemainingInputArgs();
         if (OPS_GetIntInput(&numdata, &dir) < 0) {
+            if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                // move current arg back by one
+                OPS_ResetCurrentInputArg(-1);
+            }
             break;
         }
         if (dir < 1 || ndf < dir) {
