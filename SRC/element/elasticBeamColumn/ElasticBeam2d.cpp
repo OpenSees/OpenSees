@@ -52,104 +52,193 @@
 #include <string>
 #include <ElementIter.h>
 
+#include <map>
+
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
 Matrix ElasticBeam2d::kb(3,3);
 
-void* OPS_ElasticBeam2d(const ID &info)
-{
-    if(OPS_GetNumRemainingInputArgs() < 5) {
-	opserr<<"insufficient arguments:eleTag,iNode,jNode,<A,E,Iz>or<sectionTag>,transfTag\n";
-	return 0;
-    }
+void *OPS_ElasticBeam2d(const ID &info) {
+    /*!
+## OPS_ElasticBeam2D(const ID& info)
 
-    int ndm = OPS_GetNDM();
-    int ndf = OPS_GetNDF();
-    if(ndm != 2 || ndf != 3) {
-	opserr<<"ndm must be 2 and ndf must be 3\n";
-	return 0;
-    }
-
-    // inputs: 
+1. data needed for creating the element
+     */
     int iData[3];
-    int numData = 3;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
-	opserr<<"WARNING failed to read integers\n";
-	return 0;
-    }
-
     bool section = false;
     int sectionTag;
     double data[3];
-    if (OPS_GetNumRemainingInputArgs() > 3) {
-      // Read A, E, Iz
-      numData = 3;
-      if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
-	opserr<<"WARNING failed to read doubles\n";
-	return 0;
-      }
-    } else {
-      // Read a section tag
-      numData = 1;
-      if(OPS_GetIntInput(&numData,&sectionTag) < 0) {
-	opserr<<"WARNING sectionTag is not integer\n";
-	return 0;
-      }
-      section = true;
-    }
-    numData = 1;
     int transfTag;
-    if(OPS_GetIntInput(&numData,&transfTag) < 0) {
-	opserr<<"WARNING transfTag is not integer\n";
-	return 0;
-    }
-    
-    // options
-    double mass = 0.0, alpha=0.0, depth=0.0;
+    double mass = 0.0, alpha = 0.0, depth = 0.0;
     int cMass = 0;
     int release = 0;
-    while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type == "-alpha") {
-	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&alpha) < 0) return 0;
-	    }
-	} else if(type == "-depth") {
-	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&depth) < 0) return 0;
-	    }
-	} else if(type == "-release") {
-	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetIntInput(&numData,&release) < 0) return 0;
-	    }	    
+    int numData = 0;
 
-	} else if(type == "-mass") {
-	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
-	    }
-	} else if(type == "-cMass") {
-	    cMass = 1;
-	}
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 2 || ndf != 3) {
+        opserr << "ndm must be 2 and ndf must be 3\n";
+        return 0;
+    }
+
+    /*!
+2. for regular elements, which are not in a mesh,
+to get element tag and node tags
+    */
+    if (info.Size() == 0) {
+        if (OPS_GetNumRemainingInputArgs() < 5) {
+            opserr << "insufficient "
+                      "arguments:eleTag,iNode,jNode,<A,E,Iz>or<"
+                      "sectionTag>,transfTag\n";
+            return 0;
+        }
+
+        // inputs:
+        int numData = 3;
+        if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+            opserr << "WARNING failed to read integers\n";
+            return 0;
+        }
+    }
+
+    /*!
+3. for regular elements and those in a mesh
+to get element data
+    */
+    if (info.Size() == 0 || info(0) == 1) {
+        if (OPS_GetNumRemainingInputArgs() > 3) {
+            // Read A, E, Iz
+            numData = 3;
+            if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+                opserr << "WARNING failed to read doubles\n";
+                return 0;
+            }
+        } else {
+            // Read a section tag
+            numData = 1;
+            if (OPS_GetIntInput(&numData, &sectionTag) < 0) {
+                opserr << "WARNING sectionTag is not integer\n";
+                return 0;
+            }
+            section = true;
+        }
+        if (OPS_GetNumRemainingInputArgs() < 1) {
+          opserr << "WARNING: transfTag is needed\n";
+        }
+        numData = 1;
+        if (OPS_GetIntInput(&numData, &transfTag) < 0) {
+            opserr << "WARNING transfTag is not integer\n";
+            return 0;
+        }
+
+        // options
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            std::string type = OPS_GetString();
+            if (type == "-alpha") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
+                        opserr << "WARNING: failed to get alpha";
+                        return 0;
+                    }
+                }
+            } else if (type == "-depth") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &depth) < 0) {
+                        opserr << "WARNING: failed to get depth";
+                        return 0;
+                    }
+                }
+            } else if (type == "-release") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &release) < 0) {
+                        opserr << "WARNING: failed to get release";
+                        return 0;
+                    }
+                }
+
+            } else if (type == "-mass") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+                        opserr << "WARNING: failed to get mass";
+                        return 0;
+                    }
+                }
+            } else if (type == "-cMass") {
+                cMass = 1;
+            }
+        }
+    }
+
+    /*!
+4. store data for a mesh
+    */
+    static std::map<int, Vector> meshdata;
+    if (info.Size() > 0 && info(0) == 1) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+        }
+
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(11);
+        mdata(0) = section;
+        mdata(1) = sectionTag;
+        mdata(2) = data[0];
+        mdata(3) = data[1];
+        mdata(4) = data[2];
+        mdata(5) = transfTag;
+        mdata(6) = mass;
+        mdata(7) = alpha;
+        mdata(8) = depth;
+        mdata(9) = cMass;
+        mdata(10) = release;
+        return &meshdata;
+
+    } else if (info.Size() > 0 && info(0) == 2) {
+        /*!
+5. load data for a mesh
+        */
+        if (info.Size() < 5) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2\n";
+            return 0;
+        }
+
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(11);
+        section = (bool) mdata(0);
+        sectionTag = (int) mdata(1);
+        data[0] = mdata(2);
+        data[1] = mdata(3);
+        data[2] = mdata(4);
+        transfTag = (int) mdata(5);
+        mass = mdata(6);
+        alpha = mdata(7);
+        depth = mdata(8);
+        cMass = (int) mdata(9);
+        release = (int) mdata(10);
     }
 
     // check transf
-    CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
-    if(theTransf == 0) {
-	opserr<<"coord transfomration not found\n";
-	return 0;
+    CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
+    if (theTransf == 0) {
+        opserr << "coord transfomration not found\n";
+        return 0;
     }
 
     if (section) {
-      SectionForceDeformation *theSection = OPS_getSectionForceDeformation(sectionTag);
-      if (theSection == 0) {
-	opserr << "section not found\n";
-	return 0;
-      }
-      return new ElasticBeam2d(iData[0],iData[1],iData[2],*theSection,
-			       *theTransf,alpha,depth,mass,cMass,release);
+        SectionForceDeformation *theSection =
+            OPS_getSectionForceDeformation(sectionTag);
+        if (theSection == 0) {
+            opserr << "section not found\n";
+            return 0;
+        }
+        return new ElasticBeam2d(iData[0], iData[1], iData[2],
+                                 *theSection, *theTransf, alpha,
+                                 depth, mass, cMass, release);
     } else {
-      return new ElasticBeam2d(iData[0],data[0],data[1],data[2],iData[1],iData[2],
-			       *theTransf,alpha,depth,mass,cMass,release);
+        return new ElasticBeam2d(iData[0], data[0], data[1], data[2],
+                                 iData[1], iData[2], *theTransf,
+                                 alpha, depth, mass, cMass, release);
     }
 }
 
