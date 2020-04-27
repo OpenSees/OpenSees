@@ -276,7 +276,7 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
   //
   // spit out header to file
   //
-
+  thePVDFile << "<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
   thePVDFile << "<VTKFile type=\"Collection\" version=\"1.0\" \n";
   thePVDFile << "byte_order=\"LittleEndian\" \n";
   thePVDFile << "compressor=\"vtkZLibDataCompressor\">\n";
@@ -408,6 +408,7 @@ VTK_Recorder::vtu()
   theFileVTU << std::scientific;
   
   // header
+  theFileVTU<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
   theFileVTU<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
   theFileVTU<<" version="<<quota<<"1.0"<<quota;
   theFileVTU<<" byte_order="<<quota<<"LittleEndian"<<quota;
