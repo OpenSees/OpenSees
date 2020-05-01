@@ -134,7 +134,7 @@ PlasticDamageConcrete3d::PlasticDamageConcrete3d(int tag,
 
   //      % initial damage threshold
   double rp0 = ft/sqrt(E);
-  double rn0 = sqrt((k+sqrt(2.0))*fc/sqrt(3.0));
+  double rn0 = sqrt((-k+sqrt(2.0))*fc/sqrt(3.0));
       
   rp = rp0;
   rn = rn0;
@@ -249,7 +249,7 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   double k = sqrt(2.0)*(f2c - fc)/(2.*f2c - fc);
   // initial damage threshold
   double rp0 = ft/sqrt(E);
-  double rn0 = sqrt((k+sqrt(2.0))*fc/sqrt(3.0));
+  double rn0 = sqrt((-k+sqrt(2.0))*fc/sqrt(3.0));
 
   double tol = 1.0e-5;
   
