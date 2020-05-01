@@ -383,6 +383,7 @@ PVDRecorder::savePart0(int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -845,6 +846,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1231,6 +1233,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
