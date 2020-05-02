@@ -76,6 +76,10 @@
 #include <UniaxialJ2Plasticity.h>   // Quan 
 
 extern void *OPS_SPSW02(void);		// SAJalali
+extern void *OPS_TDConcreteEXP(void); // ntosic
+extern void *OPS_TDConcrete(void); // ntosic
+extern void *OPS_TDConcreteMC10(void); //ntosic
+extern void *OPS_TDConcreteMC10NL(void); //ntosic
 extern void *OPS_ElasticMaterial(void);
 extern void *OPS_ElasticPPMaterial(void);
 extern void *OPS_EPPGapMaterial(void);
@@ -269,6 +273,43 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		else
 			return TCL_ERROR;
 	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteEXP") == 0) {
+		void *theMat = OPS_TDConcreteEXP();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcrete") == 0) {
+		void *theMat = OPS_TDConcrete();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteMC10") == 0) {
+		void *theMat = OPS_TDConcreteMC10();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteMC10NL") == 0) {
+		void *theMat = OPS_TDConcreteMC10NL();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
 	else if (strcmp(argv[1],"Steel01") == 0) {
 
       void *theMat = OPS_Steel01();

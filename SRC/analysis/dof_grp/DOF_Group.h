@@ -97,6 +97,10 @@ class DOF_Group: public TaggedObject
     virtual void incrNodeVel(const Vector &udot);
     virtual void incrNodeAccel(const Vector &udotdot);
 
+    virtual const Vector & getTrialDisp();
+    virtual const Vector & getTrialVel();
+    virtual const Vector & getTrialAccel();
+
     // methods to set the eigen vectors
     virtual void setEigenvector(int mode, const Vector &eigenvalue);
     virtual const Matrix &getEigenvectors(void);

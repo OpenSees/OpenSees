@@ -38,7 +38,6 @@
 #include <Vector.h>
 #include <DOF_Group.h>
 #include <DOF_GrpIter.h>
-#include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
@@ -47,7 +46,7 @@
 
 void *OPS_GeneralizedAlpha(void)
 {
-  // Pointer to a uniaxial material that will be returned
+  // Pointer to an integrator that will be returned
   TransientIntegrator *theIntegrator = 0;
 
   int argc = OPS_GetNumRemainingInputArgs();
@@ -436,6 +435,11 @@ int GeneralizedAlpha::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+GeneralizedAlpha::getVel()
+{
+  return *Udot;
+}
 
 int GeneralizedAlpha::sendSelf(int cTag, Channel &theChannel)
 {

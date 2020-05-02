@@ -33,6 +33,7 @@
 #include <Matrix.h>
 #include <ReliabilityDomain.h>
 #include <MatrixOperations.h>
+#include <ProbabilityTransformation.h>
 
 class AllIndependentTransformation : public ProbabilityTransformation
 {

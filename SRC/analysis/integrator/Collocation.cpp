@@ -369,6 +369,11 @@ int Collocation::update(const Vector &deltaU)
     return 0;
 }
 
+const Vector &
+Collocation::getVel()
+{
+  return *Udot;
+}
 
 int Collocation::commit(void)
 {

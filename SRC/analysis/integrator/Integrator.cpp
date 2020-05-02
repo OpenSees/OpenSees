@@ -115,6 +115,11 @@ Integrator::sensitivityDomainChanged()
 return 0;
 }
 
+bool
+Integrator::computeSensitivityAtEachIteration()
+{
+  return false ;
+}
 
 bool 
 Integrator::shouldComputeAtEachStep(void)

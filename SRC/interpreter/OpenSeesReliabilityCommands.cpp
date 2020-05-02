@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Description: all reliability APIs are defined or declared here
 //
 
-#include "OpenSeesReliabilityCommands.h"
+#include <OpenSeesReliabilityCommands.h>
 #include <elementAPI.h>
 
 #include <vector>
@@ -97,6 +97,13 @@ ReliabilityDomain*
 OpenSeesReliabilityCommands::getDomain()
 {
     return theDomain;
+}
+
+int OPS_wipeReliability()
+{
+    ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
+    theReliabilityDomain->clearAll();
+    return 0;
 }
 
 int OPS_randomVariable()

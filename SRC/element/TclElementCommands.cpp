@@ -148,7 +148,8 @@ extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 #ifdef _HAVE_LHNMYS
-extern void* OPS_BeamColumnwLHNMYS(void);
+extern void* OPS_BeamColumn2DwLHNMYS(void);
+extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
@@ -177,6 +178,8 @@ extern void *OPS_RJWatsonEQS2d(void);
 extern void *OPS_RJWatsonEQS3d(void);
 extern void* OPS_GradientInelasticBeamColumn2d();
 extern void* OPS_GradientInelasticBeamColumn3d();
+
+extern void* OPS_LehighJoint2d(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -267,7 +270,6 @@ TclModelBuilder_addForceBeamColumn(ClientData, Tcl_Interp *, int, TCL_Char **,
 // NM
 extern int
 TclModelBuilder_addBeamColumnJoint(ClientData, Tcl_Interp *, int, TCL_Char **, Domain*, int);
-
 
 //Rohit Kraul
 extern int
@@ -498,10 +500,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
   #ifdef _HAVE_LHNMYS
-  else if (strcmp(argv[1],"beamColumnwLHNMYS") == 0) {
+  else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
-    theEle = (Element *)OPS_BeamColumnwLHNMYS();
+    theEle = (Element *)OPS_BeamColumn2DwLHNMYS();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
+  else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_BeamColumn3DwLHNMYS();
     if (theEle != 0) 
       theElement = theEle;
     else {
@@ -1482,7 +1495,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addJoint3D(clientData, interp, argc, argv,
 					    theTclDomain, theTclBuilder);
     return result;
-  } else if ((strcmp(argv[1], "inelastic2dYS01")== 0) ||
+  }  
+  else if ((strcmp(argv[1],"LehighJoint2D") == 0) ||
+	   (strcmp(argv[1],"LehighJoint2d") == 0)) {
+    void *theEle = OPS_LehighJoint2d();
+    if (theEle != 0)
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TCL -- unable to create element of type: " << argv[1] << endln;
+      return TCL_ERROR;
+    }  
+  } 
+  else if ((strcmp(argv[1], "inelastic2dYS01")== 0) ||
 	     (strcmp(argv[1], "inelastic2dYS02")== 0) ||
 	     (strcmp(argv[1], "inelastic2dYS03")== 0) ||
 	     (strcmp(argv[1], "inelastic2dYS04")== 0) ||

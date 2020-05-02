@@ -257,6 +257,12 @@ CentralDifferenceAlternative::commit(void)
   return 0;
 }
 
+const Vector &
+CentralDifferenceAlternative::getVel()
+{
+  return *Udot;
+}
+
 int
 CentralDifferenceAlternative::sendSelf(int cTag, Channel &theChannel)
 {

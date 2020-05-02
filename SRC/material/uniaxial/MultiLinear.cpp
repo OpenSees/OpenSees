@@ -101,16 +101,15 @@ MultiLinear::MultiLinear(int tag, const Vector &s, const Vector &e)
   data(0,1) = e(0);       // pos yield strain
   data(0,2) = -s(0);      // neg yield stress
   data(0,3) = s(0);       // pos yield stress
-  data(0,4) = s(0)/e(0); // slope
-  data(0,5) = e(0);      // dist - (0-1)/2
+  data(0,4) = s(0)/e(0);  // slope
+  data(0,5) = e(0);       // dist - (0-1)/2
 
   for (int i=1; i<numSlope; i++) {
     data(i,0) = -e(i);
     data(i,1) = e(i);
     data(i,2) = -s(i);
     data(i,3) = s(i);
-    data(i,4) = (s(i)-s(i-1)) /
-	(e(i)-e(i-1));
+    data(i,4) = (s(i)-s(i-1)) / (e(i)-e(i-1));
     data(i,5) = e(i)-e(i-1);
   }    
 
@@ -138,6 +137,7 @@ MultiLinear::MultiLinear()
   cTangent = 0;
   tSlope = 0;
 }
+
 
 MultiLinear::~MultiLinear()
 {
@@ -204,7 +204,7 @@ MultiLinear::commitState(void)
   if (tSlope != 0) { // yielded
 
 
-    if (tStrain > data(0,1)) {     // positive yield direction
+    if (tStrain > data(0,1)) {  // positive yield direction
 
       // set elastic bounds
       data(0,1) = tStrain;
@@ -235,12 +235,9 @@ MultiLinear::commitState(void)
 	  + (data(tSlope,0)-data(tSlope-1,0))*data(tSlope,4);
       }
 
-    } else {  // neg direction
+    } else {  // neg yield direction
       
-      //
       // set elastic bounds
-      //
-
       data(0,0) = tStrain;
       data(0,2) = tStress;
       data(0,1) = tStrain + 2*data(0,5);
@@ -257,7 +254,6 @@ MultiLinear::commitState(void)
 
       // reset bounds for all those pts after
       //  - pos pts affected 
-
       data(tSlope,1) = data(tSlope-1,1) + 2*data(tSlope,5) 
 	+ data(tSlope,0) - data(tSlope-1,0);
       data(tSlope,3) = data(tSlope-1,3) 
@@ -272,8 +268,8 @@ MultiLinear::commitState(void)
     }
   }
   	
-  cStress=tStress;
-  cStrain=tStrain;
+  cStress = tStress;
+  cStrain = tStrain;
   cTangent = tTangent;
     
   return 0;
@@ -289,7 +285,6 @@ MultiLinear::revertToLastCommit(void)
   return 0;
 }
 
-
 int 
 MultiLinear::revertToStart(void)
 {
@@ -297,22 +292,21 @@ MultiLinear::revertToStart(void)
   data(0,1) =  data(0,5);       
   data(0,3) =  data(0,5)*data(0,4);
   data(0,0) = -data(0,1);
-  data(0,2) = -data(0,2);
+  data(0,2) = -data(0,3);
 
   for (int i=1; i<numSlope; i++) {
     data(i,1) =  data(i-1,1) + data(i,5);
     data(i,3) =  data(i-1,3) + data(i,5)*data(i,4);
-    data(i,1) = -data(i,0);
-    data(i,3) = -data(i,3);
-  }    
+    data(i,0) = -data(i,1);
+    data(i,2) = -data(i,3);
+  }
 
   tStrain = cStrain = 0.0;
-  tStress = cStress = 0;
+  tStress = cStress = 0.0;
   tTangent = data(0,4);
   cTangent = tTangent;
   return 0;
 }
-
 
 UniaxialMaterial *
 MultiLinear::getCopy(void)
@@ -332,7 +326,6 @@ MultiLinear::getCopy(void)
 
   return theCopy;
 }
-
 
 int 
 MultiLinear::sendSelf(int cTag, Channel &theChannel)
@@ -387,5 +380,3 @@ MultiLinear::Print(OPS_Stream &s, int flag)
     s << "tSlope: " << tSlope << "numSlope: " << numSlope << endln;
     s << data;
 }
-
-

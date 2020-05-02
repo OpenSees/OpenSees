@@ -443,6 +443,18 @@ TriMesh::mesh() {
     return 0;
 }
 
+
+// Every node may be in multiple mesh
+// Do triangulation of all nodes
+// For each triangle:
+//     If 3 nodes share 1 mesh, 
+//        use that mesh for the triangle
+//     If 3 nodes share multiple mesh, 
+//        use the mesh with eleArgs and lowest id
+//     If 3 nodes are in different mesh, 
+//        use the mesh with lowest id
+//     If the selected mesh id >= 0, skip triangle
+//     If the selected mesh has no eleArgs, skip triangle
 int
 TriMesh::remesh(double alpha) {
     if (OPS_GetNDM() != 2) {
@@ -473,6 +485,7 @@ TriMesh::remesh(double alpha) {
             std::vector<int> &info = ndinfo[tags(i)];
             info.push_back(mtag);
             info.push_back(id);
+            info.push_back(msh->hasEleArgs());
             nodetags.insert(tags(i));
         }
 
@@ -482,6 +495,7 @@ TriMesh::remesh(double alpha) {
             std::vector<int> &info = ndinfo[newtags(i)];
             info.push_back(mtag);
             info.push_back(id);
+            info.push_back(msh->hasEleArgs());
             nodetags.insert(newtags(i));
         }
     }
@@ -561,18 +575,20 @@ TriMesh::remesh(double alpha) {
 
         // check if all nodes in same mesh
         std::vector<int> &info1 = ndinfo[nds[0]];
-        int mtag = 0, id = 0;
+        int mtag = 0, id = 0, hasele = false;
+        int same_mtag = 0, same_id = 0, same_hasele=false;
         bool same = false;
-        for (int k = 0; k < (int) info1.size() / 2; ++k) {
+        for (int k = 0; k < (int) info1.size() / 3; ++k) {
             // check if any mesh of node 1 is same for another two nodes
-            mtag = info1[2 * k];
-            id = info1[2 * k + 1];
+            mtag = info1[3 * k];
+            id = info1[3 * k + 1];
+            hasele = info1[3 * k + 2];
 
             int num = 0;
             for (int j = 1; j < 3; ++j) {
                 std::vector<int> &infoj = ndinfo[nds[j]];
-                for (int kj = 0; kj < (int) infoj.size() / 2; ++kj) {
-                    int mtagj = infoj[2 * kj];
+                for (int kj = 0; kj < (int) infoj.size() / 3; ++kj) {
+                    int mtagj = infoj[3 * kj];
                     if (mtag == mtagj) {
                         ++num;
                         break;
@@ -581,21 +597,59 @@ TriMesh::remesh(double alpha) {
 
             }
             if (num == 2) {
-                same = true;
-                break;
+                // get first same
+                if (!same) {
+                    same_mtag = mtag;
+                    same_id = id;
+                    same_hasele = hasele;
+                    same = true;
+                } else {
+                    // if already has same with ele, then next same has to have smaller id
+                    if (same_hasele) {
+                        if (same_id > id) {
+                            same_mtag = mtag;
+                            same_id = id;
+                            same_hasele = hasele;
+                        }
+                    } else {
+                        // if already has same without ele, then next same has ele 
+                        if (hasele) {
+                            same_mtag = mtag;
+                            same_id = id;
+                            same_hasele = hasele;
+                        } else {
+                            // if already has same without ele, then next same without ele must have smaller id
+                            if (same_id > id) {
+                                same_mtag = mtag;
+                                same_id = id;
+                                same_hasele = hasele;
+                            }
+                        }
+                    }
+                }
             }
         }
 
         // nodes in different mesh
-        if (!same) {
+        if (same) {
+            mtag = same_mtag;
+            id = same_id;
+            hasele = same_hasele;
+        } else {
+            // find the mesh with lowest id
             mtag = 0;
             id = 0;
+            hasele = false;
             for (int j = 0; j < 3; ++j) {
                 std::vector<int> &info = ndinfo[nds[j]];
-                for (int k = 0; k < (int) info.size() / 2; ++k) {
-                    if (info[2 * k + 1] < id) {
-                        mtag = info[2 * k];
-                        id = info[2 * k + 1];
+                for (int k = 0; k < (int) info.size() / 3; ++k) {
+                    if (!info[3 * k + 2]) {
+                        continue;
+                    }
+                    if (id == 0 || info[3 * k + 1] < id) {
+                        mtag = info[3 * k];
+                        id = info[3 * k + 1];
+                        hasele = info[3 * k + 2];
                     }
                 }
             }
@@ -603,6 +657,9 @@ TriMesh::remesh(double alpha) {
 
         // if all connected to structure
         if (id >= 0) continue;
+
+        // if no ele is associated
+        if (!hasele) continue;
 
         // add elenodes to its mesh
         ID &elenodes = meshelenodes[mtag];

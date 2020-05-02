@@ -630,9 +630,12 @@
 #define ELE_TAG_ElasticForceBeamColumn3d 76
 #define ELE_TAG_ForceBeamColumnCBDI2d   77
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
+#define ELE_TAG_MixedBeamColumn2d 30766
+#define ELE_TAG_MixedBeamColumn3d 30765
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
+#define ELE_TAG_LehighJoint2d           8181
 #define ELE_TAG_Joint2D                 82
 #define ELE_TAG_Joint3D                 83
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
@@ -747,7 +750,11 @@
 #define ELE_TAG_CohesiveZoneQuad 194
 #define ELE_TAG_ComponentElement2d       195
 #define ELE_TAG_InerterElement 196
-#define ELE_TAG_ExternalElement           99990  
+#define ELE_TAG_BeamColumn2DwLHNMYS 197
+#define ELE_TAG_BeamColumn3DwLHNMYS 198
+#define ELE_TAG_PFEMLink                  199
+#define ELE_TAG_PFEMContact2D             200
+#define ELE_TAG_ExternalElement           99990
 
 
 

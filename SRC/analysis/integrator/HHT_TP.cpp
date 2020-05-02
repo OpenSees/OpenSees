@@ -486,6 +486,11 @@ int HHT_TP::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHT_TP::getVel()
+{
+  return *Udot;
+}
 
 int HHT_TP::sendSelf(int cTag, Channel &theChannel)
 {

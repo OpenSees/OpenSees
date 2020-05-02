@@ -135,6 +135,7 @@ public:
 	void setTagOfActiveLimitStateFunction(int tag); // Probably not need anymore -- MHS
 
 	// Member functions to remove single components from the domain
+	void clearAll(void);
 	int removeRandomVariable(int tag);
 	int removeCorrelationCoefficient(int tag);
 	int removeLimitStateFunction(int tag);

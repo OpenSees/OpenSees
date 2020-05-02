@@ -52,7 +52,7 @@
 #include <Spectrum.h>
 #include <RandomNumberGenerator.h>
 #include <ReliabilityDomain.h>
-#include <NewDiscretizedRandomProcessSeries.h>
+//#include <NewDiscretizedRandomProcessSeries.h>
 
 extern ReliabilityDomain *theReliabilityDomain;
 extern RandomNumberGenerator *theRandomNumberGenerator;
@@ -81,13 +81,12 @@ extern void *OPS_PeerNGAMotion(void);
 
 #include <TclModelBuilder.h>
 
-extern int OPS_ResetInput(ClientData clientData, 
+extern int OPS_ResetInputNoBuilder(ClientData clientData,
 			  Tcl_Interp *interp,  
 			  int cArg, 
 			  int mArg, 
 			  TCL_Char **argv, 
-			  Domain *domain,
-			  TclModelBuilder *builder);
+			  Domain *domain);
 
 
 TimeSeries *
@@ -98,7 +97,7 @@ TclTimeSeriesCommand(ClientData clientData,
 		     Domain *theDomain)
 {
   // note the 1 instead of usual 2
-  OPS_ResetInput(clientData, interp, 1, argc, argv, theDomain, 0);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, theDomain);
 			    
   TimeSeries *theSeries = 0;
 
@@ -486,6 +485,7 @@ TclTimeSeriesCommand(ClientData clientData,
   }
   
    ///// added by K Fujimura /////
+   /*FMK RELIABILITY
   else if (strcmp(argv[0],"NewDiscretizedRandomProcess") == 0) {
     
     double mean, maxStdv;
@@ -530,9 +530,9 @@ TclTimeSeriesCommand(ClientData clientData,
     }	
     
     // Parsing was successful, create the random process series object
-    theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
+  theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
   }
-
+  */
   else if (strcmp(argv[0],"SimulatedRandomProcess") == 0) {
     
     int spectrumTag, numFreqIntervals;
