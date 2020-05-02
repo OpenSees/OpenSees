@@ -66,6 +66,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TrapezoidalBeamIntegration.h>
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
+#include <GradientInelasticBeamColumn2d.h>
+#include <GradientInelasticBeamColumn3d.h>
 
 // no 'beamWithHinges', 'flBrick'
 
