@@ -18,24 +18,24 @@
 # Date: September 2017
 
 # import the OpenSees Python module
-import opensees as ops
+from opensees import *
 
 # ----------------------------
 # Start of model generation
 # ----------------------------
 # remove existing model
-ops.wipe()
+wipe()
 
 # create ModelBuilder (with three-dimensions and 6 DOF/node)
-ops.model("BasicBuilder", "-ndm",3, "-ndf",6)
+model("BasicBuilder", "-ndm",3, "-ndf",6)
 
 # set default units
-ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
 
 # Define the section
 # ------------------
 #                                       secTag  E     nu     h    rho
-ops.section("ElasticMembranePlateSection", 1, 3.0E3, 0.25, 1.175, 1.27)
+section("ElasticMembranePlateSection", 1, 3.0E3, 0.25, 1.175, 1.27)
 
 # Define geometry
 # ---------------
@@ -50,7 +50,7 @@ side2 = int((nx+1)*(ny+1) - side1 + 1)
 
 # generate the nodes and elements
 #          numX numY startNode startEle eleType eleArgs? coords?
-ops.block2D(nx, ny, 1, 1,
+block2D(nx, ny, 1, 1,
             "ShellMITC4", 1,
             1, -20.0,  0.0,  0.0,
             2, -20.0,  0.0, 40.0,
@@ -62,20 +62,20 @@ ops.block2D(nx, ny, 1, 1,
 
 # define the boundary conditions
 # rotation free about x-axis (remember right-hand-rule)
-ops.fixZ( 0.0, 1, 1, 1, 0, 1, 1)
-ops.fixZ(40.0, 1, 1, 1, 0, 1, 1)  
+fixZ( 0.0, 1, 1, 1, 0, 1, 1)
+fixZ(40.0, 1, 1, 1, 0, 1, 1)  
 
 # create a Linear time series
-ops.timeSeries("Linear", 1)
+timeSeries("Linear", 1)
 # add some loads
-ops.pattern("Plain", 1, 1, "-fact", 1.0)
-ops.load(mid  , 0.0, -0.50, 0.0, 0.0, 0.0, 0.0)
-ops.load(side1, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
-ops.load(side2, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
+pattern("Plain", 1, 1, "-fact", 1.0)
+load(mid  , 0.0, -0.50, 0.0, 0.0, 0.0, 0.0)
+load(side1, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
+load(side2, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
 
 # print model
-#ops.printModel()
-ops.printModel("-JSON", "-file", "Example7.1.json")
+#printModel()
+printModel("-JSON", "-file", "Example7.1.json")
 
 # ----------------------- 
 # End of model generation
@@ -88,30 +88,30 @@ ops.printModel("-JSON", "-file", "Example7.1.json")
 
 # Load control with variable load steps
 #                            init  Jd  min  max
-ops.integrator("LoadControl", 1.0, 1, 1.0, 10.0)
+integrator("LoadControl", 1.0, 1, 1.0, 10.0)
 
 # Convergence test
 #                  tolerance maxIter displayCode
-ops.test("EnergyIncr", 1.0E-10, 20, 0)
+test("EnergyIncr", 1.0E-10, 20, 0)
 
 # Solution algorithm
-ops.algorithm("Newton")
+algorithm("Newton")
 
 # DOF numberer
-ops.numberer("RCM")
+numberer("RCM")
 
 # Cosntraint handler
-ops.constraints("Plain") 
+constraints("Plain") 
 
 # System of equations solver
-ops.system("SparseGeneral", "-piv")
-#ops.system("ProfileSPD")
+system("SparseGeneral", "-piv")
+#system("ProfileSPD")
 
 # Analysis for gravity load
-ops.analysis("Static") 
+analysis("Static") 
 
 # Perform the gravity load analysis
-ops.analyze(5)
+analyze(5)
 
 # --------------------------
 # End of static analysis
@@ -122,11 +122,11 @@ ops.analyze(5)
 # Start of recorder generation
 # ----------------------------
 
-ops.recorder("Node", "-file", "Node.out", "-time", "-node", mid, "-dof", 2, "disp")
-#ops.recorder("plot", "Node.out", "CenterNodeDisp", 625, 10, 625, 450, "-columns", 1, 2)
+recorder("Node", "-file", "Node.out", "-time", "-node", mid, "-dof", 2, "disp")
+#recorder("plot", "Node.out", "CenterNodeDisp", 625, 10, 625, 450, "-columns", 1, 2)
 
 # create the display
-#ops.recorder("display", "shellDynamics", 10, 10, 600, 600, "-wipe")
+#recorder("display", "shellDynamics", 10, 10, 600, 600, "-wipe")
 #prp -0 0 1000
 #vup 0 1 0 
 #display 2 4 100
@@ -141,25 +141,25 @@ ops.recorder("Node", "-file", "Node.out", "-time", "-node", mid, "-dof", 2, "dis
 # ---------------------------------------
 
 # Remove the static analysis & reset the time to 0.0
-ops.wipeAnalysis()
-ops.setTime(0.0)
+wipeAnalysis()
+setTime(0.0)
 
 # Now remove the loads and let the beam vibrate
-ops.remove("loadPattern", 1)
+remove("loadPattern", 1)
 
 # Create the transient analysis
-ops.test("EnergyIncr", 1.0E-10, 20, 0)
-ops.algorithm("Newton")
-ops.numberer("RCM")
-ops.constraints("Plain") 
-ops.system("SparseGeneral", "-piv")
-ops.integrator("Newmark", 0.50, 0.25)
-ops.analysis("Transient")
+test("EnergyIncr", 1.0E-10, 20, 0)
+algorithm("Newton")
+numberer("RCM")
+constraints("Plain") 
+system("SparseGeneral", "-piv")
+integrator("Newmark", 0.50, 0.25)
+analysis("Transient")
 
 # record once at time 0
-ops.record()
+record()
 
 # Perform the transient analysis (20 sec)
-ops.analyze(100, 0.2)
+analyze(100, 0.2)
 
-ops.wipe()
+wipe()

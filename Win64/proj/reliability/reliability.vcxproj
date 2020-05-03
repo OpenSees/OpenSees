@@ -22,13 +22,13 @@
     <ProjectGuid>{85F9E3F0-A6E0-6A77-9683-7150B4BE5A09}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -38,7 +38,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -75,7 +75,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\SRC\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundmotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;\..\..\src\analysis\fe_ele;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\SRC\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundmotion;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;\..\..\src\analysis\fe_ele;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -135,7 +135,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundMotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundMotion;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -250,49 +250,6 @@
     <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\SafeGuardedZeroFindingAlgorithm.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\SecantRootFinding.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\ZeroFindingAlgorithm.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\Analyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGFunEvaluator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGradGEvaluator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\CrossingRateAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\DynamciAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\FOSeriesSimulation.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\FirstPassageAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\GFunEachstepEvaluator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\GeneralRandGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\InitialPointBuilder.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\InitialStaticAnalysis.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewDiscretizedRandomProcessSeries.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewNewmarkSensitivityIntegrator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewSearchWithStepSizeAndStepDirection.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewSensitivityAlgorithm.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewStandardLinearOscillatorAccelerationFilter.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewStaticSensitivityIntegrator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewWhitenoiseFilter.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NonStatFirstPassageAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NonStatRandomVibrationSimulation.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\OutCrossingResults.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoeff.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoefficientIter.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomProcess.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationAnalysis.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulation.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulatorResult.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityDirectIntegrationAnalysis.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityStaticAnalysis.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\SelectLoadInitialStaticAnalysis.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\SmoothConcrete02.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StatFirstPassageAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StatRandomVibrationSimulation.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StaticAnalyzer.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ThresholdIncInitialPointBuilder.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\TimePoints.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\UniformGenerator.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\localMath.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\mersenne.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\mother.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\rancombi.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ranrotb.cpp" />
-    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ranrotw.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\FiniteDifferenceGradient.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\GradientEvaluator.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\ImplicitGradient.cpp" />
@@ -431,44 +388,6 @@
     <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\SafeGuardedZeroFindingAlgorithm.h" />
     <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\SecantRootFinding.h" />
     <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\ZeroFindingAlgorithm.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\Analyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGFunEvaluator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGradGEvaluator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\CrossingRateAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\DynamicAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\FOSeriesSimulation.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\FirstPassageAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\GFunEachStepEvaluator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\GeneralRandGenerator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\InitialPointBuilder.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\InitialStaticAnalysis.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewDiscretizedRandomProcessSeries.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewNewmarkSensitivityIntegrator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewSearchWithStepSizeAndStepDirection.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewSensitivityAlgorithm.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewStandardLinearOscillatorAccelerationFilter.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewStaticSensitivityIntegrator.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewWhitenoiseFilter.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NonStatFirstPassageAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NonStatRandomVibrationSimulation.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\OutCrossingResults.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoeff.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoefficientIter.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomProcess.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationAnalysis.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulation.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulatorResult.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityDirectIntegrationAnalysis.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityStaticAnalysis.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\SelectLoadInitialStaticAnalysis.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\SmoothConcrete02.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StatFirstPassageAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StatRandomVibrationSimulation.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StaticAnalyzer.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ThresholdIncInitialPointBuilder.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\TimePoints.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\localMath.h" />
-    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\randomc.h" />
     <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\FiniteDifferenceGradient.h" />
     <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\GradientEvaluator.h" />
     <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\ImplicitGradient.h" />
