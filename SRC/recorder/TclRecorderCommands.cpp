@@ -94,13 +94,6 @@ extern void* OPS_VTK_Recorder();
 
  //extern TclModelBuilder *theDamageTclModelBuilder;
 
- extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				    Tcl_Interp *interp,  
-				    int cArg, 
-				    int mArg, 
-				    TCL_Char **argv, 
-				    Domain *domain);
-
  typedef struct externalRecorderCommand {
    char *funcName;
    void *(*funcPtr)();

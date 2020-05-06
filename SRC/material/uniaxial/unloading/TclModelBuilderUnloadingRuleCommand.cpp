@@ -30,9 +30,6 @@
 
 #include <OPS_Globals.h>
 
-#include <tcl.h>
-#include <elementAPI.h>
-
 #include <TakedaUnloadingRule.h>
 #include <EnergyUnloadingRule.h>
 #include <ConstantUnloadingRule.h>
@@ -44,14 +41,8 @@ extern void *OPS_EnergyUnloadingRule(void);
 extern void *OPS_ConstantUnloadingRule(void);
 extern void *OPS_KarsanUnloadingRule(void);
 
+#include <elementAPI.h>
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
 
 int
 TclModelBuilderUnloadingRuleCommand(ClientData clientData,

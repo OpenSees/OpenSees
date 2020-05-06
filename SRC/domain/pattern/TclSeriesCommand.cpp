@@ -45,7 +45,6 @@
 #include <PeerNGAMotion.h>
 #include <string.h>
 
-
 #ifdef _RELIABILITY
 #include <DiscretizedRandomProcessSeries.h>
 #include <SimulatedRandomProcessSeries.h>
@@ -57,7 +56,6 @@
 extern ReliabilityDomain *theReliabilityDomain;
 extern RandomNumberGenerator *theRandomNumberGenerator;
 #endif
-
 
 #include <SimulationInformation.h>
 extern SimulationInformation simulationInfo;
@@ -79,15 +77,8 @@ extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
 
+#include <elementAPI.h>
 #include <TclModelBuilder.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData,
-			  Tcl_Interp *interp,  
-			  int cArg, 
-			  int mArg, 
-			  TCL_Char **argv, 
-			  Domain *domain);
-
 
 TimeSeries *
 TclTimeSeriesCommand(ClientData clientData, 
@@ -324,7 +315,6 @@ TclTimeSeriesCommand(ClientData clientData,
 
       endMarker++;
     }
-    
 
     if (filePathName != 0 && fileTimeName == 0 && timeIncr != 0.0) {
       //      const char *pwd = getInterpPWD(interp);
@@ -398,7 +388,6 @@ TclTimeSeriesCommand(ClientData clientData,
     }
   }
 
-
   else if ((strcmp(argv[0],"PeerNGADatabase") == 0) || (strcmp(argv[0],"PeerNGAMotion") == 0)) {
 
 
@@ -433,7 +422,6 @@ TclTimeSeriesCommand(ClientData clientData,
       }
     }
   }
-
 
 #ifdef _RELIABILITY
 
@@ -573,8 +561,6 @@ TclTimeSeriesCommand(ClientData clientData,
 
 #endif
 
-
-	
   else {
     for (int i = 0; i < argc; i++)
       opserr << argv[i] << ' ';
@@ -611,4 +597,3 @@ TclSeriesCommand(ClientData clientData, Tcl_Interp *interp, TCL_Char *arg)
   cleanup(argv);
   return theSeries;
 }
-

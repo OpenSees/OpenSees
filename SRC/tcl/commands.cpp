@@ -83,6 +83,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <stdlib.h>
 #include <string.h>
 
+#include <elementAPI.h>
 #include <packages.h>
 
 #include <FEM_ObjectBrokerAllClasses.h>
@@ -469,15 +470,6 @@ Domain theDomain;
 Domain theDomain;
 
 #endif
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData,
-			  Tcl_Interp *interp,  
-			  int cArg, 
-			  int mArg, 
-			  TCL_Char **argv, 
-			  Domain *domain);
-
-
 
 #include <MachineBroker.h>
 
