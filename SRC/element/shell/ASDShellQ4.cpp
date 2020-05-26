@@ -932,6 +932,9 @@ const Vector& ASDShellQ4::getResistingForceIncInertia()
         for (int j = 0; j < 6; j++)
             RHS(index + j) += M(index + j, index + j) * A(j);
     }
+
+    // Done
+    return RHS;
 }
 
 int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
