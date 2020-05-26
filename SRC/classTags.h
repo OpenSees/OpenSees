@@ -754,6 +754,8 @@
 #define ELE_TAG_BeamColumn3DwLHNMYS 198
 #define ELE_TAG_PFEMLink                  199
 #define ELE_TAG_PFEMContact2D             200
+#define ELE_TAG_ASDShellQ4                201  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDShellT3                202  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 

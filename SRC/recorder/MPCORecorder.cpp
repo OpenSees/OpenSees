@@ -640,7 +640,9 @@ namespace utils {
 				ele_tag == ELE_TAG_ShellNLDKGQThermal ||
 				ele_tag == ELE_TAG_ShellDKGT ||
 				ele_tag == ELE_TAG_ShellNLDKGT ||
-				ele_tag == ELE_TAG_ShellANDeS
+				ele_tag == ELE_TAG_ShellANDeS ||
+				ele_tag == ELE_TAG_ASDShellQ4 ||
+				ele_tag == ELE_TAG_ASDShellT3
 				);
 		}
 
@@ -3715,7 +3717,8 @@ namespace mpco {
 				else if (
 					// ./shell
 					elem_class_tag == ELE_TAG_ShellDKGT ||
-					elem_class_tag == ELE_TAG_ShellNLDKGT
+					elem_class_tag == ELE_TAG_ShellNLDKGT ||
+					elem_class_tag == ELE_TAG_ASDShellT3
 					) {
 					geom_type = ElementGeometryType::Triangle_3N;
 					int_type = ElementIntegrationRuleType::Triangle_GaussLegendre_2C;
@@ -3747,6 +3750,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ShellNLDKGQ ||
 					elem_class_tag == ELE_TAG_ShellMITC4 ||
 					elem_class_tag == ELE_TAG_ShellMITC4Thermal ||
+					elem_class_tag == ELE_TAG_ASDShellQ4 ||
 					// ./up
 					elem_class_tag == ELE_TAG_BBarFourNodeQuadUP ||
 					elem_class_tag == ELE_TAG_FourNodeQuadUP

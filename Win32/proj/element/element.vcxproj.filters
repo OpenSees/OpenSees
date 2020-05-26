@@ -653,6 +653,12 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp">
       <Filter>shell</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C">
       <Filter>HUelements</Filter>
     </ClCompile>
@@ -1349,6 +1355,12 @@
       <Filter>shell</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h">
       <Filter>shell</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h">
