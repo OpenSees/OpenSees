@@ -97,7 +97,7 @@ public:
 		Vector3Type e1(P2global - P1global);
 		double e1_dot_e3 = e1.dot(e3);
 		e1 -= e1_dot_e3 * e3;
-		if (std::abs(alpha) > DBL_EPSILON)
+		if (std::abs(alpha) > std::numeric_limits<double>::epsilon())
 			QuaternionType::FromAxisAngle(e3(0), e3(1), e3(2), alpha).rotateVector(e1);
 		e1.normalize();
 

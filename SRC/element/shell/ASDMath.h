@@ -184,7 +184,7 @@ public:
 	inline T normalize()
 	{
 		T n = norm();
-		if (n > DBL_EPSILON) {
+		if (n > std::numeric_limits<T>::epsilon()) {
 			mData[0] /= n;
 			mData[1] /= n;
 			mData[2] /= n;
@@ -619,7 +619,7 @@ public:
 	static inline ASDQuaternion FromRotationVector(T rx, T ry, T rz)
 	{
 		T rModulus = rx * rx + ry * ry + rz * rz;
-		if (rModulus < DBL_EPSILON)
+		if (rModulus < std::numeric_limits<T>::epsilon())
 			return ASDQuaternion::Identity();
 
 		if (rModulus != 1.0) {
