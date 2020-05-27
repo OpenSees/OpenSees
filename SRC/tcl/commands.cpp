@@ -189,6 +189,7 @@ extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
 
 extern void *OPS_Newmark(void);
+extern void *OPS_GimmeMCK(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -4619,6 +4620,14 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"Newmark") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_Newmark();
+    
+    // if the analysis exists - we want to change the Integrator
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+  
+  else if (strcmp(argv[1],"GimmeMCK") == 0 || strcmp(argv[1],"ZZTop") == 0) {
+    theTransientIntegrator = (TransientIntegrator*)OPS_GimmeMCK();
     
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
