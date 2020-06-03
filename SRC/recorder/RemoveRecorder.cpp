@@ -330,10 +330,10 @@ RemoveRecorder::record(int commitTag, double timeStamp)
   opserr<<"entering record()"<<endln;
 #endif
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
     
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
     
     if (int(nodeTag) != 0) {
       

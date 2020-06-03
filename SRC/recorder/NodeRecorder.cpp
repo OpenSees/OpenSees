@@ -520,10 +520,10 @@ NodeRecorder::record(int commitTag, double timeStamp)
 
   int numDOF = theDofs->Size();
   
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
 
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
 
     //
     // if need nodal reactions get the domain to calculate them

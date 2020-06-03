@@ -87,10 +87,10 @@ PatternRecorder::record(int commitTag, double timeStamp)
 {
   double value = 0.0;
   
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
-    
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
+
     if (deltaT != 0.0)
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
     
     LoadPattern *pattern = theDomain->getLoadPattern(thePattern);
     if (pattern != 0) {

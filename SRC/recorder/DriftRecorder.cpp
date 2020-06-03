@@ -135,10 +135,10 @@ DriftRecorder::record(int commitTag, double timeStamp)
   if (numNodes == 0 || data == 0)
     return 0;
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
 
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
 
     int timeOffset = 0;
     if (echoTimeFlag == true) {

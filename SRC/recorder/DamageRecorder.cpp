@@ -187,10 +187,10 @@ int
 DamageRecorder::record(int commitTag, double timeStamp)
 {
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
     
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
     
     // print out the pseudo time if requested
     int counter = 0;

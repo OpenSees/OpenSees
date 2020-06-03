@@ -327,10 +327,10 @@ VTK_Recorder::record(int ctag, double timeStamp)
     initializationDone = true;
   }
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
     
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
   
     //
     // add a line to pvd file

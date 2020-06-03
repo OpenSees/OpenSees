@@ -173,10 +173,10 @@ int
 FilePlotter::record(int cTag, double timeStamp)
 {
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
 
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = timeStamp + deltaT;
+      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
 
     if (fileName1 != 0 && fileName2 == 0)
       return this->plotFile();
