@@ -47,7 +47,6 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <iostream>
-#include <map>
 using std::nothrow;
 #include <Pressure_Constraint.h>
 #include <Pressure_ConstraintIter.h>
@@ -763,37 +762,11 @@ void PFEMLinSOE::saveK(OPS_Stream& output) {
     output << "sparse matrix <" << M->m << ", " << M->n << "> with "
            << M->nzmax << " entries\n";
 
-    // reorder and combine duplicates
-    std::map<std::pair<int, int>, double> mat;
+    // save the matrix
     for (int j = 0; j < M->n; ++j) {
         for (int k = M->p[j]; k < M->p[j + 1]; ++k) {
-            mat[std::make_pair(M->i[k], j)] += M->x[k];
-        }
-    }
-
-    // renumber
-    Domain* domain = OPS_GetDomain();
-    NodeIter& nodes = domain->getNodes();
-    Node* node = 0;
-    std::vector<int> dofs;
-    while ((node = nodes()) != 0) {
-        auto dof = node->getDOF_GroupPtr();
-        auto id = dof->getID();
-        for (int i=0; i<id.Size(); ++i) {
-            dofs.push_back(id(i));
-        }
-    }
-
-    // save matrix
-    for (int i = 0; i < dofs.size(); ++i) {
-        int dof1 = dofs[i];
-        for (int j = 0; j < dofs.size(); ++j) {
-            int dof2 = dofs[j];
-            auto it = mat.find(std::make_pair(dof1, dof2));
-            if (it != mat.end()) {
-                output << "    " << i << "    " << j << "    ("
-                       << it->second << ")\n";
-            }
+            output << "    " << M->i[k] << "    " << j << "    ("
+                   << M->x[k] << ")\n";
         }
     }
 }
