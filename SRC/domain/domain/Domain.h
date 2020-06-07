@@ -152,6 +152,7 @@ class Domain
 
     // methods to query the state of the domain
     virtual double  getCurrentTime(void) const;
+    virtual double  getDT(void) const;
     virtual int getCreep(void) const;
     virtual int     getCommitTag(void) const;    	
     virtual int getNumElements(void) const;

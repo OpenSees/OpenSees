@@ -82,10 +82,24 @@ OPS_ShellMITC4(void)
   }
   bool updateBasis = false;
 
-  if (numArgs == 7) {
-    const char* type = OPS_GetString();    
+  int dampingTag = 0;
+  Damping *theDamping = 0;
+
+  while(OPS_GetNumRemainingInputArgs() > 0) {
+    const char* type = OPS_GetString();
     if(strcmp(type,"-updateBasis") == 0) 
       updateBasis = true;
+    else if(strcmp(type,"-damp") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+	      numData = 1;
+        if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+		    theDamping = OPS_getDamping(dampingTag);
+        if(theDamping == 0) {
+	        opserr<<"damping not found\n";
+	        return 0;
+        }
+	    }
+    } 
   }
 
   SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
@@ -96,7 +110,7 @@ OPS_ShellMITC4(void)
   }
   
   theElement = new ShellMITC4(iData[0], iData[1], iData[2], iData[3],
-			      iData[4], *theSection, updateBasis);
+			      iData[4], *theSection, updateBasis, theDamping);
 
   return theElement;
 }
@@ -214,6 +228,9 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(false)
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
 
+  for (int i = 0 ;  i < 4; i++ ) 
+    theDamping[i] = 0;
+
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
   sg[2] = one_over_root3;
@@ -245,7 +262,8 @@ ShellMITC4::ShellMITC4(  int tag,
 			 int node3,
                          int node4,
 			 SectionForceDeformation &theMaterial,
-			 bool UpdateBasis) :
+			 bool UpdateBasis,
+       Damping *damping) :
 Element( tag, ELE_TAG_ShellMITC4 ),
 connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
 {
@@ -265,6 +283,23 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
       } //end if
       
   } //end for i 
+
+  if (damping)
+  {
+    for (i = 0; i < 4; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "ShellMITC4::ShellMITC4 -- failed to get copy of damping\n";
+        exit(01);
+      }
+    }
+  }
+  else
+  {
+    for (i = 0; i < 4; i++) theDamping[i] = 0;
+  }
 
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
@@ -302,6 +337,15 @@ ShellMITC4::~ShellMITC4( )
     nodePointers[i] = 0 ;
 
   } //end for i
+
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i])
+    {
+      delete theDamping[i];
+      theDamping[i] = 0;
+    }
+  }
 
   if (load != 0)
     delete load;
@@ -359,6 +403,14 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   //basis vectors and local coordinates
   computeBasis( ) ;
 
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i] && theDamping[i]->setDomain(theDomain, 8)) {
+      opserr << "ShellMITC4::setDomain -- Error initializing damping\n";
+      exit(-1);
+    }
+  }
+
   this->DomainComponent::setDomain(theDomain);
 }
 
@@ -403,6 +455,9 @@ int  ShellMITC4::commitState( )
   for (int i = 0; i < 4; i++ ) 
     success += materialPointers[i]->commitState( ) ;
 
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->commitState();
+
   return success ;
 }
  
@@ -417,6 +472,9 @@ int  ShellMITC4::revertToLastCommit( )
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToLastCommit( ) ;
   
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToLastCommit();
+  
   return success ;
 }
     
@@ -429,6 +487,9 @@ int  ShellMITC4::revertToStart( )
 
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToStart( ) ;
+  
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToStart();
   
   return success ;
 }
@@ -591,6 +652,34 @@ ShellMITC4::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 3, Vector(32));
   }
 
+  else if (theDamping[0] && strcmp(argv[0],"dampingStresses") ==0) {
+
+    for (int i=0; i<4; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.attr("eta",sg[i]);
+      output.attr("neta",tg[i]);
+      
+      output.tag("SectionForceDeformation");
+      output.attr("classType", materialPointers[i]->getClassTag());
+      output.attr("tag", materialPointers[i]->getTag());
+      
+      output.tag("ResponseType","p11");
+      output.tag("ResponseType","p22");
+      output.tag("ResponseType","p1212");
+      output.tag("ResponseType","m11");
+      output.tag("ResponseType","m22");
+      output.tag("ResponseType","m12");
+      output.tag("ResponseType","q1");
+      output.tag("ResponseType","q2");
+      
+      output.endTag(); // GaussPoint
+      output.endTag(); // NdMaterialOutput
+    }
+    
+    theResponse =  new ElementResponse(this, 4, Vector(32));
+  }
+
   output.endTag();
   return theResponse;
 }
@@ -640,6 +729,23 @@ ShellMITC4::getResponse(int responseID, Information &eleInfo)
       cnt += 8;
     }
     return eleInfo.setVector(strains);
+    break;
+  case 4: // damping stresses
+    for (int i = 0; i < 4; i++) {
+
+      // Get material stress response
+      const Vector &sigma = theDamping[i]->getDampingForce();
+      stresses(cnt) = sigma(0);
+      stresses(cnt+1) = sigma(1);
+      stresses(cnt+2) = sigma(2);
+      stresses(cnt+3) = sigma(3);
+      stresses(cnt+4) = sigma(4);
+      stresses(cnt+5) = sigma(5);
+      stresses(cnt+6) = sigma(6);
+      stresses(cnt+7) = sigma(7);
+      cnt += 8;
+    }
+    return eleInfo.setVector(stresses);
     break;
   default:
     return -1;
@@ -855,6 +961,7 @@ const Matrix&  ShellMITC4::getInitialStiff( )
   
 
     dd = materialPointers[i]->getInitialTangent( ) ;
+    if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
     dd *= dvol[i] ;
 
     //residual and tangent calculations node loops
@@ -1235,6 +1342,8 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
   static Vector stress(nstress) ;  //stress resultants
 
+  static Vector dampingStress(nstress); // damping stress resultants
+
   static Matrix dd(nstress,nstress) ;  //material tangent
 
   static Matrix J0(2,2) ;  //Jacobian at center
@@ -1441,6 +1550,13 @@ ShellMITC4::formResidAndTangent( int tang_flag )
     //compute the stress
     stress = materialPointers[i]->getStressResultant( ) ;
 
+    if (theDamping[i])
+    {
+      theDamping[i]->update(stress);
+      dampingStress = theDamping[i]->getDampingForce();
+      dampingStress *= dvol[i];
+    }
+
     //drilling "stress" 
     tauDrill = Ktt * epsDrill ;
 
@@ -1450,6 +1566,7 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
     if ( tang_flag == 1 ) {
       dd = materialPointers[i]->getSectionTangent( ) ;
+      if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
       dd *= dvol[i] ;
     } //end if tang_flag
 
@@ -1479,6 +1596,7 @@ ShellMITC4::formResidAndTangent( int tang_flag )
       }//end for p
 
       residJ.addMatrixVector(0.0, BJtran,stress,1.0 ) ;
+      if (theDamping[i]) residJ.addMatrixVector(1.0, BJtran,dampingStress,1.0 ) ;
 
       //drilling B matrix
       drillPointer = computeBdrill( j, shp ) ;
