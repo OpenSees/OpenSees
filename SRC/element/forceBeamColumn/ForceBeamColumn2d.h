@@ -69,6 +69,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 #include <BeamIntegration.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 
 class Response;
 class ElementalLoad;
@@ -81,7 +82,8 @@ class ForceBeamColumn2d: public Element
 		    int numSections, SectionForceDeformation **sec,
 		    BeamIntegration &beamIntegr,
 		    CrdTransf &coordTransf, double rho = 0.0, 
-		    int maxNumIters = 10, double tolerance = 1.0e-12);
+		    int maxNumIters = 10, double tolerance = 1.0e-12,
+        Damping *theDamping = 0);
   
   ~ForceBeamColumn2d();
   
@@ -108,6 +110,7 @@ class ForceBeamColumn2d: public Element
   int addInertiaLoadToUnbalance(const Vector &accel);
   
   const Vector &getResistingForce(void);
+  const Vector &getDampingForce(void);
   const Vector &getResistingForceIncInertia(void);            
   
   int sendSelf(int cTag, Channel &theChannel);
@@ -222,6 +225,8 @@ class ForceBeamColumn2d: public Element
   // AddingSensitivity:END ///////////////////////////////////////////
 
   Matrix tjcMass;
+
+  Damping *theDamping;
 };
 
 #endif

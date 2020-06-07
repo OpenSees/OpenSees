@@ -38,6 +38,7 @@
 #include <FEM_ObjectBroker.h>
 
 #include <CrdTransf.h>
+#include <Damping.h>
 #include <Information.h>
 #include <Parameter.h>
 #include <ElementResponse.h>
@@ -108,6 +109,8 @@ void* OPS_ElasticBeam3d(void)
     
     // options
     double mass = 0.0;
+    int dampingTag = 0;
+    Damping *theDamping = 0;
     int cMass = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string theType = OPS_GetString();
@@ -117,14 +120,23 @@ void* OPS_ElasticBeam3d(void)
 	    }
 	} else if (theType == "-cMass") {
 	    cMass = 1;
+	} else if(theType == "-damp"){
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+        if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+		    theDamping = OPS_getDamping(dampingTag);
+        if(theDamping == 0) {
+	        opserr<<"damping not found\n";
+	        return 0;
+        }
+	    }
 	}
     }
 
     if (theSection != 0) {
-	return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass); 
+	return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,theDamping); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass);
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass,0,theDamping);
     }
 }
 
@@ -132,7 +144,8 @@ void* OPS_ElasticBeam3d(void)
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+  theDamping(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -154,10 +167,12 @@ ElasticBeam3d::ElasticBeam3d()
 
 ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
-			     CrdTransf &coordTransf, double r, int cm, int sectTag)
+			     CrdTransf &coordTransf, double r, int cm, int sectTag,
+			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm), sectionTag(sectTag),
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+  theDamping(0)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -167,6 +182,16 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
   if (!theCoordTransf) {
     opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of coordinate transformation\n";
     exit(-1);
+  }
+
+  if (damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
+      exit(01);
+    }
   }
 
   q0[0] = 0.0;
@@ -187,9 +212,9 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 }
 
 ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section,  
-			     CrdTransf &coordTransf, double r, int cm)
+			     CrdTransf &coordTransf, double r, int cm, Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
   if (section != 0) {
     sectionTag = section->getTag();
@@ -237,6 +262,16 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     exit(-1);
   }
 
+  if (damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
+      exit(-1);
+    }
+  }
+
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
@@ -258,6 +293,7 @@ ElasticBeam3d::~ElasticBeam3d()
 {
   if (theCoordTransf)
     delete theCoordTransf;
+  if (theDamping) delete theDamping;
 }
 
 int
@@ -328,6 +364,11 @@ ElasticBeam3d::setDomain(Domain *theDomain)
 	exit(-1);
     }
     
+    if (theDamping && theDamping->setDomain(theDomain, 6)) {
+	opserr << "ElasticBeam3d::setDomain -- Error initializing damping\n";
+	exit(-1);
+    }
+    
     double L = theCoordTransf->getInitialLength();
 
     if (L == 0.0) {
@@ -345,19 +386,26 @@ ElasticBeam3d::commitState()
     opserr << "ElasticBeam3d::commitState () - failed in base class";
   }    
   retVal += theCoordTransf->commitState();
+  if (theDamping) retVal += theDamping->commitState();
   return retVal;
 }
 
 int
 ElasticBeam3d::revertToLastCommit()
 {
-    return theCoordTransf->revertToLastCommit();
+  int retVal = 0;
+  retVal += theCoordTransf->revertToLastCommit();
+  if (theDamping) retVal += theDamping->revertToLastCommit();
+  return retVal;
 }
 
 int
 ElasticBeam3d::revertToStart()
 {
-    return theCoordTransf->revertToStart();
+  int retVal = 0;
+  retVal += theCoordTransf->revertToStart();
+  if (theDamping) retVal += theDamping->revertToStart();
+  return retVal;
 }
 
 int
@@ -401,6 +449,8 @@ ElasticBeam3d::getTangentStiff(void)
   kb(4,3) = kb(3,4) = EIyoverL2;
   kb(5,5) = GJoverL;
 
+  if(theDamping) kb *= theDamping->getStiffnessMultiplier();  
+
   return theCoordTransf->getGlobalStiffMatrix(kb,q);
 }
 
@@ -426,6 +476,8 @@ ElasticBeam3d::getInitialStiff(void)
   kb(3,3) = kb(4,4) = EIyoverL4;
   kb(4,3) = kb(3,4) = EIyoverL2;
   kb(5,5) = GJoverL;
+  
+  if(theDamping) kb *= theDamping->getStiffnessMultiplier();  
   
   return theCoordTransf->getInitialGlobalStiffMatrix(kb);
 }
@@ -631,6 +683,8 @@ ElasticBeam3d::getResistingForceIncInertia()
 {	
   P = this->getResistingForce(); 
   
+  if (theDamping) P += this->getDampingForce();
+  
   // add the damping forces if rayleigh damping
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
     P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
@@ -696,6 +750,8 @@ ElasticBeam3d::getResistingForce()
   q(3) += q0[3];
   q(4) += q0[4];
   
+  if (theDamping) theDamping->update(q);
+
   Vector p0Vec(p0, 5);
   
   //  opserr << q;
@@ -707,6 +763,14 @@ ElasticBeam3d::getResistingForce()
     P.addVector(1.0, Q, -1.0);
   
   return P;
+}
+
+const Vector &
+ElasticBeam3d::getDampingForce()
+{
+  theCoordTransf->update();
+  
+  return theCoordTransf->getGlobalResistingForce(theDamping->getDampingForce(), Vector(5));
 }
 
 int
@@ -1076,6 +1140,54 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     
     theResponse = new ElementResponse(this, 4, Vector(6));
 
+  // global damping forces
+  } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
+
+    output.tag("ResponseType","Px_1");
+    output.tag("ResponseType","Py_1");
+    output.tag("ResponseType","Pz_1");
+    output.tag("ResponseType","Mx_1");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Px_2");
+    output.tag("ResponseType","Py_2");
+    output.tag("ResponseType","Pz_2");
+    output.tag("ResponseType","Mx_2");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","Mz_2");
+
+    theResponse =  new ElementResponse(this, 21, P);
+
+	// local damping forces
+  } else if (theDamping && (strcmp(argv[0],"localDampingForce") == 0 || strcmp(argv[0],"localDampingForces") == 0)) {
+
+    output.tag("ResponseType","N_1");
+    output.tag("ResponseType","Vy_1");
+    output.tag("ResponseType","Vz_1");
+    output.tag("ResponseType","T_1");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","N_2");
+    output.tag("ResponseType","Vy_2");
+    output.tag("ResponseType","Vz_2");
+    output.tag("ResponseType","T_2");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","Mz_2");
+
+    theResponse =  new ElementResponse(this, 22, P);
+
+  // basic damping forces
+  }  else if (theDamping && (strcmp(argv[0],"basicDampingForce") == 0 || strcmp(argv[0],"basicDampingForces") == 0)) {
+
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Mz_2");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","T");
+    
+    theResponse = new ElementResponse(this, 23, Vector(6));
+
   }  else if (strcmp(argv[0],"deformations") == 0 || 
 	      strcmp(argv[0],"basicDeformations") == 0) {
     
@@ -1098,6 +1210,7 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   double N, V, M1, M2, T;
   double L = theCoordTransf->getInitialLength();
   double oneOverL = 1.0/L;
+  Vector Sd(3);
   static Vector Res(12);
   Res = this->getResistingForce();
 
@@ -1145,6 +1258,47 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
 
   case 5:
     return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
+
+  case 21: // global damping forces
+    return eleInfo.setVector(this->getDampingForce());
+    
+  case 22: // local damping forces
+    
+    Sd = theDamping->getDampingForce();
+    
+    // Axial
+    N = Sd(0);
+    P(6) =  N;
+    P(0) = -N;
+    
+    // Torsion
+    T = Sd(5);
+    P(9) =  T;
+    P(3) = -T;
+    
+    // Moments about z and shears along y
+    M1 = Sd(1);
+    M2 = Sd(2);
+    P(5)  = M1;
+    P(11) = M2;
+    V = (M1+M2)*oneOverL;
+    P(1) =  V;
+    P(7) = -V;
+    
+    // Moments about y and shears along z
+    M1 = Sd(3);
+    M2 = Sd(4);
+    P(4)  = M1;
+    P(10) = M2;
+    V = (M1+M2)*oneOverL;
+    P(2) = -V;
+    P(8) =  V;
+
+    return eleInfo.setVector(P);
+    
+  case 23: // basic damping forces
+
+    return eleInfo.setVector(theDamping->getDampingForce());
 
   default:
     return -1;

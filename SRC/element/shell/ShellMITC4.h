@@ -44,6 +44,7 @@
 #include <Node.h>
 #include <SectionForceDeformation.h>
 #include <R3vectors.h>
+#include <Damping.h>
 
 class ShellMITC4 : public Element {
 
@@ -59,8 +60,9 @@ class ShellMITC4 : public Element {
 	      int node3,
 	      int node4,
 	      SectionForceDeformation &theMaterial,
-	      bool updateBasis=false) ;
-  
+	      bool updateBasis=false,
+	      Damping *theDamping = 0);
+   
   //destructor 
   virtual ~ShellMITC4( ) ;
 
@@ -194,6 +196,7 @@ class ShellMITC4 : public Element {
     Vector *load;
     Matrix *Ki;
     double init_disp[4][6];
+    Damping *theDamping[4];
 } ; 
 
 
