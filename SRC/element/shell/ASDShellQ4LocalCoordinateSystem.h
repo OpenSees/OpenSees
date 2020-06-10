@@ -33,11 +33,6 @@
 #include <array>
 #include <vector>
 
-// if this macro is defined, the local system is alligned according to the
-// original paper of C.Felippa, i.e. the local X axis is alligned to side 1-2
-// otherwise we use the same convention as in all the other shells in opensees
-#define ALLIGN_AS_FELIPPA
-
 /** \brief ASDShellQ4LocalCoordinateSystem
 *
 * This class represent the local coordinate system of any element whose geometry
@@ -67,9 +62,6 @@ public:
 		: m_P(4)
 		, m_orientation(3, 3)
 	{
-		// Form the basis vectors alligning the local X direction
-		// with the 1-2 side
-
 		// compute the central point
 		m_center = P1global;
 		m_center += P2global;
@@ -77,11 +69,9 @@ public:
 		m_center += P4global;
 		m_center *= 0.25;
 
-#ifdef ALLIGN_AS_FELIPPA
-
 		// compute the diagonal vectors
-		Vector3Type d13(P3global - P1global);
-		Vector3Type d24(P4global - P2global);
+		Vector3Type d13 = P3global - P1global;
+		Vector3Type d24 = P4global - P2global;
 
 		// compute the Normal vector at the element center
 		// as the cross product of the 2 diagonals.
@@ -94,53 +84,21 @@ public:
 
 		// compute the local X direction parallel to the projection of the side 1-2 onto
 		// the local xy plane.
-		Vector3Type e1(P2global - P1global);
+		Vector3Type e1 = P2global - P1global;
 		double e1_dot_e3 = e1.dot(e3);
 		e1 -= e1_dot_e3 * e3;
-		if (std::abs(alpha) > std::numeric_limits<double>::epsilon())
+
+		// if user defined local rotation is included...
+		if (std::abs(alpha) > 0.0)
 			QuaternionType::FromAxisAngle(e3(0), e3(1), e3(2), alpha).rotateVector(e1);
+
 		e1.normalize();
 
 		// finally compute the local Y direction to be orthogonal to both X and Z local directions
 		Vector3Type e2 = e3.cross(e1);
 		e2.normalize();
 
-#else
-
-		// compute the right and left mid nodes
-		Vector3Type p23(P3global + P2global);
-		p23 *= 0.5;
-		Vector3Type p14(P4global + P1global);
-		p14 *= 0.5;
-
-		// compute the local x axis
-		Vector3Type e1(p23 - p14);
-
-		// compute the bottom and top mid nodes
-		Vector3Type p12(P2global + P1global);
-		p12 *= 0.5;
-		Vector3Type p43(P3global + P4global);
-		p43 *= 0.5;
-
-		// compute the local y axis
-		Vector3Type e2(p43 - p12);
-
-		// compute the normal vector at the element center and get area
-		// from its norm
-		Vector3Type e3 = e1.cross(e2);
-		m_area = e3.norm();
-
-		// update local y axis to make an orthonormal basis
-		e2 = e3.cross(e1);
-
-		// normalize all local vectors
-		e1.normalize();
-		e2.normalize();
-		e3.normalize();
-
-#endif // ALLIGN_AS_FELIPPA
-
-		// form the 3x3 transformation matrix
+		// form the 3x3 transformation matrix (the transposed actually...)
 		for (int i = 0; i < 3; i++)
 		{
 			m_orientation(0, i) = e1(i);
@@ -200,7 +158,7 @@ public:
 
 	inline void ComputeTotalRotationMatrix(MatrixType& R)const
 	{
-		size_t mat_size = 24;
+		constexpr size_t mat_size = 24;
 		if (R.noRows() != mat_size || R.noCols() != mat_size)
 			R.resize(mat_size, mat_size);
 
@@ -217,11 +175,13 @@ public:
 
 	inline void ComputeTotalWarpageMatrix(MatrixType& W, double wf)const
 	{
-		size_t mat_size = 24;
+		constexpr size_t mat_size = 24;
 		if (W.noRows() != mat_size || W.noCols() != mat_size)
 			W.resize(mat_size, mat_size);
 
 		W.Zero();
+		for (size_t i = 0; i < mat_size; i++)
+			W(i, i) = 1.0;
 
 		W(0, 4) = -wf;
 		W(1, 3) = wf;
@@ -249,5 +209,18 @@ private:
 	double m_area;
 
 };
+
+template<class TStream>
+inline static TStream& operator << (TStream& s, const ASDShellQ4LocalCoordinateSystem& lc)
+{
+	s << "Points:\n";
+	s << "[";
+	for (size_t i = 0; i < 4; i++) {
+		s << " (" << lc.X(i) << ", " << lc.Y(i) << ") ";
+	}
+	s << "]";
+	s << "Normal: " << lc.Vz() << "\n";
+	return s;
+}
 
 #endif // !ASDShellQ4LocalCoordinateSystem_h

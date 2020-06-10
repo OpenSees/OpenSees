@@ -32,7 +32,11 @@
 #include <ASDEICR.h>
 #include <ASDShellQ4Transformation.h>
 
-/** \brief ADShellQ4CorotationalTransformation
+// this is experimental: it fits the corotational frame following the polar
+// decomposition rather than the 1-2 side allignement as per Felippa's work
+#define USE_POLAR_DECOMP_ALLIGN
+
+/** \brief ASDShellQ4CorotationalTransformation
 *
 * This class represents a corotational (nonlinear) coordinate transformation
 * that can be used by any element whose geometry is a QUAD 4 in 3D space,
@@ -56,7 +60,7 @@
 *   Chapter 5 of B.Haugen's Thesis.
 *   link: http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/
 */
-class ADShellQ4CorotationalTransformation : public ASDShellQ4Transformation
+class ASDShellQ4CorotationalTransformation : public ASDShellQ4Transformation
 {
 
 public:
@@ -73,12 +77,12 @@ public:
 
 public:
 
-    ADShellQ4CorotationalTransformation()
+    ASDShellQ4CorotationalTransformation()
         : ASDShellQ4Transformation()
     {
     }
 
-    virtual ~ADShellQ4CorotationalTransformation()
+    virtual ~ASDShellQ4CorotationalTransformation()
     {
     }
 
@@ -86,7 +90,7 @@ public:
 
     virtual ASDShellQ4Transformation* create()const
     {
-        return new ADShellQ4CorotationalTransformation();
+        return new ASDShellQ4CorotationalTransformation();
     }
 
     virtual bool isLinear() const
@@ -97,7 +101,7 @@ public:
     virtual void revertToStart()
     {
         // create the reference (undeformed configuration) coordinate system
-        ASDShellQ4LocalCoordinateSystem LCS(createReferenceCoordinateSystem());
+        ASDShellQ4LocalCoordinateSystem LCS = createReferenceCoordinateSystem();
 
         // save reference orientation and center
         m_Q0 = QuaternionType::FromRotationMatrix(LCS.Orientation());
@@ -143,16 +147,16 @@ public:
         }
     }
 
-    virtual void update()
+    virtual void update(const VectorType& globalDisplacements)
     {
         for (int i = 0; i < 4; i++)
         {
             // compute current rotation vector removing initial rotations if any
-            Vector3Type currentRotVec = Vector3Type(m_nodes[i]->getTrialDisp(), 3);
+            Vector3Type currentRotVec;
             int index = i * 6;
-            currentRotVec(0) -= m_U0(index + 3);
-            currentRotVec(1) -= m_U0(index + 4);
-            currentRotVec(2) -= m_U0(index + 5);
+            currentRotVec(0) = globalDisplacements(index + 3) - m_U0(index + 3);
+            currentRotVec(1) = globalDisplacements(index + 4) - m_U0(index + 4);
+            currentRotVec(2) = globalDisplacements(index + 5) - m_U0(index + 5);
 
             // compute incremental rotation vector
             Vector3Type incrementalRotation = currentRotVec - m_RV[i];
@@ -168,10 +172,10 @@ public:
         }
     }
 
-    virtual ASDShellQ4LocalCoordinateSystem createLocalCoordinateSystem()const
+    virtual ASDShellQ4LocalCoordinateSystem createLocalCoordinateSystem(const VectorType& globalDisplacements)const
     {
         // reference coordinate system
-        ASDShellQ4LocalCoordinateSystem a(createReferenceCoordinateSystem());
+        ASDShellQ4LocalCoordinateSystem a = createReferenceCoordinateSystem();
 
         // compute nodal positions at current configuration removing intial displacements if any
         std::array<Vector3Type, 4> def = {
@@ -183,14 +187,17 @@ public:
         for (int i = 0; i < 4; i++) {
             int index = i * 6;
             Vector3Type& iP = def[i];
-            const Vector& iU = m_nodes[i]->getTrialDisp();
-            iP(0) += iU(0) - m_U0(index);
-            iP(1) += iU(1) - m_U0(index + 1);
-            iP(2) += iU(2) - m_U0(index + 2);
+            iP(0) += globalDisplacements(index) - m_U0(index);
+            iP(1) += globalDisplacements(index + 1) - m_U0(index + 1);
+            iP(2) += globalDisplacements(index + 2) - m_U0(index + 2);
         }
 
         // current coordinate system
         ASDShellQ4LocalCoordinateSystem b(def[0], def[1], def[2], def[3]);
+
+#ifndef USE_POLAR_DECOMP_ALLIGN
+        return b;
+#endif // !USE_POLAR_DECOMP_ALLIGN
 
         double aX1 = a.X1(); double aY1 = a.Y1();
         double bX1 = b.X1(); double bY1 = b.Y1();
@@ -251,7 +258,7 @@ public:
 
             // get deformational displacements
             Q.rotateVector(X);
-            Q.rotateVector(X0);
+            m_Q0.rotateVector(X0);
             Vector3Type deformationalDisplacements = X - X0;
 
             localDisplacements[index] = deformationalDisplacements[0];
@@ -273,8 +280,7 @@ public:
         const VectorType& localDisplacements,
         MatrixType& LHS,
         VectorType& RHS,
-        const bool RHSrequired,
-        const bool LHSrequired)
+        bool LHSrequired)
     {
         // Get the total rotation matrix (local - to - global)
         // Note: do NOT include the warpage correction matrix!
@@ -294,9 +300,9 @@ public:
         static MatrixType S(24, 3);
         static MatrixType G(3, 24);
         EICR::Compute_Pt(4, P);
-        EICR::Compute_S(LCS.Nodes(), P);
-        RotationGradient(G);
-        P.addMatrixProduct(1.0, S, G, -1.0); // P -= G*S
+        EICR::Compute_S(LCS.Nodes(), S);
+        RotationGradient(LCS, globalDisplacements, G);
+        P.addMatrixProduct(1.0, S, G, -1.0); // P -= S*G
 
         // Compute the projected local forces ( pe = P' * RHS ).
         // Note: here the RHS is already given as a residual vector -> - internalForces -> (pe = - Ke * U)
@@ -373,14 +379,90 @@ public:
         const ASDShellQ4LocalCoordinateSystem& LCS,
         MatrixType& LHS,
         VectorType& RHS,
-        bool RHSrequired,
         bool LHSrequired)
     {
-        static VectorType globalDisplacements = VectorType(24);
-        static VectorType localDisplacements = VectorType(24);
+        static VectorType globalDisplacements(24);
+        static VectorType localDisplacements(24);
         computeGlobalDisplacements(globalDisplacements);
         calculateLocalDisplacements(LCS, globalDisplacements, localDisplacements);
-        transformToGlobal(LCS, globalDisplacements, localDisplacements, LHS, RHS, RHSrequired, LHSrequired);
+        transformToGlobal(LCS, globalDisplacements, localDisplacements, LHS, RHS, LHSrequired);
+    }
+
+    virtual int internalDataSize() const
+    {
+        // 24 -> initial displacement +
+        // 9*4 -> 9 quaternions +
+        // 9*3 -> 9 3d vectors
+        return 87;
+    }
+
+    virtual void saveInternalData(VectorType& v, int pos) const
+    {
+        if ((v.Size() - pos) < internalDataSize()) {
+            opserr << "ASDShellQ4CorotationalTransformation - failed to save internal data: vector too small\n";
+            exit(-1);
+        }
+
+        // 24 -> initial displacement +
+        for (int i = 0; i < 24; i++)
+            v(pos++) = m_U0(i);
+
+        // 9*4 -> 9 quaternions +
+        auto lamq = [&v, &pos](const QuaternionType& x) {
+            v(pos++) = x.w();
+            v(pos++) = x.x();
+            v(pos++) = x.y();
+            v(pos++) = x.z();
+        };
+        lamq(m_Q0);
+        for (int i = 0; i < 4; i++)
+            lamq(m_QN[i]);
+        for (int i = 0; i < 4; i++)
+            lamq(m_QN_converged[i]);
+
+        // 9*3 -> 9 3d vectors +
+        auto lamv = [&v, &pos](const Vector3Type& x) {
+            v(pos++) = x.x();
+            v(pos++) = x.y();
+            v(pos++) = x.z();
+        };
+        lamv(m_C0);
+        for (int i = 0; i < 4; i++)
+            lamv(m_RV[i]);
+        for (int i = 0; i < 4; i++)
+            lamv(m_RV_converged[i]);
+    }
+
+    virtual void restoreInternalData(const VectorType& v, int pos)
+    {
+        if ((v.Size() - pos) < internalDataSize()) {
+            opserr << "ASDShellQ4CorotationalTransformation - failed to restore internal data: vector too small\n";
+            exit(-1);
+        }
+        
+        // 24 -> initial displacement +
+        for (int i = 0; i < 24; i++)
+            m_U0(i) = v(pos++);
+
+        // 9*4 -> 9 quaternions +
+        auto lamq = [&v, &pos](QuaternionType& x) {
+            x = QuaternionType(v(pos++), v(pos++), v(pos++), v(pos++));
+        };
+        lamq(m_Q0);
+        for (int i = 0; i < 4; i++)
+            lamq(m_QN[i]);
+        for (int i = 0; i < 4; i++)
+            lamq(m_QN_converged[i]);
+
+        // 9*3 -> 9 3d vectors +
+        auto lamv = [&v, &pos](Vector3Type& x) {
+            x = Vector3Type(v(pos++), v(pos++), v(pos++));
+        };
+        lamv(m_C0);
+        for (int i = 0; i < 4; i++)
+            lamv(m_RV[i]);
+        for (int i = 0; i < 4; i++)
+            lamv(m_RV_converged[i]);
     }
 
 private:
@@ -394,92 +476,113 @@ private:
     * TODO: Find a closed form of the derivative.
     * @return the Spin Fitter Matrix
     */
-    inline void RotationGradient(MatrixType& G)
+    inline void RotationGradient(
+        const ASDShellQ4LocalCoordinateSystem& LCS,
+        const VectorType& globalDisplacements, 
+        MatrixType& G)
     {
         G.Zero();
 
-        // reference coordinate system
-        ASDShellQ4LocalCoordinateSystem a(createReferenceCoordinateSystem());
+#ifdef USE_POLAR_DECOMP_ALLIGN
 
-        double aX1 = a.X1(); double aY1 = a.Y1();
-        double aX2 = a.X2(); double aY2 = a.Y2();
-        double aX3 = a.X3(); double aY3 = a.Y3();
-        double aX4 = a.X4(); double aY4 = a.Y4();
+        /**
+        Note: when attaching the local system using the polar decomposition, it turns out
+        that the G matrix should be exactly 0!
+        */
 
-        double pert = std::sqrt(a.Area()) * 1.0E-2;
+        //// perturbation relative to initial area
+        //double pert = std::sqrt(createReferenceCoordinateSystem().Area()) * 1.0e-8;
 
-        // compute nodal positions at current configuration removing intial displacements if any
-        std::array<Vector3Type, 4> def = {
-            Vector3Type(m_nodes[0]->getCrds()),
-            Vector3Type(m_nodes[1]->getCrds()),
-            Vector3Type(m_nodes[2]->getCrds()),
-            Vector3Type(m_nodes[3]->getCrds())
-        };
-        for (int i = 0; i < 4; i++) {
-            int index = i * 6;
-            Vector3Type& iP = def[i];
-            const Vector& iU = m_nodes[i]->getTrialDisp();
-            iP(0) += iU(0) - m_U0(index);
-            iP(1) += iU(1) - m_U0(index + 1);
-            iP(2) += iU(2) - m_U0(index + 2);
-        }
+        //// un-perturbed coordinate system
+        //auto CS0 = createLocalCoordinateSystem(globalDisplacements);
+        //Vector3Type e30 = CS0.Vz();
+        //Vector3Type e10 = CS0.Vx();
+        //QuaternionType Q0 = QuaternionType::FromRotationMatrix(CS0.Orientation());
 
-        // for each node...
-        for (int i = 0; i < 4; i++) 
-        {
-            Vector3Type& iNode = def[i];
+        //// perturbed displacement vector
+        //static Vector UGP(24);
+        //UGP = globalDisplacements;
 
-            int index = i * 6;
+        //// for each node...
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    int index = i * 6;
 
-            // for each component in [x, y, z] ...
-            for (int j = 0; j < 3; j++) 
-            {
-                // save the current coordinate
-                double saved_coord = iNode[j]; 
+        //    // for each component in [x, y, z] ...
+        //    for (int j = 0; j < 3; j++)
+        //    {
+        //        // apply perturbation
+        //        UGP(index + j) += pert;
 
-                // apply perturbation
-                iNode[j] += pert; 
+        //        // current coordinate system (perturbed at node i component j)
+        //        auto CSi = createLocalCoordinateSystem(UGP);
 
-                // current coordinate system (perturbed at node i component j)
-                ASDShellQ4LocalCoordinateSystem b(def[0], def[1], def[2], def[3]);
+        //        // save the (numerical) rotation gradient
 
-                double bX1 = b.X1(); double bY1 = b.Y1();
-                double bX2 = b.X2(); double bY2 = b.Y2();
-                double bX3 = b.X3(); double bY3 = b.Y3();
-                double bX4 = b.X4(); double bY4 = b.Y4();
+        //        Vector3Type e3 = CSi.Vz();// - e30;
+        //        Vector3Type e1 = CSi.Vx();// - e10;
+        //        Q0.rotateVector(e3);
+        //        Q0.rotateVector(e1);
 
-                double C1 = 1 / (aX1 * aY2 - aX2 * aY1 - aX1 * aY4 + aX2 * aY3 - aX3 * aY2 + aX4 * aY1 + aX3 * aY4 - aX4 * aY3);
-                double C2 = bY1 / 4 + bY2 / 4 - bY3 / 4 - bY4 / 4;
-                double C3 = bY1 / 4 - bY2 / 4 - bY3 / 4 + bY4 / 4;
-                double C4 = bX1 / 4 + bX2 / 4 - bX3 / 4 - bX4 / 4;
-                double C5 = bX1 / 4 - bX2 / 4 - bX3 / 4 + bX4 / 4;
-                double C6 = aX1 + aX2 - aX3 - aX4;
-                double C7 = aX1 - aX2 - aX3 + aX4;
-                double C8 = aY1 + aY2 - aY3 - aY4;
-                double C9 = aY1 - aY2 - aY3 + aY4;
-                double f11 = 2 * C1 * C5 * C8 - 2 * C1 * C4 * C9;
-                double f12 = 2 * C1 * C4 * C7 - 2 * C1 * C5 * C6;
-                double f21 = 2 * C1 * C3 * C8 - 2 * C1 * C2 * C9;
-                double f22 = 2 * C1 * C2 * C7 - 2 * C1 * C3 * C6;
+        //        G(0, index + j) = e3(1) / pert; // - d(e3.y)/dxj , where xj is x,y,z for j=0,1,2
+        //        G(1, index + j) = -e3(0) / pert; // + d(e3.x)/dxj , where xj is x,y,z for j=0,1,2
+        //        G(2, index + j) = -e1(1) / pert; // + d(e1.y)/dxj , where xj is x,y,z for j=0,1,2
 
-                double alpha = std::atan2(f21 - f12, f11 + f22);
+        //        UGP(index + j) = globalDisplacements(index + j); // restore the current coordinate
+        //    }
+        //}
 
-                // this final coordinate system (perturbed) is the one in which 
-                // the deformation gradient is equal to the stretch tensor
-                ASDShellQ4LocalCoordinateSystem c(def[0], def[1], def[2], def[3], alpha);
+#else // !USE_POLAR_DECOMP_ALLIGN
 
-                // save the (numerical) rotation gradient
+        const auto& P1 = LCS.P1();
+        const auto& P2 = LCS.P2();
+        const auto& P3 = LCS.P3();
+        const auto& P4 = LCS.P4();
 
-                Vector3Type e3 = c.Vz();
-                Vector3Type e1 = c.Vx();
+        double Ap = 2.0 * LCS.Area();
+        double m = 1.0 / Ap;
 
-                G(0, index + j) = -e3(1) / pert; // - d(e3.y)/dxj , where xj is x,y,z for j=0,1,2
-                G(1, index + j) = e3(0) / pert; // + d(e3.x)/dxj , where xj is x,y,z for j=0,1,2
-                G(2, index + j) = e1(1) / pert; // + d(e1.y)/dxj , where xj is x,y,z for j=0,1,2
+        Vector3Type D12(P2 - P1);
+        Vector3Type D24(P4 - P2);
+        Vector3Type D13(P3 - P1);
 
-                iNode[j] = saved_coord; // restore the current coordinate
-            }
-        }
+        double x42 = D24(0);
+        double x24 = -x42;
+        double y42 = D24(1);
+        double y24 = -y42;
+        double x31 = D13(0);
+        double x13 = -x31;
+        double y31 = D13(1);
+        double y13 = -y31;
+
+        // Note, assuming the input vectors are in local CR, 
+        // l12 is the length of the side 1-2 projected onto the xy plane.
+        double l12 = std::sqrt(D12(0) * D12(0) + D12(1) * D12(1));
+
+        // G1
+
+        G(0, 2) = x42 * m;
+        G(1, 2) = y42 * m;
+        G(2, 1) = -1.0 / l12;
+
+        // G2
+
+        G(0, 8) = x13 * m;
+        G(1, 8) = y13 * m;
+        G(2, 7) = 1.0 / l12;
+
+        // G3
+
+        G(0, 14) = x24 * m;
+        G(1, 14) = y24 * m;
+
+        // G4
+
+        G(0, 20) = x31 * m;
+        G(1, 20) = y31 * m;
+
+#endif // USE_POLAR_DECOMP_ALLIGN
+
     }
 
 private:
@@ -490,7 +593,6 @@ private:
     std::array<Vector3Type, 4> m_RV;
     std::array<QuaternionType, 4> m_QN_converged;
     std::array<Vector3Type, 4> m_RV_converged;
-
 };
 
 #endif // !ASDShellQ4CorotationalTransformation_h

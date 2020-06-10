@@ -89,6 +89,15 @@ OPS_ASDShellQ4(void)
 // anonymous namespace for utilities
 namespace
 {
+    // some typedefs
+    typedef ASDVector3<double> Vector3Type;
+
+    // calculation options
+    constexpr int OPT_NONE = 0;
+    constexpr int OPT_UPDATE = (1 << 0);
+    constexpr int OPT_LHS = (1 << 1);
+    constexpr int OPT_RHS = (1 << 2);
+    constexpr int OPT_LHS_IS_INITIAL = (1 << 3);
 
     // gauss quadrature data
     constexpr double GLOC = 0.577350269189626;
@@ -105,7 +114,7 @@ namespace
         N(3) = 0.25 * (1.0 - xi) * (1.0 + eta);
     }
 
-    // shape functions in iso-parametric space
+    // shape function derivatives in iso-parametric space
     inline void shapeFunctionsNaturalDerivatives(double xi, double eta, Matrix& dN)
     {
         dN(0, 0) = -(1.0 - eta) * 0.25;
@@ -165,12 +174,12 @@ namespace
      */
     struct MITC4Params
     {
-        double Ax;
-        double Ay;
-        double Bx;
-        double By;
-        double Cx;
-        double Cy;
+        double Ax = 0.0;
+        double Ay = 0.0;
+        double Bx = 0.0;
+        double By = 0.0;
+        double Cx = 0.0;
+        double Cy = 0.0;
         Matrix transformation = Matrix(2, 2);
         Matrix shearStrains = Matrix(4, 24);
 
@@ -257,6 +266,7 @@ namespace
             static constexpr std::array<double, 4> s = { -1.0, 1.0, 1.0, -1.0 };
             static constexpr std::array<double, 4> t = { -1.0, -1.0, 1.0, 1.0 };
 
+            a1 = a2 = a3 = b1 = b2 = b3 = 0.0;
             for (size_t i = 0; i < 4; i++) {
                 a1 += s[i] * LCS.X(i) / 4.0;
                 a2 += t[i] * LCS.X(i) / 4.0;
@@ -268,7 +278,7 @@ namespace
         }
     };
 
-    /** \brief ASShellQ4Globals
+    /** \brief ASDShellQ4Globals
      *
      * This singleton class stores some data for the shell calculations that
      * can be statically instanciated to avoid useless re-allocations
@@ -289,11 +299,26 @@ namespace
         Vector UL = Vector(24); // local displacements
 
         Matrix B = Matrix(8, 24); // strain-displacement matrix
+        Matrix B1 = Matrix(8, 24); // strain-displacement matrix with inverted bending terms
+        Matrix B1TD = Matrix(24, 8); // holds the B1^T*D terms
+        Vector Bd = Vector(24); // strain-displacement matrix for drilling
+        Vector N = Vector(4); // shape functions
         Matrix dN = Matrix(4, 2); // shape functions derivatives in isoparametric space
+        Matrix dNdX = Matrix(4, 2); // shape functions derivatives in cartesian space
         Vector E = Vector(8); // strain vector
+        Vector S = Vector(8); // stress vector
+        Vector Elocal = Vector(8); // strain vector in local element coordinate system
+        Matrix Re = Matrix(8, 8); // rotation matrix for strains
+        Matrix Rs = Matrix(8, 8); // rotation matrix for stresses
+        Matrix RsT = Matrix(8, 8); // transpose of above
+        Matrix D = Matrix(8, 8); // section tangent
+        Matrix DRsT = Matrix(8, 8); // holds the product D * Rs^T
 
-        Matrix LHS = Matrix(24, 24); // LHS matrix
-        Vector RHS = Vector(24); // RHS vector
+        Matrix LHS = Matrix(24, 24); // LHS matrix (tangent stiffness)
+        Matrix LHS_initial = Matrix(24, 24); // LHS matrix (initial stiffness)
+        Matrix LHS_mass = Matrix(24, 24); // LHS matrix (mass matrix)
+        Vector RHS = Vector(24); // RHS vector (residual vector)
+        Vector RHS_winertia = Vector(24); // RHS vector (residual vector with inertia terms)
 
     public:
         static ASDShellQ4Globals& instance() {
@@ -302,19 +327,20 @@ namespace
         }
     };
 
-    static 
-
     // computes the complete B matrix
     void computeBMatrix(
+        const ASDShellQ4LocalCoordinateSystem& LCS,
         double xi, double eta,
         const JacobianOperator& Jac, 
         const GQ12Params& gq12,
         const MITC4Params& mitc,
+        const Vector& N,
         const Matrix& dN,
-        Matrix& B)
+        Matrix& B,
+        Vector& Bd)
     {
         // cartesian derivatives of standard shape function
-        static Matrix dNdX(4, 2);
+        auto& dNdX = ASDShellQ4Globals::instance().dNdX;
         dNdX.addMatrixProduct(0.0, dN, Jac.invJ, 1.0);
 
         // cartesian derivatives of the modified shape functions for the 
@@ -338,7 +364,12 @@ namespace
         dNUdX.addMatrixProduct(0.0, dNU, Jac.invJ, 1.0);
         dNVdX.addMatrixProduct(0.0, dNV, Jac.invJ, 1.0);
 
+        // initialize
+        B.Zero();
+        Bd.Zero();
+
         // membrane ************************************************************************************************
+        // this is the memebrane part of the compatible standard in-plane displacement field
 
         B(0, 0) = dNdX(0, 0);   B(0, 6) = dNdX(1, 0);   B(0, 12) = dNdX(2, 0);   B(0, 18) = dNdX(3, 0);
         B(1, 1) = dNdX(0, 1);   B(1, 7) = dNdX(1, 1);   B(1, 13) = dNdX(2, 1);   B(1, 19) = dNdX(3, 1);
@@ -346,22 +377,48 @@ namespace
         B(2, 1) = dNdX(0, 0);   B(2, 7) = dNdX(1, 0);   B(2, 13) = dNdX(2, 0);   B(2, 19) = dNdX(3, 0);
 
         // drilling ************************************************************************************************
+        // this is the enrichment of the displacement field linked to the in-plane rotation (drilling)
+        // according to the GQ12 formulation. Note however that even if we use a 2x2 gauss quadrature,
+        // this contribution alone leaves 2 spurios zero energy modes. Those are very rarely activated, but it
+        // is however necessary to suppress them!
 
-        B(0, 2) = dNUdX(0, 0);
-        B(1, 2) = dNVdX(0, 1);
-        B(2, 2) = dNUdX(0, 1) + dNVdX(0, 0);
+        B(0, 5) = dNUdX(0, 0);
+        B(1, 5) = dNVdX(0, 1);
+        B(2, 5) = dNUdX(0, 1) + dNVdX(0, 0);
+        
+        B(0, 11) = dNUdX(1, 0);
+        B(1, 11) = dNVdX(1, 1);
+        B(2, 11) = dNUdX(1, 1) + dNVdX(1, 0);
+        
+        B(0, 17) = dNUdX(2, 0);
+        B(1, 17) = dNVdX(2, 1);
+        B(2, 17) = dNUdX(2, 1) + dNVdX(2, 0);
+        
+        B(0, 23) = dNUdX(3, 0);
+        B(1, 23) = dNVdX(3, 1);
+        B(2, 23) = dNUdX(3, 1) + dNVdX(3, 0);
 
-        B(0, 8) = dNUdX(1, 0);
-        B(1, 8) = dNVdX(1, 1);
-        B(2, 8) = dNUdX(1, 1) + dNVdX(1, 0);
+        // to suppress the 2 spurious modes, we use the drilling penalty as defined by hughes and brezzi,
+        // where we link the independent rotation to the skew symmetric part of the in-plane displacement field.
+        // Also note that we need a full integration (2x2) for this part as well, since we need to suppress
+        // 2 zero-energy modes, and this constraint is a 1-row B matrix, so with a 1-point gauss quadrature
+        // it will provide at most 1 non-zero energy mode!
 
-        B(0, 14) = dNUdX(2, 0);
-        B(1, 14) = dNVdX(2, 1);
-        B(2, 14) = dNUdX(2, 1) + dNVdX(2, 0);
-
-        B(0, 20) = dNUdX(3, 0);
-        B(1, 20) = dNVdX(3, 1);
-        B(2, 20) = dNUdX(3, 1) + dNVdX(3, 0);
+        Bd(0) = -0.5 * dNdX(0, 1);
+        Bd(1) = 0.5 * dNdX(0, 0);
+        Bd(5) = -N(0);
+        
+        Bd(6) = -0.5 * dNdX(1, 1);
+        Bd(7) = 0.5 * dNdX(1, 0);
+        Bd(11) = -N(1);
+        
+        Bd(12) = -0.5 * dNdX(2, 1);
+        Bd(13) = 0.5 * dNdX(2, 0);
+        Bd(17) = -N(2);
+        
+        Bd(18) = -0.5 * dNdX(3, 1);
+        Bd(19) = 0.5 * dNdX(3, 0);
+        Bd(23) = -N(3);
 
         // bending *************************************************************************************************
 
@@ -374,6 +431,7 @@ namespace
 
         // MITC modified shape functions
         static Matrix MITCShapeFunctions(2, 4);
+        MITCShapeFunctions.Zero();
         MITCShapeFunctions(1, 0) = 1.0 - xi;
         MITCShapeFunctions(0, 1) = 1.0 - eta;
         MITCShapeFunctions(1, 2) = 1.0 + xi;
@@ -411,6 +469,62 @@ namespace
                 B(i + 6, j) = TBN(i, j);
     }
 
+    // invert bending terms
+    void invertBBendingTerms(
+        const Matrix& B,
+        Matrix& B1) 
+    {
+        // due to the convention in the shell sections, we need to change the sign of the bending terms
+        // for the B^T case.
+        B1.addMatrix(0.0, B, 1.0);
+        for (int i = 3; i < 6; i++) {
+            for (int j = 0; j < 4; j++) {
+                B1(i, j * 6 + 3) *= -1.0;
+                B1(i, j * 6 + 4) *= -1.0;
+            }
+        }
+    }
+
+    // computes the transformation matrix for generalized strains
+    inline void getRotationMatrixForGeneralizedStrains(double radians, Matrix& T)
+    {
+        double c = std::cos(radians);
+        double s = std::sin(radians);
+
+        T.Zero();
+
+        T(0, 0) = c * c;			T(0, 1) = s * s;			T(0, 2) = -s * c;
+        T(1, 0) = s * s;			T(1, 1) = c * c;			T(1, 2) = s * c;
+        T(2, 0) = 2.0 * s * c;		T(2, 1) = -2.0 * s * c;		T(2, 2) = c * c - s * s;
+
+        T(3, 3) = c * c;			T(3, 4) = s * s;			T(3, 5) = -s * c;
+        T(4, 3) = s * s;			T(4, 4) = c * c;			T(4, 5) = s * c;
+        T(5, 3) = 2.0 * s * c;		T(5, 4) = -2.0 * s * c;		T(5, 5) = c * c - s * s;
+
+        T(6, 6) = c;		T(6, 7) = s;
+        T(7, 6) = -s;		T(7, 7) = c;
+    }
+
+    // computes the transformation matrix for generalized stresses
+    inline void getRotationMatrixForGeneralizedStresses(double radians, Matrix& T)
+    {
+        double c = std::cos(radians);
+        double s = std::sin(radians);
+
+        T.Zero();
+
+        T(0, 0) = c * c;		T(0, 1) = s * s;		T(0, 2) = -2.0 * s * c;
+        T(1, 0) = s * s;		T(1, 1) = c * c;		T(1, 2) = 2.0 * s * c;
+        T(2, 0) = s * c;		T(2, 1) = -s * c;		T(2, 2) = c * c - s * s;
+
+        T(3, 3) = c * c;		T(3, 4) = s * s;		T(3, 5) = -2.0 * s * c;
+        T(4, 3) = s * s;		T(4, 4) = c * c;		T(4, 5) = 2.0 * s * c;
+        T(5, 3) = s * c;		T(5, 4) = -s * c;		T(5, 5) = c * c - s * s;
+
+        T(6, 6) = c;		T(6, 7) = s;
+        T(7, 6) = -s;		T(7, 7) = c;
+    }
+
 }
 
 ASDShellQ4::ASDShellQ4() 
@@ -428,7 +542,7 @@ ASDShellQ4::ASDShellQ4(
     SectionForceDeformation* section,
     bool corotational)
     : Element(tag, ELE_TAG_ASDShellQ4)
-    , m_transformation(corotational ? new ADShellQ4CorotationalTransformation() : new ASDShellQ4Transformation())
+    , m_transformation(corotational ? new ASDShellQ4CorotationalTransformation() : new ASDShellQ4Transformation())
 {
     // save node ids
     m_node_ids(0) = node1;
@@ -453,7 +567,8 @@ ASDShellQ4::~ASDShellQ4( )
         delete m_sections[i];
 
     // clean up coordinate transformation
-    delete m_transformation;
+    if(m_transformation)
+        delete m_transformation;
 
     // clean up load vectors
     if (m_load)
@@ -464,6 +579,30 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
 {
     // set domain on transformation
     m_transformation->setDomain(theDomain, m_node_ids);
+
+    // compute drilling penalty parameter
+    m_drill_stiffness = 0.0;
+    for (int i = 0; i < 4; i++)
+        m_drill_stiffness += m_sections[i]->getInitialTangent()(2, 2);
+    m_drill_stiffness /= 4.0;
+    m_drill_stiffness *= 1.0e-6;
+
+    // compute section orientation angle
+    ASDShellQ4LocalCoordinateSystem LCS = m_transformation->createReferenceCoordinateSystem();
+    Vector3Type e1_local = LCS.Vx();
+    Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
+    Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
+    Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
+    Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
+    Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
+    e1.normalize();
+    m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
+    if (m_angle != 0.0) {
+        // if they are not counter-clock-wise, let's change the sign of the angle
+        const Matrix& R = LCS.Orientation();
+        if ((e1(0) * R(1, 0) + e1(1) * R(1, 1) + e1(2) * R(1, 2)) < 0.0)
+            m_angle = -m_angle;
+    }
 
     // call base class implementation
     DomainComponent::setDomain(theDomain);
@@ -589,183 +728,34 @@ int  ASDShellQ4::revertToStart()
 
 int ASDShellQ4::update()
 {
-    // Output code
-    int result = 0;
-
-    // Compute the local coordinate system.
-    ASDShellQ4LocalCoordinateSystem local_cs = 
-        m_transformation->createLocalCoordinateSystem();
-
-    // Compute the reference coordinate system
-    ASDShellQ4LocalCoordinateSystem reference_cs = 
-        m_transformation->createReferenceCoordinateSystem();
-
-    // Prepare all the parameters needed for the MITC4
-    // and GQ12 formulations.
-    // This is to be done here outside the Gauss Loop.
-    auto& mitc = ASDShellQ4Globals::instance().mitc;
-    auto& gq12 = ASDShellQ4Globals::instance().gq12;
-    mitc.compute(reference_cs);
-    gq12.compute(reference_cs);
-
-    // Jacobian
-    auto& jac = ASDShellQ4Globals::instance().jac;
-
-    // Some matrices
-    auto& B = ASDShellQ4Globals::instance().B;
-    auto& dN = ASDShellQ4Globals::instance().dN;
-    auto& E = ASDShellQ4Globals::instance().E;
-
-    // Displacements
-    auto& UG = ASDShellQ4Globals::instance().UG;
-    auto& UL = ASDShellQ4Globals::instance().UL;
-    m_transformation->computeGlobalDisplacements(UG);
-    m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
-
-    // Gauss loop
-    for (int i = 0; i < 4; i++)
-    {
-        // Current integration point data
-        double xi = XI[i];
-        double eta = ETA[i];
-        double w = WTS[i];
-        shapeFunctionsNaturalDerivatives(xi, eta, dN);
-        jac.calculate(reference_cs, dN);
-
-        // Strain-displacement matrix
-        computeBMatrix(xi, eta, jac, gq12, mitc, dN, B);
-
-        // Section deformation
-        E.addMatrixVector(0.0, B, UL, 1.0);
-        
-        // Update section
-        result += m_sections[i]->setTrialSectionDeformation(E);
-    }
-
-    // Done
-    return result;
+    // calculate
+    auto& LHS = ASDShellQ4Globals::instance().LHS;
+    auto& RHS = ASDShellQ4Globals::instance().RHS;
+    return calculateAll(LHS, RHS, (OPT_UPDATE));
 }
 
 const Matrix& ASDShellQ4::getTangentStiff()
 {
-    // Output matrix
+    // calculate
     auto& LHS = ASDShellQ4Globals::instance().LHS;
-    LHS.Zero();
-
-    // Compute the local coordinate system.
-    ASDShellQ4LocalCoordinateSystem local_cs =
-        m_transformation->createLocalCoordinateSystem();
-
-    // Compute the reference coordinate system
-    ASDShellQ4LocalCoordinateSystem reference_cs =
-        m_transformation->createReferenceCoordinateSystem();
-
-    // Prepare all the parameters needed for the MITC4
-    // and GQ12 formulations.
-    // This is to be done here outside the Gauss Loop.
-    auto& mitc = ASDShellQ4Globals::instance().mitc;
-    auto& gq12 = ASDShellQ4Globals::instance().gq12;
-    mitc.compute(reference_cs);
-    gq12.compute(reference_cs);
-
-    // Jacobian
-    auto& jac = ASDShellQ4Globals::instance().jac;
-
-    // Some matrices
-    auto& B = ASDShellQ4Globals::instance().B;
-    auto& dN = ASDShellQ4Globals::instance().dN;
-
-    // Gauss loop
-    for (int i = 0; i < 4; i++)
-    {
-        // Current integration point data
-        double xi = XI[i];
-        double eta = ETA[i];
-        double w = WTS[i];
-        shapeFunctionsNaturalDerivatives(xi, eta, dN);
-        jac.calculate(reference_cs, dN);
-        double dA = w * jac.detJ;
-
-        // Strain-displacement matrix
-        computeBMatrix(xi, eta, jac, gq12, mitc, dN, B);
-
-        // Section tangent
-        const auto& D = m_sections[i]->getSectionTangent();
-
-        // Add current integration point contribution
-        LHS.addMatrixTripleProduct(1.0, B, D, dA);
-    }
-
-    // Tranform LHS to global coordinate system
     auto& RHS = ASDShellQ4Globals::instance().RHS;
-    m_transformation->transformToGlobal(local_cs, LHS, RHS, false, true);
-
-    // Done
+    calculateAll(LHS, RHS, (OPT_LHS));
     return LHS;
 }
 
 const Matrix& ASDShellQ4::getInitialStiff()
 {
-    // Output matrix
-    auto& LHS = ASDShellQ4Globals::instance().LHS;
-    LHS.Zero();
-
-    // Compute the local coordinate system.
-    ASDShellQ4LocalCoordinateSystem local_cs =
-        m_transformation->createLocalCoordinateSystem();
-
-    // Compute the reference coordinate system
-    ASDShellQ4LocalCoordinateSystem reference_cs =
-        m_transformation->createReferenceCoordinateSystem();
-
-    // Prepare all the parameters needed for the MITC4
-    // and GQ12 formulations.
-    // This is to be done here outside the Gauss Loop.
-    auto& mitc = ASDShellQ4Globals::instance().mitc;
-    auto& gq12 = ASDShellQ4Globals::instance().gq12;
-    mitc.compute(reference_cs);
-    gq12.compute(reference_cs);
-
-    // Jacobian
-    auto& jac = ASDShellQ4Globals::instance().jac;
-
-    // Some matrices
-    auto& B = ASDShellQ4Globals::instance().B;
-    auto& dN = ASDShellQ4Globals::instance().dN;
-
-    // Gauss loop
-    for (int i = 0; i < 4; i++)
-    {
-        // Current integration point data
-        double xi = XI[i];
-        double eta = ETA[i];
-        double w = WTS[i];
-        shapeFunctionsNaturalDerivatives(xi, eta, dN);
-        jac.calculate(reference_cs, dN);
-        double dA = w * jac.detJ;
-
-        // Strain-displacement matrix
-        computeBMatrix(xi, eta, jac, gq12, mitc, dN, B);
-
-        // Section tangent
-        const auto& D = m_sections[i]->getInitialTangent();
-
-        // Add current integration point contribution
-        LHS.addMatrixTripleProduct(1.0, B, D, dA);
-    }
-
-    // Tranform LHS to global coordinate system
+    // calculate
+    auto& LHS = ASDShellQ4Globals::instance().LHS_initial;
     auto& RHS = ASDShellQ4Globals::instance().RHS;
-    m_transformation->transformToGlobal(local_cs, LHS, RHS, false, true);
-
-    // Done
+    calculateAll(LHS, RHS, (OPT_LHS | OPT_LHS_IS_INITIAL));
     return LHS;
 }
 
 const Matrix& ASDShellQ4::getMass()
 {
     // Output matrix
-    auto& LHS = ASDShellQ4Globals::instance().LHS;
+    auto& LHS = ASDShellQ4Globals::instance().LHS_mass;
     LHS.Zero();
 
     // Compute the reference coordinate system
@@ -848,74 +838,19 @@ ASDShellQ4::addInertiaLoadToUnbalance(const Vector& accel)
 
 const Vector& ASDShellQ4::getResistingForce()
 {
-    // Output vector
-    auto& RHS = ASDShellQ4Globals::instance().RHS;
-    RHS.Zero();
-
-    // Compute the local coordinate system.
-    ASDShellQ4LocalCoordinateSystem local_cs =
-        m_transformation->createLocalCoordinateSystem();
-
-    // Compute the reference coordinate system
-    ASDShellQ4LocalCoordinateSystem reference_cs =
-        m_transformation->createReferenceCoordinateSystem();
-
-    // Prepare all the parameters needed for the MITC4
-    // and GQ12 formulations.
-    // This is to be done here outside the Gauss Loop.
-    auto& mitc = ASDShellQ4Globals::instance().mitc;
-    auto& gq12 = ASDShellQ4Globals::instance().gq12;
-    mitc.compute(reference_cs);
-    gq12.compute(reference_cs);
-
-    // Jacobian
-    auto& jac = ASDShellQ4Globals::instance().jac;
-
-    // Some matrices
-    auto& B = ASDShellQ4Globals::instance().B;
-    auto& dN = ASDShellQ4Globals::instance().dN;
-
-    // Gauss loop
-    for (int i = 0; i < 4; i++)
-    {
-        // Current integration point data
-        double xi = XI[i];
-        double eta = ETA[i];
-        double w = WTS[i];
-        shapeFunctionsNaturalDerivatives(xi, eta, dN);
-        jac.calculate(reference_cs, dN);
-        double dA = w * jac.detJ;
-
-        // Strain-displacement matrix
-        computeBMatrix(xi, eta, jac, gq12, mitc, dN, B);
-
-        // Section force
-        const auto& S = m_sections[i]->getStressResultant();
-
-        // Add current integration point contribution
-        RHS.addMatrixTransposeVector(1.0, B, S, dA);
-    }
-
-    // Tranform RHS to global coordinate system
+    // calculate
     auto& LHS = ASDShellQ4Globals::instance().LHS;
-    m_transformation->transformToGlobal(local_cs, LHS, RHS, true, false);
-
-    // Subtract external loads if any
-    if (m_load) {
-        RHS.addVector(1.0, *m_load, -1.0);
-    }
-
-    // Done
+    auto& RHS = ASDShellQ4Globals::instance().RHS;
+    calculateAll(LHS, RHS, (OPT_RHS));
     return RHS;
 }
 
 const Vector& ASDShellQ4::getResistingForceIncInertia()
 {
-    // Output vector
-    auto& RHS = ASDShellQ4Globals::instance().RHS;
-
-    // Compute residual (sets RHS above...)
-    getResistingForce();
+    // calculate
+    auto& LHS = ASDShellQ4Globals::instance().LHS;
+    auto& RHS = ASDShellQ4Globals::instance().RHS_winertia;
+    calculateAll(LHS, RHS, (OPT_RHS));
 
     // Add damping terms
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
@@ -939,179 +874,157 @@ const Vector& ASDShellQ4::getResistingForceIncInertia()
 
 int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 {
-    return -1;
-    //int res = 0;
+    int res = 0;
 
-    //// note: we don't check for dataTag == 0 for Element
-    //// objects as that is taken care of in a commit by the Domain
-    //// object - don't want to have to do the check if sending data
-    //int dataTag = this->getDbTag();
+    // note: we don't check for dataTag == 0 for Element
+    // objects as that is taken care of in a commit by the Domain
+    // object - don't want to have to do the check if sending data
+    int dataTag = this->getDbTag();
 
-    //// send the ids of sections
-    //int matDbTag;
+    // send the ids of sections
+    int matDbTag;
 
-    //static ID idData(14);
+    // INT data
+    // 4 section class tags +
+    // 4 mat db tag +
+    // 1 tag +
+    // 4 node tags +
+    // 1 transformation type
+    static ID idData(14);
 
-    //for (int i = 0; i < 4; i++) {
-    //    idData(i) = m_sections[i]->getClassTag();
-    //    matDbTag = m_sections[i]->getDbTag();
-    //    // NOTE: we do have to ensure that the material has a database
-    //    // tag if we are sending to a database channel.
-    //    if (matDbTag == 0) {
-    //        matDbTag = theChannel.getDbTag();
-    //        if (matDbTag != 0)
-    //            m_sections[i]->setDbTag(matDbTag);
-    //    }
-    //    idData(i + 4) = matDbTag;
-    //}
+    for (int i = 0; i < 4; i++) {
+        idData(i) = m_sections[i]->getClassTag();
+        matDbTag = m_sections[i]->getDbTag();
+        // NOTE: we do have to ensure that the material has a database
+        // tag if we are sending to a database channel.
+        if (matDbTag == 0) {
+            matDbTag = theChannel.getDbTag();
+            if (matDbTag != 0)
+                m_sections[i]->setDbTag(matDbTag);
+        }
+        idData(i + 4) = matDbTag;
+    }
 
-    //idData(8) = getTag();
-    //idData(9) = m_node_ids(0);
-    //idData(10) = m_node_ids(1);
-    //idData(11) = m_node_ids(2);
-    //idData(12) = m_node_ids(3);
-    //idData(13) = m_transformation->isLinear() ? 0 : 1;
+    idData(8) = getTag();
+    idData(9) = m_node_ids(0);
+    idData(10) = m_node_ids(1);
+    idData(11) = m_node_ids(2);
+    idData(12) = m_node_ids(3);
+    idData(13) = m_transformation->isLinear() ? 0 : 1;
 
-    //res += theChannel.sendID(dataTag, commitTag, idData);
-    //if (res < 0) {
-    //    opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    //    return res;
-    //}
+    res += theChannel.sendID(dataTag, commitTag, idData);
+    if (res < 0) {
+        opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send ID\n";
+        return res;
+    }
 
-    //static Vector vectData(5 + 6 * 4);
-    //vectData(0) = Ktt;
-    //vectData(1) = alphaM;
-    //vectData(2) = betaK;
-    //vectData(3) = betaK0;
-    //vectData(4) = betaKc;
+    // DOUBLE data
+    // 4 damping factors +
+    // 2 drill stiffness and section orientation angle +
+    // N transformation data
+    int NT = m_transformation->internalDataSize();
+    Vector vectData(6 + NT);
+    
+    vectData(0) = alphaM;
+    vectData(1) = betaK;
+    vectData(2) = betaK0;
+    vectData(3) = betaKc;
+    vectData(4) = m_drill_stiffness;
+    vectData(5) = m_angle;
+    m_transformation->saveInternalData(vectData, 6);
 
-    //int pos = 0;
-    //for (int node = 0; node < 4; ++node)
-    //{
-    //    for (int dof = 0; dof < 6; ++dof)
-    //    {
-    //        vectData(5 + pos) = init_disp[node][dof];
-    //        pos++;
-    //    }
-    //}
+    res += theChannel.sendVector(dataTag, commitTag, vectData);
+    if (res < 0) {
+        opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+        return res;
+    }
 
-    //res += theChannel.sendVector(dataTag, commitTag, vectData);
-    //if (res < 0) {
-    //    opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    //    return res;
-    //}
+    // send all sections
+    for (int i = 0; i < 4; i++) {
+        res += m_sections[i]->sendSelf(commitTag, theChannel);
+        if (res < 0) {
+            opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+            return res;
+        }
+    }
 
-    //// Finally, quad asks its material objects to send themselves
-    //for (i = 0; i < 4; i++) {
-    //    res += m_sections[i]->sendSelf(commitTag, theChannel);
-    //    if (res < 0) {
-    //        opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send its Material\n";
-    //        return res;
-    //    }
-    //}
-
-    //return res;
+    // done
+    return res;
 }
 
-int  ASDShellQ4::recvSelf(int commitTag,
-    Channel& theChannel,
-    FEM_ObjectBroker& theBroker)
+int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
-    return -1;
-    //int res = 0;
+    int res = 0;
 
-    //int dataTag = this->getDbTag();
+    int dataTag = this->getDbTag();
 
-    //static ID idData(14);
-    //// Quad now receives the tags of its four external nodes
-    //res += theChannel.recvID(dataTag, commitTag, idData);
-    //if (res < 0) {
-    //    opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive ID\n";
-    //    return res;
-    //}
+    // INT data
+    // 4 section class tags +
+    // 4 mat db tag +
+    // 1 tag +
+    // 4 node tags +
+    // 1 transformation type
+    static ID idData(14);
+    res += theChannel.recvID(dataTag, commitTag, idData);
+    if (res < 0) {
+        opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+        return res;
+    }
 
-    //this->setTag(idData(8));
-    //connectedExternalNodes(0) = idData(9);
-    //connectedExternalNodes(1) = idData(10);
-    //connectedExternalNodes(2) = idData(11);
-    //connectedExternalNodes(3) = idData(12);
-    //if (idData(13) == 0)
-    //    doUpdateBasis = true;
-    //else
-    //    doUpdateBasis = false;
+    setTag(idData(8));
+    m_node_ids(0) = idData(9);
+    m_node_ids(1) = idData(10);
+    m_node_ids(2) = idData(11);
+    m_node_ids(3) = idData(12);
 
-    //static Vector vectData(5 + 6 * 4);
-    //res += theChannel.recvVector(dataTag, commitTag, vectData);
-    //if (res < 0) {
-    //    opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    //    return res;
-    //}
+    if (m_transformation)
+        delete m_transformation;
+    m_transformation = idData(13) == 0 ? new ASDShellQ4Transformation() : new ASDShellQ4CorotationalTransformation();
 
-    //Ktt = vectData(0);
-    //alphaM = vectData(1);
-    //betaK = vectData(2);
-    //betaK0 = vectData(3);
-    //betaKc = vectData(4);
+    // DOUBLE data
+    // 4 damping factors +
+    // 2 drill stiffness and section orientation angle +
+    // N transformation data
+    int NT = m_transformation->internalDataSize();
+    Vector vectData(6 + NT);
 
+    res += theChannel.recvVector(dataTag, commitTag, vectData);
+    if (res < 0) {
+        opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to receive Vector\n";
+        return res;
+    }
 
-    //int pos = 0;
-    //for (int node = 0; node < 4; ++node)
-    //{
-    //    for (int dof = 0; dof < 6; ++dof)
-    //    {
-    //        init_disp[node][dof] = vectData(5 + pos);
-    //        pos++;
-    //    }
-    //}
+    alphaM = vectData(0);
+    betaK = vectData(1);
+    betaK0 = vectData(2);
+    betaKc = vectData(3);
+    m_drill_stiffness = vectData(4);
+    m_angle = vectData(5);
+    m_transformation->restoreInternalData(vectData, 6);
 
+    // all sections
+    for (int i = 0; i < 4; i++) {
+        int matClassTag = idData(i);
+        int matDbTag = idData(i + 4);
+        // Allocate new material with the sent class tag
+        if (m_sections[i])
+            delete m_sections[i];
+        m_sections[i] = theBroker.getNewSection(matClassTag);
+        if (m_sections[i] == 0) {
+            opserr << "ASDShellQ4::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;;
+            return -1;
+        }
+        // Receive the material
+        m_sections[i]->setDbTag(matDbTag);
+        res += m_sections[i]->recvSelf(commitTag, theChannel, theBroker);
+        if (res < 0) {
+            opserr << "ASDShellQ4::recvSelf() - material " << i << "failed to recv itself\n";
+            return res;
+        }
+    }
 
-    //int i;
-
-    //if (materialPointers[0] == 0) {
-    //    for (i = 0; i < 4; i++) {
-    //        int matClassTag = idData(i);
-    //        int matDbTag = idData(i + 4);
-    //        // Allocate new material with the sent class tag
-    //        materialPointers[i] = theBroker.getNewSection(matClassTag);
-    //        if (materialPointers[i] == 0) {
-    //            opserr << "ASDShellQ4::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;;
-    //            return -1;
-    //        }
-    //        // Now receive materials into the newly allocated space
-    //        materialPointers[i]->setDbTag(matDbTag);
-    //        res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
-    //        if (res < 0) {
-    //            opserr << "ASDShellQ4::recvSelf() - material " << i << "failed to recv itself\n";
-    //            return res;
-    //        }
-    //    }
-    //}
-    //// Number of materials is the same, receive materials into current space
-    //else {
-    //    for (i = 0; i < 4; i++) {
-    //        int matClassTag = idData(i);
-    //        int matDbTag = idData(i + 4);
-    //        // Check that material is of the right type; if not,
-    //        // delete it and create a new one of the right type
-    //        if (materialPointers[i]->getClassTag() != matClassTag) {
-    //            delete materialPointers[i];
-    //            materialPointers[i] = theBroker.getNewSection(matClassTag);
-    //            if (materialPointers[i] == 0) {
-    //                opserr << "ASDShellQ4::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;
-    //                exit(-1);
-    //            }
-    //        }
-    //        // Receive the material
-    //        materialPointers[i]->setDbTag(matDbTag);
-    //        res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
-    //        if (res < 0) {
-    //            opserr << "ASDShellQ4::recvSelf() - material " << i << "failed to recv itself\n";
-    //            return res;
-    //        }
-    //    }
-    //}
-
-    //return res;
+    // done
+    return res;
 }
 
 Response*
@@ -1269,11 +1182,186 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
     }
 }
 
+int ASDShellQ4::setParameter(const char** argv, int argc, Parameter& param)
+{
+    int res = -1;
+    int matRes = res;
+    for (int i = 0; i < 4; i++)
+    {
+        matRes = m_sections[i]->setParameter(argv, argc, param);
+        if (matRes != -1)
+            res = matRes;
+    }
+    return res;
+}
 
+int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
+{
+    // Check options
+    if (!m_transformation->isLinear()) {
+        // corotational calculation of the tangent LHS requires the RHS!
+        if (options & OPT_LHS)
+            options |= OPT_RHS;
+    }
 
+    // Zero output
+    int result = 0;
+    if(options & OPT_RHS)
+        RHS.Zero();
+    if(options & OPT_LHS)
+        LHS.Zero();
 
+    // Global displacements
+    auto& UG = ASDShellQ4Globals::instance().UG;
+    m_transformation->computeGlobalDisplacements(UG);
 
+    // update transformation
+    if(options & OPT_UPDATE)
+        m_transformation->update(UG);
 
+    // Compute the reference coordinate system
+    ASDShellQ4LocalCoordinateSystem reference_cs =
+        m_transformation->createReferenceCoordinateSystem();
 
+    // Compute the local coordinate system.
+    ASDShellQ4LocalCoordinateSystem local_cs =
+        m_transformation->createLocalCoordinateSystem(UG);
 
+    // Prepare all the parameters needed for the MITC4
+    // and GQ12 formulations.
+    // This is to be done here outside the Gauss Loop.
+    auto& mitc = ASDShellQ4Globals::instance().mitc;
+    auto& gq12 = ASDShellQ4Globals::instance().gq12;
+    mitc.compute(reference_cs);
+    gq12.compute(reference_cs);
+
+    // Jacobian
+    auto& jac = ASDShellQ4Globals::instance().jac;
+
+    // Some matrices
+    auto& B = ASDShellQ4Globals::instance().B;
+    auto& Bd = ASDShellQ4Globals::instance().Bd;
+    auto& B1 = ASDShellQ4Globals::instance().B1;
+    auto& B1TD = ASDShellQ4Globals::instance().B1TD;
+    auto& N = ASDShellQ4Globals::instance().N;
+    auto& dN = ASDShellQ4Globals::instance().dN;
+    auto& E = ASDShellQ4Globals::instance().E;
+    auto& S = ASDShellQ4Globals::instance().S;
+    auto& D = ASDShellQ4Globals::instance().D;
+
+    // matrices for orienting strains in section coordinate system
+    auto& Re = ASDShellQ4Globals::instance().Re;
+    auto& Rs = ASDShellQ4Globals::instance().Rs;
+    if (m_angle != 0.0) {
+        if (options & OPT_UPDATE)
+            getRotationMatrixForGeneralizedStrains(-m_angle, Re);
+        if (options & OPT_RHS)
+            getRotationMatrixForGeneralizedStresses(m_angle, Rs);
+    }
+
+    // Local displacements
+    auto& UL = ASDShellQ4Globals::instance().UL;
+    m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
+
+    // Gauss loop
+    for (int i = 0; i < 4; i++)
+    {
+        // Current integration point data
+        double xi = XI[i];
+        double eta = ETA[i];
+        double w = WTS[i];
+        shapeFunctions(xi, eta, N);
+        shapeFunctionsNaturalDerivatives(xi, eta, dN);
+        jac.calculate(reference_cs, dN);
+        double dA = w * jac.detJ;
+
+        // Strain-displacement matrix
+        computeBMatrix(reference_cs, xi, eta, jac, gq12, mitc, N, dN, B, Bd);
+
+        // Update strain strain
+        if (options & OPT_UPDATE)
+        {
+            // Section deformation
+            if (m_angle != 0.0) {
+                auto& Elocal = ASDShellQ4Globals::instance().Elocal;
+                Elocal.addMatrixVector(0.0, B, UL, 1.0);
+                E.addMatrixVector(0.0, Re, Elocal, 1.0);
+            }
+            else {
+                E.addMatrixVector(0.0, B, UL, 1.0);
+            }
+
+            // Update section
+            result += m_sections[i]->setTrialSectionDeformation(E);
+
+            // Drilling strain Ed = Bd*UL
+            double& Ed = m_drill_strain[i];
+            Ed = 0.0;
+            for (int i = 0; i < 24; i++)
+                Ed += Bd(i) * UL(i);
+        }
+
+        // Invert bending terms for correct statement of equilibrium
+        if((options & OPT_RHS) || (options & OPT_LHS))
+            invertBBendingTerms(B, B1);
+
+        // Integrate RHS
+        if (options & OPT_RHS)
+        {
+            // Section force
+            if (m_angle != 0.0) {
+                auto& Ssection = m_sections[i]->getStressResultant();
+                S.addMatrixVector(0.0, Rs, Ssection, 1.0);
+            }
+            else {
+                S = m_sections[i]->getStressResultant();
+            }
+
+            // Add current integration point contribution (RHS)
+            RHS.addMatrixTransposeVector(1.0, B1, S, dA);
+
+            // Add drilling stress = Bd'*Sd * dA (RHS)
+            double Sd = m_drill_stiffness * m_drill_strain[i];
+            for (int i = 0; i < 24; i++)
+                RHS(i) += Bd(i) * Sd * dA;
+        }
+
+        // Integrate LHS
+        if (options & OPT_LHS) 
+        {
+            // Section tangent
+            if(m_angle != 0.0) {
+                const auto& Dsection = (options & OPT_LHS_IS_INITIAL) ? m_sections[i]->getInitialTangent() : m_sections[i]->getSectionTangent();
+                auto& RsT = ASDShellQ4Globals::instance().RsT;
+                RsT.addMatrixTranspose(0.0, Rs, 1.0);
+                auto& DRsT = ASDShellQ4Globals::instance().DRsT;
+                DRsT.addMatrixProduct(0.0, Dsection, RsT, 1.0);
+                D.addMatrixProduct(0.0, Rs, DRsT, 1.0);
+            }
+            else {
+                D = (options & OPT_LHS_IS_INITIAL) ? m_sections[i]->getInitialTangent() : m_sections[i]->getSectionTangent();
+            }
+
+            // Add current integration point contribution (LHS)
+            B1TD.addMatrixTransposeProduct(0.0, B1, D, dA);
+            LHS.addMatrixProduct(1.0, B1TD, B, 1.0);
+
+            // Add drilling stiffness = Bd'*Kd*Bd * dA (LHS)
+            for (int i = 0; i < 24; i++)
+                for (int j = 0; j < 24; j++)
+                    LHS(i, j) += Bd(i) * m_drill_stiffness * Bd(j) * dA;
+        }
+
+    }
+
+    // Tranform LHS to global coordinate system
+    m_transformation->transformToGlobal(local_cs, UG, UL, LHS, RHS, (options & OPT_LHS));
+
+    // Subtract external loads if any
+    if ((options & OPT_RHS) && m_load) 
+        RHS.addVector(1.0, *m_load, -1.0);
+
+    // Done
+    return result;
+}
 

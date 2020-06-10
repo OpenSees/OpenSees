@@ -45,6 +45,8 @@
 
 #include <Element.h>
 #include <ID.h>
+#include <Vector.h>
+#include <Matrix.h>
 
 class SectionForceDeformation;
 class ASDShellQ4Transformation;
@@ -103,9 +105,15 @@ public:
     int sendSelf(int commitTag, Channel& theChannel);
     int recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
 
-
     Response* setResponse(const char** argv, int argc, OPS_Stream& output);
     int getResponse(int responseID, Information& eleInfo);
+
+    int setParameter(const char** argv, int argc, Parameter& param);
+
+private:
+
+    // internal method to compute everything using switches...
+    int calculateAll(Matrix& LHS, Vector& RHS, int options);
 
 private:
 
@@ -120,6 +128,14 @@ private:
 
     // vectors for applying load (allocated only if necessary)
     Vector* m_load = nullptr;
+
+    // drilling strain for the indipendent rotation field (Hughes-Brezzi)
+    // since the QG12 formulation has a rank-1 deficiency
+    double m_drill_strain[4] = { 0.0, 0.0, 0.0, 0.0 };
+    double m_drill_stiffness = 0.0;
+
+    // section orientation with respect to the local coordinate system
+    double m_angle = 0.0;
 };
 
 #endif // ASDShellQ4_h

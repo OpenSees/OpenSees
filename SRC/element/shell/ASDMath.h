@@ -184,7 +184,7 @@ public:
 	inline T normalize()
 	{
 		T n = norm();
-		if (n > std::numeric_limits<T>::epsilon()) {
+		if (n > 0.0) {
 			mData[0] /= n;
 			mData[1] /= n;
 			mData[2] /= n;
@@ -285,6 +285,18 @@ template<class T>
 inline ASDVector3<T> operator * (T a, const ASDVector3<T>& b)
 {
 	return b * a;
+}
+
+/**
+Prints this vector to a input stream
+@param s the output stream
+@param v the vector
+@return the stream
+*/
+template<class TStream, class T>
+inline TStream& operator << (TStream& s, const ASDVector3<T>& v)
+{
+	return (s << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")");
 }
 
 /** \brief ASDQuaternion
@@ -396,7 +408,7 @@ public:
 	*/
 	inline const T norm()const
 	{
-		return std::sqrt(this->squaredNorm());
+		return std::sqrt(squaredNorm());
 	}
 
 	/**
@@ -588,10 +600,10 @@ public:
 	static inline ASDQuaternion FromAxisAngle(T x, T y, T z, T radians)
 	{
 		T sqnorm = x * x + y * y + z * z;
-		if (sqnorm < std::numeric_limits<T>::epsilon())
+		if (sqnorm == 0.0)
 			return ASDQuaternion::Identity();
 
-		if (sqnorm != 1.0) {
+		if (sqnorm > 0.0 && sqnorm != 1.0) {
 			T norm = std::sqrt(sqnorm);
 			x /= norm;
 			y /= norm;
@@ -619,7 +631,7 @@ public:
 	static inline ASDQuaternion FromRotationVector(T rx, T ry, T rz)
 	{
 		T rModulus = rx * rx + ry * ry + rz * rz;
-		if (rModulus < std::numeric_limits<T>::epsilon())
+		if (rModulus == 0.0)
 			return ASDQuaternion::Identity();
 
 		if (rModulus != 1.0) {
@@ -634,7 +646,10 @@ public:
 		T q0 = std::cos(halfAngle);
 		T s = std::sin(halfAngle);
 
-		return ASDQuaternion(q0, rx * s, ry * s, rz * s);
+		ASDQuaternion result(q0, rx * s, ry * s, rz * s);
+		result.normalize();
+
+		return result;
 	}
 
 	/**

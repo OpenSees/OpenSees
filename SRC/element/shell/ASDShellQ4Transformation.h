@@ -119,12 +119,14 @@ public:
     {
     }
 
-    virtual void update()
+    virtual void update(const VectorType& globalDisplacements)
     {
     }
 
     virtual ASDShellQ4LocalCoordinateSystem createReferenceCoordinateSystem()const
     {
+        // the reference coordinate system in the underformed configuration
+        // using the default alignment to the first column of the jacobian at center
         return ASDShellQ4LocalCoordinateSystem(
             Vector3Type(m_nodes[0]->getCrds()),
             Vector3Type(m_nodes[1]->getCrds()),
@@ -133,8 +135,9 @@ public:
         );
     }
 
-    virtual ASDShellQ4LocalCoordinateSystem createLocalCoordinateSystem()const
+    virtual ASDShellQ4LocalCoordinateSystem createLocalCoordinateSystem(const VectorType& globalDisplacements)const
     {
+        // same as reference
         return createReferenceCoordinateSystem();
     }
 
@@ -180,17 +183,16 @@ public:
         const VectorType& localDisplacements,
         MatrixType& LHS,
         VectorType& RHS,
-        bool RHSrequired,
         bool LHSrequired)
     {
-        static MatrixType temp(24, 24);
+        static MatrixType RT_LHS(24, 24);
+        static VectorType RHScopy(24);
         const MatrixType& R = computeTransformationMatrix(LCS);
+        RHScopy = RHS;
+        RHS.addMatrixTransposeVector(0.0, R, RHScopy, 1.0);
         if (LHSrequired) {
-            temp.addMatrixTransposeProduct(0.0, R, LHS, 1.0);
-            LHS.addMatrixProduct(0.0, temp, R, 1.0);
-        }
-        if (RHSrequired) {
-            RHS.addMatrixTransposeVector(0.0, R, RHS, 1.0);
+            RT_LHS.addMatrixTransposeProduct(0.0, R, LHS, 1.0);
+            LHS.addMatrixProduct(0.0, RT_LHS, R, 1.0);
         }
     }
 
@@ -198,11 +200,36 @@ public:
         const ASDShellQ4LocalCoordinateSystem& LCS,
         MatrixType& LHS,
         VectorType& RHS,
-        bool RHSrequired,
         bool LHSrequired)
     {
         static VectorType dummy;
-        transformToGlobal(LCS, dummy, dummy, LHS, RHS, RHSrequired, LHSrequired);
+        transformToGlobal(LCS, dummy, dummy, LHS, RHS, LHSrequired);
+    }
+
+    virtual int internalDataSize() const
+    {
+        // just the size of the initial displacements
+        return 24;
+    }
+
+    virtual void saveInternalData(VectorType& v, int pos) const
+    {
+        if ((v.Size() - pos) < internalDataSize()) {
+            opserr << "ASDShellQ4Transformation - failed to save internal data: vector too small\n";
+            exit(-1);
+        }
+        for (int i = 0; i < 24; i++)
+            v(pos++) = m_U0(i);
+    }
+
+    virtual void restoreInternalData(const VectorType& v, int pos)
+    {
+        if ((v.Size() - pos) < internalDataSize()) {
+            opserr << "ASDShellQ4Transformation - failed to restore internal data: vector too small\n";
+            exit(-1);
+        }
+        for (int i = 0; i < 24; i++)
+            m_U0(i) = v(pos++);
     }
 
 public:
