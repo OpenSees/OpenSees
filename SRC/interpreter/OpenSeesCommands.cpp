@@ -69,6 +69,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonRaphson.h>
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
+#include <GimmeMCK.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -1417,6 +1418,9 @@ int OPS_Integrator()
 
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();
+
+    } else if (strcmp(type,"GimmeMCK") == 0 || strcmp(type,"ZZTop") == 0) {
+	ti = (TransientIntegrator*)OPS_GimmeMCK();
 
     } else if (strcmp(type,"TRBDF2") == 0 || strcmp(type,"Bathe") == 0) {
 	ti = (TransientIntegrator*)OPS_TRBDF2();

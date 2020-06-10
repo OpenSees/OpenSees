@@ -78,6 +78,9 @@
     <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

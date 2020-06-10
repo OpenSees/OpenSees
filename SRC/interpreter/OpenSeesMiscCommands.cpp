@@ -2184,6 +2184,8 @@ int OPS_partition() {
     // partition for elements
     std::vector<idx_t> epart(ne);
 
+    // partition for nodes
+    std::vector<idx_t> npart(nn);
 
     // do partition on P0
     if (pid == 0) {
@@ -2204,9 +2206,6 @@ int OPS_partition() {
 
         // total communications volume
         idx_t objval;
-
-        // partition for nodes
-        std::vector<idx_t> npart(nn);
 
         // call metis
         auto res =
@@ -2230,10 +2229,17 @@ int OPS_partition() {
         }
     }
 
-    // broadcast partitions
+    // broadcast element partitions
     if (MPI_Bcast(&epart[0], ne, MPI_INT, 0, MPI_COMM_WORLD) !=
         MPI_SUCCESS) {
         opserr << "WARNING: failed to broadcast epart\n";
+        return -1;
+    }
+
+    // broadcast node partitions
+    if (MPI_Bcast(&npart[0], nn, MPI_INT, 0, MPI_COMM_WORLD) !=
+        MPI_SUCCESS) {
+        opserr << "WARNING: failed to broadcast npart\n";
         return -1;
     }
 
@@ -2242,7 +2248,7 @@ int OPS_partition() {
 
         // remove element
         if (epart[i] != pid) {
-            Element* ele = domain->removeElement(etag[i]);
+            Element *ele = domain->removeElement(etag[i]);
             if (ele != 0) {
                 delete ele;
             }
@@ -2253,7 +2259,10 @@ int OPS_partition() {
         Element *ele = domain->getElement(etag[i]);
         const auto &elenodes = ele->getExternalNodes();
         for (int j = 0; j < elenodes.Size(); ++j) {
-            nind[elenodes(j)] = -1;
+            auto &id = nind[elenodes(j)];
+            if (id >= 0) {
+                id = -id - 1;
+            }
         }
     }
 
@@ -2265,9 +2274,13 @@ int OPS_partition() {
         int ctag = mp->getNodeConstrained();
         auto &rid = nind[rtag];
         auto &cid = nind[ctag];
-        if (rid == -1 || cid == -1) {
-            rid = -1;
-            cid = -1;
+        if (rid < 0 || cid < 0) {
+            if (rid >= 0) {
+                rid = -rid - 1;
+            }
+            if (cid >= 0) {
+                cid = -cid - 1;
+            }
         } else {
             domain->removeMP_Constraint(mp->getTag());
             delete mp;
@@ -2315,6 +2328,13 @@ int OPS_partition() {
             if (id >= 0) {
                 lp->removeNodalLoad(nload->getTag());
                 delete nload;
+            } else {
+                // nodal load can only appear in one place
+                id = -id - 1;
+                if (npart[id] != pid) {
+                    lp->removeNodalLoad(nload->getTag());
+                    delete nload;
+                }
             }
         }
 
