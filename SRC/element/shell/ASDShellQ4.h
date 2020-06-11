@@ -23,7 +23,7 @@
 
 // Original implementation: Massimo Petracca (ASDEA)
 //
-// A 4-node general shell element based on the GQ12 formulation 
+// A 4-node general shell element based on the AGQI formulation 
 // for the in-plane behavior, 
 // and the MITC4 formulation for the out-of-plane behavior.
 // 
@@ -50,6 +50,7 @@
 
 class SectionForceDeformation;
 class ASDShellQ4Transformation;
+class ASDShellQ4LocalCoordinateSystem;
 
 class ASDShellQ4 : public Element
 {
@@ -115,6 +116,10 @@ private:
     // internal method to compute everything using switches...
     int calculateAll(Matrix& LHS, Vector& RHS, int options);
 
+    void AGQIinitialize();
+    void AGQIupdate(const Vector& UL);
+    void AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs);
+
 private:
 
     // cross sections
@@ -130,12 +135,23 @@ private:
     Vector* m_load = nullptr;
 
     // drilling strain for the indipendent rotation field (Hughes-Brezzi)
-    // since the QG12 formulation has a rank-1 deficiency
     double m_drill_strain[4] = { 0.0, 0.0, 0.0, 0.0 };
     double m_drill_stiffness = 0.0;
 
     // section orientation with respect to the local coordinate system
     double m_angle = 0.0;
+
+    // members for non-linear treatement of AGQI internal DOFs:
+    // it has 24 displacement DOFs
+    // and 4 internal DOFs for membrane enhancement
+    Vector m_Q = Vector(4);
+    Vector m_Q_converged = Vector(4);
+    Vector m_U = Vector(24);
+    Vector m_U_converged = Vector(24);
+    Vector m_Q_residual = Vector(4);
+    Matrix m_KQQ_inv = Matrix(4, 4);
+    Matrix m_KQU = Matrix(4, 24); // L = G'*C*B
+    Matrix m_KUQ = Matrix(24, 4); // L^T = B'*C'*G
 };
 
 #endif // ASDShellQ4_h

@@ -246,36 +246,50 @@ namespace
 
     };
 
-    /** \brief GQ12Params
+    /** \brief AGQIParams
      *
      * This class performs some operations and stores some data to compute
-     * the higher order shape functions for the drilling dof
+     * the AGQI enhancement of the membrane part
      *
      */
-    struct GQ12Params
+    struct AGQIParams
     {
-        double a1 = 0.0;
-        double a2 = 0.0;
-        double a3 = 0.0;
-        double b1 = 0.0;
-        double b2 = 0.0;
-        double b3 = 0.0;
+        std::array<double, 4> X = { 0.0, 0.0, 0.0, 0.0 };
+        std::array<double, 4> Y = { 0.0, 0.0, 0.0, 0.0 };
+        std::array<double, 4> b = { 0.0, 0.0, 0.0, 0.0 };
+        std::array<double, 4> c = { 0.0, 0.0, 0.0, 0.0 };
+        double A1 = 0.0;
+        double A2 = 0.0;
+        double A3 = 0.0;
+        double A = 0.0;
+        std::array<double, 4> g = { 0.0, 0.0, 0.0, 0.0 };
 
         void compute(const ASDShellQ4LocalCoordinateSystem& LCS)
         {
-            static constexpr std::array<double, 4> s = { -1.0, 1.0, 1.0, -1.0 };
-            static constexpr std::array<double, 4> t = { -1.0, -1.0, 1.0, 1.0 };
-
-            a1 = a2 = a3 = b1 = b2 = b3 = 0.0;
-            for (size_t i = 0; i < 4; i++) {
-                a1 += s[i] * LCS.X(i) / 4.0;
-                a2 += t[i] * LCS.X(i) / 4.0;
-                a3 += s[i] * t[i] * LCS.X(i) / 4.0;
-                b1 += s[i] * LCS.Y(i) / 4.0;
-                b2 += t[i] * LCS.Y(i) / 4.0;
-                b3 += s[i] * t[i] * LCS.Y(i) / 4.0;
+            // extract the x and y coordinates
+            // and compute bi = yj-yk, and ci = xk-xj
+            // Eq 3
+            for (int i = 0; i < 4; i++) {
+                X[i] = LCS.X(i);
+                Y[i] = LCS.Y(i);
             }
+            for (int i = 0; i < 4; i++) {
+                int j = i + 1; if (j > 3) j = 0;
+                int k = j + 1; if (k > 3) k = 0;
+                b[i] = Y[j] - Y[k];
+                c[i] = X[k] - X[j];
+            }
+
+            // areas of sub-triangles
+            A1 = 0.5 * (X[1] * Y[3] + X[0] * Y[1] + X[3] * Y[0] - X[1] * Y[0] - X[3] * Y[1] - X[0] * Y[3]);
+            A2 = 0.5 * (X[1] * Y[2] + X[0] * Y[1] + X[2] * Y[0] - X[1] * Y[0] - X[2] * Y[1] - X[0] * Y[2]);
+            A3 = 0.5 * (X[2] * Y[3] + X[1] * Y[2] + X[3] * Y[1] - X[2] * Y[1] - X[3] * Y[2] - X[1] * Y[3]);
+            A = A1 + A3;
+            // characteristic parameters of a quadrilateral
+            // Eq 4
+            g[0] = A1 / A; g[1] = A2 / A; g[2] = 1.0 - g[0]; g[3] = 1.0 - g[1];
         }
+
     };
 
     /** \brief ASDShellQ4Globals
@@ -287,13 +301,13 @@ namespace
     class ASDShellQ4Globals
     {
     private:
-        ASDShellQ4Globals() {}
+        ASDShellQ4Globals() = default;
 
     public:
 
         JacobianOperator jac; // Jacobian
         MITC4Params mitc; // MITC4 parameters
-        GQ12Params gq12; // GQ12 parameters
+        AGQIParams agq; // GQ12 parameters
 
         Vector UG = Vector(24); // global displacements
         Vector UL = Vector(24); // local displacements
@@ -314,6 +328,11 @@ namespace
         Matrix D = Matrix(8, 8); // section tangent
         Matrix DRsT = Matrix(8, 8); // holds the product D * Rs^T
 
+        Matrix BQ = Matrix(3, 4); // B matrix for internal DOFs
+        Matrix BQ_mean = Matrix(3, 4); // Average B matrix for internal DOFs
+        Matrix BQTD = Matrix(4, 3); // holds the BQ^T*D terms
+        Matrix DBQ = Matrix(3, 4); // holds the D*BQ^T terms
+
         Matrix LHS = Matrix(24, 24); // LHS matrix (tangent stiffness)
         Matrix LHS_initial = Matrix(24, 24); // LHS matrix (initial stiffness)
         Matrix LHS_mass = Matrix(24, 24); // LHS matrix (mass matrix)
@@ -332,41 +351,73 @@ namespace
         const ASDShellQ4LocalCoordinateSystem& LCS,
         double xi, double eta,
         const JacobianOperator& Jac, 
-        const GQ12Params& gq12,
+        const AGQIParams& agq,
         const MITC4Params& mitc,
         const Vector& N,
         const Matrix& dN,
+        const Matrix& BQ_mean,
         Matrix& B,
-        Vector& Bd)
+        Matrix& BQ,
+        Vector& Bd
+    )
     {
         // cartesian derivatives of standard shape function
         auto& dNdX = ASDShellQ4Globals::instance().dNdX;
         dNdX.addMatrixProduct(0.0, dN, Jac.invJ, 1.0);
 
-        // cartesian derivatives of the modified shape functions for the 
-        // drilling DOF according to the GQ12 formulation
-        static constexpr std::array<double, 4> s = { -1.0, 1.0, 1.0, -1.0 };
-        static constexpr std::array<double, 4> t = { -1.0, -1.0, 1.0, 1.0 };
-        static Matrix dNU(4, 2);
-        static Matrix dNV(4, 2);
-        static Matrix dNUdX(4, 2);
-        static Matrix dNVdX(4, 2);
-        for (size_t i = 0; i < 4; i++) {
-            dNU(i, 0) = 1.0 / 8.0 * (-2.0 * s[i] * xi * (gq12.b1 + gq12.b3 * t[i]) * (1.0 + t[i] * eta) +
-                s[i] * t[i] * (1.0 - eta * eta) * (gq12.b2 + gq12.b3 * s[i]));
-            dNU(i, 1) = 1.0 / 8.0 * (s[i] * t[i] * (1.0 - xi * xi) * (gq12.b1 + gq12.b3 * t[i]) -
-                2.0 * t[i] * eta * (gq12.b2 + gq12.b3 * s[i]) * (1.0 + s[i] * xi));
-            dNV(i, 0) = -1.0 / 8.0 * (-2.0 * s[i] * xi * (gq12.a1 + gq12.a3 * t[i]) * (1.0 + t[i] * eta) +
-                s[i] * t[i] * (1.0 - eta * eta) * (gq12.a2 + gq12.a3 * s[i]));
-            dNV(i, 1) = -1.0 / 8.0 * (s[i] * t[i] * (1.0 - xi * xi) * (gq12.a1 + gq12.a3 * t[i]) -
-                2.0 * t[i] * eta * (gq12.a2 + gq12.a3 * s[i]) * (1.0 + s[i] * xi));
-        }
-        dNUdX.addMatrixProduct(0.0, dNU, Jac.invJ, 1.0);
-        dNVdX.addMatrixProduct(0.0, dNV, Jac.invJ, 1.0);
-
         // initialize
         B.Zero();
+        BQ.Zero();
         Bd.Zero();
+
+        // AGQI proc ***********************************************************************************************
+
+        // area coordinates of the gauss point (Eq 7)
+        std::array<double, 4> L;
+        L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
+        L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
+        L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
+        L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+
+        // computed modified shape function gradients for the strain matrix for external dofs
+        // using the area coordinate method as written in the reference paper of the AGQI element
+        static constexpr std::array<double, 4> NXI = { -1.0, 1.0, 1.0, -1.0 };
+        static constexpr std::array<double, 4> NETA = { -1.0, -1.0, 1.0, 1.0 };
+        for (int i = 0; i < 4; i++)
+        { 
+            int j = i + 1; if (j > 3) j = 0;
+            int k = j + 1; if (k > 3) k = 0;
+            double SX = 0.0;
+            double SY = 0.0;
+            for (int ii = 0; ii < 4; ii++)
+            { 
+                int jj = ii + 1; if (jj > 3) jj = 0;
+                int kk = jj + 1; if (kk > 3) kk = 0;
+                int mm = kk + 1; if (mm > 3) mm = 0;
+                SX = SX + agq.b[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                SY = SY + agq.c[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+            }
+            dNdX(i, 0) = (agq.b[i] + agq.b[j]) / agq.A / 2.0 + 
+                NXI[i] * NETA[i] * agq.g[k] * SX / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
+            dNdX(i, 1) = (agq.c[i] + agq.c[j]) / agq.A / 2.0 + 
+                NXI[i] * NETA[i] * agq.g[k] * SY / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
+        }
+
+        // compute the BQ matrix for the internal DOFs
+        for (int i = 0; i < 2; i++)
+        {
+            unsigned int j = i + 1; if (j > 3) j = 0;
+            unsigned int k = j + 1; if (k > 3) k = 0;
+            double NQX = (agq.b[i] * L[k] + agq.b[k] * L[i]) / agq.A / 2.0;
+            double NQY = (agq.c[i] * L[k] + agq.c[k] * L[i]) / agq.A / 2.0;
+            unsigned int index1 = i * 6;
+            unsigned int index2 = index1 + 1;
+            BQ(0, index1) += NQX;
+            BQ(1, index2) += NQY;
+            BQ(2, index1) += NQY;
+            BQ(2, index2) += NQX;
+        }
+        BQ.addMatrix(1.0, BQ_mean, -1.0);
 
         // membrane ************************************************************************************************
         // this is the memebrane part of the compatible standard in-plane displacement field
@@ -376,33 +427,8 @@ namespace
         B(2, 0) = dNdX(0, 1);   B(2, 6) = dNdX(1, 1);   B(2, 12) = dNdX(2, 1);   B(2, 18) = dNdX(3, 1);
         B(2, 1) = dNdX(0, 0);   B(2, 7) = dNdX(1, 0);   B(2, 13) = dNdX(2, 0);   B(2, 19) = dNdX(3, 0);
 
-        // drilling ************************************************************************************************
-        // this is the enrichment of the displacement field linked to the in-plane rotation (drilling)
-        // according to the GQ12 formulation. Note however that even if we use a 2x2 gauss quadrature,
-        // this contribution alone leaves 2 spurios zero energy modes. Those are very rarely activated, but it
-        // is however necessary to suppress them!
-
-        B(0, 5) = dNUdX(0, 0);
-        B(1, 5) = dNVdX(0, 1);
-        B(2, 5) = dNUdX(0, 1) + dNVdX(0, 0);
-        
-        B(0, 11) = dNUdX(1, 0);
-        B(1, 11) = dNVdX(1, 1);
-        B(2, 11) = dNUdX(1, 1) + dNVdX(1, 0);
-        
-        B(0, 17) = dNUdX(2, 0);
-        B(1, 17) = dNVdX(2, 1);
-        B(2, 17) = dNUdX(2, 1) + dNVdX(2, 0);
-        
-        B(0, 23) = dNUdX(3, 0);
-        B(1, 23) = dNVdX(3, 1);
-        B(2, 23) = dNUdX(3, 1) + dNVdX(3, 0);
-
-        // to suppress the 2 spurious modes, we use the drilling penalty as defined by hughes and brezzi,
+        // We use the drilling penalty as defined by hughes and brezzi,
         // where we link the independent rotation to the skew symmetric part of the in-plane displacement field.
-        // Also note that we need a full integration (2x2) for this part as well, since we need to suppress
-        // 2 zero-energy modes, and this constraint is a 1-row B matrix, so with a 1-point gauss quadrature
-        // it will provide at most 1 non-zero energy mode!
 
         Bd(0) = -0.5 * dNdX(0, 1);
         Bd(1) = 0.5 * dNdX(0, 0);
@@ -585,11 +611,11 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
     for (int i = 0; i < 4; i++)
         m_drill_stiffness += m_sections[i]->getInitialTangent()(2, 2);
     m_drill_stiffness /= 4.0;
-    m_drill_stiffness *= 1.0e-6;
+    m_drill_stiffness *= 1.0e-3;
 
     // compute section orientation angle
-    ASDShellQ4LocalCoordinateSystem LCS = m_transformation->createReferenceCoordinateSystem();
-    Vector3Type e1_local = LCS.Vx();
+    ASDShellQ4LocalCoordinateSystem reference_cs = m_transformation->createReferenceCoordinateSystem();
+    Vector3Type e1_local = reference_cs.Vx();
     Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
     Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
     Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
@@ -599,10 +625,13 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
     m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
     if (m_angle != 0.0) {
         // if they are not counter-clock-wise, let's change the sign of the angle
-        const Matrix& R = LCS.Orientation();
+        const Matrix& R = reference_cs.Orientation();
         if ((e1(0) * R(1, 0) + e1(1) * R(1, 1) + e1(2) * R(1, 2)) < 0.0)
             m_angle = -m_angle;
     }
+
+    // AGQI internal DOFs
+    AGQIinitialize();
 
     // call base class implementation
     DomainComponent::setDomain(theDomain);
@@ -693,6 +722,10 @@ int  ASDShellQ4::commitState()
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->commitState();
 
+    // AGQI internal DOFs
+    m_U_converged = m_U;
+    m_Q_converged = m_Q;
+
     // done
     return success;
 }
@@ -708,6 +741,10 @@ int  ASDShellQ4::revertToLastCommit()
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->revertToLastCommit();
 
+    // AGQI internal DOFs
+    m_U = m_U_converged;
+    m_Q = m_Q_converged;
+
     // done
     return success;
 }
@@ -722,6 +759,9 @@ int  ASDShellQ4::revertToStart()
     // sections
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->revertToStart();
+
+    // AGQI internal DOFs
+    AGQIinitialize();
 
     return success;
 }
@@ -1228,19 +1268,23 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
         m_transformation->createLocalCoordinateSystem(UG);
 
     // Prepare all the parameters needed for the MITC4
-    // and GQ12 formulations.
+    // and AGQI formulations.
     // This is to be done here outside the Gauss Loop.
     auto& mitc = ASDShellQ4Globals::instance().mitc;
-    auto& gq12 = ASDShellQ4Globals::instance().gq12;
+    auto& agq = ASDShellQ4Globals::instance().agq;
     mitc.compute(reference_cs);
-    gq12.compute(reference_cs);
+    agq.compute(reference_cs);
 
     // Jacobian
     auto& jac = ASDShellQ4Globals::instance().jac;
 
-    // Some matrices
+    // Some matrices/vectors
     auto& B = ASDShellQ4Globals::instance().B;
     auto& Bd = ASDShellQ4Globals::instance().Bd;
+    auto& BQ = ASDShellQ4Globals::instance().BQ;
+    auto& BQ_mean = ASDShellQ4Globals::instance().BQ_mean;
+    auto& BQTD = ASDShellQ4Globals::instance().BQTD;
+    auto& DBQ = ASDShellQ4Globals::instance().DBQ;
     auto& B1 = ASDShellQ4Globals::instance().B1;
     auto& B1TD = ASDShellQ4Globals::instance().B1TD;
     auto& N = ASDShellQ4Globals::instance().N;
@@ -1263,20 +1307,27 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
     auto& UL = ASDShellQ4Globals::instance().UL;
     m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
 
+    // Update AGQI internal DOFs
+    if (options & OPT_UPDATE)
+        AGQIupdate(UL);
+
+    // AGQI begin gauss loop (computes the BQ_mean correction matrix)
+    AGQIbeginGaussLoop(reference_cs);
+
     // Gauss loop
-    for (int i = 0; i < 4; i++)
+    for (int igauss = 0; igauss < 4; igauss++)
     {
         // Current integration point data
-        double xi = XI[i];
-        double eta = ETA[i];
-        double w = WTS[i];
+        double xi = XI[igauss];
+        double eta = ETA[igauss];
+        double w = WTS[igauss];
         shapeFunctions(xi, eta, N);
         shapeFunctionsNaturalDerivatives(xi, eta, dN);
         jac.calculate(reference_cs, dN);
         double dA = w * jac.detJ;
 
         // Strain-displacement matrix
-        computeBMatrix(reference_cs, xi, eta, jac, gq12, mitc, N, dN, B, Bd);
+        computeBMatrix(reference_cs, xi, eta, jac, agq, mitc, N, dN, BQ_mean, B, BQ, Bd);
 
         // Update strain strain
         if (options & OPT_UPDATE)
@@ -1285,17 +1336,19 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             if (m_angle != 0.0) {
                 auto& Elocal = ASDShellQ4Globals::instance().Elocal;
                 Elocal.addMatrixVector(0.0, B, UL, 1.0);
+                Elocal.addMatrixVector(1.0, BQ, m_Q, 1.0);
                 E.addMatrixVector(0.0, Re, Elocal, 1.0);
             }
             else {
                 E.addMatrixVector(0.0, B, UL, 1.0);
+                E.addMatrixVector(1.0, BQ, m_Q, 1.0);
             }
 
             // Update section
-            result += m_sections[i]->setTrialSectionDeformation(E);
+            result += m_sections[igauss]->setTrialSectionDeformation(E);
 
             // Drilling strain Ed = Bd*UL
-            double& Ed = m_drill_strain[i];
+            double& Ed = m_drill_strain[igauss];
             Ed = 0.0;
             for (int i = 0; i < 24; i++)
                 Ed += Bd(i) * UL(i);
@@ -1310,28 +1363,34 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
         {
             // Section force
             if (m_angle != 0.0) {
-                auto& Ssection = m_sections[i]->getStressResultant();
+                auto& Ssection = m_sections[igauss]->getStressResultant();
                 S.addMatrixVector(0.0, Rs, Ssection, 1.0);
             }
             else {
-                S = m_sections[i]->getStressResultant();
+                S = m_sections[igauss]->getStressResultant();
             }
 
             // Add current integration point contribution (RHS)
             RHS.addMatrixTransposeVector(1.0, B1, S, dA);
 
             // Add drilling stress = Bd'*Sd * dA (RHS)
-            double Sd = m_drill_stiffness * m_drill_strain[i];
+            double Sd = m_drill_stiffness * m_drill_strain[igauss];
             for (int i = 0; i < 24; i++)
                 RHS(i) += Bd(i) * Sd * dA;
+
+            // AGQI: update residual for internal DOFs
+            m_Q_residual.addMatrixTransposeVector(1.0, BQ, S, -1.0);
         }
 
-        // Integrate LHS
-        if (options & OPT_LHS) 
+        // AGQI: due to the static condensation, the following items
+        // must be computed if we need either the RHS or the LHS, or both of them
+        if ((options & OPT_RHS) || (options & OPT_LHS))
         {
             // Section tangent
-            if(m_angle != 0.0) {
-                const auto& Dsection = (options & OPT_LHS_IS_INITIAL) ? m_sections[i]->getInitialTangent() : m_sections[i]->getSectionTangent();
+            if (m_angle != 0.0) {
+                const auto& Dsection = (options & OPT_LHS_IS_INITIAL) ?
+                    m_sections[igauss]->getInitialTangent() :
+                    m_sections[igauss]->getSectionTangent();
                 auto& RsT = ASDShellQ4Globals::instance().RsT;
                 RsT.addMatrixTranspose(0.0, Rs, 1.0);
                 auto& DRsT = ASDShellQ4Globals::instance().DRsT;
@@ -1339,9 +1398,22 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
                 D.addMatrixProduct(0.0, Rs, DRsT, 1.0);
             }
             else {
-                D = (options & OPT_LHS_IS_INITIAL) ? m_sections[i]->getInitialTangent() : m_sections[i]->getSectionTangent();
+                D = (options & OPT_LHS_IS_INITIAL) ?
+                    m_sections[igauss]->getInitialTangent() :
+                    m_sections[igauss]->getSectionTangent();
             }
 
+            // Matrices for AGQI static condensation of internal DOFs
+            BQTD.addMatrixTransposeProduct(0.0, BQ, D, 1.0);
+            DBQ.addMatrixProduct(0.0, D, BQ, 1.0);
+            m_KQQ_inv.addMatrixProduct(1.0, BQTD, BQ, 1.0);
+            m_KQU.addMatrixProduct(1.0, BQTD, B, 1.0);
+            m_KUQ.addMatrixTransposeProduct(1.0, B1, DBQ, 1.0);
+        }
+
+        // Integrate LHS
+        if (options & OPT_LHS) 
+        {
             // Add current integration point contribution (LHS)
             B1TD.addMatrixTransposeProduct(0.0, B1, D, dA);
             LHS.addMatrixProduct(1.0, B1TD, B, 1.0);
@@ -1352,6 +1424,20 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
                     LHS(i, j) += Bd(i) * m_drill_stiffness * Bd(j) * dA;
         }
 
+    } // End of Gauss Loop
+
+    // AGQI: static condensation
+    if ((options & OPT_RHS) || (options & OPT_LHS))
+    {
+        static Matrix KQQ = Matrix(4, 4);
+        static Matrix KUQ_KQQ_inv = Matrix(24, 4);
+        KQQ = m_KQQ_inv;
+        KQQ.Invert(m_KQQ_inv);
+        KUQ_KQQ_inv.addMatrixProduct(0.0, m_KUQ, m_KQQ_inv, 1.0);
+        if (options & OPT_RHS)
+            RHS.addMatrixVector(1.0, KUQ_KQQ_inv, m_Q_residual, 1.0);
+        if (options & OPT_LHS)
+            LHS.addMatrixProduct(1.0, KUQ_KQQ_inv, m_KQU, -1.0);
     }
 
     // Tranform LHS to global coordinate system
@@ -1363,5 +1449,108 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
 
     // Done
     return result;
+}
+
+void ASDShellQ4::AGQIinitialize()
+{
+    // Global displacements
+    auto& UG = ASDShellQ4Globals::instance().UG;
+    m_transformation->computeGlobalDisplacements(UG);
+
+    ASDShellQ4LocalCoordinateSystem local_cs = m_transformation->createLocalCoordinateSystem(UG);
+
+    // Local displacements
+    auto& UL = ASDShellQ4Globals::instance().UL;
+    m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
+
+    // Initialize internal DOFs members
+    m_Q.Zero();
+    m_Q_converged.Zero();
+    m_U = UL;
+    m_U_converged = UL;
+}
+
+void ASDShellQ4::AGQIupdate(const Vector& UL)
+{
+    // Compute incremental displacements
+    static Vector dUL(24);
+    dUL = UL;
+    dUL.addVector(1.0, m_U, -1.0);
+
+    // Save current trial displacements
+    m_U = UL;
+
+    // Update internal DOFs
+    static Vector temp(4);
+    temp.addMatrixVector(0.0, m_KQU, dUL, 1.0);
+    temp.addVector(1.0, m_Q_residual, -1.0);
+    m_Q.addMatrixVector(1.0, m_KQQ_inv, temp, -1.0);
+}
+
+void ASDShellQ4::AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs)
+{
+    // set to zero vectors and matrices for the static condensation
+    // of internal DOFs before proceding with gauss integration
+    m_KQU.Zero();
+    m_KUQ.Zero();
+    m_KQQ_inv.Zero();
+    m_Q_residual.Zero();
+
+    // Some matrices/vectors
+    auto& N = ASDShellQ4Globals::instance().N;
+    auto& dN = ASDShellQ4Globals::instance().dN;
+
+    // Jacobian
+    auto& jac = ASDShellQ4Globals::instance().jac;
+
+    // this one is already computed in the caller method
+    auto& agq = ASDShellQ4Globals::instance().agq;
+
+    // The AGQI uses incompatible modes and only the weak patch test is passed.
+    // Here we computed the mean Bq matrix for the enhanced strains. It will be subtracted
+    // from the gauss-wise Bq matrices to make this element pass the strict patch test:
+    // BQ = BQ - 1/A*int{BQ*dV}
+    auto& BQ_mean = ASDShellQ4Globals::instance().BQ_mean;
+    BQ_mean.Zero();
+    double Atot = 0.0;
+
+    // Gauss loop
+    std::array<double, 4> L;
+    for (int igauss = 0; igauss < 4; igauss++)
+    {
+        // Current integration point data
+        double xi = XI[igauss];
+        double eta = ETA[igauss];
+        double w = WTS[igauss];
+        shapeFunctions(xi, eta, N);
+        shapeFunctionsNaturalDerivatives(xi, eta, dN);
+        jac.calculate(reference_cs, dN);
+        double dA = w * jac.detJ;
+        Atot += dA;
+
+        // area coordinates of the gauss point (Eq 7)
+        L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
+        L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
+        L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
+        L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+
+        // strain matrix for internal dofs
+        for (int i = 0; i < 2; i++)
+        { 
+            unsigned int j = i + 1; if (j > 3) j = 0;
+            unsigned int k = j + 1; if (k > 3) k = 0;
+            double NQX = (agq.b[i] * L[k] + agq.b[k] * L[i]) / agq.A / 2.0;
+            double NQY = (agq.c[i] * L[k] + agq.c[k] * L[i]) / agq.A / 2.0;
+            unsigned int index1 = i * 6;
+            unsigned int index2 = index1 + 1;
+            BQ_mean(0, index1) += NQX * dA;
+            BQ_mean(1, index2) += NQY * dA;
+            BQ_mean(2, index1) += NQY * dA;
+            BQ_mean(2, index2) += NQX * dA;
+        } 
+    }
+
+    // Average
+    BQ_mean /= Atot;
 }
 
