@@ -142,6 +142,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <KrylovNewton.h>
 #include <PeriodicNewton.h>
 #include <AcceleratedNewton.h>
+#include <ExpressNewton.h>
 
 // accelerators
 #include <RaphsonAccelerator.h>
@@ -4023,6 +4024,25 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
 	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
 
       theNewAlgo = new NewtonLineSearch(*theTest, theLineSearch); 
+  }
+
+  else if (strcmp(argv[1],"ExpressNewton") == 0) {
+    int nIter = 2;
+    int formTangent = CURRENT_TANGENT;
+    double kMultiplier = 1.0;
+	  if (argc >= 3 && Tcl_GetInt(interp, argv[2], &nIter) != TCL_OK)
+	  {
+  	  if (strcmp(argv[2],"-initial") == 0)	
+	      formTangent = HALL_TANGENT;	      	  
+  	  else
+	      return TCL_ERROR;	      	  
+	  }
+	  if (argc >= 4 && strcmp(argv[3],"-initial") == 0)	
+	    formTangent = HALL_TANGENT;
+	  if (argc >= 5 && Tcl_GetDouble(interp, argv[4], &kMultiplier) != TCL_OK)	
+	    return TCL_ERROR;
+    
+    theNewAlgo = new ExpressNewton(nIter,formTangent,kMultiplier);
   }
 
   else {
