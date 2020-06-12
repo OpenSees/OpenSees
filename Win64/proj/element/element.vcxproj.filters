@@ -891,7 +891,7 @@
       <Filter>mixedBeamColumn</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>pfem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1586,7 +1586,7 @@
       <Filter>mixedBeamColumn</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h">
-      <Filter>Header Files</Filter>
+      <Filter>pfem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
