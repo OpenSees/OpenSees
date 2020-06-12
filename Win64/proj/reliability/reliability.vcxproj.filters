@@ -43,9 +43,6 @@
     <Filter Include="analysis\rootFinding">
       <UniqueIdentifier>{3ace3745-688a-4976-ab11-41386fa095e9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="analysis\telm">
-      <UniqueIdentifier>{533b4899-eb81-4128-98e7-c7e1237ed9ea}</UniqueIdentifier>
-    </Filter>
     <Filter Include="analysis\gradient">
       <UniqueIdentifier>{4cddb45d-3f95-4cc3-9a5e-eca4b1ccbd98}</UniqueIdentifier>
     </Filter>
