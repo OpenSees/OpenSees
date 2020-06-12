@@ -40,6 +40,7 @@
 class Channel;
 class Information;
 class CrdTransf;
+class Damping;
 class Response;
 class Renderer;
 class SectionForceDeformation;
@@ -52,10 +53,11 @@ class ElasticBeam3d : public Element
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
           double rho = 0.0, int cMass = 0,
-          int sectionTag = 0);
+          int sectionTag = 0, Damping *theDamping = 0);
 
     ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section, 
-		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0);
+		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
+		  Damping *theDamping = 0);
 
     ~ElasticBeam3d();
 
@@ -82,6 +84,7 @@ class ElasticBeam3d : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Vector &getResistingForce(void);
+    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
     
     int sendSelf(int commitTag, Channel &theChannel);
@@ -117,6 +120,8 @@ class ElasticBeam3d : public Element
     ID  connectedExternalNodes;    
 
     CrdTransf *theCoordTransf;
+
+    Damping *theDamping;
 };
 
 #endif
