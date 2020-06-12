@@ -24,9 +24,6 @@
 // ============================================================================
 // Please read detailed description in H5DRM.h.
 // ============================================================================
-
-#ifdef _H5DRM
-
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -2162,4 +2159,3 @@ void convert_h5drmcrd_to_ops_crd(Matrix & xyz )
     }
 }
 
-#endif
