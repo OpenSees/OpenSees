@@ -292,7 +292,6 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
     
       if (!theDamping[i]) {
         opserr << "ShellMITC4::ShellMITC4 -- failed to get copy of damping\n";
-        exit(01);
       }
     }
   }
