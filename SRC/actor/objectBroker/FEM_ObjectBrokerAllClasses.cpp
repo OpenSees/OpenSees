@@ -262,7 +262,6 @@
 #include <ShellDKGQ.h>   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <ShellNLDKGQ.h> //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <ASDShellQ4.h> // Massimo Petracca
-#include <ASDShellT3.h> // Massimo Petracca
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
@@ -758,9 +757,6 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     
     case ELE_TAG_ASDShellQ4:   // Massimo Petracca
       return new ASDShellQ4(); // Massimo Petracca
-    
-    case ELE_TAG_ASDShellT3:   // Massimo Petracca
-      return 0;// new ASDShellT3(); // Massimo Petracca
     
     case ELE_TAG_BbarBrick:
       return new BbarBrick();

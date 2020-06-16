@@ -105,7 +105,6 @@ void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
 void* OPS_ASDShellQ4();
-void* OPS_ASDShellT3();
 void* OPS_CoupledZeroLength();
 void* OPS_BeamContact2D();
 void* OPS_BeamContact2Dp();
@@ -585,7 +584,6 @@ namespace {
 	functionMap.insert(std::make_pair("ShellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("shellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("ASDShellQ4", &OPS_ASDShellQ4));
-	functionMap.insert(std::make_pair("ASDShellT3", &ASDShellT3));
 	functionMap.insert(std::make_pair("CoupledZeroLength", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("ZeroLengthCoupled", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("BeamContact2d", &OPS_BeamContact2D));
