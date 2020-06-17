@@ -73,7 +73,7 @@ DegradingPinchedBW::DegradingPinchedBW(int tag,
 	   double p_rhop,
 	   double ptolerance,
 	   int pMaxNumIter)
- :UniaxialMaterial(tag,MAT_TAG_DegradingPinchedBW),
+ :UniaxialMaterial(tag, 0),
   xmax(0.0), xmaxp(0.0), m(p_m), Fy(p_Fy), xu(p_xu),alpha(p_alpha), 
   ko(p_ko), n(p_n), eta(p_eta), beta(p_beta), rhoeps(p_rhoeps), rhox(p_rhox), 
   phi(p_phi), deltak(p_deltak), deltaf(p_deltaf), sigma(p_sigma), 
