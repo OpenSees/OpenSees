@@ -1,5 +1,5 @@
 #include <elementAPI.h>
-#include "DegradingPinchedBW.h"
+#include <DegradingPinchedBW.h>
 
 #include <Vector.h>
 #include <Channel.h>
