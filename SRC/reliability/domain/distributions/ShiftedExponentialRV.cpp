@@ -116,7 +116,7 @@ double
 ShiftedExponentialRV::getPDFvalue(double rvValue)
 {
 	double result;
-	if ( x0 < rvValue ) {
+	if ( x0 <= rvValue ) {
 		result = lambda * exp(-lambda * (rvValue-x0));
 	}
 	else {
@@ -130,7 +130,7 @@ double
 ShiftedExponentialRV::getCDFvalue(double rvValue)
 {
 	double result;
-	if ( x0 < rvValue ) {
+	if ( x0 <= rvValue ) {
 		result = 1 - exp(-lambda*(rvValue-x0));
 	}
 	else {
