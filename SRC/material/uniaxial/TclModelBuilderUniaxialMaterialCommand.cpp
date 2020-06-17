@@ -167,6 +167,7 @@ extern void *OPS_GNGMaterial(void);
 extern void *OPS_OOHystereticMaterial(void);
 extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
+extern void *OPS_DegradingPinchedBW(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -620,6 +621,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1], "BWBN") == 0) {
         void *theMat = OPS_BWBN();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial *)theMat;
+        else
+            return TCL_ERROR;
+
+    } else if (strcmp(argv[1], "DegradingPinchedBW") == 0) {
+        void *theMat = OPS_DegradingPinchedBW();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial *)theMat;
         else
