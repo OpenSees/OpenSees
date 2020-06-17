@@ -105,8 +105,8 @@ ShiftedRayleighRV::getParameters(void) {
 int
 ShiftedRayleighRV::setParameters(double mean, double stdv)
 {
-	u = 2.0 * stdv / sqrt(3.0*pi+4.0);
-	x0 = mean + stdv*sqrt(pi) / sqrt(3.0*pi+4.0);
+	u = 2.0 * stdv / sqrt(4.0 - pi);
+	x0 = mean - stdv*sqrt(pi) / sqrt(4.0 - pi);
 	
 	return 0;
 }
