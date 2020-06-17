@@ -129,6 +129,7 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
+	PlateBearingConnectionThermal.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
