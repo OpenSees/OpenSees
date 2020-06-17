@@ -23,22 +23,57 @@
 
 // Original implementation: Massimo Petracca (ASDEA)
 //
-// A 4-node general shell element based on the AGQI formulation 
-// for the in-plane behavior, 
-// and the MITC4 formulation for the out-of-plane behavior.
+// A 4-node general shell element based on 
+// the AGQ6-I formulation for the membrane part, 
+// and the MITC4 formulation for the shear-deformable bending part.
 // 
 // It supports both linear and corotational kinematics. Warped geometries
 // can be modelled since this element is not assumed flat.
 //
 //  References:
-// - Dvorkin, Bathe, "A continuum mechanics based four node shell
-//   element for general nonlinear analysis",
-//   Eng.Comput., vol. 1, 77 - 88, 1984
-// - Bathe, Dvorkin, "Short communication A four-node plate bending element
-//   based on Mindlin / Reissner plate theory and a Mixed Interpolation",
-//   International Journal for Numerical Methods in Eng.,
-//   vol. 21, 367 - 383, 1985
+// 
+// 1 Chen, Xiao-Ming, et al. "Membrane elements insensitive to distortion 
+//   using the quadrilateral area coordinate method." 
+//   Computers & Structures 82.1 (2004): 35-54.
+//   http://www.paper.edu.cn/scholar/showpdf/MUT2ANwINTT0Ax5h
 //
+// 2 Dvorkin, Eduardo N., and Klaus-Jurgen Bathe. 
+//   "A continuum mechanics based four-node shell element for 
+//   general non-linear analysis." Engineering computations (1984).
+//   https://www.researchgate.net/profile/Eduardo_Dvorkin/publication/235313212_A_Continuum_mechanics_based_four-node_shell_element_for_general_nonlinear_analysis/links/00b7d52611d8813ffe000000.pdf
+//
+// 3 Bathe, Klaus-Jurgen, and Eduardo N. Dvorkin. 
+//   "A four-node plate bending element based on Mindlin/Reissner plate theory 
+//   and a mixed interpolation." 
+//   International Journal for Numerical Methods in Engineering 21.2 (1985): 367-383.
+//   http://www.simytec.com/docs/Short_communicaion_%20four_node_plate.pdf
+//
+// 4 Hughes, Thomas JR, and F. Brezzi. 
+//   "On drilling degrees of freedom." 
+//   Computer methods in applied mechanics and engineering 72.1 (1989): 105-121.
+//   https://www.sciencedirect.com/science/article/pii/0045782589901242
+//
+// Notes:
+//
+// - The AGQ6-I formulation greatly enhances the membrane behavior of the
+//   standard 4-node iso-parametric element. However it does not pass the constant-strain
+//   patch test as most of the enhanced elements based on incompatible-modes.
+//   In this implementation the enhancing BQ matrix is corrected to make the element
+//   pass the constant strain patch test. At each gauss point the BQ = BQ - 1/V*BQ_mean
+//
+// - The drilling DOF is treated using the Hughes-Brezzi formulation. The drilling
+//   stiffness is taken equal to the initial (elastic) in-plane section shear modulus.
+//   Taking the real shear modulus (and not a scaled version of it, as suggested in many
+//   articles) is mandatory to obtain a correct response for warped shells, i.e. when
+//   the drilling rotation affects the bending rotation. However using the full shear modulus
+//   deteriorates the element membrane behavior, making the element stiffer. For example,
+//   when using softening material models, this drilling stiffness makes the element lock
+//   failing in representing crack propagation correctly.
+//   Here we solved this problem using a reduced integration for the drilling part. However
+//   a pure reduced integration for the drilling DOFs, leads to 3 spurious zero-energy modes.
+//   Therefore we also include a fully integrated contribution of the drilling DOFs
+//   scaling the drilling stiffness by 1.0e-4, so just to suppress these spurious zero energy modes.
+// 
 
 #ifndef ASDShellQ4_h
 #define ASDShellQ4_h
