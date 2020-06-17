@@ -130,6 +130,7 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
         TclModelBuilderUniaxialMaterialCommand.o
+	DegradingPinchedBW.o \
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/uniaxial/fedeas; $(MAKE);
