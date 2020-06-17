@@ -37,6 +37,7 @@
 
 
 #include <LinearSOE.h>
+#include <OPS_Stream.h>
 #include <Vector.h>
 #include <ID.h>
 extern "C" {
@@ -89,6 +90,7 @@ class PFEMLinSOE : public LinearSOE
     virtual bool skipFluid() const;
     virtual int getStage() const {return stage;}
     virtual void setStage(int s) {stage = s;}
+    void saveK(OPS_Stream& output);
 
 private:
 

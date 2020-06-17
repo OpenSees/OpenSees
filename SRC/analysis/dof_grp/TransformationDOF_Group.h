@@ -90,6 +90,7 @@ class TransformationDOF_Group: public DOF_Group
     const Vector & getTrialAccel();
 
     virtual void setEigenvector(int mode, const Vector &eigenvalue);
+    virtual const Matrix &getEigenvectors(void);
 
     int addSP_Constraint(SP_Constraint &theSP);
     int enforceSPs(int doMP);

@@ -2246,8 +2246,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("printA", &Py_ops_printA);
     addCommand("printB", &Py_ops_printB);
     addCommand("printGID", &Py_ops_printGID);
-    addCommand("getCTestNorms", &Py_ops_getCTestNorms);
-    addCommand("getCTestIter", &Py_ops_getCTestIter);
+    addCommand("testNorm", &Py_ops_getCTestNorms);
+    addCommand("testIter", &Py_ops_getCTestIter);
     addCommand("recorder", &Py_ops_recorder);
     addCommand("database", &Py_ops_database);
     addCommand("save", &Py_ops_save);

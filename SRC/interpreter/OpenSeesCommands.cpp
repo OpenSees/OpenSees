@@ -69,6 +69,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonRaphson.h>
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
+#include <GimmeMCK.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -1418,6 +1419,9 @@ int OPS_Integrator()
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();
 
+    } else if (strcmp(type,"GimmeMCK") == 0 || strcmp(type,"ZZTop") == 0) {
+	ti = (TransientIntegrator*)OPS_GimmeMCK();
+
     } else if (strcmp(type,"TRBDF2") == 0 || strcmp(type,"Bathe") == 0) {
 	ti = (TransientIntegrator*)OPS_TRBDF2();
 
@@ -1861,6 +1865,13 @@ int OPS_printA()
 	} else if (theTransientIntegrator != 0) {
 	    theTransientIntegrator->formTangent(0);
 	}
+
+    PFEMLinSOE* pfemsoe = dynamic_cast<PFEMLinSOE*>(theSOE);
+    if (pfemsoe != 0) {
+        pfemsoe->saveK(*output);
+        outputFile.close();
+        return 0;
+    }
 
 	Matrix *A = const_cast<Matrix*>(theSOE->getA());
 	if (A != 0) {

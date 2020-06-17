@@ -107,7 +107,6 @@ class DOF_Group: public TaggedObject
 
     virtual double getDampingBetaFactor(int mode, double ratio, double wn);
     virtual const Vector &getDampingBetaForce(int mode, double beta);
-
 	
     // method added for TransformationDOF_Groups
     virtual Matrix *getT(void);

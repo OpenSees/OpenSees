@@ -56,6 +56,7 @@ using std::nothrow;
 #include <DOF_Group.h>
 #include <AnalysisModel.h>
 #include <BackgroundMesh.h>
+#include <elementAPI.h>
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
 #endif
@@ -754,4 +755,18 @@ PFEMLinSOE::skipFluid() const
 {
     BackgroundMesh& bgmesh = OPS_getBgMesh();
     return assemblyFlag==1 && bgmesh.isDispOn()==false && bgmesh.isFastAssembly();
+}
+
+void PFEMLinSOE::saveK(OPS_Stream& output) {
+    if (M == 0) return;
+    output << "sparse matrix <" << M->m << ", " << M->n << "> with "
+           << M->nzmax << " entries\n";
+
+    // save the matrix
+    for (int j = 0; j < M->n; ++j) {
+        for (int k = M->p[j]; k < M->p[j + 1]; ++k) {
+            output << "    " << M->i[k] << "    " << j << "    ("
+                   << M->x[k] << ")\n";
+        }
+    }
 }
