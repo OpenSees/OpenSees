@@ -695,6 +695,7 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
   }
 
   else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+	// These equations should works for partial trapezoidal load
     double waa = data(2)*loadFactor;  // Axial
     double wab = data(3)*loadFactor;  // Axial
     double wya = data(0)*loadFactor;  // Transverse
