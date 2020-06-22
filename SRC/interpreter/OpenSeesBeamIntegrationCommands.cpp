@@ -2,7 +2,7 @@
 Copyright (c) 2015-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,14 +26,14 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
-
+                                                                        
 // Written: Minjie
 
 // Description: command to create beam integration
@@ -44,33 +44,33 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ID.h>
 #include <BeamIntegration.h>
 
-void* OPS_BeamIntegration(int&, ID&);
-void* OPS_LobattoBeamIntegration(int&, ID&);
-void* OPS_LegendreBeamIntegration(int&, ID&);
-void* OPS_NewtonCotesBeamIntegration(int&, ID&);
-void* OPS_RadauBeamIntegration(int&, ID&);
-void* OPS_TrapezoidalBeamIntegration(int&, ID&);
-void* OPS_CompositeSimpsonBeamIntegration(int&, ID&);
-void* OPS_UserDefinedBeamIntegration(int&, ID&);
-void* OPS_FixedLocationBeamIntegration(int&, ID&);
-void* OPS_LowOrderBeamIntegration(int&, ID&);
-void* OPS_MidDistanceBeamIntegration(int&, ID&);
-void* OPS_UserHingeBeamIntegration(int&, ID&);
-void* OPS_HingeMidpointBeamIntegration(int&, ID&);
-void* OPS_HingeRadauBeamIntegration(int&, ID&);
-void* OPS_HingeRadauTwoBeamIntegration(int&, ID&);
-void* OPS_HingeEndpointBeamIntegration(int&, ID&);
-void* OPS_SimpsonBeamIntegration(int&, ID&);	// MSN
+void* OPS_BeamIntegration(int&,ID&);
+void* OPS_LobattoBeamIntegration(int&,ID&);
+void* OPS_LegendreBeamIntegration(int&,ID&);
+void* OPS_NewtonCotesBeamIntegration(int&,ID&);
+void* OPS_RadauBeamIntegration(int&,ID&);
+void* OPS_TrapezoidalBeamIntegration(int&,ID&);
+void* OPS_CompositeSimpsonBeamIntegration(int&,ID&);
+void* OPS_UserDefinedBeamIntegration(int&,ID&);
+void* OPS_FixedLocationBeamIntegration(int&,ID&);
+void* OPS_LowOrderBeamIntegration(int&,ID&);
+void* OPS_MidDistanceBeamIntegration(int&,ID&);
+void* OPS_UserHingeBeamIntegration(int&,ID&);
+void* OPS_HingeMidpointBeamIntegration(int&,ID&);
+void* OPS_HingeRadauBeamIntegration(int&,ID&);
+void* OPS_HingeRadauTwoBeamIntegration(int&,ID&);
+void* OPS_HingeEndpointBeamIntegration(int&,ID&);
+void* OPS_SimpsonBeamIntegration(int&,ID&);	// MSN
 
 namespace {
 	struct char_cmp {
-		bool operator () (const char* a, const char* b) const
+		bool operator () (const char *a, const char *b) const
 		{
-			return strcmp(a, b) < 0;
+			return strcmp(a,b) < 0;
 		}
 	};
 
-	typedef std::map<const char*, void* (*)(int&, ID&), char_cmp> OPS_ParsingFunctionMap;
+	typedef std::map<const char *, void *(*)(int&,ID&), char_cmp> OPS_ParsingFunctionMap;
 
 
 	static OPS_ParsingFunctionMap functionMap;
@@ -106,7 +106,7 @@ int OPS_BeamIntegration()
 	}
 
 	if (OPS_GetNumRemainingInputArgs() < 2) {
-		opserr << "WARNING too few arguments: beamIntegration type? tag? ...\n";
+		opserr<<"WARNING too few arguments: beamIntegration type? tag? ...\n";
 		return -1;
 	}
 
@@ -114,17 +114,17 @@ int OPS_BeamIntegration()
 
 	OPS_ParsingFunctionMap::const_iterator iter = functionMap.find(type);
 	if (iter == functionMap.end()) {
-		opserr << "WARNING beam integration type " << type << " is unknown\n";
+		opserr<<"WARNING beam integration type " << type << " is unknown\n";
 		return -1;
 	}
 
 	int iTag;
 	ID secTags;
-	BeamIntegration* bi = (BeamIntegration*)(*iter->second)(iTag, secTags);
+	BeamIntegration* bi = (BeamIntegration*)(*iter->second)(iTag,secTags);
 	if (bi == 0) {
 		return -1;
 	}
-	BeamIntegrationRule* rule = new BeamIntegrationRule(iTag, bi, secTags);
+	BeamIntegrationRule* rule = new BeamIntegrationRule(iTag,bi,secTags);
 	if (rule == 0) {
 		return -1;
 	}
