@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Description: all reliability APIs are defined or declared here
 //
 
-#include <OpenSeesReliabilityCommands.h>
+#include "OpenSeesReliabilityCommands.h"
 #include <elementAPI.h>
 
 #include <vector>

@@ -17,7 +17,7 @@
 # Date: June 2017
 
 # import the OpenSees Python module
-import opensees as ops
+from opensees import *
 import MomentCurvature
 
 # ------------------------------
@@ -25,28 +25,28 @@ import MomentCurvature
 # ------------------------------
 
 # remove existing model
-ops.wipe()
+wipe()
 
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
-ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
+model("BasicBuilder", "-ndm",2, "-ndf",3)
 
 # set default units
-ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
 
 # Define materials for nonlinear columns
 # ------------------------------------------
 # CONCRETE                        tag  f'c    ec0    f'cu   ecu
 # Core concrete (confined)
-ops.uniaxialMaterial("Concrete01", 1, -6.0, -0.004, -5.0, -0.014)
+uniaxialMaterial("Concrete01", 1, -6.0, -0.004, -5.0, -0.014)
 # Cover concrete (unconfined)
-ops.uniaxialMaterial("Concrete01", 2, -5.0, -0.002, -0.0, -0.006)
+uniaxialMaterial("Concrete01", 2, -5.0, -0.002, -0.0, -0.006)
 
 # STEEL
 # Reinforcing steel 
 fy = 60.0;      # Yield stress
 E = 30000.0;    # Young's modulus
 #                              tag fy  E0  b
-ops.uniaxialMaterial("Steel01", 3, fy, E, 0.01)
+uniaxialMaterial("Steel01", 3, fy, E, 0.01)
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
@@ -60,18 +60,18 @@ As = 0.60;     # area of no. 7 bars
 y1 = colDepth/2.0
 z1 = colWidth/2.0
 
-ops.section("Fiber", 1)
+section("Fiber", 1)
 # Create the concrete core fibers
-ops.patch("rect", 1, 10, 1, cover-y1, cover-z1, y1-cover, z1-cover)
+patch("rect", 1, 10, 1, cover-y1, cover-z1, y1-cover, z1-cover)
 # Create the concrete cover fibers (top, bottom, left, right)
-ops.patch("rect", 2, 10, 1, -y1, z1-cover, y1, z1)
-ops.patch("rect", 2, 10, 1, -y1, -z1, y1, cover-z1)
-ops.patch("rect", 2,  2, 1, -y1, cover-z1, cover-y1, z1-cover)
-ops.patch("rect", 2,  2, 1,  y1-cover, cover-z1, y1, z1-cover)
+patch("rect", 2, 10, 1, -y1, z1-cover, y1, z1)
+patch("rect", 2, 10, 1, -y1, -z1, y1, cover-z1)
+patch("rect", 2,  2, 1, -y1, cover-z1, cover-y1, z1-cover)
+patch("rect", 2,  2, 1,  y1-cover, cover-z1, y1, z1-cover)
 # Create the reinforcing fibers (left, middle, right)
-ops.layer("straight", 3, 3, As, y1-cover, z1-cover, y1-cover, cover-z1)
-ops.layer("straight", 3, 2, As, 0.0, z1-cover, 0.0, cover-z1)
-ops.layer("straight", 3, 3, As, cover-y1, z1-cover, cover-y1, cover-z1)
+layer("straight", 3, 3, As, y1-cover, z1-cover, y1-cover, cover-z1)
+layer("straight", 3, 2, As, 0.0, z1-cover, 0.0, cover-z1)
+layer("straight", 3, 3, As, cover-y1, z1-cover, cover-y1, cover-z1)
 
 # Estimate yield curvature
 # (Assuming no axial load and only top and bottom steel)
@@ -89,6 +89,6 @@ mu  = 15.0;     # Target ductility for analysis
 numIncr = 100;  # Number of analysis increments
 
 # Call the section analysis procedure
-MomentCurvature.execute(ops, 1, P, Ky*mu, numIncr)
+MomentCurvature.execute(1, P, Ky*mu, numIncr)
 
-ops.wipe()
+wipe()

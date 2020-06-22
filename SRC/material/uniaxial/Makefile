@@ -129,6 +129,7 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
+	DegradingPinchedBW.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

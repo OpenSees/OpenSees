@@ -62,7 +62,7 @@ void* OPS_TwoNodeLink()
         opserr << "Want: twoNodeLink eleTag iNode jNode -mat matTags -dir dirs <-orient <x1 x2 x3> y1 y2 y3> <-pDelta Mratios> <-shearDist sDratios> <-doRayleigh> <-mass m>\n";
         return 0;
     }
-
+    
     // tags
     int idata[3];
     int numdata = 3;
@@ -70,7 +70,7 @@ void* OPS_TwoNodeLink()
         opserr << "WARNING: invalid integer data\n";
         return 0;
     }
-
+    
     // mats
     const char* type = OPS_GetString();
     if (strcmp(type, "-mat") != 0) {
@@ -81,12 +81,13 @@ void* OPS_TwoNodeLink()
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int mattag;
         numdata = 1;
-	int numArgs = OPS_GetNumRemainingInputArgs();
+        int numArgs = OPS_GetNumRemainingInputArgs();
         if (OPS_GetIntInput(&numdata, &mattag) < 0) {
-	  if (numArgs > OPS_GetNumRemainingInputArgs()) {
-            OPS_ResetCurrentInputArg(-1);
-	  }
-	  break;
+            if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                // move current arg back by one
+                OPS_ResetCurrentInputArg(-1);
+            }
+            break;
         }
         UniaxialMaterial* mat = OPS_getUniaxialMaterial(mattag);
         if (mat == 0) {
@@ -99,7 +100,7 @@ void* OPS_TwoNodeLink()
     
     // dirs
     type = OPS_GetString();
-    if (strcmp(type, "-dir") != 0) {
+    if (strcmp(type, "-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir dirs\n";
         return 0;
     }
