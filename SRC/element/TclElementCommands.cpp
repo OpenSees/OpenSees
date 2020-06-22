@@ -337,7 +337,7 @@ TclModelBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc
 // MSN
 extern int
 TclModelBuilder_addGradientInelasticBeamColumn(ClientData, Tcl_Interp*, int, TCL_Char**,
-	Domain*, TclModelBuilder*);
+    Domain*, TclModelBuilder*);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -484,21 +484,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  }
-
-  else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
-    Element *theEle = 0;
-    if (OPS_GetNDM() == 2)
-      theEle = (Element *)OPS_GradientInelasticBeamColumn2d();
-    else
-      theEle = (Element *)OPS_GradientInelasticBeamColumn3d();
-
-    if (theEle != 0) 
-      theElement = theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
   }
 
   #ifdef _HAVE_LHNMYS
@@ -1531,6 +1516,13 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
     return result;
   }
+
+  // MSN
+  else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+    int result = TclModelBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv,
+      theTclDomain, theTclBuilder);
+    return result;
+  }
   
   // Kikuchi
   else if ((strcmp(argv[1],"multipleShearSpring") == 0) ||
@@ -1558,13 +1550,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 						 theTclDomain, theTclBuilder);
     return result;
   }
-	
-	// MSN
-	else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
-		int result = TclModelBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv,
-			theTclDomain, theTclBuilder);
-		return result;
-	}
 
   else {
 
