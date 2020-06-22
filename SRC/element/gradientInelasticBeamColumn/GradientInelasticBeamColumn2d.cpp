@@ -210,18 +210,18 @@ Vector GradientInelasticBeamColumn2d::theVector(6);
 
 // Constructor 1 (for normal processing)
 GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d(int tag, int nodeI, int nodeJ,
-	int numSec, SectionForceDeformation** endSec1, SectionForceDeformation** sec, SectionForceDeformation** endSec2, double R1, double R2,
-	BeamIntegration& BI, CrdTransf& CT, double LC,
+	int numSec, SectionForceDeformation **endSec1, SectionForceDeformation **sec, SectionForceDeformation **endSec2, double R1, double R2,
+	BeamIntegration &BI, CrdTransf &CT, double LC,
 	double minTolerance, double maxTolerance, int maxNumIters,
 	bool constH,
 	bool corControl, double maxEps, double maxPhi)
 	: Element(tag, ELE_TAG_GradientInelasticBeamColumn2d), connectedExternalNodes(2),
 	numSections(numSec), sections(0),
 	beamIntegr(0), crdTransf(0), lc(LC),
-	maxIters(maxNumIters), minTol(minTolerance), maxTol(maxTolerance),
+	maxIters(maxNumIters), minTol(minTolerance), maxTol(maxTolerance), 
 	cnstH(constH), secLR1(R1), secLR2(R2),
 	correctionControl(corControl), maxEpsInc(maxEps), maxPhiInc(maxPhi),
-	L(0.0), F_tol_q(0.0), F_tol_f_ms(0.0),
+	L(0.0), F_tol_q(0.0), F_tol_f_ms(0.0), 
 	hh(0), H(0), H_init(0), H_inv(0),
 	B_q(0), B_Q(0), B_q_H_inv_init(0), K0(0),
 	J(0), J_init(0), J_commit(0),
@@ -268,13 +268,13 @@ GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d(int tag, int nodeI,
 		exit(-1);
 	}
 
-	sections = new SectionForceDeformation * [numSections];
+	sections = new SectionForceDeformation *[numSections];
 	if (!sections) {
 		opserr << "WARNING! GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d() - element: " << this->getTag() << " - could not allocate section pointers\n";
 		exit(-1);
 	}
 
-	double* secX = new double[numSections];
+	double *secX = new double[numSections];
 	beamIntegr->getSectionLocations(numSections, L, secX);	// relative locations of sections (x/L)
 
 	for (int i = 0; i < numSections; i++) {
@@ -457,7 +457,7 @@ GradientInelasticBeamColumn2d::~GradientInelasticBeamColumn2d()
 
 // Definition of setDomain()
 void
-GradientInelasticBeamColumn2d::setDomain(Domain* theDomain)
+GradientInelasticBeamColumn2d::setDomain(Domain *theDomain)
 {
 	// Check Domain is not Null
 	if (theDomain == 0) {
@@ -517,10 +517,10 @@ GradientInelasticBeamColumn2d::setDomain(Domain* theDomain)
 	}
 
 	// Form Total Force Interpolation and Total Displacement Integration Matrices
-	double* secX = new double[numSections];
+	double *secX = new double[numSections];
 	beamIntegr->getSectionLocations(numSections, L, secX);	// relative locations of sections (x/L)
 
-	double* secW = new double[numSections];
+	double *secW = new double[numSections];
 	beamIntegr->getSectionWeights(numSections, L, secW);	// relative weights of sections (w/L)
 
 	B_Q->Zero();
@@ -530,7 +530,7 @@ GradientInelasticBeamColumn2d::setDomain(Domain* theDomain)
 	Vector dx(numSections - 1);	// spaces between integration points
 
 	for (int j = 0; j < numSections; j++) {
-		const ID& code = sections[j]->getType();
+		const ID &code = sections[j]->getType();
 
 		w = L * secW[j];
 		x = L * secX[j];
@@ -630,7 +630,7 @@ GradientInelasticBeamColumn2d::setDomain(Domain* theDomain)
 		(*H_init)(i, i) = Ac;
 	}*/
 
-	* H = *H_init;
+	*H = *H_init;
 
 	// Initialize Section Deformations
 	if (!initialFlag) {
@@ -698,7 +698,7 @@ GradientInelasticBeamColumn2d::setDomain(Domain* theDomain)
 
 		// Decide on Maximum Trial Change
 		if (maxEpsInc != 0.0) {
-			const ID& code = sections[0]->getType();
+			const ID &code = sections[0]->getType();
 
 			for (int i = 0; i < secOrder; i++) {
 				for (int j = 0; j < numSections; j++) {
@@ -748,13 +748,13 @@ GradientInelasticBeamColumn2d::getNumExternalNodes(void) const
 	return 2;
 }
 
-const ID&
+const ID &
 GradientInelasticBeamColumn2d::getExternalNodes(void)
 {
 	return connectedExternalNodes;
 }
 
-Node**
+Node **
 GradientInelasticBeamColumn2d::getNodePtrs(void)
 {
 	return theNodes;
@@ -816,7 +816,7 @@ GradientInelasticBeamColumn2d::commitState(void)
 
 	if (correctionControl && (maxEpsInc == 0.0))
 		for (int i = 0; i < numSections * secOrder + 3; i++)
-			(*max_trial_change)(i) = ((commitNo - 1.0) * (*max_trial_change)(i) + fabs((*trial_change)(i))) / commitNo;
+			(*max_trial_change)(i) = ((commitNo - 1.0) * (*max_trial_change)(i)+fabs((*trial_change)(i))) / commitNo;
 
 	// complete committing the variables
 
@@ -926,7 +926,7 @@ GradientInelasticBeamColumn2d::assembleMatrix(Matrix& A, const Matrix& B, int ro
 }
 
 void
-GradientInelasticBeamColumn2d::assembleMatrix(Matrix& A, const Vector& B, int col, double fact)
+GradientInelasticBeamColumn2d::assembleMatrix(Matrix &A, const Vector &B, int col, double fact)
 {
 	if (A.noRows() != B.Size())
 		opserr << "ERROR! NonlocalBeamColumn2d::assembleMatrix - element: " << this->getTag() << " - incompatible matrix column number and vector size\n";
@@ -936,7 +936,7 @@ GradientInelasticBeamColumn2d::assembleMatrix(Matrix& A, const Vector& B, int co
 }
 
 void
-GradientInelasticBeamColumn2d::assembleVector(Vector& A, const Vector& B, int rowStart, int rowEnd, double fact)
+GradientInelasticBeamColumn2d::assembleVector(Vector &A, const Vector &B, int rowStart, int rowEnd, double fact)
 {
 	int rowsNo = rowEnd - rowStart + 1;
 
@@ -962,12 +962,12 @@ GradientInelasticBeamColumn2d::update(void)
 	totStrIterNo++;
 
 	// Get Section Behaviors
-	const ID& code = sections[0]->getType();
+	const ID &code = sections[0]->getType();
 
 	// Get Trial Nodal Basic Displacements
 	crdTransf->update();
-	const Vector& q_t = crdTransf->getBasicTrialDisp();		// target
-	const Vector& q_inc = crdTransf->getBasicIncrDisp();		// increment from last committed step
+	const Vector &q_t = crdTransf->getBasicTrialDisp();		// target
+	const Vector &q_inc = crdTransf->getBasicIncrDisp();		// increment from last committed step
 	static Vector q(3);											// trial for each iteration (could be smaller than target)
 
 	if (initialFlag != 0 && q_inc.Norm() <= DBL_EPSILON)
@@ -1203,30 +1203,30 @@ GradientInelasticBeamColumn2d::update(void)
 
 // Definition of Methods Dealing with Sections
 void
-GradientInelasticBeamColumn2d::getSectionsTangentStiff(Matrix& tStiff)
+GradientInelasticBeamColumn2d::getSectionsTangentStiff(Matrix &tStiff)
 {
 	tStiff.Zero();
 
 	for (int i = 0; i < numSections; i++) {
-		const Matrix& k_ms = sections[i]->getSectionTangent();
+		const Matrix &k_ms = sections[i]->getSectionTangent();
 		this->assembleMatrix(tStiff, k_ms, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
 	}
 }
 
 void
-GradientInelasticBeamColumn2d::getSectionsInitialStiff(Matrix& iStiff)
+GradientInelasticBeamColumn2d::getSectionsInitialStiff(Matrix &iStiff)
 {
 	iStiff.Zero();
 
 	for (int i = 0; i < numSections; i++) {
-		const Matrix& k_ms0 = sections[i]->getInitialTangent();
+		const Matrix &k_ms0 = sections[i]->getInitialTangent();
 		this->assembleMatrix(iStiff, k_ms0, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
 	}
 }
 
 // Definition of Convergence Test Methods
 double
-GradientInelasticBeamColumn2d::weightedNorm(const Vector& W, const Vector& V, bool sqRt)
+GradientInelasticBeamColumn2d::weightedNorm(const Vector &W, const Vector &V, bool sqRt)
 {
 	if (W.Size() != V.Size())
 		opserr << "WARNING! GradientInelasticBeamColumnPF3d::weightedNorm() - element: " << this->getTag() << " - inequal number of elements in vectors\n";
@@ -1242,7 +1242,7 @@ GradientInelasticBeamColumn2d::weightedNorm(const Vector& W, const Vector& V, bo
 }
 
 bool
-GradientInelasticBeamColumn2d::qConvergence(const int& iter, const Vector& qt, const Vector& dnl_tot, Vector& Dq, double& dqNorm)
+GradientInelasticBeamColumn2d::qConvergence(const int &iter, const Vector &qt, const Vector &dnl_tot, Vector &Dq, double &dqNorm)
 {
 	bool q_converged;
 
@@ -1260,7 +1260,7 @@ GradientInelasticBeamColumn2d::qConvergence(const int& iter, const Vector& qt, c
 }
 
 bool
-GradientInelasticBeamColumn2d::fConvergence(const int& iter, const Vector& Qt, Vector& DF_ms, double& dfNorm)
+GradientInelasticBeamColumn2d::fConvergence(const int &iter, const Vector &Qt, Vector &DF_ms, double &dfNorm)
 {
 	bool F_ms_converged;
 
@@ -1280,7 +1280,7 @@ GradientInelasticBeamColumn2d::fConvergence(const int& iter, const Vector& Qt, V
 }
 
 // Definition of Methods Used to Determine Stiffness Matrices and Mass Matrix
-const Matrix&
+const Matrix &
 GradientInelasticBeamColumn2d::getBasicStiff(void)
 {
 	// Determine Element Stiffness Matrix in Basic System
@@ -1307,14 +1307,14 @@ GradientInelasticBeamColumn2d::getBasicStiff(void)
 	return K;
 }
 
-const Matrix&
+const Matrix &
 GradientInelasticBeamColumn2d::getTangentStiff(void)
 {
 	crdTransf->update();
 	return crdTransf->getGlobalStiffMatrix(this->getBasicStiff(), Q);
 }
 
-const Matrix&
+const Matrix &
 GradientInelasticBeamColumn2d::getInitialBasicStiff(void)
 {
 	// Determine Sections Initial Stiffness Matrices
@@ -1338,7 +1338,7 @@ GradientInelasticBeamColumn2d::getInitialBasicStiff(void)
 	return K_init;
 }
 
-const Matrix&
+const Matrix &
 GradientInelasticBeamColumn2d::getInitialStiff(void)
 {
 	// Check for Quick Return
@@ -1351,7 +1351,7 @@ GradientInelasticBeamColumn2d::getInitialStiff(void)
 	return *K0;
 }
 
-const Matrix&
+const Matrix &
 GradientInelasticBeamColumn2d::getMass(void)
 {
 	theMatrix.Zero();
@@ -1360,7 +1360,7 @@ GradientInelasticBeamColumn2d::getMass(void)
 }
 
 // Definition of Methods to Get Forces
-const Vector&
+const Vector &
 GradientInelasticBeamColumn2d::getResistingForce(void)
 {
 	double Q0[3];
@@ -1371,7 +1371,7 @@ GradientInelasticBeamColumn2d::getResistingForce(void)
 	return crdTransf->getGlobalResistingForce(Q, Q0Vec);
 }
 
-const Vector&
+const Vector &
 GradientInelasticBeamColumn2d::getResistingForceIncInertia()
 {
 	// Compute the current resisting force
@@ -1386,7 +1386,7 @@ GradientInelasticBeamColumn2d::getResistingForceIncInertia()
 
 // Definition of Print Command
 void
-GradientInelasticBeamColumn2d::Print(OPS_Stream& s, int flag)
+GradientInelasticBeamColumn2d::Print(OPS_Stream &s, int flag)
 {
 	s << "Element Tag: " << this->getTag() << endln;
 	s << "Type: GradientInelasticBeamColumn2d" << endln;
@@ -1398,11 +1398,11 @@ GradientInelasticBeamColumn2d::Print(OPS_Stream& s, int flag)
 }
 
 // Definition of Response Parameters
-Response*
-GradientInelasticBeamColumn2d::setResponse(const char** argv, int argc, OPS_Stream& output)
+Response *
+GradientInelasticBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 	// Define and Initialize theResponse
-	Response* theResponse = 0;
+	Response *theResponse = 0;
 
 	output.tag("ElementOutput");
 	output.attr("eleType", this->getClassType());
@@ -1478,7 +1478,7 @@ GradientInelasticBeamColumn2d::setResponse(const char** argv, int argc, OPS_Stre
 
 			if (sectionNum > 0 && sectionNum <= numSections && argc > 2) {
 
-				double* secX = new double[numSections]; //double secX[50];
+				double *secX = new double[numSections]; //double secX[50];
 				beamIntegr->getSectionLocations(numSections, L, secX);
 
 				output.tag("GaussPointOutput");
@@ -1490,7 +1490,7 @@ GradientInelasticBeamColumn2d::setResponse(const char** argv, int argc, OPS_Stre
 				}
 				else {
 					theResponse = new ElementResponse(this, 76, Vector(secOrder));
-					Information& info = theResponse->getInformation();
+					Information &info = theResponse->getInformation();
 					info.theInt = sectionNum;
 				}
 
@@ -1507,7 +1507,7 @@ GradientInelasticBeamColumn2d::setResponse(const char** argv, int argc, OPS_Stre
 
 // Definition of Method to Get Response Parameters
 int
-GradientInelasticBeamColumn2d::getResponse(int responseID, Information& eleInfo)
+GradientInelasticBeamColumn2d::getResponse(int responseID, Information &eleInfo)
 {
 	switch (responseID) {
 	case 1: // Global Forces
@@ -1552,33 +1552,33 @@ GradientInelasticBeamColumn2d::getResponse(int responseID, Information& eleInfo)
 
 // Definition of Method to Display Element
 int
-GradientInelasticBeamColumn2d::displaySelf(Renderer& theViewer, int displayMode, float fact)
+GradientInelasticBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
 	// first determine the end points of the beam based on
 	// the display factor (a measure of the distorted image)
-	const Vector& end1Crd = theNodes[0]->getCrds();
-	const Vector& end2Crd = theNodes[1]->getCrds();
+	const Vector &end1Crd = theNodes[0]->getCrds();
+	const Vector &end2Crd = theNodes[1]->getCrds();
 
 	static Vector v1(3);
 	static Vector v2(3);
 
 	if (displayMode >= 0) {
-		const Vector& end1Disp = theNodes[0]->getDisp();
-		const Vector& end2Disp = theNodes[1]->getDisp();
+		const Vector &end1Disp = theNodes[0]->getDisp();
+		const Vector &end2Disp = theNodes[1]->getDisp();
 
 		for (int i = 0; i < 2; i++) {
-			v1(i) = end1Crd(i) + end1Disp(i) * fact;
-			v2(i) = end2Crd(i) + end2Disp(i) * fact;
+			v1(i) = end1Crd(i) + end1Disp(i)*fact;
+			v2(i) = end2Crd(i) + end2Disp(i)*fact;
 		}
 	}
 	else {
-		int mode = displayMode * -1;
-		const Matrix& eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix& eigen2 = theNodes[1]->getEigenvectors();
+		int mode = displayMode  *  -1;
+		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
+		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
 		if (eigen1.noCols() >= mode) {
 			for (int i = 0; i < 2; i++) {
-				v1(i) = end1Crd(i) + eigen1(i, mode - 1) * fact;
-				v2(i) = end2Crd(i) + eigen2(i, mode - 1) * fact;
+				v1(i) = end1Crd(i) + eigen1(i, mode - 1)*fact;
+				v2(i) = end2Crd(i) + eigen2(i, mode - 1)*fact;
 			}
 		}
 		else {
@@ -1594,14 +1594,14 @@ GradientInelasticBeamColumn2d::displaySelf(Renderer& theViewer, int displayMode,
 
 // Definition of Methods Dealing with Parallel Processing
 int
-GradientInelasticBeamColumn2d::sendSelf(int commitTag, Channel& theChannel)
+GradientInelasticBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
 {
 	opserr << "WARNING! GradientInelasticBeamColumn2d::sendSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
 	return -1;
 }
 
 int
-GradientInelasticBeamColumn2d::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
+GradientInelasticBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
 	opserr << "WARNING! GradientInelasticBeamColumn2d::recvSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
 	return -1;
