@@ -151,8 +151,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 		// CHECK FOR UNLOADING
 		if ((fi_1 > 0) && (du <= 0) && (du*du_i_1 <= 0)) {
 			Unloading_Flag = 1;
+			Reversal_Flag = 1;
 			Reloading_Flag = 0;
-			K_check=(FLastPeak_pos_j_1-fi_1)/(ULastPeak_pos_j_1-ui_1);
+			K_check = (FLastPeak_pos_j_1 - fi_1) / (ULastPeak_pos_j_1 - ui_1);
 			if ((K_check >= 1.05*Kul_j_1) || (K_check <= 0.95*Kul_j_1)) { // a tailored criteria to avoid registering last peak points during small unload/reload excursions on the unloading branch 
 				FLastPeak_pos_j_1 = fi_1;
 				ULastPeak_pos_j_1 = ui_1;
@@ -160,12 +161,16 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 		}
 		else if ((fi_1 < 0) && (du > 0) && (du*du_i_1 <= 0)) {
 			Unloading_Flag = 1;
+			Reversal_Flag = 1;
 			Reloading_Flag = 0;
-			K_check=(FLastPeak_neg_j_1-fi_1)/(ULastPeak_neg_j_1-ui_1);
-			if ((K_check >=1.01*Kul_j_1) || (K_check <=0.99*Kul_j_1)) {
+			K_check = (FLastPeak_neg_j_1 - fi_1) / (ULastPeak_neg_j_1 - ui_1);
+			if ((K_check >= 1.01*Kul_j_1) || (K_check <= 0.99*Kul_j_1)) {
 				FLastPeak_neg_j_1 = fi_1;
 				ULastPeak_neg_j_1 = ui_1;
 			}
+		}
+		else {
+			Reversal_Flag = 0;
 		}
 
 		// CHECK FOR RELOADING
@@ -234,7 +239,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 			betaA = 0;
 		}
 
-		if (Unloading_Flag == 1) {
+		if (Reversal_Flag == 1) {
 			EpjK = Energy_Acc - 0.5*(fi_1 / Kul_j_1)*fi_1;
 			EiK = Energy_Acc - Energy_Diss + 0.5*(fi_1 / Kul_j_1)*fi_1;
 			betaK = pow((EiK / (EtK - EpjK)), c_K);
@@ -761,6 +766,7 @@ int IMKPinching::commitState(void)
 	cUnloading_Flag		= Unloading_Flag;
 	cTargetPeak_Flag	= TargetPeak_Flag;
 	cYield_Flag			= Yield_Flag;
+	cReversal_Flag		= Reversal_Flag;
 
 	cKrel_j_1 = Krel_j_1;
 
@@ -830,6 +836,7 @@ int IMKPinching::revertToLastCommit(void)
 	Unloading_Flag    = cUnloading_Flag;
 	TargetPeak_Flag   = cTargetPeak_Flag;
 	Yield_Flag   = cYield_Flag;
+	Reversal_Flag = cReversal_Flag;
 
 	u0 = cu0;
 
@@ -909,7 +916,8 @@ int IMKPinching::revertToStart(void)
 	Reloading_Flag	= cReloading_Flag  = 0;
 	TargetPeak_Flag = cTargetPeak_Flag = 0;
 	Yield_Flag 		= cYield_Flag	   = 0;
-	
+	Reversal_Flag	= cReversal_Flag   = 0;
+
 	ULastPeak_pos_j_1 =  Uy_pos;
 	FLastPeak_pos_j_1 =  Fy_pos;
 	ULastPeak_neg_j_1 = -Uy_neg;
@@ -1037,7 +1045,8 @@ IMKPinching::getCopy(void)
 	theCopy->Excursion_Flag  = Excursion_Flag;
 	theCopy->Reloading_Flag  = Reloading_Flag;
 	theCopy->TargetPeak_Flag = TargetPeak_Flag;
-	theCopy->Yield_Flag 	 = Yield_Flag;
+	theCopy->Yield_Flag		 = Yield_Flag;
+	theCopy->Reversal_Flag   = Reversal_Flag;
 
 	theCopy->Krel_j_1 = Krel_j_1;
 	
@@ -1092,6 +1101,7 @@ IMKPinching::getCopy(void)
 	theCopy->cReloading_Flag	= cReloading_Flag;
 	theCopy->cTargetPeak_Flag	= cTargetPeak_Flag;
 	theCopy->cYield_Flag 		= cYield_Flag;
+	theCopy->cReversal_Flag		= cReversal_Flag;
 
 	theCopy->cKrel_j_1 = cKrel_j_1;
 	
@@ -1107,7 +1117,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
 	int res = 0;
 	cout << " sendSelf" << endln;
 
-	static Vector data(142);
+	static Vector data(144);
 	data(0) = this->getTag();
 	data(1)   = Ke;
 	data(2)   = Uy_pos;
@@ -1250,6 +1260,8 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
 	data(139) = Fbp;
 	data(140) = cUbp;
 	data(141) = cFbp;
+	data(142) = Reversal_Flag;
+	data(143) = cReversal_Flag;
 
 	res = theChannel.sendVector(this->getDbTag(), cTag, data);
 	if (res < 0)
@@ -1261,7 +1273,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
 int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(142);
+	static Vector data(144);
 	res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
 	if (res < 0) {
@@ -1411,7 +1423,9 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 		Ubp  				= data(138);
 		Fbp  				= data(139);
 		cUbp 				= data(140);
-		cFbp				= data(141);
+		cFbp				= data(141);		
+		cReversal_Flag		= data(142);
+		Reversal_Flag		= data(143);
 	}
 
 	return res;
