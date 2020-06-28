@@ -176,8 +176,8 @@ extern void *OPS_SingleFPSimple2d(void);
 extern void *OPS_SingleFPSimple3d(void);
 extern void *OPS_RJWatsonEQS2d(void);
 extern void *OPS_RJWatsonEQS3d(void);
-extern void* OPS_GradientInelasticBeamColumn2d();
-extern void* OPS_GradientInelasticBeamColumn3d();
+//extern void* OPS_GradientInelasticBeamColumn2d();
+//extern void* OPS_GradientInelasticBeamColumn3d();
 
 extern void* OPS_LehighJoint2d(void);
 
@@ -336,6 +336,10 @@ extern int
 TclModelBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc,
 	TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
+// MSN
+extern int
+TclModelBuilder_addGradientInelasticBeamColumn(ClientData, Tcl_Interp*, int, TCL_Char**,
+	Domain*, TclModelBuilder*);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -484,7 +488,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   }
 
-  else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+  /*else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_GradientInelasticBeamColumn2d();
@@ -497,7 +501,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
+  }*/
 
   #ifdef _HAVE_LHNMYS
   else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
@@ -1556,6 +1560,13 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 						 theTclDomain, theTclBuilder);
     return result;
   }
+	
+	// MSN
+	else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+		int result = TclModelBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv,
+			theTclDomain, theTclBuilder);
+		return result;
+	}
 
   else {
 
