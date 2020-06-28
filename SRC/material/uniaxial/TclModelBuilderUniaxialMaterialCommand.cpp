@@ -136,7 +136,7 @@ extern void *OPS_StainlessECThermal(void); // L.Jiang [SIF]
 extern void *OPS_SteelECThermal(void); // L.Jiang [SIF]
 extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
-extern void *OPS_PlateBearingConnectionThermal(void);
+//extern void *OPS_PlateBearingConnectionThermal(void);
 
 extern void *OPS_BWBN(void);
 extern void *OPS_IMKPeakOriented(void);
@@ -680,7 +680,8 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     } else if (strcmp(argv[1],"PlateBearingConnectionThermal") == 0) {
-      void *theMat = OPS_PlateBearingConnectionThermal();
+      //void *theMat = OPS_PlateBearingConnectionThermal();
+      void *theMat = 0;
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

@@ -2,7 +2,8 @@ include ../../../Makefile.def
 
 OBJS       = \
 	GradientInelasticBeamColumn2d.o \
-	GradientInelasticBeamColumn3d.o
+	GradientInelasticBeamColumn3d.o \
+	TclGradientInelasticBeamColumnCommand.o
 
 # Compilation control
 
