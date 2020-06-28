@@ -62,9 +62,9 @@ void* OPS_GradientInelasticBeamColumn2d()
 {
 	// Necessary Arguments
 	if (OPS_GetNumRemainingInputArgs() < 11) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - insufficient arguments\n";
-		opserr << "Want: eleTag? iNode? jNode? numIntgrPts? endSecTag1? intSecTag? endSecTag2? secLR1? secLR2? lc? transfTag?\n" <<
-			"<-constH> <-integration integrType?> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - insufficient arguments\n" <<
+			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
+			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
 		return 0;
 	}
 
@@ -76,24 +76,23 @@ void* OPS_GradientInelasticBeamColumn2d()
 	}
 
 	// inputs: 
-	int iData[7];
-	int numData = 7;
+	int iData[5];
+	int numData = 5;
 	if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid tags or numIntgrPts\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid input tags\n";
 		return 0;
 	}
 
-	double dData[3];
-	numData = 3;
-	if (OPS_GetDoubleInput(&numData, &dData[0]) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid secLR or lc\n";
-		return 0;
-	}
+	int eleTag = iData[0];
+	int nodeTagI = iData[1];
+	int nodeTagJ = iData[2];
+	int transfTag = iData[3];
+	int integrTag = iData[4];
 
+	double LC;
 	numData = 1;
-	int transfTag;
-	if (OPS_GetIntInput(&numData, &transfTag) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid transfTag\n";
+	if (OPS_GetDoubleInput(&numData, &LC) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid lc\n";
 		return 0;
 	}
 
@@ -103,7 +102,6 @@ void* OPS_GradientInelasticBeamColumn2d()
 	bool correctionControl = false;
 	bool constH = false;
 	double maxEpsInc = 0.0, maxPhiInc = 0.0;
-	const char* integrType = "Simpson";
 
 	numData = 1;
 	while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -131,14 +129,6 @@ void* OPS_GradientInelasticBeamColumn2d()
 				return 0;
 			}
 		}
-		else if (strcmp(word, "-integration") == 0) {
-			if (OPS_GetNumRemainingInputArgs() > 0)
-				integrType = OPS_GetString();
-			else {
-				opserr << "WARNING! gradientInelasticBeamColumn2d - need integrType? after -integration \n";
-				return 0;
-			}
-		}
 		else if (strcmp(word, "-corControl") == 0) {
 			correctionControl = true;
 
@@ -152,6 +142,9 @@ void* OPS_GradientInelasticBeamColumn2d()
 					return 0;
 				}
 			}
+			else
+				opserr << "WARNING! gradientInelasticBeamColumn2d - no max. correction increments set\n" <<
+				"         -> setting them automatically|\n";
 		}
 	}
 
@@ -163,60 +156,50 @@ void* OPS_GradientInelasticBeamColumn2d()
 	}
 
 	// check beam integrataion
-	BeamIntegration* beamIntegr = 0;
-
-	if (strcmp(integrType, "Lobatto") == 0)
-		beamIntegr = new LobattoBeamIntegration;
-	else if (strcmp(integrType, "Legendre") == 0)
-		beamIntegr = new LegendreBeamIntegration;
-	else if (strcmp(integrType, "Simpson") == 0)
-		beamIntegr = new SimpsonBeamIntegration;
-	else if (strcmp(integrType, "NewtonCotes") == 0) {
-		if (iData[3] > 20) {
-			opserr << "WARNING! gradientInelasticBeamColumn2d - Newton-Cotes integration method\n" <<
-				"number of integration points must be less than 20\n" <<
-				"use Simpson integration method instead!\n";
-			beamIntegr = new SimpsonBeamIntegration;
-		}
-
-		beamIntegr = new NewtonCotesBeamIntegration;
-	}
-	else if (strcmp(integrType, "Trapezoidal") == 0)
-		beamIntegr = new TrapezoidalBeamIntegration;
-	else {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - integration type " << integrType << " is not available\n";
+	BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(integrTag);
+	if (theRule == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn2d - BeamIntegrationRule with tag " << integrTag << " not found\n";
 		return 0;
 	}
 
+	BeamIntegration* beamIntegr = theRule->getBeamIntegration();
 	if (beamIntegr == 0) {
 		opserr << "WARNING! gradientInelasticBeamColumn2d - failed to create beam integration\n";
 		return 0;
 	}
 
 	// check sections
-	SectionForceDeformation* endSection1 = OPS_getSectionForceDeformation(iData[4]);
+	const ID& secTags = theRule->getSectionTags();
+	int numIntegrPoints = secTags.Size();
 
+	for (int i = 2; i < numIntegrPoints; i++) {
+		if (secTags(i) == secTags(i - 1)) {
+			opserr << "WARNING! gradientInelasticBeamColumn2d - internal integration points should have identical tags\n"
+				<< "continued using section tag of integration point 2 for all internal integration points\n";
+			return 0;
+		}
+	}
+
+	SectionForceDeformation* endSection1 = OPS_getSectionForceDeformation(secTags(0));
 	if (!endSection1) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << iData[4] << " not found\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << secTags(0) << " not found\n";
 		return 0;
 	}
 
-	SectionForceDeformation* intSection = OPS_getSectionForceDeformation(iData[5]);
-
+	SectionForceDeformation* intSection = OPS_getSectionForceDeformation(secTags(1));
 	if (!intSection) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << iData[5] << " not found\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << secTags(1) << " not found\n";
 		return 0;
 	}
 
-	SectionForceDeformation* endSection2 = OPS_getSectionForceDeformation(iData[6]);
-
+	SectionForceDeformation* endSection2 = OPS_getSectionForceDeformation(secTags(numIntegrPoints - 1));
 	if (!endSection2) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << iData[6] << " not found\n";
+		opserr << "WARNING! gradientInelasticBeamColumn2d - section with tag " << secTags(numIntegrPoints - 1) << " not found\n";
 		return 0;
 	}
 
-	Element* theEle = new GradientInelasticBeamColumn2d(iData[0], iData[1], iData[2], iData[3], &endSection1, &intSection, &endSection2,
-		dData[0], dData[1], *beamIntegr, *theTransf, dData[2], minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
+	Element* theEle = new GradientInelasticBeamColumn2d(eleTag, nodeTagI, nodeTagJ, numIntegrPoints, &endSection1, &intSection, &endSection2,
+		0.01, 0.01, *beamIntegr, *theTransf, LC, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
 
 	return theEle;
 }
@@ -240,7 +223,7 @@ GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d(int tag, int nodeI,
 	correctionControl(corControl), maxEpsInc(maxEps), maxPhiInc(maxPhi),
 	L(0.0), F_tol_q(0.0), F_tol_f_ms(0.0), 
 	hh(0), H(0), H_init(0), H_inv(0),
-	B_q(0), B_Q(0),	B_q_H_inv_init(0), K0(0),
+	B_q(0), B_Q(0), B_q_H_inv_init(0), K0(0),
 	J(0), J_init(0), J_commit(0),
 	k_init(3), flex_ms_init(0), trial_change(0), max_trial_change(0),
 	initialFlag(0), Q(3), Q_commit(3),
@@ -346,7 +329,7 @@ GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d(int tag, int nodeI,
 
 	F_ms = new Vector(numSections * secOrder);
 	F_ms_commit = new Vector(numSections * secOrder);
-	
+
 	// Get Copy of Coordinate Transformation Method 
 	crdTransf = CT.getCopy2d();
 
@@ -911,7 +894,7 @@ GradientInelasticBeamColumn2d::revertToStart(void)
 }
 
 void
-GradientInelasticBeamColumn2d::assembleMatrix(Matrix &A, const Matrix &B, int rowStart, int rowEnd, int colStart, int colEnd, double fact)
+GradientInelasticBeamColumn2d::assembleMatrix(Matrix& A, const Matrix& B, int rowStart, int rowEnd, int colStart, int colEnd, double fact)
 {
 	int rowsNo = rowEnd - rowStart + 1;
 	int colsNo = colEnd - colStart + 1;
