@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Element.h>
 #include <ElementIter.h>
 #include <map>
+#include <set>
 #include <Recorder.h>
 #include <Pressure_Constraint.h>
 #include <vector>
@@ -1808,58 +1809,61 @@ int OPS_getEleTags()
     return 0;
 }
 
-int OPS_getNodeTags()
-{
-    Domain* theDomain = OPS_GetDomain();
+int OPS_getNodeTags() {
+    Domain *theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
     std::vector<int> nodetags;
     if (OPS_GetNumRemainingInputArgs() < 1) {
+        // return all nodes
+        Node *theNode;
+        NodeIter &nodeIter = theDomain->getNodes();
 
-	// return all nodes
-	Node *theNode;
-	NodeIter &nodeIter = theDomain->getNodes();
-
-	while ((theNode = nodeIter()) != 0) {
-	    nodetags.push_back(theNode->getTag());
-	}
-    } else if (OPS_GetNumRemainingInputArgs() == 2) {
-
-	// return nodes in mesh
-	const char* type = OPS_GetString();
-	if (strcmp(type,"-mesh") == 0) {
-	    int tag;
-	    int num = 1;
-	    if (OPS_GetIntInput(&num, &tag) < 0) {
-		opserr << "WARNING: failed to get mesh tag\n";
-		return -1;
-	    }
-	    Mesh* msh = OPS_getMesh(tag);
-	    if (msh == 0) {
-		opserr << "WARNING: mesh "<<tag<<" does not exist\n";
-		return -1;
-	    }
-	    const ID& tags = msh->getNodeTags();
-	    for (int i=0; i<tags.Size(); ++i) {
-		nodetags.push_back(tags(i));
-	    }
-	    const ID& newtags = msh->getNewNodeTags();
-	    for (int i=0; i<newtags.Size(); ++i) {
-		nodetags.push_back(newtags(i));
-	    }
-	}
+        while ((theNode = nodeIter()) != 0) {
+            nodetags.push_back(theNode->getTag());
+        }
+    } else if (OPS_GetNumRemainingInputArgs() > 1) {
+        // return nodes in mesh
+        const char *type = OPS_GetString();
+        if (strcmp(type, "-mesh") == 0) {
+            int numtags = OPS_GetNumRemainingInputArgs();
+            std::set<int> nodeset;
+            for (int i = 0; i < numtags; ++i) {
+                int tag;
+                int num = 1;
+                if (OPS_GetIntInput(&num, &tag) < 0) {
+                    opserr << "WARNING: failed to get mesh tag\n";
+                    return -1;
+                }
+                Mesh *msh = OPS_getMesh(tag);
+                if (msh == 0) {
+                    opserr << "WARNING: mesh " << tag
+                           << " does not exist\n";
+                    return -1;
+                }
+                const ID &tags = msh->getNodeTags();
+                for (int i = 0; i < tags.Size(); ++i) {
+                    nodeset.insert(tags(i));
+                }
+                const ID &newtags = msh->getNewNodeTags();
+                for (int i = 0; i < newtags.Size(); ++i) {
+                    nodeset.insert(newtags(i));
+                }
+            }
+            nodetags.assign(nodeset.begin(), nodeset.end());
+        }
     }
 
     int size = 0;
-    int* data = 0;
+    int *data = 0;
     if (!nodetags.empty()) {
         size = (int)nodetags.size();
         data = &nodetags[0];
     }
 
     if (OPS_SetIntOutput(&size, data, false) < 0) {
-	opserr << "WARNING failed to set outputs\n";
-	return -1;
+        opserr << "WARNING failed to set outputs\n";
+        return -1;
     }
 
     return 0;
