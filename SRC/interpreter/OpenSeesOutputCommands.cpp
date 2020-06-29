@@ -67,6 +67,7 @@ void* OPS_EnvelopeNodeRecorder();
 void* OPS_ElementRecorder();
 void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
+void* OPS_AlgorithmRecorder();
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -2203,7 +2204,7 @@ int OPS_sectionLocation()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionLocation eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionLocation eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2272,7 +2273,7 @@ int OPS_sectionWeight()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionWeight eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionWeight eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2313,6 +2314,158 @@ int OPS_sectionWeight()
     double value = theVec(secNum-1);
     numdata = 1;
 
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionDisplacement()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionDisplacement eleTag? secNum? \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 2;
+    int data[2];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING sectionDisplacement eleTag? secNum? - could not read int input? \n";
+	return -1;
+    }
+
+    int tag = data[0];
+    int secNum = data[1];
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionDisplacement element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "sectionDisplacements";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Vector &theVec = *(info.theVector);
+    if (secNum <= 0 || secNum > theVec.Size()) {
+	opserr << "WARNING invalid secNum\n";
+	delete theResponse;
+	return -1;
+    }
+
+    double value = theVec(secNum-1);
+    numdata = 1;
+
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_cbdiDisplacement()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - cbdiDisplacement eleTag? x/L? \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int data[1];
+    double ddata[1];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING cbdiDisplacement eleTag? x/L? - could not read int input? \n";
+	return -1;
+    }
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	opserr << "WARNING cbdiDisplacement eleTag? x/L? - could not read double input? \n";
+	return -1;
+    }    
+
+    int tag = data[0];
+    double xOverL = ddata[0];
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING cbdiDisplacment element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "cbdiDisplacements";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Vector &theVec = *(info.theVector);
+    if (xOverL < 0.0 || xOverL > 1.0) {
+	opserr << "WARNING invalid xOverL\n";
+	delete theResponse;
+	return -1;
+    }
+
+    double value = 0.0; // Need to interpolate
+    int N = theVec.Size();
+    double dx = 1.0/(N-1);
+    for (int i = 0; i < N; i++) {
+      double xi = double(i)/(N-1);
+      double xf = double(i+1)/(N-1);
+      if (xOverL >= xi && xOverL < xf) {
+	value = theVec(i) + (xOverL-xi)/(xf-xi)*(theVec(i+1)-theVec(i));
+      }
+    }
+    
+    numdata = 1;
     if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
