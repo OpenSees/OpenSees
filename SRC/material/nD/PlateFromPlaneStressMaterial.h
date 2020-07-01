@@ -92,6 +92,10 @@ class PlateFromPlaneStressMaterial: public NDMaterial{
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
+    //setResponse - added by V.K. Papanikolaou [AUTh] - start
+    Response* setResponse(const char** argv, int argc, OPS_Stream& s);
+    //setResponse - added by V.K. Papanikolaou [AUTh] - end
+
 private :
     NDMaterial *theMat ;  //pointer to three dimensional material
     double gmod;
