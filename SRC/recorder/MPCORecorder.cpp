@@ -4609,7 +4609,7 @@ int MPCORecorder::initialize()
 		std::stringstream ss_filename;
 		for (size_t i = 0; i < filename_words.size() - 1; i++)
 			ss_filename << filename_words[i] << '.';
-		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in slave procs, = 0 -> not in parallel
+		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in secondary procs, = 0 -> not in parallel
 			ss_filename << "p" << m_data->p_id << '.';
 		}
 		ss_filename << filename_words.back();
