@@ -3497,31 +3497,31 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
         return 1;
     }
 
-    // get slave node
-    int slave = 0;
+    // get secondary node
+    int secondary = 0;
     int id = 0;
     bool find = false;
     for (std::map<int, VInt>::iterator it=grp.begin();
          it!=grp.end(); ++it) {
         VInt& nds = it->second;
         if (nds.size() == 1) {
-            // slave node with largest sid
+            // secondary node with largest sid
             if (!find || (id < it->first)) {
                 id = it->first;
-                slave = nds[0];
+                secondary = nds[0];
                 find = true;
             }
         } else if (find && id < it->first) {
-            // if master nodes have larger sid
+            // if primary nodes have larger sid
             find = false;
         }
     }
     if (!find) return 1;
 
-    // index for slave node
+    // index for secondary node
     int index = 0;
     for (int i = 0; i < (int) ndtags.size(); ++i) {
-        if (ndtags[i] == slave) {
+        if (ndtags[i] == secondary) {
             index = i + 1;
             if (index >= (int) ndtags.size()) {
                 index -= ndtags.size();
@@ -3530,7 +3530,7 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
         }
     }
 
-    // get master nodes
+    // get primary nodes
     elends.clear();
     for (int i = 0; i < (int) ndtags.size() - 1; ++i) {
         elends.push_back(ndtags[index]);
@@ -3539,7 +3539,7 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
             index -= ndtags.size();
         }
     }
-    elends.push_back(slave);
+    elends.push_back(secondary);
 
     return 0;
 }
