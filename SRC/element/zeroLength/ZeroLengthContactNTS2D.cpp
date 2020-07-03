@@ -87,7 +87,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   numData = 10;
   nextString = OPS_GetString();
 
-  if (strcmp(nextString,"-mNdNum") != 0 || strcmp(nextString,"-pNdNum") != 0) {
+  if (strcmp(nextString,"-mNdNum") != 0 && strcmp(nextString,"-pNdNum") != 0) {
     opserr << "ZeroLengthContactNTS2D:: expecting "<<
       "- element ZeroLengthContactNTS2D eleTag? -sNdNum sNode? -pNdNum pNode? -Nodes Nodes? Kn? Kt? phi? \n" ;
     return 0;
