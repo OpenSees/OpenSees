@@ -225,7 +225,7 @@
 #define MAT_TAG_QzSimple2                    212
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
-
+#define MAT_TAG_PlateBearingConnectionThermal 215
 
 
 #define MAT_TAG_FedeasMaterial    1000

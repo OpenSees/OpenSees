@@ -52,7 +52,7 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3dThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0), sT(0)
+  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0), sT(0), Fiber_T(0), Fiber_TMax(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -137,8 +137,31 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3dThermal),
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0), sT(0)
+  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0), sT(0), Fiber_T(0), Fiber_TMax(0)
 {
+  if(sizeFibers != 0) {
+    theMaterials = new UniaxialMaterial *[sizeFibers];
+    
+    if (theMaterials == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate Material pointers\n";
+      exit(-1);
+    }
+    
+    matData = new double [sizeFibers*3];
+    
+    if (matData == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for material data\n";
+      exit(-1);
+    }
+    
+    for (int i = 0; i < sizeFibers; i++) {
+      matData[i*3] = 0.0;
+      matData[i*3+1] = 0.0;
+      matData[i*3+2] = 0.0;
+      theMaterials[i] = 0;
+    }
+  }
+  
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
 
@@ -179,7 +202,7 @@ FiberSection3dThermal::FiberSection3dThermal():
   SectionForceDeformation(0, SEC_TAG_FiberSection3dThermal),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0)
+  yBar(0.0), zBar(0.0), e(3), eCommit(3), s(0), ks(0), sT(0), Fiber_T(0), Fiber_TMax(0)
 {
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
@@ -312,6 +335,11 @@ FiberSection3dThermal::~FiberSection3dThermal()
     delete sT;
   //if (TemperatureTangent != 0)
     //delete [] TemperatureTangent;
+
+  if (Fiber_T != 0)
+    delete [] Fiber_T;
+  if (Fiber_TMax != 0)
+    delete [] Fiber_TMax;  
 }
 
 int
