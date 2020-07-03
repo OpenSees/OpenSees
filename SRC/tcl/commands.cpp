@@ -762,8 +762,8 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
   switch ((enum option) index) {
   case OPT_CREATE: {
     TCL_Char *theInterpreterName = Tcl_GetStringResult(interp);
-    Tcl_Interp *slaveInterp = Tcl_GetSlave(interp, theInterpreterName);
-    ok = OpenSeesAppInit(slaveInterp);
+    Tcl_Interp *secondaryInterp = Tcl_GetSlave(interp, theInterpreterName);
+    ok = OpenSeesAppInit(secondaryInterp);
     return ok;
     break;
   }
