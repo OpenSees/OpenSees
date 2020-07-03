@@ -419,6 +419,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/PVDRecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/MPCORecorder.o \
+	$(FE)/recorder/ElementRecorderRMS.o \
+	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/VTK_Recorder.o 
 
 
@@ -656,7 +658,9 @@ endif
 
 
 ifdef PLAINCONCRETE_FLAG
-	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
+       $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
+       $(FE)/element/PML/PML3D.o
 else
 	PLAINCONCRETE = 
 endif
