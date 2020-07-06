@@ -893,6 +893,21 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
+      <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_region.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile> 
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1587,6 +1602,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h">
       <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.h">
+      <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.h">
+      <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
+      <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.h">
+      <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC_region.h">
+      <Filter>RockingBC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
