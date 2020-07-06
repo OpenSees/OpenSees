@@ -1,9 +1,46 @@
 /* ****************************************************************** **
-**    Rocking 2D Beam - Column Element   							  **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
 ** ****************************************************************** */
-
-// Written by: Evangelos Avgenakis
+                                                                                                                                                                                           
+// Written: vavgen  (Evangelos Avgenakis)
 // Some preexisting code from basic OpenSees elements was used
+// Created: July 2020
+// Revision: A
+//
+// Description: This element can be used to describe the rocking motion of 2d deformable bodies,
+// 		either elastic or inelastic, under static or dynamic loading. Apart from the deformability
+// 		along the length of the member, the element is able to account for deformability near the
+// 		contact area, where nonlinear stress distributions develop and sections do not remain plane.
+// 		Furthermore, the element is able to account for constraints along the length of the rocking
+// 		member imposed by other structural members, as well as sliding and upthrow.
+//
+// References:
+// 	1. Avgenakis E. and Psycharis I.N. (2017) “Modeling of Rocking Elastic Flexible Bodies under Static
+//  		Loading Considering the Nonlinear Stress Distribution at Their Base.” Journal of Structural
+//		Engineering 143(7): 04017051.
+//	2. Avgenakis, E. and Psycharis, I. N. (2019) “Determination of the nonlinear displacement distribution
+//		of the semi-infinite strip–Application to deformable rocking bodies.” International Journal
+//		of Solids and Structures, 170, 22-37.
+//	3. Avgenakis E. and Psycharis I.N. (2020) “Modeling of inelastic rocking bodies under cyclic loading.”
+//		Journal of Engineering Mechanics 146(4): 04020020.
+// 	4. Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic
+//		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
 
 #include "RockingBC.h"
 #include <ElementalLoad.h>
