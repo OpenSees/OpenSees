@@ -756,6 +756,8 @@
 #define ELE_TAG_PFEMContact2D             200
 #define ELE_TAG_PML3D                     201
 #define ELE_TAG_PML2D                     202
+#define ELE_TAG_ASDShellQ4                203  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 

@@ -705,12 +705,6 @@ FatigueMaterial::revertToStart(void)
 	     = 1 otherwise */
   DL  = 0; //Damage if current strain was last peak.
 
-  Dmax    = 0;
-  E0      = 0; 
-  m       = 0;
-  minStrain    = 0;
-  maxStrain    = 0;
-
   // added 6/9/2006
   //values for recorder
   SR1 = 0;
