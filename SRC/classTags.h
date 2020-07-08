@@ -225,7 +225,7 @@
 #define MAT_TAG_QzSimple2                    212
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
-
+#define MAT_TAG_PlateBearingConnectionThermal 215
 
 
 #define MAT_TAG_FedeasMaterial    1000
@@ -752,7 +752,11 @@
 #define ELE_TAG_InerterElement 196
 #define ELE_TAG_BeamColumn2DwLHNMYS 197
 #define ELE_TAG_BeamColumn3DwLHNMYS 198
-#define ELE_TAG_ExternalElement           99990  
+#define ELE_TAG_PFEMLink                  199
+#define ELE_TAG_PFEMContact2D             200
+#define ELE_TAG_PML3D                     201
+#define ELE_TAG_PML2D                     202
+#define ELE_TAG_ExternalElement           99990
 
 
 
@@ -940,7 +944,8 @@
 #define INTEGRATOR_TAGS_KRAlphaExplicit                 53
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 #define INTEGRATOR_TAGS_ExplicitDifference              55
-#define INTEGRATOR_TAGS_EQPath        					        56
+#define INTEGRATOR_TAGS_EQPath                          56
+#define INTEGRATOR_TAGS_GimmeMCK       			        57
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -1031,6 +1036,8 @@
 #define RECORDER_TAGS_MPCORecorder               20
 #define RECORDER_TAGS_GmshRecorder               21
 #define RECORDER_TAGS_VTK_Recorder               22
+#define RECORDER_TAGS_NodeRecorderRMS               23
+#define RECORDER_TAGS_ElementRecorderRMS               24
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

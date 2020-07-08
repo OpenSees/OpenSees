@@ -138,7 +138,7 @@ void* OPS_ZeroLength()
 
     // now read the dirn ID's for the materials added
     type = OPS_GetString();
-    if (strcmp(type,"-dir") != 0) {
+    if (strcmp(type,"-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir flag " <<
             "- element ZeroLength eleTag? iNode? jNode? " <<
             "-mat matID1? ... -dir dirMat1? .. " <<

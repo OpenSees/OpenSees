@@ -84,6 +84,7 @@ public:
 	double gammaFunction(double x);
 	double incompleteGammaFunction(double a, double x);
 	double betaFunction(double passed_q, double passed_r);
+	double incompleteBetaFunction(double passed_q, double passed_r, double passed_x);
     
     // standard normal utility functions
 	double errorFunction(double x);

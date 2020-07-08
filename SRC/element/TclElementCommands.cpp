@@ -129,6 +129,10 @@ extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_Truss2(void);
+#ifdef _HAVE_PML
+extern void *OPS_PML3D(void);
+extern void *OPS_PML2D(void);
+#endif
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -176,8 +180,8 @@ extern void *OPS_SingleFPSimple2d(void);
 extern void *OPS_SingleFPSimple3d(void);
 extern void *OPS_RJWatsonEQS2d(void);
 extern void *OPS_RJWatsonEQS3d(void);
-extern void* OPS_GradientInelasticBeamColumn2d();
-extern void* OPS_GradientInelasticBeamColumn3d();
+//extern void* OPS_GradientInelasticBeamColumn2d();
+//extern void* OPS_GradientInelasticBeamColumn3d();
 
 extern void* OPS_LehighJoint2d(void);
 
@@ -336,6 +340,10 @@ extern int
 TclModelBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc,
 	TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
+// MSN
+extern int
+TclModelBuilder_addGradientInelasticBeamColumn(ClientData, Tcl_Interp*, int, TCL_Char**,
+	Domain*, TclModelBuilder*);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -482,9 +490,25 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  }
+#ifdef _HAVE_PML
+  } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
+    Element *theEle = 0;
+    ID info;
+    if (OPS_GetNDM() == 2)
+      ; // theEle = (Element *)OPS_PML2D();
+    else
+      theEle = (Element *)OPS_PML3D();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
 
-  else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+#endif
+
+  /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_GradientInelasticBeamColumn2d();
@@ -497,10 +521,10 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
+  }*/
 
-  #ifdef _HAVE_LHNMYS
-  else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
+#ifdef _HAVE_LHNMYS
+  } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
     theEle = (Element *)OPS_BeamColumn2DwLHNMYS();
@@ -510,8 +534,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
-  else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
+  
+  } else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
     theEle = (Element *)OPS_BeamColumn3DwLHNMYS();
@@ -521,21 +545,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
-  #endif
+  
+#endif
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
-  else if((strcmp(argv[1], "WheelRail") == 0)) {
-  // ------------------------------add------------------------------------------
-  int eleArgStart = 1;
-  int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
-	  theTclDomain, theTclBuilder, eleArgStart);
-  return result;
+  } else if((strcmp(argv[1], "WheelRail") == 0)) {
+    // ------------------------------add------------------------------------------
+    int eleArgStart = 1;
+    int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
+					      theTclDomain, theTclBuilder, eleArgStart);
+    return result;
+    
+  //End of WheelRail element TCL command*/
 
-}//End of WheelRail element TCL command*/
-
-  else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
+  } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_ElasticTimoshenkoBeam2d();
@@ -1556,6 +1580,13 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 						 theTclDomain, theTclBuilder);
     return result;
   }
+	
+	// MSN
+	else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+		int result = TclModelBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv,
+			theTclDomain, theTclBuilder);
+		return result;
+	}
 
   else {
 

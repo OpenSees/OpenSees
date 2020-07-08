@@ -42,6 +42,7 @@
 #include <elementAPI.h>
 #include <string>
 #include <LinearCrdTransf3d.h>
+#include<ID.h>
 
 // initialize static variables
 Matrix LinearCrdTransf3d::Tlg(12,12);
@@ -75,7 +76,7 @@ void* OPS_LinearCrdTransf3d()
 	    if(OPS_GetDoubleInput(&numData,jptr) < 0) return 0;
 	}
     }
-
+//opserr<<"maybe "<<vec(0)<<" "<<vec(1)<<" "<<vec(2)<<" "<<vec(3)<<endln;
     return new LinearCrdTransf3d(tag,vec,jntOffsetI,jntOffsetJ);
 }
 
@@ -94,6 +95,12 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         R[2][0] = vecInLocXZPlane(0);
         R[2][1] = vecInLocXZPlane(1);
         R[2][2] = vecInLocXZPlane(2);
+
+       V1 = vecInLocXZPlane(0);
+       V2 = vecInLocXZPlane(1);
+       V3 = vecInLocXZPlane(2);
+
+
         
         // Does nothing
 }
@@ -116,6 +123,11 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         R[2][1] = vecInLocXZPlane(1);
         R[2][2] = vecInLocXZPlane(2);
         
+        V1 = vecInLocXZPlane(0);
+        V2 = vecInLocXZPlane(1);
+        V3 = vecInLocXZPlane(2);
+
+
         // check rigid joint offset for node I
         if (&rigJntOffset1 == 0 || rigJntOffset1.Size() != 3 ) {
             opserr << "LinearCrdTransf3d::LinearCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
@@ -291,7 +303,8 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
     
     // calculate the element length
     L = dx.Norm();
-    
+//   opserr<<"linear 3d:: L = "<<L<<endln; 
+    // opserr<<"dx(0)= "<<dx(0)<<", dx(1)= "<<dx(1)<<", dx(2)= "<<dx(2)<<endln;
     if (L == 0.0) {
         opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
         return -2;  
@@ -302,7 +315,19 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
     R[0][0] = dx(0)/L;
     R[0][1] = dx(1)/L;
     R[0][2] = dx(2)/L;
+ //   opserr<<"R[0][0]= "<<R[0][1]<<endln;
+ //opserr<<" The R mtrix is "<<endln;
+ //   for(int i=0;i<3;i++)
+ //   {
+ //   for(int j=0;j<3;j++)
+ //   {
+ //   opserr<<R[i][j]<<"   ";
     
+ //   }
+ //   opserr<<endln;
+//    }
+
+
     return 0;
 }
 
@@ -322,7 +347,7 @@ LinearCrdTransf3d::compTransfMatrixLocalGlobal(Matrix &Tlg)
     Tlg(2,0) = Tlg(5,3) = Tlg(8,6) = Tlg(11,9)  = R[2][0];
     Tlg(2,1) = Tlg(5,4) = Tlg(8,7) = Tlg(11,10) = R[2][1];
     Tlg(2,2) = Tlg(5,5) = Tlg(8,8) = Tlg(11,11) = R[2][2];
-}
+   }
 
 
 int
@@ -370,7 +395,17 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     R[2][0] = zAxis(0);
     R[2][1] = zAxis(1);
     R[2][2] = zAxis(2);
-    
+//    opserr<<"getLocal Axis function : R is "<<endln;
+//for(int i=0;i<3;i++)
+//{
+//for(int j=0;j<3;j++)
+//{
+//opserr<<R[i][j]<<"   ";
+
+//}
+//opserr<<endln;
+//}
+
     return 0;
 }
 
@@ -1453,7 +1488,7 @@ LinearCrdTransf3d::Print(OPS_Stream &s, int flag)
 const Vector &
 LinearCrdTransf3d::getBasicDisplSensitivity(int gradNumber)
 {
-  
+ // opserr<<"getBasicDisplSensitivity: start"<<endln;
   static double ug[12];
   for (int i = 0; i < 6; i++) {
     ug[i]   = nodeIPtr->getDispSensitivity((i+1),gradNumber);
@@ -1512,6 +1547,808 @@ LinearCrdTransf3d::getBasicDisplSensitivity(int gradNumber)
 	ub(3) = ul[4] + tmp;
 	ub(4) = ul[10] + tmp;
 	ub(5) = ul[9] - ul[3];
-
+//opserr<<" end"<<endln;
 	return ub;
+}
+
+const Vector &
+LinearCrdTransf3d::getBasicTrialDispShapeSensitivity(int gradNumber)
+{
+//opserr<<"getBasicTrialDispShapeSensitivity(): start"<<endln;
+ // element projection
+    static Vector dx(3);
+    
+    const Vector &ndICoords = nodeIPtr->getCrds();
+    const Vector &ndJCoords = nodeJPtr->getCrds();
+    
+    dx(0) = ndJCoords(0) - ndICoords(0);
+    dx(1) = ndJCoords(1) - ndICoords(1);
+    dx(2) = ndJCoords(2) - ndICoords(2);
+    
+    if (nodeJOffset != 0) {
+        dx(0) += nodeJOffset[0];
+        dx(1) += nodeJOffset[1];
+        dx(2) += nodeJOffset[2];
+    }
+    
+    if (nodeIOffset != 0) {
+        dx(0) -= nodeIOffset[0];
+        dx(1) -= nodeIOffset[1];
+        dx(2) -= nodeIOffset[2];
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        dx(0) -= nodeIInitialDisp[0];
+        dx(1) -= nodeIInitialDisp[1];
+        dx(2) -= nodeIInitialDisp[2];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        dx(0) += nodeJInitialDisp[0];
+        dx(1) += nodeJInitialDisp[1];
+        dx(2) += nodeJInitialDisp[2];
+    }
+    
+    // calculate the element length
+    L = dx.Norm();
+//   opserr<<"linear 3d:: L = "<<L<<endln; 
+    // opserr<<"dx(0)= "<<dx(0)<<", dx(1)= "<<dx(1)<<", dx(2)= "<<dx(2)<<endln;
+    if (L == 0.0) {
+        opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
+    }
+    
+    // calculate the element local x axis components (direction cosines)
+    // wrt to the global coordinates
+    R[0][0] = dx(0)/L;
+    R[0][1] = dx(1)/L;
+    R[0][2] = dx(2)/L;
+
+// Now perform the dRdh
+//double  dRdh[3][3];
+for (int i=0;i<3;i++)
+{
+for(int j=0;j<3;j++)
+{
+dRdh[i][j]=0.0;
+
+}
+
+}
+ int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+double dLdh=this->getdLdh();
+  if (nodeParameterI != 0 || nodeParameterJ != 0) {
+
+    if (nodeIOffset != 0 || nodeJOffset != 0) {
+      opserr << "ERROR: Currently a node offset cannot be used in " << endln
+	     << " conjunction with random nodal coordinates." << endln;
+    }
+
+ this->formdRdh(gradNumber);
+ /*
+    if (nodeParameterI == 1) // here x1 is random
+   dRdh[0][0]=(-L-dx(0)*dLdh)/(L*L); 
+     //return dRdh[0][0];
+    if (nodeParameterI == 2) // here y1 is random
+   dRdh[0][1]=(-L-dx(1)*dLdh)/(L*L); 
+   //  return -dx(1)/L;
+    if (nodeParameterI == 3) // here z1 is random
+   dRdh[0][2]=(-L-dx(2)*dLdh)/(L*L); 
+   //  return -dx(2)/L;
+
+    if (nodeParameterJ == 1) // here x2 is random
+   dRdh[0][0]=(L-dx(0)*dLdh)/(L*L);  
+   // return dx(0)/L;
+   if (nodeParameterJ == 2) // here y2 is random
+  dRdh[0][1]=(L-dx(1)*dLdh)/(L*L); 
+//   return dx(1)/L;
+   if (nodeParameterJ == 3) // here z2 is random
+  dRdh[0][2]=(L-dx(2)*dLdh)/(L*L); 
+//   return dx(2)/L;
+*/
+  }
+
+double d1oLdh=this->getdOneoverLdh();
+
+    // Want to return dAdh * u
+  // determine global displacements
+    const Vector &disp1 = nodeIPtr->getTrialDisp();
+    const Vector &disp2 = nodeJPtr->getTrialDisp();
+    
+    static double ug[12];
+    for (int i = 0; i < 6; i++) {
+        ug[i]   = disp1(i);
+        ug[i+6] = disp2(i);
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j] -= nodeIInitialDisp[j];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j+6] -= nodeJInitialDisp[j];
+    }
+    
+    double oneOverL = 1.0/L;
+    
+    static Vector ub(6);
+    
+    ub.Zero();
+ static double ul[12];
+    
+    ul[0]  = R[0][0]*ug[0] + R[0][1]*ug[1] + R[0][2]*ug[2];
+    ul[1]  = R[1][0]*ug[0] + R[1][1]*ug[1] + R[1][2]*ug[2];
+    ul[2]  = R[2][0]*ug[0] + R[2][1]*ug[1] + R[2][2]*ug[2];
+    
+    ul[3]  = R[0][0]*ug[3] + R[0][1]*ug[4] + R[0][2]*ug[5];
+    ul[4]  = R[1][0]*ug[3] + R[1][1]*ug[4] + R[1][2]*ug[5];
+    ul[5]  = R[2][0]*ug[3] + R[2][1]*ug[4] + R[2][2]*ug[5];
+    
+    ul[6]  = R[0][0]*ug[6] + R[0][1]*ug[7] + R[0][2]*ug[8];
+    ul[7]  = R[1][0]*ug[6] + R[1][1]*ug[7] + R[1][2]*ug[8];
+    ul[8]  = R[2][0]*ug[6] + R[2][1]*ug[7] + R[2][2]*ug[8];
+    
+    ul[9]  = R[0][0]*ug[9] + R[0][1]*ug[10] + R[0][2]*ug[11];
+    ul[10] = R[1][0]*ug[9] + R[1][1]*ug[10] + R[1][2]*ug[11];
+    ul[11] = R[2][0]*ug[9] + R[2][1]*ug[10] + R[2][2]*ug[11];
+    
+    static double Wu[3];
+    if (nodeIOffset) {
+        Wu[0] =  nodeIOffset[2]*ug[4] - nodeIOffset[1]*ug[5];
+        Wu[1] = -nodeIOffset[2]*ug[3] + nodeIOffset[0]*ug[5];
+        Wu[2] =  nodeIOffset[1]*ug[3] - nodeIOffset[0]*ug[4];
+        
+        ul[0] += R[0][0]*Wu[0] + R[0][1]*Wu[1] + R[0][2]*Wu[2];
+        ul[1] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[2] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+    
+    if (nodeJOffset) {
+        Wu[0] =  nodeJOffset[2]*ug[10] - nodeJOffset[1]*ug[11];
+        Wu[1] = -nodeJOffset[2]*ug[9]  + nodeJOffset[0]*ug[11];
+        Wu[2] =  nodeJOffset[1]*ug[9]  - nodeJOffset[0]*ug[10];
+        
+        ul[6] += R[0][0]*Wu[0] + R[0][1]*Wu[1] + R[0][2]*Wu[2];
+        ul[7] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[8] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+
+   
+    static double dUldh[12];
+    
+    dUldh[0]  = dRdh[0][0]*ug[0] + dRdh[0][1]*ug[1] +dRdh[0][2]*ug[2];
+    dUldh[1]  = dRdh[1][0]*ug[0] + dRdh[1][1]*ug[1] + dRdh[1][2]*ug[2];
+    dUldh[2]  = dRdh[2][0]*ug[0] + dRdh[2][1]*ug[1] + dRdh[2][2]*ug[2];
+    
+    dUldh[3]  = dRdh[0][0]*ug[3] + dRdh[0][1]*ug[4] + dRdh[0][2]*ug[5];
+    dUldh[4]  = dRdh[1][0]*ug[3] + dRdh[1][1]*ug[4] +dRdh[1][2]*ug[5];
+    dUldh[5]  = dRdh[2][0]*ug[3] + dRdh[2][1]*ug[4] + dRdh[2][2]*ug[5];
+    
+    dUldh[6]  = dRdh[0][0]*ug[6] + dRdh[0][1]*ug[7] + dRdh[0][2]*ug[8];
+    dUldh[7]  = dRdh[1][0]*ug[6] + dRdh[1][1]*ug[7] + dRdh[1][2]*ug[8];
+    dUldh[8]  = dRdh[2][0]*ug[6] + dRdh[2][1]*ug[7] + dRdh[2][2]*ug[8];
+    
+    dUldh[9]  = dRdh[0][0]*ug[9] + dRdh[0][1]*ug[10] + dRdh[0][2]*ug[11];
+    dUldh[10] = dRdh[1][0]*ug[9] + dRdh[1][1]*ug[10] + dRdh[1][2]*ug[11];
+    dUldh[11] = dRdh[2][0]*ug[9] + dRdh[2][1]*ug[10] + dRdh[2][2]*ug[11];
+    
+       if (nodeIOffset) {
+        Wu[0] =  nodeIOffset[2]*ug[4] - nodeIOffset[1]*ug[5];
+        Wu[1] = -nodeIOffset[2]*ug[3] + nodeIOffset[0]*ug[5];
+        Wu[2] =  nodeIOffset[1]*ug[3] - nodeIOffset[0]*ug[4];
+        
+        dUldh[0] += dRdh[0][0]*Wu[0] + dRdh[0][1]*Wu[1] + dRdh[0][2]*Wu[2];
+        dUldh[1] += dRdh[1][0]*Wu[0] + dRdh[1][1]*Wu[1] + dRdh[1][2]*Wu[2];
+       dUldh[2] += dRdh[2][0]*Wu[0] + dRdh[2][1]*Wu[1] + dRdh[2][2]*Wu[2];
+    }
+    
+    if (nodeJOffset) {
+        Wu[0] =  nodeJOffset[2]*ug[10] - nodeJOffset[1]*ug[11];
+        Wu[1] = -nodeJOffset[2]*ug[9]  + nodeJOffset[0]*ug[11];
+        Wu[2] =  nodeJOffset[1]*ug[9]  - nodeJOffset[0]*ug[10];
+        
+        dUldh[6] += dRdh[0][0]*Wu[0] + dRdh[0][1]*Wu[1] + dRdh[0][2]*Wu[2];
+        dUldh[7] += dRdh[1][0]*Wu[0] + dRdh[1][1]*Wu[1] + dRdh[1][2]*Wu[2];
+        dUldh[8] += dRdh[2][0]*Wu[0] + dRdh[2][1]*Wu[1] + dRdh[2][2]*Wu[2];
+    }
+    
+    ub(0) = dUldh[6] - dUldh[0];
+    double tmp;
+    double dtmpdh;
+    tmp = oneOverL*(ul[1]-ul[7]);
+    dtmpdh=oneOverL*(dUldh[1]-dUldh[7])+d1oLdh*(ul[1]-ul[7]);
+    ub(1) = dUldh[5] + dtmpdh;
+    ub(2) = dUldh[11] + dtmpdh;
+    tmp = oneOverL*(ul[8]-ul[2]);
+    dtmpdh=oneOverL*(dUldh[8]-dUldh[2])+d1oLdh*(ul[8]-ul[2]);
+    ub(3) = dUldh[4] + dtmpdh;
+    ub(4) = dUldh[10] + dtmpdh;
+    ub(5) = dUldh[9] - dUldh[3];
+ //  opserr<<" end"<<endln;
+    return ub;
+   }
+
+
+
+
+bool
+LinearCrdTransf3d::isShapeSensitivity(void)
+{
+  int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+
+  return (nodeParameterI != 0 || nodeParameterJ != 0);
+}
+
+
+double
+LinearCrdTransf3d::getdLdh(void)
+{
+// opserr<<" dLdh: start"<<endln;
+  
+  static Vector dx(3);
+    
+    const Vector &ndICoords = nodeIPtr->getCrds();
+    const Vector &ndJCoords = nodeJPtr->getCrds();
+    
+    dx(0) = ndJCoords(0) - ndICoords(0);
+    dx(1) = ndJCoords(1) - ndICoords(1);
+    dx(2) = ndJCoords(2) - ndICoords(2);
+    
+    if (nodeJOffset != 0) {
+        dx(0) += nodeJOffset[0];
+        dx(1) += nodeJOffset[1];
+        dx(2) += nodeJOffset[2];
+    }
+    
+    if (nodeIOffset != 0) {
+        dx(0) -= nodeIOffset[0];
+        dx(1) -= nodeIOffset[1];
+        dx(2) -= nodeIOffset[2];
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        dx(0) -= nodeIInitialDisp[0];
+        dx(1) -= nodeIInitialDisp[1];
+        dx(2) -= nodeIInitialDisp[2];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        dx(0) += nodeJInitialDisp[0];
+        dx(1) += nodeJInitialDisp[1];
+        dx(2) += nodeJInitialDisp[2];
+    }
+
+  int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+
+  if (nodeParameterI != 0 || nodeParameterJ != 0) {
+
+    if (nodeIOffset != 0 || nodeJOffset != 0) {
+      opserr << "ERROR: Currently a node offset cannot be used in " << endln
+	     << " conjunction with random nodal coordinates." << endln;
+    }
+
+    if (nodeParameterI == 1) // here x1 is random
+      return -dx(0)/L;
+    if (nodeParameterI == 2) // here y1 is random
+      return -dx(1)/L;
+    if (nodeParameterI == 3) // here z1 is random
+      return -dx(2)/L;
+
+    if (nodeParameterJ == 1) // here x2 is random
+      return dx(0)/L;
+   if (nodeParameterJ == 2) // here y2 is random
+      return dx(1)/L;
+   if (nodeParameterJ == 3) // here z2 is random
+      return dx(2)/L;
+  }
+//  opserr<<"dLdh: end"<<endln;
+  return 0.0;
+}
+
+
+const Vector &
+LinearCrdTransf3d::getGlobalResistingForceShapeSensitivity(const Vector &pb, const Vector &p0, int gradNumber)
+{
+  // opserr<<"getGlobalResistingForceShapeSensitivity: strt"<<endln;
+ static double pl[12];
+    
+    double q0 = pb(0);
+    double q1 = pb(1);
+    double q2 = pb(2);
+    double q3 = pb(3);
+    double q4 = pb(4);
+    double q5 = pb(5);
+    
+    double oneOverL = 1.0/L;
+    
+    pl[0]  = -q0;
+    pl[1]  =  oneOverL*(q1+q2);
+    pl[2]  = -oneOverL*(q3+q4);
+    pl[3]  = -q5;
+    pl[4]  =  q3;
+    pl[5]  =  q1;
+    pl[6]  =  q0;
+    pl[7]  = -pl[1];
+    pl[8]  = -pl[2];
+    pl[9]  =  q5;
+    pl[10] =  q4;
+    pl[11] =  q2;
+    
+    pl[0] += p0(0);
+    pl[1] += p0(1);
+    pl[7] += p0(2);
+    pl[2] += p0(3);
+    pl[8] += p0(4);
+    
+    // transform resisting forces  from local to global coordinates
+    static Vector pg(12);
+
+// element projection
+    static Vector dx(3);
+    
+    const Vector &ndICoords = nodeIPtr->getCrds();
+    const Vector &ndJCoords = nodeJPtr->getCrds();
+    
+    dx(0) = ndJCoords(0) - ndICoords(0);
+    dx(1) = ndJCoords(1) - ndICoords(1);
+    dx(2) = ndJCoords(2) - ndICoords(2);
+    
+    if (nodeJOffset != 0) {
+        dx(0) += nodeJOffset[0];
+        dx(1) += nodeJOffset[1];
+        dx(2) += nodeJOffset[2];
+    }
+    
+    if (nodeIOffset != 0) {
+        dx(0) -= nodeIOffset[0];
+        dx(1) -= nodeIOffset[1];
+        dx(2) -= nodeIOffset[2];
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        dx(0) -= nodeIInitialDisp[0];
+        dx(1) -= nodeIInitialDisp[1];
+        dx(2) -= nodeIInitialDisp[2];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        dx(0) += nodeJInitialDisp[0];
+        dx(1) += nodeJInitialDisp[1];
+        dx(2) += nodeJInitialDisp[2];
+    }
+    
+    // calculate the element length
+    L = dx.Norm();
+//   opserr<<"linear 3d:: L = "<<L<<endln; 
+    // opserr<<"dx(0)= "<<dx(0)<<", dx(1)= "<<dx(1)<<", dx(2)= "<<dx(2)<<endln;
+    if (L == 0.0) {
+        opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
+    }
+    
+    // calculate the element local x axis components (direction cosines)
+    // wrt to the global coordinates
+    R[0][0] = dx(0)/L;
+    R[0][1] = dx(1)/L;
+    R[0][2] = dx(2)/L;
+
+//opserr<<"R is "<<endln;
+//for(int i=0;i<3;i++)
+//{
+//for(int j=0;j<3;j++)
+//{
+//opserr<<R[i][j]<<"   ";
+
+//}
+//opserr<<endln;
+//}
+
+// Now perform the dRdh
+//double  dRdh[3][3];
+for (int i=0;i<3;i++)
+{
+for(int j=0;j<3;j++)
+{
+dRdh[i][j]=0.0;
+
+}
+
+}
+
+this->formdRdh(gradNumber);
+/*
+ int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+double dLdh=this->getdLdh();
+  if (nodeParameterI != 0 || nodeParameterJ != 0) {
+
+    if (nodeIOffset != 0 || nodeJOffset != 0) {
+      opserr << "ERROR: Currently a node offset cannot be used in " << endln
+	     << " conjunction with random nodal coordinates." << endln;
+    }
+
+  if (nodeParameterI == 1) // here x1 is random
+   dRdh[0][0]=(-L-dx(0)*dLdh)/(L*L); 
+     //return dRdh[0][0];
+    if (nodeParameterI == 2) // here y1 is random
+   dRdh[0][1]=(-L-dx(1)*dLdh)/(L*L); 
+   //  return -dx(1)/L;
+    if (nodeParameterI == 3) // here z1 is random
+   dRdh[0][2]=(-L-dx(2)*dLdh)/(L*L); 
+   //  return -dx(2)/L;
+
+    if (nodeParameterJ == 1) // here x2 is random
+   dRdh[0][0]=(L-dx(0)*dLdh)/(L*L);  
+   // return dx(0)/L;
+   if (nodeParameterJ == 2) // here y2 is random
+  dRdh[0][1]=(L-dx(1)*dLdh)/(L*L); 
+//   return dx(1)/L;
+   if (nodeParameterJ == 3) // here z2 is random
+  dRdh[0][2]=(L-dx(2)*dLdh)/(L*L); 
+//   return dx(2)/L;
+  }
+  */
+//opserr<<"dRdh is "<<endln;
+//for(int i=0;i<3;i++)
+//{
+//for(int j=0;j<3;j++)
+//{
+//opserr<<dRdh[i][j]<<"   ";
+
+//}
+//opserr<<endln;
+//}
+
+double dOneoverLdh=this->getdOneoverLdh();
+
+
+
+    pg(0)  = dRdh[0][0]*pl[0] + dRdh[1][0]*pl[1]+R[1][0]*dOneoverLdh*(q1+q2) + dRdh[2][0]*pl[2]-R[2][0]*dOneoverLdh*(q3+q4);
+    pg(1)  = dRdh[0][1]*pl[0]+ dRdh[1][1]*pl[1]+R[1][1]*dOneoverLdh*(q1+q2) + dRdh[2][1]*pl[2]-R[2][1]*dOneoverLdh*(q3+q4);
+    pg(2)  = dRdh[0][2]*pl[0] + dRdh[1][2]*pl[1]+R[1][2]*dOneoverLdh*(q1+q2) + dRdh[2][2]*pl[2]-R[2][2]*dOneoverLdh*(q3+q4);
+    
+    pg(3)  = dRdh[0][0]*pl[3] + dRdh[1][0]*pl[4] + dRdh[2][0]*pl[5];
+    pg(4)  = dRdh[0][1]*pl[3] + dRdh[1][1]*pl[4] + dRdh[2][1]*pl[5];
+    pg(5)  = dRdh[0][2]*pl[3] + dRdh[1][2]*pl[4] + dRdh[2][2]*pl[5];
+    
+    pg(6)  = dRdh[0][0]*pl[6] + dRdh[1][0]*pl[7]-R[1][0]*dOneoverLdh*(q1+q2) + dRdh[2][0]*pl[8]+R[2][0]*dOneoverLdh*(q3+q4);
+    pg(7)  = dRdh[0][1]*pl[6] + dRdh[1][1]*pl[7]-R[1][1]*dOneoverLdh*(q1+q2) + dRdh[2][1]*pl[8]+R[2][1]*dOneoverLdh*(q3+q4);
+    pg(8)  = dRdh[0][2]*pl[6] + dRdh[1][2]*pl[7]-R[1][2]*dOneoverLdh*(q1+q2) + dRdh[2][2]*pl[8]+R[2][2]*dOneoverLdh*(q3+q4);
+    
+    pg(9)  = dRdh[0][0]*pl[9] + dRdh[1][0]*pl[10] + dRdh[2][0]*pl[11];
+    pg(10) = dRdh[0][1]*pl[9] + dRdh[1][1]*pl[10] + dRdh[2][1]*pl[11];
+    pg(11) = dRdh[0][2]*pl[9] + dRdh[1][2]*pl[10] + dRdh[2][2]*pl[11];
+    
+    if (nodeIOffset) {
+        pg(3) += -nodeIOffset[2]*pg(1) + nodeIOffset[1]*pg(2);
+        pg(4) +=  nodeIOffset[2]*pg(0) - nodeIOffset[0]*pg(2);
+        pg(5) += -nodeIOffset[1]*pg(0) + nodeIOffset[0]*pg(1);
+    }
+    
+    if (nodeJOffset) {
+        pg(9)  += -nodeJOffset[2]*pg(7) + nodeJOffset[1]*pg(8);
+        pg(10) +=  nodeJOffset[2]*pg(6) - nodeJOffset[0]*pg(8);
+        pg(11) += -nodeJOffset[1]*pg(6) + nodeJOffset[0]*pg(7);
+    }
+  //  opserr<<"end"<<endln;
+    return pg;
+}
+double
+LinearCrdTransf3d::getdOneoverLdh( )
+{
+double dLdh=this->getdLdh();
+return -dLdh/(L*L);
+
+}
+// Length of the vector in the Y direction
+double LinearCrdTransf3d:: formLy()
+{
+
+    static Vector vAxis(3);
+    vAxis(0) = V1;	vAxis(1) = V2;	vAxis(2) = V3;
+    
+    static Vector xAxis(3);
+    xAxis(0) = R[0][0];	xAxis(1) = R[0][1];	xAxis(2) = R[0][2];
+ //   XAxis(0) = xAxis(0);    XAxis(1) = xAxis(1);    XAxis(2) = xAxis(2);
+    
+    static Vector yAxis(3);
+    yAxis(0) = vAxis(1)*xAxis(2) - vAxis(2)*xAxis(1);
+    yAxis(1) = vAxis(2)*xAxis(0) - vAxis(0)*xAxis(2);
+    yAxis(2) = vAxis(0)*xAxis(1) - vAxis(1)*xAxis(0);
+      
+    double ynorm = yAxis.Norm();
+ //  opserr<<" y1= "<<yAxis(0)<<" y2= "<<yAxis(1)<<" y3= "<<yAxis(2)<<endln;
+//  opserr<<"L="<<L<<endln; 
+//    opserr<<"ynorm= "<<ynorm<<endln;
+return (ynorm*L);
+}
+double
+LinearCrdTransf3d:: dLydh(int gradNumber)
+{
+
+static Vector vAxis(3);
+    vAxis(0) = V1;	vAxis(1) = V2;	vAxis(2) = V3;
+    
+    static Vector xAxis(3);
+    xAxis(0) = R[0][0];	xAxis(1) = R[0][1];	xAxis(2) = R[0][2];
+  //  XAxis(0) = xAxis(0);    XAxis(1) = xAxis(1);    XAxis(2) = xAxis(2);
+    
+    static Vector yAxis(3);
+    yAxis(0) = vAxis(1)*xAxis(2) - vAxis(2)*xAxis(1);
+    yAxis(1) = vAxis(2)*xAxis(0) - vAxis(0)*xAxis(2);
+    yAxis(2) = vAxis(0)*xAxis(1) - vAxis(1)*xAxis(0);
+    
+    double ynorm = yAxis.Norm();
+
+    
+    if (ynorm == 0) {
+        opserr << "\nLinearCrdTransf3d::getLocalAxes";
+        opserr << "\nvector v that defines plane xz is parallel to x axis\n";
+        return -3;
+    }
+    
+    yAxis /= ynorm;
+    
+  //  YAxis(0) = yAxis(0);    YAxis(1) = yAxis(1);    YAxis(2) = yAxis(2);
+    
+    // Compute z = x cross y
+    static Vector zAxis(3);
+    
+    zAxis(0) = xAxis(1)*yAxis(2) - xAxis(2)*yAxis(1);
+    zAxis(1) = xAxis(2)*yAxis(0) - xAxis(0)*yAxis(2);
+    zAxis(2) = xAxis(0)*yAxis(1) - xAxis(1)*yAxis(0);
+    //ZAxis(0) = zAxis(0);    ZAxis(1) = zAxis(1);    ZAxis(2) = zAxis(2);
+    
+    // Fill in transformation matrix
+    R[1][0] = yAxis(0);
+    R[1][1] = yAxis(1);
+    R[1][2] = yAxis(2);
+    
+    R[2][0] = zAxis(0);
+    R[2][1] = zAxis(1);
+    R[2][2] = zAxis(2);
+
+    //////////////////
+   static Vector dx(3);
+    
+    const Vector &ndICoords = nodeIPtr->getCrds();
+    const Vector &ndJCoords = nodeJPtr->getCrds();
+    
+    dx(0) = ndJCoords(0) - ndICoords(0);
+    dx(1) = ndJCoords(1) - ndICoords(1);
+    dx(2) = ndJCoords(2) - ndICoords(2);
+    
+    if (nodeJOffset != 0) {
+        dx(0) += nodeJOffset[0];
+        dx(1) += nodeJOffset[1];
+        dx(2) += nodeJOffset[2];
+    }
+    
+    if (nodeIOffset != 0) {
+        dx(0) -= nodeIOffset[0];
+        dx(1) -= nodeIOffset[1];
+        dx(2) -= nodeIOffset[2];
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        dx(0) -= nodeIInitialDisp[0];
+        dx(1) -= nodeIInitialDisp[1];
+        dx(2) -= nodeIInitialDisp[2];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        dx(0) += nodeJInitialDisp[0];
+        dx(1) += nodeJInitialDisp[1];
+        dx(2) += nodeJInitialDisp[2];
+    }
+
+ // double V1=vAxis(0); double V2=vAxis(1); double V3=vAxis(2);
+    double Ly=this->formLy();
+    double dLydh;
+   
+
+  int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+
+  if (nodeParameterI != 0 || nodeParameterJ != 0) {
+
+    if (nodeIOffset != 0 || nodeJOffset != 0) {
+      opserr << "ERROR: Currently a node offset cannot be used in " << endln
+	     << " conjunction with random nodal coordinates." << endln;
+    }
+
+
+
+  if (nodeParameterI == 1) // here x1 is random
+  {
+  dLydh=((V3*dx(0)-V1*dx(2))*(-V3) + (V1*dx(1)-V2*dx(0))*V2)/(Ly);
+  return dLydh;
+  }
+ if (nodeParameterI == 2) // here y1 is random
+  {
+  dLydh=((V2*dx(2)-V3*dx(1))*(V3) + (V1*dx(1)-V2*dx(0))*(-V1))/(Ly);
+  return dLydh;
+  }
+ if (nodeParameterI == 3) // here z1 is random
+  {
+  dLydh=((V2*dx(2)-V3*dx(1))*(-V2) + (V3*dx(0)-V1*dx(2))*V1)/(Ly);
+  return dLydh;
+  }
+if (nodeParameterJ == 1) // here x2 is random
+  {
+  dLydh=((V3*dx(0)-V1*dx(2))*(V3) + (V1*dx(1)-V2*dx(0))*(-V2))/(Ly);
+ // opserr<<" the V vector is "<<endln;
+//  opserr<<"V1= "<<V1<<" V2= "<<V2<<" V3= "<<V3<<endln;
+  return dLydh;
+  }
+if (nodeParameterJ == 2) // here y2 is random
+  {
+  dLydh=((V2*dx(2)-V3*dx(1))*(-V3) + (V1*dx(1)-V2*dx(0))*(V1))/(Ly);
+  return dLydh;
+  }
+if (nodeParameterJ == 3) // here z2 is random
+  {
+  dLydh=((V2*dx(2)-V3*dx(1))*(V2) +  (V3*dx(0)-V1*dx(2))*(-V1))/(Ly);
+  return dLydh;
+  }
+
+   }
+return 0;
+
+} 
+void
+LinearCrdTransf3d::formdRdh(int gradNumber)
+{
+static Vector vAxis(3);
+    vAxis(0) = V1;	vAxis(1) = V2;	vAxis(2) = V3;
+    
+
+    //////////////////
+   static Vector dx(3);
+    
+    const Vector &ndICoords = nodeIPtr->getCrds();
+    const Vector &ndJCoords = nodeJPtr->getCrds();
+    
+    dx(0) = ndJCoords(0) - ndICoords(0);
+    dx(1) = ndJCoords(1) - ndICoords(1);
+    dx(2) = ndJCoords(2) - ndICoords(2);
+    
+    if (nodeJOffset != 0) {
+        dx(0) += nodeJOffset[0];
+        dx(1) += nodeJOffset[1];
+        dx(2) += nodeJOffset[2];
+    }
+    
+    if (nodeIOffset != 0) {
+        dx(0) -= nodeIOffset[0];
+        dx(1) -= nodeIOffset[1];
+        dx(2) -= nodeIOffset[2];
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        dx(0) -= nodeIInitialDisp[0];
+        dx(1) -= nodeIInitialDisp[1];
+        dx(2) -= nodeIInitialDisp[2];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        dx(0) += nodeJInitialDisp[0];
+        dx(1) += nodeJInitialDisp[1];
+        dx(2) += nodeJInitialDisp[2];
+    }
+
+ // double V1=vAxis(0); double V2=vAxis(1); double V3=vAxis(2);
+    double Ly=this->formLy();
+double dLydh=this->dLydh(gradNumber);
+double dLdh=this->getdLdh();
+//opserr<<"Ly is "<<Ly<<endln;
+//opserr<<"dLydh="<<dLydh<<endln;
+//double  dRdh[3][3];
+for (int i=0;i<3;i++)
+{
+for(int j=0;j<3;j++)
+{
+dRdh[i][j]=0.0;
+
+}
+
+}
+
+  int nodeParameterI, nodeParameterJ;
+  nodeParameterI = nodeIPtr->getCrdsSensitivity();
+  nodeParameterJ = nodeJPtr->getCrdsSensitivity();
+
+  if (nodeParameterI != 0 || nodeParameterJ != 0) {
+
+    if (nodeIOffset != 0 || nodeJOffset != 0) {
+      opserr << "ERROR: Currently a node offset cannot be used in " << endln
+	     << " conjunction with random nodal coordinates." << endln;
+    }
+
+
+
+  if (nodeParameterI == 1) // here x1 is random
+  {
+  dRdh[0][0]=(-L-dx(0)*dLdh)/(L*L); 
+  dRdh[0][1]=(-dx(1)*dLdh)/(L*L);
+  dRdh[0][2]=(-dx(2)*dLdh)/(L*L);
+  dRdh[1][0]=(-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+  dRdh[1][1]=(Ly*(-V3)-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+  dRdh[1][2]=(Ly*V2-(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+
+   
+  }
+ if (nodeParameterI == 2) // here y1 is random
+  {
+  dRdh[0][0]=(-dx(0)*dLdh)/(L*L); 
+  dRdh[0][1]=(-L-dx(1)*dLdh)/(L*L);
+  dRdh[0][2]=(-dx(2)*dLdh)/(L*L);
+  dRdh[1][0]=(Ly*V3-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+  dRdh[1][1]=(-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+  dRdh[1][2]=(Ly*(-V1)+(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+
+    }
+ if (nodeParameterI == 3) // here z1 is random
+  {
+  dRdh[0][0]= (-dx(0)*dLdh)/(L*L) ;   
+  dRdh[0][1]=(-dx(1)*dLdh)/(L*L);
+  dRdh[0][2]=(-L-(dx(2)*dLdh))/(L*L);
+
+  dRdh[1][0]=(Ly*(-V2)-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+  dRdh[1][1]=(Ly*V1-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+  dRdh[1][2]=(-(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+
+  }
+if (nodeParameterJ == 1) // here x2 is random
+  {
+     
+   dRdh[0][0]=(L-dx(0)*dLdh)/(L*L); 
+   dRdh[0][1]=(-dx(1)*dLdh)/(L*L);
+   dRdh[0][2]=(-dx(2)*dLdh)/(L*L);
+
+ 
+   dRdh[1][0]=(-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+   dRdh[1][1]=(Ly*V3-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+   dRdh[1][2]=(Ly*(-V2)-(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+
+
+  }
+if (nodeParameterJ == 2) // here y2 is random
+  {
+   dRdh[0][0]=(-dx(0)*dLdh)/(L*L); 
+   dRdh[0][1]=(L-dx(1)*dLdh)/(L*L);
+   dRdh[0][2]=(-dx(2)*dLdh)/(L*L);
+ 
+  dRdh[1][0]=(Ly*(-V3)-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+  dRdh[1][1]=(-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+  dRdh[1][2]=(Ly*(V1)-(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+
+   }
+if (nodeParameterJ == 3) // here z2 is random
+  {
+   dRdh[0][0]=(-dx(0)*dLdh)/(L*L); 
+   dRdh[0][1]=(-dx(1)*dLdh)/(L*L);
+   dRdh[0][2]=(L-dx(2)*dLdh)/(L*L);
+
+
+
+  dRdh[1][0]=(Ly*(V2)-(V2*dx(2)-V3*dx(1))*dLydh)/(Ly*Ly);
+  dRdh[1][1]=(Ly*(-V1)-(V3*dx(0)-V1*dx(2))*dLydh)/(Ly*Ly);
+  dRdh[1][2]=(-(V1*dx(1)-V2*dx(0))*dLydh)/(Ly*Ly);
+  }
+ dRdh[2][0]=R[0][1]*dRdh[1][2]+dRdh[0][1]*R[1][2]-(R[0][2]*dRdh[1][1]+dRdh[0][2]*R[1][1]);
+  dRdh[2][1]=R[0][2]*dRdh[1][0]+dRdh[0][2]*R[1][0]-(R[0][0]*dRdh[1][2]+dRdh[0][0]*R[1][2]);
+  dRdh[2][2]=R[0][0]*dRdh[1][1]+dRdh[0][0]*R[1][1]-(R[0][1]*dRdh[1][0]+dRdh[0][1]*R[1][0]);
+
+   }
+
+
 }

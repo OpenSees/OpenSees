@@ -52,7 +52,7 @@
 #include <Spectrum.h>
 #include <RandomNumberGenerator.h>
 #include <ReliabilityDomain.h>
-#include <NewDiscretizedRandomProcessSeries.h>
+//#include <NewDiscretizedRandomProcessSeries.h>
 
 extern ReliabilityDomain *theReliabilityDomain;
 extern RandomNumberGenerator *theRandomNumberGenerator;
@@ -485,6 +485,7 @@ TclTimeSeriesCommand(ClientData clientData,
   }
   
    ///// added by K Fujimura /////
+   /*FMK RELIABILITY
   else if (strcmp(argv[0],"NewDiscretizedRandomProcess") == 0) {
     
     double mean, maxStdv;
@@ -529,9 +530,9 @@ TclTimeSeriesCommand(ClientData clientData,
     }	
     
     // Parsing was successful, create the random process series object
-    theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
+  theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
   }
-
+  */
   else if (strcmp(argv[0],"SimulatedRandomProcess") == 0) {
     
     int spectrumTag, numFreqIntervals;

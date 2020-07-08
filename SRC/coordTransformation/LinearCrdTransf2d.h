@@ -72,7 +72,7 @@ public:
     // AddingSensitivity:BEGIN //////////////////////////////////
     const Vector &getBasicDisplSensitivity(int gradNumber);
     const Vector &getGlobalResistingForceShapeSensitivity(const Vector &basicForce, const Vector &p0);
-    const Vector &getBasicTrialDispShapeSensitivity(void);
+    const Vector &getBasicTrialDispShapeSensitivity(int gradNumber);
 
     // ---MHS
     const Vector & getGlobalResistingForceShapeSensitivity(const Vector &pb,

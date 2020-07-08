@@ -1425,7 +1425,7 @@ LinearCrdTransf2d::getd1overLdh(void)
 
 
 const Vector &
-LinearCrdTransf2d::getBasicTrialDispShapeSensitivity(void)
+LinearCrdTransf2d::getBasicTrialDispShapeSensitivity(int gradNumber)
 {
     // Want to return dAdh * u
 

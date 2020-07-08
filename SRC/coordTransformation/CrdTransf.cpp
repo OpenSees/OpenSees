@@ -33,7 +33,7 @@
 
 #include <CrdTransf.h>
 #include <Vector.h>
-
+#include<Matrix.h>
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
 
@@ -42,16 +42,6 @@ static MapOfTaggedObjects theCrdTransfObjects;
 bool 
 OPS_addCrdTransf(CrdTransf *newComponent) {
   return theCrdTransfObjects.addComponent(newComponent);
-}
-
-bool OPS_removeCrdTransf(int tag)
-{
-    TaggedObject* obj = theCrdTransfObjects.removeComponent(tag);
-    if (obj != 0) {
-	delete obj;
-	return true;
-    }
-    return false;
 }
 
 CrdTransf *
@@ -113,7 +103,8 @@ CrdTransf::getBasicDisplSensitivity(int gradNumber)
     return dummy;
 }
 
-const Vector &
+
+   const Vector &
 CrdTransf::getGlobalResistingForceShapeSensitivity(const Vector &pb,
 						   const Vector &p0,
 						   int gradNumber)
@@ -149,6 +140,7 @@ CrdTransf::getBasicTrialDispShapeSensitivity(void)
 
 
 // --Quan
+
 const Vector &
 CrdTransf::getBasicDisplSensitivity(int gradNumber, int)
 {
@@ -157,4 +149,37 @@ CrdTransf::getBasicDisplSensitivity(int gradNumber, int)
     
     static Vector dummy(1);
     return dummy;
+
 }
+
+
+//////////////////Abbas////////////////////
+//This function will be used only with sensitivity of Corotational3d transformation class
+   const Vector & 
+CrdTransf::dTdhTimesPl(const Vector &Pb, int  gradNumber)
+{
+   static Vector PL(12);
+   PL.Zero();
+   return PL; 
+}
+const Vector &
+CrdTransf::dPGlobaldh2(const Matrix &kb,const Vector &dvdh,int gradNumber)
+{
+static Vector P(12);
+P.Zero();
+return P;
+
+}
+const Vector &
+CrdTransf::dPGlobaldh3(const Matrix &kb, int gradNumber)
+{
+static Vector P(12);
+P.Zero();
+return P;
+
+
+
+}
+
+/////////////////Abbas/////////////////////
+

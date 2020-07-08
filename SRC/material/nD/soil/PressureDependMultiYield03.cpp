@@ -1031,6 +1031,7 @@ int PressureDependMultiYield03::setParameter(const char **argv, int argc, Parame
 {
   /*if (argc < 1)
     return -1;
+
   if (strcmp(argv[0],"updateMaterialStage") == 0) {
     if (argc < 2)
       return -1;
@@ -1040,10 +1041,13 @@ int PressureDependMultiYield03::setParameter(const char **argv, int argc, Parame
     else
       return -1;
   }
+
   else if (strcmp(argv[0],"shearModulus") == 0)
     return param.addObject(10, this);
+
   else if (strcmp(argv[0],"bulkModulus") == 0)
     return param.addObject(11, this);
+
   return -1;*/
 
   if (argc < 2)

@@ -10,6 +10,7 @@ OBJS       = CrdTransf.o \
 	ModerateDispCrdTransf2d.o \
 	CorotCrdTransf2d.o \
 	CorotCrdTransf3d.o \
+	CorotCrdTransf3dSENS.o \
 	CorotCrdTransfWarping2d.o \
 	TclGeomTransfCommand.o
 

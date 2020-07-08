@@ -130,9 +130,9 @@ class BeamEndContact3D : public Element
 
 	Vector mIcrd_a;                  // initial coordinates of node a
 	Vector mIcrd_b;                  // initial coordinates of node b
-	Vector mIcrd_s;                  // initial coordinates of slave node
+	Vector mIcrd_s;                  // initial coordinates of secondary node
     Vector mDcrd_a;                  // initial coordinates of node a
-	Vector mDcrd_s;                  // initial coordinates of slave node
+	Vector mDcrd_s;                  // initial coordinates of secondary node
 };
 
 #endif

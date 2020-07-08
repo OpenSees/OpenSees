@@ -90,6 +90,15 @@ public:
 
    ////////////////// sensitivity /////////////////////////////////
 	const Vector & getBasicDisplSensitivity (int gradNumber);
+	const Vector &getGlobalResistingForceShapeSensitivity(const Vector &basicForce,const Vector &p0, int gradNumer);
+	double getdOneoverLdh();
+	double getdLdh();
+	bool isShapeSensitivity( );
+	const Vector &
+	   getBasicTrialDispShapeSensitivity(int gradNumber );
+double dLydh(int gradNumber);
+void formdRdh(int gradNumber);
+double formLy();
    /////////////////////////////////////////////////////////////    
 private:
     int computeElemtLengthAndOrient(void);
@@ -101,8 +110,9 @@ private:
     double *nodeIOffset, *nodeJOffset;	// rigid joint offsets
     
     double R[3][3];	 // rotation matrix
+    double dRdh[3][3];
     double L;        // undeformed element length
-
+double V1,V2,V3;
     static Matrix Tlg;  // matrix that transforms from global to local coordinates
     static Matrix kg;   // global stiffness matrix
 
