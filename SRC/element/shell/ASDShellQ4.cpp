@@ -254,15 +254,15 @@ namespace
      */
     struct AGQIParams
     {
-        std::array<double, 4> X = { 0.0, 0.0, 0.0, 0.0 };
-        std::array<double, 4> Y = { 0.0, 0.0, 0.0, 0.0 };
-        std::array<double, 4> b = { 0.0, 0.0, 0.0, 0.0 };
-        std::array<double, 4> c = { 0.0, 0.0, 0.0, 0.0 };
+        std::array<double, 4> X = { {0.0, 0.0, 0.0, 0.0} };
+        std::array<double, 4> Y = { {0.0, 0.0, 0.0, 0.0} };
+        std::array<double, 4> b = { {0.0, 0.0, 0.0, 0.0} };
+        std::array<double, 4> c = { {0.0, 0.0, 0.0, 0.0} };
         double A1 = 0.0;
         double A2 = 0.0;
         double A3 = 0.0;
         double A = 0.0;
-        std::array<double, 4> g = { 0.0, 0.0, 0.0, 0.0 };
+        std::array<double, 4> g = { {0.0, 0.0, 0.0, 0.0} };
 
         void compute(const ASDShellQ4LocalCoordinateSystem& LCS)
         {
