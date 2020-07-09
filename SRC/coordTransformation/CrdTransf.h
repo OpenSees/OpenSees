@@ -82,6 +82,7 @@ public:
     virtual bool isShapeSensitivity(void) {return false;}
     virtual double getdLdh(void) {return 0.0;}
     virtual double getd1overLdh(void) {return 0.0;}
+  
     // AddingSensitivity:END //////////////////////////////////
     
     virtual const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &uniformLoad) = 0;
@@ -94,16 +95,25 @@ public:
     // methods used in post-processing only
     virtual const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords) = 0;
     virtual const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
+   
+    //////////Abbas/////// 
+    virtual  bool Corotational3dKey(void){return false; } //Abbas,  by default: this key is used to include dTdh*Pl to the sensitivity of the resisting Force sensitivity.
+    virtual   const Vector &dTdhTimesPl(const Vector &Pb, int gradNumber);  
+    virtual const Vector &dPGlobaldh2(const Matrix &kb,const Vector &dvdh, int gradNumber);
+    virtual const Vector &dPGlobaldh3(const Matrix &kb, int gradNumber);
+    //virtual const Vector &sensitivityOfBasicIncrDisp(void) = 0;
     
-protected:
+    //virtual const Vector &sensitivityOfBasicIncrDeltaDisp(void) = 0;
+
+    /////////////////////Abbas////////
+ protected:
     
-private:
+ private:
 };
 
 // some additional methods related to prototypes created for copy constructors
 extern bool       OPS_addCrdTransf(CrdTransf *newComponent);
 extern CrdTransf *OPS_getCrdTransf(int tag);
-extern bool       OPS_removeCrdTransf(int tag);
 extern void       OPS_clearAllCrdTransf(void);
 extern void       OPS_printCrdTransf(OPS_Stream &s, int flag=0);
 

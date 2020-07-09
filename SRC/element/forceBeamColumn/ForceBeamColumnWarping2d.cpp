@@ -29,7 +29,7 @@
  Shear Wall with Warping
  ---
 Hsiang-Chuan Tsai, James M. Kelly (2004), "Buckling of short beams with warping effect included."
-International Journal of Solids and Structures, 42:239�253
+International Journal of Solids and Structures, 42:239?253
 
 
 State Determination Algorithm

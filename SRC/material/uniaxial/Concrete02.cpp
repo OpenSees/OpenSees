@@ -93,6 +93,19 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
   fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
 {
+  // Make all concrete parameters negative
+  if (fc > 0.0)
+    fc = -fc;
+  
+  if (epsc0 > 0.0)
+    epsc0 = -epsc0;
+  
+  if (fcu > 0.0)
+    fcu = -fcu;
+  
+  if (epscu > 0.0)
+    epscu = -epscu;
+
   ecminP = 0.0;
   deptP = 0.0;
 
