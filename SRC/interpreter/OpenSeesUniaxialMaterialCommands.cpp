@@ -171,6 +171,8 @@ void* OPS_UVCuniaxial();
 void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
+void* OPS_BoltBearingConnectionThermal();
+void* OPS_PlateBearingConnectionThermal();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -334,6 +336,8 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
+	uniaxialMaterialsMap.insert(std::make_pair("BoltBearingConnectionThermal", &OPS_BoltBearingConnectionThermal));
+	uniaxialMaterialsMap.insert(std::make_pair("PlateBearingConnectionThermal", &OPS_PlateBearingConnectionThermal));
 
 	return 0;
     }

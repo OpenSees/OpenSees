@@ -969,6 +969,11 @@ ZeroLengthND::setUp(int Nd1, int Nd2, const Vector &x, const Vector &yp)
 		transformation(1,i) = y(i)/yn;
 		transformation(2,i) = z(i)/zn;
 	}
+    transformation.Zero();
+    transformation(0,0) = 1.0;
+    transformation(1,1) = 1.0;
+    transformation(2,2) = 1.0;		
+      
 }
 
 // Set basic deformation-displacement transformation matrix for the materials
@@ -1028,6 +1033,11 @@ ZeroLengthND::setTransformation(void)
 			tran(i,j) = -tran(i,j+numDOF/2);
 	}
 
+	for (int i = 0; i < numDOF/2; i++) {
+	  tran(i,i) = -1.0;
+	  tran(i+numDOF/2,i+numDOF/2) = 1.0;
+	}
+	
 	// Fill in transformation for UniaxialMaterial
 	if (the1DMaterial != 0) {
 

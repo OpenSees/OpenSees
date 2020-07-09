@@ -165,13 +165,15 @@ J2BeamFiber2d::getTangent (void)
   double q = sqrt(two3*xsi[0]*xsi[0] + 2.0*xsi[1]*xsi[1]);
   double F = q - root23*(sigmaY + Hiso*alphan);
 
-  if (F < -100*DBL_EPSILON) {
+  if (F < 0.0) {
     D(0,0) = E;
     D(1,1) = G;
     D(0,1) = D(1,0) = 0.0;
 
     epsPn1[0] = epsPn[0];
     epsPn1[1] = epsPn[1];
+    alphan1 = alphan;
+    dg_n1 = 0.0;
   }
   else {
 
@@ -196,12 +198,12 @@ J2BeamFiber2d::getTangent (void)
         J(0,2) = two3*(E+Hkin)*x(0);
         J(1,2) = (twoG+two3Hkin)*x(1);
 
-        //J(2,0) = x(0)*two3/q; J(2,1) = x(1)*2.0/q;
-        J(2,0) = (1.0-two3*Hiso*dg)*x(0)*two3/q;
-        J(2,1) = (1.0-two3*Hiso*dg)*x(1)*2.0/q;
+        J(2,0) = x(0)*two3/q; J(2,1) = x(1)*2.0/q;
+        //J(2,0) = (1.0-two3*Hiso*dg)*x(0)*two3/q;
+        //J(2,1) = (1.0-two3*Hiso*dg)*x(1)*2.0/q;
 
-        //J(2,2) = -root23*Hiso;
-	J(2,2) = -two3*Hiso*q;
+        J(2,2) = -root23*Hiso;
+	//J(2,2) = -two3*Hiso*q;
 
         J.Solve(R, dx);
         x.addVector(1.0, dx, -1.0);
@@ -213,14 +215,16 @@ J2BeamFiber2d::getTangent (void)
 
         R(0) = x(0) - xsi[0] + dg*two3*(E+Hkin)*x(0);
         R(1) = x(1) - xsi[1] + dg*(twoG+two3Hkin)*x(1);
-        R(2) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+        //R(2) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+	R(2) = q - root23*(sigmaY + Hiso*(alphan+dg));
     }
 
     if (iter == maxIter) {
-      //opserr << "J2BeamFiber2d::getTangent -- maxIter reached " << R.Norm() << endln;
+      opserr << "J2BeamFiber2d::getTangent -- maxIter reached " << R.Norm() << endln;
     }
 
-    alphan1 = alphan + dg*root23*q;
+    //alphan1 = alphan + dg*root23*q;
+    alphan1 = alphan + dg;
 
     epsPn1[0] = epsPn[0] + dg*two3*x(0);
     epsPn1[1] = epsPn[1] + dg*2.0*x(1);
@@ -236,15 +240,15 @@ J2BeamFiber2d::getTangent (void)
     J(0,2) = (two3*E-dg*two3*E/(1.0+dg*two3Hkin)*two3Hkin)*x(0);
     J(1,2) = (twoG  -dg*  twoG/(1.0+dg*two3Hkin)*two3Hkin)*x(1);
 
-    //J(2,0) = x(0)/q*two3/(1.0+dg*two3Hkin);
-    //J(2,1) = x(1)/q* 2.0/(1.0+dg*two3Hkin);
-    J(2,0) = (1.0-two3*Hiso*dg)*x(0)/q*two3/(1.0+dg*two3Hkin);
-    J(2,1) = (1.0-two3*Hiso*dg)*x(1)/q* 2.0/(1.0+dg*two3Hkin);
+    J(2,0) = x(0)/q*two3/(1.0+dg*two3Hkin);
+    J(2,1) = x(1)/q* 2.0/(1.0+dg*two3Hkin);
+    //J(2,0) = (1.0-two3*Hiso*dg)*x(0)/q*two3/(1.0+dg*two3Hkin);
+    //J(2,1) = (1.0-two3*Hiso*dg)*x(1)/q* 2.0/(1.0+dg*two3Hkin);
 
-    //J(2,2) = -(x(0)/q*two3/(1.0+dg*two3Hkin)*two3Hkin*x(0))
-    //         -(x(1)/q* 2.0/(1.0+dg*two3Hkin)*two3Hkin*x(1));
+    J(2,2) = -(x(0)/q*two3/(1.0+dg*two3Hkin)*two3Hkin*x(0))
+             -(x(1)/q* 2.0/(1.0+dg*two3Hkin)*two3Hkin*x(1)) - root23*Hiso;
     //J(2,2) = -q*two3Hkin/(1.0+dg*two3Hkin) - root23*Hiso;
-    J(2,2) = -q*two3Hkin/(1.0+dg*two3Hkin) - two3*Hiso*q;
+    //J(2,2) = -q*two3Hkin/(1.0+dg*two3Hkin) - two3*Hiso*q;
 
     static Matrix invJ(3,3);
     J.Invert(invJ);
@@ -291,9 +295,11 @@ J2BeamFiber2d::getStress (void)
   double q = sqrt(two3*xsi[0]*xsi[0] + 2.0*xsi[1]*xsi[1]);
   double F = q - root23*(sigmaY + Hiso*alphan);
 
-  if (F < -100*DBL_EPSILON) {
+  if (F < 0.0) {
     epsPn1[0] = epsPn[0];
     epsPn1[1] = epsPn[1];
+    alphan1 = alphan;
+    dg_n1 = 0;
   }
   else {
 
@@ -318,12 +324,12 @@ J2BeamFiber2d::getStress (void)
         J(0,2) = two3*(E+Hkin)*x(0);
         J(1,2) = (2.0*G+two3*Hkin)*x(1);
 
-        //J(2,0) = x(0)*two3/q; J(2,1) = x(1)*2.0/q;
-        J(2,0) = (1.0-two3*Hiso*dg)*x(0)*two3/q;
-        J(2,1) = (1.0-two3*Hiso*dg)*x(1)*2.0/q;
+        J(2,0) = x(0)*two3/q; J(2,1) = x(1)*2.0/q;
+        //J(2,0) = (1.0-two3*Hiso*dg)*x(0)*two3/q;
+        //J(2,1) = (1.0-two3*Hiso*dg)*x(1)*2.0/q;
 
-        //J(2,2) = -root23*Hiso;
-	J(2,2) = -two3*Hiso*q;
+        J(2,2) = -root23*Hiso;
+	//J(2,2) = -two3*Hiso*q;
 
         J.Solve(R, dx);
         x = x-dx;
@@ -335,14 +341,16 @@ J2BeamFiber2d::getStress (void)
 
         R(0) = x(0) - xsi[0] + dg*two3*(E+Hkin)*x(0);
         R(1) = x(1) - xsi[1] + dg*(2.0*G+two3*Hkin)*x(1);
-        R(2) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+        //R(2) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+	R(2) = q - root23*(sigmaY + Hiso*(alphan+dg));
     }
 
     if (iter == maxIter) {
-      //opserr << "J2BeamFiber2d::getStress -- maxIter reached " << R.Norm() << endln;
+      opserr << "J2BeamFiber2d::getStress -- maxIter reached " << R.Norm() << endln;
     }
 
-    alphan1 = alphan + dg*root23*q;
+    //alphan1 = alphan + dg*root23*q;
+    alphan1 = alphan + dg;
 
     epsPn1[0] = epsPn[0] + dg*two3*x(0);
     epsPn1[1] = epsPn[1] + dg*2.0*x(1);
@@ -482,15 +490,15 @@ J2BeamFiber2d::getStressSensitivity(int gradIndex, bool conditional)
   static const double root23 = sqrt(two3);
 
   double xsi[2];
-  xsi[0] = E*(Tepsilon(0)-epsPn1[0]) -      Hkin*epsPn1[0];
-  xsi[1] = G*(Tepsilon(1)-epsPn1[1]) - one3*Hkin*epsPn1[1];
+  xsi[0] = E*(Tepsilon(0)-epsPn[0]) -      Hkin*epsPn[0];
+  xsi[1] = G*(Tepsilon(1)-epsPn[1]) - one3*Hkin*epsPn[1];
 
   double q = sqrt(two3*xsi[0]*xsi[0] + 2.0*xsi[1]*xsi[1]);
-  double F = q - root23*(sigmaY + Hiso*alphan1);
+  double F = q - root23*(sigmaY + Hiso*alphan);
 
-  if (F <= -100*DBL_EPSILON) {
-    sigma(0) = dEdh*(Tepsilon(0)-epsPn1[0]) - E*depsPdh[0];
-    sigma(1) = dGdh*(Tepsilon(1)-epsPn1[1]) - G*depsPdh[1];
+  if (F < 0.0) {
+    sigma(0) = dEdh*(Tepsilon(0)-epsPn[0]) - E*depsPdh[0];
+    sigma(1) = dGdh*(Tepsilon(1)-epsPn[1]) - G*depsPdh[1];
   }
   else {
     static Matrix J(3,3);
@@ -505,12 +513,12 @@ J2BeamFiber2d::getStressSensitivity(int gradIndex, bool conditional)
     J(0,2) = two3*(E+Hkin)*xsi[0];
     J(1,2) = (2.0*G+two3*Hkin)*xsi[1];
     
-    //J(2,0) = xsi[0]*two3/q; J(2,1) = xsi[1]*2.0/q;
-    J(2,0) = (1.0-two3*Hiso*dg)*xsi[0]*two3/q; 
-    J(2,1) = (1.0-two3*Hiso*dg)*xsi[1]*2.0/q;
+    J(2,0) = xsi[0]*two3/q; J(2,1) = xsi[1]*2.0/q;
+    //J(2,0) = (1.0-two3*Hiso*dg)*xsi[0]*two3/q; 
+    //J(2,1) = (1.0-two3*Hiso*dg)*xsi[1]*2.0/q;
 
-    //J(2,2) = -root23*Hiso;
-    J(2,2) = -two3*Hiso*q;
+    J(2,2) = -root23*Hiso;
+    //J(2,2) = -two3*Hiso*q;
 
     b(0) = dEdh*Tepsilon(0) - (E+     Hkin)*depsPdh[0] - (dEdh+     dHkindh)*epsPn1[0];
     b(1) = dGdh*Tepsilon(1) - (G+one3*Hkin)*depsPdh[1] - (dGdh+one3*dHkindh)*epsPn1[1];
@@ -580,13 +588,13 @@ J2BeamFiber2d::commitSensitivity(const Vector &depsdh, int gradIndex, int numGra
   static const double root23 = sqrt(two3);
 
   double xsi[2];
-  xsi[0] = E*(Tepsilon(0)-epsPn1[0]) -      Hkin*epsPn1[0];
-  xsi[1] = G*(Tepsilon(1)-epsPn1[1]) - one3*Hkin*epsPn1[1];
+  xsi[0] = E*(Tepsilon(0)-epsPn[0]) -      Hkin*epsPn[0];
+  xsi[1] = G*(Tepsilon(1)-epsPn[1]) - one3*Hkin*epsPn[1];
 
   double q = sqrt(two3*xsi[0]*xsi[0] + 2.0*xsi[1]*xsi[1]);
-  double F = q - root23*(sigmaY + Hiso*alphan1);
+  double F = q - root23*(sigmaY + Hiso*alphan);
 
-  if (F <= -100*DBL_EPSILON) {
+  if (F < 0.0) {
     // Do nothing
   }
   else {
@@ -602,12 +610,12 @@ J2BeamFiber2d::commitSensitivity(const Vector &depsdh, int gradIndex, int numGra
     J(0,2) = two3*(E+Hkin)*xsi[0];
     J(1,2) = (2.0*G+two3*Hkin)*xsi[1];
     
-    //J(2,0) = xsi[0]*two3/q; J(2,1) = xsi[1]*2.0/q;
-    J(2,0) = (1.0-two3*Hiso*dg)*xsi[0]*two3/q; 
-    J(2,1) = (1.0-two3*Hiso*dg)*xsi[1]*2.0/q;
+    J(2,0) = xsi[0]*two3/q; J(2,1) = xsi[1]*2.0/q;
+    //J(2,0) = (1.0-two3*Hiso*dg)*xsi[0]*two3/q; 
+    //J(2,1) = (1.0-two3*Hiso*dg)*xsi[1]*2.0/q;
 
-    //J(2,2) = -root23*Hiso;
-    J(2,2) = -two3*Hiso*q;
+    J(2,2) = -root23*Hiso;
+    //J(2,2) = -two3*Hiso*q;
 
     b(0) = E*depsdh(0) + dEdh*Tepsilon(0) - (E+     Hkin)*depsPdh[0] - (dEdh+     dHkindh)*epsPn1[0];
     b(1) = G*depsdh(1) + dGdh*Tepsilon(1) - (G+one3*Hkin)*depsPdh[1] - (dGdh+one3*dHkindh)*epsPn1[1];
@@ -615,7 +623,8 @@ J2BeamFiber2d::commitSensitivity(const Vector &depsdh, int gradIndex, int numGra
 
     J.Solve(b, dx);
 
-    dalphadh += dx(2)*root23*q + dg*root23*(xsi[0]*two3*dx(0)+xsi[1]*2.0*dx(1))/q;
+    //dalphadh += dx(2)*root23*q + dg*root23*(xsi[0]*two3*dx(0)+xsi[1]*2.0*dx(1))/q;
+    dalphadh += dx(2);
     depsPdh[0] += dx(2)*two3*xsi[0] + dg*two3*dx(0);
     depsPdh[1] += dx(2)* 2.0*xsi[1] + dg* 2.0*dx(1);
 

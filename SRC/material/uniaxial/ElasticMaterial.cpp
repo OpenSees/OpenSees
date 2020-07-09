@@ -349,10 +349,24 @@ ElasticMaterial::activateParameter(int paramID)
   return 0;
 }
 
+int
+ElasticMaterial::getActiveParameter(double &param)
+{
+  if (parameterID == 1 || parameterID == 2)
+    param = Epos;
+  if (parameterID == 3)
+    param = Eneg;
+  if (parameterID == 4)
+    param = eta;
+
+  return parameterID;
+}
 
 double
 ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
+  return UniaxialMaterial::getStressSensitivity(gradIndex, conditional);
+  
   if (parameterID == 1)
     return trialStrain;
   if (parameterID == 2 && trialStrain > 0.0)
@@ -364,7 +378,6 @@ ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 
   return 0.0;
 }
-
 
 double
 ElasticMaterial::getTangentSensitivity(int gradIndex)

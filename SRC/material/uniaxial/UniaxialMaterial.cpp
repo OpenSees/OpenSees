@@ -97,14 +97,16 @@ void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
 :Material(tag,clasTag)
 {
-
+  for (int i = 0; i < 100; i++)
+    sensHstv[i] = 0.0;
 }
 
 
 UniaxialMaterial::UniaxialMaterial()
     :Material(0, 0)
 {
-
+  for (int i = 0; i < 100; i++)
+    sensHstv[i] = 0.0;
 }
 
 
@@ -394,7 +396,69 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 double
 UniaxialMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
-    return 0.0;
+  // Save current stress
+  double sig0 = this->getStress();
+
+  // Get active parameter and its value
+  int paramID;
+  double h0;
+  paramID = this->getActiveParameter(h0);
+
+  // Get current history variables
+  static double hstv[100];
+  int numHV = this->getNumHistoryVariables();
+  if (numHV > 0) {
+    this->getCommittedHistoryVariables(hstv);
+  }
+  
+  // Perturb the active parameter
+  double eps = 1.0e-3;
+  Information info;
+  info.theDouble = h0*(1+eps);
+  this->updateParameter(paramID, info);
+
+  // Set perturbed history variables
+  if (numHV > 0) {
+    this->setCommittedHistoryVariables(sensHstv);
+  }
+  
+  // Force a new state determination
+  double strain = this->getStrain();
+  double strainRate = this->getStrainRate();
+  this->setTrialStrain(strain, strainRate);
+  
+  // Get stress at perturbed state
+  double sig = this->getStress();
+
+  // Get perturbed history variables
+  if (numHV > 0) {
+    this->getTrialHistoryVariables(sensHstv);
+  }
+  
+  // Restore the active parameter
+  info.theDouble = h0;
+  this->updateParameter(paramID, info);
+
+  // Restore history variables
+  if (numHV > 0) {
+    this->setCommittedHistoryVariables(hstv);
+  }
+  
+  //
+  // Do we need another state determination?
+  this->setTrialStrain(strain, strainRate);
+  this->getStress();
+  //
+  
+  return (sig-sig0)/(eps*h0);
+
+  //return 0.0;
+}
+
+int
+UniaxialMaterial::commitSensitivity(double strainSensitivity, int gradIndex, int numGrads)
+{
+  return 0;
 }
 
 double
@@ -425,12 +489,6 @@ double
 UniaxialMaterial::getDampTangentSensitivity(int gradIndex)
 {
     return 0.0;
-}
-
-int
-UniaxialMaterial::commitSensitivity(double strainSensitivity, int gradIndex, int numGrads)
-{
-    return -1;
 }
 
 double

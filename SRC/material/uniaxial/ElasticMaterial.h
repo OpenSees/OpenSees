@@ -74,6 +74,7 @@ class ElasticMaterial : public UniaxialMaterial
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int activateParameter(int parameterID);
+    int getActiveParameter(double &param);
     double getStressSensitivity(int gradIndex, bool conditional);
     double getTangentSensitivity(int gradIndex);
     double getInitialTangentSensitivity(int gradIndex);

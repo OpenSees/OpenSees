@@ -129,7 +129,7 @@ InitStressMaterial::InitStressMaterial(int tag,
 
 InitStressMaterial::InitStressMaterial()
   :UniaxialMaterial(0,MAT_TAG_InitStress), theMaterial(0),
-   epsInit(0.0)
+   epsInit(0.0), sigInit(0.0)
 {
 
 }

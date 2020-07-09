@@ -199,6 +199,9 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
 
   for (int i = 0; i < numFibers; i++) {
 
+    matData[i*2] = fiberLocs[i];
+    matData[i*2+1] = fiberArea[i];
+    
     ABar  += fiberArea[i];
     QzBar += fiberLocs[i]*fiberArea[i];
 
@@ -840,7 +843,7 @@ FiberSection2d::setResponse(const char **argv, int argc,
     int key = numFibers;
     int passarg = 2;
     
-    if (argc <= 3) {		  // fiber number was input directly
+    if (argc < 3) {		  // fiber number was input directly
       
       key = atoi(argv[1]);
       
@@ -879,7 +882,6 @@ FiberSection2d::setResponse(const char **argv, int argc,
     }
     
     else {                  // fiber near-to coordinate specified
-      
       double yCoord = atof(argv[1]);
       double closestDist;
       double ySearch, dy;
@@ -892,7 +894,6 @@ FiberSection2d::setResponse(const char **argv, int argc,
       for (int j = 1; j < numFibers; j++) {
 	ySearch = matData[2*j];
 	dy = ySearch-yCoord;
-	
 	distance = fabs(dy);
 	if (distance < closestDist) {
 	  closestDist = distance;

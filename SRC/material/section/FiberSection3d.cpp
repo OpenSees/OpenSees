@@ -192,7 +192,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion):
 	for (int i = 0; i < sizeFibers; i++) {
 	    matData[i*3] = 0.0;
 	    matData[i*3+1] = 0.0;
-	    matData[i*3+2] = .0;
+	    matData[i*3+2] = 0.0;
 	    theMaterials[i] = 0;
 	}
     }

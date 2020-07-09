@@ -81,6 +81,8 @@ class UniaxialMaterial : public Material
     virtual int getResponse (int responseID, Information &matInformation);    
     virtual bool hasFailed(void) {return false;}
 
+    virtual int getActiveParameter(double &param) {param = 0.0; return 0;}
+    
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual double getStressSensitivity     (int gradIndex, bool conditional);
     virtual double getStrainSensitivity     (int gradIndex);
@@ -94,8 +96,13 @@ class UniaxialMaterial : public Material
 	virtual double getEnergy(void) { return 0; }
 
  protected:
-    
+	virtual int getNumHistoryVariables(void) {return 0;}
+	virtual int getTrialHistoryVariables(double *hstv) {return 0;}
+	virtual int setTrialHistoryVariables(const double *hstv) {return 0;}
+	virtual int getCommittedHistoryVariables(double *hstv) {return 0;}
+	virtual int setCommittedHistoryVariables(const double *hstv) {return 0;}		
  private:
+	double sensHstv[100]; // Hacky for now
 };
 
 extern bool OPS_addUniaxialMaterial(UniaxialMaterial *newComponent);

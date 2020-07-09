@@ -122,8 +122,10 @@ int
 HardeningMaterial::setTrialStrain (double strain, double strainRate)
 {
 
-    if (fabs(Tstrain-strain) < DBL_EPSILON)
-      return 0;
+  // Don't want to do this when changing parameter values without
+  // changing the strain
+  //if (fabs(Tstrain-strain) < DBL_EPSILON)
+  //  return 0;
 
     // Set total strain
     Tstrain = strain;
@@ -197,7 +199,7 @@ HardeningMaterial::commitState(void)
     // Commit trial history variables
     CplasticStrain = TplasticStrain;
     Chardening = Thardening;
-    
+
     return 0;
 }
 
@@ -393,12 +395,27 @@ HardeningMaterial::activateParameter(int passedParameterID)
 	return 0;
 }
 
+int
+HardeningMaterial::getActiveParameter(double &param)
+{
+  if (parameterID == 1)
+    param = sigmaY;
+  if (parameterID == 2)
+    param = E;
+  if (parameterID == 3)
+    param = Hkin;
+  if (parameterID == 4)
+    param = Hiso;
 
+  return parameterID;
+}
 
 
 double
 HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
+  return UniaxialMaterial::getStressSensitivity(gradIndex, conditional);
+  
 	// First set values depending on what is random
 	double SigmaYSensitivity = 0.0;
 	double ESensitivity = 0.0;
