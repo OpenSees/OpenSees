@@ -239,7 +239,7 @@ public:
 
 protected:
 
-    NodeContainerType m_nodes = { nullptr, nullptr, nullptr, nullptr };
+    NodeContainerType m_nodes = { {nullptr, nullptr, nullptr, nullptr} };
     Vector m_U0 = Vector(24);
 };
 
