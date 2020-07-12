@@ -193,12 +193,8 @@ TensionOnlyMaterial::getStrainRate(void)
 
 int 
 TensionOnlyMaterial::commitState(void)
-{
-  double f = theMaterial->getStress();
-  if (f < 0.0)
-    return 0;
-  else
-    return theMaterial->commitState();
+{	
+  return theMaterial->commitState();
 }
 
 int 
