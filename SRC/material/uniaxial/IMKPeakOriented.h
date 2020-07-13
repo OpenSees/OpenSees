@@ -22,8 +22,7 @@
 
 //**********************************************************************                                                                     
 // Code Developed by: Ahmed Elkady and Hammad ElJisr
-// Postdoctoral Researcher, EPFL, Switzerland
-// Last Updated: July 2018
+// Last Updated: July 2020
 //**********************************************************************
 
 #ifndef IMKPeakOriented_h
@@ -85,8 +84,6 @@ private:
 	double D_pos;
 	double D_neg;
 	
-	double kappaF;
-	double kappaD;
 	//State variables 
 	double U, cU;
 	
@@ -100,61 +97,37 @@ private:
 
 	double Uy_pos_j_1,				cUy_pos_j_1;
 	double Umax_pos_j_1,			cUmax_pos_j_1;
-	double Uu_pos_j_1,				cUu_pos_j_1;
 	double Fy_pos_j_1,				cFy_pos_j_1;
 	double Fmax_pos_j_1,			cFmax_pos_j_1;
 	double Upeak_pos_j_1,			cUpeak_pos_j_1;
 	double Fpeak_pos_j_1,			cFpeak_pos_j_1;
-	double Ubp_pos_j_1,				cUbp_pos_j_1;
-	double Fbp_pos_j_1,				cFbp_pos_j_1;
 	double Ures_pos_j_1,			cUres_pos_j_1;
 	double Fres_pos_j_1,			cFres_pos_j_1;
 	double Kp_pos_j_1,				cKp_pos_j_1;
 	double Kpc_pos_j_1,				cKpc_pos_j_1;
-	double KrelA_pos_j_1,			cKrelA_pos_j_1;
-	double KrelB_pos_j_1,			cKrelB_pos_j_1;	
-	double Plastic_Offset_pos_j_1,	cPlastic_Offset_pos_j_1;
 
 
 	double Uy_neg_j_1,               cUy_neg_j_1;
 	double Umax_neg_j_1,             cUmax_neg_j_1;
-	double Uu_neg_j_1,             	 cUu_neg_j_1;
 	double Fy_neg_j_1,               cFy_neg_j_1;
 	double Fmax_neg_j_1,             cFmax_neg_j_1;
 	double Upeak_neg_j_1,            cUpeak_neg_j_1;
 	double Fpeak_neg_j_1,            cFpeak_neg_j_1;
-	double Ubp_neg_j_1,              cUbp_neg_j_1;
-	double Fbp_neg_j_1,              cFbp_neg_j_1;
+
 	double Ures_neg_j_1,             cUres_neg_j_1;
 	double Fres_neg_j_1,             cFres_neg_j_1;
 	double Kp_neg_j_1,               cKp_neg_j_1;
 	double Kpc_neg_j_1,              cKpc_neg_j_1;
-	double KrelA_neg_j_1,            cKrelA_neg_j_1;
-	double KrelB_neg_j_1,            cKrelB_neg_j_1;
-	double Plastic_Offset_neg_j_1,   cPlastic_Offset_neg_j_1;
-
 
 	double Kul_j_1, cKul_j_1;
-	 
-	double Failure_Flag, 		cFailure_Flag;
-	double Excursion_Flag,		cExcursion_Flag;
-	
+
 	double Energy_Acc,  cEnergy_Acc;
 	double Energy_Diss, cEnergy_Diss;
 	
-	double Umaxp, cUmaxp;
-	double Umaxn, cUmaxn;
-	
-	
-	double u0;
+	double u0, cu0;
+
 	double du;
 	double df;
-	
-	double Unloading_Flag;
-	double New_Peak_Pos_Flag;
-	double New_Peak_Neg_Flag;
-
-	double Fp;
 	
 	double FailS;
 	double FailC;
@@ -187,11 +160,31 @@ private:
 
 	double TangentK, cTangentK, ki;
 
-	double Uy_pos, Uy_neg;
-	double Umax_pos, Umax_neg;
-	double Fmax_pos, Fmax_neg;
-	double Kpc_pos, Kpc_neg;
-	double Kp_pos, Kp_neg;
+	double Uy_pos,		Uy_neg;
+	double Umax_pos,	Umax_neg;
+	double Fmax_pos,	Fmax_neg;
+	double Kpc_pos,		Kpc_neg;
+	double Kp_pos,		Kp_neg;
+	
+	double ULastPeak_pos_j_1,		cULastPeak_pos_j_1;
+	double FLastPeak_pos_j_1,		cFLastPeak_pos_j_1;
+	double ULastPeak_neg_j_1,		cULastPeak_neg_j_1;
+	double FLastPeak_neg_j_1,		cFLastPeak_neg_j_1;
+	
+	double Failure_Flag,	cFailure_Flag;
+	double Excursion_Flag,	cExcursion_Flag;
+	double Reloading_Flag,	cReloading_Flag;
+	double TargetPeak_Flag,	cTargetPeak_Flag;
+	double Unloading_Flag,	cUnloading_Flag;
+	double Yield_Flag,		cYield_Flag;
+	double Reversal_Flag,	cReversal_Flag;
+
+	double Krel_j_1,	    cKrel_j_1;	
+
+	double Krel_LastPeak;
+	double Krel_GlobalPeak;
+	double K_check;
+
 	
 };
 

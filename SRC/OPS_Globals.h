@@ -28,7 +28,7 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "3.2.0"
+#define OPS_VERSION "3.2.2"
 
 #ifdef _WIN32
 #ifndef _WIN64

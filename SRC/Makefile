@@ -419,6 +419,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/PVDRecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/MPCORecorder.o \
+	$(FE)/recorder/ElementRecorderRMS.o \
+	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/VTK_Recorder.o 
 
 
@@ -524,6 +526,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.o \
+	$(FE)/element/gradientInelasticBeamColumn/TclGradientInelasticBeamColumnCommand.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn2d.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
@@ -541,6 +544,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellDKGT.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/ShellNLDKGQThermal.o \
+	$(FE)/element/shell/ASDShellQ4.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/shell/ShellANDeS.o \
 	$(FE)/element/brick/Brick.o \
@@ -656,7 +660,9 @@ endif
 
 
 ifdef PLAINCONCRETE_FLAG
-	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
+       $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
+       $(FE)/element/PML/PML3D.o
 else
 	PLAINCONCRETE = 
 endif
@@ -790,6 +796,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteEXP.o \
 	$(FE)/material/uniaxial/TDConcreteMC10.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
+	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
+	$(FE)/material/uniaxial/DegradingPinchedBW.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
@@ -1263,6 +1271,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/DistributedDisplacementControl.o \
 	$(FE)/analysis/integrator/TransientIntegrator.o \
 	$(FE)/analysis/integrator/Newmark.o \
+	$(FE)/analysis/integrator/GimmeMCK.o \
 	$(FE)/analysis/integrator/PFEMIntegrator.o \
 	$(FE)/analysis/integrator/TRBDF2.o \
 	$(FE)/analysis/integrator/TRBDF3.o \
