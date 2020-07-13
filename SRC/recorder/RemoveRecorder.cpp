@@ -90,7 +90,7 @@ ofstream RemoveRecorder::theFile;
 RemoveRecorder::RemoveRecorder(int nodeID, 
 			       ID &eleIDs, 
 			       ID &secIDs, 
-			       ID &slaveTags, 
+			       ID &secondaryTags, 
 			       Vector remCriteria, 
 			       Domain &theDomainPtr, 
 			       OPS_Stream &s,
@@ -114,8 +114,8 @@ RemoveRecorder::RemoveRecorder(int nodeID,
    numSecs(secIDs.Size()), 
    criteria(remCriteria),
    theDomain(&theDomainPtr), 
-   slaveEleTags(slaveTags.Size()), 
-   slaveFlag(false),
+   secondaryEleTags(secondaryTags.Size()), 
+   secondaryFlag(false),
    echoTimeFlag(echotimeflag), 
    deltaT(deltat), 
    nextTimeStampToRecord(0.0), 
@@ -157,16 +157,16 @@ RemoveRecorder::RemoveRecorder(int nodeID,
   } else
     secTags[0] = 0;
   
-  if (slaveTags[0] != 0 || slaveTags.Size() != 1) {
-    slaveFlag = true;
-    for (int l=0 ; l<slaveTags.Size() ; l++) {
-      slaveEleTags(l) = slaveTags(l);
+  if (secondaryTags[0] != 0 || secondaryTags.Size() != 1) {
+    secondaryFlag = true;
+    for (int l=0 ; l<secondaryTags.Size() ; l++) {
+      secondaryEleTags(l) = secondaryTags(l);
 #ifdef MMTDEBUG
-      opserr<<"storing slaveEleID = "<<slaveTags[l]<<endln;
+      opserr<<"storing secondaryEleID = "<<secondaryTags[l]<<endln;
 #endif
     }
   } else
-    slaveEleTags[0] = 0;
+    secondaryEleTags[0] = 0;
 
 
   if (thefileNameinf != 0)  { 
@@ -209,12 +209,12 @@ RemoveRecorder::RemoveRecorder(int nodeID,
   delete [] argv;
 
 
-  if (slaveEleTags[0] != 0) {
-    for (int k= 0; k<slaveTags.Size(); k++) {
-      Element *theEle = theDomainPtr.getElement(slaveTags[k]);
+  if (secondaryEleTags[0] != 0) {
+    for (int k= 0; k<secondaryTags.Size(); k++) {
+      Element *theEle = theDomainPtr.getElement(secondaryTags[k]);
       if ( theEle == NULL ) {
 	opserr << "WARNING RemoveRecorder::RemoveRecorder() - no element with tag: "
-	       << slaveTags[k] << " exists in Domain\n";
+	       << secondaryTags[k] << " exists in Domain\n";
 	exit(-1);
       }
     }
@@ -440,16 +440,16 @@ RemoveRecorder::record(int commitTag, double timeStamp)
 	eleCount += remFlag;
       }
       
-      // now check if the slave elements need to be removed
+      // now check if the secondary elements need to be removed
 #ifdef MMTDEBUG
-      opserr<<"eleCount = "<<eleCount<<" numEles = "<<numEles<<" slaveFlag = "<<int(slaveFlag)<<endln;
+      opserr<<"eleCount = "<<eleCount<<" numEles = "<<numEles<<" secondaryFlag = "<<int(secondaryFlag)<<endln;
 #endif
-      if (eleCount == numEles && slaveFlag == true) {
-	if(this->elimSlaves(timeStamp) != 0) {
-	  opserr<<"Error: Collapse Recorder - failed to remove slave components to element "<<eleTags[0]<<endln;
+      if (eleCount == numEles && secondaryFlag == true) {
+	if(this->elimSecondaries(timeStamp) != 0) {
+	  opserr<<"Error: Collapse Recorder - failed to remove secondary components to element "<<eleTags[0]<<endln;
 	  return -1;
 	}
-	slaveFlag = false;
+	secondaryFlag = false;
       }
     }
     
@@ -796,21 +796,21 @@ RemoveRecorder::elimNode(int theNodeTag, double timeStamp)
 
 
 int 
-RemoveRecorder::elimSlaves(double timeStamp)
+RemoveRecorder::elimSecondaries(double timeStamp)
 {
 																			#ifdef MMTDEBUG	
-	opserr<<"entering elimSlaves()"<<endln;
+	opserr<<"entering elimSecondaries()"<<endln;
 																			#endif
 	int result = 0;
 
 
 	
-	// remove slave elements and nodes
-	for (int i =0; i<slaveEleTags.Size(); i++) {
+	// remove secondary elements and nodes
+	for (int i =0; i<secondaryEleTags.Size(); i++) {
 
 		int remFlag = 0;
 		for (int m =0; m<RemoveRecorder::numRemEles; m++) {
-			if (slaveEleTags[i] == RemoveRecorder::remEleList[m]) {
+			if (secondaryEleTags[i] == RemoveRecorder::remEleList[m]) {
 				remFlag = 1;
 																			#ifdef MMTDEBUG			
 			opserr<<" element "<<eleTags[i]<<" already removed "<<endln;
@@ -819,34 +819,34 @@ RemoveRecorder::elimSlaves(double timeStamp)
 		}
 
 		if (remFlag == 0) {
-			Element *theEle = theDomain->getElement(slaveEleTags[i]);
-			ID slaveNodes = theEle->getExternalNodes();
+			Element *theEle = theDomain->getElement(secondaryEleTags[i]);
+			ID secondaryNodes = theEle->getExternalNodes();
 			
 			for (int k = 0; k<theEle->getNumExternalNodes(); k++) {
 				
 				int nodeRemFlag = 0;
 				for (int m =0; m<RemoveRecorder::numRemNodes; m++) {
 						
-					if (slaveNodes[k] == RemoveRecorder::remNodeList[m]) {
+					if (secondaryNodes[k] == RemoveRecorder::remNodeList[m]) {
 						nodeRemFlag = 1;
 																			#ifdef MMTDEBUG			
-					opserr<<" node "<<slaveNodes[k]<<" already removed "<<endln;
+					opserr<<" node "<<secondaryNodes[k]<<" already removed "<<endln;
 																			#endif
 					}
 				}
 
 				if (nodeRemFlag == 0) {
-				this->elimNode(slaveNodes[k], timeStamp);
+				this->elimNode(secondaryNodes[k], timeStamp);
 																			#ifdef MMTDEBUG
-				opserr<<" eliminated node "<<slaveNodes[k]<<endln;
+				opserr<<" eliminated node "<<secondaryNodes[k]<<endln;
 				opserr<<"Node removal # "<<numRemNodes<<" of node # "<<remNodeList[numRemNodes-1]<<endln;
 																			#endif
 				}
 			}
 				
-			this->elimElem(slaveEleTags[i], timeStamp);
+			this->elimElem(secondaryEleTags[i], timeStamp);
 																			#ifdef MMTDEBUG
-			opserr<<" eliminated element "<<slaveEleTags[i]<<endln;
+			opserr<<" eliminated element "<<secondaryEleTags[i]<<endln;
 			opserr<<"Element removal # "<<numRemEles<<" of element # "<<remEleList[numRemEles-1]<<endln;
 																			#endif
 		}

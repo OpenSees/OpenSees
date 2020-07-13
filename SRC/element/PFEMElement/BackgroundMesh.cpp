@@ -3016,8 +3016,12 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int level, int nums)
     VDouble pns, dpns;
 
     // convect in a cell
-    double subdt = dt / nums;
-    for (int n=0; n<nums; ++n) {
+    while (pt->getDt() > 0) {
+        // get subdt
+        double subdt = dt / nums;
+        if (pt->getDt() < subdt) {
+            subdt = pt->getDt();
+        }
 
         // particle crds
         const VDouble& pcrds = pt->getCrds();
@@ -3029,7 +3033,7 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int level, int nums)
         int newlevel = getSizeLevel(newIndex);
 
         // update corners
-        if (n==0 || newIndex != index) {
+        if (indices.empty() || newIndex != index) {
             index = newIndex;
             level = newlevel;
 
@@ -3138,7 +3142,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (fixed.size() != 8) return 0;
     }
 
-    VDouble pcrds = pt->getCrds();
+    const VDouble& pcrds = pt->getCrds();
     if ((int)pcrds.size() != ndm) {
         opserr << "WARNING: pcrds.size() != ndm -- BgMesh::interpolate\n";
         return -1;
@@ -3156,52 +3160,6 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         double hz = (crds[4][2]+crds[5][2]+crds[6][2]+crds[7][2])/4.0-crds[0][2];
         getNForRect(crds[0][0],crds[0][1],crds[0][2],
                     hx,hy,hz,pcrds[0],pcrds[1],pcrds[2],N);
-    }
-
-    // get structural coordinates
-    VVDouble scoords, scoordsn;
-    for (int j=0; j<(int)fixed.size(); ++j) {
-        if (fixed[j] == 1) {
-            BNode& bnode = bnodes[index[j]];
-            for (int i = 0; i < (int) ndtags[j].size(); ++i) {
-                Node* snode = domain->getNode(ndtags[j][i]);
-                if (snode != 0) {
-                    VDouble curr(ndm);
-                    const Vector& scrds = snode->getCrds();
-                    const Vector& sdisp = snode->getTrialDisp();
-                    for (int k = 0; k < ndm; ++k) {
-                        curr[k] = scrds(k) + sdisp(k);
-                    }
-                    scoords.push_back(curr);
-                    scoordsn.push_back(bnode.crdsn[i]);
-                }
-            }
-        }
-    }
-
-    // get walls
-    VVInt walls;
-    if (ndm == 2) {
-        for (int i = 0; i < (int) scoords.size(); ++i) {
-            for (int k = i + 1; k < (int) scoords.size(); ++k) {
-                VInt boundary(2);
-                boundary[0] = i;
-                boundary[1] = k;
-                walls.push_back(boundary);
-            }
-        }
-    } else if (ndm == 3) {
-        for (int i = 0; i < (int) scoords.size(); ++i) {
-            for (int m = i + 1; m < (int) scoords.size(); ++m) {
-                for (int k = m + 1; k < (int) scoords.size(); ++k) {
-                    VInt boundary(3);
-                    boundary[0] = i;
-                    boundary[1] = m;
-                    boundary[2] = k;
-                    walls.push_back(boundary);
-                }
-            }
-        }
     }
 
     // particle velocity
@@ -3249,80 +3207,48 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     }
 
     // particle displacement
-    VDouble newpdisp = pvel;
-    newpdisp *= dt;
-    for (int k = 0; k < (int)walls.size(); ++k) {
-
-        // get current wall
-        VDouble boundir;
-        double dist;
-        VDouble xbnd(ndm), ybnd(ndm), zbnd(ndm);
-        for (int l = 0; l < ndm; ++l) {
-            xbnd[l] = scoords[walls[k][l]][0];
-            ybnd[l] = scoords[walls[k][l]][1];
-            if (ndm == 3) {
-                zbnd[l] = scoords[walls[k][l]][2];
+    // cannot travel more than one cell
+    VDouble newpcrds;
+    bool travel_cell = false;
+    while (newpcrds.empty() || travel_cell) {
+        newpcrds = pvel;
+        newpcrds *= dt;
+        travel_cell = false;
+        for (int i = 0; i < ndm; ++i) {
+            if (newpcrds[i] > bsize) {
+                travel_cell = true;
+                dt *= 0.5;
+                break;
             }
         }
-        getWall(boundir, dist, xbnd, ybnd, zbnd, pcrds);
+    }
 
-        // get previous wall
-        VDouble boundirn;
-        double distn;
-        for (int l = 0; l < ndm; ++l) {
-            xbnd[l] = scoordsn[walls[k][l]][0];
-            ybnd[l] = scoordsn[walls[k][l]][1];
-            if (ndm == 3) {
-                zbnd[l] = scoordsn[walls[k][l]][2];
+    // new particle coordinates
+    newpcrds += pcrds;
+
+    // find new cell
+    VInt newindex;
+    lowerIndex(newpcrds, newindex);
+    auto it = bnodes.find(newindex);
+
+    // if new cell is structure
+    if (it != bnodes.end()) {
+        if (it->second.type == STRUCTURE) {
+            // check each direction
+            for (int i = 0; i < ndm; ++i) {
+                int diff = newindex[i] - index[0][i];
+                if (diff == 0) continue;
+                double out_disp = 0.0;
+                if (diff > 0) {
+                    out_disp = newpcrds[i] - crds[0][i] - bsize;
+                    newpcrds[i] = crds[0][i] + bsize - out_disp;
+                    pvel[i] = -pvel[i];
+                } else {
+                    out_disp = crds[0][i] - newpcrds[i];
+                    newpcrds[i] = crds[0][i] + out_disp;
+                    pvel[i] = -pvel[i];
+                }
             }
-        }
-        getWall(boundirn, distn, xbnd, ybnd, zbnd, pcrds);
-
-        // check if particle is between the two walls
-        if (dotVDouble(boundir, boundirn) < 0) {
-
-            VDouble temp = boundir;
-            temp *= dist;
-
-            pt->move(temp, 0.0);
-
-            temp = boundir;
-            temp *= distn;
-
-            pt->move(temp, 0.0);
-
-            boundir *= -1.0;
-            dist = distn;
-
-            pcrds = pt->getCrds();
-        }
-
-        // check if particle is moving toward the current wall
-        if (dotVDouble(pvel, boundir) > 0) {
-
-            // vertical
-            VDouble vdisp = boundir, vvel = boundir;
-            double newdist = dotVDouble(newpdisp, boundir);
-            double newvel = dotVDouble(pvel, boundir);
-//            double vmag = normVDouble(pvel);
-            vdisp *= newdist;
-            vvel *= newvel;
-
-            double percent = dist / bsize * boundReduceFactor;
-
-            // horizontal disp
-            newpdisp -= vdisp;
-            pvel -= vvel;
-
-            // new vertical disp
-            vdisp *= percent;
-            vvel *= percent;
-
-            // new disp
-            newpdisp += vdisp;
-            pvel += vvel;
-//            pvel /= normVDouble(pvel);
-//            pvel *= vmag;
         }
     }
 
@@ -3339,7 +3265,7 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     }
 
     // original->dest
-    pt->move(newpdisp, dt);
+    pt->moveTo(newpcrds, dt);
 
     return 0;
 }
@@ -3497,31 +3423,31 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
         return 1;
     }
 
-    // get slave node
-    int slave = 0;
+    // get secondary node
+    int secondary = 0;
     int id = 0;
     bool find = false;
     for (std::map<int, VInt>::iterator it=grp.begin();
          it!=grp.end(); ++it) {
         VInt& nds = it->second;
         if (nds.size() == 1) {
-            // slave node with largest sid
+            // secondary node with largest sid
             if (!find || (id < it->first)) {
                 id = it->first;
-                slave = nds[0];
+                secondary = nds[0];
                 find = true;
             }
         } else if (find && id < it->first) {
-            // if master nodes have larger sid
+            // if primary nodes have larger sid
             find = false;
         }
     }
     if (!find) return 1;
 
-    // index for slave node
+    // index for secondary node
     int index = 0;
     for (int i = 0; i < (int) ndtags.size(); ++i) {
-        if (ndtags[i] == slave) {
+        if (ndtags[i] == secondary) {
             index = i + 1;
             if (index >= (int) ndtags.size()) {
                 index -= ndtags.size();
@@ -3530,7 +3456,7 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
         }
     }
 
-    // get master nodes
+    // get primary nodes
     elends.clear();
     for (int i = 0; i < (int) ndtags.size() - 1; ++i) {
         elends.push_back(ndtags[index]);
@@ -3539,7 +3465,7 @@ BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids, VInt& elends
             index -= ndtags.size();
         }
     }
-    elends.push_back(slave);
+    elends.push_back(secondary);
 
     return 0;
 }
