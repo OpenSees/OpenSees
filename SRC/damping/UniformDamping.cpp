@@ -116,43 +116,71 @@ UniformDamping::~UniformDamping()
 int
 UniformDamping::Initialize(void)
 {
+  double delta = 0.05;
   double f1log = log10(freq1);
   double f2log = log10(freq2);
-  nFilter = static_cast<int>(floor(f2log - f1log)) + 2;
-  double dfreq = (f2log - f1log) / (nFilter - 1);
-  alpha = new Vector(nFilter);
-  omegac = new Vector(nFilter);
-
-  for (int i = 0; i < nFilter; ++i)
+  
+  nFilter = 2;
+  for (int iter = 0; iter < 100; ++iter)
   {
-    (*omegac)(i) = 6.28318530718 * pow(10.0, f1log + i * dfreq);
-  }
+    double dfreq = (f2log - f1log) / (nFilter - 1);
+    alpha = new Vector(nFilter);
+    omegac = new Vector(nFilter);
 
-  int nf = 100 * nFilter;
-  double df = (f2log - f1log) / (nf - 1);
-  Vector *y = new Vector(nFilter);
-  Matrix *X = new Matrix(nFilter, nFilter);
-  for (int i = 0; i < nf; ++i)
-  {
-    double omega = 6.28318530718 * pow(10.0, f1log + i * df);
-    for (int j = 0; j < nFilter; ++j)
+    for (int i = 0; i < nFilter; ++i)
     {
-      double wjn = omega / (*omegac)[j];
-      double phij = 2.0 * wjn / (1.0 + wjn * wjn);
-      (*y)(j) += phij;
-      for (int k = 0; k < nFilter; ++k)
+      (*omegac)(i) = 6.28318530718 * pow(10.0, f1log + i * dfreq);
+    }
+
+    int nf = 100 * nFilter;
+    double df = (f2log - f1log) / (nf - 1);
+    Vector *y = new Vector(nFilter);
+    Matrix *X = new Matrix(nFilter, nFilter);
+    for (int i = 0; i < nf; ++i)
+    {
+      double omega = 6.28318530718 * pow(10.0, f1log + i * df);
+      for (int j = 0; j < nFilter; ++j)
       {
-        double wkn = omega / (*omegac)[k];
-        double phik = 2.0 * wkn / (1.0 + wkn * wkn);
-        (*X)(j, k) += phij * phik;
+        double wjn = omega / (*omegac)[j];
+        double phij = 2.0 * wjn / (1.0 + wjn * wjn);
+        (*y)(j) += phij;
+        for (int k = 0; k < nFilter; ++k)
+        {
+          double wkn = omega / (*omegac)[k];
+          double phik = 2.0 * wkn / (1.0 + wkn * wkn);
+          (*X)(j, k) += phij * phik;
+        }
       }
     }
+
+    *alpha = (*y) / (*X);
+    
+    delete y;
+    delete X;
+
+    bool converged = true;
+    for (int i = 0; i < nf; ++i)
+    {
+      double omega = 6.28318530718 * pow(10.0, f1log + i * df);
+      double err = 0.0;
+      for (int j = 0; j < nFilter; ++j)
+      {
+        double wjn = omega / (*omegac)[j];
+        double phij = 2.0 * wjn / (1.0 + wjn * wjn);
+        err += (*alpha)(j) * phij;
+      }
+      err -= 1.0;
+      if (err > delta || err < -delta)
+      {
+        converged = false;
+        break;
+      }
+    }
+    
+    if (converged) break;
+
+    ++nFilter;
   }
-
-  *alpha = (*y) / (*X);
-
-  delete y;
-  delete X;
   
   return 0;
 }
