@@ -180,14 +180,6 @@ extern UniaxialMaterial *Tcl_addWrapperUniaxialMaterial(matObj *, ClientData cli
 
 #include <packages.h>
 
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
-
-
 typedef struct uniaxialPackageCommand {
   char *funcName;
   void * (*funcPtr)(); 
