@@ -496,7 +496,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     Element *theEle = 0;
     ID info;
     if (OPS_GetNDM() == 2)
-      ; // theEle = (Element *)OPS_PML2D();
+      theEle = (Element *)OPS_PML2D();
     else
       theEle = (Element *)OPS_PML3D();
     if (theEle != 0) 
