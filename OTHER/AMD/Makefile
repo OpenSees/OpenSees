@@ -2,7 +2,7 @@ include ../../Makefile.def
 
 all: $(AMD_LIBRARY)
 
-C = $(CC) -O3 -fexceptions -fPIC -I.
+C = $(CC) $(OPT_FLAG) -fexceptions -fPIC -I.
 
 #-------------------------------------------------------------------------------
 # source files
