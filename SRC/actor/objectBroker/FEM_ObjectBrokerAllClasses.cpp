@@ -268,6 +268,7 @@
 #include <TwoNodeLink.h>
 #include <LinearElasticSpring.h>
 #include <Inerter.h>
+#include <FourNodeTetrahedron.h>
 
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
@@ -335,6 +336,7 @@
 #include <DriftRecorder.h>
 #include <MPCORecorder.h>
 #include <VTK_Recorder.h>
+#include <GmshRecorder.h>
 
 // mp_constraint header files
 #include <MP_Constraint.h>
@@ -360,6 +362,9 @@
 #include <Beam3dPointLoad.h>
 #include <BrickSelfWeight.h>
 #include <SelfWeight.h>
+#include <TriSurfaceLoad.h>
+#include <SurfaceLoad.h>
+#include <SurfaceLoader.h>
 
 // matrix, vector & id header files
 #include <Matrix.h>
@@ -472,6 +477,10 @@
 #include <InterpolatedGroundMotion.h>
 #include <DRMLoadPatternWrapper.h>
 
+#ifdef H5DRM_FLAG
+#include <H5DRM.h>
+#endif
+
 #include <Parameter.h>
 #include <ElementParameter.h>
 #include <MaterialStageParameter.h>
@@ -486,6 +495,7 @@
 #include <RectangularSeries.h>
 #include <ConstantSeries.h>
 #include <TrigSeries.h>
+#include <TriangleSeries.h>
 
 // time series integrators
 #include <TrapezoidalTimeSeriesIntegrator.h>
@@ -721,7 +731,16 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-      
+    
+    case ELE_TAG_SurfaceLoad:
+      return new SurfaceLoad();
+
+    case ELE_TAG_TriSurfaceLoad:
+      return new TriSurfaceLoad();
+    
+    case ELE_TAG_FourNodeTetrahedron:
+      return new FourNodeTetrahedron();
+
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -751,6 +770,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ShellDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+    
+    case ELE_TAG_ShellDKGT:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+      return new ShellDKGT();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       
     case ELE_TAG_ShellNLDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellNLDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -965,6 +987,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     case LOAD_TAG_SelfWeight:
       return new SelfWeight();
 	     
+    case LOAD_TAG_SurfaceLoader:
+      return new SurfaceLoader();     	     
+        
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNodalLoad - ";
     opserr << " - no NodalLoad type exists for class tag ";
@@ -1581,6 +1606,11 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 	case PATTERN_TAG_DRMLoadPattern:
 	     return new DRMLoadPatternWrapper();
 
+#ifdef H5DRM_FLAG
+	case PATTERN_TAG_H5DRM:
+	     return new H5DRM();
+#endif
+
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
 	     opserr << " - no Load type exists for class tag ";
@@ -1629,6 +1659,9 @@ FEM_ObjectBrokerAllClasses::getNewTimeSeries(int classTag)
 
         case TSERIES_TAG_ConstantSeries:
 	  return new ConstantSeries;
+      
+        case TSERIES_TAG_TriangleSeries:
+      return new TriangleSeries;
 
         case TSERIES_TAG_TrigSeries:
 	  return new TrigSeries;
@@ -1778,13 +1811,16 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_DriftRecorder:  
 	     return new DriftRecorder();
+       
+
+    case RECORDER_TAGS_GmshRecorder:
+         return new GmshRecorder();        
+    
+    case RECORDER_TAGS_MPCORecorder:
+         return new MPCORecorder();        
 
         case RECORDER_TAGS_TclFeViewer:  
 	  return 0;
-  //           return new TclFeViewer();
-
-		case RECORDER_TAGS_MPCORecorder:
-			return new MPCORecorder();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
