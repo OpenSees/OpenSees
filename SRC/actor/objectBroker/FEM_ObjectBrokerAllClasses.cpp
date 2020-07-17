@@ -260,6 +260,7 @@
 #include <ShellMITC4.h>
 #include <ShellMITC9.h>
 #include <ShellDKGQ.h>   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+#include <ShellDKGT.h>   //Added by Jose Abell Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <ShellNLDKGQ.h> //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <ASDShellQ4.h> // Massimo Petracca
 #include <Brick.h>
@@ -268,7 +269,7 @@
 #include <TwoNodeLink.h>
 #include <LinearElasticSpring.h>
 #include <Inerter.h>
-#include <FourNodeTetrahedron.h>
+#include <FourNodeTetrahedron.h> //Added by Jose Abell
 
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
@@ -478,7 +479,7 @@
 #include <DRMLoadPatternWrapper.h>
 
 #ifdef H5DRM_FLAG
-#include <H5DRM.h>
+#include <H5DRM.h> //Added by Jose Abell
 #endif
 
 #include <Parameter.h>
@@ -732,13 +733,13 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
     
-    case ELE_TAG_SurfaceLoad:
+    case ELE_TAG_SurfaceLoad: //Added by Jose Abell
       return new SurfaceLoad();
 
-    case ELE_TAG_TriSurfaceLoad:
+    case ELE_TAG_TriSurfaceLoad: //Added by Jose Abell
       return new TriSurfaceLoad();
     
-    case ELE_TAG_FourNodeTetrahedron:
+    case ELE_TAG_FourNodeTetrahedron: //Added by Jose Abell
       return new FourNodeTetrahedron();
 
     case ELE_TAG_BeamContact2D:
