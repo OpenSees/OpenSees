@@ -281,7 +281,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
 #endif
 
     // Attempt to get the file attributes
-    intStat = stat(localLibName, &stFileInfo);
+    // intintStat = stat(localLibName, &stFileInfo);
     /* get library
     if(intStat != 0) {
       opserr << "packages.cpp - NO FILE EXISTS: - trying OpenSees" << localLibName << endln;
