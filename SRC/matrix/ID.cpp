@@ -363,7 +363,7 @@ ID::operator[](int x)
     
 
 int 
-ID::resize(int newSize){
+ID::resize(int newSize, int fill_value){
 
   // first check that newSize is valid
   if (newSize <= 0) {
@@ -383,7 +383,7 @@ ID::resize(int newSize){
     // without having to go get more space
     
     for (int i=sz; i<newSize; i++)
-      data[i] = 0;
+      data[i] = fill_value;
     sz = newSize;
 
   } else if (newSize > arraySize) {
@@ -397,7 +397,7 @@ ID::resize(int newSize){
 	newData[i] = data[i];
       // zero the new
       for (int j=sz; j<newSize; j++)
-	newData[j] = 0;
+	newData[j] = fill_value;
       
       sz = newSize;
       // release the memory held by the old
@@ -415,6 +415,13 @@ ID::resize(int newSize){
   return 0;
 }
 
+
+
+int 
+ID::fill(int fill_value){
+  for (int i=0; i<sz; i++)
+    data[i] = fill_value;
+}
 
 
 // ID &operator=(const ID  &V):
