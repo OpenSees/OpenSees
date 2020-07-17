@@ -58,7 +58,8 @@ int  Element::numMatrices(0);
 Element::Element(int tag, int cTag) 
   :DomainComponent(tag, cTag), alphaM(0.0), 
   betaK(0.0), betaK0(0.0), betaKc(0.0), 
-   Kc(0), previousK(0), numPreviousK(0), index(-1), nodeIndex(-1)
+      Kc(0), previousK(0), numPreviousK(0), index(-1), nodeIndex(-1),
+      is_this_element_active(true)
 {
   // does nothing
   ops_TheActiveElement = this;
@@ -769,4 +770,53 @@ Element::getGeometricTangentStiff()
     theMatrix->Zero();
     
     return *theMatrix;
+}
+
+void Element::activate()
+{
+    // opserr << "Activating element # " << this->getTag() << endln;
+    is_this_element_active = true;
+    this->onActivate();
+}
+
+void Element::deactivate()
+{
+    // opserr << "Deactivating element # " << this->getTag() << endln;
+    is_this_element_active = false;
+    this->onDeactivate();
+}
+
+
+void Element::onActivate()
+{
+    static bool report_once = true;
+    if (report_once)
+    {
+        opserr << "onActivate not implemented for this element. classTag = " << this->getClassTag() << endln;
+        report_once = false;
+    }
+}
+
+void Element::onDeactivate()
+{   static bool report_once = true;
+    if (report_once)
+    {
+        opserr << "onDeactivate not implemented for this element. classTag = " << this->getClassTag() << endln;
+        report_once = false;
+    }
+}    
+
+
+bool  Element::isActive()
+{
+    // opserr << "Element::isActive() [tag = " << this->getTag() << "] = ";
+    // if (is_this_element_active)
+    // {
+    //     opserr << "TRUE" << endln;
+    // }
+    // else
+    // {
+    //     opserr << "FALSE" << endln;
+    // }
+    return is_this_element_active;
 }
