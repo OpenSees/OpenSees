@@ -46,7 +46,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
-#include <Timer.h>
+//#include <Timer.h>
 #include <elementAPI.h>
 
 void* OPS_ModifiedNewton()

@@ -3,7 +3,6 @@
 
 #include <Domain.h>
 #include <Element.h>
-#include <Brick.h>
 #include <Node.h>
 #include <Vector.h>
 #include <Matrix.h>

@@ -7,14 +7,15 @@
 
 // Description: This file contains the class prototype for PressureIndependMultiYield.
 //
-// What: "@(#) PressureIndependMultiYield.h, revA"
-
+// What: "@(#) PressureIndependMultiYield.h, revA" 
 #ifndef PressureIndependMultiYield_h
 #define PressureIndependMultiYield_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
+#include "soil/T2Vector.h"
 #include <Matrix.h>
+
+class MultiYieldSurface;
 
 class PressureIndependMultiYield : public NDMaterial
 {

@@ -35,7 +35,7 @@
 // normal force perpendicular to the sliding surface. If N is negative
 // the friction force is zero.
 
-#include <FrictionModel.h>
+#include "FrictionModel.h"
 
 class Coulomb : public FrictionModel
 {

@@ -14,8 +14,9 @@
 #define FluidSolidPorousMaterial_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
 #include <Matrix.h>
+#include "soil/T2Vector.h"
+class MultiYieldSurface;
 
 class Response;
 

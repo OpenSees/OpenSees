@@ -35,9 +35,9 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
-#include <BackgroundDef.h>
-#include <Particle.h>
-#include <ParticleGroup.h>
+#include "PFEMElement/BackgroundDef.h"
+#include "PFEMElement/Particle.h"
+#include "PFEMELEMENT/ParticleGroup.h"
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
