@@ -479,7 +479,7 @@ int Newmark::update(const Vector &deltaU)
         
         (*Udotdot) += deltaU;
     }
-    
+
     // update the response at the DOFs
     theModel->setResponse(*U,*Udot,*Udotdot);
     if (theModel->updateDomain() < 0)  {
