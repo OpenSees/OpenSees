@@ -27,7 +27,10 @@
 #include <UniaxialMaterial.h>
 #include <Domain.h>
 
+#include <string>
+
 class FourNodeQuad;
+class TimeSeries;
 
 //#include <SSPquadUP.h>
 //#include <SSPquad.h>
