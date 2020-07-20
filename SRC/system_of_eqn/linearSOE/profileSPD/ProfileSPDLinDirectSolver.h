@@ -39,7 +39,8 @@
 #ifndef ProfileSPDLinDirectSolver_h
 #define ProfileSPDLinDirectSolver_h
 
-#include <ProfileSPDLinSolver.h>
+#include "ProfileSPDLinSolver.h"
+
 class ProfileSPDLinSOE;
 
 class ProfileSPDLinDirectSolver : public ProfileSPDLinSolver
