@@ -758,6 +758,7 @@
 #define ELE_TAG_PML2D                     202
 #define ELE_TAG_ASDShellQ4                203  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
+#define ELE_TAG_WheelRail                 205
 #define ELE_TAG_ExternalElement           99990
 
 
