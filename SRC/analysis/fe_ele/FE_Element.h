@@ -102,6 +102,10 @@ class FE_Element: public TaggedObject
     virtual int  commitSensitivity           (int gradNum, int numGrads);
     // AddingSensitivity:END //////////////////////////////////////
     
+    void activate();
+    void deactivate();
+    bool isActive();
+
   protected:
     void  addLocalM_Force(const Vector &accel, double fact = 1.0);    
     void  addLocalD_Force(const Vector &vel, double fact = 1.0);    
@@ -121,7 +125,6 @@ class FE_Element: public TaggedObject
     Vector *theResidual;
     Matrix *theTangent;
     Integrator *theIntegrator; // need for Subdomain
-
     
     // static variables - single copy for all objects of the class	
     static Matrix errMatrix;

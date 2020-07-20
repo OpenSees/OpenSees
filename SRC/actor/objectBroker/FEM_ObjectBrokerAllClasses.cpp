@@ -283,7 +283,7 @@
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
 
-#include "PFEMelement/PFEMElement2D.h"
+#include "PFEMElement/PFEMElement2D.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -356,6 +356,7 @@
 #include "Beam3dPointLoad.h"
 #include "BrickSelfWeight.h"
 #include "SelfWeight.h"
+#include "SurfaceLoader.h"
 
 // matrix, vector & id header files
 #include "Matrix.h"
@@ -959,6 +960,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     case LOAD_TAG_SelfWeight:
       return new SelfWeight();
 	     
+    case LOAD_TAG_SurfaceLoader:
+      return new SurfaceLoader();     	     
+        
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNodalLoad - ";
     opserr << " - no NodalLoad type exists for class tag ";
