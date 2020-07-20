@@ -476,6 +476,7 @@
 
 #define ND_TAG_InitStressNDMaterial 7009
 
+#define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
 
 
@@ -759,6 +760,7 @@
 #define ELE_TAG_ASDShellQ4                203  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_WheelRail                 205
+#define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
 #define ELE_TAG_ExternalElement           99990
 
 
@@ -948,7 +950,10 @@
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 #define INTEGRATOR_TAGS_ExplicitDifference              55
 #define INTEGRATOR_TAGS_EQPath                          56
-#define INTEGRATOR_TAGS_GimmeMCK       			        57
+#define INTEGRATOR_TAGS_GimmeMCK       	                57
+#define INTEGRATOR_TAGS_StagedLoadControl               58
+#define INTEGRATOR_TAGS_StagedNewmark                   59
+
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

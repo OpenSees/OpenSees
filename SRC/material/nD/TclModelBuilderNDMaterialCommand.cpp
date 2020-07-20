@@ -95,6 +95,7 @@ extern  void *  OPS_NewPlasticDamageConcrete3d(void);
 extern  void *  OPS_NewPlasticDamageConcretePlaneStress(void);
 extern  void *OPS_ElasticIsotropicMaterial(void);
 extern  void *OPS_ElasticIsotropic3D(void);
+extern  void *OPS_IncrementalElasticIsotropicThreeDimensional(void);
 extern  void *OPS_ElasticOrthotropicMaterial(void);
 extern  void *OPS_DruckerPragerMaterial(void);
 extern  void *OPS_BoundingCamClayMaterial(void);
@@ -563,6 +564,16 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
+
+    else if ((strcmp(argv[1],"IncrementalElasticIsotropic3D") == 0) || (strcmp(argv[1],"incrementalElasticIsotropic3D") == 0)) {
+
+      void *theMat = OPS_IncrementalElasticIsotropicThreeDimensional();
+      if (theMat != 0)
+        theMaterial = (NDMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+
 
     else if (strcmp(argv[1],"PressureDependentElastic3D") == 0) {
 	if (argc < 6) {

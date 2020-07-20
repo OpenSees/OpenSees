@@ -1682,3 +1682,20 @@ ZeroLength::updateDir(const Vector& x, const Vector& y)
 	this->setUp(connectedExternalNodes(0), connectedExternalNodes(1), x, y);
 	this->setTran1d(elemType, numMaterials1d);
 }
+
+
+void
+ZeroLength::onActivate()
+{
+
+    Domain* theDomain = this->getDomain();
+    this->setDomain(theDomain);
+    this->update();
+}
+
+
+void
+ZeroLength::onDeactivate()
+{
+
+}

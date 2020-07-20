@@ -39,6 +39,7 @@
 // What: "@(#) LoadControl.h, revA"
 
 #include <StaticIntegrator.h>
+#include <classTags.h>
 
 class LinearSOE;
 class AnalysisModel;
@@ -51,7 +52,7 @@ class LoadControl : public StaticIntegrator
 {
   public:
     LoadControl(double deltaLambda, int numIncr, 
-		double minLambda, double maxlambda);
+		double minLambda, double maxlambda, int classtag=INTEGRATOR_TAGS_LoadControl);
 
     ~LoadControl();
 

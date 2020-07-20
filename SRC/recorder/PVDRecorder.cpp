@@ -37,7 +37,7 @@
 #include <NodeIter.h>
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
-#include "PFEMELEMENT/ParticleGroup.h"
+#include "PFEMElement/ParticleGroup.h"
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
