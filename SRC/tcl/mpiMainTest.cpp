@@ -65,9 +65,9 @@ main(int argc, char **argv)
   if (rank != 0) {
 
     //
-    // on slave processes we spin waiting to create & run actors
+    // on secondary processes we spin waiting to create & run actors
     //
-    fprintf(stderr, "Slave Process Running\n");
+    fprintf(stderr, "Secondary Process Running\n");
     theMachine.runActors();
 
   } else {
@@ -75,7 +75,7 @@ main(int argc, char **argv)
     //
     // on process 0 we create some ShadowSubdomains & then start the OpenSees interpreter
     //
-    fprintf(stderr, "Master Process Running OpenSees Interpreter\n");   
+    fprintf(stderr, "Primary Process Running OpenSees Interpreter\n");   
 
     //
     // set some global parameters

@@ -52,7 +52,7 @@ public:
 	// RV functionality
 	double getPDFvalue(double rvValue);
 	double getCDFvalue(double rvValue);
-	double getInverseCDFvalue(double rvValue); 
+	double getInverseCDFvalue(double probValue);
 	
 	// other
 	void Print(OPS_Stream &s, int flag = 0);

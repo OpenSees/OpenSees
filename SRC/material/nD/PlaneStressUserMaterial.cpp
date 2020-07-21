@@ -373,68 +373,117 @@ PlaneStressUserMaterial::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int 
-PlaneStressUserMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+PlaneStressUserMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
-  int res = 0;
+    int res = 0;
 
-  int dataTag = this->getDbTag();
+    int dataTag = this->getDbTag();
 
-  static ID idData(3);
+    static ID idData(3);
 
-  res = theChannel.recvID(dataTag, commitTag, idData);
-  if (res < 0) {
-   opserr << "PlaneStressUserMaterial::recvSelf -- could not recv ID" << endln;
-   return res;
-  }
+    res = theChannel.recvID(dataTag, commitTag, idData);
+    if (res < 0) {
+        opserr << "PlaneStressUserMaterial::recvSelf -- could not recv ID" << endln;
+        return res;
+    }
 
-  this->setTag(idData(0));
-  
-  if (nstatevs != idData(1))
-  {
-    nstatevs = idData(1);
-    if (statev0 != 0) delete statev0;
-    statev0 = new Vector(nstatevs);
-    if (statev != 0) delete statev;
-    statev = new Vector(nstatevs);
-    if (statevdata != 0) delete statevdata;
-    statevdata = new double[nstatevs];
-  }
-  
-  if (nprops != idData(2))
-  {
-    nprops = idData(2);
-    if (vprops != 0) delete vprops;
-    vprops = new Vector(nprops);
-    if (props != 0) delete props;
-    props = new double[nprops];
-  }
+    this->setTag(idData(0));
 
-  res = theChannel.recvVector(dataTag, commitTag, strain0);
-  if (res < 0) {
-   opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
-   return res;
-  }
+    if (nstatevs != idData(1))
+    {
+        nstatevs = idData(1);
+        if (statev0 != 0) delete statev0;
+        statev0 = new Vector(nstatevs);
+        if (statev != 0) delete statev;
+        statev = new Vector(nstatevs);
+        if (statevdata != 0) delete statevdata;
+        statevdata = new double[nstatevs];
+    }
 
-  res = theChannel.recvVector(dataTag, commitTag, stress0);
-  if (res < 0) {
-   opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
-   return res;
-  }
+    if (nprops != idData(2))
+    {
+        nprops = idData(2);
+        if (vprops != 0) delete vprops;
+        vprops = new Vector(nprops);
+        if (props != 0) delete props;
+        props = new double[nprops];
+    }
 
-  res = theChannel.recvVector(dataTag, commitTag, *statev0);
-  if (res < 0) {
-   opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
-   return res;
-  }
+    res = theChannel.recvVector(dataTag, commitTag, strain0);
+    if (res < 0) {
+        opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
+        return res;
+    }
 
-  res = theChannel.recvVector(dataTag, commitTag, *vprops);
-  if (res < 0) {
-   opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
-   return res;
-  }
+    res = theChannel.recvVector(dataTag, commitTag, stress0);
+    if (res < 0) {
+        opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
+        return res;
+    }
 
-  setInitials();
+    res = theChannel.recvVector(dataTag, commitTag, *statev0);
+    if (res < 0) {
+        opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
+        return res;
+    }
 
-  return res;
+    res = theChannel.recvVector(dataTag, commitTag, *vprops);
+    if (res < 0) {
+        opserr << "PlaneStressUserMaterial::recvSelf -- could not recv data" << endln;
+        return res;
+    }
+
+    setInitials();
+
+    return res;
 }
+
+  //cracking output - added by V.K. Papanikolaou [AUTh] - start
+  const Vector& PlaneStressUserMaterial::getCracking()
+  {
+      static Vector vec = Vector(3);
+
+      vec(0) = statevdata[27];                          // crack 0/1 in direction 1
+
+      if ((vec(0) != 0) && (vec(0) != 1)) vec(0) = 0;   // clean unwanted values
+
+      vec(1) = statevdata[38];                          // crack 0/1 in direction 2
+
+      if ((vec(1) != 0) && (vec(1) != 1)) vec(1) = 0;   // clean unwanted values
+
+      vec(2) = statevdata[15] * 180 / 3.14159;          // crack angle (degrees)
+
+      vec(2) = (int)(vec(2) * 100.0) / 100.0;           // round to 2 decimals    
+
+      if (vec(2) >= 360) vec(2) -= 360;                 // fix angle for over 360 degrees
+
+      if ((vec(0) == 0) && (vec(1) == 0)) vec(2) = 0;   // zero angle for no cracking
+
+      return vec;
+  }
+  //cracking output - added by V.K. Papanikolaou [AUTh] - end
+
+  //set/getresponse - added by V.K. Papanikolaou [AUTh] - start
+  Response*
+  PlaneStressUserMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
+  {
+      Response* theResponse = 0;
+      const Vector& res = this->getCracking();
+      theResponse = new MaterialResponse(this, 1, res);
+
+      return theResponse;
+  }
+
+  int
+  PlaneStressUserMaterial::getResponse(int responseID, Information & matInfo)
+  {
+      switch (responseID) {
+      case 1:
+          return matInfo.setVector(this->getCracking());
+
+      default:
+          return -1;
+      }
+  }
+  //set/getResponse - added by V.K. Papanikolaou [AUTh] - end
  

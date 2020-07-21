@@ -138,7 +138,7 @@ void* OPS_ZeroLength()
 
     // now read the dirn ID's for the materials added
     type = OPS_GetString();
-    if (strcmp(type,"-dir") != 0) {
+    if (strcmp(type,"-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir flag " <<
             "- element ZeroLength eleTag? iNode? jNode? " <<
             "-mat matID1? ... -dir dirMat1? .. " <<
@@ -1681,4 +1681,21 @@ ZeroLength::updateDir(const Vector& x, const Vector& y)
 {
 	this->setUp(connectedExternalNodes(0), connectedExternalNodes(1), x, y);
 	this->setTran1d(elemType, numMaterials1d);
+}
+
+
+void
+ZeroLength::onActivate()
+{
+
+    Domain* theDomain = this->getDomain();
+    this->setDomain(theDomain);
+    this->update();
+}
+
+
+void
+ZeroLength::onDeactivate()
+{
+
 }

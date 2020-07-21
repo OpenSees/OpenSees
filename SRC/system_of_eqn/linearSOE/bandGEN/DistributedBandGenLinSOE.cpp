@@ -113,7 +113,7 @@ DistributedBandGenLinSOE::setSize(Graph &theGraph)
   else {
 
     // from each distributed soe recv it's graph
-    // and merge them into master graph
+    // and merge them into primary graph
 
     FEM_ObjectBroker theBroker;
     for (int j=0; j<numChannels; j++) {
@@ -166,7 +166,7 @@ DistributedBandGenLinSOE::setSize(Graph &theGraph)
     data(2) = numSuperD;
 
     // to each distributed soe send the size data
-    // and merge them into master graph
+    // and merge them into primary graph
 
     for (int j=0; j<numChannels; j++) {
       Channel *theChannel = theChannels[j];

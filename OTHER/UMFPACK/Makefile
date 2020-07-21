@@ -1,7 +1,7 @@
 include ../../Makefile.def
 
 I = -I. -I../AMD
-C = $(CC) -O3 -fexceptions -fPIC -DNCHOLMOD $(I)
+C = $(CC) $(OPT_FLAG) -fexceptions -fPIC -DNCHOLMOD $(I)
 
 #-------------------------------------------------------------------------------
 # source files

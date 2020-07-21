@@ -3529,3 +3529,39 @@ Domain::getRecorder(int tag)
 	return res;
 }
 
+
+
+
+int Domain::activateElements(const ID& elementList)
+{
+    ElementIter& iter = getElements();
+    Element* theElement;
+    for (int i = 0; i < elementList.Size(); ++i)
+    {
+        int eleTag = elementList(i);
+        Element* theElement = this->getElement(eleTag);
+        if (theElement != 0)
+        {
+            theElement->activate();
+        }
+    }
+    return 0;
+}
+
+
+
+int Domain::deactivateElements(const ID& elementList)
+{
+    // ElementIter& iter = getElements();
+    Element* theElement;
+    for (int i = 0; i < elementList.Size(); ++i)
+    {
+        int eleTag = elementList(i);
+        Element* theElement = this->getElement(eleTag);
+        if (theElement != 0)
+        {
+            theElement->deactivate();
+        }
+    }
+    return 0;
+}

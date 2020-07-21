@@ -32,7 +32,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#include <DruckerPrager.h>
+#include "DruckerPrager.h"
 
 class DruckerPrager3D : public DruckerPrager {
 

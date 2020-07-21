@@ -451,9 +451,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\TzSimple2.cpp">
       <Filter>uniaxial\py_tz_qz</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin.cpp">
-      <Filter>uniaxial\snap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilinear.cpp">
       <Filter>uniaxial\snap</Filter>
     </ClCompile>
@@ -1175,9 +1172,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
-      <Filter>uniaxial\snap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\ExternalNDMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -1331,6 +1325,12 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin02.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcrete.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1343,7 +1343,11 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
+=======
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp">
+>>>>>>> master
       <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1668,9 +1672,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\TzSimple2.h">
       <Filter>uniaxial\py_tz_qz</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin.h">
-      <Filter>uniaxial\snap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilinear.h">
       <Filter>uniaxial\snap</Filter>
@@ -2342,9 +2343,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
-      <Filter>uniaxial\snap</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
@@ -2501,6 +2499,12 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin02.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcrete.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
@@ -2513,7 +2517,11 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h">
+=======
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h">
+>>>>>>> master
       <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>

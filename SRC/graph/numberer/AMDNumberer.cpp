@@ -41,7 +41,7 @@
 AMD::AMD()
 :GraphNumberer(GraphNUMBERER_TAG_AMD)
 {
-  opserr << "AMD::AMD()\n";
+ 
 }
 
 // Destructor

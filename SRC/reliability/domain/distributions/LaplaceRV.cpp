@@ -132,9 +132,14 @@ LaplaceRV::getCDFvalue(double rvValue)
 
 
 double
-LaplaceRV::getInverseCDFvalue(double rvValue)
+LaplaceRV::getInverseCDFvalue(double probValue)
 {
-	return 0.0;
+	if (probValue < 0.5) {
+		return alpha + 1.0 / beta * log(2.0 * probValue);
+	}
+	else {
+		return alpha - 1.0 / beta * log(2.0 * (1.0 - probValue));
+	}
 }
 
 

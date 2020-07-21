@@ -37,9 +37,11 @@
 
 #include <Matrix.h>
 
+/*
 ///// added by K Fujimura /////
 #include <GFunEachStepEvaluator.h>
 #include <PerformanceFunctionCoefficientIter.h>
+*/
 
 class FunctionEvaluator
 {
@@ -90,6 +92,7 @@ public:
 	//////////////////////////////////////////////////////////
 	//// added by K Fujimura /////////////////////////////////
 	//////////////////////////////////////////////////////////
+	/*
 	virtual void activateSensitivty(void);
 	virtual void inactivateSensitivty(void);
 	virtual void setGFunEachStepEvaluator(GFunEachStepEvaluator *pGFunEachStepEvaluator);
@@ -100,6 +103,7 @@ public:
 	virtual Matrix* getEachStepConvFlag();
 	virtual void setPerformFuncCoeffs(TaggedObjectStorage*);
 	virtual void setPerformFuncCoeffIter(PerformanceFunctionCoefficientIter*);
+	*/
 
 protected:
 

@@ -596,7 +596,7 @@ FunctionEvaluator::getDt()
 }
 
 
-
+/*
 void
 FunctionEvaluator::activateSensitivty(void)
 {
@@ -647,3 +647,4 @@ void FunctionEvaluator::setPerformFuncCoeffIter(PerformanceFunctionCoefficientIt
 {
 
 }
+*/

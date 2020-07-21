@@ -83,6 +83,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <stdlib.h>
 #include <string.h>
 
+#include <elementAPI.h>
 #include <packages.h>
 
 #include <FEM_ObjectBrokerAllClasses.h>
@@ -189,6 +190,7 @@ extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
 
 extern void *OPS_Newmark(void);
+extern void *OPS_GimmeMCK(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -369,8 +371,8 @@ extern void *OPS_WilsonTheta(void);
 // #include <PFEMSensitivityIntegrator.h>
 //#include <OrigSensitivityAlgorithm.h>
 //#include <NewSensitivityAlgorithm.h>
-#include <ReliabilityStaticAnalysis.h>
-#include <ReliabilityDirectIntegrationAnalysis.h>
+//#include <ReliabilityStaticAnalysis.h>
+//#include <ReliabilityDirectIntegrationAnalysis.h>
 // AddingSensitivity:END /////////////////////////////////////////////////
 #include <TclReliabilityBuilder.h>
 
@@ -470,16 +472,6 @@ Domain theDomain;
 
 #endif
 
-extern int OPS_ResetInput(ClientData clientData, 
-			  Tcl_Interp *interp,  
-			  int cArg, 
-			  int mArg, 
-			  TCL_Char **argv, 
-			  Domain *domain,
-			  TclModelBuilder *builder);
-
-
-
 #include <MachineBroker.h>
 
 MachineBroker *theMachineBroker =0;
@@ -528,8 +520,8 @@ static TclReliabilityBuilder *theReliabilityBuilder = 0;
 
 Integrator *theSensitivityAlgorithm = 0;
 Integrator *theSensitivityIntegrator = 0;
-ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
-ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
+//FMK RELIABILITY ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
+//FMK RELIABILITY ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
 // static NewmarkSensitivityIntegrator *theNSI = 0;
 // static NewNewmarkSensitivityIntegrator *theNNSI = 0;
@@ -762,8 +754,8 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
   switch ((enum option) index) {
   case OPT_CREATE: {
     TCL_Char *theInterpreterName = Tcl_GetStringResult(interp);
-    Tcl_Interp *slaveInterp = Tcl_GetSlave(interp, theInterpreterName);
-    ok = OpenSeesAppInit(slaveInterp);
+    Tcl_Interp *secondaryInterp = Tcl_GetSlave(interp, theInterpreterName);
+    ok = OpenSeesAppInit(secondaryInterp);
     return ok;
     break;
   }
@@ -1063,8 +1055,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     theSensitivityAlgorithm =0;
     theSensitivityIntegrator =0;
-    theReliabilityStaticAnalysis =0;
-    theReliabilityTransientAnalysis =0;    
+	//FMK RELIABILITY theReliabilityStaticAnalysis =0;
+    //FMK RELIABILITY theReliabilityTransientAnalysis =0;    
     // AddingSensitivity:END //////////////////////////////////
 
     theOptimizationBuilder = 0;
@@ -2626,7 +2618,9 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	//////////////////////////////////
     ////// added by K Fujimura ///////
-	//////////////////////////////////
+	
+	//FMK RELIABILITY
+	/*
     } else if (strcmp(argv[1],"ReliabilityStatic") == 0) {
 		// make sure all the components have been built,
 		// otherwise print a warning and use some defaults
@@ -2670,13 +2664,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
 
-		  /* This if-statement cannot stay -- MHS
-		  if(!theSensitivityAlgorithm->newAlgorithm()){
-		    opserr << "WARNING new sensitivity algorothm needs to be specified \n";
-		    opserr << "for reliability static analysis \n";
-		    return TCL_ERROR;
-		  }
-		  */
+		  //This if-statement cannot stay -- MHS
+		  //if(!theSensitivityAlgorithm->newAlgorithm()){
+		  //  opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		   // opserr << "for reliability static analysis \n";
+		   // return TCL_ERROR;
+		  //}
+		  
 
 		  //theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 		} else {
@@ -2732,13 +2726,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
 
-		  /* This if-statement must go -- MHS
-		  if(!theSensitivityAlgorithm->newAlgorithm()){
-		    opserr << "WARNING new sensitivity algorothm needs to be specified \n";
-		    opserr << "for reliability static analysis \n";
-		    return TCL_ERROR;
-		  }
-		  */
+		  //This if-statement must go -- MHS
+		  //if(!theSensitivityAlgorithm->newAlgorithm()){
+		   // opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		   // opserr << "for reliability static analysis \n";
+		   // return TCL_ERROR;
+		  //}
+		  
 
 			theReliabilityTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 		}else{
@@ -2746,6 +2740,8 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 			opserr << "ReliabilityStaticAnalysis with computeateachstep\n";
 			return TCL_ERROR;
 		}
+		FMK RELIABILITY
+	    *************************/
 // AddingSensitivity:END /////////////////////////////////
 #endif
 
@@ -3372,6 +3368,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
     int icntl14 = 20;    
     int icntl7 = 7;
+    int matType = 0; // 0: unsymmetric, 1: symmetric positive definite, 2: symmetric general
 
     int currentArg = 2;
     while (currentArg < argc) {
@@ -3384,6 +3381,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  if (Tcl_GetInt(interp, argv[currentArg+1], &icntl7) != TCL_OK)	
 	    ;
 	  currentArg += 2;
+	} else  if (strcmp(argv[currentArg],"-matrixType") == 0) {
+	  if (Tcl_GetInt(interp, argv[currentArg+1], &matType) != TCL_OK)
+		  opserr << "Mumps Warning: failed to get -matrixType. Unsymmetric matrix assumed\n";
+	  if (matType < 0 || matType > 2) {
+		  opserr << "Mumps Warning: wrong -matrixType value (" << matType << "). Unsymmetric matrix assumed\n";
+		  matType = 0;
+	  }
+	  currentArg += 2;
 	} else 
 	  currentArg++;
       }    
@@ -3394,13 +3399,13 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     theSOE = new MumpsParallelSOE(*theSolver);
 #elif _PARALLEL_INTERPRETERS
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
-    MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver);
+    MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver, matType);
     theParallelSOE->setProcessID(OPS_rank);
     theParallelSOE->setChannels(numChannels, theChannels);
     theSOE = theParallelSOE;
 #else
     MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver);
+    theSOE = new MumpsSOE(*theSolver, matType);
 #endif
 
   }
@@ -3422,7 +3427,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
       if (strcmp(argv[1], solverCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);
+          OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 	void *theRes = (*(solverCommands->funcPtr))();
 	if (theRes != 0) {
 
@@ -3460,7 +3465,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	theSolverCommand->next = theExternalSolverCommands;
 	theExternalSolverCommands = theSolverCommand;
 	
-	OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -3645,20 +3650,20 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   EquiSolnAlgo *theNewAlgo = 0;
-  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
+  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
     int formTangent = CURRENT_TANGENT;
-	int factorOnce = 0;
-	int count = 2;
-	while (count < argc) {
+    int factorOnce = 0;
+    int count = 2;
+    while (count < argc) {
       if ((strcmp(argv[count],"-secant") == 0) || (strcmp(argv[count],"-Secant") == 0)) {
-		 formTangent = CURRENT_SECANT;
-	  } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
-		 formTangent = INITIAL_TANGENT;
-	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	     factorOnce = 1;
+	formTangent = CURRENT_SECANT;
+      } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
+	formTangent = INITIAL_TANGENT;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+	factorOnce = 1;
       }
       count++;
     }
@@ -4284,7 +4289,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		  TCL_Char **argv)
 {
 
-  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 
   // make sure at least one other argument to contain integrator
   if (argc < 2) {
@@ -4482,13 +4487,23 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	opserr << "<Jd minIncrement maxIncrement>\n";
 	return TCL_ERROR;
       }    
+      int tangFlag = 0;
+      
       if (Tcl_GetInt(interp, argv[2], &node) != TCL_OK)	
 	return TCL_ERROR;	
       if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK)	
 	return TCL_ERROR;	
       if (Tcl_GetDouble(interp, argv[4], &increment) != TCL_OK)	
-	return TCL_ERROR;	      
-      if (argc > 7) {
+	return TCL_ERROR;
+
+      if (argc == 6 || argc == 9)
+	if (argc == 6) {
+	  if (strcmp(argv[5],"-initial") == 0)
+	    tangFlag = 1;
+	} else if (strcmp(argv[8],"-initial") == 0)
+	  tangFlag = 1;
+
+      if (argc > 6) {
 	if (Tcl_GetInt(interp, argv[5], &numIter) != TCL_OK)	
 	  return TCL_ERROR;	
 	if (Tcl_GetDouble(interp, argv[6], &minIncr) != TCL_OK)	
@@ -4501,6 +4516,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	maxIncr = increment;
 	numIter = 1;
       }
+
 
 
 #ifdef _PARALLEL_PROCESSING
@@ -4522,7 +4538,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       }
 
       theStaticIntegrator = new DisplacementControl(node, dof-1, increment, &theDomain,
-						    numIter, minIncr, maxIncr);
+						    numIter, minIncr, maxIncr, tangFlag);
 #endif
 
       // if the analysis exists - we want to change the Integrator
@@ -4607,6 +4623,14 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"Newmark") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_Newmark();
+    
+    // if the analysis exists - we want to change the Integrator
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+  
+  else if (strcmp(argv[1],"GimmeMCK") == 0 || strcmp(argv[1],"ZZTop") == 0) {
+    theTransientIntegrator = (TransientIntegrator*)OPS_GimmeMCK();
     
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
@@ -5117,7 +5141,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       if (strcmp(argv[2], integratorCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+          OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	void *theRes = (*(integratorCommands->funcPtr))();
 	if (theRes != 0) {
 	  theTransientIntegrator = (TransientIntegrator *)theRes;
@@ -5154,7 +5178,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theIntegratorCommand->next = theExternalTransientIntegratorCommands;
 	theExternalTransientIntegratorCommands = theIntegratorCommand;
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -5185,7 +5209,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       if (strcmp(argv[2], integratorCommands->funcName) == 0) {
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	void *theRes = (*(integratorCommands->funcPtr))();
 	if (theRes != 0) {
 	  theStaticIntegrator = (StaticIntegrator *)theRes;
@@ -5222,7 +5246,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	theIntegratorCommand->next = theExternalStaticIntegratorCommands;
 	theExternalStaticIntegratorCommands = theIntegratorCommand;
 	
-	OPS_ResetInput(clientData, interp, 3, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 3, argc, argv, &theDomain);
 	
 	void *theRes = (*funcPtr)();
 	if (theRes != 0) {
@@ -8210,7 +8234,7 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 int 
 addRegion(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-    OPS_ResetInput(clientData, interp, 1, argc, argv, &theDomain, NULL);
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
   return TclAddMeshRegion(clientData, interp, argc, argv, theDomain);
 }
 

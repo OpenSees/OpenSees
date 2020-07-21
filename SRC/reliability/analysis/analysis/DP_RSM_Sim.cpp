@@ -740,7 +740,8 @@ Hessian size = numRV-1                                           not used
 				strcat(extension, "out");
    			char theStr[3];
 
-			itoa(ii+1,theStr,10);
+			//itoa(ii+1,theStr,10);
+			sprintf(theStr,"%d",ii+1);
 			strcat(fileName, theStr);
 			strcat(fileName, extension);
     			

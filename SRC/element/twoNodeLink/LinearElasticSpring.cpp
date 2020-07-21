@@ -74,7 +74,7 @@ void* OPS_LinearElasticSpring()
     
     // dirs
     const char* type = OPS_GetString();
-    if (strcmp(type, "-dir") != 0) {
+    if (strcmp(type, "-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir dirs\n";
         return 0;
     }
@@ -83,7 +83,12 @@ void* OPS_LinearElasticSpring()
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int dir;
         numdata = 1;
+        int numArgs = OPS_GetNumRemainingInputArgs();
         if (OPS_GetIntInput(&numdata, &dir) < 0) {
+            if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                // move current arg back by one
+                OPS_ResetCurrentInputArg(-1);
+            }
             break;
         }
         if (dir < 1 || ndf < dir) {
@@ -121,7 +126,7 @@ void* OPS_LinearElasticSpring()
     Matrix *cb = 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new LinearElasticSpring(idata[0], ndm, idata[1], idata[2],
-            dirs[0], kb);
+            dirs, kb);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -518,18 +523,18 @@ const Matrix& LinearElasticSpring::getTangentStiff()
     // zero the matrix
     theMatrix->Zero();
     
-    // get resisting forces and stiffnesses
+    // get resisting force and stiffness
     qb.addMatrixVector(0.0, kb, ub, 1.0);
     
-    // transform from basic to local system
+    // transform stiffness from basic to local system
     Matrix kl(numDOF,numDOF);
     kl.addMatrixTripleProduct(0.0, Tlb, kb, 1.0);
     
-    // add geometric stiffness to local stiffness
+    // add P-Delta effects to local stiffness
     if (Mratio.Size() == 4)
-        this->addPDeltaStiff(kl);
+        this->addPDeltaStiff(kl, qb);
     
-    // transform from local to global system
+    // transform stiffness from local to global system
     theMatrix->addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
     
     return *theMatrix;
@@ -541,11 +546,11 @@ const Matrix& LinearElasticSpring::getInitialStiff()
     // zero the matrix
     theMatrix->Zero();
     
-    // transform from basic to local system
+    // transform stiffness from basic to local system
     Matrix klInit(numDOF,numDOF);
     klInit.addMatrixTripleProduct(0.0, Tlb, kb, 1.0);
     
-    // transform from local to global system
+    // transform stiffness from local to global system
     theMatrix->addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return *theMatrix;
@@ -566,11 +571,11 @@ const Matrix& LinearElasticSpring::getDamp()
     
     // add damping from optional user input
     if (cb != 0) {
-        // transform from basic to local system
+        // transform damping from basic to local system
         Matrix cl(numDOF,numDOF);
         cl.addMatrixTripleProduct(0.0, Tlb, *cb, 1.0);
 
-        // transform from local to global system and add to cg
+        // transform damping from local to global system
         theMatrix->addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
     }
     
@@ -606,18 +611,18 @@ const Vector& LinearElasticSpring::getResistingForce()
     // zero the residual
     theVector->Zero();
     
-    // get resisting forces
+    // get resisting force
     qb.addMatrixVector(0.0, kb, ub, 1.0);
     
-    // determine resisting forces in local system
+    // determine resisting force in local system
     Vector ql(numDOF);
     ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
-    // add P-Delta effects to local forces
+    // add P-Delta effects to local force
     if (Mratio.Size() == 4)
-        this->addPDeltaForces(ql);
+        this->addPDeltaForces(ql, qb);
     
-    // determine resisting forces in global system
+    // determine resisting force in global system
     theVector->addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     return *theVector;
@@ -631,25 +636,27 @@ const Vector& LinearElasticSpring::getResistingForceIncInertia()
     // subtract external load
     theVector->addVector(1.0, *theLoad, -1.0);
     
-    // add the damping forces from rayleigh damping
+    // add the damping force from Rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
             theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
-    // add damping forces from optional user input
+    // add damping force from optional user input
     if (cb != 0) {
-        // get damping forces
+        // get damping force
         Vector qdb(numDIR);
         qdb.addMatrixVector(0.0, *cb, ubdot, 1.0);
         
-        // transform from basic to local system
+        // transform damping force from basic to local system
         Vector qdl(numDOF);
         qdl.addMatrixTransposeVector(0.0, Tlb, qdb, 1.0);
         
-        // SHOULD I ADD P-DELTA EFFECTS HERE????
-        
-        // transform from local to global system and add
+        // add P-Delta effects to local force
+        if (Mratio.Size() == 4)
+            this->addPDeltaForces(qdl, qdb);
+
+        // transform damping force from local to global system
         theVector->addMatrixTransposeVector(1.0, Tgl, qdl, 1.0);
     }
     
@@ -986,7 +993,7 @@ int LinearElasticSpring::getResponse(int responseID, Information &eleInfo)
         theVector->addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta effects to local forces
         if (Mratio.Size() == 4)
-            this->addPDeltaForces(*theVector);
+            this->addPDeltaForces(*theVector, qb);
         
         return eleInfo.setVector(*theVector);
         
@@ -1167,91 +1174,91 @@ void LinearElasticSpring::setTranLocalBasic()
 }
 
 
-void LinearElasticSpring::addPDeltaForces(Vector &pLocal)
+void LinearElasticSpring::addPDeltaForces(Vector &pLocal, const Vector& qBasic)
 {
     int dirID;
     double N = 0.0;
     double deltal1 = 0.0;
     double deltal2 = 0.0;
     
-    for (int i = 0; i < numDIR; i++) {
+    for (int i=0; i<numDIR; i++)  {
         dirID = dir(i);  // direction 0 to 5;
         
         // get axial force and local disp differences
         if (dirID == 0)
-            N = qb(i);
+            N = qBasic(i);
         else if (dirID == 1 && numDIM > 1)
-            deltal1 = ul(1 + numDOF / 2) - ul(1);
+            deltal1 = ul(1+numDOF/2) - ul(1);
         else if (dirID == 2 && numDIM > 2)
-            deltal2 = ul(2 + numDOF / 2) - ul(2);
+            deltal2 = ul(2+numDOF/2) - ul(2);
     }
     
-    if (N != 0.0 && (deltal1 != 0.0 || deltal2 != 0.0)) {
-        for (int i = 0; i < numDIR; i++) {
+    if (N != 0.0 && (deltal1 != 0.0 || deltal2 != 0.0))  {
+        for (int i=0; i<numDIR; i++)  {
             dirID = dir(i);  // direction 0 to 5;
             
             // switch on dimensionality of element
-            switch (elemType) {
+            switch (elemType)  {
             case D2N4:
-                if (dirID == 1) {
-                    double VpDelta = N * deltal1 / L;
-                    VpDelta *= 1.0 - Mratio(2) - Mratio(3);
+                if (dirID == 1)  {
+                    double VpDelta = N*deltal1/L;
+                    VpDelta *= 1.0-Mratio(2)-Mratio(3);
                     pLocal(1) -= VpDelta;
                     pLocal(3) += VpDelta;
                 }
                 break;
-            case D2N6:
-                if (dirID == 1) {
-                    double VpDelta = N * deltal1 / L;
-                    VpDelta *= 1.0 - Mratio(2) - Mratio(3);
+            case D2N6: 
+                if (dirID == 1)  {
+                    double VpDelta = N*deltal1/L;
+                    VpDelta *= 1.0-Mratio(2)-Mratio(3);
                     pLocal(1) -= VpDelta;
                     pLocal(4) += VpDelta;
                 }
-                else if (dirID == 2) {
-                    double MpDelta = N * deltal1;
+                else if (dirID == 2)  {
+                    double MpDelta = N*deltal1;
                     pLocal(2) += Mratio(2)*MpDelta;
                     pLocal(5) += Mratio(3)*MpDelta;
                 }
                 break;
             case D3N6:
-                if (dirID == 1) {
-                    double VpDelta = N * deltal1 / L;
-                    VpDelta *= 1.0 - Mratio(2) - Mratio(3);
+                if (dirID == 1)  {
+                    double VpDelta = N*deltal1/L;
+                    VpDelta *= 1.0-Mratio(2)-Mratio(3);
                     pLocal(1) -= VpDelta;
                     pLocal(4) += VpDelta;
                 }
-                else if (dirID == 2) {
-                    double VpDelta = N * deltal2 / L;
-                    VpDelta *= 1.0 - Mratio(0) - Mratio(1);
+                else if (dirID == 2)  {
+                    double VpDelta = N*deltal2/L;
+                    VpDelta *= 1.0-Mratio(0)-Mratio(1);
                     pLocal(2) -= VpDelta;
                     pLocal(5) += VpDelta;
                 }
                 break;
             case D3N12:
-                if (dirID == 1) {
-                    double VpDelta = N * deltal1 / L;
-                    VpDelta *= 1.0 - Mratio(2) - Mratio(3);
+                if (dirID == 1)  {
+                    double VpDelta = N*deltal1/L;
+                    VpDelta *= 1.0-Mratio(2)-Mratio(3);
                     pLocal(1) -= VpDelta;
                     pLocal(7) += VpDelta;
                 }
-                else if (dirID == 2) {
-                    double VpDelta = N * deltal2 / L;
-                    VpDelta *= 1.0 - Mratio(0) - Mratio(1);
+                else if (dirID == 2)  {
+                    double VpDelta = N*deltal2/L;
+                    VpDelta *= 1.0-Mratio(0)-Mratio(1);
                     pLocal(2) -= VpDelta;
                     pLocal(8) += VpDelta;
                 }
-                else if (dirID == 4) {
-                    double MpDelta = N * deltal2;
+                else if (dirID == 4)  {
+                    double MpDelta = N*deltal2;
                     pLocal(4) -= Mratio(0)*MpDelta;
                     pLocal(10) -= Mratio(1)*MpDelta;
                 }
-                else if (dirID == 5) {
-                    double MpDelta = N * deltal1;
+                else if (dirID == 5)  {
+                    double MpDelta = N*deltal1;
                     pLocal(5) += Mratio(2)*MpDelta;
                     pLocal(11) += Mratio(3)*MpDelta;
                 }
                 break;
-            default:
+            default :
                 // do nothing
                 break;
             }
@@ -1260,7 +1267,7 @@ void LinearElasticSpring::addPDeltaForces(Vector &pLocal)
 }
 
 
-void LinearElasticSpring::addPDeltaStiff(Matrix &kLocal)
+void LinearElasticSpring::addPDeltaStiff(Matrix &kLocal, const Vector& qBasic)
 {
     int dirID;
     double N = 0.0;
@@ -1268,7 +1275,7 @@ void LinearElasticSpring::addPDeltaStiff(Matrix &kLocal)
     // get axial force
     for (int i=0; i<numDIR; i++)  {
         if (dir(i) == 0)
-            N = qb(i);
+            N = qBasic(i);
     }
     
     if (N != 0.0)  {

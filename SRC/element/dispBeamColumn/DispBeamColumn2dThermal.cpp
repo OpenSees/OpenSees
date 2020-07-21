@@ -1852,8 +1852,10 @@ DispBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &pa
     return -1;
   
   // If the parameter belongs to the element itself
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
+  }
   
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
@@ -1893,7 +1895,7 @@ DispBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &pa
       return -1;
   }
   
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     
     if (argc < 2)
       return -1;
@@ -1903,10 +1905,19 @@ DispBeamColumn2dThermal::setParameter(const char **argv, int argc, Parameter &pa
 
   // Default, send to every object
   int ok = 0;
-  for (int i = 0; i < numSections; i++)
-    ok += theSections[i]->setParameter(argv, argc, param);
-  ok += beamInt->setParameter(argv, argc, param);
-  return ok;
+  int result = -1;
+
+  for (int i = 0; i < numSections; i++) {
+    ok = theSections[i]->setParameter(argv, argc, param);
+    if (ok != -1) 
+      result = ok;
+  }
+  
+  ok = beamInt->setParameter(argv, argc, param);
+  if (ok != -1)
+    result = ok;
+  
+  return result;
 }
 
 int

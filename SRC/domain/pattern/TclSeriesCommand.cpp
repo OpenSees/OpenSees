@@ -45,19 +45,17 @@
 #include <PeerNGAMotion.h>
 #include <string.h>
 
-
 #ifdef _RELIABILITY
 #include <DiscretizedRandomProcessSeries.h>
 #include <SimulatedRandomProcessSeries.h>
 #include <Spectrum.h>
 #include <RandomNumberGenerator.h>
 #include <ReliabilityDomain.h>
-#include <NewDiscretizedRandomProcessSeries.h>
+//#include <NewDiscretizedRandomProcessSeries.h>
 
 extern ReliabilityDomain *theReliabilityDomain;
 extern RandomNumberGenerator *theRandomNumberGenerator;
 #endif
-
 
 #include <SimulationInformation.h>
 extern SimulationInformation simulationInfo;
@@ -79,16 +77,8 @@ extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
 
+#include <elementAPI.h>
 #include <TclModelBuilder.h>
-
-extern int OPS_ResetInput(ClientData clientData, 
-			  Tcl_Interp *interp,  
-			  int cArg, 
-			  int mArg, 
-			  TCL_Char **argv, 
-			  Domain *domain,
-			  TclModelBuilder *builder);
-
 
 TimeSeries *
 TclTimeSeriesCommand(ClientData clientData, 
@@ -98,7 +88,7 @@ TclTimeSeriesCommand(ClientData clientData,
 		     Domain *theDomain)
 {
   // note the 1 instead of usual 2
-  OPS_ResetInput(clientData, interp, 1, argc, argv, theDomain, 0);	  
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, theDomain);
 			    
   TimeSeries *theSeries = 0;
 
@@ -325,7 +315,6 @@ TclTimeSeriesCommand(ClientData clientData,
 
       endMarker++;
     }
-    
 
     if (filePathName != 0 && fileTimeName == 0 && timeIncr != 0.0) {
       //      const char *pwd = getInterpPWD(interp);
@@ -399,7 +388,6 @@ TclTimeSeriesCommand(ClientData clientData,
     }
   }
 
-
   else if ((strcmp(argv[0],"PeerNGADatabase") == 0) || (strcmp(argv[0],"PeerNGAMotion") == 0)) {
 
 
@@ -434,7 +422,6 @@ TclTimeSeriesCommand(ClientData clientData,
       }
     }
   }
-
 
 #ifdef _RELIABILITY
 
@@ -486,6 +473,7 @@ TclTimeSeriesCommand(ClientData clientData,
   }
   
    ///// added by K Fujimura /////
+   /*FMK RELIABILITY
   else if (strcmp(argv[0],"NewDiscretizedRandomProcess") == 0) {
     
     double mean, maxStdv;
@@ -530,9 +518,9 @@ TclTimeSeriesCommand(ClientData clientData,
     }	
     
     // Parsing was successful, create the random process series object
-    theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
+  theSeries = new NewDiscretizedRandomProcessSeries(numModFuncs,theModFUNCS,mean,maxStdv);       	
   }
-
+  */
   else if (strcmp(argv[0],"SimulatedRandomProcess") == 0) {
     
     int spectrumTag, numFreqIntervals;
@@ -573,8 +561,6 @@ TclTimeSeriesCommand(ClientData clientData,
 
 #endif
 
-
-	
   else {
     for (int i = 0; i < argc; i++)
       opserr << argv[i] << ' ';
@@ -611,4 +597,3 @@ TclSeriesCommand(ClientData clientData, Tcl_Interp *interp, TCL_Char *arg)
   cleanup(argv);
   return theSeries;
 }
-

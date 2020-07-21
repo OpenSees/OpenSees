@@ -573,7 +573,7 @@ PlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 
   // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
-  res = theChannel.sendID(this->getDbTag(), commitTag, idData);
+  res = theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
     opserr << "PlaneStressMaterial::sendSelf() - failed to send id data\n";
     return res;
@@ -624,4 +624,21 @@ PlaneStressMaterial::setParameter(const char **argv, int argc,
 				  Parameter &param)
 {
   return theMaterial->setParameter(argv, argc, param);
+}
+
+Response* PlaneStressMaterial::setResponse(const char** argv, int argc, OPS_Stream& s)
+{
+    // for strain, stress and tangent use the base class implementation
+        // so that the output will be that of the adapter
+    if (strcmp(argv[0], "Tangent") == 0 ||
+        strcmp(argv[0], "tangent") == 0 ||
+        strcmp(argv[0], "stress") == 0 ||
+        strcmp(argv[0], "stresses") == 0 ||
+        strcmp(argv[0], "strain") == 0 ||
+        strcmp(argv[0], "strains") == 0
+        ) {
+        return NDMaterial::setResponse(argv, argc, s);
+    }
+    // otherwise, for other custom results, forward the call to the adaptee
+    return theMaterial->setResponse(argv, argc, s);
 }

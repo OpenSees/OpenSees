@@ -92,6 +92,15 @@ ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
 	cutsetSize = cutsetSize_init;
 }
 
+void
+ReliabilityDomain::clearAll()
+{
+  if (theRandomVariablesPtr != 0)
+    theRandomVariablesPtr->clearAll();
+
+  // Need to do the other stuff -- MHS
+}
+
 ReliabilityDomain::~ReliabilityDomain()
 {
   if (theRandomVariablesPtr != 0) {
