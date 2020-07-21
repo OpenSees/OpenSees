@@ -1343,11 +1343,10 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-<<<<<<< HEAD
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
-=======
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp">
->>>>>>> master
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2517,11 +2516,10 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
-<<<<<<< HEAD
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h">
-=======
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h">
->>>>>>> master
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
