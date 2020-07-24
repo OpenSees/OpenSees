@@ -286,14 +286,17 @@ int OPS_ElementalLoad()
 		opserr<<"WARNING eleLoad - beamUniform want Wya <Wxa> <aL> <bL> <Wyb> <Wxb>\n";
 		return -1;
 	    }
-	    // if (numdata > 4) numdata = 4;
 	    if (numdata > 6) numdata = 6;
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 		opserr<<"WARNING eleLoad - invalid value for beamUniform\n";
 		return -1;
 	    }
 	    for (int i=0; i<theEleTags.Size(); i++) {
-		if (data[2] > 0.0 || data[3] < 1.0 || data[0] != data[4] || data[1] != data[5])
+		if (numdata > 1 && numdata < 5) {
+		  data[4] = data[0];
+		  data[5] = data[1];
+		}
+		if (data[2] > 0.0 || data[3] < 1.0 || numdata > 4)
 		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0], data[4], data[1], data[5], data[2], data[3], theEleTags(i));
 		else
 		    theLoad = new Beam2dUniformLoad(eleLoadTag, data[0], data[1], theEleTags(i));
