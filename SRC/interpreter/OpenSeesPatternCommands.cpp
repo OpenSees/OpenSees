@@ -292,7 +292,7 @@ int OPS_ElementalLoad()
 		return -1;
 	    }
 	    for (int i=0; i<theEleTags.Size(); i++) {
-		if (numdata > 1 && numdata < 5) {
+		if (numdata == 3 || numdata == 4) {
 		  data[4] = data[0];
 		  data[5] = data[1];
 		}
