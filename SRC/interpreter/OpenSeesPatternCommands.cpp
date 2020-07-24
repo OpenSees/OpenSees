@@ -294,7 +294,7 @@ int OPS_ElementalLoad()
 	    }
 	    for (int i=0; i<theEleTags.Size(); i++) {
 		if (data[2] > 0.0 || data[3] < 1.0 || data[0] != data[4] || data[1] != data[5])
-		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0], data[1], data[2], data[3], data[4], data[5], theEleTags(i));
+		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0], data[4], data[1], data[5], data[2], data[3], theEleTags(i));
 		else
 		    theLoad = new Beam2dUniformLoad(eleLoadTag, data[0], data[1], theEleTags(i));
 
