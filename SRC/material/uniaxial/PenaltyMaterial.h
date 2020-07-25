@@ -23,8 +23,11 @@
 // $Source$
                                                       
 // Description: This file contains the class definition for 
-// PenaltyMaterial.  PenaltyMaterial wraps a UniaxialMaterial
-// and modifies the stress and tangent by a multiplier.
+// PenaltyMaterial. PenaltyMaterial adds a small stiffness to
+// its wrapped UniaxialMaterial object. This wrapper can help you
+// avoid a singular stiffness due to perfect plasticity and is a
+// downsized approach to putting the wrapped material in parallel
+// with an ElasticMaterial.
 
 #ifndef PenaltyMaterial_h
 #define PenaltyMaterial_h

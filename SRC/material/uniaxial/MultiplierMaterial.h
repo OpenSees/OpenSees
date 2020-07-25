@@ -19,12 +19,15 @@
 ** ****************************************************************** */
                                                                         
 // $Revision$
-// $Date$
+// $Date$ 
 // $Source$
                                                       
 // Description: This file contains the class definition for 
 // MultiplierMaterial.  MultiplierMaterial wraps a UniaxialMaterial
-// and modifies the stress and tangent by a multiplier.
+// and multiplies the stress and tangent of the wrapped UniaxialMaterial
+// object by a factor. This wrapper can be used to apply overstrength
+// factors to materials and p-y multipliers for shadowing effects in
+// pile groups. An example is shown below with a multiplier of 0.8.
 
 #ifndef MultiplierMaterial_h
 #define MultiplierMaterial_h
