@@ -451,6 +451,17 @@ namespace {
     }
   }
 
+  static void* OPS_DispBeamColumn3dID()
+  {
+    int ndm = OPS_GetNDM();
+    if (ndm == 2) {
+      // return OPS_DispBeamColumn2dID();
+    }
+    else {
+      return OPS_DispBeamColumn3dID();
+    }
+  }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
