@@ -26,8 +26,11 @@
 // Created: Aug 2001
 //
 // Description: This file contains the class definition for 
-// PenaltyMaterial.  PenaltyMaterial wraps a UniaxialMaterial
-// and imposes min and max strain limits.
+// PenaltyMaterial. PenaltyMaterial adds a small stiffness to
+// its wrapped UniaxialMaterial object. This wrapper can help you
+// avoid a singular stiffness due to perfect plasticity and is a
+// downsized approach to putting the wrapped material in parallel
+// with an ElasticMaterial.
 
 #include <stdlib.h>
 #include <string.h>
