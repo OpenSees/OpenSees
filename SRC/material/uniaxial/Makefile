@@ -84,6 +84,7 @@ OBJS       = UniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
 	PenaltyMaterial.o \
+	MultiplierMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
 	SecantMaterial.o \
@@ -129,10 +130,7 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
-	PlateBearingConnectionThermal.o \
 	DegradingPinchedBW.o \
-	BoltBearingConnectionThermal.o \
-	PlateBearingConnectionThermal.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
