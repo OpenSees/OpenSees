@@ -26,7 +26,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <EquiSolnAlgo.h>
-#include <PFEMLinSOE.h>
+#include "sparseGEN/PFEMLinSOE.h"
 #include <typeinfo>
 #include <cmath>
 #include <elementAPI.h>
@@ -153,6 +153,7 @@ int CTestPFEM::test(void)
     const Vector &x = theSOE->getX();
     const Vector &B = theSOE->getB();
     const ID& dofType = theSOE->getDofType();
+    int stage = theSOE->getStage();
     if(dofType.Size() != x.Size()) {
         opserr << "WARNING: x and dofType have different size -- CTestPFEM::test()\n";
         return -2;
@@ -183,28 +184,28 @@ int CTestPFEM::test(void)
     // copy norms from host to all processors
     int myid;
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    double norms[6];
+    double allnorms[6];
     if(myid == 0) {
-	norms[0] = normv;
-	norms[1] = normp;
-	norms[2] = normpi;
-	norms[3] = normresv;
-	norms[4] = normresp;
-	norms[5] = normrespi;
+	allnorms[0] = normv;
+	allnorms[1] = normp;
+	allnorms[2] = normpi;
+	allnorms[3] = normresv;
+	allnorms[4] = normresp;
+	allnorms[5] = normrespi;
     }
 
-    if(MPI_Bcast(&norms,6,MPI_DOUBLE,0,MPI_COMM_WORLD) != MPI_SUCCESS) {
+    if(MPI_Bcast(&allnorms,6,MPI_DOUBLE,0,MPI_COMM_WORLD) != MPI_SUCCESS) {
 	opserr<<"WARNING: failed to copy norms to all processors\n";
 	return -1;
     }
 
     if(myid != 0) {
-	normv = norms[0];
-	normp = norms[1];
-	normpi = norms[2];
-	normresv = norms[3];
-	normresp = norms[4];
-	normrespi = norms[5];
+	normv = allnorms[0];
+	normp = allnorms[1];
+	normpi = allnorms[2];
+	normresv = allnorms[3];
+	normresp = allnorms[4];
+	normrespi = allnorms[5];
     }
 
     // no print except host
@@ -226,6 +227,18 @@ int CTestPFEM::test(void)
         normprel = 0.0;
     }
 
+    if (stage==1 || stage==3) {
+        normp = 0;
+        normresp = 0;
+        normprel = 0;
+        normpi = 0;
+        normrespi = 0;
+    } else if (stage == 2) {
+        normv = 0;
+        normresv = 0;
+        normvrel = 0;
+    }
+
     // record norms
     if(currentIter <= maxNumIter) {
         normsv.push_back(normv);
@@ -235,7 +248,7 @@ int CTestPFEM::test(void)
     }
     
     // check for norm increase
-    if(currentIter > 1 && maxIncr > 0) {
+    if(stage==0 && currentIter > 1 && maxIncr > 0) {
         if(normv>10*normsv[currentIter-2] || normp>10*normsp[currentIter-2] ||
            normresv>10*normsresv[currentIter-2] || normresp>10*normsresp[currentIter-2]) {
             numIncr++;
@@ -245,6 +258,13 @@ int CTestPFEM::test(void)
     // print the data if required
     if(printFlag == 1) {
         opserr << "PFEM: " << currentIter;
+        if (stage == 1) {
+            opserr << " -- Predictor Stage\n";
+        } else if (stage == 2) {
+            opserr << " -- Pressure Stage\n";
+        } else if (stage == 3) {
+            opserr << " -- Corrector Stage\n";
+        }
         opserr << " dV(" << normv << "," << normvrel;
         opserr << "), dP(" << normp << "," << normprel;
         opserr << "), dPi(" << normpi;
@@ -282,9 +302,14 @@ int CTestPFEM::test(void)
                 opserr << "), incr(" << numIncr<<")\n";
             }
         }
-        
-        // return the number of times test has been called
-        return currentIter;
+
+        if (stage == 1) {
+            theSOE->setStage(2);
+        } else if (stage == 0 || stage == 3) {
+
+            // return the number of times test has been called
+            return currentIter;
+        }
     }
     
     // algo failed to converged after specified number of iterations - but RETURN OK
@@ -317,10 +342,11 @@ int CTestPFEM::test(void)
     } 
     
     // algorithm not yet converged - increment counter and return -1
-    else {
-        currentIter++;    
-        return -1;
+    if (stage == 2) {
+        theSOE->setStage(3);
     }
+    currentIter++;
+    return -1;
 }
 
 

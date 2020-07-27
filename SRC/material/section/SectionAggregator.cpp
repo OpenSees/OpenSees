@@ -110,6 +110,12 @@ void* OPS_SectionAggregator()
 	codes[codes.Size()] = code;
     }
 
+    int nMats = (int)theMats.size();
+    if (nMats == 0) {
+      opserr << "No material is given\n";
+      return 0;
+    }
+
     // section
     if (OPS_GetNumRemainingInputArgs() > 1) {
 	const char* flag = OPS_GetString();
@@ -128,8 +134,6 @@ void* OPS_SectionAggregator()
 	}
     }
 
-    int nMats = (int)theMats.size();
-	
     if (theSec) {
 	return new SectionAggregator (tag, *theSec, nMats, &theMats[0], codes);
     } else {

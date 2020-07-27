@@ -100,13 +100,6 @@ using std::ios;
 
 #include <packages.h>
 
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
-
 extern void *OPS_ElasticSection(void);
 extern void *OPS_ElasticWarpingShearSection2d();
 extern void *OPS_ElasticTubeSection3d(void);
@@ -1138,6 +1131,7 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     int secTag;
     int maxNumPatches = 30; 
     int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
     
     if (argc < 4) 
 	return TCL_ERROR;
@@ -1204,8 +1198,7 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 
       brace = 5;
     }
-
-    int NDM = theTclModelBuilder->getNDM();  
+	
     if (torsion == 0 && NDM == 3) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSection3d: " << secTag << endln;
@@ -1240,6 +1233,7 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
     int secTag;
     int maxNumPatches = 30; 
     int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
     
     if (argc < 4) 
 	return TCL_ERROR;
@@ -1343,7 +1337,7 @@ TclCommand_addFiberIntSection (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
     }
 
-    if (torsion == 0) {
+    if (NDM == 3 && torsion == 0) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSectionInt3d: " << secTag << endln;
       return TCL_ERROR;
@@ -1742,12 +1736,11 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
     FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
     int numFibers = fiberSectionRepr->getNumFibers();    
     
-    Fiber *theFiber =0;
-      
+    Fiber *theFiber = 0;
     int matTag;
     double yLoc, zLoc, area;
+	int NDM = theTclModelBuilder->getNDM();
 
-    
     if (Tcl_GetDouble(interp, argv[1], &yLoc) != TCL_OK) {
       opserr <<  "WARNING invalid yLoc: fiber yLoc zLoc area matTag\n";
       return TCL_ERROR;
@@ -1764,9 +1757,7 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr <<  "WARNING invalid matTag: fiber yLoc zLoc area matTag\n";
       return TCL_ERROR;
     }                
-
-    int NDM = theTclModelBuilder->getNDM();  
-        
+    
     // creates 2d section      
     if (NDM == 2) {
 
@@ -1873,13 +1864,10 @@ TclCommand_addHFiber(ClientData clientData, Tcl_Interp *interp, int argc,
     FiberSectionRepr *fiberSectionHRepr = (FiberSectionRepr *) sectionHRepres;
     int numHFibers = fiberSectionHRepr->getNumHFibers();    
     
-    int HNDM = theTclModelBuilder->getNDM();  
-    
-    Fiber *theHFiber =0;
-      
+    Fiber *theHFiber = 0;
     int matHTag;
     double yHLoc, zHLoc, Harea;
-
+	int HNDM = theTclModelBuilder->getNDM();
     
     if (Tcl_GetDouble(interp, argv[1], &yHLoc) != TCL_OK) {
          opserr <<  "WARNING invalid yLoc: Hfiber yLoc zLoc area matTag\n";
@@ -2866,6 +2854,7 @@ int TclCommand_addFiberSectionThermal(ClientData clientData, Tcl_Interp *interp,
 	int secTag;
 	int maxNumPatches = 30;
 	int maxNumReinfLayers = 30;
+    int NDM = theTclModelBuilder->getNDM();
 
 	if (argc < 4)
 		return TCL_ERROR;
@@ -2926,7 +2915,7 @@ int TclCommand_addFiberSectionThermal(ClientData clientData, Tcl_Interp *interp,
 		return TCL_ERROR;
 	}
 
-	if (torsion == 0) {
+	if (NDM == 3 && torsion == 0) {
 	  opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
 	  opserr << "\nFiberSectionThermal3d: " << secTag << endln;
 	  return TCL_ERROR;

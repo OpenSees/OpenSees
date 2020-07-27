@@ -35,9 +35,9 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
-#include <BackgroundDef.h>
-#include <Particle.h>
-#include <ParticleGroup.h>
+#include "PFEMElement/BackgroundDef.h"
+#include "PFEMElement/Particle.h"
+#include "PFEMElement/ParticleGroup.h"
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
@@ -383,6 +383,7 @@ PVDRecorder::savePart0(int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -845,6 +846,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1231,6 +1233,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1842,6 +1845,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_PlateMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC9] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ASDShellQ4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDShellT3] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_Plate1] = VTK_QUAD;
     vtktypes[ELE_TAG_Brick] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_BbarBrick] = VTK_HEXAHEDRON;
@@ -1966,6 +1971,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
 }
 
 void

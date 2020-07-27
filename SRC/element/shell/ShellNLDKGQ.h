@@ -41,7 +41,6 @@
 #include <Element.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
-#include <R3vectors.h>
 
 class ShellNLDKGQ : public Element {
 

@@ -8,7 +8,8 @@ OBJS       = DispBeamColumn2d.o \
 	DispBeamColumn2dWithSensitivity.o \
 	DispBeamColumn3dWithSensitivity.o \
 	AxEqDispBeamColumn2d.o \
-	TimoshenkoBeamColumn2d.o
+	TimoshenkoBeamColumn2d.o \
+	DispBeamColumn3dID.o 
 
 
 all:         $(OBJS)

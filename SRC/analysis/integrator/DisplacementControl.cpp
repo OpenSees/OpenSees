@@ -86,6 +86,7 @@ void* OPS_DisplacementControlIntegrator()
 
     // numIter,dumin,dumax
     int numIter = 1;
+    int formTangent = 0;
     double data[2] = {incr,incr};
     if(OPS_GetNumRemainingInputArgs() > 2) {
        numData = 1;
@@ -98,6 +99,13 @@ void* OPS_DisplacementControlIntegrator()
 	   opserr << "WARNING failed to read dumin and dumax\n";
 	   return 0;
        }
+    }
+
+    if (OPS_GetNumRemainingInputArgs() == 1) {
+      	std::string type = OPS_GetString();
+	if(type=="-initial" || type=="-Initial") {
+	    formTangent = 1;
+	} 
     }
 
     // check node
@@ -114,15 +122,18 @@ void* OPS_DisplacementControlIntegrator()
        return 0;
     }
 
-    return new DisplacementControl(iData[0],iData[1]-1,incr,theDomain,numIter,data[0],data[1]);
+    return new DisplacementControl(iData[0],iData[1]-1,
+				   incr,theDomain,
+				   numIter,data[0],data[1], 
+				   formTangent);
 }
 
 
 DisplacementControl::DisplacementControl(int node, int dof, 
-      double increment, 
-      Domain *domain,
-      int numIncr,
-      double min, double max) 
+					 double increment, 
+					 Domain *domain,
+					 int numIncr,
+					 double min, double max, int tang) 
 :StaticIntegrator(INTEGRATOR_TAGS_DisplacementControl),
    theNode(node), theDof(dof), theIncrement(increment), theDomain(domain),
    theDofID(-1),
@@ -132,6 +143,8 @@ DisplacementControl::DisplacementControl(int node, int dof,
    minIncrement(min), maxIncrement(max),sensitivityFlag(0),Residual(0),dlambdadh(0.0),
    dLambda(0.0),  sensU(0),d_deltaU_dh(0),Residual2(0),gradNumber(0),dLAMBDAdh(0),dphatdh(0)
 {
+  tangFlag = tang;
+
    // to avoid divide-by-zero error on first update() ensure numIncr != 0
    if (numIncr == 0) {
       opserr << "WARNING DisplacementControl::DisplacementControl() -";
@@ -207,7 +220,7 @@ DisplacementControl::newStep(void)
    currentLambda = theModel->getCurrentDomainTime();
 
    // determine dUhat
-   this->formTangent();
+   this->formTangent(tangFlag);
    theLinSOE->setB(*phat);
    if (theLinSOE->solve() < 0) {
       opserr << "DisplacementControl::newStep(void) - failed in solver\n";
@@ -628,7 +641,7 @@ DisplacementControl::formTangDispSensitivity(Vector *dUhatdh,int gradNumber)
    
    
    //call the tangent (K)
-   this->formTangent();
+   this->formTangent(tangFlag);
    theLinSOE->setB(*dphatdh);
    if(theLinSOE->solve()<0) {
       opserr<<"SOE failed to obtained dUhatdh ";
@@ -1046,7 +1059,7 @@ DisplacementControl::computeSensitivities(void)
     //  this->formTangDispSensitivity(dUhatdh,gradIndex);
     this->formSensitivityRHS(gradIndex);
      
-    this->formTangent();
+    this->formTangent(tangFlag);
     theSOE->solve();
     *dUIJdh=theSOE->getX();// sensitivity of the residual displacement
  

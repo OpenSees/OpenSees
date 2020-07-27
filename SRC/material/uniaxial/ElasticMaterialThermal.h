@@ -101,11 +101,13 @@ class ElasticMaterialThermal : public UniaxialMaterial
 	int softIndex;
 	double ThermalElongation;
 	double Temp;
-	double* redfactors;
-
+	
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
     // AddingSensitivity:END ///////////////////////////////////////////
+
+    static double ConcRedFactors[12];
+    static double SteelRedFactors[12];
 };
 
 

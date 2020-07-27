@@ -136,6 +136,7 @@ extern void *OPS_StainlessECThermal(void); // L.Jiang [SIF]
 extern void *OPS_SteelECThermal(void); // L.Jiang [SIF]
 extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
+//extern void *OPS_PlateBearingConnectionThermal(void);
 
 extern void *OPS_BWBN(void);
 extern void *OPS_IMKPeakOriented(void);
@@ -166,6 +167,7 @@ extern void *OPS_GNGMaterial(void);
 extern void *OPS_OOHystereticMaterial(void);
 extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
+extern void *OPS_DegradingPinchedBW(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -177,14 +179,6 @@ extern UniaxialMaterial *Tcl_addWrapperUniaxialMaterial(matObj *, ClientData cli
 							int argc, TCL_Char **argv);
 
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
-
 
 typedef struct uniaxialPackageCommand {
   char *funcName;
@@ -624,6 +618,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
 
+    } else if (strcmp(argv[1], "DegradingPinchedBW") == 0) {
+        void *theMat = OPS_DegradingPinchedBW();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial *)theMat;
+        else
+            return TCL_ERROR;
+
     }
     else if (strcmp(argv[1], "IMKBilin") == 0) {
       void *theMat = OPS_IMKBilin();
@@ -670,12 +671,20 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"PlateBearingConnectionThermal") == 0) {
+      //void *theMat = OPS_PlateBearingConnectionThermal();
+      void *theMat = 0;
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
     } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
       void *theMat = OPS_Steel01Thermal();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
-	return TCL_ERROR;
+	return TCL_ERROR;      
 
     } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
       void *theMat = OPS_Steel02Thermal();

@@ -29,7 +29,7 @@
 #include <stdlib.h> 
 #include <math.h> 
 
-#include <ManzariDafalias.h>
+#include "ManzariDafalias.h"
 
 class ManzariDafalias3D : public ManzariDafalias
 {

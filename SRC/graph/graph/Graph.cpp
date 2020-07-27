@@ -42,7 +42,8 @@
 #include <Vector.h>
 
 Graph::Graph()
-  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM)
+  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM),
+  vertices()
 {
     myVertices = new MapOfTaggedObjects();
     theVertexIter = new VertexIter(myVertices);
@@ -50,7 +51,8 @@ Graph::Graph()
 
 
 Graph::Graph(int numVertices)
-  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM)
+  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM),
+  vertices()
 {
     myVertices = new MapOfTaggedObjects();
     theVertexIter = new VertexIter(myVertices);
@@ -58,7 +60,8 @@ Graph::Graph(int numVertices)
 
 
 Graph::Graph(TaggedObjectStorage &theVerticesStorage)
-  :myVertices(&theVerticesStorage), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM)
+  :myVertices(&theVerticesStorage), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM),
+  vertices()
 {
   TaggedObject *theObject;
   TaggedObjectIter &theObjects = theVerticesStorage.getComponents();
@@ -72,7 +75,8 @@ Graph::Graph(TaggedObjectStorage &theVerticesStorage)
     
 
 Graph::Graph(Graph &other) 
-  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM)
+  :myVertices(0), theVertexIter(0), numEdge(0), nextFreeTag(START_VERTEX_NUM),
+  vertices()
 {
   myVertices = new MapOfTaggedObjects();
   theVertexIter = new VertexIter(myVertices);
@@ -215,6 +219,61 @@ Graph::addEdge(int vertexTag, int otherVertexTag)
     return result;
 }
 
+void
+Graph::startAddEdge() {
+  vertices.clear();
+  VertexIter& iter = getVertices();
+  Vertex* v = 0;
+  while ((v = iter()) != 0) {
+    int tag = v->getTag();
+    if (tag >= 0) {
+      vertices.resize(tag+1);
+      vertices[tag] = v;
+    }
+  }
+}
+
+int 
+Graph::addEdgeFast(int vertexTag, int otherVertexTag)
+{
+    // get pointers to the vertices, if one does not exist return
+    if (vertices.size()<=vertexTag ||
+    vertices.size()<=otherVertexTag) {
+      opserr << "WARNING: the size of vertices is not correct\n";
+      return -1;
+    }
+    Vertex *vertex1 = vertices[vertexTag];
+    Vertex *vertex2 = vertices[otherVertexTag];
+    if ((vertex1 == 0) || (vertex2 == 0)) {
+	opserr << "WARNING Graph::addEdge() - one or both of the vertices ";
+	opserr << vertexTag << " " << otherVertexTag << " not in Graph\n";
+	return -1;
+    }
+
+    // add an edge to each vertex
+    int result = vertex1->addEdge(otherVertexTag);
+	if (result == 1)
+		return 0;  // already there
+	else if (result == 0) {  // added to vertexTag now add to other
+		if ((result = vertex2->addEdge(vertexTag)) == 0) {
+			numEdge++;
+		}
+		else {
+			opserr << " WARNING Graph::addEdge() - " << vertexTag;
+			opserr << " added to " << otherVertexTag;
+			opserr << " adjacency - but already there in otherVertexTag!.\n";
+			opserr << *this; exit(0);
+			return -2;
+		}
+	} else {
+			opserr << " WARNING Graph::addEdge() - " << vertexTag;
+			opserr << " added to " << otherVertexTag;
+			opserr << " adjacency - but not vica versa!.\n";
+			opserr << *this; exit(0);
+			return -2;
+	}
+    return result;
+}
 
 Vertex *
 Graph::getVertexPtr(int vertexTag)

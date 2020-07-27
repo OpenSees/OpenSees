@@ -902,6 +902,8 @@
 #define INTEGRATOR_TAGS_KRAlphaExplicit                 53
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 #define INTEGRATOR_TAGS_ExplicitDifference              55
+#define INTEGRATOR_TAGS_EQPath                          56
+#define INTEGRATOR_TAGS_GimmeMCK                        57
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

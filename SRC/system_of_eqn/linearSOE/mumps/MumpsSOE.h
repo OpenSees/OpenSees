@@ -49,10 +49,10 @@ class LinearSOESolver;
 class MumpsSOE : public LinearSOE
 {
   public:
-    MumpsSOE(MumpsSolver &theSolver, int matType=2);        
+    MumpsSOE(MumpsSolver &theSolver, int matType=0);        
     MumpsSOE();       
     MumpsSOE(int classTag);        
-    MumpsSOE(LinearSOESolver &theSolver, int classTag, int matType = 2);        
+    MumpsSOE(LinearSOESolver &theSolver, int classTag, int matType = 0);        
 
     virtual ~MumpsSOE();
 

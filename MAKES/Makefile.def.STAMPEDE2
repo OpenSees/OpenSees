@@ -25,17 +25,17 @@ BASE  =
 
 FE    = $(HOME)/OpenSees/SRC
 
-#PROGRAMMING_MODE = SEQUENTIAL
+PROGRAMMING_MODE = SEQUENTIAL
 #PROGRAMMING_MODE = PARALLEL
 #PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
-OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+OpenSees_PROGRAM = $(HOME)/fmkBin/OpenSees
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL)
-OpenSees_PROGRAM = $(HOME)/bin/OpenSeesSP
+OpenSees_PROGRAM = $(HOME)/fmkBin/OpenSeesSP
 endif
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
-OpenSees_PROGRAM = $(HOME)/bin/OpenSeesMP
+OpenSees_PROGRAM = $(HOME)/fmkBin/OpenSeesMP
 endif
 
 # %---------------------------------%
@@ -52,7 +52,6 @@ DEBUG_MODE = NO_DEBUG
 RELIABILITY = NO_RELIABILITY
 
 GRAPHICS = NONE
-
 
 BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
 CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
@@ -171,13 +170,13 @@ MPI_BIN = $(MPI_DIR)/bin
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
-#CC++            =  $(ICC_BIN)/icpc
-#CC              =  $(ICC_BIN)/icc
-#FC              =  $(IFC_BIN)/ifort
+CC++            =  $(ICC_BIN)/icpc
+CC              =  $(ICC_BIN)/icc
+FC              =  $(IFC_BIN)/ifort
 
-CC++ = g++
-CC = gcc
-FC = gfortran
+#CC++ = g++
+#CC = gcc
+#FC = gfortran
 
 OPT_FLAG = -O2
 
@@ -202,7 +201,7 @@ LINKER          =  $(CC++)
 
 endif
 
-C++FLAGS         = $(PLAINCONCRETE_FLAG) -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
+C++FLAGS         = $(PLAINCONCRETE_FLAG) $(DAMAGE2P_FLAG) -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG) $(H5DRM_FLAG) \
 		$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
 		-D_TCL85 -D_BLAS 
 
@@ -243,6 +242,8 @@ RELIABILITY_FLAG =
 #DEBUG_FLAG = -p -g
 DEBUG_FLAG = 
 
+H5DRM_FLAG = -D_H5DRM
+DAMAGE2P_FLAG = -D_HAVE_Damage2p
 PLAINCONCRETE_FLAG = -D_HAVE_PSUMAT
 MUMPS_FLAG = 
 PETSC_FLAG =
@@ -457,14 +458,17 @@ MACHINE_NUMERICAL_LIBS  = -lm \
   $(RELIABILITY_LIBRARY) \
   $(DISTRIBUTED_SUPERLU_LIBRARY) $(CSPARSE_LIBRARY) \
   $(METIS_LIBRARY) $(PETSC_LIB) $(CBLAS_LIBRARY) \
-  $(LAPACK_LIBRARY) $(MUMPS_LIB) $(BLAS_LIBRARY) $(PARALLEL_LIB)
+  $(LAPACK_LIBRARY) $(MUMPS_LIB) $(BLAS_LIBRARY) \
+  $(TACC_HDF5_DIR)/lib/libhdf5.a  \
+$(TACC_HDF5_DIR)/lib/libsz.a $(PARALLEL_LIB)
 
 #  $(DISTRIBUTED_SUPERLU_LIBRARY) $(METIS_LIBRARY) \
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
 #MACHINE_SPECIFIC_LIBS = -mkl=sequential -static-intel -lifcore
-MACHINE_SPECIFIC_LIBS = -lpthread -lgfortran -ldl
+#MACHINE_SPECIFIC_LIBS = -lpthread -lgfortran -ldl
+MACHINE_SPECIFIC_LIBS = -lpthread -static-intel -L$(IFC_LIB) -lifcore
 
 #MACHINE_SPECIFIC_LIBS = /usr/lib/x86_64-redhat-linux6E/lib64/libpthread.a -lgfortran \
 #/usr/lib/x86_64-redhat-linux6E/lib64/libdl.a \
@@ -490,7 +494,7 @@ MACHINE_INCLUDES = -I$(MPICH_HOME)/include \
 	-I$(HOME)/include   \
 	-I$(UMFPACKdir) \
 	-I$(SUPERLUdir) \
-	-I$(SUPERLU_DISTdir) \
+	-I$(SUPERLU_DISTdir) -I$(TACC_HDF5_DIR)/include \
 	$(PETSC_INC) $(MUMPS_INCLUDE)
 
 

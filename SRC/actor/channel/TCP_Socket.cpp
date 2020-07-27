@@ -858,7 +858,7 @@ TCP_Socket::getBytesAvailable()
 char *
 TCP_Socket::addToProgram()
 {
-    char *tcp = " 1 ";
+    const char *tcp = " 1 ";
 
     char  my_InetAddr[MAX_INET_ADDR];
     char  myPortNum[8];

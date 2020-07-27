@@ -2,13 +2,10 @@ include ../../../../Makefile.def
 
 OBJS       = Pinching.o \
 	Bilinear.o \
-	Bilin.o \
-	Bilin02.o \
 	Clough.o \
 	CloughHenry.o \
 	CloughDamage.o \
 	PinchingDamage.o \
-	Bilin.o \
 	TclSnapMaterialCommand.o
 
 all:         $(OBJS)

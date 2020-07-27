@@ -47,14 +47,8 @@ extern void *OPS_ConstantStrengthDegradation(void);
 extern void *OPS_ACIStrengthDegradation(void);
 extern void *OPS_PetrangeliStrengthDegradation(void);
 
+#include <elementAPI.h>
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
 
 static void printCommand(int argc, TCL_Char **argv)
 {

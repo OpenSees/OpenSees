@@ -5,6 +5,8 @@ OBJS       = UniaxialMaterial.o \
 	Elastic2Material.o \
 	ElasticPowerFunc.o \
 	UVCuniaxial.o \
+	Bilin.o \
+	Bilin02.o \
 	IMKBilin.o \
 	IMKPeakOriented.o \
 	IMKPinching.o \
@@ -127,6 +129,8 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
+	PlateBearingConnectionThermal.o \
+	DegradingPinchedBW.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
