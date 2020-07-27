@@ -77,6 +77,24 @@ OPS_ShellDKGQ(void)
     return 0;
   }
 
+  int dampingTag = 0;
+  Damping *theDamping = 0;
+
+  while(OPS_GetNumRemainingInputArgs() > 0) {
+    const char* type = OPS_GetString();    
+    if(strcmp(type,"-damp") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+	      numData = 1;
+        if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+		    theDamping = OPS_getDamping(dampingTag);
+        if(theDamping == 0) {
+	        opserr<<"damping not found\n";
+	        return 0;
+        }
+	    }
+    } 
+  }
+
   SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
 
   if (theSection == 0) {
@@ -85,7 +103,7 @@ OPS_ShellDKGQ(void)
   }
   
   theElement = new ShellDKGQ(iData[0], iData[1], iData[2], iData[3],
-			      iData[4], *theSection);
+			      iData[4], *theSection, theDamping);
 
   return theElement;
 }
@@ -114,6 +132,9 @@ connectedExternalNodes(4), load(0), Ki(0)
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
 
+  for (int i = 0 ;  i < 4; i++ ) 
+    theDamping[i] = 0;
+
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
   sg[2] = one_over_root3;
@@ -138,7 +159,8 @@ ShellDKGQ::ShellDKGQ(  int tag,
                          int node2,
    	                     int node3,
                          int node4,
-	                     SectionForceDeformation &theMaterial ) :
+	                     SectionForceDeformation &theMaterial,
+                       Damping *damping) :
 Element( tag, ELE_TAG_ShellDKGQ ),
 connectedExternalNodes(4), load(0), Ki(0)
 {
@@ -158,6 +180,22 @@ connectedExternalNodes(4), load(0), Ki(0)
       } //end if
       
   } //end for i 
+
+  if (damping)
+  {
+    for (i = 0; i < 4; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "ShellDKGQ::ShellDKGQ -- failed to get copy of damping\n";
+      }
+    }
+  }
+  else
+  {
+    for (i = 0; i < 4; i++) theDamping[i] = 0;
+  }
 
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
@@ -190,6 +228,15 @@ ShellDKGQ::~ShellDKGQ( )
 
   } //end for i
 
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i])
+    {
+      delete theDamping[i];
+      theDamping[i] = 0;
+    }
+  }
+
   if (load != 0)
     delete load;
 
@@ -220,6 +267,14 @@ void  ShellDKGQ::setDomain( Domain *theDomain )
 
   //basis vectors and local coordinates
   computeBasis( ) ;
+
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i] && theDamping[i]->setDomain(theDomain, 8)) {
+      opserr << "ShellDKGQ::setDomain -- Error initializing damping\n";
+      exit(-1);
+    }
+  }
 
   this->DomainComponent::setDomain(theDomain);
 }
@@ -265,6 +320,9 @@ int  ShellDKGQ::commitState( )
   for (int i = 0; i < 4; i++ ) 
     success += materialPointers[i]->commitState( ) ;
 
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->commitState();
+
   return success ;
 }
  
@@ -279,6 +337,9 @@ int  ShellDKGQ::revertToLastCommit( )
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToLastCommit( ) ;
   
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToLastCommit();
+  
   return success ;
 }
     
@@ -291,6 +352,9 @@ int  ShellDKGQ::revertToStart( )
 
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToStart( ) ;
+  
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToStart();
   
   return success ;
 }
@@ -411,7 +475,7 @@ ShellDKGQ::setResponse(const char **argv, int argc, OPS_Stream &output)
       
       output.tag("ResponseType","p11");
       output.tag("ResponseType","p22");
-      output.tag("ResponseType","p1212");
+      output.tag("ResponseType","p12");
       output.tag("ResponseType","m11");
       output.tag("ResponseType","m22");
       output.tag("ResponseType","m12");
@@ -451,6 +515,34 @@ ShellDKGQ::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     
     theResponse =  new ElementResponse(this, 3, Vector(32));
+  }
+
+  else if (theDamping[0] && strcmp(argv[0],"dampingStresses") ==0) {
+
+    for (int i=0; i<4; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.attr("eta",sg[i]);
+      output.attr("neta",tg[i]);
+      
+      output.tag("SectionForceDeformation");
+      output.attr("classType", materialPointers[i]->getClassTag());
+      output.attr("tag", materialPointers[i]->getTag());
+      
+      output.tag("ResponseType","p11");
+      output.tag("ResponseType","p22");
+      output.tag("ResponseType","p12");
+      output.tag("ResponseType","m11");
+      output.tag("ResponseType","m22");
+      output.tag("ResponseType","m12");
+      output.tag("ResponseType","q1");
+      output.tag("ResponseType","q2");
+      
+      output.endTag(); // GaussPoint
+      output.endTag(); // NdMaterialOutput
+    }
+    
+    theResponse =  new ElementResponse(this, 4, Vector(32));
   }
 
   output.endTag();
@@ -503,6 +595,23 @@ ShellDKGQ::getResponse(int responseID, Information &eleInfo)
       cnt += 8;
     }
     return eleInfo.setVector(strains);
+    break;
+  case 4: // damping stresses
+    for (int i = 0; i < 4; i++) {
+
+      // Get material stress response
+      const Vector &sigma = theDamping[i]->getDampingForce();
+      stresses(cnt) = sigma(0);
+      stresses(cnt+1) = sigma(1);
+      stresses(cnt+2) = sigma(2);
+      stresses(cnt+3) = sigma(3);
+      stresses(cnt+4) = sigma(4);
+      stresses(cnt+5) = sigma(5);
+      stresses(cnt+6) = sigma(6);
+      stresses(cnt+7) = sigma(7);
+      cnt += 8;
+    }
+    return eleInfo.setVector(stresses);
     break;
   default:
     return -1;
@@ -708,6 +817,7 @@ const Matrix&  ShellDKGQ::getInitialStiff( )
 		}//end j-node loop
 
 		dd = materialPointers[i]->getInitialTangent( );
+    if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
 		dd *= dvol[i];
 
 		//tangent stiff matrix calculations node loops
@@ -1068,6 +1178,8 @@ ShellDKGQ::formResidAndTangent( int tang_flag )
 
 	static Vector stress(nstress); //stress resultants
 
+  static Vector dampingStress(nstress); // damping stress resultants
+
 	static Matrix dd(nstress,nstress);//material tangent
 
 	//static Matrix J0(2,2); //Jacobian at center
@@ -1219,11 +1331,19 @@ ShellDKGQ::formResidAndTangent( int tang_flag )
 		//compute the stress
 		stress = materialPointers[i]->getStressResultant( );
 
+    if (theDamping[i])
+    {
+      theDamping[i]->update(stress);
+      dampingStress = theDamping[i]->getDampingForce();
+      dampingStress *= dvol[i];
+    }
+
 		//multiply by volume element
 		stress *= dvol[i];
 
 		if(tang_flag == 1){
 			dd = materialPointers[i]->getSectionTangent( );
+      if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
 			dd *= dvol[i];
 		}//end if tang_flag
 
@@ -1253,6 +1373,7 @@ ShellDKGQ::formResidAndTangent( int tang_flag )
 
 			//compute residual force
 			residJlocal.addMatrixVector(0.0,BJtran,stress,1.0);
+      if (theDamping[i]) residJlocal.addMatrixVector(1.0, BJtran,dampingStress,1.0 ) ;
 			residJ1.addMatrixVector(0.0,PmatTran,residJlocal,1.0);
 			residJ.addMatrixVector(0.0,TmatTran,residJ1,1.0);
 

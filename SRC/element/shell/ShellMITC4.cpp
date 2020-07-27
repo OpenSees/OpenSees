@@ -609,7 +609,7 @@ ShellMITC4::setResponse(const char **argv, int argc, OPS_Stream &output)
       
       output.tag("ResponseType","p11");
       output.tag("ResponseType","p22");
-      output.tag("ResponseType","p1212");
+      output.tag("ResponseType","p12");
       output.tag("ResponseType","m11");
       output.tag("ResponseType","m22");
       output.tag("ResponseType","m12");
@@ -665,7 +665,7 @@ ShellMITC4::setResponse(const char **argv, int argc, OPS_Stream &output)
       
       output.tag("ResponseType","p11");
       output.tag("ResponseType","p22");
-      output.tag("ResponseType","p1212");
+      output.tag("ResponseType","p12");
       output.tag("ResponseType","m11");
       output.tag("ResponseType","m22");
       output.tag("ResponseType","m12");

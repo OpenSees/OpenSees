@@ -38,7 +38,7 @@
 #include <Element.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
-#include <R3vectors.h>
+#include <Damping.h>
 
 class ShellDKGQ : public Element {
 
@@ -53,7 +53,8 @@ class ShellDKGQ : public Element {
 	          int node2,
 			  int node3,
 			  int node4,
-			  SectionForceDeformation &theMaterial ) ;
+			  SectionForceDeformation &theMaterial,
+	      Damping *theDamping = 0);
   
   //destructor 
   virtual ~ShellDKGQ( ) ;
@@ -189,6 +190,7 @@ class ShellDKGQ : public Element {
     // vector for applying loads
     Vector *load;
     Matrix *Ki;
+    Damping *theDamping[4];
 } ; 
 
 
