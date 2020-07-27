@@ -580,6 +580,7 @@ namespace {
 	functionMap.insert(std::make_pair("ShellNL", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("shellMITC9", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("ShellMITC9", &OPS_ShellMITC9));
+	functionMap.insert(std::make_pair("shellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("ShellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("shellDKGT", &OPS_ShellDKGT));
 	functionMap.insert(std::make_pair("ShellDKGT", &OPS_ShellDKGT));
