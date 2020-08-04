@@ -52,15 +52,15 @@
  +----+----+----+----+----+----+----+----+----+----+----+----+----+----+------*/
 
 /*
- element zeroLengthInterface2D eleTag? -sNdNum sNdNum? -mNdNum mNdNum? �dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? 
+ element zeroLengthInterface2D eleTag? -sNdNum sNdNum? -pNdNum pNdNum? �dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? 
 
  Description: This file contains the class definition for ZeroLengthContact2D.
 
 [1] The contact element is node-to-segment (NTS) contact. The relation follows 
     Mohr-coulomb frictional law: T = N * tan($phi), where T is tangential force 
 	and N is normal force across the interface. $phi is friction angle.
-[2] For 2D contact, slave nodes and master nodes must be 2 DOF and notice note 
-    that the slave and master nodes must be entered in counterclockwise order.
+[2] For 2D contact, secondary nodes and primary nodes must be 2 DOF and notice note 
+    that the secondary and primary nodes must be entered in counterclockwise order.
 [3] The resulting tangent from the contact element is non-symmetric. Switch to 
     the non-symmetric matrix solver if convergence problem is experienced. 
 [4] As opposed to node-to-node contact, predefined normal vector for node-to-segment (NTS) 
@@ -94,7 +94,7 @@ class ZeroLengthInterface2D: public Element
 {
   public:
   // Constructor
-  ZeroLengthInterface2D(int tag, int sNdNum, int mNdNum, int sDof, int mDof, const ID& Nodes,
+  ZeroLengthInterface2D(int tag, int sNdNum, int pNdNum, int sDof, int mDof, const ID& Nodes,
 		                   double Kn, double Kt, double fRatio);
   // Null constructor
   ZeroLengthInterface2D();
@@ -156,26 +156,26 @@ class ZeroLengthInterface2D: public Element
   // Normal and Tangental Vectors for Elemental Nodes, (4*1)
   Vector N;
   Vector T;
-  Vector ContactNormal;  // out normal of master element
+  Vector ContactNormal;  // out normal of primary element
   int ContactFlag;                    // 0: not contact; 1: stick; 2: slide
   int numDOF;	                        // number of dof for ZeroLength
   // detect the contact and set flag
   int contactDetect(int s, int m1, int m2, int stage);
   //form residual and tangent
-  void formLocalResidAndTangent( int tang_flag , int slave, int master1, int master2, int stage);
+  void formLocalResidAndTangent( int tang_flag , int secondary, int primary1, int primary2, int stage);
   void formGlobalResidAndTangent(int tang_flag );
-  void GlobalResidAndTangentOrder(int slave, int master1, int master2);
-  void GlobalResidAndTangentOrder2(int slave, int master1, int master2);
+  void GlobalResidAndTangentOrder(int secondary, int primary1, int primary2);
+  void GlobalResidAndTangentOrder2(int secondary, int primary1, int primary2);
   Matrix *Ki; 	    	// pointer to objects matrix (a class Matrix)
   Vector *load;         	// pointer to objects vector (a class Vector)
   // variables for 2D contact
   Matrix stiff;   // for stiff matrix
   Vector resid;   // for force residual vector
   Matrix zeroMatrix;
-  int SlaveNodeNum;
-  int MasterNodeNum;
-  int SlaveDof;
-  int MasterDof;
+  int SecondaryNodeNum;
+  int PrimaryNodeNum;
+  int SecondaryDof;
+  int PrimaryDof;
   double *restore_shear_gap;
   int loctoglob[6];
 };

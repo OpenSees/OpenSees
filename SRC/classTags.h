@@ -215,6 +215,9 @@
 #define MAT_TAG_ElasticPowerFunc                102
 #define MAT_TAG_UVCuniaxial                     103
 #define MAT_TAG_IMKBilin                        104
+#define MAT_TAG_IMKPeakOriented                 105
+#define MAT_TAG_IMKPinching                     106
+#define MAT_TAG_SLModel                         107
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
@@ -225,7 +228,7 @@
 #define MAT_TAG_QzSimple2                    212
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
-
+#define MAT_TAG_PlateBearingConnectionThermal 215
 
 
 #define MAT_TAG_FedeasMaterial    1000
@@ -375,6 +378,15 @@
 #define ND_TAG_UVCmultiaxial  58
 #define ND_TAG_UVCplanestress 59
 
+#define ND_TAG_LowTension 65
+#define ND_TAG_LowTensionPlaneStress 66
+#define ND_TAG_ExponentialTS 67
+#define ND_TAG_ExponentialTS2D 68
+#define ND_TAG_ElasticTS 69
+#define ND_TAG_ElasticTS2D 70
+#define ND_TAG_BilinearTS 71
+#define ND_TAG_BilinearTS2D 72
+
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
 #define ND_TAG_PressureIndependMultiYield		102
@@ -467,6 +479,7 @@
 
 #define ND_TAG_InitStressNDMaterial 7009
 
+#define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
 
 
@@ -621,9 +634,12 @@
 #define ELE_TAG_ElasticForceBeamColumn3d 76
 #define ELE_TAG_ForceBeamColumnCBDI2d   77
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
+#define ELE_TAG_MixedBeamColumn2d 30766
+#define ELE_TAG_MixedBeamColumn3d 30765
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
+#define ELE_TAG_LehighJoint2d           8181
 #define ELE_TAG_Joint2D                 82
 #define ELE_TAG_Joint3D                 83
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
@@ -731,12 +747,24 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
-#define ELE_TAG_ComponentElement2d       192
 #define ELE_TAG_LinearElasticSpring       190
 #define ELE_TAG_Inerter                   191
 #define ELE_TAG_GradientInelasticBeamColumn2d	192
 #define ELE_TAG_GradientInelasticBeamColumn3d	193
-#define ELE_TAG_ExternalElement           99990  
+#define ELE_TAG_CohesiveZoneQuad 194
+#define ELE_TAG_ComponentElement2d       195
+#define ELE_TAG_InerterElement 196
+#define ELE_TAG_BeamColumn2DwLHNMYS 197
+#define ELE_TAG_BeamColumn3DwLHNMYS 198
+#define ELE_TAG_PFEMLink                  199
+#define ELE_TAG_PFEMContact2D             200
+#define ELE_TAG_PML3D                     201
+#define ELE_TAG_PML2D                     202
+#define ELE_TAG_ASDShellQ4                203  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
+#define ELE_TAG_WheelRail                 205
+#define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
+#define ELE_TAG_ExternalElement           99990
 
 
 
@@ -924,7 +952,11 @@
 #define INTEGRATOR_TAGS_KRAlphaExplicit                 53
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 #define INTEGRATOR_TAGS_ExplicitDifference              55
-#define INTEGRATOR_TAGS_EQPath        					        56
+#define INTEGRATOR_TAGS_EQPath                          56
+#define INTEGRATOR_TAGS_GimmeMCK       	                57
+#define INTEGRATOR_TAGS_StagedLoadControl               58
+#define INTEGRATOR_TAGS_StagedNewmark                   59
+
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -1015,6 +1047,8 @@
 #define RECORDER_TAGS_MPCORecorder               20
 #define RECORDER_TAGS_GmshRecorder               21
 #define RECORDER_TAGS_VTK_Recorder               22
+#define RECORDER_TAGS_NodeRecorderRMS               23
+#define RECORDER_TAGS_ElementRecorderRMS               24
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

@@ -99,6 +99,13 @@ OpenSeesReliabilityCommands::getDomain()
     return theDomain;
 }
 
+int OPS_wipeReliability()
+{
+    ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
+    theReliabilityDomain->clearAll();
+    return 0;
+}
+
 int OPS_randomVariable()
 {
     RandomVariable *theRandomVariable = 0;

@@ -69,16 +69,12 @@ class MultiLinear : public UniaxialMaterial
   int numSlope;
   int tSlope;
 
-  double tStrain;	     // current t strain
-  double tStress;      // current t stress
-  double tTangent;     // current t tangent
+  double tStrain;     // current t strain
+  double tStress;     // current t stress
+  double tTangent;    // current t tangent
   double cStrain;     // last ced strain
   double cStress;     // last ced stress
   double cTangent;    // last cted  tangent
 };
 
-
 #endif
-
-
-

@@ -61,8 +61,8 @@
  [3] Penalty (Kn,Kt) is used to enforce the constraints, i.e.
          No (in fact, very small) penetration in the normal direction, and
 	     Coulomb frictional law in the tangential direction.
- [4] For 2D contact, slave nodes and master nodes must be 2 DOF and notice that the slave and 
-         master nodes must be entered in counterclockwise order.
+ [4] For 2D contact, secondary nodes and primary nodes must be 2 DOF and notice that the secondary and 
+         primary nodes must be entered in counterclockwise order.
  [5] The resulting tangent from the contact element is non-symmetric.  
          Switch to the non-symmetric matrix solver if convergence problem is experienced. 
  [6] As opposed to node-to-node contact, predefined normal vector for node-to-segment (NTS) element is not required 
@@ -154,13 +154,13 @@ class ZeroLengthContactNTS2D: public Element
   // Normal and Tangental Vectors for Elemental Nodes, (4*1)
   Vector N;
   Vector T;
-  Vector ContactNormal;  // out normal of master element
+  Vector ContactNormal;  // out normal of primary element
   int ContactFlag;                    // 0: not contact; 1: stick; 2: slide
   int numDOF;	                        // number of dof for ZeroLength
   // detect the contact and set flag
   int contactDetect(int s, int m1, int m2, int stage);
   //form residual and tangent
-  void formLocalResidAndTangent( int tang_flag , int slave, int master1, int master2, int stage);
+  void formLocalResidAndTangent( int tang_flag , int secondary, int primary1, int primary2, int stage);
   void formGlobalResidAndTangent(int tang_flag );
   Matrix *Ki; 	    	// pointer to objects matrix (a class Matrix)
   Vector *load;         	// pointer to objects vector (a class Vector)
@@ -168,8 +168,8 @@ class ZeroLengthContactNTS2D: public Element
   Matrix stiff;   // for stiff matrix
   Vector resid;   // for force residual vector
   Matrix zeroMatrix;
-  int SlaveNodeNum;
-  int MasterNodeNum;
+  int SecondaryNodeNum;
+  int PrimaryNodeNum;
   double *restore_shear_gap;
 };
 

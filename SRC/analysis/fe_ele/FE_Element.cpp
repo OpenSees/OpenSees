@@ -351,13 +351,16 @@ FE_Element::zeroTangent(void)
 void  
 FE_Element::addKtToTang(double fact)
 {
-    if (myEle != 0) {
+    if (myEle != 0 && myEle->isActive()) {
 	
 	// check for a quick return	
 	if (fact == 0.0) 
 	    return;
 	else if (myEle->isSubdomain() == false)	    
-	    theTangent->addMatrix(1.0, myEle->getTangentStiff(),fact);
+	{
+	    const Matrix& Kt = myEle->getTangentStiff();
+	    theTangent->addMatrix(1.0, Kt,fact);
+	}
 	else {
 	    opserr << "WARNING FE_Element::addKToTang() - ";
 	    opserr << "- this should not be called on a Subdomain!\n";
@@ -368,7 +371,7 @@ FE_Element::addKtToTang(double fact)
 void  
 FE_Element::addCtoTang(double fact)
 {
-    if (myEle != 0) {
+    if (myEle != 0 && myEle->isActive()) {
 	
 	// check for a quick return	
 	if (fact == 0.0) 
@@ -385,7 +388,7 @@ FE_Element::addCtoTang(double fact)
 void  
 FE_Element::addMtoTang(double fact)
 {
-    if (myEle != 0) {
+    if (myEle != 0 && myEle->isActive()) {
 
 	// check for a quick return	
 	if (fact == 0.0) 
@@ -403,7 +406,7 @@ FE_Element::addMtoTang(double fact)
 void
 FE_Element::addKiToTang(double fact)
 {
-  if (myEle != 0) {
+  if (myEle != 0 && myEle->isActive()) {
     // check for a quick return	
     if (fact == 0.0) 
       return;
@@ -419,7 +422,7 @@ FE_Element::addKiToTang(double fact)
 void
 FE_Element::addKgToTang(double fact)
 {
-  if (myEle != 0) {
+  if (myEle != 0 && myEle->isActive()) {
     // check for a quick return	
     if (fact == 0.0) 
       return;
@@ -435,7 +438,7 @@ FE_Element::addKgToTang(double fact)
 void
 FE_Element::addKpToTang(double fact, int numP)
 {
-  if (myEle != 0) {
+  if (myEle != 0 && myEle->isActive()) {
     // check for a quick return	
     if (fact == 0.0) 
       return;
@@ -484,7 +487,7 @@ FE_Element::addRtoResidual(double fact)
 {
   if (myEle != 0) {
     // check for a quick return	
-    if (fact == 0.0) 
+    if (fact == 0.0 || !myEle->isActive()) 
       return;
     else if (myEle->isSubdomain() == false) {
       const Vector &eleResisting = myEle->getResistingForce();
@@ -507,7 +510,7 @@ FE_Element::addRIncInertiaToResidual(double fact)
 {
     if (myEle != 0) {
 	// check for a quick return	
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	else if (myEle->isSubdomain() == false) {
 	  const Vector &eleResisting = myEle->getResistingForceIncInertia();
@@ -534,7 +537,7 @@ FE_Element::getTangForce(const Vector &disp, double fact)
 	theResidual->Zero();
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return *theResidual;
 
 	// get the components we need out of the vector
@@ -583,7 +586,7 @@ FE_Element::getK_Force(const Vector &disp, double fact)
 	theResidual->Zero();
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return *theResidual;
 
 	// get the components we need out of the vector
@@ -621,7 +624,7 @@ FE_Element::getKi_Force(const Vector &disp, double fact)
 	theResidual->Zero();
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return *theResidual;
 
 	// get the components we need out of the vector
@@ -659,7 +662,7 @@ FE_Element::getM_Force(const Vector &disp, double fact)
 	theResidual->Zero();
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return *theResidual;
 
 	// get the components we need out of the vector
@@ -697,7 +700,7 @@ FE_Element::getC_Force(const Vector &disp, double fact)
 	theResidual->Zero();
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return *theResidual;
 
 	// get the components we need out of the vector
@@ -765,7 +768,7 @@ FE_Element::addM_Force(const Vector &accel, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    // get the components we need out of the vector
@@ -801,7 +804,7 @@ FE_Element::addD_Force(const Vector &accel, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    // get the components we need out of the vector
@@ -837,7 +840,7 @@ FE_Element::addK_Force(const Vector &disp, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    // get the components we need out of the vector
@@ -873,7 +876,7 @@ FE_Element::addKg_Force(const Vector &disp, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    // get the components we need out of the vector
@@ -910,7 +913,7 @@ FE_Element::addLocalM_Force(const Vector &accel, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    if (theResidual->addMatrixVector(1.0, myEle->getMass(),
@@ -937,7 +940,7 @@ FE_Element::addLocalD_Force(const Vector &accel, double fact)
     if (myEle != 0) {    
 
 	// check for a quick return
-	if (fact == 0.0) 
+	if (fact == 0.0 || !myEle->isActive()) 
 	    return;
 	if (myEle->isSubdomain() == false) {
 	    if (theResidual->addMatrixVector(1.0, myEle->getDamp(),
@@ -1101,11 +1104,38 @@ FE_Element::commitSensitivity(int gradNum, int numGrads)
 int  
 FE_Element::updateElement(void)
 {
-  if (myEle != 0) {
+  if (myEle != 0 && myEle->isActive()) {
     return myEle->update();
     opserr << "FE_Element::update()"; myEle->Print(opserr, 0);
   }
 
   
   return 0;
+}
+
+
+void FE_Element::activate()
+{ 
+	myEle->activate();
+}
+
+
+void FE_Element::deactivate()
+{ 
+	myEle->deactivate();
+}
+
+
+bool FE_Element::isActive()
+{ 
+	if (myEle->isActive())
+	{
+		// opserr << "Element # " << myEle->getTag() << " is ACTIVE." << endln;
+		return true;
+	} 
+	else
+	{
+		// opserr << "Element # " << myEle->getTag() << " is INACTIVE." << endln;
+		return false;
+	}
 }

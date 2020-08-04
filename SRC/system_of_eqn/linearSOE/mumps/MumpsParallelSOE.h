@@ -47,7 +47,7 @@ class MumpsParallelSolver;
 class MumpsParallelSOE : public MumpsSOE
 {
   public:
-    MumpsParallelSOE(MumpsParallelSolver &theSolver, int matType=2);
+    MumpsParallelSOE(MumpsParallelSolver &theSolver, int matType=0);
     MumpsParallelSOE();
     
     ~MumpsParallelSOE();

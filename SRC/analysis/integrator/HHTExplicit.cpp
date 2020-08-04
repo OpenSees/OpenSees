@@ -433,6 +433,11 @@ int HHTExplicit::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+HHTExplicit::getVel()
+{
+  return *Udot;
+}
 
 int HHTExplicit::sendSelf(int cTag, Channel &theChannel)
 {

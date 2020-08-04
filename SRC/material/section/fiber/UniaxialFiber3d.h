@@ -42,7 +42,7 @@
 #define UniaxialFiber3d_h
 
 #include <Matrix.h>
-#include <Fiber.h>
+#include "Fiber.h"
 
 class UniaxialMaterial;
 class Response;

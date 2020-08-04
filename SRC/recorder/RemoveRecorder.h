@@ -63,7 +63,7 @@ class RemoveRecorder: public Recorder
    RemoveRecorder(int nodeID, 
 		  ID &eleIDs,
 		  ID &secIDs,
-		  ID &slaveEleIDs,
+		  ID &secondaryEleIDs,
 		  const Vector remCriteria,
 		  Domain &theDomainPtr,
 		  OPS_Stream &s,
@@ -90,7 +90,7 @@ class RemoveRecorder: public Recorder
    //	int checkNodeRemoval(Element* theEle, int &theComponent,const Vector Criteria);
    int elimElem(int theDeadEleTag, double timeStamp = 0);
    int elimNode(int theDeadNodeTag, double timeStamp = 0);
-   int elimSlaves(double timeStamp = 0);
+   int elimSecondaries(double timeStamp = 0);
    int updateNodalMasses(int theEleTag, double theEleMass);
    
    static int numRecs;
@@ -111,11 +111,11 @@ class RemoveRecorder: public Recorder
    int numSecs;
    int numRules;  
    
-   // Tags for Master elements, sections to check (if applicable), slave element (optional)
-   ID eleTags, secTags, slaveEleTags;	
+   // Tags for primary elements, sections to check (if applicable), secondary element (optional)
+   ID eleTags, secTags, secondaryEleTags;	
    
    Vector criteria;
-   bool slaveFlag; // flag indiacting if slave elements should be removed if all master elements collaspe
+   bool secondaryFlag; // flag indiacting if secondary elements should be removed if all primary elements collaspe
    Vector eleMasses, eleWeights;
    double gAcc;
    int gDir, gPat;

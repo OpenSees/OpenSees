@@ -276,7 +276,7 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
   //
   // spit out header to file
   //
-
+  thePVDFile << "<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
   thePVDFile << "<VTKFile type=\"Collection\" version=\"1.0\" \n";
   thePVDFile << "byte_order=\"LittleEndian\" \n";
   thePVDFile << "compressor=\"vtkZLibDataCompressor\">\n";
@@ -408,6 +408,7 @@ VTK_Recorder::vtu()
   theFileVTU << std::scientific;
   
   // header
+  theFileVTU<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
   theFileVTU<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
   theFileVTU<<" version="<<quota<<"1.0"<<quota;
   theFileVTU<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1039,6 +1040,8 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_PlateMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC9] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ASDShellQ4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDShellT3] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_Plate1] = VTK_QUAD;
     vtktypes[ELE_TAG_Brick] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_BbarBrick] = VTK_HEXAHEDRON;

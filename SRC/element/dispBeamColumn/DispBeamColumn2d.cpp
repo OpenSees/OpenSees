@@ -1845,11 +1845,12 @@ DispBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
 {
   if (argc < 1)
     return -1;
-  
+
   // If the parameter belongs to the element itself
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
-  
+  }
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
 		return -1;
@@ -1888,13 +1889,14 @@ DispBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
   
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     
     if (argc < 2)
       return -1;
 
     return beamInt->setParameter(&argv[1], argc-1, param);
   }
+  
   int result =-1;
   // Default, send to every object
   int ok = 0;

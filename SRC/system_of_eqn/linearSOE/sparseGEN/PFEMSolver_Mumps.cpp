@@ -172,8 +172,6 @@ int
 PFEMSolver_Mumps::solve()
 {
 #ifdef _MUMPS
-    Timer timer;
-    timer.start();
     cs* M = theSOE->M;
     cs* Gft = theSOE->Gft;
     cs* Git = theSOE->Git;
@@ -183,6 +181,7 @@ PFEMSolver_Mumps::solve()
     Vector& B = theSOE->B;
     ID& dofType = theSOE->dofType;
     ID& dofID = theSOE->dofID;
+    int stage = theSOE->stage;
 
     int Msize = M->n;
     int Isize = Git->n;
@@ -192,7 +191,7 @@ PFEMSolver_Mumps::solve()
     int size = X.Size();
 
     // numeric LU factorization of M
-    if(Msize > 0) {
+    if(Msize > 0 && stage!=2) {
         sid.job = JOB_FACTORIZATION;
         dmumps_c(&sid);
 
@@ -205,15 +204,16 @@ PFEMSolver_Mumps::solve()
     // structure and interface predictor : deltaV1 = M^{-1} * rsi
     std::vector<double> deltaV1;
     if(Msize > 0) {
-        deltaV1.assign(Msize,0.0);
-
+        deltaV1.assign(Msize, 0.0);
+    }
+    if (Msize>0 && stage!=2) {
         // rsi
-        for(int i=0; i<size; i++) {        // row
+        for (int i = 0; i < size; i++) {        // row
             int rowtype = dofType(i);      // row type
             int rowid = dofID(i);          // row id
-            if(rowtype == 2) {
-                deltaV1[rowid+Ssize] = B(i);   // rsi
-            } else if(rowtype == 0) {
+            if (rowtype == 2) {
+                deltaV1[rowid + Ssize] = B(i);   // rsi
+            } else if (rowtype == 0) {
                 deltaV1[rowid] = B(i);         // rsi
             }
         }
@@ -221,16 +221,18 @@ PFEMSolver_Mumps::solve()
         sid.nrhs = 1;
         sid.job = JOB_SOLUTION;
         dmumps_c(&sid);
-        if(sid.info[0] != 0) {
-            opserr<<"WARNING: failed to solve predictor -- PFEMSolver_Mumps::solve\n";
+        if (sid.info[0] != 0) {
+            opserr << "WARNING: failed to solve predictor -- PFEMSolver_Mumps::solve\n";
             return -1;
         }
     }
 
     // fluid predictor: deltaVf1 = Mf^{-1} * rf
     std::vector<double> deltaVf1;
-    if(Fsize > 0) {
+    if (Fsize > 0) {
         deltaVf1.assign(Fsize,0.0);
+    }
+    if(Fsize>0 && stage!=2) {
 
         // rf
         for(int i=0; i<size; i++) {        // row
@@ -250,30 +252,31 @@ PFEMSolver_Mumps::solve()
     // Gi, Gf
     cs* Gi = 0;
     cs* Gf = 0;
-    if(Fsize > 0) {
+    if(Fsize>0 && (stage==0||stage==2)) {
         Gf = cs_transpose(Gft, 1);
     }
-    if(Isize > 0) {
+    if(Isize>0 && (stage==0||stage==2)) {
         Gi = cs_transpose(Git, 1);
     }
 
     // solve for pressure
     std::vector<double> deltaP, rhsP;
-    double mf = 1.0/Mf.Norm();
     if(Psize>0) {
         deltaP.assign(Psize, 0.0);
         rhsP.assign(Psize, 0.0);
+    }
+    if(Psize>0 && (stage==2||stage==0)) {
 
         // S = L + Git*Mi{-1}*Gi + Gft*Mf{-1}*Gf
         cs* S = 0;
 
         // Gft*deltaVf1
-        if(Fsize > 0) {
+        if(Fsize > 0 && stage==0) {
             cs_gaxpy(Gft, &deltaVf1[0], &rhsP[0]);
         }
 
         // Git*deltaVi1
-        if(Isize > 0) {
+        if(Isize > 0 && stage==0) {
             cs_gaxpy(Git, &deltaV1[0]+Ssize, &rhsP[0]);
         }
 
@@ -287,10 +290,7 @@ PFEMSolver_Mumps::solve()
         }
 
         // Git*Mi{-1}*Gi
-        if (Isize > 0) {
-            Timer timer2;
-            timer2.start();
-
+        if (Isize > 0 && stage==0) {
             std::vector<int> irhs_ptr(Msize+1,1);
             std::vector<int> irhs_row(Isize*Isize);
             std::vector<double> rhs_val(Isize*Isize);
@@ -310,10 +310,6 @@ PFEMSolver_Mumps::solve()
             sid.irhs_sparse = &irhs_row[0];
             sid.rhs_sparse = &rhs_val[0];
 
-            timer2.pause();
-            // opserr<<"Bi prepare time = "<<timer2.getReal()<<"\n";
-            timer2.start();
-
             sid.job = JOB_SOLUTION;
             dmumps_c(&sid);
             if(sid.info[0] != 0) {
@@ -331,10 +327,6 @@ PFEMSolver_Mumps::solve()
                 irhs_row[k] -= 1;
                 irhs_row[k] -= Ssize;
             }
-
-            timer2.pause();
-            // pserr<<"Bi solve time = "<<timer2.getReal()<<"\n";
-            timer2.start();
 
             cs* Bi1 = cs_spalloc(Isize,Isize,1,1,1);
             int numignore = 0;
@@ -354,15 +346,47 @@ PFEMSolver_Mumps::solve()
             S = cs_multiply(S1, Gi);
             cs_spfree(S1);
             cs_spfree(Bi);
-            timer2.pause();
-            // opserr<<"Bi compress time = "<<timer2.getReal()<<"\n";
+
+        } else if (Isize > 0 && stage==2) {
+
+            // get Mi
+            Vector Mi;
+            Mi.resize(Isize);
+            Mi.Zero();
+
+            for (int i = 0; i < size; ++i) {
+                int coltype = dofType(i);
+                int colid = dofID(i);
+                if (coltype == 2) {
+                    int cid = colid + Ssize;
+                    for (int k = M->p[cid]; k < M->p[cid+1]; ++k) {
+                        Mi(colid) += M->x[k];
+                    }
+                }
+            }
+
+            // Gi*Mi{-1}*Gi
+            for(int j=0; j<Psize; j++) {
+                for(int k=Gi->p[j]; k<Gi->p[j+1]; k++) {
+                    Gi->x[k] /= Mi(Gi->i[k]);
+                }
+            }
+            cs* S1 = cs_multiply(Git, Gi);
+            if(S == 0) {
+                S = S1;
+            } else {
+                cs* S2 = cs_add(S, S1, 1.0, 1.0);
+                cs_spfree(S);
+                cs_spfree(S1);
+                S = S2;
+            }
         }
 
         // Gft*Mf{-1}*Gf
         if(Fsize > 0) {
-            for(int j=0; j<Fsize; j++) {
-                for(int k=Gft->p[j]; k<Gft->p[j+1]; k++) {
-                    Gft->x[k] /= Mf(j);
+            for(int j=0; j<Psize; j++) {
+                for(int k=Gf->p[j]; k<Gf->p[j+1]; k++) {
+                    Gf->x[k] /= Mf(Gf->i[k]);
                 }
             }
             cs* S1 = cs_multiply(Gft, Gf);
@@ -449,12 +473,11 @@ PFEMSolver_Mumps::solve()
     if (Msize > 0) {
         deltaV.assign(Msize, 0.0);
     }
-    if(Isize > 0) {
+    if(Isize > 0 && stage==0) {
         // Gi*deltaP
         if(Psize > 0) {
             cs_gaxpy(Gi, &deltaP[0], &deltaV[0]+Ssize);
         }
-        cs_spfree(Gi);
 
         sid.rhs = &deltaV[0];
         sid.nrhs = 1;
@@ -465,7 +488,7 @@ PFEMSolver_Mumps::solve()
             return -1;
         }
     }
-    for (int i=0; i<Msize; ++i) {
+    for (int i = 0; i < Msize; ++i) {
         deltaV[i] += deltaV1[i];
     }
 
@@ -473,13 +496,22 @@ PFEMSolver_Mumps::solve()
     std::vector<double> deltaVf;
     if(Fsize > 0) {
         deltaVf.assign(Fsize, 0.0);
+    }
+    if(Fsize > 0 && stage==0) {
         if(Psize > 0) {
             cs_gaxpy(Gf, &deltaP[0], &deltaVf[0]);
         }
+    }
+    for (int i=0; i<Fsize; ++i) {
+        deltaVf[i] = deltaVf[i] + deltaVf1[i];
+    }
+
+    // delete Gi, Gf
+    if(Fsize>0 && (stage==0||stage==2)) {
         cs_spfree(Gf);
-        for (int i=0; i<Fsize; ++i) {
-            deltaVf[i] = deltaVf[i]/Mf(i) + deltaVf1[i];
-        }
+    }
+    if(Isize>0 && (stage==0||stage==2)) {
+        cs_spfree(Gi);
     }
 
     // copy to X
@@ -498,9 +530,6 @@ PFEMSolver_Mumps::solve()
             X(i) = deltaP[rowid];
         }
     }
-
-    timer.pause();
-    opserr<<"MUMPS total solve time = "<<timer.getReal()<<"\n";
 #endif
     return 0;
 }

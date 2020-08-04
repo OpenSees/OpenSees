@@ -410,6 +410,9 @@ rho -- mass density, optional default = 0.0.\n\n";
 static char wipeAnalysis_docstring[] =
     "* wipeAnalysis()\n\n\
 Wipe all the analysis\n";
+static char wipeReliability_docstring[] =
+    "* wipeReliability()\n\n\
+Wipe all the reliability analysis and random variables\n";
 static char wipe_docstring[] =
     "* wipe()\n\n\
 Wipe all the analysis and model\n";
@@ -762,6 +765,7 @@ static PyMethodDef methodsOpenSees[] = {
   {"eleLoad", ops_addElementalLoad, METH_VARARGS, eleLoad_docstring},
   // analysis methods
   {"wipeAnalysis", ops_wipeAnalysis, METH_VARARGS, wipeAnalysis_docstring},
+  {"wipeReliability", ops_wipeReliability, METH_VARARGS, wipeReliability_docstring},
   {"wipe", ops_wipeModel, METH_VARARGS, wipe_docstring},
   {"Print", ops_printModel, METH_VARARGS, Print_docstring},
   {"system", ops_specifySOE, METH_VARARGS, system_docstring},

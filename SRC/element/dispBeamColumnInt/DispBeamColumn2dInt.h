@@ -50,8 +50,6 @@ class CrdTransf;
 
 class LinearCrdTransf2dInt;
 
-class LinearCrdTransf2dInt;
-
 class Response;
 
 

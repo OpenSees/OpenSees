@@ -38,6 +38,7 @@
 // What: "@(#) Graph.h, revA"
 
 #include <OPS_Stream.h>
+#include <vector>
 
 class Vertex;
 class VertexIter;
@@ -56,6 +57,8 @@ class Graph
 
     virtual bool addVertex(Vertex *vertexPtr, bool checkAdjacency = true);
     virtual int addEdge(int vertexTag, int otherVertexTag);
+    virtual void startAddEdge();
+    virtual int addEdgeFast(int vertexTag, int otherVertexTag);
     
     virtual Vertex *getVertexPtr(int vertexTag);
     virtual VertexIter &getVertices(void);
@@ -79,6 +82,7 @@ class Graph
     VertexIter *theVertexIter;
     int numEdge;
     int nextFreeTag;
+    std::vector<Vertex*> vertices;
 };
 
 #endif

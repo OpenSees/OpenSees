@@ -344,6 +344,12 @@ int NewmarkExplicit::update(const Vector &aiPlusOne)
 }
 
 
+const Vector &
+NewmarkExplicit::getVel()
+{
+  return *Udot;
+}
+
 int NewmarkExplicit::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(1);

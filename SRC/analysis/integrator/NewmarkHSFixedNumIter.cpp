@@ -463,6 +463,12 @@ int NewmarkHSFixedNumIter::commit(void)
 }
 
 
+const Vector &
+NewmarkHSFixedNumIter::getVel()
+{
+  return *Udot;
+}
+
 int NewmarkHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(4);

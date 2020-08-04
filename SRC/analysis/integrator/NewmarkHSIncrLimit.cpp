@@ -377,6 +377,12 @@ int NewmarkHSIncrLimit::update(const Vector &deltaU)
 }
 
 
+const Vector &
+NewmarkHSIncrLimit::getVel()
+{
+  return *Udot;
+}
+
 int NewmarkHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(4);

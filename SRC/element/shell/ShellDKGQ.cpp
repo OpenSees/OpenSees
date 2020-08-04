@@ -1611,6 +1611,12 @@ const Matrix&
 	 Bbend(2,1) = shpBend[3][j] + shpBend[4][j];
 	 Bbend(2,2) = shpBend[3][k] + shpBend[4][k];
 
+     /*
+     bugfix: Massimo Petracca 02/26/2020. with the original implementation, the curvatures
+     sent to the section had the wrong sign.
+     */
+     Bbend *= -1.0;
+
 	 return Bbend;
  }
 

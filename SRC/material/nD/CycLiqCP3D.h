@@ -40,7 +40,6 @@
 
 #include <Vector.h>
 #include <Matrix.h>
-#include <T2Vector.h>
 #include <NDMaterial.h>
 
 #include <CycLiqCP.h>

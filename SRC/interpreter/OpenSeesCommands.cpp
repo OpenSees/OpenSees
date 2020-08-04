@@ -69,6 +69,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonRaphson.h>
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
+#include <GimmeMCK.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -97,14 +98,41 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonLineSearch.h>
 #include <FileDatastore.h>
 #include <Mesh.h>
+#ifdef _MUMPS
+#include <MumpsSolver.h>
+#include <MumpsSOE.h>
+#endif
+#include <BackgroundMesh.h>
 
 #ifdef _PARALLEL_INTERPRETERS
+bool setMPIDSOEFlag = false;
+
 #include <mpi.h>
 #include <MPI_MachineBroker.h>
 #include <ParallelNumberer.h>
 #include <DistributedDisplacementControl.h>
+#include <DistributedBandSPDLinSOE.h>
+#include <DistributedSparseGenColLinSOE.h>
+#include <DistributedSparseGenRowLinSOE.h>
+#include <DistributedBandGenLinSOE.h>
+#include <DistributedDiagonalSOE.h>
+#include <DistributedDiagonalSolver.h>
+#include <MPIDiagonalSOE.h>
+#include <MPIDiagonalSolver.h>
+#define MPIPP_H
+#include <DistributedSuperLU.h>
+#include <DistributedProfileSPDLinSOE.h>
+#ifdef _MUMPS
 #include <MumpsParallelSOE.h>
 #include <MumpsParallelSolver.h>
+#endif
+#elif _PARALLEL_PROCESSING
+#include <mpi.h>
+#include <PartitionedDomain.h>
+#ifdef _MUMPS
+#include <MumpsParallelSOE.h>
+#include <MumpsParallelSolver.h>
+#endif
 #endif
 
 
@@ -548,6 +576,12 @@ OpenSeesCommands::setStaticAnalysis()
     if (theEigenSOE != 0) {
 	theStaticAnalysis->setEigenSOE(*theEigenSOE);
     }
+
+#ifdef _PARALLEL_INTERPRETERS
+    if (setMPIDSOEFlag) {
+        ((MPIDiagonalSOE*)theSOE)->setAnalysisModel(*theAnalysisModel);
+    }
+#endif
 }
 
 int
@@ -628,6 +662,12 @@ OpenSeesCommands::setPFEMAnalysis()
     if (theEigenSOE != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
+
+#ifdef _PARALLEL_INTERPRETERS
+    if (setMPIDSOEFlag) {
+        ((MPIDiagonalSOE*)theSOE)->setAnalysisModel(*theAnalysisModel);
+    }
+#endif
 
     return 0;
 }
@@ -767,7 +807,11 @@ OpenSeesCommands::setTransientAnalysis()
     if (theEigenSOE != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
-
+#ifdef _PARALLEL_INTERPRETERS
+	if (setMPIDSOEFlag) {
+	  ((MPIDiagonalSOE*) theSOE)->setAnalysisModel(*theAnalysisModel);
+	}
+#endif
 }
 
 void
@@ -826,6 +870,7 @@ OpenSeesCommands::wipe()
 
     // wipe all meshes
     OPS_clearAllMesh();
+    OPS_getBgMesh().clearAll();
 
     // time set to zero
     ops_Dt = 0.0;
@@ -1099,8 +1144,14 @@ int OPS_System()
 
 
     } else if (strcmp(type,"MPIDiagonal") == 0) {
+#ifdef _PARALLEL_INTERPRETERS
+        MPIDiagonalSolver* theSolver = new MPIDiagonalSolver();
+        theSOE = new MPIDiagonalSOE(*theSolver);
+        setMPIDSOEFlag = true;
+#else
 	// Diagonal SOE & SOLVER
 	theSOE = (LinearSOE*)OPS_DiagonalDirectSolver();
+#endif
 
     } else if (strcmp(type,"SProfileSPD") == 0) {
 	// PROFILE SPD SOE * SOLVER
@@ -1110,6 +1161,20 @@ int OPS_System()
     } else if (strcmp(type, "ProfileSPD") == 0) {
 
 	theSOE = (LinearSOE*)OPS_ProfileSPDLinDirectSolver();
+
+#ifdef _PARALLEL_INTERPRETERS
+    } else if (strcmp(type, "ParallelProfileSPD") == 0) {
+        ProfileSPDLinSolver* theSolver = new ProfileSPDLinDirectSolver();
+        DistributedProfileSPDLinSOE* theParallelSOE = new DistributedProfileSPDLinSOE(*theSolver);
+        theSOE = theParallelSOE;
+        auto theMachineBroker = cmds->getMachineBroker();
+        auto rank = theMachineBroker->getPID();
+        auto numChannels = cmds->getNumChannels();
+        auto theChannels = cmds->getChannels();
+        theParallelSOE->setProcessID(rank);
+        theParallelSOE->setChannels(numChannels, theChannels);
+    
+#endif
 
     } else if (strcmp(type, "PFEM") == 0) {
 	// PFEM SOE & SOLVER
@@ -1128,7 +1193,9 @@ int OPS_System()
 		
 	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
 
-	    }
+	    } else if (strcmp(type, "-umfpack") == 0) {
+	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
+        }
 	}
 
 
@@ -1351,6 +1418,9 @@ int OPS_Integrator()
 
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();
+
+    } else if (strcmp(type,"GimmeMCK") == 0 || strcmp(type,"ZZTop") == 0) {
+	ti = (TransientIntegrator*)OPS_GimmeMCK();
 
     } else if (strcmp(type,"TRBDF2") == 0 || strcmp(type,"Bathe") == 0) {
 	ti = (TransientIntegrator*)OPS_TRBDF2();
@@ -1795,6 +1865,13 @@ int OPS_printA()
 	} else if (theTransientIntegrator != 0) {
 	    theTransientIntegrator->formTangent(0);
 	}
+
+    PFEMLinSOE* pfemsoe = dynamic_cast<PFEMLinSOE*>(theSOE);
+    if (pfemsoe != 0) {
+        pfemsoe->saveK(*output);
+        outputFile.close();
+        return 0;
+    }
 
 	Matrix *A = const_cast<Matrix*>(theSOE->getA());
 	if (A != 0) {
@@ -3090,6 +3167,7 @@ void* OPS_ParallelDisplacementControl() {
 void* OPS_MumpsSolver() {
     int icntl14 = 20;
     int icntl7 = 7;
+    int matType = 0; // 0: unsymmetric, 1: symmetric positive definite, 2: symmetric general
     while (OPS_GetNumRemainingInputArgs() > 2) {
         const char* opt = OPS_GetString();
         int num = 1;
@@ -3103,14 +3181,24 @@ void* OPS_MumpsSolver() {
                 opserr << "WARNING: failed to get icntl7\n";
                 return 0;
             }
+        } else if (strcmp(opt, "-matrixType") == 0) {
+            if (OPS_GetIntInput(&num, &matType) < 0) {
+                opserr << "WARNING: failed to get -matrixType. Unsymmetric matrix assumed\n";
+                return 0;
+            }
+            if (matType < 0 || matType > 2) {
+                opserr << "Mumps Warning: wrong -matrixType value (" << matType << "). Unsymmetric matrix assumed\n";
+                matType = 0;
+            }
         }
     }
 
 #ifdef _PARALLEL_INTERPRETERS
+#ifdef _MUMPS
     MumpsParallelSOE* soe = 0;
 
     MumpsParallelSolver *solver= new MumpsParallelSolver(icntl7, icntl14);
-    soe = new MumpsParallelSOE(*solver);
+    soe = new MumpsParallelSOE(*solver, matType);
 
     MachineBroker* machine = cmds->getMachineBroker();
     Channel** channels = cmds->getChannels();
@@ -3120,8 +3208,13 @@ void* OPS_MumpsSolver() {
     soe->setProcessID(rank);
     soe->setChannels(numChannels, channels);
     return soe;
+#endif
 #else
-    return 0;
+#ifdef _MUMPS
+    MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
+    theSOE = new MumpsSOE(*theSolver, matType);
+    return theSOE;
+#endif
 #endif
 
 }
