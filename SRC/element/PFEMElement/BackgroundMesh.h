@@ -127,15 +127,10 @@ class BackgroundMesh {
     void setNumSub(int num) { numsub = num; }
     void addStructuralNodes(VInt& snodes, int sid);
     void setContactData(const VDouble& data);
-    void setBoundReduceFactor(double factor) {
-        boundReduceFactor = factor;
-    }
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
     int getSizeLevel(VInt& index);
     bool isDispOn() const { return dispon; }
-    void setKernelClose(bool flag) { kernelClose = flag; }
-    bool isKernelClose() const { return kernelClose; }
 
     // remesh all
     int remesh(bool init = false);
@@ -156,9 +151,6 @@ class BackgroundMesh {
     int moveParticles();
     int convectParticle(Particle* pt, VInt index, int level, int nums);
     int moveFixedParticles();
-    int inlet();
-    void addInlet(const VDouble& crds, const VDouble& vel);
-    void setInletNum(const VInt& num) { inletNum = num; }
 
     // create grid nodes and elements
     int addStructure();
@@ -225,13 +217,8 @@ class BackgroundMesh {
                                           // 0:invalid, larger:debris
     VDouble contactData;
     VInt contactEles;
-    double boundReduceFactor;
-    VVInt inletLoc;
-    VVDouble inletVel;
-    VInt inletNum;
     VVInt largesize;
     bool dispon;
-    bool kernelClose;
 
     static const int contact_tag = -13746;
 };

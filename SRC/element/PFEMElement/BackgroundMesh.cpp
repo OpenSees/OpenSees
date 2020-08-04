@@ -75,15 +75,11 @@ int OPS_BgMesh() {
 
     // check input
     if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 1) {
-        opserr
-            << "WARNING: basicsize? lower? upper? <-tol tol? "
-               "-wave wavefilename? numl? locs? -numsub numsub? "
-               "-structure sid? ?numnodes? structuralNodes?"
-               "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-               "-kernelClose? -kernelAll? "
-               "-boundReduceFactor factor? "
-               "-inlet crds? vel? -inletNum nump?"
-               "-largeSize? level? lower? upper?>";
+        opserr << "WARNING: basicsize? lower? upper? <-tol tol? "
+                  "-wave wavefilename? numl? locs? -numsub numsub? "
+                  "-structure sid? ?numnodes? structuralNodes?"
+                  "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
+                  "-largeSize? level? lower? upper?>";
         return -1;
     }
 
@@ -225,19 +221,6 @@ int OPS_BgMesh() {
                 return -1;
             }
             bgmesh.setContactData(data);
-        } else if (strcmp(opt, "-boundReduceFactor") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need factor\n";
-                return -1;
-            }
-            num = 1;
-            double factor = 0.5;
-            if (OPS_GetDoubleInput(&num, &factor) < 0) {
-                opserr << "WARNING: failed to get factor\n";
-                return -1;
-            }
-
-            bgmesh.setBoundReduceFactor(factor);
         } else if (strcmp(opt, "-largeSize") == 0) {
             int numbasic = 2;
             num = 1;
@@ -260,33 +243,6 @@ int OPS_BgMesh() {
             }
 
             bgmesh.addLargeSize(numbasic, range_low, range_up);
-        } else if (strcmp(opt, "-kernelClose") == 0) {
-            bgmesh.setKernelClose(true);
-        } else if (strcmp(opt, "-kernelAll") == 0) {
-            bgmesh.setKernelClose(false);
-        } else if (strcmp(opt, "-inlet") == 0) {
-            VDouble crds(ndm), vel(ndm);
-            if (OPS_GetNumRemainingInputArgs() < 2 * ndm) {
-                opserr << "WARNING: need crds and vel\n";
-                return -1;
-            }
-            if (OPS_GetDoubleInput(&ndm, &crds[0]) < 0) {
-                opserr << "WARNING: failed to get inlet coordinates\n";
-                return -1;
-            }
-            if (OPS_GetDoubleInput(&ndm, &crds[0]) < 0) {
-                opserr << "WARNING: failed to get inlet velocity\n";
-                return -1;
-            }
-            bgmesh.addInlet(crds, vel);
-        } else if (strcmp(opt, "-inletNum") == 0) {
-            VInt nump(ndm);
-            if (OPS_GetIntInput(&ndm, &nump[0]) < 0) {
-                opserr << "WARNING: failed to get inlet number of "
-                          "particles\n";
-                return -1;
-            }
-            bgmesh.setInletNum(nump);
         }
     }
 
@@ -321,13 +277,8 @@ BackgroundMesh::BackgroundMesh()
       structuralNodes(),
       contactData(8),
       contactEles(),
-      boundReduceFactor(0.5),
-      inletLoc(),
-      inletVel(),
-      inletNum(),
       largesize(),
-      dispon(true),
-      kernelClose(false) {}
+      dispon(true) {}
 
 BackgroundMesh::~BackgroundMesh() {
     for (int i = 0; i < (int)recorders.size(); ++i) {
@@ -396,14 +347,6 @@ void BackgroundMesh::addLargeSize(int numbasic, const VDouble& range_low,
     }
 
     largesize.push_back(lsize);
-}
-
-void BackgroundMesh::addInlet(const VDouble& crds, const VDouble& vel) {
-    VInt ind;
-    nearIndex(crds, ind);
-
-    inletLoc.push_back(ind);
-    inletVel.push_back(vel);
 }
 
 int BackgroundMesh::getSizeLevel(VInt& index) {
@@ -764,10 +707,8 @@ void BackgroundMesh::clearAll() {
         contactData[i] = 0.0;
     }
     contactEles.clear();
-    boundReduceFactor = 0.5;
     largesize.clear();
     dispon = true;
-    kernelClose = false;
 }
 
 int BackgroundMesh::clearBackground() {
@@ -1222,118 +1163,6 @@ int BackgroundMesh::addParticles() {
     return 0;
 }
 
-int BackgroundMesh::inlet() {
-    // check nump
-    if (inletNum.empty()) {
-        return 0;
-    }
-    int nump = 1;
-    for (int i = 0; i < (int)inletNum.size(); ++i) {
-        nump *= inletNum[i];
-    }
-    if (nump <= 0) {
-        opserr << "WARNING: inlet number of particles for one cell is not "
-                  "correctly set\n";
-        return -1;
-    }
-
-    // get group
-    ParticleGroup* group = 0;
-    TaggedObjectIter& meshes = OPS_getAllMesh();
-    Mesh* mesh = 0;
-    while ((mesh = dynamic_cast<Mesh*>(meshes())) != 0) {
-        group = dynamic_cast<ParticleGroup*>(mesh);
-        if (group != 0) {
-            break;
-        }
-    }
-    if (group == 0) {
-        opserr << "WARNING: no particle group is defined\n";
-        return -1;
-    }
-
-    // for each inlet location
-    for (int i = 0; i < (int)inletLoc.size(); ++i) {
-        // get bcell
-        BCell& bcell = bcells[inletLoc[i]];
-
-        // get size level
-        int level = getSizeLevel(inletLoc[i]);
-        if (bcell.sizeLevel != 0 && bcell.sizeLevel != level) {
-            opserr << "WARNING: regions with different mesh sizes"
-                      "are overlapping\n";
-            return -1;
-        }
-        bcell.sizeLevel = level;
-
-        if (bcell.type == STRUCTURE) {
-            opserr << "WARNING: inlet boundary overlapps with structure\n";
-            return -1;
-        }
-
-        // add bnodes of the cell
-        if (bcell.bnodes.empty()) {
-            // get corners
-            VVInt indices;
-            getCorners(inletLoc[i], 1, level, indices);
-
-            // set corners
-            for (int j = 0; j < (int)indices.size(); ++j) {
-                BNode& bnode = bnodes[indices[j]];
-                if (bnode.size() == 0) {
-                    bnode.type = FLUID;
-                }
-                bcell.bnodes.push_back(&bnode);
-                bcell.bindex.push_back(indices[j]);
-            }
-        }
-
-        // create and add particles
-        int numneed = nump - bcell.pts.size();
-        int count = 0;
-        VDouble crds(inletNum.size());
-
-        Particle* particle = 0;
-        if (inletNum.size() == 2) {
-            int sizex = bsize / (inletNum[0] + 1);
-            int sizey = bsize / (inletNum[1] + 1);
-            for (int j = 0; j < inletNum[0]; ++j) {
-                for (int k = 0; k < inletNum[1]; ++k) {
-                    if (count >= numneed) break;
-                    getCrds(inletLoc[i], crds);
-                    crds[0] += sizex / 2.0 + j * sizex;
-                    crds[1] += sizey / 2.0 + k * sizey;
-
-                    group->addParticle(crds, inletVel[i], 0.0);
-                    particle =
-                        group->getParticle(group->numParticles() - 1);
-                }
-            }
-        } else if (inletNum.size() == 3) {
-            int sizex = bsize / (inletNum[0] + 1);
-            int sizey = bsize / (inletNum[1] + 1);
-            int sizez = bsize / (inletNum[2] + 1);
-            for (int j = 0; j < inletNum[0]; ++j) {
-                for (int k = 0; k < inletNum[1]; ++k) {
-                    for (int l = 0; l < inletNum[2]; ++l) {
-                        if (count >= numneed) break;
-                        getCrds(inletLoc[i], crds);
-                        crds[0] += sizex / 2.0 + j * sizex;
-                        crds[1] += sizey / 2.0 + k * sizey;
-                        crds[2] += sizez / 2.0 + l * sizez;
-
-                        group->addParticle(crds, inletVel[i], 0.0);
-                        particle =
-                            group->getParticle(group->numParticles() - 1);
-                    }
-                }
-            }
-        }
-        bcell.add(particle);
-    }
-    return 0;
-}
-
 int BackgroundMesh::gridNodes() {
     // get domain
     int ndm = OPS_GetNDM();
@@ -1392,10 +1221,9 @@ int BackgroundMesh::gridNodes() {
         maxind += numave * level;
         gatherParticles(minind, maxind, pts);
 
-        // find closest particle
-        VDouble wts(pts.size());
-        VDouble closeVel(ndm);
-        double minDist = -1;
+        // get information
+        double wt = 0.0, pre = 0.0, pdot = 0.0;
+        VDouble crdsn(ndm), vel(ndm), accel(ndm);
         for (int i = 0; i < (int)pts.size(); ++i) {
             // get particle
             if (pts[i] == 0) {
@@ -1411,52 +1239,33 @@ int BackgroundMesh::gridNodes() {
             double q = normVDouble(dist) / (bsize * level);
 
             // weight for the particle
-            wts[i] = QuinticKernel(q, bsize * level, ndm);
-
-            // check minimum distance
-            if (minDist < 0 || q < minDist) {
-                minDist = q;
-                closeVel = pts[i]->getVel();
-            }
-        }
-
-        // get information
-        double wt = 0.0, pre = 0.0, pdot = 0.0;
-        VDouble crdsn(ndm), vel(ndm), accel(ndm);
-        for (int i = 0; i < (int)pts.size(); ++i) {
-            // get particle
-            if (pts[i] == 0 || wts[i] <= 0) {
-                continue;
-            }
+            double w = QuinticKernel(q, bsize * level, ndm);
 
             // check velocity
             const VDouble& pvel = pts[i]->getVel();
-            if (kernelClose && dotVDouble(closeVel, pvel) < 0) {
-                continue;
-            }
 
             // add pressure
-            pre += pts[i]->getPressure() * wts[i];
-            pdot += pts[i]->getPdot() * wts[i];
+            pre += pts[i]->getPressure() * w;
+            pdot += pts[i]->getPdot() * w;
 
             // add velocity
             for (int k = 0; k < ndm; k++) {
-                vel[k] += wts[i] * pvel[k];
+                vel[k] += w * pvel[k];
             }
 
             // add acceleration
             const VDouble& paccel = pts[i]->getAccel();
             for (int k = 0; k < ndm; k++) {
-                accel[k] += wts[i] * paccel[k];
+                accel[k] += w * paccel[k];
             }
 
             // add displacement of last time step
             const VDouble& pcrdsn = pts[i]->getCrdsn();
             for (int k = 0; k < ndm; k++) {
-                crdsn[k] += wts[i] * pcrdsn[k];
+                crdsn[k] += w * pcrdsn[k];
             }
 
-            wt += wts[i];
+            wt += w;
         }
 
         // get nodal states
