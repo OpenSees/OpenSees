@@ -42,11 +42,10 @@
 
 class BackgroundMesh {
    private:
-    static int FLUID, STRUCTURE, FIXED;
 
-    // FLUID - a grid fluid node
-    // STRUCTURE - a structural node
-    // FIXED - a fixed grid fluid node
+    // BACKGROUND_FLUID - a grid fluid node
+    // BACKGROUND_STRUCTURE - a structural node
+    // BACKGROUND_FIXED - a fixed grid fluid node
     struct BNode {
         VInt tags;
         VVDouble crdsn;
@@ -67,7 +66,7 @@ class BackgroundMesh {
               dvn(),
               pn(),
               dpn(),
-              type(FLUID) {}
+              type(BACKGROUND_FLUID) {}
         void addNode(int tag, const VDouble& crds, const VDouble& v,
                      const VDouble& dv, double p, double dp, int tp,
                      int id = -1) {
@@ -89,21 +88,21 @@ class BackgroundMesh {
             dvn.clear();
             pn.clear();
             dpn.clear();
-            type = FLUID;
+            type = BACKGROUND_FLUID;
             sid.clear();
         }
         int size() const { return (int)tags.size(); }
     };
 
-    // FLUID - a grid fluid cell
-    // STRUCTURE - a structural cell, which should have no particles
+    // BACKGROUND_FLUID - a grid fluid cell
+    // BACKGROUND_STRUCTURE - a structural cell, which should have no particles
     struct BCell {
         VParticle pts;
         int type;
         std::vector<BNode*> bnodes;
         std::vector<VInt> bindex;
 
-        BCell() : pts(), type(FLUID), bnodes(), bindex() {}
+        BCell() : pts(), type(BACKGROUND_FLUID), bnodes(), bindex() {}
         void add(Particle* pt) { pts.push_back(pt); }
     };
 

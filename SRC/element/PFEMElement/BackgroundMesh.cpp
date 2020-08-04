@@ -61,10 +61,6 @@
 #include <fstream>
 #include <iostream>
 
-int BackgroundMesh::FLUID = 1;
-int BackgroundMesh::STRUCTURE = 2;
-int BackgroundMesh::FIXED = 3;
-
 static BackgroundMesh bgmesh;
 
 BackgroundMesh& OPS_getBgMesh() { return bgmesh; }
@@ -382,7 +378,7 @@ void BackgroundMesh::gatherParticles(const VInt& minind,
                 std::map<VInt, BCell>::iterator it = bcells.find(index);
                 if (it != bcells.end()) {
                     BCell& cell = it->second;
-                    if (checkfsi && cell.type == FLUID) continue;
+                    if (checkfsi && cell.type == BACKGROUND_FLUID) continue;
                     pts.insert(pts.end(), cell.pts.begin(),
                                cell.pts.end());
                 }
@@ -399,7 +395,7 @@ void BackgroundMesh::gatherParticles(const VInt& minind,
                         bcells.find(index);
                     if (it != bcells.end()) {
                         BCell& cell = it->second;
-                        if (checkfsi && cell.type == FLUID) continue;
+                        if (checkfsi && cell.type == BACKGROUND_FLUID) continue;
                         pts.insert(pts.end(), cell.pts.begin(),
                                    cell.pts.end());
                     }
@@ -660,7 +656,7 @@ void BackgroundMesh::clearGrid() {
         int type = bnode.type;
 
         for (int i = 0; i < (int)tags.size(); ++i) {
-            if (type == FLUID) {
+            if (type == BACKGROUND_FLUID) {
                 // remove node
                 Node* nd = domain->removeNode(tags[i]);
                 if (nd != 0) {
@@ -935,7 +931,7 @@ int BackgroundMesh::addStructure() {
             // add structural node to the bnode
             BNode& bnode = bnodes[index];
             bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
-                          STRUCTURE, sid);
+                          BACKGROUND_STRUCTURE, sid);
 
             // set fixed  bnodes
             VInt ind = index;
@@ -945,7 +941,7 @@ int BackgroundMesh::addStructure() {
             for (int i = 0; i < (int)indices.size(); ++i) {
                 BNode& bnd = bnodes[indices[i]];
                 if (bnd.size() == 0) {
-                    bnd.type = FIXED;
+                    bnd.type = BACKGROUND_FIXED;
                 }
             }
 
@@ -953,7 +949,7 @@ int BackgroundMesh::addStructure() {
             getCorners(ind, 1, indices);
             for (int i = 0; i < (int)indices.size(); ++i) {
                 BCell& bcell = bcells[indices[i]];
-                bcell.type = STRUCTURE;
+                bcell.type = BACKGROUND_STRUCTURE;
 
                 // set corners
                 if (bcell.bnodes.empty()) {
@@ -1030,7 +1026,7 @@ int BackgroundMesh::addParticles() {
             bcell.add(p);
 
             // if initial check structure cell
-            if (bcell.type == STRUCTURE) {
+            if (bcell.type == BACKGROUND_STRUCTURE) {
                 continue;
             }
 
@@ -1044,7 +1040,7 @@ int BackgroundMesh::addParticles() {
                 for (int i = 0; i < (int)indices.size(); ++i) {
                     BNode& bnode = bnodes[indices[i]];
                     if (bnode.size() == 0) {
-                        bnode.type = FLUID;
+                        bnode.type = BACKGROUND_FLUID;
                     }
                     bcell.bnodes.push_back(&bnode);
                     bcell.bindex.push_back(indices[i]);
@@ -1089,10 +1085,10 @@ int BackgroundMesh::gridNodes() {
         // get cell
         const VInt& index = it->first;
         BNode& bnode = it->second;
-        if (bnode.type == FIXED) {
+        if (bnode.type == BACKGROUND_FIXED) {
             continue;
         }
-        //        if (bnode.type[0] == STRUCTURE) {continue;}
+        //        if (bnode.type[0] == BACKGROUND_STRUCTURE) {continue;}
 
         // coordinates
         VDouble crds;
@@ -1163,7 +1159,7 @@ int BackgroundMesh::gridNodes() {
         }
 
         // update pressure for structural nodes
-        if (bnode.type == STRUCTURE) {
+        if (bnode.type == BACKGROUND_STRUCTURE) {
             for (int i = 0; i < (int)bnode.size(); ++i) {
                 Pressure_Constraint* pc =
                     domain->getPressure_Constraint(bnode.tags[i]);
@@ -1214,7 +1210,7 @@ int BackgroundMesh::gridNodes() {
         newnodes[j] = node;
 
         // set the bnode
-        bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot, FLUID);
+        bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot, BACKGROUND_FLUID);
 
         // set pressure
         Pressure_Constraint* thePC =
@@ -1325,8 +1321,8 @@ int BackgroundMesh::moveFixedParticles() {
             continue;
         }
 
-        // check if STRUCTURE cell
-        if (cell.type != STRUCTURE) {
+        // check if BACKGROUND_STRUCTURE cell
+        if (cell.type != BACKGROUND_STRUCTURE) {
             continue;
         }
 
@@ -1346,7 +1342,7 @@ int BackgroundMesh::moveFixedParticles() {
                 scores[i] = 2;
                 continue;
             }
-            if (cellit->second.type == STRUCTURE) {
+            if (cellit->second.type == BACKGROUND_STRUCTURE) {
                 scores[i] = -1;
             } else {
                 scores[i] = 1;
@@ -1583,7 +1579,7 @@ int BackgroundMesh::gridFluid() {
 #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // structural cell
-        if (cells[j]->type == STRUCTURE) continue;
+        if (cells[j]->type == BACKGROUND_STRUCTURE) continue;
 
         // find the group of this mesh
         std::map<int, int> numpts;
@@ -1707,7 +1703,7 @@ int BackgroundMesh::gridFSI() {
          it != bcells.end(); ++it) {
         // only for structural cells
         BCell& bcell = it->second;
-        if (bcell.type == FLUID) continue;
+        if (bcell.type == BACKGROUND_FLUID) continue;
 
         // get bnode
         for (int j = 0; j < (int)bcell.bnodes.size(); ++j) {
@@ -1737,7 +1733,7 @@ int BackgroundMesh::gridFSI() {
 
         for (int i = -1; i < (int)tags.size(); ++i) {
             // -1 is only for fixed bnode
-            if (i == -1 && type != FIXED) {
+            if (i == -1 && type != BACKGROUND_FIXED) {
                 continue;
             }
             if (i == -1) {
@@ -1853,9 +1849,9 @@ int BackgroundMesh::gridFSI() {
         VVInt findex, sindex;
         bool fixed = false;
         for (int j = 0; j < (int)tri.size(); ++j) {
-            if (ndtypes[tri[j]] == STRUCTURE) {
+            if (ndtypes[tri[j]] == BACKGROUND_STRUCTURE) {
                 sindex.push_back(ndindex[tri[j]]);
-            } else if (ndtypes[tri[j]] == FIXED) {
+            } else if (ndtypes[tri[j]] == BACKGROUND_FIXED) {
                 fixed = true;
             } else {
                 findex.push_back(ndindex[tri[j]]);
@@ -1904,7 +1900,7 @@ int BackgroundMesh::gridFSI() {
                             outside = true;
                             break;
                         } else {
-                            if (it->second.type == FLUID) {
+                            if (it->second.type == BACKGROUND_FLUID) {
                                 outside = true;
                                 break;
                             }
@@ -1925,7 +1921,7 @@ int BackgroundMesh::gridFSI() {
                                 outside = true;
                                 break;
                             } else {
-                                if (it->second.type == FLUID) {
+                                if (it->second.type == BACKGROUND_FLUID) {
                                     outside = true;
                                     break;
                                 }
@@ -1962,7 +1958,7 @@ int BackgroundMesh::gridFSI() {
                 std::map<VInt, BCell>::iterator cellit =
                     bcells.find(indices[k]);
                 if (cellit == bcells.end()) continue;
-                if (cellit->second.type == STRUCTURE) continue;
+                if (cellit->second.type == BACKGROUND_STRUCTURE) continue;
                 if (cellit->second.pts.empty()) continue;
                 const VParticle& pts = cellit->second.pts;
                 tripts.insert(tripts.end(), pts.begin(), pts.end());
@@ -2625,17 +2621,17 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
 
                 // get bnode
                 BNode& bnode = it->second;
-                if (bnode.type == FIXED) continue;
+                if (bnode.type == BACKGROUND_FIXED) continue;
 
                 // get node tags
                 ndtags[i] = bnode.tags;
 
                 // get fixed
                 for (int j = 0; j < (int)bnode.size(); ++j) {
-                    if (bnode.type == FLUID) {
+                    if (bnode.type == BACKGROUND_FLUID) {
                         fixed[i] = 0;
                         break;
-                    } else if (bnode.type == STRUCTURE) {
+                    } else if (bnode.type == BACKGROUND_STRUCTURE) {
                         fixed[i] = 1;
                         break;
                     }
