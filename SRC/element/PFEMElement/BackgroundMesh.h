@@ -127,8 +127,6 @@ class BackgroundMesh {
     void setNumSub(int num) { numsub = num; }
     void addStructuralNodes(VInt& snodes, int sid);
     void setContactData(const VDouble& data);
-    bool isIncrVel() const { return incrVel; }
-    void setIncrVel(bool ivel) { incrVel = ivel; }
     bool isFSITri() const { return fsiTri; }
     void setFSITri(bool fsi) { fsiTri = fsi; }
     void setBoundReduceFactor(double factor) {
@@ -202,10 +200,9 @@ class BackgroundMesh {
 
     // interpolate in a cell
     int interpolate(Particle* pt, const VVInt& index, const VVDouble& vels,
-                    const VVDouble& incrvels, const VVDouble& dvns,
-                    const VDouble& pns, const VDouble& dpns,
-                    const VVDouble& crds, const VInt& fixed,
-                    const VVInt& ndtags, double dt);
+                    const VVDouble& dvns, const VDouble& pns,
+                    const VDouble& dpns, const VVDouble& crds,
+                    const VInt& fixed, const VVInt& ndtags, double dt);
     static int interpolate(const VVDouble& values, const VDouble& N,
                            VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N,
@@ -239,7 +236,6 @@ class BackgroundMesh {
     bool freesurface;
     VDouble contactData;
     VInt contactEles;
-    bool incrVel;
     bool fsiTri;  // move partiles in fsi area through triangles
     double boundReduceFactor;
     VVInt inletLoc;
