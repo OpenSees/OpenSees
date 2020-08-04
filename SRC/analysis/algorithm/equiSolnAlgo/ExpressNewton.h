@@ -47,7 +47,7 @@
 class ExpressNewton: public EquiSolnAlgo
 {
   public:
-    ExpressNewton(int nIter, int tangent, double kMultiplier);
+    ExpressNewton(int nIter, double kMultiplier, int factorOnce);
     ~ExpressNewton();
 
     int solveCurrentStep(void);
@@ -62,7 +62,6 @@ class ExpressNewton: public EquiSolnAlgo
   protected:
     
   private:
-    int tangent;
     int factorOnce;
     int nIter;
     double kMultiplier;
