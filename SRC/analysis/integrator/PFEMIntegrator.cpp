@@ -369,13 +369,6 @@ PFEMIntegrator::formTangent(int statFlag)
     DOF_Group *dofPtr;
 
     while ((dofPtr = theDOFs()) != 0) {
-        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
-        if (soe != 0) {
-            if (soe->skipFluid() && soe->isFluidID(dofPtr->getID())) {
-                continue;
-            }
-        }
-
         if (theLinSOE->addA(dofPtr->getTangent(this),dofPtr->getID()) <0) {
             opserr << "TransientIntegrator::formTangent() - failed to addA:dof\n";
             result = -1;
@@ -386,12 +379,6 @@ PFEMIntegrator::formTangent(int statFlag)
     FE_EleIter &theEles2 = theModel->getFEs();
     FE_Element *elePtr;
     while((elePtr = theEles2()) != 0)     {
-        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
-        if (soe != 0) {
-            if (soe->skipFluid() && soe->isFluidID(elePtr->getID())) {
-                continue;
-            }
-        }
         if (theLinSOE->addA(elePtr->getTangent(this),elePtr->getID()) < 0) {
             opserr << "TransientIntegrator::formTangent() - failed to addA:ele\n";
             result = -2;

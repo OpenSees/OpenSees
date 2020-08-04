@@ -80,8 +80,8 @@ int OPS_BgMesh() {
                "-wave wavefilename? numl? locs? -numsub numsub? "
                "-structure sid? ?numnodes? structuralNodes?"
                "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-               "-pressureOnce? -pressureExact? -kernelClose? -kernelAll?"
-               "-boundReduceFactor factor? -allAssembly? -fastAssembly?"
+               "-kernelClose? -kernelAll? "
+               "-boundReduceFactor factor? "
                "-inlet crds? vel? -inletNum nump?"
                "-largeSize? level? lower? upper?>";
         return -1;
@@ -225,10 +225,6 @@ int OPS_BgMesh() {
                 return -1;
             }
             bgmesh.setContactData(data);
-        } else if (strcmp(opt, "-pressureOnce") == 0) {
-            bgmesh.setPressureOnce(true);
-        } else if (strcmp(opt, "-pressureExact") == 0) {
-            bgmesh.setPressureOnce(false);
         } else if (strcmp(opt, "-boundReduceFactor") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING: need factor\n";
@@ -264,10 +260,6 @@ int OPS_BgMesh() {
             }
 
             bgmesh.addLargeSize(numbasic, range_low, range_up);
-        } else if (strcmp(opt, "-allAssembly") == 0) {
-            bgmesh.setFastAssembly(false);
-        } else if (strcmp(opt, "-fastAssembly") == 0) {
-            bgmesh.setFastAssembly(true);
         } else if (strcmp(opt, "-kernelClose") == 0) {
             bgmesh.setKernelClose(true);
         } else if (strcmp(opt, "-kernelAll") == 0) {
@@ -334,9 +326,7 @@ BackgroundMesh::BackgroundMesh()
       inletVel(),
       inletNum(),
       largesize(),
-      pressureonce(false),
       dispon(true),
-      fastAssembly(true),
       kernelClose(false) {}
 
 BackgroundMesh::~BackgroundMesh() {
@@ -776,9 +766,7 @@ void BackgroundMesh::clearAll() {
     contactEles.clear();
     boundReduceFactor = 0.5;
     largesize.clear();
-    pressureonce = false;
     dispon = true;
-    fastAssembly = true;
     kernelClose = false;
 }
 
