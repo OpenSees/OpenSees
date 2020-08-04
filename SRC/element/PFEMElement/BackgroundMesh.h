@@ -39,72 +39,10 @@
 #include <vector>
 
 #include "BackgroundDef.h"
+#include "BCell.h"
+#include "BNode.h"
 
 class BackgroundMesh {
-   private:
-
-    // BACKGROUND_FLUID - a grid fluid node
-    // BACKGROUND_STRUCTURE - a structural node
-    // BACKGROUND_FIXED - a fixed grid fluid node
-    struct BNode {
-        VInt tags;
-        VVDouble crdsn;
-        VVDouble vn;
-        VVDouble incrv;
-        VVDouble dvn;
-        VDouble pn;
-        VDouble dpn;
-        int type;
-        VInt sid;  // structure id, <0:fluid, >0:structure, =0:not in
-                   // contact
-
-        BNode()
-            : tags(),
-              crdsn(),
-              vn(),
-              incrv(),
-              dvn(),
-              pn(),
-              dpn(),
-              type(BACKGROUND_FLUID) {}
-        void addNode(int tag, const VDouble& crds, const VDouble& v,
-                     const VDouble& dv, double p, double dp, int tp,
-                     int id = -1) {
-            tags.push_back(tag);
-            crdsn.push_back(crds);
-            vn.push_back(v);
-            incrv.push_back(v);
-            dvn.push_back(dv);
-            pn.push_back(p);
-            dpn.push_back(dp);
-            type = tp;
-            sid.push_back(id);
-        }
-        void clear() {
-            tags.clear();
-            crdsn.clear();
-            vn.clear();
-            incrv.clear();
-            dvn.clear();
-            pn.clear();
-            dpn.clear();
-            type = BACKGROUND_FLUID;
-            sid.clear();
-        }
-        int size() const { return (int)tags.size(); }
-    };
-
-    // BACKGROUND_FLUID - a grid fluid cell
-    // BACKGROUND_STRUCTURE - a structural cell, which should have no particles
-    struct BCell {
-        VParticle pts;
-        int type;
-        std::vector<BNode*> bnodes;
-        std::vector<VInt> bindex;
-
-        BCell() : pts(), type(BACKGROUND_FLUID), bnodes(), bindex() {}
-        void add(Particle* pt) { pts.push_back(pt); }
-    };
 
    public:
     BackgroundMesh();
@@ -193,10 +131,6 @@ class BackgroundMesh {
                          double crd, double& k);
     static bool inEle(const VDouble& N);
 
-    // wall
-    void getWall(VDouble& dir, double& dist, const VDouble& xbnd,
-                 const VDouble& ybnd, const VDouble& zbnd,
-                 const VDouble pcrds);
 
    private:
     VInt lower, upper;
