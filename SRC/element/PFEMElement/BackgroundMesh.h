@@ -115,8 +115,6 @@ class BackgroundMesh {
     // background info
     void setTol(double t) { this->tol = t; }
     double getTol() const { return this->tol; }
-    void setMeshTol(double t) { meshtol = t; }
-    double getMeshTol() const { return meshtol; }
     void setRange(const VDouble& l, const VDouble& u);
     void setBasicSize(double size) {
         bsize = size;
@@ -229,7 +227,7 @@ class BackgroundMesh {
     VInt lower, upper;
     std::map<VInt, BCell> bcells;
     std::map<VInt, BNode> bnodes;
-    double tol, meshtol;
+    double tol;
     double bsize;
     int numave, numsub;
     std::vector<Recorder*> recorders;

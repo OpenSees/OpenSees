@@ -76,8 +76,7 @@ int OPS_BgMesh() {
     // check input
     if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 1) {
         opserr
-            << "WARNING: basicsize? lower? upper? <-tol tol? -meshtol "
-               "tol? "
+            << "WARNING: basicsize? lower? upper? <-tol tol? "
                "-wave wavefilename? numl? locs? -numsub numsub? "
                "-structure sid? ?numnodes? structuralNodes?"
                "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
@@ -135,17 +134,6 @@ int OPS_BgMesh() {
                 return -1;
             }
             bgmesh.setTol(tol);
-        } else if (strcmp(opt, "-meshtol") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need tol\n";
-                return -1;
-            }
-            double tol;
-            if (OPS_GetDoubleInput(&num, &tol) < 0) {
-                opserr << "WARNING: failed to read mesh tolerance\n";
-                return -1;
-            }
-            bgmesh.setMeshTol(tol);
 
         } else if (strcmp(opt, "-wave") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 2) {
@@ -342,7 +330,6 @@ BackgroundMesh::BackgroundMesh()
       bcells(),
       bnodes(),
       tol(1e-10),
-      meshtol(0.1),
       bsize(-1.0),
       numave(2),
       numsub(4),
@@ -783,7 +770,6 @@ void BackgroundMesh::clearAll() {
     bcells.clear();
     bnodes.clear();
     tol = 1e-10;
-    meshtol = 0.1;
     bsize = -1.0;
     numave = 2;
     numsub = 4;
