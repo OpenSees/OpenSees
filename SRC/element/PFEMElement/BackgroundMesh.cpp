@@ -80,7 +80,7 @@ int OPS_BgMesh() {
                "-wave wavefilename? numl? locs? -numsub numsub? "
                "-structure sid? ?numnodes? structuralNodes?"
                "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-               "-freesurface? -fsiSquare? -fsiTri?"
+               "-fsiSquare? -fsiTri?"
                "-pressureOnce? -pressureExact? -kernelClose? -kernelAll?"
                "-boundReduceFactor factor? -allAssembly? -fastAssembly?"
                "-inlet crds? vel? -inletNum nump?"
@@ -212,8 +212,6 @@ int OPS_BgMesh() {
                 bgmesh.addStructuralNodes(snodes, sid);
             }
 
-        } else if (strcmp(opt, "-freesurface") == 0) {
-            bgmesh.setFreeSurface();
         } else if (strcmp(opt, "-contact") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 8) {
                 opserr << "WARNING: need kdoverAd, thk, mu, beta, Dc, "
@@ -334,7 +332,6 @@ BackgroundMesh::BackgroundMesh()
       currentTime(0.0),
       theFile(),
       structuralNodes(),
-      freesurface(false),
       contactData(8),
       contactEles(),
       fsiTri(false),
@@ -779,7 +776,6 @@ void BackgroundMesh::clearAll() {
     currentTime = 0.0;
     theFile.close();
     structuralNodes.clear();
-    freesurface = false;
     for (int i = 0; i < (int)contactData.size(); ++i) {
         contactData[i] = 0.0;
     }
@@ -978,8 +974,7 @@ int BackgroundMesh::remesh(bool init) {
 #endif
 
     // create FSI elements
-    ID freenodes;
-    if (gridFSI(freenodes) < 0) {
+    if (gridFSI() < 0) {
         opserr << "WARNING: failed to create FSI elements\n";
         return -1;
     }
@@ -987,17 +982,6 @@ int BackgroundMesh::remesh(bool init) {
 #ifdef _LINUX
     timer.pause();
     opserr << "time for fsi eles = " << timer.getReal() << "\n";
-    timer.start();
-#endif
-
-    if (findFreeSurface(freenodes) < 0) {
-        opserr << "WARNING: failed to add pressures on free surface\n";
-        return -1;
-    }
-
-#ifdef _LINUX
-    timer.pause();
-    opserr << "time for free surface = " << timer.getReal() << "\n";
     timer.start();
 #endif
 
@@ -2037,7 +2021,7 @@ int BackgroundMesh::gridFluid() {
     return 0;
 }
 
-int BackgroundMesh::gridFSI(ID& freenodes) {
+int BackgroundMesh::gridFSI() {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
     int ndm = OPS_GetNDM();
@@ -2119,7 +2103,6 @@ int BackgroundMesh::gridFSI(ID& freenodes) {
             }
         }
     }
-    VInt ndfree(ndtags.size());
 
     // no mesh
     int numpoints = 0;
@@ -2336,10 +2319,6 @@ int BackgroundMesh::gridFSI(ID& freenodes) {
             }
         }
         if (tripts.empty()) {
-            // set free surface
-            for (int j = 0; j < (int)tri.size(); ++j) {
-                ndfree[tri[j]] = 1;
-            }
             continue;
         }
 
@@ -2404,14 +2383,6 @@ int BackgroundMesh::gridFSI(ID& freenodes) {
         elends[i].resize(tri.size());
         for (int j = 0; j < (int)tri.size(); ++j) {
             elends[i][j] = ndtags[tri[j]];
-        }
-    }
-
-    // get free surface nodes
-    freenodes = ID();
-    for (int i = 0; i < (int)ndtags.size(); ++i) {
-        if (ndfree[i] == 1 && ndtypes[i] == FLUID) {
-            freenodes.insert(ndtags[i]);
         }
     }
 
@@ -3218,76 +3189,6 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
 
     // original->dest
     pt->moveTo(newpcrds, dt);
-
-    return 0;
-}
-
-int BackgroundMesh::findFreeSurface(const ID& freenodes) {
-    // quick return
-    if (!freesurface) return 0;
-
-    // get domain
-    Domain* domain = OPS_GetDomain();
-    if (domain == 0) return -1;
-
-    // for all fluid nodes
-    for (std::map<VInt, BNode>::iterator it = bnodes.begin();
-         it != bnodes.end(); ++it) {
-        // check if fluid
-        VInt index = it->first;
-        BNode& bnode = it->second;
-        if (bnode.tags.size() != 1) {
-            continue;
-        }
-        if (bnode.type != FLUID) {
-            continue;
-        }
-
-        // get neighbors corners
-        index -= 1;
-        VVInt indices;
-        getCorners(index, 1, 1, indices);
-        bool free = false;
-        for (int i = 0; i < (int)indices.size(); ++i) {
-            std::map<VInt, BCell>::iterator it2 = bcells.find(indices[i]);
-            if (it2 == bcells.end()) {
-                free = true;
-                break;
-            }
-            if (it2->second.type != FLUID) continue;
-            if (it2->second.pts.empty()) {
-                free = true;
-                break;
-            }
-        }
-
-        // set free surface
-        if (free) {
-            int ndtag = bnode.tags[0];
-            Pressure_Constraint* pc =
-                domain->getPressure_Constraint(ndtag);
-            if (pc == 0) {
-                opserr << "WARNING: node " << ndtag;
-                opserr << " has no pc -- BgMesh::findFreeSurface()\n";
-                return -1;
-            }
-
-            pc->setFreeSurf();
-        }
-    }
-
-    // for all fsi nodes on free surface
-    for (int i = 0; i < freenodes.Size(); ++i) {
-        int ndtag = freenodes(i);
-        Pressure_Constraint* pc = domain->getPressure_Constraint(ndtag);
-        if (pc == 0) {
-            opserr << "WARNING: node " << ndtag;
-            opserr << " has no pc -- BgMesh::findFreeSurface()\n";
-            return -1;
-        }
-
-        pc->setFreeSurf();
-    }
 
     return 0;
 }

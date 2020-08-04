@@ -170,7 +170,7 @@ class BackgroundMesh {
     int addStructure();
     int gridNodes();
     int gridFluid();
-    int gridFSI(ID& freenodes);
+    int gridFSI();
     int gridEles();
     static int createContact(const VInt& ndtags, const VInt& sids,
                              VInt& elends);
@@ -211,10 +211,6 @@ class BackgroundMesh {
                          double crd, double& k);
     static bool inEle(const VDouble& N);
 
-    // find free surface
-    int findFreeSurface(const ID& freenodes);
-    void setFreeSurface() { freesurface = true; }
-
     // wall
     void getWall(VDouble& dir, double& dist, const VDouble& xbnd,
                  const VDouble& ybnd, const VDouble& zbnd,
@@ -233,7 +229,6 @@ class BackgroundMesh {
     std::ofstream theFile;
     std::map<int, VInt> structuralNodes;  // >0:structure, <0: fluid,
                                           // 0:invalid, larger:debris
-    bool freesurface;
     VDouble contactData;
     VInt contactEles;
     bool fsiTri;  // move partiles in fsi area through triangles
