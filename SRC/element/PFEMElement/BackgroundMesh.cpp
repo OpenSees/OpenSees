@@ -80,7 +80,6 @@ int OPS_BgMesh() {
                "-wave wavefilename? numl? locs? -numsub numsub? "
                "-structure sid? ?numnodes? structuralNodes?"
                "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?"
-               "-fsiSquare? -fsiTri?"
                "-pressureOnce? -pressureExact? -kernelClose? -kernelAll?"
                "-boundReduceFactor factor? -allAssembly? -fastAssembly?"
                "-inlet crds? vel? -inletNum nump?"
@@ -226,10 +225,6 @@ int OPS_BgMesh() {
                 return -1;
             }
             bgmesh.setContactData(data);
-        } else if (strcmp(opt, "-fsiSquare") == 0) {
-            bgmesh.setFSITri(false);
-        } else if (strcmp(opt, "-fsiTri") == 0) {
-            bgmesh.setFSITri(true);
         } else if (strcmp(opt, "-pressureOnce") == 0) {
             bgmesh.setPressureOnce(true);
         } else if (strcmp(opt, "-pressureExact") == 0) {
@@ -334,7 +329,6 @@ BackgroundMesh::BackgroundMesh()
       structuralNodes(),
       contactData(8),
       contactEles(),
-      fsiTri(false),
       boundReduceFactor(0.5),
       inletLoc(),
       inletVel(),
@@ -780,7 +774,6 @@ void BackgroundMesh::clearAll() {
         contactData[i] = 0.0;
     }
     contactEles.clear();
-    fsiTri = false;
     boundReduceFactor = 0.5;
     largesize.clear();
     pressureonce = false;
@@ -934,12 +927,9 @@ int BackgroundMesh::remesh(bool init) {
 #endif
 
     // move particles in fixed cells
-    if (fsiTri) {
-    } else {
-        if (moveFixedParticles()) {
-            opserr << "WARNING: failed to move particles in fixed cells";
-            return -1;
-        }
+    if (moveFixedParticles()) {
+        opserr << "WARNING: failed to move particles in fixed cells";
+        return -1;
     }
 
 #ifdef _LINUX
@@ -1216,7 +1206,7 @@ int BackgroundMesh::addParticles() {
                               "finest mesh\n";
                     return -1;
                 }
-                if (!fsiTri) continue;
+                continue;
             }
 
             // add bnodes of the cell
@@ -2281,43 +2271,22 @@ int BackgroundMesh::gridFSI() {
 
         // gather particles
         VParticle tripts;
-        if (fsiTri) {
-            std::set<VInt> partindices;
-            for (int j = 0; j < (int)tri.size(); ++j) {
-                VInt ind = ndindex[tri[j]];
-                ind -= 1;
-                VVInt indices;
-                getCorners(ind, 1, 1, indices);
-                for (int k = 0; k < (int)indices.size(); ++k) {
-                    partindices.insert(indices[k]);
-                }
-            }
-            for (std::set<VInt>::iterator it = partindices.begin();
-                 it != partindices.end(); ++it) {
-                VInt ind = *it;
-                std::map<VInt, BCell>::iterator cellit = bcells.find(ind);
+        for (int j = 0; j < (int)findex.size(); ++j) {
+            VInt ind = findex[j];
+            ind -= 1;
+            VVInt indices;
+            getCorners(ind, 1, 1, indices);
+            for (int k = 0; k < (int)indices.size(); ++k) {
+                std::map<VInt, BCell>::iterator cellit =
+                    bcells.find(indices[k]);
                 if (cellit == bcells.end()) continue;
+                if (cellit->second.type == STRUCTURE) continue;
+                if (cellit->second.pts.empty()) continue;
                 const VParticle& pts = cellit->second.pts;
-                if (pts.empty()) continue;
                 tripts.insert(tripts.end(), pts.begin(), pts.end());
             }
-        } else {
-            for (int j = 0; j < (int)findex.size(); ++j) {
-                VInt ind = findex[j];
-                ind -= 1;
-                VVInt indices;
-                getCorners(ind, 1, 1, indices);
-                for (int k = 0; k < (int)indices.size(); ++k) {
-                    std::map<VInt, BCell>::iterator cellit =
-                        bcells.find(indices[k]);
-                    if (cellit == bcells.end()) continue;
-                    if (cellit->second.type == STRUCTURE) continue;
-                    if (cellit->second.pts.empty()) continue;
-                    const VParticle& pts = cellit->second.pts;
-                    tripts.insert(tripts.end(), pts.begin(), pts.end());
-                }
-            }
         }
+
         if (tripts.empty()) {
             continue;
         }
@@ -2344,24 +2313,7 @@ int BackgroundMesh::gridFSI() {
         }
 
         VParticle newtripts;
-        if (fsiTri) {
-            for (int j = 0; j < (int)tripts.size(); ++j) {
-                // get shape function
-                const VDouble& pcrds = tripts[j]->getCrds();
-                VDouble N;
-                if (ndm == 2) {
-                    getNForTri(coeff, pcrds[0], pcrds[1], N);
-                } else if (ndm == 3) {
-                    getNForTet(tetcoeff, pcrds, N);
-                }
-                if (inEle(N)) {
-                    // in tri
-                    newtripts.push_back(tripts[j]);
-                }
-            }
-        } else {
-            newtripts = tripts;
-        }
+        newtripts = tripts;
 
         if (newtripts.empty()) continue;
 

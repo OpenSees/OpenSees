@@ -127,8 +127,6 @@ class BackgroundMesh {
     void setNumSub(int num) { numsub = num; }
     void addStructuralNodes(VInt& snodes, int sid);
     void setContactData(const VDouble& data);
-    bool isFSITri() const { return fsiTri; }
-    void setFSITri(bool fsi) { fsiTri = fsi; }
     void setBoundReduceFactor(double factor) {
         boundReduceFactor = factor;
     }
@@ -231,7 +229,6 @@ class BackgroundMesh {
                                           // 0:invalid, larger:debris
     VDouble contactData;
     VInt contactEles;
-    bool fsiTri;  // move partiles in fsi area through triangles
     double boundReduceFactor;
     VVInt inletLoc;
     VVDouble inletVel;
