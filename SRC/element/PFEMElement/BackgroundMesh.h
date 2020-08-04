@@ -102,9 +102,8 @@ class BackgroundMesh {
         int type;
         std::vector<BNode*> bnodes;
         std::vector<VInt> bindex;
-        int sizeLevel;
 
-        BCell() : pts(), type(FLUID), bnodes(), bindex(), sizeLevel(0) {}
+        BCell() : pts(), type(FLUID), bnodes(), bindex() {}
         void add(Particle* pt) { pts.push_back(pt); }
     };
 
@@ -129,7 +128,6 @@ class BackgroundMesh {
     void setContactData(const VDouble& data);
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
-    int getSizeLevel(VInt& index);
     bool isDispOn() const { return dispon; }
 
     // remesh all
@@ -141,15 +139,14 @@ class BackgroundMesh {
     void upperIndex(const VDouble& crds, VInt& index) const;
     void nearIndex(const VDouble& crds, VInt& index) const;
     void getCrds(const VInt& index, VDouble& crds) const;
-    void getCorners(const VInt& index, int num, int level,
-                    VVInt& indices) const;
+    void getCorners(const VInt& index, int num, VVInt& indices) const;
 
     // particles
     int addParticles();
     void gatherParticles(const VInt& minindex, const VInt& maxindex,
                          VParticle& pts, bool checkfsi = false);
     int moveParticles();
-    int convectParticle(Particle* pt, VInt index, int level, int nums);
+    int convectParticle(Particle* pt, VInt index, int nums);
     int moveFixedParticles();
 
     // create grid nodes and elements
@@ -217,7 +214,6 @@ class BackgroundMesh {
                                           // 0:invalid, larger:debris
     VDouble contactData;
     VInt contactEles;
-    VVInt largesize;
     bool dispon;
 
     static const int contact_tag = -13746;
