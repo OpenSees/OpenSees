@@ -317,12 +317,8 @@ numIter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 systemSize(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-
-
-
-
-
-
-
-
+int
+elementActivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+int
+elementDeactivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
