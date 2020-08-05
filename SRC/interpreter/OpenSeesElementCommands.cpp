@@ -451,6 +451,17 @@ namespace {
     }
   }
 
+  static void* OPS_DispBeamColumn3dID()
+  {
+    int ndm = OPS_GetNDM();
+    if (ndm == 2) {
+      // return OPS_DispBeamColumn2dID();
+    }
+    else {
+      return OPS_DispBeamColumn3dID();
+    }
+  }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
@@ -580,8 +591,10 @@ namespace {
 	functionMap.insert(std::make_pair("ShellNL", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("shellMITC9", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("ShellMITC9", &OPS_ShellMITC9));
+	functionMap.insert(std::make_pair("shellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("ShellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("shellDKGT", &OPS_ShellDKGT));
+	functionMap.insert(std::make_pair("ShellDKGT", &OPS_ShellDKGT));
 	functionMap.insert(std::make_pair("ShellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("shellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("ASDShellQ4", &OPS_ASDShellQ4));
