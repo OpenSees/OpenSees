@@ -54,6 +54,8 @@ class Particle {
         }
     }
 
+    void setVelOnly(const VDouble &vel) { this->velocity = vel; }
+
     void setPressure(double p) { pressure = p; }
 
     void setAccel(const VDouble &accel) { this->accel = accel; }

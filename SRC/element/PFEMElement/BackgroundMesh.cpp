@@ -1496,26 +1496,39 @@ int BackgroundMesh::moveFixedParticles() {
         if (ind == index) continue;
 
         // get new  cell
-        // auto& new_cell = bcells[ind];
-        // if (new_cell.getType() == BACKGROUND_STRUCTURE) {
-        //     continue;
-        // }
+        auto& new_cell = bcells[ind];
+        if (new_cell.getType() == BACKGROUND_STRUCTURE) {
+            continue;
+        }
 
-        // // if an new empty cell
-        // if (new_cell.getNodes().empty()) {
-        //     // get corners
-        //     indices.clear();
-        //     getCorners(ind, 1, indices);
+        // if an new empty cell
+        if (new_cell.getNodes().empty()) {
+            // get corners
+            indices.clear();
+            getCorners(ind, 1, indices);
 
-        //     // set corners
-        //     for (int k = 0; k < (int)indices.size(); ++k) {
-        //         BNode& bnode = bnodes[indices[k]];
-        //         if (bnode.size() == 0) {
-        //             bnode.setType(BACKGROUND_FLUID);
-        //         }
-        //         new_cell.addNode(&bnode, indices[k]);
-        //     }
-        // }
+            // set corners
+            for (int k = 0; k < (int)indices.size(); ++k) {
+                BNode& bnode = bnodes[indices[k]];
+                if (bnode.size() == 0) {
+                    bnode.setType(BACKGROUND_FLUID);
+                }
+                new_cell.addNode(&bnode, indices[k]);
+            }
+        }
+
+        // get averate structural velocity
+        VDouble svel(ndm);
+        int numv = 0;
+        for (auto* bnode : cell.getNodes()) {
+            auto& vel = bnode->getVel();
+            for (int i = 0; i < bnode->size(); ++i) {
+                svel += vel[i];
+                ++numv;
+            }
+        }
+        svel /= numv;
+        double mag_svel = normVDouble(svel);
 
         // move the particles
         VDouble crds;
@@ -1523,23 +1536,21 @@ int BackgroundMesh::moveFixedParticles() {
         auto& pts = cell.getPts();
         for (int i = 0; i < (int)pts.size(); ++i) {
             Particle* pt = pts[i];
-            const VDouble& pcrds = pt->getCrds();
+            auto pcrds = pt->getCrds();
 
             // move the particle
             VDouble newcrds;
             getCrds(ind, newcrds);
-            VDouble disp = pcrds;
-            disp -= crds;
-            newcrds += disp;
+            pcrds -= crds;
+            pcrds += newcrds;
             pt->moveTo(newcrds, 0.0);
+            auto& pvel = pt->getVel();
+            double mag_pvel = normVDouble(pvel);
+            if (mag_svel > mag_pvel) {
+                pt->setVelOnly(svel);
+            }
 
-            // add particles to the new cell
-            // BCell& bcell = bcells[ind];
-            // bcell.add(pt);
-            // if (bcell.type == STRUCTURE) {
-            //     // still a structure!!
-            //     continue;
-            // }
+            new_cell.add(pt);
         }
 
         cell.clearParticles();
