@@ -84,9 +84,9 @@ Matrix ForceBeamColumn2d::theMatrix(6,6);
 Vector ForceBeamColumn2d::theVector(6);
 double ForceBeamColumn2d::workArea[200];
 
-Vector *ForceBeamColumn2d::vsSubdivide = 0;
-Matrix *ForceBeamColumn2d::fsSubdivide = 0;
-Vector *ForceBeamColumn2d::SsrSubdivide = 0;
+Vector ForceBeamColumn2d::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumn2d::fsSubdivide[maxNumSections];
+Vector ForceBeamColumn2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2d()
 {
@@ -424,16 +424,16 @@ ForceBeamColumn2d::ForceBeamColumn2d():
   theNodes[0] = 0;  
   theNodes[1] = 0;
 
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
+  //  if (vsSubdivide == 0)
+  //  vsSubdivide  = new Vector [maxNumSections];
+  //if (fsSubdivide == 0)
+  //  fsSubdivide  = new Matrix [maxNumSections];
+  //if (SsrSubdivide == 0)
+  //  SsrSubdivide  = new Vector [maxNumSections];
+  //if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
+  //  opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
+  //  exit(-1);
+  //}
 }
 
 // constructor which takes the unique element tag, sections,
@@ -477,16 +477,16 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
 
   this->setSectionPointers(numSec, sec);
   
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
+  //if (vsSubdivide == 0)
+  //  vsSubdivide  = new Vector [maxNumSections];
+  //if (fsSubdivide == 0)
+  //  fsSubdivide  = new Matrix [maxNumSections];
+  //if (SsrSubdivide == 0)
+  //  SsrSubdivide  = new Vector [maxNumSections];
+  //if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
+  //  opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
+  //  exit(-1);
+  //}
 }
 
 // ~ForceBeamColumn2d():
