@@ -1243,6 +1243,7 @@ int BackgroundMesh::gridNodes() {
             node->commitState();
             toVector(crds, vec);
             node->setTrialDisp(vec);
+            node->commitState();
         } else {
             Vector vec;
             toVector(crds, vec);
