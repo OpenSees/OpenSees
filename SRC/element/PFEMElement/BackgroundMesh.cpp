@@ -1147,7 +1147,7 @@ int BackgroundMesh::gridNodes() {
 
         // get information
         double wt = 0.0, pre = 0.0, pdot = 0.0;
-        VDouble crdsn(ndm), vel(ndm), accel(ndm);
+        VDouble vel(ndm), accel(ndm);
         for (int i = 0; i < (int)pts.size(); ++i) {
             // get particle
             if (pts[i] == 0) {
@@ -1183,12 +1183,6 @@ int BackgroundMesh::gridNodes() {
                 accel[k] += w * paccel[k];
             }
 
-            // add displacement of last time step
-            const VDouble& pcrdsn = pts[i]->getCrdsn();
-            for (int k = 0; k < ndm; k++) {
-                crdsn[k] += w * pcrdsn[k];
-            }
-
             wt += w;
         }
 
@@ -1198,7 +1192,6 @@ int BackgroundMesh::gridNodes() {
             pdot /= wt;
             vel /= wt;
             accel /= wt;
-            crdsn /= wt;
         }
 
         // update pressure for structural nodes
@@ -1234,15 +1227,12 @@ int BackgroundMesh::gridNodes() {
 
         if (wt > 0) {
             Vector vec;
-            toVector(crdsn, vec);
+            toVector(crds, vec);
             node->setTrialDisp(vec);
             toVector(vel, vec);
             node->setTrialVel(vec);
             toVector(accel, vec);
             node->setTrialAccel(vec);
-            node->commitState();
-            toVector(crds, vec);
-            node->setTrialDisp(vec);
             node->commitState();
         } else {
             Vector vec;
@@ -2185,217 +2175,6 @@ int BackgroundMesh::gridFSI() {
         if (group->newElements(it->second) < 0) {
             opserr << "WARNING: failed to create elements for mesh ";
             opserr << group->getTag() << " -- BgMesh::gridFSI\n";
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-int BackgroundMesh::gridEles() {
-    Domain* domain = OPS_GetDomain();
-    if (domain == 0) return 0;
-    int ndm = OPS_GetNDM();
-
-    TriangleMeshGenerator gen;
-    TetMeshGenerator tetgen;
-
-    // add points
-    VInt ndtags;
-    ndtags.reserve(bnodes.size() * 1.05);
-    for (std::map<VInt, BNode>::iterator it = bnodes.begin();
-         it != bnodes.end(); ++it) {
-        BNode& bnode = it->second;
-        auto& crdsn = bnode.getCrds();
-        auto& tags = bnode.getTags();
-        for (int i = 0; i < (int)crdsn.size(); ++i) {
-            ndtags.push_back(tags[i]);
-            if (ndm == 2) {
-                gen.addPoint(crdsn[i][0], crdsn[i][1]);
-            } else if (ndm == 3) {
-                tetgen.addPoint(crdsn[i][0], crdsn[i][1], crdsn[i][2], 0);
-            }
-        }
-    }
-
-    // mesh
-    if (ndm == 2) {
-        gen.remesh(-1.0);
-    } else if (ndm == 3) {
-        tetgen.remesh(-1.0);
-    }
-
-    // get triangles or tetrahedrons
-    int numele = 0;
-    if (ndm == 2) {
-        numele = gen.getNumTriangles();
-    } else if (ndm == 3) {
-        numele = tetgen.getNumTets();
-    }
-
-    VVInt elends(numele);
-    VInt gtags(numele);
-#pragma omp parallel for
-    for (int i = 0; i < numele; ++i) {
-        // get points
-        VInt tri;
-        if (ndm == 2) {
-            tri.resize(3);
-            gen.getTriangle(i, tri[0], tri[1], tri[2]);
-        } else if (ndm == 3) {
-            tri.resize(4);
-            tetgen.getTet(i, tri[0], tri[1], tri[2], tri[3]);
-        }
-
-        // get point crds
-        VVDouble ptcrds(tri.size());
-        for (int j = 0; j < (int)tri.size(); ++j) {
-            ptcrds[j].resize(ndm);
-            int mark;
-            if (ndm == 2) {
-                gen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], mark);
-            } else if (ndm == 3) {
-                tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1],
-                                ptcrds[j][2], mark);
-            }
-        }
-
-        // get index for points
-        // if the element is too large
-        bool large = false;
-        VVInt indices(tri.size());
-        for (int j = 0; j < (int)indices.size(); ++j) {
-            nearIndex(ptcrds[j], indices[j]);
-        }
-        for (int ii = 0; ii < (int)indices.size(); ++ii) {
-            for (int j = 0; j < (int)indices.size() - 1; ++j) {
-                for (int k = 0; k < ndm; ++k) {
-                    if (abs(indices[ii][k] - indices[j][k]) > 3) {
-                        large = true;
-                        break;
-                    }
-                }
-                if (large) break;
-            }
-            if (large) break;
-        }
-        if (large) {
-            continue;
-        }
-
-        // precalculate shape functions
-        VDouble coeff;
-        VVDouble tetcoeff;
-        bool zerovol = false;
-        if (ndm == 2) {
-            if (preNForTri(ptcrds[0][0], ptcrds[0][1], ptcrds[1][0],
-                           ptcrds[1][1], ptcrds[2][0], ptcrds[2][1],
-                           coeff) < 0) {
-                zerovol = true;
-            }
-        } else if (ndm == 3) {
-            if (preNForTet(ptcrds[0], ptcrds[1], ptcrds[2], ptcrds[3],
-                           tetcoeff) < 0) {
-                zerovol = true;
-            }
-        }
-
-        // zero volumne, no element
-        if (zerovol) {
-            continue;
-        }
-
-        // get index range and point crds
-        VInt minind, maxind;
-        for (int j = 0; j < (int)tri.size(); ++j) {
-            VInt low, up;
-            lowerIndex(ptcrds[j], low);
-            upperIndex(ptcrds[j], up);
-            if (minind.empty()) minind = low;
-            if (maxind.empty()) maxind = up;
-            for (int k = 0; k < ndm; ++k) {
-                if (minind[k] > low[k]) {
-                    minind[k] = low[k];
-                }
-                if (maxind[k] < up[k]) {
-                    maxind[k] = up[k];
-                }
-            }
-        }
-
-        // get particles
-        VParticle pts;
-        gatherParticles(minind, maxind, pts);
-
-        // check which particles are in the triangle
-        VParticle tripts;
-        for (int j = 0; j < (int)pts.size(); ++j) {
-            // get shape function
-            const VDouble& pcrds = pts[j]->getCrds();
-            VDouble N;
-            if (ndm == 2) {
-                getNForTri(coeff, pcrds[0], pcrds[1], N);
-            } else if (ndm == 3) {
-                getNForTet(tetcoeff, pcrds, N);
-            }
-            if (inEle(N)) {
-                // in tri
-                tripts.push_back(pts[j]);
-            }
-        }
-
-        // no particles, no element
-        if (tripts.empty()) continue;
-
-        // find the group of this mesh
-        std::map<int, int> numpts;
-        for (int j = 0; j < (int)tripts.size(); ++j) {
-            numpts[tripts[j]->getGroupTag()] += 1;
-        }
-        int num = 0;
-        for (std::map<int, int>::iterator it = numpts.begin();
-             it != numpts.end(); ++it) {
-            if (num < it->second) {
-                num = it->second;
-                gtags[i] = it->first;
-            }
-        }
-
-        // add to elenodes
-        elends[i].resize(tri.size());
-        for (int j = 0; j < (int)tri.size(); ++j) {
-            elends[i][j] = ndtags[tri[j]];
-        }
-    }
-
-    // get particle group tags
-    std::map<int, ID> elenodes;
-    for (int i = 0; i < (int)elends.size(); ++i) {
-        // no elenodes, no element
-        if (elends[i].empty()) continue;
-
-        // if all nodes are fluid and fixed nodes
-        ID& nds = elenodes[gtags[i]];
-        for (int j = 0; j < (int)elends[i].size(); ++j) {
-            nds[nds.Size()] = elends[i][j];
-        }
-    }
-
-    // create elements
-    for (std::map<int, ID>::iterator it = elenodes.begin();
-         it != elenodes.end(); ++it) {
-        ParticleGroup* group =
-            dynamic_cast<ParticleGroup*>(OPS_getMesh(it->first));
-        if (group == 0) {
-            opserr << "WARNING: failed to get particle group -- "
-                      "BgMesh::gridEles\n";
-            return -1;
-        }
-        group->setEleNodes(it->second);
-
-        if (group->newElements(it->second) < 0) {
-            opserr << "WARNING: failed to create elements for mesh ";
-            opserr << group->getTag() << " -- BgMesh::gridEles\n";
             return -1;
         }
     }

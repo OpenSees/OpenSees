@@ -49,7 +49,6 @@ class Particle {
     void setVel(const VDouble &vel) {
         if (!updated) {
             this->velocity = vel;
-            this->coordn = this->coord;
             updated = true;
         }
     }
@@ -71,8 +70,6 @@ class Particle {
 
     const VDouble &getCrds() const { return coord; }
 
-    const VDouble &getCrdsn() const { return coordn; }
-
     const VDouble &getVel() const { return velocity; }
 
     const VDouble &getAccel() const { return accel; }
@@ -90,7 +87,7 @@ class Particle {
     size_t getTag() const { return tag; }
 
    private:
-    VDouble coord, coordn;
+    VDouble coord;
     VDouble velocity;
     VDouble accel;
     double pressure, pdot;

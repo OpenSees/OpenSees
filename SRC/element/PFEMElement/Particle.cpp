@@ -32,7 +32,6 @@ size_t Particle::curr_tag = 1;
 
 Particle::Particle()
     : coord(),
-      coordn(),
       velocity(),
       accel(),
       pressure(0),

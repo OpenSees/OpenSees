@@ -260,16 +260,13 @@ int PFEMIntegrator::newStep(double deltaT)
     } else if (init == 2) {
         // determine new displacements and accelerations at t+deltaT
         *U = *Ut;
-        *Udot = *Utdot;
         *Udotdot = *Utdotdot;
         if (gamma>0 && beta>0) {
-            U->addVector(1.0, *Utdot, deltaT);
-            // U->addVector(1.0, *Utdot, deltaT*(1-beta/gamma));
-            // U->addVector(1.0, *Udot, deltaT*beta/gamma);
+            U->addVector(1.0, *Utdot, deltaT*(1.0-beta/gamma));
+            U->addVector(1.0, *Udot, deltaT*beta/gamma);
             U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta/gamma));
-            (*Udotdot) *= 1.0 - 1.0/gamma;
-            // Udotdot->addVector((1-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
-            // Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
+            Udotdot->addVector((1.0-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
+            Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
         } else {
             U->addVector(1.0, *Udot, deltaT);
             Udotdot->addVector(0.0, *Udot, 1.0/deltaT);
