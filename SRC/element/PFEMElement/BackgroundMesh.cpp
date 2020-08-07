@@ -1215,9 +1215,9 @@ int BackgroundMesh::gridNodes() {
         // create node
         Node* node = 0;
         if (ndm == 2) {
-            node = new Node(ndtag + 2 * j, ndm, 0.0, 0.0);
+            node = new Node(ndtag + 2 * j, ndm, crds[0], crds[1]);
         } else if (ndm == 3) {
-            node = new Node(ndtag + 2 * j, ndm, 0.0, 0.0, 0.0);
+            node = new Node(ndtag + 2 * j, ndm, crds[0], crds[1], crds[2]);
         }
         if (node == 0) {
             opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
@@ -1227,17 +1227,10 @@ int BackgroundMesh::gridNodes() {
 
         if (wt > 0) {
             Vector vec;
-            toVector(crds, vec);
-            node->setTrialDisp(vec);
             toVector(vel, vec);
             node->setTrialVel(vec);
             toVector(accel, vec);
             node->setTrialAccel(vec);
-            node->commitState();
-        } else {
-            Vector vec;
-            toVector(crds, vec);
-            node->setTrialDisp(vec);
             node->commitState();
         }
 

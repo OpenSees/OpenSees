@@ -972,7 +972,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     this->incrLevel();
     for(int i=0; i<(int)particles.size(); i++) {
 	this->indent();
-	theFile<<i<<std::endl;
+	theFile<<particles[i]->getTag()<<std::endl;
     }
     this->decrLevel();
     this->indent();

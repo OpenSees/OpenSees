@@ -98,6 +98,46 @@ int OPS_ParticleGroup() {
             return -1;
         }
     } else if (strcmp(geotype, "cube") == 0) {
+        if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 3) {
+            opserr << "WARNING: insufficient args -- ";
+            opserr << "lower point, upper point, nx, ny, nz\n";
+            return -1;
+        }
+        // node coord
+        if (OPS_GetDoubleInput(&ndm, &p1[0]) < 0) {
+            opserr << "WARNING: failed to get cooridnates for the "
+                      "lower point\n";
+            return -1;
+        }
+        if (OPS_GetDoubleInput(&ndm, &p7[0]) < 0) {
+            opserr << "WARNING: failed to get cooridnates for the "
+                      "upper point\n";
+            return -1;
+        }
+        p2 = p1;
+        p3 = p1;
+        p4 = p1;
+        p5 = p7;
+        p6 = p7;
+        p8 = p7;
+        p2[0] = p7[0];
+        p3[0] = p7[0];
+        p3[1] = p7[1];
+        p4[1] = p7[1];
+        p5[0] = p1[0];
+        p5[1] = p1[1];
+        p6[1] = p1[1];
+        p8[0] = p1[0];
+
+        // num of particles
+        int numdata = 3;
+        nump.resize(numdata);
+        if (OPS_GetIntInput(&numdata, &nump[0]) < 0) {
+            opserr << "WARNING: failed to get particle mesh size\n";
+            return -1;
+        }
+
+    } else if (strcmp(geotype, "hex") == 0) {
         if (OPS_GetNumRemainingInputArgs() < 8 * ndm + 3) {
             opserr << "WARNING: insufficient args -- ";
             opserr << "bottom p1, p2, p3, p4 and top p5, p6, p7, p8\n";
@@ -106,37 +146,45 @@ int OPS_ParticleGroup() {
 
         // node coord
         if (OPS_GetDoubleInput(&ndm, &p1[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for first bottom point\n";
+            opserr << "WARNING: failed to get cooridnates for first "
+                        "bottom point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p2[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for second bottom point\n";
+            opserr << "WARNING: failed to get cooridnates for second "
+                        "bottom point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p3[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for third bottom point\n";
+            opserr << "WARNING: failed to get cooridnates for third "
+                        "bottom point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p4[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for fouth bottom point\n";
+            opserr << "WARNING: failed to get cooridnates for fouth "
+                        "bottom point\n";
             return -1;
         }
 
         // node coord
         if (OPS_GetDoubleInput(&ndm, &p5[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for first top point\n";
+            opserr << "WARNING: failed to get cooridnates for first "
+                        "top point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p6[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for second top point\n";
+            opserr << "WARNING: failed to get cooridnates for second "
+                        "top point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p7[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for third top point\n";
+            opserr << "WARNING: failed to get cooridnates for third "
+                        "top point\n";
             return -1;
         }
         if (OPS_GetDoubleInput(&ndm, &p8[0]) < 0) {
-            opserr << "WARNING: failed to get cooridnates for fouth top point\n";
+            opserr << "WARNING: failed to get cooridnates for fouth "
+                        "top point\n";
             return -1;
         }
 
@@ -285,7 +333,8 @@ int OPS_ParticleGroup() {
     // generate particles
     if (strcmp(geotype, "quad") == 0) {
         group->qua_d(p1, p2, p3, p4, nump[0], nump[1], vel0, p0);
-    } else if (strcmp(geotype, "cube") == 0) {
+    } else if (strcmp(geotype, "cube") == 0 || 
+               strcmp(geotype, "hex") == 0) {
         VVDouble pts(8);
         pts[0] = p1;
         pts[1] = p2;
