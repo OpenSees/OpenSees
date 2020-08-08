@@ -88,9 +88,9 @@ Matrix ForceBeamColumn3d::theMatrix(12,12);
 Vector ForceBeamColumn3d::theVector(12);
 double ForceBeamColumn3d::workArea[200];
 
-Vector *ForceBeamColumn3d::vsSubdivide = 0;
-Matrix *ForceBeamColumn3d::fsSubdivide = 0;
-Vector *ForceBeamColumn3d::SsrSubdivide = 0;
+Vector ForceBeamColumn3d::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumn3d::fsSubdivide[maxNumSections];
+Vector ForceBeamColumn3d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn3d()
 {
@@ -195,17 +195,6 @@ ForceBeamColumn3d::ForceBeamColumn3d():
 
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0) 
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn3d::ForceBeamColumn3d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -248,17 +237,6 @@ ForceBeamColumn3d::ForceBeamColumn3d (int tag, int nodeI, int nodeJ,
   }
 
   this->setSectionPointers(numSec, sec);
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn3d::ForceBeamColumn3d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // ~ForceBeamColumn3d():
