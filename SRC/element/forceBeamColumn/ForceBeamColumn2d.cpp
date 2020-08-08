@@ -423,17 +423,6 @@ ForceBeamColumn2d::ForceBeamColumn2d():
 
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  //  if (vsSubdivide == 0)
-  //  vsSubdivide  = new Vector [maxNumSections];
-  //if (fsSubdivide == 0)
-  //  fsSubdivide  = new Matrix [maxNumSections];
-  //if (SsrSubdivide == 0)
-  //  SsrSubdivide  = new Vector [maxNumSections];
-  //if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-  //  opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-  //  exit(-1);
-  //}
 }
 
 // constructor which takes the unique element tag, sections,
@@ -476,17 +465,6 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
   }
 
   this->setSectionPointers(numSec, sec);
-  
-  //if (vsSubdivide == 0)
-  //  vsSubdivide  = new Vector [maxNumSections];
-  //if (fsSubdivide == 0)
-  //  fsSubdivide  = new Matrix [maxNumSections];
-  //if (SsrSubdivide == 0)
-  //  SsrSubdivide  = new Vector [maxNumSections];
-  //if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-  //  opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-  //  exit(-1);
-  //}
 }
 
 // ~ForceBeamColumn2d():
