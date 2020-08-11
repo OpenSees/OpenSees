@@ -1120,9 +1120,11 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
             }
             theResponse =  new ElementResponse(this, 1, Vector(numDOF));
 
+    } else if ((strcmp(argv[0],"localForce") == 0) || (strcmp(argv[0],"localForces") == 0) ) {
+            theResponse =  new ElementResponse(this, 11, Vector(numDOF));
+	    
     } else if ((strcmp(argv[0],"axialForce") == 0) || 
 	       (strcmp(argv[0],"basicForce") == 0) || 
-	       (strcmp(argv[0],"localForce") == 0) || 
 	       (strcmp(argv[0],"basicForces") == 0)) {
       output.tag("ResponseType", "N");
       theResponse =  new ElementResponse(this, 2, Vector(1));
@@ -1165,6 +1167,23 @@ TrussSection::getResponse(int responseID, Information &eleInfo)
   case 1:
       return eleInfo.setVector(this->getResistingForce());
 
+    case 11: {
+      Vector P(numDOF);
+      int order = theSection->getOrder();
+      const ID &code = theSection->getType();
+
+      const Vector &s = theSection->getStressResultant();
+      force = 0.0;
+      int i;
+      for (i = 0; i < order; i++) {
+	if (code(i) == SECTION_RESPONSE_P)
+	  force += s(i);
+      }
+
+      P(numDOF/2) = force;
+      P(0) = -P(numDOF/2);
+      return eleInfo.setVector(P);
+    }
   case 2:
       if (L == 0.0) {
           strain = 0.0;
