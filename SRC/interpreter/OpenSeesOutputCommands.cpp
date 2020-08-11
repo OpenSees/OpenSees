@@ -2377,17 +2377,20 @@ int OPS_sectionDisplacement()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    const Vector &theVec = *(info.theVector);
-    if (secNum <= 0 || secNum > theVec.Size()) {
+    const Matrix &theMatrix = *(info.theMatrix);
+    if (secNum <= 0 || secNum > theMatrix.noRows()) {
 	opserr << "WARNING invalid secNum\n";
 	delete theResponse;
 	return -1;
     }
 
-    double value = theVec(secNum-1);
-    numdata = 1;
+    double value[3];
+    value[0] = theMatrix(secNum-1,0);
+    value[1] = theMatrix(secNum-1,1);
+    value[2] = theMatrix(secNum-1,2);        
 
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    numdata = 3;
+    if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
@@ -2451,26 +2454,28 @@ int OPS_cbdiDisplacement()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    const Vector &theVec = *(info.theVector);
+    const Matrix &theMatrix = *(info.theMatrix);
     if (xOverL < 0.0 || xOverL > 1.0) {
 	opserr << "WARNING invalid xOverL\n";
 	delete theResponse;
 	return -1;
     }
 
-    double value = 0.0; // Need to interpolate
-    int N = theVec.Size();
+    double value[3]; // Need to interpolate
+    int N = theMatrix.noRows();
     double dx = 1.0/(N-1);
     for (int i = 0; i < N; i++) {
       double xi = double(i)/(N-1);
       double xf = double(i+1)/(N-1);
       if (xOverL >= xi && xOverL < xf) {
-	value = theVec(i) + (xOverL-xi)/(xf-xi)*(theVec(i+1)-theVec(i));
+	value[0] = theMatrix(i,0) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,0)-theMatrix(i,0));
+	value[1] = theMatrix(i,1) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,1)-theMatrix(i,1));
+	value[2] = theMatrix(i,2) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,2)-theMatrix(i,2));	
       }
     }
     
-    numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    numdata = 3;
+    if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
