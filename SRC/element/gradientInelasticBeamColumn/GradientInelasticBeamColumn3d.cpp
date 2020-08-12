@@ -1,0 +1,1613 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+
+/* Written by: Mohammad Salehi (mohammad.salehi@tamu.edu)
+** Created: 07/19
+** Description: The source code for the 3D gradient inelastic (GI) force-based beam-column element formulation
+**
+**
+** References:
+**
+** Mohammad Salehi and Petros Sideris (2017)
+** “Refined Gradient Inelastic Flexibility-Based Formulation for Members Subjected to Arbitrary Loading”
+** ASCE Journal of Engineering Mechanics, 143(9): 04017090
+**
+** Petros Sideris and Mohammad Salehi (2016)
+** “A Gradient Inelastic Flexibility-Based Frame Element Formulation”
+** ASCE Journal of Engineering Mechanics, 142(7): 04016039
+*/
+
+#include "GradientInelasticBeamColumn3d.h"
+
+#include <elementAPI.h>
+#include <Domain.h>
+#include <Node.h>
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
+#include <Renderer.h>
+#include <Information.h>
+#include <ElementResponse.h>
+
+#include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
+#include <SimpsonBeamIntegration.h>
+#include <LobattoBeamIntegration.h>
+#include <LegendreBeamIntegration.h>
+
+#include <iostream>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <float.h>
+
+// Method to Read Command Arguments
+void* OPS_GradientInelasticBeamColumn3d()
+{
+	// Necessary Arguments
+	if (OPS_GetNumRemainingInputArgs() < 11) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - insufficient arguments\n" <<
+			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
+			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
+		return 0;
+	}
+
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();
+	if (ndm != 3 || ndf != 6) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - ndm must be 3 and ndf must be 6\n";
+		return 0;
+	}
+
+	// inputs: 
+	int iData[5];
+	int numData = 5;
+	if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid input tags\n";
+		return 0;
+	}
+
+	int eleTag = iData[0];
+	int nodeTagI = iData[1];
+	int nodeTagJ = iData[2];
+	int transfTag = iData[3];
+	int integrTag = iData[4];
+
+	double LC;
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData, &LC) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid lc\n";
+		return 0;
+	}
+
+	// Optional Arguments
+	int maxIter = 50;
+	double minTol = 1E-10, maxTol = 1E-8;
+	bool correctionControl = false;
+	bool constH = false;
+	double maxEpsInc = 0.0, maxPhiInc = 0.0;
+
+	numData = 1;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* word = OPS_GetString();
+
+		if (strcmp(word, "-constH") == 0)
+			constH = true;
+		else if (strcmp(word, "-iter") == 0) {
+			if (OPS_GetNumRemainingInputArgs() > 2) {
+				if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxIter\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &minTol) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid minTol\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &maxTol) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxTol\n";
+					return 0;
+				}
+			}
+			else {
+				opserr << "WARNING! gradientInelasticBeamColumn3d - need maxIter? minTol? maxTol? after -iter \n";
+				return 0;
+			}
+		}
+		else if (strcmp(word, "-corControl") == 0) {
+			correctionControl = true;
+
+			if (OPS_GetNumRemainingInputArgs() > 1) {
+				if (OPS_GetDoubleInput(&numData, &maxEpsInc) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxEpsInc\n";
+					return 0;
+				}
+				if (OPS_GetDoubleInput(&numData, &maxPhiInc) < 0) {
+					opserr << "WARNING! gradientInelasticBeamColumn3d - invalid maxPhiInc\n";
+					return 0;
+				}
+			}
+			else
+				opserr << "WARNING! gradientInelasticBeamColumn3d - no max. correction increments set\n" <<
+				"         -> setting them automatically|\n";
+		}
+	}
+
+	// check transf
+	CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
+	if (theTransf == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - CrdTransf with tag " << transfTag << " not found\n";
+		return 0;
+	}
+
+	// check beam integrataion
+	BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(integrTag);
+	if (theRule == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - BeamIntegrationRule with tag " << integrTag << " not found\n";
+		return 0;
+	}
+
+	BeamIntegration* beamIntegr = theRule->getBeamIntegration();
+	if (beamIntegr == 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - failed to create beam integration\n";
+		return 0;
+	}
+
+	// check sections
+	const ID& secTags = theRule->getSectionTags();
+	int numIntegrPoints = secTags.Size();
+
+	for (int i = 2; i < numIntegrPoints; i++) {
+		if (secTags(i) == secTags(i - 1)) {
+			opserr << "WARNING! gradientInelasticBeamColumn3d - internal integration points should have identical tags\n"
+				<< "continued using section tag of integration point 2 for all internal integration points\n";
+			return 0;
+		}
+	}
+
+	SectionForceDeformation* endSection1 = OPS_getSectionForceDeformation(secTags(0));
+	if (!endSection1) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << secTags(0) << " not found\n";
+		return 0;
+	}
+
+	SectionForceDeformation* intSection = OPS_getSectionForceDeformation(secTags(1));
+	if (!intSection) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << secTags(1) << " not found\n";
+		return 0;
+	}
+
+	SectionForceDeformation* endSection2 = OPS_getSectionForceDeformation(secTags(numIntegrPoints - 1));
+	if (!endSection2) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - section with tag " << secTags(numIntegrPoints - 1) << " not found\n";
+		return 0;
+	}
+
+	Element* theEle = new GradientInelasticBeamColumn3d(eleTag, nodeTagI, nodeTagJ, numIntegrPoints, &endSection1, &intSection, &endSection2,
+		0.01, 0.01, *beamIntegr, *theTransf, LC, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
+
+	return theEle;
+}
+
+// Initialize Class Wide Variables
+Matrix GradientInelasticBeamColumn3d::theMatrix(12, 12);
+Vector GradientInelasticBeamColumn3d::theVector(12);
+
+// Constructor 1 (for normal processing)
+GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d(int tag, int nodeI, int nodeJ,
+	int numSec, SectionForceDeformation **endSec1, SectionForceDeformation **sec, SectionForceDeformation **endSec2, double R1, double R2,
+	BeamIntegration &BI, CrdTransf &CT, double LC,
+	double minTolerance, double maxTolerance, int maxNumIters,
+	bool constH,
+	bool corControl, double maxEps, double maxPhi)
+	: Element(tag, ELE_TAG_GradientInelasticBeamColumn3d), connectedExternalNodes(2),
+	numSections(numSec), sections(0),
+	beamIntegr(0), crdTransf(0), lc(LC),
+	maxIters(maxNumIters), minTol(minTolerance), maxTol(maxTolerance), F_tol_q(0.0), F_tol_f_ms(0.0),
+	cnstH(constH),
+	correctionControl(corControl), maxEpsInc(maxEps), maxPhiInc(maxPhi),
+	L(0.0), secLR1(R1), secLR2(R2),
+	hh(0), H(0), H_init(0), H_inv(0),
+	B_q(0), B_Q(0), B_q_H_inv_init(0), K0(0),
+	J(0), J_init(0), J_commit(0),
+	k_init(6), flex_ms_init(0), trial_change(0), max_trial_change(0),
+	initialFlag(0), Q(6), Q_commit(6),
+	d_sec(0), d_sec_commit(0), d_tot(0), d_tot_commit(0), d_nl_tot(0), d_nl_tot_commit(0),
+	F_ms(0), F_ms_commit(0),
+	iterNo(0), strIterNo(0), totStrIterNo(0), commitNo(0), iters(3)
+	// complete
+{
+	// Pointers to Nodes and Their IDs
+	if (connectedExternalNodes.Size() != 2) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - failed to create an ID of size 2\n";
+		exit(-1);
+	}
+
+	connectedExternalNodes(0) = nodeI;
+	connectedExternalNodes(1) = nodeJ;
+
+	theNodes[0] = 0;
+	theNodes[1] = 0;
+
+	// Get Copy of Integration Method
+	beamIntegr = BI.getCopy();
+
+	if (!beamIntegr) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not create copy of beam integration object" << endln;
+		exit(-1);
+	}
+
+	// Get Copy of Sections
+	if (!endSec1) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - invalid first section pointer\n";
+		exit(-1);
+	}
+
+	if (!sec) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - invalid intermediate section pointer\n";
+		exit(-1);
+	}
+
+	if (!endSec2) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - invalid last section pointer\n";
+		exit(-1);
+	}
+
+	sections = new SectionForceDeformation *[numSections];
+	if (!sections) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not allocate section pointers\n";
+		exit(-1);
+	}
+
+	double *secX = new double[numSections];
+	beamIntegr->getSectionLocations(numSections, L, secX);	// relative locations of sections (x/L)
+
+	for (int i = 0; i < numSections; i++) {
+		if (secX[i] >= 1.0 - secLR2)
+			sections[i] = endSec2[0]->getCopy();
+		else if (secX[i] > secLR1)
+			sections[i] = sec[0]->getCopy();
+		else
+			sections[i] = endSec1[0]->getCopy();
+
+		if (!sections[i]) {
+			opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not create copy of section " << i + 1 << endln;
+			exit(-1);
+		}
+	}
+
+	if (secX)
+		delete[] secX;
+
+	// Check Sections Order
+	secOrder = sec[0]->getOrder();
+
+	if (secOrder < 4) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - section order must be larger than 4" << endln;
+		exit(-1);
+	}
+
+	// Initialize Matrices
+	B_q = new Matrix(6, numSections * secOrder);
+
+	B_Q = new Matrix(numSections * secOrder, 6);
+
+	H = new Matrix(numSections * secOrder, numSections * secOrder);
+	H_init = new Matrix(numSections * secOrder, numSections * secOrder);
+	H_inv = new Matrix(numSections * secOrder, numSections * secOrder);
+	hh = new Vector(numSections * secOrder);
+
+	B_q_H_inv_init = new Matrix(6, numSections * secOrder);
+
+	J = new Matrix(6 + numSections * secOrder, 6 + numSections * secOrder);
+	J_init = new Matrix(6 + numSections * secOrder, 6 + numSections * secOrder);
+	J_commit = new Matrix(6 + numSections * secOrder, 6 + numSections * secOrder);
+
+	flex_ms_init = new Vector(numSections * secOrder);
+	trial_change = new Vector(numSections * secOrder + 6);
+	max_trial_change = new Vector(numSections * secOrder + 6);
+
+	d_tot = new Vector(numSections * secOrder);
+	d_tot_commit = new Vector(numSections * secOrder);
+	d_nl_tot = new Vector(numSections * secOrder);
+	d_nl_tot_commit = new Vector(numSections * secOrder);
+
+	F_ms = new Vector(numSections * secOrder);
+	F_ms_commit = new Vector(numSections * secOrder);
+
+	// Get Copy of Coordinate Transformation Method 
+	crdTransf = CT.getCopy3d();
+
+	if (!crdTransf) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not create copy of coordinate transformation object " << endln;
+		exit(-1);
+	}
+
+	// Allocate Array of Pointers to Analysis State Variables
+	d_sec = new Vector[numSections];
+	if (!d_sec) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not allocate section deformation pointers\n";
+		exit(-1);
+	}
+
+	d_sec_commit = new Vector[numSections];
+	if (!d_sec_commit) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d() - element: " << this->getTag() << " - could not allocate committed section deformation pointers\n";
+		exit(-1);
+	}
+}
+
+// Constructor 2 (for parallel processing)
+GradientInelasticBeamColumn3d::GradientInelasticBeamColumn3d()
+	: Element(0, ELE_TAG_GradientInelasticBeamColumn3d), connectedExternalNodes(2),
+	numSections(0), sections(0),
+	beamIntegr(0), crdTransf(0), lc(0.0),
+	maxIters(0), minTol(0.0), maxTol(0.0), F_tol_q(0.0), F_tol_f_ms(0.0), correctionControl(0),
+	L(0.0), secOrder(0),
+	initialFlag(0), Q(6), Q_commit(6),
+	d_sec(0), d_sec_commit(0)
+	// complete
+{
+	// Set Node Pointers to 0
+	theNodes[0] = 0;
+	theNodes[1] = 0;
+}
+
+// Destructor
+GradientInelasticBeamColumn3d::~GradientInelasticBeamColumn3d()
+{
+	// Delete Vector and Matrix Pointers
+	if (B_q != 0)
+		delete B_q;
+	
+	if (B_Q != 0)
+		delete B_Q;
+	
+	if (H != 0)
+		delete H;
+	
+	if (H_init != 0)
+		delete H_init;
+	
+	if (H_inv != 0)
+		delete H_inv;
+	
+	if (hh != 0)
+		delete hh;
+	
+	if (B_q_H_inv_init != 0)
+		delete B_q_H_inv_init;
+	
+	if (J != 0)
+		delete J;
+	
+	if (J_init != 0)
+		delete J_init;
+	
+	if (J_commit != 0)
+		delete J_commit;
+	
+	if (flex_ms_init != 0)
+		delete flex_ms_init;
+	
+	if (trial_change != 0)
+		delete trial_change;
+	
+	if (max_trial_change != 0)
+		delete max_trial_change;
+	
+	if (d_tot != 0)
+		delete d_tot;
+	
+	if (d_tot_commit != 0)
+		delete d_tot_commit;
+	
+	if (d_nl_tot != 0)
+		delete d_nl_tot;
+	
+	if (d_nl_tot_commit != 0)
+		delete d_nl_tot_commit;
+	
+	if (F_ms != 0)
+		delete F_ms;
+	
+	if (F_ms_commit != 0)
+		delete F_ms_commit;
+	
+	if (K0 != 0)
+		delete K0;
+	
+	// Delete Section Pointers
+	if (sections) {
+		for (int i = 0; i < numSections; i++)
+			if (sections[i])
+				delete sections[i];
+		delete[] sections;
+	}
+	
+	// Delete Beam Integration Pointer and Coordinate Transformation Pointer
+	if (beamIntegr != 0)
+		delete beamIntegr;
+	
+	if (crdTransf != 0)
+		delete crdTransf;
+	
+	// Delete Analysis Arrays
+	if (d_sec != 0)
+		delete[] d_sec;
+	
+	if (d_sec_commit != 0)
+		delete[] d_sec_commit;
+}
+
+// Definition of setDomain()
+void
+GradientInelasticBeamColumn3d::setDomain(Domain *theDomain)
+{
+	// Check Domain is not Null
+	if (theDomain == 0) {
+		theNodes[0] = 0;
+		theNodes[1] = 0;
+
+		opserr << "ERROR! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - the domain is null\n";
+		exit(0);
+	}
+
+	// Get Node Pointers
+	int Nd1 = connectedExternalNodes(0);
+	int Nd2 = connectedExternalNodes(1);
+
+	theNodes[0] = theDomain->getNode(Nd1);
+	theNodes[1] = theDomain->getNode(Nd2);
+
+	if (!theNodes[0]) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - node " << Nd1 << " does not exist in the domain\n";
+		exit(0);
+	}
+
+	if (!theNodes[1]) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - node " << Nd2 << " does not exist in the domain\n";
+		exit(0);
+	}
+
+	// Call DomainComponent Class Method
+	this->DomainComponent::setDomain(theDomain);
+
+	// Check Node DOFs are 6
+	int dofNd1 = theNodes[0]->getNumberDOF();
+	int dofNd2 = theNodes[1]->getNumberDOF();
+
+	if (dofNd1 != 6) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - node " << Nd1 << " has incorrect number of DOFs (not 6)\n";
+		exit(0);
+	}
+
+	if (dofNd2 != 6) {
+		opserr << "ERROR! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - node " << Nd2 << " has incorrect number of DOFs (not 6)\n";
+		exit(0);
+	}
+
+	// Initialize Coordinate Transformation
+	if (crdTransf->initialize(theNodes[0], theNodes[1])) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - coordinate transformation object could not be initialized\n";
+		exit(0);
+	}
+
+	// Determine Element Initial Length
+	L = crdTransf->getInitialLength();
+
+	if (L == 0.0) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - element length is zero\n";
+		exit(0);
+	}
+
+	// Form Total Force Interpolation and Total Displacement Integration Matrices
+	double *secX = new double[numSections];
+	beamIntegr->getSectionLocations(numSections, L, secX);	// relative locations of sections (x/L)
+
+	double *secW = new double[numSections];
+	beamIntegr->getSectionWeights(numSections, L, secW);	// relative weights of sections (w/L)
+
+	B_Q->Zero();
+	B_q->Zero();
+
+	double w, x;
+	Vector dx(numSections - 1);	// spaces between integration points
+
+	for (int j = 0; j < numSections; j++) {
+		const ID &code = sections[j]->getType();
+
+		w = L * secW[j];
+		x = L * secX[j];
+
+		if (j < numSections - 1)
+			dx(j) = L * (secX[j + 1] - secX[j]);
+
+		for (int i = 0; i < secOrder; i++) {
+			switch (code(i)) {
+			case SECTION_RESPONSE_P:
+				(*B_Q)(j * secOrder + i, 0) = 1.0;
+				(*B_q)(0, j * secOrder + i) = w;
+				break;
+			case SECTION_RESPONSE_MZ:
+				(*B_Q)(j * secOrder + i, 1) = x / L - 1.0;
+				(*B_Q)(j * secOrder + i, 2) = x / L;
+				(*B_q)(1, j * secOrder + i) = w * (x / L - 1.0);
+				(*B_q)(2, j * secOrder + i) = w * x / L;
+				break;
+			case SECTION_RESPONSE_MY:
+				(*B_Q)(j * secOrder + i, 3) = x / L - 1.0;
+				(*B_Q)(j * secOrder + i, 4) = x / L;
+				(*B_q)(3, j * secOrder + i) = w * (x / L - 1.0);
+				(*B_q)(4, j * secOrder + i) = w * x / L;
+				break;
+			case SECTION_RESPONSE_VY:
+				(*B_Q)(j * secOrder + i, 1) = (*B_Q)(j * secOrder + i, 2) = -1.0 / L;
+				(*B_q)(1, j * secOrder + i) = (*B_q)(2, j * secOrder + i) = -w / L;
+				break;
+			case SECTION_RESPONSE_VZ:
+				(*B_Q)(j * secOrder + i, 3) = (*B_Q)(j * secOrder + i, 4) = 1.0 / L;
+				(*B_q)(3, j * secOrder + i) = (*B_q)(4, j * secOrder + i) = w / L;
+				break;
+			case SECTION_RESPONSE_T:
+				(*B_Q)(j * secOrder + i, 5) = 1.0;
+				(*B_q)(5, j * secOrder + i) = w;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	if (secX)
+		delete[] secX;
+
+	// Form H Matrix
+	H_init->Zero();
+
+	/// 2nd Order PDE, Dirichlet BCs
+	for (int i = 0; i < secOrder; i++) {
+		(*H_init)(i, i) = 1.0;
+		(*H_init)(secOrder * numSections - i - 1, secOrder * numSections - i - 1) = 1.0;
+	}
+
+	for (int j = 1; j < numSections - 1; j++) {
+		for (int i = 0; i < secOrder; i++) {
+			(*H_init)(j * secOrder + i, (j - 1) * secOrder + i) = -lc * lc / (dx(j - 1) * (dx(j - 1) + dx(j)));
+			(*H_init)(j * secOrder + i, j * secOrder + i) = 1 + lc * lc / (dx(j - 1) * dx(j));
+			(*H_init)(j * secOrder + i, (j + 1) * secOrder + i) = -lc * lc / (dx(j) * (dx(j - 1) + dx(j)));
+		}
+	}
+
+	// Initialize Section Deformations
+	if (!initialFlag) {
+		for (int i = 0; i < numSections; i++) {
+			d_sec[i] = Vector(secOrder);
+			d_sec_commit[i] = Vector(secOrder);
+
+			d_sec[i].Zero();
+			d_sec_commit[i].Zero();
+		}
+
+		d_tot->Zero();
+		d_tot_commit->Zero();
+
+		d_nl_tot->Zero();
+		d_nl_tot_commit->Zero();
+
+		F_ms->Zero();
+		F_ms_commit->Zero();
+
+		// Compute H_inv and B_q_H_inv
+		if (H_init->Invert(*H_inv) < 0) {
+			opserr << "WARNING! GradientInelasticBeamColumn3d::setDomain() - element: " << this->getTag() << " - could not invert H matrix\n";
+			exit(0);
+		}
+
+		*B_q_H_inv_init = (*B_q) * (*H_inv);
+	}
+
+	// Form Initial Jacobian Matrix
+	Matrix K_ms(numSections * secOrder, numSections * secOrder);
+	this->getSectionsInitialStiff(K_ms);
+
+	J_init->Zero();
+	this->assembleMatrix(*J_init, *B_Q, 0, numSections * secOrder - 1, 0, 5, 1.0);
+	this->assembleMatrix(*J_init, K_ms, 0, numSections * secOrder - 1, 6, numSections * secOrder + 5, -1.0);
+	this->assembleMatrix(*J_init, *B_q_H_inv_init, numSections * secOrder, numSections * secOrder + 5, 6, numSections * secOrder + 5, -1.0);
+
+	*J = *J_init;
+	*J_commit = *J;
+
+	// Determine Element's Initial Stiffness Matrix to Use as Weight Matrix for Norm Calculations
+	Matrix k_el_init = this->getInitialBasicStiff();
+
+	for (int i = 0; i < 6; i++)
+		k_init(i) = k_el_init(i, i);
+
+	// Determine Element's Initial Sections' Felxibility Matrix
+	for (int i = 0; i < numSections; i++) {
+		double W = secW[i] * L;
+
+		for (int j = 0; j < secOrder; j++) {
+			int k = i * secOrder + j;
+			(*flex_ms_init)(k) = W / K_ms(k, k);
+		}
+	}
+
+	if (secW)
+		delete[] secW;
+
+	// Determine Maximum Corrections (for d_tot and Q in iterations)
+	if (correctionControl) {
+		// Zero trial_change
+		trial_change->Zero();
+
+		// Decide on Maximum Trial Change
+		if (maxEpsInc != 0.0) {
+			const ID &code = sections[0]->getType();
+
+			for (int i = 0; i < secOrder; i++) {
+				for (int j = 0; j < numSections; j++) {
+					int k = j * secOrder + i;
+
+					switch (code(i)) {
+					case SECTION_RESPONSE_P:
+						(*max_trial_change)(6 + k) = maxEpsInc;
+						break;
+					case SECTION_RESPONSE_MZ:
+						(*max_trial_change)(6 + k) = maxPhiInc;
+						break;
+					case SECTION_RESPONSE_MY:
+						(*max_trial_change)(6 + k) = maxPhiInc;
+						break;
+					case SECTION_RESPONSE_T:
+						(*max_trial_change)(6 + k) = maxPhiInc;
+						break;
+					case SECTION_RESPONSE_VY:
+						(*max_trial_change)(6 + k) = maxEpsInc;
+						break;
+					case SECTION_RESPONSE_VZ:
+						(*max_trial_change)(6 + k) = maxEpsInc;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
+			Vector d_tot_max(numSections * secOrder);
+			d_tot_max.Extract(*max_trial_change, 6);
+			Vector Q_max = k_el_init * (*B_q) * d_tot_max;
+
+			for (int i = 0; i < 6; i++)
+				(*max_trial_change)(i) = fabs(Q_max(i));
+		}
+		else
+			max_trial_change->Zero();
+	}
+
+	// Determine factors for tol_q and tol_f_ms
+	F_tol_q = sqrt(k_init(0) + k_init(1) + k_init(2) + k_init(3) + k_init(4) + k_init(5));	// for nodal displacements
+
+	F_tol_f_ms = 0.0;
+	for (int i = 0; i < numSections * secOrder; i++)
+		F_tol_f_ms += (*flex_ms_init)(i);
+
+	F_tol_f_ms = sqrt(F_tol_f_ms);	// for section forces
+}
+
+// Definition of Methods Dealing with Nodes Information
+int
+GradientInelasticBeamColumn3d::getNumExternalNodes(void) const
+{
+	return 2;
+}
+
+const ID &
+GradientInelasticBeamColumn3d::getExternalNodes(void)
+{
+	return connectedExternalNodes;
+}
+
+Node **
+GradientInelasticBeamColumn3d::getNodePtrs(void)
+{
+	return theNodes;
+}
+
+int
+GradientInelasticBeamColumn3d::getNumDOF(void)
+{
+	return 12;
+}
+
+// Definition of Methods Dealing with Element's State
+int
+GradientInelasticBeamColumn3d::commitState(void)
+{
+	int err = 0;
+
+	// Element commitState()
+	if ((err = this->Element::commitState()))
+		opserr << "WARNING! GradientInelasticBeamColumn3d::commitState() - element: " << this->getTag() << " - failed in committing base class\n";
+
+	// Record [H] Diagonal Elements and Section Energy Increments
+	for (int i = 0; i < (numSections * secOrder); i++) {
+		(*hh)(i) = (*H_inv)(i, i);
+	}
+
+	// Commit Section State Variables
+	for (int i = 0; i < numSections; i++) {
+		err += sections[i]->commitState();
+		d_sec_commit[i] = d_sec[i];
+	}
+
+	*d_tot_commit = *d_tot;
+	*d_nl_tot_commit = *d_nl_tot;
+
+	*F_ms_commit = *F_ms;
+
+	// Commit Coordinate Transformation Object
+	if ((err = crdTransf->commitState()))
+		opserr << "WARNING! GradientInelasticBeamColumn3d::commitState() - element: " << this->getTag() << " - coordinate transformation object failed to commit\n";
+
+	// Commit Jacobian Matrix
+	*J_commit = *J;
+
+	// Commit Element State Variables
+	Q_commit = Q;
+
+	// Set iters vector and zero iterNo and strIterNo
+	totStrIterNo--;
+	iters(0) = totStrIterNo;
+	iters(1) = strIterNo;
+	iters(2) = iterNo;
+
+	iterNo = 0;
+	strIterNo = 0;
+
+	// Update {max_trial_change}
+	commitNo++;
+
+	if (correctionControl && (maxEpsInc == 0.0))
+		for (int i = 0; i < numSections * secOrder + 3; i++)
+			(*max_trial_change)(i) = ((commitNo - 1.0) * (*max_trial_change)(i) + fabs((*trial_change)(i))) / commitNo;
+
+	// complete committing the variables
+
+	return err;
+}
+
+int
+GradientInelasticBeamColumn3d::revertToLastCommit(void)
+{
+	int err = 0;
+
+	// Revert Section State Variables to Last Committed State
+	for (int i = 0; i < numSections; i++) {
+		err += sections[i]->revertToLastCommit();
+
+		d_sec[i] = d_sec_commit[i];
+		sections[i]->setTrialSectionDeformation(d_sec[i]);
+	}
+
+	d_tot = d_tot_commit;
+	d_nl_tot = d_nl_tot_commit;
+
+	// Revert Coordinate Transformation Object to Last Committed State
+	if ((err = crdTransf->revertToLastCommit()))
+		opserr << "WARNING! GradientInelasticBeamColumn3d::revertToLastCommit() - element: " << this->getTag() << " - coordinate transformation object failed to revert to last committed state\n";
+
+	// Revert Element State Variables to Last Committed State
+	Q = Q_commit;
+
+	// Iteration Numbers
+	initialFlag = 0;
+	iterNo = 0;
+	strIterNo = 0;
+	iters.Zero();
+
+	// complete reverting the variables
+
+	initialFlag = 0;
+	return err;
+}
+
+int
+GradientInelasticBeamColumn3d::revertToStart(void)
+{
+	int err = 0;
+
+	// Revert Section State Variables to Start
+	for (int i = 0; i < numSections; i++) {
+		err += sections[i]->revertToStart();
+
+		d_sec[i].Zero();
+	}
+
+	d_tot->Zero();
+	d_tot_commit->Zero();
+
+	d_nl_tot->Zero();
+	d_nl_tot_commit->Zero();
+
+	// Revert Coordinate Transformation Object to Start
+	if ((err = crdTransf->revertToStart()))
+		opserr << "WARNING! GradientInelasticBeamColumn3d::revertToStart() - element: " << this->getTag() << " - coordinate transformation object failed to revert to start\n";
+
+	// Revert Element State Variables to Start
+	Q.Zero();
+	Q_commit.Zero();
+
+	// Zero iteration numbers
+	totStrIterNo = 0;
+	iterNo = 0;
+	strIterNo = 0;
+	commitNo = 0;
+
+	initialFlag = 0;
+	return err;
+}
+
+void
+GradientInelasticBeamColumn3d::assembleMatrix(Matrix &A, const Matrix &B, int rowStart, int rowEnd, int colStart, int colEnd, double fact)
+{
+	int rowsNo = rowEnd - rowStart + 1;
+	int colsNo = colEnd - colStart + 1;
+
+	if (B.noRows() != rowsNo)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleMatrix() - element: " << this->getTag() << " - incompatible number of rows to assemble\n";
+
+	if (B.noCols() != colsNo)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleMatrix() - element: " << this->getTag() << " - incompatible number of columns to assemble\n";
+
+	if ((A.noRows() - 1) < rowEnd)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleMatrix() - element: " << this->getTag() << " - receiving matrix has less rows than needed\n";
+
+	if ((A.noCols() - 1) < colEnd)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleMatrix() - element: " << this->getTag() << " - receiving matrix has less columns than needed\n";
+
+	int i = 0;
+	int j = 0;
+
+	for (int row = rowStart; row <= rowEnd; row++) {
+		for (int col = colStart; col <= colEnd; col++) {
+			A(row, col) = fact * B(i, j);
+			j++;
+		}
+
+		j = 0;
+		i++;
+	}
+}
+
+void
+GradientInelasticBeamColumn3d::assembleMatrix(Matrix &A, const Vector &B, int col, double fact)
+{
+	if (A.noRows() != B.Size())
+		opserr << "ERROR! NonlocalBeamColumn2d::assembleMatrix - element: " << this->getTag() << " - incompatible matrix column number and vector size\n";
+
+	for (int row = 0; row < B.Size(); row++)
+		A(row, col) = fact * B(row);
+}
+
+void
+GradientInelasticBeamColumn3d::assembleVector(Vector &A, const Vector &B, int rowStart, int rowEnd, double fact)
+{
+	int rowsNo = rowEnd - rowStart + 1;
+
+	if (B.Size() != rowsNo)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleVector() - element: " << this->getTag() << " - incompatible number of rows to assemble\n";
+
+	if ((A.Size() - 1) < rowEnd)
+		opserr << "ERROR! GradientInelasticBeamColumn3d::assembleVector() - element: " << this->getTag() << " - receiving matrix has less rows than needed\n";
+
+	int i = 0;
+
+	for (int row = rowStart; row <= rowEnd; row++) {
+		A(row) = fact * B(i);
+
+		i++;
+	}
+}
+
+// Definition of Method to Solve for Nodal Forces
+int
+GradientInelasticBeamColumn3d::update(void)
+{
+	totStrIterNo++;
+
+	// Get Section Behaviors
+	const ID &code = sections[0]->getType();
+
+	// Get Trial Nodal Basic Displacements
+	crdTransf->update();
+	const Vector &q_t = crdTransf->getBasicTrialDisp();		// target
+	const Vector &q_inc = crdTransf->getBasicIncrDisp();		// increment from last committed step
+	static Vector q(6);											// trial for each iteration (could be smaller than target)
+
+	if (initialFlag != 0 && q_inc.Norm() <= DBL_EPSILON)
+		return 0;
+
+	// Declare Previous Step Variables for Subdivision
+	Vector d_tot_prev(numSections * secOrder);
+	Vector d_nl_tot_prev(numSections * secOrder);
+	Vector F_ms_prev(numSections * secOrder);
+	static Vector Q_prev(6);
+
+	// Initialize Previous Sub-step Variables
+	d_tot_prev = *d_tot_commit;
+	d_nl_tot_prev = *d_nl_tot_commit;
+	Q_prev = Q_commit;
+	F_ms_prev = *F_ms_commit; // B_Q * Q_commit;
+
+	// Declare Variables Requaired for Iterations
+	static Vector dq(6);
+	Vector dF_ms(numSections * secOrder);
+	Vector d_inc_tot(numSections * secOrder);
+	Vector trial_diff(6 + numSections * secOrder);
+	Vector trial_old(6 + numSections * secOrder);
+	Vector trial_new(6 + numSections * secOrder);
+	Matrix K_ms(numSections * secOrder, numSections * secOrder);
+	Matrix B_q_H_inv(6, numSections * secOrder);
+	Matrix J_prev = *J_commit;
+
+	bool bothConverged;
+	bool converged = false;
+
+	double dq_norm;
+	double dF_ms_norm;
+
+	// Subdivision of Basic Displacements in Case Convergence is not Achieved
+	double r = 1.0;
+	double r_fail;
+	double r_commit = 0.0;
+	double dr = 1.0;
+
+	const double div = 10.0;
+	const int maxDivNo = 7;
+
+	for (int divNo = 0; divNo < maxDivNo; divNo++) {
+
+		// Determine Current Trial Basic Displacements
+		q = q_t - (1.0 - r) * q_inc;
+
+		//std::cout << "q =      " << q(0) << ", " << q(1) << ", " << q(2) << "\n" << endln;
+
+		// Do Newton-Raphson Iteration to Achieve Compatible Forces
+		for (int l = 0; l < 4; l++) {
+
+			//std::cout << "l = " << l << endln;
+			//std::cout << "\n";
+
+			*d_tot = d_tot_prev;
+			Q = Q_prev;
+
+			for (int iter = 1; iter <= maxIters; iter++) {
+
+				// Set Trial Section Strains and Get New Section Forces
+				for (int i = 0; i < numSections; i++) {
+					d_sec[i].Extract(*d_tot, secOrder * i, 1.0);
+
+					if (sections[i]->setTrialSectionDeformation(d_sec[i]) < 0) {
+						opserr << "WARNING! GradientInelasticBeamColumn3d::update() - element: " << this->getTag() << " - section " << i << " failed in setTrialSectionDeformation\n";
+						return -1;
+					}
+
+					this->assembleVector(*F_ms, sections[i]->getStressResultant(), i * secOrder, ((i + 1) * secOrder - 1), 1.0);
+				}
+
+				// Compute Material Section Strain Increments
+				d_inc_tot = (*d_tot) - d_tot_prev;
+
+				if (!cnstH) {
+					//Update[H]
+					*H = *H_init;
+
+					double E_sec, eps_sec;
+
+					for (int i = secOrder; i < (numSections - 1) * secOrder; i += secOrder) {
+						E_sec = eps_sec = 0.0;
+
+						for (int j = 0; j < secOrder; j++) {
+							E_sec += (((*F_ms)(i + j) - F_ms_prev(i + j)) * d_inc_tot(i + j));
+							eps_sec += fabs(d_inc_tot(i + j));
+						}
+
+						if (E_sec <= 0.0 &&	eps_sec > DBL_EPSILON) {
+							for (int k = 0; k < secOrder; k++) {
+								for (int j = 0; j < numSections * secOrder; j++)
+									(*H)(i + k, j) = 0.0;
+
+								(*H)(i + k, i + k) = 1.0;
+							}
+						}
+					}
+
+					// Invert [H]
+					if (H->Invert(*H_inv) < 0) {
+						opserr << "WARNING! GradientInelasticBeamColumn3d::updateH() - element: " << this->getTag() << " - could not invert [H]\n";
+						return -1;
+					}
+				}
+
+				// Compute Macroscopic Section Strains
+				*d_nl_tot = d_nl_tot_prev + ((*H_inv) * d_inc_tot);
+
+				// Check Convergence
+				bothConverged = false;
+
+				if (this->qConvergence(iter, q, *d_nl_tot, dq, dq_norm) && this->fConvergence(iter, Q, dF_ms, dF_ms_norm)) {
+					bothConverged = true;
+
+					iterNo += iter;
+					strIterNo++;
+
+					iter = 10 * maxIters;
+					l = 10;
+				}
+				else {
+					// Choose Which Stiffness Values Go inside Jacobian Matrix
+					switch (l) {
+					case 0:
+						if (!cnstH) {
+							B_q_H_inv = (*B_q) * (*H_inv);
+							this->assembleMatrix(*J, B_q_H_inv, numSections * secOrder, numSections * secOrder + 5, 6, numSections * secOrder + 5, -1.0);
+						}
+						else
+							this->assembleMatrix(*J, *B_q_H_inv_init, numSections * secOrder, numSections * secOrder + 5, 6, numSections * secOrder + 5, -1.0);
+
+						this->getSectionsTangentStiff(K_ms);
+						this->assembleMatrix(*J, K_ms, 0, numSections * secOrder - 1, 6, numSections * secOrder + 5, -1.0);
+
+						break;
+					case 1:
+						if (!cnstH) {
+							B_q_H_inv = (*B_q) * (*H_inv);
+							this->assembleMatrix(*J, B_q_H_inv, numSections * secOrder, numSections * secOrder + 5, 6, numSections * secOrder + 5, -1.0);
+						}
+						else
+							this->assembleMatrix(*J, *B_q_H_inv_init, numSections * secOrder, numSections * secOrder + 5, 6, numSections * secOrder + 5, -1.0);
+
+						this->getSectionsTangentStiff(K_ms);
+						this->assembleMatrix(*J, K_ms, 0, numSections * secOrder - 1, 6, numSections * secOrder + 5, -1.0);
+
+						break;
+					case 2:
+						*J = J_prev;
+
+						break;
+					case 3:
+						*J = *J_init;
+
+						break;
+					}
+
+					// Assemble Trial Variables
+					this->assembleVector(trial_diff, dF_ms, 0, numSections * secOrder - 1, 1.0);
+					this->assembleVector(trial_diff, dq, numSections * secOrder, numSections * secOrder + 5, 1.0);
+
+					this->assembleVector(trial_old, Q, 0, 5, 1.0);
+					this->assembleVector(trial_old, *d_tot, 6, numSections * secOrder + 5, 1.0);
+
+					// Apply Newton-Raphson
+					if (J->Solve(trial_diff, *trial_change) < 0) {
+						opserr << "WARNING! GradientInelasticBeamColumn3d::update() - element: " << this->getTag() << " - could not invert Jacobian\n";
+						return -1;
+					}
+
+					// Scale down trial_change if necessary
+					if (correctionControl  && !initialFlag && l > 0) {
+						double gamma = 1.0;
+						for (int i = 0; i < numSections * secOrder + 6; i++)
+							if (fabs((*trial_change)(i)) > (*max_trial_change)(i))
+								gamma = fmin((*max_trial_change)(i) / fabs((*trial_change)(i)), gamma);
+
+						trial_new = trial_old - (gamma * (*trial_change));
+					}
+					else
+						trial_new = trial_old - (*trial_change);
+
+					Q.Extract(trial_new, 0, 1.0);
+					d_tot->Extract(trial_new, 6, 1.0);
+				} // else of (if (q_converged && F_ms_converged))
+			} // for (int iter = 0; iter <= maxIters; iter++)
+		} // for (int l = 0; l < 3; l++)
+
+		if (bothConverged) {
+			if (r == 1.0) {
+				converged = true;
+				break;
+			}
+			else {
+				divNo--;
+				r_commit = r;
+
+				if (r > r_fail) {	// increase dr if passed previous failure point
+					dr *= div;
+					divNo--;
+				}
+
+				r += dr;
+
+				if (r > 1.0)
+					r = 1.0;
+
+				d_tot_prev = *d_tot;
+				d_nl_tot_prev = *d_nl_tot;
+				F_ms_prev = *F_ms;
+				Q_prev = Q;
+				J_prev = *J;
+			}
+		}
+		else {
+			dr /= div;
+			r_fail = r;
+			r = r_commit + dr;
+		}
+	} // for (int divNo = 0; divNo < maxDivNo; divNo++)
+
+	// Check if Convergence has Occurred
+	if (!converged) {
+		opserr << "\nWARNING! GradientInelasticBeamColumn3d::update() - element: " << this->getTag() << " - failed to get compatible forces"
+			<< "\ntarget basic displacements:    " << q_t(0) << ", " << q_t(1) << ", " << q_t(2) << ", " << q_t(3) << ", " << q_t(4) << ", " << q_t(5)
+			<< "\nbasic displacement increments: " << q_inc(0) << ", " << q_inc(1) << ", " << q_inc(2) << ", " << q_inc(3) << ", " << q_inc(4) << ", " << q_inc(5)
+			<< "\ndq_norm: " << dq_norm << ", dF_ms_norm: " << dF_ms_norm << "\n\n";
+
+		return -1;
+	}
+
+	// Set Convergence Indicators
+	initialFlag = 1;
+	return 0;
+}
+
+// Definition of Methods Dealing with Sections
+void
+GradientInelasticBeamColumn3d::getSectionsTangentStiff(Matrix &tStiff)
+{
+	tStiff.Zero();
+
+	for (int i = 0; i < numSections; i++) {
+		const Matrix &k_ms = sections[i]->getSectionTangent();
+		this->assembleMatrix(tStiff, k_ms, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
+	}
+}
+
+void
+GradientInelasticBeamColumn3d::getSectionsInitialStiff(Matrix &iStiff)
+{
+	iStiff.Zero();
+
+	for (int i = 0; i < numSections; i++) {
+		const Matrix &k_ms0 = sections[i]->getInitialTangent();
+		this->assembleMatrix(iStiff, k_ms0, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
+	}
+}
+
+// Definition of Convergence Test Methods
+double
+GradientInelasticBeamColumn3d::weightedNorm(const Vector &W, const Vector &V, bool sqRt)
+{
+	if (W.Size() != V.Size())
+		opserr << "WARNING! GradientInelasticBeamColumnPF3d::weightedNorm() - element: " << this->getTag() << " - inequal number of elements in vectors\n";
+
+	double sqSum = 0.0;
+	for (int i = 0; i < V.Size(); i++)
+		sqSum += V(i) * W(i) * V(i);
+
+	if (sqRt)
+		return sqrt(sqSum);
+	else
+		return sqSum;
+}
+
+bool
+GradientInelasticBeamColumn3d::qConvergence(const int &iter, const Vector &qt, const Vector &dnl_tot, Vector &Dq, double &dqNorm)
+{
+	bool q_converged;
+
+	Dq = qt - ((*B_q) * (*d_nl_tot));
+	dqNorm = this->weightedNorm(k_init, Dq);
+
+	if (iter < (maxIters / 3))
+		q_converged = (dqNorm <= fmin(minTol * this->weightedNorm(k_init, qt), minTol * F_tol_q));
+	else if (iter < (2 * maxIters / 3))
+		q_converged = (dqNorm <= fmax(minTol * this->weightedNorm(k_init, qt), minTol * F_tol_q));
+	else
+		q_converged = (dqNorm <= fmax(maxTol * this->weightedNorm(k_init, qt), maxTol * F_tol_q));
+
+	return q_converged;
+}
+
+bool
+GradientInelasticBeamColumn3d::fConvergence(const int &iter, const Vector &Qt, Vector &DF_ms, double &dfNorm)
+{
+	bool F_ms_converged;
+
+	Vector F_ms_trial = (*B_Q) * Q;
+	DF_ms = F_ms_trial - (*F_ms);
+
+	dfNorm = this->weightedNorm(*flex_ms_init, DF_ms);
+
+	if (iter < (maxIters / 3))
+		F_ms_converged = (dfNorm <= fmin(minTol * this->weightedNorm(*flex_ms_init, *F_ms), fmin(minTol * this->weightedNorm(*flex_ms_init, F_ms_trial), 100.0 * minTol * F_tol_f_ms)));
+	else if (iter < (2 * maxIters / 3))
+		F_ms_converged = (dfNorm <= fmax(minTol * this->weightedNorm(*flex_ms_init, *F_ms), fmax(minTol * this->weightedNorm(*flex_ms_init, F_ms_trial), 100.0 * minTol * F_tol_f_ms)));
+	else
+		F_ms_converged = (dfNorm <= fmax(maxTol * this->weightedNorm(*flex_ms_init, *F_ms), fmax(maxTol * this->weightedNorm(*flex_ms_init, F_ms_trial), 100.0 * maxTol * F_tol_f_ms)));
+
+	return F_ms_converged;
+}
+
+// Definition of Methods Used to Determine Stiffness Matrices and Mass Matrix
+const Matrix &
+GradientInelasticBeamColumn3d::getBasicStiff(void)
+{
+	// Determine Element Stiffness Matrix in Basic System
+	Matrix K_ms(numSections * secOrder, numSections * secOrder);
+	Matrix K_ms_inv_BQ(numSections * secOrder, 6);
+	static Matrix F(6, 6);       // flexibility matrix in the basic system
+	static Matrix K(6, 6);       // stiffness matrix in the basic system
+
+	this->getSectionsTangentStiff(K_ms);
+
+	if (K_ms.Solve((*B_Q), K_ms_inv_BQ) < 0) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::getBasicStiff() - element: " << this->getTag() << " - could not invert K_ms\n";
+	}
+
+	if (!cnstH)
+		F = ((*B_q) * (*H_inv)) * K_ms_inv_BQ;
+	else
+		F = (*B_q_H_inv_init) * K_ms_inv_BQ;
+
+	if (F.Invert(K) < 0) {
+		opserr << "WARNING! GradientInelasticBeamColumn3d::getBasicStiff() - element: " << this->getTag() << " - could not invert element flexibility matrix\n";
+	}
+
+	return K;
+}
+
+const Matrix &
+GradientInelasticBeamColumn3d::getTangentStiff(void)
+{
+	crdTransf->update();
+	return crdTransf->getGlobalStiffMatrix(this->getBasicStiff(), Q);
+}
+
+const Matrix &
+GradientInelasticBeamColumn3d::getInitialBasicStiff(void)
+{
+	// Determine Sections Initial Stiffness Matrices
+	Matrix K_ms_init(numSections * secOrder, numSections * secOrder);
+
+	this->getSectionsInitialStiff(K_ms_init);
+
+	// Determine Element Stiffness Matrix in Basic System
+	Matrix K_ms_inv_BQ(numSections * secOrder, 6);
+	Matrix H_inv_init(numSections * secOrder, numSections * secOrder);
+	static Matrix F_init(6, 6);      // initial flexibility matrix in the basic system
+	static Matrix K_init(6, 6);      // initial stiffness matrix in the basic system
+
+	if (K_ms_init.Solve((*B_Q), K_ms_inv_BQ) < 0)
+		opserr << "WARNING! GradientInelasticBeamColumn3d::getInitialBasicStiff() - element: " << this->getTag() << " - could not invert K_ms_init\n";
+
+	if (H_init->Invert(H_inv_init) < 0)
+		opserr << "WARNING! GradientInelasticBeamColumn3d::getInitialBasicStiff() - element: " << this->getTag() << " - could not invert H_init\n";
+
+	F_init = ((*B_q) * H_inv_init) * K_ms_inv_BQ;
+
+	if (F_init.Invert(K_init) < 0)
+		opserr << "WARNING! GradientInelasticBeamColumn3d::getInitialBasicStiff() - element: " << this->getTag() << " - could not invert element initial flexibility matrix\n";
+
+	return K_init;
+}
+
+const Matrix &
+GradientInelasticBeamColumn3d::getInitialStiff(void)
+{
+	// Check for Quick Return
+	if (K0 != 0)
+		return *K0;
+
+	// Transform to Global System and Return
+	K0 = new Matrix(crdTransf->getInitialGlobalStiffMatrix(this->getInitialBasicStiff()));
+
+	return *K0;
+}
+
+const Matrix &
+GradientInelasticBeamColumn3d::getMass(void)
+{
+	theMatrix.Zero();
+
+	return theMatrix;
+}
+
+// Definition of Methods to Get Forces
+const Vector &
+GradientInelasticBeamColumn3d::getResistingForce(void)
+{
+	double Q0[6];
+	Vector Q0Vec(Q0, 6);
+	Q0Vec.Zero();
+
+	crdTransf->update();
+	return crdTransf->getGlobalResistingForce(Q, Q0Vec);
+}
+
+const Vector &
+GradientInelasticBeamColumn3d::getResistingForceIncInertia()
+{
+	// Compute the current resisting force
+	theVector = this->getResistingForce();
+
+	// add the damping forces if rayleigh damping
+	if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+		theVector += this->getRayleighDampingForces();
+
+	return theVector;
+}
+
+// Definition of Print Command
+void
+GradientInelasticBeamColumn3d::Print(OPS_Stream &s, int flag)
+{
+	s << "Element Tag: " << this->getTag() << endln;
+	s << "Type: GradientInelasticBeamColumn3d" << endln;
+	s << "Connected Node Tags: iNode " << connectedExternalNodes(0)
+		<< ", jNode " << connectedExternalNodes(1) << endln;
+	s << "Section Tag: " << sections[0]->getTag() << endln;
+	s << "Number of Sections: " << numSections << endln;
+	s << "Characteristic Length: " << lc << endln;
+}
+
+// Definition of Response Parameters
+Response *
+GradientInelasticBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
+{
+	// Define and Initialize theResponse
+	Response *theResponse = 0;
+
+	output.tag("ElementOutput");
+	output.attr("eleType", this->getClassType());
+	output.attr("eleTag", this->getTag());
+	output.attr("node1", connectedExternalNodes[0]);
+	output.attr("node2", connectedExternalNodes[1]);
+
+	// Global Forces
+	if (strcmp(argv[0], "force") == 0 || strcmp(argv[0], "forces") == 0 ||
+		strcmp(argv[0], "globalForce") == 0 || strcmp(argv[0], "globalForces") == 0) {
+		output.tag("ResponseType", "Px_1");
+		output.tag("ResponseType", "Py_1");
+		output.tag("ResponseType", "Pz_1");
+		output.tag("ResponseType", "Mx_1");
+		output.tag("ResponseType", "My_1");
+		output.tag("ResponseType", "Mz_1");
+		output.tag("ResponseType", "Px_2");
+		output.tag("ResponseType", "Py_2");
+		output.tag("ResponseType", "Pz_2");
+		output.tag("ResponseType", "Mx_2");
+		output.tag("ResponseType", "My_2");
+		output.tag("ResponseType", "Mz_2");
+
+		theResponse = new ElementResponse(this, 1, theVector);
+	}
+
+	// Local Forces
+	else if (strcmp(argv[0], "localForce") == 0 || strcmp(argv[0], "localForces") == 0) {
+		output.tag("ResponseType", "N_ 1");
+		output.tag("ResponseType", "My_1");
+		output.tag("ResponseType", "Mz_1");
+		output.tag("ResponseType", "Vy_1");
+		output.tag("ResponseType", "Vz_1");
+		output.tag("ResponseType", "T_1");
+		output.tag("ResponseType", "N_2");
+		output.tag("ResponseType", "My_2");
+		output.tag("ResponseType", "Mz_2");
+		output.tag("ResponseType", "Vy_2");
+		output.tag("ResponseType", "Vz_2");
+		output.tag("ResponseType", "T_2");
+
+		theResponse = new ElementResponse(this, 2, theVector);
+	}
+
+	// Basic Forces
+	else if (strcmp(argv[0], "basicForce") == 0 || strcmp(argv[0], "basicForces") == 0) {
+		output.tag("ResponseType", "N_J");
+		output.tag("ResponseType", "Mz_I");
+		output.tag("ResponseType", "Mz_J");
+		output.tag("ResponseType", "My_I");
+		output.tag("ResponseType", "My_J");
+		output.tag("ResponseType", "T_J");
+
+		theResponse = new ElementResponse(this, 3, Vector(6));
+	}
+
+	// Nonlocal Strains
+	else if (strcmp(argv[0], "nonlocalStrain") == 0 || strcmp(argv[0], "nonlocalStrains") == 0) {
+		theResponse = new ElementResponse(this, 4, Vector(secOrder * numSections));
+	}
+
+	// Local Strains
+	else if (strcmp(argv[0], "localStrain") == 0 || strcmp(argv[0], "localStrains") == 0) {
+		theResponse = new ElementResponse(this, 5, Vector(secOrder * numSections));
+	}
+
+	// [H] Diagonal Elements
+	else if (strcmp(argv[0], "Hdiagonal") == 0) {
+		theResponse = new ElementResponse(this, 6, Vector(secOrder * numSections));
+	}
+
+	// Global Damping Forces
+	else if (strcmp(argv[0], "dampingForce") == 0 || strcmp(argv[0], "dampingForces") == 0) {
+		theResponse = new ElementResponse(this, 7, theVector);
+	}
+
+	// Iteration Number
+	else if (strcmp(argv[0], "iterNo") == 0) {
+		theResponse = new ElementResponse(this, 8, iters);
+	}
+
+	// Sections Responses
+	else if (strstr(argv[0], "section") != 0) {
+
+		if (argc > 1) {
+
+			int sectionNum = atoi(argv[1]);
+
+			if (sectionNum > 0 && sectionNum <= numSections && argc > 2) {
+
+				double *secX = new double[numSections]; //double secX[50];
+				beamIntegr->getSectionLocations(numSections, L, secX);
+
+				output.tag("GaussPointOutput");
+				output.attr("number", sectionNum);
+				output.attr("eta", secX[sectionNum - 1] * L);
+
+				if (strcmp(argv[2], "dsdh") != 0) {
+					theResponse = sections[sectionNum - 1]->setResponse(&argv[2], argc - 2, output);
+				}
+				else {
+					theResponse = new ElementResponse(this, 76, Vector(secOrder));
+					Information &info = theResponse->getInformation();
+					info.theInt = sectionNum;
+				}
+
+				output.endTag();
+
+				if (secX)
+					delete[] secX;
+			}
+		}
+	}
+
+	return theResponse;
+}
+
+// Definition of Method to Get Response Parameters
+int
+GradientInelasticBeamColumn3d::getResponse(int responseID, Information &eleInfo)
+{
+	switch (responseID) {
+	case 1: // Global Forces
+		return eleInfo.setVector(this->getResistingForce());
+
+	case 2: // Local Forces
+		theVector.Zero();
+
+		theVector(0) = -Q(0);		// N_1
+		theVector(6) = Q(0);		// N_2
+
+		theVector(3) = (Q(1) + Q(2)) / L;		// Vy_1
+		theVector(9) = -(Q(1) + Q(2)) / L;		// Vy_2
+
+		theVector(4) = (Q(3) + Q(4)) / L;		// Vz_1
+		theVector(10) = -(Q(3) + Q(4)) / L;		// Vz_2
+
+		theVector(1) = Q(3);		// My_1
+		theVector(7) = Q(4);		// My_2
+
+		theVector(2) = Q(1);		// Mz_1
+		theVector(8) = Q(2);		// Mz_2
+
+		theVector(5) = -Q(5);		// T_1
+		theVector(11) = Q(5);		// T_2
+
+		return eleInfo.setVector(theVector);
+
+	case 3: // Basic Forces
+		return eleInfo.setVector(Q);
+
+	case 4: // Nonlocal Strains
+		return eleInfo.setVector(*d_nl_tot);
+
+	case 5: // Local Strains
+		return eleInfo.setVector(*d_tot);
+
+	case 6:
+		return eleInfo.setVector(*hh);
+
+	case 7:
+		return eleInfo.setVector(this->getRayleighDampingForces());
+
+	case 8:
+		return eleInfo.setVector(iters);
+
+	default:
+		return -1;
+	}
+}
+
+// Definition of Method to Display Element
+int
+GradientInelasticBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+{
+	// first determine the end points of the beam based on
+	// the display factor (a measure of the distorted image)
+	const Vector &end1Crd = theNodes[0]->getCrds();
+	const Vector &end2Crd = theNodes[1]->getCrds();
+
+	static Vector v1(3);
+	static Vector v2(3);
+
+	if (displayMode >= 0) {
+		const Vector &end1Disp = theNodes[0]->getDisp();
+		const Vector &end2Disp = theNodes[1]->getDisp();
+
+		for (int i = 0; i < 3; i++) {
+			v1(i) = end1Crd(i) + end1Disp(i)*fact;
+			v2(i) = end2Crd(i) + end2Disp(i)*fact;
+		}
+	}
+	else {
+		int mode = displayMode  *  -1;
+		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
+		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
+		if (eigen1.noCols() >= mode) {
+			for (int i = 0; i < 3; i++) {
+				v1(i) = end1Crd(i) + eigen1(i, mode - 1)*fact;
+				v2(i) = end2Crd(i) + eigen2(i, mode - 1)*fact;
+			}
+		}
+		else {
+			for (int i = 0; i < 3; i++) {
+				v1(i) = end1Crd(i);
+				v2(i) = end2Crd(i);
+			}
+		}
+	}
+
+	return theViewer.drawLine(v1, v2, 1.0, 1.0);
+}
+
+// Definition of Methods Dealing with Parallel Processing
+int
+GradientInelasticBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
+{
+	opserr << "WARNING! GradientInelasticBeamColumn3d::sendSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
+	return -1;
+}
+
+int
+GradientInelasticBeamColumn3d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+{
+	opserr << "WARNING! GradientInelasticBeamColumn3d::recvSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
+	return -1;
+}

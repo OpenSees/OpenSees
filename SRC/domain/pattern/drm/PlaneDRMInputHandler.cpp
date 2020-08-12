@@ -342,8 +342,6 @@ void PlaneDRMInputHandler::populateBuffers()
 void PlaneDRMInputHandler::getMotions(Element* eletag, double time, Vector& U, Vector& Ud, Vector& Udd)
 {
   
-
-
 //  int tg = eletag->getTag();
 
   if (time > numSteps*deltaT)
@@ -394,7 +392,7 @@ void PlaneDRMInputHandler::getMotions(Element* eletag, double time, Vector& U, V
     handle_elementAtface4(eletag, time, U, Ud, Udd);
     break;
   default:
-    opserr << " SHOULDNT SEE THIS \n";
+    opserr << " SHOULDN'T SEE THIS \n";
     break;
   }
 }

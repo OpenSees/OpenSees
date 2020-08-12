@@ -385,6 +385,12 @@ int WilsonTheta::commit(void)
 }
 
 
+const Vector &
+WilsonTheta::getVel()
+{
+  return *Udot;
+}
+
 int WilsonTheta::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(1);

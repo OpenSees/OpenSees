@@ -198,7 +198,7 @@ DistributedSparseGenRowLinSOE::setSize(Graph &theGraph)
       }
     }
 
-    // now recv each of the shared DOFs & merge with mine to form the master list
+    // now recv each of the shared DOFs & merge with mine to form the primary list
     for (int j=0; j<numChannels; j++) {
       Channel *theChannel = theChannels[j];
       theChannel->recvID(0, 0, otherSize);	
@@ -225,7 +225,7 @@ DistributedSparseGenRowLinSOE::setSize(Graph &theGraph)
   }
 
   //
-  // now master list has been created we recv from each process the edges corresponding
+  // now primary list has been created we recv from each process the edges corresponding
   // to shared vertices.
   // 
 
@@ -579,7 +579,7 @@ DistributedSparseGenRowLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != n) {
 	opserr << "WARNING BandGenLinSOE::setB() -";
-	opserr << " incomptable ns " << n << " and " << v.Size() << endln;
+	opserr << " incompatible ns " << n << " and " << v.Size() << endln;
 	return -1;
     }
     

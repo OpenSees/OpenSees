@@ -436,7 +436,7 @@ UniaxialMaterial::commitSensitivity(double strainSensitivity, int gradIndex, int
 double
 UniaxialMaterial::getInitialTangent (void)
 {
-	opserr << "UniaxialMaterial::getInitialTangent() -- this mehtod " << endln
+	opserr << "UniaxialMaterial::getInitialTangent() -- this method " << endln
 		<< " is not implemented for the selected material. " << endln;
 	return 0.0;
 }

@@ -31,7 +31,7 @@
 #ifndef RaphsonAccelerator_h
 #define RaphsonAccelerator_h
 
-#include <Accelerator.h>
+#include "Accelerator.h"
 #include <IncrementalIntegrator.h>
 
 class RaphsonAccelerator: public Accelerator

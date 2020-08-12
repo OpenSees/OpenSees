@@ -29,7 +29,7 @@
 //
 // Description: This file contains the class definition for 
 // ShearCurve. Defines the curve used by LimitStateMaterial  
-// to determine if shear failure has occured according to empirical 
+// to determine if shear failure has occurred according to empirical 
 // drift capacity model by Elwood (2002).
 
 

@@ -6,7 +6,7 @@ UNDER CONSTRUCTION
 \noindent {\bf Files}   \\
 \indent \#include $<$/domain/domain/partitioned/PartitionedDomain.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class PartitionedDomain: public Domain  \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -106,12 +106,12 @@ Deletes the storage components. \\
 Method which first checks that subdomains with tags 1 through {\em numPartitions} exist in the 
 PartitionedDomain. Then it invokes {\em setPartitionedDomain(*this)} on the DomainPartitioner
 and finally it returns the result of invoking {\em partition(numPartitions} on
-the DomainPartitioner, which will return 0 if succesfull, a negative number if not. \\
+the DomainPartitioner, which will return 0 if successful, a negative number if not. \\
 
 {\em virtual bool addSubdomain(Subdomain *theSubdomainPtr);}  \\
 Adds the subdomain pointed to by theSubdomainPtr to the domain. The domain
 is responsible for checking that no other subdomain with a similar tag,
-has been previously added to the domain. If successfull
+has been previously added to the domain. If successful
 the domain is responsible for invoking {\em setDomain(this)} on the
 Subdomain. The domain is also responsible for invoking {\em
 domainChange()}. The call returns {\em false} if the subdomain was not added, 
@@ -143,7 +143,7 @@ check = false);}  \\
 To add the element pointed to by theElementPtr to the domain. If {\em check}
 is {\em true} the domain is responsible for checking to see that: 1)
 no other element with a similar tag, element number, exists in any of
-the subdomains. If check is successfull the partitioned domain
+the subdomains. If check is successful the partitioned domain
 attempts to add the element to the storage arrey. The call returns
 {\em false} if the element was not added, otherwise {\em true} is 
 returned.\\   
@@ -152,7 +152,7 @@ returned.\\
 Adds the node pointed to by theNodePtr to the domain. If {\em check}
 is {\em true} the domain is responsible for checking that no other
 node with a similar tag, node number, exists in any of the
-subdomains. If successfull the partition domain attempts to add the
+subdomains. If successful the partition domain attempts to add the
 node by invoking {\em Domain::addNode}. The call returns {\em false} if
 the node was not added, otherwise {\em true} is returned. \\  
 
@@ -215,16 +215,16 @@ same operation on them. \\
 
 {\em virtual void applyLoad(double time = 0.0, double loadFactor
 = 1.0);} \\
-The partioned domain iterates through all the subdomains invoking {\em
+The partitioned domain iterates through all the subdomains invoking {\em
 applyLoad(double timeStamp)} on them. \\
 
 {\em virtual void linearize(void);} \\
-The partioned domain iterates through all the subdomains invoking {\em
+The partitioned domain iterates through all the subdomains invoking {\em
 linearize()} on them. \\
 
 
 {\em virtual void commit(void);} \\
-The partioned domain iterates through all the subdomains invoking {\em
+The partitioned domain iterates through all the subdomains invoking {\em
 commit()} on them. \\
 
 %%%%%%%% Public Member Functions - QUERY
@@ -310,5 +310,5 @@ PartitionedDomain. \\
 {\em virtual int buildEleGraph(Graph \&theEleGraph)} \\
 A method which will cause the domain to discard the current element
 graph and build a new one based on the element connectivity. Returns
-$0$ if successfull otherwise $-1$ is returned along with an error
+$0$ if successful otherwise $-1$ is returned along with an error
 message to opserr. \\

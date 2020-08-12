@@ -101,10 +101,10 @@ public:
 private:
  
 	//defining parameters
-	double fcu;		//concrete conmpressive strenght
-	double ecu;		//concrete compres strain at ultimate strength
+	double fcu;		//concrete conmpressive strength
+	double ecu;		//concrete compress strain at ultimate strength
 	double Ec;      //concrete modulus of elasticity
-	double fcr;		//concrete strenght at cracking
+	double fcr;		//concrete strength at cracking
 	double Esv;		//vertical reinforcement Youngs Modulus
 	double fyv;     //vertical reinforcement yield stress
 	double alphaV;	//vertical steel reinforcement hardening ratio

@@ -22,7 +22,7 @@
 // $Date: 2011-07-18 10:11:35 $
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam2dThermalAction.h,v $
 
-//Added by Liming Jiang, [Univeristy of Edinburgh]
+//Added by Liming Jiang, [University of Edinburgh]
 //This class is a wrapper processing the thermal action definition
 
 

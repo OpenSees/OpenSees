@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-//Modified by Jian Zhang, [Univeristy of Edinburgh]
-//Modified by Panagiotis Kotsovinos, [Univeristy of Edinburgh]
+//Modified by Jian Zhang, [University of Edinburgh]
+//Modified by Panagiotis Kotsovinos, [University of Edinburgh]
 //Modified by Liming Jiang, [University of Edinburgh]
 
 // Description: This file contains the class implementation of FiberSection2dThermal.
@@ -67,7 +67,7 @@ void* OPS_FiberSection2dThermal()
 FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers):
   SectionForceDeformation(tag, SEC_TAG_FiberSection2dThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),DataMixed(27),AverageThermalElong(2), QzBar(0.0), ABar(0.0),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2), sT(0)//,theTemperatures(temperatures),theTemperatureFactor(0)
+  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), dedh(2)//,theTemperatures(temperatures),theTemperatureFactor(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -128,7 +128,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers):
   sTData[1] = 0.0;
   sT = new Vector(sTData,2);
 
- //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+ //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
    Fiber_Tangent = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_Tangent[i] = 0;
@@ -145,7 +145,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num):
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   DataMixed(27),AverageThermalElong(2),
   QzBar(0.0), ABar(0.0), yBar(0.0),
-  sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2), sT(0)
+  sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), dedh(2)
 {
     if(sizeFibers > 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
@@ -188,7 +188,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num):
     sTData[1] = 0.0;
     sT = new Vector(sTData,2);
 
-    //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+    //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
     Fiber_Tangent = new double [1000];
     for (int i = 0;i<1000; i++) {
 	Fiber_Tangent[i] = 0;
@@ -204,7 +204,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
 			       SectionIntegration &si):
   SectionForceDeformation(tag, SEC_TAG_FiberSection2dThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),DataMixed(27),AverageThermalElong(2),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2)//,theTemperature(0)
+  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), dedh(2)//,theTemperature(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -270,7 +270,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
    sTData[0] = 0.0;
    sTData[1] = 0.0;
 
- //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+ //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
      Fiber_Tangent = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_Tangent[i] = 0;
@@ -286,7 +286,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
 FiberSection2dThermal::FiberSection2dThermal():
   SectionForceDeformation(0, SEC_TAG_FiberSection2dThermal),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),DataMixed(27),AverageThermalElong(2),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2)//, theTemperatures(0),theTemperatureFactor(0)
+  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), Fiber_Tangent(0), Fiber_ElongP(0), dedh(2)//, theTemperatures(0),theTemperatureFactor(0)
 {
   s = new Vector(sData, 2);
   ks = new Matrix(kData, 2, 2);
@@ -308,7 +308,7 @@ FiberSection2dThermal::FiberSection2dThermal():
    sTData[1] = 0.0;
 
 
-   //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+   //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
    Fiber_Tangent = new double [1000];
    for(int i = 0;i<1000; i++) {
 	   Fiber_Tangent[i] = 0;
@@ -468,7 +468,7 @@ FiberSection2dThermal::setTrialSectionDeformation(const Vector& deforms)
 		}
 		else
 		{
-			//caculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
+			//calculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
 			Vector TempV= this->determineFiberTemperature( DataMixed, fiberLocs[i]);
 			FiberTemperature = TempV(0);
 			FiberTempMax= TempV(1);
@@ -623,7 +623,7 @@ FiberSection2dThermal::getTemperatureStress(const Vector &dataMixed)
     }
     else
 	{
-		//caculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
+		//calculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
 		Vector TempV= this->determineFiberTemperature( dataMixed, fiberLocs[i]);
 		FiberTemperature = TempV(0);FiberTempMax= TempV(1);
 	}
@@ -1303,11 +1303,12 @@ FiberSection2dThermal::setParameter(const char **argv, int argc, Parameter &para
   }
 
   // Check if it belongs to the section integration
-  else if (strstr(argv[0],"integration") != 0)
+  if (strstr(argv[0],"integration") != 0) {
     if (sectionIntegr != 0)
       return sectionIntegr->setParameter(&argv[1], argc-1, param);
     else
       return -1;
+  }
 
   int ok = 0;
 

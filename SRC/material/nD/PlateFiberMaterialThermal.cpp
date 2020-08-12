@@ -461,7 +461,7 @@ PlateFiberMaterialThermal::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  // put tag and assocaited materials class and database tags into an id and send it
+  // put tag and associated materials class and database tags into an id and send it
   static ID idData(3);
   idData(0) = this->getTag();
   idData(1) = theMaterial->getClassTag();
@@ -501,7 +501,7 @@ PlateFiberMaterialThermal::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
 {
   int res = 0;
 
-  // recv an id containg the tag and associated materials class and db tags
+  // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
   res = theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
@@ -536,7 +536,7 @@ PlateFiberMaterialThermal::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   Cstrain22 = vecData(0);
   Tstrain22 = Cstrain22;
 
-  // now receive the assocaited materials data
+  // now receive the associated materials data
   res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
   if (res < 0) 
     opserr << "PlateFiberMaterialThermal::sendSelf() - failed to send vector material\n";

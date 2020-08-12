@@ -193,7 +193,7 @@ protected:
 	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
-	Vector mTracker;      // internal paramter tracker
+	Vector mTracker;      // internal parameter tracker
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations

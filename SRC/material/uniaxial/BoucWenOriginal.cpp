@@ -45,7 +45,7 @@ void* OPS_BoucWenOriginal()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {
-        opserr << "WARNING: Insufficient arguements\n";
+        opserr << "WARNING: Insufficient arguments\n";
         opserr << "Want: uniaxialMaterial BoucWenOriginal tag E fy alphaL" << endln;
         return 0;
     }

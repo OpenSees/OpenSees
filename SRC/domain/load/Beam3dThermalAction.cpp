@@ -173,7 +173,7 @@ Beam3dThermalAction::getData(int &type, double loadFactor)
   //data(23) = T15;
   //data(24) = LocZ5;
  if (indicator ==4){
-	 //using 9 data ponts
+	 //using 9 data points
 	 data.resize(18);
 	  for(int i=0; i<9;i++) {
 		data(2*i) = TempApp[i];

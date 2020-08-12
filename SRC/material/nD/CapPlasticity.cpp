@@ -11,7 +11,7 @@
 ** Developed by:                                                      **
 **   Quan Gu (quangu@xmu.edu.cn)                                      **  
 **                                                                    **     
-** reference: Hofstetter, G., J.C. Simo and R.L. Taylor, \A modifed   **
+** reference: Hofstetter, G., J.C. Simo and R.L. Taylor, \A modified  **
 ** cap-model: Closest point solution algorithms\, Computers &         **
 ** Structures, 46 (1993),203-214.                                     **
 **                                                                    **

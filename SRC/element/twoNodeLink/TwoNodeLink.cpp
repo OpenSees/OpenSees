@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 08/08
 // Revision: A
@@ -85,8 +81,12 @@ void* OPS_TwoNodeLink()
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int mattag;
         numdata = 1;
+        int numArgs = OPS_GetNumRemainingInputArgs();
         if (OPS_GetIntInput(&numdata, &mattag) < 0) {
-            OPS_ResetCurrentInputArg(-1);
+            if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                // move current arg back by one
+                OPS_ResetCurrentInputArg(-1);
+            }
             break;
         }
         UniaxialMaterial* mat = OPS_getUniaxialMaterial(mattag);
@@ -100,11 +100,11 @@ void* OPS_TwoNodeLink()
     
     // dirs
     type = OPS_GetString();
-    if (strcmp(type, "-dir") != 0) {
+    if (strcmp(type, "-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir dirs\n";
         return 0;
     }
-    ID dirs(mats.size());
+    ID dirs(int(mats.size()));
     if (OPS_GetNumRemainingInputArgs() < dirs.Size()) {
         opserr << "WARNING wrong number of directions specified\n";
         return 0;
@@ -123,8 +123,7 @@ void* OPS_TwoNodeLink()
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
-            dirs, &mats[0], y, x, Mratio, sDistI,
-            doRayleigh, mass);
+            dirs, &mats[0]);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -200,13 +199,11 @@ void* OPS_TwoNodeLink()
                 return 0;
             }
         }
-
     }
     
     // create object
     return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
-        dirs, &mats[0], y, x, Mratio, sDistI,
-        doRayleigh, mass);
+        dirs, &mats[0], y, x, Mratio, sDistI, doRayleigh, mass);
 }
 
 
@@ -218,7 +215,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     const Vector sdI, int addRay, double m)
     : Element(tag, ELE_TAG_TwoNodeLink),
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
-    theMaterials(0), numDir(direction.Size()), dir(0), trans(3,3),
+    theMaterials(0), numDIR(direction.Size()), dir(0), trans(3,3),
     x(_x), y(_y), Mratio(Mr), shearDistI(sdI), addRayleigh(addRay),
     mass(m), L(0.0), onP0(true), ub(0), ubdot(0), qb(0), ul(0),
     Tgl(0,0), Tlb(0,0), theMatrix(0), theVector(0), theLoad(0)
@@ -238,14 +235,14 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // check the number of directions
-    if (numDir < 1 || numDir > 6)  {
+    if (numDIR < 1 || numDIR > 6)  {
         opserr << "TwoNodeLink::TwoNodeLink() - element: "
             << this->getTag() << " wrong number of directions\n";
         exit(-1);
     }
     
     // allocate memory for direction array
-    dir = new ID(numDir);
+    dir = new ID(numDIR);
     if (dir == 0)  {
         opserr << "TwoNodeLink::TwoNodeLink() - "
             << "failed to create direction array\n";
@@ -254,7 +251,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     
     // initialize directions and check for valid values
     (*dir) = direction;
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         if ((*dir)(i) < 0 ||
             (numDIM == 1 && (*dir)(i) > 0) ||
             (numDIM == 2 && (*dir)(i) > 2) ||
@@ -274,7 +271,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     }
     
     // allocate memory for the uniaxial materials
-    theMaterials = new UniaxialMaterial* [numDir];
+    theMaterials = new UniaxialMaterial* [numDIR];
     if (theMaterials == 0)  {
         opserr << "TwoNodeLink::TwoNodeLink() - "
             << "failed to allocate pointers for uniaxial materials.\n";
@@ -282,7 +279,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     }
     
     // get copies of the uniaxial materials
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         if (materials[i] == 0)  {
             opserr << "TwoNodeLink::TwoNodeLink() - "
                 "null uniaxial material pointer passed.\n";
@@ -298,6 +295,12 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     
     // check p-delta moment distribution ratios
     if (Mratio.Size() == 4)  {
+        if (Mratio(0) < 0.0 || Mratio(1) < 0.0 ||
+            Mratio(2) < 0.0 || Mratio(3) < 0.0) {
+            opserr << "TwoNodeLink::TwoNodeLink() - "
+                << "p-delta moment ratios can not be negative\n";
+            exit(-1);
+        }
         if (Mratio(0)+Mratio(1) > 1.0)  {
             opserr << "TwoNodeLink::TwoNodeLink() - "
                 << "incorrect p-delta moment ratios:\nrMy1 + rMy2 = "
@@ -333,9 +336,9 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     }
     
     // initialize response vectors in basic system
-    ub.resize(numDir);
-    ubdot.resize(numDir);
-    qb.resize(numDir);
+    ub.resize(numDIR);
+    ubdot.resize(numDIR);
+    qb.resize(numDIR);
     this->revertToStart();
 }
 
@@ -343,7 +346,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
 TwoNodeLink::TwoNodeLink()
     : Element(0, ELE_TAG_TwoNodeLink),
     numDIM(0), numDOF(0), connectedExternalNodes(2),
-    theMaterials(0), numDir(0), dir(0), trans(3,3), x(0), y(0),
+    theMaterials(0), numDIR(0), dir(0), trans(3,3), x(0), y(0),
     Mratio(0), shearDistI(0), addRayleigh(0), mass(0.0), L(0.0),
     onP0(false), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
@@ -373,7 +376,7 @@ TwoNodeLink::~TwoNodeLink()
     
     // delete the materials
     if (theMaterials != 0)  {
-        for (int i=0; i<numDir; i++)
+        for (int i=0; i<numDIR; i++)
             if (theMaterials[i] != 0)
                 delete theMaterials[i];
         delete [] theMaterials;
@@ -525,7 +528,7 @@ int TwoNodeLink::commitState()
     int errCode = 0;
     
     // commit material models
-    for (int i=0; i<numDir; i++)
+    for (int i=0; i<numDIR; i++)
         errCode += theMaterials[i]->commitState();
     
     // commit the base class
@@ -540,7 +543,7 @@ int TwoNodeLink::revertToLastCommit()
     int errCode = 0;
     
     // revert material models
-    for (int i=0; i<numDir; i++)
+    for (int i=0; i<numDIR; i++)
         errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
@@ -557,7 +560,7 @@ int TwoNodeLink::revertToStart()
     qb.Zero();
     
     // revert material models
-    for (int i=0; i<numDir; i++)
+    for (int i=0; i<numDIR; i++)
         errCode += theMaterials[i]->revertToStart();
     
     return errCode;
@@ -592,7 +595,7 @@ int TwoNodeLink::update()
     //ubdot = (Tlb*Tgl)*ugdot;
     
     // set trial response for material models
-    for (int i=0; i<numDir; i++)
+    for (int i=0; i<numDIR; i++)
         errCode += theMaterials[i]->setTrialStrain(ub(i),ubdot(i));
     
     return errCode;
@@ -604,22 +607,22 @@ const Matrix& TwoNodeLink::getTangentStiff()
     // zero the matrix
     theMatrix->Zero();
     
-    // get resisting forces and stiffnesses
-    Matrix kb(numDir,numDir);
-    for (int i=0; i<numDir; i++)  {
+    // get resisting force and stiffness
+    Matrix kb(numDIR,numDIR);
+    for (int i=0; i<numDIR; i++)  {
         qb(i) = theMaterials[i]->getStress();
         kb(i,i) = theMaterials[i]->getTangent();
     }
     
-    // transform from basic to local system
+    // transform stiffness from basic to local system
     Matrix kl(numDOF,numDOF);
     kl.addMatrixTripleProduct(0.0, Tlb, kb, 1.0);
     
-    // add geometric stiffness to local stiffness
+    // add P-Delta effects to local stiffness
     if (Mratio.Size() == 4)
-        this->addPDeltaStiff(kl);
+        this->addPDeltaStiff(kl, qb);
     
-    // transform from local to global system
+    // transform stiffness from local to global system
     theMatrix->addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
     //Matrix kg(numDOF,numDOF);
     //kg.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
@@ -634,17 +637,17 @@ const Matrix& TwoNodeLink::getInitialStiff()
     // zero the matrix
     theMatrix->Zero();
     
-    // get initial stiffnesses
-    Matrix kbInit(numDir,numDir);
-    for (int i=0; i<numDir; i++)  {
+    // get initial stiffness
+    Matrix kbInit(numDIR,numDIR);
+    for (int i=0; i<numDIR; i++)  {
         kbInit(i,i) = theMaterials[i]->getInitialTangent();
     }
     
-    // transform from basic to local system
+    // transform stiffness from basic to local system
     Matrix klInit(numDOF,numDOF);
     klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
-    // transform from local to global system
+    // transform stiffness from local to global system
     theMatrix->addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     //Matrix kgInit(numDOF,numDOF);
     //kgInit.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
@@ -659,24 +662,24 @@ const Matrix& TwoNodeLink::getDamp()
     // zero the matrix
     theMatrix->Zero();
     
-    // call base class to setup Rayleigh damping
+    // call base class to set up Rayleigh damping
     double factThis = 0.0;
     if (addRayleigh == 1)  {
         (*theMatrix) = this->Element::getDamp();
         factThis = 1.0;
     }
     
-    // now add damping tangent from materials
-    Matrix cb(numDir,numDir);
-    for (int i=0; i<numDir; i++)  {
+    // add damping tangent from materials
+    Matrix cb(numDIR,numDIR);
+    for (int i=0; i<numDIR; i++)  {
         cb(i,i) = theMaterials[i]->getDampTangent();
     }
     
-    // transform from basic to local system
+    // transform damping from basic to local system
     Matrix cl(numDOF,numDOF);
     cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
     
-    // transform from local to global system and add to cg
+    // transform damping from local to global system
     theMatrix->addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
     //Matrix cg(numDOF,numDOF);
     //cg.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
@@ -696,7 +699,7 @@ const Matrix& TwoNodeLink::getMass()
         double m = 0.5*mass;
         int numDOF2 = numDOF/2;
         for (int i=0; i<numDIM; i++)  {
-            (*theMatrix)(i,i) = m;
+            (*theMatrix)(i,i)                 = m;
             (*theMatrix)(i+numDOF2,i+numDOF2) = m;
         }
     }
@@ -756,19 +759,19 @@ const Vector& TwoNodeLink::getResistingForce()
     // zero the residual
     theVector->Zero();
     
-    // get resisting forces
-    for (int i=0; i<numDir; i++)
+    // get resisting force
+    for (int i=0; i<numDIR; i++)
         qb(i) = theMaterials[i]->getStress();
     
-    // determine resisting forces in local system
+    // determine resisting force in local system
     Vector ql(numDOF);
     ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
-    // add P-Delta effects to local forces
+    // add P-Delta effects to local force
     if (Mratio.Size() == 4)
-        this->addPDeltaForces(ql);
+        this->addPDeltaForces(ql, qb);
     
-    // determine resisting forces in global system    
+    // determine resisting force in global system
     theVector->addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     return *theVector;
@@ -777,19 +780,19 @@ const Vector& TwoNodeLink::getResistingForce()
 
 const Vector& TwoNodeLink::getResistingForceIncInertia()
 {
-    // this already includes damping forces from materials
+    // this already includes damping force from materials
     this->getResistingForce();
     
     // subtract external load
     theVector->addVector(1.0, *theLoad, -1.0);
     
-    // add the damping forces from rayleigh damping
+    // add the damping force from Rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
             theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
-    // add inertia forces from element mass
+    // add inertia force from element mass
     if (mass != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
         const Vector &accel2 = theNodes[1]->getTrialAccel();
@@ -813,7 +816,7 @@ int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
-    data(3) = numDir;
+    data(3) = numDIR;
     data(4) = x.Size();
     data(5) = y.Size();
     data(6) = Mratio.Size();
@@ -833,13 +836,13 @@ int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
     sChannel.sendID(0, commitTag, *dir);
     
     // send the material class tags
-    ID matClassTags(numDir);
-    for (int i=0; i<numDir; i++)
+    ID matClassTags(numDIR);
+    for (int i=0; i<numDIR; i++)
         matClassTags(i) = theMaterials[i]->getClassTag();
     sChannel.sendID(0, commitTag, matClassTags);
     
     // send the material models
-    for (int i=0; i<numDir; i++)
+    for (int i=0; i<numDIR; i++)
         theMaterials[i]->sendSelf(commitTag, sChannel);
     
     // send remaining data
@@ -863,7 +866,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     if (dir != 0)
         delete dir;
     if (theMaterials != 0)  {
-        for (int i=0; i<numDir; i++)
+        for (int i=0; i<numDIR; i++)
             if (theMaterials[i] != 0)
                 delete theMaterials[i];
         delete [] theMaterials;
@@ -875,7 +878,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     this->setTag((int)data(0));
     numDIM = (int)data(1);
     numDOF = (int)data(2);
-    numDir = (int)data(3);
+    numDIR = (int)data(3);
     addRayleigh = (int)data(8);
     mass = data(9);
     alphaM = data(10);
@@ -887,7 +890,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     rChannel.recvID(0, commitTag, connectedExternalNodes);
     
     // allocate memory for direction array and receive it
-    dir = new ID(numDir);
+    dir = new ID(numDIR);
     if (dir == 0)  {
         opserr << "TwoNodeLink::recvSelf() - "
             << "failed to create direction array\n";
@@ -896,18 +899,18 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     rChannel.recvID(0, commitTag, *dir);
     
     // receive the material class tags
-    ID matClassTags(numDir);
+    ID matClassTags(numDIR);
     rChannel.recvID(0, commitTag, matClassTags);
     
     // allocate memory for the uniaxial materials
-    theMaterials = new UniaxialMaterial* [numDir];
+    theMaterials = new UniaxialMaterial* [numDIR];
     if (theMaterials == 0)  {
         opserr << "TwoNodeLink::recvSelf() - "
             << "failed to allocate pointers for uniaxial materials.\n";
         return -2;
     }
     // receive the material models
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
         if (theMaterials[i] == 0) {
             opserr << "TwoNodeLink::recvSelf() - "
@@ -930,6 +933,12 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
         Mratio.resize(4);
         rChannel.recvVector(0, commitTag, Mratio);
         // check p-delta moment distribution ratios
+        if (Mratio(0) < 0.0 || Mratio(1) < 0.0 ||
+            Mratio(2) < 0.0 || Mratio(3) < 0.0) {
+            opserr << "TwoNodeLink::recvSelf() - "
+                << "p-delta moment ratios can not be negative\n";
+            return -4;
+        }
         if (Mratio(0)+Mratio(1) > 1.0)  {
             opserr << "TwoNodeLink::recvSelf() - "
                 << "incorrect p-delta moment ratios:\nrMy1 + rMy2 = "
@@ -968,9 +977,9 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     onP0 = false;
     
     // initialize response vectors in basic system
-    ub.resize(numDir);
-    ubdot.resize(numDir);
-    qb.resize(numDir);
+    ub.resize(numDIR);
+    ubdot.resize(numDIR);
+    qb.resize(numDIR);
     this->revertToStart();
     
     return 0;
@@ -1026,7 +1035,7 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
         s << "  type: TwoNodeLink" << endln;
         s << "  iNode: " << connectedExternalNodes(0)
             << ", jNode: " << connectedExternalNodes(1) << endln;
-        for (int i = 0; i < numDir; i++) {
+        for (int i = 0; i < numDIR; i++) {
             s << "  Material dir" << (*dir)(i) << ": ";
             s << theMaterials[i]->getTag() << endln;
         }
@@ -1042,11 +1051,11 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
         s << "\"type\": \"TwoNodeLink\", ";
         s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
         s << "\"materials\": [";
-        for (int i = 0; i < numDir - 1; i++)
+        for (int i = 0; i < numDIR - 1; i++)
             s << "\"" << theMaterials[i]->getTag() << "\", ";
-        s << "\"" << theMaterials[numDir - 1]->getTag() << "\"], ";
+        s << "\"" << theMaterials[numDIR - 1]->getTag() << "\"], ";
         s << "\"dof\": [";
-        for (int i = 0; i < numDir - 1; i++) {
+        for (int i = 0; i < numDIR - 1; i++) {
             if ((*dir)(i) == 0)
                 s << "\"P\", ";
             else if ((*dir)(i) == 1)
@@ -1060,17 +1069,17 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
             else if ((*dir)(i) == 5)
                 s << "\"Mz\", ";
         }
-        if ((*dir)(numDir - 1) == 0)
+        if ((*dir)(numDIR - 1) == 0)
             s << "\"P\"], ";
-        else if ((*dir)(numDir - 1) == 1)
+        else if ((*dir)(numDIR - 1) == 1)
             s << "\"Vy\"], ";
-        else if ((*dir)(numDir - 1) == 2)
+        else if ((*dir)(numDIR - 1) == 2)
             s << "\"Vz\"], ";
-        else if ((*dir)(numDir - 1) == 3)
+        else if ((*dir)(numDIR - 1) == 3)
             s << "\"T\"], ";
-        else if ((*dir)(numDir - 1) == 4)
+        else if ((*dir)(numDIR - 1) == 4)
             s << "\"My\"], ";
-        else if ((*dir)(numDir - 1) == 5)
+        else if ((*dir)(numDIR - 1) == 5)
             s << "\"Mz\"], ";
         s << "\"sDratios\": [" << shearDistI(0) << ", " << shearDistI(1) << "], ";
         if (Mratio.Size() == 4) {
@@ -1129,11 +1138,11 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
     // basic forces
     else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0)
     {
-        for (int i=0; i<numDir; i++)  {
+        for (int i=0; i<numDIR; i++)  {
             sprintf(outputData,"q%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        theResponse = new ElementResponse(this, 3, Vector(numDir));
+        theResponse = new ElementResponse(this, 3, Vector(numDIR));
     }
     // local displacements
     else if (strcmp(argv[0],"localDisplacement") == 0 ||
@@ -1150,32 +1159,32 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
         strcmp(argv[0],"basicDeformation") == 0 || strcmp(argv[0],"basicDeformations") == 0 ||
         strcmp(argv[0],"basicDisplacement") == 0 || strcmp(argv[0],"basicDisplacements") == 0)
     {
-        for (int i=0; i<numDir; i++)  {
+        for (int i=0; i<numDIR; i++)  {
             sprintf(outputData,"db%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        theResponse = new ElementResponse(this, 5, Vector(numDir));
+        theResponse = new ElementResponse(this, 5, Vector(numDIR));
     }
     // basic deformations and basic forces
     else if (strcmp(argv[0],"defoANDforce") == 0 || strcmp(argv[0],"deformationANDforce") == 0 ||
         strcmp(argv[0],"deformationsANDforces") == 0)
     {
         int i;
-        for (i=0; i<numDir; i++)  {
+        for (i=0; i<numDIR; i++)  {
             sprintf(outputData,"db%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        for (i=0; i<numDir; i++)  {
+        for (i=0; i<numDIR; i++)  {
             sprintf(outputData,"q%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        theResponse = new ElementResponse(this, 6, Vector(numDir*2));
+        theResponse = new ElementResponse(this, 6, Vector(numDIR*2));
     }
     // material output
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
-            if (matNum >= 1 && matNum <= numDir)
+            if (matNum >= 1 && matNum <= numDIR)
                 theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
@@ -1188,7 +1197,7 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
 
 int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
 {
-    Vector defoAndForce(numDir*2);
+    Vector defoAndForce(numDIR*2);
     
     switch (responseID)  {
     case 1:  // global forces
@@ -1200,7 +1209,7 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
         theVector->addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta effects to local forces
         if (Mratio.Size() == 4)
-            this->addPDeltaForces(*theVector);
+            this->addPDeltaForces(*theVector, qb);
         
         return eleInfo.setVector(*theVector);
         
@@ -1216,7 +1225,7 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
     case 6:  // basic deformations and basic forces
         defoAndForce.Zero();
         defoAndForce.Assemble(ub,0);
-        defoAndForce.Assemble(qb,numDir);
+        defoAndForce.Assemble(qb,numDIR);
         
         return eleInfo.setVector(defoAndForce);
         
@@ -1369,10 +1378,10 @@ void TwoNodeLink::setTranGlobalLocal()
 void TwoNodeLink::setTranLocalBasic()
 {
     // resize transformation matrix and zero it
-    Tlb.resize(numDir,numDOF);
+    Tlb.resize(numDIR,numDOF);
     Tlb.Zero();
     
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         
         int dirID = (*dir)(i);     // direction 0 to 5;
         Tlb(i,dirID) = -1.0;
@@ -1404,19 +1413,19 @@ void TwoNodeLink::setTranLocalBasic()
 }
 
 
-void TwoNodeLink::addPDeltaForces(Vector &pLocal)
+void TwoNodeLink::addPDeltaForces(Vector &pLocal, const Vector& qBasic)
 {
     int dirID;
     double N = 0.0;
     double deltal1 = 0.0;
     double deltal2 = 0.0;
     
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         dirID = (*dir)(i);  // direction 0 to 5;
         
         // get axial force and local disp differences
         if (dirID == 0)
-            N = qb(i);
+            N = qBasic(i);
         else if (dirID == 1 && numDIM > 1)
             deltal1 = ul(1+numDOF/2) - ul(1);
         else if (dirID == 2 && numDIM > 2)
@@ -1424,7 +1433,7 @@ void TwoNodeLink::addPDeltaForces(Vector &pLocal)
     }
     
     if (N != 0.0 && (deltal1 != 0.0 || deltal2 != 0.0))  {
-        for (int i=0; i<numDir; i++)  {
+        for (int i=0; i<numDIR; i++)  {
             dirID = (*dir)(i);  // direction 0 to 5;
             
             // switch on dimensionality of element
@@ -1497,19 +1506,19 @@ void TwoNodeLink::addPDeltaForces(Vector &pLocal)
 }
 
 
-void TwoNodeLink::addPDeltaStiff(Matrix &kLocal)
+void TwoNodeLink::addPDeltaStiff(Matrix &kLocal, const Vector& qBasic)
 {
     int dirID;
     double N = 0.0;
     
     // get axial force
-    for (int i=0; i<numDir; i++)  {
+    for (int i=0; i<numDIR; i++)  {
         if ((*dir)(i) == 0)
-            N = qb(i);
+            N = qBasic(i);
     }
     
     if (N != 0.0)  {
-        for (int i=0; i<numDir; i++)  {
+        for (int i=0; i<numDIR; i++)  {
             dirID = (*dir)(i);  // direction 0 to 5;
             
             // switch on dimensionality of element
@@ -1607,7 +1616,7 @@ int TwoNodeLink::setParameter(const char **argv, int argc, Parameter &param)
     if (strcmp(argv[0], "material") == 0) {
         if (argc > 2) {
             int matNum = atoi(argv[1]);
-            if (matNum >= 1 && matNum <= numDir)
+            if (matNum >= 1 && matNum <= numDIR)
                 return theMaterials[matNum - 1]->setParameter(&argv[2], argc - 2, param);
         }
         else {
@@ -1615,7 +1624,7 @@ int TwoNodeLink::setParameter(const char **argv, int argc, Parameter &param)
         }
     }
     
-    for (int i = 0; i < numDir; i++) {
+    for (int i = 0; i < numDIR; i++) {
         int res = theMaterials[i]->setParameter(argv, argc, param);
         if (res != -1) {
             result = res;

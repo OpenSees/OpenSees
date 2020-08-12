@@ -27,7 +27,7 @@
 // Created: January 2002
 // Updated: September 2004
 //
-// Description: This file contains the class defination for 
+// Description: This file contains the class definition for 
 // bar-slip material. The file generates the 4 point envelope for both positive 
 // and negative loading and is basically a wrapper for the Pinching4 material at it's outset.
 // Updates: new damage calculations and user interfaces
@@ -106,7 +106,7 @@ private:
 	double fc;   // compressive strength of concrete
 	
 	// steel properties
-	double fy;    // yeild strength of steel
+	double fy;    // yield strength of steel
 	double Es;    // modulus of elasticity of steel
 	double fu;    // ultimate strength of steel
 	double Eh;    // modulus of hardening of steel
@@ -118,9 +118,9 @@ private:
 
 		// bond strengths
 	double tauET;  // bond strength of steel that is elastic and carries tensile load
-	double tauYT;  // bond strength of steel that has yeilded in tension
+	double tauYT;  // bond strength of steel that has yielded in tension
 	double tauEC;  // bond strength of steel that is elastic and carries compression load
-	double tauYC;  // bond strength of steel that has yeilded in compression
+	double tauYC;  // bond strength of steel that has yielded in compression
 	double tauR;   // residual bond strength of steel
 
 	// unloading-reloading parameters 
@@ -139,7 +139,7 @@ private:
 	Matrix eN;
 
 	//**************************************************************************
-	// Trial Set varables
+	// Trial Set variables
 	double Tstrain; double Ttangent; double Tstress;
 
 	// Converged Material History parameters

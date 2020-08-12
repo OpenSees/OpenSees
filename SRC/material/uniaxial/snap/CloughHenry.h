@@ -20,7 +20,7 @@
                                                                         
 // CloughHenry.h: based on Clough.h/.cpp, slight modification
 //
-// Orginal Clough Written: Arash Altoontash,
+// Original Clough Written: Arash Altoontash,
 // Modification: fmk
 //
 // Purpose: This file contains the implementation for the CloughHenry class.

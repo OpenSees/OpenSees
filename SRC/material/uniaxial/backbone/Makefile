@@ -8,6 +8,10 @@ OBJS       = HystereticBackbone.o \
 	ReeseSandBackbone.o \
 	ManderBackbone.o \
 	RaynorBackbone.o \
+	MultilinearBackbone.o \
+	CappedBackbone.o \
+	LinearCappedBackbone.o \
+	MaterialBackbone.o \
 	TclModelBuilderBackboneCommand.o
 
 

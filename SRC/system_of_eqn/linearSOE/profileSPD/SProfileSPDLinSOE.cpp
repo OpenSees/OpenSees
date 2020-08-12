@@ -410,7 +410,7 @@ SProfileSPDLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != size) {
 	opserr << "WARNING BandGenLinSOE::setB() -";
-	opserr << " incomptable sizes " << size << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
 	return -1;
     }
     

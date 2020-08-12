@@ -20,7 +20,7 @@
 //#
 //#
 //# DATE:              07July2001
-//# UPDATE HISTORY:    22Nov2002 small fixes, formating...
+//# UPDATE HISTORY:    22Nov2002 small fixes, formatting...
 //#
 //#
 //===============================================================================

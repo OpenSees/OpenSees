@@ -86,8 +86,8 @@ class PathTimeSeries : public TimeSeries
   protected:
     
   private:
-    Vector *thePath;      // vector containg the data points
-    Vector *time;		  // vector containg the time values of data points
+    Vector *thePath;      // vector containing the data points
+    Vector *time;		  // vector containing the time values of data points
     int currentTimeLoc;   // current location in time
     double cFactor;       // additional factor on the returned load factor
     int dbTag1, dbTag2;   // additional database tags needed for vector objects

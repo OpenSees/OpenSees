@@ -26,6 +26,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/triangle; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
 	@$(CD) $(FE)/element/dispBeamColumn; $(MAKE);
+	@$(CD) $(FE)/element/mixedBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/elasticBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/updatedLagrangianBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/forceBeamColumn; $(MAKE);
@@ -47,6 +48,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE);
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
+	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -71,6 +73,7 @@ spotless: clean
 	@$(CD) $(FE)/element/triangle; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;
 	@$(CD) $(FE)/element/dispBeamColumn; $(MAKE) wipe;
+	@$(CD) $(FE)/element/mixedBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/elasticBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/updatedLagrangianBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/forceBeamColumn; $(MAKE) wipe;
@@ -92,6 +95,7 @@ spotless: clean
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE) wipe;
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
+	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
 
 wipe: spotless
 

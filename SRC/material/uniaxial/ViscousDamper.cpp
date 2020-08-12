@@ -210,8 +210,8 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
     
     double dStrain = (strain - Tstrain);
     
-    if ((fd0 > 0) && (Tstress < 0)) {  //from negtive to positive
-      Tpugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // aproximate displacement for gap initiation
+    if ((fd0 > 0) && (Tstress < 0)) {  //from negative to positive
+      Tpugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // approximate displacement for gap initiation
       Tnugr = 0.;
       
       if (fabs(strain-Tpugr) < LGap) {
@@ -221,7 +221,7 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
     
     if ((fd0 < 0) && (Tstress > 0)) {  //from positive to negative
       
-      Tnugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // aproximate displacement for gap initiation
+      Tnugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // approximate displacement for gap initiation
       Tpugr = 0.;
       
       if (fabs(strain-Tnugr) < LGap) {
@@ -231,7 +231,7 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
     
     // After gap inititon
     
-    if  ((fabs(Tpugr) > 0.) && (Tstress == 0)) {   //from negtive to positive
+    if  ((fabs(Tpugr) > 0.) && (Tstress == 0)) {   //from negative to positive
       
       if ((strain > Tpugr) && ((strain-Tpugr) < LGap)) {
 	fd0 = 0.;

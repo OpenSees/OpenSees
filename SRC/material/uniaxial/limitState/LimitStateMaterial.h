@@ -36,13 +36,13 @@
 // Option only available for 3 point specification. Behaves 
 // same as HystereticMaterial if no limit curve specified.
 //
-// All code specific to LimitStateMaterial seperated by ////////////////
+// All code specific to LimitStateMaterial separated by ////////////////
 
 #ifndef LimitStateMaterial_h
 #define LimitStateMaterial_h
 
 #include <UniaxialMaterial.h>
-#include <LimitCurve.h>
+class LimitCurve;
 
 
 class LimitStateMaterial : public UniaxialMaterial

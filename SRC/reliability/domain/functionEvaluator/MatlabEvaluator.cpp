@@ -76,7 +76,7 @@ MatlabEvaluator::setVariables(const Vector &x)
 	double xval;
 	Parameter *theParam;
 	
-	// Set values of random variables in the Tcl intepreter
+	// Set values of random variables in the Tcl interpreter
 	int nparam = theReliabilityDomain->getNumberOfParameters();
 	for (int i = 0; i < nparam; i++) {
 		theParam = theReliabilityDomain->getParameterPtrFromIndex(i);

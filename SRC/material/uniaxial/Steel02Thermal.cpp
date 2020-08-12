@@ -19,7 +19,7 @@
 ** ****************************************************************** */
  
 //This file contains the definition of material Steel02Thermal, which is
-// modified from Steel02 by adding fuctions for considering temperature
+// modified from Steel02 by adding functions for considering temperature
 // dependent material properties
 
 //Modified by:  Jian Zhang(j.zhang@ed.ac.uk)---------07,2010// 
@@ -496,7 +496,7 @@ Steel02Thermal::getElongTangent(double TempT, double&ET, double&Elong, double Te
       opserr << "the temperature is invalid\n"; 
   } 
 
-  // caculation of thermal elongation of reinforcing steel. JZ
+  // calculation of thermal elongation of reinforcing steel. JZ
  //opserr<<TempT<<endln;
 	  if (TempT <= 1) {
 		  ThermalElongation = TempT * 1.2164e-5;

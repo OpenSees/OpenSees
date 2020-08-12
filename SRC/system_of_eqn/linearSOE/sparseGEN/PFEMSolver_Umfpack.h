@@ -49,7 +49,7 @@ class PFEMLinSOE;
 class PFEMSolver_Umfpack : public PFEMSolver
 {
 public:
-    PFEMSolver_Umfpack();
+    PFEMSolver_Umfpack(double tol=1e-4, int niter=100, int p=0);
     virtual ~PFEMSolver_Umfpack();
 
     int solve();
@@ -64,6 +64,9 @@ private:
     void *Symbolic;
     double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
     PFEMLinSOE* theSOE;
+    int print;
+    double ptol;
+    int pmaxiter;
 };
 
 #endif

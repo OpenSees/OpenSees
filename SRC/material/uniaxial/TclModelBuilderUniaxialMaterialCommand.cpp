@@ -38,6 +38,7 @@
 
 #include <Elastic2Material.h>	// ZHY
 #include <HardeningMaterial.h>	// MHS
+#include <HardeningMaterial2.h>	// MHS
 #include <Steel03.h>			// KM
 #include <Concrete01WithSITC.h>		// Won Lee
 #include <ECC01.h>                      // Won Lee
@@ -75,22 +76,29 @@
 #include <UniaxialJ2Plasticity.h>   // Quan 
 
 extern void *OPS_SPSW02(void);		// SAJalali
+extern void *OPS_TDConcreteEXP(void); // ntosic
+extern void *OPS_TDConcrete(void); // ntosic
+extern void *OPS_TDConcreteMC10(void); //ntosic
+extern void *OPS_TDConcreteMC10NL(void); //ntosic
 extern void *OPS_ElasticMaterial(void);
 extern void *OPS_ElasticPPMaterial(void);
+extern void *OPS_EPPGapMaterial(void);
 extern void *OPS_ParallelMaterial(void);
 extern void *OPS_SeriesMaterial(void);
+extern void *OPS_HardeningMaterial(void);
 extern void *OPS_HystereticMaterial(void);
 extern void *OPS_CableMaterial(void);
 extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
 extern void *OPS_Steel01(void);
 extern void *OPS_FRPConfinedConcrete02(void);
-//extern void *OPS_HoehlerStanton(void);
 extern void *OPS_Steel02(void);
+extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
+extern void *OPS_Concrete02IS(void);
 extern void *OPS_PinchingLimitStateMaterial(void);
 extern void *OPS_SAWSMaterial(void);
 extern void *OPS_ConcreteZ01Material(void);
@@ -120,7 +128,7 @@ extern void *OPS_HookGap(void);
 extern void *OPS_HyperbolicGapMaterial(void);
 extern void *OPS_FRPConfinedConcrete(void);
 extern void *OPS_FRPConfinedConcrete02(void);
-
+extern void *OPS_UVCuniaxial(void);
 extern void *OPS_Steel01Thermal(void);
 extern void *OPS_Steel02Thermal(void);
 extern void *OPS_Concrete02Thermal(void);
@@ -128,8 +136,12 @@ extern void *OPS_StainlessECThermal(void); // L.Jiang [SIF]
 extern void *OPS_SteelECThermal(void); // L.Jiang [SIF]
 extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
+//extern void *OPS_PlateBearingConnectionThermal(void);
 
 extern void *OPS_BWBN(void);
+extern void *OPS_IMKPeakOriented(void);
+extern void *OPS_IMKBilin(void);
+extern void *OPS_IMKPinching(void);
 extern void *OPS_ModIMKPeakOriented(void);
 extern void *OPS_ModIMKPeakOriented02(void);
 extern void *OPS_ModIMKPinching(void);
@@ -152,6 +164,11 @@ extern void *OPS_Steel4(void);
 extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenOriginal(void);
 extern void *OPS_GNGMaterial(void);
+extern void *OPS_OOHystereticMaterial(void);
+extern void *OPS_ElasticPowerFunc(void);
+extern void *OPS_UVCuniaxial(void);
+extern void *OPS_DegradingPinchedBW(void);
+extern void *OPS_SLModel(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -163,14 +180,6 @@ extern UniaxialMaterial *Tcl_addWrapperUniaxialMaterial(matObj *, ClientData cli
 							int argc, TCL_Char **argv);
 
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
-
 
 typedef struct uniaxialPackageCommand {
   char *funcName;
@@ -259,6 +268,43 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		else
 			return TCL_ERROR;
 	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteEXP") == 0) {
+		void *theMat = OPS_TDConcreteEXP();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcrete") == 0) {
+		void *theMat = OPS_TDConcrete();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteMC10") == 0) {
+		void *theMat = OPS_TDConcreteMC10();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	// ntosic
+	else if (strcmp(argv[1], "TDConcreteMC10NL") == 0) {
+		void *theMat = OPS_TDConcreteMC10NL();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
 	else if (strcmp(argv[1],"Steel01") == 0) {
 
       void *theMat = OPS_Steel01();
@@ -273,9 +319,22 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+    } else if (strcmp(argv[1],"Steel02Fatigue") == 0) {
+      void *theMat = OPS_Steel02Fatigue();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
 
     } else if (strcmp(argv[1],"Steel4") == 0) {
       void *theMat = OPS_Steel4();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"UVCuniaxial") == 0) {
+      void *theMat = OPS_UVCuniaxial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -311,6 +370,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       */
     } else if (strcmp(argv[1],"Concrete02") == 0) {
       void *theMat = OPS_Concrete02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    } else if (strcmp(argv[1],"Concrete02IS") == 0) {
+      void *theMat = OPS_Concrete02IS();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -419,7 +484,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-/*
+    }
+    else if (strcmp(argv[1], "ElasticPowerFunc") == 0) {
+      void* theMat = OPS_ElasticPowerFunc();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+      else
+        return TCL_ERROR;
+    }
+    /*
 	} else if (strcmp(argv[1],"HoehlerStanton") == 0) {
       void *theMat = OPS_HoehlerStanton();
       if (theMat != 0) 
@@ -427,7 +500,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 */
-    } else if ((strcmp(argv[1],"RambergOsgood") == 0) || (strcmp(argv[1],"RambergOsgoodSteel") == 0)) {
+    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
+      void *theMat = OPS_UVCuniaxial();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+    else if (strcmp(argv[1], "SLModel") == 0) {
+      void *theMat = OPS_SLModel();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+    else if ((strcmp(argv[1],"RambergOsgood") == 0) || (strcmp(argv[1],"RambergOsgoodSteel") == 0)) {
       void *theMat = OPS_RambergOsgoodSteel();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -539,7 +626,39 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"ModIMKPeakOriented") == 0) {
+    } else if (strcmp(argv[1], "DegradingPinchedBW") == 0) {
+        void *theMat = OPS_DegradingPinchedBW();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial *)theMat;
+        else
+            return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKBilin") == 0) {
+      void *theMat = OPS_IMKBilin();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPeakOriented") == 0) {
+      void *theMat = OPS_IMKPeakOriented();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "IMKPinching") == 0) {
+      void *theMat = OPS_IMKPinching();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "ModIMKPeakOriented") == 0) {
       void *theMat = OPS_ModIMKPeakOriented();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -560,12 +679,20 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"PlateBearingConnectionThermal") == 0) {
+      //void *theMat = OPS_PlateBearingConnectionThermal();
+      void *theMat = 0;
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
     } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
       void *theMat = OPS_Steel01Thermal();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
-	return TCL_ERROR;
+	return TCL_ERROR;      
 
     } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
       void *theMat = OPS_Steel02Thermal();
@@ -754,110 +881,20 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
     
     else if (strcmp(argv[1],"ElasticPPGap") == 0) {
-      if (argc < 6) {
-        opserr << "WARNING insufficient arguments\n";
-        printCommand(argc,argv);
-        opserr << "Want: uniaxialMaterial ElasticPPGap tag? E? fy? gap? <eta?> <damage>" << endln;
-        return TCL_ERROR;
-      }
-      
-      int tag;
-      int damage = 0;
-      double eta = 0.0;
-      double E, fy, gap;
-      
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << "WARNING invalid uniaxialMaterial ElasticPPGap tag" << endln;
-        return TCL_ERROR;        
-      }
-      
-      if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-        opserr << "WARNING invalid E\n";
-        opserr << "uniaxialMaterial ElasticPPGap: " << tag << endln;
-        return TCL_ERROR;    
-      }
-      
-      if (Tcl_GetDouble(interp, argv[4], &fy) != TCL_OK) {
-        opserr << "WARNING invalid fy\n";
-        opserr << "uniaxialMaterial ElasticPPGap: " << tag << endln;
-        return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[5], &gap) != TCL_OK) {
-        opserr << "WARNING invalid gap\n";
-        opserr << "uniaxialMaterial ElasticPPGap: " << tag << endln;
-        return TCL_ERROR;
-      }
-      
-      if (argc > 6){
-	if (strcmp(argv[6],"damage") == 0)
-	  damage = 1;
-	else {
-	  if (Tcl_GetDouble(interp, argv[6], &eta) != TCL_OK) {
-	    opserr << "WARNING invalid eta\n";
-	    opserr << "uniaxialMaterial ElasticPPGap: " << tag << endln;
-	    return TCL_ERROR;
-	  }	
-	  if (argc > 7 && strcmp(argv[7],"damage") == 0) 
-	    damage = 1;
-	}
-      }
-      
-      // Parsing was successful, allocate the material
-      theMaterial = new EPPGapMaterial(tag, E, fy, gap, eta, damage); 
-      
+      void *theMat = OPS_EPPGapMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
-    else if (strcmp(argv[1],"Hardening") == 0) {
-      if (argc < 7) {
-	opserr << "WARNING insufficient arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Hardening tag? E? sigmaY? H_iso? H_kin? <eta?>" << endln;
-	return TCL_ERROR;
-      }
+    else if (strcmp(argv[1],"Hardening") == 0 || strcmp(argv[1],"Hardening2") == 0) {
       
-      int tag;
-      double E, sigmaY, Hiso, Hkin;
-      double eta = 0.0;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid uniaxialMaterial Hardening tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E\n";
-	    opserr << "uniaxialMaterial Hardening: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[4], &sigmaY) != TCL_OK) {
-	    opserr << "WARNING invalid sigmaY\n";
-	    opserr << "uniaxialMaterial Hardening: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[5], &Hiso) != TCL_OK) {
-	    opserr << "WARNING invalid H_iso\n";
-	    opserr << "uniaxialMaterial Hardening: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[6], &Hkin) != TCL_OK) {
-	    opserr << "WARNING invalid H_kin\n";
-	    opserr << "uniaxialMaterial Hardening: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (argc > 7 && Tcl_GetDouble(interp, argv[7], &eta) != TCL_OK) {
-	    opserr << "WARNING invalid eta\n";
-	    opserr << "uniaxialMaterial Hardening: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	// Parsing was successful, allocate the material
-	theMaterial = new HardeningMaterial (tag, E, sigmaY, Hiso, Hkin, eta);
+      void *theMat = OPS_HardeningMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
     }
 
     else if (strcmp(argv[1],"BoucWen") == 0) {
@@ -1082,6 +1119,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
+
+    else if (strcmp(argv[1],"OOHysteretic") == 0) {
+
+      void *theMat = OPS_OOHystereticMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    }
     
     else if (strcmp(argv[1],"Concrete04") == 0) {
       //        opserr << argc << endln;
@@ -1244,7 +1291,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     else if (strcmp(argv[1], "Concrete07") == 0) {
       // Check to see if there are enough arquements
       if (argc < 11) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	printCommand(argc, argv);
 	opserr << "Want: uniaxialMaterial Concrete07 tag? fpc? epsc0? Ec? fpt? epst0? xcrp? xcrn? r?\n";
 	return TCL_ERROR;
@@ -1555,8 +1602,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
-
-	else if (strcmp(argv[1],"Pinching4") == 0) {
+    
+    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
+        void* theMat = OPS_UVCuniaxial();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+    else
+        return TCL_ERROR;
+    }
+    
+    else if (strcmp(argv[1],"Pinching4") == 0) {
 		if (argc != 42 && argc != 31 ) {
 			opserr << "WARNING insufficient arguments\n";
 			printCommand(argc,argv);

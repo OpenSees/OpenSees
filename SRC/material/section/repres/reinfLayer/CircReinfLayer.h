@@ -32,6 +32,7 @@
 #define CircReinfLayer_h 
 
 #include <ReinfLayer.h>
+#include <Vector.h>
 
 class ReinfBar;
 

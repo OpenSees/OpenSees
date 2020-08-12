@@ -451,6 +451,12 @@ int CollocationHSIncrLimit::commit(void)
 }
 
 
+const Vector &
+CollocationHSIncrLimit::getVel()
+{
+  return *Udot;
+}
+
 int CollocationHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 {
     static Vector data(5);

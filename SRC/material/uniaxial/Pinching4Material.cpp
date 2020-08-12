@@ -49,7 +49,7 @@ void* OPS_Pinching4Material()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata!=40 && numdata!=29) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	return 0;
     }
 
@@ -615,7 +615,7 @@ void Pinching4Material::SetEnvelope(void)
 	envlpNegStrain(5) = 1e+6*strain4n;
 	envlpNegStress(5) = (k2>0.0)? stress4n+k2*(envlpNegStrain(5) - strain4n):stress4n*1.1;
 	
-	// define crtical material properties
+	// define critical material properties
 	kElasticPos = envlpPosStress(1)/envlpPosStrain(1);	
 	kElasticNeg = envlpNegStress(1)/envlpNegStrain(1);
 

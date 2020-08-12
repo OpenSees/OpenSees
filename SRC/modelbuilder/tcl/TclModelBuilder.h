@@ -50,10 +50,6 @@ class YS_Evolution;
 class PlasticHardeningMaterial;
 class CyclicModel;	 //!!
 class DamageModel;
-class HystereticBackbone;
-class StiffnessDegradation;
-class UnloadingRule;
-class StrengthDegradation;
 class FrictionModel;
 
 #include <tcl.h>
@@ -103,18 +99,6 @@ class TclModelBuilder : public ModelBuilder
     // int addFrictionModel(FrictionModel &theFrnMdl);
     // FrictionModel *getFrictionModel(int tag);
 
-#ifdef OO_HYSTERETIC
-    // methods needed to add/get material state relationships
-    int addStiffnessDegradation(StiffnessDegradation &theDegr);
-    StiffnessDegradation *getStiffnessDegradation(int tag);
-    int addUnloadingRule(UnloadingRule &theDegr);
-    UnloadingRule *getUnloadingRule(int tag);
-    int addStrengthDegradation(StrengthDegradation &theDegr);
-    StrengthDegradation *getStrengthDegradation(int tag);
-#endif
-    //    int addHystereticBackbone(HystereticBackbone &theBackbone);
-    //    HystereticBackbone *getHystereticBackbone(int tag);
-
   private:
     int ndm;	// space dimension of the mesh
     int ndf;	// number of degrees of freedom per node
@@ -130,13 +114,6 @@ class TclModelBuilder : public ModelBuilder
     //    TaggedObjectStorage *theDamageModels; //!!
     //    TaggedObjectStorage *theFrictionModels;
     TaggedObjectStorage *theLimitCurves;	//MRL
-
-#ifdef OO_HYSTERETIC
-    TaggedObjectStorage *theStiffnessDegradations;
-    TaggedObjectStorage *theUnloadingRules;
-    TaggedObjectStorage *theStrengthDegradations;
-#endif
-    // TaggedObjectStorage *theHystereticBackbones;
 
  protected:
     Tcl_Interp *theInterp;

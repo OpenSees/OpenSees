@@ -115,7 +115,7 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
   sTData[0] = 0.0;
   sTData[1] = 0.0;
   sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_ElongP = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_ElongP[i] = 0;
@@ -146,7 +146,7 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, double gj):
   sTData[0] = 0.0;
   sTData[1] = 0.0;
   sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_ElongP = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_ElongP[i] = 0;
@@ -178,7 +178,7 @@ FiberSectionGJThermal::FiberSectionGJThermal():
   sTData[0] = 0.0;
   sTData[1] = 0.0;
   sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and intializing it.
+  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
   Fiber_ElongP = new double [1000];
   for (int i = 0;i<1000; i++) {
 	   Fiber_ElongP[i] = 0;
@@ -1097,7 +1097,7 @@ FiberSectionGJThermal::determineFiberTemperature(const Vector& DataMixed, double
 			return 0;
 		}
 	
-	//caculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
+	//calculate the fiber tempe, T=T1-(Y-Y1)*(T1-T2)/(Y1-Y2)
 	//first for bottom flange if existing
 		if (  fiberLocy <= dataTempe[1]) 
 		{

@@ -34,7 +34,9 @@
 #include <Graph.h>
 #include <Vertex.h>
 #include <VertexIter.h>
+#if !_DLL
 #include <f2c.h>
+#endif
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -113,7 +115,7 @@ DistributedBandSPDLinSOE::setSize(Graph &theGraph)
   else {
 
     // from each distributed soe recv it's graph
-    // and merge them into master graph
+    // and merge them into primary graph
     FEM_ObjectBroker theBroker;
     for (int j=0; j<numChannels; j++) {
       Channel *theChannel = theChannels[j];
@@ -154,7 +156,7 @@ DistributedBandSPDLinSOE::setSize(Graph &theGraph)
     data(1) = half_band;
 
     // to each distributed soe send the size data
-    // and merge them into master graph
+    // and merge them into primary graph
 
     for (int j=0; j<numChannels; j++) {
       Channel *theChannel = theChannels[j];
@@ -464,7 +466,7 @@ DistributedBandSPDLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != size) {
 	opserr << "WARNING DistributedBandGenLinSOE::setB() -";
-	opserr << " incomptable sizes " << size << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
 	return -1;
     }
     

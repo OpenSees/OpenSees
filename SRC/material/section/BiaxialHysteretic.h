@@ -135,7 +135,7 @@ private:
     // deterioration
     double r0, rp, rs, rc, rn;
 
-    // strengh, stiffness
+    // strength, stiffness
     double fn, fc, k, alp, als, eta;
 
     // pinching

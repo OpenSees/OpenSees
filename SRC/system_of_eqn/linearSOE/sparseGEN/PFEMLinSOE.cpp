@@ -55,6 +55,8 @@ using std::nothrow;
 #include <NodeIter.h>
 #include <DOF_Group.h>
 #include <AnalysisModel.h>
+#include <BackgroundMesh.h>
+#include <elementAPI.h>
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
 #endif
@@ -63,7 +65,7 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver)
     :LinearSOE(the_Solver, LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID()
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
     the_Solver.setLinearSOE(*this);
 }
@@ -73,7 +75,7 @@ PFEMLinSOE::PFEMLinSOE()
     :LinearSOE(LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID()
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -82,7 +84,7 @@ PFEMLinSOE::PFEMLinSOE(int classTag)
     :LinearSOE(classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID()
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -92,7 +94,7 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver, int classTag)
     :LinearSOE(the_Solver, classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID()
+     dofType(), dofID(), assemblyFlag(0), stage(0)
 {
 
 }
@@ -109,6 +111,17 @@ PFEMLinSOE::~PFEMLinSOE()
     if(Qt != 0) cs_spfree(Qt);
 }
 
+int
+PFEMLinSOE::solve(void)
+{
+    int res = LinearSOE::solve();
+    if (res < 0) {
+        return res;
+    }
+
+    assemblyFlag = 1;
+    return 0;
+}
 
 int
 PFEMLinSOE::getNumEqn(void) const
@@ -121,6 +134,10 @@ PFEMLinSOE::setSize(Graph &theGraph)
 {
     int result = 0;
     int size = theGraph.getNumVertex();
+    if (size <= 0) {
+	opserr << "WARNING: size<=0 -- PFEMLinSOE::setSize\n";
+	return -1;
+    }
 
     // resize vectors
     B.resize(size);
@@ -136,6 +153,16 @@ PFEMLinSOE::setSize(Graph &theGraph)
 
     // set matrix IDs
     result = this->setMatIDs(theGraph, Ssize, Fsize, Isize, Psize, Pisize);
+
+    // reset flags
+    assemblyFlag = 0;
+
+    BackgroundMesh& bgmesh = OPS_getBgMesh();
+    bool pressureonce = bgmesh.isPressureOnce();
+    stage = 0;
+    if (pressureonce) {
+        stage = 1;
+    }
     
     // invoke setSize() on the Solver    
     LinearSOESolver *the_Solver = this->getSolver();
@@ -160,10 +187,12 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
     
     // check that m and id are of similar size
     if (idSize != m.noRows() && idSize != m.noCols()) {
-	opserr << "PFEMLinSOE::addA() ";
-	opserr << " - Matrix and ID not of similar sizes\n";
-	return -1;
+        opserr << "PFEMLinSOE::addA() ";
+        opserr << " - Matrix and ID not of similar sizes\n";
+        return -1;
     }
+
+    bool hasFluid = !skipFluid();
 
     int Ssize = M->n - Git->n;
 
@@ -175,9 +204,9 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
             int colid = dofID(col);             // column id
 
             if(coltype == 4) {                  // diganol of Mhat
-                Mhat(colid) += m(i,i);
+                if (hasFluid) Mhat(colid) += m(i,i);
             } else if(coltype == 1) {           // diganol of Mf
-                Mf(colid) += m(i,i);
+                if (hasFluid) Mf(colid) += m(i,i);
             }
 
             if(coltype==4 || coltype<0) continue;
@@ -205,13 +234,13 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
                     mat = M;
                     rowid += Ssize;
                 } else if(rowtype==3 && coltype==1) {          // Gft
-                    mat = Gft;
+                    if (hasFluid) mat = Gft;
                 } else if(rowtype==3 && coltype==2) {          // Git
                     mat = Git;
                 } else if(rowtype==3 && coltype==3) {          // L
-                    mat = L;
+                    if (hasFluid) mat = L;
                 } else if(rowtype==4 && coltype==3) {          // Qt
-                    mat = Qt;
+                    if (hasFluid) mat = Qt;
                 }
 
                 if(mat == 0) continue;
@@ -233,9 +262,9 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
             int colid = dofID(col);             // column id
 
             if(coltype == 4) {                  // diganol of Mhat
-                Mhat(colid) += fact*m(i,i);
+                if (hasFluid) Mhat(colid) += fact*m(i,i);
             } else if(coltype == 1) {           // diganol of Mf
-                Mf(colid) += fact*m(i,i);
+                if (hasFluid) Mf(colid) += fact*m(i,i);
             }
 
             if(coltype==4 || coltype<0) continue;
@@ -263,13 +292,13 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
                     mat = M;
                     rowid += Ssize;
                 } else if(rowtype==3 && coltype==1) {          // Gft
-                    mat = Gft;
+                    if (hasFluid) mat = Gft;
                 } else if(rowtype==3 && coltype==2) {          // Git
                     mat = Git;
                 } else if(rowtype==3 && coltype==3) {          // L
-                    mat = L;
+                    if (hasFluid) mat = L;
                 } else if(rowtype==4 && coltype==3) {          // Qt
-                    mat = Qt;
+                    if (hasFluid) mat = Qt;
                 }
 
                 if(mat == 0) continue;
@@ -336,7 +365,7 @@ PFEMLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != B.Size()) {
 	opserr << "WARNING BandGenLinSOE::setB() -";
-	opserr << " incomptable sizes " << B.Size() << " and " << v.Size() << endln;
+	opserr << " incompatible sizes " << B.Size() << " and " << v.Size() << endln;
 	return -1;
     }
     
@@ -357,19 +386,25 @@ PFEMLinSOE::setB(const Vector &v, double fact)
 void 
 PFEMLinSOE::zeroA(void)
 {
-    for(int i=0; i<M->nzmax; i++)
-	M->x[i] = 0.0;
-    for(int i=0; i<Gft->nzmax; i++)
-	Gft->x[i] = 0.0;
-    for(int i=0; i<Git->nzmax; i++)
-	Git->x[i] = 0.0;
-    for(int i=0; i<L->nzmax; i++)
-	L->x[i] = 0.0;
-    for(int i=0; i<Qt->nzmax; i++)
-	Qt->x[i] = 0.0;
+    for (int i = 0; i < M->nzmax; i++)
+        M->x[i] = 0.0;
 
-    Mhat.Zero();
-    Mf.Zero();
+    for (int i = 0; i < Git->nzmax; i++)
+        Git->x[i] = 0.0;
+
+    // zero fluid part
+    bool hasFluid = !skipFluid();
+    if (hasFluid) {
+        for (int i = 0; i < Gft->nzmax; i++)
+            Gft->x[i] = 0.0;
+        for (int i = 0; i < L->nzmax; i++)
+            L->x[i] = 0.0;
+        for (int i = 0; i < Qt->nzmax; i++)
+            Qt->x[i] = 0.0;
+
+        Mhat.Zero();
+        Mf.Zero();
+    }
 }
 	
 void 
@@ -512,7 +547,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
         if(pnode != 0) {
             const ID& pid = pDOF->getID();
 
-	    if(thePC->isFreeSurf()) {
+	    if(thePC->isFreeSurf() && thePC->isFluid()) {
 		for(int i=0; i<pid.Size(); i++) {
                     if(pid(i) >= 0) {
                         dofType(pid(i)) = -1;    
@@ -699,4 +734,39 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
     // }
 
     return 0;
+}
+
+bool
+PFEMLinSOE::isFluidID(const ID &id) const
+{
+    bool fluid = true;
+    for (int i = 0; i < id.Size(); ++i) {
+        if (dofType(id(i))==0 || dofType(id(i))==2) {
+            fluid = false;
+            break;
+        }
+    }
+
+    return fluid;
+}
+
+bool
+PFEMLinSOE::skipFluid() const
+{
+    BackgroundMesh& bgmesh = OPS_getBgMesh();
+    return assemblyFlag==1 && bgmesh.isDispOn()==false && bgmesh.isFastAssembly();
+}
+
+void PFEMLinSOE::saveK(OPS_Stream& output) {
+    if (M == 0) return;
+    output << "sparse matrix <" << M->m << ", " << M->n << "> with "
+           << M->nzmax << " entries\n";
+
+    // save the matrix
+    for (int j = 0; j < M->n; ++j) {
+        for (int k = M->p[j]; k < M->p[j + 1]; ++k) {
+            output << "    " << M->i[k] << "    " << j << "    ("
+                   << M->x[k] << ")\n";
+        }
+    }
 }

@@ -28,10 +28,14 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "3.0.3"
+#define OPS_VERSION "3.2.2"
 
+#ifdef _WIN32
 #ifndef _WIN64
 #define WIN_ARCH "32-Bit"
+#else
+#define WIN_ARCH "64-Bit"
+#endif
 #else
 #define WIN_ARCH "64-Bit"
 #endif
@@ -63,6 +67,7 @@ class Element;
 
 extern double   ops_Dt;                // current delta T for current domain doing an update
 // extern double  *ops_Gravity;        // gravity factors for current domain undergoing an update
+extern int ops_Creep;
 extern Domain  *ops_TheActiveDomain;   // current domain undergoing an update
 extern Element *ops_TheActiveElement;  // current element undergoing an update
 

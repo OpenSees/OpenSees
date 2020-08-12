@@ -164,7 +164,7 @@ StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, 
 #ifdef _DEBUG
 		 // opserr << "  CstrainINI:  " << Cstrain << "  CStressINI: " << Cstress << endln;
 #endif
-		  // need to initiliase Tstrian? Tstress?? or they will be assigned in the setTrial(), setTrialStrain()anyway	  
+		  // need to initialise Tstrian? Tstress?? or they will be assigned in the setTrial(), setTrialStrain()anyway	  
 	  }
 	  else
 		  epsini = 0.0;
@@ -237,11 +237,11 @@ double StainlessECThermal::determineYieldSurface(double sigini)  // Added by Mia
 
 	else if (fabsSigini = fyT)
 	{
-		if (sigini > 0)   // positve/tensile inital stress
+		if (sigini > 0)   // positive/tensile initial stress
 		{
 			epsini = 0.02;
 		}
-		else {//negative/compressive inital stress
+		else {//negative/compressive initial stress
 			epsini = -0.02;
 		}
 	}
@@ -606,7 +606,7 @@ StainlessECThermal::getElongTangent(double TempT, double &ET, double &Elong, dou
 #ifdef _DEBUG
 	//opserr<<", TempT:"<<TempT<< " fy: "<< fy <<" E0T:  "<< E0<<endln;
 #endif
-// caculation of thermal elongation
+// calculation of thermal elongation
 ///*
   if (TempT <= 1)
 	{

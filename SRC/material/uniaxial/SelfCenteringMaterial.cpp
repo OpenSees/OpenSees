@@ -44,7 +44,7 @@ void* OPS_SelfCenteringMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: uniaxialMaterial SelfCentering tag? k1? k2? ";
 	opserr << "ActF? beta? <SlipDef? BearDef? rBear?>" << endln;
 	return 0;

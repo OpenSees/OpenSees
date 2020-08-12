@@ -100,14 +100,14 @@ class DoddRestr : public UniaxialMaterial
 
 //	Committed Response quantities
 
-    double Cstrain;     // last commited strain
-    double Cstress;     // last commited stress
+    double Cstrain;     // last committed strain
+    double Cstress;     // last committed stress
     double Ctangent;    // last committed  tangent
 
 
 //	Committed History Variables
 
-    double Cepso;     // last commited shrinkage strain
+    double Cepso;     // last committed shrinkage strain
     double Ch1;     // last committed h1
     double Ch2;    // last committed h2
 	double Ctn;	   // last committed "time for shrinkage calculation"!		

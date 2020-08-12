@@ -76,7 +76,7 @@ class profilematrix_rep
 
       int neq;      // dimension of a system ( as square matrix )
 
-      int total_numb; // total nubmer of elements in al and/or au
+      int total_numb; // total number of elements in al and/or au
 
       char flag;    // if flag=='S' symmetric; if flag=='N' NON(un)symmetric
 
@@ -142,7 +142,7 @@ class profilematrix
 
 //......    nDarray deep_copy( ); // make an image
 
-//      int operator==( profilematrix & rval);  // profilematrix comparisson
+//      int operator==( profilematrix & rval);  // profilematrix comparison
 //                                             // returns 1 if they are same
 //                                             // returns 0 if they are not
 
@@ -187,13 +187,13 @@ class profilematrix
 
     private:
       void error(char *msg1, char *msg2 = "") const; // private function
-// this one is the same as mval except that it is more convinient
+// this one is the same as mval except that it is more convenient
 // to overload operator (row,col).
       double & operator( )(int , int ) const;
       double & mval(int , int ) const;
 // full_val inline function allows you to treat profilematrix as if it is full
 // float matrix. The function will calculate position inside sky matrix
-// and return appropriate number if row and col are bellow skyline or
+// and return appropriate number if row and col are below skyline or
 // return zero (0) if row and col are above sky line
       double full_val (int , int ) const;
 

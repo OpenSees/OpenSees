@@ -52,22 +52,92 @@
 #include <LoadPattern.h>
 #include <FE_EleIter.h>
 #include <elementAPI.h>
+#include "sparseGEN/PFEMLinSOE.h"
 
-void* OPS_PFEMIntegrator()
+void *
+OPS_PFEMIntegrator(void)
 {
-    return new PFEMIntegrator();
+    TransientIntegrator *theIntegrator = 0;
+
+    int dispFlag = 2;
+    int init = 1;
+    double dData[2] = {-1.0, -1.0};
+    int numData = 2;
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+        if (OPS_GetDouble(&numData, dData) < 0) {
+            OPS_ResetCurrentInputArg(-2);
+        }
+    }
+
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+        const char *nextString = OPS_GetString();
+        if (strcmp(nextString,"-form") == 0) {
+            nextString = OPS_GetString();
+            if ((nextString[0] == 'D') || (nextString[0] == 'd')) {
+                dispFlag = 1;
+                init = 1;
+            } else if ((nextString[0] == 'A') || (nextString[0] == 'a')) {
+                dispFlag = 3;
+                init = 3;
+            } else if ((nextString[0] == 'V') || (nextString[0] == 'v')) {
+                dispFlag = 2;
+                init = 2;
+            }
+        } else {
+            opserr << "WARNING: first option must be -form\n";
+            return 0;
+        }
+        if (OPS_GetNumRemainingInputArgs() > 1) {
+            nextString = OPS_GetString();
+            if (strcmp(nextString, "-init") == 0) {
+                nextString = OPS_GetString();
+                if ((nextString[0] == 'D') || (nextString[0] == 'd')) {
+                    init = 1;
+                } else if ((nextString[0] == 'A') || (nextString[0] == 'a')) {
+                    init = 3;
+                } else if ((nextString[0] == 'V') || (nextString[0] == 'v')) {
+                    init = 2;
+                }
+            }
+        } else {
+            opserr << "WARNING: second option must be -init\n";
+            return 0;
+        }
+    }
+
+    theIntegrator = new PFEMIntegrator(dData[0], dData[1], dispFlag, init);
+
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating Newmark integrator\n";
+
+    return theIntegrator;
 }
 
 PFEMIntegrator::PFEMIntegrator()
+        : TransientIntegrator(INTEGRATOR_TAGS_PFEMIntegrator),
+          displ(2), init(1), gamma(-1), beta(-1),
+          c1(0.0), c2(0.0), c3(0.0),
+          Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
+          determiningMass(false),
+          sensitivityFlag(0), gradNumber(0), massMatrixMultiplicator(0),
+          dampingMatrixMultiplicator(0), assemblyFlag(false), independentRHS(),
+          dUn(), dVn(), dAn()
+{
+
+}
+
+PFEMIntegrator::PFEMIntegrator(double _gamma, double _beta, int _disp, int _init)
     : TransientIntegrator(INTEGRATOR_TAGS_PFEMIntegrator),
-      c1(0.0), c2(0.0), c3(0.0), 
+      displ(_disp), init(_init), gamma(_gamma), beta(_beta),
+      c1(0.0), c2(0.0), c3(0.0),
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-      determiningMass(false), sensitivityFlag(0),gradNumber(0),
-      dVn(), dUn()
+      determiningMass(false),
+      sensitivityFlag(0), gradNumber(0), massMatrixMultiplicator(0),
+      dampingMatrixMultiplicator(0), assemblyFlag(false), independentRHS(),
+      dUn(), dVn(), dAn()
 {
     
 }
-
 
 PFEMIntegrator::~PFEMIntegrator()
 {
@@ -84,11 +154,23 @@ PFEMIntegrator::~PFEMIntegrator()
         delete Udot;
     if (Udotdot != 0)
         delete Udotdot;
+
+    // clean up sensitivity
+    if (massMatrixMultiplicator!=0)
+        delete massMatrixMultiplicator;
+
+    if (dampingMatrixMultiplicator!=0)
+        delete dampingMatrixMultiplicator;
 }
 
 
 int PFEMIntegrator::newStep(double deltaT)
 {
+    if (beta == 0 || gamma == 0)  {
+        opserr << "Newmark::newStep() - error in variable\n";
+        opserr << "gamma = " << gamma << " beta = " << beta << endln;
+        return -1;
+    }
 
     if (deltaT <= 0.0)  {
         opserr << "PFEMIntegrator::newStep() - error in variable\n";
@@ -108,34 +190,114 @@ int PFEMIntegrator::newStep(double deltaT)
         opserr<<" -- PFEMIntegrator::newStep()\n";
         return -1;
     }
-    
-    // set the constants
-    c1 = deltaT;
-    c2 = 1.0;
-    c3 = 1.0/deltaT;
 
-    c4 = deltaT*deltaT;
-    c5 = deltaT;
-    c6 = 1.0;
+    // set the constants
+    if (displ == 1)  {
+        if (gamma>0 && beta>0) {
+            c1 = 1.0;
+            c2 = gamma / (beta * deltaT);
+            c3 = 1.0 / (beta * deltaT * deltaT);
+        } else {
+            c1 = 1.0;
+            c2 = 1.0 / deltaT;
+            c3 = 1.0 / (deltaT * deltaT);
+        }
+    } else if (displ == 2) {
+        if (gamma>0 && beta>0) {
+            c1 = deltaT * beta / gamma;
+            c2 = 1.0;
+            c3 = 1.0 / (gamma * deltaT);
+        } else {
+            c1 = deltaT;
+            c2 = 1.0;
+            c3 = 1.0/deltaT;
+        }
+    } else if (displ == 3) {
+        if (gamma>0 && beta>0) {
+            c1 = beta * deltaT * deltaT;
+            c2 = gamma * deltaT;
+            c3 = 1.0;
+        } else {
+            c1 = deltaT * deltaT;
+            c2 = deltaT;
+            c3 = 1.0;
+        }
+    }
 
     // check if domainchange() is called
     if (U == 0)  {
         opserr << "PFEMIntegrator::newStep() - domainChange() failed or hasn't been called\n";
         return -3;	
     }
-    
-    // set response at t to be that at t+deltaT of previous step
-    (*Ut) = *U;        
-    (*Utdot) = *Udot;  
-    (*Utdotdot) = *Udotdot;
-    
-    // determinte new disps and accels
-    U->addVector(1.0, *Utdot, deltaT);
-    Udotdot->Zero();
 
-    // set states
-    theModel->setDisp(*U);
-    theModel->setAccel(*Udotdot);
+    populateUn();
+    populateU();
+
+    if (init == 1) {
+
+        // determine new velocities and accelerations at t+deltaT
+        *Udot = *Utdot;
+        *Udotdot = *Utdotdot;
+        if (gamma>0 && beta>0) {
+            Udot->addVector(1.0-gamma/beta, *Utdotdot, deltaT*(1.0-0.5*gamma/beta));
+            Udot->addVector(1.0, *U, gamma / (deltaT * beta));
+            Udot->addVector(1.0, *Ut, -gamma / (deltaT * beta));
+            Udotdot->addVector(1.0-0.5/beta, *Utdot, -1.0 / (beta * deltaT));
+            Udotdot->addVector(1.0, *U, 1.0/(deltaT * deltaT * beta));
+            Udotdot->addVector(1.0, *Ut, -1.0/(deltaT * deltaT * beta));
+        } else {
+            Udot->addVector(0.0, *U, 1.0/deltaT);
+            Udot->addVector(1.0, *Ut, -1.0/deltaT);
+            Udotdot->addVector(0.0, *U, 1.0/(deltaT*deltaT));
+            Udotdot->addVector(1.0, *Ut, -1.0/(deltaT*deltaT));
+            Udotdot->addVector(1.0, *Utdot, -1.0/deltaT);
+        }
+
+        // set the trial response quantities
+        theModel->setVel(*Udot);
+        theModel->setAccel(*Udotdot);
+
+    } else if (init == 2) {
+        // determine new displacements and accelerations at t+deltaT
+        *U = *Ut;
+        *Udotdot = *Utdotdot;
+        if (gamma>0 && beta>0) {
+            U->addVector(1.0, *Utdot, deltaT*(1-beta/gamma));
+            U->addVector(1.0, *Udot, deltaT*beta/gamma);
+            U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta/gamma));
+            Udotdot->addVector((1-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
+            Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
+        } else {
+            U->addVector(1.0, *Udot, deltaT);
+            Udotdot->addVector(0.0, *Udot, 1.0/deltaT);
+            Udotdot->addVector(1.0, *Utdot, -1.0/deltaT);
+        }
+
+        // set the trial response quantities
+        theModel->setDisp(*U);
+        theModel->setAccel(*Udotdot);
+
+    } else  {
+        // determine new displacements and velocities at t+deltaT
+        *U = *Ut;
+        *Udot = *Utdot;
+
+        if (gamma>0 && beta>0) {
+            U->addVector(1.0, *Utdot, deltaT);
+            U->addVector(1.0, *Utdotdot, deltaT * deltaT * (0.5 - beta));
+            U->addVector(1.0, *Udotdot, deltaT * deltaT * beta);
+            Udot->addVector(1.0, *Utdotdot, deltaT * (1 - gamma));
+            Udot->addVector(1.0, *Udotdot, deltaT * gamma);
+        } else {
+            U->addVector(1.0, *Utdot, deltaT);
+            U->addVector(1.0, *Udotdot, deltaT*deltaT);
+            Udot->addVector(1.0, *Udotdot, deltaT);
+        }
+
+        // set the trial response quantities
+        theModel->setDisp(*U);
+        theModel->setVel(*Udot);
+    }
     
     // increment the time to t+deltaT and apply the load
     double time = theModel->getCurrentDomainTime();
@@ -173,6 +335,71 @@ int PFEMIntegrator::revertToLastStep()
     return 0;
 }
 
+int
+PFEMIntegrator::formTangent(int statFlag)
+{
+    int result = 0;
+    statusFlag = statFlag;
+
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theLinSOE == 0 || theModel == 0) {
+        opserr << "WARNING TransientIntegrator::formTangent() ";
+        opserr << "no LinearSOE or AnalysisModel has been set\n";
+        return -1;
+    }
+
+    // the loops to form and add the tangents are broken into two for
+    // efficiency when performing parallel computations
+
+    theLinSOE->zeroA();
+
+    // do modal damping
+    bool inclModalMatrix=theModel->inclModalDampingMatrix();
+    if (inclModalMatrix == true) {
+        const Vector *modalValues = theModel->getModalDampingFactors();
+        if (modalValues != 0) {
+            this->addModalDampingMatrix(modalValues);
+        }
+    }
+
+
+    // loop through the DOF_Groups and add the unbalance
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
+    DOF_Group *dofPtr;
+
+    while ((dofPtr = theDOFs()) != 0) {
+        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
+        if (soe != 0) {
+            if (soe->skipFluid() && soe->isFluidID(dofPtr->getID())) {
+                continue;
+            }
+        }
+
+        if (theLinSOE->addA(dofPtr->getTangent(this),dofPtr->getID()) <0) {
+            opserr << "TransientIntegrator::formTangent() - failed to addA:dof\n";
+            result = -1;
+        }
+    }
+
+    // loop through the FE_Elements getting them to add the tangent
+    FE_EleIter &theEles2 = theModel->getFEs();
+    FE_Element *elePtr;
+    while((elePtr = theEles2()) != 0)     {
+        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
+        if (soe != 0) {
+            if (soe->skipFluid() && soe->isFluidID(elePtr->getID())) {
+                continue;
+            }
+        }
+        if (theLinSOE->addA(elePtr->getTangent(this),elePtr->getID()) < 0) {
+            opserr << "TransientIntegrator::formTangent() - failed to addA:ele\n";
+            result = -2;
+        }
+    }
+    return result;
+}
+
 
 int PFEMIntegrator::formEleTangent(FE_Element *theEle)
 {
@@ -185,13 +412,15 @@ int PFEMIntegrator::formEleTangent(FE_Element *theEle)
         theEle->addKtToTang(c1);
         theEle->addCtoTang(c2);
         theEle->addMtoTang(c3);
-	if (sensitivityFlag == 1) {
-	    theEle->addKgToTang(c1);
-	}
+        if (sensitivityFlag == 1) {
+            theEle->addKgToTang(c1);
+        }
     } else if (statusFlag == INITIAL_TANGENT)  {
         theEle->addKiToTang(c1);
         theEle->addCtoTang(c2);
         theEle->addMtoTang(c3);
+    } else {
+        opserr << "Newmark::formEleTangent - unknown FLAG\n";
     }
     
     return 0;
@@ -351,6 +580,7 @@ int PFEMIntegrator::domainChanged()
         Udotdot = new Vector(size);
 	dVn.resize(size); dVn.Zero();
 	dUn.resize(size); dUn.Zero();
+	dAn.resize(size); dAn.Zero();
         
         // check we obtained the new
         if (Ut == 0 || Ut->Size() != size ||
@@ -416,28 +646,36 @@ int PFEMIntegrator::domainChanged()
             }
         }
 
-	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
-	for (int i=0; i < idSize; i++) {
-	    int loc = id(i);
-	    if (loc >= 0) {
-		dUn(loc) = dispSens(i);
-	    }
-	}
+        const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
+        for (i=0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                dUn(loc) = dispSens(i);
+            }
+        }
 
-	const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
-	for (int i=0; i < idSize; i++) {
-	    int loc = id(i);
-	    if (loc >= 0) {
-		dVn(loc) = velSens(i);
-	    }
-	}
-    }    
-    
+        const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+        for (i=0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                dVn(loc) = velSens(i);
+            }
+        }
+
+        const Vector &accelSens = dofPtr->getAccSensitivity(gradNumber);
+        for (i=0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                dAn(loc) = accelSens(i);
+            }
+        }
+    }
+
     return 0;
 }
 
 
-int PFEMIntegrator::update(const Vector &deltaU)
+int PFEMIntegrator::update(const Vector &delta)
 {
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel == 0)  {
@@ -452,18 +690,26 @@ int PFEMIntegrator::update(const Vector &deltaU)
     }	
     
     // check deltaU is of correct size
-    if (deltaU.Size() != U->Size())  {
+    if (delta.Size() != U->Size())  {
         opserr << "WARNING PFEMIntegrator::update() - Vectors of incompatible size ";
-        opserr << " expecting " << U->Size() << " obtained " << deltaU.Size() << endln;
+        opserr << " expecting " << U->Size() << " obtained " << delta.Size() << endln;
         return -3;
     }
     
     //  determine the response at t+deltaT
-    U->addVector(1.0, deltaU, c1);
-
-    (*Udot) += deltaU;
-
-    Udotdot->addVector(1.0, deltaU, c3);
+    if (displ == 1)  {
+        (*U) += delta;
+        Udot->addVector(1.0, delta, c2);
+        Udotdot->addVector(1.0, delta, c3);
+    } else if (displ == 2) {
+        U->addVector(1.0, delta, c1);
+        (*Udot) += delta;
+        Udotdot->addVector(1.0, delta, c3);
+    } else  {
+        U->addVector(1.0, delta, c1);
+        Udot->addVector(1.0, delta, c2);
+        (*Udotdot) += delta;
+    }
     
     // update the response at the DOFs
     theModel->setResponse(*U,*Udot,*Udotdot);
@@ -476,21 +722,49 @@ int PFEMIntegrator::update(const Vector &deltaU)
 }    
 
 
+const Vector &
+PFEMIntegrator::getVel()
+{
+  return *Udot;
+}
+
 int PFEMIntegrator::sendSelf(int cTag, Channel &theChannel)
 {
+    Vector data(4);
+    data(0) = gamma;
+    data(1) = beta;
+    data(2) = displ;
+    data(3) = init;
 
+
+    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
+        opserr << "WARNING Newmark::sendSelf() - could not send data\n";
+        return -1;
+    }
     return 0;
 }
 
 
 int PFEMIntegrator::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
+    Vector data(4);
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
+        opserr << "WARNING Newmark::recvSelf() - could not receive data\n";
+        gamma = 0.5; beta = 0.25; displ = 2; init = 1;
+        return -1;
+    }
+
+    gamma  = data(0);
+    beta   = data(1);
+    displ  = data(2);
+    init   = data(3);
     return 0;
 }
 
 
 void PFEMIntegrator::Print(OPS_Stream &s, int flag)
 {
+    if (flag != 0) return;
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0) {
         double currentTime = theModel->getCurrentDomainTime();
@@ -500,6 +774,92 @@ void PFEMIntegrator::Print(OPS_Stream &s, int flag)
         s << "\t PFEMIntegrator - no associated AnalysisModel\n";
 }
 
+int
+PFEMIntegrator::populateUn()
+{
+    AnalysisModel *myModel = this->getAnalysisModel();
+
+    // now go through and populate U, Udot and Udotdot by iterating through
+    // the DOF_Groups and getting the last committed velocity and accel
+    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_Group *dofPtr;
+    while ((dofPtr = theDOFs()) != 0) {
+        const ID &id = dofPtr->getID();
+        int idSize = id.Size();
+
+        int i;
+        const Vector &disp = dofPtr->getCommittedDisp();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*Ut)(loc) = disp(i);
+            }
+        }
+
+        const Vector &vel = dofPtr->getCommittedVel();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*Utdot)(loc) = vel(i);
+            }
+        }
+
+        const Vector &accel = dofPtr->getCommittedAccel();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*Utdotdot)(loc) = accel(i);
+            }
+        }
+    }
+
+    return 0;
+}
+
+int
+PFEMIntegrator::populateU()
+{
+    AnalysisModel *myModel = this->getAnalysisModel();
+    Domain* domain = myModel->getDomainPtr();
+    if (domain == 0) return -1;
+
+    // now go through and populate U, Udot and Udotdot by iterating through
+    // the DOF_Groups and getting the last committed velocity and accel
+    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_Group *dofPtr;
+    while ((dofPtr = theDOFs()) != 0) {
+        const ID &id = dofPtr->getID();
+        int idSize = id.Size();
+        int nodetag = dofPtr->getNodeTag();
+
+        int i;
+        const Vector &disp = dofPtr->getTrialDisp();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*U)(loc) = disp(i);
+            }
+        }
+
+        const Vector &vel = dofPtr->getTrialVel();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*Udot)(loc) = vel(i);
+            }
+        }
+
+        const Vector &accel = dofPtr->getTrialAccel();
+        for (i = 0; i < idSize; i++) {
+            int loc = id(i);
+            if (loc >= 0) {
+                (*Udotdot)(loc) = accel(i);
+            }
+        }
+    }
+
+    return 0;
+}
 
 // AddingSensitivity:BEGIN //////////////////////////////
 int PFEMIntegrator::revertToStart()
@@ -647,6 +1007,5 @@ PFEMIntegrator::commitSensitivity(int gradNum, int numGrads)
 
     return 0;
 }
-
 // AddingSensitivity:END ////////////////////////////////
 

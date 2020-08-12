@@ -390,7 +390,7 @@ FRPConfinedConcrete02::setTrialStrain(double strain, double strainRate)
 					if (m_gamare > 0.7 && m_betaun > 0.7) // Eq.30 (Lam and Teng 2009)
 						m_ne +=1;
 				}
-				Compr_GetPlasticStrain(); // calulate new m_epspl
+				Compr_GetPlasticStrain(); // calculate new m_epspl
 			}
 			m_loadingflag = TAG_UNLOADING; // Set current loading type
 		}

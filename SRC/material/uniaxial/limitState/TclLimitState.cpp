@@ -53,13 +53,6 @@ static void printCommand(int argc, TCL_Char **argv)
 //Package Commands
 extern LimitCurve *Tcl_addWrapperLimitCurve(limCrvObj *, ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				  Tcl_Interp *interp,  
-				  int cArg, 
-				  int mArg, 
-				  TCL_Char **argv, 
-				  Domain *domain);
-
 typedef struct limitCurvePackageCommand {
 	char *funcName;
 	void * (*funcPtr)(int argc, TCL_Char **argv); 

@@ -47,8 +47,8 @@ class Newmark : public TransientIntegrator
 {
 public:
     // constructors
-    Newmark();
-    Newmark(double gamma, double beta, bool disp = true, bool aflag=false);
+    Newmark(int classTag=INTEGRATOR_TAGS_Newmark);
+    Newmark(double gamma, double beta, bool disp = true, bool aflag=false, int classTag=INTEGRATOR_TAGS_Newmark);
 
     // destructor
     ~Newmark();
@@ -84,7 +84,7 @@ public:
     // AddingSensitivity:END ////////////////////////////////////
     
 protected:
-    bool displ;      // a flag indicating whether displ or accel increments
+    int displ;      // a flag indicating whether displ(1), vel(2) or accel(3) increments
     double gamma;
     double beta;
     

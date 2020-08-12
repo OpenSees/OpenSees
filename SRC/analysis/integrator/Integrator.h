@@ -79,6 +79,7 @@ public:
     bool shouldComputeAtEachStep(void);
     void setComputeType(int flag);
     bool newAlgorithm(void) {return true;}
+    virtual  bool computeSensitivityAtEachIteration();    
     void activateSensitivityKey() {SensitivityKey=true;}
     bool activateSensitivity() {return SensitivityKey;};
      ///////////////////////////////Abbas//////////////////

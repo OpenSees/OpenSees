@@ -90,7 +90,7 @@ class NodeRecorder: public Recorder
     double nextTimeStampToRecord;
 
     // AddingSensitivity:BEGIN //////////////////////////////
-    int sensitivity;
+    int gradIndex;
     // AddingSensitivity:END ////////////////////////////////
 
     bool initializationDone;
