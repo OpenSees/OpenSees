@@ -1,33 +1,40 @@
-# RockingBC Examples - Similar to the ones in Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
+# RockingBC Examples: Solitary flexible rocking body under dynamic loading
+#
+# More information about the model can be found in Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
+#
+# Author: Evangelos Avgenakis
 
 # ##### INITIALIZATION
 
 # Model properties 
 
-set B 1.0
-set w 1.0
-set rho 2.5
-set mu 0
-set g 9.81
+set B 1.0; 				# Member width
+set w 1.0; 				# Member thickness
+set rho 2.5; 			# Density
+set mu 0; 				# Friction coefficient (set 0 for infinite friction when a compressive axial force is applied)
+set g 9.81; 			# Gravity acceleration
 
-set nu 0.0
-set Nw 15
+set nu 0.0; 			# Poisson ratio (practically of negligible importance)
+set Nw 15; 				# Rocking interface control points
 
-set a 0.2	
-set zeta 0.05
-set e0 5.0e-6 ;# These parameters are defined in: Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
-set sr 5.0e-3
+set a 0.2; 				# Rocking member angle (tana=B/H)
+set zeta 0.05; 			# Damping ratio
 
-set H [expr $B/tan($a)]
-set E [expr $rho*$g*$H/$e0] 
-set sy [expr -$rho*$g*$H/$sr]
+# The following parameters are defined in: Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
 
-set R [expr sqrt($H*$H+$B*$B)/2.]
-set p [expr sqrt(3.0*$g/4.0/$R)]
-set total_mass [expr $H*$B*$w*$rho]
-set rot_inertia [expr 1./12.*$total_mass*($B*$B+$H*$H)]
+set e0 5.0e-6; 						# Initial strain at the rocking interface (e0=rho*g*H/E)
+set sr 5.0e-3; 						# Initial to yield stress ratio (sy=-rho*g*h/sy)
 
-# RockingBC element Parameters
+set H [expr $B/tan($a)]; 			# Member height
+set E [expr $rho*$g*$H/$e0]; 		# Modulus of elasticity
+set sy [expr -$rho*$g*$H/$sr]; 		# Yield stress
+
+set R [expr sqrt($H*$H+$B*$B)/2.]; 							# Diagonal half length
+set p [expr sqrt(3.0*$g/4.0/$R)]; 							# Characteristic rocking frequency parameter
+set total_mass [expr $H*$B*$w*$rho]; 						# Total mass
+set rot_inertia [expr 1./12.*$total_mass*($B*$B+$H*$H)]; 	# Rotational inertia with respect to the center of mass
+
+# RockingBC element parameters, as explained in the macroelement wiki page
 
 set convlim 1.0e-15
 set useshear 0
@@ -48,40 +55,35 @@ set errorifNexceeds 1 ;# A non-default value is used here, together with a times
 
 # Analysis Parameters
 
-set Tol 1.0e-10
-set NumIter 100
-set nEigen 1
-
-set DtfacL 0.5
-set DtfacU 1.5
-set incrafter 10
-set Nlimratio 0.9
+set Tol 1.0e-10; 	# Tolerance value for tests
+set NumIter 100; 	# Maximum number of iterations
+set nEigen 1; 		# Eigenmode, which the damping ratio is applied to
 
 # Analysis cases
 
-set THcase "Free" ; # CHANGE ANALYSIS TYPE AS FOLLOWS
+set THcase "Free" ; # Options: Free, Sinepulse, EQ
 
 set pi [expr acos(-1.0)]
 if {$THcase=="Free"} {
-	set ur 0.5
-	set THousnerratio 3.0
-	set th0 [expr $ur*$a]	
+	set ur 0.5; 			# Initial rotation over angle a
+	set THousnerratio 3.0;	# Controls analysis duration
+	set th0 [expr $ur*$a];	# Initial rotation
 	set ang [expr 1.0/(1.0-$th0/$a)]
-	set Thousner [expr 4.0/$p*log($ang+sqrt($ang*$ang-1))]
+	set Thousner [expr 4.0/$p*log($ang+sqrt($ang*$ang-1))]; # Theoretical rocking period at the beginning of the analysis
 	puts "Thousner = $Thousner"
 	set TmaxAnalysis [expr $THousnerratio*$Thousner]
 } elseif {$THcase=="Sinepulse"} {
-	set wpratio 6.0
-	set apratio 2.0
-	set Tpratio 18.0
+	set wpratio 6.0;		# Controls sine pulse frequency
+	set apratio 2.0;		# Controls sine pulse amplitude
+	set Tpratio 18.0;		# Controls analysis duration
 	set wp [expr $wpratio*$p]
 	set ap [expr $apratio*$a*$g]
 	set Tp [expr 2.0*$pi/$wp]
 	set TmaxAnalysis [expr $Tpratio*$Tp]	
 } elseif {$THcase=="EQ"} {
-	set EQfile "Northridge.dat"
-	set skiprows 5
-	set accmult 9.81
+	set EQfile "Northridge.dat";	# Earthquake acceleration file
+	set skiprows 5;					# Rows to skip from file
+	set accmult 9.81;				# Acceleration multiplier
 } else {
 	error "Error: No such timehistory case"
 }
@@ -112,6 +114,7 @@ pattern Plain 1 Linear {
     load 2 0.0 [expr -$total_mass*$g] 0.0
 }
 
+# Recorders
 recorder Node -file $name\\topdisps.txt -time -nodes 3 -dof 1 2 3 disp
 recorder Node -file $name\\centdisps.txt -time -nodes 2 -dof 1 2 3 disp
 recorder Node -file $name\\centvel.txt -time -nodes 2 -dof 1 2 3 vel
@@ -121,6 +124,7 @@ recorder Element -file $name\\Nforces.txt -time -ele 1 basicForce ; # Corotation
 recorder Element -file $name\\forces.txt -time -ele 1 force ; # Global system forces
 # recorder Element -file $name\\dummy -time -ele 1 $name\\Dist ; # Uncomment to record Stress and Plastic displacement distributions each step inside the folder given at the end of the command (comment the same command at the end of the script)
 
+# Self weight application
 constraints Transformation
 numberer RCM
 system UmfPack
@@ -135,6 +139,7 @@ analyze $NstepGravity
 puts "Dead load analysis complete"
 loadConst -time 0.0
 
+# Setting damping parameter for dynamic analysis
 set lambdaN [eigen 1]
 set lambdaI [lindex $lambdaN [expr $nEigen-1]]
 set omegaI [expr pow($lambdaI,0.5)]
@@ -144,6 +149,7 @@ set betaKcurr [expr 2.*$zeta/$omegaI]
 set T1 [expr 2.*$pi/$omegaI]
 puts "T1 = $T1"   
 
+# Writing file with info
 set infofile [open $name\\info.txt w+]   
 puts $infofile "H $H"
 puts $infofile "B $B"
@@ -194,7 +200,7 @@ if {$THcase=="Free"} {
 
 close $infofile
 
-# ##### PUSHOVER IF NEEDED
+# ##### PUSHOVER (if free rocking is applied)
 
 if {$THcase=="Free"} {
 
@@ -323,6 +329,13 @@ set curTime [getTime]
 set Dtcur $DtMax
 set igood 0
 
+# Parameters controlling the analysis during impacts
+set DtfacL 0.5
+set DtfacU 1.5
+set incrafter 10
+set Nlimratio 0.9
+
+# Algorithm taking into account changes in analysis parameters during impacts, also see the macroelement wiki page for the strategy employed during impacts
 while {$curTime < $TmaxAnalysis && $ok == 0} {
 	
 	set ok [analyze 1 $Dtcur]
