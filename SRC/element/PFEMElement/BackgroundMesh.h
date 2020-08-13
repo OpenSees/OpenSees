@@ -92,6 +92,7 @@ class BackgroundMesh {
     int gridNodes();
     int gridFluid();
     int gridFSI();
+    int gridFSInoDT();
     int gridEles();
     static int createContact(const VInt& ndtags, const VInt& sids,
                              VInt& elends);
@@ -112,6 +113,16 @@ class BackgroundMesh {
     static void getNForRect(double x0, double y0, double z0, double hx,
                             double hy, double hz, double x, double y,
                             double z, VDouble& N);
+    //    1
+    //    /\ upper
+    // 0 /  \ 2
+    //  ------
+    //  | 4  |
+    //  | /\ | lower
+    //  |/  \|
+    // 3------5
+    static void splitPrism(const VInt& prism, VVInt& tets, bool incl1,
+                           bool incl4);
 
     // clear all
     void clearAll();

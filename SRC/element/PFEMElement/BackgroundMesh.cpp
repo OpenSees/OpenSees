@@ -847,7 +847,7 @@ int BackgroundMesh::remesh(bool init) {
 #endif
 
     // create FSI elements
-    if (gridFSI() < 0) {
+    if (gridFSInoDT() < 0) {
         opserr << "WARNING: failed to create FSI elements\n";
         return -1;
     }
@@ -1729,6 +1729,408 @@ int BackgroundMesh::gridFluid() {
     return 0;
 }
 
+int BackgroundMesh::gridFSInoDT() {
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+    int ndm = OPS_GetNDM();
+
+    // store cells in a vector
+    std::vector<BCell*> cells;
+    for (auto& item : bcells) {
+        auto& cell = item.second;
+        if (cell.getType() == BACKGROUND_STRUCTURE) {
+            cells.push_back(&cell);
+        }
+    }
+
+    // create elements in each cell
+    int numele = 0;
+    if (ndm == 2) {
+        numele = 2;
+    } else if (ndm == 3) {
+        numele = 6;
+    }
+    VVInt elends(numele * cells.size());
+    VInt gtags(numele * cells.size());
+#pragma omp parallel for
+    for (int j = 0; j < (int)cells.size(); ++j) {
+        // get indices
+        auto& cindices = cells[j]->getIndices();
+
+        // get bnodes
+        auto& cbnodes = cells[j]->getNodes();
+
+        // node tags and sids
+        VInt tags(cbnodes.size(), -1), sids(cbnodes.size()),
+            types(cbnodes.size());
+        for (int i = 0; i < (int)tags.size(); ++i) {
+            types[i] = cbnodes[i]->getType();
+            if (types[i] != BACKGROUND_FIXED) {
+                auto& ctags = cbnodes[i]->getTags();
+                tags[i] = ctags[0];
+                auto& ids = cbnodes[i]->getSid();
+                sids[i] = ids[0];
+            }
+        }
+
+        // get fluid and structural local indices
+        VInt flocal, slocal, fixlocal;
+        for (int i = 0; i < (int)types.size(); ++i) {
+            int type = types[i];
+            if (type == BACKGROUND_STRUCTURE) {
+                slocal.push_back(i);
+            } else if (type == BACKGROUND_FLUID) {
+                flocal.push_back(i);
+            } else {
+                fixlocal.push_back(i);
+            }
+        }
+
+        // contact cell: must fully engaged
+        if (ndm == 2 && slocal.size() == 4) {
+            VInt csnds(3), csids(3);
+            if (slocal.size() == 4) {
+                // two contact elements
+                csnds[0] = tags[0];
+                csnds[1] = tags[3];
+                csnds[2] = tags[2];
+                csids[0] = sids[0];
+                csids[1] = sids[3];
+                csids[2] = sids[2];
+                if (createContact(csnds, csids, elends[numele * j])) {
+                    gtags[numele * j] = contact_tag;
+                }
+
+                csnds[0] = tags[0];
+                csnds[1] = tags[1];
+                csnds[2] = tags[3];
+                csids[0] = sids[0];
+                csids[1] = sids[1];
+                csids[2] = sids[3];
+                if (createContact(csnds, csids, elends[numele * j + 1])) {
+                    gtags[numele * j + 1] = contact_tag;
+                }
+                continue;
+            }
+        } else if (ndm == 3 && slocal.size() == 8) {
+            // 3D contact element: TODO
+            continue;
+        }
+
+        // get surrounding cells
+        VInt min = cindices[0];
+        min -= 1;
+        VInt max = cindices[0];
+        max += 2;
+
+        // gather particles
+        VParticle pts;
+        gatherParticles(min, max, pts);
+        if (pts.empty()) {
+            continue;
+        }
+
+        // find the group of this mesh
+        std::map<int, int> numpts;
+        for (int i = 0; i < (int)pts.size(); ++i) {
+            numpts[pts[i]->getGroupTag()] += 1;
+        }
+        int num = 0;
+        int gtag = 0;
+        for (std::map<int, int>::iterator it = numpts.begin();
+             it != numpts.end(); ++it) {
+            if (num < it->second) {
+                num = it->second;
+                gtag = it->first;
+            }
+        }
+        for (int i = 0; i < numele; ++i) {
+            gtags[numele * j + i] = gtag;
+        }
+
+        // add to elenodes
+        if (ndm == 2) {
+            if (types[1] == BACKGROUND_STRUCTURE &&
+                types[2] == BACKGROUND_STRUCTURE) {
+                if (types[0] == BACKGROUND_FLUID) {
+                    elends[numele * j].push_back(tags[0]);
+                    elends[numele * j].push_back(tags[1]);
+                    elends[numele * j].push_back(tags[2]);
+                }
+                if (types[3] == BACKGROUND_FLUID) {
+                    elends[numele * j + 1].push_back(tags[1]);
+                    elends[numele * j + 1].push_back(tags[3]);
+                    elends[numele * j + 1].push_back(tags[2]);
+                }
+
+            } else if (types[0] == BACKGROUND_STRUCTURE &&
+                       types[3] == BACKGROUND_STRUCTURE) {
+                if (types[1] == BACKGROUND_FLUID) {
+                    elends[numele * j].push_back(tags[0]);
+                    elends[numele * j].push_back(tags[1]);
+                    elends[numele * j].push_back(tags[3]);
+                }
+                if (types[2] == BACKGROUND_FLUID) {
+                    elends[numele * j + 1].push_back(tags[0]);
+                    elends[numele * j + 1].push_back(tags[3]);
+                    elends[numele * j + 1].push_back(tags[2]);
+                }
+
+            } else if (types[1] != BACKGROUND_FIXED &&
+                       types[2] != BACKGROUND_FIXED) {
+                if (types[0] != BACKGROUND_FIXED) {
+                    elends[numele * j].push_back(tags[0]);
+                    elends[numele * j].push_back(tags[1]);
+                    elends[numele * j].push_back(tags[2]);
+                }
+                if (types[3] != BACKGROUND_FIXED) {
+                    elends[numele * j + 1].push_back(tags[1]);
+                    elends[numele * j + 1].push_back(tags[3]);
+                    elends[numele * j + 1].push_back(tags[2]);
+                }
+
+            } else if (types[0] != BACKGROUND_FIXED &&
+                       types[3] != BACKGROUND_FIXED) {
+                if (types[1] != BACKGROUND_FIXED) {
+                    elends[numele * j].push_back(tags[0]);
+                    elends[numele * j].push_back(tags[1]);
+                    elends[numele * j].push_back(tags[3]);
+                }
+                if (types[2] != BACKGROUND_FIXED) {
+                    elends[numele * j + 1].push_back(tags[0]);
+                    elends[numele * j + 1].push_back(tags[3]);
+                    elends[numele * j + 1].push_back(tags[2]);
+                }
+            }
+
+        } else if (ndm == 3) {
+            VInt prism(6);
+            VVInt tets;
+            bool incl1, incl4;
+
+            int face[6][4] = {{1, 2, 5, 6}, {0, 3, 4, 7}, {1, 3, 4, 6},
+                              {0, 2, 5, 7}, {2, 3, 4, 5}, {0, 1, 6, 7}};
+            int prisms[12][6] = {{5, 4, 6, 1, 0, 2}, {6, 7, 5, 2, 3, 1},
+                                 {4, 6, 7, 0, 2, 3}, {7, 5, 4, 3, 1, 0},
+                                 {4, 5, 1, 6, 7, 3}, {1, 0, 4, 3, 2, 6},
+                                 {0, 4, 5, 2, 6, 7}, {5, 1, 0, 7, 3, 2},
+                                 {3, 1, 5, 2, 0, 4}, {5, 7, 3, 4, 6, 2},
+                                 {1, 5, 7, 0, 4, 6}, {7, 3, 1, 6, 2, 0}};
+
+            // if find a splitting
+            bool find = false;
+
+            // check which face is structure
+            for (int i = 0; i < 6; ++i) {
+                find = true;
+                for (int k = 0; k < 4; ++k) {
+                    if (types[face[i][k]] != BACKGROUND_STRUCTURE) {
+                        find = false;
+                    }
+                }
+
+                // if it's structure
+                if (find) {
+                    // set prism
+                    for (int k = 0; k < 2; ++k) {
+                        for (int m = 0; m < 6; ++m) {
+                            prism[m] = tags[prisms[2 * i + k][m]];
+                        }
+
+                        // check if include corner 1
+                        incl1 = false;
+                        if (types[prisms[2 * i + k][1]] ==
+                            BACKGROUND_FLUID) {
+                            incl1 = true;
+                        }
+
+                        // check if include corner 4
+                        incl4 = false;
+                        if (types[prisms[2 * i + k][4]] ==
+                            BACKGROUND_FLUID) {
+                            incl4 = true;
+                        }
+
+                        // split the prism
+                        splitPrism(prism, tets, incl1, incl4);
+
+                        // add ele nodes
+                        for (int m = 0; m < (int)tets.size(); ++m) {
+                            for (int tag : tets[m]) {
+                                elends[numele * j + m].push_back(tag);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // check which face is not fixed
+            if (!find) {
+                for (int i = 0; i < 6; ++i) {
+                    find = true;
+                    for (int k = 0; k < 4; ++k) {
+                        if (types[face[i][k]] == BACKGROUND_FIXED) {
+                            find = false;
+                        }
+                    }
+
+                    // if it's not fixed
+                    if (find) {
+                        // set prism
+                        for (int k = 0; k < 2; ++k) {
+                            for (int m = 0; m < 6; ++m) {
+                                prism[m] = tags[prisms[2 * i + k][m]];
+                            }
+
+                            // check if include corner 1
+                            incl1 = false;
+                            if (types[prisms[2 * i + k][1]] !=
+                                BACKGROUND_FIXED) {
+                                incl1 = true;
+                            }
+
+                            // check if include corner 4
+                            incl4 = false;
+                            if (types[prisms[2 * i + k][4]] !=
+                                BACKGROUND_FIXED) {
+                                incl4 = true;
+                            }
+
+                            // split the prism
+                            splitPrism(prism, tets, incl1, incl4);
+
+                            // add ele nodes
+                            for (int m = 0; m < (int)tets.size(); ++m) {
+                                for (int tag : tets[m]) {
+                                    elends[numele * j + m].push_back(tag);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // get particle group tags
+    std::map<int, ID> elenodes;
+    int nextEletag = Mesh::nextEleTag();
+    VInt oldContactEles = contactEles;
+    VInt removedEles(oldContactEles.size(), 1);
+    contactEles.clear();
+    for (int i = 0; i < (int)elends.size(); ++i) {
+        // no elenodes, no element
+        if (elends[i].empty()) continue;
+
+        // contact element
+        if (gtags[i] == contact_tag) {
+            if (ndm == 2) {
+                if (elends[i].size() != 3) {
+                    opserr << "WARNING: 2D contact should have 3 "
+                              "nodes\n";
+                    return -1;
+                }
+
+                // check if exists
+                bool created = false;
+                for (int j = 0; j < (int)oldContactEles.size(); ++j) {
+                    if (removedEles[j] == 0) continue;
+                    Element* ele = domain->getElement(oldContactEles[j]);
+                    if (ele == 0) continue;
+                    const ID& contactNodes = ele->getExternalNodes();
+                    if (contactNodes(0) == elends[i][0] &&
+                        contactNodes(1) == elends[i][1] &&
+                        contactNodes(2) == elends[i][2]) {
+                        created = true;
+                        removedEles[j] = 0;
+                        contactEles.push_back(oldContactEles[j]);
+                        break;
+                    }
+                }
+                if (created) continue;
+
+                if (contactData[0] <= 0 || contactData[1] <= 0 ||
+                    contactData[2] < 0 || contactData[3] < 0 ||
+                    contactData[4] <= 0 || contactData[6] <= 0 ||
+                    contactData[7] <= 0) {
+                    opserr << "WARNING: contact data is not "
+                              "correctly "
+                              "set\n";
+                    return -1;
+                }
+                Element* ele = new PFEMContact2D(
+                    nextEletag, elends[i][0], elends[i][1], elends[i][2],
+                    contactData[0], contactData[1], contactData[2],
+                    contactData[3], contactData[4], contactData[5],
+                    contactData[6], contactData[7]);
+                if (ele == 0) {
+                    opserr << "WARNING: failed to create contact "
+                              "element\n";
+                    return -1;
+                }
+                if (domain->addElement(ele) == false) {
+                    opserr << "WARNING: failed to add element "
+                           << nextEletag << "\n";
+                    delete ele;
+                    return -1;
+                }
+                contactEles.push_back(nextEletag);
+                nextEletag += 1;
+
+            } else if (ndm == 3) {
+                if (elends[i].size() != 4) {
+                    opserr << "WARNING: 3D contact should have 4 "
+                              "nodes\n";
+                    return -1;
+                }
+                opserr << "WARNING: 3D contact element hasn't been "
+                          "developed\n";
+            }
+            continue;
+        }
+
+        // if all nodes are fluid nodes
+        ID& nds = elenodes[gtags[i]];
+        for (int j = 0; j < (int)elends[i].size(); ++j) {
+            nds[nds.Size()] = elends[i][j];
+        }
+    }
+
+    // remove old contact elements
+    for (int i = 0; i < (int)oldContactEles.size(); ++i) {
+        if (removedEles[i] == 1) {
+            opserr << "old contact element " << oldContactEles[i] << ": ";
+            Element* ele = domain->removeElement(oldContactEles[i]);
+            opserr << ele->getExternalNodes() << " is removed\n";
+            if (ele != 0) {
+                delete ele;
+            }
+        }
+    }
+
+    // create elements
+    for (auto& item : elenodes) {
+        ParticleGroup* group =
+            dynamic_cast<ParticleGroup*>(OPS_getMesh(item.first));
+        if (group == 0) {
+            opserr << "WARNING: failed to get particle group -- "
+                      "BgMesh::gridFluid\n";
+            return -1;
+        }
+        group->setEleNodes(item.second);
+
+        if (group->newElements(item.second) < 0) {
+            opserr << "WARNING: failed to create elements for mesh ";
+            opserr << group->getTag() << " -- BgMesh::gridFluid\n";
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 int BackgroundMesh::gridFSI() {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -2074,7 +2476,8 @@ int BackgroundMesh::gridFSI() {
         if (gtags[i] == contact_tag) {
             if (ndm == 2) {
                 if (elends[i].size() != 3) {
-                    opserr << "WARNING: 2D contact should have 3 nodes\n";
+                    opserr << "WARNING: 2D contact should have 3 "
+                              "nodes\n";
                     return -1;
                 }
 
@@ -2100,8 +2503,9 @@ int BackgroundMesh::gridFSI() {
                     contactData[2] < 0 || contactData[3] < 0 ||
                     contactData[4] <= 0 || contactData[6] <= 0 ||
                     contactData[7] <= 0) {
-                    opserr
-                        << "WARNING: contact data is not correctly set\n";
+                    opserr << "WARNING: contact data is not "
+                              "correctly "
+                              "set\n";
                     return -1;
                 }
                 Element* ele = new PFEMContact2D(
@@ -2110,8 +2514,8 @@ int BackgroundMesh::gridFSI() {
                     contactData[3], contactData[4], contactData[5],
                     contactData[6], contactData[7]);
                 if (ele == 0) {
-                    opserr
-                        << "WARNING: failed to create contact element\n";
+                    opserr << "WARNING: failed to create contact "
+                              "element\n";
                     return -1;
                 }
                 if (domain->addElement(ele) == false) {
@@ -2125,7 +2529,8 @@ int BackgroundMesh::gridFSI() {
 
             } else if (ndm == 3) {
                 if (elends[i].size() != 4) {
-                    opserr << "WARNING: 3D contact should have 4 nodes\n";
+                    opserr << "WARNING: 3D contact should have 4 "
+                              "nodes\n";
                     return -1;
                 }
                 opserr << "WARNING: 3D contact element hasn't been "
@@ -2191,8 +2596,8 @@ int BackgroundMesh::record(bool init) {
         if (recorders[i] != 0) {
             if (recorders[i]->record(domain->getCommitTag(),
                                      currentTime)) {
-                opserr
-                    << "WARNING: failed to record -- BgMesh::gridEles\n";
+                opserr << "WARNING: failed to record -- "
+                          "BgMesh::gridEles\n";
                 return -1;
             }
         }
@@ -2485,7 +2890,8 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
         // get particle velocity and move
         if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, types,
                         ndtags, subdt) < 0) {
-            opserr << "WARNING: failed to interpolate particle velocity";
+            opserr << "WARNING: failed to interpolate particle "
+                      "velocity";
             opserr << "-- BgMesh::convectParticle\n";
             return -1;
         }
@@ -2523,7 +2929,8 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
 
     const VDouble& pcrds = pt->getCrds();
     if ((int)pcrds.size() != ndm) {
-        opserr << "WARNING: pcrds.size() != ndm -- BgMesh::interpolate\n";
+        opserr << "WARNING: pcrds.size() != ndm -- "
+                  "BgMesh::interpolate\n";
         return -1;
     }
 
@@ -2732,8 +3139,8 @@ int BackgroundMesh::interpolate(const VVDouble& values, const VDouble& N,
     newvalue.assign(values[0].size(), 0.0);
     for (int i = 0; i < (int)N.size(); ++i) {
         if (values[i].size() != values[0].size()) {
-            opserr
-                << "WARNING: dimensions of nodal values are different\n";
+            opserr << "WARNING: dimensions of nodal values are "
+                      "different\n";
             newvalue.clear();
             return -1;
         }
@@ -2842,4 +3249,38 @@ int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
 
 void BackgroundMesh::setContactData(const VDouble& data) {
     contactData = data;
+}
+
+void BackgroundMesh::splitPrism(const VInt& prism, VVInt& tets, bool incl1,
+                                bool incl4) {
+    if (prism.size() != 6) return;
+    tets.clear();
+    VInt tet(4);
+
+    // first tetehedron
+    if (incl4) {
+        tet[0] = prism[3];
+        tet[1] = prism[4];
+        tet[2] = prism[2];
+        tet[3] = prism[5];
+        tets.push_back(tet);
+    }
+
+    // second tetehedron
+    if (incl1 && incl4) {
+        tet[0] = prism[3];
+        tet[1] = prism[1];
+        tet[2] = prism[2];
+        tet[3] = prism[4];
+        tets.push_back(tet);
+    }
+
+    // third tetehedron
+    if (incl1) {
+        tet[0] = prism[3];
+        tet[1] = prism[0];
+        tet[2] = prism[2];
+        tet[3] = prism[1];
+        tets.push_back(tet);
+    }
 }
