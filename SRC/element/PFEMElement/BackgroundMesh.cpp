@@ -1939,15 +1939,15 @@ int BackgroundMesh::gridFSInoDT() {
 
                         // check if include corner 1
                         incl1 = false;
-                        if (types[prisms[2 * i + k][1]] ==
-                            BACKGROUND_FLUID) {
+                        if (types[prisms[2 * i + k][1]] !=
+                            BACKGROUND_FIXED) {
                             incl1 = true;
                         }
 
                         // check if include corner 4
                         incl4 = false;
-                        if (types[prisms[2 * i + k][4]] ==
-                            BACKGROUND_FLUID) {
+                        if (types[prisms[2 * i + k][4]] !=
+                            BACKGROUND_FIXED) {
                             incl4 = true;
                         }
 
