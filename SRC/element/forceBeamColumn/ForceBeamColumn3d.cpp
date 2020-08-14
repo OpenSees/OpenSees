@@ -2910,8 +2910,8 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     // Displacement vector
     Vector dispsy(numSections); // along local y
     Vector dispsz(numSections); // along local z    
-    dispsy.addMatrixVector(0.0, ls, kappaz, 1.0);
-    dispsz.addMatrixVector(0.0, ls, kappay, 1.0);    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
     beamIntegr->getSectionLocations(numSections, L, pts);
     static Vector uxb(3);
     static Vector uxg(3);
@@ -2956,8 +2956,8 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     // Displacement vector
     Vector dispsy(20); // along local y
     Vector dispsz(20); // along local z    
-    dispsy.addMatrixVector(0.0, ls, kappaz, 1.0);
-    dispsz.addMatrixVector(0.0, ls, kappay, 1.0);    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
     static Vector uxb(3);
     static Vector uxg(3);
     Matrix disps(20,3);
