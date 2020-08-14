@@ -102,6 +102,11 @@ def toOpenSeesPy(infile, outfile):
             if info[i] == '}':
                 writeClose = False                
                 break
+            if info[0] == 'recorder':
+                # If it's a recorder, make everything immediately  after material, section, or fiber a string
+                if info[i-1] in ['material','section','fiber'] and isfloat(info[i]):
+                    outfile.write(',str(%s)' % info[i])
+                    continue
             if isfloat(info[i]):
                 outfile.write(',%s' % info[i])
             else:
