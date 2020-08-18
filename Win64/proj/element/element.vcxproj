@@ -447,10 +447,6 @@
     <ClCompile Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.cpp" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.cpp" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_region.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.cpp" />
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -685,10 +681,6 @@
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.h" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_region.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.h" />
     <ClInclude Include="..\..\..\SRC\element\NewElement.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
