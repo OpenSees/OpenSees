@@ -149,6 +149,8 @@ void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_ForceBeamColumnCBDI2d();
 void* OPS_ForceBeamColumnCSBDI2d();
+void* OPS_ForceBeamColumnCBDI3d();
+void* OPS_ForceBeamColumnCSBDI3d();
 void* OPS_ForceBeamColumnWarping2d();
 void* OPS_ElasticForceBeamColumnWarping2d();
 void* OPS_DispBeamColumn3dID();
@@ -237,6 +239,28 @@ namespace {
 	    return OPS_ForceBeamColumn3d();
 	}
     }
+
+    static void* OPS_ForceBeamColumnCBDI()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_ForceBeamColumnCBDI2d();
+	} else {
+	    return OPS_ForceBeamColumnCBDI3d();
+	}
+    }
+
+  static void* OPS_ForceBeamColumnCSBDI()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_ForceBeamColumnCSBDI2d();
+	} else {
+	    return OPS_ForceBeamColumnCSBDI3d();
+	}
+    }  
 
   static void* OPS_ForceBeamColumnThermal()
     {
@@ -625,8 +649,8 @@ namespace {
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn3dID", &OPS_DispBeamColumn3dID));
 	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
-	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI2d));
-	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI2d));
+	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));
+	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI));
 	functionMap.insert(std::make_pair("mixedBeamColumn", &OPS_MixedBeamColumn));
 	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
