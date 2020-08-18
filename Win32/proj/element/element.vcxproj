@@ -360,10 +360,6 @@
     <ClCompile Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_region.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.cpp" />
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -598,10 +594,6 @@
     <ClInclude Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_bilin.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_region.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SCfuncs.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC_SISfuncs.h" />
     <ClInclude Include="..\..\..\SRC\element\NewElement.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
