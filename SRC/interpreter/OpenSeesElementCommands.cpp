@@ -268,6 +268,7 @@ namespace {
 	if(ndm == 2) {
 	    return OPS_ForceBeamColumn2dThermal();
 	} else {
+		return 0;
 	  //return OPS_ForceBeamColumn3dThermal();
 	}
     }
@@ -479,6 +480,7 @@ namespace {
   {
     int ndm = OPS_GetNDM();
     if (ndm == 2) {
+		return 0;
       // return OPS_DispBeamColumn2dID();
     }
     else {
