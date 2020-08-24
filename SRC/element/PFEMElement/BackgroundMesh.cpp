@@ -1852,12 +1852,12 @@ int BackgroundMesh::gridFSInoDT() {
         if (ndm == 2) {
             if (types[1] == BACKGROUND_STRUCTURE &&
                 types[2] == BACKGROUND_STRUCTURE) {
-                if (types[0] == BACKGROUND_FLUID) {
+                if (types[0] != BACKGROUND_FIXED) {
                     elends[numele * j].push_back(tags[0]);
                     elends[numele * j].push_back(tags[1]);
                     elends[numele * j].push_back(tags[2]);
                 }
-                if (types[3] == BACKGROUND_FLUID) {
+                if (types[3] != BACKGROUND_FIXED) {
                     elends[numele * j + 1].push_back(tags[1]);
                     elends[numele * j + 1].push_back(tags[3]);
                     elends[numele * j + 1].push_back(tags[2]);
@@ -1865,12 +1865,12 @@ int BackgroundMesh::gridFSInoDT() {
 
             } else if (types[0] == BACKGROUND_STRUCTURE &&
                        types[3] == BACKGROUND_STRUCTURE) {
-                if (types[1] == BACKGROUND_FLUID) {
+                if (types[1] != BACKGROUND_FIXED) {
                     elends[numele * j].push_back(tags[0]);
                     elends[numele * j].push_back(tags[1]);
                     elends[numele * j].push_back(tags[3]);
                 }
-                if (types[2] == BACKGROUND_FLUID) {
+                if (types[2] != BACKGROUND_FIXED) {
                     elends[numele * j + 1].push_back(tags[0]);
                     elends[numele * j + 1].push_back(tags[3]);
                     elends[numele * j + 1].push_back(tags[2]);
