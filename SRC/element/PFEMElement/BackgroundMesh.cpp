@@ -2667,8 +2667,10 @@ int BackgroundMesh::record(bool init) {
         for (int iy = lower[1]; iy <= upper[1]; ++iy) {
             VInt ind = index;
             ind[1] = iy;
-            if (bcells.find(ind) != bcells.end()) {
-                bottom = iy * bsize;
+            auto it = bcells.find(ind);
+            if (it != bcells.end() &&
+                it->second.getPts().empty() == false) {
+                bottom = iy * bsize + 0.5 * bsize;
                 break;
             }
         }
@@ -2678,8 +2680,10 @@ int BackgroundMesh::record(bool init) {
         for (int ix = lower[0]; ix <= upper[0]; ++ix) {
             VInt ind = index;
             ind[0] = ix;
-            if (bcells.find(ind) != bcells.end()) {
-                left = ix * bsize;
+            auto it = bcells.find(ind);
+            if (it != bcells.end() &&
+                it->second.getPts().empty() == false) {
+                left = ix * bsize + 0.5 * bsize;
                 break;
             }
         }
@@ -2688,8 +2692,10 @@ int BackgroundMesh::record(bool init) {
         for (int iy = upper[1]; iy >= lower[1]; --iy) {
             VInt ind = index;
             ind[1] = iy;
-            if (bcells.find(ind) != bcells.end()) {
-                top = (iy + 1) * bsize;
+            auto it = bcells.find(ind);
+            if (it != bcells.end() &&
+                it->second.getPts().empty() == false) {
+                top = (iy + 0.5) * bsize;
                 break;
             }
         }
@@ -2699,8 +2705,10 @@ int BackgroundMesh::record(bool init) {
         for (int ix = upper[0]; ix >= lower[0]; --ix) {
             VInt ind = index;
             ind[0] = ix;
-            if (bcells.find(ind) != bcells.end()) {
-                right = (ix + 1) * bsize;
+            auto it = bcells.find(ind);
+            if (it != bcells.end() &&
+                it->second.getPts().empty() == false) {
+                right = (ix + 0.5) * bsize;
                 break;
             }
         }
