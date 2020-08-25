@@ -217,6 +217,7 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
+	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI3d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn3d.o \
