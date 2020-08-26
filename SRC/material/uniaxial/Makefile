@@ -85,6 +85,7 @@ OBJS       = UniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
 	PenaltyMaterial.o \
+	MultiplierMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
 	SecantMaterial.o \
