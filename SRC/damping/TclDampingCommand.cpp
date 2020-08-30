@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/damping/TclDampingCommand.cpp,v $
 
 // Written: Yuli Huang (yulee@berkeley.edu)
-// Created: 02/2020
+// Created: 01/2020
 // Revision: A
 
 #include <string.h>
@@ -58,35 +58,35 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
     int dampingTag;
 
     if (argc < 3) {
-      opserr << "WARNING insufficient arguments - want: damping type? tag? <specific transf args>\n"; 
+      opserr << "WARNING insufficient arguments - want: damping type? tag? <specific damping args>\n"; 
       return TCL_ERROR;
     }
 	    
     if (Tcl_GetInt(interp, argv[2], &dampingTag) != TCL_OK) {	
-      opserr << "WARNING invalid tag - want: damping type? tag? <specific transf args>\n";
+      opserr << "WARNING invalid tag - want: damping type? tag? <specific damping args>\n";
       return  TCL_ERROR;
     }
 
     // construct the transformation object
     
-    Damping *Damping =0;
+    Damping *Damping = 0;
     
     if (strcmp(argv[1],"Uniform") == 0)
     {
       double zeta, freq1, freq2;
       if (Tcl_GetDouble(interp, argv[3], &zeta) != TCL_OK)
       {	
-        opserr << "WARNING invalid tag - want: damping type? tag? <specific damping args>\n";
+        opserr << "WARNING invalid damping ratio - want: damping Uniform tag zeta freq1 freq2\n";
         return  TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[4], &freq1) != TCL_OK)
       {	
-        opserr << "WARNING invalid tag - want: damping type? tag? <specific damping args>\n";
+        opserr << "WARNING invalid frequency range - want: damping Uniform tag zeta freq1 freq2\n";
         return  TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[5], &freq2) != TCL_OK)
       {	
-        opserr << "WARNING invalid tag - want: damping type? tag? <specific damping args>\n";
+        opserr << "WARNING invalid frequency range - want: damping Uniform tag zeta freq1 freq2\n";
         return  TCL_ERROR;
       }
       Damping = new UniformDamping(dampingTag, zeta*2.0, freq1, freq2);
@@ -97,7 +97,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
       double beta;
       if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK)
       {	
-        opserr << "WARNING invalid tag - want: damping type? tag? <specific damping args>\n";
+        opserr << "WARNING invalid damping factor - want: damping SecStiff tag beta\n";
         return  TCL_ERROR;
       }
       Damping = new SecStifDamping(dampingTag, beta);

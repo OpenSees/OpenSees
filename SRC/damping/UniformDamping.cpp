@@ -246,16 +246,16 @@ UniformDamping::update(Vector q)
     for (int i = 0; i < nFilter; ++i)
     {
       double dTomegac = dT * (*omegac)(i);
-      double cqd = 2.0 * (*alpha)(i) * eta / (2.0 + dTomegac);
-      double cqL1 = dTomegac / (2.0 + dTomegac);
-      double cqL2 = 1.0 - 2.0 * cqL1;
+      double cd = 4.0 * (*alpha)(i) * eta / (2.0 + dTomegac);
+      double c0 = dTomegac / (2.0 + dTomegac);
+      double cL = (2.0 - dTomegac) / (2.0 + dTomegac);
       for (int j = 0; j < nComp; ++j)
       {
-        (*qd)(j) += cqd * ((*q0C)(j) + (*q0)(j) - 2.0 * (*qLC)(j,i));
-        (*qL)(j,i) = cqL1 * ((*q0C)(j) + (*q0)(j)) + cqL2 * (*qLC)(j,i);
+        (*qd)(j) += cd * ((*q0C)(j) + (*q0)(j) - 2.0 * (*qLC)(j,i));
+        (*qL)(j,i) = c0 * ((*q0C)(j) + (*q0)(j)) + cL * (*qLC)(j,i);
       }
     }
-    *qd = *qd * 2.0 - *qdC;
+    *qd -= *qdC;
   }
   return 0;
 }
