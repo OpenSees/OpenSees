@@ -113,6 +113,10 @@ class BackgroundMesh {
     static void getNForRect(double x0, double y0, double z0, double hx,
                             double hy, double hz, double x, double y,
                             double z, VDouble& N);
+    static bool check_area(const VDouble& ndcrds1, const VDouble& ndcrds2,
+                           const VDouble& ndcrds3);
+    static bool check_vol(const VDouble& ndcrds1, const VDouble& ndcrds2,
+                          const VDouble& ndcrds3, const VDouble& ndcrds4);
     //    1
     //    /\ upper
     // 0 /  \ 2

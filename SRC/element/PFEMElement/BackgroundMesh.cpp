@@ -1763,6 +1763,7 @@ int BackgroundMesh::gridFSInoDT() {
         // node tags and sids
         VInt tags(cbnodes.size(), -1), sids(cbnodes.size()),
             types(cbnodes.size());
+        VVDouble ndcrds(cbnodes.size());
         for (int i = 0; i < (int)tags.size(); ++i) {
             types[i] = cbnodes[i]->getType();
             if (types[i] != BACKGROUND_FIXED) {
@@ -1770,6 +1771,8 @@ int BackgroundMesh::gridFSInoDT() {
                 tags[i] = ctags[0];
                 auto& ids = cbnodes[i]->getSid();
                 sids[i] = ids[0];
+                auto& crdsn = cbnodes[i]->getCrds();
+                ndcrds[i] = crdsn[0];
             }
         }
 
@@ -1853,53 +1856,69 @@ int BackgroundMesh::gridFSInoDT() {
             if (types[1] == BACKGROUND_STRUCTURE &&
                 types[2] == BACKGROUND_STRUCTURE) {
                 if (types[0] != BACKGROUND_FIXED) {
-                    elends[numele * j].push_back(tags[0]);
-                    elends[numele * j].push_back(tags[1]);
-                    elends[numele * j].push_back(tags[2]);
+                    if (!check_area(ndcrds[0], ndcrds[1], ndcrds[2])) {
+                        elends[numele * j].push_back(tags[0]);
+                        elends[numele * j].push_back(tags[1]);
+                        elends[numele * j].push_back(tags[2]);
+                    }
                 }
                 if (types[3] != BACKGROUND_FIXED) {
-                    elends[numele * j + 1].push_back(tags[1]);
-                    elends[numele * j + 1].push_back(tags[3]);
-                    elends[numele * j + 1].push_back(tags[2]);
+                    if (!check_area(ndcrds[1], ndcrds[3], ndcrds[2])) {
+                        elends[numele * j + 1].push_back(tags[1]);
+                        elends[numele * j + 1].push_back(tags[3]);
+                        elends[numele * j + 1].push_back(tags[2]);
+                    }
                 }
 
             } else if (types[0] == BACKGROUND_STRUCTURE &&
                        types[3] == BACKGROUND_STRUCTURE) {
                 if (types[1] != BACKGROUND_FIXED) {
-                    elends[numele * j].push_back(tags[0]);
-                    elends[numele * j].push_back(tags[1]);
-                    elends[numele * j].push_back(tags[3]);
+                    if (!check_area(ndcrds[0], ndcrds[1], ndcrds[3])) {
+                        elends[numele * j].push_back(tags[0]);
+                        elends[numele * j].push_back(tags[1]);
+                        elends[numele * j].push_back(tags[3]);
+                    }
                 }
                 if (types[2] != BACKGROUND_FIXED) {
-                    elends[numele * j + 1].push_back(tags[0]);
-                    elends[numele * j + 1].push_back(tags[3]);
-                    elends[numele * j + 1].push_back(tags[2]);
+                    if (!check_area(ndcrds[0], ndcrds[3], ndcrds[2])) {
+                        elends[numele * j + 1].push_back(tags[0]);
+                        elends[numele * j + 1].push_back(tags[3]);
+                        elends[numele * j + 1].push_back(tags[2]);
+                    }
                 }
 
             } else if (types[1] != BACKGROUND_FIXED &&
                        types[2] != BACKGROUND_FIXED) {
                 if (types[0] != BACKGROUND_FIXED) {
-                    elends[numele * j].push_back(tags[0]);
-                    elends[numele * j].push_back(tags[1]);
-                    elends[numele * j].push_back(tags[2]);
+                    if (!check_area(ndcrds[0], ndcrds[1], ndcrds[2])) {
+                        elends[numele * j].push_back(tags[0]);
+                        elends[numele * j].push_back(tags[1]);
+                        elends[numele * j].push_back(tags[2]);
+                    }
                 }
                 if (types[3] != BACKGROUND_FIXED) {
-                    elends[numele * j + 1].push_back(tags[1]);
-                    elends[numele * j + 1].push_back(tags[3]);
-                    elends[numele * j + 1].push_back(tags[2]);
+                    if (!check_area(ndcrds[1], ndcrds[3], ndcrds[2])) {
+                        elends[numele * j + 1].push_back(tags[1]);
+                        elends[numele * j + 1].push_back(tags[3]);
+                        elends[numele * j + 1].push_back(tags[2]);
+                    }
                 }
 
             } else if (types[0] != BACKGROUND_FIXED &&
                        types[3] != BACKGROUND_FIXED) {
                 if (types[1] != BACKGROUND_FIXED) {
-                    elends[numele * j].push_back(tags[0]);
-                    elends[numele * j].push_back(tags[1]);
-                    elends[numele * j].push_back(tags[3]);
+                    if (!check_area(ndcrds[0], ndcrds[1], ndcrds[3])) {
+                        elends[numele * j].push_back(tags[0]);
+                        elends[numele * j].push_back(tags[1]);
+                        elends[numele * j].push_back(tags[3]);
+                    }
                 }
                 if (types[2] != BACKGROUND_FIXED) {
-                    elends[numele * j + 1].push_back(tags[0]);
-                    elends[numele * j + 1].push_back(tags[3]);
-                    elends[numele * j + 1].push_back(tags[2]);
+                    if (!check_area(ndcrds[0], ndcrds[3], ndcrds[2])) {
+                        elends[numele * j + 1].push_back(tags[0]);
+                        elends[numele * j + 1].push_back(tags[3]);
+                        elends[numele * j + 1].push_back(tags[2]);
+                    }
                 }
             }
 
@@ -1934,20 +1953,18 @@ int BackgroundMesh::gridFSInoDT() {
                     // set prism
                     for (int k = 0; k < 2; ++k) {
                         for (int m = 0; m < 6; ++m) {
-                            prism[m] = tags[prisms[2 * i + k][m]];
+                            prism[m] = prisms[2 * i + k][m];
                         }
 
                         // check if include corner 1
                         incl1 = false;
-                        if (types[prisms[2 * i + k][1]] !=
-                            BACKGROUND_FIXED) {
+                        if (types[prism[1]] != BACKGROUND_FIXED) {
                             incl1 = true;
                         }
 
                         // check if include corner 4
                         incl4 = false;
-                        if (types[prisms[2 * i + k][4]] !=
-                            BACKGROUND_FIXED) {
+                        if (types[prism[4]] != BACKGROUND_FIXED) {
                             incl4 = true;
                         }
 
@@ -1956,8 +1973,14 @@ int BackgroundMesh::gridFSInoDT() {
 
                         // add ele nodes
                         for (int m = 0; m < (int)tets.size(); ++m) {
-                            for (int tag : tets[m]) {
-                                elends[numele * j + m].push_back(tag);
+                            if (!check_vol(ndcrds[tets[m][0]],
+                                           ndcrds[tets[m][1]],
+                                           ndcrds[tets[m][2]],
+                                           ndcrds[tets[m][3]])) {
+                                for (int p : tets[m]) {
+                                    elends[numele * j + m].push_back(
+                                        tags[p]);
+                                }
                             }
                         }
                     }
@@ -1980,20 +2003,18 @@ int BackgroundMesh::gridFSInoDT() {
                         // set prism
                         for (int k = 0; k < 2; ++k) {
                             for (int m = 0; m < 6; ++m) {
-                                prism[m] = tags[prisms[2 * i + k][m]];
+                                prism[m] = prisms[2 * i + k][m];
                             }
 
                             // check if include corner 1
                             incl1 = false;
-                            if (types[prisms[2 * i + k][1]] !=
-                                BACKGROUND_FIXED) {
+                            if (types[prism[1]] != BACKGROUND_FIXED) {
                                 incl1 = true;
                             }
 
                             // check if include corner 4
                             incl4 = false;
-                            if (types[prisms[2 * i + k][4]] !=
-                                BACKGROUND_FIXED) {
+                            if (types[prism[4]] != BACKGROUND_FIXED) {
                                 incl4 = true;
                             }
 
@@ -2002,8 +2023,14 @@ int BackgroundMesh::gridFSInoDT() {
 
                             // add ele nodes
                             for (int m = 0; m < (int)tets.size(); ++m) {
-                                for (int tag : tets[m]) {
-                                    elends[numele * j + m].push_back(tag);
+                                if (!check_vol(ndcrds[tets[m][0]],
+                                               ndcrds[tets[m][1]],
+                                               ndcrds[tets[m][2]],
+                                               ndcrds[tets[m][3]])) {
+                                    for (int p : tets[m]) {
+                                        elends[numele * j + m].push_back(
+                                            tags[p]);
+                                    }
                                 }
                             }
                         }
@@ -2416,22 +2443,12 @@ int BackgroundMesh::gridFSI() {
         }
 
         // in-element check
-        VDouble coeff;
-        VVDouble tetcoeff;
         bool zerovol = false;
         if (ndm == 2) {
-            if (preNForTri(ptcrds[0][0], ptcrds[0][1], ptcrds[1][0],
-                           ptcrds[1][1], ptcrds[2][0], ptcrds[2][1],
-                           coeff) < 0) {
-                zerovol = true;
-            }
-        } else if (ndm == 3) {
-            if (preNForTet(ptcrds[0], ptcrds[1], ptcrds[2], ptcrds[3],
-                           tetcoeff) < 0) {
-                zerovol = true;
-            }
+            check_area(ptcrds[0], ptcrds[1], ptcrds[2]);
+        } else {
+            check_vol(ptcrds[0], ptcrds[1], ptcrds[2], ptcrds[3]);
         }
-
         if (zerovol) {
             continue;
         }
@@ -3291,4 +3308,29 @@ void BackgroundMesh::splitPrism(const VInt& prism, VVInt& tets, bool incl1,
         tet[3] = prism[1];
         tets.push_back(tet);
     }
+}
+
+bool BackgroundMesh::check_area(const VDouble& ndcrds1,
+                                const VDouble& ndcrds2,
+                                const VDouble& ndcrds3) {
+    VDouble coeff;
+    bool zerovol = false;
+    if (preNForTri(ndcrds1[0], ndcrds1[1], ndcrds2[0], ndcrds2[1],
+                   ndcrds3[0], ndcrds3[1], coeff) < 0) {
+        zerovol = true;
+    }
+    return zerovol;
+}
+
+bool BackgroundMesh::check_vol(const VDouble& ndcrds1,
+                               const VDouble& ndcrds2,
+                               const VDouble& ndcrds3,
+                               const VDouble& ndcrds4) {
+    VVDouble coeff;
+    bool zerovol = false;
+    if (preNForTet(ndcrds1, ndcrds2, ndcrds3, ndcrds4, coeff) < 0) {
+        zerovol = true;
+    }
+
+    return zerovol;
 }
