@@ -73,6 +73,7 @@ int OPS_BgMesh() {
     if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 1) {
         opserr << "WARNING: basicsize? lower? upper? <-tol tol? "
                   "-wave wavefilename? numl? locs? -numsub numsub? "
+                  "-dispon? "
                   "-structure sid? ?numnodes? structuralNodes? "
                   "-alphaS alphaS -alphaF alphaF"
                   "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?>";
@@ -253,14 +254,10 @@ int OPS_BgMesh() {
                 alpha = 1.0;
             }
             bgmesh.setAlphaF(alpha);
+        } else if (strcmp(opt, "-dispOn") == 0) {
+            bgmesh.setDispOn(true);
         }
     }
-
-    // turn off disp on in PFEM elements
-    PFEMElement2DBubble::dispon = bgmesh.isDispOn();
-    PFEMElement3DBubble::dispon = bgmesh.isDispOn();
-    PFEMElement2DCompressible::dispon = bgmesh.isDispOn();
-    PFEMElement2Dmini::dispon = bgmesh.isDispOn();
 
     // bg mesh
     if (bgmesh.remesh(true) < 0) {
@@ -326,6 +323,14 @@ int BackgroundMesh::setFile(const char* name) {
 
     return 0;
 }
+
+void BackgroundMesh::setDispOn(bool on) {
+    dispon = on;
+    PFEMElement2DBubble::dispon = on;
+    PFEMElement3DBubble::dispon = on;
+    PFEMElement2DCompressible::dispon = on;
+    PFEMElement2Dmini::dispon = on;
+} 
 
 void BackgroundMesh::addStructuralNodes(VInt& snodes, int sid) {
     VInt& curr = structuralNodes[sid];

@@ -51,10 +51,7 @@ class BackgroundMesh {
     void setTol(double t) { this->tol = t; }
     double getTol() const { return this->tol; }
     void setRange(const VDouble& l, const VDouble& u);
-    void setBasicSize(double size) {
-        bsize = size;
-        dispon = false;
-    }
+    void setBasicSize(double size) { bsize = size; }
     void addRecorder(Recorder* recorder);
     int record(bool init = false);
     void setLocs(const VDouble& l) { this->locs = l; }
@@ -67,6 +64,7 @@ class BackgroundMesh {
     bool isDispOn() const { return dispon; }
     void setAlphaS(double alpha) { alphaS = alpha; }
     void setAlphaF(double alpha) { alphaF = alpha; }
+    void setDispOn(bool on);
 
     // remesh all
     int remesh(bool init = false);
