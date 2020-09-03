@@ -165,6 +165,8 @@ void* OPS_FourNodeQuadWithSensitivity();
 void* OPS_EnhancedQuad();
 void* OPS_ConstantPressureVolumeQuad();
 void* OPS_NineNodeMixedQuad();
+void* OPS_NineNodeQuad();
+void* OPS_EightNodeQuad();
 void* OPS_FourNodeQuadUP();
 void* OPS_BrickUP();
 void* OPS_NineFourNodeQuadUP();
@@ -544,6 +546,8 @@ namespace {
 	functionMap.insert(std::make_pair("quadWithSensitivity", &OPS_FourNodeQuadWithSensitivity));
 	functionMap.insert(std::make_pair("quad", &OPS_FourNodeQuad));
 	functionMap.insert(std::make_pair("stdQuad", &OPS_FourNodeQuad));
+	functionMap.insert(std::make_pair("quad9n", &OPS_NineNodeQuad));
+	functionMap.insert(std::make_pair("quad8n", &OPS_EightNodeQuad));
 	functionMap.insert(std::make_pair("dispBeamColumnWithSensitivity", &OPS_DispBeamColumnWithSensitivity));
 	functionMap.insert(std::make_pair("elasticForceBeamColumn", &OPS_ElasticForceBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumnThermal", &OPS_DispBeamColumnThermal));
