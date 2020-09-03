@@ -896,6 +896,9 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1593,6 +1596,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h">
       <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.h">
+      <Filter>forceBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
