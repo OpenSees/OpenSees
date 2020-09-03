@@ -62,6 +62,7 @@
 
 #include <ElasticPlateSection.h>
 #include <ElasticMembranePlateSection.h>
+#include <ElasticMembranePlateSection2.h>
 #include <MembranePlateFiberSection.h>
 
 #include <QuadPatch.h>
@@ -613,6 +614,55 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
 	theSection = new ElasticMembranePlateSection (tag, E, nu, h, rho);
     }	
+	
+	else if (strcmp(argv[1], "ElasticMembranePlateSection2") == 0) {
+	if (argc < 6) {
+		opserr << "WARNING insufficient arguments\n";
+		opserr << "Want: section ElasticMembranePlateSection2 tag? Em? Eb? nu? h? <rho?>" << endln;
+		return TCL_ERROR;
+	}
+
+	int tag;
+	double Em, Eb, nu, h;
+	double rho = 0.0;
+
+	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+		opserr << "WARNING invalid section ElasticMembranePlateSection2 tag" << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[3], &Em) != TCL_OK) {
+		opserr << "WARNING invalid Em" << endln;
+		opserr << "ElasticMembranePlateSection2 section: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[4], &Eb) != TCL_OK) {
+		opserr << "WARNING invalid Eb" << endln;
+		opserr << "ElasticMembranePlateSection2 section: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[5], &nu) != TCL_OK) {
+		opserr << "WARNING invalid nu" << endln;
+		opserr << "ElasticMembranePlateSection2 section: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[6], &h) != TCL_OK) {
+		opserr << "WARNING invalid h" << endln;
+		opserr << "ElasticMembranePlateSection2 section: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (argc > 6 && Tcl_GetDouble(interp, argv[7], &rho) != TCL_OK) {
+		opserr << "WARNING invalid rho" << endln;
+		opserr << "ElasticMembranePlateSection2 section: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	theSection = new ElasticMembranePlateSection2 (tag, Em, Eb, nu, h, rho);
+	}
 
     else if (strcmp(argv[1],"PlateFiber") == 0) {
 	if (argc < 5) {
