@@ -435,6 +435,7 @@
     <ClCompile Include="..\..\..\SRC\element\triangle\Tri31.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\R3vectors.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
@@ -670,6 +671,7 @@
     <ClInclude Include="..\..\..\SRC\element\triangle\Tri31.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\R3vectors.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h" />

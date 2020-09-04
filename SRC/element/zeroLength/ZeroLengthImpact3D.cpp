@@ -539,7 +539,7 @@ ZeroLengthImpact3D::getResponse(int responseID, Information &eleInfo)
 }
 
 // Private methods
-// determine the slave/master pair in contact, and setup Vectors (N,T1,T2)
+// determine the secondary/primary pair in contact, and setup Vectors (N,T1,T2)
 int
 ZeroLengthImpact3D::contactDetect(void)
 {
@@ -549,8 +549,8 @@ ZeroLengthImpact3D::contactDetect(void)
 	  int transientgap; 
 	  transientgap = 1;   // 1: transient gap; 0: dynamic gap
 
-	  Vector  slaveNd;
-	  Vector  masterNd;
+	  Vector  secondaryNd;
+	  Vector  primaryNd;
 
       //+--------------+-----------------+----------------+----------------+---------------+
       // NOTES: some methods to get displacements from nodes
@@ -564,24 +564,24 @@ ZeroLengthImpact3D::contactDetect(void)
 	  if (transientgap) 
 	  {  ///////////// for transient gap //////////////////////////
 
-		   slaveNd = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
-           masterNd= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
+		   secondaryNd = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
+           primaryNd= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
 	  }  else {
          ///////////// for dynamic gap ////////////////////////////
-    	  slaveNd = nodePointers[0]->getCrds() + nodePointers[0]->getIncrDisp();
-          masterNd= nodePointers[1]->getCrds() + nodePointers[1]->getIncrDisp();
+    	  secondaryNd = nodePointers[0]->getCrds() + nodePointers[0]->getIncrDisp();
+          primaryNd= nodePointers[1]->getCrds() + nodePointers[1]->getIncrDisp();
 	  }
       
-      double Xs=slaveNd(0)  - origin(0);
-      double Ys=slaveNd(1)  - origin(1);
-	  double Zs=slaveNd(2);
+      double Xs=secondaryNd(0)  - origin(0);
+      double Ys=secondaryNd(1)  - origin(1);
+	  double Zs=secondaryNd(2);
       double Rs=sqrt(Xs*Xs +Ys*Ys); 
 
-      double Xm=masterNd(0) - origin(0);
-	  double Ym=masterNd(1) - origin(1);
-      double Zm=masterNd(2);
+      double Xp=primaryNd(0) - origin(0);
+	  double Yp=primaryNd(1) - origin(1);
+      double Zp=primaryNd(2);
 
-	  double Rm=sqrt(Xm*Xm +Ym*Ym);
+	  double Rp=sqrt(Xp*Xp +Yp*Yp);
 
 			
 
@@ -595,11 +595,11 @@ ZeroLengthImpact3D::contactDetect(void)
 
 				if (transientgap) {
 
-					gap = Rs-Rm - initGap;
+					gap = Rs-Rp - initGap;
 
 				} else {
 
-                   gap= gap_n + Rs - Rm - initGap; // dynamic gap
+                   gap= gap_n + Rs - Rp - initGap; // dynamic gap
 
 				}
 
@@ -615,15 +615,15 @@ ZeroLengthImpact3D::contactDetect(void)
 
 			
 
-					N(0)   =  -Xm/Rm ;
+					N(0)   =  -Xp/Rp ;
 
-					N(1)   =  -Ym/Rm ;
+					N(1)   =  -Yp/Rp ;
 
 					N(2)   =   0 ;
 
-					N(3)   =   Xm/Rm ;
+					N(3)   =   Xp/Rp ;
 
-					N(4)   =   Ym/Rm ;
+					N(4)   =   Yp/Rp ;
 
 					N(5)   =   0 ;
 
@@ -643,15 +643,15 @@ ZeroLengthImpact3D::contactDetect(void)
 
 
 
-					T2(0)  =  -Ym/Rm ;
+					T2(0)  =  -Yp/Rp ;
 
-					T2(1)  =   Xm/Rm ;
+					T2(1)  =   Xp/Rp ;
 
 					T2(2)  =   0 ;
 
-					T2(3)  =   Ym/Rm ;
+					T2(3)  =   Yp/Rp ;
 
-					T2(4)  =  -Xm/Rm ;
+					T2(4)  =  -Xp/Rp ;
 
 					T2(5)  =   0 ;
 
@@ -665,15 +665,15 @@ ZeroLengthImpact3D::contactDetect(void)
 
 
 
-	 	case 1:   // normal of master plane pointing to +X direction
+	 	case 1:   // normal of primary plane pointing to +X direction
 
 				if (transientgap) {
 
-					gap= Xm -Xs - initGap;             // transient gap
+					gap= Xp -Xs - initGap;             // transient gap
 
 				} else {
 
-                    gap= gap_n + Xm - Xs - initGap;    // dynamic gap
+                    gap= gap_n + Xp - Xs - initGap;    // dynamic gap
 
 				}
 
@@ -741,15 +741,15 @@ ZeroLengthImpact3D::contactDetect(void)
 
 
 
-		case 2:  // normal of master plane pointing to +Y direction
+		case 2:  // normal of primary plane pointing to +Y direction
 
 				if (transientgap) {
 
-					gap= Ym - Ys - initGap;            // transient gap
+					gap= Yp - Ys - initGap;            // transient gap
 
 				} else {
 
-					gap= gap_n + Ym - Ys - initGap;    // dynamic gap
+					gap= gap_n + Yp - Ys - initGap;    // dynamic gap
 
 				}
 
@@ -811,19 +811,19 @@ ZeroLengthImpact3D::contactDetect(void)
 
 
 
-		case 3:   // normal of master plane pointing to +Z direction
+		case 3:   // normal of primary plane pointing to +Z direction
 
 			//          ___________ 
 
             //         |           |
 
-			//         |   slave   |  
+			//         | secondary |  
 
 			//         |___________| 
 
 			//         |           |
 
-			//         |   Master  |
+			//         |  primary  |
 
             //         |           |
 
@@ -833,11 +833,11 @@ ZeroLengthImpact3D::contactDetect(void)
 
 				if (transientgap) {
 
-					gap= Zm - Zs - initGap;         // transient gap
+					gap= Zp - Zs - initGap;         // transient gap
 
 				} else {
 
-					gap= gap_n + Zm - Zs - initGap; // dynamic gap
+					gap= gap_n + Zp - Zs - initGap; // dynamic gap
 
 				}
 
@@ -917,9 +917,9 @@ ZeroLengthImpact3D::formResidAndTangent( int tang_flag )
 
 	// trial displacement vectors
 
- 	Vector DispTrialS(3); // trial disp for slave node
+ 	Vector DispTrialS(3); // trial disp for secondary node
 
-	Vector DispTrialM(3); // trial disp for master node
+	Vector DispTrialP(3); // trial disp for primary node
 
 	// trial frictional force vectors (in local coordinate)
 
@@ -973,7 +973,7 @@ ZeroLengthImpact3D::formResidAndTangent( int tang_flag )
 
 		DispTrialS=nodePointers[0]->getTrialDisp();
 
-        DispTrialM=nodePointers[1]->getTrialDisp();
+        DispTrialP=nodePointers[1]->getTrialDisp();
 
 
 
@@ -989,11 +989,11 @@ ZeroLengthImpact3D::formResidAndTangent( int tang_flag )
 
 		ul[2]=DispTrialS(2);
 
-		ul[3]=DispTrialM(0);
+		ul[3]=DispTrialP(0);
 
-		ul[4]=DispTrialM(1);
+		ul[4]=DispTrialP(1);
 
-		ul[5]=DispTrialM(2);
+		ul[5]=DispTrialP(2);
 
 
 

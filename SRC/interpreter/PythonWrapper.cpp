@@ -1459,6 +1459,30 @@ static PyObject *Py_ops_sectionWeight(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_sectionDisplacement(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sectionDisplacement() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_cbdiDisplacement(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_cbdiDisplacement() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_basicDeformation(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2246,8 +2270,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("printA", &Py_ops_printA);
     addCommand("printB", &Py_ops_printB);
     addCommand("printGID", &Py_ops_printGID);
-    addCommand("getCTestNorms", &Py_ops_getCTestNorms);
-    addCommand("getCTestIter", &Py_ops_getCTestIter);
+    addCommand("testNorm", &Py_ops_getCTestNorms);
+    addCommand("testIter", &Py_ops_getCTestIter);
     addCommand("recorder", &Py_ops_recorder);
     addCommand("database", &Py_ops_database);
     addCommand("save", &Py_ops_save);
@@ -2295,6 +2319,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sectionFlexibility", &Py_ops_sectionFlexibility);
     addCommand("sectionLocation", &Py_ops_sectionLocation);
     addCommand("sectionWeight", &Py_ops_sectionWeight);
+    addCommand("sectionDisplacement", &Py_ops_sectionDisplacement);
+    addCommand("cbdiDisplacement", &Py_ops_cbdiDisplacement);        
     addCommand("basicDeformation", &Py_ops_basicDeformation);
     addCommand("basicForce", &Py_ops_basicForce);
     addCommand("basicStiffness", &Py_ops_basicStiffness);

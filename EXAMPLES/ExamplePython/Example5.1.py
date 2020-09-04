@@ -66,7 +66,7 @@ node(16,  bx/2.0,  by/2.0, 3.0*h)
 node(17,  bx/2.0, -by/2.0, 3.0*h) 
 node(18, -bx/2.0, -by/2.0, 3.0*h)
 
-# Master nodes for rigid diaphragm
+# Retained nodes for rigid diaphragm
 #        tag   X    Y    Z 
 node( 9,  0.0, 0.0,     h)
 node(14,  0.0, 0.0, 2.0*h)
@@ -80,12 +80,12 @@ fix(3, 1, 1, 1, 1, 1, 1)
 fix(4, 1, 1, 1, 1, 1, 1)
 
 # Define rigid diaphragm multi-point constraints
-#              normalDir master slaves
+#              normalDir retained constrained
 rigidDiaphragm(3,  9,  5,  6,  7,  8)
 rigidDiaphragm(3, 14, 10, 11, 12, 13)
 rigidDiaphragm(3, 19, 15, 16, 17, 18)
 
-# Constraints for rigid diaphragm master nodes
+# Constraints for rigid diaphragm retained nodes
 #      tag DX DY DZ RX RY RZ
 fix( 9, 0, 0, 1, 1, 1, 0)
 fix(14, 0, 0, 1, 1, 1, 0)
@@ -199,13 +199,13 @@ element(eleType, 24, 18, 15, 2, beamSec)
 # 10% of column capacity
 p = 0.1*fc*h*h
 
-# Mass lumped at master nodes
+# Mass lumped at retained nodes
 m = (4.0*p)/g
 
-# Rotary inertia of floor about master node
+# Rotary inertia of floor about retained node
 i = m*(bx*bx + by*by)/12.0
 
-# Set mass at the master nodes
+# Set mass at the retained nodes
 #        tag MX MY MZ   RX   RY   RZ
 mass( 9, m, m, 0.0, 0.0, 0.0, i)
 mass(14, m, m, 0.0, 0.0, 0.0, i)

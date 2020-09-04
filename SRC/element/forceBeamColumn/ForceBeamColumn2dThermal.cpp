@@ -87,9 +87,9 @@ Matrix ForceBeamColumn2dThermal::theMatrix(6,6);
 Vector ForceBeamColumn2dThermal::theVector(6);
 double ForceBeamColumn2dThermal::workArea[200];
 
-Vector *ForceBeamColumn2dThermal::vsSubdivide = 0;
-Matrix *ForceBeamColumn2dThermal::fsSubdivide = 0;
-Vector *ForceBeamColumn2dThermal::SsrSubdivide = 0;
+Vector ForceBeamColumn2dThermal::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumn2dThermal::fsSubdivide[maxNumSections];
+Vector ForceBeamColumn2dThermal::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2dThermal()
 {
@@ -173,17 +173,6 @@ ForceBeamColumn2dThermal::ForceBeamColumn2dThermal():
 {
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2dThermal::ForceBeamColumn2dThermal() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -228,17 +217,6 @@ ForceBeamColumn2dThermal::ForceBeamColumn2dThermal (int tag, int nodeI, int node
   if(Vsth0==0)
 	  Vsth0 = new Vector[maxNumSections];
   
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2dThermal::ForceBeamColumn2dThermal() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
-
   for (int m=0; m<numSections; m++) {
  Vsth0[m] = Vector(2);
  Vsth0[m].Zero();

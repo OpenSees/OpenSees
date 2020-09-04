@@ -1866,6 +1866,13 @@ int OPS_printA()
 	    theTransientIntegrator->formTangent(0);
 	}
 
+    PFEMLinSOE* pfemsoe = dynamic_cast<PFEMLinSOE*>(theSOE);
+    if (pfemsoe != 0) {
+        pfemsoe->saveK(*output);
+        outputFile.close();
+        return 0;
+    }
+
 	Matrix *A = const_cast<Matrix*>(theSOE->getA());
 	if (A != 0) {
 	    if (ret) {

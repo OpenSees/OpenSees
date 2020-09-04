@@ -95,6 +95,12 @@
     <ClCompile Include="..\..\..\SRC\recorder\VTK_Recorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\recorder\ElementRecorderRMS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\recorder\NodeRecorderRMS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\AlgorithmIncrements.h">
@@ -173,6 +179,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\VTK_Recorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\ElementRecorderRMS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\NodeRecorderRMS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

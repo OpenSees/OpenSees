@@ -128,6 +128,8 @@ class FourNodeTetrahedron : public Element {
 
     //plotting 
     int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
+    void onActivate();
+    void onDeactivate();
 
   private : 
 

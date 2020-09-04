@@ -38,7 +38,7 @@
 #ifndef FullGenLinLapackSolver_h
 #define FullGenLinLapackSolver_h
 
-#include <FullGenLinSolver.h>
+#include "FullGenLinSolver.h"
 
 class FullGenLinLapackSolver : public FullGenLinSolver
 {

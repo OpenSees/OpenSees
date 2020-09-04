@@ -18,6 +18,8 @@
 #include <Parameter.h>
 #include <string.h>
 #include <elementAPI.h>
+#include <MultiYieldSurface.h>
+
 
 Matrix PressureIndependMultiYield::theTangent(6,6);
 T2Vector PressureIndependMultiYield::subStrainRate;

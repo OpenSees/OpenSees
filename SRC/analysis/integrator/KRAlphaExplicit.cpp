@@ -21,8 +21,8 @@
 #include <KRAlphaExplicit.h>
 #include <FE_Element.h>
 #include <LinearSOE.h>
-#include <FullGenLinSOE.h>
-#include <FullGenLinLapackSolver.h>
+#include "fullGEN/FullGenLinSOE.h"
+#include "fullGEN/FullGenLinLapackSolver.h"
 #include <AnalysisModel.h>
 #include <Vector.h>
 #include <DOF_Group.h>

@@ -137,13 +137,16 @@ Vector::~Vector()
 {
   if (theData != 0 && fromFree == 0) 
     delete [] theData;
+  theData = 0;
 }
 
 
 int 
 Vector::setData(double *newData, int size){
-  if (theData != 0 && fromFree == 0) 
+  if (theData != 0 && fromFree == 0) {
     delete [] theData;      
+    theData = 0;
+  }
   sz = size;
   theData = newData;
   fromFree = 1;
@@ -171,8 +174,10 @@ Vector::resize(int newSize){
   else if (newSize > sz) {
 
     // delete the old array
-    if (theData != 0 && fromFree == 0) 
+    if (theData != 0 && fromFree == 0) {
 	delete [] theData;
+  theData = 0;
+}
     sz = 0;
     fromFree = 0;
     
@@ -651,9 +656,10 @@ Vector::operator[](int x)
       dataNew[j] = 0.0;
     
     if (fromFree == 0)
-      if (theData != 0)
+      if (theData != 0){
 	delete [] theData;
-
+  theData = 0;
+}
     theData = dataNew;
     sz = x+1;
   }
@@ -732,8 +738,10 @@ Vector::operator=(const Vector &V)
 #endif
 
 	  // Check that we are not deleting an empty Vector
-	  if (this->theData != 0) delete [] this->theData;
-
+	  if (this->theData != 0){
+      delete [] this->theData;
+      this->theData = 0;
+    }
 	  this->sz = V.sz;
 	  
 	  // Check that we are not creating an empty Vector
@@ -757,7 +765,10 @@ Vector::operator=(Vector &&V)
   // first check we are not trying v = v
   if (this != &V) {
     // opserr << "move assign!\n";
-    if (this->theData != 0) delete [] this->theData;
+    if (this->theData != 0){ 
+      delete [] this->theData;
+      this->theData = 0;
+    }
     theData = V.theData;
     this->sz = V.sz;
     V.theData = 0;

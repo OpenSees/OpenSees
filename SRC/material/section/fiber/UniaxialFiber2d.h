@@ -40,7 +40,7 @@
 #ifndef UniaxialFiber2d_h
 #define UniaxialFiber2d_h
 
-#include <Fiber.h>
+#include "Fiber.h"
 #include <Vector.h>
 #include <Matrix.h>
 

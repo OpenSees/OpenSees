@@ -29,7 +29,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#include <BoundingCamClay.h>
+#include "BoundingCamClay.h"
 
 class BoundingCamClayPlaneStrain : public BoundingCamClay {
 
