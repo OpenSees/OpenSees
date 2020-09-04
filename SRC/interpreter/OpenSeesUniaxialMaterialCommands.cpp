@@ -171,6 +171,7 @@ void* OPS_UVCuniaxial();
 void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
+void* OPS_SLModel();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -334,6 +335,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
+	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
 
 	return 0;
     }

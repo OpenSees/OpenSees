@@ -78,6 +78,8 @@ TclModelBuilderUpdateMaterialStageCommand(ClientData clientData,
 
   theDomain->removeParameter(parTag);
 
+  delete theParameter;
+
   return TCL_OK;
 }
 

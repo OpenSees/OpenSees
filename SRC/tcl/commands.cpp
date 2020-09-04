@@ -83,6 +83,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <stdlib.h>
 #include <string.h>
 
+#include <elementAPI.h>
 #include <packages.h>
 
 #include <FEM_ObjectBrokerAllClasses.h>
@@ -471,15 +472,6 @@ Domain theDomain;
 
 #endif
 
-extern int OPS_ResetInputNoBuilder(ClientData clientData,
-			  Tcl_Interp *interp,  
-			  int cArg, 
-			  int mArg, 
-			  TCL_Char **argv, 
-			  Domain *domain);
-
-
-
 #include <MachineBroker.h>
 
 MachineBroker *theMachineBroker =0;
@@ -762,8 +754,8 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
   switch ((enum option) index) {
   case OPT_CREATE: {
     TCL_Char *theInterpreterName = Tcl_GetStringResult(interp);
-    Tcl_Interp *slaveInterp = Tcl_GetSlave(interp, theInterpreterName);
-    ok = OpenSeesAppInit(slaveInterp);
+    Tcl_Interp *secondaryInterp = Tcl_GetSlave(interp, theInterpreterName);
+    ok = OpenSeesAppInit(secondaryInterp);
     return ok;
     break;
   }
@@ -913,8 +905,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "reactions", &calculateNodalReactions, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "nodeDOFs", &nodeDOFs, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "nodeCoord", &nodeCoord, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
     Tcl_CreateCommand(interp, "setNodeCoord", &setNodeCoord, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
@@ -3663,15 +3657,15 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
     int formTangent = CURRENT_TANGENT;
-	int factorOnce = 0;
-	int count = 2;
-	while (count < argc) {
+    int factorOnce = 0;
+    int count = 2;
+    while (count < argc) {
       if ((strcmp(argv[count],"-secant") == 0) || (strcmp(argv[count],"-Secant") == 0)) {
-		 formTangent = CURRENT_SECANT;
-	  } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
-		 formTangent = INITIAL_TANGENT;
-	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	     factorOnce = 1;
+	formTangent = CURRENT_SECANT;
+      } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
+	formTangent = INITIAL_TANGENT;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+	factorOnce = 1;
       }
       count++;
     }
@@ -4495,13 +4489,23 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	opserr << "<Jd minIncrement maxIncrement>\n";
 	return TCL_ERROR;
       }    
+      int tangFlag = 0;
+      
       if (Tcl_GetInt(interp, argv[2], &node) != TCL_OK)	
 	return TCL_ERROR;	
       if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK)	
 	return TCL_ERROR;	
       if (Tcl_GetDouble(interp, argv[4], &increment) != TCL_OK)	
-	return TCL_ERROR;	      
-      if (argc > 7) {
+	return TCL_ERROR;
+
+      if (argc == 6 || argc == 9)
+	if (argc == 6) {
+	  if (strcmp(argv[5],"-initial") == 0)
+	    tangFlag = 1;
+	} else if (strcmp(argv[8],"-initial") == 0)
+	  tangFlag = 1;
+
+      if (argc > 6) {
 	if (Tcl_GetInt(interp, argv[5], &numIter) != TCL_OK)	
 	  return TCL_ERROR;	
 	if (Tcl_GetDouble(interp, argv[6], &minIncr) != TCL_OK)	
@@ -4514,6 +4518,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	maxIncr = increment;
 	numIter = 1;
       }
+
 
 
 #ifdef _PARALLEL_PROCESSING
@@ -4535,7 +4540,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       }
 
       theStaticIntegrator = new DisplacementControl(node, dof-1, increment, &theDomain,
-						    numIter, minIncr, maxIncr);
+						    numIter, minIncr, maxIncr, tangFlag);
 #endif
 
       // if the analysis exists - we want to change the Integrator
@@ -6628,6 +6633,44 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   const ID &tags = theElement->getExternalNodes();
   for (int i = 0; i < numTags; i++) {
     sprintf(buffer, "%d ", tags(i));
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+  
+  return TCL_OK;
+}
+
+int 
+nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+    opserr << "WARNING want - nodeDOFs nodeTag?\n";
+    return TCL_ERROR;
+  }    
+  
+  int tag;
+  
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+    return TCL_ERROR;	        
+  }    
+  
+  char buffer[40];
+
+  Node *theNode = theDomain.getNode(tag);
+  if (theNode == 0) {
+    opserr << "WARNING nodeDOFs node " << tag << " not found" << endln;
+    return TCL_ERROR;
+  }
+  int numDOF = theNode->getNumberDOF();
+
+  DOF_Group *theDOFgroup = theNode->getDOF_GroupPtr();
+  if (theDOFgroup == 0) {
+    opserr << "WARNING nodeDOFs DOF group null" << endln;
+    return -1;
+  }
+  const ID &eqnNumbers = theDOFgroup->getID();
+  for (int i = 0; i < numDOF; i++) {
+    sprintf(buffer, "%d ", eqnNumbers(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
   

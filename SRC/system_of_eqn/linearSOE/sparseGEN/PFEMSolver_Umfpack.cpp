@@ -33,7 +33,7 @@
 #include <PFEMLinSOE.h>
 #include <iostream>
 #include <cmath>
-#include <Timer.h>
+// #include <Timer.h>
 #include <elementAPI.h>
 #include <vector>
 
@@ -109,8 +109,8 @@ PFEMSolver_Umfpack::~PFEMSolver_Umfpack()
 int
 PFEMSolver_Umfpack::solve()
 {
-    Timer timer;
-    timer.start();
+    // Timer timer;
+    // timer.start();
     cs* M = theSOE->M;
     cs* Gft = theSOE->Gft;
     cs* Git = theSOE->Git;
@@ -194,7 +194,7 @@ PFEMSolver_Umfpack::solve()
 	    return -1;
 	}	
     }
-    
+
     // fluid predictor: deltaVf1 = Mf^{-1} * rf
     Vector deltaVf1(Fsize);
     if(Fsize > 0) {
@@ -371,14 +371,16 @@ PFEMSolver_Umfpack::solve()
         // prm.precond.coarse_enough = 1;
         // prm.precond.max_levels = maxlev;
         // prm.precond.direct_coarse = false;
-
+		
 	    // setup
 	    prof.tic("setup");
-	    std::vector<std::ptrdiff_t> ptr(S->nzmax), num(S->nzmax);
+	    std::vector<std::ptrdiff_t> ptr(Psize+1), num(S->nzmax);
 	    for (int i=0; i<S->nzmax; ++i) {
-	    	ptr[i] = S->p[i];
 	    	num[i] = S->i[i];
 	    }
+		for (int i = 0; i < Psize+1; ++i) {
+			ptr[i] = S->p[i];
+		}
 	    double* val = &(S->x[0]);
 	    Solver solve(amgcl::adapter::zero_copy(Psize,&ptr[0],&num[0],val),prm);
 	    prof.toc("setup");
@@ -472,7 +474,7 @@ PFEMSolver_Umfpack::solve()
     // timer.pause();
     // opserr<<"deltaP = "<<deltaP.Norm()<<"\n";
     // opserr<<"pressure  time = "<<timer.getReal()<<"\n";
-    
+
     // timer.start();
     // structure and interface corrector : deltaV = deltaV1 + M^{-1}*G*deltaP
     Vector deltaV(Msize);
@@ -575,8 +577,8 @@ PFEMSolver_Umfpack::solve()
 
     }
     // opserr<<"dvi = "<<dvi.Norm()<<"\n";
-    timer.pause();
-    opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
+    // timer.pause();
+    // opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
 
     return 0;
 }

@@ -41,7 +41,7 @@
 #define ProfileSPDLinSubstrSolver_h
 
 #include <DomainSolver.h>
-#include <ProfileSPDLinDirectSolver.h>
+#include "ProfileSPDLinDirectSolver.h"
 
 class ProfileSPDLinSOE;
 

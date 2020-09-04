@@ -71,7 +71,7 @@ OPS_BeamContact3D(void)
   int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
 
   if (numRemainingInputArgs < 10) {
-    opserr << "Invalid #args,  want: element BeamContact3D eleTag?  iNode? jNode? slaveNode? lambdaNode? radius? crdTransf? matTag? tolGap? tolF? <cSwitch>?\n";
+    opserr << "Invalid #args,  want: element BeamContact3D eleTag?  iNode? jNode? secondaryNode? lambdaNode? radius? crdTransf? matTag? tolGap? tolF? <cSwitch>?\n";
     return 0;
   }
    
@@ -408,11 +408,11 @@ BeamContact3D::setDomain(Domain *theDomain)
     mQb = mQa;
     mchi = 0;  
 
-    // length of master segment L
+    // length of primary segment L
     mL = (mDcrd_b - mDcrd_a).Norm();  
        
     // perform projection to update local coordinate along centerline
-    //  of master segment.  projection function also sets mn, mc1
+    //  of primary segment.  projection function also sets mn, mc1
     mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a)) / ((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a)) ;  // initial approx
     // initial basis function values for use in projection
     mxi = project(mxi);
@@ -597,7 +597,7 @@ BeamContact3D::update(void)
     Vector x_c(BC3D_NUM_NDM);
     Vector d(BC3D_NUM_NDM);
 
-    // update slave node coordinate
+    // update secondary node coordinate
     mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
 
     // update Lagrange Multiplier Value
@@ -730,7 +730,7 @@ BeamContact3D::project(double xi)
                 Vector a1(BC3D_NUM_NDM);                // tangent at end a
                 Vector b1(BC3D_NUM_NDM);                // tangent at end b
                 Vector x_c_P(BC3D_NUM_NDM);             // current centerline porjection coordinate
-                Vector d(BC3D_NUM_NDM);                 // distance from slave node to centerline coord
+                Vector d(BC3D_NUM_NDM);                 // distance from secondary node to centerline coord
                 Vector tc(BC3D_NUM_NDM);                // tangent at projection point = 1st deriv of x_c
                 Vector ddx_c(BC3D_NUM_NDM);             // 2nd derivative of x_c
 
@@ -2097,13 +2097,16 @@ BeamContact3D::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
     else if (strcmp(argv[0],"forcescalar") == 0 || strcmp(argv[0],"forcescalars") == 0)
       return new ElementResponse(this, 3, Vector(3));
 
-    else if (strcmp(argv[0],"masterforce") == 0 || strcmp(argv[0],"masterforces") == 0)
+    else if (strcmp(argv[0],"masterforce") == 0 || strcmp(argv[0],"masterforces") == 0 ||
+	     strcmp(argv[0],"primaryforce") == 0 || strcmp(argv[0],"primaryforces") == 0)
       return new ElementResponse(this, 4, Vector(6));
 
-    else if (strcmp(argv[0],"mastermoment") == 0 || strcmp(argv[0],"mastermoments") == 0)
+    else if (strcmp(argv[0],"mastermoment") == 0 || strcmp(argv[0],"mastermoments") == 0 ||
+	     strcmp(argv[0],"primarymoment") == 0 || strcmp(argv[0],"primarymoments") == 0)
       return new ElementResponse(this, 5, Vector(6));
 
-    else if (strcmp(argv[0],"masterreaction") == 0 || strcmp(argv[0],"masterreactions") == 0)
+    else if (strcmp(argv[0],"masterreaction") == 0 || strcmp(argv[0],"masterreactions") == 0 ||
+	     strcmp(argv[0],"primaryreaction") == 0 || strcmp(argv[0],"primaryreactions") == 0)
       return new ElementResponse(this, 6, Vector(12));
 
 	else if (strcmp(argv[0],"slip") == 0)
@@ -2136,7 +2139,7 @@ BeamContact3D::getResponse(int responseID, Information &eleInfo)
      
         // force = stress(0)*mn + stress(1)*mg1 + stress(2)*mg2;
 
-        // forces on slave node
+        // forces on secondary node
           for (int ii=0; ii<3; ii++) {
                   sForce(ii)   = -mInternalForces(BC3D_NUM_DOF - 6 + ii);
 /*
@@ -2170,7 +2173,7 @@ BeamContact3D::getResponse(int responseID, Information &eleInfo)
  
   } else if (responseID == 4) {
 
-        // forces on master nodes
+        // forces on primary nodes
           for (int ii=0; ii<3; ii++) {
                   mForces(ii)   = -mInternalForces(ii);
                   mForces(ii+3) = -mInternalForces(ii+6);
@@ -2180,7 +2183,7 @@ BeamContact3D::getResponse(int responseID, Information &eleInfo)
  
   } else if (responseID == 5) {
 
-        // moments on master nodes
+        // moments on primary nodes
           for (int ii=0; ii<3; ii++) {
                   mMoments(ii)   = -mInternalForces(ii+3);
                   mMoments(ii+3) = -mInternalForces(ii+9);
@@ -2190,7 +2193,7 @@ BeamContact3D::getResponse(int responseID, Information &eleInfo)
  
   } else if (responseID == 6) {
 
-        // full reactions on master nodes
+        // full reactions on primary nodes
           for (int ii=0; ii<6; ii++) {
                   mReactions(ii)   = -mInternalForces(ii);
                   mReactions(ii+6) = -mInternalForces(ii+6);

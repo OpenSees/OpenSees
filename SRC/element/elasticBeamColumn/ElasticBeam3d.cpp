@@ -586,6 +586,48 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[3] += My;
     q0[4] -= My;
   }
+  else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
+	  double wa = data(2) * loadFactor;  // Axial
+	  double wy = data(0) * loadFactor;  // Transverse
+	  double wz = data(1) * loadFactor;  // Transverse
+	  double a = data(3) * L;
+	  double b = data(4) * L;
+	  double c = 0.5 * (b + a);
+	  double cOverL = c / L;
+
+	  double P = wa * (b - a);
+	  double Fy = wy * (b - a);
+	  double Fz = wz * (b - a);
+
+	  // Reactions in basic system
+	  p0[0] -= P;
+	  double V1, V2;
+	  V1 = Fy * (1.0 - cOverL);
+	  V2 = Fy * cOverL;
+	  p0[1] -= V1;
+	  p0[2] -= V2;
+	  V1 = Fz * (1.0 - cOverL);
+	  V2 = Fz * cOverL;
+	  p0[3] -= V1;
+	  p0[4] -= V2;
+
+	  // Fixed end forces in basic system
+	  q0[0] -= P * cOverL;
+	  double M1, M2;
+	  double beta2 = (1 - cOverL) * (1 - cOverL);
+	  double alfa2 = (cOverL) * (cOverL);
+	  double gamma2 = (b - a) / L;
+	  gamma2 *= gamma2;
+
+	  M1 = -wy * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
+	  M2 = wy * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
+	  q0[1] += M1;
+	  q0[2] += M2;
+	  M1 = -wz * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
+	  M2 = wz * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
+	  q0[3] -= M1;
+	  q0[4] -= M2;
+  }
   else if (type == LOAD_TAG_Beam3dPointLoad) {
     double Py = data(0)*loadFactor;
     double Pz = data(1)*loadFactor;
@@ -1198,7 +1240,17 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","theta22");
     output.tag("ResponseType","phi");
     theResponse = new ElementResponse(this, 5, Vector(6));
-  }  
+  }
+
+  else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
+    theResponse = new ElementResponse(this, 201, Vector(3));
+  
+  else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
+    theResponse = new ElementResponse(this, 202, Vector(3));
+  
+  else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
+    theResponse = new ElementResponse(this, 203, Vector(3));
+
   output.endTag(); // ElementOutput
 
   return theResponse;
@@ -1301,8 +1353,25 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
     return eleInfo.setVector(theDamping->getDampingForce());
 
   default:
-    return -1;
+    break;
   }
+
+  if (responseID >= 201 && responseID <= 203) {
+    static Vector xlocal(3);
+    static Vector ylocal(3);
+    static Vector zlocal(3);
+    
+    theCoordTransf->getLocalAxes(xlocal,ylocal,zlocal);
+    
+    if (responseID == 201)
+      return eleInfo.setVector(xlocal);
+    if (responseID == 202)
+      return eleInfo.setVector(ylocal);
+    if (responseID == 203)
+      return eleInfo.setVector(zlocal);    
+  }
+
+  return -1;
 }
 
 

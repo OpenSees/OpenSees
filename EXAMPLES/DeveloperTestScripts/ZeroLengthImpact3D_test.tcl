@@ -20,7 +20,7 @@
 #  x      (y=0.0)         x      (y=10.0)         x      (y=10.0)         x      (y=20.0)
 #  |                      |                      |                      |
 #  02--------05           12--------15           22--------25           32--------35
-#  | master1 |            | master1 |            |  slave1 |            |  slave1 | 
+#  | primary1 |            | primary1 |            |  secondary1 |            |  secondary1 | 
 #  01--------04---> z     11--------14---> z     21--------24---> z     31--------34---> z
 
 
@@ -66,8 +66,8 @@ fix 05 1 1 1;
 nDMaterial ElasticIsotropic 1 29000.0 0.3; #steel
 
 #element stdBrick $eleTag $node1 $node2 $node3 $node4 $node5 $node6 $node7 $node8 $matTag
-element stdBrick 1 12 11 01 02 15 14 04 05 1;#master1
-element stdBrick 2 32 31 21 22 35 34 24 25 1;#slave1
+element stdBrick 1 12 11 01 02 15 14 04 05 1;#primary1
+element stdBrick 2 32 31 21 22 35 34 24 25 1;#secondary1
 
 
 

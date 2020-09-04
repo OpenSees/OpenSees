@@ -596,6 +596,7 @@ ElasticBeam2d::getTangentStiff(void)
 
   // determine q = kv + q0
   q(0) = EAoverL*v(0);
+  kb.Zero();
   kb(0,0) = EAoverL;  
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
@@ -637,7 +638,8 @@ ElasticBeam2d::getInitialStiff(void)
 
   double EoverL   = E/L;
   double EAoverL  = A*EoverL;			// EA/L
-  
+
+  kb.Zero();
   kb(0,0) = EAoverL;
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
@@ -747,6 +749,7 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
   }
 
   else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+	// These equations should works for partial trapezoidal load
     double waa = data(2)*loadFactor;  // Axial
     double wab = data(3)*loadFactor;  // Axial
     double wya = data(0)*loadFactor;  // Transverse
