@@ -552,8 +552,8 @@ ShellNLDKGT::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.attr("neta",tg[i]);
       
       output.tag("SectionForceDeformation");
-      output.attr("classType", materialPointers[i]->getClassTag());
-      output.attr("tag", materialPointers[i]->getTag());
+      output.attr("classType", theDamping[i]->getClassTag());
+      output.attr("tag", theDamping[i]->getTag());
       
       output.tag("ResponseType","p11");
       output.tag("ResponseType","p22");
