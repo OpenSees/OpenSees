@@ -64,12 +64,29 @@ class MultiplierMaterial : public UniaxialMaterial
     
     void Print(OPS_Stream &s, int flag =0);
 
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int activateParameter(int parameterID);
+    double getStressSensitivity     (int gradIndex, bool conditional);
+    double getStrainSensitivity     (int gradIndex);
+    double getInitialTangentSensitivity(int gradIndex);
+    double getDampTangentSensitivity(int gradIndex);
+    double getRhoSensitivity        (int gradIndex);
+    int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
+    // AddingSensitivity:END ///////////////////////////////////////////
+    
   protected:
     
   private:
-	UniaxialMaterial *theMaterial;
+    UniaxialMaterial *theMaterial;
 
-	double multiplier;
+    double multiplier;
+
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int parameterID;
+    // AddingSensitivity:END ///////////////////////////////////////////
 };
 
 
