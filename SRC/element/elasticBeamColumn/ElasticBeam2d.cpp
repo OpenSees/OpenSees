@@ -66,7 +66,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
      */
     int iData[3];
     bool section = false;
-    int sectionTag;
+    int sectionTag = -1;
     double data[3];
     int transfTag;
     double mass = 0.0, alpha = 0.0, depth = 0.0;
@@ -216,6 +216,10 @@ to get element data
         depth = mdata(8);
         cMass = (int) mdata(9);
         release = (int) mdata(10);
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
     }
 
     // check transf
