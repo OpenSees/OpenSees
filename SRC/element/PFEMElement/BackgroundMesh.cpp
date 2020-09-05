@@ -2789,29 +2789,29 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
 
     // find new cell
     VInt newindex;
-    // lowerIndex(newpcrds, newindex);
-    // auto it = bnodes.find(newindex);
+    lowerIndex(newpcrds, newindex);
+    auto it = bnodes.find(newindex);
 
     // if new cell is structure
-    // if (it != bnodes.end()) {
-    //     if (it->second.type == STRUCTURE) {
-    //         // check each direction
-    //         for (int i = 0; i < ndm; ++i) {
-    //             int diff = newindex[i] - index[0][i];
-    //             if (diff == 0) continue;
-    //             double out_disp = 0.0;
-    //             if (diff > 0) {
-    //                 out_disp = newpcrds[i] - crds[0][i] - bsize;
-    //                 newpcrds[i] = crds[0][i] + bsize - out_disp;
-    //                 pvel[i] = -pvel[i];
-    //             } else {
-    //                 out_disp = crds[0][i] - newpcrds[i];
-    //                 newpcrds[i] = crds[0][i] + out_disp;
-    //                 pvel[i] = -pvel[i];
-    //             }
-    //         }
-    //     }
-    // }
+    if (it != bnodes.end()) {
+        if (it->second.getType() == BACKGROUND_STRUCTURE) {
+            // check each direction
+            for (int i = 0; i < ndm; ++i) {
+                int diff = newindex[i] - index[0][i];
+                if (diff == 0) continue;
+                double out_disp = 0.0;
+                if (diff > 0) {
+                    out_disp = newpcrds[i] - crds[0][i] - bsize;
+                    newpcrds[i] = crds[0][i] + bsize - out_disp;
+                    pvel[i] = -pvel[i];
+                } else {
+                    out_disp = crds[0][i] - newpcrds[i];
+                    newpcrds[i] = crds[0][i] + out_disp;
+                    pvel[i] = -pvel[i];
+                }
+            }
+        }
+    }
 
     // update particle
     if (pt->isUpdated() == false) {
