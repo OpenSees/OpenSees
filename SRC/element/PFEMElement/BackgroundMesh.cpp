@@ -1521,6 +1521,9 @@ int BackgroundMesh::moveFixedParticles() {
         VDouble svel(ndm);
         int numv = 0;
         for (auto* bnode : cell.getNodes()) {
+            if (bnode->getType() != BACKGROUND_STRUCTURE) {
+                continue;
+            }
             auto& vel = bnode->getVel();
             for (int i = 0; i < bnode->size(); ++i) {
                 svel += vel[i];
@@ -1543,7 +1546,7 @@ int BackgroundMesh::moveFixedParticles() {
             getCrds(ind, newcrds);
             pcrds -= crds;
             pcrds += newcrds;
-            pt->moveTo(newcrds, 0.0);
+            pt->moveTo(pcrds, 0.0);
             auto& pvel = pt->getVel();
             double mag_pvel = normVDouble(pvel);
             if (mag_svel > mag_pvel) {
