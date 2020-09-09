@@ -38,14 +38,14 @@ class BNode {
     VVDouble dvn;
     VDouble pn;
     VDouble dpn;
-    int type;
+    BackgroundType type;
     VInt sid;  // structure id, <0:fluid, >0:structure, =0:not in
                // contact
 
    public:
     BNode();
     void addNode(int tag, const VDouble& crds, const VDouble& v,
-                 const VDouble& dv, double p, double dp, int tp,
+                 const VDouble& dv, double p, double dp, BackgroundType tp,
                  int id = -1);
     void clear();
     void setType(BackgroundType t);
@@ -57,7 +57,7 @@ class BNode {
     VVDouble& getAccel();
     VDouble& getPressure();
     VDouble& getPdot();
-    int getType();
+    BackgroundType getType();
     VInt& getSid();
 };
 

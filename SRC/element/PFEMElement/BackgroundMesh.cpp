@@ -74,6 +74,7 @@ int OPS_BgMesh() {
         opserr << "WARNING: basicsize? lower? upper? <-tol tol? "
                   "-wave wavefilename? numl? locs? -numsub numsub? "
                   "-structure sid? ?numnodes? structuralNodes? "
+                  "-alphaS alphaS -alphaF alphaF"
                   "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?>";
         return -1;
     }
@@ -216,6 +217,42 @@ int OPS_BgMesh() {
                 return -1;
             }
             bgmesh.setContactData(data);
+
+        } else if (strcmp(opt, "-alphaS") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need alphaS\n";
+                return -1;
+            }
+            num = 1;
+            double alpha = 0.1;
+            if (OPS_GetDoubleInput(&num, &alpha) < 0) {
+                opserr << "WARNING: failed to get alphaS\n";
+                return -1;
+            }
+            if (alpha <= 0) {
+                alpha = 0.0;
+            } else if (alpha > 1) {
+                alpha = 1.0;
+            }
+            bgmesh.setAlphaS(alpha);
+
+        } else if (strcmp(opt, "-alphaF") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need alphaF\n";
+                return -1;
+            }
+            num = 1;
+            double alpha = 0.0;
+            if (OPS_GetDoubleInput(&num, &alpha) < 0) {
+                opserr << "WARNING: failed to get alphaF\n";
+                return -1;
+            }
+            if (alpha <= 0) {
+                alpha = 0.0;
+            } else if (alpha > 1) {
+                alpha = 1.0;
+            }
+            bgmesh.setAlphaF(alpha);
         }
     }
 
@@ -250,7 +287,9 @@ BackgroundMesh::BackgroundMesh()
       structuralNodes(),
       contactData(8),
       contactEles(),
-      dispon(true) {}
+      dispon(true),
+      alphaS(0.1),
+      alphaF(0.0) {}
 
 BackgroundMesh::~BackgroundMesh() {
     for (int i = 0; i < (int)recorders.size(); ++i) {
@@ -622,6 +661,8 @@ void BackgroundMesh::clearAll() {
     }
     contactEles.clear();
     dispon = true;
+    alphaS = 0.1;
+    alphaF = 0.0;
 }
 
 int BackgroundMesh::clearBackground() {
@@ -1072,7 +1113,7 @@ int BackgroundMesh::gridNodes() {
         iters.push_back(it);
     }
 
-    // each cell
+    // vector of new objects
     int ndtag = Mesh::nextNodeTag();
     std::vector<Node*> newnodes(iters.size(), 0),
         newpnodes(iters.size(), 0);
@@ -1091,7 +1132,6 @@ int BackgroundMesh::gridNodes() {
         if (bnode.getType() == BACKGROUND_FIXED) {
             continue;
         }
-        //        if (bnode.type[0] == BACKGROUND_STRUCTURE) {continue;}
 
         // coordinates
         VDouble crds;
@@ -2593,7 +2633,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
     // get corners
     VVInt indices, ndtags;
     VVDouble crds;
-    VInt fixed;
+    std::vector<BackgroundType> types;
     VVDouble vels, dvns;
     VDouble pns, dpns;
 
@@ -2626,10 +2666,10 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
                 indices[7] = temp[6];
             }
 
-            // get corner coordinates, fixed, and velocities
+            // get corner coordinates, types, and velocities
             ndtags.assign(indices.size(), VInt());
             crds.assign(indices.size(), VDouble());
-            fixed.assign(indices.size(), 0);
+            types.assign(indices.size(), BACKGROUND_FIXED);
             vels.assign(indices.size(), VDouble());
             dvns.assign(indices.size(), VDouble());
             pns.assign(indices.size(), 0.0);
@@ -2646,21 +2686,11 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
 
                 // get bnode
                 BNode& bnode = it->second;
-                if (bnode.getType() == BACKGROUND_FIXED) continue;
+                types[i] = bnode.getType();
+                if (types[i] == BACKGROUND_FIXED) continue;
 
                 // get node tags
                 ndtags[i] = bnode.getTags();
-
-                // get fixed
-                for (int j = 0; j < (int)bnode.size(); ++j) {
-                    if (bnode.getType() == BACKGROUND_FLUID) {
-                        fixed[i] = 0;
-                        break;
-                    } else if (bnode.getType() == BACKGROUND_STRUCTURE) {
-                        fixed[i] = 1;
-                        break;
-                    }
-                }
 
                 // get vn and dvn
                 if (bnode.getTags().size() < 1) {
@@ -2680,7 +2710,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
         }
 
         // get particle velocity and move
-        if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, fixed,
+        if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, types,
                         ndtags, subdt) < 0) {
             opserr << "WARNING: failed to interpolate particle velocity";
             opserr << "-- BgMesh::convectParticle\n";
@@ -2694,7 +2724,8 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
 int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                                 const VVDouble& vels, const VVDouble& dvns,
                                 const VDouble& pns, const VDouble& dpns,
-                                const VVDouble& crds, const VInt& fixed,
+                                const VVDouble& crds,
+                                const std::vector<BackgroundType>& types,
                                 const VVInt& ndtags, double dt) {
     int ndm = OPS_GetNDM();
     Domain* domain = OPS_GetDomain();
@@ -2707,14 +2738,14 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (pns.size() != 4) return 0;
         if (dpns.size() != 4) return 0;
         if (crds.size() != 4) return 0;
-        if (fixed.size() != 4) return 0;
+        if (types.size() != 4) return 0;
     } else if (ndm == 3) {
         if (index.size() != 8) return 0;
         if (vels.size() != 8) return 0;
         if (pns.size() != 8) return 0;
         if (dpns.size() != 8) return 0;
         if (crds.size() != 8) return 0;
-        if (fixed.size() != 8) return 0;
+        if (types.size() != 8) return 0;
     }
 
     const VDouble& pcrds = pt->getCrds();
@@ -2749,9 +2780,76 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (vels[j].empty()) continue;
 
         // interpolate
-        if (fixed[j] == 0) {
+        if (types[j] == BACKGROUND_FLUID) {
+            // check surrounding nodes
+            VInt ind = index[j];
+            VVInt indices;
+            ind -= 1;
+            getCorners(ind, 2, indices);
+
+            VDouble svel(ndm);
+            int num_svel = 0;
+            for (auto& indi : indices) {
+                auto it = bnodes.find(indi);
+                if (it != bnodes.end() &&
+                    it->second.getType() == BACKGROUND_STRUCTURE) {
+                    for (auto& v : it->second.getVel()) {
+                        svel += v;
+                        ++num_svel;
+                    }
+                }
+            }
+            svel /= num_svel;
+
+            // check surrounding cells
+            getCorners(ind, 1, indices);
+            VVInt sindices;
+            for (int k = 0; k < (int)indices.size(); ++k) {
+                auto it = bcells.find(indices[k]);
+                if (it != bcells.end() &&
+                    it->second.getType() == BACKGROUND_STRUCTURE) {
+                    sindices.push_back(indices[k]);
+                }
+            }
+            VInt num_equal(ndm);
             for (int k = 0; k < ndm; ++k) {
-                pvel[k] += N[j] * vels[j][k];
+                for (int m = 0; m < (int)sindices.size(); ++m) {
+                    int num = 0;
+                    for (int n = 0; n < (int)sindices.size(); ++n) {
+                        if (sindices[m][k] == sindices[n][k]) {
+                            num += 1;
+                        }
+                    }
+                    if (num_equal[k] < num) {
+                        num_equal[k] = num;
+                    }
+                }
+            }
+
+            // interpolate
+            for (int k = 0; k < ndm; ++k) {
+                bool fixk = (ndm == 2 && num_equal[k] >= 2) ||
+                            (ndm == 3 && num_equal[k] >= 4);
+                if (num_svel > 0 && fixk && fabs(svel[k]) < tol) {
+                    // k is fixed structure
+                    pvel[k] += N[j] * svel[k];
+                } else if (num_svel > 0 &&
+                           fabs(svel[k]) > fabs(vels[j][k])) {
+                    // k is faster structure
+                    pvel[k] += N[j] * svel[k];
+                } else if (num_svel > 0 && !fixk && fabs(svel[k]) < tol) {
+                    // k is unfixed and unmoved structure
+                    pvel[k] += N[j] * (alphaF * svel[k] +
+                                       (1.0 - alphaF) * vels[j][k]);
+                } else if (num_svel > 0 &&
+                           fabs(svel[k]) < fabs(vels[j][k])) {
+                    // k is slower structure
+                    pvel[k] += N[j] * (alphaS * svel[k] +
+                                       (1.0 - alphaS) * vels[j][k]);
+                } else {
+                    // all others
+                    pvel[k] += N[j] * vels[j][k];
+                }
                 if (pt->isUpdated() == false) {
                     pdvn[k] += N[j] * dvns[j][k];
                 }
@@ -2801,31 +2899,31 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     // new particle coordinates
     newpcrds += pcrds;
 
-    // find new cell
-    VInt newindex;
-    lowerIndex(newpcrds, newindex);
-    auto it = bnodes.find(newindex);
+    // // find new cell
+    // VInt newindex;
+    // lowerIndex(newpcrds, newindex);
+    // auto it = bnodes.find(newindex);
 
-    // if new cell is structure
-    if (it != bnodes.end()) {
-        if (it->second.getType() == BACKGROUND_STRUCTURE) {
-            // check each direction
-            for (int i = 0; i < ndm; ++i) {
-                int diff = newindex[i] - index[0][i];
-                if (diff == 0) continue;
-                double out_disp = 0.0;
-                if (diff > 0) {
-                    out_disp = newpcrds[i] - crds[0][i] - bsize;
-                    newpcrds[i] = crds[0][i] + bsize - out_disp;
-                    pvel[i] = -pvel[i];
-                } else {
-                    out_disp = crds[0][i] - newpcrds[i];
-                    newpcrds[i] = crds[0][i] + out_disp;
-                    pvel[i] = -pvel[i];
-                }
-            }
-        }
-    }
+    // // if new cell is structure
+    // if (it != bnodes.end()) {
+    //     if (it->second.getType() == BACKGROUND_STRUCTURE) {
+    //         // check each direction
+    //         for (int i = 0; i < ndm; ++i) {
+    //             int diff = newindex[i] - index[0][i];
+    //             if (diff == 0) continue;
+    //             double out_disp = 0.0;
+    //             if (diff > 0) {
+    //                 out_disp = newpcrds[i] - crds[0][i] - bsize;
+    //                 newpcrds[i] = crds[0][i] + bsize - out_disp;
+    //                 pvel[i] = -pvel[i];
+    //             } else {
+    //                 out_disp = crds[0][i] - newpcrds[i];
+    //                 newpcrds[i] = crds[0][i] + out_disp;
+    //                 pvel[i] = -pvel[i];
+    //             }
+    //         }
+    //     }
+    // }
 
     // update particle
     if (pt->isUpdated() == false) {

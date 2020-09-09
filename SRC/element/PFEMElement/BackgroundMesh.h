@@ -38,12 +38,11 @@
 #include <set>
 #include <vector>
 
-#include "BackgroundDef.h"
 #include "BCell.h"
 #include "BNode.h"
+#include "BackgroundDef.h"
 
 class BackgroundMesh {
-
    public:
     BackgroundMesh();
     virtual ~BackgroundMesh();
@@ -66,6 +65,8 @@ class BackgroundMesh {
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
     bool isDispOn() const { return dispon; }
+    void setAlphaS(double alpha) { alphaS = alpha; }
+    void setAlphaF(double alpha) { alphaF = alpha; }
 
     // remesh all
     int remesh(bool init = false);
@@ -122,7 +123,8 @@ class BackgroundMesh {
     int interpolate(Particle* pt, const VVInt& index, const VVDouble& vels,
                     const VVDouble& dvns, const VDouble& pns,
                     const VDouble& dpns, const VVDouble& crds,
-                    const VInt& fixed, const VVInt& ndtags, double dt);
+                    const std::vector<BackgroundType>& types,
+                    const VVInt& ndtags, double dt);
     static int interpolate(const VVDouble& values, const VDouble& N,
                            VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N,
@@ -130,7 +132,6 @@ class BackgroundMesh {
     static int solveLine(const VDouble& p1, const VDouble& dir, int dim,
                          double crd, double& k);
     static bool inEle(const VDouble& N);
-
 
    private:
     VInt lower, upper;
@@ -148,6 +149,7 @@ class BackgroundMesh {
     VDouble contactData;
     VInt contactEles;
     bool dispon;
+    double alphaS, alphaF;
 
     static const int contact_tag = -13746;
 };

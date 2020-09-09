@@ -28,8 +28,8 @@ BNode::BNode()
     : tags(), crdsn(), vn(), dvn(), pn(), dpn(), type(BACKGROUND_FLUID) {}
 
 void BNode::addNode(int tag, const VDouble& crds, const VDouble& v,
-                    const VDouble& dv, double p, double dp, int tp,
-                    int id) {
+                    const VDouble& dv, double p, double dp,
+                    BackgroundType tp, int id) {
     tags.push_back(tag);
     crdsn.push_back(crds);
     vn.push_back(v);
@@ -67,6 +67,6 @@ VDouble& BNode::getPressure() { return pn; }
 
 VDouble& BNode::getPdot() { return dpn; }
 
-int BNode::getType() { return type; }
+BackgroundType BNode::getType() { return type; }
 
 VInt& BNode::getSid() { return sid; }
