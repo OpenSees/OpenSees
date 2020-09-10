@@ -218,6 +218,14 @@ extern int
 TclModelBuilder_addNineNodeMixedQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
 				     Domain*, TclModelBuilder *);
 
+extern int
+TclModelBuilder_addNineNodeQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
+								Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addEightNodeQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
+								Domain*, TclModelBuilder *);
+
 
 // GLF
 extern int
@@ -1446,6 +1454,14 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 						      argc, argv,
 						      theTclDomain,
 						      theTclBuilder);
+    return result;
+  } else if (strcmp(argv[1],"quad9n") == 0) {
+    int result = TclModelBuilder_addNineNodeQuad(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
+    return result;
+  } else if (strcmp(argv[1],"quad8n") == 0) {
+    int result = TclModelBuilder_addEightNodeQuad(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
     return result;
   } else if (strcmp(argv[1],"quadUP") == 0) {
     int result = TclModelBuilder_addFourNodeQuadUP(clientData, interp, argc, argv,

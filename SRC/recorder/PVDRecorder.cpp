@@ -1854,6 +1854,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_EnhancedQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_ConstantPressureVolumeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_NineNodeMixedQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_NineNodeQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EightNodeQuad] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_DispBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_TimoshenkoBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_DispBeamColumn3d] = VTK_LINE;
