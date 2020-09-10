@@ -908,8 +908,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "reactions", &calculateNodalReactions, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "nodeDOFs", &nodeDOFs, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "nodeCoord", &nodeCoord, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
     Tcl_CreateCommand(interp, "setNodeCoord", &setNodeCoord, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
@@ -6664,6 +6666,44 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   const ID &tags = theElement->getExternalNodes();
   for (int i = 0; i < numTags; i++) {
     sprintf(buffer, "%d ", tags(i));
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+  
+  return TCL_OK;
+}
+
+int 
+nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+    opserr << "WARNING want - nodeDOFs nodeTag?\n";
+    return TCL_ERROR;
+  }    
+  
+  int tag;
+  
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+    return TCL_ERROR;	        
+  }    
+  
+  char buffer[40];
+
+  Node *theNode = theDomain.getNode(tag);
+  if (theNode == 0) {
+    opserr << "WARNING nodeDOFs node " << tag << " not found" << endln;
+    return TCL_ERROR;
+  }
+  int numDOF = theNode->getNumberDOF();
+
+  DOF_Group *theDOFgroup = theNode->getDOF_GroupPtr();
+  if (theDOFgroup == 0) {
+    opserr << "WARNING nodeDOFs DOF group null" << endln;
+    return -1;
+  }
+  const ID &eqnNumbers = theDOFgroup->getID();
+  for (int i = 0; i < numDOF; i++) {
+    sprintf(buffer, "%d ", eqnNumbers(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
   

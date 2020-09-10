@@ -58,7 +58,7 @@ void* OPS_ElasticBeam3d(void)
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
     if(numArgs < 10 && numArgs != 5) {
-	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,G,J,Iy,Iz,transfTag\n";
+	opserr<<"insufficient arguments:eleTag,iNode,jNode,<A,E,G,J,Iy,Iz>or<sectionTag>,transfTag\n";
 	return 0;
     }
 
@@ -78,7 +78,9 @@ void* OPS_ElasticBeam3d(void)
     CrdTransf* theTrans = 0;
     double data[6];
     int transfTag, secTag;
-
+    int releasez = 0;
+    int releasey = 0;
+    
     if(numArgs == 5) {
 	numData = 1;
 	if(OPS_GetIntInput(&numData,&secTag) < 0) return 0;
@@ -117,14 +119,28 @@ void* OPS_ElasticBeam3d(void)
 	    }
 	} else if (theType == "-cMass") {
 	    cMass = 1;
-	}
+	} else if (theType == "-releasez") {
+	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
+	      opserr << "WARNING: failed to get releasez";
+	      return 0;
+	    }
+	  }
+	} else if (theType == "-releasey") {
+	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
+	      opserr << "WARNING: failed to get releasey";
+	      return 0;
+	    }
+	  }
+	} 
     }
 
     if (theSection != 0) {
-	return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass); 
+      return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,releasez, releasey); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass);
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey);
     }
 }
 
@@ -132,7 +148,7 @@ void* OPS_ElasticBeam3d(void)
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0), releasez(0), releasey(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -154,10 +170,11 @@ ElasticBeam3d::ElasticBeam3d()
 
 ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
-			     CrdTransf &coordTransf, double r, int cm, int sectTag)
+			     CrdTransf &coordTransf, double r, int cm, int relz, int rely)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-  A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm), sectionTag(sectTag),
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+  A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
+   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+   releasez(relz), releasey(rely)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -169,6 +186,12 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
     exit(-1);
   }
 
+  // Make no release if input not 0, 1, 2, or 3
+  if (releasez < 0 || releasez > 3)
+    releasez = 0;
+  if (releasey < 0 || releasey > 3)
+    releasey = 0;  
+  
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
@@ -187,12 +210,12 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 }
 
 ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section,  
-			     CrdTransf &coordTransf, double r, int cm)
+			     CrdTransf &coordTransf, double r, int cm, int relz, int rely)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-  Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+   releasez(relz), releasey(rely)
 {
   if (section != 0) {
-    sectionTag = section->getTag();
     E = 1.0;
     G = 1.0;
     Jx = 0.0;
@@ -237,6 +260,12 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     exit(-1);
   }
 
+  // Make no release if input not 0, 1, 2, or 3
+  if (releasez < 0 || releasez > 3)
+    releasez = 0;
+  if (releasey < 0 || releasey > 3)
+    releasey = 0;
+  
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
@@ -375,32 +404,69 @@ ElasticBeam3d::getTangentStiff(void)
   double oneOverL = 1.0/L;
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-  double GJoverL = G*Jx*oneOverL;         // GJ/L
+  double GJoverL  = G*Jx*oneOverL;         // GJ/L
   
   q(0) = EAoverL*v(0);
-  q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
-  q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
-  q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
-  q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
-  q(5) = GJoverL*v(5);
+  q(5) = GJoverL*v(5);  
+  kb.Zero();
+  kb(0,0) = EAoverL;
+  kb(5,5) = GJoverL;
+  if (releasez == 0) {
+    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
+    kb(1,1) = kb(2,2) = EIzoverL4;
+    kb(2,1) = kb(1,2) = EIzoverL2;
+  }
+  if (releasez == 1) { // release I
+    q(1) = 0.0;
+    double EIoverL3 = 3.0*Iz*EoverL;
+    q(2) = EIoverL3*v(2);
+    kb(2,2) = EIoverL3;
+  }
+  if (releasez == 2) { // release J
+    q(2) = 0.0;
+    double EIoverL3 = 3.0*Iz*EoverL;
+    q(1) = EIoverL3*v(1);
+    kb(1,1) = EIoverL3;
+  }
+  if (releasez == 3) { // release I and J
+    q(1) = 0.0;
+    q(2) = 0.0;
+  }
 
+  if (releasey == 0) {
+    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
+    kb(3,3) = kb(4,4) = EIyoverL4;
+    kb(4,3) = kb(3,4) = EIyoverL2;
+  }
+  if (releasey == 1) { // release I
+    q(3) = 0.0;
+    double EIoverL3 = 3.0*Iy*EoverL;
+    q(4) = EIoverL3*v(4);
+    kb(4,4) = EIoverL3;
+  }
+  if (releasey == 2) { // release J
+    q(4) = 0.0;
+    double EIoverL3 = 3.0*Iy*EoverL;
+    q(3) = EIoverL3*v(3);
+    kb(3,3) = EIoverL3;
+  }
+  if (releasey == 3) { // release I and J
+    q(3) = 0.0;
+    q(4) = 0.0;
+  }
+  
   q(0) += q0[0];
   q(1) += q0[1];
   q(2) += q0[2];
   q(3) += q0[3];
   q(4) += q0[4];
   
-  kb(0,0) = EAoverL;
-  kb(1,1) = kb(2,2) = EIzoverL4;
-  kb(2,1) = kb(1,2) = EIzoverL2;
-  kb(3,3) = kb(4,4) = EIyoverL4;
-  kb(4,3) = kb(3,4) = EIyoverL2;
-  kb(5,5) = GJoverL;
-
   return theCoordTransf->getGlobalStiffMatrix(kb,q);
 }
 
@@ -414,19 +480,37 @@ ElasticBeam3d::getInitialStiff(void)
   double oneOverL = 1.0/L;
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-  double GJoverL = G*Jx*oneOverL;         // GJ/L
-  
+  double GJoverL  = G*Jx*oneOverL;         // GJ/L
+
+  kb.Zero();
   kb(0,0) = EAoverL;
-  kb(1,1) = kb(2,2) = EIzoverL4;
-  kb(2,1) = kb(1,2) = EIzoverL2;
-  kb(3,3) = kb(4,4) = EIyoverL4;
-  kb(4,3) = kb(3,4) = EIyoverL2;
   kb(5,5) = GJoverL;
-  
+  if (releasez == 0) {
+    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    kb(1,1) = kb(2,2) = EIzoverL4;
+    kb(2,1) = kb(1,2) = EIzoverL2;
+  }
+  if (releasez == 1) { // release I
+    kb(2,2) = 3.0*Iz*EoverL;
+  }
+  if (releasez == 2) { // release J
+    kb(1,1) = 3.0*Iz*EoverL;
+  }
+
+  if (releasey == 0) {
+    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    kb(3,3) = kb(4,4) = EIyoverL4;
+    kb(4,3) = kb(3,4) = EIyoverL2;
+  }
+  if (releasey == 1) { // release I
+    kb(4,4) = 3.0*Iy*EoverL;
+  }
+  if (releasey == 2) { // release J
+    kb(3,3) = 3.0*Iy*EoverL;
+  }
+
   return theCoordTransf->getInitialGlobalStiffMatrix(kb);
 }
 
@@ -529,10 +613,28 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    q0[1] -= Mz;
-    q0[2] += Mz;
-    q0[3] += My;
-    q0[4] -= My;
+    if (releasez == 0) {
+      q0[1] -= Mz;
+      q0[2] += Mz;
+    }
+    if (releasez == 1) {
+      q0[2] += wy*L*L/8;
+    }
+    if (releasez == 2) {
+      q0[1] -= wy*L*L/8;
+    }
+    
+    if (releasey == 0) {
+      q0[3] += My;
+      q0[4] -= My;
+    }
+    if (releasey == 1) {
+      q[4] -= wz*L*L/8;
+    }
+    if (releasey == 2) {
+      q[3] += wz*L*L/8;
+    }
+    
   }
   else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
 	  double wa = data(2) * loadFactor;  // Axial
@@ -719,18 +821,50 @@ ElasticBeam3d::getResistingForce()
   double oneOverL = 1.0/L;
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
   double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
   double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
   double GJoverL = G*Jx*oneOverL;         // GJ/L
   
   q(0) = EAoverL*v(0);
-  q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
-  q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
-  q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
-  q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
   q(5) = GJoverL*v(5);
+
+  if (releasez == 0) {
+    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
+  }
+  if (releasez == 1) {
+    q(1) = 0.0;
+    q(2) = 3.0*Iz*EoverL*v(2);
+  }
+  if (releasez == 2) {
+    q(1) = 3.0*Iz*EoverL*v(1);
+    q(2) = 0.0;
+  }
+  if (releasez == 3) {
+    q(1) = 0.0;
+    q(2) = 0.0;
+  }
+  
+  if (releasey == 0) {
+    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
+  }
+  if (releasey == 1) {
+    q(3) = 0.0;
+    q(4) = 3.0*Iy*EoverL*v(4);
+  }
+  if (releasey == 2) {
+    q(3) = 3.0*Iy*EoverL*v(3);
+    q(4) = 0.0;
+  }
+  if (releasey == 3) {
+    q(3) = 0.0;
+    q(4) = 0.0;
+  }  
   
   q(0) += q0[0];
   q(1) += q0[1];
@@ -756,7 +890,7 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(17);
+    static Vector data(19);
     
     data(0) = A;
     data(1) = E; 
@@ -785,6 +919,8 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
     data(14) = betaK;
     data(15) = betaK0;
     data(16) = betaKc;
+    data(17) = releasez;
+    data(18) = releasey;    
     
     // Send the data vector
     res += theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -807,7 +943,7 @@ int
 ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(17);
+  static Vector data(19);
 
   res += theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) {
@@ -831,6 +967,8 @@ ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
   betaK = data(14);
   betaK0 = data(15);
   betaKc = data(16);
+  releasez = (int)data(17);
+  releasey = (int)data(18);
   
   // Check if the CoordTransf is null; if so, get a new one
   int crdTag = (int)data(11);
@@ -872,7 +1010,6 @@ ElasticBeam3d::Print(OPS_Stream &s, int flag)
 	if (flag == -1) {
 		int eleTag = this->getTag();
 		s << "EL_BEAM\t" << eleTag << "\t";
-		s << sectionTag << "\t" << sectionTag;
 		s << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
 		s << "\t0\t0.0000000\n";
 	}
@@ -959,7 +1096,8 @@ ElasticBeam3d::Print(OPS_Stream &s, int flag)
 		s << "\tConnected Nodes: " << connectedExternalNodes;
 		s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
 		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
-
+		s << "\trelease about z:  " << releasez << endln;
+		s << "\trelease about y:  " << releasey << endln;		
 		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
 		double L = theCoordTransf->getInitialLength();
 		double oneOverL = 1.0 / L;
@@ -991,6 +1129,8 @@ ElasticBeam3d::Print(OPS_Stream &s, int flag)
 		s << "\"Iy\": " << Iy << ", ";
 		s << "\"Iz\": " << Iz << ", ";
 		s << "\"massperlength\": " << rho << ", ";
+		s << "\"releasez\": "<< releasez << ", ";
+		s << "\"releasey\": "<< releasey << ", ";		
 		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
 	}
 }
@@ -1128,7 +1268,17 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","theta22");
     output.tag("ResponseType","phi");
     theResponse = new ElementResponse(this, 5, Vector(6));
-  }  
+  }
+
+  else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
+    theResponse = new ElementResponse(this, 201, Vector(3));
+  
+  else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
+    theResponse = new ElementResponse(this, 202, Vector(3));
+  
+  else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
+    theResponse = new ElementResponse(this, 203, Vector(3));
+
   output.endTag(); // ElementOutput
 
   return theResponse;
@@ -1189,8 +1339,25 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
     return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
 
   default:
-    return -1;
+    break;
   }
+
+  if (responseID >= 201 && responseID <= 203) {
+    static Vector xlocal(3);
+    static Vector ylocal(3);
+    static Vector zlocal(3);
+    
+    theCoordTransf->getLocalAxes(xlocal,ylocal,zlocal);
+    
+    if (responseID == 201)
+      return eleInfo.setVector(xlocal);
+    if (responseID == 202)
+      return eleInfo.setVector(ylocal);
+    if (responseID == 203)
+      return eleInfo.setVector(zlocal);    
+  }
+
+  return -1;
 }
 
 
@@ -1201,29 +1368,45 @@ ElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     return -1;
 
   // E of the beam interior
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-
+  }
   // A of the beam interior
-  if (strcmp(argv[0],"A") == 0)
+  if (strcmp(argv[0],"A") == 0) {
+    param.setValue(A);
     return param.addObject(2, this);
-  
+  }
   // Iz of the beam interior
-  if (strcmp(argv[0],"Iz") == 0)
+  if (strcmp(argv[0],"Iz") == 0) {
+    param.setValue(Iz);
     return param.addObject(3, this);
-  
+  }
   // Iy of the beam interior
-  if (strcmp(argv[0],"Iy") == 0)
+  if (strcmp(argv[0],"Iy") == 0) {
+    param.setValue(Iy);
     return param.addObject(4, this);
-
+  }
   // G of the beam interior
-  if (strcmp(argv[0],"G") == 0)
+  if (strcmp(argv[0],"G") == 0) {
+    param.setValue(G);
     return param.addObject(5, this);
-
+  }
   // J of the beam interior
-  if (strcmp(argv[0],"J") == 0)
+  if (strcmp(argv[0],"J") == 0) {
+    param.setValue(Jx);
     return param.addObject(6, this);
-
+  }
+  // moment release
+  if (strcmp(argv[0],"releasez") == 0) {
+    param.setValue(releasez);
+    return param.addObject(7, this);
+  }
+  if (strcmp(argv[0],"releasey") == 0) {
+    param.setValue(releasey);
+    return param.addObject(8, this);
+  }  
+  
   return -1;
 }
 
@@ -1251,6 +1434,16 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 	case 6:
 		Jx = info.theDouble;
 		return 0;
+	case 7:
+	  releasez = (int)info.theDouble;
+	  if (releasez < 0 || releasez > 3)
+	    releasez = 0;
+	  return 0;
+	case 8:
+	  releasey = (int)info.theDouble;
+	  if (releasey < 0 || releasey > 3)
+	    releasey = 0;
+	  return 0;			  
 	default:
 		return -1;
 	}

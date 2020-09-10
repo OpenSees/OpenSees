@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.13 $
-// $Date: 2009-02-05 16:28:20 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.h,v $
+// $Revision$
+// $Date$
+// $Source$
 
 /*
  * References
@@ -58,8 +58,8 @@ Journal of Structural Engineering, Approved for publication, February 2007.
  *
  */
 
-#ifndef ForceBeamColumnCBDI2d_h
-#define ForceBeamColumnCBDI2d_h
+#ifndef ForceBeamColumnCBDI3d_h
+#define ForceBeamColumnCBDI3d_h
 
 #include <Element.h>
 #include <Node.h>
@@ -73,20 +73,20 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 class Response;
 class ElementalLoad;
 
-class ForceBeamColumnCBDI2d: public Element
+class ForceBeamColumnCBDI3d: public Element
 {
  public:
-  ForceBeamColumnCBDI2d();
-  ForceBeamColumnCBDI2d(int tag, int nodeI, int nodeJ, 
+  ForceBeamColumnCBDI3d();
+  ForceBeamColumnCBDI3d(int tag, int nodeI, int nodeJ, 
 			int numSections, SectionForceDeformation **sec,
 			BeamIntegration &beamIntegr,
 			CrdTransf &coordTransf, 
 			double rho = 0.0, bool includeShear = false,
 			int maxNumIters = 10, double tolerance = 1.0e-12);
   
-  ~ForceBeamColumnCBDI2d();
+  ~ForceBeamColumnCBDI3d();
   
-  const char *getClassType(void) const {return "ForceBeamColumnCBDI2d";};
+  const char *getClassType(void) const {return "ForceBeamColumnCBDI3d";};
 
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
@@ -115,7 +115,7 @@ class ForceBeamColumnCBDI2d: public Element
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
   int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes=0, int numModes=0);
   
-  friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumnCBDI2d &E);        
+  friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumnCBDI3d &E);        
   void Print(OPS_Stream &s, int flag =0);    
   
   Response *setResponse(const char **argv, int argc, OPS_Stream &s);
@@ -147,6 +147,10 @@ class ForceBeamColumnCBDI2d: public Element
 		   const Vector &w, const Vector &wp,
 		   const Matrix &lsk, const Matrix &lsg,
 		   const Matrix &lskp, const Matrix &lsgp);
+  void computedwzdq(Matrix &dwidzq,  const Vector &q,
+		    const Vector &wz, const Vector &wpz,
+		    const Matrix &lsk, const Matrix &lsg,
+		    const Matrix &lskp, const Matrix &lsgp);  
   void compSectionDisplacements(Vector sectionCoords[], Vector sectionDispls[]) const;
   void initializeSectionHistoryVariables (void);
 
@@ -193,10 +197,10 @@ class ForceBeamColumnCBDI2d: public Element
   Vector *vscommit;              // array of committed section deformation vectors
   
   enum {maxNumEleLoads = 100};
-  enum {NDM = 2};         // dimension of the problem (2d)
-  enum {NND = 3};         // number of nodal dof's
-  enum {NEGD = 6};         // number of element global dof's
-  enum {NEBD = 3};         // number of element dof's in the basic system
+  enum {NDM = 3};         // dimension of the problem (2d)
+  enum {NND = 6};         // number of nodal dof's
+  enum {NEGD = 12};         // number of element global dof's
+  enum {NEBD = 6};         // number of element dof's in the basic system
 
   int numEleLoads; // Number of element load objects
   int sizeEleLoads;
@@ -210,7 +214,7 @@ class ForceBeamColumnCBDI2d: public Element
   static double workArea[];
   
   enum {maxNumSections = 20};
-  enum {maxSectionOrder = 5};
+  enum {maxSectionOrder = 10};
 
   // following are added for subdivision of displacement increment
   int    maxSubdivisions;       // maximum number of subdivisons of dv for local iterations
