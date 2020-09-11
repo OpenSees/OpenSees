@@ -561,6 +561,7 @@
 #define ELE_TAG_EightNodeQuad	        312
 #define ELE_TAG_FourNodeQuad3d	        32
 #define ELE_TAG_Tri31	                33    //Added by Roozbeh Geraili Mikola
+#define ELE_TAG_SixNodeTri              331
 #define ELE_TAG_BeamWithHinges2d        34
 #define ELE_TAG_BeamWithHinges3d        35
 #define ELE_TAG_EightNodeBrick          36

@@ -539,6 +539,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
 	$(FE)/element/fourNodeQuad/EightNodeQuad.o \
+	$(FE)/element/fourNodeQuad/SixNodeTri.o \
 	$(FE)/element/shell/ShellMITC4.o \
 	$(FE)/element/shell/ShellMITC4Thermal.o \
 	$(FE)/element/shell/ShellMITC9.o \
