@@ -1147,6 +1147,28 @@ SixNodeTri::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(9));
   }
 
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
+		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+    for (int i=0; i<nnodes; i++) {
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(18));
+  }
+
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
     for (int i=0; i<nip; i++) {
       output.tag("GaussPoint");
@@ -1196,6 +1218,34 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
     }
 
     return eleInfo.setVector(stresses);
+
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(3*nip);
+    static Vector stressAtNodes(3*nnodes);
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < nip; i++) {
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+	// loop over stress components: xx, yy, xy
+    for (int i = 0; i < 3; i++) {
+	  // six triangle nodes: three at corners and three at sides
+	  stressAtNodes(i) = stressGP(i+0)*1.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*-0.3333333333333333;
+	  stressAtNodes(i+3) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*1.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
+	  stressAtNodes(i+6) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*1.6666666666666667 ;
+	  stressAtNodes(i+9) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
+	  stressAtNodes(i+12) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*0.6666666666666667 ;
+	  stressAtNodes(i+15) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*0.6666666666666667 ;
+    }
+
+    return eleInfo.setVector(stressAtNodes);
 
   } else if (responseID == 4) {
 
