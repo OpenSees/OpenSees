@@ -154,7 +154,6 @@ SixNodeTri::SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4,
 	nip = 3;
 	nnodes = 6;
 
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[nip];
 
@@ -210,7 +209,7 @@ SixNodeTri::SixNodeTri()
 	wts[1] = 0.166666666666666667;
 	wts[2] = 0.166666666666666667;
 
-    for (int i=0; i<6; i++)
+    for (int i=0; i<nnodes; i++)
       theNodes[i] = 0;
 }
 
@@ -618,7 +617,7 @@ SixNodeTri::addInertiaLoadToUnbalance(const Vector &accel)
     return -1;
   }
 
-  static double ra[18];
+  static double ra[12];
 
   ra[0] = Raccel1(0);
   ra[1] = Raccel1(1);
@@ -857,7 +856,7 @@ SixNodeTri::recvSelf(int commitTag, Channel &theChannel,
   betaK0 = data(7);
   betaKc = data(8);
 
-  static ID idData(27);
+  static ID idData(18); // 2*3 + 6
   // Quad now receives the tags of its nine external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1096,6 +1095,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
   output.attr("node5",connectedExternalNodes[4]);
   output.attr("node6",connectedExternalNodes[5]);
 
+  // check out the proper size ??? test recorder for 'force'
   char dataOut[20];
   // char dataOut[32];
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0) {
