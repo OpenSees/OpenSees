@@ -113,8 +113,8 @@ double EightNodeQuad::matrixData[256];
 Matrix EightNodeQuad::K(matrixData, 16, 16);
 Vector EightNodeQuad::P(16);
 double EightNodeQuad::shp[3][8];
-double EightNodeQuad::pts[8][2];
-double EightNodeQuad::wts[8];
+double EightNodeQuad::pts[9][2];
+double EightNodeQuad::wts[9];
 
 EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 						   int nd5, int nd6, int nd7, int nd8,
@@ -140,6 +140,8 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 	pts[6][1] =  0.7745966692414834;
 	pts[7][0] = -0.7745966692414834;
 	pts[7][1] =  0.0;
+	pts[8][0] =  0.0;
+	pts[8][1] =  0.0;
 
 	wts[0] = 0.30864197530864196;
 	wts[1] = 0.30864197530864196;
@@ -149,6 +151,7 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 	wts[5] = 0.49382716049382713;
 	wts[6] = 0.49382716049382713;
 	wts[7] = 0.49382716049382713;
+	wts[8] = 0.7901234567901234;
 
 	if (strcmp(type,"PlaneStrain") != 0 && strcmp(type,"PlaneStress") != 0
 	    && strcmp(type,"PlaneStrain2D") != 0 && strcmp(type,"PlaneStress2D") != 0) {
@@ -160,8 +163,11 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 	b[0] = b1;
 	b[1] = b2;
 
+	nip = 9;
+	nnodes = 8;
+
     // Allocate arrays of pointers to NDMaterials
-    theMaterial = new NDMaterial *[8];
+    theMaterial = new NDMaterial *[nip];
 
     if (theMaterial == 0) {
       opserr << "EightNodeQuad::EightNodeQuad - failed allocate material model pointer\n";
@@ -169,7 +175,7 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
     }
 
 	int i;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < nip; i++) {
 
       // Get copies of the material model for each integration point
       theMaterial[i] = m.getCopy(type);
@@ -191,7 +197,7 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
     connectedExternalNodes(6) = nd7;
     connectedExternalNodes(7) = nd8;
 
-    for (i=0; i<8; i++)
+    for (i=0; i<nnodes; i++)
       theNodes[i] = 0;
 }
 
@@ -216,6 +222,8 @@ EightNodeQuad::EightNodeQuad()
 	pts[6][1] =  0.7745966692414834;
 	pts[7][0] = -0.7745966692414834;
 	pts[7][1] =  0.0;
+	pts[8][0] =  0.0;
+	pts[8][1] =  0.0;
 
 	wts[0] = 0.30864197530864196;
 	wts[1] = 0.30864197530864196;
@@ -225,14 +233,15 @@ EightNodeQuad::EightNodeQuad()
 	wts[5] = 0.49382716049382713;
 	wts[6] = 0.49382716049382713;
 	wts[7] = 0.49382716049382713;
+	wts[8] = 0.7901234567901234;
 
-    for (int i=0; i<8; i++)
+    for (int i=0; i<nnodes; i++)
       theNodes[i] = 0;
 }
 
 EightNodeQuad::~EightNodeQuad()
 {
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < nip; i++) {
     if (theMaterial[i])
       delete theMaterial[i];
   }
@@ -345,7 +354,7 @@ EightNodeQuad::commitState()
     }
 
     // Loop over the integration points and commit the material states
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < nip; i++)
       retVal += theMaterial[i]->commitState();
 
     return retVal;
@@ -357,7 +366,7 @@ EightNodeQuad::revertToLastCommit()
     int retVal = 0;
 
     // Loop over the integration points and revert to last committed state
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < nip; i++)
 		retVal += theMaterial[i]->revertToLastCommit();
 
     return retVal;
@@ -369,7 +378,7 @@ EightNodeQuad::revertToStart()
     int retVal = 0;
 
     // Loop over the integration points and revert states to start
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < nip; i++)
 		retVal += theMaterial[i]->revertToStart();
 
     return retVal;
@@ -412,7 +421,7 @@ EightNodeQuad::update()
 	int ret = 0;
 
 	// Loop over the integration points
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < nip; i++) {
 
 		// Determine Jacobian for this integration point
 		this->shapeFunction(pts[i][0], pts[i][1]);
@@ -421,7 +430,7 @@ EightNodeQuad::update()
 		//eps = B*u;
 		//eps.addMatrixVector(0.0, B, u, 1.0);
 		eps.Zero();
-		for (int beta = 0; beta < 8; beta++) {
+		for (int beta = 0; beta < nnodes; beta++) {
 			eps(0) += shp[0][beta]*u[0][beta];
 			eps(1) += shp[1][beta]*u[1][beta];
 			eps(2) += shp[0][beta]*u[1][beta] + shp[1][beta]*u[0][beta];
@@ -445,7 +454,7 @@ EightNodeQuad::getTangentStiff()
 	double DB[3][2];
 
 	// Loop over the integration points
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < nip; i++) {
 
 	  // Determine Jacobian for this integration point
 	  dvol = this->shapeFunction(pts[i][0], pts[i][1]);
@@ -466,8 +475,8 @@ EightNodeQuad::getTangentStiff()
 	  //   beta < 4;
 	  //   beta++, ib += 2, colIb += 16, colIbP1 += 16) {
 
-	  for (int alpha = 0, ia = 0; alpha < 8; alpha++, ia += 2) {
-	    for (int beta = 0, ib = 0; beta < 8; beta++, ib += 2) {
+	  for (int alpha = 0, ia = 0; alpha < nnodes; alpha++, ia += 2) {
+	    for (int beta = 0, ib = 0; beta < nnodes; beta++, ib += 2) {
 
 	      DB[0][0] = dvol * (D00 * shp[0][beta] + D02 * shp[1][beta]);
 	      DB[1][0] = dvol * (D10 * shp[0][beta] + D12 * shp[1][beta]);
@@ -506,7 +515,7 @@ EightNodeQuad::getInitialStiff()
   double DB[3][2];
 
   // Loop over the integration points
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < nip; i++) {
 
     // Determine Jacobian for this integration point
     dvol = this->shapeFunction(pts[i][0], pts[i][1]);
@@ -523,10 +532,10 @@ EightNodeQuad::getInitialStiff()
     //K = K + (B^ D * B) * intWt(i)*intWt(j) * detJ;
     //K.addMatrixTripleProduct(1.0, B, D, intWt(i)*intWt(j)*detJ);
     for (int beta = 0, ib = 0, colIb =0, colIbP1 = 8;
-	 beta < 8;
+	 beta < nnodes;
 	 beta++, ib += 2, colIb += 16, colIbP1 += 16) {
 
-      for (int alpha = 0, ia = 0; alpha < 8; alpha++, ia += 2) {
+      for (int alpha = 0, ia = 0; alpha < nnodes; alpha++, ia += 2) {
 
 	DB[0][0] = dvol * (D00 * shp[0][beta] + D02 * shp[1][beta]);
 	DB[1][0] = dvol * (D10 * shp[0][beta] + D12 * shp[1][beta]);
@@ -553,9 +562,9 @@ EightNodeQuad::getMass()
 	K.Zero();
 
 	int i;
-	static double rhoi[8];
+	static double rhoi[9]; // nip
 	double sum = 0.0;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < nip; i++) {
 	  if (rho == 0)
 	    rhoi[i] = theMaterial[i]->getRho();
 	  else
@@ -569,7 +578,7 @@ EightNodeQuad::getMass()
 	double rhodvol, Nrho;
 
 	// Compute a lumped mass matrix
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < nip; i++) {
 
 		// Determine Jacobian for this integration point
 		rhodvol = this->shapeFunction(pts[i][0], pts[i][1]);
@@ -577,7 +586,7 @@ EightNodeQuad::getMass()
 		// Element plus material density ... MAY WANT TO REMOVE ELEMENT DENSITY
 		rhodvol *= (rhoi[i]*thickness*wts[i]);
 
-		for (int alpha = 0, ia = 0; alpha < 8; alpha++, ia++) {
+		for (int alpha = 0, ia = 0; alpha < nnodes; alpha++, ia++) {
 			Nrho = shp[2][alpha]*rhodvol;
 			K(ia,ia) += Nrho;
 			ia++;
@@ -625,9 +634,9 @@ int
 EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
 {
   int i;
-  static double rhoi[8];
+  static double rhoi[9]; // nip
   double sum = 0.0;
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < nip; i++) {
     rhoi[i] = theMaterial[i]->getRho();
     sum += rhoi[i];
   }
@@ -676,7 +685,7 @@ EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
 
   // Want to add ( - fact * M R * accel ) to unbalance
   // Take advantage of lumped mass matrix
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < 2*nnodes; i++)
     Q(i) += -K(i,i)*ra[i];
 
   return 0;
@@ -690,7 +699,7 @@ EightNodeQuad::getResistingForce()
 	double dvol;
 
 	// Loop over the integration points
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < nip; i++) {
 
 		// Determine Jacobian for this integration point
 		dvol = this->shapeFunction(pts[i][0], pts[i][1]);
@@ -702,7 +711,7 @@ EightNodeQuad::getResistingForce()
 		// Perform numerical integration on internal force
 		//P = P + (B^ sigma) * intWt(i)*intWt(j) * detJ;
 		//P.addMatrixTransposeVector(1.0, B, sigma, intWt(i)*intWt(j)*detJ);
-		for (int alpha = 0, ia = 0; alpha < 8; alpha++, ia += 2) {
+		for (int alpha = 0, ia = 0; alpha < nnodes; alpha++, ia += 2) {
 
 			P(ia) += dvol*(shp[0][alpha]*sigma(0) + shp[1][alpha]*sigma(2));
 
@@ -738,9 +747,9 @@ const Vector&
 EightNodeQuad::getResistingForceIncInertia()
 {
 	int i;
-	static double rhoi[8];
+	static double rhoi[9]; // nip
 	double sum = 0.0;
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < nip; i++) {
 	  rhoi[i] = theMaterial[i]->getRho();
 	  sum += rhoi[i];
 	}
@@ -791,7 +800,7 @@ EightNodeQuad::getResistingForceIncInertia()
 	this->getMass();
 
 	// Take advantage of lumped mass matrix
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 2*nnodes; i++)
 		P(i) += K(i,i)*a[i];
 
 	// add the damping forces if rayleigh damping
@@ -835,10 +844,10 @@ EightNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
 
-  static ID idData(24);
+  static ID idData(2*nip+nnodes);
 
   int i;
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < nip; i++) {
     idData(i) = theMaterial[i]->getClassTag();
     matDbTag = theMaterial[i]->getDbTag();
     // NOTE: we do have to ensure that the material has a database
@@ -848,12 +857,11 @@ EightNodeQuad::sendSelf(int commitTag, Channel &theChannel)
 			if (matDbTag != 0)
 			  theMaterial[i]->setDbTag(matDbTag);
     }
-    // idData(i+4) = matDbTag;
-    idData(i+8) = matDbTag;
+    idData(i+nip) = matDbTag;
   }
 
-  for( i = 0; i < 8; i++)
-	idData(16+i) = connectedExternalNodes(i);
+  for( i = 0; i < nnodes; i++)
+	idData(2*nip+i) = connectedExternalNodes(i);
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -862,7 +870,7 @@ EightNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // Finally, quad asks its material objects to send themselves
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < nip; i++) {
     res += theMaterial[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
       opserr << "WARNING EightNodeQuad::sendSelf() - " << this->getTag() << " failed to send its Material\n";
@@ -901,7 +909,7 @@ EightNodeQuad::recvSelf(int commitTag, Channel &theChannel,
   betaK0 = data(7);
   betaKc = data(8);
 
-  static ID idData(24); // 2*8+8
+  static ID idData(2*nip+nnodes);
   // Quad now receives the tags of its nine external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -909,19 +917,19 @@ EightNodeQuad::recvSelf(int commitTag, Channel &theChannel,
     return res;
   }
 
-  for( int i = 0; i < 8; i++)
-    connectedExternalNodes(i) = idData(16+i);
+  for( int i = 0; i < nnodes; i++)
+    connectedExternalNodes(i) = idData(2*nip+i);
 
   if (theMaterial == 0) {
     // Allocate new materials
-    theMaterial = new NDMaterial *[8];
+    theMaterial = new NDMaterial *[nip];
     if (theMaterial == 0) {
       opserr << "EightNodeQuad::recvSelf() - Could not allocate NDMaterial* array\n";
       return -1;
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < nip; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+8);
+      int matDbTag = idData(i+nip);
       // Allocate new material with the sent class tag
       theMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
       if (theMaterial[i] == 0) {
@@ -940,9 +948,9 @@ EightNodeQuad::recvSelf(int commitTag, Channel &theChannel,
 
   // materials exist , ensure materials of correct type and recvSelf on them
   else {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < nip; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+8);
+      int matDbTag = idData(i+nip);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (theMaterial[i]->getClassTag() != matClassTag) {
@@ -974,8 +982,8 @@ EightNodeQuad::Print(OPS_Stream &s, int flag)
     s << "#EightNodeQuad\n";
 
     int i;
-    const int numNodes = 8;
-    const int nstress = 3 ;
+    const int numNodes = nnodes;
+    const int nstress = nip ;
 
     for (i=0; i<numNodes; i++) {
       const Vector &nodeCrd = theNodes[i]->getCrds();
@@ -984,8 +992,7 @@ EightNodeQuad::Print(OPS_Stream &s, int flag)
      }
 
     // spit out the section location & invoke print on the scetion
-    // const int numMaterials = 4;
-    const int numMaterials = 8;
+    const int numMaterials = nip;
 
     static Vector avgStress(nstress);
     static Vector avgStrain(nstress);
@@ -1018,7 +1025,7 @@ EightNodeQuad::Print(OPS_Stream &s, int flag)
     s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
 	theMaterial[0]->Print(s,flag);
 	s << "\tStress (xx yy xy)" << endln;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < nip; i++)
 		s << "\t\tGauss point " << i+1 << ": " << theMaterial[i]->getStress();
   }
 
@@ -1049,13 +1056,13 @@ EightNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, con
     // first set the quantity to be displayed at the nodes;
     // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
 
-    static Vector values(8);
+    static Vector values(nip);
 
-    for (int j=0; j<8; j++)
+    for (int j=0; j<nip; j++)
 	   values(j) = 0.0;
 
-    if (displayMode < 8 && displayMode > 0) {
-	for (int i=0; i<8; i++) {
+    if (displayMode < nip && displayMode > 0) {
+	for (int i=0; i<nip; i++) {
 	  const Vector &stress = theMaterial[i]->getStress();
 	  values(i) = stress(displayMode-1);
 	}
@@ -1073,7 +1080,7 @@ EightNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, con
     const Vector &end7Crd = theNodes[6]->getCrds();
     const Vector &end8Crd = theNodes[7]->getCrds();
 
-    static Matrix coords(8,3);
+    static Matrix coords(nnodes,3);
 
     if (displayMode >= 0) {
 
@@ -1157,12 +1164,12 @@ EightNodeQuad::setResponse(const char **argv, int argc,
   output.attr("node7",connectedExternalNodes[6]);
   output.attr("node8",connectedExternalNodes[7]);
 
-  // check out ??? test recorder for 'force'
+  // check out the proper size ??? test recorder for 'force'
   char dataOut[20];
   // char dataOut[32];
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0) {
 
-    for (int i=1; i<=8; i++) {
+    for (int i=1; i<=nip; i++) {
       sprintf(dataOut,"P1_%d",i);
       output.tag("ResponseType",dataOut);
       sprintf(dataOut,"P2_%d",i);
@@ -1175,7 +1182,7 @@ EightNodeQuad::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"integrPoint") == 0) {
 
     int pointNum = atoi(argv[1]);
-    if (pointNum > 0 && pointNum <= 8) {
+    if (pointNum > 0 && pointNum <= nip) {
 
       output.tag("GaussPoint");
       output.attr("number",pointNum);
@@ -1189,7 +1196,7 @@ EightNodeQuad::setResponse(const char **argv, int argc,
     }
   }
   else if ((strcmp(argv[0],"stresses") ==0) || (strcmp(argv[0],"stress") ==0)) {
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<nip; i++) {
       output.tag("GaussPoint");
       output.attr("number",i+1);
       output.attr("eta",pts[i][0]);
@@ -1210,7 +1217,7 @@ EightNodeQuad::setResponse(const char **argv, int argc,
   }
 
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<nip; i++) {
       output.tag("GaussPoint");
       output.attr("number",i+1);
       output.attr("eta",pts[i][0]);
@@ -1245,9 +1252,9 @@ EightNodeQuad::getResponse(int responseID, Information &eleInfo)
   } else if (responseID == 3) {
 
     // Loop over the integration points
-    static Vector stresses(24);
+    static Vector stresses(3*nip);
     int cnt = 0;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < nip; i++) {
 
       // Get material stress response
       const Vector &sigma = theMaterial[i]->getStress();
@@ -1262,9 +1269,9 @@ EightNodeQuad::getResponse(int responseID, Information &eleInfo)
   } else if (responseID == 4) {
 
     // Loop over the integration points
-    static Vector stresses(24);
+    static Vector stresses(3*nip);
     int cnt = 0;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < nip; i++) {
 
       // Get material stress response
       const Vector &sigma = theMaterial[i]->getStrain();
@@ -1300,7 +1307,7 @@ EightNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
 
     int pointNum = atoi(argv[1]);
-    if (pointNum > 0 && pointNum <= 8)
+    if (pointNum > 0 && pointNum <= nip)
       return theMaterial[pointNum-1]->setParameter(&argv[2], argc-2, param);
     else
       return -1;
@@ -1310,7 +1317,7 @@ EightNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
   else {
 
     int matRes = res;
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<nip; i++) {
 
       matRes =  theMaterial[i]->setParameter(argv, argc, param);
 
@@ -1333,7 +1340,7 @@ EightNodeQuad::updateParameter(int parameterID, Information &info)
 
 	case 1:
 
-		for (int i = 0; i<8; i++) {
+		for (int i = 0; i<nip; i++) {
 		matRes = theMaterial[i]->updateParameter(parameterID, info);
 		}
 		if (matRes != -1) {
@@ -1371,18 +1378,6 @@ double EightNodeQuad::shapeFunction(double s, double t)
 	const Vector &nd7Crds = theNodes[6]->getCrds();
 	const Vector &nd8Crds = theNodes[7]->getCrds();
 
-	// double oneMinusT = 1.0-t;
-	// double onePlusT = 1.0+t;
-	// double oneMinusS = 1.0-s;
-	// double onePlusS = 1.0+s;
-	// double oneMinusSSq = 1.0-(s*s);
-	// double oneMinusTSq = 1.0-(t*t);
-	// double N9 = oneMinusSSq*oneMinusTSq;
-	// double N5 = 0.5*oneMinusSSq*oneMinusT - 0.5*N9;
-	// double N6 = 0.5*onePlusS*oneMinusTSq - 0.5*N9;
-	// double N7 = 0.5*oneMinusSSq*onePlusT - 0.5*N9;
-	// double N8 = 0.5*oneMinusS*oneMinusTSq - 0.5*N9;
-
 	double N1 = -(1-s)*(1-t)*(1+s+t)/4;
 	double N2 = -(1+s)*(1-t)*(1-s+t)/4;
 	double N3 = -(1+s)*(1+t)*(1-s-t)/4;
@@ -1401,11 +1396,6 @@ double EightNodeQuad::shapeFunction(double s, double t)
 	shp[2][5] = N6;
 	shp[2][6] = N7;
 	shp[2][7] = N8;
-
-	// shp[2][0] = 0.25*oneMinusS*oneMinusT - 0.5*N5 - 0.5*N8 - 0.25*N9; // N_1
-	// shp[2][1] = 0.25*onePlusS*oneMinusT - 0.5*N5 - 0.5*N6 - 0.25*N9; // N_2
-	// shp[2][2] = 0.25*onePlusS*onePlusT - 0.5*N6 - 0.5*N7 - 0.25*N9; // N_3
-	// shp[2][3] = 0.25*oneMinusS*onePlusT - 0.5*N7 - 0.5*N8 - 0.25*N9; // N_4
 
 	// derivatives
 	double N11 = -1*(-(1-t)*(1+s+t)+(1-s)*(1-t))/4;

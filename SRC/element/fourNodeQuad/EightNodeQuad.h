@@ -124,14 +124,17 @@ private:
                    // Note: positive for outward normal
   double rho;
   static double shp[3][8]; // Stores shape functions and derivatives (overwritten)
-  static double pts[8][2]; // Stores quadrature points
-  static double wts[8];    // Stores quadrature weights
+  static double pts[9][2]; // Stores quadrature points
+  static double wts[9];    // Stores quadrature weights
 
   // private member functions - only objects of this class can call these
   double shapeFunction(double xi, double eta);
   void setPressureLoadAtNodes(void);
 
   Matrix *Ki;
+
+  int nip; // number of integration/Gauss points
+  int nnodes; // number of nodes
 };
 
 #endif
