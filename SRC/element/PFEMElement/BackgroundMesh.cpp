@@ -75,7 +75,7 @@ int OPS_BgMesh() {
                   "-wave wavefilename? numl? locs? -numsub numsub? "
                   "-dispon? "
                   "-structure sid? ?numnodes? structuralNodes? "
-                  "-alphaS alphaS -alphaF alphaF"
+                  "-alphaS sid? alphaS?"
                   "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?>";
         return -1;
     }
@@ -220,12 +220,18 @@ int OPS_BgMesh() {
             bgmesh.setContactData(data);
 
         } else if (strcmp(opt, "-alphaS") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need alphaS\n";
+            if (OPS_GetNumRemainingInputArgs() < 2) {
+                opserr << "WARNING: need sid alphaS\n";
                 return -1;
             }
             num = 1;
-            double alpha = 0.1;
+            int sid;
+            if (OPS_GetIntInput(&num, &sid) < 0) {
+                opserr << "WARNING: failed to get sid\n";
+                return -1;
+            }
+
+            double alpha = 0.0;
             if (OPS_GetDoubleInput(&num, &alpha) < 0) {
                 opserr << "WARNING: failed to get alphaS\n";
                 return -1;
@@ -235,25 +241,8 @@ int OPS_BgMesh() {
             } else if (alpha > 1) {
                 alpha = 1.0;
             }
-            bgmesh.setAlphaS(alpha);
+            bgmesh.setAlphaS(sid, alpha);
 
-        } else if (strcmp(opt, "-alphaF") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING: need alphaF\n";
-                return -1;
-            }
-            num = 1;
-            double alpha = 0.0;
-            if (OPS_GetDoubleInput(&num, &alpha) < 0) {
-                opserr << "WARNING: failed to get alphaF\n";
-                return -1;
-            }
-            if (alpha <= 0) {
-                alpha = 0.0;
-            } else if (alpha > 1) {
-                alpha = 1.0;
-            }
-            bgmesh.setAlphaF(alpha);
         } else if (strcmp(opt, "-dispOn") == 0) {
             bgmesh.setDispOn(true);
         }
@@ -285,8 +274,7 @@ BackgroundMesh::BackgroundMesh()
       contactData(8),
       contactEles(),
       dispon(true),
-      alphaS(0.1),
-      alphaF(0.0) {}
+      alphaS() {}
 
 BackgroundMesh::~BackgroundMesh() {
     for (int i = 0; i < (int)recorders.size(); ++i) {
@@ -330,7 +318,7 @@ void BackgroundMesh::setDispOn(bool on) {
     PFEMElement3DBubble::dispon = on;
     PFEMElement2DCompressible::dispon = on;
     PFEMElement2Dmini::dispon = on;
-} 
+}
 
 void BackgroundMesh::addStructuralNodes(VInt& snodes, int sid) {
     VInt& curr = structuralNodes[sid];
@@ -666,8 +654,7 @@ void BackgroundMesh::clearAll() {
     }
     contactEles.clear();
     dispon = true;
-    alphaS = 0.1;
-    alphaF = 0.0;
+    alphaS.clear();
 }
 
 int BackgroundMesh::clearBackground() {
@@ -2843,7 +2830,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
     VVDouble crds;
     std::vector<BackgroundType> types;
     VVDouble vels, dvns;
-    VDouble pns, dpns;
+    VDouble pns, dpns, alphas;
 
     // convect in a cell
     while (pt->getDt() > 0) {
@@ -2875,6 +2862,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
             }
 
             // get corner coordinates, types, and velocities
+            // pressures, alphas for structural damping
             ndtags.assign(indices.size(), VInt());
             crds.assign(indices.size(), VDouble());
             types.assign(indices.size(), BACKGROUND_FIXED);
@@ -2882,14 +2870,14 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
             dvns.assign(indices.size(), VDouble());
             pns.assign(indices.size(), 0.0);
             dpns.assign(indices.size(), 0.0);
+            alphas.assign(indices.size(), 0.0);
 
             for (int i = 0; i < (int)indices.size(); ++i) {
                 // get crds
                 getCrds(indices[i], crds[i]);
 
                 // check bnode
-                std::map<VInt, BNode>::iterator it =
-                    bnodes.find(indices[i]);
+                auto it = bnodes.find(indices[i]);
                 if (it == bnodes.end()) continue;
 
                 // get bnode
@@ -2910,16 +2898,24 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
                 auto& dvn = bnode.getAccel();
                 auto& pn = bnode.getPressure();
                 auto& dpn = bnode.getPdot();
+                auto& sid = bnode.getSid();
                 vels[i] = vn[0];
                 dvns[i] = dvn[0];
                 pns[i] = pn[0];
                 dpns[i] = dpn[0];
+                // get alpha
+                if (types[i] == BACKGROUND_STRUCTURE) {
+                    auto it_alpha = alphaS.find(sid[0]);
+                    if (it_alpha != alphaS.end()) {
+                        alphas[i] = it_alpha->second;
+                    }
+                }
             }
         }
 
         // get particle velocity and move
         if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, types,
-                        ndtags, subdt) < 0) {
+                        ndtags, alphas, subdt) < 0) {
             opserr << "WARNING: failed to interpolate particle "
                       "velocity";
             opserr << "-- BgMesh::convectParticle\n";
@@ -2935,7 +2931,8 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                                 const VDouble& pns, const VDouble& dpns,
                                 const VVDouble& crds,
                                 const std::vector<BackgroundType>& types,
-                                const VVInt& ndtags, double dt) {
+                                const VVInt& ndtags, const VDouble& alphas,
+                                double dt) {
     int ndm = OPS_GetNDM();
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -2948,6 +2945,7 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (dpns.size() != 4) return 0;
         if (crds.size() != 4) return 0;
         if (types.size() != 4) return 0;
+        if (alphas.size() != 4) return 0;
     } else if (ndm == 3) {
         if (index.size() != 8) return 0;
         if (vels.size() != 8) return 0;
@@ -2955,6 +2953,7 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (dpns.size() != 8) return 0;
         if (crds.size() != 8) return 0;
         if (types.size() != 8) return 0;
+        if (alphas.size() != 8) return 0;
     }
 
     const VDouble& pcrds = pt->getCrds();
@@ -3047,15 +3046,11 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                            fabs(svel[k]) > fabs(vels[j][k])) {
                     // k is faster structure
                     pvel[k] += N[j] * svel[k];
-                } else if (num_svel > 0 && !fixk && fabs(svel[k]) < tol) {
-                    // k is unfixed and unmoved structure
-                    pvel[k] += N[j] * (alphaF * svel[k] +
-                                       (1.0 - alphaF) * vels[j][k]);
                 } else if (num_svel > 0 &&
                            fabs(svel[k]) < fabs(vels[j][k])) {
                     // k is slower structure
-                    pvel[k] += N[j] * (alphaS * svel[k] +
-                                       (1.0 - alphaS) * vels[j][k]);
+                    pvel[k] += N[j] * (alphas[j] * svel[k] +
+                                       (1.0 - alphas[j]) * vels[j][k]);
                 } else {
                     // all others
                     pvel[k] += N[j] * vels[j][k];

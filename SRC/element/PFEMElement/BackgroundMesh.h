@@ -62,8 +62,7 @@ class BackgroundMesh {
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
     bool isDispOn() const { return dispon; }
-    void setAlphaS(double alpha) { alphaS = alpha; }
-    void setAlphaF(double alpha) { alphaF = alpha; }
+    void setAlphaS(int sid, double alpha) { alphaS[sid] = alpha; }
     void setDispOn(bool on);
 
     // remesh all
@@ -137,7 +136,7 @@ class BackgroundMesh {
                     const VVDouble& dvns, const VDouble& pns,
                     const VDouble& dpns, const VVDouble& crds,
                     const std::vector<BackgroundType>& types,
-                    const VVInt& ndtags, double dt);
+                    const VVInt& ndtags, const VDouble& alphas, double dt);
     static int interpolate(const VVDouble& values, const VDouble& N,
                            VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N,
@@ -162,7 +161,7 @@ class BackgroundMesh {
     VDouble contactData;
     VInt contactEles;
     bool dispon;
-    double alphaS, alphaF;
+    std::map<int, double> alphaS;  // alphaS for sids
 
     static const int contact_tag = -13746;
 };
