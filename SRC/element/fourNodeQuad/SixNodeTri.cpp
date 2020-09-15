@@ -1235,16 +1235,6 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
       stressGP(cnt+2) = sigma(2);
       cnt += 3;
     }
-	// loop over stress components: xx, yy, xy
-    // for (int i = 0; i < 3; i++) {
-	//   // six triangle nodes: three at corners and three at sides
-	//   stressAtNodes(i) = stressGP(i+0)*1.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*-0.3333333333333333;
-	//   stressAtNodes(i+3) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*1.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
-	//   stressAtNodes(i+6) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*1.6666666666666667 ;
-	//   stressAtNodes(i+9) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
-	//   stressAtNodes(i+12) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*0.6666666666666667 ;
-	//   stressAtNodes(i+15) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*0.6666666666666667 ;
-    // }
 
 	double We[nnodes][nip] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
 							  {-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
