@@ -132,6 +132,9 @@ private:
   void setPressureLoadAtNodes(void);
 
   Matrix *Ki;
+
+  int nip; // number of integration/Gauss points
+  int nnodes; // number of nodes
 };
 
 #endif
