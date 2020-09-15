@@ -20,12 +20,12 @@
 //
 // based on FourNodeQuad by MHS
 // Written: Seweryn Kokot, Opole University of Technology, Poland
-// Created: Aug 2020
+// Created: Sep 2020
 //
-// Description: This file contains the class definition for EightNodeQuad.
+// Description: This file contains the class definition for SixNodeTri.
 
-#ifndef EightNodeQuad_h
-#define EightNodeQuad_h
+#ifndef SixNodeTri_h
+#define SixNodeTri_h
 
 #ifndef _bool_h
 #include "bool.h"
@@ -40,16 +40,16 @@ class Node;
 class NDMaterial;
 class Response;
 
-class EightNodeQuad : public Element {
+class SixNodeTri : public Element {
 public:
-  EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6,
-               int nd7, int nd8, NDMaterial &m, const char *type, double t,
+  SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6,
+               NDMaterial &m, const char *type, double t,
                double pressure = 0.0, double rho = 0.0, double b1 = 0.0,
                double b2 = 0.0);
-  EightNodeQuad();
-  ~EightNodeQuad();
+  SixNodeTri();
+  ~SixNodeTri();
 
-  const char *getClassType(void) const { return "EightNodeQuad"; };
+  const char *getClassType(void) const { return "SixNodeTri"; };
 
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
@@ -104,10 +104,9 @@ private:
 
   ID connectedExternalNodes; // Tags of quad nodes
 
-  Node *theNodes[8];
+  Node *theNodes[6];
 
-  // static double matrixData[64]; // array data for matrix
-  static double matrixData[256]; // array data for matrix
+  static double matrixData[144]; // array data for matrix
   static Matrix K;              // Element stiffness, damping, and mass Matrix
   static Vector P;              // Element resisting force vector
   Vector Q;                     // Applied nodal loads
@@ -123,9 +122,9 @@ private:
   double pressure;  // Normal surface traction (pressure) over entire element
                    // Note: positive for outward normal
   double rho;
-  static double shp[3][8]; // Stores shape functions and derivatives (overwritten)
-  static double pts[9][2]; // Stores quadrature points
-  static double wts[9];    // Stores quadrature weights
+  static double shp[3][6]; // Stores shape functions and derivatives (overwritten)
+  static double pts[3][2]; // Stores quadrature points
+  static double wts[3];    // Stores quadrature weights
 
   // private member functions - only objects of this class can call these
   double shapeFunction(double xi, double eta);

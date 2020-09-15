@@ -8,6 +8,7 @@ OBJS       = FourNodeQuad.o \
 	NineNodeMixedQuad.o \
 	NineNodeQuad.o \
 	EightNodeQuad.o \
+	SixNodeTri.o \
 	FourNodeQuadWithSensitivity.o
 
 all:         $(OBJS)
