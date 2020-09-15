@@ -205,8 +205,11 @@
     <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\EightNodeQuad.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.cpp" />
@@ -469,8 +472,11 @@
     <ClInclude Include="..\..\..\SRC\element\ExternalElement.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\SimpsonBeamIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\EightNodeQuad.h" />
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.h" />
     <ClInclude Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.h" />
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.h" />
