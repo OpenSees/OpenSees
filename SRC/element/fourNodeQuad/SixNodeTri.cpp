@@ -1224,6 +1224,7 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
     // extrapolate stress from Gauss points to element nodes
     static Vector stressGP(3*nip);
     static Vector stressAtNodes(3*nnodes);
+	stressAtNodes.Zero();
     int cnt = 0;
 	// first get stress components (xx, yy, xy) at Gauss points
     for (int i = 0; i < nip; i++) {
@@ -1235,15 +1236,33 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
       cnt += 3;
     }
 	// loop over stress components: xx, yy, xy
-    for (int i = 0; i < 3; i++) {
-	  // six triangle nodes: three at corners and three at sides
-	  stressAtNodes(i) = stressGP(i+0)*1.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*-0.3333333333333333;
-	  stressAtNodes(i+3) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*1.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
-	  stressAtNodes(i+6) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*1.6666666666666667 ;
-	  stressAtNodes(i+9) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
-	  stressAtNodes(i+12) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*0.6666666666666667 ;
-	  stressAtNodes(i+15) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*0.6666666666666667 ;
-    }
+    // for (int i = 0; i < 3; i++) {
+	//   // six triangle nodes: three at corners and three at sides
+	//   stressAtNodes(i) = stressGP(i+0)*1.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*-0.3333333333333333;
+	//   stressAtNodes(i+3) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*1.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
+	//   stressAtNodes(i+6) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*1.6666666666666667 ;
+	//   stressAtNodes(i+9) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*-0.3333333333333333 ;
+	//   stressAtNodes(i+12) = stressGP(i+0)*-0.3333333333333333 + stressGP(i+3)*0.6666666666666667 + stressGP(i+6)*0.6666666666666667 ;
+	//   stressAtNodes(i+15) = stressGP(i+0)*0.6666666666666667 + stressGP(i+3)*-0.3333333333333333 + stressGP(i+6)*0.6666666666666667 ;
+    // }
+
+	double We[nnodes][nip] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
+							  {-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
+							  {-0.3333333333333333, -0.3333333333333333, 1.6666666666666667},
+							  {0.6666666666666667, 0.6666666666666667, -0.3333333333333333},
+							  {-0.3333333333333333, 0.6666666666666667, 0.6666666666666667},
+							  {0.6666666666666667, -0.3333333333333333, 0.6666666666666667}};
+	int p, l;
+	for (int i = 0; i < nnodes; i++) {
+	  for (int k = 0; k < 3; k++) {
+		p = 3*i + k;
+		for (int j = 0; j < nip; j++) {
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "We[" << i << "][" << j << "] * stressGP(" << l << ") = stressAtNodes(" << p << "): " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
 
     return eleInfo.setVector(stressAtNodes);
 
