@@ -109,20 +109,20 @@ void* OPS_EightNodeQuad()
 }
 
 
-double EightNodeQuad::matrixData[256];
-Matrix EightNodeQuad::K(matrixData, 16, 16);
-Vector EightNodeQuad::P(16);
-double EightNodeQuad::shp[3][8];
-double EightNodeQuad::pts[9][2];
-double EightNodeQuad::wts[9];
+double EightNodeQuad::matrixData[(nnodes*2)*(nnodes*2)];
+Matrix EightNodeQuad::K(matrixData, nnodes*2, nnodes*2);
+Vector EightNodeQuad::P(nnodes*2);
+double EightNodeQuad::shp[3][nnodes];
+double EightNodeQuad::pts[nip][2];
+double EightNodeQuad::wts[nip];
 
 EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 						   int nd5, int nd6, int nd7, int nd8,
 						   NDMaterial &m, const char *type, double t,
 						   double p, double r, double b1, double b2)
 :Element (tag, ELE_TAG_EightNodeQuad),
-  theMaterial(0), connectedExternalNodes(8),
- Q(16), applyLoad(0), pressureLoad(16), thickness(t), pressure(p), rho(r), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(nnodes*2), applyLoad(0), pressureLoad(nnodes*2), thickness(t), pressure(p), rho(r), Ki(0)
 {
 	pts[0][0] = -0.7745966692414834;
 	pts[0][1] = -0.7745966692414834;
@@ -163,9 +163,6 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 	b[0] = b1;
 	b[1] = b2;
 
-	nip = 9;
-	nnodes = 8;
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[nip];
 
@@ -203,8 +200,8 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 
 EightNodeQuad::EightNodeQuad()
 :Element (0,ELE_TAG_EightNodeQuad),
-  theMaterial(0), connectedExternalNodes(8),
- Q(16), applyLoad(0), pressureLoad(16), thickness(0.0), pressure(0.0), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(nnodes*2), applyLoad(0), pressureLoad(nnodes*2), thickness(0.0), pressure(0.0), Ki(0)
 {
 	pts[0][0] = -0.7745966692414834;
 	pts[0][1] = -0.7745966692414834;
@@ -257,7 +254,7 @@ EightNodeQuad::~EightNodeQuad()
 int
 EightNodeQuad::getNumExternalNodes() const
 {
-    return 8;
+    return nnodes;
 }
 
 const ID&
@@ -276,7 +273,7 @@ EightNodeQuad::getNodePtrs(void)
 int
 EightNodeQuad::getNumDOF()
 {
-    return 16;
+    return nnodes*2;
 }
 
 void
@@ -397,7 +394,7 @@ EightNodeQuad::update()
 	const Vector &disp7 = theNodes[6]->getTrialDisp();
 	const Vector &disp8 = theNodes[7]->getTrialDisp();
 
-	static double u[2][8];
+	static double u[2][nnodes];
 
 	u[0][0] = disp1(0);
 	u[1][0] = disp1(1);
@@ -562,7 +559,7 @@ EightNodeQuad::getMass()
 	K.Zero();
 
 	int i;
-	static double rhoi[9]; // nip
+	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
 	  if (rho == 0)
@@ -634,7 +631,7 @@ int
 EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
 {
   int i;
-  static double rhoi[9]; // nip
+  static double rhoi[nip];
   double sum = 0.0;
   for (i = 0; i < nip; i++) {
     rhoi[i] = theMaterial[i]->getRho();
@@ -661,7 +658,7 @@ EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
     return -1;
   }
 
-  static double ra[16];
+  static double ra[nnodes*2];
 
   ra[0] = Raccel1(0);
   ra[1] = Raccel1(1);
@@ -747,7 +744,7 @@ const Vector&
 EightNodeQuad::getResistingForceIncInertia()
 {
 	int i;
-	static double rhoi[9]; // nip
+	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
 	  rhoi[i] = theMaterial[i]->getRho();
@@ -774,7 +771,7 @@ EightNodeQuad::getResistingForceIncInertia()
 	const Vector &accel7 = theNodes[6]->getTrialAccel();
 	const Vector &accel8 = theNodes[7]->getTrialAccel();
 
-	static double a[16];
+	static double a[nnodes*2];
 
 	a[0] = accel1(0);
 	a[1] = accel1(1);

@@ -377,9 +377,6 @@ Tri31::Tri31(int tag, int nd1, int nd2, int nd3,
 	b[0] = b1;
 	b[1] = b2;
 
-	numgp = 1;
-	numnodes = 3;
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[numgp];
     
