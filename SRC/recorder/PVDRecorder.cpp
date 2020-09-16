@@ -1824,6 +1824,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_FourNodeQuad3d] = VTK_QUAD;
     vtktypes[ELE_TAG_Tri31] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_SixNodeTri] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_BeamWithHinges2d] = VTK_LINE;
     vtktypes[ELE_TAG_BeamWithHinges3d] = VTK_LINE;
     vtktypes[ELE_TAG_EightNodeBrick] = VTK_HEXAHEDRON;
@@ -1854,6 +1855,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_EnhancedQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_ConstantPressureVolumeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_NineNodeMixedQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_NineNodeQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EightNodeQuad] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_DispBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_TimoshenkoBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_DispBeamColumn3d] = VTK_LINE;

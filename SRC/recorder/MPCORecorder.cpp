@@ -3764,6 +3764,7 @@ namespace mpco {
 				else if (
 					// ./quad
 					elem_class_tag == ELE_TAG_NineNodeMixedQuad ||
+					elem_class_tag == ELE_TAG_NineNodeQuad ||
 					// ./shell
 					elem_class_tag == ELE_TAG_ShellMITC9 ||
 					// ./up
