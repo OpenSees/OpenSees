@@ -1351,9 +1351,9 @@ Tri31::getResponse(int responseID, Information &eleInfo)
       cnt += 3;
     }
 
-	double We[numnodes][numgp] = {{1.0},
-								  {1.0},
-								  {1.0}};
+	double We[3][1] = {{1.0},
+					   {1.0},
+					   {1.0}};
 
 	int p, l;
 	for (int i = 0; i < numnodes; i++) {
