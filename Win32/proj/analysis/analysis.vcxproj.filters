@@ -293,6 +293,12 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\WilsonTheta.cpp">
       <Filter>integrator</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedNewmark.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.cpp">
       <Filter>numberer</Filter>
     </ClCompile>
@@ -620,6 +626,12 @@
       <Filter>integrator</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\integrator\WilsonTheta.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h">
       <Filter>integrator</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.h">

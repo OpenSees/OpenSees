@@ -254,6 +254,9 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.cpp">
       <Filter>quad</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp">
+      <Filter>quad</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\TclFourNodeQuadCommand.cpp">
       <Filter>quad</Filter>
     </ClCompile>
@@ -1004,6 +1007,9 @@
       <Filter>quad</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.h">
+      <Filter>quad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.h">
       <Filter>quad</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam2d.h">

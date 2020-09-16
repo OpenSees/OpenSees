@@ -203,6 +203,8 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\TRBDF3.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\WilsonTheta.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedNewmark.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\numberer\PlainNumberer.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\handler\ConstraintHandler.cpp" />
@@ -314,6 +316,8 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\TRBDF3.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\WilsonTheta.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h" />
     <ClInclude Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.h" />
     <ClInclude Include="..\..\..\SRC\analysis\numberer\PlainNumberer.h" />
     <ClInclude Include="..\..\..\SRC\analysis\handler\ConstraintHandler.h" />

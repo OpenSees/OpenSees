@@ -302,6 +302,7 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuad3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp" />
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\TclFourNodeQuadCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam3d.cpp" />
@@ -563,6 +564,7 @@
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuad3d.h" />
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\FourNodeQuadWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.h" />
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.h" />
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam2d.h" />
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam3d.h" />
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.h" />

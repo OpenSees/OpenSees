@@ -151,9 +151,6 @@ SixNodeTri::SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4,
 	b[0] = b1;
 	b[1] = b2;
 
-	nip = 3;
-	nnodes = 6;
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[nip];
 
