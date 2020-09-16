@@ -18,14 +18,16 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.9 $
-// $Date: 2006-08-03 23:49:46 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/ElasticMembranePlateSection.h,v $
+// $Revision: 1.0 $
+// $Date: 2020-09-16 16:45:00 $
+// $Source: /OpenSees/SRC/material/section/ElasticMembranePlateSection2.h,v $
 
+// Developed by Pearl Ranchal
+// with support from Degenkolb Engineers
+// Elastic shell section with decoupled in-plane and out-of-plane stiffness parameters
+
+// Adapted from 'ElasticMembranePlateSection.h' by:
 // Ed "C++" Love
-//
-//  Elastic Plate Section with membrane
-//
 
 #ifndef ElasticMembranePlateSection2_h
 #define ElasticMembranePlateSection2_h
