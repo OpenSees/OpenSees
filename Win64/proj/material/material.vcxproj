@@ -234,7 +234,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\section\ElasticMembranePlateSection2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
@@ -650,7 +649,6 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h" />
-    <ClInclude Include="..\..\..\SRC\material\section\ElasticMembranePlateSection2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
