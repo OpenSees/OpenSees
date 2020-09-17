@@ -330,14 +330,10 @@ RemoveRecorder::record(int commitTag, double timeStamp)
   opserr<<"entering record()"<<endln;
 #endif
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
+  if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * 1.0e-12) {
     
     if (deltaT != 0.0) 
-      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
-      // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
-        if (nextTimeStampToRecord <= timeStamp) {
-            nextTimeStampToRecord = timeStamp + deltaT;
-        }
+      nextTimeStampToRecord = timeStamp + deltaT;
     
     if (int(nodeTag) != 0) {
       

@@ -417,7 +417,7 @@ ElementRecorderRMS::record(int commitTag, double timeStamp)
   }
 
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * 1.0e-12) {
       
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;

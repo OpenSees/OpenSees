@@ -187,7 +187,7 @@ int
 DamageRecorder::record(int commitTag, double timeStamp)
 {
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
+  if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * 1.0e-12) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
