@@ -312,13 +312,31 @@ const Matrix &
 TransformationDOF_Group::getTangent(Integrator *theIntegrator) 
 {
 
-
     const Matrix &unmodTangent = this->DOF_Group::getTangent(theIntegrator);
     Matrix *T = this->getT();
     if (T != 0) {
 	// *modTangent = (*T) ^ unmodTangent * (*T);
 	modTangent->addMatrixTripleProduct(0.0, *T, unmodTangent, 1.0);
 	return *modTangent;
+	
+    } else 
+      return unmodTangent;
+}
+ 
+
+
+const Matrix &
+TransformationDOF_Group::getEigenvectors(void) 
+{
+    const Matrix &unmodTangent = this->DOF_Group::getEigenvectors();
+    Matrix *T = this->getT();
+    if (T != 0) {
+	// *modTangent = (*T) ^ unmodTangent * (*T);
+      static Matrix res;
+      res = (*T) ^ unmodTangent;
+      return res;
+      // modTangent->addMatrixTripleProduct(0.0, *T, unmodTangent, 1.0);
+      // return *modTangent;
 	
     } else 
       return unmodTangent;
@@ -855,85 +873,85 @@ TransformationDOF_Group::doneID(void)
   if (theMP == 0)
     return 0;
 
-    // get number of DOF & verify valid
-    int numNodalDOF = myNode->getNumberDOF();
-    const ID &retainedDOF = theMP->getRetainedDOFs();
-    const ID &constrainedDOF = theMP->getConstrainedDOFs();    
-    int numNodalDOFConstrained = constrainedDOF.Size();
-    int numRetainedDOF = numNodalDOF - numNodalDOFConstrained;
-    int numRetainedNodeDOF = retainedDOF.Size();
-
-    int retainedNode = theMP->getNodeRetained();
-    Domain *theDomain = myNode->getDomain();
-    Node *retainedNodePtr = theDomain->getNode(retainedNode);
-    DOF_Group *retainedGroup = retainedNodePtr->getDOF_GroupPtr();
-    const ID &otherID = retainedGroup->getID();
-    
-    // set the ID for those dof corresponding to dof at another node
-    for (int i=0; i<numRetainedNodeDOF; i++) {
-	int dof = retainedDOF(i);
-	int id = otherID(dof);
-	(*modID)(i+numRetainedDOF) = id;
+  // get number of DOF & verify valid
+  int numNodalDOF = myNode->getNumberDOF();
+  const ID &retainedDOF = theMP->getRetainedDOFs();
+  const ID &constrainedDOF = theMP->getConstrainedDOFs();    
+  int numNodalDOFConstrained = constrainedDOF.Size();
+  int numRetainedDOF = numNodalDOF - numNodalDOFConstrained;
+  int numRetainedNodeDOF = retainedDOF.Size();
+  
+  int retainedNode = theMP->getNodeRetained();
+  Domain *theDomain = myNode->getDomain();
+  Node *retainedNodePtr = theDomain->getNode(retainedNode);
+  DOF_Group *retainedGroup = retainedNodePtr->getDOF_GroupPtr();
+  const ID &otherID = retainedGroup->getID();
+  
+  // set the ID for those dof corresponding to dof at another node
+  for (int i=0; i<numRetainedNodeDOF; i++) {
+    int dof = retainedDOF(i);
+    int id = otherID(dof);
+    (*modID)(i+numRetainedDOF) = id;
+  }
+  
+  // if constraint is not time-varying determine the transformation matrix
+  if (theMP->isTimeVarying() == false) {
+    Trans->Zero();
+    const Matrix &Ccr = theMP->getConstraint();
+    int col = 0;
+    for (int i=0; i<numNodalDOF; i++) {
+      int loc = constrainedDOF.getLocation(i);
+      if (loc < 0) {
+	(*Trans)(i,col) = 1.0;
+	col++;
+      } else {
+	for (int j=0; j<numRetainedNodeDOF; j++)
+	  (*Trans)(i,j+numRetainedDOF) = Ccr(loc,j);
+      }
     }
-
-    // if constraint is not time-varying determine the transformation matrix
-    if (theMP->isTimeVarying() == false) {
-	Trans->Zero();
-	const Matrix &Ccr = theMP->getConstraint();
-	int col = 0;
-	for (int i=0; i<numNodalDOF; i++) {
-	    int loc = constrainedDOF.getLocation(i);
-	    if (loc < 0) {
-		(*Trans)(i,col) = 1.0;
-		col++;
-	    } else {
-		for (int j=0; j<numRetainedNodeDOF; j++)
-		    (*Trans)(i,j+numRetainedDOF) = Ccr(loc,j);
-	    }
-	}
-    }
-	
-    // set the pointers for the tangent and residual
-    if (modNumDOF <= MAX_NUM_DOF) {
-	// use class wide objects
-	if (modVectors[modNumDOF] == 0) {
-	    // have to create matrix and vector of size as none yet created
-	    modVectors[modNumDOF] = new Vector(modNumDOF);
-	    modMatrices[modNumDOF] = new Matrix(modNumDOF,modNumDOF);
-	    modUnbalance = modVectors[modNumDOF];
-	    modTangent = modMatrices[modNumDOF];
-	    if (modUnbalance == 0 || modUnbalance->Size() != modNumDOF ||	
-		modTangent == 0 || modTangent->noCols() != modNumDOF)	{  
-		opserr << "DOF_Group::DOF_Group(Node *) ";
-		opserr << " ran out of memory for vector/Matrix of size :";
-		opserr << modNumDOF << endln;
-		exit(-1);
-	    }
-	} else {
-	    modUnbalance = modVectors[modNumDOF];
-	    modTangent = modMatrices[modNumDOF];
-	}
+  }
+  
+  // set the pointers for the tangent and residual
+  if (modNumDOF <= MAX_NUM_DOF) {
+    // use class wide objects
+    if (modVectors[modNumDOF] == 0) {
+      // have to create matrix and vector of size as none yet created
+      modVectors[modNumDOF] = new Vector(modNumDOF);
+      modMatrices[modNumDOF] = new Matrix(modNumDOF,modNumDOF);
+      modUnbalance = modVectors[modNumDOF];
+      modTangent = modMatrices[modNumDOF];
+      if (modUnbalance == 0 || modUnbalance->Size() != modNumDOF ||	
+	  modTangent == 0 || modTangent->noCols() != modNumDOF)	{  
+	opserr << "DOF_Group::DOF_Group(Node *) ";
+	opserr << " ran out of memory for vector/Matrix of size :";
+	opserr << modNumDOF << endln;
+	exit(-1);
+      }
     } else {
-	// create matrices and vectors for each object instance
-	modUnbalance = new Vector(modNumDOF);
-	modTangent = new Matrix(modNumDOF, modNumDOF);
-	if (modUnbalance == 0 || modUnbalance->Size() ==0 ||
-	    modTangent ==0 || modTangent->noRows() ==0) {
-	    
-	    opserr << "DOF_Group::DOF_Group(Node *) ";
-	    opserr << " ran out of memory for vector/Matrix of size :";
-	    opserr << modNumDOF << endln;
-	    exit(-1);
-	}
-    }    
-
-    if (modID != 0) {
-      for (int i=numConstrainedNodeRetainedDOF; i<modNumDOF; i++)
-	if ((*modID)(i) == -1)
-	  needRetainedData = 0;
+      modUnbalance = modVectors[modNumDOF];
+      modTangent = modMatrices[modNumDOF];
     }
-
-    return 0;
+  } else {
+    // create matrices and vectors for each object instance
+    modUnbalance = new Vector(modNumDOF);
+    modTangent = new Matrix(modNumDOF, modNumDOF);
+    if (modUnbalance == 0 || modUnbalance->Size() ==0 ||
+	modTangent ==0 || modTangent->noRows() ==0) {
+      
+      opserr << "DOF_Group::DOF_Group(Node *) ";
+      opserr << " ran out of memory for vector/Matrix of size :";
+      opserr << modNumDOF << endln;
+      exit(-1);
+    }
+  }    
+  
+  if (modID != 0) {
+    for (int i=numConstrainedNodeRetainedDOF; i<modNumDOF; i++)
+      if ((*modID)(i) == -1)
+	needRetainedData = 0;
+  }
+  
+  return 0;
 }
 
 int 

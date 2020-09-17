@@ -43,6 +43,8 @@ OBJS       = AlphaOS.o \
 	KRAlphaExplicit.o \
 	KRAlphaExplicit_TP.o \
 	LoadControl.o \
+	StagedLoadControl.o \
+	StagedNewmark.o \
 	LoadPath.o \
 	MinUnbalDispNorm.o \
 	Newmark.o \

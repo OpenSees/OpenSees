@@ -249,6 +249,7 @@ OPS_EnvelopeElementRecorder()
         }
     }
 
+    
     // data handler
     if (eMode == DATA_STREAM && filename != 0)
         theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);

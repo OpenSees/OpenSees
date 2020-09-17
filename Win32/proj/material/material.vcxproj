@@ -166,6 +166,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticBDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMaterialThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticPowerFunc.cpp" />
@@ -579,6 +580,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticBDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticMaterialThermal.h" />

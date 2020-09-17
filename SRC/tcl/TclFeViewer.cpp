@@ -310,7 +310,7 @@ TclFeViewer::record(int cTag, double timeStamp)
           double zAvg = (theBounds(2) + theBounds(5))/2.0;
 
           if (vrpSet == 0)
-              this->setVRP(xAvg, yAvg, zAvg);
+              this->setVRP(float(xAvg), float(yAvg), float(zAvg));
 
           double diff, xDiff, yDiff, zDiff;
           xDiff = (theBounds(3) - theBounds(0));
@@ -325,11 +325,11 @@ TclFeViewer::record(int cTag, double timeStamp)
           diff *= 1.25 * 0.5;
 
           if (vpwindowSet == 0)
-              this->setViewWindow(-diff,diff,-diff,diff);
+              this->setViewWindow(float(-diff),float(diff),float(-diff),float(diff));
 
           if (clippingPlaneDistancesSet == 0) {
               diff = sqrt(xDiff*xDiff + yDiff*yDiff + zDiff * zDiff);
-              this->setPlaneDist(diff,-diff);
+              this->setPlaneDist(float(diff),float(-diff));
           }
       }
 
@@ -339,7 +339,7 @@ TclFeViewer::record(int cTag, double timeStamp)
           ElementIter &theElements = theDomain->getElements();
           Element *theEle;
           while ((theEle = theElements()) != 0) {
-              res = theEle->displaySelf(*theRenderer, theEleMode, theDisplayFact);
+              res = theEle->displaySelf(*theRenderer, theEleMode, float(theDisplayFact));
               if (res < 0) {
                   opserr << "Renderer::displayModel() - Element: \n";
                   opserr << theEle->getTag() << " failed to display itself\n";
@@ -351,7 +351,7 @@ TclFeViewer::record(int cTag, double timeStamp)
           NodeIter &theNodes = theDomain->getNodes();
           Node *theNode;
           while ((theNode = theNodes()) != 0) {
-              res = theNode->displaySelf(*theRenderer, theNodeMode, theDisplayFact);
+              res = theNode->displaySelf(*theRenderer, theNodeMode, float(theDisplayFact));
               if (res < 0) {
                   opserr << "Renderer::displayModel() - Node: ";
                   opserr << theNode->getTag() << " failed to display itself\n";
@@ -589,7 +589,7 @@ TclFeViewer_setVRP(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   
-  theTclFeViewer->setVRP(xLoc,yLoc,zLoc);
+  theTclFeViewer->setVRP(float(xLoc),float(yLoc),float(zLoc));
   return TCL_OK;  
 #endif
 }
@@ -627,7 +627,7 @@ TclFeViewer_setVPN(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   
-  theTclFeViewer->setVPN(xDirn,yDirn,zDirn);
+  theTclFeViewer->setVPN(float(xDirn),float(yDirn),float(zDirn));
   return 0;
 #endif
 }
@@ -665,7 +665,7 @@ TclFeViewer_setVUP(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   
-  theTclFeViewer->setVUP(xDirn,yDirn,zDirn);
+  theTclFeViewer->setVUP(float(xDirn),float(yDirn),float(zDirn));
   return TCL_OK;  
 #endif
 }
@@ -706,7 +706,7 @@ TclFeViewer_setViewWindow(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }      
   
-  theTclFeViewer->setViewWindow(uMin,uMax,vMin,vMax);
+  theTclFeViewer->setViewWindow(float(uMin),float(uMax),float(vMin),float(vMax));
   return TCL_OK;    
 #endif
 }
@@ -739,7 +739,7 @@ TclFeViewer_setPlaneDist(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }  
 
-  theTclFeViewer->setPlaneDist(anear, afar);    
+  theTclFeViewer->setPlaneDist(float(anear),float(afar));    
   return TCL_OK;  
 #endif
 }
@@ -828,7 +828,7 @@ TclFeViewer_setPRP(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   
-  theTclFeViewer->setPRP(xLoc,yLoc,zLoc);
+  theTclFeViewer->setPRP(float(xLoc),float(yLoc),float(zLoc));
   return TCL_OK;  
 #endif
 }
@@ -870,7 +870,7 @@ TclFeViewer_setPortWindow(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }      
 
-  theTclFeViewer->setPortWindow(uMin,uMax,vMin,vMax);    
+  theTclFeViewer->setPortWindow(float(uMin),float(uMax),float(vMin),float(vMax));    
   return TCL_OK;
 #endif
 }
@@ -906,7 +906,7 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
 	  return TCL_ERROR;
       }  
 
-      theTclFeViewer->displayModel(displayMode, -1, displayFact);
+      theTclFeViewer->displayModel(displayMode, -1, float(displayFact));
       return TCL_OK;    
   } else {
       
@@ -925,7 +925,7 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
 	  return TCL_ERROR;
       }  
 
-      theTclFeViewer->displayModel(eleFlag, nodeFlag, displayFact);
+      theTclFeViewer->displayModel(eleFlag, nodeFlag, float(displayFact));
       return TCL_OK;    
   }
 #endif

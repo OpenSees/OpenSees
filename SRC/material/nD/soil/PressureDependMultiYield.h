@@ -15,8 +15,10 @@
 #define PressureDependMultiYield_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
+#include "soil/T2Vector.h"
 #include <Matrix.h>
+
+class MultiYieldSurface;
 
 class PressureDependMultiYield : public NDMaterial
 {

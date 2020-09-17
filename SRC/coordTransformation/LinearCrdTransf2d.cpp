@@ -1553,3 +1553,21 @@ LinearCrdTransf2d::getBasicDisplSensitivity(int gradNumber, int flag)
     
     return ub;
 }
+
+int
+LinearCrdTransf2d::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
+{
+  xAxis(0) = cosTheta;
+  xAxis(1) = sinTheta;
+  xAxis(2) = 0;
+
+  yAxis(0) = -sinTheta;
+  yAxis(1) =  cosTheta;
+  yAxis(2) =  0;    
+  
+  zAxis(0) = 0.0;
+  zAxis(1) = 0.0;
+  zAxis(2) = 1.0;
+
+  return 0;
+}

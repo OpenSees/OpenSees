@@ -32,7 +32,6 @@
 #include <Element.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
-#include <R3vectors.h>
 
 class ShellMITC9 : public Element
 {

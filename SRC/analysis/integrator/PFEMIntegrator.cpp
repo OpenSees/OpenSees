@@ -52,7 +52,7 @@
 #include <LoadPattern.h>
 #include <FE_EleIter.h>
 #include <elementAPI.h>
-#include <PFEMLinSOE.h>
+#include "sparseGEN/PFEMLinSOE.h"
 
 void *
 OPS_PFEMIntegrator(void)

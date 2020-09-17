@@ -42,7 +42,7 @@
 #define LimitStateMaterial_h
 
 #include <UniaxialMaterial.h>
-#include <LimitCurve.h>
+class LimitCurve;
 
 
 class LimitStateMaterial : public UniaxialMaterial

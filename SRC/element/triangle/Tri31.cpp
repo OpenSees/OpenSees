@@ -42,6 +42,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ElementResponse.h>
+#include <ElementalLoad.h>
 #include <ElementIter.h>
 #include <elementAPI.h>
 #include <map>
@@ -748,6 +749,10 @@ Tri31::getMass()
 void
 Tri31::zeroLoad(void)
 {
+    applyLoad = 0;
+    appliedB[0] = 0.0;
+    appliedB[1] = 0.0;
+
 	Q.Zero();
     return;
 }
@@ -755,7 +760,20 @@ Tri31::zeroLoad(void)
 int 
 Tri31::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-	opserr << "Tri31::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+	// body forces can be applied in a load pattern
+	int type;
+	const Vector &data = theLoad->getData(type, loadFactor);
+
+	if (type == LOAD_TAG_SelfWeight) {
+		applyLoad = 1;
+		appliedB[0] += loadFactor*data(0)*b[0];
+		appliedB[1] += loadFactor*data(1)*b[1];
+		return 0;
+	} else {
+	    opserr << "Tri31::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+		return -1;
+	}
+
     return -1;
 }
 
@@ -835,8 +853,13 @@ Tri31::getResistingForce()
 			// Subtract equiv. body forces from the nodes
 			//P = P - (N^ b) * intWt(i)*intWt(j) * detJ;
 			//P.addMatrixTransposeVector(1.0, N, b, -intWt(i)*intWt(j)*detJ);
-			P(ia)   -= dvol*(shp[2][alpha]*b[0]);
-			P(ia+1) -= dvol*(shp[2][alpha]*b[1]);
+			if (applyLoad == 0) {
+			  P(ia)   -= dvol*(shp[2][alpha]*b[0]);
+			  P(ia+1) -= dvol*(shp[2][alpha]*b[1]);
+			} else {
+			  P(ia)   -= dvol*(shp[2][alpha]*appliedB[0]);
+			  P(ia+1) -= dvol*(shp[2][alpha]*appliedB[1]);
+			}
 		}
 	}
 

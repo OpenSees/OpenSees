@@ -31,7 +31,7 @@
 #ifndef KrylovAccelerator_h
 #define KrylovAccelerator_h
 
-#include <Accelerator.h>
+#include "Accelerator.h"
 #include <IncrementalIntegrator.h>
 
 class KrylovAccelerator : public Accelerator
