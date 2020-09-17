@@ -100,14 +100,16 @@ protected:
 private:
   // private attributes - a copy for each object of the class
 
+  static constexpr int nip = 9; // number of integration/Gauss points
+  static constexpr int nnodes = 8; // number of nodes
+
   NDMaterial **theMaterial; // pointer to the ND material objects
 
   ID connectedExternalNodes; // Tags of quad nodes
 
-  Node *theNodes[8];
+  Node *theNodes[nnodes];
 
-  // static double matrixData[64]; // array data for matrix
-  static double matrixData[256]; // array data for matrix
+  static double matrixData[(nnodes*2)*(nnodes*2)]; // array data for matrix
   static Matrix K;              // Element stiffness, damping, and mass Matrix
   static Vector P;              // Element resisting force vector
   Vector Q;                     // Applied nodal loads
@@ -123,18 +125,15 @@ private:
   double pressure;  // Normal surface traction (pressure) over entire element
                    // Note: positive for outward normal
   double rho;
-  static double shp[3][8]; // Stores shape functions and derivatives (overwritten)
-  static double pts[9][2]; // Stores quadrature points
-  static double wts[9];    // Stores quadrature weights
+  static double shp[3][nnodes]; // Stores shape functions and derivatives (overwritten)
+  static double pts[nip][2]; // Stores quadrature points
+  static double wts[nip];    // Stores quadrature weights
 
   // private member functions - only objects of this class can call these
   double shapeFunction(double xi, double eta);
   void setPressureLoadAtNodes(void);
 
   Matrix *Ki;
-
-  int nip; // number of integration/Gauss points
-  int nnodes; // number of nodes
 };
 
 #endif
