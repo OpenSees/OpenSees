@@ -109,20 +109,20 @@ void* OPS_EightNodeQuad()
 }
 
 
-double EightNodeQuad::matrixData[256];
-Matrix EightNodeQuad::K(matrixData, 16, 16);
-Vector EightNodeQuad::P(16);
-double EightNodeQuad::shp[3][8];
-double EightNodeQuad::pts[9][2];
-double EightNodeQuad::wts[9];
+double EightNodeQuad::matrixData[(nnodes*2)*(nnodes*2)];
+Matrix EightNodeQuad::K(matrixData, nnodes*2, nnodes*2);
+Vector EightNodeQuad::P(nnodes*2);
+double EightNodeQuad::shp[3][nnodes];
+double EightNodeQuad::pts[nip][2];
+double EightNodeQuad::wts[nip];
 
 EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 						   int nd5, int nd6, int nd7, int nd8,
 						   NDMaterial &m, const char *type, double t,
 						   double p, double r, double b1, double b2)
 :Element (tag, ELE_TAG_EightNodeQuad),
-  theMaterial(0), connectedExternalNodes(8),
- Q(16), applyLoad(0), pressureLoad(16), thickness(t), pressure(p), rho(r), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(nnodes*2), applyLoad(0), pressureLoad(nnodes*2), thickness(t), pressure(p), rho(r), Ki(0)
 {
 	pts[0][0] = -0.7745966692414834;
 	pts[0][1] = -0.7745966692414834;
@@ -163,9 +163,6 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 	b[0] = b1;
 	b[1] = b2;
 
-	nip = 9;
-	nnodes = 8;
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[nip];
 
@@ -203,8 +200,8 @@ EightNodeQuad::EightNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4,
 
 EightNodeQuad::EightNodeQuad()
 :Element (0,ELE_TAG_EightNodeQuad),
-  theMaterial(0), connectedExternalNodes(8),
- Q(16), applyLoad(0), pressureLoad(16), thickness(0.0), pressure(0.0), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(nnodes*2), applyLoad(0), pressureLoad(nnodes*2), thickness(0.0), pressure(0.0), Ki(0)
 {
 	pts[0][0] = -0.7745966692414834;
 	pts[0][1] = -0.7745966692414834;
@@ -257,7 +254,7 @@ EightNodeQuad::~EightNodeQuad()
 int
 EightNodeQuad::getNumExternalNodes() const
 {
-    return 8;
+    return nnodes;
 }
 
 const ID&
@@ -276,7 +273,7 @@ EightNodeQuad::getNodePtrs(void)
 int
 EightNodeQuad::getNumDOF()
 {
-    return 16;
+    return nnodes*2;
 }
 
 void
@@ -397,7 +394,7 @@ EightNodeQuad::update()
 	const Vector &disp7 = theNodes[6]->getTrialDisp();
 	const Vector &disp8 = theNodes[7]->getTrialDisp();
 
-	static double u[2][8];
+	static double u[2][nnodes];
 
 	u[0][0] = disp1(0);
 	u[1][0] = disp1(1);
@@ -562,7 +559,7 @@ EightNodeQuad::getMass()
 	K.Zero();
 
 	int i;
-	static double rhoi[9]; // nip
+	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
 	  if (rho == 0)
@@ -634,7 +631,7 @@ int
 EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
 {
   int i;
-  static double rhoi[9]; // nip
+  static double rhoi[nip];
   double sum = 0.0;
   for (i = 0; i < nip; i++) {
     rhoi[i] = theMaterial[i]->getRho();
@@ -661,7 +658,7 @@ EightNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
     return -1;
   }
 
-  static double ra[16];
+  static double ra[nnodes*2];
 
   ra[0] = Raccel1(0);
   ra[1] = Raccel1(1);
@@ -747,7 +744,7 @@ const Vector&
 EightNodeQuad::getResistingForceIncInertia()
 {
 	int i;
-	static double rhoi[9]; // nip
+	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
 	  rhoi[i] = theMaterial[i]->getRho();
@@ -774,7 +771,7 @@ EightNodeQuad::getResistingForceIncInertia()
 	const Vector &accel7 = theNodes[6]->getTrialAccel();
 	const Vector &accel8 = theNodes[7]->getTrialAccel();
 
-	static double a[16];
+	static double a[nnodes*2];
 
 	a[0] = accel1(0);
 	a[1] = accel1(1);
@@ -1213,7 +1210,29 @@ EightNodeQuad::setResponse(const char **argv, int argc,
       output.endTag(); // GaussPoint
       output.endTag(); // NdMaterialOutput
       }
-    theResponse =  new ElementResponse(this, 3, Vector(27));
+    theResponse =  new ElementResponse(this, 3, Vector(3*nip));
+  }
+
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
+		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+    for (int i=0; i<nnodes; i++) {
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(3*nnodes));
   }
 
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
@@ -1234,7 +1253,7 @@ EightNodeQuad::setResponse(const char **argv, int argc,
       output.endTag(); // GaussPoint
       output.endTag(); // NdMaterialOutput
       }
-    theResponse =  new ElementResponse(this, 4, Vector(27));
+    theResponse =  new ElementResponse(this, 4, Vector(3*nip));
   }
 
   output.endTag(); // ElementOutput
@@ -1265,6 +1284,46 @@ EightNodeQuad::getResponse(int responseID, Information &eleInfo)
     }
 
     return eleInfo.setVector(stresses);
+
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(3*nip);
+    static Vector stressAtNodes(3*nnodes);
+	stressAtNodes.Zero();
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < nip; i++) {
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
+	double We[nnodes][nip] = {{2.0758287072798374, 0.1666666666666666, -0.075828707279838,  0.1666666666666666, -0.7636648162452683, 0.0969981495786018, 0.0969981495786018, -0.7636648162452683, 0.0},
+							  {0.1666666666666666, 2.0758287072798374, 0.1666666666666666, -0.075828707279838, -0.7636648162452683, -0.7636648162452683, 0.0969981495786018, 0.0969981495786018, 0.0},
+							  {-0.075828707279838,  0.1666666666666666, 2.0758287072798374, 0.1666666666666666, 0.0969981495786018, -0.7636648162452683, -0.7636648162452683, 0.0969981495786018, 0.0},
+							  {0.1666666666666666, -0.075828707279838,  0.1666666666666666, 2.0758287072798374, 0.0969981495786018, 0.0969981495786018, -0.7636648162452683, -0.7636648162452683, 0.0},
+							  {0.1666666666666666, 0.1666666666666666, 0.1666666666666666, 0.1666666666666666, 1.1454972243679027, -0.3333333333333333, -0.1454972243679028, -0.3333333333333333, 0.0},
+							  {0.1666666666666666, 0.1666666666666666, 0.1666666666666666, 0.1666666666666666, -0.3333333333333333, 1.1454972243679027, -0.3333333333333333, -0.1454972243679028, 0.0},
+							  {0.1666666666666666, 0.1666666666666666, 0.1666666666666666, 0.1666666666666666, -0.1454972243679028, -0.3333333333333333, 1.1454972243679027, -0.3333333333333333, 0.0},
+							  {0.1666666666666666, 0.1666666666666666, 0.1666666666666666, 0.1666666666666666, -0.3333333333333333, -0.1454972243679028, -0.3333333333333333, 1.1454972243679027, 0.0}};
+
+	int p, l;
+	for (int i = 0; i < nnodes; i++) {
+	  for (int k = 0; k < 3; k++) {
+		p = 3*i + k;
+		for (int j = 0; j < nip; j++) {
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
+
+    return eleInfo.setVector(stressAtNodes);
 
   } else if (responseID == 4) {
 
