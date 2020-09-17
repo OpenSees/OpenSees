@@ -32,6 +32,225 @@
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
 
+#include <elementAPI.h>
+#include <FiberSection2d.h>
+#include <NDFiberSection2d.h>
+#include <ParallelSection.h>
+
+void* OPS_RCTBeamSection2d()
+{
+  if (OPS_GetNumRemainingInputArgs() < 18) {
+    opserr << "WARNING insufficient arguments\n";
+    opserr << "Want: section RCTBeamSection2d tag? coreTag? coverTag? steelTag? d? bw? beff? hf? Atop? Abottom? flcov? wcov? Nflcover? Nwcover? Nflcore? Nwcore? NsteelTop?  NsteelBottom?" << endln;
+    return 0;
+  }
+  
+  // int
+  int numdata = 4;
+  int idata[6];
+  if (OPS_GetIntInput(&numdata, idata) < 0) {
+    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
+    return 0;
+  }
+  int tag = idata[0];
+  int coreTag = idata[1];
+  int coverTag = idata[2];
+  int steelTag = idata[3];
+  
+  // double
+  numdata = 8;
+  double data[8];
+  if (OPS_GetDoubleInput(&numdata, data) < 0) {
+    opserr << "WARNING invalid double inputs" << endln;
+    opserr << "RCTBeamSection2d section: " << tag << endln;
+    return 0;
+  }
+  
+  double d = data[0];
+  double bw = data[1];
+  double beff = data[2];
+  double hf = data[3];
+  double Atop = data[4];
+  double Abottom = data[5];
+  double flcov = data[6];
+  double wcov = data[7];
+  
+  // int
+  numdata = 6;
+  if (OPS_GetIntInput(&numdata, idata) < 0) {
+    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
+    return 0;
+  }
+  int Nflcover = idata[0];
+  int Nwcover = idata[1];
+  int Nflcore = idata[2];
+  int Nwcore = idata[3];
+  int NsteelTop = idata[4];
+  int NsteelBottom = idata[5];
+  
+  UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+  if (theSteel == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << steelTag;
+    opserr << "\nRCTBeamSection2d section: " << tag << endln;
+    return 0;
+  }
+  
+  RCTBeamSectionIntegration
+    rctbeamsect(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
+		Nflcover, Nwcover, Nflcore, Nwcore,
+		NsteelTop, NsteelBottom);
+  
+  
+  NDMaterial *theCore = OPS_getNDMaterial(coreTag);
+  if (theCore == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << coreTag;
+    opserr << "\nRCTBeamSection2d section: " << tag << endln;
+    return 0;
+  }
+  
+  NDMaterial *theCover = OPS_getNDMaterial(coverTag);
+  if (theCover == 0) {
+    opserr << "WARNING uniaxial material does not exist\4n";
+    opserr << "material: " << coverTag;
+    opserr << "\nRCTBeamSection2d section: " << tag << endln;
+    return 0;
+  }
+  
+  int numCFibers = rctbeamsect.getNumFibers(concrete);
+  int numSFibers = rctbeamsect.getNumFibers(steel);
+  
+  NDMaterial **theNDMat = new NDMaterial *[numCFibers];
+  UniaxialMaterial **theUniMat = new UniaxialMaterial *[numSFibers];
+  
+  rctbeamsect.arrangeFibers(theUniMat, theNDMat, theCore, theCover, theSteel);
+  
+  //theSection = new McftSection2dfiber(tag, theNDMat, theUniMat, rctbeamsect);
+  
+  
+  
+  RCTBeamSectionIntegration
+    steel(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
+	  0, 0, 0, 0,
+	  NsteelTop, NsteelBottom);
+  steel.arrangeFibers(theUniMat, theNDMat, 0, 0, theSteel);
+  FiberSection2d steelSec(0, numSFibers, theUniMat, steel);
+  
+  RCTBeamSectionIntegration
+    concrete(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
+	     Nflcover, Nwcover, Nflcore, Nwcore,
+	     0, 0);
+  concrete.arrangeFibers(theUniMat, theNDMat, theCore, theCover, 0);
+  NDFiberSection2d concSec(0, numCFibers, theNDMat, concrete);
+  
+  
+  
+  SectionForceDeformation *theSections[2];
+  theSections[1] = &steelSec;
+  theSections[0] = &concSec;
+  SectionForceDeformation *theSection = new ParallelSection(tag, 2, theSections);
+
+
+
+  delete [] theNDMat;
+  delete [] theUniMat;
+  return theSection;
+}
+
+void* OPS_RCTBeamSectionUniMat2d()
+{
+  if (OPS_GetNumRemainingInputArgs() < 18) {
+    opserr << "WARNING insufficient arguments\n";
+    opserr << "Want: section RCTBeamSectionUniMat2d tag? coreTag? coverTag? steelTag? d? bw? beff? hf? Atop? Abottom? flcov? wcov? Nflcover? Nwcover? Nflcore? Nwcore? NsteelTop?  NsteelBottom?" << endln;
+    return 0;
+  }
+  
+  // int
+  int numdata = 4;
+  int idata[6];
+  if (OPS_GetIntInput(&numdata, idata) < 0) {
+    opserr << "WARNING invalid section RCTBeamSectionUniMat2d int inputs" << endln;
+    return 0;
+  }
+  int tag = idata[0];
+  int coreTag = idata[1];
+  int coverTag = idata[2];
+  int steelTag = idata[3];
+  
+  // double
+  numdata = 8;
+  double data[8];
+  if (OPS_GetDoubleInput(&numdata, data) < 0) {
+    opserr << "WARNING invalid double inputs" << endln;
+    opserr << "RCTBeamSectionUniMat2d section: " << tag << endln;
+    return 0;
+  }
+  
+  double d = data[0];
+  double bw = data[1];
+  double beff = data[2];
+  double hf = data[3];
+  double Atop = data[4];
+  double Abottom = data[5];
+  double flcov = data[6];
+  double wcov = data[7];
+  
+  // int
+  numdata = 6;
+  if (OPS_GetIntInput(&numdata, idata) < 0) {
+    opserr << "WARNING invalid section RCTBeamSectionUniMat2d int inputs" << endln;
+    return 0;
+  }
+  int Nflcover = idata[0];
+  int Nwcover = idata[1];
+  int Nflcore = idata[2];
+  int Nwcore = idata[3];
+  int NsteelTop = idata[4];
+  int NsteelBottom = idata[5];
+  
+  UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+  if (theSteel == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << steelTag;
+    opserr << "\nRCTBeamSectionUniMat2d section: " << tag << endln;
+    return 0;
+  }
+  
+  RCTBeamSectionIntegration
+    rctbeamsect(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
+		Nflcover, Nwcover, Nflcore, Nwcore,
+		NsteelTop, NsteelBottom);
+  
+  UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
+  if (theCore == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << coreTag;
+    opserr << "\nRCTBeamSectionUniMat2d section: " << tag << endln;
+    return 0;
+  }
+  
+  UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
+  if (theCover == 0) {
+    opserr << "WARNING uniaxial material does not exist\n";
+    opserr << "material: " << coreTag;
+    opserr << "\nRCTBeamSectionUniMat2d section: " << tag << endln;
+    return 0;
+  }
+  
+  int numFibers = rctbeamsect.getNumFibers();
+  
+  UniaxialMaterial **theUniMat = new UniaxialMaterial *[numFibers];
+  
+  rctbeamsect.arrangeFibers(theUniMat, theCore, theCover, theSteel);
+  
+  SectionForceDeformation *theSection = new FiberSection2d(tag, numFibers, theUniMat, rctbeamsect);
+  
+  delete [] theUniMat;
+  
+  return theSection;
+}
+
 RCTBeamSectionIntegration::RCTBeamSectionIntegration(double D,
 						     double BW,
 						     double BEFF,

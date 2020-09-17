@@ -5,7 +5,7 @@
 \indent \#include $<\tilde{
 }$/system\_of\_eqn/linearSOE/fullGEN/SuperLU.h$>$  \\ 
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class SuperLU: public SparseGenColLinSolver  \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -52,11 +52,11 @@ column permutations {\em permC}: $0$ uses the original ordering
 supplied, $1$ defines a min-degree ordering based on $A^TA$ and $2$ a
 min-degree ordering based on $A^T + A$. {\em relax} defines the min
 number of columns in a subtree for the subtree to be considered a
-single supernode. {\em thresh} defines the pivoting threshhold: at
+single supernode. {\em thresh} defines the pivoting threshold: at
 step j of the Gaussian elimination if (abs$(A_{jj}) \ge$ {\em thresh}
 (max$ i \ge j$ abs($A_{ij}$)). A value for {\em thresh} of $0.0$
 definines no pivoting, a value of $1.0$ classical partial pivoting.
-{\em panelSize} defines the number of consequtive columns used as a
+{\em panelSize} defines the number of consecutive columns used as a
 panel in the elimination. For more information on these values see the
 SuperLU manual. \\
 
@@ -72,7 +72,7 @@ First copies $B$ into $X$ and then solves the FullGenLinSOE system
 it is associated with (pointer kept by parent class) by calling the SeuperLU
 routine {\em dgstrf()}, if the system is marked as not having been factored,
 or {\em dgstrs()}, if system is marked as having been factored. If the
-solution is sucessfully obtained, i.e. the SuperLU routines return $0$
+solution is successfully obtained, i.e. the SuperLU routines return $0$
 in the INFO argument, it marks the system has having been
 factored and returns $0$, otherwise it prints a warning message and
 returns INFO. The solve process changes $A$ and $X$ and sets the char
@@ -89,7 +89,7 @@ applies this permutation and determines the elimination tree {\em
 etree} by calling the SuperLU routine {\em sp\_preorder()}. It then
 creates a SuperMatrix for X by calling the SuperLU routine 
 {\em dCreate\_Dense\_Matrix()}.
-Returns $0$ if sucessfull, prints a warning message and returns
+Returns $0$ if successful, prints a warning message and returns
 a $-1$ if not enough memory is available for the arrays. \\
 
 

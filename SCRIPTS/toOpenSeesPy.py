@@ -77,14 +77,20 @@ def toOpenSeesPy(infile, outfile):
             secTag = info[6]
             eleTag = info[2]
             Np = info[5]
-            Np = 3
-            outfile.write('ops.beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
+            if info[1] == 'dispBeamColumn':
+                outfile.write('ops.beamIntegration(\'Legendre\',%s,%s,%s)\n' % (eleTag,secTag,Np))
+            if info[1] == 'forceBeamColumn':
+                outfile.write('ops.beamIntegration(\'Lobatto\',%s,%s,%s)\n' % (eleTag,secTag,Np))
             outfile.write('ops.element(\'%s\',%s,%s,%s,%s,%s)\n' % (info[1],eleTag,info[3],info[4],info[7],eleTag))
             continue
 
+        # Change print to printModel
+        if info[0] == 'print':
+            info[0] = 'printModel'
+        
         # For everything else, have to do the first one before loop because of the commas
         if isfloat(info[1]):        
-            outfile.write('ops.%s(%s' % (info[0],info[1]))
+            outfile.write('ops.%s(%s' % (info[0],info[1]))            
         else:
             outfile.write('ops.%s(\'%s\'' % (info[0],info[1]))
         # Now loop through the rest with preceding commas
@@ -96,6 +102,11 @@ def toOpenSeesPy(infile, outfile):
             if info[i] == '}':
                 writeClose = False                
                 break
+            if info[0] == 'recorder':
+                # If it's a recorder, make everything immediately  after material, section, or fiber a string
+                if info[i-1] in ['material','section','fiber'] and isfloat(info[i]):
+                    outfile.write(',str(%s)' % info[i])
+                    continue
             if isfloat(info[i]):
                 outfile.write(',%s' % info[i])
             else:

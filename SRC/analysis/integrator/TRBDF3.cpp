@@ -388,6 +388,12 @@ int TRBDF3::update(const Vector &deltaU)
 }    
 
 
+const Vector &
+TRBDF3::getVel()
+{
+  return *Udot;
+}
+
 int TRBDF3::sendSelf(int cTag, Channel &theChannel)
 {
     // nothing to send

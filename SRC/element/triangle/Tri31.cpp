@@ -42,6 +42,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ElementResponse.h>
+#include <ElementalLoad.h>
 #include <ElementIter.h>
 #include <elementAPI.h>
 #include <map>
@@ -375,9 +376,6 @@ Tri31::Tri31(int tag, int nd1, int nd2, int nd3,
 	// Body forces
 	b[0] = b1;
 	b[1] = b2;
-
-	numgp = 1;
-	numnodes = 3;
 
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[numgp];
@@ -748,6 +746,10 @@ Tri31::getMass()
 void
 Tri31::zeroLoad(void)
 {
+    applyLoad = 0;
+    appliedB[0] = 0.0;
+    appliedB[1] = 0.0;
+
 	Q.Zero();
     return;
 }
@@ -755,7 +757,20 @@ Tri31::zeroLoad(void)
 int 
 Tri31::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-	opserr << "Tri31::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+	// body forces can be applied in a load pattern
+	int type;
+	const Vector &data = theLoad->getData(type, loadFactor);
+
+	if (type == LOAD_TAG_SelfWeight) {
+		applyLoad = 1;
+		appliedB[0] += loadFactor*data(0)*b[0];
+		appliedB[1] += loadFactor*data(1)*b[1];
+		return 0;
+	} else {
+	    opserr << "Tri31::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+		return -1;
+	}
+
     return -1;
 }
 
@@ -835,8 +850,13 @@ Tri31::getResistingForce()
 			// Subtract equiv. body forces from the nodes
 			//P = P - (N^ b) * intWt(i)*intWt(j) * detJ;
 			//P.addMatrixTransposeVector(1.0, N, b, -intWt(i)*intWt(j)*detJ);
-			P(ia)   -= dvol*(shp[2][alpha]*b[0]);
-			P(ia+1) -= dvol*(shp[2][alpha]*b[1]);
+			if (applyLoad == 0) {
+			  P(ia)   -= dvol*(shp[2][alpha]*b[0]);
+			  P(ia+1) -= dvol*(shp[2][alpha]*b[1]);
+			} else {
+			  P(ia)   -= dvol*(shp[2][alpha]*appliedB[0]);
+			  P(ia+1) -= dvol*(shp[2][alpha]*appliedB[1]);
+			}
 		}
 	}
 
@@ -1260,8 +1280,31 @@ Tri31::setResponse(const char **argv, int argc, OPS_Stream &output)
            output.endTag(); // GaussPoint
            output.endTag(); // NdMaterialOutput
        }
-       theResponse =  new ElementResponse(this, 3, Vector(12));
+       theResponse =  new ElementResponse(this, 3, Vector(3*numgp));
    }
+
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
+		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+    for (int i=0; i<numnodes; i++) {
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(3*numnodes));
+  }
+
 
    output.endTag(); // ElementOutput
 
@@ -1287,6 +1330,42 @@ Tri31::getResponse(int responseID, Information &eleInfo)
             cnt += 3;
        }
        return eleInfo.setVector(stresses);
+
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(3*numgp);
+    static Vector stressAtNodes(3*numnodes); // 3*nnodes
+	stressAtNodes.Zero();
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < numgp; i++) {
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
+	double We[numnodes][numgp] = {{1.0},
+								  {1.0},
+								  {1.0}};
+
+	int p, l;
+	for (int i = 0; i < numnodes; i++) {
+	  for (int k = 0; k < 3; k++) { // number of stress components
+		p = 3*i + k;
+		for (int j = 0; j < numgp; j++) {
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
+
+    return eleInfo.setVector(stressAtNodes);
+
   } else
 
     return -1;

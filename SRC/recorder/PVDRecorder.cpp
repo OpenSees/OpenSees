@@ -35,9 +35,9 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
-#include <BackgroundDef.h>
-#include <Particle.h>
-#include <ParticleGroup.h>
+#include "PFEMElement/BackgroundDef.h"
+#include "PFEMElement/Particle.h"
+#include "PFEMElement/ParticleGroup.h"
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
@@ -383,6 +383,7 @@ PVDRecorder::savePart0(int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -550,9 +551,10 @@ PVDRecorder::savePart0(int nodendf)
 
     // node displacement
     if(nodedata.disp) {
-	this->indent();
+	// all displacement
+    this->indent();
 	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
 	this->incrLevel();
@@ -561,6 +563,29 @@ PVDRecorder::savePart0(int nodendf)
 	    this->indent();
 	    for(int j=0; j<nodendf; j++) {
 		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+
+    // displacement
+    this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<3<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)nodes.size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialDisp();
+	    this->indent();
+	    for(int j=0; j<3; j++) {
+		if(j < vel.Size() && j < nodes[i]->getCrds().Size()) {
 		    theFile<<vel(j)<<' ';
 		} else {
 		    theFile<<0.0<<' ';
@@ -821,6 +846,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1207,6 +1233,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     theFile << std::scientific;
 
     // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
     theFile<<" version="<<quota<<"1.0"<<quota;
     theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
@@ -1421,9 +1448,10 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
     // node displacement
     if(nodedata.disp) {
-	this->indent();
+	// all displacement
+    this->indent();
 	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
 	this->incrLevel();
@@ -1432,6 +1460,29 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 	    this->indent();
 	    for(int j=0; j<nodendf; j++) {
 		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+
+    // displacement
+    this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<3<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialDisp();
+	    this->indent();
+	    for(int j=0; j<3; j++) {
+		if(j < vel.Size() && j < nodes[i]->getCrds().Size()) {
 		    theFile<<vel(j)<<' ';
 		} else {
 		    theFile<<0.0<<' ';
@@ -1773,6 +1824,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_FourNodeQuad3d] = VTK_QUAD;
     vtktypes[ELE_TAG_Tri31] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_SixNodeTri] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_BeamWithHinges2d] = VTK_LINE;
     vtktypes[ELE_TAG_BeamWithHinges3d] = VTK_LINE;
     vtktypes[ELE_TAG_EightNodeBrick] = VTK_HEXAHEDRON;
@@ -1794,6 +1846,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_PlateMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC9] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ASDShellQ4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDShellT3] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_Plate1] = VTK_QUAD;
     vtktypes[ELE_TAG_Brick] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_BbarBrick] = VTK_HEXAHEDRON;
@@ -1801,6 +1855,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_EnhancedQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_ConstantPressureVolumeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_NineNodeMixedQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_NineNodeQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EightNodeQuad] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_DispBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_TimoshenkoBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_DispBeamColumn3d] = VTK_LINE;
@@ -1918,6 +1974,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
 }
 
 void

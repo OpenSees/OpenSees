@@ -853,7 +853,7 @@ SSPquadUP::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 
     // SSPquadUP creates a Vector, receives the Vector and then sets the 
     // internal data with the data in the Vector
-    static Vector data(6);
+    static Vector data(15);
     res += theChannel.recvVector(dataTag, commitTag, data);
     if (res < 0) {
         opserr << "WARNING SSPquadUP::recvSelf() - failed to receive Vector\n";

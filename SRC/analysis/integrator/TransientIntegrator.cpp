@@ -136,13 +136,13 @@ TransientIntegrator::formUnbalance(void) {
     if (modalValues != 0) {
       this->addModalDampingForce(modalValues);
     }
-    
+
     if (this->formElementResidual() < 0) {
 	opserr << "WARNING IncrementalIntegrator::formUnbalance ";
 	opserr << " - this->formElementResidual failed\n";
 	return -1;
     }
-    
+
     if (this->formNodalUnbalance() < 0) {
 	opserr << "WARNING IncrementalIntegrator::formUnbalance ";
 	opserr << " - this->formNodalUnbalance failed\n";

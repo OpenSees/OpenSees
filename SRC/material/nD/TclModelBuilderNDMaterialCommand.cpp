@@ -94,6 +94,8 @@ extern  void *OPS_NewMaterialCMM(void);
 extern  void *  OPS_NewPlasticDamageConcrete3d(void);
 extern  void *  OPS_NewPlasticDamageConcretePlaneStress(void);
 extern  void *OPS_ElasticIsotropicMaterial(void);
+extern  void *OPS_ElasticIsotropic3D(void);
+extern  void *OPS_IncrementalElasticIsotropicThreeDimensional(void);
 extern  void *OPS_ElasticOrthotropicMaterial(void);
 extern  void *OPS_DruckerPragerMaterial(void);
 extern  void *OPS_BoundingCamClayMaterial(void);
@@ -121,6 +123,8 @@ extern  void *OPS_BeamFiberMaterial2d(void);
 extern  void *OPS_BeamFiberMaterial2dPS(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
+extern void* OPS_UVCmultiaxial(void);
+extern void* OPS_UVCplanestress(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -398,6 +402,24 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+    else if ((strcmp(argv[1],"UVCplanestress") == 0)){
+
+      void *theMat = OPS_UVCplanestress();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"UVCmultiaxial") == 0)){
+
+      void *theMat = OPS_UVCmultiaxial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
 	  else if ((strcmp(argv[1],"MaterialCMM") == 0)){
 
       void *theMat = OPS_MaterialCMM();
@@ -506,6 +528,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+#if !_DLL
     else if ((strcmp(argv[1],"stressDensity") == 0) || (strcmp(argv[1],"StressDensity") == 0)) {
       
       void *theMat = OPS_StressDensityMaterial();
@@ -514,8 +537,17 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
-    
-    else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0) || (strcmp(argv[1],"ElasticIsotropic") == 0)) {
+#endif
+    else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0)) {
+
+      void *theMat = OPS_ElasticIsotropic3D();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"ElasticIsotropic") == 0)) {
 
       void *theMat = OPS_ElasticIsotropicMaterial();
       if (theMat != 0)
@@ -532,6 +564,16 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
+
+    else if ((strcmp(argv[1],"IncrementalElasticIsotropic3D") == 0) || (strcmp(argv[1],"incrementalElasticIsotropic3D") == 0)) {
+
+      void *theMat = OPS_IncrementalElasticIsotropicThreeDimensional();
+      if (theMat != 0)
+        theMaterial = (NDMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+
 
     else if (strcmp(argv[1],"PressureDependentElastic3D") == 0) {
 	if (argc < 6) {
@@ -818,7 +860,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
 
-    // Pressure Independend Multi-yield, by ZHY
+    // Pressure Independent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureIndependMultiYield") == 0) {
 	const int numParam = 6;
 	const int totParam = 10;
@@ -880,7 +922,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
     }
 
-    // Pressure Independend Multi-yield, by Quan Gu
+    // Pressure Independent Multi-yield, by Quan Gu
     else if (strcmp(argv[1],"MultiYieldSurfaceClay") == 0) {
 		const int numParam = 6;
 		const int totParam = 10;
@@ -943,7 +985,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 	// ============
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield") == 0) {
 	const int numParam = 15;
 	const int totParam = 24;
@@ -1042,7 +1084,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
 	}
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield02") == 0) {
 	const int numParam = 13;
 	const int totParam = 26;

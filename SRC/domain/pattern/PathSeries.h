@@ -80,7 +80,7 @@ class PathSeries : public TimeSeries
   protected:
     
   private:
-    Vector *thePath;      // vector containg the data points
+    Vector *thePath;      // vector containing the data points
     double pathTimeIncr;  // specifies the time increment used in load path vector
     double cFactor;       // additional factor on the returned load factor
     int otherDbTag;       // a database tag needed for the vector object

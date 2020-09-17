@@ -444,7 +444,7 @@ PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
       result = theChannel.sendVector(dbTag1, commitTag, *thePath);
       if (result < 0) {
 	opserr << "PathTimeSeries::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result;  
       }
     }
@@ -452,7 +452,7 @@ PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
       result = theChannel.sendVector(dbTag2, commitTag, *time);
       if (result < 0) {
 	opserr << "PathTimeSeries::sendSelf() - ";
-	opserr << "channel failed to send tha Path Vector\n";
+	opserr << "channel failed to send the Path Vector\n";
 	return result;  
       }
     }
@@ -504,13 +504,13 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
     result = theChannel.recvVector(dbTag1, lastSendCommitTag, *thePath);    
     if (result < 0) {
       opserr << "PathTimeSeries::recvSelf() - ";
-      opserr << "channel failed to receive tha Path Vector\n";
+      opserr << "channel failed to receive the Path Vector\n";
       return result;  
     }
     result = theChannel.recvVector(dbTag2, lastSendCommitTag, *time);    
     if (result < 0) {
       opserr << "PathTimeSeries::recvSelf() - ";
-      opserr << "channel failed to receive tha time Vector\n";
+      opserr << "channel failed to receive the time Vector\n";
       return result;  
     }
   }

@@ -43,7 +43,7 @@ void initValues();
         (nperm,ninvp) - new permutation and inverse permutation vectors
         parent - parent vector of elimination tree
         nblks - number of blocks 
-        list - a linked list of begining row/columns 
+        list - a linked list of beginning row/columns 
     working parameters -
         fchild - first son vector
         sibling - sibling vector
@@ -212,7 +212,7 @@ void bntree (int neqns, int *parent, int *fchild, int *sibling)
  ************************************************************************
  
     purpose - to form an equivalent post ordering of the elimination
-              tree.  It also forms a list of the begining of 
+              tree.  It also forms a list of the beginning of 
 	      new blocks in the generalized profile matrix.
  
     input parameters -
@@ -248,7 +248,7 @@ void postordr(int i, int *parent, int *fchild, int *sibling, int *oinvp, int *op
    if (fchild[i] >= 0)  postordr(fchild[i], parent, fchild,
       sibling, oinvp, operm, ninvp, nperm, list, rowblks  ) ;
    else
-   {  /* add count to list of nodes begining a new block */
+   {  /* add count to list of nodes beginning a new block */
       xcount++ ;
       list[xcount] = count;
    }
@@ -267,7 +267,7 @@ void postordr(int i, int *parent, int *fchild, int *sibling, int *oinvp, int *op
    if (sibling[i] >= 0)
    {  postordr(sibling[i],parent,fchild, sibling, oinvp, operm, 
 	 ninvp, nperm, list, rowblks ) ;
-      /* add parent to list of nodes begining a new block */
+      /* add parent to list of nodes beginning a new block */
       /* comment out below to cut down number of blocks and 
 	 follow Liu's scheme */ 
       if (list[xcount] != count)
@@ -287,11 +287,11 @@ void postordr(int i, int *parent, int *fchild, int *sibling, int *oinvp, int *op
  ************  pfblk ..... profile      blocks **************************
  ************************************************************************
  
-    purpose -  to set up xblk - index of begining row/column of each block
+    purpose -  to set up xblk - index of beginning row/column of each block
  
     input parameters -
         neqns - no of equations
-        list - a linked list of begining row/columns of each block
+        list - a linked list of beginning row/columns of each block
     output parameters -
         xblk - index vector for blocks
  

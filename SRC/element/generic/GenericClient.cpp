@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/06
 // Revision: A
@@ -47,6 +43,147 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elementAPI.h>
+
+
+void* OPS_GenericClient()
+{
+    int ndf = OPS_GetNDF();
+    if (OPS_GetNumRemainingInputArgs() < 7) {
+        opserr << "WARNING insufficient arguments\n";
+        opserr << "Want: element genericClient eleTag -node Ndi Ndj ... -dof dofNdi -dof dofNdj ... -server ipPort <ipAddr> <-ssl> <-udp> <-dataSize size> <-noRayleigh>\n";
+        return 0;
+    }
+    
+    // tags
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING: invalid tag\n";
+        return 0;
+    }
+    
+    // nodes
+    const char* type = OPS_GetString();
+    if (strcmp(type, "-node") != 0) {
+        opserr << "WARNING expecting -node Ndi Ndj ...\n";
+        return 0;
+    }
+    ID nodes(32);
+    int numNodes = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        int node;
+        numdata = 1;
+        int numArgs = OPS_GetNumRemainingInputArgs();
+        if (OPS_GetIntInput(&numdata, &node) < 0) {
+            if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                // move current arg back by one
+                OPS_ResetCurrentInputArg(-1);
+            }
+            break;
+        }
+        nodes(numNodes++) = node;
+    }
+    nodes.resize(numNodes);
+    
+    // dofs
+    int numDOF = 0;
+    ID *dofs = new ID[numNodes];
+    for (int i = 0; i < numNodes; i++) {
+        type = OPS_GetString();
+        if (strcmp(type, "-dof") != 0 && strcmp(type, "-dir") != 0) {
+            opserr << "WARNING expecting -dof dofNd"
+                << i+1 << ", but got " << type << endln;
+            return 0;
+        }
+        ID dofsi(ndf);
+        int numDOFi = 0;
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            int dof;
+            numdata = 1;
+            int numArgs = OPS_GetNumRemainingInputArgs();
+            if (OPS_GetIntInput(&numdata, &dof) < 0) {
+                if (numArgs > OPS_GetNumRemainingInputArgs()) {
+                    // move current arg back by one
+                    OPS_ResetCurrentInputArg(-1);
+                }
+                break;
+            }
+            if (dof < 1 || ndf < dof) {
+                opserr << "WARNING invalid dof ID\n";
+                return 0;
+            }
+            dofsi(numDOFi++) = dof - 1;
+            numDOF++;
+        }
+        dofsi.resize(numDOFi);
+        dofs[i] = dofsi;
+    }
+    
+    // ipPort
+    int ipPort;
+    numdata = 1;
+    type = OPS_GetString();
+    if (strcmp(type, "-server") != 0) {
+        opserr << "WARNING expecting -server ipPort <ipAddr>\n";
+        return 0;
+    }
+    if (OPS_GetIntInput(&numdata, &ipPort) < 0) {
+        opserr << "WARNING: invalid ipPort\n";
+        return 0;
+    }
+    
+    // options
+    char* ipAddr = new char[10];
+    strcpy(ipAddr, "127.0.0.1");
+    int ssl = 0, udp = 0;
+    int dataSize = 256;
+    int doRayleigh = 1;
+    
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        type = OPS_GetString();
+        if (strcmp(type, "-ssl") != 0 &&
+            strcmp(type, "-udp") != 0 &&
+            strcmp(type, "-dataSize") != 0 &&
+            strcmp(type, "-noRayleigh") != 0 &&
+            strcmp(type, "-doRayleigh") != 0) {
+            delete[] ipAddr;
+            ipAddr = new char[strlen(type) + 1];
+            strcpy(ipAddr, type);
+        }
+        else if (strcmp(type, "-ssl") == 0) {
+            ssl = 1; udp = 0;
+        }
+        else if (strcmp(type, "-udp") == 0) {
+            udp = 1; ssl = 0;
+        }
+        else if (strcmp(type, "-dataSize") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING wrong dataSize specified\n";
+                return 0;
+            }
+            numdata = 1;
+            if (OPS_GetIntInput(&numdata, &dataSize) < 0) {
+                opserr << "WARNING invalid damping value\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-doRayleigh") == 0) {
+            doRayleigh = 1;
+        }
+        else if (strcmp(type, "-noRayleigh") == 0) {
+            doRayleigh = 0;
+        }
+    }
+
+    // create object
+    Element *theEle = new GenericClient(tag, nodes, dofs, ipPort,
+        ipAddr, ssl, udp, dataSize, doRayleigh);
+
+    delete[] ipAddr;
+
+    return theEle;
+}
 
 
 // responsible for allocating the necessary space needed
@@ -91,7 +228,8 @@ GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
     }
     
     // save ipAddress
-    machineInetAddr = machineinetaddr;
+    machineInetAddr = new char[strlen(machineinetaddr) + 1];
+    strcpy(machineInetAddr,machineinetaddr);
     
     // set the vector sizes and zero them
     basicDOF.resize(numBasicDOF);
@@ -136,11 +274,11 @@ GenericClient::~GenericClient()
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
     if (theNodes != 0)
-        delete [] theNodes;
+        delete[] theNodes;
     if (theDOF != 0)
-        delete [] theDOF;
+        delete[] theDOF;
     if (machineInetAddr != 0)
-        delete [] machineInetAddr;
+        delete[] machineInetAddr;
     
     if (db != 0)
         delete db;
@@ -159,11 +297,11 @@ GenericClient::~GenericClient()
     if (sendData != 0)
         delete sendData;
     if (sData != 0)
-        delete [] sData;
+        delete[] sData;
     if (recvData != 0)
         delete recvData;
     if (rData != 0)
-        delete [] rData;
+        delete[] rData;
     if (theChannel != 0)
         delete theChannel;
 }
@@ -547,7 +685,7 @@ int GenericClient::sendSelf(int commitTag, Channel &sChannel)
     data(0) = this->getTag();
     data(1) = numExternalNodes;
     data(2) = port;
-    data(3) = strlen(machineInetAddr);
+    data(3) = double(strlen(machineInetAddr));
     data(4) = ssl;
     data(5) = udp;
     data(6) = dataSize;
@@ -564,7 +702,7 @@ int GenericClient::sendSelf(int commitTag, Channel &sChannel)
         sChannel.sendID(0, commitTag, theDOF[i]);
     
     // send the ip-address
-    Message theMessage(machineInetAddr, strlen(machineInetAddr));
+    Message theMessage(machineInetAddr, int(strlen(machineInetAddr)));
     sChannel.sendMsg(0, commitTag, theMessage);
     
     return 0;
@@ -576,11 +714,11 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
 {
     // delete dynamic memory
     if (theNodes != 0)
-        delete [] theNodes;
+        delete[] theNodes;
     if (theDOF != 0)
-        delete [] theDOF;
+        delete[] theDOF;
     if (machineInetAddr != 0)
-        delete [] machineInetAddr;
+        delete[] machineInetAddr;
     
     // receive element parameters
     static Vector data(12);
@@ -588,7 +726,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
     this->setTag((int)data(0));
     numExternalNodes = (int)data(1);
     port = (int)data(2);
-    machineInetAddr = new char [(int)data(3) + 1];
+    machineInetAddr = new char[int(data(3) + 1)];
     ssl = (int)data(4);
     udp = (int)data(5);
     dataSize = (int)data(6);
@@ -629,7 +767,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive the ip-address
-    Message theMessage(machineInetAddr, strlen(machineInetAddr));
+    Message theMessage(machineInetAddr, int(strlen(machineInetAddr)));
     rChannel.recvMsg(0, commitTag, theMessage);
     
     // set the vector sizes and zero them

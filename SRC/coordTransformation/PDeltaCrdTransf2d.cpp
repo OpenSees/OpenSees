@@ -1235,3 +1235,21 @@ PDeltaCrdTransf2d::Print(OPS_Stream &s, int flag)
 		s << "}";
 	}
 }
+
+int
+PDeltaCrdTransf2d::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
+{
+  xAxis(0) = cosTheta;
+  xAxis(1) = sinTheta;
+  xAxis(2) = 0;
+
+  yAxis(0) = -sinTheta;
+  yAxis(1) =  cosTheta;
+  yAxis(2) =  0;    
+  
+  zAxis(0) = 0.0;
+  zAxis(1) = 0.0;
+  zAxis(2) = 1.0;
+
+  return 0;
+}

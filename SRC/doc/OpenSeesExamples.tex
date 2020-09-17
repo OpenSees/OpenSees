@@ -1900,7 +1900,7 @@ is used. 2000 steps are performed with a time step of 0.01.
 \vspace{0.2in} \noindent{\bf Output Specification}
 
 The nodal displacements at nodes 9, 14, and 19
-(the master nodes for the rigid diaphragms)
+(the retained nodes for the rigid diaphragms)
 will be stored in the file node51.out for post-processing.
 
 \vspace{0.2in} \noindent{\bf OpenSees Script}
@@ -1948,7 +1948,7 @@ node 16  [expr  $bx/2] [expr  $by/2] [expr 3*$h]
 node 17  [expr  $bx/2] [expr -$by/2] [expr 3*$h] 
 node 18  [expr -$bx/2] [expr -$by/2] [expr 3*$h]
 
-# Master nodes for rigid diaphragm
+# Retained nodes for rigid diaphragm
 #    tag X Y          Z 
 node  9  0 0         $h 
 node 14  0 0 [expr 2*$h]
@@ -1962,12 +1962,12 @@ fix  3   1  1  1  1  1  1
 fix  4   1  1  1  1  1  1
 
 # Define rigid diaphragm multi-point constraints
-#               normalDir  master     slaves
+#               normalDir  retained     constrained
 rigidDiaphragm     3          9     5  6  7  8
 rigidDiaphragm     3         14    10 11 12 13
 rigidDiaphragm     3         19    15 16 17 18
 
-# Constraints for rigid diaphragm master nodes
+# Constraints for rigid diaphragm retained nodes
 #   tag DX DY DZ RX RY RZ
 fix  9   0  0  1  1  1  0
 fix 14   0  0  1  1  1  0
@@ -2092,14 +2092,14 @@ element nonlinearBeamColumn  24 18  15   $np  $beamSec     2
 # 10% of column capacity
 set p [expr 0.1*$fc*$h*$h]
 
-# Mass lumped at master nodes
+# Mass lumped at retained nodes
 set g 386.4;            # Gravitational constant
 set m [expr (4*$p)/$g]
 
-# Rotary inertia of floor about master node
+# Rotary inertia of floor about retained node
 set i [expr $m*($bx*$bx+$by*$by)/12.0]
 
-# Set mass at the master nodes
+# Set mass at the retained nodes
 #    tag MX MY MZ RX RY RZ
 mass  9  $m $m  0  0  0 $i
 mass 14  $m $m  0  0  0 $i
@@ -2189,7 +2189,7 @@ analyze   2000   0.01
 
 The results consist of the file node.out, which contains a line for
 every time step. Each line contains the time and the horizontal and
-vertical displacements at the diaphragm master nodes (9, 14 and 19)
+vertical displacements at the diaphragm retained nodes (9, 14 and 19)
 i.e. time Dx9 Dy9 Dx14 Dy14 Dx19 Dy19. The horizontal displacement
 time history of the first floor diaphragm node 9 is shown in
 figure~\ref{example4disp}. Notice the increase in period

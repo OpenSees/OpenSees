@@ -61,6 +61,7 @@ class Vertex: public TaggedObject
     virtual int addEdge(int otherTag);
     virtual int getDegree(void) const;
     virtual const ID &getAdjacency(void) const;
+    virtual void setAdjacency(const ID& adj) {myAdjacency = adj;}
 
     virtual  void Print(OPS_Stream &s, int flag =0);
     int sendSelf(int commitTag, Channel &theChannel);

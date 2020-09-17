@@ -26,7 +26,7 @@
 // File: ~/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSolver.h
 //
 // Written: fmk 
-// Created: Febuary 1997
+// Created: February 1997
 // Revision: A
 //
 // Description: This file contains the class definition for 
@@ -39,7 +39,8 @@
 #ifndef ProfileSPDLinDirectSolver_h
 #define ProfileSPDLinDirectSolver_h
 
-#include <ProfileSPDLinSolver.h>
+#include "ProfileSPDLinSolver.h"
+
 class ProfileSPDLinSOE;
 
 class ProfileSPDLinDirectSolver : public ProfileSPDLinSolver

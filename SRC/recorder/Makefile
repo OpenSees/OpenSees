@@ -9,7 +9,9 @@ endif
 OBJS       = Recorder.o \
 	DatastoreRecorder.o \
 	ElementRecorder.o \
+	ElementRecorderRMS.o \
 	NodeRecorder.o \
+	NodeRecorderRMS.o \
 	EnvelopeElementRecorder.o \
 	NormElementRecorder.o \
 	NormEnvelopeElementRecorder.o \
@@ -20,8 +22,8 @@ OBJS       = Recorder.o \
 	PatternRecorder.o \
 	RemoveRecorder.o \
 	DamageRecorder.o $(GRAPHIC_OBJECTS) \
-	PVDRecorder.o MPCORecorder.o GmshRecorder.o 
-
+	PVDRecorder.o MPCORecorder.o GmshRecorder.o \
+	VTK_Recorder.o
 
 
 # Compilation control

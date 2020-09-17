@@ -84,9 +84,9 @@ Matrix ForceBeamColumn2d::theMatrix(6,6);
 Vector ForceBeamColumn2d::theVector(6);
 double ForceBeamColumn2d::workArea[200];
 
-Vector *ForceBeamColumn2d::vsSubdivide = 0;
-Matrix *ForceBeamColumn2d::fsSubdivide = 0;
-Vector *ForceBeamColumn2d::SsrSubdivide = 0;
+Vector ForceBeamColumn2d::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumn2d::fsSubdivide[maxNumSections];
+Vector ForceBeamColumn2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2d()
 {
@@ -423,17 +423,6 @@ ForceBeamColumn2d::ForceBeamColumn2d():
 
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -476,17 +465,6 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
   }
 
   this->setSectionPointers(numSec, sec);
-  
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2d::ForceBeamColumn2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // ~ForceBeamColumn2d():
@@ -2649,6 +2627,12 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionDisplacements") == 0)
+    theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
+
+  else if (strcmp(argv[0],"cbdiDisplacements") == 0)
+    theResponse = new ElementResponse(this, 112, Matrix(20,3));  
+  
   else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") ==0 || strcmp(argv[0],"dampingForces") == 0) { 
 
     output.tag("ResponseType","Px_1");
@@ -2923,6 +2907,81 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
       weights(i) = wts[i]*L;
     return eleInfo.setVector(weights);
   }
+
+  else if (responseID == 111) {
+    double L = crdTransf->getInitialLength();
+    double pts[maxNumSections];
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    // CBDI influence matrix
+    Matrix ls(numSections, numSections);
+    getCBDIinfluenceMatrix(numSections, pts, L, ls);
+    // Curvature vector
+    Vector kappa(numSections);
+    for (int i = 0; i < numSections; i++) {
+      const ID &code = sections[i]->getType();
+      const Vector &e = sections[i]->getSectionDeformation();
+      int order = sections[i]->getOrder();
+      for (int j = 0; j < order; j++)
+	if (code(j) == SECTION_RESPONSE_MZ)
+	  kappa(i) += e(j);
+    }
+    // Displacement vector
+    Vector dispsy(numSections);
+    dispsy.addMatrixVector(0.0, ls, kappa, 1.0);
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    static Vector uxb(2);
+    static Vector uxg(2);
+    Matrix disps(numSections,3);
+    vp = crdTransf->getBasicTrialDisp();
+    for (int i = 0; i < numSections; i++) {
+      uxb(0) = pts[i]*vp(0); // linear shape function
+      uxb(1) = dispsy(i);
+      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      disps(i,0) = uxg(0);
+      disps(i,1) = uxg(1);
+      disps(i,2) = 0.0;      
+    }
+    return eleInfo.setMatrix(disps);
+  }
+
+  else if (responseID == 112) {
+    double L = crdTransf->getInitialLength();
+    double ipts[maxNumSections];
+    beamIntegr->getSectionLocations(numSections, L, ipts);
+    // CBDI influence matrix
+    double pts[20];
+    for (int i = 0; i < 20; i++)
+      pts[i] = 1.0/(20-1)*i;
+    Matrix ls(20, numSections);
+    getCBDIinfluenceMatrix(20, pts, numSections, ipts, L, ls);
+    // Curvature vector
+    Vector kappa(numSections);
+    for (int i = 0; i < numSections; i++) {
+      const ID &code = sections[i]->getType();
+      const Vector &e = sections[i]->getSectionDeformation();
+      int order = sections[i]->getOrder();
+      for (int j = 0; j < order; j++)
+	if (code(j) == SECTION_RESPONSE_MZ)
+	  kappa(i) += e(j);
+    }
+    // Displacement vector
+    Vector dispsy(20);
+    dispsy.addMatrixVector(0.0, ls, kappa, 1.0);
+    static Vector uxb(2);
+    static Vector uxg(2);
+    Matrix disps(20,3);
+    vp = crdTransf->getBasicTrialDisp();
+    for (int i = 0; i < 20; i++) {
+      uxb(0) = pts[i]*vp(0); // linear shape function
+      uxb(1) = dispsy(i);
+      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      disps(i,0) = uxg(0);
+      disps(i,1) = uxg(1);
+      disps(i,2) = 0.0;   
+    }
+    return eleInfo.setMatrix(disps);
+  }
+  
   //by SAJalali
   else if (responseID == 14) {
 	  double xi[maxNumSections];

@@ -21,8 +21,47 @@
 #include <ElasticIsotropicThreeDimensional.h>           
 #include <Channel.h>
 
+#include <elementAPI.h>
+
 Vector ElasticIsotropicThreeDimensional::sigma(6);
 Matrix ElasticIsotropicThreeDimensional::D(6,6);
+
+void *
+OPS_ElasticIsotropic3D(void)
+{
+  NDMaterial *theMaterial = 0;
+  
+  int numArgs = OPS_GetNumRemainingInputArgs();
+  
+  if (numArgs < 3) {
+    opserr << "Want: nDMaterial ElasticIsotropic3D $tag $E $nu <$rho>" << endln;
+    return 0;	
+  }
+  
+  int iData[1];
+  double dData[3];
+  dData[2] = 0.0;
+  
+  int numData = 1;
+  if (OPS_GetInt(&numData, iData) != 0) {
+    opserr << "WARNING invalid integer tag: nDMaterial ElasticIsotropic3D \n";
+    return 0;
+  }
+  
+  if (numArgs > 3) 
+    numData = 3;
+  else
+    numData = 2;
+  
+  if (OPS_GetDouble(&numData, dData) != 0) {
+    opserr << "WARNING invalid data: nDMaterial ElasticIsotropic3D : " << iData[0] <<"\n";
+    return 0;
+  }  
+  
+  theMaterial = new ElasticIsotropicThreeDimensional(iData[0], dData[0], dData[1], dData[2]);
+  
+  return theMaterial;
+}
 
 ElasticIsotropicThreeDimensional::ElasticIsotropicThreeDimensional
 (int tag, double E, double nu, double rho) :

@@ -347,6 +347,11 @@ int CentralDifference::commit(void)
     return theModel->commitDomain();
 }
 
+const Vector &
+CentralDifference::getVel()
+{
+  return *Udot;
+}
 
 int CentralDifference::sendSelf(int cTag, Channel &theChannel)
 {

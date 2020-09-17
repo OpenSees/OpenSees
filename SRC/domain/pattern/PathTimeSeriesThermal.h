@@ -83,9 +83,9 @@ class PathTimeSeriesThermal : public TimeSeries
   private:
 	int numCols;
 	int numRows;
-    Matrix *thePath;      // vector containg the data points
+    Matrix *thePath;      // vector containing the data points
 	Vector *CurrentFactors;
-    Vector *time;		  // vector containg the time values of data points
+    Vector *time;		  // vector containing the time values of data points
     int currentTimeLoc;   // current location in time
     double cFactor;       // additional factor on the returned load factor
     int dbTag1, dbTag2;   // additional database tags needed for vector objects

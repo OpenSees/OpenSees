@@ -40,7 +40,7 @@
 #include <StaticIntegrator.h>
 #include <ConvergenceTest.h>
 #include <Subdomain.h>
-#include <Timer.h>
+//#include <Timer.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 

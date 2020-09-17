@@ -26,7 +26,7 @@
 // File: ~/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.h
 //
 // Written: fmk 
-// Created: Febuary 1997
+// Created: February 1997
 // Revision: A
 //
 // Description: This file contains the class definition for 
@@ -41,7 +41,7 @@
 #define ProfileSPDLinSubstrSolver_h
 
 #include <DomainSolver.h>
-#include <ProfileSPDLinDirectSolver.h>
+#include "ProfileSPDLinDirectSolver.h"
 
 class ProfileSPDLinSOE;
 

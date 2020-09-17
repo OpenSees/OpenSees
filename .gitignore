@@ -15,9 +15,10 @@
 *.pch
 
 # Compiled Dynamic libraries
-*.so
+*.so*
 *.dylib
 *.dll
+*.pyd
 
 # Fortran module files
 *.mod
@@ -40,6 +41,18 @@
 *.pdb
 .vs
 obj
+*.exp
+
+# CLion
+.gitignore
+.idea
+cmake-build-debug
+cmake-build-release
+CMakeLists.txt
+.dropbox.attr
+
+# VSCode
+.vscode
 
 # OTHER
 Makefile.def
@@ -62,3 +75,7 @@ Faria1998PlaneStress2d.cpp
 Faria1998PlaneStress2d.h
 Faria1998ThreeDimensional.cpp
 Faria1998ThreeDimensional.h
+SRC/interpreter/pythonInterpreter
+SRC/interpreter/tclInterpreter
+SRC/interpreter/openseespy
+SRC/interpreter/openseestcl

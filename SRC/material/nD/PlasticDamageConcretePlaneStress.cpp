@@ -99,7 +99,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    double k = 1.4142135623730951 * (f2c - fc) / (2.0 * f2c - fc);
 
    //  initial damage threshold
-   double rn0 = (k + 1.4142135623730951) * fc / 1.7320508075688772;
+   double rn0 = (-k + 1.4142135623730951) * fc / 1.7320508075688772;
 
    //  some useful constants
    //  shear modulus
@@ -163,7 +163,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    double k = 1.4142135623730951 * (f2c - fc) / (2.0 * f2c - fc);
 
    //  initial damage threshold
-   double rn0 = (k + 1.4142135623730951) * fc / 1.7320508075688772;
+   double rn0 = (-k + 1.4142135623730951) * fc / 1.7320508075688772;
 
    //  some useful constants
    //  shear modulus
@@ -368,7 +368,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
        taun = taunt * lam;
        taup = taupt * lam;
 
-       //  update damage funciton
+       //  update damage function
        gp = taup - rp;
        gn = taun - rn;
        

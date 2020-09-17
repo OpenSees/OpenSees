@@ -22,8 +22,8 @@
 #include <FE_Element.h>
 #include <FE_EleIter.h>
 #include <LinearSOE.h>
-#include <FullGenLinSOE.h>
-#include <FullGenLinLapackSolver.h>
+#include "fullGEN/FullGenLinSOE.h"
+#include "fullGEN/FullGenLinLapackSolver.h"
 #include <AnalysisModel.h>
 #include <Vector.h>
 #include <DOF_Group.h>
@@ -611,6 +611,12 @@ int KRAlphaExplicit_TP::commit(void)
     return theModel->commitDomain();
 }
 
+
+const Vector &
+KRAlphaExplicit_TP::getVel()
+{
+  return *Udot;
+}
 
 int KRAlphaExplicit_TP::sendSelf(int cTag, Channel &theChannel)
 {

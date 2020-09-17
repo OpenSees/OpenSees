@@ -46,7 +46,7 @@
 #include <Matrix.h>
 #include <ID.h>
 #include <Graph.h>
-#include <Timer.h>
+//#include <Timer.h>
 #include <Integrator.h>//Abbas
 
 // Constructor
@@ -76,6 +76,7 @@ StaticAnalysis::StaticAnalysis(Domain &the_Domain,
 
     theIntegrator->setLinks(theModel, theLinSOE, theTest);
     theAlgorithm->setLinks(theModel, theStaticIntegrator, theLinSOE, theTest);
+    theSOE->setLinks(theModel);
 
     if (theTest != 0)
       theAlgorithm->setConvergenceTest(theTest);

@@ -36,7 +36,7 @@
 // coefficients at low and high velocities with both of them being a function of
 // the normal force. If the normal force N is negative the friction force is zero.
 
-#include <FrictionModel.h>
+#include "FrictionModel.h"
 
 class VelNormalFrcDep : public FrictionModel
 {

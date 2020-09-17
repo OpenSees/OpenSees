@@ -18,8 +18,9 @@
 #define MultiYieldSurfaceClay_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
 #include <Matrix.h>
+#include "soil/T2Vector.h"
+class MultiYieldSurface;
 
 #define ND_TAG_MultiYieldSurfaceClay   10284765
 
@@ -224,10 +225,10 @@ private:
 	static T2Vector dStrainRate;
 	static T2Vector dContactStress;
 
-// uncommited conditional sensitivity
+// uncommitted conditional sensitivity
 	double * dMultiSurfaceCenter;
 
-// commited unconditional sensitivity
+// committed unconditional sensitivity
 
 	double * dCommittedMultiSurfaceSize;
 //	double * dCommittedMultiSurfaceElastPlastModul;

@@ -53,6 +53,7 @@ class FiberSection : public SectionForceDeformation
 
     const Vector &getStressResultant(void);
     const Matrix &getSectionTangent(void);
+    const Matrix &getInitialTangent(void);
 
     int   commitState(void);
     int   revertToLastCommit(void);    

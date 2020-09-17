@@ -23,8 +23,8 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam2dThermalAction.cpp,v $
 
 
-//Modified by Jian Zhang, [Univeristy of Edinburgh]
-//Modified by Panagiotis Kotsovinos, [Univeristy of Edinburgh]
+//Modified by Jian Zhang, [University of Edinburgh]
+//Modified by Panagiotis Kotsovinos, [University of Edinburgh]
 //Modified by Liming Jiang [http://openseesforfire.github.io]
 
 // Description: This file contains the class implementation for Beam2dThermalAction.

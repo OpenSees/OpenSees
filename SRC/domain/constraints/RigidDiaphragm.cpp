@@ -72,14 +72,14 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     // check plane is valid, i.e. perpPlaneConstrained must be 0, 1 or 2
     if (perpPlaneConstrained < 0 || perpPlaneConstrained > 2) {
       opserr << "RigidDiaphragm::RigidDiaphragm - " << 
-	"the dirn of perpendicular to constrained plane" << perpPlaneConstrained <<  "not valid\n";
+	"the dirn of perpendicular to constrained plane " << perpPlaneConstrained <<  " not valid\n";
       return;
     }
 
     // check constrainedNodes ID does not contain the retained node
     if (nC.getLocation(nR) >= 0) {
       opserr << "RigidDiaphragm::RigidDiaphragm - " << 
-	"retained node" << nR << "is in constrained node list\n";
+	"retained node " << nR << " is in constrained node list\n";
       return;
     }	
     
@@ -87,14 +87,14 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     Node *nodeR = theDomain.getNode(nR);
     if (nodeR == 0) {
       opserr << "RigidDiaphragm::RigidDiaphragm - " << 
-	"retained Node" <<  nR <<  "not in domain\n";
+	"retained Node " <<  nR <<  " not in domain\n";
       return;
     }
 
     const Vector &crdR = nodeR->getCrds();
     if ((nodeR->getNumberDOF() != 6) || (crdR.Size() != 3)){
       opserr << "RigidDiaphragm::RigidDiaphragm - " << 
-	"retained Node" << nR << "not in 3d space with 6 dof\n";
+	"retained Node " << nR << " not in 3d space with 6 dof\n";
 			      
 			      
       return;
@@ -108,7 +108,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     // create the ID to identify the constrained dof 
     ID id(3);
 
-    // construct the tranformation matrix Ccr, where  Uc = Ccr Ur & set the diag
+    // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag
     Matrix mat(3,3);
     mat.Zero();
     mat(0,0) = 1.0; mat(1,1) = 1.0; mat(2,2) = 1.0;
@@ -205,7 +205,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	  }
 
 	} else  // node not in 3d space
-	  opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
+	  opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node  " << ndC << 
 	    ", not 3d node\n";
 	
       } else // node does not exist

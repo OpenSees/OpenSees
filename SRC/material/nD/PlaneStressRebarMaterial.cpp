@@ -336,7 +336,7 @@ PlaneStressRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
 
   int dataTag = this->getDbTag();
 
-  // recv an id containg the tag and associated materials class and db tags
+  // recv an id containing the tag and associated materials class and db tags
   static ID idData(3);
   res = theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {

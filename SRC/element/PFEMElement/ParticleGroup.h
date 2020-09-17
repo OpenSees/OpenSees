@@ -43,6 +43,9 @@ public:
 
     // particles
     void addParticle(const VDouble& coord, const VDouble& vel, double p);
+    void addParticle(const VDouble& coordn, const VDouble& coord,
+                     const VDouble& vel,
+                     const VDouble& accel, double p);
     void removeParticles(const VInt& rm);
     int numParticles() const {return (int)particles.size();}
     Particle* getParticle(int i) {
@@ -52,8 +55,11 @@ public:
     // dummy mesh
     int mesh(){return 0;}
 
+    // return particles
+    int pointlist(VDouble& pointdata);
+
     // create particles
-    int point(const VDouble& p1, const VDouble& vel0, double p0);
+    int pointlist(const VDouble& pointdata, int ndm);
     int line(const VDouble& p1, const VDouble& p2, int num,
 	     const VDouble& vel0, double p0);
     int qua_d(const VDouble& p1, const VDouble& p2, const VDouble& p3,
@@ -61,7 +67,6 @@ public:
     int tri(const VDouble& p1, const VDouble& p2,
 	    const VDouble& p4, int m, int n, const VDouble& vel0, double p0);
     int cube(const VVDouble& pts, const VInt& num, const VDouble& vel0, double p0);
-    int readfile(const char* crdsfile, const char* velfile);
 
 private:
 

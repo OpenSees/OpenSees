@@ -90,7 +90,7 @@ Invoked to allow the LinearSOE object to determine the size and sparsity of
 the matrix $A$ and vectors $x$ and $b$. This information can be
 deduced from the number of vertices and the connectivity between the
 vertices in the Graph object {\em G}. To return $0$ if
-sucessfull, a negative number if not. \\  
+successful, a negative number if not. \\  
 
 \indent {\em virtual int addA(const Matrix \&M, const ID \& loc,
 doublefact = 1.0) =0;} \\
@@ -100,7 +100,7 @@ locations given by the ID object {\em loc}, i.e. $a_{loc(i),loc(j)} +=
 M(i,j)$. Numbering in $A$ starts at $(0,0)$, i.e. C style. If a
 location specified is outside the range, i.e. $(-1,-1)$ the
 corresponding entry in {\em M} is not added to $A$. To return $0$ if
-sucessfull, a negative number if not. \\ 
+successful, a negative number if not. \\ 
 
 {\em virtual int addB(const Vector \& theVector, const ID \& loc,
 double fact = 1.0) =0;} \\
@@ -108,13 +108,13 @@ The LinearSOE object assembles {\em fact} times the Vector {\em V} into
 the vector $b$. The Vector is assembled into $b$ at the locations
 given by the ID object {\em loc}, i.e. $b_{loc(i)} += V(i)$. If a
 location specified is outside the range, e.g. $-1$, the corresponding
-entry in {\em V} is not added to $b$. To return $0$ if sucessfull, a
+entry in {\em V} is not added to $b$. To return $0$ if successful, a
 negative number if not.  \\ 
 
 {\em virtual int setB(const Vector \& theVector,
 double fact = 1.0) =0;} \\
 The LinearSOE object sets the vector {\em b} to be {\em fact} times
-the Vector {\em V}. To return $0$ if sucessfull, a negative number if
+the Vector {\em V}. To return $0$ if successful, a negative number if
 not.  \\  
 
 {\em virtual void zeroA(void) =0;} \\

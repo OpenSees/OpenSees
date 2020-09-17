@@ -78,7 +78,7 @@ ChiSquareRV::getType()
 double 
 ChiSquareRV::getMean()
 {
-	return 2*nu;
+	return nu;
 }
 
 
@@ -100,7 +100,7 @@ ChiSquareRV::getParameters(void) {
 int
 ChiSquareRV::setParameters(double mean, double stdv)
 {
-	nu = 0.5*mean;
+	nu = mean;
 	
 	return 0;
 }
@@ -136,9 +136,45 @@ ChiSquareRV::getCDFvalue(double rvValue)
 
 
 double
-ChiSquareRV::getInverseCDFvalue(double rvValue)
+ChiSquareRV::getInverseCDFvalue(double probValue)
 {
-	return 0.0;
+	// Here we want to solve the nonlinear equation:
+	//         probValue = getCDFvalue(x)
+	// with respect to x. 
+	// A Newton scheme to find roots - f(x)=0 - looks something like:
+	//         x(i+1) = x(i) - f(xi)/f'(xi)
+	// In our case the function f(x) is: f(x) = probValue - getCDFvalue(x)
+
+	double x_old = nu;
+
+	double tol = 1.0e-7;
+	double x_new = x_old;
+	double dx = x_old;
+	int step = 1;
+	int nmax = 50;
+
+	for (int i = 1; i <= nmax; i++) {
+
+		dx = (getCDFvalue(x_new) - probValue) / getPDFvalue(x_new);
+		
+		// Take a Newton step
+		x_new = x_old - dx;
+
+		if (fabs(getCDFvalue(x_new) - probValue) < tol) {
+			return x_new;
+		}
+		else {
+			if (i == nmax) {
+				opserr << "WARNING: ChiSquaredRV did not converge to find inverse CDF!" << endln;
+				return 0.0;
+			}
+			else {
+				x_old = x_new;
+			}
+		}
+	}
+
+	return x_new;
 }
 
 

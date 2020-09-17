@@ -33,7 +33,7 @@
 // Unloading and reloanding curve: stress-strain model proposed by D. Karsan, and J. Jirsa in 
 //                                 "Behavior of concrete under compressive loadings"
 //                                 Journal of the Structural Division, ASCE, Vol. 95, No. ST12, December, 1969
-// Tensile evelope strenght:       model has not tensile strenght
+// Tensile envelope strength:      model has no tensile strength
 //                                 
 
 
