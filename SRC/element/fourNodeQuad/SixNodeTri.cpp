@@ -1144,7 +1144,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
       output.endTag(); // GaussPoint
       output.endTag(); // NdMaterialOutput
       }
-    theResponse =  new ElementResponse(this, 3, Vector(9));
+    theResponse =  new ElementResponse(this, 3, Vector(3*nip));
   }
 
   else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
@@ -1166,7 +1166,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
       output.endTag(); // GaussPoint
       // output.endTag(); // NdMaterialOutput
       }
-    theResponse =  new ElementResponse(this, 11, Vector(18));
+    theResponse =  new ElementResponse(this, 11, Vector(3*nnodes));
   }
 
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
@@ -1187,7 +1187,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
       output.endTag(); // GaussPoint
       output.endTag(); // NdMaterialOutput
       }
-    theResponse =  new ElementResponse(this, 4, Vector(9));
+    theResponse =  new ElementResponse(this, 4, Vector(3*nip));
   }
 
   output.endTag(); // ElementOutput
@@ -1249,7 +1249,7 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
 		for (int j = 0; j < nip; j++) {
 		  l = 3*j + k;
 		  stressAtNodes(p) += We[i][j] * stressGP(l);
-		  // opserr << "We[" << i << "][" << j << "] * stressGP(" << l << ") = stressAtNodes(" << p << "): " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
 		}
 	  }
 	}
