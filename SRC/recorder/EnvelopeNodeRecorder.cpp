@@ -511,6 +511,10 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+      // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
+        if (nextTimeStampToRecord <= timeStamp) {
+            nextTimeStampToRecord = timeStamp + deltaT;
+        }
 
     double timeSeriesTerm = 0.0;
 

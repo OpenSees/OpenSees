@@ -177,6 +177,10 @@ FilePlotter::record(int cTag, double timeStamp)
 
     if (deltaT != 0.0) 
       nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+      // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
+        if (nextTimeStampToRecord <= timeStamp) {
+            nextTimeStampToRecord = timeStamp + deltaT;
+        }
 
     if (fileName1 != 0 && fileName2 == 0)
       return this->plotFile();

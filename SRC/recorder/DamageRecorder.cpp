@@ -191,6 +191,10 @@ DamageRecorder::record(int commitTag, double timeStamp)
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+      // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
+        if (nextTimeStampToRecord <= timeStamp) {
+            nextTimeStampToRecord = timeStamp + deltaT;
+        }
     
     // print out the pseudo time if requested
     int counter = 0;

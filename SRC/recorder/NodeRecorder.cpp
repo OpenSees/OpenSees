@@ -519,11 +519,54 @@ NodeRecorder::record(int commitTag, double timeStamp)
   }
 
   int numDOF = theDofs->Size();
+
+  // In regards to the choice of 0.00001 as the multiplier of the recorder time step (deltaT)
+  // to deal with precision error, here k is the decimal digits such that for k=5, 1e-k=0.00001.
+  // The comparison of floats always requires some tolerance, however, in this situation there are
+  // two competing limits that must be satisfied. If k is too big and adt << deltaT (where adt is the
+  // analysis time step), then the recorder may record a step too early. However, if k is too small
+  // then as the total time (timeStamp) increases and deltaT/timeStamp therefore decreases then the
+  // recorder may record a step too late.
+  //
+  // Without the ` - k * deltaT`, then in the case where the timeStamp is equal to the next recorder
+  // time (nextTimeStampToRecord) the precision error may evaluate timeStamp to be less than
+  // nextTimeStampToRecord and take an additional step before recording. Assuming that the most common
+  // use of a recorder time step would be to sample the analysis at a multiple of the analysis time step
+  // (to accurately record the object state at the intended time) then the current behaviour is not ideal.
+  //
+  // The ` - k * deltaT` means that the evaluation of timeStamp >= nextTimeStampToRecord now evaluates
+  // the exact multiple correctly provided that adt/deltaT > 1e-k, if this limit is not satisfied then a
+  // recording would happen k*deltaT prior to the expected recording time, or in the case where the deltaT
+  // is not a multiple the same tolerance would apply and therefore the recorder accuracy has k
+  // significant digits of accuracy.
+  //
+  // A further consideration is that timeStamp is stored as a double with 15 significant digits of precision.
+  // Therefore a transient analysis can run while the following condition is true: adt/timeStamp > 1e-15.
+  // But if deltaT/nextTimeStampToRecord < 1e-(15-k) then the ` - k * deltaT` has no effect since it exceeds
+  // the significant digits of nextTimeStampToRecord, and therefore the recorder may not correctly evaluate
+  // timeStamp==nextTimeStampToRecord and take another step before recording.
+  //
+  // Since recorder intervals are typically 1-5 orders of magnitude larger than the analysis time step and analysis
+  // times are typically many orders of magnitude greater than the recorder time step and appropriate value for k
+  // would be 4-8. Noting that if adt/deltaT<1e-k is not satisfied the error is k*deltaT, whereas if
+  // deltaT/nextTimeStampToRecord < 1e-(15-k) is not satisfied the error is adt and if deltaT=adt, then the error
+  // is significantly larger. Therefore to minimise the occurrence of the second error, a value of k=5 was selected.
+  // Noting that users can reset the timeStamp to zero if the second error is problematic.
+  //
+  // The `nextTimeStampToRecord = nextTimeStampToRecord + deltaT;` was used as opposed to
+  // `nextTimeStampToRecord = timeStamp + deltaT;`.
+  // This was to avoid propagation of precision error to the next time step.
+  // In the previous implementation, when the recording was a step early or late this would then cause the next step
+  // to be shifted by the same amount, whereas in the new formulation the next recording step would be unaffected.
   
   if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
 
     if (deltaT != 0.0) 
       nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+      // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
+        if (nextTimeStampToRecord <= timeStamp) {
+            nextTimeStampToRecord = timeStamp + deltaT;
+        }
 
     //
     // if need nodal reactions get the domain to calculate them

@@ -290,10 +290,14 @@ TclFeViewer::record(int cTag, double timeStamp)
   // using theRenderer and displayTag as arguments.
   // first clear the image
   int res = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
 
       if (deltaT != 0.0) 
-          nextTimeStampToRecord = timeStamp + deltaT;
+          nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+          // check for time lag - since nextTimeStampToRecord initialises with 0, or when analysis dt > recorder dt
+          if (nextTimeStampToRecord <= timeStamp) {
+                nextTimeStampToRecord = timeStamp + deltaT;
+          }
 
       if (wipeFlag == 1)
           theRenderer->clearImage();
