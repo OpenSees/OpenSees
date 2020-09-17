@@ -123,6 +123,9 @@
 #include "drain/DrainPinch1Material.h"
 #include "HyperbolicGapMaterial.h"
 #include "ImpactMaterial.h"
+#include "Hertzdamp.h"
+#include "JankowskiImpact.h"
+#include "ViscoelasticGap.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -1231,6 +1234,15 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ImpactMaterial:
 		return new ImpactMaterial();
+
+	case MAT_TAG_Hertzdamp:
+		return new Hertzdamp();
+
+	case MAT_TAG_JankowskiImpact:
+		return new JankowskiImpact();
+
+	case MAT_TAG_ViscoelasticGap:
+		return new ViscoelasticGap();
 
 	case MAT_TAG_Bilin:
 		return new Bilin();
