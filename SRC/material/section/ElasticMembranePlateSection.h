@@ -27,6 +27,9 @@
 //  Elastic Plate Section with membrane
 //
 
+// Out-of-Plane stiffness modifier added by Pearl Ranchal
+// Supported by Degenkolb Engineers
+
 #ifndef ElasticMembranePlateSection_h
 #define ElasticMembranePlateSection_h
 

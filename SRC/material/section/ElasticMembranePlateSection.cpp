@@ -27,6 +27,9 @@
 //  Elastic Plate Section with membrane
 //
 
+// Out-of-Plane stiffness modifier added by Pearl Ranchal
+// Supported by Degenkolb Engineers
+
 
 #include <ElasticMembranePlateSection.h>
 #include <Channel.h>
