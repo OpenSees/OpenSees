@@ -137,7 +137,6 @@
 #include "FiberSection3d.h"
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
-#include "ElasticMembranePlateSection2.h"
 #include "MembranePlateFiberSection.h"
 #include "Bidirectional.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
@@ -1324,9 +1323,6 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_ElasticMembranePlateSection:
 		return new ElasticMembranePlateSection();
-
-	case SEC_TAG_ElasticMembranePlateSection2:
-		return new ElasticMembranePlateSection2();
 
 	case SEC_TAG_MembranePlateFiberSection:
 		return new MembranePlateFiberSection();
