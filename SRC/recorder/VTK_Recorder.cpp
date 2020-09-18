@@ -327,7 +327,9 @@ VTK_Recorder::record(int ctag, double timeStamp)
     initializationDone = true;
   }
 
-  if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * 1.0e-12) {
+  // where 1.0e-5 is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * 1.0e-5) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
