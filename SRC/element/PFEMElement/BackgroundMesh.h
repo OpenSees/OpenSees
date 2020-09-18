@@ -136,7 +136,7 @@ class BackgroundMesh {
                     const VVDouble& dvns, const VDouble& pns,
                     const VDouble& dpns, const VVDouble& crds,
                     const std::vector<BackgroundType>& types,
-                    const VVInt& ndtags, const VDouble& alphas, double dt);
+                    const VVInt& ndtags, double dt);
     static int interpolate(const VVDouble& values, const VDouble& N,
                            VDouble& newvalue);
     static int interpolate(const VDouble& values, const VDouble& N,

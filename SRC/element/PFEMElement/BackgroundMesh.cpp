@@ -110,6 +110,7 @@ int OPS_BgMesh() {
         return -1;
     }
     bgmesh.setRange(lower, upper);
+    bgmesh.setDispOn(false);
 
     // get tolerance
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -2830,7 +2831,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
     VVDouble crds;
     std::vector<BackgroundType> types;
     VVDouble vels, dvns;
-    VDouble pns, dpns, alphas;
+    VDouble pns, dpns;
 
     // convect in a cell
     while (pt->getDt() > 0) {
@@ -2870,7 +2871,6 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
             dvns.assign(indices.size(), VDouble());
             pns.assign(indices.size(), 0.0);
             dpns.assign(indices.size(), 0.0);
-            alphas.assign(indices.size(), 0.0);
 
             for (int i = 0; i < (int)indices.size(); ++i) {
                 // get crds
@@ -2898,24 +2898,16 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
                 auto& dvn = bnode.getAccel();
                 auto& pn = bnode.getPressure();
                 auto& dpn = bnode.getPdot();
-                auto& sid = bnode.getSid();
                 vels[i] = vn[0];
                 dvns[i] = dvn[0];
                 pns[i] = pn[0];
                 dpns[i] = dpn[0];
-                // get alpha
-                if (types[i] == BACKGROUND_STRUCTURE) {
-                    auto it_alpha = alphaS.find(sid[0]);
-                    if (it_alpha != alphaS.end()) {
-                        alphas[i] = it_alpha->second;
-                    }
-                }
             }
         }
 
         // get particle velocity and move
         if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, types,
-                        ndtags, alphas, subdt) < 0) {
+                        ndtags, subdt) < 0) {
             opserr << "WARNING: failed to interpolate particle "
                       "velocity";
             opserr << "-- BgMesh::convectParticle\n";
@@ -2931,8 +2923,7 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                                 const VDouble& pns, const VDouble& dpns,
                                 const VVDouble& crds,
                                 const std::vector<BackgroundType>& types,
-                                const VVInt& ndtags, const VDouble& alphas,
-                                double dt) {
+                                const VVInt& ndtags, double dt) {
     int ndm = OPS_GetNDM();
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -2945,7 +2936,6 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (dpns.size() != 4) return 0;
         if (crds.size() != 4) return 0;
         if (types.size() != 4) return 0;
-        if (alphas.size() != 4) return 0;
     } else if (ndm == 3) {
         if (index.size() != 8) return 0;
         if (vels.size() != 8) return 0;
@@ -2953,7 +2943,6 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
         if (dpns.size() != 8) return 0;
         if (crds.size() != 8) return 0;
         if (types.size() != 8) return 0;
-        if (alphas.size() != 8) return 0;
     }
 
     const VDouble& pcrds = pt->getCrds();
@@ -2997,18 +2986,33 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
             getCorners(ind, 2, indices);
 
             VDouble svel(ndm);
-            int num_svel = 0;
+            double alphas = 0.0;
+            int num_svel = 0, num_sid = 0;
             for (auto& indi : indices) {
                 auto it = bnodes.find(indi);
-                if (it != bnodes.end() &&
-                    it->second.getType() == BACKGROUND_STRUCTURE) {
-                    for (auto& v : it->second.getVel()) {
-                        svel += v;
-                        ++num_svel;
+                int size = 0;
+                if (it != bnodes.end()) {
+                    size = it->second.size();
+                }
+                for (int i = 0; i < size; ++i) {
+                    auto& v = it->second.getVel();
+                    svel += v[i];
+                    ++num_svel;
+
+                    auto& sid = it->second.getSid();
+                    auto it_alpha = alphaS.find(sid[i]);
+                    if (it_alpha != alphaS.end()) {
+                        alphas += it_alpha->second;
+                        ++num_sid;
                     }
                 }
             }
-            svel /= num_svel;
+            if (num_svel > 0) {
+                svel /= num_svel;
+            }
+            if (num_sid > 0) {
+                alphas /= num_sid;
+            }
 
             // check surrounding cells
             getCorners(ind, 1, indices);
@@ -3049,8 +3053,8 @@ int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
                 } else if (num_svel > 0 &&
                            fabs(svel[k]) < fabs(vels[j][k])) {
                     // k is slower structure
-                    pvel[k] += N[j] * (alphas[j] * svel[k] +
-                                       (1.0 - alphas[j]) * vels[j][k]);
+                    pvel[k] += N[j] * (alphas * svel[k] +
+                                       (1.0 - alphas) * vels[j][k]);
                 } else {
                     // all others
                     pvel[k] += N[j] * vels[j][k];
