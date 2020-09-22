@@ -230,8 +230,10 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
 
 UniaxialMaterial *
 TclModelBuilder_FRPCnfinedConcrete(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
-				  
 
+//csasj
+UniaxialMaterial*
+TclModelBuilder_addPISAMaterial(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
 
 int
 TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain)
@@ -2903,6 +2905,10 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       // LimitState
       if (theMaterial == 0)
 	theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
+
+      // PISA soil curves 
+      if (theMaterial == 0)
+    theMaterial = TclModelBuilder_addPISAMaterial(clientData, interp, argc, argv);
     }
 
     if (theMaterial == 0) {
