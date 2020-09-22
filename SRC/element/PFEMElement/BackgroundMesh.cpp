@@ -1153,7 +1153,7 @@ int BackgroundMesh::gridNodes() {
             // distance from particle to current location
             VDouble dist = pcrds;
             dist -= crds;
-            double q = normVDouble(dist) / (bsize);
+            double q = normVDouble(dist) / (bsize * numave);
 
             // weight for the particle
             double w = QuinticKernel(q, bsize, ndm);
