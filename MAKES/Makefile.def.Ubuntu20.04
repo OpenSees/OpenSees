@@ -15,6 +15,10 @@
 
 
 # Instructuction for building OpenSees on Ubuntu 20.04
+# NOTE: if you plan to contribue code, fork your own github reo in the browser
+#       and make change to git clone below to point to your own fork. We will
+#       never give anyone access to repo itself.
+
 
 # mkdir $HOME/lib
 # mkdir $HOME/bin
@@ -30,7 +34,7 @@
 # make
 # make install
 # cd $HOME
-# git clone https://peera.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
+# git clone https://github.com/OpenSees/OpenSees.git
 # cd OpenSees
 # cp ./MAKES/Makefile.def.Ubuntu20.04 ./Makefile.def 
 # make
