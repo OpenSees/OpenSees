@@ -24,7 +24,7 @@
 # sudo apt-get install build-essential
 # sudo apt-get install gfortran
 # wget https://prdownloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz
-# tar zxbf tcl8.6.tar.gz
+# tar zxBf tcl8.6.tar.gz
 # cd tcl8.6.10/unix
 # configure --prefx=$HOME/tcl8.6 --enable-static --disable-shared --enable-64bit
 # make
