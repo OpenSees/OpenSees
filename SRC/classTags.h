@@ -215,6 +215,9 @@
 #define MAT_TAG_ElasticPowerFunc                102
 #define MAT_TAG_UVCuniaxial                     103
 #define MAT_TAG_IMKBilin                        104
+#define MAT_TAG_IMKPeakOriented                 105
+#define MAT_TAG_IMKPinching                     106
+#define MAT_TAG_SLModel                         107
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
@@ -761,6 +764,9 @@
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_WheelRail                 205
 #define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
+#define ELE_TAG_NineNodeQuad              207
+#define ELE_TAG_EightNodeQuad             208
+#define ELE_TAG_SixNodeTri                209
 #define ELE_TAG_ExternalElement           99990
 
 

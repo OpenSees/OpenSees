@@ -217,6 +217,7 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
+	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI3d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn3d.o \
@@ -536,6 +537,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/EnhancedQuad.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
+	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
+	$(FE)/element/fourNodeQuad/EightNodeQuad.o \
+	$(FE)/element/fourNodeQuad/SixNodeTri.o \
 	$(FE)/element/shell/ShellMITC4.o \
 	$(FE)/element/shell/ShellMITC4Thermal.o \
 	$(FE)/element/shell/ShellMITC9.o \
@@ -800,6 +804,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
+	$(FE)/material/uniaxial/SLModel.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \

@@ -10,6 +10,7 @@ OBJS       = UniaxialMaterial.o \
 	IMKBilin.o \
 	IMKPeakOriented.o \
 	IMKPinching.o \
+	SLModel.o \
 	Steel2.o \
 	OriginCentered.o \
 	ConcretewBeta.o \
@@ -84,6 +85,7 @@ OBJS       = UniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
 	PenaltyMaterial.o \
+	MultiplierMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
 	SecantMaterial.o \

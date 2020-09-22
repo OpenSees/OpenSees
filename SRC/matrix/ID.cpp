@@ -421,6 +421,7 @@ int
 ID::fill(int fill_value){
   for (int i=0; i<sz; i++)
     data[i] = fill_value;
+  return 0;
 }
 
 
