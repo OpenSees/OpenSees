@@ -1,0 +1,101 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+
+// Written: csasj 
+// $Revision: 1.14 $
+// $Date: 18/09/2020 $
+//
+// Description: This file contains the class implementation for MbClayPISA material. 
+//				Provide the base moment soil reaction for clays according to PISA project. 
+
+#ifndef MbClayPISA_h
+#define MbClayPISA_h
+
+#include <UniaxialMaterial.h>
+#include <Matrix.h>
+
+class MbClayPISA : public UniaxialMaterial
+{
+public:
+	// Full constructor 
+	MbClayPISA(int tag, double D, double L, double Su, double Go, double A0, double Au);
+	// Null constructor
+	MbClayPISA();
+	// Destructor
+	~MbClayPISA();
+
+	// OpenSees methods 
+	int setTrialStrain(double newy, double yRate);
+	double getStrain(void);
+	double getStress(void);
+	double getTangent(void);
+
+	double getInitialTangent(void);
+
+	int commitState(void);
+	int revertToLastCommit(void);
+	int revertToStart(void);
+
+	UniaxialMaterial* getCopy(void);
+
+	int sendSelf(int commitTag, Channel& theChannel);
+	int recvSelf(int commitTag, Channel& theChannel,
+		FEM_ObjectBroker& theBroker);
+
+	void Print(OPS_Stream& s, int flag = 0);
+
+protected:
+	// Input parameters
+	double diameter;						// pile outside diameter (m)
+	double embedded_length;					// embedded pile length (m)
+	double undrained_shear_strength;		// vertical effective soil stress (kPa)
+	double gmax;							// small-strain shear modulus (kPa)
+	double A0;								// Scaling factor for initial stiffness
+	double Au;								// Scaling factor for ultimate stress 
+
+private:
+	// Functions to get normalised parameters for each soil reaction curve
+	void Mb_conic_function(double diameter, double embedded_length, double A0, double Au);
+
+	// Function to evaluate conic function from PISA project
+	double conic_function(double epsilon_ratio, double k0, double n, double Epsilon_u, double Sigma_u);
+
+	// Normalised parameters for conic function
+	double epsilon_u;			// Ultimate strain 
+	double initial_stiffness;	// Initial stiffness
+	double curvature;			// Curvature 
+	double sigma_u;				// Ultimate reaction 
+
+	// Vectors to stock p-y curves 
+	Matrix data;
+	int numSlope;
+	int tSlope;
+
+	// Trial values
+	double initial_tangent; 
+	double tStrain;				// current t strain
+	double tStress;				// current t stress
+	double tTangent;			// current t tangent
+	// Commited values  
+	double cStrain;				// last ced strain
+	double cStress;				// last ced stress
+	double cTangent;			// last cted  tangent
+};
+#endif
