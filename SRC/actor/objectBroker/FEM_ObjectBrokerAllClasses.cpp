@@ -222,6 +222,8 @@
 #include "fourNodeQuad/FourNodeQuad.h"
 #include "fourNodeQuad/EnhancedQuad.h"
 #include "fourNodeQuad/NineNodeMixedQuad.h"
+#include "fourNodeQuad/NineNodeQuad.h"
+#include "fourNodeQuad/EightNodeQuad.h"
 #include "fourNodeQuad/ConstantPressureVolumeQuad.h"
 #include "elasticBeamColumn/ElasticBeam2d.h"
 #include "elasticBeamColumn/ElasticBeam3d.h"
@@ -698,6 +700,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_NineNodeMixedQuad:
       return new NineNodeMixedQuad();
+      
+    case ELE_TAG_NineNodeQuad:
+      return new NineNodeQuad();
+      
+    case ELE_TAG_EightNodeQuad:
+      return new EightNodeQuad();
       
     case ELE_TAG_ConstantPressureVolumeQuad:
       return new ConstantPressureVolumeQuad();

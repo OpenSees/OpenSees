@@ -173,6 +173,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 // integrators
 #include <LoadControl.h>
+#include <StagedLoadControl.h>
 #include <ArcLength.h>
 #include <ArcLength1.h>
 #include <HSConstraint.h>
@@ -191,6 +192,7 @@ extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
 
 extern void *OPS_Newmark(void);
+extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
@@ -228,6 +230,7 @@ extern void *OPS_WilsonTheta(void);
 
 
 #include <Newmark.h>
+#include <StagedNewmark.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
 #include <Newmark1.h>
@@ -4341,8 +4344,35 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   // if the analysis exists - we want to change the Integrator
   if (theStaticAnalysis != 0)
     theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+      } else if (strcmp(argv[1],"StagedLoadControl") == 0) {
+      double dLambda;
+      double minIncr, maxIncr;
+      int numIter;
+      if (argc < 3) {
+	opserr << "WARNING incorrect # args - integrator StagedLoadControl dlam <Jd dlamMin dlamMax>\n";
+	return TCL_ERROR;
   }
+      if (Tcl_GetDouble(interp, argv[2], &dLambda) != TCL_OK)	
+	return TCL_ERROR;	
+      if (argc > 5) {
+	if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)	
+	  return TCL_ERROR;	
+	if (Tcl_GetDouble(interp, argv[4], &minIncr) != TCL_OK)	
+	  return TCL_ERROR;	
+	if (Tcl_GetDouble(interp, argv[5], &maxIncr) != TCL_OK)	
+	  return TCL_ERROR;	  
+      }
+      else {
+	minIncr = dLambda;
+	maxIncr = dLambda;
+	numIter = 1;
+      }
+      theStaticIntegrator = new StagedLoadControl(dLambda, numIter, minIncr, maxIncr);       
 
+  
+      if (theStaticAnalysis != 0)
+        theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+      }
   
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
@@ -4646,6 +4676,9 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"GimmeMCK") == 0 || strcmp(argv[1],"ZZTop") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_GimmeMCK();
+   }
+  else if (strcmp(argv[1],"StagedNewmark") == 0) {
+    theTransientIntegrator = (TransientIntegrator*)OPS_StagedNewmark();
     
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
@@ -9359,6 +9392,41 @@ numIter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   return TCL_OK;
 }
+
+int
+elementActivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+	int eleTag;
+	int argLoc = 1;
+	int Nelements = argc;
+	ID activate_us(0, Nelements);
+
+	while (argLoc < argc && Tcl_GetInt(interp, argv[argLoc], &eleTag) == TCL_OK) {
+		activate_us.insert(eleTag);
+		++argLoc;
+	}
+
+	theDomain.activateElements(activate_us);
+
+  return TCL_OK;
+}
+
+int 
+elementDeactivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+	int eleTag;
+	int argLoc = 1;
+	int Nelements = argc;
+	ID deactivate_us(0, Nelements);
+
+	while (argLoc < argc && Tcl_GetInt(interp, argv[argLoc], &eleTag) == TCL_OK) {
+		deactivate_us.insert(eleTag);
+		++argLoc;
+	}
+
+	theDomain.deactivateElements(deactivate_us);
+  return TCL_OK;}
 
 int
 version(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)

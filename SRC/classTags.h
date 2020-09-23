@@ -764,6 +764,9 @@
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_WheelRail                 205
 #define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
+#define ELE_TAG_NineNodeQuad              207
+#define ELE_TAG_EightNodeQuad             208
+#define ELE_TAG_SixNodeTri                209
 #define ELE_TAG_ExternalElement           99990
 
 

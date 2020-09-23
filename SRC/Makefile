@@ -537,6 +537,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/EnhancedQuad.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
+	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
+	$(FE)/element/fourNodeQuad/EightNodeQuad.o \
+	$(FE)/element/fourNodeQuad/SixNodeTri.o \
 	$(FE)/element/shell/ShellMITC4.o \
 	$(FE)/element/shell/ShellMITC4Thermal.o \
 	$(FE)/element/shell/ShellMITC9.o \
@@ -663,7 +666,9 @@ endif
 ifdef PLAINCONCRETE_FLAG
 	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
        $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
-       $(FE)/element/PML/PML3D.o
+       $(FE)/element/PML/PML3D.o \
+       $(FE)/element/PML/PMLDynamicSymmDamp2D.o \
+       $(FE)/element/PML/PML2D.o
 else
 	PLAINCONCRETE = 
 endif
