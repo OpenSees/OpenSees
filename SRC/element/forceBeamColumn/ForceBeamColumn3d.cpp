@@ -2738,7 +2738,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
       theResponse = new ElementResponse(this, 203, Vector(3));
     
-    else if (strcmp(argv[0],"section") ==0) { 
+    else if (strstr(argv[0],"section") != 0) { 
 
       if (argc > 1) {
 
