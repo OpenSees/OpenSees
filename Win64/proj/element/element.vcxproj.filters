@@ -896,6 +896,15 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\EightNodeQuad.cpp">
+      <Filter>quad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp">
+      <Filter>quad</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1593,6 +1602,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.h">
       <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.h">
+      <Filter>forceBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\EightNodeQuad.h">
+      <Filter>quad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.h">
+      <Filter>quad</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

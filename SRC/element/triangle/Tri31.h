@@ -135,8 +135,8 @@ class Tri31 : public Element
 
     Matrix *Ki;
 
-    int numgp; // number of guess points
-	int numnodes; // number of nodes
+    static constexpr int numgp = 1; // number of gauss points
+	static constexpr int numnodes = 3; // number of nodes
 };
 
 #endif
