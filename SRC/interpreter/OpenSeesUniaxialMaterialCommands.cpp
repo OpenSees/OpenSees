@@ -195,6 +195,16 @@ void *OPS_TakedaUnloadingRule();
 void *OPS_EnergyUnloadingRule();
 void *OPS_KarsanUnloadingRule();
 
+// csasj
+void *OPS_PyClayPISA();
+void* OPS_MtClayPISA();
+void* OPS_HbClayPISA();
+void* OPS_MbClayPISA();
+void* OPS_PySandPISA();
+void* OPS_MtSandPISA();
+void* OPS_HbSandPISA();
+void* OPS_MbSandPISA();
+
 namespace {
 
     static UniaxialMaterial *theTestingUniaxialMaterial = 0;
@@ -336,6 +346,16 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
+
+	// csasj
+	uniaxialMaterialsMap.insert(std::make_pair("PyClayPISA", &OPS_PyClayPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("MtClayPISA", &OPS_MtClayPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("HbClayPISA", &OPS_HbClayPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("MbClayPISA", &OPS_MbClayPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("PySandPISA", &OPS_PySandPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("MtSandPISA", &OPS_MtSandPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("HbSandPISA", &OPS_HbSandPISA));
+	uniaxialMaterialsMap.insert(std::make_pair("MbSandPISA", &OPS_MbSandPISA));
 
 	return 0;
     }
