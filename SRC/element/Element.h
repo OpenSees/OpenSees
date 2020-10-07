@@ -126,6 +126,7 @@ protected:
 #if !_DLL
 	const Vector& getRayleighDampingForces(void);
 #endif
+
     double alphaM, betaK, betaK0, betaKc;
     Matrix *Kc; // pointer to hold last committed matrix if needed for rayleigh damping
 
