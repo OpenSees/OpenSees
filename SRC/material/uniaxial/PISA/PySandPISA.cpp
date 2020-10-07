@@ -19,8 +19,8 @@
 ** ****************************************************************** */
 
 // Written: csasj 
-// $Revision: 1.1 $
-// $Date: 21/09/2020 $
+// $Revision: 1.11 $
+// $Date: 07/10/2020 $
 //
 // Description: This file contains the class implementation for PySandPISA material. 
 //				Provide p-y lateral spring for sands according to PISA project. 
@@ -58,7 +58,7 @@ OPS_PySandPISA()
         return 0;
     }
 
-    double dData[8] = {0,0,0,0,0,0,0,0};
+    double dData[8] = {0,0,0,0,0,0,1,1};
     numData = OPS_GetNumRemainingInputArgs();
     if (OPS_GetDoubleInput(&numData, dData) < 0)
     {
@@ -279,6 +279,8 @@ PySandPISA::Print(OPS_Stream& s, int flag)
     s << "  Embedded pile length (m) : " << embedded_length << endln;
     s << "  Vertical effective soil stress (kPa) : " << sigma_vo_eff << endln;
     s << "  Small-strain shear modulus (kPa) : " << gmax << endln;
+    s << "  Scaling factor for initial stiffness (-) : " << A0 << endln;
+    s << "  Scaling factor for ultimate stress (-) : " << Au << endln;
 }
 
 // Function to create the parameters following the APIrp2GEO method

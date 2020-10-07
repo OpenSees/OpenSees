@@ -19,8 +19,8 @@
 ** ****************************************************************** */
 
 // Written: csasj 
-// $Revision: 1.13 $
-// $Date: 17/09/2020 $
+// $Revision: 1.14 $
+// $Date: 06/10/2020 $
 //
 // Description: This file contains the class implementation for MtClayPISA material. 
 //				Provide moment distributed spring for clays according to PISA project. 
@@ -58,7 +58,7 @@ OPS_MtClayPISA()
         return 0;
     }
 
-    double dData[7] = { 0, 0, 0, 0, 0, 0, 0 };
+    double dData[7] = { 0, 0, 0, 0, 0, 1, 1 };
     numData = OPS_GetNumRemainingInputArgs();
     if (OPS_GetDoubleInput(&numData, dData) != 0)
     {

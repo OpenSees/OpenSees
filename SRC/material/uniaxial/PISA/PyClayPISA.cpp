@@ -19,8 +19,8 @@
 ** ****************************************************************** */
 
 // Written: csasj 
-// $Revision: 1.11 $
-// $Date: 17/09/2020 $
+// $Revision: 1.12 $
+// $Date: 06/10/2020 $
 //
 // Description: This file contains the class implementation for PyClayPISA material. 
 //				Provide p-y lateral spring for clay according to the PISA project. 
@@ -58,7 +58,7 @@ OPS_PyClayPISA()
         return 0;
     }
 
-    double dData[7] = {0, 0, 0, 0, 0, 0, 0};
+    double dData[7] = {0, 0, 0, 0, 0, 1, 1};
     numData = OPS_GetNumRemainingInputArgs();
     if (OPS_GetDoubleInput(&numData, dData) != 0)
     {

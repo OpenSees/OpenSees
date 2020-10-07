@@ -19,8 +19,8 @@
 ** ****************************************************************** */
 
 // Written: csasj 
-// $Revision: 1.13 $
-// $Date: 17/09/2020 $
+// $Revision: 1.14 $
+// $Date: 06/10/2020 $
 //
 // Description: This file contains the class implementation for HbClayPISA material. 
 //				Provide the base shear load curve for clays according to PISA project. 
@@ -58,7 +58,7 @@ OPS_HbClayPISA()
         return 0;
     }
 
-    double dData[6] = { 0, 0, 0, 0, 0, 0 };
+    double dData[6] = { 0, 0, 0, 0, 1, 1 };
     numData = OPS_GetNumRemainingInputArgs();
     if (OPS_GetDoubleInput(&numData, dData) != 0)
     {

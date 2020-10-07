@@ -19,8 +19,8 @@
 ** ****************************************************************** */
 
 // Written: csasj 
-// $Revision: 1.14 $
-// $Date: 18/09/2020 $
+// $Revision: 1.15 $
+// $Date: 06/10/2020 $
 //
 // Description: This file contains the class implementation for MbClayPISA material. 
 //				Provide the base moment soil reaction for clays according to PISA project. 
@@ -41,7 +41,7 @@ OPS_MbClayPISA()
 {
     // Checking the number of data 
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 7)
+    if (numdata < 5)
     {
         opserr << "WARNING insufficient arguments" << endln;
         opserr << "Want: uniaxialMaterial MbClayPISA tag? diameter? pile embedded lenght? undrained shear strength? G0? A0? Au?" << endln;
@@ -58,7 +58,7 @@ OPS_MbClayPISA()
         return 0;
     }
 
-    double dData[6] = {0, 0, 0, 0, 0, 0};
+    double dData[6] = {0, 0, 0, 0, 1, 1};
     numData = OPS_GetNumRemainingInputArgs();
     if (OPS_GetDoubleInput(&numData, dData) != 0)
     {
