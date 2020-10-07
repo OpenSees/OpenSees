@@ -38,7 +38,9 @@
 #ifdef _LINUX
 #include <Timer.h>
 #endif
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include <iostream>
 #include <Node.h>
 #include <NodeIter.h>
