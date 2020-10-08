@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "PythonModule.h"
 #include "PythonStream.h"
+#include <OPS_Globals.h>
 
 // define opserr
 static PythonStream sserr;
@@ -285,6 +286,16 @@ initopensees(void)
     }
     Py_INCREF(st->error);
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
+
+    char version[10];
+    const char *py_version = ".5";
+    for (int i = 0; i < 5; ++i) {
+        version[i] = OPS_VERSION[i];
+    }
+    for (int i = 0; i < 3; ++i) {
+        version[5 + i] = py_version[i];
+    }
+    PyModule_AddStringConstant(pymodule, "__version__", version);
 
     sserr.setError(st->error);
 

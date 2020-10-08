@@ -2723,9 +2723,13 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
 
-    else if (strcmp(argv[0],"sectionDisplacements") == 0)
-      theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
-
+    else if (strcmp(argv[0],"sectionDisplacements") == 0) {
+      if (argc > 1 && strcmp(argv[1],"local") == 0)
+	theResponse = new ElementResponse(this, 1111, Matrix(numSections,3));
+      else
+	theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
+    }
+    
     else if (strcmp(argv[0],"cbdiDisplacements") == 0)
       theResponse = new ElementResponse(this, 112, Matrix(20,3));
 
@@ -2738,7 +2742,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
       theResponse = new ElementResponse(this, 203, Vector(3));
     
-    else if (strcmp(argv[0],"section") ==0) { 
+    else if (strstr(argv[0],"section") != 0) { 
 
       if (argc > 1) {
 
@@ -2886,7 +2890,7 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
-  else if (responseID == 111) {
+  else if (responseID == 111 || responseID == 1111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];
     beamIntegr->getSectionLocations(numSections, L, pts);
@@ -2910,8 +2914,8 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     // Displacement vector
     Vector dispsy(numSections); // along local y
     Vector dispsz(numSections); // along local z    
-    dispsy.addMatrixVector(0.0, ls, kappaz, 1.0);
-    dispsz.addMatrixVector(0.0, ls, kappay, 1.0);    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
     beamIntegr->getSectionLocations(numSections, L, pts);
     static Vector uxb(3);
     static Vector uxg(3);
@@ -2920,8 +2924,11 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     for (int i = 0; i < numSections; i++) {
       uxb(0) = pts[i]*vp(0); // linear shape function
       uxb(1) = dispsy(i);
-      uxb(2) = dispsz(i);      
-      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      uxb(2) = dispsz(i);
+      if (responseID == 111)
+	uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      else
+	uxg = crdTransf->getPointLocalDisplFromBasic(pts[i],uxb);
       disps(i,0) = uxg(0);
       disps(i,1) = uxg(1);
       disps(i,2) = uxg(2);            
@@ -2956,8 +2963,8 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     // Displacement vector
     Vector dispsy(20); // along local y
     Vector dispsz(20); // along local z    
-    dispsy.addMatrixVector(0.0, ls, kappaz, 1.0);
-    dispsz.addMatrixVector(0.0, ls, kappay, 1.0);    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
     static Vector uxb(3);
     static Vector uxg(3);
     Matrix disps(20,3);

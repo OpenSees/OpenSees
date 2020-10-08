@@ -2628,10 +2628,10 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
   else if (strcmp(argv[0],"sectionDisplacements") == 0)
-    theResponse = new ElementResponse(this, 111, Matrix(numSections,2));
+    theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
 
   else if (strcmp(argv[0],"cbdiDisplacements") == 0)
-    theResponse = new ElementResponse(this, 112, Matrix(20,2));  
+    theResponse = new ElementResponse(this, 112, Matrix(20,3));  
   
   else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") ==0 || strcmp(argv[0],"dampingForces") == 0) { 
 

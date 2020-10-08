@@ -64,14 +64,17 @@ class PathIndependentMaterial : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
     
     // AddingSensitivity:BEGIN //////////////////////////////////////////
-    virtual double getStressSensitivity     (int gradIndex, bool conditional);
-    virtual double getStrainSensitivity     (int gradIndex);
-    virtual double getInitialTangentSensitivity(int gradIndex);
-    virtual double getDampTangentSensitivity(int gradIndex);
-    virtual double getRhoSensitivity        (int gradIndex);
-    virtual int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
+    double getStressSensitivity     (int gradIndex, bool conditional);
+    double getStrainSensitivity     (int gradIndex);
+    double getInitialTangentSensitivity(int gradIndex);
+    double getDampTangentSensitivity(int gradIndex);
+    double getRhoSensitivity        (int gradIndex);
+    int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
 
   protected:

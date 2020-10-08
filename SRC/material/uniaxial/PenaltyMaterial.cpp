@@ -39,6 +39,8 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <OPS_Globals.h>
 
@@ -90,7 +92,7 @@ OPS_PenaltyMaterial(void)
 }
 
 PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mult)
-  :UniaxialMaterial(tag,MAT_TAG_Penalty), theMaterial(0), penalty(mult)
+  :UniaxialMaterial(tag,MAT_TAG_Penalty), theMaterial(0), penalty(mult), parameterID(0)
 {
   theMaterial = material.getCopy();
 
@@ -101,7 +103,7 @@ PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mul
 }
 
 PenaltyMaterial::PenaltyMaterial()
-  :UniaxialMaterial(0,MAT_TAG_Penalty), theMaterial(0), penalty(0.0)
+  :UniaxialMaterial(0,MAT_TAG_Penalty), theMaterial(0), penalty(0.0), parameterID(0)
 {
 
 }
@@ -266,4 +268,79 @@ PenaltyMaterial::Print(OPS_Stream &s, int flag)
   s << "PenaltyMaterial tag: " << this->getTag() << endln;
   s << "\tMaterial: " << theMaterial->getTag() << endln;
   s << "\tPenalty: " << penalty << endln;
+}
+
+int
+PenaltyMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"penalty") == 0) {
+    param.setValue(penalty);
+    return param.addObject(1,this);
+  }
+  return theMaterial->setParameter(argv, argc, param);
+}
+
+int
+PenaltyMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->penalty = info.theDouble;
+    break;
+  }
+
+  return 0;
+}
+
+int
+PenaltyMaterial::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
+}
+
+double
+PenaltyMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  // dsig = dsigma + dalpha*strain < + alpha*dstrain>
+  if (parameterID == 1)
+    return theMaterial->getStrain(); // dalpha*strain where dalpha=1
+  else
+    return theMaterial->getStressSensitivity(gradIndex,conditional);
+}
+
+double
+PenaltyMaterial::getStrainSensitivity(int gradIndex)
+{
+  return theMaterial->getStrainSensitivity(gradIndex);
+}
+
+double
+PenaltyMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  if (parameterID == 1)
+    return 1.0;
+  else
+    return theMaterial->getInitialTangentSensitivity(gradIndex);
+}
+
+double
+PenaltyMaterial::getDampTangentSensitivity(int gradIndex)
+{
+  theMaterial->getDampTangentSensitivity(gradIndex);
+}
+
+double
+PenaltyMaterial::getRhoSensitivity(int gradIndex)
+{
+  return theMaterial->getRhoSensitivity(gradIndex);
+}
+
+int
+PenaltyMaterial::commitSensitivity(double strainGradient, int gradIndex, int numGrads)
+{
+  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
 }

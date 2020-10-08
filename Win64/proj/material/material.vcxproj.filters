@@ -1349,6 +1349,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2521,6 +2524,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
