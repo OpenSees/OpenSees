@@ -132,8 +132,8 @@ private:
 
   Matrix *Ki;
 
-  int nip; // number of integration/Gauss points
-  int nnodes; // number of nodes
+  static constexpr int nip = 3; // number of integration/Gauss points
+  static constexpr int nnodes = 6; // number of nodes
 };
 
 #endif
