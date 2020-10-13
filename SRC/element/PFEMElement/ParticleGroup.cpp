@@ -216,8 +216,6 @@ int OPS_ParticleGroup() {
             opserr << "WARNING: failed to get number of points\n";
             return -1;
         }
-        opserr << "numpoints = "<<num_point<<"\n";
-        opserr << "ndm = "<<ndm<<"\n";
 
         // check input
         numdata = num_point * (4 * ndm + 1);
@@ -227,7 +225,6 @@ int OPS_ParticleGroup() {
             << "vx1, vy1, <vz1>, ax1, ay1, <az1>, p1, x2n, ...]\n";
             return -1;
         }
-        opserr << "numdata = "<<numdata<<"\n";
 
         // node coord
         pointdata.resize(numdata);
@@ -235,11 +232,6 @@ int OPS_ParticleGroup() {
             opserr << "WARNING: failed to get cooridnates for points\n";
             return -1;
         }
-        opserr << "point data = \n[";
-        for (int i=0; i<numdata;++i) {
-            opserr << pointdata[i] << ", ";
-        }
-        opserr << "]\n";
 
     } else {
         opserr << "WARNING: unknown geometry type\n";
