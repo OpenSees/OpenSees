@@ -288,7 +288,7 @@ initopensees(void)
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
 
     char version[10];
-    const char *py_version = ".5";
+    const char *py_version = ".6";
     for (int i = 0; i < 5; ++i) {
         version[i] = OPS_VERSION[i];
     }
