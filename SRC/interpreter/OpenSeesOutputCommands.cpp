@@ -1645,20 +1645,16 @@ int OPS_nodeDOFs()
 
 int OPS_nodeMass()
 {
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr << "WARNING want - nodeMass nodeTag? nodeDOF?\n";
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - nodeMass nodeTag?\n";
 	return -1;
     }
 
-    int tag, dof;
+    int tag;
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
-	return -1;
-    }
-    if (OPS_GetIntInput(&numdata, &dof) < 0) {
-	opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+	opserr << "WARNING nodeMass nodeTag?\n";
 	return -1;
     }
 
@@ -1670,17 +1666,16 @@ int OPS_nodeMass()
 	opserr << "WARNING nodeMass node " << tag << " not found" << endln;
 	return -1;
     }
+
     int numDOF = theNode->getNumberDOF();
-    if (dof < 1 || dof > numDOF) {
-	opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
-	return -1;
-    }
-    else {
-	const Matrix &mass = theNode->getMass();
-	double value = mass(dof-1,dof-1);
-	if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
-	    opserr << "WARNING nodeMass failed to set mass\n";
-	}
+    const Matrix &mass = theNode->getMass();
+    std::vector<double> data(numDOF);
+    for (int i = 0; i < numDOF; i++)
+      data[i] = mass(i,i);
+    
+    if (OPS_SetDoubleOutput(&numDOF, &data[0], false) < 0) {
+      opserr << "WARNING nodeMass failed to set mass\n";
+      return -1;
     }
 
     return 0;
@@ -2346,12 +2341,19 @@ int OPS_sectionDisplacement()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionDisplacement eleTag? secNum? - could not read int input? \n";
+	opserr << "WARNING sectionDisplacement eleTag? secNum? <-local>- could not read int input? \n";
 	return -1;
     }
 
     int tag = data[0];
     int secNum = data[1];
+    bool local = false;
+    
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* localGlobal = OPS_GetString();
+      if (strstr(localGlobal,"local") != 0)
+	local = true;
+    }
 
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
@@ -2362,10 +2364,14 @@ int OPS_sectionDisplacement()
 	return -1;
     }
 
-    int argcc = 1;
+    int argcc = 2;
     char a[80] = "sectionDisplacements";
-    const char *argvv[1];
+    const char *argvv[2];
     argvv[0] = a;
+    if (local)
+      argvv[1] = "local";
+    else
+      argvv[2] = "global";
 
     DummyStream dummy;
 

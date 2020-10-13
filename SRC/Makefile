@@ -666,7 +666,9 @@ endif
 ifdef PLAINCONCRETE_FLAG
 	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
        $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
-       $(FE)/element/PML/PML3D.o
+       $(FE)/element/PML/PML3D.o \
+       $(FE)/element/PML/PMLDynamicSymmDamp2D.o \
+       $(FE)/element/PML/PML2D.o
 else
 	PLAINCONCRETE = 
 endif
