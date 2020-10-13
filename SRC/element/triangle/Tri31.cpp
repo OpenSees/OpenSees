@@ -1118,7 +1118,7 @@ Tri31::Print(OPS_Stream &s, int flag)
 
         for (i = 0; i < numNodes; i++) {
             const Vector &nodeCrd = theNodes[i]->getCrds();
-            const Vector &nodeDisp = theNodes[i]->getDisp();
+            // const Vector &nodeDisp = theNodes[i]->getDisp();
             s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
         }
 
