@@ -1095,8 +1095,7 @@ FourNodeQuad::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(12));
   }
 
-  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
-		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
     for (int i=0; i<4; i++) { // nnodes
       output.tag("NodalPoint");
       output.attr("number",i+1);

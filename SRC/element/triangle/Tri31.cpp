@@ -1283,8 +1283,7 @@ Tri31::setResponse(const char **argv, int argc, OPS_Stream &output)
        theResponse =  new ElementResponse(this, 3, Vector(3*numgp));
    }
 
-  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
-		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
     for (int i=0; i<numnodes; i++) {
       output.tag("NodalPoint");
       output.attr("number",i+1);
