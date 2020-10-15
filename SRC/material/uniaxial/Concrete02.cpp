@@ -35,6 +35,17 @@
 // by D. Sze and Filip C. Filippou in 1994
 //-----------------------------------------------------------------------
 
+//-----------------------------------------------------------------------
+//Modified on 2020 by:
+// Juan D. Pozo (jpozo@nd.edu)
+// Department of Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA and 
+// Department of Structural and Geotechnical Engineering, Pontificia Universidad Catolica de Chile, Macul, Santiago, Chile
+// Yahya C. Kurama (ykurama@nd.edu)
+// Department of Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana
+// Matias A. Hube (mhube@ing.puc.cl)
+// Department of Structural and Geotechnical Engineering, Pontificia Universidad Catolica de Chile, Macul, Santiago, Chile
+//-----------------------------------------------------------------------
+
 
 #include <stdlib.h>
 #include <string.h>
