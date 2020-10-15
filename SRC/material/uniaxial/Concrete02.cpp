@@ -56,7 +56,7 @@ OPS_Concrete02()
   UniaxialMaterial *theMaterial = 0;
 
   int    iData[1];
-  double dData[7];
+  double dData[8];      //jdPozo
   int numData = 1;
 
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -66,28 +66,60 @@ OPS_Concrete02()
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 7) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
-    return 0;
+ 
+  // jdPozo
+  if (numData != 7 && numData != 8) {
+      opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets? <Eo?>\n";
+      return 0;
+  }
+ 
+  if (numData == 7) {
+      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+          opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets? <Eo?>\n";
+          return 0;
+      }
+
+      // Parsing was successful, allocate the material
+      theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+
+  } else if (numData == 8) {
+      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+          opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets? <Eo?>\n";
+          return 0;
+      }
+
+      // Parsing was successful, allocate the material
+      theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7]);
   }
 
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
-    return 0;
-  }
 
-
-  // Parsing was successful, allocate the material
-  theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
-  
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type Concrete02 Material\n";
-    return 0;
+      opserr << "WARNING could not create uniaxialMaterial of type Concrete02 Material\n";
+      return 0;
   }
 
   return theMaterial;
 }
 
+//Constructor for Popovics Equation: jdPozo
+Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
+    double _epscu, double _rat, double _ft, double _Ets, double _ec0):
+    UniaxialMaterial(tag, MAT_TAG_Concrete02),
+    fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets), ec0(_ec0)
+{
+    ecminP = 0.0;
+    deptP = 0.0;
+
+    eP = ec0;
+    epsP = 0.0;
+    sigP = 0.0;
+    eps = 0.0;
+    sig = 0.0;
+    e = ec0;
+    Eq = 1;  //for Popovics
+}
+
+//Constructor for Hognestad parabola (Original Concrete02): jdPozo
 Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
@@ -96,12 +128,15 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   ecminP = 0.0;
   deptP = 0.0;
 
-  eP = 2.0*fc/epsc0;
+  ec0 = 2.0 * fc / epsc0;
+
+  eP = ec0;
   epsP = 0.0;
   sigP = 0.0;
   eps = 0.0;
   sig = 0.0;
-  e = 2.0*fc/epsc0;
+  e = ec0;
+  Eq = 0; //for Hognestad
 }
 
 Concrete02::Concrete02(void):
@@ -118,7 +153,7 @@ Concrete02::~Concrete02(void)
 UniaxialMaterial*
 Concrete02::getCopy(void)
 {
-  Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
+  Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets, ec0);
   
   return theCopy;
 }
@@ -126,13 +161,12 @@ Concrete02::getCopy(void)
 double
 Concrete02::getInitialTangent(void)
 {
-  return 2.0*fc/epsc0;
+    return ec0;
 }
 
 int
 Concrete02::setTrialStrain(double trialStrain, double strainRate)
 {
-  double  ec0 = fc * 2. / epsc0;
 
   // retrieve concrete hitory variables
 
@@ -280,12 +314,12 @@ Concrete02::revertToStart(void)
   ecminP = 0.0;
   deptP = 0.0;
 
-  eP = 2.0*fc/epsc0;
+  eP = ec0;     //jdPozo
   epsP = 0.0;
   sigP = 0.0;
   eps = 0.0;
   sig = 0.0;
-  e = 2.0*fc/epsc0;
+  e = ec0;     //jdPozo
 
   return 0;
 }
@@ -294,19 +328,20 @@ int
 Concrete02::sendSelf(int commitTag, Channel &theChannel)
 {
   static Vector data(13);
-  data(0) =fc;    
-  data(1) =epsc0; 
-  data(2) =fcu;   
-  data(3) =epscu; 
-  data(4) =rat;   
-  data(5) =ft;    
-  data(6) =Ets;   
-  data(7) =ecminP;
-  data(8) =deptP; 
-  data(9) =epsP;  
-  data(10) =sigP; 
-  data(11) =eP;   
-  data(12) = this->getTag();
+  data(0) = fc;
+  data(1) = epsc0;
+  data(2) = ec0;    //jdPozo
+  data(3) = fcu;
+  data(4) = epscu;
+  data(5) = rat;
+  data(6) = ft;
+  data(7) = Ets;
+  data(8) = ecminP;
+  data(9) = deptP;
+  data(10) = epsP;
+  data(11) = sigP;
+  data(12) = eP;
+  data(13) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02::sendSelf() - failed to sendSelf\n";
@@ -320,7 +355,7 @@ Concrete02::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(13);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02::recvSelf() - failed to recvSelf\n";
@@ -329,17 +364,18 @@ Concrete02::recvSelf(int commitTag, Channel &theChannel,
 
   fc = data(0);
   epsc0 = data(1);
-  fcu = data(2);
-  epscu = data(3);
-  rat = data(4);
-  ft = data(5);
-  Ets = data(6);
-  ecminP = data(7);
-  deptP = data(8);
-  epsP = data(9);
-  sigP = data(10);
-  eP = data(11);
-  this->setTag(data(12));
+  ec0 = data(2);    //jdPozo
+  fcu = data(3);
+  epscu = data(4);
+  rat = data(5);
+  ft = data(6);
+  Ets = data(7);
+  ecminP = data(8);
+  deptP = data(9);
+  epsP = data(10);
+  sigP = data(11);
+  eP = data(12);
+  this->setTag(data(13));
 
   e = eP;
   sig = sigP;
@@ -359,7 +395,7 @@ Concrete02::Print(OPS_Stream &s, int flag)
     s << "\t\t\t{";
 	s << "\"name\": \"" << this->getTag() << "\", ";
 	s << "\"type\": \"Concrete02\", ";
-	s << "\"Ec\": " << 2.0*fc/epsc0 << ", ";
+	s << "\"Ec\": " << ec0 << ", ";
 	s << "\"fc\": " << fc << ", ";
     s << "\"epsc\": " << epsc0 << ", ";
     s << "\"fcu\": " << fcu << ", ";
@@ -387,7 +423,7 @@ Concrete02::Tens_Envlp (double epsc, double &sigc, double &Ect)
 !    Ect  = tangent concrete modulus
 !-----------------------------------------------------------------------*/
   
-  double Ec0  = 2.0*fc/epsc0;
+  double Ec0  = ec0;    //jdPozo
 
   double eps0 = ft/Ec0;
   double epsu = ft*(1.0/Ets+1.0/Ec0);
@@ -426,12 +462,22 @@ Concrete02::Compr_Envlp (double epsc, double &sigc, double &Ect)
 !   Ect   = tangent concrete modulus
 -----------------------------------------------------------------------*/
 
-  double Ec0  = 2.0*fc/epsc0;
+  double Ec0  = ec0;
 
-  double ratLocal = epsc/epsc0;
+  double x = epsc / epsc0;
+
+  // Aditional variables for Popovics equation: jdPozo
+  double Esec = fc / epsc0;
+  double r = Ec0 / (Ec0 - Esec);
+
   if (epsc>=epsc0) {
-    sigc = fc*ratLocal*(2.0-ratLocal);
-    Ect  = Ec0*(1.0-ratLocal);
+      if (Eq == 0) {
+          sigc = fc * x * (2.0 - x);
+          Ect = Ec0 * (1.0 - x);
+      } else if (Eq == 1) {
+          sigc = (fc * r * x) / (r - 1.0 + pow(x, r));
+          Ect = Esec * (r * (1.0 - r) * (pow(x, r) - 1.0)) / pow((r - 1.0 + pow(x, r)), 2.0);
+      }
   } else {
     
     //   linear descending branch between epsc0 and epscu

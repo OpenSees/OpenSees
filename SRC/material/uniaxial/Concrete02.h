@@ -45,8 +45,13 @@
 class Concrete02 : public UniaxialMaterial
 {
   public:
+    //Constructor for Popovics Equation:  jdPozo
     Concrete02(int tag, double _fc, double _epsc0, double _fcu,
-	     double _epscu, double _rat, double _ft, double _Ets);
+	     double _epscu, double _rat, double _ft, double _Ets, double _ec0);
+
+    //Constructor for Hognestad parabola:  jdPozo
+    Concrete02(int tag, double _fc, double _epsc0, double _fcu,
+        double _epscu, double _rat, double _ft, double _Ets);
 
     Concrete02(void);
 
@@ -87,6 +92,7 @@ class Concrete02 : public UniaxialMaterial
     double rat;   // ratio between unloading slope at epscu and original slope : mp(5)
     double ft;    // concrete tensile strength               : mp(6)
     double Ets;   // tension stiffening slope                : mp(7)
+    double ec0;   // initial stiffness                       : mp(8)  jdPozo
 
     // hstvP : Concerete HISTORY VARIABLES last committed step
     double ecminP;  //  hstP(1)
@@ -101,6 +107,9 @@ class Concrete02 : public UniaxialMaterial
     double sig;   
     double e;     
     double eps;   
+
+    // Auxiliary variable to define which equation to use for the pre-peak compression envelope: jdPozo
+    double Eq;
 };
 
 
