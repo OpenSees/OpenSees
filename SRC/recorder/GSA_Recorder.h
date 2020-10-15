@@ -59,7 +59,7 @@ class GSA_Recorder: public Recorder
 		 const char *length,
 		 const char *force,
 		 const char *temp,
-		 double deltaT = 0.0); 
+		 double deltaT = 0.0, double relDeltaTTol = 0.00001);
 
     ~GSA_Recorder();
     int record(int commitTag, double timeStamp);
@@ -74,6 +74,7 @@ class GSA_Recorder: public Recorder
     int counter;
     FileStream theFile;
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 };
 

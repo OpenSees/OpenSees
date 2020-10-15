@@ -50,11 +50,11 @@ class TclFeViewer : public Recorder
   public:
     TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
 		Domain &theDomain, int wipeFlag, Tcl_Interp *interp,
-        double deltaT = 0.0);
+        double deltaT = 0.0, double relDeltaTTol = 0.00001);
 
     TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
         const char *fileName, Domain &theDomain, Tcl_Interp *interp,
-        double deltaT = 0.0);
+        double deltaT = 0.0, double relDeltaTTol = 0.00001);
 
     TclFeViewer();
     ~TclFeViewer();
@@ -104,6 +104,7 @@ class TclFeViewer : public Recorder
     int theNodeMode;    
     double theDisplayFact;
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
     int wipeFlag;
     int vrpSet;
