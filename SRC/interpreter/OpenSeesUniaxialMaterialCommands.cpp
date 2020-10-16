@@ -91,6 +91,10 @@ void* OPS_Concrete07();
 void* OPS_Concrete01WithSITC();
 void* OPS_ConfinedConcrete01Material();
 void* OPS_ConcreteD();
+void* OPS_TDConcreteMC10(); //qiao
+void* OPS_TDConcreteMC10NL(); //qiao
+void* OPS_TDConcrete(); //qiao
+void* OPS_TDConcreteEXP(); //qiao								  
 void* OPS_FRPConfinedConcrete();
 void* OPS_ConcreteCM();
 void* OPS_Cast();
@@ -239,6 +243,10 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("ConfinedConcrete01", &OPS_ConfinedConcrete01Material));
 	uniaxialMaterialsMap.insert(std::make_pair("ConfinedConcrete", &OPS_ConfinedConcrete01Material));
 	uniaxialMaterialsMap.insert(std::make_pair("ConcreteD", &OPS_ConcreteD));
+	uniaxialMaterialsMap.insert(std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10)); //qiao
+	uniaxialMaterialsMap.insert(std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL)); //qiao
+	uniaxialMaterialsMap.insert(std::make_pair("TDConcrete", &OPS_TDConcrete)); //qiao
+	uniaxialMaterialsMap.insert(std::make_pair("TDTDConcreteEXP", &OPS_TDConcreteEXP)); //qiao																						   
 	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
 	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete02", &OPS_FRPConfinedConcrete02));
 	uniaxialMaterialsMap.insert(std::make_pair("ConcreteCM", &OPS_ConcreteCM));
