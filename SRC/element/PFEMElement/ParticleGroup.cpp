@@ -199,7 +199,7 @@ int OPS_ParticleGroup() {
         }
     } else if (strcmp(geotype, "pointlist") == 0) {
         int numdata = OPS_GetNumRemainingInputArgs();
-        if (numdata < ndm) {
+        if (numdata < 1) {
             group->pointlist(pointdata);
             numdata = (int) pointdata.size(); 
             if (OPS_SetDoubleOutput(&numdata, &pointdata[0], false) < 0) {
@@ -207,6 +207,23 @@ int OPS_ParticleGroup() {
                 return -1;
             }
             return 0;
+        }
+
+        // number of points
+        int num_point = 0;
+        numdata = 1;
+        if (OPS_GetIntInput(&numdata, &num_point) < 0) {
+            opserr << "WARNING: failed to get number of points\n";
+            return -1;
+        }
+
+        // check input
+        numdata = num_point * (4 * ndm + 1);
+        if (OPS_GetNumRemainingInputArgs() < numdata) {
+            opserr << "WARNING: insufficient input for " 
+            << num_point << " points: [x1n, y1, <z1n>, x1, y1, <z1> "
+            << "vx1, vy1, <vz1>, ax1, ay1, <az1>, p1, x2n, ...]\n";
+            return -1;
         }
 
         // node coord

@@ -905,6 +905,9 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp">
       <Filter>quad</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp">
+      <Filter>triangle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1611,6 +1614,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.h">
       <Filter>quad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.h">
+      <Filter>triangle</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

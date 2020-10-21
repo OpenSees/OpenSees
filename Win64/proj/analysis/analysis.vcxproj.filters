@@ -371,6 +371,12 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\GimmeMCK.cpp">
       <Filter>integrator</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedNewmark.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">
@@ -701,6 +707,12 @@
       <Filter>integrator</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\integrator\GimmeMCK.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h">
       <Filter>integrator</Filter>
     </ClInclude>
   </ItemGroup>
