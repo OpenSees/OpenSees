@@ -899,6 +899,7 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp">
       <Filter>quad</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp">
       <Filter>mixedBeamColumn</Filter>
     </ClCompile>
@@ -907,6 +908,10 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp">
       <Filter>quad</Filter>
+=======
+    <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp">
+      <Filter>triangle</Filter>
+>>>>>>> 32127b321560368a66d757b273b647bbfee3daed
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
