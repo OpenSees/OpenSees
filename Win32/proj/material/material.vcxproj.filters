@@ -1346,6 +1346,12 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp">
+      <Filter>nD\elasticIsotropic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2524,6 +2530,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h">
+      <Filter>nD\elasticIsotropic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
