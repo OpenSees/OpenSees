@@ -246,7 +246,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10)); //qiao
 	uniaxialMaterialsMap.insert(std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL)); //qiao
 	uniaxialMaterialsMap.insert(std::make_pair("TDConcrete", &OPS_TDConcrete)); //qiao
-	uniaxialMaterialsMap.insert(std::make_pair("TDTDConcreteEXP", &OPS_TDConcreteEXP)); //qiao																						   
+	uniaxialMaterialsMap.insert(std::make_pair("TDConcreteEXP", &OPS_TDConcreteEXP)); //qiao																						   
 	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
 	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete02", &OPS_FRPConfinedConcrete02));
 	uniaxialMaterialsMap.insert(std::make_pair("ConcreteCM", &OPS_ConcreteCM));
