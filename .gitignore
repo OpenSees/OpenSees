@@ -1,0 +1,81 @@
+# Prerequisites
+*.d
+
+# old text editor files
+*~
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so*
+*.dylib
+*.dll
+*.pyd
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Visual Studio
+*.vcxproj.user
+*.bsc
+*.pdb
+.vs
+obj
+*.exp
+
+# CLion
+.gitignore
+.idea
+cmake-build-debug
+cmake-build-release
+CMakeLists.txt
+.dropbox.attr
+
+# VSCode
+.vscode
+
+# OTHER
+Makefile.def
+PlainConcrete.f
+forumat.f
+Damage2p.cpp
+Damage2p.h
+Damage2p3D.cpp
+Damage2p3D.h
+Damage2pThanh.tar
+Damage2ppstress.cpp
+Damage2ppstress.h
+Faria1998.cpp
+Faria1998.h
+Faria1998PlaneStrain.cpp
+Faria1998PlaneStrain.h
+Faria1998PlaneStress.cpp
+Faria1998PlaneStress.h
+Faria1998PlaneStress2d.cpp
+Faria1998PlaneStress2d.h
+Faria1998ThreeDimensional.cpp
+Faria1998ThreeDimensional.h
+SRC/interpreter/pythonInterpreter
+SRC/interpreter/tclInterpreter
+SRC/interpreter/openseespy
+SRC/interpreter/openseestcl
