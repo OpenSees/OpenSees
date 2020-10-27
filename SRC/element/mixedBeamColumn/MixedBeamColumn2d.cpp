@@ -22,8 +22,7 @@
 // $Date: 2010-05-04 17:14:45 $
 // $Source: /scratch/slocal/chroot/cvsroot/openseescomp/CompositePackages/mixedBeamColumn/MixedBeamColumn2d.cpp,v $
 
-#include "MixedBeamColumn2d.h"
-
+#include <MixedBeamColumn2d.h>
 #include <elementAPI.h>
 #include <G3Globals.h>
 
