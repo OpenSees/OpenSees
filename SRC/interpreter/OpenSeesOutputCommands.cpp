@@ -69,6 +69,7 @@ void* OPS_ElementRecorder();
 void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
 void* OPS_AlgorithmRecorder();
+void* OPS_RemoveRecorder();
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -94,6 +95,10 @@ namespace {
         recordersMap.insert(std::make_pair("EnvelopeElement", &OPS_EnvelopeElementRecorder));
 	recordersMap.insert(std::make_pair("PVD", &OPS_PVDRecorder));
 	recordersMap.insert(std::make_pair("BgPVD", &OPS_PVDRecorder));
+	recordersMap.insert(std::make_pair("Remove", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
