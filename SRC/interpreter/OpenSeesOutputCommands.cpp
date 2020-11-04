@@ -143,6 +143,14 @@ int OPS_Recorder()
 	}
     }
 
+    // set recorder tag as result
+    int size = 1;
+    int tag = theRecorder->getTag();
+    if (OPS_SetIntOutput(&size, &tag, true) < 0) {
+        opserr << "ERROR: failed to return recorder tag\n";
+        return -1;
+    }
+
     return 0;
 }
 
