@@ -900,7 +900,7 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
     
     for (i=0; i<numNodes; i++) {
       const Vector &nodeCrd = theNodes[i]->getCrds();
-      const Vector &nodeDisp = theNodes[i]->getDisp();
+      // const Vector &nodeDisp = theNodes[i]->getDisp();
       s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
      }
     
@@ -1095,8 +1095,7 @@ FourNodeQuad::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(12));
   }
 
-  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
-		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
     for (int i=0; i<4; i++) { // nnodes
       output.tag("NodalPoint");
       output.attr("number",i+1);
@@ -1185,10 +1184,10 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
     }
 
 	// [nnodes][nip]
-	double We[4][4] = {{1.8660254037844386, -0.5, 0.1339745962155614, -0.5},
-					   {-0.5, 1.8660254037844386, -0.5, 0.1339745962155614},
-					   {0.1339745962155614, -0.5, 1.8660254037844386, -0.5},
-					   {-0.5, 0.1339745962155614, -0.5, 1.8660254037844386}};
+	const double We[4][4] = {{1.8660254037844386, -0.5, 0.1339745962155614, -0.5},
+							 {-0.5, 1.8660254037844386, -0.5, 0.1339745962155614},
+							 {0.1339745962155614, -0.5, 1.8660254037844386, -0.5},
+							 {-0.5, 0.1339745962155614, -0.5, 1.8660254037844386}};
 
 	int p, l;
 	for (int i = 0; i < 4; i++) { // nnodes
