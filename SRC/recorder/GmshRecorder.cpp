@@ -1283,6 +1283,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_FourNodeQuad] = GMSH_QUAD;
     gmshtypes[ELE_TAG_FourNodeQuad3d] = GMSH_QUAD;
     gmshtypes[ELE_TAG_Tri31] = GMSH_TRIANGLE;
+    gmshtypes[ELE_TAG_SixNodeTri] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_BeamWithHinges2d] = GMSH_LINE;
     gmshtypes[ELE_TAG_BeamWithHinges3d] = GMSH_LINE;
     gmshtypes[ELE_TAG_EightNodeBrick] = GMSH_HEXAHEDRON;

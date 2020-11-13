@@ -377,9 +377,6 @@ Tri31::Tri31(int tag, int nd1, int nd2, int nd3,
 	b[0] = b1;
 	b[1] = b2;
 
-	numgp = 1;
-	numnodes = 3;
-
     // Allocate arrays of pointers to NDMaterials
     theMaterial = new NDMaterial *[numgp];
     
@@ -1121,7 +1118,7 @@ Tri31::Print(OPS_Stream &s, int flag)
 
         for (i = 0; i < numNodes; i++) {
             const Vector &nodeCrd = theNodes[i]->getCrds();
-            const Vector &nodeDisp = theNodes[i]->getDisp();
+            // const Vector &nodeDisp = theNodes[i]->getDisp();
             s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
         }
 
@@ -1283,8 +1280,30 @@ Tri31::setResponse(const char **argv, int argc, OPS_Stream &output)
            output.endTag(); // GaussPoint
            output.endTag(); // NdMaterialOutput
        }
-       theResponse =  new ElementResponse(this, 3, Vector(12));
+       theResponse =  new ElementResponse(this, 3, Vector(3*numgp));
    }
+
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
+    for (int i=0; i<numnodes; i++) {
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(3*numnodes));
+  }
+
 
    output.endTag(); // ElementOutput
 
@@ -1310,6 +1329,42 @@ Tri31::getResponse(int responseID, Information &eleInfo)
             cnt += 3;
        }
        return eleInfo.setVector(stresses);
+
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(3*numgp);
+    static Vector stressAtNodes(3*numnodes); // 3*nnodes
+	stressAtNodes.Zero();
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < numgp; i++) {
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
+	double We[numnodes][numgp] = {{1.0},
+								  {1.0},
+								  {1.0}};
+
+	int p, l;
+	for (int i = 0; i < numnodes; i++) {
+	  for (int k = 0; k < 3; k++) { // number of stress components
+		p = 3*i + k;
+		for (int j = 0; j < numgp; j++) {
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
+
+    return eleInfo.setVector(stressAtNodes);
+
   } else
 
     return -1;

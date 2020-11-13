@@ -1824,6 +1824,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_FourNodeQuad3d] = VTK_QUAD;
     vtktypes[ELE_TAG_Tri31] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_SixNodeTri] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_BeamWithHinges2d] = VTK_LINE;
     vtktypes[ELE_TAG_BeamWithHinges3d] = VTK_LINE;
     vtktypes[ELE_TAG_EightNodeBrick] = VTK_HEXAHEDRON;

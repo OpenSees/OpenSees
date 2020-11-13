@@ -1426,6 +1426,74 @@ LinearCrdTransf3d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 }
 
 
+const Vector &
+LinearCrdTransf3d::getPointLocalDisplFromBasic(double xi, const Vector &uxb)
+{
+    // determine global displacements
+    const Vector &disp1 = nodeIPtr->getTrialDisp();
+    const Vector &disp2 = nodeJPtr->getTrialDisp();
+    
+    static double ug[12];
+    for (int i = 0; i < 6; i++)
+    {
+        ug[i]   = disp1(i);
+        ug[i+6] = disp2(i);
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j] -= nodeIInitialDisp[j];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j+6] -= nodeJInitialDisp[j];
+    }
+    
+    
+    
+    // transform global end displacements to local coordinates
+    //ul.addMatrixVector(0.0, Tlg,  ug, 1.0);       //  ul = Tlg *  ug;
+    static double ul[12];
+    
+    ul[0]  = R[0][0]*ug[0] + R[0][1]*ug[1] + R[0][2]*ug[2];
+    ul[1]  = R[1][0]*ug[0] + R[1][1]*ug[1] + R[1][2]*ug[2];
+    ul[2]  = R[2][0]*ug[0] + R[2][1]*ug[1] + R[2][2]*ug[2];
+    
+    ul[7]  = R[1][0]*ug[6] + R[1][1]*ug[7] + R[1][2]*ug[8];
+    ul[8]  = R[2][0]*ug[6] + R[2][1]*ug[7] + R[2][2]*ug[8];
+    
+    static double Wu[3];
+    if (nodeIOffset) {
+        Wu[0] =  nodeIOffset[2]*ug[4] - nodeIOffset[1]*ug[5];
+        Wu[1] = -nodeIOffset[2]*ug[3] + nodeIOffset[0]*ug[5];
+        Wu[2] =  nodeIOffset[1]*ug[3] - nodeIOffset[0]*ug[4];
+        
+        ul[0] += R[0][0]*Wu[0] + R[0][1]*Wu[1] + R[0][2]*Wu[2];
+        ul[1] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[2] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+    
+    if (nodeJOffset) {
+        Wu[0] =  nodeJOffset[2]*ug[10] - nodeJOffset[1]*ug[11];
+        Wu[1] = -nodeJOffset[2]*ug[9]  + nodeJOffset[0]*ug[11];
+        Wu[2] =  nodeJOffset[1]*ug[9]  - nodeJOffset[0]*ug[10];
+        
+        ul[7] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[8] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+    
+    // compute displacements at point xi, in local coordinates
+    static Vector uxl(3);
+    
+    uxl(0) = uxb(0) +        ul[0];
+    uxl(1) = uxb(1) + (1-xi)*ul[1] + xi*ul[7];
+    uxl(2) = uxb(2) + (1-xi)*ul[2] + xi*ul[8];
+    
+    return uxl;  
+}
+
+
 void
 LinearCrdTransf3d::Print(OPS_Stream &s, int flag)
 {

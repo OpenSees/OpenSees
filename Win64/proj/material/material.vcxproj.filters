@@ -1350,7 +1350,13 @@
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp">
-      <Filter>nD</Filter>
+      <Filter>nD\elasticIsotropic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface3D.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurfacePlaneStrain.cpp">
+      <Filter>nD\UWmaterials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2526,7 +2532,13 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h">
-      <Filter>nD</Filter>
+      <Filter>nD\elasticIsotropic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface3D.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurfacePlaneStrain.h">
+      <Filter>nD\UWmaterials</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

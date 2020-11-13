@@ -456,7 +456,9 @@
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
 // J2CyclicBoundingSurface material - D.Turello
-#define ND_TAG_J2CyclicBoundingSurface        14023
+#define ND_TAG_J2CyclicBoundingSurface            14023
+#define ND_TAG_J2CyclicBoundingSurface3D          14024
+#define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
@@ -583,8 +585,6 @@
 #define ELE_TAG_NLBeamColumn3d	        29
 #define ELE_TAG_LargeDispBeamColumn3d	30
 #define ELE_TAG_FourNodeQuad	        31
-#define ELE_TAG_NineNodeQuad	        311
-#define ELE_TAG_EightNodeQuad	        312
 #define ELE_TAG_FourNodeQuad3d	        32
 #define ELE_TAG_Tri31	                33    //Added by Roozbeh Geraili Mikola
 #define ELE_TAG_BeamWithHinges2d        34
@@ -766,6 +766,9 @@
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_WheelRail                 205
 #define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
+#define ELE_TAG_NineNodeQuad              207
+#define ELE_TAG_EightNodeQuad             208
+#define ELE_TAG_SixNodeTri                209
 #define ELE_TAG_ExternalElement           99990
 
 

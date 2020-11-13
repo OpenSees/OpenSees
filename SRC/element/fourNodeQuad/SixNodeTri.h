@@ -20,12 +20,12 @@
 //
 // based on FourNodeQuad by MHS
 // Written: Seweryn Kokot, Opole University of Technology, Poland
-// Created: Aug 2020
+// Created: Sep 2020
 //
-// Description: This file contains the class definition for NineNodeQuad.
+// Description: This file contains the class definition for SixNodeTri.
 
-#ifndef NineNodeQuad_h
-#define NineNodeQuad_h
+#ifndef SixNodeTri_h
+#define SixNodeTri_h
 
 #ifndef _bool_h
 #include "bool.h"
@@ -40,16 +40,16 @@ class Node;
 class NDMaterial;
 class Response;
 
-class NineNodeQuad : public Element {
+class SixNodeTri : public Element {
 public:
-  NineNodeQuad(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6,
-               int nd7, int nd8, int nd9, NDMaterial &m, const char *type, double t,
+  SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4, int nd5, int nd6,
+               NDMaterial &m, const char *type, double t,
                double pressure = 0.0, double rho = 0.0, double b1 = 0.0,
                double b2 = 0.0);
-  NineNodeQuad();
-  ~NineNodeQuad();
+  SixNodeTri();
+  ~SixNodeTri();
 
-  const char *getClassType(void) const { return "NineNodeQuad"; };
+  const char *getClassType(void) const { return "SixNodeTri"; };
 
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
@@ -100,8 +100,8 @@ protected:
 private:
   // private attributes - a copy for each object of the class
 
-  static constexpr int nip = 9; // number of integration/Gauss points
-  static constexpr int nnodes = 9; // number of nodes
+  static constexpr int nip = 3; // number of integration/Gauss points
+  static constexpr int nnodes = 6; // number of nodes
 
   NDMaterial **theMaterial; // pointer to the ND material objects
 
