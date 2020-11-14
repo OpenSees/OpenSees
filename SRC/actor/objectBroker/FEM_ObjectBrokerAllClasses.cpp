@@ -64,6 +64,7 @@
 #include "Elastic2Material.h"
 #include "ElasticPPMaterial.h"
 #include "ParallelMaterial.h"
+#include "ASD_SMA_3K.h"
 #include "Concrete01.h"
 #include "Concrete02.h"
 #include "Concrete04.h"
@@ -1097,6 +1098,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
     case MAT_TAG_ParallelMaterial:
 	     return new ParallelMaterial();
+
+	case MAT_TAG_ASD_SMA_3K:  
+	     return new ASD_SMA_3K();
 
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
