@@ -229,6 +229,7 @@
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
 #define MAT_TAG_PlateBearingConnectionThermal 215
+#define MAT_TAG_ASD_SMA_3K                    216
 
 
 #define MAT_TAG_FedeasMaterial    1000
@@ -456,7 +457,9 @@
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
 // J2CyclicBoundingSurface material - D.Turello
-#define ND_TAG_J2CyclicBoundingSurface        14023
+#define ND_TAG_J2CyclicBoundingSurface            14023
+#define ND_TAG_J2CyclicBoundingSurface3D          14024
+#define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031

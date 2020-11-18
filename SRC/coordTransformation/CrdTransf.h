@@ -94,6 +94,7 @@ public:
     // methods used in post-processing only
     virtual const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords) = 0;
     virtual const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
+    virtual const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
     
 protected:
     
