@@ -4024,15 +4024,24 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   else if (strcmp(argv[1],"ExpressNewton") == 0) {
-    int nIter = 2, factorOnce = 0;
+    int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
     double kMultiplier = 1.0;
 	  if (argc >= 3 && Tcl_GetInt(interp, argv[2], &nIter) != TCL_OK)
       return TCL_ERROR;
 	  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &kMultiplier) != TCL_OK)
       return TCL_ERROR;
-	  if (argc >= 5 && strcmp(argv[4],"-initial") == 0)	
-      factorOnce = 1;
-    theNewAlgo = new ExpressNewton(nIter,kMultiplier,factorOnce);
+    int count = 4;
+    while (argc > count) {
+      if ((strcmp(argv[count],"-initialTangent") == 0) || (strcmp(argv[count],"-InitialTangent") == 0)) {
+        formTangent = INITIAL_TANGENT;
+      } else if ((strcmp(argv[count],"-currentTangent") == 0) || (strcmp(argv[count],"-CurrentTangent") ==0 )) {
+        formTangent = CURRENT_TANGENT;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+        factorOnce = 1;
+      }
+      count++;
+    }
+    theNewAlgo = new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
   }
 
   else {

@@ -55,9 +55,17 @@
 #include <string>
 
 // Constructor
-ExpressNewton::ExpressNewton(int ni, double km, int fo)
-  :EquiSolnAlgo(EquiALGORITHM_TAGS_ExpressNewton), nIter(ni), kMultiplier(km), factorOnce(fo) 
+ExpressNewton::ExpressNewton(int ni, double km, int tg, int fo)
+  :EquiSolnAlgo(EquiALGORITHM_TAGS_ExpressNewton), nIter(ni), factorOnce(fo) 
 {
+  if (tg == INITIAL_TANGENT) {
+    kMultiplier1 = km;
+    kMultiplier2 = 0.0;
+  }
+  else {
+    kMultiplier1 = 0.0;
+    kMultiplier2 = km;
+  }
 }
 
 // Destructor
@@ -83,7 +91,7 @@ ExpressNewton::solveCurrentStep(void)
     }
 
 	if (factorOnce != 2) {
-		if (theIntegrator->formTangent(HALL_TANGENT, 0.0, kMultiplier) < 0) {
+		if (theIntegrator->formTangent(HALL_TANGENT, kMultiplier1, kMultiplier2) < 0) {
 		  opserr << "WARNING ExpressNewton::solveCurrentStep() -";
 		  opserr << "the Integrator failed in formTangent()\n";
 		  return -1;
@@ -125,9 +133,10 @@ ExpressNewton::setConvergenceTest(ConvergenceTest *theNewTest)
 int
 ExpressNewton::sendSelf(int cTag, Channel &theChannel)
 {
-  static Vector data(3);
+  static Vector data(4);
   data(0) = nIter;
-  data(1) = kMultiplier;
+  data(1) = kMultiplier1;
+  data(1) = kMultiplier2;
   data(2) = factorOnce;
   return theChannel.sendVector(this->getDbTag(), cTag, data);
 
@@ -137,11 +146,12 @@ ExpressNewton::sendSelf(int cTag, Channel &theChannel)
 int
 ExpressNewton::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  static Vector data(3);
+  static Vector data(4);
   theChannel.recvVector(this->getDbTag(), cTag, data);
   nIter = int(data(0));
-  kMultiplier = data(1);
-  factorOnce = int(data(2));
+  kMultiplier1 = data(1);
+  kMultiplier2 = data(2);
+  factorOnce = int(data(3));
   return 0;
 }
 
