@@ -132,6 +132,53 @@ J2CyclicBoundingSurface::J2CyclicBoundingSurface(int  tag,
 	calcInitialTangent();
 }
 
+//full constructor
+J2CyclicBoundingSurface::J2CyclicBoundingSurface(int  tag, int classTag,
+	double G,
+	double K,
+	double su,
+	double rho,
+	double h,
+	double m,
+	double h0,
+	double chi,
+	double beta)
+	:
+	NDMaterial(tag, classTag),
+	m_sigma0_n(6), m_sigma0_np1(6), m_stress_n(6), m_stress_np1(6), m_strain_np1(6), 
+	m_strain_n(6), m_strainRate_n(6), m_strainRate_n1(6), m_Cep(6, 6), m_Ce(6, 6), 
+	m_D(6, 6), m_stress_vis_n(6), m_stress_vis_n1(6), m_stress_t_n1(6)
+{
+	double m_poiss = (3.*K - 2.*G) / 2. / (3. * K + G);
+
+	if (m_poiss > 0.5) {
+		opserr << "\n ERROR! J2CyclicBoundingSurface Poiss can not be grater than 0.50!" << endln;
+		exit(-1);
+		return;
+	}
+
+	m_su = su;
+	m_bulk = K; // E / 3 / (1-2*nu)
+	m_shear = G;  // E / 2 / (1 + nu);
+	m_R = sqrt(8. / 3.)*su;
+	m_density = rho;
+	m_kappa_inf = 1.0e10;
+	m_h_par = h;
+	m_m_par = m;
+	m_h0_par = h0;
+	m_beta = beta;
+	m_kappa_n = m_kappa_inf;
+	m_kappa_np1 = m_kappa_inf;
+	m_psi_n = 2.*m_shear;
+	m_chi = chi;
+
+	m_isElast2Plast = false;
+	debugFlag = false;
+	small = 1.0e-10;
+
+	calcInitialTangent();
+}
+
 
 //destructor
 J2CyclicBoundingSurface :: ~J2CyclicBoundingSurface()

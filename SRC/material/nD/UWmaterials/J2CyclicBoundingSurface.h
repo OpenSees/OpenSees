@@ -47,7 +47,7 @@ public:
 	J2CyclicBoundingSurface();
 
 	//full constructor
-	J2CyclicBoundingSurface(int    tag,
+	J2CyclicBoundingSurface(int tag,
 		double G,
 		double K,
 		double su,
@@ -58,6 +58,16 @@ public:
 		double chi,
 		double beta);
 
+	J2CyclicBoundingSurface(int tag, int classTag,
+		double G,
+		double K,
+		double su,
+		double rho,
+		double h,
+		double m,
+		double h0,
+		double chi,
+		double beta);
 
 	//destructor
 	virtual ~J2CyclicBoundingSurface();

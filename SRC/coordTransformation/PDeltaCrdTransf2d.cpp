@@ -1215,6 +1215,66 @@ PDeltaCrdTransf2d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 }
 
 
+const Vector &
+PDeltaCrdTransf2d::getPointLocalDisplFromBasic(double xi, const Vector &uxb)
+{
+    // determine global displacements
+    const Vector &disp1 = nodeIPtr->getTrialDisp();
+    const Vector &disp2 = nodeJPtr->getTrialDisp();
+    
+    static Vector ug(6);
+    for (int i = 0; i < 3; i++)
+    {
+        ug(i)   = disp1(i);
+        ug(i+3) = disp2(i);
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        for (int j=0; j<3; j++)
+            ug[j] -= nodeIInitialDisp[j];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        for (int j=0; j<3; j++)
+            ug[j+3] -= nodeJInitialDisp[j];
+    }
+    
+    // transform global end displacements to local coordinates
+    static Vector ul(6);      // total displacements
+    
+    ul(0) =  cosTheta*ug(0) + sinTheta*ug(1);
+    ul(1) = -sinTheta*ug(0) + cosTheta*ug(1);
+    ul(2) =  ug(2);
+    ul(3) =  cosTheta*ug(3) + sinTheta*ug(4);
+    ul(4) = -sinTheta*ug(3) + cosTheta*ug(4);
+    ul(5) =  ug(5);
+    
+    if (nodeIOffset != 0) {
+        double t02 = -cosTheta*nodeIOffset[1] + sinTheta*nodeIOffset[0];
+        double t12 =  sinTheta*nodeIOffset[1] + cosTheta*nodeIOffset[0];
+        
+        ul(0) += t02*ug(2);
+        ul(1) += t12*ug(2);
+    }
+    
+    if (nodeJOffset != 0) {
+        double t35 = -cosTheta*nodeJOffset[1] + sinTheta*nodeJOffset[0];
+        double t45 =  sinTheta*nodeJOffset[1] + cosTheta*nodeJOffset[0];
+        
+        ul(3) += t35*ug(5);
+        ul(4) += t45*ug(5);
+    }
+    
+    // compute displacements at point xi, in local coordinates
+    static Vector uxl(2);
+    
+    uxl(0) = uxb(0) +        ul(0);
+    uxl(1) = uxb(1) + (1-xi)*ul(1) + xi*ul(4);
+    
+    return uxl;  
+}
+
+
 void
 PDeltaCrdTransf2d::Print(OPS_Stream &s, int flag)
 {
