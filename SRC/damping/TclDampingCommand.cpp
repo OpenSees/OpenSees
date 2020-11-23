@@ -74,6 +74,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
     if (strcmp(argv[1],"Uniform") == 0)
     {
       double zeta, freq1, freq2;
+      double ta = 0.0, td = 1e20;
       if (Tcl_GetDouble(interp, argv[3], &zeta) != TCL_OK)
       {	
         opserr << "WARNING invalid damping ratio - want: damping Uniform tag zeta freq1 freq2\n";
@@ -89,8 +90,30 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
         opserr << "WARNING invalid frequency range - want: damping Uniform tag zeta freq1 freq2\n";
         return  TCL_ERROR;
       }
-      Damping = new UniformDamping(dampingTag, zeta*2.0, freq1, freq2);
-      
+      int count = 6;
+      while (argc > count)
+      {
+        if ((strcmp(argv[count],"-activateTime") == 0) || (strcmp(argv[count],"-ActivateTime") == 0))
+        {
+          if (Tcl_GetDouble(interp, argv[count+1], &ta) != TCL_OK)
+          {	
+            opserr << "WARNING invalid activation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td>\n";
+            return  TCL_ERROR;
+          }
+          count++;
+        }
+        else if ((strcmp(argv[count],"-deactivateTime") == 0) || (strcmp(argv[count],"-DeactivateTime") ==0 ))
+        {
+          if (Tcl_GetDouble(interp, argv[count+1], &td) != TCL_OK)
+          {	
+            opserr << "WARNING invalid activation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td>\n";
+            return  TCL_ERROR;
+          }
+          count++;
+        }
+        count++;
+      }
+      Damping = new UniformDamping(dampingTag, zeta*2.0, freq1, freq2, ta, td);
     }
     else if (strcmp(argv[1],"SecStif") == 0 || strcmp(argv[1],"SecStiff") == 0)
     {

@@ -52,10 +52,10 @@
 #include <UniformDamping.h>
 
 // constructor:
-UniformDamping::UniformDamping(int tag, double cd, double f1, double f2):
+UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2):
 Damping(tag, DMP_TAG_UniformDamping),
 nComp(0), nFilter(0),
-eta(cd), freq1(f1), freq2(f2),
+eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2),
 alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
   if (eta <= 0.0) opserr << "UniformDamping::UniformDamping:  Invalid damping ratio\n";
@@ -66,10 +66,10 @@ alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 }
 
 // constructor:
-UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, int nF, Vector *a, Vector *w):
+UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2, int nF, Vector *a, Vector *w):
 Damping(tag, DMP_TAG_UniformDamping),
 nComp(0), nFilter(0),
-eta(cd), freq1(f1), freq2(f2),
+eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2),
 alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
   if (eta <= 0.0) opserr << "UniformDamping::UniformDamping:  Invalid damping ratio\n";
@@ -238,24 +238,37 @@ UniformDamping::setDomain(Domain *domain, int nC)
 int
 UniformDamping::update(Vector q)
 {
+  double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   if (dT > 0.0)
   {
     *q0 = q;
     (*qd).Zero();
-    for (int i = 0; i < nFilter; ++i)
+    if (t < td)
     {
-      double dTomegac = dT * (*omegac)(i);
-      double cd = 4.0 * (*alpha)(i) * eta / (2.0 + dTomegac);
-      double c0 = dTomegac / (2.0 + dTomegac);
-      double cL = (2.0 - dTomegac) / (2.0 + dTomegac);
-      for (int j = 0; j < nComp; ++j)
+      if (theDomain->getCurrentTime() > ta)
       {
-        (*qd)(j) += cd * ((*q0C)(j) + (*q0)(j) - 2.0 * (*qLC)(j,i));
-        (*qL)(j,i) = c0 * ((*q0C)(j) + (*q0)(j)) + cL * (*qLC)(j,i);
+        for (int i = 0; i < nFilter; ++i)
+        {
+          double dTomegac = dT * (*omegac)(i);
+          double cd = 4.0 * (*alpha)(i) * eta / (2.0 + dTomegac);
+          double c0 = dTomegac / (2.0 + dTomegac);
+          double cL = (2.0 - dTomegac) / (2.0 + dTomegac);
+          for (int j = 0; j < nComp; ++j)
+          {
+            (*qd)(j) += cd * ((*q0C)(j) + (*q0)(j) - 2.0 * (*qLC)(j,i));
+            (*qL)(j,i) = c0 * ((*q0C)(j) + (*q0)(j)) + cL * (*qLC)(j,i);
+          }
+        }
+        *qd -= *qdC;
+      }
+      else
+      {
+        for (int i = 0; i < nFilter; ++i)
+          for (int j = 0; j < nComp; ++j)
+            (*qL)(j,i) = q(i);
       }
     }
-    *qd -= *qdC;
   }
   return 0;
 }
@@ -268,9 +281,10 @@ UniformDamping::getDampingForce(void)
 
 double UniformDamping::getStiffnessMultiplier(void)
 {
+  double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   double km = 1.0;
-  if (dT > 0.0)
+  if (dT > 0.0 && t > ta && t < td)
   {
     for (int i = 0; i < nFilter; ++i)
     {
@@ -286,7 +300,7 @@ Damping *UniformDamping::getCopy(void)
 
   UniformDamping *theCopy;
 
-  theCopy = new UniformDamping(this->getTag(), eta, freq1, freq2, nFilter, alpha, omegac);
+  theCopy = new UniformDamping(this->getTag(), eta, freq1, freq2, ta, td, nFilter, alpha, omegac);
 
   return theCopy;
 }
@@ -295,11 +309,13 @@ Damping *UniformDamping::getCopy(void)
 int 
 UniformDamping::sendSelf(int cTag, Channel &theChannel)
 {
-  static Vector data(4);
-  data(3) = this->getTag();
-  data(0) = eta;
-  data(1) = freq1;
-  data(2) = freq2;
+  static Vector data(6);
+  data(0) = this->getTag();
+  data(1) = eta;
+  data(2) = freq1;
+  data(3) = freq2;
+  data(4) = ta;
+  data(5) = td;
 
   if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)
   {
@@ -320,10 +336,12 @@ UniformDamping::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBro
     return -1;
   }
     
-  this->setTag((int)data(3));
-  eta = data(0);
-  freq1 = data(1);
-  freq2 = data(2);
+  this->setTag((int)data(0));
+  eta = data(1);
+  freq1 = data(2);
+  freq2 = data(3);
+  ta = data(4);
+  td = data(5);
 
   if (eta <= 0.0) opserr << "UniformDamping::recvSelf:  Invalid damping ratio\n";
   if (freq1 <= 0.0 || freq2 <= 0.0 || freq1 >= freq2)
@@ -342,6 +360,8 @@ UniformDamping::Print(OPS_Stream &s, int flag)
     s << "\tdamping ratio: " << 0.5 * eta << endln;
     s << "\tlower bound frequency: " << freq1 << endln;
     s << "\tupper bound frequency: " << freq2 << endln;
+    s << "\tactivation time: " << ta << endln;
+    s << "\tdeactivation time: " << td << endln;
   }
 
   if (flag == OPS_PRINT_PRINTMODEL_JSON)
@@ -350,6 +370,8 @@ UniformDamping::Print(OPS_Stream &s, int flag)
     s << ", \"damping ratio\": [" << 0.5 * eta << "]";
     s << ", \"lower bound frequency\": [" << freq1 << "]";
     s << ", \"upper bound frequency\": [" << freq2 << "]";
+    s << ", \"activation time\": [" << ta << "]";
+    s << ", \"deactivation time\": [" << td << "]";
     s << "}";
   }
 }
