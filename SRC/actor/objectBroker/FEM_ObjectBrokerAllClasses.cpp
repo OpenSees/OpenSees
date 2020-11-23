@@ -64,6 +64,7 @@
 #include "Elastic2Material.h"
 #include "ElasticPPMaterial.h"
 #include "ParallelMaterial.h"
+#include "ASD_SMA_3K.h"
 #include "Concrete01.h"
 #include "Concrete02.h"
 #include "Concrete04.h"
@@ -74,6 +75,7 @@
 #include "Steel01.h"
 #include "Steel02.h"
 #include "Steel2.h"
+#include "Steel4.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
 #include "HardeningMaterial.h"
@@ -222,6 +224,8 @@
 #include "fourNodeQuad/FourNodeQuad.h"
 #include "fourNodeQuad/EnhancedQuad.h"
 #include "fourNodeQuad/NineNodeMixedQuad.h"
+#include "fourNodeQuad/NineNodeQuad.h"
+#include "fourNodeQuad/EightNodeQuad.h"
 #include "fourNodeQuad/ConstantPressureVolumeQuad.h"
 #include "elasticBeamColumn/ElasticBeam2d.h"
 #include "elasticBeamColumn/ElasticBeam3d.h"
@@ -699,6 +703,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_NineNodeMixedQuad:
       return new NineNodeMixedQuad();
       
+    case ELE_TAG_NineNodeQuad:
+      return new NineNodeQuad();
+      
+    case ELE_TAG_EightNodeQuad:
+      return new EightNodeQuad();
+      
     case ELE_TAG_ConstantPressureVolumeQuad:
       return new ConstantPressureVolumeQuad();
       
@@ -1089,6 +1099,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
     case MAT_TAG_ParallelMaterial:
 	     return new ParallelMaterial();
 
+	case MAT_TAG_ASD_SMA_3K:  
+	     return new ASD_SMA_3K();
+
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
 
@@ -1115,6 +1128,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Steel2:  
 	     return new Steel2();
+
+	case MAT_TAG_Steel4:  
+	     return new Steel4();	     
 
 	case MAT_TAG_OriginCentered:  
 	     return new OriginCentered();

@@ -126,6 +126,8 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedNewmark.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\DOF_GrpIter.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\FE_EleIter.cpp" />
@@ -237,6 +239,8 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\DOF_GrpIter.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\FE_EleIter.h" />
