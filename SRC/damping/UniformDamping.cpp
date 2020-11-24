@@ -50,12 +50,14 @@
 #include <Channel.h>
 #include <elementAPI.h>
 #include <UniformDamping.h>
+#include <FEM_ObjectBroker.h>
+#include <ID.h>
 
 // constructor:
-UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2):
+UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2, TimeSeries *f):
 Damping(tag, DMP_TAG_UniformDamping),
 nComp(0), nFilter(0),
-eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2),
+eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2), fac(f),
 alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
   if (eta <= 0.0) opserr << "UniformDamping::UniformDamping:  Invalid damping ratio\n";
@@ -66,10 +68,10 @@ alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 }
 
 // constructor:
-UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2, int nF, Vector *a, Vector *w):
+UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2, TimeSeries *f, int nF, Vector *a, Vector *w):
 Damping(tag, DMP_TAG_UniformDamping),
 nComp(0), nFilter(0),
-eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2),
+eta(cd), freq1(f1), freq2(f2), ta(t1), td(t2), fac(f),
 alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
   if (eta <= 0.0) opserr << "UniformDamping::UniformDamping:  Invalid damping ratio\n";
@@ -268,6 +270,7 @@ UniformDamping::update(Vector q)
           for (int j = 0; j < nComp; ++j)
             (*qL)(j,i) = q(i);
       }
+      if (fac) *qd *= fac->getFactor(t);
     }
   }
   return 0;
@@ -283,15 +286,16 @@ double UniformDamping::getStiffnessMultiplier(void)
 {
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
-  double km = 1.0;
+  double km = 0.0;
   if (dT > 0.0 && t > ta && t < td)
   {
     for (int i = 0; i < nFilter; ++i)
     {
       km += 4.0 * (*alpha)(i) * eta / (2.0 + (*omegac)(i) * dT);
     }
+    if (fac) km *= fac->getFactor(t);
   }
-  return km;
+  return 1.0 + km;
 }
 
 Damping *UniformDamping::getCopy(void)
@@ -300,7 +304,7 @@ Damping *UniformDamping::getCopy(void)
 
   UniformDamping *theCopy;
 
-  theCopy = new UniformDamping(this->getTag(), eta, freq1, freq2, ta, td, nFilter, alpha, omegac);
+  theCopy = new UniformDamping(this->getTag(), eta, freq1, freq2, ta, td, fac, nFilter, alpha, omegac);
 
   return theCopy;
 }
@@ -309,7 +313,24 @@ Damping *UniformDamping::getCopy(void)
 int 
 UniformDamping::sendSelf(int cTag, Channel &theChannel)
 {
+  int dbTag = this->getDbTag();
+  static ID idData(2);
   static Vector data(6);
+
+  if (fac)
+  {
+    idData(0) = fac->getClassTag();
+    int seriesDbTag = fac->getDbTag();
+    if (seriesDbTag == 0)
+    {
+      seriesDbTag = theChannel.getDbTag();
+      fac->setDbTag(seriesDbTag);
+    }
+    idData(1) = seriesDbTag;
+  }
+  else
+    idData(0) = -1;
+
   data(0) = this->getTag();
   data(1) = eta;
   data(2) = freq1;
@@ -317,11 +338,24 @@ UniformDamping::sendSelf(int cTag, Channel &theChannel)
   data(4) = ta;
   data(5) = td;
 
-  if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)
+  int res = theChannel.sendID(dbTag, cTag, idData);
+  res += theChannel.sendVector(dbTag, cTag, data);
+  if (res < 0)
   {
     opserr << " UniformDamping::sendSelf() - data could not be sent\n" ;
     return -1;
   }
+
+  if (fac)
+  {
+    res = fac->sendSelf(cTag, theChannel);
+    if (res < 0)
+    {
+      opserr << " UniformDamping::sendSelf() - failed to send factor series\n";
+      return res;
+    }
+  }
+
   return 0;
 }
 
@@ -329,11 +363,38 @@ UniformDamping::sendSelf(int cTag, Channel &theChannel)
 int 
 UniformDamping::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  static Vector data(4);
-  if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)
-  {
-    opserr << " UniformDamping::recvSelf() - data could not be received\n" ;
+  int dbTag = this->getDbTag();
+  static ID idData(2);
+  static Vector data(6);
+
+  int res = theChannel.recvID(dbTag, cTag, idData);
+  res += theChannel.recvVector(dbTag, cTag, data);
+  if (res < 0) {opserr << " UniformDamping::recvSelf() - data could not be received\n" ;
     return -1;
+  }
+
+  int seriesClassTag = idData(0);
+  if (seriesClassTag != -1)
+  {
+    int seriesDbTag = idData(1);
+    if (fac == 0 || fac->getClassTag() != seriesClassTag)
+    {
+      if (fac != 0)
+        delete fac;
+      fac = theBroker.getNewTimeSeries(seriesClassTag);
+      if (fac == 0)
+      {
+        opserr << "GroundMotion::recvSelf - could not create a Series object\n";
+        return -2;
+      }
+    }
+    fac->setDbTag(seriesDbTag);
+    res = fac->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0)
+    {
+      opserr << "UniformDamping::recvSelf() - factor series could not be received\n";
+      return res;
+    }
   }
     
   this->setTag((int)data(0));

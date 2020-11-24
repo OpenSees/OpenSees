@@ -48,12 +48,13 @@
 
 #include <Damping.h>
 #include <Vector.h>
+#include <TimeSeries.h>
 
 class UniformDamping: public Damping
 {
 public:
-  UniformDamping(int tag, double eta, double freq1, double freq2, double ta, double td);
-  UniformDamping(int tag, double eta, double freq1, double freq2, double ta, double td, int nFilter, Vector *alpha, Vector *omegac);
+  UniformDamping(int tag, double eta, double freq1, double freq2, double ta, double td, TimeSeries *fac);
+  UniformDamping(int tag, double eta, double freq1, double freq2, double ta, double td, TimeSeries *fac, int nFilter, Vector *alpha, Vector *omegac);
   
   UniformDamping();
   ~UniformDamping();
@@ -84,6 +85,7 @@ private:
   // internal data
   int nComp, nFilter;
   double eta, freq1, freq2, ta, td;
+  TimeSeries *fac;
   Vector *alpha, *omegac;
   Matrix *qL, *qLC;
   Vector *qd, *qdC, *q0, *q0C;

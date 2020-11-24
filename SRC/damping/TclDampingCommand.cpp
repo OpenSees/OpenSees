@@ -75,6 +75,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
     {
       double zeta, freq1, freq2;
       double ta = 0.0, td = 1e20;
+      TimeSeries *facSeries = 0;
       if (Tcl_GetDouble(interp, argv[3], &zeta) != TCL_OK)
       {	
         opserr << "WARNING invalid damping ratio - want: damping Uniform tag zeta freq1 freq2\n";
@@ -97,7 +98,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
         {
           if (Tcl_GetDouble(interp, argv[count+1], &ta) != TCL_OK)
           {	
-            opserr << "WARNING invalid activation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td>\n";
+            opserr << "WARNING invalid activation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
             return  TCL_ERROR;
           }
           count++;
@@ -106,14 +107,25 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
         {
           if (Tcl_GetDouble(interp, argv[count+1], &td) != TCL_OK)
           {	
-            opserr << "WARNING invalid activation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td>\n";
+            opserr << "WARNING invalid deactivation time - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
             return  TCL_ERROR;
           }
           count++;
         }
+        else if ((strcmp(argv[count],"-fact") == 0) || (strcmp(argv[count],"-factor") ==0 ))
+        {
+          int tsTag;
+          if (Tcl_GetInt(interp, argv[count+1], &tsTag) != TCL_OK)
+          {	
+            opserr << "WARNING invalid factor series - want: damping Uniform tag zeta freq1 freq2 <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
+            return  TCL_ERROR;
+          }
+          facSeries = OPS_getTimeSeries(tsTag);
+          count++;
+        }
         count++;
       }
-      Damping = new UniformDamping(dampingTag, zeta*2.0, freq1, freq2, ta, td);
+      Damping = new UniformDamping(dampingTag, zeta*2.0, freq1, freq2, ta, td, facSeries);
     }
     else if (strcmp(argv[1],"SecStif") == 0 || strcmp(argv[1],"SecStiff") == 0)
     {
