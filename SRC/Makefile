@@ -1141,6 +1141,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/MaterialStageParameter.o \
 	$(FE)/domain/component/MatParameter.o \
 	$(FE)/domain/domain/Domain.o \
+	$(FE)/domain/domain/DomainModalProperties.o \
 	$(FE)/domain/domain/single/SingleDomEleIter.o \
 	$(FE)/domain/domain/single/SingleDomNodIter.o \
 	$(FE)/domain/domain/single/SingleDomSP_Iter.o \
