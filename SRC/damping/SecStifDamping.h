@@ -37,11 +37,12 @@
 
 #include <Damping.h>
 #include <Vector.h>
+#include <TimeSeries.h>
 
 class SecStifDamping: public Damping
 {
 public:
-  SecStifDamping(int tag, double beta);
+  SecStifDamping(int tag, double beta, double ta, double td, TimeSeries *fac);
   
   SecStifDamping();
   ~SecStifDamping();
@@ -68,7 +69,8 @@ public:
 private:
   
   // internal data
-  double beta;
+  double beta, ta, td;
+  TimeSeries *fac;
   Vector *qd, *q0, *q0C;
   Domain *theDomain;
 };

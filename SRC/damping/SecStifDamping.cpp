@@ -39,30 +39,13 @@
 #include <Channel.h>
 #include <elementAPI.h>
 #include <SecStifDamping.h>
-
-void* OPS_SecStifDamping()
-{
-  if(OPS_GetNumRemainingInputArgs() < 2)
-  {
-    opserr<<"insufficient arguments for SecStifDamping\n";
-    return 0;
-  }
-
-  // get tag
-  int tag;
-  int numData = 1;
-  if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
-  
-  double beta;
-  if(OPS_GetDoubleInput(&numData,&beta) < 0) return 0;
-      
-  return new SecStifDamping(tag,beta);
-}
+#include <FEM_ObjectBroker.h>
+#include <ID.h>
 
 // constructor:
-SecStifDamping::SecStifDamping(int tag, double b):
+SecStifDamping::SecStifDamping(int tag, double b, double t1, double t2, TimeSeries *f):
 Damping(tag, DMP_TAG_SecStifDamping),
-beta(b), qd(0), q0(0), q0C(0)
+beta(b), ta(t1), td(t2), fac(f), qd(0), q0(0), q0C(0)
 {
   if (beta <= 0.0) opserr << "SecStifDamping::SecStifDamping:  Invalid damping factor\n";
 }
@@ -72,7 +55,7 @@ beta(b), qd(0), q0(0), q0C(0)
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.
 SecStifDamping::SecStifDamping():
 Damping(0, DMP_TAG_SecStifDamping),
-beta(0.0), qd(0), q0(0), q0C(0)
+beta(0.0), ta(0.0), td(0.0), fac(0), qd(0), q0(0), q0C(0)
 {
     
 }
@@ -81,6 +64,7 @@ beta(0.0), qd(0), q0(0), q0C(0)
 // destructor:
 SecStifDamping::~SecStifDamping() 
 {
+  if (fac) delete fac;
   if(qd) delete qd;
   if(q0) delete q0;
   if(q0C) delete q0C;
@@ -128,11 +112,20 @@ SecStifDamping::setDomain(Domain *domain, int nComp)
 int
 SecStifDamping::update(Vector q)
 {       
+  double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   if (dT > 0.0)
   {
     *q0 = q;
-    *qd = (beta / dT) * (*q0 - *q0C);
+    if (t > ta && t < td)
+    {
+      *qd = (beta / dT) * (*q0 - *q0C);
+      if (fac) *qd *= fac->getFactor(t);
+    }
+    else
+    {
+      (*qd).Zero();
+    }
   }
   return 0;
 }
@@ -145,10 +138,11 @@ SecStifDamping::getDampingForce(void)
 
 double SecStifDamping::getStiffnessMultiplier(void)
 {
+  double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
-  double km = 1.0;
-  if (dT > 0.0) km += beta / dT;
-  return km;
+  double km = 0.0;
+  if (dT > 0.0 && t > ta && t < td) km = beta / dT;
+  return 1.0 + km;
 }
 
 
@@ -158,7 +152,7 @@ Damping *SecStifDamping::getCopy(void)
     
     SecStifDamping *theCopy;
     
-    theCopy = new SecStifDamping(this->getTag(), beta);
+    theCopy = new SecStifDamping(this->getTag(), beta, ta, td, fac);
     
     return theCopy;
 }
@@ -167,17 +161,96 @@ Damping *SecStifDamping::getCopy(void)
 int 
 SecStifDamping::sendSelf(int cTag, Channel &theChannel)
 {
-  int res = 0;
-    
-  return res;
+  int dbTag = this->getDbTag();
+  static ID idData(2);
+  static Vector data(4);
+
+  if (fac)
+  {
+    idData(0) = fac->getClassTag();
+    int seriesDbTag = fac->getDbTag();
+    if (seriesDbTag == 0)
+    {
+      seriesDbTag = theChannel.getDbTag();
+      fac->setDbTag(seriesDbTag);
+    }
+    idData(1) = seriesDbTag;
+  }
+  else
+    idData(0) = -1;
+
+  data(0) = this->getTag();
+  data(1) = beta;
+  data(2) = ta;
+  data(3) = td;
+
+  int res = theChannel.sendID(dbTag, cTag, idData);
+  res += theChannel.sendVector(dbTag, cTag, data);
+  if (res < 0)
+  {
+    opserr << " UniformDamping::sendSelf() - data could not be sent\n" ;
+    return -1;
+  }
+
+  if (fac)
+  {
+    res = fac->sendSelf(cTag, theChannel);
+    if (res < 0)
+    {
+      opserr << " UniformDamping::sendSelf() - failed to send factor series\n";
+      return res;
+    }
+  }
+
+  return 0;
 }
 
 
 int 
 SecStifDamping::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  int res = 0;
-  return res;
+  int dbTag = this->getDbTag();
+  static ID idData(2);
+  static Vector data(4);
+
+  int res = theChannel.recvID(dbTag, cTag, idData);
+  res += theChannel.recvVector(dbTag, cTag, data);
+  if (res < 0) {opserr << " UniformDamping::recvSelf() - data could not be received\n" ;
+    return -1;
+  }
+
+  int seriesClassTag = idData(0);
+  if (seriesClassTag != -1)
+  {
+    int seriesDbTag = idData(1);
+    if (fac == 0 || fac->getClassTag() != seriesClassTag)
+    {
+      if (fac != 0)
+        delete fac;
+      fac = theBroker.getNewTimeSeries(seriesClassTag);
+      if (fac == 0)
+      {
+        opserr << "GroundMotion::recvSelf - could not create a Series object\n";
+        return -2;
+      }
+    }
+    fac->setDbTag(seriesDbTag);
+    res = fac->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0)
+    {
+      opserr << "UniformDamping::recvSelf() - factor series could not be received\n";
+      return res;
+    }
+  }
+    
+  this->setTag((int)data(0));
+  beta = data(1);
+  ta = data(2);
+  td = data(3);
+
+  if (beta <= 0.0) opserr << "SecStifDamping::recvSelf:  Invalid damping factor\n";
+
+  return 0;
 }
 
 void
@@ -187,12 +260,16 @@ SecStifDamping::Print(OPS_Stream &s, int flag)
 	{
     s << "\nDamping: " << this->getTag() << " Type: SecStifDamping";
     s << "\tdamping factor: " << beta << endln;
+    s << "\tactivation time: " << ta << endln;
+    s << "\tdeactivation time: " << td << endln;
 	}
 	
 	if (flag == OPS_PRINT_PRINTMODEL_JSON)
   {
     s << "\t\t\t{\"name\": \"" << this->getTag() << "\", \"type\": \"SecStifDamping\"";
     s << ", \"damping factor\": [" << beta << "]";
+    s << ", \"activation time\": [" << ta << "]";
+    s << ", \"deactivation time\": [" << td << "]";
     s << "}";
   }
 }

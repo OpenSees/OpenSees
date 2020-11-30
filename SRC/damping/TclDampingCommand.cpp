@@ -130,12 +130,48 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
     else if (strcmp(argv[1],"SecStif") == 0 || strcmp(argv[1],"SecStiff") == 0)
     {
       double beta;
+      double ta = 0.0, td = 1e20;
+      TimeSeries *facSeries = 0;
       if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK)
       {	
         opserr << "WARNING invalid damping factor - want: damping SecStiff tag beta\n";
         return  TCL_ERROR;
       }
-      Damping = new SecStifDamping(dampingTag, beta);
+      int count = 4;
+      while (argc > count)
+      {
+        if ((strcmp(argv[count],"-activateTime") == 0) || (strcmp(argv[count],"-ActivateTime") == 0))
+        {
+          if (Tcl_GetDouble(interp, argv[count+1], &ta) != TCL_OK)
+          {	
+            opserr << "WARNING invalid activation time - want: damping SecStiff tag beta <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
+            return  TCL_ERROR;
+          }
+          count++;
+        }
+        else if ((strcmp(argv[count],"-deactivateTime") == 0) || (strcmp(argv[count],"-DeactivateTime") ==0 ))
+        {
+          if (Tcl_GetDouble(interp, argv[count+1], &td) != TCL_OK)
+          {	
+            opserr << "WARNING invalid deactivation time - want: damping SecStiff tag beta <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
+            return  TCL_ERROR;
+          }
+          count++;
+        }
+        else if ((strcmp(argv[count],"-fact") == 0) || (strcmp(argv[count],"-factor") ==0 ))
+        {
+          int tsTag;
+          if (Tcl_GetInt(interp, argv[count+1], &tsTag) != TCL_OK)
+          {	
+            opserr << "WARNING invalid factor series - want: damping SecStiff tag beta <-activateTime ta> <-deactivateTime td> <-fact tsTag>\n";
+            return  TCL_ERROR;
+          }
+          facSeries = OPS_getTimeSeries(tsTag);
+          count++;
+        }
+        count++;
+      }
+      Damping = new SecStifDamping(dampingTag, beta, ta, td, facSeries);
       
     }
     else {
@@ -151,7 +187,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
     
     // add the transformation to the modelBuilder
     if (OPS_addDamping(Damping) != true) {
-      opserr << "WARNING TclElmtBuilder - damping  - could not add damping to model Builder\n";
+      opserr << "WARNING TclElmtBuilder - damping - could not add damping to model Builder\n";
       return TCL_ERROR;
     }
   

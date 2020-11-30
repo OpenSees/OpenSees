@@ -95,7 +95,7 @@ alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 UniformDamping::UniformDamping():
 Damping(0, DMP_TAG_UniformDamping),
 nComp(0), nFilter(0),
-eta(0.0), freq1(0.0), freq2(0.0),
+eta(0.0), freq1(0.0), freq2(0.0), ta(0.0), td(0.0), fac(0),
 alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
 
@@ -105,6 +105,7 @@ alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 // destructor:
 UniformDamping::~UniformDamping() 
 {
+  if (fac) delete fac;
   if (alpha) delete alpha;
   if (omegac) delete omegac;
   if (qL) delete qL;
@@ -248,7 +249,7 @@ UniformDamping::update(Vector q)
     (*qd).Zero();
     if (t < td)
     {
-      if (theDomain->getCurrentTime() > ta)
+      if (t > ta)
       {
         for (int i = 0; i < nFilter; ++i)
         {
