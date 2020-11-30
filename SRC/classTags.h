@@ -888,6 +888,7 @@
 #define EquiALGORITHM_TAGS_InitialNewton          13
 #define EquiALGORITHM_TAGS_ElasticAlgorithm 14
 #define EquiALGORITHM_TAGS_NewtonHallM 15
+#define EquiALGORITHM_TAGS_ExpressNewton 16
 
 #define ACCELERATOR_TAGS_Krylov		1
 #define ACCELERATOR_TAGS_Secant		2
