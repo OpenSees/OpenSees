@@ -471,6 +471,10 @@
 #include "InterpolatedGroundMotion.h"
 #include "drm/DRMLoadPatternWrapper.h"
 
+#ifdef _H5DRM
+#include "drm/H5DRM.h"
+#endif
+
 #include "Parameter.h"
 #include "ElementParameter.h"
 #include "MaterialStageParameter.h"
@@ -1596,9 +1600,10 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 	case PATTERN_TAG_DRMLoadPattern:
 	     return new DRMLoadPatternWrapper();
 
-        case PATTERN_TAG_H5DRM:
-             return new H5DRM();
-
+#ifdef _H5DRM
+    case PATTERN_TAG_H5DRM:
+         return new H5DRM();
+#endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
 	     opserr << " - no Load type exists for class tag ";
