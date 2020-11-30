@@ -3355,11 +3355,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       count+=2;
     }
 
+
     if (matType == 0) {
+      // PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       theSOE = new PetscSOE(*theSolver);
     } else {
-      PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      // PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      PetscSparseSeqSolver *theSolver = 0;
       theSOE = new SparseGenRowLinSOE(*theSolver);
     }
   }
