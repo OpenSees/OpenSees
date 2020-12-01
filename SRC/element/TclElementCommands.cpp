@@ -124,11 +124,16 @@ extern void *OPS_ShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin
 extern void *OPS_ShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_ShellDKGT(void);     //Added by Shuhao Zhang and  Xinzheng Lu 
 extern void *OPS_ShellNLDKGT(void);   //Added by Shuhao Zhang and  Xinzheng Lu 
+extern void *OPS_ASDShellQ4(void);   // Massimo Petracca (ASDEA)
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_Truss2(void);
+#ifdef _HAVE_PML
+extern void *OPS_PML3D(void);
+extern void *OPS_PML2D(void);
+#endif
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -213,6 +218,18 @@ TclModelBuilder_addEnhancedQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
 extern int
 TclModelBuilder_addNineNodeMixedQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
 				     Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addNineNodeQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
+								Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addEightNodeQuad(ClientData, Tcl_Interp *, int, TCL_Char **,
+								Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addSixNodeTri(ClientData, Tcl_Interp *, int, TCL_Char **,
+							  Domain*, TclModelBuilder *);
 
 
 // GLF
@@ -487,9 +504,25 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  }
+#ifdef _HAVE_PML
+  } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
+    Element *theEle = 0;
+    ID info;
+    if (OPS_GetNDM() == 2)
+      theEle = (Element *)OPS_PML2D();
+    else
+      theEle = (Element *)OPS_PML3D();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
 
-  /*else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+#endif
+
+  /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_GradientInelasticBeamColumn2d();
@@ -504,8 +537,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }*/
 
-  #ifdef _HAVE_LHNMYS
-  else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
+#ifdef _HAVE_LHNMYS
+  } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
     theEle = (Element *)OPS_BeamColumn2DwLHNMYS();
@@ -515,8 +548,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
-  else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
+  
+  } else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
     theEle = (Element *)OPS_BeamColumn3DwLHNMYS();
@@ -526,21 +559,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
-  #endif
+  
+#endif
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
-  else if((strcmp(argv[1], "WheelRail") == 0)) {
-  // ------------------------------add------------------------------------------
-  int eleArgStart = 1;
-  int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
-	  theTclDomain, theTclBuilder, eleArgStart);
-  return result;
+  } else if((strcmp(argv[1], "WheelRail") == 0)) {
+    // ------------------------------add------------------------------------------
+    int eleArgStart = 1;
+    int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
+					      theTclDomain, theTclBuilder, eleArgStart);
+    return result;
+    
+  //End of WheelRail element TCL command*/
 
-}//End of WheelRail element TCL command*/
-
-  else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
+  } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_ElasticTimoshenkoBeam2d();
@@ -809,6 +842,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     } 
     
+  } else if (strcmp(argv[1],"ASDShellQ4") == 0) {
+    
+    void *theEle = OPS_ASDShellQ4();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
     
   } else if ((strcmp(argv[1],"CoupledZeroLength") == 0) || (strcmp(argv[1],"ZeroLengthCoupled") == 0)) {
     
@@ -1427,6 +1469,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 						      argc, argv,
 						      theTclDomain,
 						      theTclBuilder);
+    return result;
+  } else if (strcmp(argv[1],"quad9n") == 0) {
+    int result = TclModelBuilder_addNineNodeQuad(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
+    return result;
+  } else if (strcmp(argv[1],"quad8n") == 0) {
+    int result = TclModelBuilder_addEightNodeQuad(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
+    return result;
+  } else if (strcmp(argv[1],"tri6n") == 0) {
+    int result = TclModelBuilder_addSixNodeTri(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
     return result;
   } else if (strcmp(argv[1],"quadUP") == 0) {
     int result = TclModelBuilder_addFourNodeQuadUP(clientData, interp, argc, argv,

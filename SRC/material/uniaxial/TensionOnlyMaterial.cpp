@@ -193,8 +193,12 @@ TensionOnlyMaterial::getStrainRate(void)
 
 int 
 TensionOnlyMaterial::commitState(void)
-{	
-  return theMaterial->commitState();
+{
+  double f = theMaterial->getStress();
+  if (f >= 0.0)
+    return theMaterial->commitState();
+  else
+    return 0;
 }
 
 int 
@@ -336,4 +340,53 @@ int
 TensionOnlyMaterial::updateParameter(int parameterID, Information &info)
 {
   return 0;
+}
+
+double
+TensionOnlyMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  double f = theMaterial->getStress();
+  if (f < 0.0)
+    return 0.0;
+  else 
+    return theMaterial->getStressSensitivity(gradIndex, conditional);
+}
+
+double
+TensionOnlyMaterial::getStrainSensitivity(int gradIndex)
+{
+  return theMaterial->getStrainSensitivity(gradIndex);
+}
+
+double
+TensionOnlyMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  return theMaterial->getInitialTangentSensitivity(gradIndex);
+}
+
+double
+TensionOnlyMaterial::getDampTangentSensitivity(int gradIndex)
+{
+  double f = theMaterial->getStress();
+  if (f < 0.0)
+    return 0.0;
+  else
+    return theMaterial->getDampTangentSensitivity(gradIndex);
+}
+
+double
+TensionOnlyMaterial::getRhoSensitivity(int gradIndex)
+{
+  return theMaterial->getRhoSensitivity(gradIndex);
+}
+
+int   
+TensionOnlyMaterial::commitSensitivity(double strainGradient,
+				       int gradIndex, int numGrads)
+{
+  double f = theMaterial->getStress();
+  if (f >= 0.0)
+    return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
+  else
+    return 0;
 }

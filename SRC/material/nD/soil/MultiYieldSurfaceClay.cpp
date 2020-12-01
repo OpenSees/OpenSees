@@ -22,6 +22,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <MultiYieldSurfaceClay.h>
+#include <MultiYieldSurface.h>
+
 #include <Information.h>
 #include <Parameter.h>
 #include <ID.h>

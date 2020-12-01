@@ -971,10 +971,41 @@ CorotTrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
             theResponse = new ElementResponse(this, 3, 0.0);
 
     // a section quantity
-    }  else if (strcmp(argv[0],"section") ==0) {
-        theResponse = theSection->setResponse(&argv[1], argc-1, output);
+    }
+    else if (strcmp(argv[0], "section") == 0) {
+        output.tag("GaussPointOutput");
+        output.attr("number", 1);
+        output.attr("eta", 0.0);
 
-    }  
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+            // there is no need to forward this call to the section
+            if (argc > 2) {
+                // if we have 2 or more extra arguments, the first one 
+                // could be an integer. In this case we check to see if it is the section id
+                // (only 1 in this case)
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 0) {
+                    // if it is not a number we forward the call to the section as usual
+                    theResponse = theSection->setResponse(&argv[1], argc - 1, output);
+                }
+                else {
+                    // it is a number. Now we have to make sure it is within the allowed range
+                    // for this element (in this case it can only be 1)
+                    // If it is > 1, then we MUST return NULL, because the MPCO recorder iteratively
+                    // uses this call to understand how many fibers we have in a section
+                    if (sectionNum == 1) {
+                        theResponse = theSection->setResponse(&argv[2], argc - 2, output);
+                    }
+                }
+            }
+            else {
+                // otherwise forward it as usual
+                theResponse = theSection->setResponse(&argv[1], argc - 1, output);
+            }
+        }
+        output.endTag();
+    }
 
     output.endTag();
     return theResponse;

@@ -900,7 +900,7 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
     
     for (i=0; i<numNodes; i++) {
       const Vector &nodeCrd = theNodes[i]->getCrds();
-      const Vector &nodeDisp = theNodes[i]->getDisp();
+      // const Vector &nodeDisp = theNodes[i]->getDisp();
       s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
      }
     
@@ -1095,6 +1095,27 @@ FourNodeQuad::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(12));
   }
 
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
+    for (int i=0; i<4; i++) { // nnodes
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(12)); // 3 * nnodes
+  }
+
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
     for (int i=0; i<4; i++) {
       output.tag("GaussPoint");
@@ -1145,6 +1166,43 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
     
     return eleInfo.setVector(stresses);
       
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(12); // 3*nip
+    static Vector stressAtNodes(12); // 3*nnodes
+	stressAtNodes.Zero();
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < 4; i++) { // nip
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
+	// [nnodes][nip]
+	const double We[4][4] = {{1.8660254037844386, -0.5, 0.1339745962155614, -0.5},
+							 {-0.5, 1.8660254037844386, -0.5, 0.1339745962155614},
+							 {0.1339745962155614, -0.5, 1.8660254037844386, -0.5},
+							 {-0.5, 0.1339745962155614, -0.5, 1.8660254037844386}};
+
+	int p, l;
+	for (int i = 0; i < 4; i++) { // nnodes
+	  for (int k = 0; k < 3; k++) { // number of stress components
+		p = 3*i + k;
+		for (int j = 0; j < 4; j++) { // nip
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
+
+    return eleInfo.setVector(stressAtNodes);
+
   } else if (responseID == 4) {
 
     // Loop over the integration points

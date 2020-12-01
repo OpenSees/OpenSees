@@ -70,7 +70,7 @@ OPS_SimpleContact2D(void)
   Element *theElement = 0;
 
   if (OPS_GetNumRemainingInputArgs() != 8) {
-    opserr << "Invalid #args,  want: element SimpleContact2D eleTag? iNode? jNode? slaveNode? lambdaNode? matTag? tolGap? tolForce?\n";
+    opserr << "Invalid #args,  want: element SimpleContact2D eleTag? iNode? jNode? secondaryNode? lambdaNode? matTag? tolGap? tolForce?\n";
     return 0;
   }
     
@@ -271,17 +271,17 @@ SimpleContact2D::setDomain(Domain *theDomain)
 	dcrdS = theNodes[2]->getCrds();
 	dispL.Zero();
 
-	// length of master segment
+	// length of primary segment
 	Vector L = (dcrd2 - dcrd1);
-	Lmaster  = L.Norm();
+	Lprimary  = L.Norm();
 	Lsquare  = L^L;
 
 	// adjust cohesion force
-	theMaterial->ScaleCohesion(Lmaster);
-	theMaterial->ScaleTensileStrength(Lmaster);
+	theMaterial->ScaleCohesion(Lprimary);
+	theMaterial->ScaleTensileStrength(Lprimary);
 	
 	// error check that node 1 and node 2 are not in same location
-	if (Lmaster < tolGap ) { 
+	if (Lprimary < tolGap ) { 
 	  opserr << "SimpleContact2D::SimpleContact2D - node 1 and node 2 share same coordinates\n";
 	  opserr << "Program Terminated\n";
 	  exit(-1);
@@ -289,15 +289,15 @@ SimpleContact2D::setDomain(Domain *theDomain)
 	
 	
 	// tangent vector
-	T = L/Lmaster;
+	T = L/Lprimary;
 	
-	// normal vector to master surface
+	// normal vector to primary surface
 	n(0) = -T(1);
 	n(1) =  T(0);
 	// n(2) =  0.0;
 	
 	// initialize xsi_n
-	xsi_n = (2*dcrdS - dcrd1 - dcrd2 )^T / Lmaster;
+	xsi_n = (2*dcrdS - dcrd1 - dcrd2 )^T / Lprimary;
 	
 	
 	// call the base class method
@@ -386,7 +386,7 @@ SimpleContact2D::update(void)
 
 	gap = n ^ ( dcrdS - N1*dcrd1 - N2*dcrd2 );  
 
-	xsi_nplus1 = (2*dcrdS - dcrd1 - dcrd2)^T / Lmaster;
+	xsi_nplus1 = (2*dcrdS - dcrd1 - dcrd2)^T / Lprimary;
 		
 	Bn(0) = -N1*n(0);
 	Bn(1) = -N1*n(1);
@@ -421,7 +421,7 @@ SimpleContact2D::update(void)
 
 	if (inContact) {	
 
-	   slip = 0.5 * (xsi_nplus1 - xsi_n) * Lmaster;
+	   slip = 0.5 * (xsi_nplus1 - xsi_n) * Lprimary;
 	
 	   Vector strain(3);
 

@@ -122,6 +122,7 @@ void* OPS_PathIndependentMaterial();
 void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
+void* OPS_ASD_SMA_3K();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BWBN();
@@ -171,6 +172,7 @@ void* OPS_UVCuniaxial();
 void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
+void* OPS_SLModel();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -279,6 +281,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("Pinching4", &OPS_Pinching4Material));
 	uniaxialMaterialsMap.insert(std::make_pair("ECC01", &OPS_ECC01));
 	uniaxialMaterialsMap.insert(std::make_pair("SelfCentering", &OPS_SelfCenteringMaterial));
+    uniaxialMaterialsMap.insert(std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
 	uniaxialMaterialsMap.insert(std::make_pair("Viscous", &OPS_ViscousMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("BoucWen", &OPS_BoucWenMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
@@ -334,6 +337,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
+	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
 
 	return 0;
     }

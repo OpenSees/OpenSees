@@ -29,7 +29,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#include <DruckerPrager.h>
+#include "DruckerPrager.h"
 
 class DruckerPragerPlaneStrain : public DruckerPrager {
 

@@ -100,13 +100,6 @@ using std::ios;
 
 #include <packages.h>
 
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
-
 extern void *OPS_ElasticSection(void);
 extern void *OPS_ElasticWarpingShearSection2d();
 extern void *OPS_ElasticTubeSection3d(void);

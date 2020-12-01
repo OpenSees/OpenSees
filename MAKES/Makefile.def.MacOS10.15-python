@@ -1,0 +1,461 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#	     to use the OpenSees framework.
+#            and below.
+#
+#  Written: fmk
+#  Created: 10/99
+#
+#  Send bug reports, comments or suggestions to fmckenna@ce.berkeley.edu
+#
+#  Modified by Seokho Jeong for Mac OS X 10.11 El Capitan with
+#  Accelerate framework and Homebrew
+# Modified by Maxim Millen for Mac OSX 10.15 with Python 3.7
+#
+############################################################################
+# Prerequisites
+# - Install Active TCL 8.5 for mac OS X
+# - Install Homebrew
+# - brew install gcc
+# - brew install openmpi (for parallel versions)
+# - brew install mumps (for parallel versions)
+# - brew install python
+
+# steps
+# 1) set HOME as path to repo
+# 2) change path to gcc if not gcc-10
+# 	-L/usr/local/opt/gcc/lib/gcc/10/
+# 3) set path to Python `PYTHON_INCLUDES`
+# 4) set path to a python virtual environment PYTHON_VENV (not sure if this is necessary)
+#	e.g. PYTHON_VENV = /Users/maximmillen/git/packages/OpenSees/venv
+# 5) run `make python`
+
+INTERPRETER_LANGUAGE = PYTHON
+#INTERPRETER_LANGUAGE = TCL
+
+# TODO: Add to travis build - since it supports macOS
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+PROGRAMMING_MODE = SEQUENTIAL
+#PROGRAMMING_MODE = PARALLEL
+#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesSP
+PROGRAMMING_FLAG = -D_PARALLEL_PROCESSING
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesMP
+PROGRAMMING_FLAG = -D_PARALLEL_INTERPRETERS
+endif
+
+OPERATING_SYSTEM = LINUX
+
+DEBUG_MODE       = NO_DEBUG
+RELIABILITY      = NO_RELIABILITY
+
+GRAPHICS         = NONE
+GRAPHIC_FLAG     = -D_NOGRAPHICS
+GRAPHIC_LIBRARY  =
+AGL_OBJS         =
+RELIABILITY = YES_RELIABILITY
+RELIABILITY_FLAG = -D_RELIABILITY
+
+# %---------------------------------%
+# |  SECTION 2: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+BASE = /usr
+
+HOME = <path-to-repo>
+FE	 = $(HOME)/SRC
+
+# Use BLAS,CBLAS, and LAPACK from APPLE Accelerate Library
+BLASdir         = $(HOME)/OTHER/BLAS
+CBLASdir        = $(HOME)/OTHER/CBLAS
+LAPACKdir       = $(HOME)/OTHER/LAPACK
+SUPERLUdir      = $(HOME)/OTHER/SuperLU_5.1.1/SRC
+SUPERLU_DISTdir = $(HOME)/OTHER/SuperLU_DIST_4.3/SRC
+ARPACKdir       = $(HOME)/OTHER/ARPACK
+UMFPACKdir      = $(HOME)/OTHER/UMFPACK
+METISdir        = $(HOME)/OTHER/METIS
+AMDdir	        = $(HOME)/OTHER/AMD
+CSPARSEdir      = $(HOME)/OTHER/CSPARSE
+ITPACKdir       = $(HOME)/OTHER/ITPACK
+SRCdir          = $(HOME)/SRC
+PYdir          = $(HOME)/SRC/interpreter
+
+
+DIRS = $(BLASdir) \
+       $(CBLASdir) \
+       $(LAPACKdir) \
+	   $(SUPERLUdir) \
+       $(SUPERLU_DISTdir) \
+       $(ARPACKdir) \
+       $(UMFPACKdir) \
+       $(METISdir) \
+       $(AMDdir) \
+       $(CSPARSEdir) \
+       $(ITPACKdir) \
+       $(SRCdir)
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+DIRS = $(BLASdir) \
+       $(CBLASdir) \
+       $(LAPACKdir) \
+	   $(SUPERLUdir) \
+       $(ARPACKdir) \
+       $(UMFPACKdir) \
+       $(METISdir) \
+       $(AMDdir) \
+       $(CSPARSEdir) \
+       $(ITPACKdir) \
+       $(SRCdir)
+endif
+
+# %-------------------------------------------------------%
+# | SECTION 3: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk
+# library!!
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY      = $(HOME)/lib/libOpenSees.a
+RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
+OPTIMIZATION_LIBRARY = $(HOME)/lib/libOptimization.a
+NDARRAY_LIBRARY = $(HOME)/lib/libndarray.a # BJ_UCD jeremic@ucdavis.edu
+MATMOD_LIBRARY  = $(HOME)/lib/libmatmod.a  # BJ_UCD jeremic@ucdavis.edu
+BJMISC_LIBRARY  = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY  =
+BLAS_LIBRARY    =
+CBLAS_LIBRARY   =
+SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
+ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY   = $(HOME)/lib/libMetis.a
+AMD_LIBRARY	    = $(HOME)/lib/libAMD.a
+ITPACK_LIBRARY  = $(HOME)/lib/libItpack.a
+CSPARSE_LIBRARY = $(HOME)/lib/libcsparse.a
+TCL_LIBRARY     = -framework Tcl -framework Tk
+TCL_DIST_LIBRARY = $(HOME)/lib/libOpenSeesTclCommands.a
+PYTHON_VENV =
+
+PYTHON_LIBRARY = -L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib/ -lpython3.7
+
+DISTRIBUTED_SUPERLU_LIBRARY = $(HOME)/lib/libDistributedSuperLU.a
+
+BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
+GRAPHIC_LIBRARY     =
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+DISTRIBUTED_SUPERLU_LIBRARY =
+endif
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+WIPE_LIBS = $(FE_LIBRARY) \
+            $(NDARRAY_LIBRARY) \
+            $(MATMOD_LIBRARY) \
+            $(BJMISC_LIBRARY) \
+            $(LAPACK_LIBRARY) \
+            $(BLAS_LIBRARY) \
+            $(CBLAS_LIBRARY) \
+            $(SUPERLU_LIBRARY) \
+            $(ARPACK_LIBRARY) \
+            $(UMFPACK_LIBRARY) \
+            $(AMD_LIBRARY) \
+            $(METIS_LIBRARY) \
+            $(ITPACK_LIBRARY) \
+            $(CSPARSE_LIBRARY) \
+            $(RELIABILITY_LIBRARY) \
+            $(DISTRIBUTED_SUPERLU_LIBRARY) \
+            $(TCL_DIST_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 4: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# Compilers
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+CC++	= /usr/bin/clang++ -std=c++14
+CC      = /usr/bin/clang
+FC	    = /usr/local/bin/gfortran
+
+LINKER    = $(CC++)
+LINKFLAGS = -Wl
+
+else
+CC++  = /usr/local/bin/mpic++
+CC    = /usr/local/bin/mpicc
+FC	  = /usr/local/bin/mpifort
+
+LINKER    = $(CC++)
+LINKFLAGS =
+endif
+
+AR		    = ar
+ARFLAGS		= cqls
+RANLIB		= ranlib
+RANLIBFLAGS =
+
+# Compiler Flags
+#
+# NOTES:
+#    C++ FLAGS TAKE need _UNIX or _WIN32 for preprocessor dircetives
+#         - the _WIN32 for the Windows95/98 or NT operating system.
+#    C FLAGS used -DUSE_VENDOR_BLAS (needed in SuperLU) if UNIX in C++ FLAGS
+#
+OS_FLAG = -D_MACOSX
+
+# modified as optimizaton currently causing problems with Steeln01 code
+ifeq ($(DEBUG_MODE), DEBUG)
+C++FLAGS = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn $(OS_FLAG)\
+	       $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
+	       $(PROGRAMMING_FLAG) -g -O0
+CFLAGS   = -Wall -O0 -g
+FFLAGS   = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
+LINKFLAGS       = -g -pg
+
+else
+ifeq ($(INTERPRETER_LANGUAGE), PYTHON)
+C++FLAGS         = -D_LINUX -D_UNIX  -D_TCL85 -D_AMDn -D_MACOSX \
+	-DPYTHON_EXECUTABLE=$(PYTHON_VENV)/bin/python \
+	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
+	$(PROGRAMMING_FLAG) -g -O0
+CFLAGS          = -Wall -g -O0
+FFLAGS          = -Wall -g -O0
+
+# Linker
+LINKER          = $(CC++)
+LINKFLAGS       = -g -fPIC
+else
+C++FLAGS = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn -D_MACOSX \
+	       $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
+	       $(PROGRAMMING_FLAG) -O3 -march=native -D_NO_PARALLEL_FILESYSTEM
+CFLAGS   = -Wall -O2
+FFLAGS   = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
+endif
+endif
+
+# Misc
+MAKE		= make
+CD          = cd
+ECHO        = echo
+RM          = rm
+RMFLAGS     = -f
+SHELL       = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-------------------------------------------%
+# |  Command to build .o files from .f files. |
+# %-------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+.f.o:
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 6: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+
+# Use scalapack from Homebrew
+SCALAPACK = YES
+SCALAPACK_INCLUDE =
+SCALAPACK_FLAG = -D_SCALAP
+#SCALAPACK_DIR = /usr/local/Cellar/scalapack/2.0.2_6/
+#SCALAPACK_LIB = -L$(SCALAPACK_DIR)/lib \
+#				-lscalapack -lreflapack -lrefblas
+SCALAPACK_DIR =
+SCALAPACK_LIB = -lscalapack -lveclibfort
+
+# Use Mumps from Homebrew
+MUMPS = YES
+MUMPS_DIR =
+MUMPS_FLAG = -D_MUMPS -D_OPENMPI
+MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
+MUMPS_LIB = $(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
+             $(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
+             $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
+             $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
+             -ldmumps -lmumps_common -lpord
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+SCALAPACK = NO
+SCALAPACK_DIR =
+SCALAPACK_LIB =
+SCALAPACK_FLAG =
+
+MUMPS = NO
+MUMPS_DIR =
+MUMPS_FLAG =
+MUMPS_INCLUDE =
+MUMPS_LIB =
+endif
+
+# Add '-L/usr/local/lib' to link Homebrew-installed libraries
+MACHINE_LINKLIBS  = -L$(BASE)/lib -L/usr/local/lib -L$(HOME)/lib
+
+HAVE_CUDA = NO
+CUDA_DIR =
+CUDA_FLAG =
+CUDA_LIB =
+
+ifeq ($(HAVE_CUDA),YES)
+CUDA_DIR = /usr/local/cuda
+CUDA_FLAG = -D_CUDA
+CUDA_LIB = $(FE)/system_of_eqn/linearSOE/bandGEN/BandGenLinSOE_Single.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/BandGenLinLapackSolver_Single.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/sgbsv.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/sgbtrs.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/sgbtrf.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/sgbtf2.o \
+	$(FE)/system_of_eqn/linearSOE/bandGEN/slaswp.o \
+	-L$(CUDA_DIR)/lib -cublas -lcuda \
+	-L/usr/local/scalapack_installer_0.91/lib \
+	-lrefblas
+
+CUDA_INCLUDE = -I$(CUDA_DIR)/include
+endif
+
+
+#FORTO = $(LAPACKdir)/fortran.o
+FORTO =
+
+# Link Homebrew gfortran library
+# TODO: may need to add python lib dir
+MACHINE_NUMERICAL_LIBS  =  \
+		$(ARPACK_LIBRARY) \
+		$(SUPERLU_LIBRARY) \
+		$(UMFPACK_LIBRARY) \
+	    $(AMD_LIBRARY) \
+	    $(ITPACK_LIBRARY) \
+	    $(LAPACK_LIBRARY) \
+	    $(CSPARSE_LIBRARY) \
+		$(BLAS_LIBRARY) \
+		$(CBLAS_LIBRARY) \
+		$(GRAPHIC_LIBRARY)\
+		$(FORTO) \
+		$(CUDA_LIB) \
+		$(RELIABILITY_LIBRARY) \
+		-ldl -L/usr/local/opt/gcc/lib/gcc/10/ -lgfortran
+
+# Use BLAS,CBLAS, and LAPACK from APPLE Accelerate Library
+MACHINE_SPECIFIC_LIBS = $(AGL_OBJS) -L/usr/local/opt/openssl/lib -lssl -lcrypto \
+						-framework Accelerate
+
+PARALLEL_LIB = 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
+	$(LAPACK_LIB) $(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_LIBRARY) \
+	-lmpi_cxx -lmpi_mpifh -lmpi -lopen-rte -lopen-pal
+
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+PARALLEL_LIB = 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
+	$(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_LIBRARY) \
+	-lmpi_cxx -lmpi_mpifh -lmpi -lopen-rte -lopen-pal
+else
+PARALLEL_LIB =
+endif
+
+
+# %---------------------------------------------------------%
+# | SECTION 7: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+
+ifeq ($(PROGRAMMING_MODE),  SEQUENTIAL)
+MACHINE_INCLUDES        = -I/usr/include \
+			  -I/usr/local/include \
+			  -I$(BASE)/include \
+			  -I/usr/include/cxx \
+			  -I$(HOME)/include -I$(HOME)/blitz \
+			  -I$(CUDA_DIR)/include \
+			  -I/usr/local/opt/openssl/include
+else
+MACHINE_INCLUDES        = -I/usr/include \
+			  -I/usr/local/include \
+			  -I$(BASE)/include \
+			  -I/usr/include/cxx \
+			  -I/opt/local/include \
+              -I$(FE)/../OTHER/SuperLU_DIST_4.3/SRC \
+			  -I$(HOME)/include -I$(HOME)/blitz \
+			  $(MUMPS_INCLUDE) -I$(CUDA_DIR)/include \
+              -I/usr/local/opt/openssl/include
+
+endif
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+
+TCL_INCLUDES = -I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tk.framework/Headers
+PYTHON_INCLUDES = -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/include/python3.7m \
+               -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/include/python3.7m/internal
+
+INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
+
+
+

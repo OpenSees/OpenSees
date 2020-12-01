@@ -1978,8 +1978,8 @@ MultipleSupportExcitation before the ImposedMotionSP.
 }
 
 The equalDOF command is used to construct a multi-point constraint between
-the nodes identified by rNodeTag and cNodeTag. rNodeTag is the retained, or
-master node, and cNodeTag is the constrained, or slave node. dof1 dof2 ... 
+the nodes identified by rNodeTag and cNodeTag. rNodeTag is the retained node
+and cNodeTag is the constrained node. dof1 dof2 ... 
 represent the nodal degrees of freedom that are constrained at the cNode to
 be the same as those at the rNode. The valid range for dof1 dof2 ... is 1
 through ndf, the number of nodal degrees of freedom.
@@ -1987,14 +1987,14 @@ through ndf, the number of nodal degrees of freedom.
 \subsection{The rigidDiaphragm Command}
 {\sf\small
 \begin{verbatim}
-   rigidDiaphragm perpDirn? masterNodeTag? slaveNodeTag1 ...
+   rigidDiaphragm perpDirn? rNodeTag? cNodeTag1 ...
 \end{verbatim}
 }
 
 The rigidDiaphragm command is used to construct a number of
 MP\_Constraint objects. These constraints will constrain certain
-degrees-of-freedom at the the slave nodes listed to move as if in a
-rigid plane with the master node. The rigid plane can be the 12, 13 or
+degrees-of-freedom at the the constrained nodes listed to move as if in a
+rigid plane with the retained node. The rigid plane can be the 12, 13 or
 23 planes. The rigid plane is specified by the user providing the
 perpendicular plane direction, ie 3 for 12 plane. The constraint
 object is constructed assuming small rotations. The rigidDiaphragm
@@ -2004,15 +2004,15 @@ degrees-of-freedom at the nodes.
 \subsection{The rigidLink Command}
 {\sf\small
 \begin{verbatim}
-   rigidLink -type? masterNodeTag? slaveNodeTag
+   rigidLink -type? rNodeTag? cNodeTag
 \end{verbatim}
 }
 
 The rigidLink command is used to construct a single MP\_Constraint object.
 The type can be either rod or beam. If rod is specified, the
 translational degrees-of-freedom will be constrained to be exactly the
-same as those at the master node. If beam is specified, a rigid beam
-constraint is imposed on the slave node, that is the translational and
+same as those at the retained node. If beam is specified, a rigid beam
+constraint is imposed on the constrained node, that is the translational and
 rotational degrees of freedom are constrained. The constraint object
 constructed for the beam option assumes small rotations.
 

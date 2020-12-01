@@ -137,13 +137,13 @@ void * OPS_MixedBeamColumn3d() {
   }
 
   // Check for minimum number of arguments
-  if (OPS_GetNumRemainingInputArgs() < 6) {
-    opserr << "ERROR: MixedBeamColumn3d: too few arguments\n";
+  if (OPS_GetNumRemainingInputArgs() < 5) {
+    opserr << "ERROR: MixedBeamColumn3d, too few arguments: eleTag,ndI,ndJ,transfTag,integrationTag\n";
     return 0;
   }
 
   // Get required input data
-  numData = 6;
+  numData = 5;
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid element data - MixedBeamColumn3d\n";
     return 0;
@@ -151,21 +151,8 @@ void * OPS_MixedBeamColumn3d() {
   int eleTag = iData[0];
   int nodeI = iData[1];
   int nodeJ = iData[2];
-  int numIntgrPts = iData[3];
-  int secTag = iData[4];
-  int transfTag = iData[5];
-
-  // Get the section
-  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);
-  if (theSection == 0) {
-    opserr << "WARNING section with tag " << secTag << "not found for element " << eleTag << endln;
-    return 0;
-  }
-
-  SectionForceDeformation **sections = new SectionForceDeformation *[numIntgrPts];
-  for (int i = 0; i < numIntgrPts; i++) {
-    sections[i] = theSection;
-  }
+  int transfTag = iData[3];
+  int beamIntTag = iData[4];
 
   // Get the coordinate transformation
   CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
@@ -174,20 +161,38 @@ void * OPS_MixedBeamColumn3d() {
     return 0;
   }
 
+  // Get beam integrataion
+  BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(beamIntTag);
+  if(theRule == 0) {
+    opserr<<"beam integration not found\n";
+    return 0;
+  }
+  BeamIntegration* bi = theRule->getBeamIntegration();
+  if(bi == 0) {
+    opserr<<"beam integration is null\n";
+    return 0;
+  }  
+
+  // check sections
+  const ID& secTags = theRule->getSectionTags();
+  SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
+  for(int i=0; i<secTags.Size(); i++) {
+    sections[i] = OPS_getSectionForceDeformation(secTags(i));
+    if(sections[i] == 0) {
+      opserr<<"section "<<secTags(i)<<"not found\n";
+      delete [] sections;
+      return 0;
+    }
+  }
+  
   // Set Default Values for Optional Input
   int doRayleigh = 1;
   double massDens = 0.0;
   bool geomLinear = true;
-  BeamIntegration *beamIntegr = 0;
 
   // Loop through remaining arguments to get optional input
   while ( OPS_GetNumRemainingInputArgs() > 0 ) {
     const char *sData = OPS_GetString();
-    //if ( OPS_GetStringCopy(&sData) != 0 ) {
-    //  opserr << "WARNING invalid input";
-    //  return 0;
-    //}
-
     if ( strcmp(sData,"-mass") == 0 ) {
       numData = 1;
       if (OPS_GetDoubleInput(&numData, dData) != 0) {
@@ -195,41 +200,6 @@ void * OPS_MixedBeamColumn3d() {
         return 0;
       }
       massDens = dData[0];
-
-    } else if ( strcmp(sData,"-integration") == 0 ) {
-      const char *sData2 = OPS_GetString();
-      //if ( OPS_GetStringCopy(&sData2) != 0 ) {
-      //  opserr << "WARNING invalid input, want: -integration $intType";
-      //  return 0;
-      //}
-
-      if (strcmp(sData2,"Lobatto") == 0) {
-        beamIntegr = new LobattoBeamIntegration();
-      } else if (strcmp(sData2,"Legendre") == 0) {
-        beamIntegr = new LegendreBeamIntegration();
-      } else if (strcmp(sData2,"Radau") == 0) {
-        beamIntegr = new RadauBeamIntegration();
-      } else if (strcmp(sData2,"NewtonCotes") == 0) {
-        beamIntegr = new NewtonCotesBeamIntegration();
-      } else if (strcmp(sData2,"Trapezoidal") == 0) {
-        beamIntegr = new TrapezoidalBeamIntegration();
-      } else if (strcmp(sData2,"RegularizedLobatto") == 0 || strcmp(sData2,"RegLobatto") == 0) {
-        numData = 4;
-        if (OPS_GetDoubleInput(&numData, dData) != 0) {
-          opserr << "WARNING invalid input, want: -integration RegularizedLobatto $lpI $lpJ $zetaI $zetaJ \n";
-          return 0;
-        }
-        BeamIntegration *otherBeamInt = 0;
-        otherBeamInt = new LobattoBeamIntegration();
-        beamIntegr = new RegularizedHingeIntegration(*otherBeamInt, dData[0], dData[1], dData[2], dData[3]);
-          if (otherBeamInt != 0) {
-            delete otherBeamInt;
-          }
-      } else {
-        opserr << "WARNING invalid integration type, element: " << eleTag;
-        return 0;
-      }
-      //delete [] sData2;
 
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
@@ -244,17 +214,10 @@ void * OPS_MixedBeamColumn3d() {
     } else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
-    //delete [] sData;
-  }
-
-
-  // Set the beam integration object if not in options
-  if (beamIntegr == 0) {
-    beamIntegr = new LobattoBeamIntegration();
   }
 
   // now create the element and add it to the Domain
-  Element *theElement = new MixedBeamColumn3d(eleTag, nodeI, nodeJ, numIntgrPts, sections, *beamIntegr, *theTransf, massDens, doRayleigh, geomLinear);
+  Element *theElement = new MixedBeamColumn3d(eleTag, nodeI, nodeJ, secTags.Size(), sections, *bi, *theTransf, massDens, doRayleigh, geomLinear);
 
   if (theElement == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
@@ -1448,7 +1411,18 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
              strcmp(argv[0],"numberOfSections") == 0 ) {
     theResponse =  new ElementResponse(this, 103, Vector(1));
 
-  } else if (strcmp(argv[0],"section") ==0) {
+  }
+
+    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
+      theResponse = new ElementResponse(this, 201, Vector(3));
+
+    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
+      theResponse = new ElementResponse(this, 202, Vector(3));
+
+    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
+      theResponse = new ElementResponse(this, 203, Vector(3));  
+
+  else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
 
       int sectionNum = atoi(argv[1]);
@@ -1581,9 +1555,25 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
     tempVector(0) = numSections;
     return eleInfo.setVector(tempVector);
 
-  } else {
-    return -1;
+  }
 
+  else if (responseID >= 201 && responseID <= 203) {
+    static Vector xlocal(3);
+    static Vector ylocal(3);
+    static Vector zlocal(3);
+
+    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
+    
+    if (responseID == 201)
+      return eleInfo.setVector(xlocal);
+    if (responseID == 202)
+      return eleInfo.setVector(ylocal);
+    if (responseID == 203)
+      return eleInfo.setVector(zlocal);    
+  }
+
+  else {
+    return -1;
   }
 }
 

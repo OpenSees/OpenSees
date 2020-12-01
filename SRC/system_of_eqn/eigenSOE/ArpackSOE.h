@@ -31,7 +31,7 @@
 #ifndef ArpackSOE_h
 #define ArpackSOE_h
 
-#include <EigenSOE.h>
+#include "eigenSOE/EigenSOE.h"
 #include <Vector.h>
 
 class AnalysisModel;
