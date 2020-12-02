@@ -335,6 +335,7 @@
 #include "DriftRecorder.h"
 #include "MPCORecorder.h"
 #include "VTK_Recorder.h"
+#include "GmshRecorder.h"
 
 // mp_constraint header files
 #include "MP_Constraint.h"
@@ -413,6 +414,7 @@
 #include "DistributedDisplacementControl.h"
 #endif
 #include "LoadControl.h"
+#include "StagedLoadControl.h"
 
 #include "TransientIntegrator.h"
 #include "AlphaOS.h"
@@ -443,6 +445,7 @@
 #include "KRAlphaExplicit.h"
 #include "KRAlphaExplicit_TP.h"
 #include "Newmark.h"
+#include "StagedNewmark.h"
 #include "NewmarkExplicit.h"
 #include "NewmarkHSFixedNumIter.h"
 #include "NewmarkHSIncrLimit.h"
@@ -489,6 +492,7 @@
 #include "RectangularSeries.h"
 #include "ConstantSeries.h"
 #include "TrigSeries.h"
+#include "TriangleSeries.h"
 
 // time series integrators
 #include "TrapezoidalTimeSeriesIntegrator.h"

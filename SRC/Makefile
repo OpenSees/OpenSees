@@ -1240,6 +1240,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/BFGS.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/KrylovNewton.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/PeriodicNewton.o \
+	$(FE)/analysis/algorithm/equiSolnAlgo/ExpressNewton.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/LineSearch.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/BisectionLineSearch.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/SecantLineSearch.o \
