@@ -45,11 +45,12 @@
 class DomainPartitioner;
 class Subdomain;
 class SubdomainIter; 
-class  ArrayOfTaggedObjects;
-class  PartitionedDomainSubIter;
-class  PartitionedDomainEleIter;
+class ArrayOfTaggedObjects;
+class PartitionedDomainSubIter;
+class PartitionedDomainEleIter;
 class SingleDomEleIter;
 class Parameter;
+class GraphPartitioner;
 
 class PartitionedDomain: public Domain
 {
@@ -130,6 +131,7 @@ class PartitionedDomain: public Domain
     // public member functions in addition to the standard domain
     virtual int setPartitioner(DomainPartitioner *thePartitioner);
     virtual int partition(int numPartitions, bool usingMain = false, int mainPartitionID = 0, int specialElementTag = 0);
+    virtual int repartition(int numPartitions, bool usingMain = false, int mainPartitionID = 0, int specialElementTag = 0);
 			
     virtual bool addSubdomain(Subdomain *theSubdomain);
     virtual int getNumSubdomains(void);
@@ -147,15 +149,20 @@ class PartitionedDomain: public Domain
 
     virtual int calculateNodalReactions(bool inclInertia);
     
+    virtual int activateElements(const ID& elementList);
+    virtual int deactivateElements(const ID& elementList);
+
     // friend classes
     friend class PartitionedDomainEleIter;
     
   protected:    
     int barrierCheck(int result);        
+    GraphPartitioner *getGraphPartitioner(void);
     DomainPartitioner *getPartitioner(void) const;
     virtual int buildEleGraph(Graph *theEleGraph);
+    virtual TaggedObjectStorage* getElementsStorage();
     
-  private:
+    
     TaggedObjectStorage  *elements;    
     ArrayOfTaggedObjects *theSubdomains;
     DomainPartitioner    *theDomainPartitioner;
@@ -165,6 +172,8 @@ class PartitionedDomain: public Domain
     PartitionedDomainEleIter   *theEleIter;
     
     Graph *mySubdomainGraph;    // a graph of subdomain connectivity
+
+    bool has_sent_yet;
 };
 
 #endif
