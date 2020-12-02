@@ -17,66 +17,58 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
+                                                                       
+// Written: UW Computational Geomechanics Group
+//          Pedro Arduino (*), ALborz Ghofrani(*)
+//			(*)  University of Washington
+//          March 2020
+//
+// Description: This file contains the class definition for J2CyclicBoundingSurface3D.
+#ifndef J2CyclicBoundingSurface3D_h
+#define J2CyclicBoundingSurface3D_h
 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <math.h> 
 
-#ifndef PetscSolver_h
-#define PetscSolver_h
+#include <J2CyclicBoundingSurface.h>
 
-#include <petscksp.h>
-#include <LinearSOESolver.h>
-
-
-// Uncomment or define -D_DEBUG_PETSCSOLVER to enable debugging
-// #define _DEBUG_PETSCSOLVER
-
-#ifdef _DEBUG_PETSCSOLVER
-#define PETSCSOLVER_DEBUGOUT cout // or any other ostream
-#else
-#define PETSCSOLVER_DEBUGOUT 0 && cout
-#endif
-
-// Uncomment to enable logger that will creat petsc_log.txt on each
-// run, to profile PETSc. 
-// #define _ENABLE_PETSC_LOGGER
-
-class PetscSOE;
-
-class PetscSolver : public LinearSOESolver
+class J2CyclicBoundingSurface3D : public J2CyclicBoundingSurface
 {
-public:
-    PetscSolver();
-    PetscSolver(KSPType method, PCType preconditioner);
-    PetscSolver(KSPType method, PCType preconditioner, double rTol, double aTol, double dTol, int maxIts, MatType mat=MATMPIAIJ);//Guanzhou
-    ~PetscSolver();
+  public : 
 
-    int solve(void);
-    int setSize(void);
-    virtual int setLinearSOE(PetscSOE &theSOE);
+  //full constructor
+  J2CyclicBoundingSurface3D(int tag, double G, double K, double su, double rho, double h, double m, double h0, double chi, double beta);
 
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel,
-                    FEM_ObjectBroker &theBroker);
+  //null constructor
+  J2CyclicBoundingSurface3D();
 
-    friend class ActorPetscSOE;
-    friend class ShadowPetscSOE;
+  //destructor
+  ~J2CyclicBoundingSurface3D();
 
-protected:
-    PetscSOE *theSOE;
+  NDMaterial *getCopy(void);
+  const char *getType(void) const;
+  int getOrder(void) const;
 
-private:
-    KSP ksp;
-    PC pc;
-    int its;
-    KSPType method;
-    PCType preconditioner;
-    double rTol;
-    double aTol;
-    double dTol;
-    int maxIts;
-    MatType matType;
+  int setTrialStrain(const Vector &strain_from_element);
 
-    bool is_KSP_initialized;
+  // Unused trialStrain functions
+  int setTrialStrain(const Vector &v, const Vector &r);
+    
+  //send back the strain
+  const Vector& getStrain();
+  
+  //send back the stress 
+  const Vector& getStress();
+  const Vector& getStressToRecord();
+
+  //send back the tangent 
+  const Matrix& getTangent();
+  const Matrix& getInitialTangent();
+
+  private :
+
 };
 
-#endif
 
+#endif

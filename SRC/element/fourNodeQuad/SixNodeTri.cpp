@@ -109,20 +109,20 @@ void* OPS_SixNodeTri()
 }
 
 
-double SixNodeTri::matrixData[144];
-Matrix SixNodeTri::K(matrixData, 12, 12);
-Vector SixNodeTri::P(12);
-double SixNodeTri::shp[3][6];
-double SixNodeTri::pts[3][2];
-double SixNodeTri::wts[3];
+double SixNodeTri::matrixData[(nnodes*2)*(nnodes*2)];
+Matrix SixNodeTri::K(matrixData, 2*nnodes, 2*nnodes);
+Vector SixNodeTri::P(2*nnodes);
+double SixNodeTri::shp[3][nnodes];
+double SixNodeTri::pts[nip][2];
+double SixNodeTri::wts[nip];
 
 SixNodeTri::SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4,
 						   int nd5, int nd6,
 						   NDMaterial &m, const char *type, double t,
 						   double p, double r, double b1, double b2)
 :Element (tag, ELE_TAG_SixNodeTri),
-  theMaterial(0), connectedExternalNodes(6),
- Q(12), applyLoad(0), pressureLoad(12), thickness(t), pressure(p), rho(r), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(2*nnodes), applyLoad(0), pressureLoad(2*nnodes), thickness(t), pressure(p), rho(r), Ki(0)
 {
 	pts[0][0] = 0.666666666666666667;
 	pts[0][1] = 0.166666666666666667;
@@ -186,8 +186,8 @@ SixNodeTri::SixNodeTri(int tag, int nd1, int nd2, int nd3, int nd4,
 
 SixNodeTri::SixNodeTri()
 :Element (0,ELE_TAG_SixNodeTri),
-  theMaterial(0), connectedExternalNodes(6),
- Q(12), applyLoad(0), pressureLoad(12), thickness(0.0), pressure(0.0), Ki(0)
+  theMaterial(0), connectedExternalNodes(nnodes),
+ Q(2*nnodes), applyLoad(0), pressureLoad(2*nnodes), thickness(0.0), pressure(0.0), Ki(0)
 {
 	pts[0][0] = 0.666666666666666667;
 	pts[0][1] = 0.166666666666666667;
@@ -228,7 +228,7 @@ SixNodeTri::~SixNodeTri()
 int
 SixNodeTri::getNumExternalNodes() const
 {
-    return 6;
+    return nnodes;
 }
 
 const ID&
@@ -247,7 +247,7 @@ SixNodeTri::getNodePtrs(void)
 int
 SixNodeTri::getNumDOF()
 {
-    return 12;
+    return nnodes*2;
 }
 
 void
@@ -358,7 +358,7 @@ SixNodeTri::update()
 	const Vector &disp5 = theNodes[4]->getTrialDisp();
 	const Vector &disp6 = theNodes[5]->getTrialDisp();
 
-	static double u[2][6];
+	static double u[2][nnodes];
 
 	u[0][0] = disp1(0);
 	u[1][0] = disp1(1);
@@ -590,7 +590,7 @@ int
 SixNodeTri::addInertiaLoadToUnbalance(const Vector &accel)
 {
   int i;
-  static double rhoi[3]; // nip
+  static double rhoi[nip];
   double sum = 0.0;
   for (i = 0; i < nip; i++) {
     rhoi[i] = theMaterial[i]->getRho();
@@ -614,7 +614,7 @@ SixNodeTri::addInertiaLoadToUnbalance(const Vector &accel)
     return -1;
   }
 
-  static double ra[12];
+  static double ra[2*nnodes];
 
   ra[0] = Raccel1(0);
   ra[1] = Raccel1(1);
@@ -696,7 +696,7 @@ const Vector&
 SixNodeTri::getResistingForceIncInertia()
 {
 	int i;
-	static double rhoi[3]; // nip
+	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
 	  rhoi[i] = theMaterial[i]->getRho();
@@ -721,7 +721,7 @@ SixNodeTri::getResistingForceIncInertia()
 	const Vector &accel5 = theNodes[4]->getTrialAccel();
 	const Vector &accel6 = theNodes[5]->getTrialAccel();
 
-	static double a[12];
+	static double a[2*nnodes];
 
 	a[0] = accel1(0);
 	a[1] = accel1(1);
@@ -931,7 +931,7 @@ SixNodeTri::Print(OPS_Stream &s, int flag)
 
     for (i=0; i<numNodes; i++) {
       const Vector &nodeCrd = theNodes[i]->getCrds();
-      const Vector &nodeDisp = theNodes[i]->getDisp();
+      // const Vector &nodeDisp = theNodes[i]->getDisp();
       s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
      }
 
@@ -1092,9 +1092,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
   output.attr("node5",connectedExternalNodes[4]);
   output.attr("node6",connectedExternalNodes[5]);
 
-  // check out the proper size ??? test recorder for 'force'
   char dataOut[20];
-  // char dataOut[32];
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0) {
 
     for (int i=1; i<=nip; i++) {
@@ -1144,8 +1142,7 @@ SixNodeTri::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(3*nip));
   }
 
-  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
-		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
     for (int i=0; i<nnodes; i++) {
       output.tag("NodalPoint");
       output.attr("number",i+1);
@@ -1233,12 +1230,12 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
       cnt += 3;
     }
 
-	double We[nnodes][nip] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
-							  {-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
-							  {-0.3333333333333333, -0.3333333333333333, 1.6666666666666667},
-							  {0.6666666666666667, 0.6666666666666667, -0.3333333333333333},
-							  {-0.3333333333333333, 0.6666666666666667, 0.6666666666666667},
-							  {0.6666666666666667, -0.3333333333333333, 0.6666666666666667}};
+	const double We[nnodes][nip] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
+									{-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
+									{-0.3333333333333333, -0.3333333333333333, 1.6666666666666667},
+									{0.6666666666666667, 0.6666666666666667, -0.3333333333333333},
+									{-0.3333333333333333, 0.6666666666666667, 0.6666666666666667},
+									{0.6666666666666667, -0.3333333333333333, 0.6666666666666667}};
 	int p, l;
 	for (int i = 0; i < nnodes; i++) {
 	  for (int k = 0; k < 3; k++) {

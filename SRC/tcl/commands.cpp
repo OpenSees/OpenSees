@@ -143,6 +143,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <KrylovNewton.h>
 #include <PeriodicNewton.h>
 #include <AcceleratedNewton.h>
+#include <ExpressNewton.h>
 
 // accelerators
 #include <RaphsonAccelerator.h>
@@ -3354,11 +3355,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       count+=2;
     }
 
+
     if (matType == 0) {
+      // PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       theSOE = new PetscSOE(*theSolver);
     } else {
-      PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      // PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      PetscSparseSeqSolver *theSolver = 0;
       theSOE = new SparseGenRowLinSOE(*theSolver);
     }
   }
@@ -4020,6 +4024,27 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
 	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
 
       theNewAlgo = new NewtonLineSearch(*theTest, theLineSearch); 
+  }
+
+  else if (strcmp(argv[1],"ExpressNewton") == 0) {
+    int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
+    double kMultiplier = 1.0;
+	  if (argc >= 3 && Tcl_GetInt(interp, argv[2], &nIter) != TCL_OK)
+      return TCL_ERROR;
+	  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &kMultiplier) != TCL_OK)
+      return TCL_ERROR;
+    int count = 4;
+    while (argc > count) {
+      if ((strcmp(argv[count],"-initialTangent") == 0) || (strcmp(argv[count],"-InitialTangent") == 0)) {
+        formTangent = INITIAL_TANGENT;
+      } else if ((strcmp(argv[count],"-currentTangent") == 0) || (strcmp(argv[count],"-CurrentTangent") ==0 )) {
+        formTangent = CURRENT_TANGENT;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+        factorOnce = 1;
+      }
+      count++;
+    }
+    theNewAlgo = new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
   }
 
   else {
