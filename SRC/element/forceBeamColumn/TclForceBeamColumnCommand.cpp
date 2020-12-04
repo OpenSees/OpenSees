@@ -357,18 +357,6 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	return TCL_ERROR;
       }
 
-      if (dampingTag)
-      {
-        theDamping = OPS_getDamping(dampingTag);
-        if (theDamping == 0)
-        {
-          opserr << "WARNING damping not found\n";
-          opserr << "damping: " << dampingTag;
-          opserr << argv[1] << " element: " << eleTag << endln;
-          return TCL_ERROR;
-        }
-      }
-      
     }
     
     if (ndm == 3) {
@@ -383,6 +371,18 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       }
     }
 
+    if (dampingTag)
+    {
+      theDamping = OPS_getDamping(dampingTag);
+      if (theDamping == 0)
+      {
+        opserr << "WARNING damping not found\n";
+        opserr << "damping: " << dampingTag;
+        opserr << argv[1] << " element: " << eleTag << endln;
+        return TCL_ERROR;
+      }
+    }
+      
     if (beamIntegr == 0) {
       if (strstr(argv[1],"ispBeam") == 0) {
         beamIntegr = new LobattoBeamIntegration();
