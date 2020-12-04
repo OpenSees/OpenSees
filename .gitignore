@@ -79,3 +79,4 @@ SRC/interpreter/pythonInterpreter
 SRC/interpreter/tclInterpreter
 SRC/interpreter/openseespy
 SRC/interpreter/openseestcl
+bin

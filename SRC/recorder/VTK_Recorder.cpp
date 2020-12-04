@@ -1019,6 +1019,7 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_FourNodeQuad3d] = VTK_QUAD;
     vtktypes[ELE_TAG_Tri31] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_SixNodeTri] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_BeamWithHinges2d] = VTK_LINE;
     vtktypes[ELE_TAG_BeamWithHinges3d] = VTK_LINE;
     vtktypes[ELE_TAG_EightNodeBrick] = VTK_HEXAHEDRON;
@@ -1040,6 +1041,8 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_PlateMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC4] = VTK_QUAD;
     vtktypes[ELE_TAG_ShellMITC9] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ASDShellQ4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDShellT3] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_Plate1] = VTK_QUAD;
     vtktypes[ELE_TAG_Brick] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_BbarBrick] = VTK_HEXAHEDRON;
@@ -1047,6 +1050,8 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_EnhancedQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_ConstantPressureVolumeQuad] = VTK_QUAD;
     vtktypes[ELE_TAG_NineNodeMixedQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_NineNodeQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EightNodeQuad] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_DispBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_TimoshenkoBeamColumn2d] = VTK_LINE;
     vtktypes[ELE_TAG_DispBeamColumn3d] = VTK_LINE;

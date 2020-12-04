@@ -1726,7 +1726,7 @@ FourNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output
 int 
 FourNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 {
-  static Vector stresses(48);
+  static Vector stresses(6);
 
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());
@@ -2011,4 +2011,20 @@ FourNodeTetrahedron::shp3d( const double ss[4], double &xsj, double shp[4][4], c
 
     // Return[{Nfx,Nfy,Nfz,Jdet}]];
    return ;
+}
+
+
+void
+FourNodeTetrahedron::onActivate()
+{
+
+    Domain* theDomain = this->getDomain();
+    this->setDomain(theDomain);
+    this->update();
+}
+
+void
+FourNodeTetrahedron::onDeactivate()
+{
+
 }

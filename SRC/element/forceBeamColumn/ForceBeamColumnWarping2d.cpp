@@ -89,9 +89,9 @@ Matrix ForceBeamColumnWarping2d::theMatrix(8,8);
 Vector ForceBeamColumnWarping2d::theVector(10);
 double ForceBeamColumnWarping2d::workArea[200];
 
-Vector *ForceBeamColumnWarping2d::vsSubdivide = 0;
-Matrix *ForceBeamColumnWarping2d::fsSubdivide = 0;
-Vector *ForceBeamColumnWarping2d::SsrSubdivide = 0;
+Vector ForceBeamColumnWarping2d::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumnWarping2d::fsSubdivide[maxNumSections];
+Vector ForceBeamColumnWarping2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumnWarping2d()
 {
@@ -194,17 +194,6 @@ ForceBeamColumnWarping2d::ForceBeamColumnWarping2d():
 {
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumnWarping2d::ForceBeamColumnWarping2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -245,17 +234,6 @@ ForceBeamColumnWarping2d::ForceBeamColumnWarping2d (int tag, int nodeI, int node
   }
 
   this->setSectionPointers(numSec, sec);
-  
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumnWarping2d::ForceBeamColumnWarping2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // ~ForceBeamColumnWarping2d():

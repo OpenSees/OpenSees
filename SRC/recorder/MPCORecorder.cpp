@@ -640,7 +640,9 @@ namespace utils {
 				ele_tag == ELE_TAG_ShellNLDKGQThermal ||
 				ele_tag == ELE_TAG_ShellDKGT ||
 				ele_tag == ELE_TAG_ShellNLDKGT ||
-				ele_tag == ELE_TAG_ShellANDeS
+				ele_tag == ELE_TAG_ShellANDeS ||
+				ele_tag == ELE_TAG_ASDShellQ4 ||
+				ele_tag == ELE_TAG_ASDShellT3
 				);
 		}
 
@@ -3533,6 +3535,13 @@ namespace mpco {
 					get class tag, geometry and integration rule type
 					*/
 					int elem_type = current_element->getClassTag();
+
+					if (elem_type == ELE_TAG_Subdomain)
+					{
+						//Skip subdomains
+						continue;
+					}
+
 					ElementGeometryType::Enum geom_type;
 					ElementIntegrationRuleType::Enum int_rule_type;
 					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type);
@@ -3715,7 +3724,8 @@ namespace mpco {
 				else if (
 					// ./shell
 					elem_class_tag == ELE_TAG_ShellDKGT ||
-					elem_class_tag == ELE_TAG_ShellNLDKGT
+					elem_class_tag == ELE_TAG_ShellNLDKGT ||
+					elem_class_tag == ELE_TAG_ASDShellT3
 					) {
 					geom_type = ElementGeometryType::Triangle_3N;
 					int_type = ElementIntegrationRuleType::Triangle_GaussLegendre_2C;
@@ -3747,6 +3757,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ShellNLDKGQ ||
 					elem_class_tag == ELE_TAG_ShellMITC4 ||
 					elem_class_tag == ELE_TAG_ShellMITC4Thermal ||
+					elem_class_tag == ELE_TAG_ASDShellQ4 ||
 					// ./up
 					elem_class_tag == ELE_TAG_BBarFourNodeQuadUP ||
 					elem_class_tag == ELE_TAG_FourNodeQuadUP
@@ -3760,6 +3771,7 @@ namespace mpco {
 				else if (
 					// ./quad
 					elem_class_tag == ELE_TAG_NineNodeMixedQuad ||
+					elem_class_tag == ELE_TAG_NineNodeQuad ||
 					// ./shell
 					elem_class_tag == ELE_TAG_ShellMITC9 ||
 					// ./up
@@ -4274,7 +4286,7 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 	
 	// send misc info
 	{
-		ID aux(8);
+		ID aux(9);
 		aux(0) = getTag();
 		aux(1) = m_data->send_self_count; // use the send self counter as p_id in the receiver
 		aux(2) = static_cast<int>(m_data->filename.size());
@@ -4283,6 +4295,8 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 		aux(5) = static_cast<int>(m_data->has_region);
 		aux(6) = static_cast<int>(m_data->node_set.size());
 		aux(7) = static_cast<int>(m_data->elem_set.size());
+		aux(8) = static_cast<int>(m_data->sens_grad_indices.size());
+
 		if (theChannel.sendID(0, commitTag, aux) < 0) {
 			opserr << "MPCORecorder::sendSelf() - failed to send misc info\n";
 			return -1;
@@ -4373,7 +4387,7 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
 	if (theChannel.isDatastore() == 1) {
-		opserr << "MPCORecorder::sendSelf() - does not send data to a datastore\n";
+		opserr << "MPCORecorder::recvSelf() - does not recv data to a datastore\n";
 		return -1;
 	}
 
@@ -4391,10 +4405,11 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	size_t aux_res_merged_string_size(0);
 	size_t aux_node_set_size(0);
 	size_t aux_elem_set_size(0);
+	size_t aux_sens_grad_indices_size(0);
 	{
-		ID aux(8);
+		ID aux(9);
 		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv misc info\n";
+			opserr << "MPCORecorder::recvSelf() - " << m_data->p_id  << " - failed to recv misc info\n";
 			return -1;
 		}
 		setTag(aux(0));
@@ -4402,7 +4417,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		aux_filename_size = aux(2);
 		aux_node_res_size = aux(3);
 		aux_res_merged_string_size = aux(4);
-		m_data->has_region = aux(5) != 0;
+		m_data->has_region = aux(5);// != 0;
 		aux_node_set_size = static_cast<size_t>(aux(6));
 		aux_elem_set_size = static_cast<size_t>(aux(7));
 	}
@@ -4412,7 +4427,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		std::vector<char> aux(aux_filename_size);
 		Message msg(aux.data(), static_cast<int>(aux_filename_size));
 		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv filename\n";
+			opserr << "MPCORecorder::recvSelf() - failed to recv filename\n";
 			return -1;
 		}
 		m_data->filename = std::string(aux.begin(), aux.end());
@@ -4422,7 +4437,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	{
 		Vector aux(3);
 		if (theChannel.recvVector(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv output frequency\n";
+			opserr << "MPCORecorder::recvSelf() - failed to recv output frequency\n";
 			return -1;
 		}
 		m_data->output_freq.type = static_cast<mpco::OutputFrequency::IncrementType>(static_cast<int>(aux(0)));
@@ -4434,7 +4449,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	if (aux_node_res_size > 0) {
 		ID aux(static_cast<int>(aux_node_res_size));
 		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv node result requests\n";
+			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests\n";
 			return -1;
 		}
 		m_data->nodal_results_requests.resize(aux_node_res_size);
@@ -4443,14 +4458,14 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	}
 
 	// recv node result requests (sens grad indices)
-	if (m_data->sens_grad_indices.size() > 0) {
-		ID aux(static_cast<int>(aux_node_res_size));
+	if (aux_sens_grad_indices_size > 0) {
+		ID aux(static_cast<int>(aux_sens_grad_indices_size));
 		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv node result requests (sensitivity parameter indices)\n";
+			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests (sensitivity parameter indices)\n";
 			return -1;
 		}
-		m_data->sens_grad_indices.resize(aux_node_res_size);
-		for (size_t i = 0; i < aux_node_res_size; i++)
+		m_data->sens_grad_indices.resize(aux_sens_grad_indices_size);
+		for (size_t i = 0; i < aux_sens_grad_indices_size; i++)
 			m_data->sens_grad_indices[i] = aux(static_cast<int>(i));
 	}
 
@@ -4458,8 +4473,8 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	if (aux_res_merged_string_size > 0) {
 		std::vector<char> aux(aux_res_merged_string_size);
 		Message msg(aux.data(), static_cast<int>(aux_res_merged_string_size));
-		if (theChannel.sendMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to recv element result requests\n";
+		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
+			opserr << "MPCORecorder::recvSelf() - failed to recv element result requests\n";
 			return -1;
 		}
 		std::vector<std::string> aux_1;
@@ -4476,7 +4491,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		if (aux_node_set_size > 0) {
 			ID aux(static_cast<int>(aux_node_set_size));
 			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to recv node set\n";
+				opserr << "MPCORecorder::recvSelf() - failed to recv node set\n";
 				return -1;
 			}
 			m_data->node_set.resize(aux_node_set_size);
@@ -4488,7 +4503,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		if (aux_elem_set_size > 0) {
 			ID aux(static_cast<int>(aux_elem_set_size));
 			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to recv elem set\n";
+				opserr << "MPCORecorder::recvSelf() - failed to recv elem set\n";
 				return -1;
 			}
 			m_data->elem_set.resize(aux_elem_set_size);
@@ -4531,6 +4546,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 			}
 		}
 	}
+	_info << "]\n";
 	_info << "elem set:" << "\n" << "[";
 	{
 		int n_counter(0);
@@ -4609,7 +4625,7 @@ int MPCORecorder::initialize()
 		std::stringstream ss_filename;
 		for (size_t i = 0; i < filename_words.size() - 1; i++)
 			ss_filename << filename_words[i] << '.';
-		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in slave procs, = 0 -> not in parallel
+		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in secondary procs, = 0 -> not in parallel
 			ss_filename << "p" << m_data->p_id << '.';
 		}
 		ss_filename << filename_words.back();

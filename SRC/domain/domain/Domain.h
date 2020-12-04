@@ -235,6 +235,9 @@ class Domain
     virtual int calculateNodalReactions(int flag);
 	Recorder* getRecorder(int tag);	//by SAJalali
 
+    virtual int activateElements(const ID& elementList);
+    virtual int deactivateElements(const ID& elementList);
+
   protected:    
 
     virtual int buildEleGraph(Graph *theEleGraph);

@@ -18,8 +18,9 @@
 #define MultiYieldSurfaceClay_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
 #include <Matrix.h>
+#include "soil/T2Vector.h"
+class MultiYieldSurface;
 
 #define ND_TAG_MultiYieldSurfaceClay   10284765
 

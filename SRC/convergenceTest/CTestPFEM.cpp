@@ -26,7 +26,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <EquiSolnAlgo.h>
-#include <PFEMLinSOE.h>
+#include "sparseGEN/PFEMLinSOE.h"
 #include <typeinfo>
 #include <cmath>
 #include <elementAPI.h>

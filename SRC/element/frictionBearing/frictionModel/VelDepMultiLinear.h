@@ -35,7 +35,7 @@
 // a number of non-negative velocity/friction pairs. If the normal force N is
 // negative the friction force is zero.
 
-#include <FrictionModel.h>
+#include "FrictionModel.h"
 
 class VelDepMultiLinear : public FrictionModel
 {

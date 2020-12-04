@@ -41,6 +41,7 @@ OBJS       = NDMaterial.o \
 	ElasticIsotropicPlaneStress2D.o \
 	ElasticIsotropicPlateFiber.o \
 	ElasticIsotropicThreeDimensional.o \
+	IncrementalElasticIsotropicThreeDimensional.o \
 	ElasticOrthotropicMaterial.o \
 	ElasticOrthotropicThreeDimensional.o \
 	PressureDependentElastic3D.o \

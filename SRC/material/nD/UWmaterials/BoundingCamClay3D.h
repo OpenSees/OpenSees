@@ -33,7 +33,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#include <BoundingCamClay.h>
+#include "BoundingCamClay.h"
 
 class BoundingCamClay3D : public BoundingCamClay {
 

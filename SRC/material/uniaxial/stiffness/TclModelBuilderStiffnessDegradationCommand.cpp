@@ -43,14 +43,8 @@ extern void *OPS_EnergyStiffnessDegradation(void);
 extern void *OPS_ConstantStiffnessDegradation(void);
 extern void *OPS_PincheiraStiffnessDegradation(void);
 
+#include <elementAPI.h>
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
 
 int
 TclModelBuilderStiffnessDegradationCommand(ClientData clientData,

@@ -123,7 +123,7 @@ int J2PlaneStress :: getOrder( ) const
 //get the strain and integrate plasticity equations
 int J2PlaneStress :: setTrialStrain( const Vector &strain_from_element ) 
 {
-  const double tolerance = 1e-12 ;
+  const double tolerance = (1.0e-8)*sigma_0 ;
 
   const int max_iterations = 25 ;
   int iteration_counter  = 0 ;

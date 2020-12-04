@@ -17,14 +17,14 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.2 $
-// $Date: 2005-05-18 19:26:59 $
+// $Date: 2005/05/18 19:26:59 $
 // $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/petsc/PetscSparseSeqSolver.cpp,v $
-                                                                        
-// Written: fmk 
+
+// Written: fmk
 // Created: 04/05
-                                                                        
+
 // What: "@(#) PetscSparseSeqSolver.h, revA"
 
 #include <PetscSparseSeqSolver.h>
@@ -36,32 +36,32 @@
 #include <Timer.h>
 
 PetscSparseSeqSolver::PetscSparseSeqSolver(KSPType meth, PCType pre)
-  :SparseGenRowLinSolver(SOLVER_TAGS_PetscSparseSeqSolver), 
-   rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT)
+    : SparseGenRowLinSolver(SOLVER_TAGS_PetscSparseSeqSolver),
+      rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT)
 {
-  PetscInitialize(0, PETSC_NULL, (char *)0, PETSC_NULL);
+    PetscInitialize(0, PETSC_NULL, (char*)0, PETSC_NULL);
 
-  method = meth;
-  preconditioner = pre;
+    method = meth;
+    preconditioner = pre;
 }
 
 PetscSparseSeqSolver::PetscSparseSeqSolver(KSPType meth, PCType pre, double relTol, double absTol, double divTol, int maxIterations)
-  :SparseGenRowLinSolver(SOLVER_TAGS_PetscSparseSeqSolver), 
-   rTol(relTol), aTol(absTol), dTol(divTol), maxIts(maxIterations)
+    : SparseGenRowLinSolver(SOLVER_TAGS_PetscSparseSeqSolver),
+      rTol(relTol), aTol(absTol), dTol(divTol), maxIts(maxIterations)
 {
-  PetscInitialize(0, PETSC_NULL, (char *)0, PETSC_NULL);
+    PetscInitialize(0, PETSC_NULL, (char*)0, PETSC_NULL);
 
-  method = meth;
-  preconditioner = pre;
+    method = meth;
+    preconditioner = pre;
 }
 
 
 PetscSparseSeqSolver::~PetscSparseSeqSolver()
 {
-  MatDestroy(A);
-  VecDestroy(x);
-  VecDestroy(b);
-  KSPDestroy(ksp);
+    MatDestroy(&A);
+    VecDestroy(&x);
+    VecDestroy(&b);
+    KSPDestroy(&ksp);
 }
 
 
@@ -69,100 +69,107 @@ PetscSparseSeqSolver::~PetscSparseSeqSolver()
 int
 PetscSparseSeqSolver::solve(void)
 {
-  PetscErrorCode ierr = KSPSolve(ksp, b, x); CHKERRQ(ierr); 
+    PetscErrorCode ierr = KSPSolve(ksp, b, x);
+    CHKERRQ(ierr);
 
-  return ierr;
+    return ierr;
 }
 
 
 int
 PetscSparseSeqSolver::getNumIterations(void)
 {
-  PetscErrorCode ierr = KSPGetIterationNumber(ksp, &its);
-    
-  return its;
+    PetscErrorCode ierr = KSPGetIterationNumber(ksp, &its);
+
+    return its;
 }
 
 
 int
 PetscSparseSeqSolver::setSize()
 {
-  int n = theSOE->size;
-  int nnz = theSOE->nnz;
-  double *Adata = theSOE->A;
-  double *Xdata = theSOE->X;
-  double *Bdata = theSOE->B;
-  int *colA = theSOE->colA;
-  int *rowStartA = theSOE->rowStartA;
+    int n = theSOE->size;
+    int nnz = theSOE->nnz;
+    double* Adata = theSOE->A;
+    double* Xdata = theSOE->X;
+    double* Bdata = theSOE->B;
+    int* colA = theSOE->colA;
+    int* rowStartA = theSOE->rowStartA;
 
 
-  /* 
-   * Call Petsc VecCreate & MatCreate; NOTE: using previously allocated storage
-   * 
-   */
+    /*
+     * Call Petsc VecCreate & MatCreate; NOTE: using previously allocated storage
+     *
+     */
 
-  PetscTruth flg;
-  PetscErrorCode ierr = PetscOptionsGetInt(PETSC_NULL,"-n", &n, &flg); CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD, n, Xdata, &x); CHKERRQ(ierr); 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD, n, Bdata, &b); CHKERRQ(ierr); 
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_WORLD, n, n, rowStartA, colA,  Adata , &A);
+    PetscBool flg; // PetsTruth --> PetscBool
+    PetscErrorCode ierr = PetscOptionsGetInt(PETSC_NULL, NULL , "-n", &n, &flg);
+    CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD, 1, n, Xdata, &x);
+    CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD, 1, n, Bdata, &b);
+    CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_WORLD, n, n, rowStartA, colA,  Adata , &A);
 
-  /* 
-   * Create linear solver context
-   */
+    /*
+     * Create linear solver context
+     */
 
-   KSPCreate(PETSC_COMM_WORLD, &ksp);
+    KSPCreate(PETSC_COMM_WORLD, &ksp);
 
-   /* 
-    *  Set operators. NOTE: matrix that defines the linear system
-    *  also serves as the preconditioning matrix.
-    */
+    /*
+     *  Set operators. NOTE: matrix that defines the linear system
+     *  also serves as the preconditioning matrix.
+     */
 
-   KSPSetOperators(ksp, A, A, DIFFERENT_NONZERO_PATTERN);
+    KSPSetOperators(ksp, A, A);
 
-   /* 
-    *  Set solution scheme & tolerances
-    */
+    /*
+     *  Set solution scheme & tolerances
+     */
 
-   ierr = KSPSetType(ksp, method); CHKERRQ(ierr); 
-   ierr = KSPSetTolerances(ksp, rTol, aTol, dTol, maxIts); 
+    ierr = KSPSetType(ksp, method);
+    CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp, rTol, aTol, dTol, maxIts);
 
-   /* 
-    *  Set preconditioning scheme
-    */
+    /*
+     *  Set preconditioning scheme
+     */
 
-   KSPGetPC(ksp, &pc);
-   ierr = PCSetType(pc,  preconditioner); CHKERRQ(ierr); 
+    KSPGetPC(ksp, &pc);
+    ierr = PCSetType(pc,  preconditioner);
+    CHKERRQ(ierr);
 
-   /* 
-    *  Finally mark so that uses last solution as initial guess in each solution
-    *    NOTE: maybe change this as another user supplied option
-    */
+    /*
+     *  Finally mark so that uses last solution as initial guess in each solution
+     *    NOTE: maybe change this as another user supplied option
+     */
 
-   ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); CHKERRQ(ierr); 
+    ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
+    CHKERRQ(ierr);
 
-   return ierr;
-}
-
-
-int 
-PetscSparseSeqSolver::setLinearSOE(SparseGenRowLinSOE &theSystem)
-{
-  theSOE = &theSystem;
-  return 0;
+    return ierr;
 }
 
 
 int
-PetscSparseSeqSolver::sendSelf(int cTag, Channel &theChannel)
+PetscSparseSeqSolver::setLinearSOE(SparseGenRowLinSOE& theSystem)
+{
+    theSOE = &theSystem;
+    return 0;
+}
+
+
+int
+PetscSparseSeqSolver::sendSelf(int cTag, Channel& theChannel)
 {
     // nothing to do
     return 0;
 }
 
 int
-PetscSparseSeqSolver::recvSelf(int cTag, Channel &theChannel, 
-		      FEM_ObjectBroker &theBroker)
+PetscSparseSeqSolver::receiveSelf(int cTag, Channel& theChannel,
+                               FEM_ObjectBroker& theBroker)
 {
     // nothing to do
     return 0;

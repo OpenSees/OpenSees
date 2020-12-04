@@ -92,6 +92,7 @@ public:
     // methods used in post-processing only
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
     const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps);
+    const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps);    
     
 private:
     int compElemtLengthAndOrient(void);

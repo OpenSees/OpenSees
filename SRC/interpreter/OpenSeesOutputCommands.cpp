@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Element.h>
 #include <ElementIter.h>
 #include <map>
+#include <set>
 #include <Recorder.h>
 #include <Pressure_Constraint.h>
 #include <vector>
@@ -67,6 +68,8 @@ void* OPS_EnvelopeNodeRecorder();
 void* OPS_ElementRecorder();
 void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
+void* OPS_AlgorithmRecorder();
+void* OPS_RemoveRecorder();
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -92,6 +95,10 @@ namespace {
         recordersMap.insert(std::make_pair("EnvelopeElement", &OPS_EnvelopeElementRecorder));
 	recordersMap.insert(std::make_pair("PVD", &OPS_PVDRecorder));
 	recordersMap.insert(std::make_pair("BgPVD", &OPS_PVDRecorder));
+	recordersMap.insert(std::make_pair("Remove", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -139,6 +146,14 @@ int OPS_Recorder()
 	    delete theRecorder;
 	    return -1;
 	}
+    }
+
+    // set recorder tag as result
+    int size = 1;
+    int tag = theRecorder->getTag();
+    if (OPS_SetIntOutput(&size, &tag, true) < 0) {
+        opserr << "ERROR: failed to return recorder tag\n";
+        return -1;
     }
 
     return 0;
@@ -1643,20 +1658,16 @@ int OPS_nodeDOFs()
 
 int OPS_nodeMass()
 {
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr << "WARNING want - nodeMass nodeTag? nodeDOF?\n";
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - nodeMass nodeTag?\n";
 	return -1;
     }
 
-    int tag, dof;
+    int tag;
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
-	return -1;
-    }
-    if (OPS_GetIntInput(&numdata, &dof) < 0) {
-	opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+	opserr << "WARNING nodeMass nodeTag?\n";
 	return -1;
     }
 
@@ -1668,17 +1679,16 @@ int OPS_nodeMass()
 	opserr << "WARNING nodeMass node " << tag << " not found" << endln;
 	return -1;
     }
+
     int numDOF = theNode->getNumberDOF();
-    if (dof < 1 || dof > numDOF) {
-	opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
-	return -1;
-    }
-    else {
-	const Matrix &mass = theNode->getMass();
-	double value = mass(dof-1,dof-1);
-	if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
-	    opserr << "WARNING nodeMass failed to set mass\n";
-	}
+    const Matrix &mass = theNode->getMass();
+    std::vector<double> data(numDOF);
+    for (int i = 0; i < numDOF; i++)
+      data[i] = mass(i,i);
+    
+    if (OPS_SetDoubleOutput(&numDOF, &data[0], false) < 0) {
+      opserr << "WARNING nodeMass failed to set mass\n";
+      return -1;
     }
 
     return 0;
@@ -1807,58 +1817,61 @@ int OPS_getEleTags()
     return 0;
 }
 
-int OPS_getNodeTags()
-{
-    Domain* theDomain = OPS_GetDomain();
+int OPS_getNodeTags() {
+    Domain *theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
     std::vector<int> nodetags;
     if (OPS_GetNumRemainingInputArgs() < 1) {
+        // return all nodes
+        Node *theNode;
+        NodeIter &nodeIter = theDomain->getNodes();
 
-	// return all nodes
-	Node *theNode;
-	NodeIter &nodeIter = theDomain->getNodes();
-
-	while ((theNode = nodeIter()) != 0) {
-	    nodetags.push_back(theNode->getTag());
-	}
-    } else if (OPS_GetNumRemainingInputArgs() == 2) {
-
-	// return nodes in mesh
-	const char* type = OPS_GetString();
-	if (strcmp(type,"-mesh") == 0) {
-	    int tag;
-	    int num = 1;
-	    if (OPS_GetIntInput(&num, &tag) < 0) {
-		opserr << "WARNING: failed to get mesh tag\n";
-		return -1;
-	    }
-	    Mesh* msh = OPS_getMesh(tag);
-	    if (msh == 0) {
-		opserr << "WARNING: mesh "<<tag<<" does not exist\n";
-		return -1;
-	    }
-	    const ID& tags = msh->getNodeTags();
-	    for (int i=0; i<tags.Size(); ++i) {
-		nodetags.push_back(tags(i));
-	    }
-	    const ID& newtags = msh->getNewNodeTags();
-	    for (int i=0; i<newtags.Size(); ++i) {
-		nodetags.push_back(newtags(i));
-	    }
-	}
+        while ((theNode = nodeIter()) != 0) {
+            nodetags.push_back(theNode->getTag());
+        }
+    } else if (OPS_GetNumRemainingInputArgs() > 1) {
+        // return nodes in mesh
+        const char *type = OPS_GetString();
+        if (strcmp(type, "-mesh") == 0) {
+            int numtags = OPS_GetNumRemainingInputArgs();
+            std::set<int> nodeset;
+            for (int i = 0; i < numtags; ++i) {
+                int tag;
+                int num = 1;
+                if (OPS_GetIntInput(&num, &tag) < 0) {
+                    opserr << "WARNING: failed to get mesh tag\n";
+                    return -1;
+                }
+                Mesh *msh = OPS_getMesh(tag);
+                if (msh == 0) {
+                    opserr << "WARNING: mesh " << tag
+                           << " does not exist\n";
+                    return -1;
+                }
+                const ID &tags = msh->getNodeTags();
+                for (int i = 0; i < tags.Size(); ++i) {
+                    nodeset.insert(tags(i));
+                }
+                const ID &newtags = msh->getNewNodeTags();
+                for (int i = 0; i < newtags.Size(); ++i) {
+                    nodeset.insert(newtags(i));
+                }
+            }
+            nodetags.assign(nodeset.begin(), nodeset.end());
+        }
     }
 
     int size = 0;
-    int* data = 0;
+    int *data = 0;
     if (!nodetags.empty()) {
         size = (int)nodetags.size();
         data = &nodetags[0];
     }
 
     if (OPS_SetIntOutput(&size, data, false) < 0) {
-	opserr << "WARNING failed to set outputs\n";
-	return -1;
+        opserr << "WARNING failed to set outputs\n";
+        return -1;
     }
 
     return 0;
@@ -2203,7 +2216,7 @@ int OPS_sectionLocation()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionLocation eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionLocation eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2272,7 +2285,7 @@ int OPS_sectionWeight()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionWeight eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionWeight eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2314,6 +2327,174 @@ int OPS_sectionWeight()
     numdata = 1;
 
     if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionDisplacement()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionDisplacement eleTag? secNum? \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 2;
+    int data[2];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING sectionDisplacement eleTag? secNum? <-local>- could not read int input? \n";
+	return -1;
+    }
+
+    int tag = data[0];
+    int secNum = data[1];
+    bool local = false;
+    
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* localGlobal = OPS_GetString();
+      if (strstr(localGlobal,"local") != 0)
+	local = true;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionDisplacement element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 2;
+    char a[80] = "sectionDisplacements";
+    const char *argvv[2];
+    argvv[0] = a;
+    if (local)
+      argvv[1] = "local";
+    else
+      argvv[2] = "global";
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Matrix &theMatrix = *(info.theMatrix);
+    if (secNum <= 0 || secNum > theMatrix.noRows()) {
+	opserr << "WARNING invalid secNum\n";
+	delete theResponse;
+	return -1;
+    }
+
+    double value[3];
+    value[0] = theMatrix(secNum-1,0);
+    value[1] = theMatrix(secNum-1,1);
+    value[2] = theMatrix(secNum-1,2);        
+
+    numdata = 3;
+    if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_cbdiDisplacement()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - cbdiDisplacement eleTag? x/L? \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int data[1];
+    double ddata[1];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING cbdiDisplacement eleTag? x/L? - could not read int input? \n";
+	return -1;
+    }
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	opserr << "WARNING cbdiDisplacement eleTag? x/L? - could not read double input? \n";
+	return -1;
+    }    
+
+    int tag = data[0];
+    double xOverL = ddata[0];
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING cbdiDisplacment element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "cbdiDisplacements";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Matrix &theMatrix = *(info.theMatrix);
+    if (xOverL < 0.0 || xOverL > 1.0) {
+	opserr << "WARNING invalid xOverL\n";
+	delete theResponse;
+	return -1;
+    }
+
+    double value[3]; // Need to interpolate
+    int N = theMatrix.noRows();
+    double dx = 1.0/(N-1);
+    for (int i = 0; i < N; i++) {
+      double xi = double(i)/(N-1);
+      double xf = double(i+1)/(N-1);
+      if (xOverL >= xi && xOverL < xf) {
+	value[0] = theMatrix(i,0) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,0)-theMatrix(i,0));
+	value[1] = theMatrix(i,1) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,1)-theMatrix(i,1));
+	value[2] = theMatrix(i,2) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,2)-theMatrix(i,2));	
+      }
+    }
+    
+    numdata = 3;
+    if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;

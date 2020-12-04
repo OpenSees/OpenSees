@@ -43,6 +43,7 @@
 // All code specific to LimitStateMaterial separated by ////////////////
 
 #include <stdlib.h>
+#include "LimitCurve.h"
 
 #include <LimitStateMaterial.h>
 #include <G3Globals.h>
