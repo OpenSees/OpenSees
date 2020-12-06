@@ -73,7 +73,7 @@ NOTES:
 |-
 |  '''[3] ''' || Avgenakis E. and Psycharis I.N. (2020) “Modeling of inelastic rocking bodies under cyclic loading.” Journal of Engineering Mechanics 146(4): 04020020.
 |-
-|  '''[4] ''' || Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
+|  '''[4] ''' || Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics, 49(11), 1072-1094.
 |-
 |}
 Developed by : <span style="color:blue"> Evangelos Avgenakis </span> and <span style="color:blue"> Ioannis N. Psycharis </span>, School of Civil Engineering, National Technical University of Athens, Greece </span>

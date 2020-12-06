@@ -40,7 +40,8 @@
 //	3. Avgenakis E. and Psycharis I.N. (2020) “Modeling of inelastic rocking bodies under cyclic loading.”
 //		Journal of Engineering Mechanics 146(4): 04020020.
 // 	4. Avgenakis E. and Psycharis I.N. (2020) “An integrated macroelement formulation for the dynamic
-//		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics.
+//		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics,
+//      49(11), 1072-1094.
 
 #ifndef RockingBC_h
 #define RockingBC_h
