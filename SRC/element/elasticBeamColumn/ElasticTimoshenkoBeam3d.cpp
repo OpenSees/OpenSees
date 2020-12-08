@@ -909,6 +909,8 @@ void ElasticTimoshenkoBeam3d::setUp()
     
     // determine the element length
     L = dx.Norm();
+    double Lf = theCoordTransf->getInitialLength(); // length for flexural actions accounting for rigid end zone offset
+
     if (L == 0.0)  {
         opserr << "WARNING ElasticTimoshenkoBeam3d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";
@@ -934,8 +936,8 @@ void ElasticTimoshenkoBeam3d::setUp()
     Tgl(2,2) = Tgl(5,5) = Tgl(8,8) = Tgl(11,11) = zAxis(2);
     
     // determine ratios of bending to shear stiffness
-    phiY = 12.0*E*Iy/(L*L*G*Avz);
-    phiZ = 12.0*E*Iz/(L*L*G*Avy);
+    phiY = 12.0*E*Iy/(Lf*Lf*G*Avz);
+    phiZ = 12.0*E*Iz/(Lf*Lf*G*Avy);
     
     // compute initial stiffness matrix in local system
     kl.Zero();
@@ -943,19 +945,19 @@ void ElasticTimoshenkoBeam3d::setUp()
     kl(0,6) = kl(6,0) = -kl(0,0);
     kl(3,3) = kl(9,9) = G*Jx/L;
     kl(3,9) = kl(9,3) = -kl(3,3);
-    double a1y = E*Iy/(L*L*L*(1.0 + phiY));
+    double a1y = E*Iy/(Lf*Lf*Lf*(1.0 + phiY));
     kl(2,2) = kl(8,8) = a1y*12.0;
     kl(2,8) = kl(8,2) = -kl(2,2);
-    kl(4,4) = kl(10,10) = a1y*L*L*(4.0 + phiY);
-    kl(4,10) = kl(10,4) = a1y*L*L*(2.0 - phiY);
-    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -a1y*L*6.0;
+    kl(4,4) = kl(10,10) = a1y*Lf*Lf*(4.0 + phiY);
+    kl(4,10) = kl(10,4) = a1y*Lf*Lf*(2.0 - phiY);
+    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -a1y*Lf*6.0;
     kl(4,8) = kl(8,4) = kl(8,10) = kl(10,8) = -kl(2,4);
-    double a1z = E*Iz/(L*L*L*(1.0 + phiZ));
+    double a1z = E*Iz/(Lf*Lf*Lf*(1.0 + phiZ));
     kl(1,1) = kl(7,7) = a1z*12.0;
     kl(1,7) = kl(7,1) = -kl(1,1);
-    kl(5,5) = kl(11,11) = a1z*L*L*(4.0 + phiZ);
-    kl(5,11) = kl(11,5) = a1z*L*L*(2.0 - phiZ);
-    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = a1z*L*6.0;
+    kl(5,5) = kl(11,11) = a1z*Lf*Lf*(4.0 + phiZ);
+    kl(5,11) = kl(11,5) = a1z*Lf*Lf*(2.0 - phiZ);
+    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = a1z*Lf*6.0;
     kl(5,7) = kl(7,5) = kl(7,11) = kl(11,7) = -kl(1,5);
     
     // compute geometric stiffness matrix in local system
