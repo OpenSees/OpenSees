@@ -30,3 +30,61 @@
 // It contains all data optionally computed after an Eigenvalue analysis.
 //
 // What: "@(#) DomainModalProperties.h, revA"
+
+#include <Vector.h>
+#include <Matrix.h>
+#include <string>
+
+class Domain;
+
+class DomainModalProperties
+{
+public:
+    DomainModalProperties() = default;
+    DomainModalProperties(const DomainModalProperties&) = default;
+    DomainModalProperties& operator = (const DomainModalProperties&) = default;
+
+public:
+    bool compute(Domain* domain);
+    void print();
+    void print(const std::string &file_name);
+
+public:
+    inline const Vector& centerOfMass() const { return m_center_of_mass; }
+    inline const Vector& totalMass() const { return m_total_mass; }
+    inline const Vector& totalFreeMass() const { return m_total_free_mass; }
+    inline const Vector& eigenvalues() const { return m_eigenvalues; }
+    inline const Vector& generalizedMasses() const { return m_generalized_mass_matrix; }
+    inline const Matrix& modalParticipationFactors() const { return m_modal_participation_factors; }
+    inline const Matrix& modalParticipationMasses() const { return m_modal_participation_masses; }
+    inline const Matrix& modalParticipationMassesCumulative() const { return m_modal_participation_masses_cumulative; }
+    inline const Matrix& modalParticipationMassRatios() const { return m_modal_participation_mass_ratios; }
+    inline const Matrix& modalParticipationMassRatiosCumulative() const { return m_modal_participation_mass_ratios_cumulative; }
+
+private:
+    // the center of mass (size = NDM)
+    Vector m_center_of_mass;
+    // the total mass of the domain including the mass of fixed DOFs (size = NDF : 3 if NDM==2, 6 if NDM==3)
+    Vector m_total_mass;
+    // the total mass of the domain excluding the mass of fixed DOFs (size = NDF : 3 if NDM==2, 6 if NDM==3)
+    Vector m_total_free_mass;
+    // eigenvalues (size = NUM_MODES)
+    Vector m_eigenvalues;
+    // diag(V'*M*V)
+    // the diagonal of the generalized mass matrix (size = NUM_MODES)
+    // we store this because it the eigenvectors are not properly normalized
+    // the diagonal entries won't be 1
+    Vector m_generalized_mass_matrix;
+    // (V'*M*R)/diag(V'*M*V)
+    // the modal participation factors (size = NUM_MODES x NDF)
+    Matrix m_modal_participation_factors;
+    // ((V'*M*R)^2)/diag(V'*M*V)
+    // the modal participation masses (size = NUM_MODES x NDF)
+    Matrix m_modal_participation_masses;
+    Matrix m_modal_participation_masses_cumulative;
+    // ((V'*M*R)^2)/diag(V'*M*V)/m_total_free_mass*100
+    // the modal participation mass ratio (%) (size = NUM_MODES x NDF)
+    Matrix m_modal_participation_mass_ratios;
+    Matrix m_modal_participation_mass_ratios_cumulative;
+};
+

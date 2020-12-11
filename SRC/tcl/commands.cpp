@@ -5418,7 +5418,7 @@ groundExcitation(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 */
 
-
+#include "DomainModalProperties.h"
 int 
 eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, 
 	      TCL_Char **argv)
@@ -5609,6 +5609,10 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     } else if (theTransientAnalysis != 0) {
       result = theTransientAnalysis->eigen(numEigen, generalizedAlgo, findSmallest);      
     }
+
+    DomainModalProperties temp_modal_props;
+    temp_modal_props.compute(theAnalysisModel->getDomainPtr());
+    temp_modal_props.print();
 
     if (result == 0) {
       //      char *eigenvalueS = new char[15 * numEigen];    
