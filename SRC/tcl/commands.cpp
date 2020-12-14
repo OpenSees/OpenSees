@@ -5610,9 +5610,10 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       result = theTransientAnalysis->eigen(numEigen, generalizedAlgo, findSmallest);      
     }
 
-    DomainModalProperties temp_modal_props;
+    DomainModalProperties temp_modal_props(true);
     temp_modal_props.compute(theAnalysisModel->getDomainPtr());
     temp_modal_props.print();
+    temp_modal_props.print("ModalProperties.txt");
 
     if (result == 0) {
       //      char *eigenvalueS = new char[15 * numEigen];    

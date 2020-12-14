@@ -50,7 +50,17 @@
 #include <Node.h>
 #include <NodeIter.h>
 
-#define DMP_VERBOSE
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
+
+//#define DMP_VERBOSE
 #define DMP_DEBUG
 
 #define DMP_ERR_INFO "( function: " << __func__ << ", file: \"" << __FILE__ << "\", line: " << __LINE__ << " )\n"
@@ -355,6 +365,11 @@ namespace
 
 }
 
+DomainModalProperties::DomainModalProperties(bool unorm)
+    : m_unorm(unorm)
+{
+}
+
 bool DomainModalProperties::compute(Domain* domain)
 {
     /*
@@ -535,6 +550,20 @@ bool DomainModalProperties::compute(Domain* domain)
             DMP_ERR("Triplet indices are out of bounds\n");
     }
 #endif // DMP_DEBUG
+
+    // make sure to normalize eigenvectors such that their max component is 1
+    // if requested by the user
+    if (m_unorm) {
+        for (Vector& iV : V) {
+            double umax = 0.0;
+            for (int i = 0; i < iV.Size(); ++i)
+                umax = std::max(umax, std::abs(iV(i)));
+            if (umax > 0.0) {
+                for (int i = 0; i < iV.Size(); ++i)
+                    iV(i) /= umax;
+            }
+        }
+    }
 
     // compute the center of mass.
     // note that if the total mass in one of the global directions is 0
@@ -726,23 +755,165 @@ namespace
 #define DMP_OUT_COMMENT "#"
 #define DMP_OUT_RECORD "*"
 #define DMP_OUT_BLANK " "
-#define DMP_OUT_FLOAT(X) std::setw(12) << std::setprecision(6) << X
-#define DMP_OUT_GEN(X) std::setw(12) << X
+#define DMP_OUT_FLOAT(X) std::setw(14) << std::setprecision(6) << X
+#define DMP_OUT_GEN(X) std::setw(14) << X
+#define DMP_OUT_HLINE "-------------"
+#define DMP_OUT_TOL 1.0e-16
+#define DMP_OUT_REL_TOL 1.0e-12
+
+    inline double getTolerance(const Vector& x) {
+        double vmax = 0.0;
+        for (int i = 0; i < x.Size(); ++i)
+            vmax = std::max(vmax, std::abs(x(i)));
+        return std::max(DMP_OUT_REL_TOL * vmax, DMP_OUT_TOL);
+    }
+
+    inline double getTolerance(const Matrix& x) {
+        double vmax = 0.0;
+        for (int i = 0; i < x.noRows(); ++i)
+            for (int j = 0; j < x.noCols(); ++j)
+                vmax = std::max(vmax, std::abs(x(i, j)));
+        return std::max(DMP_OUT_REL_TOL * vmax, DMP_OUT_TOL);
+    }
+
+    inline double cleanFloat(double x, double tol) {
+        return std::abs(x) > tol ? x : 0.0;
+    }
 
     template<class TStream>
     void print_internal(TStream& out, const DomainModalProperties& dmp)
     {
+        // utils
+        auto print_vec = [&out](const Vector& x, const char* fchar = DMP_OUT_BLANK) {
+            double tol = getTolerance(x);
+            out << fchar;
+            for (int i = 0; i < x.Size(); ++i)
+                out << DMP_OUT_FLOAT(cleanFloat(x(i), tol));
+            out << "\n";
+        };
+        auto print_mat = [&out](const Matrix& x, double scale = 1.0, const char *fchar = DMP_OUT_BLANK) {
+            double tol = getTolerance(x);
+            for (int j = 0; j < x.noRows(); ++j) {
+                out << fchar << DMP_OUT_GEN(j + 1);
+                for (int i = 0; i < x.noCols(); ++i)
+                    out << DMP_OUT_FLOAT(scale * cleanFloat(x(j, i), tol));
+                out << "\n";
+            }
+        };
+        auto print_svec = [&out](const std::vector<std::string>& x, const char* fchar = DMP_OUT_BLANK) {
+            out << fchar;
+            for (int i = 0; i < x.size(); ++i)
+                out << DMP_OUT_GEN(x[i]);
+            out << "\n";
+        };
+
+        // labels
+        static std::vector<std::string> lab_freq = { "MODE", "LAMBDA", "OMEGA", "FREQUENCY", "PERIOD" };
+        static std::vector<std::string> lab_mass_2d = { "MX", "MY", "RMZ" };
+        static std::vector<std::string> lab_mass_3d = { "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_efmass_2d = { "MODE", "MX", "MY", "RMZ" };
+        static std::vector<std::string> lab_efmass_3d = { "MODE", "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_pos_2d = { "X", "Y" };
+        static std::vector<std::string> lab_pos_3d = { "X", "Y", "Z" };
+        static std::vector<std::string> lab_sep_2 = { DMP_OUT_HLINE, DMP_OUT_HLINE };
+        static std::vector<std::string> lab_sep_3 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
+        static std::vector<std::string> lab_sep_4 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
+        static std::vector<std::string> lab_sep_5 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
+        static std::vector<std::string> lab_sep_6 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
+        static std::vector<std::string> lab_sep_7 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
+
         // header
         out << DMP_OUT_COMMENT << " MODAL ANALYSIS REPORT\n\n";
 
         // problem size
-        out << DMP_OUT_RECORD << " 1. DOMAIN SIZE:\n" << dmp.centerOfMass().Size() << "\n\n";
+        int ndm = dmp.centerOfMass().Size();
+        out << DMP_OUT_RECORD << " 1. DOMAIN SIZE:\n"
+            << DMP_OUT_COMMENT << " This is the size of the problem: 2 for 2D problems, 3 for 3D problems.\n"
+            << ndm << "\n\n\n";
         
         // eigenvalues and derived quantities
-        out << DMP_OUT_RECORD << " 2. EIGENVALUE ANALYSIS:\n"
-            << DMP_OUT_COMMENT
-            << DMP_OUT_GEN("MODE") << DMP_OUT_GEN("LAMBDA") << DMP_OUT_GEN("OMEGA")
-            << DMP_OUT_GEN("FREQUENCY") << DMP_OUT_GEN("PERIOD") << "\n";
+        out << DMP_OUT_RECORD << " 2. EIGENVALUE ANALYSIS:\n";
+        print_svec(lab_freq, DMP_OUT_COMMENT);
+        print_svec(lab_sep_5, DMP_OUT_COMMENT);
+        for (int i = 0; i < dmp.eigenvalues().Size(); ++i) {
+            double lambda = dmp.eigenvalues()(i);
+            double omega = std::sqrt(lambda);
+            double freq = omega / 2.0 / M_PI;
+            double period = 1.0 / freq;
+            out << DMP_OUT_BLANK << DMP_OUT_GEN(i + 1)
+                << DMP_OUT_FLOAT(lambda)
+                << DMP_OUT_FLOAT(omega)
+                << DMP_OUT_FLOAT(freq)
+                << DMP_OUT_FLOAT(period)
+                << "\n";
+        }
+        out << "\n\n";
+
+        // total mass
+        out << DMP_OUT_RECORD << " 3. TOTAL MASS OF THE STRUCTURE:\n"
+            << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
+            << DMP_OUT_COMMENT << " including the masses at fixed DOFs (if any).\n";
+        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_vec(dmp.totalMass());
+        out << "\n\n";
+        out << DMP_OUT_RECORD << " 4. TOTAL FREE MASS OF THE STRUCTURE:\n"
+            << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
+            << DMP_OUT_COMMENT << " including only the masses at free DOFs.\n";
+        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_vec(dmp.totalFreeMass());
+        out << "\n\n";
+
+        // center of mass
+        out << DMP_OUT_RECORD << " 5. CENTER OF MASS:\n"
+            << DMP_OUT_COMMENT << " The center of mass of the structure, calculated from free masses.\n";
+        print_svec(ndm == 2 ? lab_pos_2d : lab_pos_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_2 : lab_sep_3, DMP_OUT_COMMENT);
+        print_vec(dmp.centerOfMass());
+        out << "\n\n";
+
+        // modal participation factors
+        out << DMP_OUT_RECORD << " 6. MODAL PARTICIPATION FACTORS:\n"
+            << DMP_OUT_COMMENT << " The participation factor for a certain mode 'a' in a certain direction 'i'\n"
+            << DMP_OUT_COMMENT << " indicates how strongly displacement along (or rotation about)\n"
+            << DMP_OUT_COMMENT << " the global axes is represented in the eigenvector of that mode.\n";
+        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_mat(dmp.modalParticipationFactors());
+        out << "\n\n";
+
+        // modal participation masses
+        out << DMP_OUT_RECORD << " 7. MODAL PARTICIPATION MASSES:\n"
+            << DMP_OUT_COMMENT << " The modal participation masses for each mode.\n";
+        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_mat(dmp.modalParticipationMasses());
+        out << "\n\n";
+
+        // modal participation masses (cumulative)
+        out << DMP_OUT_RECORD << " 8. MODAL PARTICIPATION MASSES (cumulative):\n"
+            << DMP_OUT_COMMENT << " The cumulative modal participation masses for each mode.\n";
+        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_mat(dmp.modalParticipationMassesCumulative());
+        out << "\n\n";
+
+        // modal participation masses
+        out << DMP_OUT_RECORD << " 9. MODAL PARTICIPATION MASS RATIOS (%):\n"
+            << DMP_OUT_COMMENT << " The modal participation mass ratios (%) for each mode.\n";
+        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_mat(dmp.modalParticipationMassRatios(), 100.0);
+        out << "\n\n";
+
+        // modal participation masses (cumulative)
+        out << DMP_OUT_RECORD << " 10. MODAL PARTICIPATION MASS RATIOS (%) (cumulative):\n"
+            << DMP_OUT_COMMENT << " The cumulative modal participation mass ratios (%) for each mode.\n";
+        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
+        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_mat(dmp.modalParticipationMassRatiosCumulative(), 100.0);
+        out << "\n\n";
     }
 }
 

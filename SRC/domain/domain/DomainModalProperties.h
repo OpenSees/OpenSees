@@ -40,7 +40,7 @@ class Domain;
 class DomainModalProperties
 {
 public:
-    DomainModalProperties() = default;
+    DomainModalProperties(bool unorm = false);
     DomainModalProperties(const DomainModalProperties&) = default;
     DomainModalProperties& operator = (const DomainModalProperties&) = default;
 
@@ -62,6 +62,8 @@ public:
     inline const Matrix& modalParticipationMassRatiosCumulative() const { return m_modal_participation_mass_ratios_cumulative; }
 
 private:
+    // optional flag to force eigenvector displacement-normalization
+    bool m_unorm;
     // the center of mass (size = NDM)
     Vector m_center_of_mass;
     // the total mass of the domain including the mass of fixed DOFs (size = NDF : 3 if NDM==2, 6 if NDM==3)
