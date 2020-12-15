@@ -61,7 +61,7 @@
 #endif
 
 //#define DMP_VERBOSE
-#define DMP_DEBUG
+//#define DMP_DEBUG
 
 #define DMP_ERR_INFO "( function: " << __func__ << ", file: \"" << __FILE__ << "\", line: " << __LINE__ << " )\n"
 #define DMP_ERR(X) opserr << "FATAL ERROR: " << X << DMP_ERR_INFO, exit(-1)
@@ -372,6 +372,13 @@ DomainModalProperties::DomainModalProperties(bool unorm)
 
 bool DomainModalProperties::compute(Domain* domain)
 {
+    // some kudos
+    static bool first_done = false;
+    if (!first_done) {
+        opserr << "Using DomainModalProperties - Developed by: Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
+        first_done = true;
+    }
+
     /*
     Notes:
     1 - we assemble the global mass matrix and eigenvectors with our own (plain) numbering

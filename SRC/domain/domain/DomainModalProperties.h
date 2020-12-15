@@ -47,9 +47,10 @@ public:
 public:
     bool compute(Domain* domain);
     void print();
-    void print(const std::string &file_name);
+    void print(const std::string& file_name);
 
 public:
+    inline bool isUnormalized() const { return m_unorm; }
     inline const Vector& centerOfMass() const { return m_center_of_mass; }
     inline const Vector& totalMass() const { return m_total_mass; }
     inline const Vector& totalFreeMass() const { return m_total_free_mass; }

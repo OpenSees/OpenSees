@@ -243,6 +243,9 @@ extern void *OPS_WilsonTheta(void);
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
 #include <PFEMAnalysis.h>
 
+// for response spectrum analysis
+#include <DomainModalProperties.h>
+
 // system of eqn and solvers
 #include <BandSPDLinSOE.h>
 #include <BandSPDLinLapackSolver.h>
@@ -873,6 +876,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "eigen", &eigenAnalysis, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "modalProperties", &modalProperties,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "video", &videoPlayer, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "remove", &removeObject, 
@@ -5418,7 +5423,6 @@ groundExcitation(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 */
 
-#include "DomainModalProperties.h"
 int 
 eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, 
 	      TCL_Char **argv)
@@ -5610,11 +5614,6 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       result = theTransientAnalysis->eigen(numEigen, generalizedAlgo, findSmallest);      
     }
 
-    DomainModalProperties temp_modal_props(true);
-    temp_modal_props.compute(theAnalysisModel->getDomainPtr());
-    temp_modal_props.print();
-    temp_modal_props.print("ModalProperties.txt");
-
     if (result == 0) {
       //      char *eigenvalueS = new char[15 * numEigen];    
       const Vector &eigenvalues = theDomain.getEigenvalues();
@@ -5629,6 +5628,57 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+int 
+modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    // modalProperties <-print> <-file $fileName> <-unorm>
+    
+    // init default values
+    bool unorm = false; // by default do not displacement-normalize eigenvectors 
+    bool print_on_console = false; // by default do not print on console
+    bool print_on_file = false; // by default do no print on file
+    std::string fname;
+
+    // check options
+    int loc = 1;
+    while (loc < argc) {
+        TCL_Char* iarg = argv[loc];
+        if (strcmp(iarg, "-unorm") == 0) {
+            unorm = true;
+        }
+        else if (strcmp(iarg, "-print") == 0) {
+            print_on_console = true;
+        }
+        else if (strcmp(iarg, "-file") == 0) {
+            print_on_file = true;
+            if (loc < argc - 1) {
+                ++loc;
+                fname = argv[loc];;
+            }
+            else {
+                opserr << "Error in modalProperties <-print> <-file $fileName> <-unorm>.\n"
+                    "After the keyword -file you should specify the file name.\n";
+                exit(-1);
+            }
+        }
+        ++loc;
+    }
+
+    // create the modal properties, compute them,
+    // and add them to the domain
+    DomainModalProperties modal_props(unorm);
+    modal_props.compute(theAnalysisModel->getDomainPtr());
+    theAnalysisModel->getDomainPtr()->setModalProperties(modal_props);
+
+    // report
+    if(print_on_console)
+        modal_props.print();
+    if(print_on_file)
+        modal_props.print(fname);
+    
+    // done
+    return TCL_OK;
+}
 
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, 
