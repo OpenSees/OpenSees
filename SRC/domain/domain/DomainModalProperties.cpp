@@ -49,6 +49,7 @@
 #include <ElementIter.h>
 #include <Node.h>
 #include <NodeIter.h>
+#include <elementAPI.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -365,13 +366,11 @@ namespace
 
 }
 
-DomainModalProperties::DomainModalProperties(bool unorm)
-    : m_unorm(unorm)
+void
+OPS_DomainModalProperties(void)
 {
-}
+    // modalProperties <-print> <-file $fileName> <-unorm>
 
-bool DomainModalProperties::compute(Domain* domain)
-{
     // some kudos
     static bool first_done = false;
     if (!first_done) {
@@ -379,6 +378,65 @@ bool DomainModalProperties::compute(Domain* domain)
         first_done = true;
     }
 
+    // get analysis model
+    AnalysisModel* theAnalysisModel = *OPS_GetAnalysisModel();
+    if (theAnalysisModel == nullptr) {
+        opserr << "modalProperties Error: no AnalysisModel available.\n";
+        exit(-1);
+    }
+
+    // init default values
+    bool unorm = false; // by default do not displacement-normalize eigenvectors 
+    bool print_on_console = false; // by default do not print on console
+    bool print_on_file = false; // by default do no print on file
+    std::string fname;
+
+    // check options
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    int loc = 0;
+    while (loc < numArgs) {
+        const char* iarg = OPS_GetString();
+        if (strcmp(iarg, "-unorm") == 0) {
+            unorm = true;
+        }
+        else if (strcmp(iarg, "-print") == 0) {
+            print_on_console = true;
+        }
+        else if (strcmp(iarg, "-file") == 0) {
+            print_on_file = true;
+            if (loc < numArgs - 1) {
+                ++loc;
+                fname = OPS_GetString();
+            }
+            else {
+                opserr << "Error in modalProperties <-print> <-file $fileName> <-unorm>.\n"
+                    "After the keyword -file you should specify the file name.\n";
+                exit(-1);
+            }
+        }
+        ++loc;
+    }
+
+    // create the modal properties, compute them,
+    // and add them to the domain
+    DomainModalProperties modal_props(unorm);
+    modal_props.compute(theAnalysisModel->getDomainPtr());
+    theAnalysisModel->getDomainPtr()->setModalProperties(modal_props);
+
+    // report
+    if (print_on_console)
+        modal_props.print();
+    if (print_on_file)
+        modal_props.print(fname);
+}
+
+DomainModalProperties::DomainModalProperties(bool unorm)
+    : m_unorm(unorm)
+{
+}
+
+bool DomainModalProperties::compute(Domain* domain)
+{
     /*
     Notes:
     1 - we assemble the global mass matrix and eigenvectors with our own (plain) numbering
