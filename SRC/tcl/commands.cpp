@@ -229,7 +229,7 @@ extern void *OPS_WilsonTheta(void);
 
 // for response spectrum analysis
 extern void OPS_DomainModalProperties(void);
-
+extern void OPS_ResponseSpectrumAnalysis(void);
 
 #include <Newmark.h>
 #include <StagedNewmark.h>
@@ -877,6 +877,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "eigen", &eigenAnalysis, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "modalProperties", &modalProperties,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "responseSpectrum", &responseSpectrum,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "video", &videoPlayer, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
@@ -5633,6 +5635,14 @@ modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** 
 {
     OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
     OPS_DomainModalProperties();
+    return TCL_OK;
+}
+
+int
+responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+    OPS_ResponseSpectrumAnalysis();
     return TCL_OK;
 }
 

@@ -31,6 +31,9 @@
 //
 // What: "@(#) DomainModalProperties.h, revA"
 
+#ifndef DomainModalProperties_h
+#define DomainModalProperties_h
+
 #include <Vector.h>
 #include <Matrix.h>
 #include <string>
@@ -51,6 +54,7 @@ public:
 
 public:
     inline bool isUnormalized() const { return m_unorm; }
+    inline const Vector& eigenVectorScaleFactors() const { return m_unorm_scale_factors; }
     inline const Vector& centerOfMass() const { return m_center_of_mass; }
     inline const Vector& totalMass() const { return m_total_mass; }
     inline const Vector& totalFreeMass() const { return m_total_free_mass; }
@@ -65,6 +69,8 @@ public:
 private:
     // optional flag to force eigenvector displacement-normalization
     bool m_unorm;
+    // the scale factors for each eigenvector (equal to 1 if unorm==false) (size = NUM_MODES)
+    Vector m_unorm_scale_factors;
     // the center of mass (size = NDM)
     Vector m_center_of_mass;
     // the total mass of the domain including the mass of fixed DOFs (size = NDF : 3 if NDM==2, 6 if NDM==3)
@@ -91,3 +97,4 @@ private:
     Matrix m_modal_participation_mass_ratios_cumulative;
 };
 
+#endif

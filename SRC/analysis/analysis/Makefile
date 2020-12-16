@@ -6,7 +6,8 @@ OBJS       = DomainUser.o Analysis.o StaticAnalysis.o TransientAnalysis.o \
 	     VariableTimeStepDirectIntegrationAnalysis.o \
 	     StaticDomainDecompositionAnalysis.o \
 	     TransientDomainDecompositionAnalysis.o \
-	     PFEMAnalysis.o 
+	     PFEMAnalysis.o \
+		 ResponseSpectrumAnalysis
 
 # Compilation control
 all:         $(OBJS)

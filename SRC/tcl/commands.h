@@ -126,6 +126,9 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 int
 modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
 
+int
+responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 

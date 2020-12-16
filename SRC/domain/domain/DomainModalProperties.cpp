@@ -618,15 +618,22 @@ bool DomainModalProperties::compute(Domain* domain)
 
     // make sure to normalize eigenvectors such that their max component is 1
     // if requested by the user
+    m_unorm_scale_factors.resize(num_eigen);
     if (m_unorm) {
-        for (Vector& iV : V) {
+        for (int imode = 0; imode < num_eigen; ++imode) {
+            Vector& iV = V[static_cast<size_t>(imode)];
             double umax = 0.0;
             for (int i = 0; i < iV.Size(); ++i)
                 umax = std::max(umax, std::abs(iV(i)));
-            if (umax > 0.0) {
-                for (int i = 0; i < iV.Size(); ++i)
-                    iV(i) /= umax;
-            }
+            double scale = umax == 0.0 ? DMP_DBL_LARGE : 1.0 / umax;
+            for (int i = 0; i < iV.Size(); ++i)
+                iV(i) *= scale;
+            m_unorm_scale_factors(imode) = scale;
+        }
+    }
+    else {
+        for (int imode = 0; imode < num_eigen; ++imode) {
+            m_unorm_scale_factors(imode) = 1.0;
         }
     }
 
