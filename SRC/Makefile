@@ -638,7 +638,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
-	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o
+	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
+	$(FE)/element/RockingBC/RockingBC.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \

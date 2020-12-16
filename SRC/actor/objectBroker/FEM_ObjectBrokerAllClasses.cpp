@@ -288,7 +288,7 @@
 #include "frictionBearing/TripleFrictionPendulum.h"
 
 #include "PFEMElement/PFEMElement2D.h"
-#include "RockingBC.h"
+#include "RockingBC/RockingBC.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
