@@ -217,6 +217,7 @@ void* OPS_FourNodeTetrahedron();
 void* OPS_CatenaryCableElement();
 void* OPS_GradientInelasticBeamColumn2d();
 void* OPS_GradientInelasticBeamColumn3d();
+void* OPS_RockingBC();
 
 namespace {
 
@@ -666,6 +667,7 @@ namespace {
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
+	functionMap.insert(std::make_pair("RockingBC", &OPS_RockingBC));
 
 	return 0;
     }
