@@ -2143,10 +2143,11 @@ void Domain::unsetModalProperties(void)
 
 const DomainModalProperties& Domain::getModalProperties(void) const
 {
-    if (theModalProperties)
-        return *theModalProperties;
-    opserr << "Domain::getModalProperties - DomainModalProperties were never set\n";
-    exit(-1);
+    if (theModalProperties == 0) {
+        opserr << "Domain::getModalProperties - DomainModalProperties were never set\n";
+        exit(-1);
+    }
+    return *theModalProperties;
 }
 
 int

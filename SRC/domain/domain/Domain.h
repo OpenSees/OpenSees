@@ -199,9 +199,9 @@ class Domain
     virtual int setEigenvalues(const Vector &theEigenvalues);
     virtual const Vector &getEigenvalues(void);
     virtual double getTimeEigenvaluesSet(void);
-    virtual void setModalProperties(const DomainModalProperties& dmp);
-    virtual void unsetModalProperties(void);
-    virtual const DomainModalProperties& getModalProperties(void) const;
+    void setModalProperties(const DomainModalProperties& dmp);
+    void unsetModalProperties(void);
+    const DomainModalProperties& getModalProperties(void) const;
     int setModalDampingFactors(Vector *, bool inclModalMatrix = false);
     const Vector *getModalDampingFactors(void);
     bool inclModalDampingMatrix(void);
