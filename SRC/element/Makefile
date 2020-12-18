@@ -49,6 +49,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
+	@$(CD) $(FE)/element/RockingBC; $(MAKE);
 
 # Miscellaneous
 tidy:	

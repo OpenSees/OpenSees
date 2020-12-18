@@ -770,6 +770,7 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
+#define ELE_TAG_RockingBC	              210
 #define ELE_TAG_ExternalElement           99990
 
 
@@ -888,6 +889,7 @@
 #define EquiALGORITHM_TAGS_InitialNewton          13
 #define EquiALGORITHM_TAGS_ElasticAlgorithm 14
 #define EquiALGORITHM_TAGS_NewtonHallM 15
+#define EquiALGORITHM_TAGS_ExpressNewton 16
 
 #define ACCELERATOR_TAGS_Krylov		1
 #define ACCELERATOR_TAGS_Secant		2

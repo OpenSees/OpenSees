@@ -126,6 +126,9 @@
     <Filter Include="mixedBeamColumn">
       <UniqueIdentifier>{01757374-de7e-4d75-aa0d-450317e0f184}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RockingBC">
+      <UniqueIdentifier>{db29c8b8-63a0-4fb4-83ca-08df7e19036f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -905,6 +908,9 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp">
       <Filter>quad</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1611,6 +1617,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.h">
       <Filter>quad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
+      <Filter>RockingBC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

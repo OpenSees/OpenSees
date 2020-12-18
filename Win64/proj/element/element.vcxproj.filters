@@ -126,6 +126,9 @@
     <Filter Include="mixedBeamColumn">
       <UniqueIdentifier>{a6ea196c-ed72-411c-ad9b-6628b144ecaa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RockingBC">
+      <UniqueIdentifier>{db29c8b8-63a0-4fb4-83ca-08df7e19036f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -908,6 +911,9 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp">
       <Filter>triangle</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
+      <Filter>RockingBC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1617,6 +1623,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.h">
       <Filter>triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
+      <Filter>RockingBC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
