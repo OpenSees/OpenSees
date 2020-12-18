@@ -95,14 +95,14 @@ void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
 }
 
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
-:Material(tag,clasTag)
+  :Material(tag,clasTag), sensHstv(0)
 {
 
 }
 
 
 UniaxialMaterial::UniaxialMaterial()
-    :Material(0, 0)
+  :Material(0, 0), sensHstv(0)
 {
 
 }
@@ -110,7 +110,8 @@ UniaxialMaterial::UniaxialMaterial()
 
 UniaxialMaterial::~UniaxialMaterial()
 {
-	// does nothing
+  if (sensHstv != 0)
+    delete [] sensHstv;
 }
 
 
@@ -394,7 +395,84 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 double
 UniaxialMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
+  // Save current stress
+  double sig0 = this->getStress();
+
+  // Get active parameter and its value
+  int paramID;
+  double h0 = 0.0;
+  paramID = this->getActiveParameter(h0);
+  // Early return so don't divide by zero
+  // in difference calculation below
+  if (h0 == 0.0)
     return 0.0;
+
+  int numGrad = 10; // Needs to be an input, like in commitSensitivity
+
+  // Get current history variables
+  static double hstv[100];
+  int numHV = this->getNumHistoryVariables();
+  if (numHV > 0) {
+    if (sensHstv == 0) {
+      sensHstv = new double[numGrad*numHV];
+      for (int i = 0; i < numGrad*numHV; i++)
+	sensHstv[i] = 0.0;
+    }
+  }
+  if (numHV > 0) {
+    this->getCommittedHistoryVariables(hstv);
+    for (int i = 0; i < numHV; i++)
+      sensHstv[gradIndex*numHV + i] = hstv[i];
+  }
+  
+  // Perturb the active parameter
+  double eps = 1.0e-5;
+  Information info;
+  info.theDouble = h0*(1+eps);
+  this->updateParameter(paramID, info);
+
+  // Set perturbed history variables
+  if (numHV > 0) {
+    this->setCommittedHistoryVariables(&sensHstv[gradIndex*numHV]);
+  }
+  
+  // Force a new state determination
+  double strain = this->getStrain();
+  double strainRate = this->getStrainRate();
+  this->setTrialStrain(strain, strainRate);
+  
+  // Get stress at perturbed state
+  double sig = this->getStress();
+
+  // Get perturbed history variables
+  if (numHV > 0) {
+    this->getTrialHistoryVariables(&sensHstv[gradIndex*numHV]);
+  }
+  
+  // Restore the active parameter
+  info.theDouble = h0;
+  this->updateParameter(paramID, info);
+
+  // Restore history variables
+  if (numHV > 0) {
+    this->setCommittedHistoryVariables(hstv);
+  }
+  
+  //
+  // Do we need another state determination?
+  this->setTrialStrain(strain, strainRate);
+  this->getStress();
+  //
+
+  return (sig-sig0)/(eps*h0);
+
+  //return 0.0;
+}
+
+int
+UniaxialMaterial::commitSensitivity(double strainSensitivity, int gradIndex, int numGrads)
+{
+  return 0;
 }
 
 double
@@ -425,12 +503,6 @@ double
 UniaxialMaterial::getDampTangentSensitivity(int gradIndex)
 {
     return 0.0;
-}
-
-int
-UniaxialMaterial::commitSensitivity(double strainSensitivity, int gradIndex, int numGrads)
-{
-    return -1;
 }
 
 double

@@ -74,9 +74,20 @@ class Concrete02IS : public UniaxialMaterial
     void Print(OPS_Stream &s, int flag =0);
 
     int getVariable(const char *variable, Information &);
-    
+
+  int setParameter (const char **argv, int argc, Parameter &param);
+  int    updateParameter          (int parameterID, Information &info);
+  int activateParameter(int parameterID);
+
+  int getActiveParameter(double &param);
+  
  protected:
-    
+  int getNumHistoryVariables(void) {return 5;}
+  int getTrialHistoryVariables(double *hstv);
+  int setTrialHistoryVariables(const double *hstv);
+  int getCommittedHistoryVariables(double *hstv);
+  int setCommittedHistoryVariables(const double *hstv);
+  
  private:
     void Tens_Envlp (double epsc, double &sigc, double &Ect);
     void Compr_Envlp (double epsc, double &sigc, double &Ect);
@@ -103,7 +114,9 @@ class Concrete02IS : public UniaxialMaterial
     double dept;   
     double sig;   
     double e;     
-    double eps;   
+    double eps;
+
+    int parameterID;
 };
 
 

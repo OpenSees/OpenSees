@@ -68,6 +68,9 @@ class MinMaxMaterial : public UniaxialMaterial
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
 
+    // Assuming minStrain and maxStrain are not parameters for mixedDDM
+    int getActiveParameter(double &param) {return theMaterial->getActiveParameter(param);}
+    
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     double getStressSensitivity     (int gradIndex, bool conditional);
     double getStrainSensitivity     (int gradIndex);
@@ -78,7 +81,12 @@ class MinMaxMaterial : public UniaxialMaterial
     // AddingSensitivity:END ///////////////////////////////////////////
     
   protected:
-    
+    //int getNumHistoryVariables(void) {return theMaterial->getNumHistoryVariables();}
+    //int getTrialHistoryVariables(double *hstv) {return theMaterial->getTrialHistoryVariables(hstv);}
+    //int setTrialHistoryVariables(const double *hstv) {return theMaterial->setTrialHistoryVariables(hstv);}
+    //int getCommittedHistoryVariables(double *hstv) {return theMaterial->getCommittedHistoryVariables(hstv);}
+    //int setCommittedHistoryVariables(const double *hstv) {return theMaterial->setCommittedHistoryVariables(hstv);}
+  
   private:
 	UniaxialMaterial *theMaterial;
 

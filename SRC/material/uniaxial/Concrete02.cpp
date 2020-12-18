@@ -45,6 +45,7 @@
 #include <float.h>
 #include <Channel.h>
 #include <Information.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 #include <OPS_Globals.h>
@@ -91,8 +92,22 @@ OPS_Concrete02()
 Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
-  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets),
+  parameterID(0)
 {
+  // Make all concrete parameters negative
+  if (fc > 0.0)
+    fc = -fc;
+  
+  if (epsc0 > 0.0)
+    epsc0 = -epsc0;
+  
+  if (fcu > 0.0)
+    fcu = -fcu;
+  
+  if (epscu > 0.0)
+    epscu = -epscu;
+
   ecminP = 0.0;
   deptP = 0.0;
 
@@ -104,8 +119,41 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   e = 2.0*fc/epsc0;
 }
 
+Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu, double _epscu):
+  UniaxialMaterial(tag, MAT_TAG_Concrete02),
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu),
+  parameterID(0)
+{
+  // Make all concrete parameters negative
+  if (fc > 0.0)
+    fc = -fc;
+  
+  if (epsc0 > 0.0)
+    epsc0 = -epsc0;
+  
+  if (fcu > 0.0)
+    fcu = -fcu;
+  
+  if (epscu > 0.0)
+    epscu = -epscu;
+
+  ecminP = 0.0;
+  deptP = 0.0;
+
+  eP = 2.0*fc/epsc0;
+  epsP = 0.0;
+  sigP = 0.0;
+  eps = 0.0;
+  sig = 0.0;
+  e = 2.0*fc/epsc0;
+
+  ft = -0.1*fc;
+  rat = 0.05;
+  Ets = 0.2*fc/epsc0;
+}
+
 Concrete02::Concrete02(void):
-  UniaxialMaterial(0, MAT_TAG_Concrete02)
+  UniaxialMaterial(0, MAT_TAG_Concrete02), parameterID(0)
 {
  
 }
@@ -458,4 +506,96 @@ Concrete02::getVariable(const char *varName, Information &theInfo)
     return 0;
   } else
     return -1;
+}
+
+int
+Concrete02::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"fc") == 0 || strcmp(argv[0],"fpc") == 0) {
+    param.setValue(fc);
+    return param.addObject(1, this);
+  }
+  
+  return 0;
+}
+
+int
+Concrete02::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    fc = info.theDouble;
+    break;
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+Concrete02::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+  
+  return 0;
+}
+
+int
+Concrete02::getActiveParameter(double &param)
+{
+  if (parameterID == 1)
+    param = fc;
+
+  return parameterID;
+}
+
+int
+Concrete02::getTrialHistoryVariables(double *hstv)
+{
+  hstv[0] = ecmin;
+  hstv[1] = dept;
+  hstv[2] = sig;
+  hstv[3] = e;
+  hstv[4] = eps;
+
+  return 0;
+}
+
+int
+Concrete02::setTrialHistoryVariables(const double *hstv)
+{
+  ecmin = hstv[0];
+  dept = hstv[1];
+  sig = hstv[2];
+  e = hstv[3];
+  eps = hstv[4];
+
+  return 0;
+}
+
+int
+Concrete02::getCommittedHistoryVariables(double *hstv)
+{
+  hstv[0] = ecminP;
+  hstv[1] = deptP;
+  hstv[2] = sigP;
+  hstv[3] = eP;
+  hstv[4] = epsP;
+
+  return 0;
+}
+
+int
+Concrete02::setCommittedHistoryVariables(const double *hstv)
+{
+  ecminP = hstv[0];
+  deptP = hstv[1];
+  sigP = hstv[2];
+  eP = hstv[3];
+  epsP = hstv[4];
+
+  return 0;
 }

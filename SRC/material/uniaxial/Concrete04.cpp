@@ -40,6 +40,8 @@
 #include <Matrix.h>
 #include <Channel.h>
 #include <Information.h>
+#include <Parameter.h>
+
 #include <math.h>
 #include <float.h>
 #include <elementAPI.h>
@@ -114,7 +116,7 @@ Concrete04::Concrete04
   :UniaxialMaterial(tag, MAT_TAG_Concrete04),
    fpc(FPC), epsc0(EPSC0), epscu(EPSCU), Ec0(EC0), fct(FCT), etu(ETU), beta(0.1),
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(FCT),
-   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
+   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0), parameterID(0)
 {
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
@@ -139,7 +141,7 @@ Concrete04::Concrete04
   :UniaxialMaterial(tag, MAT_TAG_Concrete04),
    fpc(FPC), epsc0(EPSC0), epscu(EPSCU), Ec0(EC0), fct(FCT), etu(ETU), beta(BETA),
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(FCT),
-   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
+   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0), parameterID(0)
 {
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
@@ -163,9 +165,9 @@ Concrete04::Concrete04
 Concrete04::Concrete04
 (int tag, double FPC, double EPSC0, double EPSCU, double EC0)
   :UniaxialMaterial(tag, MAT_TAG_Concrete04),
-   fpc(FPC), epsc0(EPSC0), epscu(EPSCU), Ec0(EC0), fct(0.0), etu(0.0), beta(0.0),
+   fpc(FPC), epsc0(EPSC0), epscu(EPSCU), Ec0(EC0), fct(0.0), etu(0.0), beta(0.1),
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(0.0),
-   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
+   Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0), parameterID(0)
 {
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
@@ -174,7 +176,7 @@ Concrete04::Concrete04
   
   Ctangent = Ec0;
   CunloadSlope = Ec0;
-  CUtenSlope = 0.0;
+  CUtenSlope = Ec0;
   
   // Set trial values
   this->revertToLastCommit();
@@ -184,7 +186,7 @@ Concrete04::Concrete04
 Concrete04::Concrete04():UniaxialMaterial(0, MAT_TAG_Concrete04),
 			 fpc(0.0), epsc0(0.0), epscu(0.0), Ec0(0.0), fct(0.0), etu(0.0), beta(0.0),
 			 CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(0.0),
-			 CUtenSlope(0.0), Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0)
+			 CUtenSlope(0.0), Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0), parameterID(0)
 {
   // Set trial values
   this->revertToLastCommit();
@@ -209,6 +211,9 @@ int Concrete04::setTrialStrain (double strain, double strainRate)
   Tstress = Cstress;   
   Ttangent = Ctangent;
 
+  TcompStrain = CcompStrain;
+  TUtenStress = CUtenStress;
+  
   /* // Set trial strain*/  
   if (fct == 0.0 && strain > 0.0) {    
     Tstrain = strain;
@@ -358,7 +363,7 @@ void Concrete04::TensEnvelope()
   } else if (Tstrain > etu) {    
     Tstress = 0.0;    
     Ttangent = 0.0;  
-  } else {    
+  } else {
     Tstress = fct * pow(beta, (Tstrain - ect) / (etu - ect));    
     Ttangent = fct * pow(beta, (Tstrain - ect) / (etu - ect)) * log(beta) / (etu - ect);  
   }
@@ -386,7 +391,6 @@ int Concrete04::commitState ()
   CUtenSlope = TUtenSlope;
   CcompStrain = TcompStrain;
   CUtenStress = TUtenStress;
-  CUtenSlope = TUtenSlope;
   
   /*// State variables*/   
   Cstrain = Tstrain;   
@@ -405,7 +409,6 @@ int Concrete04::revertToLastCommit ()
   TUtenSlope = CUtenSlope;
   TcompStrain = CcompStrain;
   TUtenStress = CUtenStress;
-  TUtenSlope = CUtenSlope;
   
   /*// Recompute trial stress and tangent*/   
   Tstrain = Cstrain;   
@@ -418,10 +421,22 @@ int Concrete04::revertToStart ()
 {
   
   /*// History variables*/
-  CminStrain = 0.0;   CmaxStrain = 0.0;   CunloadSlope = Ec0;   CendStrain = 0.0;   CUtenSlope = Ec0;
+  CminStrain = 0.0;
+  CmaxStrain = 0.0;
+  CunloadSlope = Ec0;
+  CendStrain = 0.0;
+  CUtenSlope = Ec0;
+  CcompStrain = 0.0;
+  CUtenStress = 0.0;
+  
   /*// State variables*/
-  Cstrain = 0.0;   Cstress = 0.0;   Ctangent = Ec0;
-  /*// Reset trial variables and state*/   this->revertToLastCommit();      return 0;
+  Cstrain = 0.0;
+  Cstress = 0.0;
+  Ctangent = Ec0;
+
+  /*// Reset trial variables and state*/
+  this->revertToLastCommit();
+  return 0;
 }
 
 UniaxialMaterial* Concrete04::getCopy ()
@@ -430,9 +445,18 @@ UniaxialMaterial* Concrete04::getCopy ()
 				       fpc, epsc0, epscu, Ec0, fct, etu, beta);
   
   /*// Converged history variables*/
-  theCopy->CminStrain = CminStrain;   theCopy->CmaxStrain = CmaxStrain;   theCopy->CunloadSlope = CunloadSlope;   theCopy->CendStrain = CendStrain;   theCopy->CUtenSlope = CUtenSlope;
+  theCopy->CminStrain = CminStrain;
+  theCopy->CmaxStrain = CmaxStrain;
+  theCopy->CunloadSlope = CunloadSlope;
+  theCopy->CendStrain = CendStrain;
+  theCopy->CcompStrain = CcompStrain;  
+  theCopy->CUtenStress = CUtenStress;
+  theCopy->CUtenSlope = CUtenSlope;  
   
-  /*// Converged state variables*/   theCopy->Cstrain = Cstrain;   theCopy->Cstress = Cstress;   theCopy->Ctangent = Ctangent;
+  /*// Converged state variables*/
+  theCopy->Cstrain = Cstrain;
+  theCopy->Cstress = Cstress;
+  theCopy->Ctangent = Ctangent;
   
   return theCopy;
 }
@@ -441,7 +465,7 @@ int Concrete04::sendSelf (int commitTag, Channel& theChannel)
 {   
   int res = 0;   
 
-  static Vector data(16);   
+  static Vector data(18);   
   data(0) = this->getTag();
   
   /* Material properties*/   
@@ -450,7 +474,9 @@ int Concrete04::sendSelf (int commitTag, Channel& theChannel)
   data(3) = epscu;   
   data(4) = Ec0;   
   data(5) = fct;
-
+  data(16) = etu;
+  data(17) = beta;
+  
   /*// History variables from last converged state*/
   data(6) = CminStrain;   
   data(7) = CmaxStrain;
@@ -477,7 +503,7 @@ int Concrete04::recvSelf (int commitTag, Channel& theChannel,
 			  FEM_ObjectBroker& theBroker)
 {
   int res = 0;
-  static Vector data(16);
+  static Vector data(18);
   res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
   if (res < 0) {
@@ -493,6 +519,8 @@ int Concrete04::recvSelf (int commitTag, Channel& theChannel,
     epscu = data(3);
     Ec0 = data(4);
     fct = data(5);
+    etu = data(16);
+    beta = data(17);
     
     /*// History variables from last converged state*/
     CminStrain = data(6);      
@@ -550,3 +578,115 @@ Concrete04::getMaterialType()
 	return 0;
 }
 /*// LOWES: end*/
+
+int
+Concrete04::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"fc") == 0) {
+    param.setValue(fpc);
+    return param.addObject(1, this);
+  }
+  
+  return 0;
+}
+
+int
+Concrete04::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    fpc = info.theDouble;
+    break;
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+Concrete04::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+  
+  return 0;
+}
+
+int
+Concrete04::getActiveParameter(double &param)
+{
+  if (parameterID == 1)
+    param = fpc;
+
+  return parameterID;
+}
+
+int
+Concrete04::getTrialHistoryVariables(double *hstv)
+{
+  hstv[0] = TminStrain;
+  hstv[1] = TmaxStrain;
+  hstv[2] = TunloadSlope;
+  hstv[3] = TendStrain;
+  hstv[4] = TcompStrain;
+  hstv[5] = TUtenStress;
+  hstv[6] = TUtenSlope;
+  hstv[7] = Tstrain;
+  hstv[8] = Tstress;
+  hstv[9] = Ttangent;
+
+  return 0;
+}
+
+int
+Concrete04::setTrialHistoryVariables(const double *hstv)
+{
+  TminStrain = hstv[0];
+  TmaxStrain = hstv[1];
+  TunloadSlope = hstv[2];
+  TendStrain = hstv[3];
+  TcompStrain = hstv[4];
+  TUtenStress = hstv[5];
+  TUtenSlope = hstv[6];
+  Tstrain = hstv[7];
+  Tstress = hstv[8];
+  Ttangent = hstv[9];
+
+  return 0;
+}
+
+int
+Concrete04::getCommittedHistoryVariables(double *hstv)
+{
+  hstv[0] = CminStrain;
+  hstv[1] = CmaxStrain;
+  hstv[2] = CunloadSlope;
+  hstv[3] = CendStrain;
+  hstv[4] = CcompStrain;
+  hstv[5] = CUtenStress;
+  hstv[6] = CUtenSlope;
+  hstv[7] = Cstrain;
+  hstv[8] = Cstress;
+  hstv[9] = Ctangent;
+
+  return 0;
+}
+
+int
+Concrete04::setCommittedHistoryVariables(const double *hstv)
+{
+  CminStrain = hstv[0];
+  CmaxStrain = hstv[1];
+  CunloadSlope = hstv[2];
+  CendStrain = hstv[3];
+  CcompStrain = hstv[4];
+  CUtenStress = hstv[5];
+  CUtenSlope = hstv[6];
+  Cstrain = hstv[7];
+  Cstress = hstv[8];
+  Ctangent = hstv[9];
+
+  return 0;
+}

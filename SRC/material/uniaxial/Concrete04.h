@@ -75,9 +75,20 @@ class Concrete04 : public UniaxialMaterial
   // LOWES: add function for use with variable hinge lnegth model
   int getMaterialType(void);
   // LOWES: end
+
+  int setParameter (const char **argv, int argc, Parameter &param);
+  int    updateParameter          (int parameterID, Information &info);
+  int activateParameter(int parameterID);
+
+  int getActiveParameter(double &param);
   
  protected:
-  
+  int getNumHistoryVariables(void) {return 10;}
+  int getTrialHistoryVariables(double *hstv);
+  int setTrialHistoryVariables(const double *hstv);
+  int getCommittedHistoryVariables(double *hstv);
+  int setCommittedHistoryVariables(const double *hstv);
+    
  private:
   /*** Material Properties ***/
   double fpc;    // Compressive strength
@@ -119,6 +130,8 @@ class Concrete04 : public UniaxialMaterial
   double Tstress;
   double Ttangent; // Not really a state variable, but declared here
   // for convenience
+
+  int parameterID;
   
   void CompReload(void);
   void CompEnvelope(void);
