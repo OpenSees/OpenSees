@@ -39,27 +39,20 @@ class TimeSeries;
 class ResponseSpectrumAnalysis
 {
 public:
-	enum ModalCombinationType
-	{
-		SRSS,
-		CQC,
-		MC_MAX
-	};
-
-public:
 	ResponseSpectrumAnalysis(
 		AnalysisModel* theModel,
 		TimeSeries* theFunction,
 		int theDirection,
-		ModalCombinationType theMCType,
-		double scale,
-		double damp
+		double scale
 	);
 	~ResponseSpectrumAnalysis();
 
 public:
 	void analyze();
-	void computeRSdisplacement();
+
+private:
+	void beginMode();
+	void endMode();
 
 private:
 	// the model
@@ -68,12 +61,10 @@ private:
 	TimeSeries* m_function;
 	// the direction 1 to 3 (for 2D models) or 1 to 6 (for 3D models)
 	int m_direction;
-	// the modal combination type
-	ModalCombinationType m_mc_type;
 	// the scale factor for the computed displacement field
 	double m_scale;
-	// the damping factor to be used in case of CQC
-	double m_damp;
+	// current mode
+	int m_current_mode;
 };
 
 #endif
