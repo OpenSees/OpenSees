@@ -42,7 +42,7 @@
 class LinearSeries : public TimeSeries
 {
   public:
-    LinearSeries(int tag =0, double cFactor =1.0);
+  LinearSeries(int tag =0, double cFactor =1.0, double tStart=0.0);
 
     ~LinearSeries();
 
@@ -67,7 +67,8 @@ class LinearSeries : public TimeSeries
   protected:
 	
   private:
-    double cFactor;  // factor = pseudoTime * cFactor
+    double cFactor;
+    double tStart;   // factor = cFactor * (pseudoTime-tStart), factor=0 if pseudoTime < tStart
 };
 
 #endif
