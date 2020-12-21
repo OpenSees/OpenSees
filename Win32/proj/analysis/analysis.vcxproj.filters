@@ -119,6 +119,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp">
       <Filter>algorithm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp">
       <Filter>algorithm</Filter>
     </ClCompile>
@@ -452,6 +455,9 @@
       <Filter>algorithm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.h">
       <Filter>algorithm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h">
