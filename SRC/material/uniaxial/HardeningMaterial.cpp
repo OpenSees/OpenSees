@@ -305,6 +305,9 @@ HardeningMaterial::recvSelf(int cTag, Channel &theChannel,
     Tstrain = data(8);
     Tstress = data(9);
     Ttangent = data(10);
+	  
+    TplasticStrain = CplasticStrain;
+    Thardening = Chardening;
   }
     
   return res;
