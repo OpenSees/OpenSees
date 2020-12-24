@@ -18,17 +18,20 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam3d.
 // ElasticTimoshenkoBeam3d is a 3d beam element. As such it can only
 // connect to a node with 6-dof. 
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam3d.h>
 
@@ -874,42 +877,9 @@ int ElasticTimoshenkoBeam3d::updateParameter (int parameterID,
 
 
 void ElasticTimoshenkoBeam3d::setUp()
-{
-    // element projection
-    static Vector dx(3);
-    
-    const Vector &ndICoords = theNodes[0]->getCrds();
-    const Vector &ndJCoords = theNodes[1]->getCrds();
-    
-    dx = ndJCoords - ndICoords;
-    
-    /*if (nodeJOffset != 0) {
-        dx(0) += nodeJOffset[0];
-        dx(1) += nodeJOffset[1];
-        dx(2) += nodeJOffset[2];
-    }
-    
-    if (nodeIOffset != 0) {
-        dx(0) -= nodeIOffset[0];
-        dx(1) -= nodeIOffset[1];
-        dx(2) -= nodeIOffset[2];
-    }
-    
-    if (nodeIInitialDisp != 0) {
-        dx(0) -= nodeIInitialDisp[0];
-        dx(1) -= nodeIInitialDisp[1];
-        dx(2) -= nodeIInitialDisp[2];
-    }
-    
-    if (nodeJInitialDisp != 0) {
-        dx(0) += nodeJInitialDisp[0];
-        dx(1) += nodeJInitialDisp[1];
-        dx(2) += nodeJInitialDisp[2];
-    }*/
-    
+{  
     // determine the element length
-    L = dx.Norm();
-    double Lf = theCoordTransf->getInitialLength(); // length for flexural actions accounting for rigid end zone offset
+    L = theCoordTransf->getInitialLength();
 
     if (L == 0.0)  {
         opserr << "WARNING ElasticTimoshenkoBeam3d::setUp()  - "
@@ -936,8 +906,8 @@ void ElasticTimoshenkoBeam3d::setUp()
     Tgl(2,2) = Tgl(5,5) = Tgl(8,8) = Tgl(11,11) = zAxis(2);
     
     // determine ratios of bending to shear stiffness
-    phiY = 12.0*E*Iy/(Lf*Lf*G*Avz);
-    phiZ = 12.0*E*Iz/(Lf*Lf*G*Avy);
+    phiY = 12.0*E*Iy/(L*L*G*Avz);
+    phiZ = 12.0*E*Iz/(L*L*G*Avy);
     
     // compute initial stiffness matrix in local system
     kl.Zero();
@@ -945,19 +915,19 @@ void ElasticTimoshenkoBeam3d::setUp()
     kl(0,6) = kl(6,0) = -kl(0,0);
     kl(3,3) = kl(9,9) = G*Jx/L;
     kl(3,9) = kl(9,3) = -kl(3,3);
-    double a1y = E*Iy/(Lf*Lf*Lf*(1.0 + phiY));
+    double a1y = E*Iy/(L*L*L*(1.0 + phiY));
     kl(2,2) = kl(8,8) = a1y*12.0;
     kl(2,8) = kl(8,2) = -kl(2,2);
-    kl(4,4) = kl(10,10) = a1y*Lf*Lf*(4.0 + phiY);
-    kl(4,10) = kl(10,4) = a1y*Lf*Lf*(2.0 - phiY);
-    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -a1y*Lf*6.0;
+    kl(4,4) = kl(10,10) = a1y*L*L*(4.0 + phiY);
+    kl(4,10) = kl(10,4) = a1y*L*L*(2.0 - phiY);
+    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -a1y*L*6.0;
     kl(4,8) = kl(8,4) = kl(8,10) = kl(10,8) = -kl(2,4);
-    double a1z = E*Iz/(Lf*Lf*Lf*(1.0 + phiZ));
+    double a1z = E*Iz/(L*L*L*(1.0 + phiZ));
     kl(1,1) = kl(7,7) = a1z*12.0;
     kl(1,7) = kl(7,1) = -kl(1,1);
-    kl(5,5) = kl(11,11) = a1z*Lf*Lf*(4.0 + phiZ);
-    kl(5,11) = kl(11,5) = a1z*Lf*Lf*(2.0 - phiZ);
-    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = a1z*Lf*6.0;
+    kl(5,5) = kl(11,11) = a1z*L*L*(4.0 + phiZ);
+    kl(5,11) = kl(11,5) = a1z*L*L*(2.0 - phiZ);
+    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = a1z*L*6.0;
     kl(5,7) = kl(7,5) = kl(7,11) = kl(11,7) = -kl(1,5);
     
     // compute geometric stiffness matrix in local system
