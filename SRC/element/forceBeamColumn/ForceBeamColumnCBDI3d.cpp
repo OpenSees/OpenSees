@@ -975,7 +975,7 @@ ForceBeamColumnCBDI3d::update()
 	if (code(j) == SECTION_RESPONSE_MY)
 	  dstilde(index) = wz(i)*SeTrial(0) + (xi[i]-1)*SeTrial(3) + 
 	    xi[i]*SeTrial(4) - stilde(index);
-	if (code(j) == SECTION_RESPONSE_VY)
+	if (code(j) == SECTION_RESPONSE_VZ)
 	  dstilde(index) = -wpz(i)*SeTrial(0) - oneOverL*(SeTrial(3)+SeTrial(4)) - stilde(index);
 	if (code(j) == SECTION_RESPONSE_T)
 	  dstilde(index) = SeTrial(5) - stilde(index);
