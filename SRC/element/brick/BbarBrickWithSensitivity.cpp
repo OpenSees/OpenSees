@@ -307,7 +307,7 @@ void  BbarBrickWithSensitivity::Print( OPS_Stream &s, int flag )
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"BbarBrickWithSensitivity\", ";
         s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 6; i++)
+        for (int i = 1; i < 7; i++)
             s << connectedExternalNodes(i) << ", ";
         s << connectedExternalNodes(7) << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";

@@ -147,6 +147,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.h" />
