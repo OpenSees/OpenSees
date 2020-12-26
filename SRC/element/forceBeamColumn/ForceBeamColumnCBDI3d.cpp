@@ -994,14 +994,7 @@ ForceBeamColumnCBDI3d::update()
 	    if (isGamma) 
 	      kEtilde(orderi+k,orderj+k+1) += lsg(i,j)*L*SeTrial(0);
 	  }
-	  if (isGamma && code(k) == SECTION_RESPONSE
-	     
-	     
-	     
-	     
-	     
-	     
-	     ) {
+	  if (isGamma && code(k) == SECTION_RESPONSE_VY) {
 	    kEtilde(orderi+k,orderj+k-1) -= lskp(i,j)*L*SeTrial(0);
 	    kEtilde(orderi+k,orderj+k) -= lsgp(i,j)*SeTrial(0);
 	  }
