@@ -251,15 +251,18 @@ LowOrderBeamIntegration::setParameter(const char **argv, int argc,
   int N = pts.Size();
   int Nf = N-Nc;
 
-  if (strcmp(argv[0],"xf") == 0 && point <= Nf)
+  if (strcmp(argv[0],"xf") == 0 && point <= Nf) {
+    param.setValue(pts(Nc+(point-1)));
     return param.addObject(point, this);
-
-  else if (strcmp(argv[0],"xc") == 0 && point <= Nc)
+  }
+  else if (strcmp(argv[0],"xc") == 0 && point <= Nc) {
+    param.setValue(pts(point-1));
     return param.addObject(10+point, this);
-
-  else if (strcmp(argv[0],"wc") == 0 && point <= Nc)
+  }
+  else if (strcmp(argv[0],"wc") == 0 && point <= Nc) {
+    param.setValue(wts(point-1));
     return param.addObject(20+point, this);
-
+  }
   else
     return -1;
 }
