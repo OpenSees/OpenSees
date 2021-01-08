@@ -1486,10 +1486,10 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
 
     } else if (strcmp(type,"HHTHSFixedNumIter") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter();
 
     } else if (strcmp(type,"HHTHSFixedNumIter_TP") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter_TP();
 
     } else if (strcmp(type,"GeneralizedAlpha") == 0) {
 	ti = (TransientIntegrator*)OPS_GeneralizedAlpha();

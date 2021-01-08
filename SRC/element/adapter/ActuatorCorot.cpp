@@ -34,6 +34,10 @@
 #include <Information.h>
 #include <ElementResponse.h>
 #include <TCP_Socket.h>
+#include <UDP_Socket.h>
+#ifdef SSL
+    #include <TCP_SocketSSL.h>
+#endif
 
 #include <math.h>
 #include <stdlib.h>
@@ -56,7 +60,7 @@ void* OPS_ActuatorCorot()
     // check the number of arguments is correct
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARNING insufficient arguments\n";
-        opserr << "Want: element actuator eleTag iNode jNode EA ipPort <-doRayleigh> <-rho rho>\n";
+        opserr << "Want: element actuator eleTag iNode jNode EA ipPort <-ssl> <-udp> <-doRayleigh> <-rho rho>\n";
         return 0;
     }
     
@@ -69,11 +73,11 @@ void* OPS_ActuatorCorot()
 	opserr << "WARNING invalid actuator int inputs" << endln;
 	return 0;
     }
-    
     int tag = idata[0];
     int iNode = idata[1];
     int jNode = idata[2];
-
+    
+    // stiffness
     double EA;
     numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &EA) < 0) {
@@ -81,6 +85,7 @@ void* OPS_ActuatorCorot()
 	return 0;
     }
     
+    // ipPort
     int ipPort;
     numdata = 1;
     if (OPS_GetIntInput(&numdata, &ipPort) < 0) {
@@ -88,38 +93,47 @@ void* OPS_ActuatorCorot()
 	return 0;
     }
     
+    // options
+    int ssl = 0, udp = 0;
     int doRayleigh = 0;
     double rho = 0.0;
     
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-	if (strcmp(flag, "-doRayleigh") == 0) {
-	    doRayleigh = 1;
-	} else if (strcmp(flag, "-rho") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() > 0) {
-		numdata = 1;
-		if (OPS_GetDoubleInput(&numdata, &rho) < 0) {
-		    opserr << "WARNING invalid rho\n";
-		    opserr << "actuator element: " << tag << endln;
-		    return 0;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* flag = OPS_GetString();
+		if (strcmp(flag, "-ssl") == 0) {
+			ssl = 1; udp = 0;
 		}
-	    }
+		else if (strcmp(flag, "-udp") == 0) {
+			udp = 1; ssl = 0;
+		}
+		else if (strcmp(flag, "-doRayleigh") == 0) {
+			doRayleigh = 1;
+		}
+		else if (strcmp(flag, "-rho") == 0) {
+			if (OPS_GetNumRemainingInputArgs() > 0) {
+				numdata = 1;
+				if (OPS_GetDoubleInput(&numdata, &rho) < 0) {
+					opserr << "WARNING invalid rho\n";
+					opserr << "actuator element: " << tag << endln;
+					return 0;
+				}
+			}
+		}
 	}
-    }
-
+    
     // now create the actuator and add it to the Domain
     return new ActuatorCorot(tag, ndm, iNode, jNode, EA, ipPort,
-			     doRayleigh, rho);
+			     ssl, udp, doRayleigh, rho);
 }
 
 
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 ActuatorCorot::ActuatorCorot(int tag, int dim, int Nd1, int Nd2,
-    double ea, int ipport, int addRay, double r)
+    double ea, int ipport, int _ssl, int _udp, int addRay, double r)
     : Element(tag, ELE_TAG_ActuatorCorot), numDIM(dim), numDOF(0),
-    connectedExternalNodes(2), EA(ea), ipPort(ipport),
-    addRayleigh(addRay), rho(r), L(0.0), Ln(0.0),
+    connectedExternalNodes(2), EA(ea), ipPort(ipport), ssl(_ssl),
+    udp(_udp), addRayleigh(addRay), rho(r), L(0.0), Ln(0.0),
     tPast(0.0), theMatrix(0), theVector(0), theLoad(0), R(3,3), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
@@ -144,8 +158,8 @@ ActuatorCorot::ActuatorCorot(int tag, int dim, int Nd1, int Nd2,
 // needs to be invoked upon
 ActuatorCorot::ActuatorCorot()
     : Element(0, ELE_TAG_ActuatorCorot), numDIM(0), numDOF(0),
-    connectedExternalNodes(2), EA(0.0), ipPort(0),
-    addRayleigh(0), rho(0.0), L(0.0), Ln(0.0), tPast(0.0),
+    connectedExternalNodes(2), EA(0.0), ipPort(0), ssl(0),
+    udp(0), addRayleigh(0), rho(0.0), L(0.0), Ln(0.0), tPast(0.0),
     theMatrix(0), theVector(0), theLoad(0), R(3,3), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
@@ -708,18 +722,20 @@ const Vector& ActuatorCorot::getResistingForceIncInertia()
 int ActuatorCorot::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(11);
+    static Vector data(13);
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
     data(3) = EA;
     data(4) = ipPort;
-    data(5) = addRayleigh;
-    data(6) = rho;
-    data(7) = alphaM;
-    data(8) = betaK;
-    data(9) = betaK0;
-    data(10) = betaKc;
+    data(5) = ssl;
+    data(6) = udp;
+    data(7) = addRayleigh;
+    data(8) = rho;
+    data(9) = alphaM;
+    data(10) = betaK;
+    data(11) = betaK0;
+    data(12) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -733,19 +749,21 @@ int ActuatorCorot::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // receive element parameters
-    static Vector data(11);
+    static Vector data(13);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numDIM = (int)data(1);
     numDOF = (int)data(2);
     EA = data(3);
     ipPort = (int)data(4);
-    addRayleigh = (int)data(5);
-    rho = data(6);
-    alphaM = data(7);
-    betaK = data(8);
-    betaK0 = data(9);
-    betaKc = data(10);
+    ssl = (int)data(5);
+    udp = (int)data(6);
+    addRayleigh = (int)data(7);
+    rho = data(8);
+    alphaM = data(9);
+    betaK = data(10);
+    betaK0 = data(11);
+    betaKc = data(12);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -961,7 +979,15 @@ int ActuatorCorot::getResponse(int responseID, Information &eleInformation)
 int ActuatorCorot::setupConnection()
 {
     // setup the connection
-    theChannel = new TCP_Socket(ipPort);
+    if (udp)
+        theChannel = new UDP_Socket(ipPort);
+#ifdef SSL
+    else if (ssl)
+        theChannel = new TCP_SocketSSL(ipPort);
+#endif
+    else
+        theChannel = new TCP_Socket(ipPort);
+    
     if (theChannel != 0)  {
         opserr << "\nChannel successfully created: "
             << "Waiting for ECSimAdapter experimental control...\n";
