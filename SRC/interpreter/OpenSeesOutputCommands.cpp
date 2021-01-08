@@ -1656,39 +1656,56 @@ int OPS_nodeDOFs()
     return 0;
 }
 
-int OPS_nodeMass()
-{
+int OPS_nodeMass() {
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - nodeMass nodeTag?\n";
-	return -1;
+        opserr << "WARNING want - nodeMass nodeTag? <dof>\n";
+        return -1;
     }
 
-    int tag;
-    int numdata = 1;
-
-    if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING nodeMass nodeTag?\n";
-	return -1;
+    int tag[2] = {0, -1};
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 2) {
+        numdata = 2;
     }
 
-    Domain* theDomain = OPS_GetDomain();
+    if (OPS_GetIntInput(&numdata, &tag[0]) < 0) {
+        opserr << "WARNING nodeMass nodeTag?\n";
+        return -1;
+    }
+    tag[1]--;
+
+    Domain *theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    Node *theNode = theDomain->getNode(tag);
+    Node *theNode = theDomain->getNode(tag[0]);
     if (theNode == 0) {
-	opserr << "WARNING nodeMass node " << tag << " not found" << endln;
-	return -1;
+        opserr << "WARNING nodeMass node " << tag << " not found" << endln;
+        return -1;
     }
 
     int numDOF = theNode->getNumberDOF();
     const Matrix &mass = theNode->getMass();
-    std::vector<double> data(numDOF);
-    for (int i = 0; i < numDOF; i++)
-      data[i] = mass(i,i);
-    
-    if (OPS_SetDoubleOutput(&numDOF, &data[0], false) < 0) {
-      opserr << "WARNING nodeMass failed to set mass\n";
-      return -1;
+    if (tag[1] >= 0) {
+        if (tag[1] >= numDOF) {
+            opserr << "WARNING: nodeMass nodeTag? dof? - dof too large\n";
+            return -1;
+        }
+        double value = mass(tag[1], tag[1]);
+        numdata = 1;
+        if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+            opserr << "WARNING: nodeMass - failed to set mass output\n";
+            return -1;
+        }
+    } else {
+        std::vector<double> data(numDOF);
+        for (int i = 0; i < numDOF; i++) {
+            data[i] = mass(i, i);
+        }
+
+        if (OPS_SetDoubleOutput(&numDOF, &data[0], false) < 0) {
+            opserr << "WARNING nodeMass failed to set mass\n";
+            return -1;
+        }
     }
 
     return 0;

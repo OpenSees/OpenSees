@@ -1424,10 +1424,10 @@ RockingBC::setResponse(const char **argv, int argc, OPS_Stream &output)
 
 	else{
 		std::string fstr = argv[0];
-		Yup_file = std::ofstream(fstr + "_Yup.txt");
-		Up_file = std::ofstream(fstr + "_Up.txt");
-		Ys_file = std::ofstream(fstr + "_Ys.txt");
-		S_file = std::ofstream(fstr + "_S.txt");
+		Yup_file.open(fstr + "_Yup.txt");
+		Up_file.open(fstr + "_Up.txt");
+		Ys_file.open(fstr + "_Ys.txt");
+		S_file.open(fstr + "_S.txt");
 
 		theResponse = new ElementResponse(this, 20, Vector(1));
 
@@ -2473,7 +2473,7 @@ int RockingBC::NL_solve_dyn()
 
 void
 RockingBC::writedbgfile() {
-	std::ofstream NLFfile = std::ofstream("NLsolvefailure.txt");
+	std::ofstream NLFfile("NLsolvefailure.txt");
 
 	if (useUelNM) {
 		Ys_com = interval_join(Ysi_com);
