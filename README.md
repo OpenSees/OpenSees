@@ -1,4 +1,4 @@
-# OpenSees source code repository.
+# OpenSees Source Code Repository
 
 This git repository contains all revisions to OpenSees source code since Version 2.3.2.
 

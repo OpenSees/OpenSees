@@ -415,7 +415,7 @@ void  Twenty_Node_Brick::Print(OPS_Stream &s, int flag)
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"20NodeBrick\", ";
         s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 18; i++)
+        for (int i = 1; i < 19; i++)
             s << connectedExternalNodes(i) << ", ";
         s << connectedExternalNodes(19) << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
