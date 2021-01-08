@@ -54,7 +54,7 @@ ASD_SMA_3K matTag? k1? k2? k3? sigF? beta?
 #include <Information.h>
 #include <Parameter.h>
 
-#include <math.h>
+#include <cmath>
 #include <float.h>
 #include <elementAPI.h>
 #include <iostream>
