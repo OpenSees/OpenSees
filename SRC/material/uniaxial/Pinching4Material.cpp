@@ -1380,27 +1380,27 @@ Pinching4Material::setParameter(const char** argv, int argc, Parameter& param)
 	}
 
 	// Parameters for hysteretic rules
-	if (strcmp(argv[0], "rDispP") == 0 || strcmp(argv[0], "rDispP") == 0) {
+	if (strcmp(argv[0], "rDispP") == 0) {
 		param.setValue(rDispP);
 		return param.addObject(17, this);
 	}
-	if (strcmp(argv[0], "rForceP") == 0 || strcmp(argv[0], "rForceP") == 0) {
+	if (strcmp(argv[0], "rForceP") == 0) {
 		param.setValue(rForceP);
 		return param.addObject(18, this);
 	}
-	if (strcmp(argv[0], "uForceP") == 0 || strcmp(argv[0], "uForceP") == 0) {
+	if (strcmp(argv[0], "uForceP") == 0) {
 		param.setValue(uForceP);
 		return param.addObject(19, this);
 	}
-	if (strcmp(argv[0], "rDispN") == 0 || strcmp(argv[0], "rDispN") == 0) {
+	if (strcmp(argv[0], "rDispN") == 0) {
 		param.setValue(rDispN);
 		return param.addObject(20, this);
 	}
-	if (strcmp(argv[0], "rForceN") == 0 || strcmp(argv[0], "rForceN") == 0) {
+	if (strcmp(argv[0], "rForceN") == 0) {
 		param.setValue(rForceN);
 		return param.addObject(21, this);
 	}
-	if (strcmp(argv[0], "uForceN") == 0 || strcmp(argv[0], "uForceN") == 0) {
+	if (strcmp(argv[0], "uForceN") == 0) {
 		param.setValue(uForceN);
 		return param.addObject(22, this);
 	}
