@@ -70,6 +70,9 @@ class BoucWenMaterial : public UniaxialMaterial
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);    
     void Print(OPS_Stream &s, int flag =0);
+    Response* setResponse(const char** argv, int argc,
+		OPS_Stream& theOutputStream);					// Salvatore Sessa 11 Jan 2021 (mailto salvatore.sessa2@unina.it)
+	int getResponse(int responseID, Information& matInformation);		// Salvatore Sessa 11 Jan 2021 (mailto salvatore.sessa2@unina.it)
     
 	// Reliability and sensitivity stuff
     double getInitialTangent        (void);
