@@ -869,24 +869,24 @@ Domain::addNodalLoad(NodalLoad *load, int pattern)
     int nodTag = load->getNodeTag();
     Node *res = this->getNode(nodTag);
     if (res == 0) {
-      opserr << "Domain::addNodalLoad() HI - no node with tag " << nodTag << 
-	"exits in  the model, not adding the nodal load"  << *load << endln;
+      opserr << "Domain::addNodalLoad() - no node with tag " << nodTag << 
+	" exists in the model, not adding the nodal load "  << *load << endln;
 	return false;
     }
 
     // now add it to the pattern
     TaggedObject *thePattern = theLoadPatterns->getComponentPtr(pattern);
     if (thePattern == 0) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag" << 
-	pattern << "in  the model, not adding the nodal load"  << *load << endln;
+      opserr << "Domain::addNodalLoad() - no pattern with tag " << 
+	pattern << " in the model, not adding the nodal load "  << *load << endln;
       
 	return false;
     }
     LoadPattern *theLoadPattern = (LoadPattern *)thePattern;
     bool result = theLoadPattern->addNodalLoad(load);
     if (result == false) {
-      opserr << "Domain::addNodalLoad() - pattern with tag" << 
-	pattern << "could not add the load" << *load << endln;
+      opserr << "Domain::addNodalLoad() - pattern with tag " << 
+	pattern << " could not add the load " << *load << endln;
 				
       return false;
     }

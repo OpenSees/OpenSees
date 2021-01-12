@@ -1118,7 +1118,7 @@ Tri31::Print(OPS_Stream &s, int flag)
 
         for (i = 0; i < numNodes; i++) {
             const Vector &nodeCrd = theNodes[i]->getCrds();
-            const Vector &nodeDisp = theNodes[i]->getDisp();
+            // const Vector &nodeDisp = theNodes[i]->getDisp();
             s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
         }
 
@@ -1283,8 +1283,7 @@ Tri31::setResponse(const char **argv, int argc, OPS_Stream &output)
        theResponse =  new ElementResponse(this, 3, Vector(3*numgp));
    }
 
-  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0) ||
-		   (strcmp(argv[0],"stressesRecovery") ==0) || (strcmp(argv[0],"stressRecovery") ==0)) {
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
     for (int i=0; i<numnodes; i++) {
       output.tag("NodalPoint");
       output.attr("number",i+1);

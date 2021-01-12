@@ -61,7 +61,7 @@ OPS_ModElasticBeam2d()
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numModElasticBeam2d == 0) {
-    opserr << "ModElasticBeam2d element -> for Stiffness Modification Factors by D.Lignos";
+    opserr << "ModElasticBeam2d element -> for Stiffness Modification Factors by D.Lignos" << endln;
     numModElasticBeam2d++;
   }
 

@@ -62,6 +62,16 @@
 
 #include <MapOfTaggedObjects.h>
 
+#include <FileStream.h>
+
+#include <iostream>
+
+//==================================================================================================
+// NodeLocations
+//==================================================================================================
+
+// This helper class maps each node tag to the partitions it belongs to.... useful to figure out 
+// the boundaries between subdomains....
 class NodeLocations: public TaggedObject
 {
 public:
@@ -96,8 +106,27 @@ NodeLocations::addPartition(int partition)
   return 0;
 }
 
+
+//==================================================================================================
+// Some maps that help handling graphs
+//==================================================================================================
+
+typedef map<int, int> MAP_INT;
+typedef MAP_INT::value_type   MAP_INT_TYPE;
+typedef MAP_INT::iterator     MAP_INT_ITERATOR;
+
+typedef map<int, ID *> MAP_ID;
+typedef MAP_ID::value_type   MAP_ID_TYPE;
+typedef MAP_ID::iterator     MAP_ID_ITERATOR;
+
+
+//==================================================================================================
+// DomainPartitioner
+//==================================================================================================
+
+
 DomainPartitioner::DomainPartitioner(GraphPartitioner &theGraphPartitioner)
-:myDomain(0),thePartitioner(theGraphPartitioner),theBalancer(0),
+  :  myDomain(0), thePartitioner(theGraphPartitioner), theBalancer(0),
  theElementGraph(0), theBoundaryElements(0), 
  theNodeLocations(0),elementPlace(0), numPartitions(0), partitionFlag(false), usingMainDomain(false)
 {
@@ -106,7 +135,7 @@ DomainPartitioner::DomainPartitioner(GraphPartitioner &theGraphPartitioner)
 
 DomainPartitioner::DomainPartitioner(GraphPartitioner &theGraphPartitioner,
 				     LoadBalancer &theLoadBalancer)
-:myDomain(0),thePartitioner(theGraphPartitioner),theBalancer(&theLoadBalancer),
+  :  myDomain(0), thePartitioner(theGraphPartitioner), theBalancer(&theLoadBalancer),
  theElementGraph(0), theBoundaryElements(0),
  theNodeLocations(0),elementPlace(0), numPartitions(0), partitionFlag(false), usingMainDomain(false)
 {
@@ -125,6 +154,7 @@ DomainPartitioner::~DomainPartitioner()
   }
 }
 
+
 void 
 DomainPartitioner::setPartitionedDomain(PartitionedDomain &theDomain)
 {
@@ -134,6 +164,9 @@ DomainPartitioner::setPartitionedDomain(PartitionedDomain &theDomain)
 int
 DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag, int specialElementTag)
 {
+
+  opserr << "DomainPartitioner::partition() - Start\n";
+
 
   usingMainDomain = usingMain;
   mainPartition = mainPartitionTag;
@@ -164,11 +197,12 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     opserr << " - the graph partioner failed to partition the ";
     opserr << "element graph\n";
     return -10+theError;
+  } else {
+    opserr << "DomainPartitioner::partition - Succesfull partition. Now redistributing data accordingly.\n";
   }
 
   /* print graph */
-  //  opserr << "DomainPartitioner::partition - eleGraph: \n";
-  //  theElementGraph->Print(opserr, 4);
+  opserr << "  * Identifying components to transfer.\n";
   
   VertexIter &theVertices1 = theElementGraph->getVertices();
   Vertex *vertexPtr = 0;
@@ -178,6 +212,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   int vertexOnePartition  = 0;
   if (vertexPtr != 0)
     vertexOnePartition  = vertexPtr->getColor();  
+
   while ((moreThanOne == false) && ((vertexPtr = theVertices1()) != 0)) {
     int partition = vertexPtr->getColor();
     if (partition != vertexOnePartition ) {
@@ -190,7 +225,8 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     return -1;
   }
 
-  int specialElementColor = 1;
+  opserr << "     + Elements.\n";
+  // No idea what this is for....
   if (specialElementTag != 0) {
     bool found = false;
     VertexIter &theVerticesSpecial = theElementGraph->getVertices();
@@ -250,6 +286,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     return -1;
   }
 
+  opserr << "     + Nodes.\n";
   NodeIter &theNodes = myDomain->getNodes();
   Node *nodePtr;
   while ((nodePtr = theNodes()) != 0) {
@@ -277,21 +314,29 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   // have to be added to the subdomain.
   //
   
+  opserr << "     + Boundary Nodes.\n";
+  //Transverse the graph
   VertexIter &theVertexIter = theElementGraph->getVertices();
   while ((vertexPtr = theVertexIter()) != 0) {
     int eleTag = vertexPtr->getRef();
     int vertexColor = vertexPtr->getColor();
     
+    // For each element, transverse its neighboring element
     const ID &adjacency = vertexPtr->getAdjacency();
     int size = adjacency.Size();
     for (int i=0; i<size; i++) {
       Vertex *otherVertex = theElementGraph->getVertexPtr(adjacency(i));
+
+      //If a neighbor has a different color (partition)
       if (otherVertex->getColor() != vertexColor) {
+
+        //Add it into the boundary elements graph
 	theBoundaryElements[vertexColor-1]->addVertex(vertexPtr,false);
 	i = size;
       }
     }
     
+    //Also for each element, transverse its connected nodes
     Element *elePtr = myDomain->getElement(eleTag);
     const ID &nodes = elePtr->getExternalNodes();
     size = nodes.Size();
@@ -304,6 +349,8 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 	numPartitions = 0;
 	return -1;	
       }
+
+      // Add current partition as a location into current node's location map...
       NodeLocations *theNodeLocation = (NodeLocations *)theTaggedObject;
       theNodeLocation->addPartition(vertexColor);
     }
@@ -311,6 +358,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 
   // now go through the MP_Constraints and ensure the retained node is in every 
   // partition the constrained node is in
+  opserr << "     + MP constraints.\n";
   MP_ConstraintIter &theMPs = myDomain->getMPs();
   MP_Constraint *mpPtr;
   while ((mpPtr = theMPs()) != 0) {
@@ -332,14 +380,65 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     
     NodeLocations *theRetainedLocation = (NodeLocations *)theRetainedObject;
     NodeLocations *theConstrainedLocation = (NodeLocations *)theConstrainedObject;
+
     ID &theConstrainedNodesPartitions = theConstrainedLocation->nodePartitions;
     int numPartitions = theConstrainedNodesPartitions.Size();
     for (int i=0; i<numPartitions; i++) {
-      theRetainedLocation->addPartition(theConstrainedNodesPartitions(i));
+      int part = theConstrainedNodesPartitions(i);
+      // opserr << "Retained node " << retained << " (equaldof with " << constrained << " ) added to partition " << part << endln;
+      theRetainedLocation->addPartition(part);
+    }
+        // if(retained == 5)
+    // {
+      // opserr << "   + Retained: " << *theRetainedLocation;
+      // opserr << "   + Constrained: " << *theConstrainedLocation;
+    // }
+  }
+
+  opserr << "     + MP constraints (2nd pass).\n";
+  MP_ConstraintIter &theMPs2 = myDomain->getMPs();
+  // we now add the nodes, 
+  while ((mpPtr = theMPs2()) != 0) {
+    int retained = mpPtr->getNodeRetained();
+    int constrained = mpPtr->getNodeConstrained();
+
+    TaggedObject *theRetainedObject = theNodeLocations->getComponentPtr(retained);
+    TaggedObject *theConstrainedObject = theNodeLocations->getComponentPtr(constrained);
+
+    if (theRetainedObject == 0 || theConstrainedObject == 0) {
+      opserr << "DomainPartitioner::partition(int numParts)";
+      if (theRetainedObject == 0)
+        opserr << " - failed to find NodeLocation in Map for Node: " << retained << " -- A BUG!!\n";
+      if (theConstrainedObject == 0)
+        opserr << " - failed to find NodeLocation in Map for Node: " << constrained << " -- A BUG!!\n";
+      numPartitions = 0;
+      return -1;
+    }
+
+    NodeLocations *theRetainedLocation = (NodeLocations *)theRetainedObject;
+    NodeLocations *theConstrainedLocation = (NodeLocations *)theConstrainedObject;
+
+    ID &theConstrainedNodesPartitions = theConstrainedLocation->nodePartitions;
+    int numPartitions = theConstrainedNodesPartitions.Size();
+    for (int i = 0; i < numPartitions; i++) {
+      int part = theConstrainedNodesPartitions(i);
+      // opserr << " ** Retained node " << retained << " (equaldof with " << constrained << " ) added to partition " << part << endln;
+      theRetainedLocation->addPartition(part);
+    }
+    if(retained == 5)
+    {
+      // opserr << "   + Retained: " << *theRetainedLocation;
+      // opserr << "   + Constrained: " << *theConstrainedLocation;
     }
   }
 
-  // we now add the nodes, 
+
+  // we now add the nodes,
+
+  // opserr << "DomainPartitioner::partition() - Sending Nodes\n";
+
+  //Transverse the node locations.....
+  opserr << "  * Sending nodes.\n";
   TaggedObjectIter &theNodeLocationIter = theNodeLocations->getComponents();
   TaggedObject *theNodeObject;
 
@@ -350,14 +449,25 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     ID &nodePartitions = theNodeLocation->nodePartitions;
     int numPartitions = theNodeLocation->numPartitions;
 
+    //Cycle the partitions that this node belongs to
     for (int i=0; i<numPartitions; i++) {
       int partition = nodePartitions(i);	  
+
+      //If current partition is not the main_partition... its a remote subdomain
       if (partition != mainPartition) {      
 	Subdomain *theSubdomain = myDomain->getSubdomainPtr(partition); 
+
+        // opserr << "Adding node # " << nodeTag << " to partition # " << partition;
+        //If the node belongs to only one partition
 	if (numPartitions == 1) {
+          // opserr << " ... internal\n";
+          // Remove it from current and add it as internal node in the remote partition
 	  Node *nodePtr = myDomain->removeNode(nodeTag);
 	  theSubdomain->addNode(nodePtr);
 	} else {
+          // opserr << " ... external\n";
+          // Otherwise, the node belongs to several partitions and is, therefore, a boundary node
+          // Add it to the external nodes in the remote partition
 	  Node *nodePtr = myDomain->getNode(nodeTag);
 	  theSubdomain->addExternalNode(nodePtr);	  
 	}
@@ -366,6 +476,8 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   }
 
   // we now move the elements 
+  // opserr << "DomainPartitioner::partition() - Sending Elements\n";
+  opserr << "  * Sending elements.\n";
   VertexIter &theVertices = theElementGraph->getVertices();
   while ((vertexPtr = theVertices()) != 0) {
     // move the element
@@ -385,7 +497,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 
 	//	opserr << "adding ele - done\n";
       } else {
-	opserr << "DomainPartitioner::partioner - element GONE! - eleTag " << eleTag << endln;
+        opserr << "DomainPartitioner::partitioner - element GONE! - eleTag " << eleTag << endln;
       }
     } 
   }
@@ -395,6 +507,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   // 2) move nodal loads
   // 3) move SP_Constraints
   
+  opserr << "  * Sending Load Patterns\n";
   LoadPatternIter &theLoadPatterns = myDomain->getLoadPatterns();
   LoadPattern *theLoadPattern;
   while ((theLoadPattern = theLoadPatterns()) != 0) {
@@ -502,6 +615,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 
   // add the single point constraints, 
   
+  opserr << "  * Sending homogeneous SP Constraints`\n";
   SP_ConstraintIter &theDomainSP = myDomain->getSPs();
   SP_Constraint *spPtr;
   while ((spPtr = theDomainSP()) != 0) {
@@ -534,13 +648,21 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   }  
 
   // move MP_Constraints - add an MP_Constraint to every partition a constrained node is in
+  opserr << "  * Sending MP Constraints\n";
   MP_ConstraintIter &moreMPs = myDomain->getMPs();
   while ((mpPtr = moreMPs()) != 0) {
     int constrained = mpPtr->getNodeConstrained();
+    int retained = mpPtr->getNodeRetained();
     TaggedObject *theConstrainedObject = theNodeLocations->getComponentPtr(constrained);
     NodeLocations *theConstrainedLocation = (NodeLocations *)theConstrainedObject;
     ID &theConstrainedNodesPartitions = theConstrainedLocation->nodePartitions;
     int numPartitions = theConstrainedLocation->numPartitions;
+    // if(retained == 5)
+    // {
+      // NodeLocations *theRetainedLocation = (NodeLocations *)theNodeLocations->getComponentPtr(retained);
+      // opserr << "  > Retained: " << *theRetainedLocation;
+      // opserr << "  > Constrained: " << *theConstrainedLocation;
+    // }
     for (int i=0; i<numPartitions; i++) {
       int partition = theConstrainedNodesPartitions(i);
       if (partition != mainPartition) {
@@ -550,6 +672,9 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 	int res = theSubdomain->addMP_Constraint(mpPtr);
 	if (res < 0)
 	  opserr << "DomainPartitioner::partition() - failed to add MP Constraint\n";
+        // else
+          // opserr << "DomainPartitioner::partition() - add MP constraint for c = " << constrained << " r = " << retained << " to partition # " << partition <<  "\n";
+          
       }
     }
   }
@@ -557,6 +682,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   // now we go through all the subdomains and tell them to update
   // their analysis for the new layouts
   
+
   SubdomainIter &theSubDomains = myDomain->getSubdomains();
   Subdomain *theSubDomain;
   while ((theSubDomain = theSubDomains()) != 0) 
@@ -570,8 +696,24 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
   // we are done
   partitionFlag = true;
 
+  opserr << "DomainPartitioner::partition() - Done\n";
+
+
+  // myDomain->Print(opserr);
+
   return 0;
 }
+
+
+#define DOMAINPARTITIONER_REPARTITION_DEBUG_DISABLED_LV_1 0
+#define DEBUGSTREAM1 \
+    if (DOMAINPARTITIONER_REPARTITION_DEBUG_DISABLED_LV_1) {} \
+    else opserr
+
+#define DOMAINPARTITIONER_REPARTITION_DEBUG_DISABLED_LV_2 0
+#define DEBUGSTREAM2 \
+    if (DOMAINPARTITIONER_REPARTITION_DEBUG_DISABLED_LV_2) {} \
+    else opserr
 
 
 int
@@ -586,21 +728,40 @@ DomainPartitioner::balance(Graph &theWeightedPGraph)
   return -1;
     }
 
+
     if (theBalancer != 0) {
 
 	// call on the LoadBalancer to partition		
+
+    // timer.start();
+    // If we have a balancer, then call the balance function
 	res = theBalancer->balance(theWeightedPGraph);
 	    
 	// now invoke domainChanged on Subdomains and PartitionedDomain
+    // { 
+
+
+      // All domains are informed that there has been a domain change
 	SubdomainIter &theSubDomains = myDomain->getSubdomains();
 	Subdomain *theSubDomain;
 
 	while ((theSubDomain = theSubDomains()) != 0) 
 	  theSubDomain->domainChange();
+        myDomain->domainChange();
 	
 	// we invoke change on the PartitionedDomain
-	myDomain->domainChange();
+
+      // if(res > 0)
+      // {
+        // fid << myDomain->getCurrentTime() << " " << timer.getReal() << endln;
+      // }
+    // }
     }
+  else
+  {
+    // If there is no balancer.... we cant balance... continue with a static domain decomposition
+  }
+
 
     return res;
 }
@@ -1493,3 +1654,9 @@ DomainPartitioner::releaseBoundary(int from,
     return 0;
 }
 
+
+GraphPartitioner* DomainPartitioner::getGraphPartitioner()
+{
+  std::cout << "DomainPartitioner::getGraphPartitioner() - thePartitioner is @ " << static_cast<void*>(&thePartitioner)  << "\n" << std::endl;
+  return &thePartitioner;
+}
