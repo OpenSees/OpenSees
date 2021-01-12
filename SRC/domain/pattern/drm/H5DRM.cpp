@@ -883,10 +883,10 @@ bool H5DRM::drm_direct_read(double t)
         bool nanfound = false;
         for (int i = 0; i < 3; ++i)
         {
-	  if ( std::isnan(d1[i])  ||
-               std::isnan(a1[i])  ||
-               std::isnan(d2[i])  ||
-               std::isnan(a2[i]) )
+	  if ( isnan(d1[i])  ||
+               isnan(a1[i])  ||
+               isnan(d2[i])  ||
+               isnan(a2[i]) )
             {
                 nanfound = true;
             }
@@ -1045,10 +1045,10 @@ bool H5DRM::drm_differentiate_displacements(double t)
         bool nanfound = false;
         for (int i = 0; i < 3; ++i)
         {
-	  if ( std::isnan(d1[i])  ||
-               std::isnan(a1[i])  ||
-               std::isnan(d2[i])  ||
-               std::isnan(a2[i]) )
+	  if ( isnan(d1[i])  ||
+               isnan(a1[i])  ||
+               isnan(d2[i])  ||
+               isnan(a2[i]) )
             {
                 nanfound = true;
             }
@@ -1283,10 +1283,10 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
 			}
 
 			// bool found_nan = false;
-			if (std::isnan(u1) || std::isnan(du1) ||
-				std::isnan(u2) || std::isnan(du2) ||
-				std::isnan(u3) || std::isnan(du3) ||
-				std::isnan(dt) || std::isnan(dtau))
+			if (isnan(u1) || isnan(du1) ||
+				isnan(u2) || isnan(du2) ||
+				isnan(u3) || isnan(du3) ||
+				isnan(dt) || isnan(dtau))
 			{
 				H5DRMerror << "NAN Detected!!! \n";
 				H5DRMerror << "    nodeTag = " << nodeTag << endln;
@@ -1480,9 +1480,9 @@ H5DRM::ComputeDRMLoads(double t)
                     DRMForces( 3 * local_pos  + 2) +=  Fk(3 * k  + 2) + Fm(3 * k  + 2);
 
 
-                    if (std::isnan(DRMForces( 3 * local_pos  + 0) ) ||
-                            std::isnan(DRMForces( 3 * local_pos  + 1) ) ||
-                            std::isnan(DRMForces( 3 * local_pos  + 2) ) )
+                    if (isnan(DRMForces( 3 * local_pos  + 0) ) ||
+                            isnan(DRMForces( 3 * local_pos  + 1) ) ||
+                            isnan(DRMForces( 3 * local_pos  + 2) ) )
                     {
                         H5DRMerror << "NAN Detected!!! \n";
                         H5DRMerror << "    nodeTag = " << nodeTag << endln;
@@ -2093,8 +2093,8 @@ bool Plane::get_ij_coordinates_to_point(double x1, double x2, int& i, int& j) co
     double xi1end = xi1(N1 - 1);
     double xi2start = xi2(0);
     double xi2end = xi2(N2 - 1);
-    i = (int) std::round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
-    j = (int) std::round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
+    i = (int) round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
+    j = (int) round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
 
     i = i < 0     ? 0    : i;
     i = i > N1 - 1  ? N1 - 1 : i;
