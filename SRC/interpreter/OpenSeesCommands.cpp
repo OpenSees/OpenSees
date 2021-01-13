@@ -208,6 +208,11 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+AnalysisModel** OpenSeesCommands::getAnalysisModel()
+{
+    return &theAnalysisModel;
+}
+
 void
 OpenSeesCommands::setSOE(LinearSOE* soe)
 {
@@ -993,6 +998,13 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+AnalysisModel**
+OPS_GetAnalysisModel(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getAnalysisModel();
 }
 
 int OPS_GetNDF()
