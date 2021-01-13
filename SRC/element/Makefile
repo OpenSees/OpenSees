@@ -97,6 +97,7 @@ spotless: clean
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
+	@$(CD) $(FE)/element/RockingBC; $(MAKE) wipe;
 
 wipe: spotless
 
