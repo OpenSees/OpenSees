@@ -340,48 +340,6 @@ int HystereticPoly::recvSelf (int commitTag, Channel& theChannel,
 }
 
 
-/*
-Response*
-HystereticPoly::setResponse(const char **argv, int argc,
-	OPS_Stream &theOutput)
-{
-	Response *theResponse = 0;
-	double data = 0.0;
-	if (strcmp(argv[0], "stress") == 0) {
-		
-		theResponse = new MaterialResponse(this, 100, data);
-	}
-	else if (strcmp(argv[0], "strain") == 0) {
-		theResponse = new MaterialResponse(this, 101, data);
-	}
-	else if (strcmp(argv[0], "tangent") == 0) {
-		theResponse = new MaterialResponse(this, 102, data);
-	}
-	else
-		return this->UniaxialMaterial::setResponse(argv, argc, theOutput);
-
-	return theResponse;
-}
-
-int
-HystereticPoly::getResponse(int responseID, Information &matInfo)
-{
-	if (responseID == 100) {
-		matInfo.theDouble = this->getStress();
-	}
-	else if (responseID == 101) {
-		matInfo.theDouble = this->getStrain();
-	}
-	else if (responseID == 102) {
-		matInfo.theDouble = this->getTangent();
-	}
-	else
-		return this->UniaxialMaterial::getResponse(responseID, matInfo);
-
-	return 0;
-}
-*/
-
 void HystereticPoly::Print (OPS_Stream& s, int flag)
 {
    s << "HystereticPoly tag: " << this->getTag() << endln;
