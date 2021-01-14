@@ -49,10 +49,13 @@ public:
 
 public:
 	void analyze();
+	void analyze(int mode_id);
 
 private:
+	void check();
 	void beginMode();
 	void endMode();
+	void solveMode();
 
 private:
 	// the model

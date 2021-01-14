@@ -119,6 +119,8 @@ OPS_ResponseSpectrumAnalysis(void)
 	// parse optional data
 	nargs = OPS_GetNumRemainingInputArgs();
 	int loc = 0;
+	int mode_id = 0;
+	bool single_mode = false;
 	while (loc < nargs) {
 		const char* value = OPS_GetString();
 		if (strcmp(value, "-scale") == 0) {
@@ -134,13 +136,31 @@ OPS_ResponseSpectrumAnalysis(void)
 				exit(-1);
 			}
 		}
+		else if (strcmp(value, "-mode") == 0) {
+			if (loc < nargs - 1) {
+				if (OPS_GetInt(&numData, &mode_id) < 0) {
+					opserr << "responseSpectrum Error: Failed to get the mode_id.\n";
+					exit(-1);
+				}
+				--mode_id; // make it 0-based
+				single_mode = true;
+				++loc;
+			}
+			else {
+				opserr << "responseSpectrum Error: mode_id requested but not provided.\n";
+				exit(-1);
+			}
+		}
 		++loc;
 	}
 
 	// ok, create the response spectrum analysis and run it here... 
 	// no need to store it
 	ResponseSpectrumAnalysis rsa(theAnalysisModel, ts, dir, scale);
-	rsa.analyze();
+	if (single_mode)
+		rsa.analyze(mode_id);
+	else
+		rsa.analyze();
 
 }
 
@@ -171,14 +191,77 @@ void ResponseSpectrumAnalysis::analyze()
 	// get the modal properties
 	const DomainModalProperties& mp = domain->getModalProperties();
 
+	// size info
+	int num_eigen = domain->getEigenvalues().Size();
+
+	// check consistency
+	check();
+
+	// loop over all required eigen-modes, compute the modal displacement
+	// and save the results.
+	// we just compute modal displacements without doing any (SRSS, CQC, etc..)
+	// modal combination otherwise derived results cannot be computed.
+	// for each mode, this analysis produces a new analysis step.
+	// modal combination of displacements (or any derived results)
+	// it's up to the user.
+	for (m_current_mode = 0; m_current_mode < num_eigen; ++m_current_mode)
+	{
+		// init the new step
+		beginMode();
+
+		// compute modal acceleration for this mode using the 
+		// provided response spectrum function (time series)
+		solveMode();
+
+		// done with the current step.
+		// here the modal displacements will be recorded (and all other results
+		// if requested via recorders...)
+		endMode();
+	}
+}
+
+void ResponseSpectrumAnalysis::analyze(int mode_id)
+{
+	// get the domain
+	Domain* domain = m_model->getDomainPtr();
+
+	// get the modal properties
+	const DomainModalProperties& mp = domain->getModalProperties();
+
+	// size info
+	int num_eigen = domain->getEigenvalues().Size();
+	if (mode_id < 0 || mode_id >= num_eigen)
+		DMP_ERR("The provided mode_id (" << mode_id + 1 << ") is out of range (1, " << num_eigen << ")");
+	m_current_mode = mode_id;
+
+	// check consistency
+	check();
+
+	// init the new step
+	beginMode();
+
+	// compute modal acceleration for this mode using the 
+	// provided response spectrum function (time series)
+	solveMode();
+
+	// done with the current step.
+	// here the modal displacements will be recorded (and all other results
+	// if requested via recorders...)
+	endMode();
+}
+
+void ResponseSpectrumAnalysis::check()
+{
+	// get the domain
+	Domain* domain = m_model->getDomainPtr();
+
+	// get the modal properties
+	const DomainModalProperties& mp = domain->getModalProperties();
+
 	// number of eigen-modes
 	int num_eigen = domain->getEigenvalues().Size();
 	if (num_eigen < 1)
 		DMP_ERR("No Eigenvalue provided.\n");
-
-	// size info
-	int ndm = mp.centerOfMass().Size();
-	int ndf = mp.totalMass().Size();
 
 	// check consistency
 	auto check_eigen = [&mp, domain]() -> bool {
@@ -198,72 +281,6 @@ void ResponseSpectrumAnalysis::analyze()
 		DMP_ERR("Eigenvalues stored in DomainModalProperties are not equal to the eigenvalues in the model.\n"
 			"Make sure to call the 'modalProperties' command\n"
 			"after the 'eigen' command, and right before the 'responseSpectrum' command.\n");
-
-	// excited DOF.
-	// Note: now we assume that a RS acts along one of the global directions, so we need
-	// to consider only the associated column of the modal participation factors.
-	// in future versions we can implement a general direction vector.
-	int exdof = m_direction - 1; // make it 0-based
-
-	// loop over all required eigen-modes, compute the modal displacement
-	// and save the results.
-	// we just compute modal displacements without doing any (SRSS, CQC, etc..)
-	// modal combination otherwise derived results cannot be computed.
-	// for each mode, this analysis produces a new analysis step.
-	// modal combination of displacements (or any derived results)
-	// it's up to the user.
-	for (m_current_mode = 0; m_current_mode < num_eigen; ++m_current_mode)
-	{
-		// init the new step
-		beginMode();
-
-		// compute modal acceleration for this mode using the 
-		// provided response spectrum function (time series)
-		double lambda = mp.eigenvalues()(m_current_mode);
-		double omega = std::sqrt(lambda);
-		double freq = omega / 2.0 / M_PI;
-		double period = 1.0 / freq;
-		double mga = m_function->getFactor(period);
-		double Vscale = mp.eigenVectorScaleFactors()(m_current_mode);
-		double MPF = mp.modalParticipationFactors()(m_current_mode, exdof);
-
-		// loop over all nodes and compute the modal displacements
-		Node* node;
-		NodeIter& theNodes = domain->getNodes();
-		while ((node = theNodes()) != 0) {
-
-			// get the nodal eigenvector, according to the ndf of modal properties
-			// and its scaling
-			const Matrix& node_evec = node->getEigenvectors();
-			int node_ndf = node_evec.noRows();
-
-			// for each DOF...
-			for (int i = 0; i < std::min(node_ndf, ndf); ++i) {
-				// exclude any dof >= node_ndf (if ndf > node_ndf... in case node is U-only)
-				// exclude any dof >= ndf (if node_ndf > ndf... in case the node has more DOFs than U and R)
-				
-				// we also need to exclude pressure dofs... easy in 3D because node_ndf is 4,
-				// but in 2D it is 3, as in U-R...
-				if (ndf == 6 && node_ndf == 4 && i == 3)
-					continue;
-
-				// eigenvector
-				double V = node_evec(i, m_current_mode) * Vscale;
-
-				// compute modal displacements for the i-th DOF
-				double u_modal = V * MPF * mga / lambda;
-
-				// save this displacement at the i-th dof as new trial displacement
-				node->setTrialDisp(u_modal, i);
-			}
-
-		}
-
-		// done with the current step.
-		// here the modal displacements will be recorded (and all other results
-		// if requested via recorders...)
-		endMode();
-	}
 }
 
 void ResponseSpectrumAnalysis::beginMode()
@@ -293,6 +310,66 @@ void ResponseSpectrumAnalysis::endMode()
 			"ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed in commitDomain"
 			" at mode " << m_current_mode << "\n"
 		);
+	}
+}
+
+void ResponseSpectrumAnalysis::solveMode()
+{
+	// get the domain
+	Domain* domain = m_model->getDomainPtr();
+
+	// get the modal properties
+	const DomainModalProperties& mp = domain->getModalProperties();
+
+	// size info
+	int ndf = mp.totalMass().Size();
+
+	// excited DOF.
+	// Note: now we assume that a RS acts along one of the global directions, so we need
+	// to consider only the associated column of the modal participation factors.
+	// in future versions we can implement a general direction vector.
+	int exdof = m_direction - 1; // make it 0-based
+
+	// compute modal acceleration for this mode using the 
+	// provided response spectrum function (time series)
+	double lambda = mp.eigenvalues()(m_current_mode);
+	double omega = std::sqrt(lambda);
+	double freq = omega / 2.0 / M_PI;
+	double period = 1.0 / freq;
+	double mga = m_function->getFactor(period);
+	double Vscale = mp.eigenVectorScaleFactors()(m_current_mode);
+	double MPF = mp.modalParticipationFactors()(m_current_mode, exdof);
+
+	// loop over all nodes and compute the modal displacements
+	Node* node;
+	NodeIter& theNodes = domain->getNodes();
+	while ((node = theNodes()) != 0) {
+
+		// get the nodal eigenvector, according to the ndf of modal properties
+		// and its scaling
+		const Matrix& node_evec = node->getEigenvectors();
+		int node_ndf = node_evec.noRows();
+
+		// for each DOF...
+		for (int i = 0; i < std::min(node_ndf, ndf); ++i) {
+			// exclude any dof >= node_ndf (if ndf > node_ndf... in case node is U-only)
+			// exclude any dof >= ndf (if node_ndf > ndf... in case the node has more DOFs than U and R)
+
+			// we also need to exclude pressure dofs... easy in 3D because node_ndf is 4,
+			// but in 2D it is 3, as in U-R...
+			if (ndf == 6 && node_ndf == 4 && i == 3)
+				continue;
+
+			// eigenvector
+			double V = node_evec(i, m_current_mode) * Vscale;
+
+			// compute modal displacements for the i-th DOF
+			double u_modal = V * MPF * mga / lambda;
+
+			// save this displacement at the i-th dof as new trial displacement
+			node->setTrialDisp(u_modal, i);
+		}
+
 	}
 }
 
