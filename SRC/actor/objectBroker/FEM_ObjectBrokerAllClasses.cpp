@@ -1283,6 +1283,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_ConfinedConcrete01:
             return new ConfinedConcrete01();
+		    
+	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
+	    return new HystereticPoly();
 
 
 	default:
