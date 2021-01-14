@@ -96,6 +96,7 @@
 #include "Bond_SP01.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
+#include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
