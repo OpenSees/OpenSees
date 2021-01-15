@@ -18,17 +18,20 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam3d.
 // ElasticTimoshenkoBeam3d is a 3d beam element. As such it can only
 // connect to a node with 6-dof. 
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam3d.h>
 
@@ -874,41 +877,10 @@ int ElasticTimoshenkoBeam3d::updateParameter (int parameterID,
 
 
 void ElasticTimoshenkoBeam3d::setUp()
-{
-    // element projection
-    static Vector dx(3);
-    
-    const Vector &ndICoords = theNodes[0]->getCrds();
-    const Vector &ndJCoords = theNodes[1]->getCrds();
-    
-    dx = ndJCoords - ndICoords;
-    
-    /*if (nodeJOffset != 0) {
-        dx(0) += nodeJOffset[0];
-        dx(1) += nodeJOffset[1];
-        dx(2) += nodeJOffset[2];
-    }
-    
-    if (nodeIOffset != 0) {
-        dx(0) -= nodeIOffset[0];
-        dx(1) -= nodeIOffset[1];
-        dx(2) -= nodeIOffset[2];
-    }
-    
-    if (nodeIInitialDisp != 0) {
-        dx(0) -= nodeIInitialDisp[0];
-        dx(1) -= nodeIInitialDisp[1];
-        dx(2) -= nodeIInitialDisp[2];
-    }
-    
-    if (nodeJInitialDisp != 0) {
-        dx(0) += nodeJInitialDisp[0];
-        dx(1) += nodeJInitialDisp[1];
-        dx(2) += nodeJInitialDisp[2];
-    }*/
-    
+{  
     // determine the element length
-    L = dx.Norm();
+    L = theCoordTransf->getInitialLength();
+
     if (L == 0.0)  {
         opserr << "WARNING ElasticTimoshenkoBeam3d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";
