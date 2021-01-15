@@ -27,6 +27,9 @@
 //  Elastic Plate Section with membrane
 //
 
+// Out-of-Plane stiffness modifier added by Pearl Ranchal
+// Supported by Degenkolb Engineers
+
 
 #include <ElasticMembranePlateSection.h>
 #include <Channel.h>
@@ -44,27 +47,29 @@ ID      ElasticMembranePlateSection::array(8) ;
 void* OPS_ElasticMembranePlateSection()
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? <rho?>\n";
-	return 0;
+        opserr << "WARNING insufficient arguments\n";
+        opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? <rho?> <Ep_modifer?>\n";
+        return 0;
     }
 
     int tag;
     int numdata = 1;
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING invalid tag\n";
-	return 0;
+        opserr << "WARNING invalid tag\n";
+        return 0;
     }
 
-    double data[4] = {0,0,0,0.0};
-    numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata > 4) numdata = 4;
+    double data[5]  = {0, 0, 0, 0, 1};
+    numdata         = OPS_GetNumRemainingInputArgs();
+
+    if (numdata > 5) numdata = 5;
+
     if (OPS_GetDoubleInput(&numdata, data) < 0) {
-	opserr << "WARNING invalid double values\n";
-	return 0;
+        opserr << "WARNING invalid double values\n";
+        return 0;
     }
 
-    return new ElasticMembranePlateSection(tag,data[0],data[1],data[2],data[3]);
+    return new ElasticMembranePlateSection(tag, data[0], data[1], data[2], data[3], data[4]);
 }
 
 //null constructor
@@ -75,22 +80,21 @@ strain(8)
 
 }
 
-
-
 //full constructor
-ElasticMembranePlateSection::ElasticMembranePlateSection(  
-                                           int    tag, 
-                                           double young,
-                                           double poisson,
-                                           double thickness,
-					   double r ) :
-SectionForceDeformation( tag, SEC_TAG_ElasticMembranePlateSection ),
+ElasticMembranePlateSection::ElasticMembranePlateSection(int    tag,
+                                                         double young_membrane,
+                                                         double poisson,
+                                                         double thickness,
+                                                         double r, 
+                                                         double young_plate_mod) :
+SectionForceDeformation(tag, SEC_TAG_ElasticMembranePlateSection),
 strain(8)
 {
-  this->E  = young ;
-  this->nu = poisson ;
-  this->h  = thickness ;
-  this->rhoH = r*thickness ;
+    this->Em    = young_membrane;
+    this->Ep    = young_membrane * young_plate_mod;
+    this->nu    = poisson;
+    this->h     = thickness;
+    this->rhoH  = r * thickness;
 }
 
 
@@ -108,7 +112,7 @@ SectionForceDeformation*  ElasticMembranePlateSection::getCopy( )
 {
   ElasticMembranePlateSection *clone ;   
 
-  clone = new ElasticMembranePlateSection(this->getTag(), E, nu, h, rhoH) ; //new instance of this class
+  clone = new ElasticMembranePlateSection(this->getTag(), Em, nu, h, rhoH, Ep/Em) ; //new instance of this class
 
   //    *clone = *this ; //assignment to make copy
   clone->rhoH = this->rhoH ;
@@ -182,9 +186,9 @@ const Vector& ElasticMembranePlateSection::getSectionDeformation( )
 const Vector&  ElasticMembranePlateSection::getStressResultant( )
 {
 
-  double M  = E / ( 1.0 - nu*nu ) ; //membrane modulus
+  double M  = Em / ( 1.0 - nu*nu ) ; //membrane modulus
 
-  double G  =  0.5 * E / ( 1.0 + nu ) ; //shear modulus
+  double G  =  0.5 * Em / ( 1.0 + nu ) ; //shear modulus
  
   G *= h ;  //multiply by thickness
   M *= h ;
@@ -199,9 +203,9 @@ const Vector&  ElasticMembranePlateSection::getStressResultant( )
 
  
 
-  G *= five6 ;  //multiply by shear correction factor
+  G *= (five6 * (Ep / Em));  //multiply by product of shear correction factor and ratio of bending to membrane moduli
 
-  double D  =  E * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
+  double D  =  Ep * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
 
   //bending resultants
 
@@ -224,9 +228,9 @@ const Vector&  ElasticMembranePlateSection::getStressResultant( )
 const Matrix&  ElasticMembranePlateSection::getSectionTangent( )
 {
 
-  double M  = E / ( 1.0 - nu*nu ) ; //membrane modulus
+  double M  = Em / ( 1.0 - nu*nu ) ; //membrane modulus
 
-  double G  =  0.5 * E / ( 1.0 + nu ) ; //shear modulus
+  double G  =  0.5 * Em / ( 1.0 + nu ) ; //shear modulus
 
   G *= h ;  //multiply by thickness
   M *= h ;
@@ -245,9 +249,9 @@ const Matrix&  ElasticMembranePlateSection::getSectionTangent( )
 
 
 
-  G *= five6 ;  //multiply by shear correction factor
+  G *= (five6 * (Ep / Em));  //multiply by product of shear correction factor and ratio of bending to membrane moduli
 
-  double D  =  E * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
+  double D  =  Ep * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
 
   //bending tangent terms
 
@@ -271,9 +275,9 @@ const Matrix&  ElasticMembranePlateSection::getSectionTangent( )
 const Matrix&  ElasticMembranePlateSection::getInitialTangent( )
 {
 
-  double M  = E / ( 1.0 - nu*nu ) ; //membrane modulus
+  double M  = Em / ( 1.0 - nu*nu ) ; //membrane modulus
 
-  double G  =  0.5 * E / ( 1.0 + nu ) ; //shear modulus
+  double G  =  0.5 * Em / ( 1.0 + nu ) ; //shear modulus
 
   G *= h ;  //multiply by thickness
   M *= h ;
@@ -292,9 +296,9 @@ const Matrix&  ElasticMembranePlateSection::getInitialTangent( )
 
 
 
-  G *= five6 ;  //multiply by shear correction factor
+  G *= (five6 * (Ep / Em));  //multiply by product of shear correction factor and ratio of bending to membrane moduli
 
-  double D  =  E * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
+  double D  =  Ep * (h*h*h) / 12.0 / ( 1.0 - nu*nu ) ;  //bending modulus
 
   //bending tangent terms
 
@@ -319,7 +323,8 @@ void  ElasticMembranePlateSection::Print( OPS_Stream &s, int flag )
 {
     if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
         s << "ElasticMembranePlateSection: \n ";
-        s << "  Young's Modulus E = " << E << endln;
+        s << "  Young's Modulus for Membrane (in-plane) Action, Em = " << Em << endln;
+        s << "  Young's Modulus for Plate (out-of-plane) Action, Ep = " << Ep << endln;
         s << "  Poisson's Ratio nu = " << nu << endln;
         s << "  Thickness h = " << h << endln;
         s << "  Density rho = " << (rhoH/h) << endln;
@@ -329,7 +334,8 @@ void  ElasticMembranePlateSection::Print( OPS_Stream &s, int flag )
         s << "\t\t\t{";
         s << "\"name\": \"" << this->getTag() << "\", ";
         s << "\"type\": \"ElasticMembranePlateSection\", ";
-        s << "\"E\": " << E << ", ";
+        s << "\"Em\": " << Em << ", ";
+        s << "\"Ep\": " << Ep << ", ";
         s << "\"nu\": " << nu << ", ";
         s << "\"thickness\": " << h << ", ";
         s << "\"masspervolume\": " << (rhoH/h) << "}";
@@ -340,12 +346,13 @@ void  ElasticMembranePlateSection::Print( OPS_Stream &s, int flag )
 int ElasticMembranePlateSection::sendSelf(int cTag, Channel &theChannel) 
 {
   int res = 0;
-  static Vector data(5);
+  static Vector data(6);
   data(0) = this->getTag();
-  data(1) = E;
+  data(1) = Em;
   data(2) = nu;
   data(3) = h;
   data(4) = rhoH;
+  data(5) = Ep/Em;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -359,13 +366,14 @@ int ElasticMembranePlateSection::recvSelf(int cTag, Channel &theChannel,
 				      FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(5);
+  static Vector data(6);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ElasticMembranePlateSection::recvSelf() - failed to recv data\n";
   else {
     this->setTag(data(0));
-    E    = data(1);
+    Em   = data(1);
+    Ep   = data(1) * data(5);
     nu   = data(2);
     h    = data(3);
     rhoH = data(4);

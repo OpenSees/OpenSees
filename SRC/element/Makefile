@@ -49,6 +49,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
+	@$(CD) $(FE)/element/RockingBC; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -96,6 +97,7 @@ spotless: clean
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
+	@$(CD) $(FE)/element/RockingBC; $(MAKE) wipe;
 
 wipe: spotless
 

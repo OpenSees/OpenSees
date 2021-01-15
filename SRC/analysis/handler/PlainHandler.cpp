@@ -91,7 +91,7 @@ PlainHandler::handle(const ID *nodesLast)
 	    opserr << "WARNING PlainHandler::handle() - ";
 	    opserr << " non-homogeneos constraint";
 	    opserr << " for node " << theSP->getNodeTag();
-	    opserr << " homo assumed\n";
+	    opserr << " homogeneous constraint assumed\n";
 	}
 	allSPs.insert(std::make_pair(theSP->getNodeTag(),theSP));
     }

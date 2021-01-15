@@ -572,47 +572,54 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     }	
 
     else if (strcmp(argv[1],"ElasticMembranePlateSection") == 0) {
-	if (argc < 5) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? <rho?>" << endln;
-	    return TCL_ERROR;
-	}
+		if (argc < 5) {
+			opserr << "WARNING insufficient arguments\n";
+			opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? <rho?> <Ep_mod?>" << endln;
+			return TCL_ERROR;
+		}
 	
-	int tag;
-	double E, nu, h;
-	double rho = 0.0;
+		int tag;
+		double E, nu, h;
+		double rho = 0.0;
+		double Ep_mod = 1.0;
 	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section ElasticMembranePlateSection tag" << endln;
-	    return TCL_ERROR;		
-	}
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid section ElasticMembranePlateSection tag" << endln;
+			return TCL_ERROR;		
+		}
 
-	if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E" << endln;
-	    opserr << "ElasticMembranePlateSection section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
+		if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
+			opserr << "WARNING invalid E" << endln;
+			opserr << "ElasticMembranePlateSection section: " << tag << endln;	    
+			return TCL_ERROR;
+		}	
 
-	if (Tcl_GetDouble (interp, argv[4], &nu) != TCL_OK) {
-	    opserr << "WARNING invalid nu" << endln;
-	    opserr << "ElasticMembranePlateSection section: " << tag << endln;	    
-	    return TCL_ERROR;
-	}	
+		if (Tcl_GetDouble (interp, argv[4], &nu) != TCL_OK) {
+			opserr << "WARNING invalid nu" << endln;
+			opserr << "ElasticMembranePlateSection section: " << tag << endln;	    
+			return TCL_ERROR;
+		}	
 	
-	if (Tcl_GetDouble (interp, argv[5], &h) != TCL_OK) {
-	    opserr << "WARNING invalid h" << endln;
-	    opserr << "ElasticMembranePlateSection section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
+		if (Tcl_GetDouble (interp, argv[5], &h) != TCL_OK) {
+			opserr << "WARNING invalid h" << endln;
+			opserr << "ElasticMembranePlateSection section: " << tag << endln;	    	    
+			return TCL_ERROR;
+		}	
 
-	if (argc > 6 && Tcl_GetDouble (interp, argv[6], &rho) != TCL_OK) {
-	    opserr << "WARNING invalid rho" << endln;
-	    opserr << "ElasticMembranePlateSection section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}
+		if (argc > 6 && Tcl_GetDouble (interp, argv[6], &rho) != TCL_OK) {
+			opserr << "WARNING invalid rho" << endln;
+			opserr << "ElasticMembranePlateSection section: " << tag << endln;	    	    
+			return TCL_ERROR;
+		}
 
-	theSection = new ElasticMembranePlateSection (tag, E, nu, h, rho);
-    }	
+		if (argc > 7 && Tcl_GetDouble(interp, argv[7], &Ep_mod) != TCL_OK) {
+			opserr << "WARNING invalid Ep_mod" << endln;
+			opserr << "ElasticMembranePlateSection section: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		theSection = new ElasticMembranePlateSection (tag, E, nu, h, rho, Ep_mod);
+    }
 
     else if (strcmp(argv[1],"PlateFiber") == 0) {
 	if (argc < 5) {
