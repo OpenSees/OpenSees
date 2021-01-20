@@ -657,7 +657,10 @@ endif
 
 ifdef FILIP_FLAG
 	FILIP = $(FE)/element/filip/BeamColumn2DwLHNMYS.o \
+	$(FE)/element/filip/BeamColumn2DwLHNMYS_Damage.o \
 	$(FE)/element/filip/BeamColumn3DwLHNMYS.o \
+	$(FE)/element/filip/Damage4NM.o \
+	$(FE)/element/filip/betaFunctions.o \
 	$(FE)/element/filip/GPYS.o
 else
 	FILIP = 
