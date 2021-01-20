@@ -198,14 +198,14 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
                         TupperStressPos = k2 * TupperStrainPos - k2 * ActDef + ActF;
                     }
                     else {
-                        Tstress = std::fmin(Cstress + diffStrain * k1, Tstrain * k1);
+                        Tstress = fmin(Cstress + diffStrain * k1, Tstrain * k1);
                         Ttangent = k1;
                     }
                 }
                 else if (diffStrain > DBL_EPSILON) {
 
                     if (No_Y_Pos == 1) {
-                        Tstress = std::fmin(Cstress + diffStrain * k1,Tstrain * k1);
+                        Tstress = fmin(Cstress + diffStrain * k1,Tstrain * k1);
                         Ttangent = k1;
                         No_k2_Pos = 0;
 
@@ -214,7 +214,7 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
 
                     } else if (No_Y_Pos == 0) {
 
-                        Tstress = std::fmin((Tstrain - CactivStrainPos) * k1,Tstrain*k1);
+                        Tstress = fmin((Tstrain - CactivStrainPos) * k1,Tstrain*k1);
                         Ttangent = k1;
                         No_k2_Pos = 0;
                     }
@@ -255,7 +255,7 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
             else { // Tstrain < ClowerStrainPos
 
                 if (k1 * Tstrain <= ClowerStressPos && No_k2_Pos == 1) {
-                    Tstress = std::fmin((Tstrain - CactivStrainPos) * k1, Tstrain * k1);
+                    Tstress = fmin((Tstrain - CactivStrainPos) * k1, Tstrain * k1);
                     Ttangent = k1;
 
                     TupperStrainPos = ActDef;
@@ -299,14 +299,14 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
                         TupperStressNeg = k2 * TupperStrainNeg + k2 * ActDef - ActF;
                     }
                     else {
-                        Tstress = std::fmax(Cstress + diffStrain * k1, Tstrain * k1);
+                        Tstress = fmax(Cstress + diffStrain * k1, Tstrain * k1);
                         Ttangent = k1;
                     }
                 }
                 else if (diffStrain < DBL_EPSILON) {
 
                     if (No_Y_Neg == 1) {
-                        Tstress = std::fmax(Cstress + diffStrain * k1, Tstrain * k1);
+                        Tstress = fmax(Cstress + diffStrain * k1, Tstrain * k1);
                         Ttangent = k1;
                         No_k2_Neg = 0;
 
@@ -315,7 +315,7 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
 
                     }
                     else if (No_Y_Neg == 0) {
-                        Tstress = std::fmax((Tstrain - CactivStrainNeg) * k1, Tstrain * k1);
+                        Tstress = fmax((Tstrain - CactivStrainNeg) * k1, Tstrain * k1);
                         Ttangent = k1;
                         No_k2_Neg = 0;
 
@@ -357,7 +357,7 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
 
 
                 if (k1 * Tstrain >= ClowerStressNeg && No_k2_Neg == 1) {
-                    Tstress = std::fmax((Tstrain - CactivStrainNeg) * k1, Tstrain * k1);
+                    Tstress = fmax((Tstrain - CactivStrainNeg) * k1, Tstrain * k1);
                     Ttangent = k1;
 
                     TupperStrainNeg = -ActDef;

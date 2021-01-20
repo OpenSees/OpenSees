@@ -639,6 +639,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
+	$(FE)/element/PML/pml_3d.o \
+        $(FE)/element/PML/PML3D.o \
+        $(FE)/element/PML/pml_2d.o \
+        $(FE)/element/PML/PML2D.o \
 	$(FE)/element/RockingBC/RockingBC.o
 
 #	$(FE)/material/nD/Damage2p.o \
@@ -665,11 +669,7 @@ endif
 
 
 ifdef PLAINCONCRETE_FLAG
-	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
-       $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
-       $(FE)/element/PML/PML3D.o \
-       $(FE)/element/PML/PMLDynamicSymmDamp2D.o \
-       $(FE)/element/PML/PML2D.o
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
 else
 	PLAINCONCRETE = 
 endif

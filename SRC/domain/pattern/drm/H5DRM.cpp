@@ -895,10 +895,10 @@ bool H5DRM::drm_direct_read(double t)
         bool nanfound = false;
         for (int i = 0; i < 3; ++i)
         {
-            if ( isnan(d1[i])  ||
-                 isnan(a1[i])  ||
-                 isnan(d2[i])  ||
-                 isnan(a2[i]) )
+	  if ( isnan(d1[i])  ||
+               isnan(a1[i])  ||
+               isnan(d2[i])  ||
+               isnan(a2[i]) )
             {
                 nanfound = true;
             }
@@ -1078,10 +1078,17 @@ bool H5DRM::drm_differentiate_displacements(double t)
         bool nanfound = false;
         for (int i = 0; i < 3; ++i)
         {
+<<<<<<< HEAD
+	  if ( isnan(d1[i])  ||
+               isnan(a1[i])  ||
+               isnan(d2[i])  ||
+               isnan(a2[i]) )
+=======
             if ( isnan(d1[i])  ||
                  isnan(a1[i])  ||
                  isnan(d2[i])  ||
                  isnan(a2[i]) )
+>>>>>>> 732044f5b1846fa0047e4516e0717dc0d22bffc3
             {
                 nanfound = true;
             }
@@ -1254,6 +1261,85 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
         }
 
 
+<<<<<<< HEAD
+		for (hsize_t i = 0; i < Nt; ++i)
+		{
+			double dtau = 0;
+			double tau_1 = tstart + i * dt;
+			double tau_2 = tstart + (i + 1) * dt;
+			tau_1 = tau_1 > t1 ? tau_1 : t1;
+			tau_2 = tau_2 < t2 ? tau_2 : t2;
+			dtau = tau_2 - tau_1;
+
+			if (dtau <= 0)
+				continue;
+
+
+
+			if (DEBUG_DRM_INTEGRATION)
+			{
+				/* FMK
+				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+				******/
+				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * Nt], v[0 + (i + 1)*3]);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * Nt], v[1 + (i + 1)*3]);
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * Nt], v[2 + (i + 1)*3]);
+
+			}
+
+			double u1 = DRMDisplacements(3 * local_pos + 0);
+			double u2 = DRMDisplacements(3 * local_pos + 1);
+			double u3 = DRMDisplacements(3 * local_pos + 2);
+			/* FMK
+			double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
+			double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
+			double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+			******/
+			double du1 = (v[0 + i * 3] + v[0 + (i + 1)*3]) * (dir * dtau / 2);
+			double du2 = (v[1 + i * 3] + v[1 + (i + 1)*3]) * (dir * dtau / 2);
+			double du3 = (v[2 + i * 3] + v[2 + (i + 1)*3]) * (dir * dtau / 2);
+
+			DRMDisplacements(3 * local_pos + 0) += du1;
+			DRMDisplacements(3 * local_pos + 1) += du2;
+			DRMDisplacements(3 * local_pos + 2) += du3;
+
+			if (DEBUG_DRM_INTEGRATION)
+			{
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0));
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1));
+				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2));
+			}
+
+			// bool found_nan = false;
+			if (isnan(u1) || isnan(du1) ||
+				isnan(u2) || isnan(du2) ||
+				isnan(u3) || isnan(du3) ||
+				isnan(dt) || isnan(dtau))
+			{
+				H5DRMerror << "NAN Detected!!! \n";
+				H5DRMerror << "    nodeTag = " << nodeTag << endln;
+				H5DRMerror << "    local_pos = " << local_pos << endln;
+				printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+				printf("        u1 = %f du1 = %f \n", u1, du1);
+				printf("        u2 = %f du2 = %f \n", u2, du2);
+				printf("        u3 = %f du3 = %f \n", u3, du3);
+				/* FMK
+				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+				*/
+				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * 3], v[0 + (i + 1)*3]);
+				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * 3], v[1 + (i + 1)*3]);
+				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * 3], v[2 + (i + 1)*3]);
+				exit(-1);
+			}
+
+		}
+=======
         for (hsize_t i = 0; i <  Nt; ++i)
         {
             double dtau = 0;
@@ -1314,6 +1400,7 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
             }
 
         }
+>>>>>>> 732044f5b1846fa0047e4516e0717dc0d22bffc3
 
         int eval_i = (int) (t2 - t1) / dt;
 
@@ -2069,8 +2156,8 @@ bool Plane::get_ij_coordinates_to_point(double x1, double x2, int& i, int& j) co
     double xi1end = xi1(N1 - 1);
     double xi2start = xi2(0);
     double xi2end = xi2(N2 - 1);
-    i = (int) std::round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
-    j = (int) std::round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
+    i = (int) round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
+    j = (int) round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
 
     i = i < 0     ? 0    : i;
     i = i > N1 - 1  ? N1 - 1 : i;
