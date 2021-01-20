@@ -58,7 +58,7 @@
 #include <LoadPatternIter.h>
 #include <LoadPattern.h>
  
-#include <Timer.h>
+//#include <Timer.h>
 
 #include <MapOfTaggedObjects.h>
 
