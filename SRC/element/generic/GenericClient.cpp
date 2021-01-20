@@ -164,7 +164,7 @@ void* OPS_GenericClient()
             }
             numdata = 1;
             if (OPS_GetIntInput(&numdata, &dataSize) < 0) {
-                opserr << "WARNING invalid damping value\n";
+                opserr << "WARNING invalid dataSize value\n";
                 return 0;
             }
         }
@@ -175,13 +175,16 @@ void* OPS_GenericClient()
             doRayleigh = 0;
         }
     }
-
+    
     // create object
     Element *theEle = new GenericClient(tag, nodes, dofs, ipPort,
         ipAddr, ssl, udp, dataSize, doRayleigh);
-
+    
+    // cleanup dynamic memory
+    if (dofs != 0)
+        delete[] dofs;
     delete[] ipAddr;
-
+    
     return theEle;
 }
 
