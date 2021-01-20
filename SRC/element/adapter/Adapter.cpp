@@ -190,8 +190,11 @@ void* OPS_Adapter()
     Element *theEle = new Adapter(tag, nodes, dofs, kb, ipPort,
         ssl, udp, doRayleigh, mb);
     
-    // clean up memory
-    delete mb;
+    // cleanup dynamic memory
+    if (dofs != 0)
+        delete[] dofs;
+    if (mb != 0)
+        delete mb;
     
     return theEle;
 }
