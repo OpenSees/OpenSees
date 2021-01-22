@@ -8879,10 +8879,10 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
         lb = 0.0000044482216152605;
     }
     else if ((strcmp(force, "kgf") == 0)) {
-        lb = 9.80665*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665;
     }
     else if ((strcmp(force, "tonf") == 0)) {
-        lb = 9.80665 / 1000.0*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665 / 1000.0;
     }
     else {
         lb = 1.0;
