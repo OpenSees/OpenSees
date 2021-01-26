@@ -116,6 +116,9 @@ class EPPGapMaterial : public UniaxialMaterial
 	//added by SAJalali
 	double commitStress;      // prev. trial stress
 	double Energy, EnergyP;
+
+    //added by ambaker1
+    double commitTangent;
 };
 
 
