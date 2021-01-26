@@ -52,7 +52,7 @@ void* OPS_CTestEnergyIncr()
     double tol = 1e-6;
     int numData = 1;
     if(OPS_GetDoubleInput(&numData,&tol) < 0) {
-	opserr << "WARNING NormUnbalance failed to read tol\n";
+	opserr << "WARNING EnergyIncr failed to read tol\n";
 	return 0;
     }
 
@@ -61,7 +61,7 @@ void* OPS_CTestEnergyIncr()
     if(numData > 3) numData = 3;
     int data[3] = {0,0,2};
     if(OPS_GetIntInput(&numData,&data[0]) < 0) {
-	opserr << "WARNING NormUnbalance failed to read int values\n";
+	opserr << "WARNING EnergyIncr failed to read int values\n";
 	return 0;
     }
 
@@ -70,7 +70,7 @@ void* OPS_CTestEnergyIncr()
     if(OPS_GetNumRemainingInputArgs() > 0) {
 	numData = 1;
 	if(OPS_GetDoubleInput(&numData,&maxTol) < 0) {
-	    opserr << "WARNING NormUnbalance failed to read maxTol\n";
+	    opserr << "WARNING EnergyIncr failed to read maxTol\n";
 	    return 0;
 	}
     }
