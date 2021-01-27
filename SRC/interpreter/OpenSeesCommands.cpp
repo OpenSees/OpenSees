@@ -987,6 +987,17 @@ const char * OPS_GetString(void)
     return res;
 }
 
+const char * OPS_GetStringFromAll(char* buffer, int len)
+{
+    if (cmds == 0) return "Invalid String Input!";
+    DL_Interpreter* interp = cmds->getInterpreter();
+    const char* res = interp->getStringFromAll(buffer, len);
+    if (res == 0) {
+	return "Invalid String Input!";
+    }
+    return res;
+}
+
 int OPS_SetString(const char* str)
 {
     if (cmds == 0) return 0;

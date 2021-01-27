@@ -84,6 +84,12 @@ DL_Interpreter::getString()
     return 0;
 }
 
+const char*
+DL_Interpreter::getStringFromAll(char* buffer, int len)
+{
+    return 0;
+}
+
 int 
 DL_Interpreter::getStringCopy(char **stringPtr)
 {
