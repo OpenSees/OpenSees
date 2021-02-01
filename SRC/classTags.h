@@ -997,6 +997,7 @@
 #define INTEGRATOR_TAGS_GimmeMCK       	                57
 #define INTEGRATOR_TAGS_StagedLoadControl               58
 #define INTEGRATOR_TAGS_StagedNewmark                   59
+#define INTEGRATOR_TAGS_HarmonicSteadyState             60
 
 
 #define LinSOE_TAGS_FullGenLinSOE		1

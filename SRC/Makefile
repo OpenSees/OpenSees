@@ -1332,6 +1332,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/HarmonicSteadyState.o \
 	$(FE)/analysis/integrator/StagedLoadControl.o \
 	$(FE)/analysis/integrator/StagedNewmark.o \
 	$(FE)/analysis/integrator/EQPath.o \

@@ -183,6 +183,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <DOF_Numberer.h>
 
 // integrators
+// #include <HarmonicSteadyState.h>
 #include <LoadControl.h>
 #include <StagedLoadControl.h>
 #include <ArcLength.h>
@@ -210,6 +211,7 @@ extern void *OPS_NewtonHallM(void);
 extern void *OPS_Newmark(void);
 extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
+extern void *OPS_HarmonicSteadyState(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -4469,7 +4471,11 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       if (theStaticAnalysis != 0)
         theStaticAnalysis->setIntegrator(*theStaticIntegrator);
       }
-  
+
+  else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSteadyState") == 0) {
+    theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
+   }
+
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
       double alpha;
