@@ -100,7 +100,7 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
-    recordersMap.insert(std::make_pair("MPCO", &OPS_MPCORecorder));
+    recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
