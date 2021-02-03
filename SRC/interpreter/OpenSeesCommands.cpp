@@ -208,6 +208,11 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+AnalysisModel** OpenSeesCommands::getAnalysisModel()
+{
+    return &theAnalysisModel;
+}
+
 void
 OpenSeesCommands::setSOE(LinearSOE* soe)
 {
@@ -982,6 +987,17 @@ const char * OPS_GetString(void)
     return res;
 }
 
+const char * OPS_GetStringFromAll(char* buffer, int len)
+{
+    if (cmds == 0) return "Invalid String Input!";
+    DL_Interpreter* interp = cmds->getInterpreter();
+    const char* res = interp->getStringFromAll(buffer, len);
+    if (res == 0) {
+	return "Invalid String Input!";
+    }
+    return res;
+}
+
 int OPS_SetString(const char* str)
 {
     if (cmds == 0) return 0;
@@ -993,6 +1009,13 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+AnalysisModel**
+OPS_GetAnalysisModel(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getAnalysisModel();
 }
 
 int OPS_GetNDF()
