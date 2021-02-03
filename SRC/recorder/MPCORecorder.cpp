@@ -4040,7 +4040,7 @@ namespace mpco
 
 		public:
 			inline Serializer& operator << (const std::string& x) {
-				ss << x << '\n';
+				ss << x.length() << ' ' << x << '\n';
 				return *this;
 			}
 			inline Serializer& operator << (bool x) {
@@ -4049,6 +4049,10 @@ namespace mpco
 			}
 			inline Serializer& operator << (int x) {
 				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (mpco::OutputFrequency::IncrementType x) {
+				ss << static_cast<int>(x) << '\n';
 				return *this;
 			}
 			inline Serializer& operator << (std::size_t x) {
@@ -4074,6 +4078,10 @@ namespace mpco
 
 		public:
 			inline Serializer& operator >> (std::string& x) {
+				std::size_t n;
+				ss >> n; // needed to make it work even when string is not the first entry
+				char dummy;
+				ss.read(&dummy, 1); // 1 white space
 				std::getline(ss, x, '\n');
 				return *this;
 			}
@@ -4377,24 +4385,18 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 
 	m_data->send_self_count++;
 
-	// info...
-	std::stringstream _info;
-	_info << "MPCORecorder sendSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	opserr << _info.str().c_str();
-
 	// element results requests
 	std::string elem_res_merged_string;
 	{
 		std::stringstream ss;
 		for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-			if (i > 0) {
+			if (i > 0) 
 				ss << ':'; // char separator for results
-			}
 			const std::vector<std::string>& i_request = m_data->elemental_results_requests[i];
 			for (size_t j = 0; j < i_request.size(); j++) {
-				if (j > 0) {
+				if (j > 0) 
 					ss << '.'; // char separator for jth token
-				}
+				ss << i_request[j];
 			}
 		}
 		elem_res_merged_string = ss.str();
@@ -4535,57 +4537,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		}
 	}
 
-	// print to debug
-	std::stringstream _info;
-	_info << "MPCORecorder recvSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	_info << "filename = " << m_data->filename << "\n";
-	_info << "freq: ";
-	if (m_data->output_freq.type == mpco::OutputFrequency::DeltaTime) 
-		_info << "dt = " << m_data->output_freq.dt << "\n";
-	else 
-		_info << "nsteps = " << m_data->output_freq.nsteps << "\n";
-	_info << "nodal results [" << m_data->nodal_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->nodal_results_requests.size(); i++) {
-		_info << "   " << m_data->nodal_results_requests[i] << "\n";
-	}
-	_info << "elemental results [" << m_data->elemental_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-		const std::vector<std::string> &ireq = m_data->elemental_results_requests[i];
-		for (size_t j = 0; j < ireq.size(); j++) {
-			if (j > 0)
-				_info << ".";
-			_info << ireq[j];
-		}
-		_info << "\n";
-	}
-	_info << "node set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->node_set.size(); i++) {
-			_info << m_data->node_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]\n";
-	_info << "elem set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->elem_set.size(); i++) {
-			_info << m_data->elem_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]" << "\n";
-	std::cout << _info.str();
-
+	// done
 	return 0;
 }
 
@@ -4650,7 +4602,7 @@ int MPCORecorder::initialize()
 		for (size_t i = 0; i < filename_words.size() - 1; i++)
 			ss_filename << filename_words[i] << '.';
 		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in secondary procs, = 0 -> not in parallel
-			ss_filename << "p" << m_data->p_id << '.';
+			ss_filename << "part-" << m_data->p_id << '.';
 		}
 		ss_filename << filename_words.back();
 		the_filename = ss_filename.str();
