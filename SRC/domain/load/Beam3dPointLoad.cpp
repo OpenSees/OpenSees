@@ -99,7 +99,7 @@ Beam3dPointLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker 
     return result;
 
   }
-  this->setTag(vectData(5));
+  this->setTag((int)vectData(5));
   Px = vectData(0);;
   Py = vectData(1);;
   Pz = vectData(2);;
@@ -116,5 +116,6 @@ Beam3dPointLoad::Print(OPS_Stream &s, int flag)
   s << "  Transverse (y): " << Py << endln;
   s << "  Transverse (z): " << Pz << endln;
   s << "  Axial (x):      " << Px << endln;
+  s << "  Relative Distance: " << x << endln;
   s << "  Element: " << eleTag << endln;;
 }

@@ -639,6 +639,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
+	$(FE)/element/PML/pml_3d.o \
+        $(FE)/element/PML/PML3D.o \
+        $(FE)/element/PML/pml_2d.o \
+        $(FE)/element/PML/PML2D.o \
 	$(FE)/element/RockingBC/RockingBC.o
 
 #	$(FE)/material/nD/Damage2p.o \
@@ -665,11 +669,7 @@ endif
 
 
 ifdef PLAINCONCRETE_FLAG
-	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o \
-       $(FE)/element/PML/PMLDynamicSymmDamp3D.o \
-       $(FE)/element/PML/PML3D.o \
-       $(FE)/element/PML/PMLDynamicSymmDamp2D.o \
-       $(FE)/element/PML/PML2D.o
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
 else
 	PLAINCONCRETE = 
 endif
@@ -1142,6 +1142,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/MaterialStageParameter.o \
 	$(FE)/domain/component/MatParameter.o \
 	$(FE)/domain/domain/Domain.o \
+	$(FE)/domain/domain/DomainModalProperties.o \
 	$(FE)/domain/domain/single/SingleDomEleIter.o \
 	$(FE)/domain/domain/single/SingleDomNodIter.o \
 	$(FE)/domain/domain/single/SingleDomSP_Iter.o \
@@ -1230,6 +1231,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/StaticDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/SubstructuringAnalysis.o \
+	$(FE)/analysis/analysis/ResponseSpectrumAnalysis.o \
 	$(FE)/analysis/algorithm/SolutionAlgorithm.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Linear.o \
