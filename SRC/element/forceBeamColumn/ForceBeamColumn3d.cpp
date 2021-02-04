@@ -1518,7 +1518,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
         break;
     case SECTION_RESPONSE_VZ:
         //sp(ii) += wz*(x-0.5*L);
-        dspdh(ii) += dwzdh*(x-0.5*L) + wz*(dxdh-0.5*dLdh);
+        dspdh(ii) += dwzdh*(0.5*L-x) + wz*(0.5*dLdh-dxdh);
         break;
     default:
 	  break;
