@@ -5411,7 +5411,7 @@ int MPCORecorder::writeSections()
 			FiberSection3d SEC_TAG_FiberSection3d
 			FiberSectionGJ SEC_TAG_FiberSectionGJ
 			*/
-			switch (sfd->getClassTag()) {
+			/*switch (sfd->getClassTag()) {
 			case SEC_TAG_FiberSection3d:
 			case SEC_TAG_FiberSectionGJ: {
 				mpco::element::SectionAssignment &i_sec_asgn = it->second;
@@ -5419,7 +5419,12 @@ int MPCORecorder::writeSections()
 					i_sec_asgn.fiber_section_data.fibers[fiber_id].y *= -1.0;
 				}
 			}
-			}
+			}*/
+			/*
+			$MP(2021/02/05). Update: This bug in the FiberSection3d has been solved by prof. Scott
+			in commit: https://github.com/OpenSees/OpenSees/commit/948b6f94c602e5d0140645c95a836ffb806e1eb6
+			(Making centroid computation an option for fiber sections)
+			*/
 		}
 	}
 	/*
