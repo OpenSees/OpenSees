@@ -281,6 +281,10 @@ int OPS_sensNodeAccel();
 int OPS_sensLambda();
 int OPS_sensSectionForce();
 int OPS_sensNodePressure();
+int OPS_getNumElements();
+int OPS_getEleLoadClassTags();
+int OPS_getEleLoadTags();
+int OPS_getEleLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */

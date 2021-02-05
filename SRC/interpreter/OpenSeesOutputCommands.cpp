@@ -47,6 +47,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <LoadPattern.h>
 #include <FileStream.h>
 #include <ID.h>
+// #include <TaggedObject.h>
+// #include <TaggedObjectIter.h>
+// #include <TaggedObjectStorage.h>
+// #include <MapOfTaggedObjects.h>
+#include <ElementalLoad.h>
+#include <ElementalLoadIter.h>
 #include <Element.h>
 #include <ElementIter.h>
 #include <map>
@@ -3099,6 +3105,143 @@ int OPS_sensNodePressure()
 	opserr<<"WARNING failed to set output\n";
 	return -1;
     }
+
+    return 0;
+}
+
+int OPS_getEleLoadClassTags()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 1) {
+	opserr << "WARNING want - getEleLoadTags patternTag?\n";
+	return -1;
+    }
+
+    int patternTag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+	opserr << "could not read patternTag\n";
+	return -1;
+    }
+
+	LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
+	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	std::vector <int> data;
+
+	while ((theLoad = theEleLoads()) != 0) {
+	  data.push_back(theLoad->getClassTag());
+	}
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getEleLoadTags()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 1) {
+	opserr << "WARNING want - getEleLoadTags patternTag?\n";
+	return -1;
+    }
+
+    int patternTag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+	opserr << "could not read patternTag\n";
+	return -1;
+    }
+
+	LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	std::vector <int> data;
+
+	while ((theLoad = theEleLoads()) != 0) {
+	  data.push_back(theLoad->getElementTag());
+	}
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getEleLoadData()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 1) {
+	opserr << "WARNING want - getEleLoadData patternTag?\n";
+	return -1;
+    }
+
+    int patternTag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+	opserr << "could not read patternTag\n";
+	return -1;
+    }
+
+	LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	std::vector <double> data;
+
+	int typeEL;
+
+	while ((theLoad = theEleLoads()) != 0) {
+	  const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+
+	  int eleLoadDataSize = eleLoadData.Size();
+	  for (int i = 0; i < eleLoadDataSize; i++) {
+		data.push_back(eleLoadData(i));
+	  }
+	}
+
+	int size = data.size();
+
+	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getNumElements()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+	int nEles = theDomain->getNumElements();
+	int size = 1;
+
+	if (OPS_SetIntOutput(&size, &nEles, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
 
     return 0;
 }
