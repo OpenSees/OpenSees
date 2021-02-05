@@ -2332,14 +2332,14 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theStaticAnalysis != 0) {
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
-	opserr << "WARNING: analysis .. existing StaticAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
+	opserr << "WARNING: analysis .. StaticAnalysis already exists => wipeAnalysis not invoked, problems may arise\n";
     }
 
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
 	theVariableTimeStepTransientAnalysis = 0;
-	opserr << "WARNING: analysis .. existing TransientAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
+	opserr << "WARNING: analysis .. TransientAnalysis already exists => wipeAnalysis not invoked, problems may arise\n";
     }
     
     // check argv[1] for type of SOE and create it
