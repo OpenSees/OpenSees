@@ -288,6 +288,12 @@ const char* OPS_GetString(void)
 }
 
 extern "C"
+const char* OPS_GetStringFromAll(char *buffer, int len)
+{
+  return OPS_GetString(); // Everything's a string in Tcl
+}
+
+extern "C"
 int OPS_SetString(const char* str)
 {
     Tcl_SetResult(theInterp, (char*)str, TCL_VOLATILE);
