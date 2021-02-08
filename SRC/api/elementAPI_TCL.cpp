@@ -277,7 +277,7 @@ const char* OPS_GetString(void)
 {
     const char* res = 0;
     if (currentArg >= maxArg) {
-        opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
+        //opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
         return res;
     }
     res = currentArgv[currentArg];

@@ -179,6 +179,8 @@ LowOrderBeamIntegration::getSectionWeights(int numSections,
     
     for (int i = 0; i < Nf; i++)
       wts(Nc+i) = wf(i);
+	  
+    computed = true;
   }
 
   int i;

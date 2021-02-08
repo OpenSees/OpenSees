@@ -348,7 +348,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"PySimle3") == 0) {
+    } else if (strcmp(argv[1],"PySimple3") == 0) {
       void *theMat = OPS_PySimple3();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
