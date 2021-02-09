@@ -22,12 +22,15 @@
 // $Date$
 // $URL$
 
-#ifndef LeadRubberX_h
-#define LeadRubberX_h
+#ifndef LeadRubberX2_h
+#define LeadRubberX2_h
 
+// Modificiation of LeadRubberX
 // Written: Manish Kumar (mkumar2@buffalo.edu)
+// Modified: Hyun-myung Kim (hkim59@buffalo.edu)
 // Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
 // Created: 02/29/2012
+// Modified: 11/03/2020
 
 #include <Element.h>
 #include <Matrix.h>
@@ -36,23 +39,23 @@
 class Channel;
 class Response;
 
-class LeadRubberX : public Element
+class LeadRubberX2 : public Element
 {
 public:
     // Constructor
-    LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha, double Gr, double Kbulk,
+    LeadRubberX2(int eleTag, int Nd1, int Nd2, double qd, double alpha, double Gr, double Kbulk,
         double D1, double D2, double ts, double tr, double n, const Vector y, const Vector x=0,
         double kc=10, double PhiM=0.5, double ac=1.0, double sDratio=0.5, double m=0.0,
         double cd=0.0, double tc=0.0, double qL=11200.0, double cL=130.0, double kS=50.0,
-        double aS=1.41e-05, int tag1=0, int tag2=0, int tag3=0, int tag4=0, int tag5=0);
+        double aS=1.41e-05, double TL_initial=20, int tag1=0, int tag2=0, int tag3=0, int tag4=0, int tag5=0);
     
-    LeadRubberX();
+    LeadRubberX2();
     
     // Destructor
-    ~LeadRubberX();
+    ~LeadRubberX2();
     
     // Method to get class type
-    const char *getClassType() const {return "LeadRubberX";};
+    const char *getClassType() const {return "LeadRubberX2";};
     
     // Public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
@@ -110,6 +113,7 @@ private:
     double alpha;                      // Post yield stiffness ratio, ke/(ke+k0)
     double ke;                         // Stiffness of elastic component (due to rubber)
     double cd;                         // Viscous damping parameter
+    double TL_initial;                 // Initial lead temperature
     double TL_trial, TL_commit;        // Change in temperature of lead core from the reference temperature
     double qL, cL, kS, aS;             // Heating parameters for lead core
     // Vertical direction

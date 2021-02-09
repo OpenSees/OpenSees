@@ -18,14 +18,17 @@
 **                                                                    **
 ** ****************************************************************** */
 
+// Modification of LeadRubberX
 // Written: Manish Kumar (mkumar2@buffalo.edu)
+// Modified: Hyun-myung Kim (hkim59@buffalo.edu)
 // Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
-// Created: 02/12
+// Created: 02/2012
+// Modified: 11/2020
 //
 // Description: This file contains the implementation of the
-// LeadRubberX class.
+// LeadRubberX2 class.
 
-#include "LeadRubberX.h"
+#include "LeadRubberX2.h"
 
 #include <Domain.h>
 #include <Node.h>
@@ -50,17 +53,17 @@ using namespace std;
 
 
 // initialize the class wide variables
-Matrix LeadRubberX::theMatrix(12,12);
-Vector LeadRubberX::theVector(12);
+Matrix LeadRubberX2::theMatrix(12,12);
+Vector LeadRubberX2::theVector(12);
 
 
 static int numMyBearing = 0;
 static int tag = 0;  // Tag to identify if bearing has failed in buckling
-void *OPS_LeadRubberX()
+void *OPS_LeadRubberX2()
 {
     // print out a message about who wrote this element & any copyright info wanted
     if (numMyBearing == 0) {
-        opserr << "LeadRubberX element - Written by Manish Kumar, University at Buffalo, 2012\n";
+        opserr << "LeadRubberX2 element - Modified by Hyun-myung Kim, University at Buffalo, 2020\n";
         numMyBearing++;
     }
     
@@ -68,14 +71,14 @@ void *OPS_LeadRubberX()
     
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs == 0) { // parallel processing
-        theEle = new LeadRubberX();
+        theEle = new LeadRubberX2();
         return theEle;
     }
     
     if (numArgs !=12 && numArgs !=18 && numArgs !=19 && numArgs !=20
         && numArgs !=24 && numArgs !=25 && numArgs !=29 && numArgs !=30
-        && numArgs !=31 && numArgs !=32 && numArgs !=33 && numArgs !=34) {
-            opserr << "ERROR - LeadRubberX incorrect # args provided";
+        && numArgs !=31 && numArgs !=32 && numArgs !=33 && numArgs !=34 && numArgs !=35) {
+            opserr << "ERROR - LeadRubberX2 incorrect # args provided";
             return theEle;
     }
     
@@ -110,6 +113,7 @@ void *OPS_LeadRubberX()
     int tag5 = 0;           // Strength degradation due to heating 
     
     // The default values of the parameters
+    double TL_initial1 = 20.0;// Initial temperature of lead
     double kl = 10.0;       // Cavitation parameter
     double phi = 0.5;       // Damage index
     double al = 1.0;        // Strength degradation parameter
@@ -120,7 +124,7 @@ void *OPS_LeadRubberX()
     double qL1 = 11200.0;   // Density of lead in kg/m3
     double cL1 = 130.0;     // Specific heat of lead in N-m/kg oC
     double kS1 = 50.0;      // Thermal conductivity of steel m2/s
-    double aS1 = 1.41e-05;  // Diffusitivity 
+    double aS1 = 1.41e-05;  // Diffusivity 
     
     if (numArgs >= 18) {
         double value;
@@ -202,31 +206,40 @@ void *OPS_LeadRubberX()
                                             opserr << "WARNING error reading element properties for element" << eleTag << endln;
                                             return 0;
                                         }
-                                        if (numArgs >= 30) {
+                                        
+                                        if (OPS_GetDoubleInput(&numData, &TL_initial1) != 0) {
+                                            opserr << "WARNING error reading initial lead temperature" << eleTag << endln;
+                                            return 0;
+                                        }
+                                   
+                                         
+                                        
+                                        
+                                        if (numArgs >= 31) {
                                             numData = 1;
                                             if (OPS_GetIntInput(&numData, &tag1) != 0) {
                                                 opserr << "WARNING error reading element properties for element" << eleTag << endln;
                                                 return 0;
                                             }
-                                            if (numArgs >= 31) {
+                                            if (numArgs >= 32) {
                                                 numData = 1;
                                                 if (OPS_GetIntInput(&numData, &tag2) != 0) {
                                                     opserr << "WARNING error reading element properties for element" << eleTag << endln;
                                                     return 0;
                                                 }
-                                                if (numArgs >= 32) {
+                                                if (numArgs >= 33) {
                                                     numData = 1;
                                                     if (OPS_GetIntInput(&numData, &tag3) != 0) {
                                                         opserr << "WARNING error reading element properties for element" << eleTag << endln;
                                                         return 0;
                                                     }
-                                                    if (numArgs >= 33) {
+                                                    if (numArgs >= 34) {
                                                         numData = 1;
                                                         if (OPS_GetIntInput(&numData, &tag4) != 0) {
                                                             opserr << "WARNING error reading element properties for element" << eleTag << endln;
                                                             return 0;
                                                         }
-                                                        if (numArgs == 34) {
+                                                        if (numArgs == 35) {
                                                             numData = 1;
                                                             if (OPS_GetIntInput(&numData, &tag5) != 0) {
                                                                 opserr << "WARNING error reading element properties for element" << eleTag << endln;
@@ -253,9 +266,9 @@ void *OPS_LeadRubberX()
         // check space frame problem has 6 dof per node
         if (ndf != 6)  {
             opserr << "WARNING invalid ndf: " << ndf;
-            opserr << ", for space problem need 6 - LeadRubberX \n"; 
+            opserr << ", for space problem need 6 - LeadRubberX2 \n"; 
         }
-        theEle = new LeadRubberX(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], y, x, kl, phi, al, sDratio, m, cd1, tc1, qL1, cL1, kS1, aS1, tag1, tag2, tag3, tag4, tag5);
+        theEle = new LeadRubberX2(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], y, x, kl, phi, al, sDratio, m, cd1, tc1, qL1, cL1, kS1, aS1, TL_initial1, tag1, tag2, tag3, tag4, tag5);
     }
     
     if (theEle == 0) {
@@ -267,12 +280,12 @@ void *OPS_LeadRubberX()
 }
 
 
-LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1, double Gr, double kbulk, double Di, double Do,
+LeadRubberX2::LeadRubberX2(int eleTag, int Nd1, int Nd2, double qd, double alpha1, double Gr, double kbulk, double Di, double Do,
     double ts1, double tr, double n1, const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio,
-    double m, double cd1, double tc1, double qL2, double cL2, double kS2, double aS2, int tg1, int tg2, int tg3, int tg4, int tg5)
-    : Element(eleTag, ELE_TAG_LeadRubberX), connectedExternalNodes(2),
+    double m, double cd1, double tc1, double qL2, double cL2, double kS2, double aS2, double TL_initial2, int tg1, int tg2, int tg3, int tg4, int tg5)
+    : Element(eleTag, ELE_TAG_LeadRubberX2), connectedExternalNodes(2),
     qYield0(qd), alpha(alpha1), cd(cd1), TL_trial(0.0), TL_commit(0.0), qL(qL2), cL(cL2),
-    kS(kS2), aS(aS2), PhiM(PhiMax), ac(al), tCurrent(0.0), tCommit(0.0), G(Gr), Kbulk(kbulk),
+    kS(kS2), aS(aS2), TL_initial(TL_initial2), PhiM(PhiMax), ac(al), tCurrent(0.0), tCommit(0.0), G(Gr), Kbulk(kbulk),
     x(_x), y(_y), tag1(tg1), tag2(tg2), tag3(tg3), tag4(tg4), tag5(tg5),
     shearDistI(sDratio), mass(m), tc(tc1), D1(Di), D2(Do), L(0.0), n(n1), ts(ts1),
     Fcrn(0.0), ucrn(0.0), Fcrmin(0.0), Fcn(0.0), ucn(0.0), Fmax(0.0), umax(0.0),
@@ -281,7 +294,7 @@ LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1,
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
-        opserr << "LeadRubberX::LeadRubberX() - element: "
+        opserr << "LeadRubberX2::LeadRubberX2() - element: "
             << this->getTag() << " failed to create an ID of size 2\n";
         exit(-1);
     }
@@ -357,10 +370,10 @@ LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1,
 }
 
 
-LeadRubberX::LeadRubberX()
-    : Element(0, ELE_TAG_LeadRubberX), connectedExternalNodes(2),
+LeadRubberX2::LeadRubberX2()
+    : Element(0, ELE_TAG_LeadRubberX2), connectedExternalNodes(2),
     k0(0.0), qYield0(0.0), qYield(0.0), alpha(0.0), ke(0.0), cd(0.0),
-    TL_trial(0.0), TL_commit(0.0), qL(0.0), cL(0.0), kS(0.0), aS(0.0),
+    TL_trial(0.0), TL_commit(0.0), TL_initial(0.0), qL(0.0), cL(0.0), kS(0.0), aS(0.0),
     S(0.0), Ec(0.0), Kv0(0.0), Kv(0.0), kc(10.0), PhiM(0.5), ac(1.0), Fcr(0.0),
     ucr(0.0), Fc(0.0), uc(0.0), tCurrent(0.0), tCommit(0.0), Kt(0.0), Kr(0.0),
     G(0.0), Kbulk(0.0), x(0), y(0), tag1(0), tag2(0), tag3(0), tag4(0), tag5(0),
@@ -372,7 +385,7 @@ LeadRubberX::LeadRubberX()
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
-        opserr << "LeadRubberX::LeadRubberX() - "
+        opserr << "LeadRubberX2::LeadRubberX2() - "
             <<  "failed to create an ID of size 2\n";
         exit(-1);
     }
@@ -383,38 +396,38 @@ LeadRubberX::LeadRubberX()
 }
 
 
-LeadRubberX::~LeadRubberX()
+LeadRubberX2::~LeadRubberX2()
 {
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
 }
 
 
-int LeadRubberX::getNumExternalNodes() const
+int LeadRubberX2::getNumExternalNodes() const
 {
     return 2;
 }
 
 
-const ID& LeadRubberX::getExternalNodes()
+const ID& LeadRubberX2::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** LeadRubberX::getNodePtrs()
+Node** LeadRubberX2::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int LeadRubberX::getNumDOF()
+int LeadRubberX2::getNumDOF()
 {
     return 12;
 }
 
 
-void LeadRubberX::setDomain(Domain *theDomain)
+void LeadRubberX2::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
@@ -431,11 +444,11 @@ void LeadRubberX::setDomain(Domain *theDomain)
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
         if (!theNodes[0])  {
-            opserr << "WARNING LeadRubberX::setDomain() - Nd1: "
+            opserr << "WARNING LeadRubberX2::setDomain() - Nd1: "
                 << connectedExternalNodes(0)
                 << " does not exist in the model for";
         } else  {
-            opserr << "WARNING LeadRubberX::setDomain() - Nd2: "
+            opserr << "WARNING LeadRubberX2::setDomain() - Nd2: "
                 << connectedExternalNodes(1)
                 << " does not exist in the model for";
         }
@@ -450,13 +463,13 @@ void LeadRubberX::setDomain(Domain *theDomain)
     
     // if differing dof at the ends - print a warning message
     if (dofNd1 != 6)  {
-        opserr << "LeadRubberX::setDomain() - node 1: "
+        opserr << "LeadRubberX2::setDomain() - node 1: "
             << connectedExternalNodes(0)
             << " has incorrect number of DOF (not 6).\n";
         return;
     }
     if (dofNd2 != 6)  {
-        opserr << "LeadRubberX::setDomain() - node 2: "
+        opserr << "LeadRubberX2::setDomain() - node 2: "
             << connectedExternalNodes(1)
             << " has incorrect number of DOF (not 6).\n";
         return;
@@ -470,7 +483,7 @@ void LeadRubberX::setDomain(Domain *theDomain)
 }
 
 
-int LeadRubberX::commitState()
+int LeadRubberX2::commitState()
 {
     int errCode = 0;
     
@@ -512,15 +525,29 @@ int LeadRubberX::commitState()
         ke = (G*A/Tr)*(1.0-pow(qb(0)/Fcrn,2));
         //if (ke < 0) {
         //    ke = 0.01*(G*A/Tr);  // a fraction of ke to avoid convergence issues
-        //    opserr << "WARNING LeadRubberX::commitState() - Negative horizontal stiffness\n";
+        //    opserr << "WARNING LeadRubberX2::commitState() - Negative horizontal stiffness\n";
         //}
     }
     
     // lead core heating
     TL_commit = TL_trial;
     tCommit = (this->getDomain())->getCurrentTime();
+    double TL_initial2 = TL_initial;
+    double Temp = TL_commit + TL_initial2;
     if (tag5 == 1) {
+		
+		if (Temp <= 250) {
         qYield = qYield0*exp(-0.0069*TL_commit);
+		}
+		
+		else if (250 < Temp && Temp <= 327) {
+		qYield = qYield0*exp(-0.0069*(250-TL_initial2))*(327-Temp)/(327 - 250);
+		}
+
+		else  {
+		qYield = 0.00000001;
+		}	
+		
     }
     
     // commit trial history variables for horizontal direction
@@ -534,13 +561,13 @@ int LeadRubberX::commitState()
 }
 
 
-int LeadRubberX::revertToLastCommit()
+int LeadRubberX2::revertToLastCommit()
 {
     return 0;
 }
 
 
-int LeadRubberX::revertToStart()
+int LeadRubberX2::revertToStart()
 {
     int errCode = 0;
     
@@ -564,7 +591,7 @@ int LeadRubberX::revertToStart()
 }
 
 
-int LeadRubberX::update()
+int LeadRubberX2::update()
 {
     // get global trial displacements and velocities
     const Vector &dsp1 = theNodes[0]->getTrialDisp();
@@ -660,7 +687,7 @@ int LeadRubberX::update()
             
             // issue warning if diagonal of derivative Df is zero
             if ((fabs(Df(0,0)) <= DBL_EPSILON) || (fabs(Df(1,1)) <= DBL_EPSILON))  {
-                opserr << "WARNING: LeadRubberX::update() - "
+                opserr << "WARNING: LeadRubberX2::update() - "
                     << "zero Jacobian in Newton-Raphson scheme for hysteretic "
                     << "evolution parameter z.\n";
                 return -1;
@@ -676,7 +703,7 @@ int LeadRubberX::update()
         
         // issue warning if Newton-Raphson scheme did not converge
         if (iter >= maxIter)   {
-            opserr << "WARNING: LeadRubberX::update() - "
+            opserr << "WARNING: LeadRubberX2::update() - "
                 << "did not find the hysteretic evolution parameters z after "
                 << iter << " iterations and norm: " << delta_z.Norm() << endln;
             return -2;
@@ -730,7 +757,7 @@ int LeadRubberX::update()
 }
 
 
-const Matrix& LeadRubberX::getTangentStiff()
+const Matrix& LeadRubberX2::getTangentStiff()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -767,7 +794,7 @@ const Matrix& LeadRubberX::getTangentStiff()
 }
 
 
-const Matrix& LeadRubberX::getInitialStiff()
+const Matrix& LeadRubberX2::getInitialStiff()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -783,7 +810,7 @@ const Matrix& LeadRubberX::getInitialStiff()
 }
 
 
-const Matrix& LeadRubberX::getDamp()
+const Matrix& LeadRubberX2::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -792,7 +819,7 @@ const Matrix& LeadRubberX::getDamp()
 }
 
 
-const Matrix& LeadRubberX::getMass()
+const Matrix& LeadRubberX2::getMass()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -812,15 +839,15 @@ const Matrix& LeadRubberX::getMass()
 }
 
 
-void LeadRubberX::zeroLoad()
+void LeadRubberX2::zeroLoad()
 {
     theLoad.Zero();
 }
 
 
-int LeadRubberX::addLoad(ElementalLoad *theLoad, double loadFactor)
+int LeadRubberX2::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-    opserr <<"LeadRubberX::addLoad() - "
+    opserr <<"LeadRubberX2::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << endln;
     
@@ -828,7 +855,7 @@ int LeadRubberX::addLoad(ElementalLoad *theLoad, double loadFactor)
 }
 
 
-int LeadRubberX::addInertiaLoadToUnbalance(const Vector &accel)
+int LeadRubberX2::addInertiaLoadToUnbalance(const Vector &accel)
 {
     // check for quick return
     if (mass == 0.0)  {
@@ -840,7 +867,7 @@ int LeadRubberX::addInertiaLoadToUnbalance(const Vector &accel)
     const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-        opserr << "LeadRubberX::addInertiaLoadToUnbalance() - "
+        opserr << "LeadRubberX2::addInertiaLoadToUnbalance() - "
             << "matrix and vector sizes are incompatible.\n";
         return -1;
     }
@@ -857,7 +884,7 @@ int LeadRubberX::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 
-const Vector& LeadRubberX::getResistingForce()
+const Vector& LeadRubberX2::getResistingForce()
 {
     // zero the residual
     theVector.Zero();
@@ -894,7 +921,7 @@ const Vector& LeadRubberX::getResistingForce()
 }
 
 
-const Vector& LeadRubberX::getResistingForceIncInertia()
+const Vector& LeadRubberX2::getResistingForceIncInertia()
 {
     this->getResistingForce();
     
@@ -921,10 +948,10 @@ const Vector& LeadRubberX::getResistingForceIncInertia()
 }
 
 
-int LeadRubberX::sendSelf(int commitTag, Channel &sChannel)
+int LeadRubberX2::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(28);
+    static Vector data(29);
     data(0)  = this->getTag();
     data(1)  = qYield0;
     data(2)  = alpha;
@@ -948,11 +975,12 @@ int LeadRubberX::sendSelf(int commitTag, Channel &sChannel)
     data(20) = cL;
     data(21) = kS;
     data(22) = aS;
-    data(23) = tag1;
-    data(24) = tag2;
-    data(25) = tag3;
-    data(26) = tag4;
-    data(27) = tag5;
+    data(23) = TL_initial;
+    data(24) = tag1;
+    data(25) = tag2;
+    data(26) = tag3;
+    data(27) = tag4;
+    data(28) = tag5;
     
     sChannel.sendVector(0, commitTag, data);
     
@@ -969,11 +997,11 @@ int LeadRubberX::sendSelf(int commitTag, Channel &sChannel)
 }
 
 
-int LeadRubberX::recvSelf(int commitTag, Channel &rChannel,
+int LeadRubberX2::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // receive element parameters
-    static Vector data(28);
+    static Vector data(29);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     
@@ -997,11 +1025,12 @@ int LeadRubberX::recvSelf(int commitTag, Channel &rChannel,
     cL = data(20);
     kS = data(21);
     aS = data(22);
-    tag1 = (int)data(23);
-    tag2 = (int)data(24);
-    tag3 = (int)data(25);
-    tag4 = (int)data(26);
-    tag5 = (int)data(27);
+    TL_initial = data(23);
+    tag1 = (int)data(24);
+    tag2 = (int)data(25);
+    tag3 = (int)data(26);
+    tag4 = (int)data(27);
+    tag5 = (int)data(28);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -1076,7 +1105,7 @@ int LeadRubberX::recvSelf(int commitTag, Channel &rChannel,
 }
 
 
-int LeadRubberX::displaySelf(Renderer &theViewer,
+int LeadRubberX2::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the element based on
@@ -1117,13 +1146,13 @@ int LeadRubberX::displaySelf(Renderer &theViewer,
 }
 
 
-void LeadRubberX::Print(OPS_Stream &s, int flag)
+void LeadRubberX2::Print(OPS_Stream &s, int flag)
 {
     if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "************************************************************" << endln;
         s << "Element: " << this->getTag();
-        s << "  type: LeadRubberX  iNode: " << connectedExternalNodes(0);
+        s << "  type: LeadRubberX2  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "************************************************************" << endln;
         s << "GEOMETRIC PROPERTIES" << endln;
@@ -1132,7 +1161,7 @@ void LeadRubberX::Print(OPS_Stream &s, int flag)
         s << "G: " << G << " kc: " << kc << " ac: " << ac << " PhiM: " << PhiM << " shearDistI: " << shearDistI << " mass: " << mass << endln;
         s << " qL: " << qL << " cL: " << cL << " kS: " << kS << " aS: " << aS << endln;
         s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION" << endln;
-        s << "k0: " << k0 << " ke: " << ke << " qYield: " << qYield << " DeltaT: " << TL_commit << " Fcrmin: " << Fcrmin << endln;
+        s << "k0: " << k0 << " ke: " << ke << " qYield: " << qYield << " DeltaT: " << TL_commit << " Initial T: " << TL_initial << " Fcrmin: " << Fcrmin << endln;
         s << "MECHANICAL PROPERTIES: VERTICAL MOTION" << endln;
         s << "Kv: "<< Kv << " Fc: " << Fc << " Fcr: " << Fcr << " Fcn: " << Fcn << " umax: " << umax << endln;
         // determine resisting forces in global system
@@ -1144,7 +1173,7 @@ void LeadRubberX::Print(OPS_Stream &s, int flag)
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
-        s << "\"type\": \"LeadRubberX\", ";
+        s << "\"type\": \"LeadRubberX2\", ";
         s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
         s << "\"D1\": " << D1 << ", ";
         s << "\"D2\": " << D2 << ", ";
@@ -1161,18 +1190,19 @@ void LeadRubberX::Print(OPS_Stream &s, int flag)
         s << "\"qL\": " << qL << ", ";
         s << "\"cL\": " << cL << ", ";
         s << "\"kS\": " << kS << ", ";
-        s << "\"aS\": " << aS << "}";
+        s << "\"aS\": " << aS << ", ";
+        s << "\"TL_initial\": " << TL_initial << "}";
     }
 }
 
 
-Response* LeadRubberX::setResponse(const char **argv, int argc,
+Response* LeadRubberX2::setResponse(const char **argv, int argc,
     OPS_Stream &output)
 {
     Response *theResponse = 0;
     
     output.tag("ElementOutput");
-    output.attr("eleType","LeadRubberX");
+    output.attr("eleType","LeadRubberX2");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
@@ -1298,7 +1328,7 @@ Response* LeadRubberX::setResponse(const char **argv, int argc,
         output.tag("ResponseType","Fcrn");
         output.tag("ResponseType","Kv");
         output.tag("ResponseType","ke");
-        output.tag("ResponseType","DeltaT");
+        output.tag("ResponseType","Temp");
         output.tag("ResponseType","qYield");
         
         theResponse = new ElementResponse(this, 9, Vector(6));
@@ -1310,7 +1340,7 @@ Response* LeadRubberX::setResponse(const char **argv, int argc,
 }
 
 
-int LeadRubberX::getResponse(int responseID, Information &eleInfo)
+int LeadRubberX2::getResponse(int responseID, Information &eleInfo)
 {
     double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
     Vector dzduVec(4), kbVec(4), Param(6);
@@ -1372,7 +1402,7 @@ int LeadRubberX::getResponse(int responseID, Information &eleInfo)
         Param(1) = Fcrn;
         Param(2) = Kv;
         Param(3) = ke;
-        Param(4) = TL_commit;
+        Param(4) = TL_initial + TL_commit;
         Param(5) = qYield;
         return eleInfo.setVector(Param);
         
@@ -1383,7 +1413,7 @@ int LeadRubberX::getResponse(int responseID, Information &eleInfo)
 
 
 // set up the transformation matrix for orientation
-void LeadRubberX::setUp()
+void LeadRubberX2::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();
@@ -1395,7 +1425,7 @@ void LeadRubberX::setUp()
             x.resize(3);
             x = xp;
         } /*else  {
-          opserr << "WARNING LeadRubberX::setUp() - "
+          opserr << "WARNING LeadRubberX2::setUp() - "
           << "element: " << this->getTag() << endln
           << "ignoring nodes and using specified "
           << "local x vector to determine orientation\n";
@@ -1403,7 +1433,7 @@ void LeadRubberX::setUp()
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
-        opserr << "LeadRubberX::setUp() - "
+        opserr << "LeadRubberX2::setUp() - "
             << "element: " << this->getTag() << endln
             << "incorrect dimension of orientation vectors\n";
         exit(-1);
@@ -1428,7 +1458,7 @@ void LeadRubberX::setUp()
     
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
-        opserr << "LeadRubberX::setUp() - "
+        opserr << "LeadRubberX2::setUp() - "
             << "element: " << this->getTag() << endln
             << "invalid orientation vectors\n";
         exit(-1);
@@ -1457,7 +1487,7 @@ void LeadRubberX::setUp()
 }
 
 
-double LeadRubberX::sgn(double x)
+double LeadRubberX2::sgn(double x)
 {
     if (x > 0)
         return 1.0;
@@ -1468,45 +1498,40 @@ double LeadRubberX::sgn(double x)
 }
 
 
-double LeadRubberX::getCurrentTemp(double qYield, double TL_commit, double v)
+double LeadRubberX2::getCurrentTemp(double qYield, double TL_commit, double v)
 {
     // lead core heating
-    tCurrent = (this->getDomain())->getCurrentTime();
-    if (tCurrent < tCommit) {
+     tCurrent = (this->getDomain())->getCurrentTime();
+     if (tCurrent < tCommit) {
         tCommit = 0.0;
-    }
+     }
     
-    double a = D1/2;
-    double dT = tCurrent - tCommit;
-    // if (dT>1) dT = 0;
-    double ALead = PI*pow(a,2);
-    double tau = (aS*tCurrent)/(pow(a,2));
-    double F;
-    if (tau < 0.6) {
-        F = 2.0*sqrt(tau/PI)-(tau/PI)*(2.0-(tau/4.0)-pow(tau/4.0,2)-(15.0/4.0)*(pow(tau/4.0,3)));
-    } else {
-        F = 8.0/(3.0*PI)-(1.0/(2.0*sqrt(PI*tau)))*(1.0-(1.0/(12.0*tau))+(1.0/(6.0*pow(4.0*tau,2)))-(1.0/(12.0*pow(4.0*tau,3))));
-    }
-    double deltaT1 = (dT/(qL*cL*h))*((qYield*v*zC.Norm())/ALead-(kS*TL_commit/a)*(1.0/F+1.274*((n-1)*ts/a)*pow(tau,-1.0/3.0))); 
-    if (deltaT1 <= 0.0) {
-        deltaT1 = 0.0;
-    }
+     double a = D1/2;
+     double dT = tCurrent - tCommit;
+    // if (dT > 1)  dT = 0
+     double ALead = PI*pow(a,2);
+     double tau = (aS*tCurrent)/(pow(a,2));
+     double F;
+     if (tau < 0.6) {
+         F = 2.0*sqrt(tau/PI)-(tau/PI)*(2.0-(tau/4.0)-pow(tau/4.0,2)-(15.0/4.0)*(pow(tau/4.0,3)));
+     } else {
+         F = 8.0/(3.0*PI)-(1.0/(2.0*sqrt(PI*tau)))*(1.0-(1.0/(12.0*tau))+(1.0/(6.0*pow(4.0*tau,2)))-(1.0/(12.0*pow(4.0*tau,3))));
+     }
+     double deltaT1 = (dT/(qL*cL*h))*((qYield*v*zC.Norm())*(1-alpha)/ALead-(kS*TL_commit/a)*(1.0/F+1.274*((n-1)*ts/a)*pow(tau,-1.0/3.0))); 
+     
     
     // use improved euler method to obtain final temperature
-    double TL_trial1 = TL_commit + deltaT1;
-    double tCurrent2 = tCurrent + dT;
-    tau = (aS*tCurrent2)/(pow(a,2));
-    if (tau < 0.6) {
-        F = 2.0*sqrt(tau/PI)-(tau/PI)*(2.0-(tau/4.0)-pow(tau/4.0,2)-(15.0/4.0)*(pow(tau/4.0,3)));
-    } else {
-        F = 8.0/(3.0*PI)-(1.0/(2.0*sqrt(PI*tau)))*(1.0-(1.0/(12.0*tau))+(1.0/(6.0*pow(4.0*tau,2)))-(1.0/(12.0*pow(4.0*tau,3))));
-    }
-    double deltaT2 = (dT/(qL*cL*h))*((qYield*v*zC.Norm())/ALead-(kS*TL_trial1/a)*(1.0/F+1.274*((n-1)*ts/a)*pow(tau,-1.0/3.0))); 
-    if (deltaT2 <= 0.0) {
-        deltaT2 = 0.0;
-    }
+     double TL_trial1 = TL_commit + deltaT1;
+     double tCurrent2 = tCurrent + dT;
+     tau = (aS*tCurrent2)/(pow(a,2));
+     if (tau < 0.6) {
+         F = 2.0*sqrt(tau/PI)-(tau/PI)*(2.0-(tau/4.0)-pow(tau/4.0,2)-(15.0/4.0)*(pow(tau/4.0,3)));
+     } else {
+         F = 8.0/(3.0*PI)-(1.0/(2.0*sqrt(PI*tau)))*(1.0-(1.0/(12.0*tau))+(1.0/(6.0*pow(4.0*tau,2)))-(1.0/(12.0*pow(4.0*tau,3))));
+     }
+     double deltaT2 = (dT/(qL*cL*h))*((qYield*v*zC.Norm())*(1-alpha)/ALead-(kS*TL_trial1/a)*(1.0/F+1.274*((n-1)*ts/a)*pow(tau,-1.0/3.0))); 
+     
+     double TL_trial = TL_commit + 0.5*(deltaT1+deltaT2);
     
-    double TL_trial = TL_commit + 0.5*(deltaT1+deltaT2);
-    
-    return TL_trial;
+        return TL_trial;
 }
