@@ -20,7 +20,7 @@
 
 // Modification of LeadRubberX
 // Written: Manish Kumar (mkumar2@buffalo.edu)
-// Modified: Hyun-myung Kim (hkim59@buffalo.edu)
+// Modified: Michael C. Constantinou (constan1@buffalo.edu) and Hyun-myung Kim (hkim59@buffalo.edu)
 // Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
 // Created: 02/2012
 // Modified: 11/2020
@@ -63,7 +63,7 @@ void *OPS_LeadRubberX2()
 {
     // print out a message about who wrote this element & any copyright info wanted
     if (numMyBearing == 0) {
-        opserr << "LeadRubberX2 element - Modified by Hyun-myung Kim, University at Buffalo, 2020\n";
+        opserr << "LeadRubberX2 element - Modified by Michael C. Constantinou and Hyun-myung Kim, University at Buffalo, 2020\n";
         numMyBearing++;
     }
     
