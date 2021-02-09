@@ -51,46 +51,34 @@ OPS_LinearSeries(void)
 
   int tag = 0;
   double cFactor = 1.0;
-  double tStart = 0.0;
   int numData = 0;
 
   if (numRemainingArgs != 0) {
 
-    if (numRemainingArgs == 1 || numRemainingArgs == 3 || numRemainingArgs == 5) {
+    if (numRemainingArgs == 1 || numRemainingArgs == 3) {
       numData = 1;
       if (OPS_GetIntInput(&numData, &tag) != 0) {
-	opserr << "WARNING invalid series tag in LinearSeries tag? <-factor factor?> <-tStart tStart?" << endln;
+	opserr << "WARNING invalid series tag in LinearSeries tag? <-factor factor?>" << endln;
 	return 0;
       }
       numRemainingArgs--;
     }
 
-    while (numRemainingArgs > 1) {
+    if (numRemainingArgs > 1) {
       const char *argvS = OPS_GetString();
-      if (argvS == 0) {
-	opserr << "WARNING string error in LinearSeries with tag: " << tag << endln;
+	   if (argvS == 0) {
+		  opserr << "WARNING string error in LinearSeries with tag: " << tag << endln;
+		return 0;
+	  }
+      numData = 1;
+      if (OPS_GetDouble(&numData, &cFactor) != 0) {
+	opserr << "WARNING invalid factor in LinearSeries with tag: " << tag << endln;
 	return 0;
       }
-      if (strcmp(argvS,"-factor") == 0) {
-	numData = 1;
-	if (OPS_GetDouble(&numData, &cFactor) != 0) {
-	  opserr << "WARNING invalid factor in LinearSeries with tag: " << tag << endln;
-	  return 0;
-	}
-	numRemainingArgs -= 2;
-      }
-      if (strcmp(argvS,"-tStart") == 0) {
-	numData = 1;
-	if (OPS_GetDouble(&numData, &tStart) != 0) {
-	  opserr << "WARNING invalid tStart in LinearSeries with tag: " << tag << endln;
-	  return 0;
-	}
-	numRemainingArgs -= 2;
-      }      
     }
   }
 
-  theSeries = new LinearSeries(tag, cFactor, tStart);
+  theSeries = new LinearSeries(tag, cFactor);
 
   if (theSeries == 0) {
     opserr << "WARNING ran out of memory creating ConstantTimeSeries with tag: " << tag << "\n";
@@ -101,9 +89,9 @@ OPS_LinearSeries(void)
 }
 
 
-LinearSeries::LinearSeries(int tag, double theFactor, double startTime)
+LinearSeries::LinearSeries(int tag, double theFactor)
   :TimeSeries(tag, TSERIES_TAG_LinearSeries),
-   cFactor(theFactor), tStart(startTime)
+   cFactor(theFactor)
 {
   // does nothing
 }
@@ -116,16 +104,13 @@ LinearSeries::~LinearSeries()
 
 TimeSeries *
 LinearSeries::getCopy(void) {
-  return new LinearSeries(this->getTag(), cFactor, tStart);
+  return new LinearSeries(this->getTag(), cFactor);
 }
 
 double
 LinearSeries::getFactor(double pseudoTime)
 {
-  if (pseudoTime < tStart)
-    return 0.0;
-  else
-    return cFactor*(pseudoTime-tStart);
+  return cFactor*pseudoTime;
 }
 
 
@@ -134,9 +119,8 @@ LinearSeries::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  Vector data(2);
+  Vector data(1);
   data(0) = cFactor;
-  data(1) = tStart;  
   int result = theChannel.sendVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "LinearSeries::sendSelf() - channel failed to send data\n";
@@ -151,16 +135,14 @@ LinearSeries::recvSelf(int commitTag, Channel &theChannel,
 		       FEM_ObjectBroker &theBroker)
 {
   int dbTag = this->getDbTag();
-  Vector data(2);
+  Vector data(1);
   int result = theChannel.recvVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "LinearSeries::sendSelf() - channel failed to receive data\n";
     cFactor = 1.0;
-    tStart = 0.0;
     return result;
   }
   cFactor = data(0);
-  tStart = data(1);
 
   return 0;
 }
@@ -169,6 +151,6 @@ LinearSeries::recvSelf(int commitTag, Channel &theChannel,
 void
 LinearSeries::Print(OPS_Stream &s, int flag)
 {
-  s << "Linear Series: constant factor: " << cFactor << ", start time: " << tStart << "\n";
+    s << "Linear Series: constant factor: " << cFactor << "\n";
 
 }
