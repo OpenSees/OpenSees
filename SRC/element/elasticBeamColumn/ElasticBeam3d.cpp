@@ -1154,33 +1154,16 @@ ElasticBeam3d::displaySelf(Renderer &theViewer, int displayMode, float fact, con
     static Vector v1(3);
     static Vector v2(3);
 
-    theNodes[0]->getDisplayCrds(v1, fact);
-    theNodes[1]->getDisplayCrds(v2, fact);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
     float d1 = 0.0;
     float d2 = 0.0;
     int res = 0;
-  
-    if (displayMode > 0) {
 
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
-
-    } else if (displayMode < 0) {
-
-      theNodes[0]->getDisplayCrds(v1, 0.);
-      theNodes[1]->getDisplayCrds(v2, 0.);
-
-      // add eigenvector values
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 3; i++) {
-	  v1(i) += eigen1(i,mode-1)*fact;
-	  v2(i) += eigen2(i,mode-1)*fact;    
-	}    
-      }
-      return theViewer.drawLine (v1, v2, 0.0, 0.0, this->getTag(), 0);
-    }
+    if (displayMode > 0 && numMode == 0)
+        res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+    else if (displayMode < 0)
+        return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag(), 0);
 
     if (numMode > 0) {
       // calculate q for potential need below
