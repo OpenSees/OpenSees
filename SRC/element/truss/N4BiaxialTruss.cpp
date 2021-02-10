@@ -1023,34 +1023,19 @@ N4BiaxialTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, co
 	if (L == 0.0)
 	return 0;
 
-	// first determine the two end points of the N4BiaxialTruss based on
-	// the display factor (a measure of the distorted image)
-	// store this information in 2 3d vectors v1 and v2
-	const Vector &end1Crd = theNodes[0]->getCrds();
-	const Vector &end2Crd = theNodes[1]->getCrds();	
-	const Vector &end3Crd = theNodes[3]->getCrds();	
-	const Vector &end4Crd = theNodes[4]->getCrds();	
-
+	// get display coordinates
 	static Vector v1(3);
 	static Vector v2(3);
 	static Vector v3(3);
 	static Vector v4(3);
-	
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+	theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+	theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+
+	// determine color and draw lines
 	int retVal = 0;
-
 	if (displayMode == 1 || displayMode == 2) {
-		const Vector &end1Disp = theNodes[0]->getDisp();
-		const Vector &end2Disp = theNodes[1]->getDisp();    
-		const Vector &end3Disp = theNodes[3]->getDisp();   
-		const Vector &end4Disp = theNodes[4]->getDisp();   
-
-		for (int i=0; i<dimension; i++) {
-			v1(i) = end1Crd(i)+end1Disp(i)*fact;
-			v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-			v3(i) = end3Crd(i)+end3Disp(i)*fact;    
-			v4(i) = end4Crd(i)+end4Disp(i)*fact;    
-		}
-		
 		// compute the strain and axial force in the member
 		double force1, force2;
 		if (L == 0.0) {
@@ -1058,50 +1043,30 @@ N4BiaxialTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, co
 			strain_2 = 0.0;
 			force1 = 0.0;
 			force2 = 0.0;
-		} else {
+		}
+		else {
 			this->computeCurrentStrainBiaxial();
 			theMaterial_1->setTrialStrain(strain_1);
 			theMaterial_2->setTrialStrain(strain_2);
-			force1 = A*theMaterial_1->getStress();    
-			force2 = A*theMaterial_2->getStress();    
+			force1 = A * theMaterial_1->getStress();
+			force2 = A * theMaterial_2->getStress();
 		}
-		
 		if (displayMode == 2) {// use the strain as the drawing measure
-			retVal += theViewer.drawLine(v1, v2, (float)strain_1, (float)strain_1);	
-			retVal += theViewer.drawLine(v3, v4, (float)strain_2, (float)strain_2);	
-		} else { // otherwise use the axial force as measure
-			retVal += theViewer.drawLine(v1, v2, (float)force1, (float)force1);	
-			retVal += theViewer.drawLine(v3, v4, (float)force2, (float)force2);	
+			retVal += theViewer.drawLine(v1, v2, (float)strain_1, (float)strain_1);
+			retVal += theViewer.drawLine(v3, v4, (float)strain_2, (float)strain_2);
 		}
-		return retVal;
-	} else if (displayMode < 0) {
-		int mode = displayMode  *  -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		const Matrix &eigen3 = theNodes[3]->getEigenvectors();
-		const Matrix &eigen4 = theNodes[4]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < dimension; i++) {
-				v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-				v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-				v3(i) = end3Crd(i) + eigen3(i,mode-1)*fact;    
-				v4(i) = end4Crd(i) + eigen4(i,mode-1)*fact;    
-			}    
-		} else {
-			for (int i = 0; i < dimension; i++) {
-				v1(i) = end1Crd(i);
-				v2(i) = end2Crd(i);
-				v3(i) = end3Crd(i);
-				v4(i) = end4Crd(i);
-			}    
+		else { // otherwise use the axial force as measure
+			retVal += theViewer.drawLine(v1, v2, (float)force1, (float)force1);
+			retVal += theViewer.drawLine(v3, v4, (float)force2, (float)force2);
 		}
-		retVal += theViewer.drawLine(v1, v2, 1.0, 1.0);	
-		retVal += theViewer.drawLine(v3, v4, 1.0, 1.0);	
-		return retVal;
-	}
-	return 0;
-}
 
+	}
+	else {
+		retVal += theViewer.drawLine(v1, v2, 1.0, 1.0);
+		retVal += theViewer.drawLine(v3, v4, 1.0, 1.0);
+	}
+	return retVal;
+}
 
 void
 N4BiaxialTruss::Print(OPS_Stream &s, int flag)
