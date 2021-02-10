@@ -1356,12 +1356,12 @@ NineNodeMixedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact,
     static Matrix coords(8, 3);
     for (int i = 0; i < 3; i++) {
         coords(0, i) = v1(i);
-        coords(1, i) = v2(i);
-        coords(2, i) = v3(i);
-        coords(3, i) = v4(i);
-        coords(4, i) = v5(i);
-        coords(5, i) = v6(i);
-        coords(6, i) = v7(i);
+        coords(1, i) = v5(i);
+        coords(2, i) = v2(i);
+        coords(3, i) = v6(i);
+        coords(4, i) = v3(i);
+        coords(5, i) = v7(i);
+        coords(6, i) = v4(i);
         coords(7, i) = v8(i);
     }
 

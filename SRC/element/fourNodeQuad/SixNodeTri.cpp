@@ -1008,7 +1008,7 @@ SixNodeTri::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
 	theNodes[4]->getDisplayCrds(v5, fact, displayMode);
 	theNodes[5]->getDisplayCrds(v6, fact, displayMode);
 
-	// place values in coords matrix
+	// place values in coords matrix - not sure of proper order here.
 	static Matrix coords(6, 3);
 	for (int i = 0; i < 3; i++) {
 		coords(0, i) = v1(i);

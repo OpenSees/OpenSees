@@ -1086,12 +1086,12 @@ NineNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
 	static Matrix coords(8, 3);
 	for (int i = 0; i < 3; i++) {
 		coords(0, i) = v1(i);
-		coords(1, i) = v2(i);
-		coords(2, i) = v3(i);
-		coords(3, i) = v4(i);
-		coords(4, i) = v5(i);
-		coords(5, i) = v6(i);
-		coords(6, i) = v7(i);
+		coords(1, i) = v5(i);
+		coords(2, i) = v2(i);
+		coords(3, i) = v6(i);
+		coords(4, i) = v3(i);
+		coords(5, i) = v7(i);
+		coords(6, i) = v4(i);
 		coords(7, i) = v8(i);
 	}
 
@@ -1099,10 +1099,22 @@ NineNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
 	// if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
 	static Vector values(nip);
 	if (displayMode < nip && displayMode > 0) {
-		for (int i = 0; i < nip; i++) {
-			const Vector& stress = theMaterial[i]->getStress();
-			values(i) = stress(displayMode - 1);
-		}
+		const Vector& stress1 = theMaterial[0]->getStress();
+		const Vector& stress2 = theMaterial[1]->getStress();
+		const Vector& stress3 = theMaterial[2]->getStress();
+		const Vector& stress4 = theMaterial[3]->getStress();
+		const Vector& stress5 = theMaterial[4]->getStress();
+		const Vector& stress6 = theMaterial[5]->getStress();
+		const Vector& stress7 = theMaterial[6]->getStress();
+		const Vector& stress8 = theMaterial[7]->getStress();
+		values(0) = stress1(displayMode - 1);
+		values(1) = stress5(displayMode - 1);
+		values(2) = stress2(displayMode - 1);
+		values(3) = stress6(displayMode - 1);
+		values(4) = stress3(displayMode - 1);
+		values(5) = stress7(displayMode - 1);
+		values(6) = stress4(displayMode - 1);
+		values(7) = stress8(displayMode - 1);
 	}
 	else {
 		for (int i = 0; i < nip; i++)
