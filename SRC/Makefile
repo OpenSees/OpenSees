@@ -661,7 +661,11 @@ endif
 
 ifdef FILIP_FLAG
 	FILIP = $(FE)/element/filip/BeamColumn2DwLHNMYS.o \
+	$(FE)/element/filip/BeamColumn2DwLHNMYS_Damage.o \
 	$(FE)/element/filip/BeamColumn3DwLHNMYS.o \
+	$(FE)/element/filip/Damage4NM.o \
+	$(FE)/element/filip/BetaDist.o \
+	$(FE)/element/filip/betaFunctions.o \
 	$(FE)/element/filip/GPYS.o
 else
 	FILIP = 
@@ -669,7 +673,8 @@ endif
 
 
 ifdef PLAINCONCRETE_FLAG
-	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o \
+	$(FE)/material/nD/forumat.o 
 else
 	PLAINCONCRETE = 
 endif
@@ -858,6 +863,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
+       $(FE)/element/PML/pml_3d.o \
+       $(FE)/element/PML/PML3D.o \
+       $(FE)/element/PML/pml_2d.o \
+       $(FE)/element/PML/PML2D.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \

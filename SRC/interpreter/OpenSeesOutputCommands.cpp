@@ -70,6 +70,7 @@ void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
 void* OPS_AlgorithmRecorder();
 void* OPS_RemoveRecorder();
+void* OPS_MPCORecorder();
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -99,6 +100,7 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
+    recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -386,10 +388,16 @@ int OPS_eleResponse()
     numdata = OPS_GetNumRemainingInputArgs();
     if (numdata > 0) {
 	const char** argv = new const char*[numdata];
+	char buffer[128];
 	for (int i=0; i<numdata; i++) {
-	    argv[i] = OPS_GetString();
+	  argv[i] = new char[128];
+	  // Turn everything in to a string for setResponse
+	  argv[i] = OPS_GetStringFromAll(buffer, 128);
 	}
 	const Vector* data = theDomain->getElementResponse(tag, argv, numdata);
+
+	for (int i=0; i<numdata; i++)
+	  delete [] argv[i];
 	delete [] argv;
 
 	if (data != 0) {
