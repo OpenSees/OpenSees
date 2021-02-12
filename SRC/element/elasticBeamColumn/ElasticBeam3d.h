@@ -119,6 +119,10 @@ class ElasticBeam3d : public Element
     double q0[5];  // Fixed end forces in basic system (no torsion)
     double p0[5];  // Reactions in basic system (no torsion)
  
+    double wx;
+    double wy;
+    double wz;
+    
     Node *theNodes[2];
 
     ID  connectedExternalNodes;    
