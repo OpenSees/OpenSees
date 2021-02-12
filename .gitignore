@@ -48,7 +48,7 @@ obj
 .idea
 cmake-build-debug
 cmake-build-release
-CMakeLists.txt
+#CMakeLists.txt
 .dropbox.attr
 
 # VSCode
@@ -79,4 +79,13 @@ SRC/interpreter/pythonInterpreter
 SRC/interpreter/tclInterpreter
 SRC/interpreter/openseespy
 SRC/interpreter/openseestcl
+filip
+PML
+CPlaneStrain.h
+CPlaneStress.h
+CPlaneStress2d.h
+CThreeDimensional.h
+Concrete.h
+forumat.for
+build
 bin

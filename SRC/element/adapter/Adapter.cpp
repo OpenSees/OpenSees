@@ -34,6 +34,10 @@
 #include <Information.h>
 #include <ElementResponse.h>
 #include <TCP_Socket.h>
+#include <UDP_Socket.h>
+#ifdef SSL
+    #include <TCP_SocketSSL.h>
+#endif
 
 #include <math.h>
 #include <stdlib.h>
@@ -45,7 +49,7 @@ void* OPS_Adapter()
     int ndf = OPS_GetNDF();
     if (OPS_GetNumRemainingInputArgs() < 8) {
         opserr << "WARNING insufficient arguments\n";
-        opserr << "Want: element adapter eleTag -node Ndi Ndj ... -dof dofNdi -dof dofNdj ... -stif Kij ipPort <-doRayleigh> <-mass Mij>\n";
+        opserr << "Want: element adapter eleTag -node Ndi Ndj ... -dof dofNdi -dof dofNdj ... -stif Kij ipPort <-ssl> <-udp> <-doRayleigh> <-mass Mij>\n";
         return 0;
     }
     
@@ -143,6 +147,7 @@ void* OPS_Adapter()
     }
     
     // options
+    int ssl = 0, udp = 0;
     int doRayleigh = 0;
     Matrix *mb = 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -151,7 +156,13 @@ void* OPS_Adapter()
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
         type = OPS_GetString();
-        if (strcmp(type, "-doRayleigh") == 0) {
+        if (strcmp(type, "-ssl") == 0) {
+            ssl = 1; udp = 0;
+        }
+        else if (strcmp(type, "-udp") == 0) {
+            udp = 1; ssl = 0;
+        }
+        else if (strcmp(type, "-doRayleigh") == 0) {
             doRayleigh = 1;
         }
         else if (strcmp(type, "-mass") == 0) {
@@ -177,10 +188,13 @@ void* OPS_Adapter()
     
     // create object
     Element *theEle = new Adapter(tag, nodes, dofs, kb, ipPort,
-        doRayleigh, mb);
+        ssl, udp, doRayleigh, mb);
     
-    // clean up memory
-    delete mb;
+    // cleanup dynamic memory
+    if (dofs != 0)
+        delete[] dofs;
+    if (mb != 0)
+        delete mb;
     
     return theEle;
 }
@@ -188,12 +202,13 @@ void* OPS_Adapter()
 
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
-Adapter::Adapter(int tag, ID nodes, ID *dof,
-    const Matrix &_kb, int ipport, int addRay, const Matrix *_mb)
+Adapter::Adapter(int tag, ID nodes, ID *dof, const Matrix &_kb,
+    int ipport, int _ssl, int _udp, int addRay, const Matrix *_mb)
     : Element(tag, ELE_TAG_Adapter),
     connectedExternalNodes(nodes), basicDOF(1), numExternalNodes(0),
-    numDOF(0), numBasicDOF(0), kb(_kb), ipPort(ipport), addRayleigh(addRay),
-    mb(0), tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
+    numDOF(0), numBasicDOF(0), kb(_kb), ipPort(ipport), ssl(_ssl),
+    udp(_udp), addRayleigh(addRay), mb(0), tPast(0.0),
+    theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlVel(0), ctrlAccel(0), ctrlForce(0), ctrlTime(0),
     daqDisp(0), daqVel(0), daqAccel(0), daqForce(0), daqTime(0)
@@ -244,8 +259,9 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
 Adapter::Adapter()
     : Element(0, ELE_TAG_Adapter),
     connectedExternalNodes(1), basicDOF(1), numExternalNodes(0),
-    numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), addRayleigh(0), mb(0),
-    tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
+    numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), ssl(0),
+    udp(0), addRayleigh(0), mb(0), tPast(0.0),
+    theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlVel(0), ctrlAccel(0), ctrlForce(0), ctrlTime(0),
     daqDisp(0), daqVel(0), daqAccel(0), daqForce(0), daqTime(0)
@@ -644,16 +660,18 @@ const Vector& Adapter::getResistingForceIncInertia()
 int Adapter::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(9);
+    static Vector data(11);
     data(0) = this->getTag();
     data(1) = numExternalNodes;
     data(2) = ipPort;
-    data(3) = addRayleigh;
-    data(4) = (mb==0) ? 0 : 1;
-    data(5) = alphaM;
-    data(6) = betaK;
-    data(7) = betaK0;
-    data(8) = betaKc;
+    data(3) = ssl;
+    data(4) = udp;
+    data(5) = addRayleigh;
+    data(6) = (mb==0) ? 0 : 1;
+    data(7) = alphaM;
+    data(8) = betaK;
+    data(9) = betaK0;
+    data(10) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the end nodes and dofs
@@ -663,7 +681,7 @@ int Adapter::sendSelf(int commitTag, Channel &sChannel)
     
     // send the stiffness and mass matrices
     sChannel.sendMatrix(0, commitTag, kb);
-    if ((int)data(4))
+    if ((int)data(6))
         sChannel.sendMatrix(0, commitTag, *mb);
     
     return 0;
@@ -682,16 +700,18 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
         delete mb;
     
     // receive element parameters
-    static Vector data(9);
+    static Vector data(11);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numExternalNodes = (int)data(1);
     ipPort = (int)data(2);
-    addRayleigh = (int)data(3);
-    alphaM = data(5);
-    betaK = data(6);
-    betaK0 = data(7);
-    betaKc = data(8);
+    ssl = (int)data(3);
+    udp = (int)data(4);
+    addRayleigh = (int)data(5);
+    alphaM = data(7);
+    betaK = data(8);
+    betaK0 = data(9);
+    betaKc = data(10);
     
     // initialize nodes and receive them
     connectedExternalNodes.resize(numExternalNodes);
@@ -726,7 +746,7 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
     // receive the stiffness and mass matrices
     kb.resize(numBasicDOF,numBasicDOF);
     rChannel.recvMatrix(0, commitTag, kb);
-    if ((int)data(4))  {
+    if ((int)data(6))  {
         mb = new Matrix(numBasicDOF,numBasicDOF);
         rChannel.recvMatrix(0, commitTag, *mb);
     }
@@ -1024,7 +1044,15 @@ int Adapter::getResponse(int responseID, Information &eleInformation)
 int Adapter::setupConnection()
 {
     // setup the connection
-    theChannel = new TCP_Socket(ipPort);
+    if (udp)
+        theChannel = new UDP_Socket(ipPort);
+#ifdef SSL
+    else if (ssl)
+        theChannel = new TCP_SocketSSL(ipPort);
+#endif
+    else
+        theChannel = new TCP_Socket(ipPort);
+    
     if (theChannel != 0) {
         opserr << "\nChannel successfully created: "
             << "Waiting for ECSimAdapter experimental control...\n";

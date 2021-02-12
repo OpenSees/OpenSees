@@ -62,6 +62,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp">
       <Filter>analysis</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp">
       <Filter>model</Filter>
     </ClCompile>
@@ -117,6 +120,9 @@
       <Filter>algorithm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.cpp">
       <Filter>algorithm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp">
@@ -397,6 +403,9 @@
     <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h">
       <Filter>analysis</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h">
       <Filter>model</Filter>
     </ClInclude>
@@ -452,6 +461,9 @@
       <Filter>algorithm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.h">
       <Filter>algorithm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h">

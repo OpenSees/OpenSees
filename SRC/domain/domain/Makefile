@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = Domain.o
+OBJS       = Domain.o DomainModalProperties.o
 
 # Compilation control
 

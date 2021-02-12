@@ -1,5 +1,5 @@
 #include "DRMBoundaryLayerDecorator.h"
-#include <Brick.h>
+#include <brick/Brick.h>
 
 DRMBoundaryLayerDecorator::
 DRMBoundaryLayerDecorator()

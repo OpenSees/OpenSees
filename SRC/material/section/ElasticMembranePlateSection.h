@@ -27,6 +27,9 @@
 //  Elastic Plate Section with membrane
 //
 
+// Out-of-Plane stiffness modifier added by Pearl Ranchal
+// Supported by Degenkolb Engineers
+
 #ifndef ElasticMembranePlateSection_h
 #define ElasticMembranePlateSection_h
 
@@ -51,20 +54,18 @@ class ElasticMembranePlateSection : public SectionForceDeformation{
     ElasticMembranePlateSection( ) ;
 
     //full constructor
-    ElasticMembranePlateSection(   int    tag, 
-                           double E,
-                           double nu,
-                           double h = 1.0,
-			   double rho = 0.0 ) ;
-
-
+    ElasticMembranePlateSection(int     tag, 
+                                double  E,
+                                double  nu,
+                                double  h       = 1.0,
+			                    double  rho     = 0.0,
+                                double  Ep_mod  = 1.0);
 
     //destructor
     ~ElasticMembranePlateSection( ) ;
 
     //make a clone of this material
     SectionForceDeformation *getCopy( ) ;
-
 
     const char *getClassType(void) const {return "ElasticMembranePlate";};
 
@@ -110,7 +111,8 @@ class ElasticMembranePlateSection : public SectionForceDeformation{
 
   private :
 
-    double E ;  // elastic modulus
+    double Em;  // elastic modulus for membrane (in-plane) action
+    double Ep;  // elastic modulus for plate (out-of-plane) action
     double nu ; // poisson ratio
     double h  ; // MembranePlate thickness
     double rhoH ; //mass per unit 2D area

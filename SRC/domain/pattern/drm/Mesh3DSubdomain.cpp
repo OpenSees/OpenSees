@@ -3,7 +3,7 @@
 #include <iostream>
 #include <OPS_Globals.h>
 #include <StandardStream.h>
-#include <Timer.h>
+//#include <Timer.h>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -18,7 +18,7 @@
 #include <ActorSubdomain.h>
 #include <Node.h>
 #include <Element.h>
-#include <ZeroLength.h>
+#include <zeroLength/ZeroLength.h>
 #include <ElasticMaterial.h>
 #include <ElasticIsotropicThreeDimensional.h>
 
@@ -42,7 +42,7 @@ using namespace std;
 #include <RigidBeam.h>
 #include <ElementIter.h>
 #include <LinearCrdTransf3d.h>
-#include <ElasticBeam3d.h>
+#include <elasticBeamColumn/ElasticBeam3d.h>
 #include <MP_Constraint.h>
 #include <classTags.h>
 //general constructor

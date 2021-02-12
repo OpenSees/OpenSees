@@ -415,7 +415,7 @@ int OPS_ElementalLoad()
 	}
 	else if (ndm == 3) {
 	    // Py, Pz, x, N
-	    double data[4] = {0.0, 0.0, 0.0, 1.0};
+	    double data[4] = {0.0, 0.0, 0.0, 0.0};
 	    int numdata = OPS_GetNumRemainingInputArgs();
 	    if (numdata < 3) {
 		opserr<<"WARNING eleLoad - beamPoint want Py Pz xL <Px>\n";

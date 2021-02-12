@@ -141,6 +141,7 @@ class ConvergenceTest;
 #define OPS_GetInt ops_getintinput_
 #define OPS_GetDouble ops_getdoubleinput_
 #define OPS_GetString ops_getstring
+#define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
@@ -182,6 +183,7 @@ extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
 extern "C" const char* OPS_GetString(); // does a strcpy
+extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a strcpy
 extern "C" int         OPS_SetString(const char* str);
 //extern "C" int       OPS_GetString(char *cArray, int sizeArray); // does a strcpy
 extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy

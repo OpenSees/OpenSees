@@ -770,6 +770,7 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
+#define ELE_TAG_RockingBC	              210
 #define ELE_TAG_ExternalElement           99990
 
 

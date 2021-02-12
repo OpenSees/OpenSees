@@ -366,7 +366,7 @@ RCCircularSectionIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"d") == 0) {
+  if (strcmp(argv[0],"d") == 0 || strcmp(argv[0],"D") == 0) {
     param.setValue(d);
     return param.addObject(1, this);
   }
