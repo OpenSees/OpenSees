@@ -31,6 +31,8 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <OPS_Globals.h>
 
@@ -266,7 +268,25 @@ InitStrainMaterial::Print(OPS_Stream &s, int flag)
 int 
 InitStrainMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
+  if (strcmp(argv[0],"epsInit") == 0) {
+    param.setValue(epsInit);
+    return param.addObject(1, this);
+  }
+
+  // Otherwise, pass it on to the wrapped material
   return theMaterial->setParameter(argv, argc, param);
+}
+
+int
+InitStrainMaterial::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    this->epsInit = info.theDouble;
+    theMaterial->setTrialStrain(epsInit);
+    theMaterial->commitState();
+  }
+
+  return 0;
 }
 
 double
