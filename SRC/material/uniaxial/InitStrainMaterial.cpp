@@ -82,7 +82,7 @@ InitStrainMaterial::InitStrainMaterial(int tag,
 				       UniaxialMaterial &material,
 				       double epsini)
   :UniaxialMaterial(tag,MAT_TAG_InitStrain), theMaterial(0),
-   epsInit(epsini)
+   epsInit(epsini), localStrain(0.0)
 {
   theMaterial = material.getCopy();
 
@@ -96,7 +96,7 @@ InitStrainMaterial::InitStrainMaterial(int tag,
 
 InitStrainMaterial::InitStrainMaterial()
   :UniaxialMaterial(0,MAT_TAG_InitStrain), theMaterial(0),
-   epsInit(0.0)
+   epsInit(0.0), localStrain(0.0)
 {
 
 }
@@ -110,6 +110,8 @@ InitStrainMaterial::~InitStrainMaterial()
 int 
 InitStrainMaterial::setTrialStrain(double strain, double strainRate)
 {
+  localStrain = strain;
+  
   return theMaterial->setTrialStrain(strain+epsInit, strainRate);
 }
 
@@ -193,9 +195,10 @@ InitStrainMaterial::sendSelf(int cTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dataVec(1);
+  static Vector dataVec(2);
   dataVec(0) = epsInit;
-
+  dataVec(1) = localStrain;
+  
   if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStrainMaterial::sendSelf() - failed to send the Vector\n";
     return -2;
@@ -234,13 +237,14 @@ InitStrainMaterial::recvSelf(int cTag, Channel &theChannel,
   }
   theMaterial->setDbTag(dataID(2));
 
-  static Vector dataVec(1);
+  static Vector dataVec(2);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStrainMaterial::recvSelf() - failed to get the Vector\n";
     return -3;
   }
 
   epsInit = dataVec(0);
+  localStrain = dataVec(1);
   
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "InitStrainMaterial::recvSelf() - failed to get the Material\n";
@@ -282,7 +286,7 @@ InitStrainMaterial::updateParameter(int parameterID, Information &info)
 {
   if (parameterID == 1) {
     this->epsInit = info.theDouble;
-    theMaterial->setTrialStrain(epsInit);
+    theMaterial->setTrialStrain(localStrain+epsInit);
     theMaterial->commitState();
   }
 
