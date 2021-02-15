@@ -96,6 +96,7 @@
 #include "Bond_SP01.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
+#include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -1291,6 +1292,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_ConfinedConcrete01:
             return new ConfinedConcrete01();
+		    
+	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
+	    return new HystereticPoly();
 
 
 	default:

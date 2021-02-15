@@ -1502,9 +1502,9 @@ double LeadRubberX::getCurrentTemp(double qYield, double TL_commit, double v)
         F = 8.0/(3.0*PI)-(1.0/(2.0*sqrt(PI*tau)))*(1.0-(1.0/(12.0*tau))+(1.0/(6.0*pow(4.0*tau,2)))-(1.0/(12.0*pow(4.0*tau,3))));
     }
     double deltaT2 = (dT/(qL*cL*h))*((qYield*v*zC.Norm())/ALead-(kS*TL_trial1/a)*(1.0/F+1.274*((n-1)*ts/a)*pow(tau,-1.0/3.0))); 
-    if (deltaT2 <= 0.0) {
-        deltaT2 = 0.0;
-    }
+    
+    
+    
     
     double TL_trial = TL_commit + 0.5*(deltaT1+deltaT2);
     
