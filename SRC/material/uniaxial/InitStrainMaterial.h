@@ -78,6 +78,7 @@ class InitStrainMaterial : public UniaxialMaterial
   private:
     UniaxialMaterial *theMaterial;
     double epsInit;
+    double localStrain;
 };
 
 
