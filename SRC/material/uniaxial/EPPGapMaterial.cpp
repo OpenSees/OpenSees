@@ -88,18 +88,13 @@ void* OPS_EPPGapMaterial()
 	return 0;
     }
 
-    // if(OPS_addUniaxialMaterial(theMaterial) == false) {
-    // 	opserr<<"WARNING: failed to add elastic material\n";
-    // 	delete theMaterial;
-    // 	return 0;
-    // }
     return theMaterial;
 }
 
 EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, double eta0, int accum)
 :UniaxialMaterial(tag,MAT_TAG_EPPGap),
- commitStrain(0.0), trialStrain(0.0), E(e), fy(fyl), gap(gap0), eta(eta0),
- minElasticYieldStrain(gap0),damage(accum), parameterID(0), SHVs(0)
+    E(e), fy(fyl), gap(gap0), eta(eta0), minElasticYieldStrain(gap0), damage(accum), 
+    parameterID(0), SHVs(0), EnergyP(0.0), trialStrain(0.0), commitStrain(0.0)
 {
 	if (E == 0.0) {
 	  opserr << "EPPGapMaterial::EPPGapMaterial -- E is zero, continuing with E = fy/0.002\n";
@@ -121,9 +116,8 @@ EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, doubl
     }
 
     maxElasticYieldStrain = fy / E + gap;
-    //use setTrialStrain method to get trial stress and tangent. Save as commited. Added by ambaker1
+    //use setTrialStrain method to get trial stress and tangent. Save as committed. Added by ambaker1
     this->setTrialStrain(trialStrain);
-    commitStrain = trialStrain;
     commitStress = trialStress;
     commitTangent = trialTangent;
 }
@@ -131,8 +125,7 @@ EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, doubl
 EPPGapMaterial::EPPGapMaterial()
 :UniaxialMaterial(0,MAT_TAG_EPPGap),
     E(0.0), fy(0.0), gap(0.0), eta(0.0), minElasticYieldStrain(0.0), 
-    maxElasticYieldStrain(0.0), damage(0), parameterID(0), SHVs(0),
-    Energy(0.0), EnergyP(0.0),
+    maxElasticYieldStrain(0.0), damage(0), parameterID(0), SHVs(0), EnergyP(0.0),
     trialStrain(0.0), trialStress(0.0), trialTangent(0.0),
     commitStrain(0.0), commitStress(0.0), commitTangent(0.0)
 {
@@ -257,20 +250,15 @@ EPPGapMaterial::revertToLastCommit(void)
 int 
 EPPGapMaterial::revertToStart(void)
 {
-    //commitStrain = 0.0;
     trialStrain = 0.0;
     maxElasticYieldStrain = fy/E+gap;
     minElasticYieldStrain = gap;
 
-	//added by SAJalali
-	//commitStress = 0;
-
-    //use setTrialStrain method to get trial stress and tangent. Save as commited. Added by ambaker1
+    //use setTrialStrain method to get trial stress and tangent. Save as committed. Added by ambaker1
     this->setTrialStrain(trialStrain);
     commitStrain = trialStrain;
     commitStress = trialStress;
     commitTangent = trialTangent;
-
 
 // AddingSensitivity:BEGIN /////////////////////////////////
     if (SHVs != 0) 
@@ -286,10 +274,16 @@ EPPGapMaterial::getCopy(void)
 {
     EPPGapMaterial *theCopy = new EPPGapMaterial(this->getTag(),E,fy,gap,eta,damage);
     theCopy->trialStrain = trialStrain;
+    theCopy->trialStress = trialStress;
+    theCopy->trialTangent = trialTangent;
+    theCopy->commitStrain = commitStrain;
+    theCopy->commitStress = commitStress;
+    theCopy->commitTangent = commitTangent;
     theCopy->maxElasticYieldStrain = maxElasticYieldStrain;
     theCopy->minElasticYieldStrain = minElasticYieldStrain;
-
+    theCopy->EnergyP = EnergyP;
     theCopy->parameterID = parameterID;
+    theCopy->SHVs = SHVs;
 
     return theCopy;
 }
