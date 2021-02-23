@@ -391,7 +391,7 @@ int OPS_eleResponse()
 	for (int i=0; i<numdata; i++) {
 	  argv[i] = new char[128];
 	  // Turn everything in to a string for setResponse
-	  OPS_GetStringFromAll(argv[i], 128);
+	  OPS_GetStringFromAll((char*)argv[i], 128);
 	}
 	const Vector* data = theDomain->getElementResponse(tag, argv, numdata);
 
