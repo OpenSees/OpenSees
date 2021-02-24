@@ -168,7 +168,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     wrapper.incrCurrentArg();
 
     // check if int
-    if (PyLong_Check(o) || PyFloat_Check(o) || PyBool_Check(o)) {
+    if (PyLong_Check(o) || PyBool_Check(o)) {
         PyErr_Clear();
         int data = PyLong_AsLong(o);
         if (PyErr_Occurred()) {
@@ -178,7 +178,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
         return buffer;
     }
     // check if double
-    else if (PyLong_Check(o) || PyFloat_Check(o) || PyBool_Check(o)) {
+    else if (PyFloat_Check(o)) {
         PyErr_Clear();
         double data = PyFloat_AsDouble(o);
         if (PyErr_Occurred()) {
@@ -202,7 +202,14 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     Py_DECREF(space);
     Py_DECREF(empty);
 
-    return res;
+    int lenres = strlen(res) + 1;
+    if (lenres > len) {
+        lenres = len;
+    }
+
+    strncpy(buffer, res, lenres);
+
+    return buffer;
 #else
     if (!PyString_Check(o)) {
         return 0;
