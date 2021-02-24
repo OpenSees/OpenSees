@@ -1726,7 +1726,7 @@ FourNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output
 int 
 FourNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 {
-  static Vector stresses(48);
+  static Vector stresses(6);
 
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());

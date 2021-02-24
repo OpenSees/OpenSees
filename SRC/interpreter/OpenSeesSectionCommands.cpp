@@ -81,7 +81,6 @@ void* OPS_ElasticTubeSection3d();
 void* OPS_ParallelSection();
 void* OPS_SectionAggregator();
 void* OPS_ElasticPlateSection();
-void* OPS_ElasticMembranePlateSection();
 void* OPS_MembranePlateFiberSection();
 void* OPS_LayeredShellFiberSection();
 void* OPS_Bidirectional();
@@ -1053,7 +1052,6 @@ namespace {
 	functionMap.insert(std::make_pair("Aggregator", &OPS_SectionAggregator));
 	functionMap.insert(std::make_pair("AddDeformation", &OPS_SectionAggregator));
 	functionMap.insert(std::make_pair("ElasticPlateSection", &OPS_ElasticPlateSection));
-	functionMap.insert(std::make_pair("ElasticMembranePlateSection", &OPS_ElasticMembranePlateSection));
 	functionMap.insert(std::make_pair("PlateFiber", &OPS_MembranePlateFiberSection));
 	functionMap.insert(std::make_pair("LayeredShell", &OPS_LayeredShellFiberSection));
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));

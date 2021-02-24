@@ -24,11 +24,18 @@
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam2d.
 // ElasticTimoshenkoBeam2d is a 2d beam element. As such it can only
 // connect to a node with 3-dof.
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam2d.h>
 
@@ -830,28 +837,9 @@ void ElasticTimoshenkoBeam2d::setUp()
     
     dx = ndJCoords - ndICoords;
     
-    //if (nodeIInitialDisp != 0) {
-    //    dx(0) -= nodeIInitialDisp[0];
-    //    dx(1) -= nodeIInitialDisp[1];
-    //}
-    
-    //if (nodeJInitialDisp != 0) {
-    //    dx(0) += nodeJInitialDisp[0];
-    //    dx(1) += nodeJInitialDisp[1];
-    //}
-    
-    //if (nodeJOffset != 0) {
-    //    dx(0) += nodeJOffset[0];
-    //    dx(1) += nodeJOffset[1];
-    //}
-    
-    //if (nodeIOffset != 0) {
-    //    dx(0) -= nodeIOffset[0];
-    //    dx(1) -= nodeIOffset[1];
-    //}
-    
     // determine the element length
-    L = dx.Norm();
+    L = theCoordTransf->getInitialLength();
+
     if (L == 0.0)  {
         opserr << "ElasticTimoshenkoBeam2d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";

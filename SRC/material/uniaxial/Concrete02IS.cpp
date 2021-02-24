@@ -69,12 +69,12 @@ OPS_Concrete02IS()
   numData = OPS_GetNumRemainingInputArgs();
 
   if (numData != 8) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "E0? fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
     return 0;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "E0? fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
     return 0;
   }
 
@@ -93,7 +93,7 @@ OPS_Concrete02IS()
 Concrete02IS::Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02IS),
-  E0(_E0), fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets), E0(_E0)
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -298,20 +298,21 @@ Concrete02IS::revertToStart(void)
 int 
 Concrete02IS::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(13);
-  data(0) =fc;    
-  data(1) =epsc0; 
-  data(2) =fcu;   
-  data(3) =epscu; 
-  data(4) =rat;   
-  data(5) =ft;    
-  data(6) =Ets;   
-  data(7) =ecminP;
-  data(8) =deptP; 
-  data(9) =epsP;  
-  data(10) =sigP; 
-  data(11) =eP;   
-  data(12) = this->getTag();
+  static Vector data(14);
+  data(0) =E0;    
+  data(1) =fc;    
+  data(2) =epsc0; 
+  data(3) =fcu;   
+  data(4) =epscu; 
+  data(5) =rat;   
+  data(6) =ft;    
+  data(7) =Ets;   
+  data(8) =ecminP;
+  data(9) =deptP; 
+  data(10) =epsP;  
+  data(11) =sigP; 
+  data(12) =eP;   
+  data(13) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02IS::sendSelf() - failed to sendSelf\n";
@@ -325,7 +326,7 @@ Concrete02IS::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(13);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02IS::recvSelf() - failed to recvSelf\n";
@@ -365,7 +366,7 @@ Concrete02IS::Print(OPS_Stream &s, int flag)
     s << "\t\t\t{";
 	s << "\"name\": \"" << this->getTag() << "\", ";
 	s << "\"type\": \"Concrete02IS\", ";
-	s << "\"Ec\": " << 2.0*fc/epsc0 << ", ";
+	s << "\"E0\": " << E0 << ", ";
 	s << "\"fc\": " << fc << ", ";
     s << "\"epsc\": " << epsc0 << ", ";
     s << "\"fcu\": " << fcu << ", ";

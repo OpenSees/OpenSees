@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PythonModule.h"
 #include "PythonStream.h"
 #include <OPS_Globals.h>
+#include <cstring>
 
 // define opserr
 static PythonStream sserr;
@@ -148,6 +149,67 @@ PythonModule::getString() {
     Py_DECREF(empty);
 
     return res;
+#else
+    if (!PyString_Check(o)) {
+        return 0;
+    }
+
+    return PyString_AS_STRING(o);
+#endif
+}
+
+const char *PythonModule::getStringFromAll(char* buffer, int len) {
+    if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
+        return 0;
+    }
+
+    PyObject *o =
+        PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
+    wrapper.incrCurrentArg();
+
+    // check if int
+    if (PyLong_Check(o) || PyBool_Check(o)) {
+        PyErr_Clear();
+        int data = PyLong_AsLong(o);
+        if (PyErr_Occurred()) {
+            return 0;
+        }
+        snprintf(buffer, len, "%d", data);
+        return buffer;
+    }
+    // check if double
+    else if (PyFloat_Check(o)) {
+        PyErr_Clear();
+        double data = PyFloat_AsDouble(o);
+        if (PyErr_Occurred()) {
+            return 0;
+        }
+        snprintf(buffer, len, "%.20f", data);
+        return buffer;
+    }
+
+#if PY_MAJOR_VERSION >= 3
+    if (!PyUnicode_Check(o)) {
+        return 0;
+    }
+
+    PyObject *space = PyUnicode_FromString(" ");
+    PyObject *empty = PyUnicode_FromString("");
+    PyObject *newo = PyUnicode_Replace(o, space, empty, -1);
+    const char* res = PyUnicode_AsUTF8(newo);
+
+    Py_DECREF(newo);
+    Py_DECREF(space);
+    Py_DECREF(empty);
+
+    int lenres = strlen(res) + 1;
+    if (lenres > len) {
+        lenres = len;
+    }
+
+    strncpy(buffer, res, lenres);
+
+    return buffer;
 #else
     if (!PyString_Check(o)) {
         return 0;
@@ -287,15 +349,15 @@ initopensees(void)
     Py_INCREF(st->error);
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
 
-    char version[10];
-    const char *py_version = ".6";
-    for (int i = 0; i < 5; ++i) {
-        version[i] = OPS_VERSION[i];
-    }
-    for (int i = 0; i < 3; ++i) {
-        version[5 + i] = py_version[i];
-    }
-    PyModule_AddStringConstant(pymodule, "__version__", version);
+    // char version[10];
+    // const char *py_version = ".6";
+    // for (int i = 0; i < 5; ++i) {
+    //     version[i] = OPS_VERSION[i];
+    // }
+    // for (int i = 0; i < 3; ++i) {
+    //     version[5 + i] = py_version[i];
+    // }
+    // PyModule_AddStringConstant(pymodule, "__version__", version);
 
     sserr.setError(st->error);
 

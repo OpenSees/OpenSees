@@ -262,7 +262,22 @@ this->DomainComponent::setDomain(theDomain);
 
 // Set up the A matrix
 	this->setTransformation();
-}   	 
+}   
+
+int
+ZeroLengthSection::update()		// MSN: added to allow error identification in setTrialSectionDeformation()
+{
+	// Compute section deformation vector
+	this->computeSectionDefs();
+
+	// Set trial section deformation
+	if (theSection->setTrialSectionDeformation(*v) < 0) {
+		opserr << "WARNING! ZeroLengthSection::update() - element: " << this->getTag() << " failed in setTrialSectionDeformation\n";
+		return -1;
+	}
+
+	return 0;
+}
 
 int
 ZeroLengthSection::commitState()
@@ -296,10 +311,10 @@ const Matrix &
 ZeroLengthSection::getTangentStiff(void)
 {
 	// Compute section deformation vector
-	this->computeSectionDefs();
+	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
 	// Set trial section deformation
-	theSection->setTrialSectionDeformation(*v);
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
 	// Get section tangent stiffness, the element basic stiffness
 	const Matrix &kb = theSection->getSectionTangent();
@@ -359,10 +374,10 @@ const Vector &
 ZeroLengthSection::getResistingForce()
 {
 	// Compute section deformation vector
-	this->computeSectionDefs();
+	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
 	// Set trial section deformation
-	theSection->setTrialSectionDeformation(*v);
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
 	// Get section stress resultants, the element basic forces
 	const Vector &q = theSection->getStressResultant();
@@ -879,10 +894,10 @@ const Vector &
 ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
 {
   // Compute section deformation vector
-  this->computeSectionDefs();
+  // this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
   // Set trial section deformation
-  theSection->setTrialSectionDeformation(*v);
+  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
   // Get section stress resultants, the element basic forces
   const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);

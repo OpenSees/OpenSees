@@ -293,38 +293,14 @@ OPS_Parameter()
     if (numr > 0) {
 
 	char** argv = new char*[numr];
-
+	char buffer[128];
+	
 	for (int i=0; i<numr; ++i) {
 
 	    argv[i] = new char[128];
 
-	    double value;
-	    int val;
-	    if (OPS_GetIntInput(&num, &val) == 0) {
-
-		// convert to string
-		snprintf(argv[i], 128, "%d", val);
-
-	    } else {
-
-		// back one
-		OPS_ResetCurrentInputArg(-1);
-
-		if (OPS_GetDoubleInput(&num, &value) == 0) {
-
-		    // convert to string
-		    snprintf(argv[i], 128, "%.20f", value);
-
-		} else {
-
-		    // back one
-		    OPS_ResetCurrentInputArg(-1);
-
-		    // copy string
-		    strcpy(argv[i], OPS_GetString());
-		}
-	    }
-
+	    // Turn everything in to a string for setParameter
+	    strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
 	}
 
 	if (isele == false) {
@@ -448,38 +424,13 @@ OPS_addToParameter()
     if (numr > 0) {
 
 	char** argv = new char*[numr];
-
+	char buffer[128];
+	
 	for (int i=0; i<numr; ++i) {
 
 	    argv[i] = new char[128];
 
-
-	    double value;
-	    int val;
-	    if (OPS_GetIntInput(&num, &val) == 0) {
-
-		// convert to string
-		snprintf(argv[i], 128, "%d", val);
-
-	    } else {
-
-		// back one
-		OPS_ResetCurrentInputArg(-1);
-
-		if (OPS_GetDoubleInput(&num, &value) == 0) {
-
-		    // convert to string
-		    snprintf(argv[i], 128, "%.20f", value);
-
-		} else {
-
-		    // back one
-		    OPS_ResetCurrentInputArg(-1);
-
-		    // copy string
-		    strcpy(argv[i], OPS_GetString());
-		}
-	    }
+	    strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
 	}
 
 	theParameter->addComponent(theObject,(const char **)argv,numr);
