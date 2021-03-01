@@ -347,7 +347,7 @@ TclFeViewer::record(int cTag, double timeStamp)
           NodeIter &theNodes = theDomain->getNodes();
           Node *theNode;
           while ((theNode = theNodes()) != 0) {
-              res = theNode->displaySelf(*theRenderer, theNodeMode, float(theDisplayFact));
+              res = theNode->displaySelf(*theRenderer, theEleMode, theNodeMode, float(theDisplayFact));
               if (res < 0) {
                   opserr << "Renderer::displayModel() - Node: ";
                   opserr << theNode->getTag() << " failed to display itself\n";

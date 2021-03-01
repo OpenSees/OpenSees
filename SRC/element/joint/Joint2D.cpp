@@ -1236,58 +1236,37 @@ Joint2D::getResistingForceIncInertia()
 
 int Joint2D::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
-  // first determine the four corner points of the element based on
-  // the display factor (a measure of the distorted image)
-  // store this information in 2 3d vectors v1 and v2
+    // get coordinates for connecting nodes
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
 
-  const Vector& node1Crd = theNodes[0]->getCrds();
-  const Vector& node2Crd = theNodes[1]->getCrds();
-  const Vector& node3Crd = theNodes[2]->getCrds();
-  const Vector& node4Crd = theNodes[3]->getCrds();
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+    theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+    theNodes[3]->getDisplayCrds(v4, fact, displayMode);
 
-  const Vector& node1Disp = theNodes[0]->getDisp();
-  const Vector& node2Disp = theNodes[1]->getDisp();
-  const Vector& node3Disp = theNodes[2]->getDisp();
-  const Vector& node4Disp = theNodes[3]->getDisp();
+    // calculate four corners of the element
+    Vector w(3); // width vector
+    Vector c1(3);
+    Vector c2(3);
+    Vector c3(3);
+    Vector c4(3);
 
-  static Vector v1(3);
-  static Vector v2(3);
-  static Vector v3(3);
-  static Vector v4(3);
+    w = v2 - v4;
+    c1 = v1 - 0.5 * w;
+    c2 = v1 + 0.5 * w;
+    c3 = v3 + 0.5 * w;
+    c4 = v3 - 0.5 * w;
 
-  // calculate the current coordinates of four external nodes
-  for (int i = 0; i < 2; i++)
-  {
-    v1(i) = node1Crd(i) + node1Disp(i) * fact;
-    v2(i) = node2Crd(i) + node2Disp(i) * fact;
-    v3(i) = node3Crd(i) + node3Disp(i) * fact;
-    v4(i) = node4Crd(i) + node4Disp(i) * fact;
-  }
+    int res = 0;
+    res += theViewer.drawLine(c1, c2, 1.0, 1.0, this->getTag());
+    res += theViewer.drawLine(c2, c3, 1.0, 1.0, this->getTag());
+    res += theViewer.drawLine(c3, c4, 1.0, 1.0, this->getTag());
+    res += theViewer.drawLine(c4, c1, 1.0, 1.0, this->getTag());
 
-  // draw the center lines
-  int dummy;
-  dummy = theViewer.drawLine(v1, v3, 1.0, 1.0);
-  dummy = theViewer.drawLine(v2, v4, 1.0, 1.0);
-
-  // calculate four corners of the element
-  Vector vb(3);
-  Vector vc(3);
-
-  vb = v1 - v3;
-  vc = v2 - v4;
-
-  v1 = v3 - 0.5 * vc;
-  v2 = v1 + vb;
-  v3 = v2 + vc;
-  v4 = v1 + vc;
-
-  dummy = theViewer.drawLine(v1, v2, 1.0, 1.0);
-  dummy = theViewer.drawLine(v2, v3, 1.0, 1.0);
-  dummy = theViewer.drawLine(v3, v4, 1.0, 1.0);
-  dummy = theViewer.drawLine(v4, v1, 1.0, 1.0);
-
-  return 0;
-
+    return res;
 }
 
 
