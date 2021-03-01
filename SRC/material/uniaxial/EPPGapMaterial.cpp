@@ -283,7 +283,6 @@ EPPGapMaterial::getCopy(void)
     theCopy->minElasticYieldStrain = minElasticYieldStrain;
     theCopy->EnergyP = EnergyP;
     theCopy->parameterID = parameterID;
-    theCopy->SHVs = SHVs;
 
     return theCopy;
 }
