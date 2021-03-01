@@ -272,6 +272,8 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+#define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
 
@@ -724,8 +726,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
-#define ELE_TAG_MVLEM                     162
-#define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_MVLEM                     162 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM                 163 // Kristijan Kolozvari
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
@@ -771,6 +773,7 @@
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
 #define ELE_TAG_RockingBC	              210
+#define ELE_TAG_MVLEM_3D	              211 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
 
 

@@ -629,6 +629,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/SSPbrickUP.o \
 	$(FE)/element/mvlem/MVLEM.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
+	$(FE)/element/mvlem/MVLEM_3D.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
@@ -811,6 +812,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
+	$(FE)/material/uniaxial/HystereticPoly.o \
 	$(FE)/material/uniaxial/SLModel.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \

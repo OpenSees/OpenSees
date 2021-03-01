@@ -43,7 +43,7 @@
 //		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics,
 //      49(11), 1072-1094.
 
-#include "RockingBC.h"
+#include <RockingBC.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 
