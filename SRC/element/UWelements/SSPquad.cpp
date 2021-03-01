@@ -665,7 +665,32 @@ SSPquad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroke
 int
 SSPquad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-	return 0;
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+	theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+	theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+
+	// place values in coords matrix
+	static Matrix coords(4, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
+	}
+
+	// fill RGB vector
+	static Vector values(4);
+	for (int i = 0; i < 4; i++)
+		values(i) = 1.0;
+
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 void

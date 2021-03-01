@@ -55,6 +55,7 @@ class WrapperElement : public Element
   virtual void setDomain(Domain *theDomain);
   
   virtual int commitState(void);
+
   virtual int revertToLastCommit(void);        
   virtual int revertToStart(void);        
   virtual int update(void);
@@ -90,6 +91,9 @@ class WrapperElement : public Element
   static Matrix Kmatrix;
   static Matrix Mmatrix;	// AGGIUNTA
   static ID connectedNodes;
+
+  double committedTime;
+  double committedDt;
 };
 
 #endif

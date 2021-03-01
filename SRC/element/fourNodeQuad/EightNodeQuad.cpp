@@ -1049,98 +1049,65 @@ EightNodeQuad::Print(OPS_Stream &s, int flag)
 int
 EightNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	static Vector v5(3);
+	static Vector v6(3);
+	static Vector v7(3);
+	static Vector v8(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+	theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+	theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+	theNodes[4]->getDisplayCrds(v5, fact, displayMode);
+	theNodes[5]->getDisplayCrds(v6, fact, displayMode);
+	theNodes[6]->getDisplayCrds(v7, fact, displayMode);
+	theNodes[7]->getDisplayCrds(v8, fact, displayMode);
 
-    // first set the quantity to be displayed at the nodes;
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-    static Vector values(nip);
-
-    for (int j=0; j<nip; j++)
-	   values(j) = 0.0;
-
-    if (displayMode < nip && displayMode > 0) {
-	for (int i=0; i<nip; i++) {
-	  const Vector &stress = theMaterial[i]->getStress();
-	  values(i) = stress(displayMode-1);
+	// place values in coords matrix
+	static Matrix coords(8, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v5(i);
+		coords(2, i) = v2(i);
+		coords(3, i) = v6(i);
+		coords(4, i) = v3(i);
+		coords(5, i) = v7(i);
+		coords(6, i) = v4(i);
+		coords(7, i) = v8(i);
 	}
-    }
 
-    // now  determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    const Vector &end3Crd = theNodes[2]->getCrds();
-    const Vector &end4Crd = theNodes[3]->getCrds();
-    const Vector &end5Crd = theNodes[4]->getCrds();
-    const Vector &end6Crd = theNodes[5]->getCrds();
-    const Vector &end7Crd = theNodes[6]->getCrds();
-    const Vector &end8Crd = theNodes[7]->getCrds();
-
-    static Matrix coords(nnodes,3);
-
-    if (displayMode >= 0) {
-
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();
-      const Vector &end3Disp = theNodes[2]->getDisp();
-      const Vector &end4Disp = theNodes[3]->getDisp();
-      const Vector &end5Disp = theNodes[4]->getDisp();
-      const Vector &end6Disp = theNodes[5]->getDisp();
-      const Vector &end7Disp = theNodes[6]->getDisp();
-      const Vector &end8Disp = theNodes[7]->getDisp();
-
-      for (int i = 0; i < 2; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-	coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
-	coords(5,i) = end6Crd(i) + end6Disp(i)*fact;
-	coords(6,i) = end7Crd(i) + end7Disp(i)*fact;
-	coords(7,i) = end8Crd(i) + end8Disp(i)*fact;
-      }
-    } else {
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      const Matrix &eigen3 = theNodes[2]->getEigenvectors();
-      const Matrix &eigen4 = theNodes[3]->getEigenvectors();
-      const Matrix &eigen5 = theNodes[4]->getEigenvectors();
-      const Matrix &eigen6 = theNodes[5]->getEigenvectors();
-      const Matrix &eigen7 = theNodes[6]->getEigenvectors();
-      const Matrix &eigen8 = theNodes[7]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(4,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	  coords(5,i) = end6Crd(i) + eigen6(i,mode-1)*fact;
-	  coords(6,i) = end7Crd(i) + eigen7(i,mode-1)*fact;
-	  coords(7,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
+	// first set the quantity to be displayed at the nodes;
+	// if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+	static Vector values(nip);
+	if (displayMode < nip && displayMode > 0) {
+		const Vector& stress1 = theMaterial[0]->getStress();
+		const Vector& stress2 = theMaterial[1]->getStress();
+		const Vector& stress3 = theMaterial[2]->getStress();
+		const Vector& stress4 = theMaterial[3]->getStress();
+		const Vector& stress5 = theMaterial[4]->getStress();
+		const Vector& stress6 = theMaterial[5]->getStress();
+		const Vector& stress7 = theMaterial[6]->getStress();
+		const Vector& stress8 = theMaterial[7]->getStress();
+		values(0) = stress1(displayMode - 1);
+		values(1) = stress5(displayMode - 1);
+		values(2) = stress2(displayMode - 1);
+		values(3) = stress6(displayMode - 1);
+		values(4) = stress3(displayMode - 1);
+		values(5) = stress7(displayMode - 1);
+		values(6) = stress4(displayMode - 1);
+		values(7) = stress8(displayMode - 1);
 	}
-      } else {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i);
-	  coords(1,i) = end2Crd(i);
-	  coords(2,i) = end3Crd(i);
-	  coords(3,i) = end4Crd(i);
-	  coords(4,i) = end5Crd(i);
-	  coords(5,i) = end6Crd(i);
-	  coords(6,i) = end7Crd(i);
-	  coords(7,i) = end8Crd(i);
+	else {
+		for (int i = 0; i < nip; i++)
+			values(i) = 0.0;
 	}
-      }
-    }
 
-    int error = 0;
-
-    // finally we  the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values, this->getTag());
-
-    return error;
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 Response*
