@@ -1767,74 +1767,41 @@ EnhancedQuad::recvSelf (int commitTag, Channel &theChannel,
 int
 EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    // first set the quantity to be displayed at the nodes;
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+
+    // place values in coords matrix
+    static Matrix coords(4, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
+        coords(3, i) = v4(i);
+    }
+
+    // set the quantity to be displayed at the nodes;
     // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-    static Vector values(4) ;
-
-    for (int j=0; j<4; j++)
-      values(j) = 0.0;
-
     // until someone projects the stress to the nodes will display the stress 
     // at the guass points at the nodes .. could also just display the average!
+    static Vector values(4);
     if (displayMode < 4 && displayMode > 0) {
-	for (int i=0; i<4; i++) {
-	  const Vector &stress = materialPointers[i]->getStress();
-	  values(i) = stress(displayMode-1);
-	}
+        for (int i = 0; i < 4; i++) {
+            const Vector& stress = materialPointers[i]->getStress();
+            values(i) = stress(displayMode - 1);
+        }
+    }
+    else {
+        for (int i = 0; i < 4; i++)
+            values(i) = 0.0;
     }
 
-    // now determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[1]->getCrds();	
-    const Vector &end3Crd = nodePointers[2]->getCrds();	
-    const Vector &end4Crd = nodePointers[3]->getCrds();	
-
-    static Matrix coords(4,3) ;
-
-    if (displayMode >= 0) {    
-      
-      const Vector &end1Disp = nodePointers[0]->getDisp();
-      const Vector &end2Disp = nodePointers[1]->getDisp();
-      const Vector &end3Disp = nodePointers[2]->getDisp();
-      const Vector &end4Disp = nodePointers[3]->getDisp();
-      
-      for (int i = 0; i < 2; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;    
-      }
-    } else {
-      int mode = displayMode  *  -1;
-      const Matrix &eigen1 = nodePointers[0]->getEigenvectors();
-      const Matrix &eigen2 = nodePointers[1]->getEigenvectors();
-      const Matrix &eigen3 = nodePointers[2]->getEigenvectors();
-      const Matrix &eigen4 = nodePointers[3]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	}    
-      } else {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i);
-	  coords(1,i) = end2Crd(i);
-	  coords(2,i) = end3Crd(i);
-	  coords(3,i) = end4Crd(i);
-	}    
-      }
-    }
-
-    int error = 0;
-
-    // finally we draw the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }

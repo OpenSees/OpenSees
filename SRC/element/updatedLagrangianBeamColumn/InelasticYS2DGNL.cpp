@@ -1761,28 +1761,23 @@ int InelasticYS2DGNL::displaySelf(Renderer &theViewer, int displayMode, float fa
 	}
 
 
-  this->UpdatedLagrangianBeam2D::displaySelf(theViewer, displayMode, fact);
+	this->UpdatedLagrangianBeam2D::displaySelf(theViewer, displayMode, fact);
 
-  const Vector &end1Crd = end1Ptr->getCrds();
-  const Vector &end2Crd = end2Ptr->getCrds();
-  const Vector &end1Disp = end1Ptr->getTrialDisp();
-  const Vector &end2Disp = end2Ptr->getTrialDisp();
-
-	Vector v1(3);
-    Vector v2(3);
+	static Vector v1(3);
+	static Vector v2(3);
 	Vector vc(3);
+
+	end1Ptr->getDisplayCrds(v1, fact, displayMode);
+	end2Ptr->getDisplayCrds(v2, fact, displayMode);
 
 	Vector rgb(3);
 	rgb(0) = 0;
 	rgb(1) = 0.9;
 	rgb(2) = 0;
 
-    for (int i=0; i<2; i++) { //!! i < 3
-	v1(i) = end1Crd(i)+end1Disp(i)*fact;
-	v2(i) = end2Crd(i)+end2Disp(i)*fact;
-    }
 	double e = 0.05;
 
+	// not sure what's going on here - doesn't draw anything for mode shapes -ambaker1
 	if (displayMode == 1) //theViewer.drawLine(v1, v2, 1, 1);
 	{
 		if(end1Damage && !end1Plastify)

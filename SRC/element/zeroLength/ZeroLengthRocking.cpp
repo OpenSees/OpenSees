@@ -742,33 +742,14 @@ ZeroLengthRocking::displaySelf(Renderer &theViewer, int displayMode, float fact,
     if (theNodes[0] == 0 || theNodes[1] == 0 )
        return 0;
 
-    // first determine the two end points of the ZeroLengthRocking based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();    
+    // get the end point display coords    
+    static Vector v1(3);
+    static Vector v2(3);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    if (displayMode == 1 || displayMode == 2) {
-        Vector v1(3);
-        Vector v2(3);
-        for (int i=0; i<dimension; i++) {
-            v1(i) = end1Crd(i)+end1Disp(i)*fact;
-            v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-        }
-        
-        // don't display strain or force
-        double strain = 0.0;
-        double force  = 0.0;
-        
-        if (displayMode == 2) // use the strain as the drawing measure
-            return theViewer.drawLine(v1, v2, (float)strain, (float)strain);	
-        else { // otherwise use the axial force as measure
-            return theViewer.drawLine(v1,v2, (float)force, (float)force);
-        }
-    }
-    return 0;
+    // draw the line (don't display strain or force)
+    return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag());
 }
 
 
