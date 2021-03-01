@@ -662,37 +662,19 @@ int Joint3D::displaySelf(Renderer& theViewer, int displayMode, float fact, const
   // the display factor (a measure of the distorted image)
   // store this information in 2 3d vectors v1 and v2
 
-  const Vector& node1Crd = theNodes[0]->getCrds();
-  const Vector& node2Crd = theNodes[1]->getCrds();
-  const Vector& node3Crd = theNodes[2]->getCrds();
-  const Vector& node4Crd = theNodes[3]->getCrds();
-  const Vector& node5Crd = theNodes[4]->getCrds();
-  const Vector& node6Crd = theNodes[5]->getCrds();
-
-  const Vector& node1Disp = theNodes[0]->getDisp();
-  const Vector& node2Disp = theNodes[1]->getDisp();
-  const Vector& node3Disp = theNodes[2]->getDisp();
-  const Vector& node4Disp = theNodes[3]->getDisp();
-  const Vector& node5Disp = theNodes[4]->getDisp();
-  const Vector& node6Disp = theNodes[5]->getDisp();
-
   static Vector v1(3);
   static Vector v2(3);
   static Vector v3(3);
   static Vector v4(3);
   static Vector v5(3);
   static Vector v6(3);
-
-  // calculate the current coordinates of four external nodes
-  for (int i = 0; i < 3; i++)
-  {
-    v1(i) = node1Crd(i) + node1Disp(i) * fact;
-    v2(i) = node2Crd(i) + node2Disp(i) * fact;
-    v3(i) = node3Crd(i) + node3Disp(i) * fact;
-    v4(i) = node4Crd(i) + node4Disp(i) * fact;
-    v5(i) = node5Crd(i) + node5Disp(i) * fact;
-    v6(i) = node6Crd(i) + node6Disp(i) * fact;
-  }
+  
+  theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+  theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+  theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+  theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+  theNodes[2]->getDisplayCrds(v5, fact, displayMode);
+  theNodes[3]->getDisplayCrds(v6, fact, displayMode);
 
   // draw the center lines
   int dummy;

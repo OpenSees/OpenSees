@@ -4,6 +4,7 @@
 #include <Information.h>
 #include <Domain.h>
 #include <Node.h>
+#include <Renderer.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <UniaxialMaterial.h>
@@ -468,5 +469,11 @@ PY_Macro2D::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 PY_Macro2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-  return 0;
+    static Vector v1(3);
+    static Vector v2(3);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

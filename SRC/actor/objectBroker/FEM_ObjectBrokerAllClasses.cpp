@@ -273,6 +273,10 @@
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
 
+#include "mvlem/MVLEM.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
+#include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
+
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
 #include "elastomericBearing/ElastomericBearingPlasticity2d.h"
@@ -797,6 +801,15 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_Inerter:
         return new Inerter();
+
+	case ELE_TAG_MVLEM:				// Kristijan Kolozvari
+		return new MVLEM();	// Kristijan Kolozvari
+
+	case ELE_TAG_SFI_MVLEM:			// Kristijan Kolozvari
+		return new SFI_MVLEM();	// Kristijan Kolozvari
+
+	case ELE_TAG_MVLEM_3D:		// Kristijan Kolozvari
+		return new MVLEM_3D();	// Kristijan Kolozvari
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			

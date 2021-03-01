@@ -140,8 +140,8 @@ BandGenLinLapackSolver::solve(void)
     if (info != 0) {
       if (info > 0) {
 	opserr << "WARNING BandGenLinLapackSolver::solve() -";
-	opserr << "factorization failed, matrix singular U(i,i) = 0, i= " << info << endln;
-	return -info;
+	opserr << "factorization failed, matrix singular U(i,i) = 0, i= " << info-1 << endln;
+	return -info+1;
       } else {
 	opserr << "WARNING BandGenLinLapackSolver::solve() - OpenSees code error\n";
 	return info;

@@ -454,72 +454,32 @@ int  PML2D::recvSelf (int commitTag,
 int
 PML2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[1]->getCrds();	
-    const Vector &end3Crd = nodePointers[2]->getCrds();	
-    const Vector &end4Crd = nodePointers[3]->getCrds();	
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
 
-    static Matrix coords(PML2D_NUM_NODES,3);
-    static Vector values(8);
-    static Vector P(PML2D_NUM_DOF) ;
-    
-    for (int i=0; i<8; i++)
-      values(i) = 1.0;
-
-    int error = 0;
-    int i;
-
-    if (displayMode >= 0) {
-
-      const Vector &end1Disp = nodePointers[0]->getDisp();
-      const Vector &end2Disp = nodePointers[1]->getDisp();
-      const Vector &end3Disp = nodePointers[2]->getDisp();
-      const Vector &end4Disp = nodePointers[3]->getDisp();
-     
-      // for each face of the brick we:
-      //   1) determine the coordinates of the displaced point
-      //   2) determine the value to be drawn, the stress at nearest gauss point in displayMode dirn
-      //   3) get the renderer to draw the face
-      
-      for (i = 0; i < 2; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-      }
-      
-      error = theViewer.drawCube(coords, values, this->getTag());
-
-    } else {
-
-      int mode = displayMode  *  -1;
-
-      const Matrix &eigen1 = nodePointers[0]->getEigenvectors();
-      const Matrix &eigen2 = nodePointers[1]->getEigenvectors();
-      const Matrix &eigen3 = nodePointers[2]->getEigenvectors();
-      const Matrix &eigen4 = nodePointers[3]->getEigenvectors();
-      
-      if (eigen1.noCols() >= mode) {
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;    
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	}
-
-	for (int i=0; i<8; i++)
-	  values(i) = 0.0;
-
-	error = theViewer.drawCube(coords, values, this->getTag());
-	opserr << "\n tag: " << this->getTag() << endln;
-	opserr << coords;
-	opserr << values;
-
-      }
+    // place values in coords matrix
+    static Matrix coords(4, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
+        coords(3, i) = v4(i);
     }
 
-    return error;
+    // fill RGB vector
+    static Vector values(4);
+    for (int i = 0; i < 4; i++)
+        values(i) = 1.0;
+
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 Response*
