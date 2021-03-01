@@ -1433,134 +1433,67 @@ int  Brick::recvSelf (int commitTag,
 int
 Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[1]->getCrds();	
-    const Vector &end3Crd = nodePointers[2]->getCrds();	
-    const Vector &end4Crd = nodePointers[3]->getCrds();	
-
-    const Vector &end5Crd = nodePointers[4]->getCrds();
-    const Vector &end6Crd = nodePointers[5]->getCrds();	
-    const Vector &end7Crd = nodePointers[6]->getCrds();	
-    const Vector &end8Crd = nodePointers[7]->getCrds();	
-
-    static Matrix coords(8,3);
-    static Vector values(8);
-    static Vector P(24) ;
-    
-    for (int i=0; i<8; i++)
-      values(i) = 1.0;
-
-    int error = 0;
+    // vertex display coordinate vectors
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    static Vector v5(3);
+    static Vector v6(3);
+    static Vector v7(3);
+    static Vector v8(3);
+    static Matrix coords(8, 3); // polygon coordinate matrix
+    static Vector values(8); // color vector
     int i;
 
-    if (displayMode >= 0) {
+    // get display coords
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+    nodePointers[4]->getDisplayCrds(v5, fact, displayMode);
+    nodePointers[5]->getDisplayCrds(v6, fact, displayMode);
+    nodePointers[6]->getDisplayCrds(v7, fact, displayMode);
+    nodePointers[7]->getDisplayCrds(v8, fact, displayMode);
 
-      const Vector &end1Disp = nodePointers[0]->getDisp();
-      const Vector &end2Disp = nodePointers[1]->getDisp();
-      const Vector &end3Disp = nodePointers[2]->getDisp();
-      const Vector &end4Disp = nodePointers[3]->getDisp();
-      const Vector &end5Disp = nodePointers[4]->getDisp();
-      const Vector &end6Disp = nodePointers[5]->getDisp();
-      const Vector &end7Disp = nodePointers[6]->getDisp();
-      const Vector &end8Disp = nodePointers[7]->getDisp();
-     
-      const Vector &stress1 = materialPointers[0]->getStress();
-      const Vector &stress2 = materialPointers[1]->getStress();
-      const Vector &stress3 = materialPointers[2]->getStress();
-      const Vector &stress4 = materialPointers[3]->getStress();
-      const Vector &stress5 = materialPointers[4]->getStress();
-      const Vector &stress6 = materialPointers[5]->getStress();
-      const Vector &stress7 = materialPointers[6]->getStress();
-      const Vector &stress8 = materialPointers[7]->getStress();
-       
-      // for each face of the brick we:
-      //   1) determine the coordinates of the displaced point
-      //   2) determine the value to be drawn, the stress at nearest gauss point in displayMode dirn
-      //   3) get the renderer to draw the face
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-	coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
-	coords(5,i) = end6Crd(i) + end6Disp(i)*fact;    
-	coords(6,i) = end7Crd(i) + end7Disp(i)*fact;    
-	coords(7,i) = end8Crd(i) + end8Disp(i)*fact;
-      }
-      
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress1(index);
-	values(1) = stress2(index);
-	values(2) = stress3(index);
-	values(3) = stress4(index);
-	values(4) = stress5(index);
-	values(5) = stress6(index);
-	values(6) = stress7(index);
-	values(7) = stress8(index);
-      }
-
-      error = theViewer.drawCube(coords, values, this->getTag());
-
-    } else {
-
-      int mode = displayMode  *  -1;
-
-      const Matrix &eigen1 = nodePointers[0]->getEigenvectors();
-      const Matrix &eigen2 = nodePointers[1]->getEigenvectors();
-      const Matrix &eigen3 = nodePointers[2]->getEigenvectors();
-      const Matrix &eigen4 = nodePointers[3]->getEigenvectors();
-      const Matrix &eigen5 = nodePointers[4]->getEigenvectors();
-      const Matrix &eigen6 = nodePointers[5]->getEigenvectors();
-      const Matrix &eigen7 = nodePointers[6]->getEigenvectors();
-      const Matrix &eigen8 = nodePointers[7]->getEigenvectors();
-      
-      if (eigen1.noCols() >= mode) {
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;    
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(4,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	  coords(5,i) = end6Crd(i) + eigen6(i,mode-1)*fact;    
-	  coords(6,i) = end7Crd(i) + eigen7(i,mode-1)*fact;    
-	  coords(7,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
-	}
-
-	for (int i=0; i<8; i++)
-	  values(i) = 0.0;
-
-	error = theViewer.drawCube(coords, values, this->getTag());
-	opserr << "\n tag: " << this->getTag() << endln;
-	opserr << coords;
-	opserr << values;
-
-      }
+    // add to coord matrix
+    for (i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
+        coords(3, i) = v4(i);
+        coords(4, i) = v5(i);
+        coords(5, i) = v6(i);
+        coords(6, i) = v7(i);
+        coords(7, i) = v8(i);
     }
+    
+    if (displayMode < 3 && displayMode > 0) {
+        // determine the value to be drawn, the stress at nearest gauss point in displayMode dirn
+        const Vector& stress1 = materialPointers[0]->getStress();
+        const Vector& stress2 = materialPointers[1]->getStress();
+        const Vector& stress3 = materialPointers[2]->getStress();
+        const Vector& stress4 = materialPointers[3]->getStress();
+        const Vector& stress5 = materialPointers[4]->getStress();
+        const Vector& stress6 = materialPointers[5]->getStress();
+        const Vector& stress7 = materialPointers[6]->getStress();
+        const Vector& stress8 = materialPointers[7]->getStress();
+        for (i = 0; i < 8; i++) {
+            int index = displayMode - 1;
+            values(0) = stress1(index);
+            values(1) = stress2(index);
+            values(2) = stress3(index);
+            values(3) = stress4(index);
+            values(4) = stress5(index);
+            values(5) = stress6(index);
+            values(6) = stress7(index);
+            values(7) = stress8(index);
+        }
+    } else if (displayMode < 0)
+        for (i = 0; i < 8; i++)
+            values(i) = 0.0;
 
-      /*
-    } else {
-	values.Zero();
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i); 
-	  coords(1,i) = end2Crd(i); 
-	  coords(2,i) = end3Crd(i); 
-	  coords(3,i) = end4Crd(i); 
-	  coords(4,i) = end5Crd(i); 
-	  coords(5,i) = end6Crd(i); 
-	  coords(6,i) = end7Crd(i); 
-	  coords(7,i) = end8Crd(i); 
-	}
-	
-	error = theViewer.drawCube(coords, values, this->getTag());
-      }
-    }
-      */
-
-
-    return error;
+    return theViewer.drawCube(coords, values, this->getTag());
 }
 
 Response*

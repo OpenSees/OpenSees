@@ -1627,7 +1627,59 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
 int
 FourNodeTetrahedron::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    return -1;
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+
+    // color vector
+    static Vector values(3);
+    values(0) = 0;
+    values(1) = 0;
+    values(2) = 0;
+
+    // draw polygons for each tetrahedron face -ambaker1
+    int res = 0;
+    static Matrix coords(3, 3); // rows are face nodes
+
+    // face 1 (1 3 2)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v3(i);
+        coords(2, i) = v2(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 2 (1 2 4)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v4(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 3 (1 4 3)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v4(i);
+        coords(2, i) = v3(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 4 (2 3 4)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v2(i);
+        coords(1, i) = v3(i);
+        coords(2, i) = v4(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+    
+    return res;
 }
 
 Response*

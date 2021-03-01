@@ -486,94 +486,44 @@ int  PML3D::recvSelf(int commitTag,
 int
 PML3D::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
-	const Vector& end1Crd = nodePointers[0]->getCrds();
-	const Vector& end2Crd = nodePointers[1]->getCrds();
-	const Vector& end3Crd = nodePointers[2]->getCrds();
-	const Vector& end4Crd = nodePointers[3]->getCrds();
+	// Get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	static Vector v5(3);
+	static Vector v6(3);
+	static Vector v7(3);
+	static Vector v8(3);
+	nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+	nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+	nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+	nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+	nodePointers[4]->getDisplayCrds(v5, fact, displayMode);
+	nodePointers[5]->getDisplayCrds(v6, fact, displayMode);
+	nodePointers[6]->getDisplayCrds(v7, fact, displayMode);
+	nodePointers[7]->getDisplayCrds(v8, fact, displayMode);
 
-	const Vector& end5Crd = nodePointers[4]->getCrds();
-	const Vector& end6Crd = nodePointers[5]->getCrds();
-	const Vector& end7Crd = nodePointers[6]->getCrds();
-	const Vector& end8Crd = nodePointers[7]->getCrds();
-
+	// place values in coords matrix
 	static Matrix coords(8, 3);
-	static Vector values(8);
-	static Vector P(PML3D_NUM_DOF);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
+		coords(4, i) = v5(i);
+		coords(5, i) = v6(i);
+		coords(6, i) = v7(i);
+		coords(7, i) = v8(i);
+	}
 
+	// fill RGB vector
+	static Vector values(8);
 	for (int i = 0; i < 8; i++)
 		values(i) = 1.0;
 
-	int error = 0;
-	int i;
-
-	if (displayMode >= 0) {
-
-		const Vector& end1Disp = nodePointers[0]->getDisp();
-		const Vector& end2Disp = nodePointers[1]->getDisp();
-		const Vector& end3Disp = nodePointers[2]->getDisp();
-		const Vector& end4Disp = nodePointers[3]->getDisp();
-		const Vector& end5Disp = nodePointers[4]->getDisp();
-		const Vector& end6Disp = nodePointers[5]->getDisp();
-		const Vector& end7Disp = nodePointers[6]->getDisp();
-		const Vector& end8Disp = nodePointers[7]->getDisp();
-
-		// for each face of the brick we:
-		//   1) determine the coordinates of the displaced point
-		//   2) determine the value to be drawn, the stress at nearest gauss point in displayMode dirn
-		//   3) get the renderer to draw the face
-
-		for (i = 0; i < 3; i++) {
-			coords(0, i) = end1Crd(i) + end1Disp(i) * fact;
-			coords(1, i) = end2Crd(i) + end2Disp(i) * fact;
-			coords(2, i) = end3Crd(i) + end3Disp(i) * fact;
-			coords(3, i) = end4Crd(i) + end4Disp(i) * fact;
-			coords(4, i) = end5Crd(i) + end5Disp(i) * fact;
-			coords(5, i) = end6Crd(i) + end6Disp(i) * fact;
-			coords(6, i) = end7Crd(i) + end7Disp(i) * fact;
-			coords(7, i) = end8Crd(i) + end8Disp(i) * fact;
-		}
-
-		error = theViewer.drawCube(coords, values, this->getTag());
-
-	}
-	else {
-
-		int mode = displayMode * -1;
-
-		const Matrix& eigen1 = nodePointers[0]->getEigenvectors();
-		const Matrix& eigen2 = nodePointers[1]->getEigenvectors();
-		const Matrix& eigen3 = nodePointers[2]->getEigenvectors();
-		const Matrix& eigen4 = nodePointers[3]->getEigenvectors();
-		const Matrix& eigen5 = nodePointers[4]->getEigenvectors();
-		const Matrix& eigen6 = nodePointers[5]->getEigenvectors();
-		const Matrix& eigen7 = nodePointers[6]->getEigenvectors();
-		const Matrix& eigen8 = nodePointers[7]->getEigenvectors();
-
-		if (eigen1.noCols() >= mode) {
-
-			for (i = 0; i < 3; i++) {
-				coords(0, i) = end1Crd(i) + eigen1(i, mode - 1) * fact;
-				coords(1, i) = end2Crd(i) + eigen2(i, mode - 1) * fact;
-				coords(2, i) = end3Crd(i) + eigen3(i, mode - 1) * fact;
-				coords(3, i) = end4Crd(i) + eigen4(i, mode - 1) * fact;
-				coords(4, i) = end5Crd(i) + eigen5(i, mode - 1) * fact;
-				coords(5, i) = end6Crd(i) + eigen6(i, mode - 1) * fact;
-				coords(6, i) = end7Crd(i) + eigen7(i, mode - 1) * fact;
-				coords(7, i) = end8Crd(i) + eigen8(i, mode - 1) * fact;
-			}
-
-			for (int i = 0; i < 8; i++)
-				values(i) = 0.0;
-
-			error = theViewer.drawCube(coords, values, this->getTag());
-			opserr << "\n tag: " << this->getTag() << endln;
-			opserr << coords;
-			opserr << values;
-
-		}
-	}
-
-	return error;
+	// draw the cube
+	return theViewer.drawCube(coords, values, this->getTag());
 }
 
 Response*

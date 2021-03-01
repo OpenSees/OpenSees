@@ -2370,9 +2370,136 @@ int
 TwentyEightNodeBrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	static Vector v5(3);
+	static Vector v6(3);
+	static Vector v7(3);
+	static Vector v8(3);
+	static Vector v9(3);
+	static Vector v10(3);
+	static Vector v11(3);
+	static Vector v12(3);
+	static Vector v13(3);
+	static Vector v14(3);
+	static Vector v15(3);
+	static Vector v16(3);
+	static Vector v17(3);
+	static Vector v18(3);
+	static Vector v19(3);
+	static Vector v20(3);
+	nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+	nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+	nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+	nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+	nodePointers[4]->getDisplayCrds(v5, fact, displayMode);
+	nodePointers[5]->getDisplayCrds(v6, fact, displayMode);
+	nodePointers[6]->getDisplayCrds(v7, fact, displayMode);
+	nodePointers[7]->getDisplayCrds(v8, fact, displayMode);
+	nodePointers[8]->getDisplayCrds(v9, fact, displayMode);
+	nodePointers[9]->getDisplayCrds(v10, fact, displayMode);
+	nodePointers[10]->getDisplayCrds(v11, fact, displayMode);
+	nodePointers[11]->getDisplayCrds(v12, fact, displayMode);
+	nodePointers[12]->getDisplayCrds(v13, fact, displayMode);
+	nodePointers[13]->getDisplayCrds(v14, fact, displayMode);
+	nodePointers[14]->getDisplayCrds(v15, fact, displayMode);
+	nodePointers[15]->getDisplayCrds(v16, fact, displayMode);
+	nodePointers[16]->getDisplayCrds(v17, fact, displayMode);
+	nodePointers[17]->getDisplayCrds(v18, fact, displayMode);
+	nodePointers[18]->getDisplayCrds(v19, fact, displayMode);
+	nodePointers[19]->getDisplayCrds(v20, fact, displayMode);
 
-   return 0;
+	// color vector
+	static Vector values(8);
+	for (int i = 0; i < 8; i++)
+		values(i) = 1.0;
 
+	// draw the 6 faces
+	static Matrix coords(8, 3);
+	int res = 0;
+
+	// Face 1 (1 9 2 18 6 13 5 17)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v9(i);
+		coords(2, i) = v2(i);
+		coords(3, i) = v18(i);
+		coords(4, i) = v6(i);
+		coords(5, i) = v13(i);
+		coords(6, i) = v5(i);
+		coords(7, i) = v17(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+	// Face 2 (1 12 4 11 3 10 2 9)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v12(i);
+		coords(2, i) = v4(i);
+		coords(3, i) = v11(i);
+		coords(4, i) = v3(i);
+		coords(5, i) = v10(i);
+		coords(6, i) = v2(i);
+		coords(7, i) = v9(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+	// Face 3 (1 12 4 20 8 16 5 17)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v12(i);
+		coords(2, i) = v4(i);
+		coords(3, i) = v20(i);
+		coords(4, i) = v8(i);
+		coords(5, i) = v16(i);
+		coords(6, i) = v5(i);
+		coords(7, i) = v17(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+	// Face 4 (7 15 8 16 5 13 6 14)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v7(i);
+		coords(1, i) = v15(i);
+		coords(2, i) = v8(i);
+		coords(3, i) = v16(i);
+		coords(4, i) = v5(i);
+		coords(5, i) = v13(i);
+		coords(6, i) = v6(i);
+		coords(7, i) = v14(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+	// Face 5 (7 15 8 20 4 11 3 19)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v7(i);
+		coords(1, i) = v15(i);
+		coords(2, i) = v8(i);
+		coords(3, i) = v20(i);
+		coords(4, i) = v4(i);
+		coords(5, i) = v11(i);
+		coords(6, i) = v3(i);
+		coords(7, i) = v19(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+	// Face 6 (7 14 6 18 2 10 3 19)
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v7(i);
+		coords(1, i) = v14(i);
+		coords(2, i) = v6(i);
+		coords(3, i) = v18(i);
+		coords(4, i) = v2(i);
+		coords(5, i) = v10(i);
+		coords(6, i) = v3(i);
+		coords(7, i) = v19(i);
+	}
+	res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    return res;
 }
 
 

@@ -726,8 +726,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
-#define ELE_TAG_MVLEM                     162
-#define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_MVLEM                     162 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM                 163 // Kristijan Kolozvari
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
@@ -772,8 +772,9 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
-#define ELE_TAG_RockingBC	              210
+#define ELE_TAG_RockingBC	          210
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
+#define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
 
 
