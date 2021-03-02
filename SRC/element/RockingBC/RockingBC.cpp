@@ -69,7 +69,6 @@
 #include <string.h>
 #include <fstream>
 
-//OPS_Export void* OPS_RockingBC() //CHANGE FOR DLL CREATION
 void* OPS_RockingBC()
 {
     if(OPS_GetNumRemainingInputArgs() < 10) {
