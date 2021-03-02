@@ -17,67 +17,65 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.4 $
-// $Date: 2007-02-14 20:12:32 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/petsc/PetscSolver.h,v $
-                                                                        
-                                                                        
-// Written: fmk 
-// Created: Tue Sep 26 16:27:47: 1996
-// Revision: A
-//
-// Description: This file contains the class definition for 
-// PetscSolver. It solves the FullGenLinSOE object by calling
-// Lapack routines.
-//
-// What: "@(#) PetscSolver.h, revA"
+
 
 #ifndef PetscSolver_h
 #define PetscSolver_h
 
-//extern "C" {
 #include <petscksp.h>
-//}
-
 #include <LinearSOESolver.h>
+
+
+// Uncomment or define -D_DEBUG_PETSCSOLVER to enable debugging
+// #define _DEBUG_PETSCSOLVER
+
+#ifdef _DEBUG_PETSCSOLVER
+#define PETSCSOLVER_DEBUGOUT cout // or any other ostream
+#else
+#define PETSCSOLVER_DEBUGOUT 0 && cout
+#endif
+
+// Uncomment to enable logger that will creat petsc_log.txt on each
+// run, to profile PETSc. 
+// #define _ENABLE_PETSC_LOGGER
 
 class PetscSOE;
 
 class PetscSolver : public LinearSOESolver
 {
-  public:
-    PetscSolver();    
-    PetscSolver(KSPType method, PCType preconditioner);    
-    PetscSolver(KSPType method, PCType preconditioner, double rTol, double aTol, double dTol, int maxIts);    
+public:
+    PetscSolver();
+    PetscSolver(KSPType method, PCType preconditioner);
+    PetscSolver(KSPType method, PCType preconditioner, double rTol, double aTol, double dTol, int maxIts, MatType mat=MATMPIAIJ);//Guanzhou
     ~PetscSolver();
 
     int solve(void);
     int setSize(void);
     virtual int setLinearSOE(PetscSOE &theSOE);
-    
+
     int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
+    int recvSelf(int commitTag, Channel &theChannel,
+                    FEM_ObjectBroker &theBroker);
 
     friend class ActorPetscSOE;
     friend class ShadowPetscSOE;
-    
-  protected:
+
+protected:
     PetscSOE *theSOE;
 
-  private:
-    KSP ksp;                   
+private:
+    KSP ksp;
     PC pc;
     int its;
     KSPType method;
     PCType preconditioner;
     double rTol;
     double aTol;
-    double dTol; 
+    double dTol;
     int maxIts;
+    MatType matType;
 
-    static int numSolver;
+    bool is_KSP_initialized;
 };
 
 #endif

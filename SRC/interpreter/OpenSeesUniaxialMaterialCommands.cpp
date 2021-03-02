@@ -85,6 +85,7 @@ void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
 void* OPS_SteelMPF();
 void* OPS_Concrete02();
+void* OPS_Concrete02IS();
 void* OPS_Concrete04();
 void* OPS_Concrete06();
 void* OPS_Concrete07();
@@ -196,6 +197,8 @@ void *OPS_TakedaUnloadingRule();
 void *OPS_EnergyUnloadingRule();
 void *OPS_KarsanUnloadingRule();
 
+void* OPS_HystereticPoly(); // Salvatore Sessa 14-01-2021 Mail: salvatore.sessa2@unina.it
+
 namespace {
 
     static UniaxialMaterial *theTestingUniaxialMaterial = 0;
@@ -233,6 +236,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgood", &OPS_RambergOsgoodSteel));
 	uniaxialMaterialsMap.insert(std::make_pair("SteelMPF", &OPS_SteelMPF));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete02", &OPS_Concrete02));
+	uniaxialMaterialsMap.insert(std::make_pair("Concrete02IS", &OPS_Concrete02IS));	
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete04", &OPS_Concrete04));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete06", &OPS_Concrete06));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete07", &OPS_Concrete07));
@@ -338,6 +342,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
+	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 	return 0;
     }

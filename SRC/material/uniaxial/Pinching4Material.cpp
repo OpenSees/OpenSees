@@ -45,6 +45,9 @@
 #include <string.h>
 #include <elementAPI.h>
 
+#include <Information.h>
+#include <Parameter.h>
+
 void* OPS_Pinching4Material()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -1306,3 +1309,186 @@ void Pinching4Material::updateDmg(double strain, double dstrain)
 		}
 		
 	}
+
+int
+Pinching4Material::setParameter(const char** argv, int argc, Parameter& param)
+{
+	// Parameters for backbone control points
+	if (strcmp(argv[0], "f1p") == 0 || strcmp(argv[0], "stress1p") == 0) {
+		param.setValue(stress1p);
+		return param.addObject(1, this);
+	}
+	if (strcmp(argv[0], "d1p") == 0 || strcmp(argv[0], "strain1p") == 0) {
+		param.setValue(strain1p);
+		return param.addObject(2, this);
+	}
+	if (strcmp(argv[0], "f2p") == 0 || strcmp(argv[0], "stress2p") == 0) {
+		param.setValue(stress2p);
+		return param.addObject(3, this);
+	}
+	if (strcmp(argv[0], "d2p") == 0 || strcmp(argv[0], "strain2p") == 0) {
+		param.setValue(strain2p);
+		return param.addObject(4, this);
+	}
+	if (strcmp(argv[0], "f3p") == 0 || strcmp(argv[0], "stress3p") == 0) {
+		param.setValue(stress3p);
+		return param.addObject(5, this);
+	}
+	if (strcmp(argv[0], "d3p") == 0 || strcmp(argv[0], "strain3p") == 0) {
+		param.setValue(strain3p);
+		return param.addObject(6, this);
+	}
+	if (strcmp(argv[0], "f4p") == 0 || strcmp(argv[0], "stress4p") == 0) {
+		param.setValue(stress4p);
+		return param.addObject(7, this);
+	}
+	if (strcmp(argv[0], "d4p") == 0 || strcmp(argv[0], "strain4p") == 0) {
+		param.setValue(strain4p);
+		return param.addObject(8, this);
+	}
+	if (strcmp(argv[0], "f1n") == 0 || strcmp(argv[0], "stress1n") == 0) {
+		param.setValue(stress1n);
+		return param.addObject(9, this);
+	}
+	if (strcmp(argv[0], "d1n") == 0 || strcmp(argv[0], "strain1n") == 0) {
+		param.setValue(strain1n);
+		return param.addObject(10, this);
+	}
+	if (strcmp(argv[0], "f2n") == 0 || strcmp(argv[0], "stress2n") == 0) {
+		param.setValue(stress2n);
+		return param.addObject(11, this);
+	}
+	if (strcmp(argv[0], "d2n") == 0 || strcmp(argv[0], "strain2n") == 0) {
+		param.setValue(strain2n);
+		return param.addObject(12, this);
+	}
+	if (strcmp(argv[0], "f3n") == 0 || strcmp(argv[0], "stress3n") == 0) {
+		param.setValue(stress3n);
+		return param.addObject(13, this);
+	}
+	if (strcmp(argv[0], "d3n") == 0 || strcmp(argv[0], "strain3n") == 0) {
+		param.setValue(strain3n);
+		return param.addObject(14, this);
+	}
+	if (strcmp(argv[0], "f4n") == 0 || strcmp(argv[0], "stress4n") == 0) {
+		param.setValue(stress4n);
+		return param.addObject(15, this);
+	}
+	if (strcmp(argv[0], "d4n") == 0 || strcmp(argv[0], "strain4n") == 0) {
+		param.setValue(strain4n);
+		return param.addObject(16, this);
+	}
+
+	// Parameters for hysteretic rules
+	if (strcmp(argv[0], "rDispP") == 0) {
+		param.setValue(rDispP);
+		return param.addObject(17, this);
+	}
+	if (strcmp(argv[0], "rForceP") == 0) {
+		param.setValue(rForceP);
+		return param.addObject(18, this);
+	}
+	if (strcmp(argv[0], "uForceP") == 0) {
+		param.setValue(uForceP);
+		return param.addObject(19, this);
+	}
+	if (strcmp(argv[0], "rDispN") == 0) {
+		param.setValue(rDispN);
+		return param.addObject(20, this);
+	}
+	if (strcmp(argv[0], "rForceN") == 0) {
+		param.setValue(rForceN);
+		return param.addObject(21, this);
+	}
+	if (strcmp(argv[0], "uForceN") == 0) {
+		param.setValue(uForceN);
+		return param.addObject(22, this);
+	}
+
+	return -1;
+}
+
+
+
+int
+Pinching4Material::updateParameter(int parameterID, Information& info)
+{
+	switch (parameterID) {
+	case -1:
+		return -1;
+	case 1:
+		this->stress1p = info.theDouble;
+		break;
+	case 2:
+		this->strain1p = info.theDouble;
+		break;
+	case 3:
+		this->stress2p = info.theDouble;
+		break;
+	case 4:
+		this->strain2p = info.theDouble;
+		break;
+	case 5:
+		this->stress3p = info.theDouble;
+		break;
+	case 6:
+		this->strain3p = info.theDouble;
+		break;
+	case 7:
+		this->stress4p = info.theDouble;
+		break;
+	case 8:
+		this->strain4p = info.theDouble;
+		break;
+	case 9:
+		this->stress1n = info.theDouble;
+		break;
+	case 10:
+		this->strain1n = info.theDouble;
+		break;
+	case 11:
+		this->stress2n = info.theDouble;
+		break;
+	case 12:
+		this->strain2n = info.theDouble;
+		break;
+	case 13:
+		this->stress3n = info.theDouble;
+		break;
+	case 14:
+		this->strain3n = info.theDouble;
+		break;
+	case 15:
+		this->stress4n = info.theDouble;
+		break;
+	case 16:
+		this->strain4n = info.theDouble;
+		break;
+	case 17:
+		this->rDispP = info.theDouble;
+		break;
+	case 18:
+		this->rForceP = info.theDouble;
+		break;
+	case 19:
+		this->uForceP = info.theDouble;
+		break;
+	case 20:
+		this->rDispN = info.theDouble;
+		break;
+	case 21:
+		this->rForceN = info.theDouble;
+		break;
+	case 22:
+		this->uForceN = info.theDouble;
+		break;
+	default:
+		return -1;
+	}
+
+	// Changed a parameter: we need to update the envelope?
+	this->SetEnvelope();
+
+
+	return 0;
+}

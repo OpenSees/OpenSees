@@ -1004,49 +1004,45 @@ Truss::displaySelf(Renderer &theViewer, int displayMode, float fact,
   int res = 0;
   if (L == 0.0)
     return res;
-  
+
   static Vector v1(3);
   static Vector v2(3);
   float d1 = 0.0;
   float d2 = 0.0;
-  
-  theNodes[0]->getDisplayCrds(v1, fact);
-  theNodes[1]->getDisplayCrds(v2, fact);
 
+  theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+  theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+  res += theViewer.drawLine(v1, v2, d1, d2, this->getTag());
+
+  // only add force, material, etc. when displayMode > 0...
+  // ...doesn't make sense for mode shapes -ambaker1
   if (displayMode > 0) {
-    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+      for (int i = 0; i < numModes; i++) {
+          const char* mode = displayModes[i];
+          if (strcmp(mode, "axialForce") == 0) {
+              double force = A * theMaterial->getStress();
+              d1 = force;
+              d2 = force;
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "material") == 0) {
+              d1 = theMaterial->getTag();
+              d2 = theMaterial->getTag();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStress") == 0) {
+              d1 = theMaterial->getStress();
+              d2 = theMaterial->getStress();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStrain") == 0) {
+              d1 = theMaterial->getStrain();
+              d2 = theMaterial->getStrain();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+      }
   }
-  
-  for (int i=0; i<numModes; i++) {
-    
-    const char *mode = displayModes[i];
-    if (strcmp(mode, "axialForce") == 0) {
-      double force = A*theMaterial->getStress();    	  
-      d1 = force; 
-      d2 = force;
-
-      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "material") == 0) {
-      d1 = theMaterial->getTag();
-      d2 = theMaterial->getTag();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "materialStress") == 0) {
-      d1 = theMaterial->getStress();
-      d2 = theMaterial->getStress();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-      } else if (strcmp(mode, "materialStrain") == 0) {
-      
-      d1 = theMaterial->getStrain();
-      d2 = theMaterial->getStrain();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-    }
-  }    
   return res;
 }
 

@@ -43,7 +43,7 @@
 //		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics,
 //      49(11), 1072-1094.
 
-#include "RockingBC.h"
+#include <RockingBC.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 
@@ -1424,10 +1424,10 @@ RockingBC::setResponse(const char **argv, int argc, OPS_Stream &output)
 
 	else{
 		std::string fstr = argv[0];
-		Yup_file = std::ofstream(fstr + "_Yup.txt");
-		Up_file = std::ofstream(fstr + "_Up.txt");
-		Ys_file = std::ofstream(fstr + "_Ys.txt");
-		S_file = std::ofstream(fstr + "_S.txt");
+		Yup_file.open(fstr + "_Yup.txt");
+		Up_file.open(fstr + "_Up.txt");
+		Ys_file.open(fstr + "_Ys.txt");
+		S_file.open(fstr + "_S.txt");
 
 		theResponse = new ElementResponse(this, 20, Vector(1));
 
@@ -2473,7 +2473,7 @@ int RockingBC::NL_solve_dyn()
 
 void
 RockingBC::writedbgfile() {
-	std::ofstream NLFfile = std::ofstream("NLsolvefailure.txt");
+	std::ofstream NLFfile("NLsolvefailure.txt");
 
 	if (useUelNM) {
 		Ys_com = interval_join(Ysi_com);
@@ -5172,4 +5172,16 @@ bool RockingBC::bilin_one(const Vec& YP, const Vec& P, Vec& YPn, Vec& Pn) {
 	bilindist(YP, P, NPd, MPd, YPn, Pn);
 	return true;
 
+}
+
+int 
+RockingBC::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+{
+	static Vector v1(3);
+	static Vector v2(3);
+
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

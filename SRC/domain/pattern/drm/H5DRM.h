@@ -119,7 +119,7 @@ class Matrix;
 class Plane
 {
 public:
-    Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1000);
+    Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1);
     ~Plane();
 
     bool locate_point(const Vector& x, double& xi1, double& xi2, double& distance) const ;
@@ -149,7 +149,7 @@ class H5DRM : public LoadPattern
 {
 public:
     H5DRM();
-    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1000);
+    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3);
     ~H5DRM();
     void clean_all_data(); // Called by destructor and if domain changes
 
@@ -197,6 +197,7 @@ private:
     double t1, t2, tstart, tend, dt;    // specifies the time increment used in load path vector
     double cFactor;                     // additional factor on the returned load factor
     double crd_scale;                   // Scaling for the point coordinates of the DRM dataset
+    double distance_tolerance;          // Distance tolerance for node-matching algorithm
     int step, step1, step2;
     double drmbox_xmax, drmbox_xmin, drmbox_ymax, drmbox_ymin, drmbox_zmax, drmbox_zmin;
 

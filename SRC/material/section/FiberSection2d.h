@@ -46,10 +46,10 @@ class FiberSection2d : public SectionForceDeformation
 {
   public:
     FiberSection2d(); 
-    FiberSection2d(int tag, int numFibers, Fiber **fibers);
-    FiberSection2d(int tag, int numFibers);
+    FiberSection2d(int tag, int numFibers, Fiber **fibers, bool compCentroid=true);
+    FiberSection2d(int tag, int numFibers, bool compCentroid=true);
     FiberSection2d(int tag, int numFibers, UniaxialMaterial **mats,
-		   SectionIntegration &si);
+		   SectionIntegration &si, bool compCentroid=true);
     ~FiberSection2d();
 
     const char *getClassType(void) const {return "FiberSection2d";};
@@ -102,7 +102,8 @@ class FiberSection2d : public SectionForceDeformation
     double   sData[2];               // data for s vector 
     
     double QzBar, ABar, yBar;       // Section centroid
-  
+    bool computeCentroid;
+      
     SectionIntegration *sectionIntegr;
 
     static ID code;

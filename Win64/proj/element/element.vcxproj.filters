@@ -129,6 +129,9 @@
     <Filter Include="RockingBC">
       <UniqueIdentifier>{db29c8b8-63a0-4fb4-83ca-08df7e19036f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PML">
+      <UniqueIdentifier>{177437c1-92ba-4883-b10c-e8a9b85d02ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -253,6 +256,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeMixedQuad.cpp">
       <Filter>quad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
+      <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\TclFourNodeQuadCommand.cpp">
       <Filter>quad</Filter>
@@ -717,6 +726,9 @@
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
@@ -1432,6 +1444,9 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
       <Filter>componentElement</Filter>
     </ClInclude>
@@ -1623,6 +1638,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.h">
       <Filter>triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
+      <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>

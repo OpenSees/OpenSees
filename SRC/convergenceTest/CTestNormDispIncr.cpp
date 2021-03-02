@@ -41,7 +41,7 @@ void* OPS_CTestNormDispIncr()
     double tol = 1e-6;
     int numData = 1;
     if(OPS_GetDoubleInput(&numData,&tol) < 0) {
-	opserr << "WARNING NormUnbalance failed to read tol\n";
+	opserr << "WARNING NormDispIncr failed to read tol\n";
 	return 0;
     }
 
@@ -50,7 +50,7 @@ void* OPS_CTestNormDispIncr()
     if(numData > 3) numData = 3;
     int data[3] = {0,0,2};
     if(OPS_GetIntInput(&numData,&data[0]) < 0) {
-	opserr << "WARNING NormUnbalance failed to read int values\n";
+	opserr << "WARNING NormDispIncr failed to read int values\n";
 	return 0;
     }
 
@@ -59,7 +59,7 @@ void* OPS_CTestNormDispIncr()
     if(OPS_GetNumRemainingInputArgs() > 0) {
 	numData = 1;
 	if(OPS_GetDoubleInput(&numData,&maxTol) < 0) {
-	    opserr << "WARNING NormUnbalance failed to read maxTol\n";
+	    opserr << "WARNING NormDispIncr failed to read maxTol\n";
 	    return 0;
 	}
     }

@@ -511,54 +511,31 @@ PFEMElement2DFIC::Print(OPS_Stream &s, int flag)
 int
 PFEMElement2DFIC::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes) 
 {
-
-  static Vector values(3);
-
-    // now  determine the end points of the Tri31 based on
+    // determine the end points of the Tri31 based on
     // the display factor (a measure of the distorted image)
     // store this information in 3 3d vectors v1 through v3
-    const Vector &end1Crd = nodes[0]->getCrds();
-    const Vector &end2Crd = nodes[2]->getCrds();	
-    const Vector &end3Crd = nodes[4]->getCrds();	
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
 
-    const int numnodes = 3;
-    static Matrix coords(numnodes,3);
+    nodes[0]->getDisplayCrds(v1, fact, displayMode);
+    nodes[2]->getDisplayCrds(v2, fact, displayMode);
+    nodes[4]->getDisplayCrds(v3, fact, displayMode);
 
-    if (displayMode >= 0) {  
-
-        const Vector &end1Disp = nodes[0]->getDisp();
-        const Vector &end2Disp = nodes[2]->getDisp();
-        const Vector &end3Disp = nodes[4]->getDisp();
-
-        for (int i = 0; i < 2; i++) {
-            coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-            coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-            coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-        }
-    } else {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = nodes[0]->getEigenvectors();
-        const Matrix &eigen2 = nodes[2]->getEigenvectors();
-        const Matrix &eigen3 = nodes[4]->getEigenvectors();
-        if (eigen1.noCols() >= mode) {
-            for (int i = 0; i < 2; i++) {
-                coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-                coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-            }    
-        } else {
-            for (int i = 0; i < 2; i++) {
-                coords(0,i) = end1Crd(i);
-                coords(1,i) = end2Crd(i);
-                coords(2,i) = end3Crd(i);
-            }    
-        }
+    // point coordinates for polygon
+    static Matrix coords(3, 3);
+    for (int i = 0; i < 2; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
     }
-    
-    int error = 0;
+
+    // color map
+    static Vector values(3);
+    values(0) = 0.0;
+    values(1) = 0.0;
+    values(2) = 0.0;
 
     // finally we draw the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+    return theViewer.drawPolygon(coords, values);
 }

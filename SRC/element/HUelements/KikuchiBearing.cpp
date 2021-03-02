@@ -1457,23 +1457,13 @@ int KikuchiBearing::displaySelf(Renderer &theViewer,
 				int displayMode, float fact,
 				const char **modes, int numMode)
 {
-  // first determine the end points of the element based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
-  
-  const Vector &end1Disp = theNodes[0]->getDisp();
-  const Vector &end2Disp = theNodes[1]->getDisp();
-  
-  static Vector v1(3);
-  static Vector v2(3);
-  
-  for (int i = 0; i < 3; i++)  {
-    v1(i) = end1Crd(i) + end1Disp(i)*fact;
-    v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-  }
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    static Vector v1(3);
+    static Vector v2(3);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 
