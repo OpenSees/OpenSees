@@ -95,12 +95,12 @@ class UniaxialMaterial : public Material
 	//by SAJalali
 	virtual double getEnergy(void) { return 0; }
 
- protected:
-	virtual int getNumHistoryVariables(void) {return 0;}
-	virtual int getTrialHistoryVariables(double *hstv) {return 0;}
-	virtual int setTrialHistoryVariables(const double *hstv) {return 0;}
-	virtual int getCommittedHistoryVariables(double *hstv) {return 0;}
-	virtual int setCommittedHistoryVariables(const double *hstv) {return 0;}		
+ public:
+	virtual int getNumHistoryVariables(void) {opserr << "UM::getNumHV" << endln; return 0;}
+	virtual int getTrialHistoryVariables(double *hstv) {opserr << "UM::getTHV" << endln; return 0;}
+	virtual int setTrialHistoryVariables(const double *hstv) {opserr << "UM::setTHV" << endln; return 0;}
+	virtual int getCommittedHistoryVariables(double *hstv) {opserr << "UM::getCHV" << endln; return 0;}
+	virtual int setCommittedHistoryVariables(const double *hstv) {opserr << "UM::setCHV" << endln; return 0;}		
  private:
 	double *sensHstv;
 };

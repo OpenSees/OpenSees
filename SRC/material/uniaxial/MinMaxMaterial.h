@@ -81,11 +81,11 @@ class MinMaxMaterial : public UniaxialMaterial
     // AddingSensitivity:END ///////////////////////////////////////////
     
   protected:
-    //int getNumHistoryVariables(void) {return theMaterial->getNumHistoryVariables();}
-    //int getTrialHistoryVariables(double *hstv) {return theMaterial->getTrialHistoryVariables(hstv);}
-    //int setTrialHistoryVariables(const double *hstv) {return theMaterial->setTrialHistoryVariables(hstv);}
-    //int getCommittedHistoryVariables(double *hstv) {return theMaterial->getCommittedHistoryVariables(hstv);}
-    //int setCommittedHistoryVariables(const double *hstv) {return theMaterial->setCommittedHistoryVariables(hstv);}
+    int getNumHistoryVariables(void) {return theMaterial->getNumHistoryVariables();}
+    int getTrialHistoryVariables(double *hstv) {return theMaterial->getTrialHistoryVariables(hstv);}
+    int setTrialHistoryVariables(const double *hstv) {return theMaterial->setTrialHistoryVariables(hstv);}
+    int getCommittedHistoryVariables(double *hstv) {return theMaterial->getCommittedHistoryVariables(hstv);}
+    int setCommittedHistoryVariables(const double *hstv) {return theMaterial->setCommittedHistoryVariables(hstv);}
   
   private:
 	UniaxialMaterial *theMaterial;
