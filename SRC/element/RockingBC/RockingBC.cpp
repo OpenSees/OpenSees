@@ -69,19 +69,6 @@
 #include <string.h>
 #include <fstream>
 
-#ifdef _USRDLL
-//#define ELE_TAG_RockingBC                 210
-#define RockingBC_dll 1
-#include "Eigen/Dense"
-#include <windows.h>
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#define RockingBC_dll 0
-#endif
-
 //OPS_Export void* OPS_RockingBC() //CHANGE FOR DLL CREATION
 void* OPS_RockingBC()
 {
