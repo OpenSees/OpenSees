@@ -2626,6 +2626,30 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       output.tag("ResponseType","Mz_2");
       
       theResponse = new ElementResponse(this, 2, theVector);
+
+    // basic force -
+    } else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
+      
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Mz_2");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","T");            
+      
+      theResponse =  new ElementResponse(this, 7, Vector(6));
+
+    // basic stiffness -
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Mz_2");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","T");                  
+      
+      theResponse =  new ElementResponse(this, 19, Matrix(6,6));
       
     // chord rotation -
     }  else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
@@ -2661,7 +2685,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       theResponse = new ElementResponse(this, 6, Vector(4));
       
     } else if (strcmp(argv[0],"getRemCriteria1") == 0) {
-      theResponse = new ElementResponse(this, 7, Vector(2));
+      theResponse = new ElementResponse(this, 77, Vector(2));
 
     } else if (strcmp(argv[0],"getRemCriteria2") == 0) {
       theResponse = new ElementResponse(this, 8, Vector(2), ID(6));
@@ -2839,6 +2863,12 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(vp);
   }
 
+  else if (responseID == 7)
+    return eleInfo.setVector(Se);
+
+  else if (responseID == 19)
+    return eleInfo.setMatrix(kv);
+  
   // Plastic rotation
   else if (responseID == 4) {
     this->getInitialFlexibility(fe);
@@ -3079,7 +3109,7 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
     return eleInfo.setVector(d);
 
-  } else if (responseID == 7) {
+  } else if (responseID == 77) { // Why is this here?
     return -1;
   } else if (responseID == 8) {
 
