@@ -126,11 +126,11 @@
     <Filter Include="mixedBeamColumn">
       <UniqueIdentifier>{a6ea196c-ed72-411c-ad9b-6628b144ecaa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RockingBC">
-      <UniqueIdentifier>{db29c8b8-63a0-4fb4-83ca-08df7e19036f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="PML">
       <UniqueIdentifier>{177437c1-92ba-4883-b10c-e8a9b85d02ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RockingBC">
+      <UniqueIdentifier>{962a9734-043f-43c1-8e90-1a79eeef085f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -728,7 +728,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
+    <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
