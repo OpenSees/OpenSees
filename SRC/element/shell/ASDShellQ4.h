@@ -146,6 +146,9 @@ public:
 
     int setParameter(const char** argv, int argc, Parameter& param);
 
+    // display -ambaker1
+    int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
+
 private:
 
     // internal method to compute everything using switches...
@@ -155,6 +158,8 @@ private:
     void AGQIupdate(const Vector& UL);
     void AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs);
 
+
+
 private:
 
     // cross sections
@@ -162,6 +167,7 @@ private:
 
     // nodal ids
     ID m_node_ids = ID(4);
+    Node* nodePointers[4];      //pointers to four nodes -ambaker1
 
     // coordinate transformation
     ASDShellQ4Transformation* m_transformation = nullptr;

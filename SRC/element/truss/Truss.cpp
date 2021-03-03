@@ -1004,49 +1004,45 @@ Truss::displaySelf(Renderer &theViewer, int displayMode, float fact,
   int res = 0;
   if (L == 0.0)
     return res;
-  
+
   static Vector v1(3);
   static Vector v2(3);
   float d1 = 0.0;
   float d2 = 0.0;
-  
-  theNodes[0]->getDisplayCrds(v1, fact);
-  theNodes[1]->getDisplayCrds(v2, fact);
 
+  theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+  theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+  res += theViewer.drawLine(v1, v2, d1, d2, this->getTag());
+
+  // only add force, material, etc. when displayMode > 0...
+  // ...doesn't make sense for mode shapes -ambaker1
   if (displayMode > 0) {
-    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+      for (int i = 0; i < numModes; i++) {
+          const char* mode = displayModes[i];
+          if (strcmp(mode, "axialForce") == 0) {
+              double force = A * theMaterial->getStress();
+              d1 = force;
+              d2 = force;
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "material") == 0) {
+              d1 = theMaterial->getTag();
+              d2 = theMaterial->getTag();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStress") == 0) {
+              d1 = theMaterial->getStress();
+              d2 = theMaterial->getStress();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStrain") == 0) {
+              d1 = theMaterial->getStrain();
+              d2 = theMaterial->getStrain();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+      }
   }
-  
-  for (int i=0; i<numModes; i++) {
-    
-    const char *mode = displayModes[i];
-    if (strcmp(mode, "axialForce") == 0) {
-      double force = A*theMaterial->getStress();    	  
-      d1 = force; 
-      d2 = force;
-
-      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "material") == 0) {
-      d1 = theMaterial->getTag();
-      d2 = theMaterial->getTag();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "materialStress") == 0) {
-      d1 = theMaterial->getStress();
-      d2 = theMaterial->getStress();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-      } else if (strcmp(mode, "materialStrain") == 0) {
-      
-      d1 = theMaterial->getStrain();
-      d2 = theMaterial->getStrain();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-    }
-  }    
   return res;
 }
 
@@ -1176,9 +1172,11 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
             }
             theResponse =  new ElementResponse(this, 1, Vector(numDOF));
 
+    } else if ((strcmp(argv[0],"localForce") == 0) || (strcmp(argv[0],"localForces") == 0) ) {
+            theResponse =  new ElementResponse(this, 11, Vector(numDOF));
+	    
     } else if ((strcmp(argv[0],"axialForce") == 0) || 
 	       (strcmp(argv[0],"basicForce") == 0) || 
-	       (strcmp(argv[0],"localForce") == 0) || 
 	       (strcmp(argv[0],"basicForces") == 0)) {
             output.tag("ResponseType", "N");
             theResponse =  new ElementResponse(this, 2, Vector(1));
@@ -1197,8 +1195,38 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
 	    
     // a material quantity
     } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"-material") == 0) {
+        output.tag("GaussPointOutput");
+        output.attr("number", 1);
+        output.attr("eta", 0.0);
 
-        theResponse =  theMaterial->setResponse(&argv[1], argc-1, output);
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+			// there is no need to forward this call to the material
+            if (argc > 2) {
+                // if we have 2 or more extra arguments, the first one 
+                // could be an integer. In this case we check to see if it is the section id
+                // (only 1 in this case)
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 0) {
+                    // if it is not a number we forward the call to the section as usual
+                    theResponse = theMaterial->setResponse(&argv[1], argc - 1, output);
+                }
+                else {
+                    // it is a number. Now we have to make sure it is within the allowed range
+                    // for this element (in this case it can only be 1)
+                    // If it is > 1, then we MUST return NULL, because the MPCO recorder iteratively
+                    // uses this call to understand how many fibers we have in a section
+                    if (sectionNum == 1) {
+                        theResponse = theMaterial->setResponse(&argv[2], argc - 2, output);
+                    }
+                }
+            }
+            else {
+                // otherwise forward it as usual
+                theResponse = theMaterial->setResponse(&argv[1], argc - 1, output);
+            }
+        }
+        output.endTag();
     }
 
     output.endTag();
@@ -1216,6 +1244,13 @@ Truss::getResponse(int responseID, Information &eleInfo)
     case 1:
         return eleInfo.setVector(this->getResistingForce());
 
+    case 11: {
+      Vector P(numDOF);
+      P(numDOF/2) = A*theMaterial->getStress();
+      P(0) = -P(numDOF/2);
+      return eleInfo.setVector(P);	
+    }
+      
     case 2:
       fVec(0) = A*theMaterial->getStress();
       return eleInfo.setVector(fVec);

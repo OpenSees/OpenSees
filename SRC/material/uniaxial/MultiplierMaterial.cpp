@@ -40,6 +40,8 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <OPS_Globals.h>
 
@@ -91,7 +93,7 @@ OPS_MultiplierMaterial(void)
 }
 
 MultiplierMaterial::MultiplierMaterial(int tag, UniaxialMaterial &material, double mult)
-  :UniaxialMaterial(tag,MAT_TAG_Multiplier), theMaterial(0), multiplier(mult)
+  :UniaxialMaterial(tag,MAT_TAG_Multiplier), theMaterial(0), multiplier(mult), parameterID(0)
 {
   theMaterial = material.getCopy();
 
@@ -102,7 +104,7 @@ MultiplierMaterial::MultiplierMaterial(int tag, UniaxialMaterial &material, doub
 }
 
 MultiplierMaterial::MultiplierMaterial()
-  :UniaxialMaterial(0,MAT_TAG_Multiplier), theMaterial(0), multiplier(1.0)
+  :UniaxialMaterial(0,MAT_TAG_Multiplier), theMaterial(0), multiplier(1.0), parameterID(0)
 {
 
 }
@@ -267,4 +269,82 @@ MultiplierMaterial::Print(OPS_Stream &s, int flag)
   s << "MultiplierMaterial tag: " << this->getTag() << endln;
   s << "\tMaterial: " << theMaterial->getTag() << endln;
   s << "\tMultiplier: " << multiplier << endln;
+}
+
+int
+MultiplierMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"multiplier") == 0) {
+    param.setValue(multiplier);
+    return param.addObject(1,this);
+  }
+  return theMaterial->setParameter(argv, argc, param);
+}
+
+int
+MultiplierMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->multiplier = info.theDouble;
+    break;
+  }
+
+  return 0;
+}
+
+int
+MultiplierMaterial::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
+}
+
+double
+MultiplierMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  // dsig = dF*sigma + F*dsigma
+  if (parameterID == 1)
+    return theMaterial->getStress(); // dF*sigma where dF=1
+  else
+    return multiplier*theMaterial->getStressSensitivity(gradIndex,conditional);
+}
+
+double
+MultiplierMaterial::getStrainSensitivity(int gradIndex)
+{
+  return theMaterial->getStrainSensitivity(gradIndex);
+}
+
+double
+MultiplierMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  if (parameterID == 1)
+    return theMaterial->getInitialTangent();
+  else
+    return multiplier*theMaterial->getInitialTangentSensitivity(gradIndex);
+}
+
+double
+MultiplierMaterial::getDampTangentSensitivity(int gradIndex)
+{
+  if (parameterID == 1)
+    return theMaterial->getDampTangent();
+  else
+    return multiplier*theMaterial->getDampTangentSensitivity(gradIndex);
+}
+
+double
+MultiplierMaterial::getRhoSensitivity(int gradIndex)
+{
+  return theMaterial->getRhoSensitivity(gradIndex);
+}
+
+int
+MultiplierMaterial::commitSensitivity(double strainGradient, int gradIndex, int numGrads)
+{
+  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
 }

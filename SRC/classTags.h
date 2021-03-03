@@ -215,6 +215,9 @@
 #define MAT_TAG_ElasticPowerFunc                102
 #define MAT_TAG_UVCuniaxial                     103
 #define MAT_TAG_IMKBilin                        104
+#define MAT_TAG_IMKPeakOriented                 105
+#define MAT_TAG_IMKPinching                     106
+#define MAT_TAG_SLModel                         107
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
 #define MAT_TAG_QzSimple1                    207
@@ -226,6 +229,7 @@
 #define MAT_TAG_SteelBRB                     213
 #define MAT_TAG_PySimple3                    214
 #define MAT_TAG_PlateBearingConnectionThermal 215
+#define MAT_TAG_ASD_SMA_3K                    216
 
 
 #define MAT_TAG_FedeasMaterial    1000
@@ -267,6 +271,8 @@
 #define MAT_TAG_KikuchiAikenLRB 6105
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
+
+#define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
@@ -453,7 +459,9 @@
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
 // J2CyclicBoundingSurface material - D.Turello
-#define ND_TAG_J2CyclicBoundingSurface        14023
+#define ND_TAG_J2CyclicBoundingSurface            14023
+#define ND_TAG_J2CyclicBoundingSurface3D          14024
+#define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
@@ -718,8 +726,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
-#define ELE_TAG_MVLEM                     162
-#define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_MVLEM                     162 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM                 163 // Kristijan Kolozvari
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
@@ -761,6 +769,12 @@
 #define ELE_TAG_ASDShellT3                204  // Massimo Petracca (ASDEA)
 #define ELE_TAG_WheelRail                 205
 #define ELE_TAG_DispBeamColumn3dID        206 // Jose Abell the Chileno added 
+#define ELE_TAG_NineNodeQuad              207
+#define ELE_TAG_EightNodeQuad             208
+#define ELE_TAG_SixNodeTri                209
+#define ELE_TAG_RockingBC	          210
+#define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
+#define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
 
 
@@ -879,6 +893,7 @@
 #define EquiALGORITHM_TAGS_InitialNewton          13
 #define EquiALGORITHM_TAGS_ElasticAlgorithm 14
 #define EquiALGORITHM_TAGS_NewtonHallM 15
+#define EquiALGORITHM_TAGS_ExpressNewton 16
 
 #define ACCELERATOR_TAGS_Krylov		1
 #define ACCELERATOR_TAGS_Secant		2

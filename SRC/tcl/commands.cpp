@@ -57,7 +57,6 @@ extern void OPS_clearAllStiffnessDegradation(void);
 extern void OPS_clearAllStrengthDegradation(void);
 extern void OPS_clearAllUnloadingRule(void);
 
-
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
 
@@ -143,6 +142,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <KrylovNewton.h>
 #include <PeriodicNewton.h>
 #include <AcceleratedNewton.h>
+#include <ExpressNewton.h>
 
 // accelerators
 #include <RaphsonAccelerator.h>
@@ -172,6 +172,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 // integrators
 #include <LoadControl.h>
+#include <StagedLoadControl.h>
 #include <ArcLength.h>
 #include <ArcLength1.h>
 #include <HSConstraint.h>
@@ -190,6 +191,7 @@ extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
 
 extern void *OPS_Newmark(void);
+extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
@@ -225,8 +227,12 @@ extern void *OPS_NewmarkHSIncrLimit(void);
 extern void *OPS_NewmarkHSIncrReduct(void);
 extern void *OPS_WilsonTheta(void);
 
+// for response spectrum analysis
+extern void OPS_DomainModalProperties(void);
+extern void OPS_ResponseSpectrumAnalysis(void);
 
 #include <Newmark.h>
+#include <StagedNewmark.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
 #include <Newmark1.h>
@@ -870,6 +876,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "eigen", &eigenAnalysis, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "modalProperties", &modalProperties,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "responseSpectrum", &responseSpectrum,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "video", &videoPlayer, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "remove", &removeObject, 
@@ -905,8 +915,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "reactions", &calculateNodalReactions, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "nodeDOFs", &nodeDOFs, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "nodeCoord", &nodeCoord, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
     Tcl_CreateCommand(interp, "setNodeCoord", &setNodeCoord, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
@@ -2320,14 +2332,14 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theStaticAnalysis != 0) {
 	delete theStaticAnalysis;
 	theStaticAnalysis = 0;
-	opserr << "WARNING: analysis .. existing StaticAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
+	opserr << "WARNING: analysis .. StaticAnalysis already exists => wipeAnalysis not invoked, problems may arise\n";
     }
 
     if (theTransientAnalysis != 0) {
 	delete theTransientAnalysis;
 	theTransientAnalysis = 0;
 	theVariableTimeStepTransientAnalysis = 0;
-	opserr << "WARNING: analysis .. existing TransientAnalysis exists => wipeAnalysis not invoked, problems may arise\n";
+	opserr << "WARNING: analysis .. TransientAnalysis already exists => wipeAnalysis not invoked, problems may arise\n";
     }
     
     // check argv[1] for type of SOE and create it
@@ -3349,11 +3361,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       count+=2;
     }
 
+
     if (matType == 0) {
+      // PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       PetscSolver *theSolver = new PetscSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
       theSOE = new PetscSOE(*theSolver);
     } else {
-      PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      // PetscSparseSeqSolver *theSolver = new PetscSparseSeqSolver(method, preconditioner, rTol, aTol, dTol, maxIts);
+      PetscSparseSeqSolver *theSolver = 0;
       theSOE = new SparseGenRowLinSOE(*theSolver);
     }
   }
@@ -4017,6 +4032,27 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       theNewAlgo = new NewtonLineSearch(*theTest, theLineSearch); 
   }
 
+  else if (strcmp(argv[1],"ExpressNewton") == 0) {
+    int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
+    double kMultiplier = 1.0;
+	  if (argc >= 3 && Tcl_GetInt(interp, argv[2], &nIter) != TCL_OK)
+      return TCL_ERROR;
+	  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &kMultiplier) != TCL_OK)
+      return TCL_ERROR;
+    int count = 4;
+    while (argc > count) {
+      if ((strcmp(argv[count],"-initialTangent") == 0) || (strcmp(argv[count],"-InitialTangent") == 0)) {
+        formTangent = INITIAL_TANGENT;
+      } else if ((strcmp(argv[count],"-currentTangent") == 0) || (strcmp(argv[count],"-CurrentTangent") ==0 )) {
+        formTangent = CURRENT_TANGENT;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+        factorOnce = 1;
+      }
+      count++;
+    }
+    theNewAlgo = new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
+  }
+
   else {
     opserr << "WARNING No EquiSolnAlgo type " << argv[1] << " exists\n";
       return TCL_ERROR;
@@ -4326,8 +4362,35 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   // if the analysis exists - we want to change the Integrator
   if (theStaticAnalysis != 0)
     theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+      } else if (strcmp(argv[1],"StagedLoadControl") == 0) {
+      double dLambda;
+      double minIncr, maxIncr;
+      int numIter;
+      if (argc < 3) {
+	opserr << "WARNING incorrect # args - integrator StagedLoadControl dlam <Jd dlamMin dlamMax>\n";
+	return TCL_ERROR;
   }
+      if (Tcl_GetDouble(interp, argv[2], &dLambda) != TCL_OK)	
+	return TCL_ERROR;	
+      if (argc > 5) {
+	if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)	
+	  return TCL_ERROR;	
+	if (Tcl_GetDouble(interp, argv[4], &minIncr) != TCL_OK)	
+	  return TCL_ERROR;	
+	if (Tcl_GetDouble(interp, argv[5], &maxIncr) != TCL_OK)	
+	  return TCL_ERROR;	  
+      }
+      else {
+	minIncr = dLambda;
+	maxIncr = dLambda;
+	numIter = 1;
+      }
+      theStaticIntegrator = new StagedLoadControl(dLambda, numIter, minIncr, maxIncr);       
 
+  
+      if (theStaticAnalysis != 0)
+        theStaticAnalysis->setIntegrator(*theStaticIntegrator);
+      }
   
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
@@ -4631,6 +4694,9 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"GimmeMCK") == 0 || strcmp(argv[1],"ZZTop") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_GimmeMCK();
+   }
+  else if (strcmp(argv[1],"StagedNewmark") == 0) {
+    theTransientIntegrator = (TransientIntegrator*)OPS_StagedNewmark();
     
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
@@ -5383,7 +5449,6 @@ groundExcitation(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 */
 
-
 int 
 eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, 
 	      TCL_Char **argv)
@@ -5589,6 +5654,21 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+int 
+modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+    OPS_DomainModalProperties();
+    return TCL_OK;
+}
+
+int
+responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+    OPS_ResponseSpectrumAnalysis();
+    return TCL_OK;
+}
 
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -6631,6 +6711,44 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   const ID &tags = theElement->getExternalNodes();
   for (int i = 0; i < numTags; i++) {
     sprintf(buffer, "%d ", tags(i));
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+  
+  return TCL_OK;
+}
+
+int 
+nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+    opserr << "WARNING want - nodeDOFs nodeTag?\n";
+    return TCL_ERROR;
+  }    
+  
+  int tag;
+  
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+    return TCL_ERROR;	        
+  }    
+  
+  char buffer[40];
+
+  Node *theNode = theDomain.getNode(tag);
+  if (theNode == 0) {
+    opserr << "WARNING nodeDOFs node " << tag << " not found" << endln;
+    return TCL_ERROR;
+  }
+  int numDOF = theNode->getNumberDOF();
+
+  DOF_Group *theDOFgroup = theNode->getDOF_GroupPtr();
+  if (theDOFgroup == 0) {
+    opserr << "WARNING nodeDOFs DOF group null" << endln;
+    return -1;
+  }
+  const ID &eqnNumbers = theDOFgroup->getID();
+  for (int i = 0; i < numDOF; i++) {
+    sprintf(buffer, "%d ", eqnNumbers(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
   
@@ -8721,18 +8839,18 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 int
 defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-    if (argc < 9) {
-        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (argc < 7) {
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     const char *force = 0;
     const char *length = 0;
     const char *time = 0;
-    const char *temperature = 0;
+    const char *temperature = "N/A";
 
     int count = 1;
-    while (count < 9) {
+    while (count < argc) {
         if ((strcmp(argv[count], "-force") == 0) || (strcmp(argv[count], "-Force") == 0)
             || (strcmp(argv[count], "-FORCE") == 0)) {
             force = argv[count + 1];
@@ -8751,21 +8869,20 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
             temperature = argv[count + 1];
         }
         else {
-            opserr << "defaultUnits - unrecognized unit: " << argv[count] << " want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+            opserr << "defaultUnits - unrecognized unit: " << argv[count] << " want: defaultUnits -Force type? -Length type? -Time type?\n";
             return -1;
         }
         count += 2;
     }
 
-    if (length == 0 || force == 0 || time == 0 || temperature == 0) {
-        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (length == 0 || force == 0 || time == 0) {
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     double lb, kip, n, kn, mn, kgf, tonf;
     double in, ft, mm, cm, m;
     double sec, msec;
-    double F, C;
 
     if ((strcmp(force, "lb") == 0) || (strcmp(force, "lbs") == 0)) {
         lb = 1.0;
@@ -8783,10 +8900,10 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
         lb = 0.0000044482216152605;
     }
     else if ((strcmp(force, "kgf") == 0)) {
-        lb = 9.80665*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665;
     }
     else if ((strcmp(force, "tonf") == 0)) {
-        lb = 9.80665 / 1000.0*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665 / 1000.0;
     }
     else {
         lb = 1.0;
@@ -8827,33 +8944,19 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
         return TCL_ERROR;
     }
 
-    if ((strcmp(temperature, "F") == 0) || (strcmp(temperature, "degF") == 0)) {
-        F = 1.0;
-    }
-    else if ((strcmp(temperature, "C") == 0) || (strcmp(temperature, "degC") == 0)) {
-        F = 9.0 / 5.0 + 32.0;
-    }
-    else {
-        F = 1.0;
-        opserr << "defaultUnits - unknown temperature type, valid options: F, C\n";
-        return TCL_ERROR;
-    }
-
     kip = lb / 0.001;
     n = lb / 4.4482216152605;
     kn = lb / 0.0044482216152605;
     mn = lb / 0.0000044482216152605;
-    kgf = lb / (9.80665*4.4482216152605);
-    tonf = lb / (9.80665 / 1000.0*4.4482216152605);
+    kgf = lb / (4.4482216152605 / 9.80665);
+    tonf = lb / (4.4482216152605 / 9.80665 / 1000.0);
 
     ft = in * 12.0;
-    mm = in / 25.44;
+    mm = in / 25.4;
     cm = in / 2.54;
     m = in / 0.0254;
 
     msec = sec * 0.001;
-
-    C = (F - 32.0)*5.0 / 9.0;
 
     char string[50];
 
@@ -8878,11 +8981,6 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     sprintf(string, "set sec %.18e", sec);   Tcl_Eval(interp, string);
     sprintf(string, "set msec %.18e", msec);   Tcl_Eval(interp, string);
-
-    sprintf(string, "set F %.18e", F);   Tcl_Eval(interp, string);
-    sprintf(string, "set degF %.18e", F);   Tcl_Eval(interp, string);
-    sprintf(string, "set C %.18e", C);   Tcl_Eval(interp, string);
-    sprintf(string, "set degC %.18e", C);   Tcl_Eval(interp, string);
 
     double g = 32.174049*ft / (sec*sec);
     sprintf(string, "set g %.18e", g);   Tcl_Eval(interp, string);
@@ -9306,6 +9404,41 @@ numIter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   return TCL_OK;
 }
+
+int
+elementActivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+	int eleTag;
+	int argLoc = 1;
+	int Nelements = argc;
+	ID activate_us(0, Nelements);
+
+	while (argLoc < argc && Tcl_GetInt(interp, argv[argLoc], &eleTag) == TCL_OK) {
+		activate_us.insert(eleTag);
+		++argLoc;
+	}
+
+	theDomain.activateElements(activate_us);
+
+  return TCL_OK;
+}
+
+int 
+elementDeactivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+	int eleTag;
+	int argLoc = 1;
+	int Nelements = argc;
+	ID deactivate_us(0, Nelements);
+
+	while (argLoc < argc && Tcl_GetInt(interp, argv[argLoc], &eleTag) == TCL_OK) {
+		deactivate_us.insert(eleTag);
+		++argLoc;
+	}
+
+	theDomain.deactivateElements(deactivate_us);
+  return TCL_OK;}
 
 int
 version(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)

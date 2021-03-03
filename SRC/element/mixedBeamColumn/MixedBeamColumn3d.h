@@ -93,7 +93,7 @@ class MixedBeamColumn3d : public Element
     int getResponse(int responseID, Information &eleInfo);
 
     const char *getClassType(void) const {return "MixedBeamColumn3d";};
-
+    int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
   protected:
 
   private:

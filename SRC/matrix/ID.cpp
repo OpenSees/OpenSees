@@ -366,7 +366,7 @@ int
 ID::resize(int newSize, int fill_value){
 
   // first check that newSize is valid
-  if (newSize <= 0) {
+  if (newSize < 0) {
     opserr << "ID::resize() - size specified " << newSize << " <= 0\n";
     return -1;
   } 
@@ -421,6 +421,7 @@ int
 ID::fill(int fill_value){
   for (int i=0; i<sz; i++)
     data[i] = fill_value;
+  return 0;
 }
 
 

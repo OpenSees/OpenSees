@@ -711,50 +711,37 @@ LehighJoint2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 int
 LehighJoint2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
-	const Vector &node1Crd = nodePtr[0]->getCrds();
-	const Vector &node2Crd = nodePtr[1]->getCrds();	
-	const Vector &node3Crd = nodePtr[2]->getCrds();
-	const Vector &node4Crd = nodePtr[3]->getCrds();
-
-	const Vector &node1Disp = nodePtr[0]->getDisp();
-	const Vector &node2Disp = nodePtr[1]->getDisp();    
-	const Vector &node3Disp = nodePtr[2]->getDisp();
-	const Vector &node4Disp = nodePtr[3]->getDisp();  
-
+	// get coordinates for connecting nodes
 	static Vector v1(3);
 	static Vector v2(3);
 	static Vector v3(3);
 	static Vector v4(3);
-	
-	// calculate the current coordinates of four external nodes
-	for (int i=0; i<2; i++) 
-    {
-		v1(i) = node1Crd(i)+node1Disp(i)*fact;
-		v2(i) = node2Crd(i)+node2Disp(i)*fact;
-		v3(i) = node3Crd(i)+node3Disp(i)*fact;
-		v4(i) = node4Crd(i)+node4Disp(i)*fact;
-	}
-	
+
+	nodePtr[0]->getDisplayCrds(v1, fact, displayMode);
+	nodePtr[1]->getDisplayCrds(v2, fact, displayMode);
+	nodePtr[2]->getDisplayCrds(v3, fact, displayMode);
+	nodePtr[3]->getDisplayCrds(v4, fact, displayMode);
+
 	// calculate four corners of the element
-	Vector vb(3);
-	Vector vc(3);
+	Vector w(3); // width vector
+	Vector c1(3);
+	Vector c2(3);
+	Vector c3(3);
+	Vector c4(3);
 
-	vb = v3 - v1;
-	vc = v4 - v2;
+	w = v2 - v4;
+	c1 = v1 - 0.5 * w;
+	c2 = v1 + 0.5 * w;
+	c3 = v3 + 0.5 * w;
+	c4 = v3 - 0.5 * w;
 
-	v1 = v1 - 0.5 * vc;
-	v2 = v1 + vb;
-	v3 = v4 + 0.5 * vb;
-	v4 = v3 - vb;
-	
-	int dummy;
-	dummy = theViewer.drawLine(v1, v2, 1.0, 1.0);
-	dummy = theViewer.drawLine(v2, v3, 1.0, 1.0);
-	dummy = theViewer.drawLine(v3, v4, 1.0, 1.0);
-	dummy = theViewer.drawLine(v4, v1, 1.0, 1.0);
+	int res = 0;
+	res += theViewer.drawLine(c1, c2, 1.0, 1.0, this->getTag());
+	res += theViewer.drawLine(c2, c3, 1.0, 1.0, this->getTag());
+	res += theViewer.drawLine(c3, c4, 1.0, 1.0, this->getTag());
+	res += theViewer.drawLine(c4, c1, 1.0, 1.0, this->getTag());
 
-	return 0;
-
+	return res;
 }
 
 void

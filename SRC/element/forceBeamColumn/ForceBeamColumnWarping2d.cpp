@@ -89,9 +89,9 @@ Matrix ForceBeamColumnWarping2d::theMatrix(8,8);
 Vector ForceBeamColumnWarping2d::theVector(10);
 double ForceBeamColumnWarping2d::workArea[200];
 
-Vector *ForceBeamColumnWarping2d::vsSubdivide = 0;
-Matrix *ForceBeamColumnWarping2d::fsSubdivide = 0;
-Vector *ForceBeamColumnWarping2d::SsrSubdivide = 0;
+Vector ForceBeamColumnWarping2d::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumnWarping2d::fsSubdivide[maxNumSections];
+Vector ForceBeamColumnWarping2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumnWarping2d()
 {
@@ -194,17 +194,6 @@ ForceBeamColumnWarping2d::ForceBeamColumnWarping2d():
 {
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumnWarping2d::ForceBeamColumnWarping2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -245,17 +234,6 @@ ForceBeamColumnWarping2d::ForceBeamColumnWarping2d (int tag, int nodeI, int node
   }
 
   this->setSectionPointers(numSec, sec);
-  
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumnWarping2d::ForceBeamColumnWarping2d() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // ~ForceBeamColumnWarping2d():
@@ -2537,42 +2515,15 @@ ForceBeamColumnWarping2d::setSectionPointers(int numSec, SectionForceDeformation
 }
 
 int
-ForceBeamColumnWarping2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ForceBeamColumnWarping2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
-  // first determine the end points of the beam based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
+    static Vector v1(3);
+    static Vector v2(3);
 
-  static Vector v1(NEBD);
-  static Vector v2(NEBD);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-  if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
-  } else {
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-      }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
-      }    
-    }
-  }
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*

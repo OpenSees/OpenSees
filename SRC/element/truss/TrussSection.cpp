@@ -929,72 +929,54 @@ TrussSection::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
     // first determine the two end points of the truss based on
     // the display factor (a measure of the distorted image)
     // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-
     static Vector v1(3);
     static Vector v2(3);
+    float d1 = 0.0;
+    float d2 = 0.0;
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
     if (displayMode == 1 || displayMode == 2) {
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();    
 
-      for (int i=0; i<dimension; i++) {
-	v1(i) = end1Crd(i)+end1Disp(i)*fact;
-	v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-      }
+        // compute the strain and axial force in the member
+        double strain, force;
+        if (L == 0.0) {
+            strain = 0.0;
+            force = 0.0;
+        } else {
+	        strain = this->computeCurrentStrain();
+            force = 0.0;
+	
+	        int order = theSection->getOrder();
+	        const ID &code = theSection->getType();
+	
+	        Vector e (order);
+	
+	        int i;
+	        for (i = 0; i < order; i++) {
+	            if (code(i) == SECTION_RESPONSE_P)
+	            e(i) = strain;
+	        }
+	
+	        theSection->setTrialSectionDeformation(e);
+	
+	        const Vector &s = theSection->getStressResultant();
+	        for (i = 0; i < order; i++) {
+	            if (code(i) == SECTION_RESPONSE_P)
+	            force += s(i);
+	        }
+        }
       
-      // compute the strain and axial force in the member
-      double strain, force;
-      if (L == 0.0) {
-	strain = 0.0;
-	force = 0.0;
-      } else {
-	strain = this->computeCurrentStrain();
-    force = 0.0;
-	
-	int order = theSection->getOrder();
-	const ID &code = theSection->getType();
-	
-	Vector e (order);
-	
-	int i;
-	for (i = 0; i < order; i++) {
-	  if (code(i) == SECTION_RESPONSE_P)
-	    e(i) = strain;
-	}
-	
-	theSection->setTrialSectionDeformation(e);
-	
-	const Vector &s = theSection->getStressResultant();
-	for (i = 0; i < order; i++) {
-	  if (code(i) == SECTION_RESPONSE_P)
-	    force += s(i);
-	}
-      }
-      
-      if (displayMode == 2) // use the strain as the drawing measure
-	return theViewer.drawLine(v1, v2, (float)strain, (float)strain, this->getTag());	
-      else { // otherwise use the axial force as measure
-	return theViewer.drawLine(v1,v2, (float)force, (float)force, this->getTag());
-      }
-    } else if (displayMode < 0) {
-      int mode = displayMode  *  -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < dimension; i++) {
-	  v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-	}    
-      } else {
-	for (int i = 0; i < dimension; i++) {
-	  v1(i) = end1Crd(i);
-	  v2(i) = end2Crd(i);
-	}    
-      }
+        if (displayMode == 2) // use the strain as the drawing measure
+	        return theViewer.drawLine(v1, v2, (float)strain, (float)strain, this->getTag());	
+        else // otherwise use the axial force as measure
+	        return theViewer.drawLine(v1,v2, (float)force, (float)force, this->getTag());
+
     }
-    return 0;
+    else {
+        return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag());
+    }
 }
 
 
@@ -1120,9 +1102,11 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
             }
             theResponse =  new ElementResponse(this, 1, Vector(numDOF));
 
+    } else if ((strcmp(argv[0],"localForce") == 0) || (strcmp(argv[0],"localForces") == 0) ) {
+            theResponse =  new ElementResponse(this, 11, Vector(numDOF));
+	    
     } else if ((strcmp(argv[0],"axialForce") == 0) || 
 	       (strcmp(argv[0],"basicForce") == 0) || 
-	       (strcmp(argv[0],"localForce") == 0) || 
 	       (strcmp(argv[0],"basicForces") == 0)) {
       output.tag("ResponseType", "N");
       theResponse =  new ElementResponse(this, 2, Vector(1));
@@ -1140,12 +1124,39 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
             theResponse = new ElementResponse(this, 4, Matrix(1,1));
 
     // a section quantity
-    }  else if (strcmp(argv[0],"section") ==0) {
-      int secNum = atoi(argv[1]);
-      if (secNum == 0)
-        theResponse = theSection->setResponse(&argv[1], argc-1, output);
-      else
-	theResponse = theSection->setResponse(&argv[2], argc-2, output);
+    } else if (strcmp(argv[0], "section") == 0) {
+        output.tag("GaussPointOutput");
+        output.attr("number", 1);
+        output.attr("eta", 0.0);
+        
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+            // there is no need to forward this call to the section
+            if (argc > 2) {
+                // if we have 2 or more extra arguments, the first one 
+                // could be an integer. In this case we check to see if it is the section id
+                // (only 1 in this case)
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 0) {
+                    // if it is not a number we forward the call to the section as usual
+                    theResponse = theSection->setResponse(&argv[1], argc - 1, output);
+                }
+                else {
+                    // it is a number. Now we have to make sure it is within the allowed range
+                    // for this element (in this case it can only be 1)
+                    // If it is > 1, then we MUST return NULL, because the MPCO recorder iteratively
+                    // uses this call to understand how many fibers we have in a section
+                    if (sectionNum == 1) {
+                        theResponse = theSection->setResponse(&argv[2], argc - 2, output);
+                    }
+                }
+            }
+            else {
+                // otherwise forward it as usual
+                theResponse = theSection->setResponse(&argv[1], argc - 1, output);
+            }
+        }
+        output.endTag();
     }
 
     output.endTag();
@@ -1165,6 +1176,23 @@ TrussSection::getResponse(int responseID, Information &eleInfo)
   case 1:
       return eleInfo.setVector(this->getResistingForce());
 
+    case 11: {
+      Vector P(numDOF);
+      int order = theSection->getOrder();
+      const ID &code = theSection->getType();
+
+      const Vector &s = theSection->getStressResultant();
+      force = 0.0;
+      int i;
+      for (i = 0; i < order; i++) {
+	if (code(i) == SECTION_RESPONSE_P)
+	  force += s(i);
+      }
+
+      P(numDOF/2) = force;
+      P(0) = -P(numDOF/2);
+      return eleInfo.setVector(P);
+    }
   case 2:
       if (L == 0.0) {
           strain = 0.0;

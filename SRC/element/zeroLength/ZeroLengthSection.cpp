@@ -262,7 +262,22 @@ this->DomainComponent::setDomain(theDomain);
 
 // Set up the A matrix
 	this->setTransformation();
-}   	 
+}   
+
+int
+ZeroLengthSection::update()		// MSN: added to allow error identification in setTrialSectionDeformation()
+{
+	// Compute section deformation vector
+	this->computeSectionDefs();
+
+	// Set trial section deformation
+	if (theSection->setTrialSectionDeformation(*v) < 0) {
+		opserr << "WARNING! ZeroLengthSection::update() - element: " << this->getTag() << " failed in setTrialSectionDeformation\n";
+		return -1;
+	}
+
+	return 0;
+}
 
 int
 ZeroLengthSection::commitState()
@@ -296,10 +311,10 @@ const Matrix &
 ZeroLengthSection::getTangentStiff(void)
 {
 	// Compute section deformation vector
-	this->computeSectionDefs();
+	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
 	// Set trial section deformation
-	theSection->setTrialSectionDeformation(*v);
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
 	// Get section tangent stiffness, the element basic stiffness
 	const Matrix &kb = theSection->getSectionTangent();
@@ -359,10 +374,10 @@ const Vector &
 ZeroLengthSection::getResistingForce()
 {
 	// Compute section deformation vector
-	this->computeSectionDefs();
+	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
 	// Set trial section deformation
-	theSection->setTrialSectionDeformation(*v);
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
 	// Get section stress resultants, the element basic forces
 	const Vector &q = theSection->getStressResultant();
@@ -548,26 +563,14 @@ ZeroLengthSection::displaySelf(Renderer &theViewer, int displayMode, float fact,
     if (theNodes[0] == 0 || theNodes[1] == 0)
 		return 0;
 
-    // first determine the two end points of the ZeroLengthSection based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();    
+	// get the end point display coords    
+	static Vector v1(3);
+	static Vector v2(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    if (displayMode == 1 || displayMode == 2) {
-		static Vector v1(3);
-		static Vector v2(3);
-		for (int i = 0; i < dimension; i++) {
-			v1(i) = end1Crd(i)+end1Disp(i)*fact;
-			v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-		}
-		
-		return theViewer.drawLine(v1, v2, 0.0, 0.0);
-    }
-
-    return 0;
+	// draw the line
+	return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag());
 }
 
 void
@@ -879,10 +882,10 @@ const Vector &
 ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
 {
   // Compute section deformation vector
-  this->computeSectionDefs();
+  // this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
 
   // Set trial section deformation
-  theSection->setTrialSectionDeformation(*v);
+  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
 
   // Get section stress resultants, the element basic forces
   const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);

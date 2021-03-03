@@ -900,7 +900,7 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
     
     for (i=0; i<numNodes; i++) {
       const Vector &nodeCrd = theNodes[i]->getCrds();
-      const Vector &nodeDisp = theNodes[i]->getDisp();
+      // const Vector &nodeDisp = theNodes[i]->getDisp();
       s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
      }
     
@@ -961,74 +961,41 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
 int
 FourNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+	theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+	theNodes[3]->getDisplayCrds(v4, fact, displayMode);
 
-    // first set the quantity to be displayed at the nodes;
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-    static Vector values(4);
-
-    for (int j=0; j<4; j++)
-	   values(j) = 0.0;
-
-    if (displayMode < 4 && displayMode > 0) {
-	for (int i=0; i<4; i++) {
-	  const Vector &stress = theMaterial[i]->getStress();
-	  values(i) = stress(displayMode-1);
+	// place values in coords matrix
+	static Matrix coords(4, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
 	}
-    }
 
-    // now  determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector &end3Crd = theNodes[2]->getCrds();	
-    const Vector &end4Crd = theNodes[3]->getCrds();	
+    // set the quantity to be displayed at the nodes;
+    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+	static Vector values(4);
+	if (displayMode < 4 && displayMode > 0) {
+		for (int i = 0; i < 4; i++) {
+			const Vector& stress = theMaterial[i]->getStress();
+			values(i) = stress(displayMode - 1);
+		}
+	}
+	else {
+		for (int i = 0; i < 4; i++)
+			values(i) = 0.0;
+	}
 
-    static Matrix coords(4,3);
-
-    if (displayMode >= 0) {    
-      
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();
-      const Vector &end3Disp = theNodes[2]->getDisp();
-      const Vector &end4Disp = theNodes[3]->getDisp();
-
-      for (int i = 0; i < 2; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;    
-      }
-    } else {
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      const Matrix &eigen3 = theNodes[2]->getEigenvectors();
-      const Matrix &eigen4 = theNodes[3]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	}    
-      } else {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i);
-	  coords(1,i) = end2Crd(i);
-	  coords(2,i) = end3Crd(i);
-	  coords(3,i) = end4Crd(i);
-	}    
-      }
-    }
-    
-    int error = 0;
-
-    // finally we  the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values, this->getTag());
-
-    return error;
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 Response*
@@ -1095,6 +1062,27 @@ FourNodeQuad::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(12));
   }
 
+  else if ((strcmp(argv[0],"stressesAtNodes") ==0) || (strcmp(argv[0],"stressAtNodes") ==0)) {
+    for (int i=0; i<4; i++) { // nnodes
+      output.tag("NodalPoint");
+      output.attr("number",i+1);
+      // output.attr("eta",pts[i][0]);
+      // output.attr("neta",pts[i][1]);
+
+      // output.tag("NdMaterialOutput");
+      // output.attr("classType", theMaterial[i]->getClassTag());
+      // output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma12");
+
+      output.endTag(); // GaussPoint
+      // output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 11, Vector(12)); // 3 * nnodes
+  }
+
   else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
     for (int i=0; i<4; i++) {
       output.tag("GaussPoint");
@@ -1145,6 +1133,43 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
     
     return eleInfo.setVector(stresses);
       
+  } else if (responseID == 11) {
+
+    // extrapolate stress from Gauss points to element nodes
+    static Vector stressGP(12); // 3*nip
+    static Vector stressAtNodes(12); // 3*nnodes
+	stressAtNodes.Zero();
+    int cnt = 0;
+	// first get stress components (xx, yy, xy) at Gauss points
+    for (int i = 0; i < 4; i++) { // nip
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStress();
+      stressGP(cnt) = sigma(0);
+      stressGP(cnt+1) = sigma(1);
+      stressGP(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
+	// [nnodes][nip]
+	const double We[4][4] = {{1.8660254037844386, -0.5, 0.1339745962155614, -0.5},
+							 {-0.5, 1.8660254037844386, -0.5, 0.1339745962155614},
+							 {0.1339745962155614, -0.5, 1.8660254037844386, -0.5},
+							 {-0.5, 0.1339745962155614, -0.5, 1.8660254037844386}};
+
+	int p, l;
+	for (int i = 0; i < 4; i++) { // nnodes
+	  for (int k = 0; k < 3; k++) { // number of stress components
+		p = 3*i + k;
+		for (int j = 0; j < 4; j++) { // nip
+		  l = 3*j + k;
+		  stressAtNodes(p) += We[i][j] * stressGP(l);
+		  // opserr << "stressAtNodes(" << p << ") = We[" << i << "][" << j << "] * stressGP(" << l << ") = " << We[i][j] << " * " << stressGP(l) << " = " << stressAtNodes(p) <<  "\n";
+		}
+	  }
+	}
+
+    return eleInfo.setVector(stressAtNodes);
+
   } else if (responseID == 4) {
 
     // Loop over the integration points
