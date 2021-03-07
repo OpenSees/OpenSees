@@ -2612,35 +2612,15 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
   }
 
   int
-  ForceBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
+  ForceBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char** displayModes, int numModes)
   {
-
     static Vector v1(3);
     static Vector v2(3);
 
-    if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-      theNodes[0]->getDisplayCrds(v1, fact);
-      theNodes[1]->getDisplayCrds(v2, fact);
-
-    } else {
-
-      theNodes[0]->getDisplayCrds(v1, 0.);
-      theNodes[1]->getDisplayCrds(v2, 0.);
-
-      // add eigenvector values
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 3; i++) {
-	  v1(i) += eigen1(i,mode-1)*fact;
-	  v2(i) += eigen2(i,mode-1)*fact;    
-	}    
-      } 
-    }
-
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
   }
 
   Response*
@@ -2695,6 +2675,30 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       output.tag("ResponseType","Mz_2");
       
       theResponse = new ElementResponse(this, 2, theVector);
+
+    // basic force -
+    } else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
+      
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Mz_2");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","T");            
+      
+      theResponse =  new ElementResponse(this, 7, Vector(6));
+
+    // basic stiffness -
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Mz_2");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","T");                  
+      
+      theResponse =  new ElementResponse(this, 19, Matrix(6,6));
       
     //global damping force -
     } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
@@ -2778,7 +2782,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       theResponse = new ElementResponse(this, 6, Vector(4));
       
     } else if (strcmp(argv[0],"getRemCriteria1") == 0) {
-      theResponse = new ElementResponse(this, 7, Vector(2));
+      theResponse = new ElementResponse(this, 77, Vector(2));
 
     } else if (strcmp(argv[0],"getRemCriteria2") == 0) {
       theResponse = new ElementResponse(this, 8, Vector(2), ID(6));
@@ -2997,6 +3001,12 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(vp);
   }
 
+  else if (responseID == 7)
+    return eleInfo.setVector(Se);
+
+  else if (responseID == 19)
+    return eleInfo.setMatrix(kv);
+  
   // Plastic rotation
   else if (responseID == 4) {
     this->getInitialFlexibility(fe);
@@ -3237,7 +3247,7 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
     return eleInfo.setVector(d);
 
-  } else if (responseID == 7) {
+  } else if (responseID == 77) { // Why is this here?
     return -1;
   } else if (responseID == 8) {
 

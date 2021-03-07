@@ -557,7 +557,6 @@ int OPS_setNodeVel()
         vel = theNode->getVel();
         vel(dof) = value;
         theNode->setTrialVel(vel);
-	theNode->commitState();
     }
     if (commit)
         theNode->commitState();

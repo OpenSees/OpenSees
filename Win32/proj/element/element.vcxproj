@@ -134,6 +134,7 @@
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4Thermal.cpp" />
@@ -363,7 +365,6 @@
     <ClCompile Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -399,6 +400,7 @@
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
+    <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\HigherOrder.h" />
@@ -426,6 +428,7 @@
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriMesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGT.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4Thermal.h" />
@@ -601,7 +604,6 @@
     <ClInclude Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h" />
-    <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
     <ClInclude Include="..\..\..\SRC\element\NewElement.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

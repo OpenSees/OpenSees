@@ -1053,49 +1053,41 @@ BBarFourNodeQuadUP::Print(OPS_Stream &s, int flag)
 int
 BBarFourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    // first set the quantity to be displayed at the nodes;
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	nd1Ptr->getDisplayCrds(v1, fact, displayMode);
+	nd2Ptr->getDisplayCrds(v2, fact, displayMode);
+	nd3Ptr->getDisplayCrds(v3, fact, displayMode);
+	nd4Ptr->getDisplayCrds(v4, fact, displayMode);
 
-    static Vector values(4);
-
-    for (int j=0; j<4; j++)
-	   values(j) = 0.0;
-
-    if (displayMode < 4 && displayMode > 0) {
-	for (int i=0; i<4; i++) {
-	  const Vector &stress = theMaterial[i]->getStress();
-	  values(i) = stress(displayMode-1);
+	// place values in coords matrix
+	static Matrix coords(4, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
 	}
-    }
 
-    // now  determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = nd1Ptr->getCrds();
-    const Vector &end2Crd = nd2Ptr->getCrds();
-    const Vector &end3Crd = nd3Ptr->getCrds();
-    const Vector &end4Crd = nd4Ptr->getCrds();
+	// set the quantity to be displayed at the nodes;
+	// if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+	static Vector values(4);
+	if (displayMode < 4 && displayMode > 0) {
+		for (int i = 0; i < 4; i++) {
+			const Vector& stress = theMaterial[i]->getStress();
+			values(i) = stress(displayMode - 1);
+		}
+	}
+	else {
+		for (int i = 0; i < 4; i++)
+			values(i) = 0.0;
+	}
 
-    const Vector &end1Disp = nd1Ptr->getDisp();
-    const Vector &end2Disp = nd2Ptr->getDisp();
-    const Vector &end3Disp = nd3Ptr->getDisp();
-    const Vector &end4Disp = nd4Ptr->getDisp();
-
-    static Matrix coords(4,3);
-
-    for (int i = 0; i < 2; i++) {
-      coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-      coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-      coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-      coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-    }
-
-    int error = 0;
-
-    // finally we draw the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 
