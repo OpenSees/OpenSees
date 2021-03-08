@@ -630,6 +630,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/MVLEM.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
+	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
