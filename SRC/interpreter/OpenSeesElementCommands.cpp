@@ -789,6 +789,20 @@ int OPS_doBlock2D()
 	}
 	cArg = 7;
 
+	
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 {
+	if (OPS_GetNumRemainingInputArgs() < 1) {
+	    opserr<<"WARNING: want - secTag\n";
+	    return -1;
+	}
+	int numdata = 1;
+	if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING invalid secTag\n";
+	    return -1;
+	}
+	cArg = 7;
+		
+		
     } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 2) {
 	    opserr<<"WARNING: want - thick, matTag\n";
@@ -996,6 +1010,28 @@ int OPS_doBlock2D()
 		theEle = new ShellMITC4(eleID,nd1,nd2,nd3,nd4,*sec);
 
 
+			
+	    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 {
+
+		if (numEleNodes != 4) {
+		    opserr<<"WARNING ShellNLDKGQ element only needs four nodes\n";
+		    return -1;
+		}
+		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
+
+		if (sec == 0) {
+		    opserr << "WARNING:  section " << secTag << " not found\n";
+		    return -1;
+		}
+
+		int nd1 = nodeTags(0) + idata[2];
+		int nd2 = nodeTags(1) + idata[2];
+		int nd3 = nodeTags(2) + idata[2];
+		int nd4 = nodeTags(3) + idata[2];
+		theEle = new ShellNLDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);
+
+		
+			
 	    } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 
 		if (numEleNodes != 4) {
