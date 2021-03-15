@@ -1423,6 +1423,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_MVLEM] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_SFI_MVLEM] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_MVLEM_3D] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_SFI_MVLEM_3D] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_PFEMElement2DFIC] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_CatenaryCable] = GMSH_LINE;
     gmshtypes[ELE_TAG_FourNodeTetrahedron] = GMSH_TETRA;
