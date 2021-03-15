@@ -99,6 +99,7 @@ void* OPS_ElastomericX();
 void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
+void* OPS_SFI_MVLEM_3D();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
@@ -618,6 +619,7 @@ namespace {
 	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM));
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM_3D));
+	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM_3D));
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
