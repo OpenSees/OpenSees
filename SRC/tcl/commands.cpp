@@ -2282,9 +2282,9 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
-      theStaticIntegrator->formTangent();
+      theStaticIntegrator->formUnbalance();
     else if (theTransientIntegrator != 0)
-      theTransientIntegrator->formTangent(0);
+      theTransientIntegrator->formUnbalance();
       
     const Vector &b = theSOE->getB();
     *output << b;
