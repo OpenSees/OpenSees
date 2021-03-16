@@ -792,7 +792,7 @@ int OPS_doBlock2D()
 	cArg = 7;
 
 	
-    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 {
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr<<"WARNING: want - secTag\n";
 	    return -1;
