@@ -1013,7 +1013,7 @@ int OPS_doBlock2D()
 
 
 			
-	    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 {
+	    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
 
 		if (numEleNodes != 4) {
 		    opserr<<"WARNING ShellNLDKGQ element only needs four nodes\n";
