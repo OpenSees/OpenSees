@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
 
 #include <BeamIntegration.h>
