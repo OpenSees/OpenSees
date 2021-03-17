@@ -1961,9 +1961,9 @@ int OPS_printB()
     }
     if (theSOE != 0) {
 	if (theStaticIntegrator != 0) {
-	    theStaticIntegrator->formTangent();
+	    theStaticIntegrator->formUnbalance();
 	} else if (theTransientIntegrator != 0) {
-	    theTransientIntegrator->formTangent(0);
+	    theTransientIntegrator->formUnbalance();
 	}
 
 	Vector &b = const_cast<Vector&>(theSOE->getB());

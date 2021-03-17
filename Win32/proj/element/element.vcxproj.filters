@@ -704,6 +704,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
       <Filter>componentElement</Filter>
     </ClCompile>
@@ -1415,6 +1418,9 @@
       <Filter>mvlem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+	<ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
