@@ -247,7 +247,8 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/coordTransformation/CorotCrdTransfWarping2d.o \
 	$(FE)/coordTransformation/LinearCrdTransf3d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf3d.o \
-	$(FE)/coordTransformation/CorotCrdTransf3d.o
+	$(FE)/coordTransformation/CorotCrdTransf3d.o \
+	$(FE)/coordTransformation/CorotCrdTransfWarping3d.o
 
 LAW_LIBS = $(FE)/system_of_eqn/linearSOE/sparseSYM/SymSparseLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseSYM/SymSparseLinSolver.o \
@@ -511,6 +512,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
+	$(FE)/element/dispBeamColumn/DispBeamColumnWarping3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.o \
@@ -520,6 +522,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
+	$(FE)/element/elasticBeamColumn/ElasticBeamWarping3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
 	$(FE)/element/elasticBeamColumn/WheelRail.o \
@@ -1014,6 +1017,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/MembranePlateFiberSectionThermal.o \
 	$(FE)/material/section/FiberSectionGJThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
+	$(FE)/material/section/FiberSectionWarping3d.o \
 	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
 	$(FE)/material/section/ParallelSection.o \
