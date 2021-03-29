@@ -51,7 +51,8 @@ class NDFiber3d : public Fiber
 {
   public:
     NDFiber3d ();   
-    NDFiber3d (int tag, NDMaterial &theMat, double Area, double y, double z);
+    NDFiber3d (int tag, NDMaterial &theMat, double Area,
+	       double y, double z, double dvalue=1.0);
     ~NDFiber3d();
 
     
@@ -77,7 +78,8 @@ class NDFiber3d : public Fiber
     void getFiberLocation(double &y, double &z);
     NDMaterial *getNDMaterial(void) {return theMaterial;}
     double getArea(void) {return area;};
-
+    double getd(void) {return dValue;};
+    
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
     int activateParameter(int parameterID);
@@ -90,9 +92,10 @@ class NDFiber3d : public Fiber
     
   private:
     NDMaterial *theMaterial;   // pointer to a material
-    double area;                          // area of the fiber 
+    double area;                          // area of the fiber
     double y;		// fiber location
     double z;
+    double dValue;
 
     static Matrix ks;       // static class wide matrix object for returns
     static Vector fs;	    // static class wide vector object for returns
