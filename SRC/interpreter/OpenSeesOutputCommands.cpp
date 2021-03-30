@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <DOF_Group.h>
 #include <Matrix.h>
 #include <LoadPattern.h>
+#include <LoadPatternIter.h>
 #include <FileStream.h>
 #include <ID.h>
 // #include <TaggedObject.h>
@@ -3161,27 +3162,44 @@ int OPS_getEleLoadClassTags()
     if (theDomain == 0) return -1;
 
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 1) {
-	opserr << "WARNING want - getEleLoadClassTags patternTag?\n";
-	return -1;
-    }
-
-    int patternTag;
-    numdata = 1;
-    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-	opserr << "could not read patternTag\n";
-	return -1;
-    }
-
-	LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
-	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
-	ElementalLoad* theLoad;
 
 	std::vector <int> data;
 
-	while ((theLoad = theEleLoads()) != 0) {
-	  data.push_back(theLoad->getClassTag());
-	}
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+	  while ((thePattern = thePatterns()) != 0) {
+		ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+		ElementalLoad* theLoad;
+
+		while ((theLoad = theEleLoads()) != 0) {
+		  data.push_back(theLoad->getClassTag());
+		}
+
+	  }
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
+	  ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad* theLoad;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		data.push_back(theLoad->getClassTag());
+	  }
+
+	} else {
+	opserr << "WARNING want - getEleLoadClassTags <patternTag?>\n";
+	return -1;
+    }
+
 
 	int size = data.size();
 
@@ -3199,27 +3217,43 @@ int OPS_getEleLoadTags()
     if (theDomain == 0) return -1;
 
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 1) {
-	opserr << "WARNING want - getEleLoadTags patternTag?\n";
-	return -1;
-    }
-
-    int patternTag;
-    numdata = 1;
-    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-	opserr << "could not read patternTag\n";
-	return -1;
-    }
-
-	LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
-	ElementalLoad* theLoad;
 
 	std::vector <int> data;
 
-	while ((theLoad = theEleLoads()) != 0) {
-	  data.push_back(theLoad->getElementTag());
-	}
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+	  while ((thePattern = thePatterns()) != 0) {
+		ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+		ElementalLoad* theLoad;
+
+		while ((theLoad = theEleLoads()) != 0) {
+		  data.push_back(theLoad->getElementTag());
+		}
+
+	  }
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad* theLoad;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		data.push_back(theLoad->getElementTag());
+	  }
+
+	} else {
+	opserr << "WARNING want - getEleLoadTags <patternTag?>\n";
+	return -1;
+    }
 
 	int size = data.size();
 
@@ -3237,34 +3271,56 @@ int OPS_getEleLoadData()
     if (theDomain == 0) return -1;
 
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 1) {
-	opserr << "WARNING want - getEleLoadData patternTag?\n";
-	return -1;
-    }
-
-    int patternTag;
-    numdata = 1;
-    if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
-	opserr << "could not read patternTag\n";
-	return -1;
-    }
-
-	LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
-	ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
-	ElementalLoad* theLoad;
 
 	std::vector <double> data;
 
-	int typeEL;
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
 
-	while ((theLoad = theEleLoads()) != 0) {
-	  const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+	  int typeEL;
+	  
+	  while ((thePattern = thePatterns()) != 0) {
+		ElementalLoadIter &theEleLoads = thePattern->getElementalLoads();
+		ElementalLoad* theLoad;
 
-	  int eleLoadDataSize = eleLoadData.Size();
-	  for (int i = 0; i < eleLoadDataSize; i++) {
-		data.push_back(eleLoadData(i));
+		while ((theLoad = theEleLoads()) != 0) {
+		  const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+
+		  int eleLoadDataSize = eleLoadData.Size();
+		  for (int i = 0; i < eleLoadDataSize; i++) {
+			data.push_back(eleLoadData(i));
+		  }
+		}
 	  }
-	}
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad* theLoad;
+
+	  int typeEL;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+
+		int eleLoadDataSize = eleLoadData.Size();
+		for (int i = 0; i < eleLoadDataSize; i++) {
+		  data.push_back(eleLoadData(i));
+		}
+	  }
+
+	} else {
+	opserr << "WARNING want - getEleLoadData <patternTag?>\n";
+	return -1;
+    }
 
 	int size = data.size();
 
