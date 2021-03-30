@@ -3109,6 +3109,52 @@ int OPS_sensNodePressure()
     return 0;
 }
 
+int OPS_getEleClassTags()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+
+	std::vector <int> data;
+
+	// all element tags
+    if (numdata < 1) {
+	  Element *theEle;
+	  ElementIter &theEles = theDomain->getElements();
+
+	  while ((theEle = theEles()) != 0) {
+		data.push_back(theEle->getClassTag());
+	  }
+
+	  // specific element tag
+    } else if (numdata == 1) {
+	  int eleTag;
+
+	  if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
+		opserr << "could not read eleTag\n";
+		return -1;
+	  }
+
+	  Element *theEle = theDomain->getElement(eleTag);
+
+	  data.push_back(theEle->getClassTag());
+
+	} else {
+	  opserr << "WARNING want - getEleClassTags <eleTag?>\n";
+	  return -1;
+    }
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
 int OPS_getEleLoadClassTags()
 {
     Domain* theDomain = OPS_GetDomain();
@@ -3116,7 +3162,7 @@ int OPS_getEleLoadClassTags()
 
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 1) {
-	opserr << "WARNING want - getEleLoadTags patternTag?\n";
+	opserr << "WARNING want - getEleLoadClassTags patternTag?\n";
 	return -1;
     }
 

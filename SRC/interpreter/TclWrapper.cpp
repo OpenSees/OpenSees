@@ -1317,6 +1317,15 @@ static int Tcl_ops_getNumElements(ClientData clientData, Tcl_Interp *interp, int
     return TCL_OK;
 }
 
+static int Tcl_ops_getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getEleClassTags() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1690,6 +1699,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"sensSectionForce", &Tcl_ops_sensSectionForce);
     addCommand(interp,"sensNodePressure", &Tcl_ops_sensNodePressure);
     addCommand(interp,"getNumElements", &Tcl_ops_getNumElements);
+    addCommand(interp,"getEleClassTags", &Tcl_ops_getEleClassTags);
     addCommand(interp,"getEleLoadClassTags", &Tcl_ops_getEleLoadClassTags);
     addCommand(interp,"getEleLoadTags", &Tcl_ops_getEleLoadTags);
     addCommand(interp,"getEleLoadData", &Tcl_ops_getEleLoadData);

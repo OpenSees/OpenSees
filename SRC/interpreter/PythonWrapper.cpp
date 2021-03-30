@@ -2004,6 +2004,18 @@ static PyObject *Py_ops_getNumElements(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getEleClassTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getEleClassTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getEleLoadClassTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2430,6 +2442,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sensSectionForce", &Py_ops_sensSectionForce);
     addCommand("sensNodePressure", &Py_ops_sensNodePressure);
     addCommand("getNumElements", &Py_ops_getNumElements);
+    addCommand("getEleClassTags", &Py_ops_getEleClassTags);
     addCommand("getEleLoadClassTags", &Py_ops_getEleLoadClassTags);
     addCommand("getEleLoadTags", &Py_ops_getEleLoadTags);
     addCommand("getEleLoadData", &Py_ops_getEleLoadData);
