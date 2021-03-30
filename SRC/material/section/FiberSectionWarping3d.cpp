@@ -462,6 +462,7 @@ FiberSectionWarping3d::setTrialSectionDeformation (const Vector &deforms)
   }
 
   if (theTorsion != 0) {
+    double stress, tangent;
     res += theTorsion->setTrial(d8, stress, tangent);
     sData[5] = stress;
     kData[35] = tangent;
