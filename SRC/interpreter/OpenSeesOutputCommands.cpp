@@ -48,10 +48,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <LoadPatternIter.h>
 #include <FileStream.h>
 #include <ID.h>
-// #include <TaggedObject.h>
-// #include <TaggedObjectIter.h>
-// #include <TaggedObjectStorage.h>
-// #include <MapOfTaggedObjects.h>
 #include <ElementalLoad.h>
 #include <ElementalLoadIter.h>
 #include <Element.h>
@@ -3188,6 +3184,10 @@ int OPS_getEleLoadClassTags()
 	  }
 
 	  LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadClassTags\n";
+		return -1;
+	  }
 	  ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
 	  ElementalLoad* theLoad;
 
@@ -3243,6 +3243,10 @@ int OPS_getEleLoadTags()
 	  }
 
 	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
+		return -1;
+	  }
 	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
 	  ElementalLoad* theLoad;
 
@@ -3279,7 +3283,7 @@ int OPS_getEleLoadData()
 	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
 
 	  int typeEL;
-	  
+
 	  while ((thePattern = thePatterns()) != 0) {
 		ElementalLoadIter &theEleLoads = thePattern->getElementalLoads();
 		ElementalLoad* theLoad;
@@ -3303,6 +3307,10 @@ int OPS_getEleLoadData()
 	  }
 
 	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadData\n";
+		return -1;
+	  }
 	  ElementalLoadIter& theEleLoads = thePattern->getElementalLoads();
 	  ElementalLoad* theLoad;
 

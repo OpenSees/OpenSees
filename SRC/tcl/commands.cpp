@@ -8544,11 +8544,16 @@ getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Cha
 	int patternTag;
 
 	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
-	  opserr << "WARNING getParamValue -- could not read paramTag \n";
+	  opserr << "WARNING getEleLoadClassTags -- could not read patternTag\n";
 	  return TCL_ERROR;
 	}
 
 	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadClassTags\n";
+	  return TCL_ERROR;
+	}
+
 	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
 	ElementalLoad* theLoad;
 
@@ -8591,11 +8596,16 @@ getEleLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 	int patternTag;
 
 	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
-	  opserr << "WARNING getParamValue -- could not read paramTag \n";
+	  opserr << "WARNING getEleLoadTags -- could not read patternTag \n";
 	  return TCL_ERROR;
 	}
 
 	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
+	  return TCL_ERROR;
+	}
+
 	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
 	ElementalLoad* theLoad;
 
@@ -8645,11 +8655,16 @@ getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 	int patternTag;
 
 	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
-	  opserr << "WARNING getParamValue -- could not read paramTag \n";
+	  opserr << "WARNING getEleLoadData -- could not read patternTag \n";
 	  return TCL_ERROR;
 	}
 
 	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadData\n";
+	  return TCL_ERROR;
+	}
+
 	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
 	ElementalLoad* theLoad;
 
