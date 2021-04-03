@@ -47,6 +47,12 @@ OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * con
 int
 OPS_SourceCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * const *argv);
 
+int
+ndm(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+ndf(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 

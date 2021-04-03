@@ -811,6 +811,11 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateObjCommand(interp, "source", &OPS_SourceCmd,
 			 (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
+    Tcl_CreateCommand(interp, "ndm", &ndm,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "ndf", &ndf,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+
     Tcl_CreateCommand(interp, "wipe", &wipeModel,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
@@ -6681,6 +6686,73 @@ updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Cha
     }
 
 	return 0;
+}
+
+int
+ndm(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    int ndm;
+
+    if (argc > 1) {
+        int tag;
+        if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+            opserr << "WARNING ndm nodeTag? \n";
+            return TCL_ERROR;
+        }
+        Node* theNode = theDomain.getNode(tag);
+        if (theNode == 0) {
+            opserr << "WARNING nodeTag " << tag << " does not exist \n";
+            return TCL_ERROR;
+        }
+        const Vector& coords = theNode->getCrds();
+        ndm = coords.Size();
+    } else {
+        if (theBuilder == 0) {
+            return TCL_OK;
+        }
+        else {
+            ndm = OPS_GetNDM();
+        }
+    }
+
+    char buffer[20];
+    sprintf(buffer, "%d", ndm);
+    Tcl_AppendResult(interp, buffer, NULL);
+
+    return TCL_OK;
+}
+
+int
+ndf(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    int ndf;
+
+    if (argc > 1) {
+        int tag;
+        if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+            opserr << "WARNING ndf nodeTag? \n";
+            return TCL_ERROR;
+        }
+        Node* theNode = theDomain.getNode(tag);
+        if (theNode == 0) {
+            opserr << "WARNING nodeTag " << tag << " does not exist \n";
+            return TCL_ERROR;
+        }
+        ndf = theNode->getNumberDOF();
+    } else {
+        if (theBuilder == 0) {
+            return TCL_OK;
+        }
+        else {
+            ndf = OPS_GetNDF();
+        }
+    }
+
+    char buffer[20];
+    sprintf(buffer, "%d", ndf);
+    Tcl_AppendResult(interp, buffer, NULL);
+
+    return TCL_OK;
 }
 
 int 
