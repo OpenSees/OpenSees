@@ -169,6 +169,9 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int
+nodeDist(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 

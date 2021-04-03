@@ -921,6 +921,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
     Tcl_CreateCommand(interp, "setNodeCoord", &setNodeCoord, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "nodeDist", &nodeDist,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "eleNodes", &eleNodes, 
@@ -6627,6 +6629,110 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 
   return TCL_ERROR;
+}
+
+int
+nodeDist(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    if (argc < 3) {
+        opserr << "WARNING want - nodeDist iNode? jNode? <dim?>\n";
+        return TCL_ERROR;
+    }
+
+    int iTag;
+    if (Tcl_GetInt(interp, argv[1], &iTag) != TCL_OK) {
+        opserr << "WARNING nodeDist iNode? jNode? <dim?> - could not read iNode? \n";
+        return TCL_ERROR;
+    }
+    int jTag;
+    if (Tcl_GetInt(interp, argv[2], &jTag) != TCL_OK) {
+        opserr << "WARNING nodeDist iNode? jNode? <dim?> - could not read jNode? \n";
+        return TCL_ERROR;
+    }
+
+    int dim = -1;
+    if (argc > 3) {
+        if (strcmp(argv[3], "X") == 0 || strcmp(argv[3], "x") == 0 ||
+            strcmp(argv[3], "1") == 0)
+            dim = 0;
+        else if (strcmp(argv[3], "Y") == 0 || strcmp(argv[3], "y") == 0 ||
+            strcmp(argv[3], "2") == 0)
+            dim = 1;
+        else if (strcmp(argv[3], "Z") == 0 || strcmp(argv[3], "z") == 0 ||
+            strcmp(argv[3], "3") == 0)
+            dim = 2;
+        else {
+            opserr << "WARNING nodeDist iNode? jNode? <dim?> - could not read dim? \n";
+            return TCL_ERROR;
+        }
+    }
+
+    Node* iNode = theDomain.getNode(iTag);
+    Node* jNode = theDomain.getNode(jTag);
+    if (iNode == 0) {
+        opserr << "WARNING nodeDist iNode? jNode? <dim?> - iNode does not exist \n";
+        return TCL_ERROR;
+    }
+    if (jNode == 0) {
+        opserr << "WARNING nodeDist iNode? jNode? <dim?> - jNode does not exist \n";
+        return TCL_ERROR;
+    }
+
+    const Vector& iCoords = iNode->getCrds();
+    const Vector& jCoords = jNode->getCrds();
+
+    int iSize = iCoords.Size();
+    int jSize = jCoords.Size();
+    int size = max(iSize, jSize);
+
+    double iCoord;
+    double jCoord;
+    double dist;
+    char buffer[40];
+    if (dim == -1) {
+        // compute distance with distance formula
+        dist = 0;
+        for (int i = 0; i < size; i++) {
+            if (i < iSize) {
+                iCoord = iCoords(i);
+            }
+            else {
+                iCoord = 0;
+            }
+            if (i < jSize) {
+                jCoord = jCoords(i);
+            }
+            else {
+                jCoord = 0;
+            }
+            dist += pow((jCoord - iCoord), 2);
+        }
+        dist = sqrt(dist);
+    }
+    else if (dim < size) {
+        // return jCoord - iCoord (with sign)
+        if (dim < iSize) {
+            iCoord = iCoords(dim);
+        }
+        else {
+            iCoord = 0;
+        }
+        if (dim < jSize) {
+            jCoord = jCoords(dim);
+        }
+        else {
+            jCoord = 0;
+        }
+        dist = jCoord - iCoord;
+    }
+    else {
+        opserr << "WARNING nodeDist iNode? jNode? <dim?> - dim out of range \n";
+        return TCL_ERROR;
+    }
+
+    sprintf(buffer, "%35.20f", dist);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+    return TCL_OK;    
 }
 
 int 
