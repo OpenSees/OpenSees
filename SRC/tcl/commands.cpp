@@ -923,6 +923,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "eleType", &eleType,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "eleNodes", &eleNodes, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
     Tcl_CreateCommand(interp, "nodeMass", &nodeMass, 
@@ -6683,6 +6685,34 @@ updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Cha
 	return 0;
 }
 
+int
+eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    if (argc < 2) {
+        opserr << "WARNING want - eleType eleTag?\n";
+        return TCL_ERROR;
+    }
+
+    int tag;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+        opserr << "WARNING eleType eleTag? \n";
+        return TCL_ERROR;
+    }
+
+    char buffer[20];
+    Element* theElement = theDomain.getElement(tag);
+    if (theElement == 0) {
+        opserr << "WARNING eleType ele " << tag << " not found" << endln;
+        return TCL_ERROR;
+    }
+    const char* type = theElement->getClassType();
+    sprintf(buffer, "%s", type);
+    Tcl_AppendResult(interp, buffer, NULL);
+
+    return TCL_OK;
+}
+
 int 
 eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6707,6 +6737,10 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   //const Vector *tags = theDomain.getElementResponse(tag, &myArgv[0], 1);
   Element *theElement = theDomain.getElement(tag);
+  if (theElement == 0) {
+      opserr << "WARNING eleNodes ele " << tag << " not found" << endln;
+      return TCL_ERROR;
+  }
   int numTags = theElement->getNumExternalNodes();
   const ID &tags = theElement->getExternalNodes();
   for (int i = 0; i < numTags; i++) {
