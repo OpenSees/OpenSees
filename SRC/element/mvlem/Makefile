@@ -1,9 +1,8 @@
 include ../../../Makefile.def
 
-OBJS       = MVLEM.o \
-	SFI_MVLEM.o
+OBJS  = MVLEM.o \
+	SFI_MVLEM.o \
 	MVLEM_3D.o
-
 
 all:         $(OBJS)
 
