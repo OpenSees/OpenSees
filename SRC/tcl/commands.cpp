@@ -6653,19 +6653,22 @@ fixedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     SP_Constraint* theSP;
     SP_ConstraintIter& spIter = theDomain.getDomainAndLoadPatternSPs();
 
-    char buffer[20];
-
+    // get unique constrained nodes with set
+    set<int> tags;
     int tag;
-    int count = 0;
-    int lastTag;
     while ((theSP = spIter()) != 0) {
         tag = theSP->getNodeTag();
-        if (count == 0 || tag != lastTag) {
-            sprintf(buffer, "%d ", tag);
-            Tcl_AppendResult(interp, buffer, NULL);
-        }
-        count += 1;
-        lastTag = tag;
+        tags.insert(tag);
+    }
+    // assign set to vector and sort
+    vector<int> tagv;
+    tagv.assign(tags.begin(), tags.end());
+    sort(tagv.begin(), tagv.end());
+    // loop through unique, sorted tags, adding to output
+    char buffer[20];
+    for (int tag : tagv) {
+        sprintf(buffer, "%d ", tag);
+        Tcl_AppendResult(interp, buffer, NULL);
     }
 
     return TCL_OK;
@@ -6689,7 +6692,7 @@ fixedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     SP_ConstraintIter& spIter = theDomain.getDomainAndLoadPatternSPs();
 
     int tag;
-    static Vector fixed(6);
+    Vector fixed(6);
     while ((theSP = spIter()) != 0) {
         tag = theSP->getNodeTag();
         if (tag == fNode) {
@@ -6750,7 +6753,6 @@ constrainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char**
 int
 constrainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
-
     if (argc < 2) {
         opserr << "WARNING want - constrainedDOFs cNode? <rNode?>\n";
         return TCL_ERROR;
