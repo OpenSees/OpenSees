@@ -6754,38 +6754,61 @@ int
 constrainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
     if (argc < 2) {
-        opserr << "WARNING want - constrainedDOFs cNode? <rNode?>\n";
+        opserr << "WARNING want - constrainedDOFs cNode? <rNode?> <rDOF?>\n";
         return TCL_ERROR;
     }
 
     int cNode;
     if (Tcl_GetInt(interp, argv[1], &cNode) != TCL_OK) {
-        opserr << "WARNING constrainedDOFs cNode? <rNode?> - could not read cNode? \n";
+        opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
         return TCL_ERROR;
     }
 
     int rNode;
-    bool all = 1;
+    bool allNodes = 1;
     if (argc > 2) {
         if (Tcl_GetInt(interp, argv[2], &rNode) != TCL_OK) {
-            opserr << "WARNING constrainedDOFs cNode? <rNode?> - could not read rNode? \n";
+            opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
             return TCL_ERROR;
         }
-        all = 0;
+        allNodes = 0;
+    }
+
+    int rDOF;
+    bool allDOFs = 1;
+    if (argc > 3) {
+        if (Tcl_GetInt(interp, argv[3], &rDOF) != TCL_OK) {
+            opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
+            return TCL_ERROR;
+        }
+        rDOF--;
+        allDOFs = 0;
     }
 
     MP_Constraint* theMP;
     MP_ConstraintIter& mpIter = theDomain.getMPs();
 
     int tag;
+    int i;
+    int n;
     Vector constrained(6);
     while ((theMP = mpIter()) != 0) {
         tag = theMP->getNodeConstrained();
         if (tag == cNode) {
-            if (all || rNode == theMP->getNodeRetained()) {
-                const ID &dofs = theMP->getConstrainedDOFs();
-                for (int i = 0; i < dofs.Size(); i++) {
-                    constrained(dofs(i)) = 1;
+            if (allNodes || rNode == theMP->getNodeRetained()) {
+                const ID &cDOFs = theMP->getConstrainedDOFs();
+                n = cDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        constrained(cDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID &rDOFs = theMP->getRetainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (rDOF == rDOFs(i))
+                            constrained(cDOFs(i)) = 1;
+                    }
                 }
             }
         }
@@ -6845,38 +6868,61 @@ retainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** arg
 {
 
     if (argc < 2) {
-        opserr << "WARNING want - retainedDOFs rNode? <cNode?>\n";
+        opserr << "WARNING want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
         return TCL_ERROR;
     }
 
     int rNode;
     if (Tcl_GetInt(interp, argv[1], &rNode) != TCL_OK) {
-        opserr << "WARNING retainedDOFs rNode? <cNode?> - could not read rNode? \n";
+        opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
         return TCL_ERROR;
     }
 
     int cNode;
-    bool all = 1;
+    bool allNodes = 1;
     if (argc > 2) {
         if (Tcl_GetInt(interp, argv[2], &cNode) != TCL_OK) {
-            opserr << "WARNING retainedDOFs rNode? <cNode?> - could not read cNode? \n";
+            opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
             return TCL_ERROR;
         }
-        all = 0;
+        allNodes = 0;
+    }
+
+    int cDOF;
+    bool allDOFs = 1;
+    if (argc > 3) {
+        if (Tcl_GetInt(interp, argv[3], &cDOF) != TCL_OK) {
+            opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
+            return TCL_ERROR;
+        }
+        cDOF--;
+        allDOFs = 0;
     }
 
     MP_Constraint* theMP;
     MP_ConstraintIter& mpIter = theDomain.getMPs();
 
     int tag;
+    int i;
+    int n;
     Vector retained(6);
     while ((theMP = mpIter()) != 0) {
         tag = theMP->getNodeRetained();
         if (tag == rNode) {
-            if (all || cNode == theMP->getNodeConstrained()) {
-                const ID& dofs = theMP->getRetainedDOFs();
-                for (int i = 0; i < dofs.Size(); i++) {
-                    retained(dofs(i)) = 1;
+            if (allNodes || cNode == theMP->getNodeConstrained()) {
+                const ID& rDOFs = theMP->getRetainedDOFs();
+                n = rDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        retained(rDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID& cDOFs = theMP->getConstrainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (cDOF == cDOFs(i))
+                            retained(rDOFs(i)) = 1;
+                    }
                 }
             }
         }
