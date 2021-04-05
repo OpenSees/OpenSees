@@ -1692,6 +1692,18 @@ static PyObject *Py_ops_equalDOF_Mixed(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject* Py_ops_mixedEqualDOF(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_MixedEqualDOF() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_rigidLink(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2356,6 +2368,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("imposedSupportMotion", &Py_ops_imposedMotion);
     addCommand("groundMotion", &Py_ops_groundMotion);
     addCommand("equalDOF_Mixed", &Py_ops_equalDOF_Mixed);
+    addCommand("mixedEqualDOF", &Py_ops_mixedEqualDOF);
     addCommand("rigidLink", &Py_ops_rigidLink);
     addCommand("rigidDiaphragm", &Py_ops_rigidDiaphragm);
     addCommand("ShallowFoundationGen", &Py_ops_ShallowFoundationGen);

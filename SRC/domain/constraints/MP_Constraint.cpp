@@ -93,6 +93,89 @@ int OPS_EqualDOF()
     return 0;
 }
 
+int OPS_MixedEqualDOF()
+{
+    // Check number of arguments
+    if (OPS_GetNumRemainingInputArgs() < 4 || OPS_GetNumRemainingInputArgs() % 2 == 1) {
+        opserr << "WARNING bad command - want: mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+        return -1;
+    }
+
+    // Read in the node IDs and the DOF
+    int RnodeID, CnodeID, dofIDR, dofIDC;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &RnodeID) < 0) {
+        opserr << "WARNING invalid RnodeID: "
+            << " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+        return -1;
+    }
+    if (OPS_GetIntInput(&numdata, &CnodeID) < 0) {
+        opserr << "WARNING invalid CnodeID: "
+            << " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+        return -1;
+    }
+    int numDOF = (int)OPS_GetNumRemainingInputArgs() / 2;
+
+    // The constraint matrix ... U_c = C_cr * U_r
+    Matrix Ccr(numDOF, numDOF);
+    Ccr.Zero();
+
+    // The vector containing the retained and constrained DOFs
+    ID rDOF(numDOF);
+    ID cDOF(numDOF);
+
+    // Read the degrees of freedom which are to be coupled
+    for (int k = 0; k < numDOF; k++) {
+        if (OPS_GetIntInput(&numdata, &dofIDR) < 0) {
+            opserr << "WARNING invalid dofID: "
+                << " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+            return -1;
+        }
+        if (OPS_GetIntInput(&numdata, &dofIDC) < 0) {
+            opserr << "WARNING invalid dofID: "
+                << " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+            return -1;
+        }
+
+        dofIDR -= 1; // Decrement for C++ indexing
+        dofIDC -= 1;
+        if (dofIDC < 0 || dofIDR < 0) {
+            opserr << "WARNING invalid dofID: "
+                << " must be >= 1";
+            return -1;
+        }
+        rDOF(k) = dofIDR;
+        cDOF(k) = dofIDC;
+        Ccr(k, k) = 1.0;
+    }
+
+    // Create the multi-point constraint
+    MP_Constraint* theMP = new MP_Constraint(RnodeID, CnodeID, Ccr, cDOF, rDOF);
+    if (theMP == 0) {
+        opserr << "WARNING ran out of memory for equalDOF MP_Constraint ";
+        return -1;
+    }
+
+    // Add the multi-point constraint to the domain
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+    if (theDomain->addMP_Constraint(theMP) == false) {
+        opserr << "WARNING could not add equalDOF MP_Constraint to domain ";
+        delete theMP;
+        return -1;
+    }
+
+    // output
+    // int mpTag = theMP->getTag();
+    // if (OPS_SetIntOutput(&numdata, &mpTag) < 0) {
+    // 	opserr << "WARNING failed to set output\n";
+    // 	return -1;
+    // }
+
+    return 0;
+}
+
 int OPS_EqualDOF_Mixed()
 {
     // Check number of arguments

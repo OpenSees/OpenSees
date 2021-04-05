@@ -1093,6 +1093,14 @@ static int Tcl_ops_equalDOF_Mixed(ClientData clientData, Tcl_Interp *interp, int
     return TCL_OK;
 }
 
+static int Tcl_ops_mixedEqualDOF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_MixedEqualDOF() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_rigidLink(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1628,6 +1636,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"imposedSupportMotion", &Tcl_ops_imposedMotion);
     addCommand(interp,"groundMotion", &Tcl_ops_groundMotion);
     addCommand(interp,"equalDOF_Mixed", &Tcl_ops_equalDOF_Mixed);
+    addCommand(interp,"mixedEqualDOF", &Tcl_ops_mixedEqualDOF);
     addCommand(interp,"rigidLink", &Tcl_ops_rigidLink);
     addCommand(interp,"rigidDiaphragm", &Tcl_ops_rigidDiaphragm);
     addCommand(interp,"ShallowFoundationGen", &Tcl_ops_ShallowFoundationGen);

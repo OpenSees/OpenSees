@@ -244,6 +244,10 @@ int
 TclCommand_addEqualDOF_MP_Mixed (ClientData clientData, Tcl_Interp *interp,
 			   int argc, TCL_Char **argv);
 
+int
+TclCommand_addMixedEqualDOF_MP(ClientData clientData, Tcl_Interp* interp,
+	int argc, TCL_Char** argv);
+
 int 
 TclCommand_RigidLink(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -550,6 +554,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
   Tcl_CreateCommand(interp, "equalDOF_Mixed", TclCommand_addEqualDOF_MP_Mixed,
 		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "mixedEqualDOF", TclCommand_addMixedEqualDOF_MP,
+			(ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "rigidLink", &TclCommand_RigidLink, 
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);                
@@ -3788,6 +3795,94 @@ TclCommand_addEqualDOF_MP (ClientData clientData, Tcl_Interp *interp,
         return TCL_OK;
 }
 
+int
+TclCommand_addMixedEqualDOF_MP(ClientData clientData, Tcl_Interp* interp,
+	int argc, TCL_Char** argv)
+{
+	// Ensure the destructor has not been called
+	if (theTclBuilder == 0) {
+		opserr << "WARNING builder has been destroyed - mixedEqualDOF \n";
+		return TCL_ERROR;
+	}
+
+    // Check number of arguments
+    if (argc < 5 || (argc - 1) % 2 == 1) {
+        opserr << "WARNING bad command - want: mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+        return TCL_ERROR;
+    }
+
+    // Read in the node IDs and the DOF
+    int RnodeID, CnodeID, dofIDR, dofIDC;
+    int numdata = 1;
+
+	if (Tcl_GetInt(interp, argv[1], &RnodeID) != TCL_OK) {
+		opserr << "WARNING invalid RnodeID: "
+			<< " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+		return TCL_ERROR;
+	}
+    if (Tcl_GetInt(interp, argv[2], &CnodeID) != TCL_OK) {
+        opserr << "WARNING invalid CnodeID: "
+            << " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+        return TCL_ERROR;
+    }
+    int numDOF = (int)(argc - 3) / 2;
+
+    // The constraint matrix ... U_c = C_cr * U_r
+    Matrix Ccr(numDOF, numDOF);
+    Ccr.Zero();
+
+    // The vector containing the retained and constrained DOFs
+    ID rDOF(numDOF);
+    ID cDOF(numDOF);
+
+	int i;
+	// Read the degrees of freedom which are to be coupled
+	for (i = 0; i < numDOF; i++) {
+		if (Tcl_GetInt(interp, argv[3+i*2], &dofIDR) != TCL_OK) {
+			opserr << "WARNING invalid dofID: " << dofIDR
+				<< " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+			return TCL_ERROR;
+		}
+		if (Tcl_GetInt(interp, argv[4+i*2], &dofIDC) != TCL_OK) {
+			opserr << "WARNING invalid dofID: " << dofIDC
+				<< " mixedEqualDOF rNode? cNode? rDOF1? cDOF1? ... ...";
+			return TCL_ERROR;
+		}
+
+        dofIDR -= 1; // Decrement for C++ indexing
+        dofIDC -= 1;
+        if (dofIDC < 0 || dofIDR < 0) {
+            opserr << "WARNING invalid dofID: "
+                << " must be >= 1";
+            return -1;
+        }
+        rDOF(i) = dofIDR;
+        cDOF(i) = dofIDC;
+        Ccr(i, i) = 1.0;
+    }
+
+	// Create the multi-point constraint
+	MP_Constraint* theMP = new MP_Constraint(RnodeID, CnodeID, Ccr, cDOF, rDOF);
+	if (theMP == 0) {
+		opserr << "WARNING ran out of memory for mixedEqualDOF MP_Constraint ";
+		printCommand(argc, argv);
+		return TCL_ERROR;
+	}
+
+	// Add the multi-point constraint to the domain
+	if (theTclDomain->addMP_Constraint(theMP) == false) {
+		opserr << "WARNING could not add mixedEqualDOF MP_Constraint to domain ";
+		printCommand(argc, argv);
+		delete theMP;
+		return TCL_ERROR;
+	}
+
+	char buffer[80];
+	sprintf(buffer, "%d", theMP->getTag());
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+	return TCL_OK;
+}
 
 int
 TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
@@ -3885,7 +3980,6 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
 
         return TCL_OK;
 }
-
 
 int 
 TclCommand_RigidLink(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
