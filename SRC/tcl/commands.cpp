@@ -811,9 +811,9 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateObjCommand(interp, "source", &OPS_SourceCmd,
 			 (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
-    Tcl_CreateCommand(interp, "ndm", &ndm,
+    Tcl_CreateCommand(interp, "getNDM", &getNDM,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "ndf", &ndf,
+    Tcl_CreateCommand(interp, "getNDF", &getNDF,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
     Tcl_CreateCommand(interp, "wipe", &wipeModel,
@@ -6689,7 +6689,7 @@ updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Cha
 }
 
 int
-ndm(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+getNDM(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
     int ndm;
 
@@ -6723,7 +6723,7 @@ ndm(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 }
 
 int
-ndf(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+getNDF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
     int ndf;
 
