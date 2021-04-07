@@ -53,6 +53,7 @@ cmake-build-release
 
 # VSCode
 .vscode
+.clang-format
 
 # OTHER
 Makefile.def
