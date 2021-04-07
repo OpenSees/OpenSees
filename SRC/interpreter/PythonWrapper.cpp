@@ -2413,7 +2413,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("strengthDegradation", &Py_ops_strengthDegradation);
     addCommand("unloadingRule", &Py_ops_unloadingRule);
     addCommand("partition", &Py_ops_partition);
-    addCommand("pc", &Py_ops_pc);
+    addCommand("pressureConstraint", &Py_ops_pc);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
