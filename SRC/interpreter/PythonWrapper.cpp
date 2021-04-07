@@ -2220,6 +2220,16 @@ static PyObject *Py_ops_partition(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_pc(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Pressure_Constraint() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
 
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
@@ -2403,6 +2413,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("strengthDegradation", &Py_ops_strengthDegradation);
     addCommand("unloadingRule", &Py_ops_unloadingRule);
     addCommand("partition", &Py_ops_partition);
+    addCommand("pressureConstraint", &Py_ops_pc);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
