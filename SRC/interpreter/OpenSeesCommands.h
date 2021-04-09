@@ -254,6 +254,7 @@ int OPS_eleNodes();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
+int OPS_setNodePressure();
 int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
