@@ -47,6 +47,9 @@ extern "C" {
 #include <OPS_Globals.h>
 #include <TclModelBuilder.h>
 #include <Matrix.h>
+#include <iostream>
+#include <set>
+#include <algorithm>
 
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
@@ -110,6 +113,8 @@ OPS_Stream *opserrPtr = &sserr;
 #include <ParameterIter.h>
 #include <SP_Constraint.h> //Joey UC Davis
 #include <SP_ConstraintIter.h> //Joey UC Davis
+#include <MP_Constraint.h>
+#include <MP_ConstraintIter.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
 #include <InitialStateParameter.h>
@@ -996,6 +1001,19 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+              
+    Tcl_CreateCommand(interp, "fixedNodes", &fixedNodes,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "fixedDOFs", &fixedDOFs,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "constrainedNodes", &constrainedNodes,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "constrainedDOFs", &constrainedDOFs,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "retainedNodes", &retainedNodes,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
+    Tcl_CreateCommand(interp, "retainedDOFs", &retainedDOFs,
+        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
     Tcl_CreateCommand(interp, "sdfResponse", &sdfResponse, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
@@ -6634,6 +6652,298 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 
   return TCL_ERROR;
+}
+
+
+int
+fixedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    SP_Constraint* theSP;
+    SP_ConstraintIter& spIter = theDomain.getDomainAndLoadPatternSPs();
+
+    // get unique constrained nodes with set
+    set<int> tags;
+    int tag;
+    while ((theSP = spIter()) != 0) {
+        tag = theSP->getNodeTag();
+        tags.insert(tag);
+    }
+    // assign set to vector and sort
+    vector<int> tagv;
+    tagv.assign(tags.begin(), tags.end());
+    sort(tagv.begin(), tagv.end());
+    // loop through unique, sorted tags, adding to output
+    char buffer[20];
+    for (int tag : tagv) {
+        sprintf(buffer, "%d ", tag);
+        Tcl_AppendResult(interp, buffer, NULL);
+    }
+
+    return TCL_OK;
+}
+
+int
+fixedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    if (argc < 2) {
+        opserr << "WARNING want - fixedDOFs fNode?\n";
+        return TCL_ERROR;
+    }
+
+    int fNode;
+    if (Tcl_GetInt(interp, argv[1], &fNode) != TCL_OK) {
+        opserr << "WARNING fixedDOFs fNode? - could not read fNode? \n";
+        return TCL_ERROR;
+    }
+    
+    SP_Constraint* theSP;
+    SP_ConstraintIter& spIter = theDomain.getDomainAndLoadPatternSPs();
+
+    int tag;
+    Vector fixed(6);
+    while ((theSP = spIter()) != 0) {
+        tag = theSP->getNodeTag();
+        if (tag == fNode) {
+            fixed(theSP->getDOF_Number()) = 1;
+        }
+    }
+
+    char buffer[20];
+    for (int i = 0; i < 6; i++) {
+        if (fixed(i) == 1) {
+            sprintf(buffer, "%d ", i + 1);
+            Tcl_AppendResult(interp, buffer, NULL);
+        }
+    }
+
+    return TCL_OK;
+}
+
+int
+constrainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    bool all = 1;
+    int rNode;
+    if (argc > 1) {
+        if (Tcl_GetInt(interp, argv[1], &rNode) != TCL_OK) {
+            opserr << "WARNING constrainedNodes <rNode?> - could not read rNode? \n";
+            return TCL_ERROR;
+        }
+        all = 0;
+    }
+
+    MP_Constraint* theMP;
+    MP_ConstraintIter& mpIter = theDomain.getMPs();
+
+    // get unique constrained nodes with set
+    set<int> tags;
+    int tag;
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeConstrained();
+        if (all || rNode == theMP->getNodeRetained()) {
+            tags.insert(tag);
+        }
+    }
+    // assign set to vector and sort
+    vector<int> tagv;
+    tagv.assign(tags.begin(), tags.end());
+    sort(tagv.begin(), tagv.end());
+    // loop through unique, sorted tags, adding to output
+    char buffer[20];
+    for (int tag : tagv) {
+        sprintf(buffer, "%d ", tag);
+        Tcl_AppendResult(interp, buffer, NULL);
+    }
+
+    return TCL_OK;
+}
+
+int
+constrainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    if (argc < 2) {
+        opserr << "WARNING want - constrainedDOFs cNode? <rNode?> <rDOF?>\n";
+        return TCL_ERROR;
+    }
+
+    int cNode;
+    if (Tcl_GetInt(interp, argv[1], &cNode) != TCL_OK) {
+        opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
+        return TCL_ERROR;
+    }
+
+    int rNode;
+    bool allNodes = 1;
+    if (argc > 2) {
+        if (Tcl_GetInt(interp, argv[2], &rNode) != TCL_OK) {
+            opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
+            return TCL_ERROR;
+        }
+        allNodes = 0;
+    }
+
+    int rDOF;
+    bool allDOFs = 1;
+    if (argc > 3) {
+        if (Tcl_GetInt(interp, argv[3], &rDOF) != TCL_OK) {
+            opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
+            return TCL_ERROR;
+        }
+        rDOF--;
+        allDOFs = 0;
+    }
+
+    MP_Constraint* theMP;
+    MP_ConstraintIter& mpIter = theDomain.getMPs();
+
+    int tag;
+    int i;
+    int n;
+    Vector constrained(6);
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeConstrained();
+        if (tag == cNode) {
+            if (allNodes || rNode == theMP->getNodeRetained()) {
+                const ID &cDOFs = theMP->getConstrainedDOFs();
+                n = cDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        constrained(cDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID &rDOFs = theMP->getRetainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (rDOF == rDOFs(i))
+                            constrained(cDOFs(i)) = 1;
+                    }
+                }
+            }
+        }
+    }
+    char buffer[20];
+    for (int i = 0; i < 6; i++) {
+        if (constrained(i) == 1) {
+            sprintf(buffer, "%d ", i + 1);
+            Tcl_AppendResult(interp, buffer, NULL);
+        }
+    }
+
+    return TCL_OK;
+}
+
+int
+retainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    bool all = 1;
+    int cNode;
+    if (argc > 1) {
+        if (Tcl_GetInt(interp, argv[1], &cNode) != TCL_OK) {
+            opserr << "WARNING retainedNodes <cNode?> - could not read cNode? \n";
+            return TCL_ERROR;
+        }
+        all = 0;
+    }
+
+    MP_Constraint* theMP;
+    MP_ConstraintIter& mpIter = theDomain.getMPs();
+
+    // get unique constrained nodes with set
+    set<int> tags;
+    int tag;
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeRetained();
+        if (all || cNode == theMP->getNodeConstrained()) {
+            tags.insert(tag);
+        }
+    }
+    // assign set to vector and sort
+    vector<int> tagv;
+    tagv.assign(tags.begin(), tags.end());
+    sort(tagv.begin(), tagv.end());
+    // loop through unique, sorted tags, adding to output
+    char buffer[20];
+    for (int tag : tagv) {
+        sprintf(buffer, "%d ", tag);
+        Tcl_AppendResult(interp, buffer, NULL);
+    }
+
+    return TCL_OK;
+}
+
+int
+retainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+
+    if (argc < 2) {
+        opserr << "WARNING want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
+        return TCL_ERROR;
+    }
+
+    int rNode;
+    if (Tcl_GetInt(interp, argv[1], &rNode) != TCL_OK) {
+        opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
+        return TCL_ERROR;
+    }
+
+    int cNode;
+    bool allNodes = 1;
+    if (argc > 2) {
+        if (Tcl_GetInt(interp, argv[2], &cNode) != TCL_OK) {
+            opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
+            return TCL_ERROR;
+        }
+        allNodes = 0;
+    }
+
+    int cDOF;
+    bool allDOFs = 1;
+    if (argc > 3) {
+        if (Tcl_GetInt(interp, argv[3], &cDOF) != TCL_OK) {
+            opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
+            return TCL_ERROR;
+        }
+        cDOF--;
+        allDOFs = 0;
+    }
+
+    MP_Constraint* theMP;
+    MP_ConstraintIter& mpIter = theDomain.getMPs();
+
+    int tag;
+    int i;
+    int n;
+    Vector retained(6);
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeRetained();
+        if (tag == rNode) {
+            if (allNodes || cNode == theMP->getNodeConstrained()) {
+                const ID& rDOFs = theMP->getRetainedDOFs();
+                n = rDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        retained(rDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID& cDOFs = theMP->getConstrainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (cDOF == cDOFs(i))
+                            retained(rDOFs(i)) = 1;
+                    }
+                }
+            }
+        }
+    }
+    char buffer[20];
+    for (int i = 0; i < 6; i++) {
+        if (retained(i) == 1) {
+            sprintf(buffer, "%d ", i + 1);
+            Tcl_AppendResult(interp, buffer, NULL);
+        }
+    }
+
+    return TCL_OK;
 }
 
 int 
