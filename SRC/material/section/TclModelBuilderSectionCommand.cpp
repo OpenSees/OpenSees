@@ -111,6 +111,8 @@ extern void *OPS_RCTunnelSection(void);
 extern void *OPS_UniaxialSection(void);
 extern void *OPS_TubeSection(void);
 extern void *OPS_ParallelSection(void);
+extern void *OPS_Bidirectional(void);
+extern void *OPS_Elliptical2(void);
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -835,196 +837,20 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	//end L.Jiang [SIF] added based on LayeredShellFiberSectionThermal section created by Yuli Huang & Xinzheng Lu ----
     
     else if (strcmp(argv[1],"Bidirectional") == 0) {
-	if (argc < 7) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section Bidirectional tag? E? sigY? Hiso? Hkin?" << endln;
-	    return TCL_ERROR;
-	}    
+      void *theMat = OPS_Bidirectional();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
 
-	int tag;
-	double E, sigY, Hi, Hk;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid Bidirectional tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E\n";
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[4], &sigY) != TCL_OK) {
-	    opserr << "WARNING invalid sigY\n";
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[5], &Hi) != TCL_OK) {
-	    opserr << "WARNING invalid Hiso\n";
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[6], &Hk) != TCL_OK) {
-	    opserr << "WARNING invalid Hkin\n";
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (argc > 8) {
-	  int code1, code2;
-	  if (strcmp(argv[7],"Mz") == 0)
-	    code1 = SECTION_RESPONSE_MZ;
-	  else if (strcmp(argv[7],"P") == 0)
-	    code1 = SECTION_RESPONSE_P;
-	  else if (strcmp(argv[7],"Vy") == 0)
-	    code1 = SECTION_RESPONSE_VY;
-	  else if (strcmp(argv[7],"My") == 0)
-	    code1 = SECTION_RESPONSE_MY;
-	  else if (strcmp(argv[7],"Vz") == 0)
-	    code1 = SECTION_RESPONSE_VZ;
-	  else if (strcmp(argv[7],"T") == 0)
-	    code1 = SECTION_RESPONSE_T;
-	  else {
-	    opserr << "WARNING invalid code 1 " << argv[7] << endln;
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;		
-	  }
-
-	  if (strcmp(argv[8],"Mz") == 0)
-	    code2 = SECTION_RESPONSE_MZ;
-	  else if (strcmp(argv[8],"P") == 0)
-	    code2 = SECTION_RESPONSE_P;
-	  else if (strcmp(argv[8],"Vy") == 0)
-	    code2 = SECTION_RESPONSE_VY;
-	  else if (strcmp(argv[8],"My") == 0)
-	    code2 = SECTION_RESPONSE_MY;
-	  else if (strcmp(argv[8],"Vz") == 0)
-	    code2 = SECTION_RESPONSE_VZ;
-	  else if (strcmp(argv[8],"T") == 0)
-	    code2 = SECTION_RESPONSE_T;
-	  else {
-	    opserr << "WARNING invalid code 2 " << argv[8] << endln;
-	    opserr << "section Bidirectional: " << tag << endln;
-	    return TCL_ERROR;		
-	  }
-	  theSection = new Bidirectional(tag, E, sigY, Hi, Hk, code1, code2);
-	}
-	else 
-	  theSection = new Bidirectional(tag, E, sigY, Hi, Hk);
-
-	}
-
-        else if (strcmp(argv[1],"Elliptical") == 0 || strcmp(argv[1],"Elliptical2") == 0) {
-	if (argc < 10) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section Elliptical tag? E1? E2? sigY1? sigY2? Hiso? Hkin1? Hkin2? <code1? code2?>" << endln;
-	    return TCL_ERROR;
-	}    
-
-	int tag;
-	double E1, E2, sigY1, sigY2, Hi, Hk1, Hk2;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid Elliptical tag" << endln;
-	    return TCL_ERROR;		
-	}
-
-	if (Tcl_GetDouble(interp, argv[3], &E1) != TCL_OK) {
-	    opserr << "WARNING invalid E1\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[4], &E2) != TCL_OK) {
-	    opserr << "WARNING invalid E2\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[5], &sigY1) != TCL_OK) {
-	    opserr << "WARNING invalid sigY1\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[6], &sigY2) != TCL_OK) {
-	    opserr << "WARNING invalid sigY2\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[7], &Hi) != TCL_OK) {
-	    opserr << "WARNING invalid Hiso\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[8], &Hk1) != TCL_OK) {
-	    opserr << "WARNING invalid Hkin1\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (Tcl_GetDouble(interp, argv[9], &Hk2) != TCL_OK) {
-	    opserr << "WARNING invalid Hkin2\n";
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;	
-	}
-
-	if (argc > 11) {
-	  int code1, code2;
-	  if (strcmp(argv[10],"Mz") == 0)
-	    code1 = SECTION_RESPONSE_MZ;
-	  else if (strcmp(argv[10],"P") == 0)
-	    code1 = SECTION_RESPONSE_P;
-	  else if (strcmp(argv[10],"Vy") == 0)
-	    code1 = SECTION_RESPONSE_VY;
-	  else if (strcmp(argv[10],"My") == 0)
-	    code1 = SECTION_RESPONSE_MY;
-	  else if (strcmp(argv[10],"Vz") == 0)
-	    code1 = SECTION_RESPONSE_VZ;
-	  else if (strcmp(argv[10],"T") == 0)
-	    code1 = SECTION_RESPONSE_T;
-	  else {
-	    opserr << "WARNING invalid code 1 " << argv[10] << endln;
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;		
-	  }
-
-	  if (strcmp(argv[11],"Mz") == 0)
-	    code2 = SECTION_RESPONSE_MZ;
-	  else if (strcmp(argv[11],"P") == 0)
-	    code2 = SECTION_RESPONSE_P;
-	  else if (strcmp(argv[11],"Vy") == 0)
-	    code2 = SECTION_RESPONSE_VY;
-	  else if (strcmp(argv[11],"My") == 0)
-	    code2 = SECTION_RESPONSE_MY;
-	  else if (strcmp(argv[11],"Vz") == 0)
-	    code2 = SECTION_RESPONSE_VZ;
-	  else if (strcmp(argv[11],"T") == 0)
-	    code2 = SECTION_RESPONSE_T;
-	  else {
-	    opserr << "WARNING invalid code 2 " << argv[11] << endln;
-	    opserr << "section Elliptical: " << tag << endln;
-	    return TCL_ERROR;		
-	  }
-	  if (strcmp(argv[1],"Elliptical") == 0)
-	    //theSection = new Elliptical(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2, code1, code2);
-	    theSection = new Elliptical2(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2, code1, code2);
-	  else
-	    theSection = new Elliptical2(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2, code1, code2);
-	}
-	else {
-	  if (strcmp(argv[1],"Elliptical") == 0)
-	    //theSection = new Elliptical(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2);
-	    theSection = new Elliptical2(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2);
-	  else 
-	    theSection = new Elliptical2(tag, E1, E2, sigY1, sigY2, Hi, Hk1, Hk2);
-	}
-	}
+    else if (strcmp(argv[1],"Elliptical") == 0 || strcmp(argv[1],"Elliptical2") == 0) {
+      void *theMat = OPS_Elliptical2();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
 
         else if (strcmp(argv[1],"Iso2spring") == 0) {
 	  if (argc < 10) {

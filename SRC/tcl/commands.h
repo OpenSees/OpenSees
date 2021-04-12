@@ -172,6 +172,9 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 int 
 updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int
+eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -204,6 +207,24 @@ getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
 int 
 getEleTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
+fixedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+fixedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+constrainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+constrainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+retainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+retainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
 
 int 
 nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
