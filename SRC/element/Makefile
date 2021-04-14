@@ -25,6 +25,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/joint; $(MAKE);
 	@$(CD) $(FE)/element/triangle; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
+	@$(CD) $(FE)/element/PML; $(MAKE);
 	@$(CD) $(FE)/element/dispBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/mixedBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/elasticBeamColumn; $(MAKE);
@@ -49,6 +50,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
+	@$(CD) $(FE)/element/RockingBC; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -72,6 +74,7 @@ spotless: clean
 	@$(CD) $(FE)/element/joint; $(MAKE) wipe;
 	@$(CD) $(FE)/element/triangle; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;
+	@$(CD) $(FE)/element/PML; $(MAKE) wipe;
 	@$(CD) $(FE)/element/dispBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/mixedBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/elasticBeamColumn; $(MAKE) wipe;
@@ -96,6 +99,7 @@ spotless: clean
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
+	@$(CD) $(FE)/element/RockingBC; $(MAKE) wipe;
 
 wipe: spotless
 

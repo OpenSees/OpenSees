@@ -45,6 +45,10 @@
 # Specify the location and name of the OpenSees interpreter program
 # that will be created (if this all works!)
 
+#########################################
+HOME = /Users/jia-weichen/OpenSeesFile/DEVELOPER
+############Added, Jiawei################
+
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
 
 OPERATING_SYSTEM = LINUX

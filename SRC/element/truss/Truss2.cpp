@@ -1012,58 +1012,35 @@ Truss2::displaySelf(Renderer &theViewer, int displayMode, float fact, const char
 	if (L == 0.0)
 		return 0;
 
-	// first determine the two end points of the truss based on
-	// the display factor (a measure of the distorted image)
-	// store this information in 2 3d vectors v1 and v2
-	const Vector &end1Crd = theNodes[0]->getCrds();
-	const Vector &end2Crd = theNodes[1]->getCrds();	
-
+	// get display coordinates
 	static Vector v1(3);
 	static Vector v2(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
+	// determine color and draw line
 	if (displayMode == 1 || displayMode == 2) {
-		const Vector &end1Disp = theNodes[0]->getDisp();
-		const Vector &end2Disp = theNodes[1]->getDisp();    
-
-		for (int i=0; i<dimension; i++) {
-			v1(i) = end1Crd(i)+end1Disp(i)*fact;
-			v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-		}
-
 		// compute the strain and axial force in the member
 		double strain, force;
 		if (L == 0.0) {
 			strain = 0.0;
 			force = 0.0;
-		} else {
+		}
+		else {
 			strain = this->computeCurrentStrain();
 			theMaterial->setTrialStrain(strain);
-			force = A*theMaterial->getStress();    
+			force = A * theMaterial->getStress();
 		}
-
-		if (displayMode == 2) // use the strain as the drawing measure
-			return theViewer.drawLine(v1, v2, (float)strain, (float)strain);	
+		if (displayMode == 2) {// use the strain as the drawing measure
+			return theViewer.drawLine(v1, v2, (float)strain, (float)strain);
+		}
 		else { // otherwise use the axial force as measure
-			return theViewer.drawLine(v1,v2, (float)force, (float)force);
+			return theViewer.drawLine(v1, v2, (float)force, (float)force);
 		}
-	} else if (displayMode < 0) {
-		int mode = displayMode  *  -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < dimension; i++) {
-				v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-				v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-			}    
-		} else {
-			for (int i = 0; i < dimension; i++) {
-				v1(i) = end1Crd(i);
-				v2(i) = end2Crd(i);
-			}    
-		}
-		return theViewer.drawLine(v1, v2, 1.0, 1.0);	
 	}
-	return 0;
+	else {
+		return theViewer.drawLine(v1, v2, 1.0, 1.0);
+	}
 }
 
 

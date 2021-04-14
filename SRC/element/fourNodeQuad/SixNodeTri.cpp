@@ -994,86 +994,47 @@ SixNodeTri::Print(OPS_Stream &s, int flag)
 int
 SixNodeTri::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	static Vector v5(3);
+	static Vector v6(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+	theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+	theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+	theNodes[4]->getDisplayCrds(v5, fact, displayMode);
+	theNodes[5]->getDisplayCrds(v6, fact, displayMode);
 
-    // first set the quantity to be displayed at the nodes;
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-    static Vector values(nip);
-
-    for (int j=0; j<nip; j++)
-	   values(j) = 0.0;
-
-    if (displayMode < nip && displayMode > 0) {
-	for (int i=0; i<nip; i++) {
-	  const Vector &stress = theMaterial[i]->getStress();
-	  values(i) = stress(displayMode-1);
+	// place values in coords matrix - not sure of proper order here.
+	static Matrix coords(6, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
+		coords(4, i) = v5(i);
+		coords(5, i) = v6(i);
 	}
-    }
 
-    // now  determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    const Vector &end3Crd = theNodes[2]->getCrds();
-    const Vector &end4Crd = theNodes[3]->getCrds();
-    const Vector &end5Crd = theNodes[4]->getCrds();
-    const Vector &end6Crd = theNodes[5]->getCrds();
-
-    static Matrix coords(nnodes,3);
-
-    if (displayMode >= 0) {
-
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();
-      const Vector &end3Disp = theNodes[2]->getDisp();
-      const Vector &end4Disp = theNodes[3]->getDisp();
-      const Vector &end5Disp = theNodes[4]->getDisp();
-      const Vector &end6Disp = theNodes[5]->getDisp();
-
-      for (int i = 0; i < 2; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-	coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
-	coords(5,i) = end6Crd(i) + end6Disp(i)*fact;
-      }
-    } else {
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      const Matrix &eigen3 = theNodes[2]->getEigenvectors();
-      const Matrix &eigen4 = theNodes[3]->getEigenvectors();
-      const Matrix &eigen5 = theNodes[4]->getEigenvectors();
-      const Matrix &eigen6 = theNodes[5]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(4,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	  coords(5,i) = end6Crd(i) + eigen6(i,mode-1)*fact;
+	// set the quantity to be displayed at the nodes;
+	// if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+	static Vector values(nip);
+	if (displayMode < nip && displayMode > 0) {
+		for (int i = 0; i < nip; i++) {
+			const Vector& stress = theMaterial[i]->getStress();
+			values(i) = stress(displayMode - 1);
+		}
 	}
-      } else {
-	for (int i = 0; i < 2; i++) {
-	  coords(0,i) = end1Crd(i);
-	  coords(1,i) = end2Crd(i);
-	  coords(2,i) = end3Crd(i);
-	  coords(3,i) = end4Crd(i);
-	  coords(4,i) = end5Crd(i);
-	  coords(5,i) = end6Crd(i);
+	else {
+		for (int i = 0; i < nip; i++)
+			values(i) = 0.0;
 	}
-      }
-    }
 
-    int error = 0;
-
-    // finally we  the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values, this->getTag());
-
-    return error;
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 Response*
@@ -1230,14 +1191,15 @@ SixNodeTri::getResponse(int responseID, Information &eleInfo)
       cnt += 3;
     }
 
-	const double We[nnodes][nip] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
-									{-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
-									{-0.3333333333333333, -0.3333333333333333, 1.6666666666666667},
-									{0.6666666666666667, 0.6666666666666667, -0.3333333333333333},
-									{-0.3333333333333333, 0.6666666666666667, 0.6666666666666667},
-									{0.6666666666666667, -0.3333333333333333, 0.6666666666666667}};
-	int p, l;
-	for (int i = 0; i < nnodes; i++) {
+    // FMK - cannot be nnodes, nip for certain compilers, error in compilation
+    double We[6][3] = {{1.6666666666666667, -0.3333333333333333, -0.3333333333333333},
+			 {-0.3333333333333333, 1.6666666666666667, -0.3333333333333333},
+			 {-0.3333333333333333, -0.3333333333333333, 1.6666666666666667},
+			 {0.6666666666666667, 0.6666666666666667, -0.3333333333333333},
+			 {-0.3333333333333333, 0.6666666666666667, 0.6666666666666667},
+			 {0.6666666666666667, -0.3333333333333333, 0.6666666666666667}};
+    int p, l;
+    for (int i = 0; i < nnodes; i++) {
 	  for (int k = 0; k < 3; k++) {
 		p = 3*i + k;
 		for (int j = 0; j < nip; j++) {

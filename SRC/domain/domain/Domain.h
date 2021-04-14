@@ -75,6 +75,8 @@ class FEM_ObjectBroker;
 
 class TaggedObjectStorage;
 
+class DomainModalProperties;
+
 class Domain
 {
   public:
@@ -197,7 +199,9 @@ class Domain
     virtual int setEigenvalues(const Vector &theEigenvalues);
     virtual const Vector &getEigenvalues(void);
     virtual double getTimeEigenvaluesSet(void);
-
+    void setModalProperties(const DomainModalProperties& dmp);
+    void unsetModalProperties(void);
+    const DomainModalProperties& getModalProperties(void) const;
     int setModalDampingFactors(Vector *, bool inclModalMatrix = false);
     const Vector *getModalDampingFactors(void);
     bool inclModalDampingMatrix(void);
@@ -288,6 +292,7 @@ class Domain
     
     Vector *theEigenvalues;
     double theEigenvalueSetTime;
+    DomainModalProperties* theModalProperties;
     Vector *theModalDampingFactors;
     bool inclModalMatrix;
 
