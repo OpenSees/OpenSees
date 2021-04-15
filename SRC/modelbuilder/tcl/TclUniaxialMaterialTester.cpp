@@ -59,6 +59,11 @@ int  TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData,
 							 int argc,   
 							 TCL_Char **argv);
 
+int  TclUniaxialMaterialTester_commitStrainUniaxialMaterial(ClientData clientData,
+    Tcl_Interp* interp,
+    int argc,
+    TCL_Char** argv);
+
 int  TclUniaxialMaterialTester_getStressUniaxialMaterial(ClientData clientData,
 							 Tcl_Interp *interp,
 							 int argc,   
@@ -86,6 +91,9 @@ TclUniaxialMaterialTester::TclUniaxialMaterialTester(Domain &theDomain, Tcl_Inte
   Tcl_CreateCommand(interp, "strainUniaxialTest", TclUniaxialMaterialTester_setStrainUniaxialMaterial,
 		    (ClientData)NULL, NULL);
 
+  Tcl_CreateCommand(interp, "commitUniaxialTest", TclUniaxialMaterialTester_commitStrainUniaxialMaterial,
+      (ClientData)NULL, NULL);
+
   Tcl_CreateCommand(interp, "stressUniaxialTest", TclUniaxialMaterialTester_getStressUniaxialMaterial,
 		    (ClientData)NULL, NULL);
 
@@ -104,10 +112,10 @@ TclUniaxialMaterialTester::~TclUniaxialMaterialTester()
 
   Tcl_DeleteCommand(theInterp, "uniaxialTest");
   Tcl_DeleteCommand(theInterp, "strainUniaxialTest");
+  Tcl_DeleteCommand(theInterp, "commitUniaxialTest");
   Tcl_DeleteCommand(theInterp, "stressUniaxialTest");
   Tcl_DeleteCommand(theInterp, "tangUniaxialTest");
 }
-
 
 //
 // THE FUNCTIONS INVOKED BY THE INTERPRETER
@@ -156,7 +164,6 @@ TclUniaxialMaterialTester_setUniaxialMaterial(ClientData clientData, Tcl_Interp 
   return TCL_OK;
 }
 
-
 int  
 TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
 						    int argc,   TCL_Char **argv)
@@ -202,7 +209,16 @@ TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData, Tcl_I
   return TCL_OK;
 }
 
-
+int
+TclUniaxialMaterialTester_commitStrainUniaxialMaterial(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv)
+{
+    if (theTestingUniaxialMaterial != 0) {
+        theTestingUniaxialMaterial->commitState();
+        count = 1;
+    }
+    return TCL_OK;
+}
 
 int  TclUniaxialMaterialTester_getStressUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
 							 int argc,   TCL_Char **argv)

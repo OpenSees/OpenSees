@@ -60,6 +60,11 @@ int  TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData client
 							       int argc,   
 							       TCL_Char **argv);
 
+int  TclPlaneStressMaterialTester_commitStrainPlaneStressMaterial(ClientData clientData,
+    Tcl_Interp* interp,
+    int argc,
+    TCL_Char** argv);
+
 int  TclPlaneStressMaterialTester_getStressPlaneStressMaterial(ClientData clientData,
 							       Tcl_Interp *interp,
 							       int argc,
@@ -91,6 +96,9 @@ TclPlaneStressMaterialTester::TclPlaneStressMaterialTester(Domain &theDomain,
   Tcl_CreateCommand(interp, "setStrain", TclPlaneStressMaterialTester_setStrainPlaneStressMaterial,
 		    (ClientData)NULL, NULL);
 
+  Tcl_CreateCommand(interp, "commitStrain", TclPlaneStressMaterialTester_commitStrainPlaneStressMaterial,
+      (ClientData)NULL, NULL);
+
   Tcl_CreateCommand(interp, "getStress", TclPlaneStressMaterialTester_getStressPlaneStressMaterial,
 		    (ClientData)NULL, NULL);
 
@@ -109,6 +117,7 @@ TclPlaneStressMaterialTester::~TclPlaneStressMaterialTester()
   opserr << "REMOVING COMMANDS";
   Tcl_DeleteCommand(theInterp, "setMaterial");
   Tcl_DeleteCommand(theInterp, "setStrain");
+  Tcl_DeleteCommand(theInterp, "commitStrain");
   Tcl_DeleteCommand(theInterp, "getStress");
   Tcl_DeleteCommand(theInterp, "getTangent");
 }
@@ -161,7 +170,6 @@ TclPlaneStressMaterialTester_setPlaneStressMaterial(ClientData clientData, Tcl_I
   return TCL_OK;
 }
 
-
 int  
 TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp,
 						    int argc,   TCL_Char **argv)
@@ -205,7 +213,16 @@ TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData,
   return TCL_OK;
 }
 
-
+int
+TclPlaneStressMaterialTester_commitStrainPlaneStressMaterial(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv)
+{
+    if (theMaterial != 0) {
+        theMaterial->commitState();
+        count = 1;
+    }
+    return TCL_OK;
+}
 
 int  TclPlaneStressMaterialTester_getStressPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp,
 							 int argc,   TCL_Char **argv)

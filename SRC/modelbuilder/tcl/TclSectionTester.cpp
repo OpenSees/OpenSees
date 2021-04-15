@@ -56,6 +56,9 @@ int  TclSectionTester_setSection(ClientData clientData, Tcl_Interp *interp,
 int  TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
 				       int argc,   TCL_Char **argv);
 
+int  TclSectionTester_commitStrainSection(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv);
+
 int  TclSectionTester_getStressSection(ClientData clientData, Tcl_Interp *interp,
 				       int argc,   TCL_Char **argv);
 
@@ -83,6 +86,9 @@ TclSectionTester::TclSectionTester(Domain &theDomain, Tcl_Interp *interp, int cT
   
   Tcl_CreateCommand(interp, "strainSectionTest", TclSectionTester_setStrainSection,
 		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "commitSectionTest", TclSectionTester_commitStrainSection,
+      (ClientData)NULL, NULL);
   
   Tcl_CreateCommand(interp, "stressSectionTest", TclSectionTester_getStressSection,
 		    (ClientData)NULL, NULL);
@@ -104,6 +110,7 @@ TclSectionTester::~TclSectionTester()
 
   Tcl_DeleteCommand(theInterp, "sectionTest");
   Tcl_DeleteCommand(theInterp, "strainSectionTest");
+  Tcl_DeleteCommand(theInterp, "commitSectionTest");
   Tcl_DeleteCommand(theInterp, "stressSectionTest");
   Tcl_DeleteCommand(theInterp, "tangSectionTest");
   Tcl_DeleteCommand(theInterp, "responseSectionTest");
@@ -197,6 +204,16 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
+int
+TclSectionTester_commitStrainSection(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv)
+{
+    if (theTestingSection != 0) {
+        theTestingSection->commitState();
+        count = 1;
+    }
+    return TCL_OK;
+}
 
 int  TclSectionTester_getStressSection(ClientData clientData, Tcl_Interp *interp,
 				       int argc,   TCL_Char **argv)
