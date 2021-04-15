@@ -114,7 +114,6 @@ TclPlaneStressMaterialTester::~TclPlaneStressMaterialTester()
 {
 
   theTclBuilder =0;
-  opserr << "REMOVING COMMANDS";
   Tcl_DeleteCommand(theInterp, "setMaterial");
   Tcl_DeleteCommand(theInterp, "setStrain");
   Tcl_DeleteCommand(theInterp, "commitStrain");
