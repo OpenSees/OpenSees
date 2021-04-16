@@ -1498,7 +1498,7 @@ PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitio
   Graph &theEleGraph = this->getElementGraph();
 
   // now we call partition on the domainPartitioner which does the partitioning
-  DomainPartitioner *thePartitioner = 0;//this->getPartitioner();
+  DomainPartitioner *thePartitioner = this->getPartitioner();
   if (thePartitioner != 0) {
     thePartitioner->setPartitionedDomain(*this);
     result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID, specialElementTag);
