@@ -130,7 +130,7 @@ private:
 
 	ID  connectedExternalNodes;
 
-	CrdTransf *theCoordTransf;
+	//CrdTransf *theCoordTransf;
 
 	int compElemtLengthAndOrient(void);
 	void compTransfMatrixLocalGlobal(Matrix &Tlg);

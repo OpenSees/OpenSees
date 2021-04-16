@@ -11,6 +11,7 @@ OBJS       = CrdTransf.o \
 	CorotCrdTransf2d.o \
 	CorotCrdTransf3d.o \
 	CorotCrdTransfWarping2d.o \
+	CorotCrdTransfWarping3d.o \
 	TclGeomTransfCommand.o
 
 # Compilation control
