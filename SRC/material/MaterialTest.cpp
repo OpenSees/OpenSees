@@ -118,7 +118,7 @@ int OPS_testSection()
         return -1;
     }
 
-    SectionForceDeformation* mat = OPS_getNDMaterial(tag);
+    SectionForceDeformation* mat = OPS_getSectionForceDeformation(tag);
 
     if (mat == 0) {
         opserr << "testSection - Section Not Found.\n";
@@ -133,38 +133,53 @@ int OPS_testSection()
 
 int OPS_setStrain()
 {
+    // check if test is active
     if (testType == 0) {
         opserr << "setStrain WARNING no active test\n";
         return -1;
     }
-    OPS_setTrialStrain()
-    OPS_commitStrain()
+    // check if any input values
+    if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "setStrain WARNING must provide strain values.\n";
+        return -1;
+    }
+    // call sub-routines
+    OPS_setTrialStrain();
+    OPS_commitStrain();
 }
 
 int OPS_setTrialStrain()
 {
+    // check if test is active
     if (testType == 0) {
         opserr << "setTrialStrain WARNING no active test\n";
         return -1;
     }
-    else if (testType == 1) {
-        if (OPS_GetNumRemainingInputArgs() != 1) {
-            opserr << "testUniaxialMaterial - You must provide a strain value.\n";
-            return -1;
-        }
-        double strain;
-        int numData = 1;
-        if (OPS_GetDoubleInput(&numData, &strain) < 0) {
-            opserr << "invalid double value\n";
+    // check if any input values
+    if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "setTrialStrain WARNING must provide strain values.\n";
+        return -1;
+    }
+    // get strain values from input
+    double strain;
+    int numData = OPS_GetNumRemainingInputArgs();
+    if (OPS_GetDoubleInput(&numData, &strain) < 0) {
+        opserr << "invalid double value\n";
+        return -1;
+    }
+    // switch for test type
+    if (testType == 1) {
+        if (numData != 1) {
+            opserr << "setTrialStrain WARNING wrong number of arguments.\n";
             return -1;
         }
         theTestingUniaxialMaterial->setTrialStrain(strain);
     }
     else if (testType == 2) {
-        opserr << "nDMaterial test - not implemented yet\n";
+        theTestingNDMaterial->setTrialStrain(strain);
     }
     else if (testType == 3) {
-        opserr << "section test - not implemented yet\n";
+        theTestingSection->setTrialSectionDeformation(strain);
     }
 
     return 0;
@@ -172,6 +187,7 @@ int OPS_setTrialStrain()
 
 int OPS_commitStrain()
 {
+    // switch for test type
     if (testType == 0) {
         opserr << "commitStrain WARNING no active test\n";
         return -1;
@@ -189,27 +205,47 @@ int OPS_commitStrain()
 
 int OPS_getStrain()
 {
+    // switch for test type
     if (testType == 0) {
         opserr << "getStrain WARNING no active test\n";
         return -1;
     }
     else if (testType == 1) {
         double strain = theTestingUniaxialMaterial->getStrain();
+        int numData = 1;
+        // set output
+        if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
+            opserr << "failed to get strain\n";
+            return -1;
+        }
     }
     else if (testType == 2) {
-        double strain = theTestingNDMaterial->getStrain();
+        const Vector& strain = theTestingNDMaterial->getStrain();
+        int numData = strain.Size();
+        // convert to double
+        double* data = new double[numData];
+        for (int i = 0; i < numData; i++)
+            data[i] = strain(i);
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get strain\n";
+            return -1;
+        }
+        delete[] data;
     }
     else if (testType == 3) {
-        double strain = theTestingSection->getStrain();
-    }
-
-    double strain = material->getStrain();
-
-    int numData = 1;
-
-    if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
-        opserr << "failed to set strain\n";
-        return -1;
+        const Vector& strain = theTestingSection->getSectionDeformation();
+        int numData = strain.Size();
+        // convert to double
+        double* data = new double[numData];
+        for (int i = 0; i < numData; i++)
+            data[i] = strain(i);
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get strain\n";
+            return -1;
+        }
+        delete[] data;
     }
 
     return 0;
@@ -217,19 +253,47 @@ int OPS_getStrain()
 
 int OPS_getStress()
 {
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-        opserr << "getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+    // switch for test type
+    if (testType == 0) {
+        opserr << "getStress WARNING no active test\n";
         return -1;
     }
-
-    double stress = material->getStress();
-
-    int numData = 1;
-
-    if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
-        opserr << "failed to set stress\n";
-        return -1;
+    else if (testType == 1) {
+        double stress = theTestingUniaxialMaterial->getStress();
+        int numData = 1;
+        // set output
+        if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
+            opserr << "failed to get stress\n";
+            return -1;
+        }
+    }
+    else if (testType == 2) {
+        const Vector& stress = theTestingNDMaterial->getStress();
+        int numData = stress.Size();
+        // convert to double
+        double* data = new double[numData];
+        for (int i = 0; i < numData; i++)
+            data[i] = stress(i);
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get stress\n";
+            return -1;
+        }
+        delete[] data;
+    }
+    else if (testType == 3) {
+        const Vector& stress = theTestingSection->getStressResultant();
+        int numData = stress.Size();
+        // convert to double
+        double* data = new double[numData];
+        for (int i = 0; i < numData; i++)
+            data[i] = stress(i);
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get stress\n";
+            return -1;
+        }
+        delete[] data;
     }
 
     return 0;
@@ -237,19 +301,55 @@ int OPS_getStress()
 
 int OPS_getTangent()
 {
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-        opserr << "getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+    // switch for test type
+    if (testType == 0) {
+        opserr << "getTangent WARNING no active test\n";
         return -1;
     }
-
-    double tangent = material->getTangent();
-
-    int numData = 1;
-
-    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
-        opserr << "failed to set tangent\n";
-        return -1;
+    else if (testType == 1) {
+        double tangent = theTestingUniaxialMaterial->getTangent();
+        int numData = 1;
+        // set output
+        if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
+            opserr << "failed to get tangent\n";
+            return -1;
+        }
+    }
+    else if (testType == 2) {
+        const Matrix& tangent = theTestingNDMaterial->getTangent();
+        int numData = tangent.noCols() * tangent.noRows();
+        // convert to double
+        double* data = new double[numData];
+        int k = 0;
+        for (int i = 0; i < tangent.noRows(); i++)
+            for (int j = 0; j < tangent.noCols(); j++) {
+                data[k] = tangent(i, j);
+                k++;
+            }
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get tangent\n";
+            return -1;
+        }
+        delete[] data;
+    }
+    else if (testType == 3) {
+        const Matrix& tangent = theTestingSection->getSectionTangent();
+        int numData = tangent.noCols() * tangent.noRows();
+        // convert to double
+        double* data = new double[numData];
+        int k = 0;
+        for (int i = 0; i < tangent.noRows(); i++)
+            for (int j = 0; j < tangent.noCols(); j++) {
+                data[k] = tangent(i, j);
+                k++;
+            }
+        // set output
+        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+            opserr << "failed to get tangent\n";
+            return -1;
+        }
+        delete[] data;
     }
 
     return 0;
@@ -257,19 +357,24 @@ int OPS_getTangent()
 
 int OPS_getDampTangent()
 {
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-        opserr << "getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+    // switch for test type
+    if (testType == 0) {
+        opserr << "getDampTangent WARNING no active test\n";
         return -1;
     }
-
-    double tangent = material->getDampTangent();
-
-    int numData = 1;
-
-    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
-        opserr << "failed to set damp tangent\n";
-        return -1;
+    else if (testType == 1) {
+        double dampTangent = theTestingUniaxialMaterial->getDampTangent();
+        int numData = 1;
+        if (OPS_SetDoubleOutput(&numData, &dampTangent, true) < 0) {
+            opserr << "failed to get damping tangent\n";
+            return -1;
+        }
+    }
+    else if (testType == 2) {
+        opserr << "damping tangent not implemented for nDMaterials\n";
+    }
+    else if (testType == 3) {
+        opserr << "damping tangent not implemented for sections\n";
     }
 
     return 0;
