@@ -27,12 +27,18 @@
 # sudo apt-get install emacs
 # sudo apt-get install build-essential
 # sudo apt-get install gfortran
-# wget https://prdownloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz
-# tar zxBf tcl8.6.tar.gz
-# cd tcl8.6.10/unix
-# configure --prefix=$HOME/tcl8.6 --enable-static --disable-shared --enable-64bit
-# make
-# make install
+
+## Builing tcl8.6 from source can cause some problem, Instead of builing from source, it is better to install tcl8.6 via apt.
+## Try the follwing 
+# sudo apt install tcl
+# sudo apt install tcl-dev
+# Ignore the follwing 6 lines if you decide to install tcl8.6 from apt.
+### wget https://prdownloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz
+### tar zxBf tcl8.6.tar.gz
+### cd tcl8.6.10/unix
+### ./configure --prefix=$HOME/tcl8.6 --enable-static --disable-shared --enable-64bit ## This building process can cause some problem 
+### make
+### make install
 # cd $HOME
 # git clone https://github.com/OpenSees/OpenSees.git
 # cd OpenSees
@@ -115,7 +121,9 @@ UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
 
-TCL_LIBRARY = $(HOME)/tcl8.6/lib/libtcl8.6.a
+# tcl library has been set to system library 
+# to find it, use "find / -name libtcl8.6.so 2>/dev/null"
+TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.6.so
 
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
@@ -268,15 +276,8 @@ MACHINE_INCLUDES        = -I/usr/include \
 include $(FE)/Makefile.incl
 
 #TCL_INCLUDES = -I/usr/includes/tcl-private/generic
-TCL_INCLUDES = -I$(HOME)/tcl8.6/include
+# tcl include has been changed to system tcl  
+TCL_INCLUDES = -I/usr/include/tcl8.6 
 PYTHON_INCLUDES = -I/usr/include/python3.5
 
-INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
-
-
-
-
-
-
-
-
+INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCL
