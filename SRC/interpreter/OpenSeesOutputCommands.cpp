@@ -1749,6 +1749,40 @@ int OPS_nodePressure()
     return 0;
 }
 
+int OPS_setNodePressure()
+{
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr << "WARNING: want - setNodePressure nodeTag? Pressure?\n";
+        return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING: setNodePressure invalid tag\n";
+        return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    double pressure = 0.0;
+
+    if (OPS_GetDoubleInput(&numdata, &pressure) < 0) {
+        opserr << "WARNING: setNodePressure invalid pressure\n";
+        return -1;
+    }
+
+    Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
+    if(thePC != 0) {
+         thePC->setPressure(pressure);
+    }
+
+    return 0;
+}
+
+
 int OPS_nodeBounds()
 {
 

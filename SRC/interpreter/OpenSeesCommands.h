@@ -254,6 +254,7 @@ int OPS_eleNodes();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
+int OPS_setNodePressure();
 int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
@@ -397,6 +398,7 @@ int OPS_HomogeneousBC_X();
 int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();
 int OPS_ShallowFoundationGen();
+int OPS_Pressure_Constraint();
 
 void* OPS_TimeSeriesIntegrator();
 

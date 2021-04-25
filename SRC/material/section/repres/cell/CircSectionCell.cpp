@@ -56,6 +56,10 @@ double CircSectionCell::getArea (void) const
   return A;
 }
 
+double CircSectionCell::getdValue (void) const
+{
+  return 1.0; // Should be something meaningful -- MHS
+}
 
 const Vector & 
 CircSectionCell::getCentroidPosition(void)

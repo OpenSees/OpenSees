@@ -560,7 +560,7 @@
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
 #define ELE_TAG_ElasticBeam3d            5
-#define ELE_TAG_ElasticWarpingBeam3d            5001
+#define ELE_TAG_ElasticBeamWarping3d            5001
 #define ELE_TAG_Beam2d    	         6
 #define ELE_TAG_beam2d02    	         7
 #define ELE_TAG_beam2d03    	         8
