@@ -44,7 +44,7 @@
 #include <NodalLoad.h>
 #include <ElementalLoad.h>
 #include <FEM_ObjectBroker.h>
-#include <Timer.h>
+//#include <Timer.h>
 #include <LoadPattern.h>
 
 #include <ArrayOfTaggedObjects.h>
@@ -52,7 +52,7 @@
 #include <SingleDomEleIter.h>
 #include <Graph.h>
 #include <FE_Element.h>
-#include <PartitionedModelBuilder.h>
+#include <modelbuilder/PartitionedModelBuilder.h>
 
 #include <EquiSolnAlgo.h>
 #include <IncrementalIntegrator.h>
@@ -66,7 +66,7 @@
 #include <SP_ConstraintIter.h>
 
 #include <ShadowActorSubdomain.h>
-#include <Message.h>
+#include <actor/message/Message.h>
 
 int ShadowSubdomain::count = 0; // MHS
 int ShadowSubdomain::numShadowSubdomains = 0;

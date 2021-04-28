@@ -1769,7 +1769,7 @@ UniaxialMaterial* Concrete07::getCopy()
 int Concrete07::sendSelf(int commitTag, Channel& theChannel)
 {
 	int res = 0;
-	static Vector data(31);
+	static Vector data(32);
 	data(0) = this->getTag();
 
 	// Material Properties
@@ -1827,7 +1827,7 @@ int Concrete07::sendSelf(int commitTag, Channel& theChannel)
 int Concrete07::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
 	int res = 0;
-	static Vector data(28);
+	static Vector data(32);
 	res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
 	if ( res < 0)

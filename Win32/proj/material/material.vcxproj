@@ -191,6 +191,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CFSWSWP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CableMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Cast.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
@@ -608,6 +609,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CFSWSWP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CableMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Cast.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />

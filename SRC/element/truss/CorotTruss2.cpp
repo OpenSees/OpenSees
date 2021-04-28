@@ -853,22 +853,13 @@ CorotTruss2::displaySelf(Renderer &theViewer, int displayMode, float fact, const
 	if (Ln == 0.0)
 		return 0;
 
-	// first determine the two end points of the CorotTruss2 based on
-	// the display factor (a measure of the distorted image)
-	// store this information in 2 3d vectors v1 and v2
-	const Vector &end1Crd = theNodes[0]->getCrds();
-	const Vector &end2Crd = theNodes[1]->getCrds();	
-	const Vector &end1Disp = theNodes[0]->getDisp();
-	const Vector &end2Disp = theNodes[1]->getDisp();    
+    static Vector v1(3);
+    static Vector v2(3);
 
-	static Vector v1(3);
-	static Vector v2(3);
-	for (int i = 0; i < numDIM; i++) {
-		v1(i) = end1Crd(i)+end1Disp(i)*fact;
-		v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-	}
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-	return theViewer.drawLine(v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 void
@@ -942,10 +933,41 @@ CorotTruss2::setResponse(const char **argv, int argc, OPS_Stream &output)
             output.tag("ResponseType", "U");
             theResponse = new ElementResponse(this, 3, 0.0);
 
-    // a material quantity
-    } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"-material") == 0) {
+            // a material quantity
+    }
+    else if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "-material") == 0) {
+        output.tag("GaussPointOutput");
+        output.attr("number", 1);
+        output.attr("eta", 0.0);
 
-        theResponse =  theMaterial->setResponse(&argv[1], argc-1, output);
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+            // there is no need to forward this call to the material
+            if (argc > 2) {
+                // if we have 2 or more extra arguments, the first one 
+                // could be an integer. In this case we check to see if it is the section id
+                // (only 1 in this case)
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 0) {
+                    // if it is not a number we forward the call to the section as usual
+                    theResponse = theMaterial->setResponse(&argv[1], argc - 1, output);
+                }
+                else {
+                    // it is a number. Now we have to make sure it is within the allowed range
+                    // for this element (in this case it can only be 1)
+                    // If it is > 1, then we MUST return NULL, because the MPCO recorder iteratively
+                    // uses this call to understand how many fibers we have in a section
+                    if (sectionNum == 1) {
+                        theResponse = theMaterial->setResponse(&argv[2], argc - 2, output);
+                    }
+                }
+            }
+            else {
+                // otherwise forward it as usual
+                theResponse = theMaterial->setResponse(&argv[1], argc - 1, output);
+            }
+        }
+        output.endTag();
     }
 
     output.endTag();

@@ -95,6 +95,8 @@ OPS_ElementRecorder()
     ID elements(0, 6);
     ID dofs(0, 6);
 
+    char **argv = 0;
+    
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
         const char* option = OPS_GetString();
@@ -247,8 +249,14 @@ OPS_ElementRecorder()
             nargrem = 1 + OPS_GetNumRemainingInputArgs();
             data = new const char *[nargrem];
             data[0] = option;
-            for (int i = 1; i < nargrem; i++)
-                data[i] = OPS_GetString();
+	    argv = new char*[nargrem];
+	    char buffer[128];
+            for (int i = 1; i < nargrem; i++) {
+	      argv[i] = new char[128];
+
+	      // Turn everything in to a string for setResponse
+	      data[i] = OPS_GetStringFromAll(buffer, 128);
+	    }
         }
     }
     
@@ -279,6 +287,13 @@ OPS_ElementRecorder()
         data, nargrem, echoTimeFlag, *domain, *theOutputStream,
         dT, &dofs);
 
+    if (argv != 0) {
+      for (int i=1; i<nargrem; ++i) {
+	delete [] argv[i];
+      }
+      delete [] argv;
+    }
+    
     return recorder;
 }
 

@@ -19,7 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // $Revision: 1.2 $
-// $Date: 2003-02-14 23:01:36 $
+// $Date: 2003/02/14 23:01:36 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/QuadCell.h,v $
                                                                         
                                                                         
@@ -55,6 +55,7 @@ class QuadCell: public Cell
     // reinforcing bar inquiring functions
     
     double getArea                     (void) const;
+    double getdValue                   (void) const;
     const  Matrix &getVertCoords       (void) const;
     const  Vector &getCentroidPosition (void);
 

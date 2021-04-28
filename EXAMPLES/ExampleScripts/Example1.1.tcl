@@ -88,8 +88,8 @@ foreach eleType {truss corotTruss} {
 # Create the integration scheme, the LoadControl scheme using steps of 1.0
 integrator LoadControl 1.0
 
-# Create the solution algorithm, a Linear algorithm is created
-algorithm Linear
+# Create the solution algorithm, a Newton algorithm is created
+algorithm Newton
 
 # create the analysis object 
 analysis Static 

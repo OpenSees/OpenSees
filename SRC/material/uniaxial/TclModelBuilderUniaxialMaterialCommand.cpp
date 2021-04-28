@@ -62,6 +62,7 @@
 #include <SteelBRB.h>             //Quan & Michele
 #include <SmoothPSConcrete.h>      //Quan & Michele
 #include <SelfCenteringMaterial.h> //JAE
+#include <ASD_SMA_3K.h> //LA
 
 #include <KikuchiAikenHDR.h>
 #include <KikuchiAikenLRB.h>
@@ -137,7 +138,7 @@ extern void *OPS_SteelECThermal(void); // L.Jiang [SIF]
 extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
 //extern void *OPS_PlateBearingConnectionThermal(void);
-
+extern void* OPS_ASD_SMA_3K(void); // Luca Aceto
 extern void *OPS_BWBN(void);
 extern void *OPS_IMKPeakOriented(void);
 extern void *OPS_IMKBilin(void);
@@ -169,6 +170,7 @@ extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
 extern void *OPS_SLModel(void);
+extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -347,7 +349,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"PySimle3") == 0) {
+    } else if (strcmp(argv[1],"PySimple3") == 0) {
       void *theMat = OPS_PySimple3();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -2597,6 +2599,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
 
 
+    else if (strcmp(argv[1], "ASD_SMA_3K") == 0) {
+      void *theMat = OPS_ASD_SMA_3K();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+
+
     else if (strcmp(argv[1],"SelfCentering") == 0) {
       if (argc < 7) {
 	opserr << "WARNING insufficient arguments\n";
@@ -2884,6 +2895,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     else if (strcmp(argv[1],"AxialSpHD") == 0) { 
       return TclCommand_AxialSpHD(clientData, interp, argc, argv);
     }
+    else if (strcmp(argv[1], "HystereticPoly") == 0) {		// BEGIN Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+	void* theMat = OPS_HystereticPoly();
+	if (theMat != 0)
+		theMaterial = (UniaxialMaterial*)theMat;
+	else
+		return TCL_ERROR;
+    }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
     else {
       // Fedeas
       theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
