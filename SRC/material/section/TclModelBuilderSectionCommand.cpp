@@ -723,7 +723,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
       }
       
       theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-      if (thickness != 0) delete thickness;
+      if (thickness != 0) delete [] thickness;
       if (theMats != 0) delete [] theMats;
     }
     //end Yuli Huang & Xinzheng Lu LayeredShellFiberSection
@@ -831,7 +831,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 		}
 
 		theSection = new LayeredShellFiberSectionThermal(tag, nLayers, thickness, theMats);
-		if (thickness != 0) delete thickness;
+		if (thickness != 0) delete [] thickness;
 		if (theMats != 0) delete[] theMats;
 	}
 	//end L.Jiang [SIF] added based on LayeredShellFiberSectionThermal section created by Yuli Huang & Xinzheng Lu ----
