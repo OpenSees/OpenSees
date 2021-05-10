@@ -53,6 +53,8 @@
 #include <FEM_ObjectBroker.h>
 #include <ID.h>
 
+extern StaticAnalysis *theStaticAnalysis;
+
 // constructor:
 UniformDamping::UniformDamping(int tag, double cd, double f1, double f2, double t1, double t2, TimeSeries *f):
 Damping(tag, DMP_TAG_UniformDamping),
@@ -243,7 +245,15 @@ UniformDamping::update(Vector q)
 {
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
-  if (dT > 0.0)
+  if (theStaticAnalysis)
+  {
+    *q0 = q;
+    (*qd).Zero();
+    for (int i = 0; i < nFilter; ++i)
+      for (int j = 0; j < nComp; ++j)
+        (*qL)(j,i) = q(j);
+  }
+  else if (dT > 0.0)
   {
     *q0 = q;
     (*qd).Zero();
@@ -269,7 +279,7 @@ UniformDamping::update(Vector q)
       {
         for (int i = 0; i < nFilter; ++i)
           for (int j = 0; j < nComp; ++j)
-            (*qL)(j,i) = q(i);
+            (*qL)(j,i) = q(j);
       }
       if (fac) *qd *= fac->getFactor(t);
     }

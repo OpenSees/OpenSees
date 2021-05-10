@@ -42,6 +42,8 @@
 #include <FEM_ObjectBroker.h>
 #include <ID.h>
 
+extern StaticAnalysis *theStaticAnalysis;
+
 // constructor:
 SecStifDamping::SecStifDamping(int tag, double b, double t1, double t2, TimeSeries *f):
 Damping(tag, DMP_TAG_SecStifDamping),
@@ -114,7 +116,11 @@ SecStifDamping::update(Vector q)
 {       
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
-  if (dT > 0.0)
+  if (theStaticAnalysis)
+  {
+    (*qd).Zero();
+  }
+  else if (dT > 0.0)
   {
     *q0 = q;
     if (t > ta && t < td)
