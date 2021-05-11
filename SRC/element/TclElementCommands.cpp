@@ -129,10 +129,8 @@ extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_Truss2(void);
-#ifdef _HAVE_PML
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
-#endif
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -506,7 +504,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-#ifdef _HAVE_PML
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -520,8 +517,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
-#endif
 
   /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
