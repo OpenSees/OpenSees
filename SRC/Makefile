@@ -648,7 +648,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
         $(FE)/element/PML/PML3D.o \
         $(FE)/element/PML/pml_2d.o \
         $(FE)/element/PML/PML2D.o \
-	$(FE)/element/RockingBC/RockingBC.o
+	$(FE)/element/RockingBC/RockingBC.o \
+	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \

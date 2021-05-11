@@ -132,6 +132,9 @@
     <Filter Include="RockingBC">
       <UniqueIdentifier>{962a9734-043f-43c1-8e90-1a79eeef085f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CEqElement">
+      <UniqueIdentifier>{44a1f5d6-7e75-44f5-a5a5-b79b65801b24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -929,6 +932,9 @@
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
       <Filter>RockingBC</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp">
+      <Filter>CEqElement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1653,6 +1659,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h">
+      <Filter>CEqElement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
