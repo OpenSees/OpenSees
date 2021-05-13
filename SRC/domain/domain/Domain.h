@@ -289,6 +289,7 @@ class Domain
     int commitTag;
     
     Vector theBounds;
+    bool initBounds; // added to fix bug when all nodes are positive or negative - ambaker1
     
     Vector *theEigenvalues;
     double theEigenvalueSetTime;
