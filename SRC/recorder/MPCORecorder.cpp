@@ -3647,6 +3647,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthRocking ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact2D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
+					elem_class_tag == ELE_TAG_ZeroLengthImplexContact ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||

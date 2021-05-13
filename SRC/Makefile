@@ -472,6 +472,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/truss/N4BiaxialTruss.o \
 	$(FE)/element/zeroLength/ZeroLengthContact2D.o \
 	$(FE)/element/zeroLength/ZeroLengthContact3D.o \
+	$(FE)/element/zeroLength/ZeroLengthImplexContact.o \
 	$(FE)/element/zeroLength/ZeroLengthContactNTS2D.o \
 	$(FE)/element/zeroLength/ZeroLengthInterface2D.o \
 	$(FE)/element/zeroLength/ZeroLengthRocking.o \

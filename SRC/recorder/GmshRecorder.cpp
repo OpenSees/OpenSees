@@ -1273,6 +1273,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ZeroLengthND] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact3D] = GMSH_LINE;
+    gmshtypes[ELE_TAG_ZeroLengthImplexContact] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContactNTS2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthInterface2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_CoupledZeroLength] = GMSH_LINE;

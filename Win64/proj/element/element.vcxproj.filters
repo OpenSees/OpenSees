@@ -194,6 +194,9 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthImplexContact3D.cpp">
+      <Filter>zeroLength</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
@@ -980,6 +983,9 @@
       <Filter>zeroLength</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.h">
+      <Filter>zeroLength</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthImplexContact.h">
       <Filter>zeroLength</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.h">

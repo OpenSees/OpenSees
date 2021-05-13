@@ -185,6 +185,7 @@ extern void *OPS_RJWatsonEQS3d(void);
 extern void *OPS_RockingBC(void);
 
 extern void* OPS_LehighJoint2d(void);
+extern void* OPS_ZeroLengthImplexContact(void); // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -1431,6 +1432,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }
 
+  else if (strcmp(argv[1], "zeroLengthImplexContact") == 0) {
+      void* theEle = OPS_ZeroLengthImplexContact();
+      if (theEle != 0)
+          theElement = (Element*)theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+          return TCL_ERROR;
+      }
+  }
+
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {
@@ -1605,7 +1616,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TCL -- unable to create element of type: " << argv[1] << endln;
       return TCL_ERROR;
     }  
-  } 
+  }
   else if ((strcmp(argv[1], "inelastic2dYS01")== 0) ||
 	     (strcmp(argv[1], "inelastic2dYS02")== 0) ||
 	     (strcmp(argv[1], "inelastic2dYS03")== 0) ||
