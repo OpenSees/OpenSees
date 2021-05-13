@@ -86,6 +86,8 @@ OPS_Stream *opserrPtr = &sserr;
 #include <string.h>
 
 #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <packages.h>
 
 #include <FEM_ObjectBrokerAllClasses.h>
