@@ -98,7 +98,7 @@ Domain::Domain()
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
- theRegions(0), numRegions(0), commitTag(0), initBounds(true),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
  theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
@@ -154,7 +154,7 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
- theRegions(0), numRegions(0), commitTag(0), initBounds(true),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
  theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
@@ -215,7 +215,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theSPs(&theSPsStorage),
  theMPs(&theMPsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
- theRegions(0), numRegions(0), commitTag(0), initBounds(true),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
  theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
@@ -274,7 +274,7 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
- theRegions(0), numRegions(0), commitTag(0),initBounds(true),
+ theRegions(0), numRegions(0), commitTag(0),initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
  theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
@@ -1079,58 +1079,7 @@ Domain::removeNode(int tag)
   this->domainChange();
 
   // adjust node bounds 
-  initBounds = true;
-  theBounds(0) = 0;
-  theBounds(1) = 0;
-  theBounds(2) = 0;
-  theBounds(3) = 0;
-  theBounds(4) = 0;
-  theBounds(5) = 0;
-  if (theNodes->getNumComponents() != 0) {
-      initBounds = false;
-      Node* nodePtr;
-      NodeIter& theNodeIter = this->getNodes();
-      // initialize with first node
-      nodePtr = theNodeIter();
-      const Vector& crds = nodePtr->getCrds();
-      int dim = crds.Size();
-      double x, y, z;
-      if (dim >= 1) {
-          x = crds(0);
-          theBounds(0) = x;
-          theBounds(3) = x;
-      }
-      if (dim >= 2) {
-          y = crds(1);
-          theBounds(1) = y;
-          theBounds(4) = y;
-      }
-      if (dim == 3) {
-          z = crds(2);
-          theBounds(2) = z;
-          theBounds(5) = z;
-      }
-      // adjust for other nodes
-      while ((nodePtr = theNodeIter()) != 0) {
-          const Vector& crds = nodePtr->getCrds();
-          dim = crds.Size();
-          if (dim >= 1) {
-              x = crds(0);
-              if (x < theBounds(0)) theBounds(0) = x;
-              if (x > theBounds(3)) theBounds(3) = x;
-          }
-          if (dim >= 2) {
-              y = crds(1);
-              if (y < theBounds(1)) theBounds(1) = y;
-              if (y > theBounds(4)) theBounds(4) = y;
-          }
-          if (dim == 3) {
-              z = crds(2);
-              if (z < theBounds(2)) theBounds(2) = z;
-              if (z > theBounds(5)) theBounds(5) = z;
-          }
-      }
-  }
+  resetBounds = true;
   
   // perform a downward cast to a Node (safe as only Node added to
   // this container and return the result of the cast
@@ -1672,6 +1621,63 @@ Domain::getNumParameters(void) const
 const Vector &
 Domain::getPhysicalBounds(void)
 {
+    // reset bounds if nodes were deleted
+    if (resetBounds) {
+        initBounds = true;
+        theBounds(0) = 0;
+        theBounds(1) = 0;
+        theBounds(2) = 0;
+        theBounds(3) = 0;
+        theBounds(4) = 0;
+        theBounds(5) = 0;
+        if (theNodes->getNumComponents() != 0) {
+            initBounds = false;
+            Node* nodePtr;
+            NodeIter& theNodeIter = this->getNodes();
+            // initialize with first node
+            nodePtr = theNodeIter();
+            const Vector& crds = nodePtr->getCrds();
+            int dim = crds.Size();
+            double x, y, z;
+            if (dim >= 1) {
+                x = crds(0);
+                theBounds(0) = x;
+                theBounds(3) = x;
+            }
+            if (dim >= 2) {
+                y = crds(1);
+                theBounds(1) = y;
+                theBounds(4) = y;
+            }
+            if (dim == 3) {
+                z = crds(2);
+                theBounds(2) = z;
+                theBounds(5) = z;
+            }
+            // adjust for other nodes
+            while ((nodePtr = theNodeIter()) != 0) {
+                const Vector& crds = nodePtr->getCrds();
+                dim = crds.Size();
+                if (dim >= 1) {
+                    x = crds(0);
+                    if (x < theBounds(0)) theBounds(0) = x;
+                    if (x > theBounds(3)) theBounds(3) = x;
+                }
+                if (dim >= 2) {
+                    y = crds(1);
+                    if (y < theBounds(1)) theBounds(1) = y;
+                    if (y > theBounds(4)) theBounds(4) = y;
+                }
+                if (dim == 3) {
+                    z = crds(2);
+                    if (z < theBounds(2)) theBounds(2) = z;
+                    if (z > theBounds(5)) theBounds(5) = z;
+                }
+            }
+        }
+        resetBounds = false;
+    }
+    
     return theBounds;
 }
 
