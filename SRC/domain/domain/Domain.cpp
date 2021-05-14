@@ -1077,11 +1077,67 @@ Domain::removeNode(int tag)
 
   // mark the domain has having changed 
   this->domainChange();
+
+  // adjust node bounds 
+  initBounds = true;
+  theBounds(0) = 0;
+  theBounds(1) = 0;
+  theBounds(2) = 0;
+  theBounds(3) = 0;
+  theBounds(4) = 0;
+  theBounds(5) = 0;
+  if (theNodes->getNumComponents() != 0) {
+      initBounds = false;
+      Node* nodePtr;
+      NodeIter& theNodeIter = this->getNodes();
+      // initialize with first node
+      nodePtr = theNodeIter();
+      const Vector& crds = nodePtr->getCrds();
+      int dim = crds.Size();
+      double x, y, z;
+      if (dim >= 1) {
+          x = crds(0);
+          theBounds(0) = x;
+          theBounds(3) = x;
+      }
+      if (dim >= 2) {
+          y = crds(1);
+          theBounds(1) = y;
+          theBounds(4) = y;
+      }
+      if (dim == 3) {
+          z = crds(2);
+          theBounds(2) = z;
+          theBounds(5) = z;
+      }
+      // adjust for other nodes
+      while ((nodePtr = theNodeIter()) != 0) {
+          const Vector& crds = nodePtr->getCrds();
+          dim = crds.Size();
+          if (dim >= 1) {
+              x = crds(0);
+              if (x < theBounds(0)) theBounds(0) = x;
+              if (x > theBounds(3)) theBounds(3) = x;
+          }
+          if (dim >= 2) {
+              y = crds(1);
+              if (y < theBounds(1)) theBounds(1) = y;
+              if (y > theBounds(4)) theBounds(4) = y;
+          }
+          if (dim == 3) {
+              z = crds(2);
+              if (z < theBounds(2)) theBounds(2) = z;
+              if (z > theBounds(5)) theBounds(5) = z;
+          }
+      }
+  }
   
   // perform a downward cast to a Node (safe as only Node added to
   // this container and return the result of the cast
   Node *result = (Node *)mc;
   // result->setDomain(0);
+  
+
   return result;
 }
 
