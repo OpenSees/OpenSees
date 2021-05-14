@@ -129,7 +129,6 @@ public:
         Vector shear_commit = Vector(2);    // commited effective shear stress
         double xs = 0.0;                    // equivalent plastic strain
         double xs_commit = 0.0;             // commited equivalent plastic strain
-        double xs_commit_old = 0.0;         // commited equivalent plastic strain (n-1)
         double rs = 0.0;                    // equivalent shear stress
         double rs_commit = 0.0;             // commited equivalent shear stress
         double rs_commit_old = 0.0;         // commited equivalent shear stress (n-1)
@@ -145,6 +144,7 @@ public:
         // modulus
         Matrix C = Matrix(3, 3);            // tangent modulus matrix
         Vector sig = Vector(3);
+        Vector sig_implex = Vector(3); // only for output
         // constructor
         StateVariables() = default;
         StateVariables(const StateVariables&) = default;

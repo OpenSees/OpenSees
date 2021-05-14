@@ -39,6 +39,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <Renderer.h>
+#include <limits>
 #include <algorithm>
 #include <string.h>
 #include <stdio.h>
@@ -330,8 +331,6 @@ int ZeroLengthImplexContact::commitState(void)
 {
     // do the implicit correction if impl-ex
     if (use_implex) {
-        // get trial strain tensor at integration point in local crd. sys.
-        computeStrain();
         // update material internal variables
         updateInternal(false, false);  // explicit_phase?, do_tangent?
     }
@@ -339,12 +338,11 @@ int ZeroLengthImplexContact::commitState(void)
     // commit internal variables
     sv.eps_commit = sv.eps;
     sv.shear_commit = sv.shear;
-    sv.xs_commit_old = sv.xs_commit;
     sv.xs_commit = sv.xs;
     sv.rs_commit_old = sv.rs_commit;
     sv.rs_commit = sv.rs;
     sv.cres_commit_old = sv.cres_commit;
-    sv.cres_commit = sv.rs;
+    sv.cres_commit = sv.cres;
     sv.PC_commit = sv.PC;
     sv.dtime_n_commit = sv.dtime_n;
 
@@ -378,7 +376,31 @@ int ZeroLengthImplexContact::revertToStart()
 int ZeroLengthImplexContact::update()
 {
     computeStrain();
-    updateInternal(true, true);
+    if (use_implex) {
+        updateInternal(true, true);
+        sv.sig_implex = sv.sig;
+    }
+    else {
+        // for the implicit case we use the numerical tangent... seems more stable
+        static Vector strain(3);
+        static Matrix Cnum(3, 3);
+        constexpr double pert = 1.0e-9;
+        strain = sv.eps;
+        for (int j = 0; j < 3; ++j) {
+            sv.eps(j) = strain(j) + pert;
+            updateInternal(true, false);
+            for (int i = 0; i < 3; ++i)
+                Cnum(i, j) = sv.sig(i);
+            sv.eps(j) = strain(j) - pert;
+            updateInternal(true, false);
+            for (int i = 0; i < 3; ++i)
+                Cnum(i, j) = (Cnum(i, j) - sv.sig(i)) / 2.0 / pert;
+            sv.eps(j) = strain(j);
+        }
+        updateInternal(true, false);
+        sv.C = Cnum;
+    }
+
     return 0;
 }
 
@@ -486,7 +508,7 @@ int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
     }
 
     // double data
-    static Vector ddata(33);
+    static Vector ddata(32);
     ddata(1) = Knormal;
     ddata(2) = Kfriction;
     ddata(3) = mu;
@@ -505,20 +527,19 @@ int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
     ddata(16) = sv.shear_commit(1);
     ddata(17) = sv.xs;
     ddata(18) = sv.xs_commit;
-    ddata(19) = sv.xs_commit_old;
-    ddata(20) = sv.rs;
-    ddata(21) = sv.rs_commit;
-    ddata(22) = sv.rs_commit_old;
-    ddata(23) = sv.cres;
-    ddata(24) = sv.cres_commit;
-    ddata(25) = sv.cres_commit_old;
-    ddata(26) = sv.PC;
-    ddata(27) = sv.PC_commit;
-    ddata(28) = sv.dtime_n;
-    ddata(29) = sv.dtime_n_commit;
-    ddata(30) = gap0(0);
-    ddata(31) = gap0(1);
-    ddata(32) = gap0(2);
+    ddata(19) = sv.rs;
+    ddata(20) = sv.rs_commit;
+    ddata(21) = sv.rs_commit_old;
+    ddata(22) = sv.cres;
+    ddata(23) = sv.cres_commit;
+    ddata(24) = sv.cres_commit_old;
+    ddata(25) = sv.PC;
+    ddata(26) = sv.PC_commit;
+    ddata(27) = sv.dtime_n;
+    ddata(28) = sv.dtime_n_commit;
+    ddata(29) = gap0(0);
+    ddata(30) = gap0(1);
+    ddata(31) = gap0(2);
     res = theChannel.sendVector(dataTag, commitTag, ddata);
     if (res < 0) {
         opserr << "WARNING ZeroLengthImplexContact::sendSelf() - " << this->getTag() << " failed to send Vector\n";
@@ -577,20 +598,19 @@ int ZeroLengthImplexContact::recvSelf(int commitTag, Channel& theChannel, FEM_Ob
     sv.shear_commit(1) = ddata(16);
     sv.xs = ddata(17);
     sv.xs_commit = ddata(18);
-    sv.xs_commit_old = ddata(19);
-    sv.rs = ddata(20);
-    sv.rs_commit = ddata(21);
-    sv.rs_commit_old = ddata(22);
-    sv.cres = ddata(23);
-    sv.cres_commit = ddata(24);
-    sv.cres_commit_old = ddata(25);
-    sv.PC = ddata(26);
-    sv.PC_commit = ddata(27);
-    sv.dtime_n = ddata(28);
-    sv.dtime_n_commit = ddata(29);
-    gap0(0) = ddata(30);
-    gap0(1) = ddata(31);
-    gap0(2) = ddata(32);
+    sv.rs = ddata(19);
+    sv.rs_commit = ddata(20);
+    sv.rs_commit_old = ddata(21);
+    sv.cres = ddata(22);
+    sv.cres_commit = ddata(23);
+    sv.cres_commit_old = ddata(24);
+    sv.PC = ddata(25);
+    sv.PC_commit = ddata(26);
+    sv.dtime_n = ddata(27);
+    sv.dtime_n_commit = ddata(28);
+    gap0(0) = ddata(29);
+    gap0(1) = ddata(30);
+    gap0(2) = ddata(31);
 
     return 0;
 }
@@ -668,6 +688,13 @@ Response* ZeroLengthImplexContact::setResponse(const char** argv, int argc, OPS_
             lam_close_gauss();
             theResponse = new ElementResponse(this, 3, Vector(2));
         }
+        else if (strcmp(argv[0], "localForceImplex") == 0 || strcmp(argv[0], "localForcesImplex") == 0) {
+            lam_open_gauss();
+            output.tag("ResponseType", "N");
+            output.tag("ResponseType", "Tx");
+            lam_close_gauss();
+            theResponse = new ElementResponse(this, 33, Vector(3));
+        }
         else if (strcmp(argv[0], "localDisplacement") == 0 || strcmp(argv[0], "localDispJump") == 0) {
             lam_open_gauss();
             output.tag("ResponseType", "dUN");
@@ -703,6 +730,14 @@ Response* ZeroLengthImplexContact::setResponse(const char** argv, int argc, OPS_
             lam_close_gauss();
             theResponse = new ElementResponse(this, 3, Vector(3));
         }
+        else if (strcmp(argv[0], "localForceImplex") == 0 || strcmp(argv[0], "localForcesImplex") == 0) {
+            lam_open_gauss();
+            output.tag("ResponseType", "N");
+            output.tag("ResponseType", "Tx");
+            output.tag("ResponseType", "Ty");
+            lam_close_gauss();
+            theResponse = new ElementResponse(this, 33, Vector(3));
+        }
         else if (strcmp(argv[0], "localDisplacement") == 0 || strcmp(argv[0], "localDispJump") == 0) {
             lam_open_gauss();
             output.tag("ResponseType", "dUN");
@@ -732,6 +767,14 @@ Response* ZeroLengthImplexContact::setResponse(const char** argv, int argc, OPS_
             output.tag("ResponseType", "|T|");
             lam_close_gauss();
             theResponse = new ElementResponse(this, 7, Vector(1));
+        }
+        else if (strcmp(argv[0], "cres") == 0) {
+            lam_open_gauss();
+            output.tag("ResponseType", "cres(n+1)");
+            output.tag("ResponseType", "cres(n)");
+            output.tag("ResponseType", "cres(n-1)");
+            lam_close_gauss();
+            theResponse = new ElementResponse(this, 8, Vector(3));
         }
     }
 
@@ -773,6 +816,13 @@ int ZeroLengthImplexContact::getResponse(int responseID, Information& eleInfo) {
         }
         return eleInfo.setVector(small);
     }
+    else if (responseID == 33) {
+        // local contact forces
+        for (int i = 0; i < numDIM; i++) {
+            small(i) = sv.sig_implex(i);
+        }
+        return eleInfo.setVector(small);
+    }
     else if (responseID == 4) {
         // local displacement jump
         for (int i = 0; i < numDIM; i++) {
@@ -794,6 +844,12 @@ int ZeroLengthImplexContact::getResponse(int responseID, Information& eleInfo) {
         // tangential contanct force norm
         scalar(0) = std::sqrt(sv.sig(1)*sv.sig(1) + sv.sig(2)*sv.sig(2));
         return eleInfo.setVector(scalar);
+    }
+    else if (responseID == 8) {
+        // cres internal variable hist
+        static Vector cres(3);
+        cres(0) = sv.cres; cres(1) = sv.cres_commit; cres(2) = sv.cres_commit_old;
+        return eleInfo.setVector(cres);
     }
     else {
         return -1;
@@ -947,14 +1003,13 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
     double SS = std::sqrt(T1 * T1 + T2 * T2);
 
     // compute residual stress in shear
-    double do_dDamage = false;
     if (do_implex && use_implex) {
         // explicit extrapolation
         sv.cres = std::max(0.0, sv.cres_commit + time_factor * (sv.cres_commit - sv.cres_commit_old));
     }
     else {
         // implicit
-        sv.cres = 0.0;
+        sv.cres = 0.0; // tolerance??
         if (SN < 0.0) {
             sv.cres = -mu * SN;
         }
@@ -976,11 +1031,14 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
 
     // update shear plastic multipler and apparent plastic damage
     double equivalent_total_strain = sv.rs / Kfriction;
-    double rs_effective = (equivalent_total_strain - sv.xs) * Kfriction;
+    double rs_effective = (equivalent_total_strain - sv.xs) * Kfriction + sv.cres;
     sv.xs = equivalent_total_strain;
-    double damage = 1.0;
-    if (sv.cres > 0.0 && rs_effective > 0.0)
-        damage = 1.0 - sv.cres / rs_effective;
+    double damage = 0.0;
+    if (sv.xs > std::numeric_limits<double>::epsilon()) {
+        damage = 1.0;
+        if (rs_effective > std::numeric_limits<double>::epsilon())
+            damage = 1.0 - sv.cres / rs_effective;
+    }
 
     // extract compressive normal stress
     if (do_implex && use_implex) {
@@ -988,7 +1046,7 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
         sv.PC = sv.PC_commit;
     }
     else {
-        sv.PC = SN < 0.0 ? 1.0 : 0.0;
+        sv.PC = SN <= 0.0 ? 1.0 : 0.0;
     }
     double SC = sv.PC * SN;
 
@@ -1012,7 +1070,7 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
             // implicit algorithmic tangent
             // may be non symmetric due to the derivative of damage
             // and the dependency of cres on normal stress
-            if (sv.cres > 0.0) {
+            if (sv.cres > std::numeric_limits<double>::epsilon()) {
                 if (sv.rs > sv.rs_commit) {
                     // plastic loading
                     double denom_n = SN * mu + SS;
@@ -1020,7 +1078,7 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
                     double UTsqnorm = sv.eps(1) * sv.eps(1) + sv.eps(2) * sv.eps(2);
                     double dE1 = 0.0;
                     double dE2 = 0.0;
-                    if (UTsqnorm > 0.0) {
+                    if (UTsqnorm > std::numeric_limits<double>::epsilon()) {
                         double dE1 = sv.eps(1) / UTsqnorm;
                         double dE2 = sv.eps(2) / UTsqnorm;
                     }
@@ -1033,12 +1091,6 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
                     sv.C(2, 1) = -T2 * dDdE1;
                     sv.C(1, 2) = -T1 * dDdE2;
                     sv.C(2, 2) = -T2 * dDdE2;
-                }
-                else {
-                    // no plastic loading, a simple dependency on normal strain
-                    double dDdEn = -Knormal * mu / (Kfriction * sv.xs - sv.rs);
-                    sv.C(1, 0) = -T1 * dDdEn;
-                    sv.C(2, 0) = -T2 * dDdEn;
                 }
             }
         }
