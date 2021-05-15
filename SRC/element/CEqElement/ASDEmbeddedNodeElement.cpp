@@ -570,9 +570,11 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
     // num_dofs
     // rot_c_flag
     // rot_c
+    // U0_computed
     // number of local dofs (at most 18)
     // mapping of local dofs (if less then 18, the last ones will be set to 0)
-    static ID idData(30);
+    static ID idData(31);
+    idData.Zero();
     idData(0) = getTag();
     idData(1) = m_node_ids.Size();
     idData(2) = m_node_ids(0);
@@ -585,9 +587,10 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
     idData(8) = m_num_dofs;
     idData(9) = m_rot_c_flag ? 1 : 0;
     idData(10) = m_rot_c ? 1 : 0;
-    idData(11) = m_mapping.Size();
+    idData(11) = m_U0_computed ? 1 : 0;
+    idData(12) = m_mapping.Size();
     for (int i = 0; i < m_mapping.Size(); ++i)
-        idData(11 + i) = m_mapping(i);
+        idData(12 + i) = m_mapping(i);
     res += theChannel.sendID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -596,8 +599,12 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
 
     // DOUBLE data
     // K
-    static Vector vectData(1);
+    // initial displacement (at most we can have 30 dofs)
+    static Vector vectData(31);
+    vectData.Zero();
     vectData(0) = m_K;
+    for (int i = 0; i < m_num_dofs; ++i)
+        vectData(1 + i) = m_U0(i);
     res += theChannel.sendVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to send Vector\n";
@@ -624,7 +631,7 @@ int ASDEmbeddedNodeElement::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
     // rot_c
     // number of local dofs (at most 18)
     // mapping of local dofs (if less then 18, the last ones will be set to 0)
-    static ID idData(30);
+    static ID idData(31);
     res += theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -645,20 +652,24 @@ int ASDEmbeddedNodeElement::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
     m_num_dofs = idData(8);
     m_rot_c_flag = idData(9) == 1;
     m_rot_c = idData(10) == 1;
-    int num_local_dofs = idData(11);
+    m_U0_computed = idData(11) == 1;
+    int num_local_dofs = idData(12);
     m_mapping.resize(num_local_dofs);
     for (int i = 0; i < m_mapping.Size(); ++i)
-        m_mapping(i) = idData(11 + i);
+        m_mapping(i) = idData(12 + i);
 
     // DOUBLE data
     // K
-    static Vector vectData(1);
+    static Vector vectData(31);
     res += theChannel.recvVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to receive Vector\n";
         return res;
     }
     m_K = vectData(0);
+    m_U0.resize(m_num_dofs);
+    for (int i = 0; i < m_num_dofs; ++i)
+        m_U0(i) = vectData(1 + i);
 
     // done
     return res;
