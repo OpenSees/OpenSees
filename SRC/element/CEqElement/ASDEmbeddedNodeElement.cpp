@@ -392,6 +392,13 @@ void ASDEmbeddedNodeElement::setDomain(Domain* theDomain)
         }
     }
 
+    // compute initial displacement vector
+    if (!m_U0_computed) {
+        m_U0.resize(m_num_dofs);
+        m_U0 = getGlobalDisplacements();
+        m_U0_computed = true;
+    }
+
     // call base class implementation
     DomainComponent::setDomain(theDomain);
 }
@@ -666,6 +673,9 @@ const Vector& ASDEmbeddedNodeElement::getGlobalDisplacements() const
         for (int i = 0; i < iu.Size(); ++i) {
             U(counter++) = iu(i);
         }
+    }
+    if (m_U0_computed) {
+        U.addVector(1.0, m_U0, -1.0);
     }
     return U;
 }

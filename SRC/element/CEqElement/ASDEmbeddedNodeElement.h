@@ -113,6 +113,9 @@ private:
     ID m_mapping;
     // stiffness penalty value to impose the constraint
     double m_K = 1.0e18;
+    // initial displacements
+    Vector m_U0;
+    bool m_U0_computed = false;
 
 };
 
