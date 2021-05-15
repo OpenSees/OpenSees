@@ -375,6 +375,13 @@ int ZeroLengthImplexContact::revertToStart()
 
 int ZeroLengthImplexContact::update()
 {
+    if (!sv.dtime_is_user_defined) {
+        sv.dtime_n = ops_Dt;
+        if (!sv.dtime_first_set) {
+            sv.dtime_n_commit = sv.dtime_n;
+            sv.dtime_first_set = true;
+        }
+    }
     computeStrain();
     if (use_implex) {
         updateInternal(true, true);
