@@ -20,13 +20,16 @@
 
 // $Revision: 1.1 $
 // $Date: 2010-05-04 17:14:45 $
-// $Source: /scratch/slocal/chroot/cvsroot/openseescomp/CompositePackages/mixedBeamColumn3d/mixedBeamColumn3d.cpp,v $
+// $Source: /scratch/slocal/chroot/cvsroot/openseescomp/CompositePackages/MixedBeamColumnAsym3d/MixedBeamColumnAsym3d.cpp,v $
 
-// Modified by: Xinlong Du, Northeastern University, USA; Year 2020
+// Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2020
 // Description: Adapted for analysis of asymmetric sections with introducing
 // high-order axial terms for the basic element formulation
+// References:
+// Du, X., & Hajjar, J. F. (2021). Three-dimensional nonlinear mixed 6-DOF beam element 
+// for thin-walled members. Thin-Walled Structures, 164, 107817. 
 
-#include "mixedBeamColumn3d.h"
+#include "MixedBeamColumnAsym3d.h"
 #include <elementAPI.h>
 #include <G3Globals.h>
 
@@ -69,19 +72,19 @@
 using namespace std;
 
 
-Matrix mixedBeamColumn3d::theMatrix(NEGD,NEGD);
-Vector mixedBeamColumn3d::theVector(NEGD);
-double mixedBeamColumn3d::workArea[400];
-//Matrix mixedBeamColumn3d::transformNaturalCoords(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION);
-//Matrix mixedBeamColumn3d::transformNaturalCoordsT(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION);
-//int mixedBeamColumn3d::maxNumSections = 10;
+Matrix MixedBeamColumnAsym3d::theMatrix(NEGD,NEGD);
+Vector MixedBeamColumnAsym3d::theVector(NEGD);
+double MixedBeamColumnAsym3d::workArea[400];
+//Matrix MixedBeamColumnAsym3d::transformNaturalCoords(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION);
+//Matrix MixedBeamColumnAsym3d::transformNaturalCoordsT(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION);
+//int MixedBeamColumnAsym3d::maxNumSections = 10;
 
-Vector *mixedBeamColumn3d::sectionDefShapeFcn = 0;
-Matrix *mixedBeamColumn3d::nldhat = 0;
-Matrix *mixedBeamColumn3d::nd1 = 0;
-Matrix *mixedBeamColumn3d::nd2 = 0;
-Matrix *mixedBeamColumn3d::nd1T = 0;
-Matrix *mixedBeamColumn3d::nd2T = 0;
+Vector *MixedBeamColumnAsym3d::sectionDefShapeFcn = 0;
+Matrix *MixedBeamColumnAsym3d::nldhat = 0;
+Matrix *MixedBeamColumnAsym3d::nd1 = 0;
+Matrix *MixedBeamColumnAsym3d::nd2 = 0;
+Matrix *MixedBeamColumnAsym3d::nd1T = 0;
+Matrix *MixedBeamColumnAsym3d::nd2T = 0;
 
 
 /*
@@ -96,12 +99,12 @@ Matrix *mixedBeamColumn3d::nd2T = 0;
 
 
 OPS_Export void localInit() {
-  OPS_Error("mixedBeamColumn3d element \nWritten by Mark D. Denavit, University of Illinois at Urbana-Champaign\n", 1);
+  OPS_Error("MixedBeamColumnAsym3d element \nWritten by Mark D. Denavit, University of Illinois at Urbana-Champaign\n", 1);
 }
 */
 
 // Documentation: Three Dimensional Mixed Beam Column Element
-// element mixedBeamColumn3d $tag $iNode $jNode $numIntgrPts $secTag $transfTag <-mass $massDens>
+// element MixedBeamColumnAsym3d $tag $iNode $jNode $numIntgrPts $secTag $transfTag <-mass $massDens>
 //   <-integration $intType> <-doRayleigh $rFlag> <-geomLinear>
 //
 // Required Input Parameters:
@@ -138,7 +141,7 @@ OPS_Export void localInit() {
 //      Urbana-Champaign, Urbana, Illinois, March.
 //
 
-void * OPS_mixedBeamColumn3d() {
+void * OPS_MixedBeamColumnAsym3d() {
   // Variables to retrieve input
   int iData[10];
   double dData[10];
@@ -150,26 +153,26 @@ void * OPS_mixedBeamColumn3d() {
 
   // Check the number of dimensions
   if (OPS_GetNDM() != 3) {
-     opserr << "ERROR: mixedBeamColumn3d: invalid number of dimensions\n";
+     opserr << "ERROR: MixedBeamColumnAsym3d: invalid number of dimensions\n";
    return 0;
   }
 
   // Check the number of degrees of freedom
   if (OPS_GetNDF() != 6) {
-     opserr << "ERROR: mixedBeamColumn3d: invalid number of degrees of freedom\n";
+     opserr << "ERROR: MixedBeamColumnAsym3d: invalid number of degrees of freedom\n";
    return 0;
   }
 
   // Check for minimum number of arguments
   if (OPS_GetNumRemainingInputArgs() < 6) {
-    opserr << "ERROR: mixedBeamColumn3d: too few arguments\n";
+    opserr << "ERROR: MixedBeamColumnAsym3d: too few arguments\n";
     return 0;
   }
 
   // Get required input data
   numData = 6;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid element data - mixedBeamColumn3d\n";
+    opserr << "WARNING invalid element data - MixedBeamColumnAsym3d\n";
     return 0;
   }
   int eleTag = iData[0];
@@ -255,7 +258,7 @@ void * OPS_mixedBeamColumn3d() {
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
         if (OPS_GetInt(&numData, &doRayleigh) != 0) {
-          opserr << "WARNING: Invalid doRayleigh in element mixedBeamColumn3d " << eleTag;
+          opserr << "WARNING: Invalid doRayleigh in element MixedBeamColumnAsym3d " << eleTag;
           return 0;
         }
 
@@ -281,7 +284,7 @@ void * OPS_mixedBeamColumn3d() {
   }
 
   // now create the element and add it to the Domain
-  Element *theElement = new mixedBeamColumn3d(eleTag, nodeI, nodeJ, numIntgrPts, sections, *beamIntegr, *theTransf,
+  Element *theElement = new MixedBeamColumnAsym3d(eleTag, nodeI, nodeJ, numIntgrPts, sections, *beamIntegr, *theTransf,
 	  dData2[0], dData2[1], massDens, doRayleigh, geomLinear);
 
   if (theElement == 0) {
@@ -302,13 +305,13 @@ void * OPS_mixedBeamColumn3d() {
 // constructor which takes the unique element tag, sections,
 // and the node ID's of it's nodal end points.
 // allocates the necessary space needed by each object
-mixedBeamColumn3d::mixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
+MixedBeamColumnAsym3d::MixedBeamColumnAsym3d (int tag, int nodeI, int nodeJ, int numSec,
                                       SectionForceDeformation **sec,
                                       BeamIntegration &bi,
                                       CrdTransf &coordTransf, double yss, double zss,
                                       double massDensPerUnitLength,
                                       int damp, bool geomLin):
-  Element(tag,ELE_TAG_mixedBeamColumn3d),
+  Element(tag,ELE_TAG_MixedBeamColumnAsym3d),
   connectedExternalNodes(2), beamIntegr(0), numSections(0), sections(0),
   crdTransf(0), doRayleigh(damp), geomLinear(geomLin),
   rho(massDensPerUnitLength), initialLength(0.0),
@@ -335,43 +338,43 @@ mixedBeamColumn3d::mixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
   // get copy of the beam integration object
   beamIntegr = bi.getCopy();
   if (beamIntegr == 0) {
-    opserr<<"Error: mixedBeamColumn3d::mixedBeamColumn3d: could not create copy of beam integration object" << endln;
+    opserr<<"Error: MixedBeamColumnAsym3d::MixedBeamColumnAsym3d: could not create copy of beam integration object" << endln;
     exit(-1);
   }
 
   // get copy of the transformation object
   crdTransf = coordTransf.getCopy3d();
   if (crdTransf == 0) {
-    opserr << "Error: mixedBeamColumn3d::mixedBeamColumn3d: could not create copy of coordinate transformation object" << endln;
+    opserr << "Error: MixedBeamColumnAsym3d::MixedBeamColumnAsym3d: could not create copy of coordinate transformation object" << endln;
     exit(-1);
   }
 
 
   //this->setSectionPointers(numSec,sec);
   if (numSec > maxNumSections) {
-    opserr << "Error: mixedBeamColumn3d::setSectionPointers -- max number of sections exceeded";
+    opserr << "Error: MixedBeamColumnAsym3d::setSectionPointers -- max number of sections exceeded";
   }
 
   numSections = numSec;
 
   if (sec == 0) {
-    opserr << "Error: mixedBeamColumn3d::setSectionPointers -- invalid section pointer";
+    opserr << "Error: MixedBeamColumnAsym3d::setSectionPointers -- invalid section pointer";
   }
 
   sections = new SectionForceDeformation *[numSections];
   if (sections == 0) {
-    opserr << "Error: mixedBeamColumn3d::setSectionPointers -- could not allocate section pointers";
+    opserr << "Error: MixedBeamColumnAsym3d::setSectionPointers -- could not allocate section pointers";
   }
 
   for (int i = 0; i < numSections; i++) {
     if (sec[i] == 0) {
-      opserr << "Error: mixedBeamColumn3d::setSectionPointers -- null section pointer " << i << endln;
+      opserr << "Error: MixedBeamColumnAsym3d::setSectionPointers -- null section pointer " << i << endln;
     }
 
     sections[i] = (SectionForceDeformation*) sec[i]->getCopy();
 
     if (sections[i] == 0) {
-      opserr << "Error: mixedBeamColumn3d::setSectionPointers -- could not create copy of section " << i << endln;
+      opserr << "Error: MixedBeamColumnAsym3d::setSectionPointers -- could not create copy of section " << i << endln;
     }
   }
 
@@ -433,7 +436,7 @@ mixedBeamColumn3d::mixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
   if (nd2T == 0)
     nd2T  = new Matrix [maxNumSections];
   if (!sectionDefShapeFcn || !nldhat || !nd1 || !nd2 || !nd1T || !nd2T ) {
-    opserr << "mixedBeamColumn3d::mixedBeamColumn3d() -- failed to allocate static section arrays";
+    opserr << "MixedBeamColumnAsym3d::MixedBeamColumnAsym3d() -- failed to allocate static section arrays";
     exit(-1);
   }
 
@@ -448,8 +451,8 @@ mixedBeamColumn3d::mixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
 // constructor:
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.
 // CONSTRUCTOR FOR PARALLEL PROCESSING
-mixedBeamColumn3d::mixedBeamColumn3d():
-  Element(0,ELE_TAG_mixedBeamColumn3d),
+MixedBeamColumnAsym3d::MixedBeamColumnAsym3d():
+  Element(0,ELE_TAG_MixedBeamColumnAsym3d),
   connectedExternalNodes(2), beamIntegr(0), numSections(0), sections(0), 
   crdTransf(0), doRayleigh(0), geomLinear(false),
   rho(0.0), initialLength(0.0),
@@ -528,7 +531,7 @@ mixedBeamColumn3d::mixedBeamColumn3d():
   if (nd2T == 0)
     nd2T  = new Matrix [maxNumSections];
   if (!sectionDefShapeFcn || !nldhat || !nd1 || !nd2 || !nd1T || !nd2T ) {
-    opserr << "mixedBeamColumn3d::mixedBeamColumn3d() -- failed to allocate static section arrays";
+    opserr << "MixedBeamColumnAsym3d::MixedBeamColumnAsym3d() -- failed to allocate static section arrays";
     exit(-1);
   }
 
@@ -540,7 +543,7 @@ mixedBeamColumn3d::mixedBeamColumn3d():
 
 }
 
-mixedBeamColumn3d::~mixedBeamColumn3d() {
+MixedBeamColumnAsym3d::~MixedBeamColumnAsym3d() {
 
   if (sections) {
     for (int i=0; i < numSections; i++) {
@@ -584,30 +587,30 @@ mixedBeamColumn3d::~mixedBeamColumn3d() {
 	  delete[] sectionForceShapeFcn;
 }
 
-int mixedBeamColumn3d::getNumExternalNodes(void) const {
+int MixedBeamColumnAsym3d::getNumExternalNodes(void) const {
    return 2;
 }
 
-const ID & mixedBeamColumn3d::getExternalNodes(void) {
+const ID & MixedBeamColumnAsym3d::getExternalNodes(void) {
    return connectedExternalNodes;
 }
 
-Node ** mixedBeamColumn3d::getNodePtrs(void) {
+Node ** MixedBeamColumnAsym3d::getNodePtrs(void) {
    return theNodes;
 }
 
-int mixedBeamColumn3d::getNumDOF(void) {
+int MixedBeamColumnAsym3d::getNumDOF(void) {
    return NEGD;
 }
 
-void mixedBeamColumn3d::setDomain(Domain *theDomain) {
+void MixedBeamColumnAsym3d::setDomain(Domain *theDomain) {
 
   // check Domain is not null - invoked when object removed from a domain
   if (theDomain == 0) {
     theNodes[0] = 0;
     theNodes[1] = 0;
 
-    opserr << "mixedBeamColumn3d::setDomain:  theDomain = 0 ";
+    opserr << "MixedBeamColumnAsym3d::setDomain:  theDomain = 0 ";
     exit(0);
   }
 
@@ -619,13 +622,13 @@ void mixedBeamColumn3d::setDomain(Domain *theDomain) {
   theNodes[1] = theDomain->getNode(Nd2);
 
   if (theNodes[0] == 0) {
-    opserr << "mixedBeamColumn3d::setDomain: Nd1: ";
+    opserr << "MixedBeamColumnAsym3d::setDomain: Nd1: ";
     opserr << Nd1 << "does not exist in model\n";
     exit(0);
   }
 
   if (theNodes[1] == 0) {
-    opserr << "mixedBeamColumn3d::setDomain: Nd2: ";
+    opserr << "MixedBeamColumnAsym3d::setDomain: Nd2: ";
     opserr << Nd2 << "does not exist in model\n";
     exit(0);
   }
@@ -638,31 +641,31 @@ void mixedBeamColumn3d::setDomain(Domain *theDomain) {
   int dofNode2 = theNodes[1]->getNumberDOF();
 
   if ((dofNode1 != NND) || (dofNode2 != NND)) {
-    opserr << "mixedBeamColumn3d::setDomain(): Nd2 or Nd1 incorrect dof ";
+    opserr << "MixedBeamColumnAsym3d::setDomain(): Nd2 or Nd1 incorrect dof ";
     exit(0);
   }
 
   // initialize the transformation
   if (crdTransf->initialize(theNodes[0], theNodes[1])) {
-    opserr << "mixedBeamColumn3d::setDomain(): Error initializing coordinate transformation";
+    opserr << "MixedBeamColumnAsym3d::setDomain(): Error initializing coordinate transformation";
     exit(0);
   }
 
   // Check element length
   if (crdTransf->getInitialLength() == 0.0) {
-    opserr << "mixedBeamColumn3d::setDomain(): Zero element length:" << this->getTag();
+    opserr << "MixedBeamColumnAsym3d::setDomain(): Zero element length:" << this->getTag();
     exit(0);
   }
 
 }
 
-int mixedBeamColumn3d::commitState() {
+int MixedBeamColumnAsym3d::commitState() {
   int err = 0; // error flag
   int i = 0; // integer for loops
 
   // call element commitState to do any base class stuff
   if ((err = this->Element::commitState()) != 0) {
-    opserr << "mixedBeamColumn3d::commitState () - failed in base class";
+    opserr << "MixedBeamColumnAsym3d::commitState () - failed in base class";
     return err;
   }
 
@@ -699,7 +702,7 @@ int mixedBeamColumn3d::commitState() {
 }
 
 
-int mixedBeamColumn3d::revertToLastCommit() {
+int MixedBeamColumnAsym3d::revertToLastCommit() {
   int err;
   int i = 0;
 
@@ -736,7 +739,7 @@ int mixedBeamColumn3d::revertToLastCommit() {
 }
 
 
-int mixedBeamColumn3d::revertToStart()
+int MixedBeamColumnAsym3d::revertToStart()
 {
   int err;
   int i; // for loops
@@ -898,7 +901,7 @@ int mixedBeamColumn3d::revertToStart()
   return err;
 }
 
-const Matrix & mixedBeamColumn3d::getInitialStiff(void) {
+const Matrix & MixedBeamColumnAsym3d::getInitialStiff(void) {
   // If things haven't be initialized, then do so
   if (initialFlag == 0) {
     this->revertToStart();
@@ -906,7 +909,7 @@ const Matrix & mixedBeamColumn3d::getInitialStiff(void) {
   return *Ki;
 }
 
-const Matrix & mixedBeamColumn3d::getTangentStiff(void) {
+const Matrix & MixedBeamColumnAsym3d::getTangentStiff(void) {
   // If things haven't be initialized, then do so
   if (initialFlag == 0) {
     this->revertToStart();
@@ -941,7 +944,7 @@ const Matrix & mixedBeamColumn3d::getTangentStiff(void) {
   return crdTransf->getGlobalStiffMatrix(kr,Pr);
 }
 
-const Vector & mixedBeamColumn3d::getResistingForce(void) {
+const Vector & MixedBeamColumnAsym3d::getResistingForce(void) {
   crdTransf->update();  // Will remove once we clean up the corotational 3d transformation -- MHS
 
   Matrix Tr(NEBD, NEBD); //transformation matrix from element basic system to basic reference system
@@ -967,7 +970,7 @@ const Vector & mixedBeamColumn3d::getResistingForce(void) {
   return crdTransf->getGlobalResistingForce(Pr, p0Vec);
 }
 
-int mixedBeamColumn3d::update() {
+int MixedBeamColumnAsym3d::update() {
 
   // If things haven't be initialized, then do so
   if (initialFlag == 0) {
@@ -1060,7 +1063,7 @@ int mixedBeamColumn3d::update() {
     //double torsionalStrain = twist/currentLength;
     //setSectionDeformation(i,sectionDefFibers[i],torsionalStrain);
 	if (sections[i]->setTrialSectionDeformation(sectionDefFibers[i]) < 0) {
-		opserr << "mixedBeamColumn3d::update() - section failed in setTrial\n";
+		opserr << "MixedBeamColumnAsym3d::update() - section failed in setTrial\n";
 		return -1;
 	}
 
@@ -1178,7 +1181,7 @@ int mixedBeamColumn3d::update() {
   return 0;
 }
 
-const Matrix & mixedBeamColumn3d::getMass(void) {
+const Matrix & MixedBeamColumnAsym3d::getMass(void) {
   theMatrix.Zero();
 
   if (rho != 0.0) {
@@ -1189,7 +1192,7 @@ const Matrix & mixedBeamColumn3d::getMass(void) {
   return theMatrix;
 }
 
-const Matrix & mixedBeamColumn3d::getDamp(void) {
+const Matrix & MixedBeamColumnAsym3d::getDamp(void) {
   theMatrix.Zero();
 
   // Add the damping forces
@@ -1200,7 +1203,7 @@ const Matrix & mixedBeamColumn3d::getDamp(void) {
   return theMatrix;
 }
 
-void mixedBeamColumn3d::zeroLoad(void) {
+void MixedBeamColumnAsym3d::zeroLoad(void) {
   if (sp != 0)
     sp->Zero();
 
@@ -1211,7 +1214,7 @@ void mixedBeamColumn3d::zeroLoad(void) {
   p0[4] = 0.0;
 }
 
-int mixedBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
+int MixedBeamColumnAsym3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
 
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
@@ -1219,7 +1222,7 @@ int mixedBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
   if (sp == 0) {
     sp = new Matrix(NSD,numSections);
     if (sp == 0) {
-      opserr << "mixedBeamColumn3d::addLoad -- out of memory\n";
+      opserr << "MixedBeamColumnAsym3d::addLoad -- out of memory\n";
       exit(-1);
     }
   }
@@ -1300,7 +1303,7 @@ int mixedBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
 
 
   } else {
-    opserr << "mixedBeamColumn3d::addLoad() -- load type unknown for element with tag: " <<
+    opserr << "MixedBeamColumnAsym3d::addLoad() -- load type unknown for element with tag: " <<
         this->getTag() << endln;
 
     return -1;
@@ -1309,7 +1312,7 @@ int mixedBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
   return 0;
 }
 
-const Vector & mixedBeamColumn3d::getResistingForceIncInertia() {
+const Vector & MixedBeamColumnAsym3d::getResistingForceIncInertia() {
 
   // Compute the current resisting force
   theVector = this->getResistingForce();
@@ -1339,10 +1342,10 @@ const Vector & mixedBeamColumn3d::getResistingForceIncInertia() {
 }
 
 
-void mixedBeamColumn3d::Print(OPS_Stream &s, int flag) {
+void MixedBeamColumnAsym3d::Print(OPS_Stream &s, int flag) {
 
   if (flag == 1) {
-    s << "\nElement: " << this->getTag() << " Type: mixedBeamColumn3d ";
+    s << "\nElement: " << this->getTag() << " Type: MixedBeamColumnAsym3d ";
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tNumber of Sections: " << numSections;
     s << "\tMass density: " << rho;
@@ -1350,7 +1353,7 @@ void mixedBeamColumn3d::Print(OPS_Stream &s, int flag) {
       s << "\nSection "<<i<<" :" << *sections[i];
 
   } else if (flag == 33) {
-    s << "\nElement: " << this->getTag() << " Type: mixedBeamColumn3d ";
+    s << "\nElement: " << this->getTag() << " Type: MixedBeamColumnAsym3d ";
     double xi[maxNumSections]; // location of sections or gauss points or integration points
     beamIntegr->getSectionLocations(numSections, initialLength, xi);
     double wt[maxNumSections]; // weights of sections or gauss points of integration points
@@ -1379,7 +1382,7 @@ void mixedBeamColumn3d::Print(OPS_Stream &s, int flag) {
     s << "}";
 
   } else {
-    s << "\nElement: " << this->getTag() << " Type: mixedBeamColumn3d ";
+    s << "\nElement: " << this->getTag() << " Type: MixedBeamColumnAsym3d ";
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tNumber of Sections: " << numSections;
     s << "\tMass density: " << rho << endln;
@@ -1388,19 +1391,19 @@ void mixedBeamColumn3d::Print(OPS_Stream &s, int flag) {
 }
 
 
-OPS_Stream &operator<<(OPS_Stream &s, mixedBeamColumn3d &E) {
+OPS_Stream &operator<<(OPS_Stream &s, MixedBeamColumnAsym3d &E) {
   E.Print(s);
   return s;
 }
 
 
-Response* mixedBeamColumn3d::setResponse(const char **argv, int argc,
+Response* MixedBeamColumnAsym3d::setResponse(const char **argv, int argc,
                                          OPS_Stream &output) {
 
   Response *theResponse = 0;
 
   output.tag("ElementOutput");
-  output.attr("eleType","mixedBeamColumn3d");
+  output.attr("eleType","MixedBeamColumnAsym3d");
   output.attr("eleTag",this->getTag());
   output.attr("node1",connectedExternalNodes[0]);
   output.attr("node2",connectedExternalNodes[1]);
@@ -1532,7 +1535,7 @@ Response* mixedBeamColumn3d::setResponse(const char **argv, int argc,
 }
 
 
-int mixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
+int MixedBeamColumnAsym3d::getResponse(int responseID, Information &eleInfo) {
   if (responseID == 1) { // global forces
     return eleInfo.setVector(this->getResistingForce());
 
@@ -1644,7 +1647,7 @@ int mixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
   }
 }
 
-Vector mixedBeamColumn3d::getd_hat(int sec, const Vector &v, double L, bool geomLinear) {
+Vector MixedBeamColumnAsym3d::getd_hat(int sec, const Vector &v, double L, bool geomLinear) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1686,7 +1689,7 @@ Vector mixedBeamColumn3d::getd_hat(int sec, const Vector &v, double L, bool geom
   return D_hat;
 }
 
-Matrix mixedBeamColumn3d::getKg(int sec, Vector P, double L) {
+Matrix MixedBeamColumnAsym3d::getKg(int sec, Vector P, double L) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1734,7 +1737,7 @@ Matrix mixedBeamColumn3d::getKg(int sec, Vector P, double L) {
   return kg;
 }
 
-Matrix mixedBeamColumn3d::getMd(int sec, Vector dShapeFcn, Vector dFibers, double L) {
+Matrix MixedBeamColumnAsym3d::getMd(int sec, Vector dShapeFcn, Vector dFibers, double L) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1755,7 +1758,7 @@ Matrix mixedBeamColumn3d::getMd(int sec, Vector dShapeFcn, Vector dFibers, doubl
   return md;
 }
 
-Matrix mixedBeamColumn3d::getNld_hat(int sec, const Vector &v, double L, bool geomLinear) {
+Matrix MixedBeamColumnAsym3d::getNld_hat(int sec, const Vector &v, double L, bool geomLinear) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1823,7 +1826,7 @@ Matrix mixedBeamColumn3d::getNld_hat(int sec, const Vector &v, double L, bool ge
   return Nld_hat;
 }
 
-Matrix mixedBeamColumn3d::getNd2(int sec, double P, double L) {
+Matrix MixedBeamColumnAsym3d::getNd2(int sec, double P, double L) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1844,7 +1847,7 @@ Matrix mixedBeamColumn3d::getNd2(int sec, double P, double L) {
   return Nd2;
 }
 
-Matrix mixedBeamColumn3d::getNd1(int sec, const Vector &v, double L, bool geomLinear) {
+Matrix MixedBeamColumnAsym3d::getNd1(int sec, const Vector &v, double L, bool geomLinear) {
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
 
@@ -1880,7 +1883,7 @@ Matrix mixedBeamColumn3d::getNd1(int sec, const Vector &v, double L, bool geomLi
   return Nd1;
 }
 /*
-void mixedBeamColumn3d::getSectionTangent(int sec,int type,Matrix &kSection,
+void MixedBeamColumnAsym3d::getSectionTangent(int sec,int type,Matrix &kSection,
                                           double &GJ) {
   int order = sections[sec]->getOrder();
   const ID &code = sections[sec]->getType();
@@ -1959,7 +1962,7 @@ void mixedBeamColumn3d::getSectionTangent(int sec,int type,Matrix &kSection,
   }
 }
 
-void mixedBeamColumn3d::getSectionStress(int sec,Vector &fSection,
+void MixedBeamColumnAsym3d::getSectionStress(int sec,Vector &fSection,
                                          double &torsion) {
   int order = sections[sec]->getOrder();
   const ID &code = sections[sec]->getType();
@@ -1993,7 +1996,7 @@ void mixedBeamColumn3d::getSectionStress(int sec,Vector &fSection,
   }
 }
 
-void mixedBeamColumn3d::setSectionDeformation(int sec,Vector &defSection,
+void MixedBeamColumnAsym3d::setSectionDeformation(int sec,Vector &defSection,
                                               double &twist) {
   int order = sections[sec]->getOrder();
   const ID &code = sections[sec]->getType();
@@ -2028,15 +2031,15 @@ void mixedBeamColumn3d::setSectionDeformation(int sec,Vector &defSection,
 }
 */
 
-int mixedBeamColumn3d::sendSelf(int commitTag, Channel &theChannel) {
-  // @todo write mixedBeamColumn3d::sendSelf
-  opserr << "Error: mixedBeamColumn3d::sendSelf -- not yet implemented for mixedBeamColumn3d element";
+int MixedBeamColumnAsym3d::sendSelf(int commitTag, Channel &theChannel) {
+  // @todo write MixedBeamColumnAsym3d::sendSelf
+  opserr << "Error: MixedBeamColumnAsym3d::sendSelf -- not yet implemented for MixedBeamColumnAsym3d element";
   return -1;
 }
 
-int mixedBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
+int MixedBeamColumnAsym3d::recvSelf(int commitTag, Channel &theChannel,
                                 FEM_ObjectBroker &theBroker) {
-  // @todo write mixedBeamColumn3d::recvSelf
-  opserr << "Error: mixedBeamColumn3d::sendSelf -- not yet implemented for mixedBeamColumn3d element";
+  // @todo write MixedBeamColumnAsym3d::recvSelf
+  opserr << "Error: MixedBeamColumnAsym3d::sendSelf -- not yet implemented for MixedBeamColumnAsym3d element";
   return -1;
 }

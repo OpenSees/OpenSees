@@ -20,21 +20,24 @@
 
 // $Revision: 1.1 $
 // $Date: 2010-05-04 17:14:46 $
-// $Source: /scratch/slocal/chroot/cvsroot/openseescomp/CompositePackages/mixedBeamColumn3d/mixedBeamColumn3d.h,v $
+// $Source: /scratch/slocal/chroot/cvsroot/openseescomp/CompositePackages/MixedBeamColumnAsym3d/MixedBeamColumnAsym3d.h,v $
 
-// Modified by: Xinlong Du, Northeastern University, USA; Year 2020
+// Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2020
 // Description: Adapted for analysis of asymmetric sections with introducing
 // high-order axial terms for the basic element formulation
+// References:
+// Du, X., & Hajjar, J. F. (2021). Three-dimensional nonlinear mixed 6-DOF beam element 
+// for thin-walled members. Thin-Walled Structures, 164, 107817. 
 
-#ifndef mixedBeamColumn3d_h
-#define mixedBeamColumn3d_h
+#ifndef MixedBeamColumnAsym3d_h
+#define MixedBeamColumnAsym3d_h
 
 // Written: Mark D. Denavit, University of Illinois at Urbana-Champaign
 //
-// Description: This file contains the interface for the mixedBeamColumn3d class.
+// Description: This file contains the interface for the MixedBeamColumnAsym3d class.
 // It defines the class interface and the class attributes.
 //
-// What: "@(#) mixedBeamColumn3d.h, revA"
+// What: "@(#) MixedBeamColumnAsym3d.h, revA"
 
 #include <Element.h>
 #include <Matrix.h>
@@ -51,19 +54,19 @@ class BeamIntegration;
 class SectionForceDeformation;
 
 
-#define ELE_TAG_mixedBeamColumn3d 30765
+#define ELE_TAG_MixedBeamColumnAsym3d 30765
 
-class mixedBeamColumn3d : public Element
+class MixedBeamColumnAsym3d : public Element
 {
   public:
     // constructors
-    mixedBeamColumn3d (int tag, int nodeI, int nodeJ,
+    MixedBeamColumnAsym3d (int tag, int nodeI, int nodeJ,
             int numSections, SectionForceDeformation **sectionPtrs, BeamIntegration &bi,
             CrdTransf &coordTransf, double ys, double zs, double massDensPerUnitLength, int doRayleigh, bool geomLinear);
-    mixedBeamColumn3d ();
+    MixedBeamColumnAsym3d ();
 
     // destructor
-    ~mixedBeamColumn3d();
+    ~MixedBeamColumnAsym3d();
 
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes(void) const;
@@ -94,12 +97,12 @@ class mixedBeamColumn3d : public Element
     int sendSelf(int cTag, Channel &theChannel);
     int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     void Print(OPS_Stream &s, int flag = 0);
-    friend OPS_Stream &operator<<(OPS_Stream &s, mixedBeamColumn3d &E);
+    friend OPS_Stream &operator<<(OPS_Stream &s, MixedBeamColumnAsym3d &E);
 
     Response* setResponse(const char **argv, int argc, OPS_Stream &output);
     int getResponse(int responseID, Information &eleInfo);
 
-    const char *getClassType(void) const {return "mixedBeamColumn3d";};
+    const char *getClassType(void) const {return "MixedBeamColumnAsym3d";};
 
   protected:
 
