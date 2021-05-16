@@ -25,16 +25,16 @@
 // Written: MHS
 // Created: Feb 2001
 //
-// Description: This file contains the class definition for DispBeamColumn3d.
+// Description: This file contains the class definition for DispBeamColumnAsym3d.
 // The element displacement field gives rise to constant axial strain,
 // linear curvature, and constant twist angle.
 
-// Modified by: Xinlong Du, Northeastern University, USA; Year 2019
+// Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
 // Description: Adapted for analysis of asymmetric sections with introducing
 // high-order axial terms for the basic element formulation
 
-#ifndef DispBeamColumn3d_h
-#define DispBeamColumn3d_h
+#ifndef DispBeamColumnAsym3d_h
+#define DispBeamColumnAsym3d_h
 
 #ifndef _bool_h
 #include "bool.h"
@@ -51,18 +51,18 @@ class CrdTransf;
 class BeamIntegration;
 class Response;
 
-class DispBeamColumn3d : public Element
+class DispBeamColumnAsym3d : public Element
 {
   public:
-    DispBeamColumn3d(int tag, int nd1, int nd2,
+    DispBeamColumnAsym3d(int tag, int nd1, int nd2,
 		     int numSections, SectionForceDeformation **s,
 		     BeamIntegration &bi, CrdTransf &coordTransf,
 		     double ys=0.0, double zs=0.0,                        //Xinlong
              double rho = 0.0, int cMass = 0);
-    DispBeamColumn3d();
-    ~DispBeamColumn3d();
+    DispBeamColumnAsym3d();
+    ~DispBeamColumnAsym3d();
 
-    const char *getClassType(void) const {return "DispBeamColumn3d";};
+    const char *getClassType(void) const {return "DispBeamColumnAsym3d";};
 
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);

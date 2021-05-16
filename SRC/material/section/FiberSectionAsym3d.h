@@ -20,21 +20,21 @@
                                                                         
 // $Revision: 1.14 $
 // $Date: 2008-08-26 16:47:42 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/FiberSection3d.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/FiberSectionAsym3d.h,v $
                                                                         
 // Written: fmk
 // Created: 04/01
 //
 // Description: This file contains the class definition for 
-// FiberSection3d.h. FiberSection3d provides the abstraction of a 
+// FiberSectionAsym3d.h. FiberSectionAsym3d provides the abstraction of a 
 // 3d beam section discretized by fibers. The section stiffness and
 // stress resultants are obtained by summing fiber contributions.
 
-// Modified by: Xinlong Du, Northeastern University, USA; Year 2019
-// Description: Modified FiberSection3d.h to include shear center coordinates and high-order longitudinal strain terms.
+// Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
+// Description: Modified FiberSectionAsym3d.h to include shear center coordinates and high-order longitudinal strain terms.
 
-#ifndef FiberSection3d_h
-#define FiberSection3d_h
+#ifndef FiberSectionAsym3d_h
+#define FiberSectionAsym3d_h
 
 #include <SectionForceDeformation.h>
 #include <Vector.h>
@@ -45,18 +45,18 @@ class Fiber;
 class Response;
 class SectionIntegration;
 
-class FiberSection3d : public SectionForceDeformation
+class FiberSectionAsym3d : public SectionForceDeformation
 {
   public:
-    FiberSection3d(); 
-    FiberSection3d(int tag, int numFibers, Fiber **fibers,             //Xinlong
+    FiberSectionAsym3d(); 
+    FiberSectionAsym3d(int tag, int numFibers, Fiber **fibers,             //Xinlong
 		   UniaxialMaterial *torsion = 0, double ys = 0.0, double zs = 0.0);                             //Xinlong
-    FiberSection3d(int tag, int numFibers, UniaxialMaterial *torsion = 0, double ys=0.0, double zs=0.0); //Xinlong
-    FiberSection3d(int tag, int numFibers, UniaxialMaterial **mats,
+    FiberSectionAsym3d(int tag, int numFibers, UniaxialMaterial *torsion = 0, double ys=0.0, double zs=0.0); //Xinlong
+    FiberSectionAsym3d(int tag, int numFibers, UniaxialMaterial **mats,
 		   SectionIntegration &si, UniaxialMaterial *torsion = 0, double ys=0.0, double zs=0.0);         //Xinlong
-    ~FiberSection3d();
+    ~FiberSectionAsym3d();
 
-    const char *getClassType(void) const {return "FiberSection3d";};
+    const char *getClassType(void) const {return "FiberSectionAsym3d";};
 
     int   setTrialSectionDeformation(const Vector &deforms); 
     const Vector &getSectionDeformation(void);

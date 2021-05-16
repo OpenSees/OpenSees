@@ -25,13 +25,13 @@
 // Written: MHS
 // Created: Feb 2001
 //
-// Description: This file contains the class definition for DispBeamColumn3d.
+// Description: This file contains the class definition for DispBeamColumnAsym3d.
 
-// Modified by: Xinlong Du, Northeastern University, USA; Year 2019
+// Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
 // Description: Adapted for analysis of asymmetric sections with introducing
 // high-order axial terms for the basic element formulation
 
-#include <DispBeamColumn3d.h>
+#include <DispBeamColumnAsym3d.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
@@ -53,11 +53,11 @@
 #include <elementAPI.h>
 #include <string>
 
-Matrix DispBeamColumn3d::K(12,12);
-Vector DispBeamColumn3d::P(12);
-double DispBeamColumn3d::workArea[200];
+Matrix DispBeamColumnAsym3d::K(12,12);
+Vector DispBeamColumnAsym3d::P(12);
+double DispBeamColumnAsym3d::workArea[200];
 
-void* OPS_DispBeamColumn3d()
+void* OPS_DispBeamColumnAsym3d()
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
@@ -121,18 +121,18 @@ void* OPS_DispBeamColumn3d()
 	}
     }
     
-    Element *theEle =  new DispBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+    Element *theEle =  new DispBeamColumnAsym3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
 					    *bi,*theTransf,mass,cmass);
     delete [] sections;
     return theEle;
 }
 
 
-DispBeamColumn3d::DispBeamColumn3d(int tag, int nd1, int nd2,
+DispBeamColumnAsym3d::DispBeamColumnAsym3d(int tag, int nd1, int nd2,
 				   int numSec, SectionForceDeformation **s,
 				   BeamIntegration &bi,
 				   CrdTransf &coordTransf, double yss, double zss, double r, int cm)    //Xinlong
-:Element (tag, ELE_TAG_DispBeamColumn3d),
+:Element (tag, ELE_TAG_DispBeamColumnAsym3d),
 numSections(numSec), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
 Q(12), q(6), ys(yss), zs(zss), rho(r), cMass(cm), parameterID(0)                        //Xinlong
@@ -141,7 +141,7 @@ Q(12), q(6), ys(yss), zs(zss), rho(r), cMass(cm), parameterID(0)                
   theSections = new SectionForceDeformation *[numSections];
   
   if (theSections == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to allocate section model pointer\n";
+    opserr << "DispBeamColumnAsym3d::DispBeamColumnAsym3d - failed to allocate section model pointer\n";
     exit(-1);
   }
   
@@ -152,7 +152,7 @@ Q(12), q(6), ys(yss), zs(zss), rho(r), cMass(cm), parameterID(0)                
     
     // Check allocation
     if (theSections[i] == 0) {
-      opserr << "DispBeamColumn3d::DispBeamColumn3d -- failed to get a copy of section model\n";
+      opserr << "DispBeamColumnAsym3d::DispBeamColumnAsym3d -- failed to get a copy of section model\n";
       exit(-1);
     }
   }
@@ -160,14 +160,14 @@ Q(12), q(6), ys(yss), zs(zss), rho(r), cMass(cm), parameterID(0)                
   beamInt = bi.getCopy();
   
   if (beamInt == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to copy beam integration\n";
+    opserr << "DispBeamColumnAsym3d::DispBeamColumnAsym3d - failed to copy beam integration\n";
     exit(-1);
   }
 
   crdTransf = coordTransf.getCopy3d();
   
   if (crdTransf == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to copy coordinate transformation\n";
+    opserr << "DispBeamColumnAsym3d::DispBeamColumnAsym3d - failed to copy coordinate transformation\n";
     exit(-1);
   }
   
@@ -192,8 +192,8 @@ Q(12), q(6), ys(yss), zs(zss), rho(r), cMass(cm), parameterID(0)                
   p0[4] = 0.0;
 }
 
-DispBeamColumn3d::DispBeamColumn3d()
-:Element (0, ELE_TAG_DispBeamColumn3d),
+DispBeamColumnAsym3d::DispBeamColumnAsym3d()
+:Element (0, ELE_TAG_DispBeamColumnAsym3d),
 numSections(0), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
 Q(12), q(6), ys(0.0), zs(0.0), rho(0.0), cMass(0), parameterID(0)       //Xinlong
@@ -214,7 +214,7 @@ Q(12), q(6), ys(0.0), zs(0.0), rho(0.0), cMass(0), parameterID(0)       //Xinlon
   theNodes[1] = 0;
 }
 
-DispBeamColumn3d::~DispBeamColumn3d()
+DispBeamColumnAsym3d::~DispBeamColumnAsym3d()
 {    
   for (int i = 0; i < numSections; i++) {
     if (theSections[i])
@@ -233,32 +233,32 @@ DispBeamColumn3d::~DispBeamColumn3d()
 }
 
 int
-DispBeamColumn3d::getNumExternalNodes() const
+DispBeamColumnAsym3d::getNumExternalNodes() const
 {
     return 2;
 }
 
 const ID&
-DispBeamColumn3d::getExternalNodes()
+DispBeamColumnAsym3d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 Node **
-DispBeamColumn3d::getNodePtrs()
+DispBeamColumnAsym3d::getNodePtrs()
 {
 
     return theNodes;
 }
 
 int
-DispBeamColumn3d::getNumDOF()
+DispBeamColumnAsym3d::getNumDOF()
 {
     return 12;
 }
 
 void
-DispBeamColumn3d::setDomain(Domain *theDomain)
+DispBeamColumnAsym3d::setDomain(Domain *theDomain)
 {
 	// Check Domain is not null - invoked when object removed from a domain
     if (theDomain == 0) {
@@ -274,7 +274,7 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
     theNodes[1] = theDomain->getNode(Nd2);
 
     if (theNodes[0] == 0 || theNodes[1] == 0) {
-	//opserr << "FATAL ERROR DispBeamColumn3d (tag: %d), node not found in domain",
+	//opserr << "FATAL ERROR DispBeamColumnAsym3d (tag: %d), node not found in domain",
 	//	this->getTag());
 	
 	return;
@@ -284,7 +284,7 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
     int dofNd2 = theNodes[1]->getNumberDOF();
     
     if (dofNd1 != 6 || dofNd2 != 6) {
-	//opserr << "FATAL ERROR DispBeamColumn3d (tag: %d), has differing number of DOFs at its nodes",
+	//opserr << "FATAL ERROR DispBeamColumnAsym3d (tag: %d), has differing number of DOFs at its nodes",
 	//	this->getTag());
 	
 	return;
@@ -306,13 +306,13 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
 }
 
 int
-DispBeamColumn3d::commitState()
+DispBeamColumnAsym3d::commitState()
 {
     int retVal = 0;
 
     // call element commitState to do any base class stuff
     if ((retVal = this->Element::commitState()) != 0) {
-      opserr << "DispBeamColumn3d::commitState () - failed in base class";
+      opserr << "DispBeamColumnAsym3d::commitState () - failed in base class";
     }    
 
     // Loop over the integration points and commit the material states
@@ -325,7 +325,7 @@ DispBeamColumn3d::commitState()
 }
 
 int
-DispBeamColumn3d::revertToLastCommit()
+DispBeamColumnAsym3d::revertToLastCommit()
 {
     int retVal = 0;
 
@@ -339,7 +339,7 @@ DispBeamColumn3d::revertToLastCommit()
 }
 
 int
-DispBeamColumn3d::revertToStart()
+DispBeamColumnAsym3d::revertToStart()
 {
     int retVal = 0;
 
@@ -353,7 +353,7 @@ DispBeamColumn3d::revertToStart()
 }
 
 int
-DispBeamColumn3d::update(void)
+DispBeamColumnAsym3d::update(void)
 {
   int err = 0;
 
@@ -414,14 +414,14 @@ DispBeamColumn3d::update(void)
   }
 
   if (err != 0) {
-    opserr << "DispBeamColumn3d::update() - failed setTrialSectionDeformations()\n";
+    opserr << "DispBeamColumnAsym3d::update() - failed setTrialSectionDeformations()\n";
     return err;
   }
   return 0;
 }
 
 const Matrix&
-DispBeamColumn3d::getTangentStiff()
+DispBeamColumnAsym3d::getTangentStiff()
 {
   //double zs = 0.6385; //z coord of shear center w.r.t. centroid
   //double ys = -0.6741; //y coord of shear center w.r.t. centroid
@@ -592,7 +592,7 @@ DispBeamColumn3d::getTangentStiff()
 }
 
 const Matrix&
-DispBeamColumn3d::getInitialBasicStiff()
+DispBeamColumnAsym3d::getInitialBasicStiff()
 {
   //double zs = 0.6385; //z coord of shear center w.r.t. centroid
   //double ys = -0.6741; //y coord of shear center w.r.t. centroid
@@ -739,7 +739,7 @@ DispBeamColumn3d::getInitialBasicStiff()
 }
 
 const Matrix&
-DispBeamColumn3d::getInitialStiff()
+DispBeamColumnAsym3d::getInitialStiff()
 {
   const Matrix &kb = this->getInitialBasicStiff();
 
@@ -750,7 +750,7 @@ DispBeamColumn3d::getInitialStiff()
 }
 
 const Matrix&
-DispBeamColumn3d::getMass()
+DispBeamColumnAsym3d::getMass()
 {
   K.Zero();
   
@@ -797,7 +797,7 @@ DispBeamColumn3d::getMass()
 }
 
 void
-DispBeamColumn3d::zeroLoad(void)
+DispBeamColumnAsym3d::zeroLoad(void)
 {
   Q.Zero();
 
@@ -817,7 +817,7 @@ DispBeamColumn3d::zeroLoad(void)
 }
 
 int 
-DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
+DispBeamColumnAsym3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
@@ -889,7 +889,7 @@ DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[4] -= M2;
   }
   else {
-    opserr << "DispBeamColumn3d::addLoad() -- load type unknown for element with tag: " << 
+    opserr << "DispBeamColumnAsym3d::addLoad() -- load type unknown for element with tag: " << 
       this->getTag() << endln;
     return -1;
   }
@@ -898,7 +898,7 @@ DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 }
 
 int 
-DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
+DispBeamColumnAsym3d::addInertiaLoadToUnbalance(const Vector &accel)
 {
   // Check for a quick return
   if (rho == 0.0) 
@@ -909,7 +909,7 @@ DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
-    opserr << "DispBeamColumn3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
+    opserr << "DispBeamColumnAsym3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
   
@@ -940,7 +940,7 @@ DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 const Vector&
-DispBeamColumn3d::getResistingForce()
+DispBeamColumnAsym3d::getResistingForce()
 {
 	//double zs = 0.6385; //z coord of shear center w.r.t. centroid
 	//double ys = -0.6741; //y coord of shear center w.r.t. centroid
@@ -1077,7 +1077,7 @@ DispBeamColumn3d::getResistingForce()
 }
 
 const Vector&
-DispBeamColumn3d::getResistingForceIncInertia()
+DispBeamColumnAsym3d::getResistingForceIncInertia()
 {
   P = this->getResistingForce();
   
@@ -1121,7 +1121,7 @@ DispBeamColumn3d::getResistingForceIncInertia()
 }
 
 int
-DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
+DispBeamColumnAsym3d::sendSelf(int commitTag, Channel &theChannel)
 {
   // place the integer data into an ID
 
@@ -1158,19 +1158,19 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   data(13) = betaKc;
   
   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send data Vector\n";
+    opserr << "DispBeamColumnAsym3d::sendSelf() - failed to send data Vector\n";
      return -1;
   }    
   
   // send the coordinate transformation
   if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
-     opserr << "DispBeamColumn3d::sendSelf() - failed to send crdTranf\n";
+     opserr << "DispBeamColumnAsym3d::sendSelf() - failed to send crdTranf\n";
      return -1;
   }      
 
   // send the beam integration
   if (beamInt->sendSelf(commitTag, theChannel) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send beamInt\n";
+    opserr << "DispBeamColumnAsym3d::sendSelf() - failed to send beamInt\n";
     return -1;
   }      
   
@@ -1195,7 +1195,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   }
 
   if (theChannel.sendID(dbTag, commitTag, idSections) < 0)  {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send ID data\n";
+    opserr << "DispBeamColumnAsym3d::sendSelf() - failed to send ID data\n";
     return -1;
   }    
 
@@ -1205,7 +1205,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   
   for (j = 0; j<numSections; j++) {
     if (theSections[j]->sendSelf(commitTag, theChannel) < 0) {
-      opserr << "DispBeamColumn3d::sendSelf() - section " << j << "failed to send itself\n";
+      opserr << "DispBeamColumnAsym3d::sendSelf() - section " << j << "failed to send itself\n";
       return -1;
     }
   }
@@ -1214,7 +1214,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int
-DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
+DispBeamColumnAsym3d::recvSelf(int commitTag, Channel &theChannel,
 						FEM_ObjectBroker &theBroker)
 {
   //
@@ -1226,7 +1226,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   static Vector data(14);
 
   if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
-    opserr << "DispBeamColumn3d::recvSelf() - failed to recv data Vector\n";
+    opserr << "DispBeamColumnAsym3d::recvSelf() - failed to recv data Vector\n";
     return -1;
   }
   
@@ -1256,7 +1256,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       crdTransf = theBroker.getNewCrdTransf(crdTransfClassTag);
 
       if (crdTransf == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - " <<
+	opserr << "DispBeamColumnAsym3d::recvSelf() - " <<
 	  "failed to obtain a CrdTrans object with classTag" <<
 	  crdTransfClassTag << endln;
 	return -2;	  
@@ -1267,7 +1267,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 
   // invoke recvSelf on the crdTransf object
   if (crdTransf->recvSelf(commitTag, theChannel, theBroker) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to recv crdTranf\n";
+    opserr << "DispBeamColumnAsym3d::sendSelf() - failed to recv crdTranf\n";
     return -3;
   }      
 
@@ -1279,7 +1279,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       beamInt = theBroker.getNewBeamIntegration(beamIntClassTag);
 
       if (beamInt == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - failed to obtain the beam integration object with classTag" <<
+	opserr << "DispBeamColumnAsym3d::recvSelf() - failed to obtain the beam integration object with classTag" <<
 	  beamIntClassTag << endln;
 	exit(-1);
       }
@@ -1290,7 +1290,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   // invoke recvSelf on the beamInt object
   if (beamInt->recvSelf(commitTag, theChannel, theBroker) < 0)  
   {
-     opserr << "DispBeamColumn3d::sendSelf() - failed to recv beam integration\n";
+     opserr << "DispBeamColumnAsym3d::sendSelf() - failed to recv beam integration\n";
      return -3;
   }      
   
@@ -1302,7 +1302,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   int loc = 0;
 
   if (theChannel.recvID(dbTag, commitTag, idSections) < 0)  {
-    opserr << "DispBeamColumn3d::recvSelf() - failed to recv ID data\n";
+    opserr << "DispBeamColumnAsym3d::recvSelf() - failed to recv ID data\n";
     return -1;
   }    
 
@@ -1327,7 +1327,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
     // create a new array to hold pointers
     theSections = new SectionForceDeformation *[nSect];
     if (theSections == 0) {
-      opserr << "DispBeamColumn3d::recvSelf() - out of memory creating sections array of size" <<
+      opserr << "DispBeamColumnAsym3d::recvSelf() - out of memory creating sections array of size" <<
 	nSect << endln;
       exit(-1);
     }    
@@ -1342,13 +1342,13 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       loc += 2;
       theSections[i] = theBroker.getNewSection(sectClassTag);
       if (theSections[i] == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
+	opserr << "DispBeamColumnAsym3d::recvSelf() - Broker could not create Section of class type" <<
 	  sectClassTag << endln;
 	exit(-1);
       }
       theSections[i]->setDbTag(sectDbTag);
       if (theSections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - section " <<
+	opserr << "DispBeamColumnAsym3d::recvSelf() - section " <<
 	  i << "failed to recv itself\n";
 	return -1;
       }     
@@ -1373,7 +1373,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 	delete theSections[i];
 	theSections[i] = theBroker.getNewSection(sectClassTag);
 	if (theSections[i] == 0) {
-	  opserr << "DispBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
+	  opserr << "DispBeamColumnAsym3d::recvSelf() - Broker could not create Section of class type" <<
 	    sectClassTag << endln;
 	  exit(-1);
 	}
@@ -1382,7 +1382,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       // recvSelf on it
       theSections[i]->setDbTag(sectDbTag);
       if (theSections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - section " << 
+	opserr << "DispBeamColumnAsym3d::recvSelf() - section " << 
 	  i << "failed to recv itself\n";
 	return -1;
       }     
@@ -1393,10 +1393,10 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 }
 
 void
-DispBeamColumn3d::Print(OPS_Stream &s, int flag)
+DispBeamColumnAsym3d::Print(OPS_Stream &s, int flag)
 {
 	if (flag == OPS_PRINT_CURRENTSTATE) {
-		s << "\nDispBeamColumn3d, element id:  " << this->getTag() << endln;
+		s << "\nDispBeamColumnAsym3d, element id:  " << this->getTag() << endln;
 		s << "\tConnected external nodes:  " << connectedExternalNodes;
 		s << "\tCoordTransf: " << crdTransf->getTag() << endln;
 		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
@@ -1432,7 +1432,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
 		s << "\"name\": " << this->getTag() << ", ";
-		s << "\"type\": \"DispBeamColumn3d\", ";
+		s << "\"type\": \"DispBeamColumnAsym3d\", ";
 		s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
 		s << "\"sections\": [";
 		for (int i = 0; i < numSections - 1; i++)
@@ -1447,7 +1447,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 
 
 int
-DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
+DispBeamColumnAsym3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
   static Vector v1(3);
   static Vector v2(3);
@@ -1477,13 +1477,13 @@ DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, 
 }
 
 Response*
-DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
+DispBeamColumnAsym3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 
     Response *theResponse = 0;
 
     output.tag("ElementOutput");
-    output.attr("eleType","DispBeamColumn3d");
+    output.attr("eleType","DispBeamColumnAsym3d");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
@@ -1649,7 +1649,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 }
 
 int 
-DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
+DispBeamColumnAsym3d::getResponse(int responseID, Information &eleInfo)
 {
   double N, V, M1, M2, T;
   double L = crdTransf->getInitialLength();
@@ -1734,7 +1734,7 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
 // AddingSensitivity:BEGIN ///////////////////////////////////
 int
-DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
+DispBeamColumnAsym3d::setParameter(const char **argv, int argc, Parameter &param)
 {
   if (argc < 1)
     return -1;
@@ -1813,7 +1813,7 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 }
 
 int
-DispBeamColumn3d::updateParameter (int parameterID, Information &info)
+DispBeamColumnAsym3d::updateParameter (int parameterID, Information &info)
 {
   if (parameterID == 1) {
     rho = info.theDouble;
@@ -1827,7 +1827,7 @@ DispBeamColumn3d::updateParameter (int parameterID, Information &info)
 
 
 int
-DispBeamColumn3d::activateParameter(int passedParameterID)
+DispBeamColumnAsym3d::activateParameter(int passedParameterID)
 {
   parameterID = passedParameterID;
   
@@ -1835,14 +1835,14 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getKiSensitivity(int gradNumber)
+DispBeamColumnAsym3d::getKiSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;
 }
 
 const Matrix &
-DispBeamColumn3d::getMassSensitivity(int gradNumber)
+DispBeamColumnAsym3d::getMassSensitivity(int gradNumber)
 {
   K.Zero();
   
@@ -1893,7 +1893,7 @@ DispBeamColumn3d::getMassSensitivity(int gradNumber)
 
 
 const Vector &
-DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
+DispBeamColumnAsym3d::getResistingForceSensitivity(int gradNumber)
 {
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
@@ -2077,7 +2077,7 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 
 // NEW METHOD
 int
-DispBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
+DispBeamColumnAsym3d::commitSensitivity(int gradNumber, int numGrads)
 {
   // Get basic deformation and sensitivities
   const Vector &v = crdTransf->getBasicTrialDisp();
