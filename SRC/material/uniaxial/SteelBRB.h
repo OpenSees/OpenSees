@@ -141,9 +141,6 @@ class SteelBRB : public UniaxialMaterial
 
 	double Tol;
  
-#if !_DLL
-	ofstream* debug1;
-#endif
 
 
 };
