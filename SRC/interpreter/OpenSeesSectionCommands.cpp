@@ -212,7 +212,7 @@ namespace {
 	if(ndm == 2) {
 	  //theSec = OPS_FiberSectionWarping2d();
 	  //theActiveFiberSectionWarping2d = (FiberSectionWarping2d*)theSec;
-	} else if(ndm == 3 && ndf == 7) {
+	} else if(ndm == 3) {
 	  theSec = OPS_FiberSectionWarping3d();
 	  theActiveFiberSectionWarping3d = (FiberSectionWarping3d*)theSec;
 	}
