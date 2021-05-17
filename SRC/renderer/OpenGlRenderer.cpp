@@ -341,9 +341,9 @@ OpenGLRenderer::startImage(void)
 	double VRPn = -PRPn;  // VRP after T(-PRP)
 	float near2 = PRPn-F;
 	float far2  = PRPn-B;
-	float zMin = near2/far2;
 
 	/**************** Having trouble with the following transformation ******
+	float zMin = near2/far2;
 	float a,b,c,e,f,g,h;
 
 	a = 2.0*PRPn/(diffU * far);
@@ -486,6 +486,7 @@ OpenGLRenderer::drawLine(const Vector &pos1, const Vector &pos2,
     if (pos1(0) == pos2(0) && pos1(1) == pos2(1) && pos1(2) == pos2(2))
       return 0;
 
+    width = 2; // S. Mazzoni
     glLineWidth(width);
 
     glBegin(GL_LINES);
@@ -526,6 +527,7 @@ OpenGLRenderer::drawLine(const Vector &end1, const Vector &end2,
     if (end1(0) == end2(0) && end1(1) == end2(1) && end1(2) == end2(2))
       return 0;
 
+    width = 2; // S. Mazzoni
     glLineWidth(width);
 
     glBegin(GL_LINES);

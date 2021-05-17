@@ -3581,7 +3581,7 @@ int Domain::activateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->activate();
@@ -3599,7 +3599,7 @@ int Domain::deactivateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->deactivate();
