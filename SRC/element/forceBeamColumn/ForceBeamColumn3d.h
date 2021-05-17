@@ -131,12 +131,7 @@ class ForceBeamColumn3d: public Element
   int getResponseSensitivity(int responseID, int gradNumber,
 			     Information &eleInformation);
   // AddingSensitivity:END ///////////////////////////////////////////
-#if _DLL
-  BeamIntegration* beamIntegr;
-  int numSections;
-  SectionForceDeformation** sections;          // array of pointers to sections
-  CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+
  protected:
   void setSectionPointers(int numSections, SectionForceDeformation **secPtrs);
   int getInitialFlexibility(Matrix &fe);
@@ -157,12 +152,11 @@ class ForceBeamColumn3d: public Element
   // internal data
   ID     connectedExternalNodes; // tags of the end nodes
 
-#if !_DLL
   BeamIntegration* beamIntegr;
   int numSections;
   SectionForceDeformation** sections;          // array of pointers to sections
   CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   int    maxIters;               // maximum number of local iterations
