@@ -111,8 +111,6 @@
 #include <Matrix.h>
 #include <array>
 
-#define	LENTOL 1.0e-6  // tolerance for zero-length of the element
-
 class Node;
 class Channel;
 class Response;

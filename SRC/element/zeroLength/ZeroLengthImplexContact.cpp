@@ -425,18 +425,12 @@ const Matrix& ZeroLengthImplexContact::getInitialStiff()
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     auto& stiff = gs.K0;
     static Matrix C0(3, 3);
-
     C0.Zero();
     const Vector& LGap = getInitialGap();
     double Un = LGap(0); // gap parallel to normal vector
-    if (use_implex) { // implex
-        C0 = sv.C; // send tangent instead
-    }
-    else { // implicit
-        if (Un <= LENTOL) { // send elastic stiffness, if contact
-            C0(0, 0) = Knormal;
-            C0(1, 1) = C0(2, 2) = Kfriction;
-        }
+    if (Un <= 1.0e-10) { // send elastic stiffness, if contact
+        C0(0, 0) = Knormal;
+        C0(1, 1) = C0(2, 2) = Kfriction;
     }
     formStiffnessMatrix(C0, stiff);
     return stiff;
@@ -1016,9 +1010,11 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
     }
     else {
         // implicit
-        sv.cres = 0.0; // tolerance??
-        if (SN < 0.0) {
+        if (SN < 0.0)
             sv.cres = -mu * SN;
+        else {
+            if(!use_implex && sv.eps(0) < 1.0e-6)
+                sv.cres = 1.0e-10;
         }
     }
 
