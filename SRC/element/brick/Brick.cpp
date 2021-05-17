@@ -242,6 +242,29 @@ void  Brick::setDomain( Domain *theDomain )
 }
 
 
+int
+Brick::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 8; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "Brick::setDamping -- failed to get copy of damping\n";
+        exit(-1);
+      }
+      if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
+        opserr << "Brick::setDamping -- Error initializing damping\n";
+        exit(-1);
+      }
+    }
+  }
+  
+  return 0;
+}
+
 //get the number of external nodes
 int  Brick::getNumExternalNodes( ) const
 {

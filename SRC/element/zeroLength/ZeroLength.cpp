@@ -670,7 +670,26 @@ ZeroLength::setDomain(Domain *theDomain)
     }
 }   	 
 
-
+int
+ZeroLength::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ZeroLength::setDamping -- failed to get copy of damping\n";
+      exit(-1);
+    }
+    if (theDamping->setDomain(theDomain, numMaterials1d)) {
+      opserr << "ZeroLength::setDamping -- Error initializing damping\n";
+      exit(-1);
+    }
+    fd = new Vector(numDOF);
+  }
+  
+  return 0;
+}
 
 int
 ZeroLength::commitState()

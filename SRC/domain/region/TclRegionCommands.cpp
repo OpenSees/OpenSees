@@ -40,6 +40,7 @@
 
 #include <MeshRegion.h>
 #include <ID.h>
+#include <Damping.h>
 
 int
 TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -51,6 +52,7 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
   double betaK  = 0.0;
   double betaK0 = 0.0;
   double betaKc = 0.0;
+  Damping *theDamping = 0;
 
   ID *theNodes = 0;
   ID *theElements = 0;
@@ -225,6 +227,28 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
       }      
       loc += 5;
 
+    } else if (strcmp(argv[loc],"-damp") == 0) {
+
+      // ensure no segmentation fault if user messes up
+      if (argc < loc+2) {
+	opserr << "WARNING region tag? .. -damp dampingTag?\n";
+	return TCL_ERROR;
+      }
+
+      int dampingTag = 0;
+
+      // read in rayleigh damping factors
+      if (Tcl_GetInt(interp, argv[loc+1], &dampingTag) != TCL_OK) {
+	opserr << "WARNING region tag? .. -damp dampingTag?\n";
+	return TCL_ERROR;
+      }      
+      theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+	      opserr<<"damping not found\n";
+	      return 0;
+      }
+      loc += 2;
+
     } else if (strcmp(argv[loc],"getNodeTags") == 0) {
 
 	MeshRegion* region = theDomain.getRegion(tag);
@@ -317,6 +341,8 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
   // if damping has been specified set the damping factors
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
     theRegion->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+
+  if(theDamping) theRegion->setDamping(theDamping);
 
   if (theElements != 0)
     delete theElements;

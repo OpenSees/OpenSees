@@ -62,6 +62,7 @@ class ShellNLDKGT : public Element {
 
   //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
+  int setDamping(Domain *theDomain, Damping *theDamping);
   
   //get the number of external nodes
   int getNumExternalNodes( ) const ;

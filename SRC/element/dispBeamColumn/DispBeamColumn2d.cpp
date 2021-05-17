@@ -536,6 +536,26 @@ DispBeamColumn2d::setDomain(Domain *theDomain)
 }
 
 int
+DispBeamColumn2d::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "DispBeamColumn2d::setDamping -- failed to get copy of damping\n";
+      exit(-1);
+    }
+    if (theDamping->setDomain(theDomain, 3)) {
+      opserr << "DispBeamColumn2d::setDamping -- Error initializing damping\n";
+      exit(-1);
+    }
+  }
+  
+  return 0;
+}
+
+int
 DispBeamColumn2d::commitState()
 {
     int retVal = 0;

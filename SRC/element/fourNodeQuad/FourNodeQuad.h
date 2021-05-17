@@ -65,6 +65,7 @@ class FourNodeQuad : public Element
 
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // public methods to set the state of the element    
     int commitState(void);

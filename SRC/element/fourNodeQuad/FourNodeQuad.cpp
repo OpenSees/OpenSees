@@ -329,6 +329,28 @@ FourNodeQuad::setDomain(Domain *theDomain)
 }
 
 int
+FourNodeQuad::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+      
+      if (!theDamping[i]) {
+        opserr << "FourNodeQuad::setDamping -- failed to get copy of damping\n";
+        exit(-1);
+      }
+      if (theDamping[i]->setDomain(theDomain, 3)) {
+        opserr << "FourNodeQuad::setDamping -- Error initializing damping\n";
+        exit(-1);
+      }
+    }
+  }
+  return 0;
+}
+
+int
 FourNodeQuad::commitState()
 {
     int retVal = 0;

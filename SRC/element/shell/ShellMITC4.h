@@ -66,6 +66,7 @@ class ShellMITC4 : public Element {
   virtual ~ShellMITC4( ) ;
 
   void setDomain( Domain *theDomain ) ;
+  int setDamping(Domain *theDomain, Damping *theDamping);
   
   //get the number of external nodes
   int getNumExternalNodes( ) const ;

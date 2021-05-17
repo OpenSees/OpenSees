@@ -308,6 +308,28 @@ void  ShellDKGT::setDomain( Domain *theDomain )
 }
 
 
+int
+ShellDKGT::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "ShellDKGT::setDamping -- failed to get copy of damping\n";
+        exit(-1);
+      }
+      if (theDamping[i]->setDomain(theDomain, 8)) {
+        opserr << "ShellDKGT::setDamping -- Error initializing damping\n";
+        exit(-1);
+      }
+    }
+  }
+  return 0;
+}
+
 //get the number of external nodes
 int  ShellDKGT::getNumExternalNodes( ) const
 {

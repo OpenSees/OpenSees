@@ -46,6 +46,7 @@ class Info;
 class Response;
 class ElementalLoad;
 class Node;
+class Damping;
 
 class Element : public DomainComponent
 {
@@ -82,6 +83,7 @@ class Element : public DomainComponent
 
     virtual int addInertiaLoadToUnbalance(const Vector &accel);
     virtual int setRayleighDampingFactors(double alphaM, double betaK, double betaK0, double betaKc);
+    virtual int setDamping(Domain *theDomain, Damping *theDamping);
 
     // methods for obtaining resisting force (force includes elemental loads)
     virtual const Vector &getResistingForce(void) =0;

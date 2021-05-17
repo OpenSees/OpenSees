@@ -72,6 +72,7 @@ class Brick : public Element {
 
     //set domain
     void setDomain( Domain *theDomain ) ;
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     //get the number of external nodes
     int getNumExternalNodes( ) const ;

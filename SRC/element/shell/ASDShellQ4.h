@@ -108,6 +108,7 @@ public:
 
     // domain
     void setDomain(Domain* theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // print
     void Print(OPS_Stream& s, int flag);
