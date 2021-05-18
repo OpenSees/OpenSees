@@ -32,6 +32,9 @@
 // Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
 // Description: Adapted for analysis of asymmetric sections with introducing
 // high-order axial terms for the basic element formulation
+// References:
+// Du, X., & Hajjar, J. (2021). Three-dimensional nonlinear displacement-based beam element
+// for members with angle and tee sections. Engineering Structures, 239, 112239.
 
 #ifndef DispBeamColumnAsym3d_h
 #define DispBeamColumnAsym3d_h

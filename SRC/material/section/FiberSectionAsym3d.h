@@ -32,6 +32,11 @@
 
 // Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
 // Description: Modified FiberSectionAsym3d.h to include shear center coordinates and high-order longitudinal strain terms.
+// References:
+// Du, X., & Hajjar, J. (2021). Three-dimensional nonlinear displacement-based beam element
+// for members with angle and tee sections. Engineering Structures, 239, 112239.
+// Du, X., & Hajjar, J. F. (2021). Three-dimensional nonlinear mixed 6-DOF beam element 
+// for thin-walled members. Thin-Walled Structures, 164, 107817.
 
 #ifndef FiberSectionAsym3d_h
 #define FiberSectionAsym3d_h

@@ -29,6 +29,11 @@
 
 // Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
 // Description: Modified FiberSectionAsym3d.cpp to include shear center coordinates and high-order longitudinal strain terms.
+// References:
+// Du, X., & Hajjar, J. (2021). Three-dimensional nonlinear displacement-based beam element
+// for members with angle and tee sections. Engineering Structures, 239, 112239.
+// Du, X., & Hajjar, J. F. (2021). Three-dimensional nonlinear mixed 6-DOF beam element 
+// for thin-walled members. Thin-Walled Structures, 164, 107817.
 
 #include <stdlib.h>
 #include <math.h>
@@ -63,7 +68,10 @@ void* OPS_FiberSectionAsym3d()
     numData = 1;
     int tag;
     if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
-    
+    numData = 2;
+    double dData[2];
+    if (OPS_GetDoubleInput(&numData, dData) < 0) return 0;
+
     double GJ = 0.0;
     ElasticMaterial *torsion = 0;
     if (OPS_GetNumRemainingInputArgs() >= 2) {
@@ -75,7 +83,7 @@ void* OPS_FiberSectionAsym3d()
     }
     
     int num = 30;
-    return new FiberSectionAsym3d(tag, num, torsion);
+    return new FiberSectionAsym3d(tag, num, torsion,dData[0],dData[1]);
 }
 
 // constructors:
