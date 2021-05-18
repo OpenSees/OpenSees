@@ -99,27 +99,20 @@ class DispBeamColumn3d : public Element
     int            updateParameter(int parameterID, Information &info);
     int            activateParameter(int parameterID);
     const Vector & getResistingForceSensitivity(int gradNumber);
-    const Matrix & getKiSensitivity(int gradNumber);
+    const Matrix & getInitialStiffSensitivity(int gradNumber);
     const Matrix & getMassSensitivity(int gradNumber);
     int            commitSensitivity(int gradNumber, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
-#if _DLL
-	int numSections;
-	SectionForceDeformation** theSections; // pointer to the ND material objects
-	CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-	BeamIntegration* beamInt;
-#endif
+
   protected:
     
   private:
     const Matrix &getInitialBasicStiff(void);
 
-#if !_DLL
 	int numSections;
 	SectionForceDeformation** theSections; // pointer to the ND material objects
 	CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
 	BeamIntegration* beamInt;
-#endif
 
     ID connectedExternalNodes; // Tags of quad nodes
 
