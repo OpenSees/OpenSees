@@ -272,6 +272,8 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+#define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
 
@@ -558,7 +560,7 @@
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
 #define ELE_TAG_ElasticBeam3d            5
-#define ELE_TAG_ElasticWarpingBeam3d            5001
+#define ELE_TAG_ElasticBeamWarping3d            5001
 #define ELE_TAG_Beam2d    	         6
 #define ELE_TAG_beam2d02    	         7
 #define ELE_TAG_beam2d03    	         8
@@ -724,8 +726,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
-#define ELE_TAG_MVLEM                     162
-#define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_MVLEM                     162 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM                 163 // Kristijan Kolozvari
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
@@ -770,7 +772,10 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
-#define ELE_TAG_RockingBC	              210
+#define ELE_TAG_RockingBC	          210
+#define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
+#define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
 
 

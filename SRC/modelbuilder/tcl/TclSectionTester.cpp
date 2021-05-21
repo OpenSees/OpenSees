@@ -36,6 +36,8 @@
 #include <SectionForceDeformation.h>
 #include <TclSectionTester.h>
 #include <Vector.h>
+#include <DummyStream.h>
+#include <Response.h>
 
 //
 // SOME STATIC POINTERS USED IN THE FUNCTIONS INVOKED BY THE INTERPRETER
@@ -60,6 +62,9 @@ int  TclSectionTester_getStressSection(ClientData clientData, Tcl_Interp *interp
 int  TclSectionTester_getTangSection(ClientData clientData, Tcl_Interp *interp,
 				     int argc,   TCL_Char **argv);
 
+int  TclSectionTester_getResponseSection(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv);
+
 //
 // CLASS CONSTRUCTOR & DESTRUCTOR
 //
@@ -70,7 +75,7 @@ static int countsTillCommit;
 				    
 // constructor: the constructor will add certain commands to the interpreter
 TclSectionTester::TclSectionTester(Domain &theDomain, Tcl_Interp *interp, int cTC)
-  :TclModelBuilder(theDomain, interp, 1, 1), theInterp(interp)
+  :TclModelBuilder(theDomain, interp, 3, 6), theInterp(interp)
 {
   countsTillCommit = cTC;
   Tcl_CreateCommand(interp, "sectionTest", TclSectionTester_setSection,
@@ -85,6 +90,8 @@ TclSectionTester::TclSectionTester(Domain &theDomain, Tcl_Interp *interp, int cT
   Tcl_CreateCommand(interp, "tangSectionTest", TclSectionTester_getTangSection,
 		    (ClientData)NULL, NULL);
   
+  Tcl_CreateCommand(interp, "responseSectionTest", TclSectionTester_getResponseSection,
+      (ClientData)NULL, NULL);
   
   // set the static pointers in this file
   theTclBuilder = this;
@@ -99,6 +106,7 @@ TclSectionTester::~TclSectionTester()
   Tcl_DeleteCommand(theInterp, "strainSectionTest");
   Tcl_DeleteCommand(theInterp, "stressSectionTest");
   Tcl_DeleteCommand(theInterp, "tangSectionTest");
+  Tcl_DeleteCommand(theInterp, "responseSectionTest");
 }
 
 
@@ -167,7 +175,8 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
   }    
 
   // get the sectionID form command line
-  static Vector data;
+  // Need to set the data based on argc, otherwise it crashes when setting "data(i-1) = strain"
+  static Vector data(argc-1);
   double strain;
   for (int i=1; i<argc; i++) {
     if (Tcl_GetDouble(interp, argv[i], &strain) != TCL_OK) {
@@ -177,7 +186,7 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
     data(i-1) = strain;
   }
 
-  // delete the old testing material
+  // if the section exists, otherwise throw an error
   if (theTestingSection !=0) {
     theTestingSection->setTrialSectionDeformation(data);
     if (count == countsTillCommit) {
@@ -192,13 +201,13 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
 int  TclSectionTester_getStressSection(ClientData clientData, Tcl_Interp *interp,
 				       int argc,   TCL_Char **argv)
 {
-  // delete the old testing material
+  // if the section exists, otherwise throw an error
   if (theTestingSection !=0) {
     const Vector &stress = theTestingSection->getStressResultant();
     for (int i=0; i<stress.Size(); i++) {
       char buffer[40];
-      sprintf(buffer,"%.10e",stress(i));
-      Tcl_AppendResult(interp, buffer, TCL_VOLATILE);
+      sprintf(buffer,"%.10e ",stress(i));
+      Tcl_AppendResult(interp, buffer, NULL);
       //      sprintf(interp->result,"%.10e",stress(i));
     }
     return TCL_OK;
@@ -212,14 +221,14 @@ int  TclSectionTester_getTangSection(ClientData clientData, Tcl_Interp *interp,
 						       int argc,   TCL_Char **argv)
 {
 
-  // delete the old testing material
+  // if the section exists, otherwise throw an error
   if (theTestingSection !=0) {
     const Matrix &tangent = theTestingSection->getSectionTangent();
     for (int i=0; i<tangent.noRows(); i++)
       for (int j=0; j<tangent.noCols(); j++) {
 	char buffer[40];
-	sprintf(buffer,"%.10e",tangent(i,j));
-	Tcl_AppendResult(interp, buffer, TCL_VOLATILE);
+	sprintf(buffer,"%.10e ",tangent(i,j));
+	Tcl_AppendResult(interp, buffer, NULL);
 	//	sprintf(interp->result,"%.10e",tangent(i,j));
       }
     return TCL_OK;
@@ -227,4 +236,36 @@ int  TclSectionTester_getTangSection(ClientData clientData, Tcl_Interp *interp,
     opserr << "WARNING no active Section - use sectionTest command\n";    
     return TCL_ERROR;
   }
+}
+
+int  TclSectionTester_getResponseSection(ClientData clientData, Tcl_Interp* interp,
+    int argc, TCL_Char** argv)
+{
+    // if the section exists, otherwise throw an error
+    if (theTestingSection != 0) {
+        DummyStream dummy;
+        Response* theResponse = theTestingSection->setResponse(argv+1, argc-1, dummy);
+        if (theResponse == 0) {
+            return TCL_ERROR;
+        }
+        if (theResponse->getResponse() < 0) {
+            delete theResponse;
+            return TCL_ERROR;
+        } 
+        Information &eleInfo = theResponse->getInformation();
+        const Vector &data = eleInfo.getData();
+        for (int i = 0; i < data.Size(); i++) {
+            char buffer[40];
+            sprintf(buffer, "%.10e ", data(i));
+            Tcl_AppendResult(interp, buffer, NULL);
+            //      sprintf(interp->result,"%.10e",stress(i));
+        }
+        // Now delete theResponse since I already retrieved the data
+        delete theResponse;
+        return TCL_OK;
+    }
+    else {
+        opserr << "WARNING no active Section - use sectionTest command\n";
+        return TCL_ERROR;
+    }
 }

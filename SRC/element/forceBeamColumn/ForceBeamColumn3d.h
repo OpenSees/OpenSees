@@ -112,7 +112,7 @@ class ForceBeamColumn3d: public Element
   
   int sendSelf(int cTag, Channel &theChannel);
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-  int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes);        
+  int displaySelf(Renderer &theViewer, int displayMode, float fact, const char** displayModes = 0, int numModes = 0);
   
   friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumn3d &E);        
   void Print(OPS_Stream &s, int flag =0);    
@@ -131,12 +131,7 @@ class ForceBeamColumn3d: public Element
   int getResponseSensitivity(int responseID, int gradNumber,
 			     Information &eleInformation);
   // AddingSensitivity:END ///////////////////////////////////////////
-#if _DLL
-  BeamIntegration* beamIntegr;
-  int numSections;
-  SectionForceDeformation** sections;          // array of pointers to sections
-  CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+
  protected:
   void setSectionPointers(int numSections, SectionForceDeformation **secPtrs);
   int getInitialFlexibility(Matrix &fe);
@@ -157,12 +152,11 @@ class ForceBeamColumn3d: public Element
   // internal data
   ID     connectedExternalNodes; // tags of the end nodes
 
-#if !_DLL
   BeamIntegration* beamIntegr;
   int numSections;
   SectionForceDeformation** sections;          // array of pointers to sections
   CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   int    maxIters;               // maximum number of local iterations

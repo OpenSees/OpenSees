@@ -64,6 +64,7 @@ class DL_Interpreter
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
     virtual const char* getString();
+    virtual const char* getStringFromAll(char* buffer, int len);
     virtual int getStringCopy(char **stringPtr);
     virtual void resetInput(int cArg);
 

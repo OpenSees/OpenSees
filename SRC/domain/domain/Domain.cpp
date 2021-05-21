@@ -80,6 +80,8 @@
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
 
+#include <DomainModalProperties.h>
+
 //
 // global variables
 //
@@ -98,6 +100,7 @@ Domain::Domain()
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),
  paramIndex(0), paramSize(0), numParameters(0)
@@ -153,6 +156,7 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  theElementGraph(0),
  theRegions(0), numRegions(0), commitTag(0),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0), paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -213,6 +217,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theLoadPatterns(&theLoadPatternsStorage),
  theRegions(0), numRegions(0), commitTag(0),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -271,6 +276,7 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -376,6 +382,9 @@ Domain::~Domain()
 
   if (theEigenvalues != 0)
     delete theEigenvalues;
+
+  if (theModalProperties != 0)
+    delete theModalProperties;
 
   if (theLoadPatternIter != 0)
       delete theLoadPatternIter;
@@ -2114,6 +2123,33 @@ Domain::getTimeEigenvaluesSet(void)
   return theEigenvalueSetTime;
 }
 
+void Domain::setModalProperties(const DomainModalProperties& dmp)
+{
+    if (theModalProperties) {
+        *theModalProperties = dmp;
+    }
+    else {
+        theModalProperties = new DomainModalProperties(dmp);
+    }
+}
+
+void Domain::unsetModalProperties(void)
+{
+    if (theModalProperties) {
+        delete theModalProperties;
+        theModalProperties = nullptr;
+    }
+}
+
+const DomainModalProperties& Domain::getModalProperties(void) const
+{
+    if (theModalProperties == 0) {
+        opserr << "Domain::getModalProperties - DomainModalProperties were never set\n";
+        exit(-1);
+    }
+    return *theModalProperties;
+}
+
 int
 Domain::setModalDampingFactors(Vector *theValues, bool inclMatrix)
 {
@@ -3539,7 +3575,7 @@ int Domain::activateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->activate();
@@ -3557,7 +3593,7 @@ int Domain::deactivateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->deactivate();

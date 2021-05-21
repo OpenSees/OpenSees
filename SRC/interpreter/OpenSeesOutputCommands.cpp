@@ -70,6 +70,7 @@ void* OPS_EnvelopeElementRecorder();
 void* OPS_PVDRecorder();
 void* OPS_AlgorithmRecorder();
 void* OPS_RemoveRecorder();
+void* OPS_MPCORecorder();
 BackgroundMesh& OPS_getBgMesh();
 
 //void* OPS_DriftRecorder();
@@ -99,6 +100,7 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
+    recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -387,9 +389,14 @@ int OPS_eleResponse()
     if (numdata > 0) {
 	const char** argv = new const char*[numdata];
 	for (int i=0; i<numdata; i++) {
-	    argv[i] = OPS_GetString();
+	  argv[i] = new char[128];
+	  // Turn everything in to a string for setResponse
+	  OPS_GetStringFromAll((char*)argv[i], 128);
 	}
 	const Vector* data = theDomain->getElementResponse(tag, argv, numdata);
+
+	for (int i=0; i<numdata; i++)
+	  delete [] argv[i];
 	delete [] argv;
 
 	if (data != 0) {
@@ -1742,6 +1749,40 @@ int OPS_nodePressure()
     return 0;
 }
 
+int OPS_setNodePressure()
+{
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr << "WARNING: want - setNodePressure nodeTag? Pressure?\n";
+        return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING: setNodePressure invalid tag\n";
+        return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    double pressure = 0.0;
+
+    if (OPS_GetDoubleInput(&numdata, &pressure) < 0) {
+        opserr << "WARNING: setNodePressure invalid pressure\n";
+        return -1;
+    }
+
+    Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
+    if(thePC != 0) {
+         thePC->setPressure(pressure);
+    }
+
+    return 0;
+}
+
+
 int OPS_nodeBounds()
 {
 
@@ -2401,7 +2442,7 @@ int OPS_sectionDisplacement()
     if (local)
       argvv[1] = "local";
     else
-      argvv[2] = "global";
+      argvv[1] = "global";
 
     DummyStream dummy;
 

@@ -120,6 +120,7 @@ private:
 	void betaf4(double &eo, double &epc, double &fc, double &epscmax); // biaxial damage
 	void InterLocker_improved(double &e_cr_normal, double &f_cr_normal, double &e_cr_parallel, double &e_cr_parallel_old, double &epc, double &Ec, double &Tau_Interlock_old); // shear aggregate interlock
 	void dowel_action(double &gama, double &Es); // reinforcement dowel action
+	Vector getInputParameters(void); // return input parameters
 
 	// Pointers to material arrays
 	UniaxialMaterial **theMaterial; // pointer of the materials 
@@ -136,6 +137,7 @@ private:
 	double   E0y;					// steel Young's modulus - Y Direction
 	double   epcc;					// concrete strain at compressive stress
 	double   et;					// monotonic Cracking Strain (et = 0.00008)
+	double   fpc;					// concrete compressive strength
 	double   Ec;					// concrete Young's modulus
 	double   nu;					// friction Coefficient of Shear Aggregate Interlock 
 	double   alfadow;				// stiffness Coefficient of Dowel Action 

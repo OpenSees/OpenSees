@@ -43,7 +43,7 @@
 //		response of inelastic deformable rocking bodies.” Earthquake Engineering and Structural Dynamics,
 //      49(11), 1072-1094.
 
-#include "RockingBC.h"
+#include <RockingBC.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 
@@ -69,20 +69,6 @@
 #include <string.h>
 #include <fstream>
 
-#ifdef _USRDLL
-//#define ELE_TAG_RockingBC                 210
-#define RockingBC_dll 1
-#include "Eigen/Dense"
-#include <windows.h>
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#define RockingBC_dll 0
-#endif
-
-//OPS_Export void* OPS_RockingBC() //CHANGE FOR DLL CREATION
 void* OPS_RockingBC()
 {
     if(OPS_GetNumRemainingInputArgs() < 10) {
@@ -5172,4 +5158,16 @@ bool RockingBC::bilin_one(const Vec& YP, const Vec& P, Vec& YPn, Vec& Pn) {
 	bilindist(YP, P, NPd, MPd, YPn, Pn);
 	return true;
 
+}
+
+int 
+RockingBC::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+{
+	static Vector v1(3);
+	static Vector v2(3);
+
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

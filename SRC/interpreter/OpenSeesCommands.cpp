@@ -208,6 +208,11 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+AnalysisModel** OpenSeesCommands::getAnalysisModel()
+{
+    return &theAnalysisModel;
+}
+
 void
 OpenSeesCommands::setSOE(LinearSOE* soe)
 {
@@ -982,6 +987,17 @@ const char * OPS_GetString(void)
     return res;
 }
 
+const char * OPS_GetStringFromAll(char* buffer, int len)
+{
+    if (cmds == 0) return "Invalid String Input!";
+    DL_Interpreter* interp = cmds->getInterpreter();
+    const char* res = interp->getStringFromAll(buffer, len);
+    if (res == 0) {
+	return "Invalid String Input!";
+    }
+    return res;
+}
+
 int OPS_SetString(const char* str)
 {
     if (cmds == 0) return 0;
@@ -993,6 +1009,13 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+AnalysisModel**
+OPS_GetAnalysisModel(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getAnalysisModel();
 }
 
 int OPS_GetNDF()
@@ -1486,10 +1509,10 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
 
     } else if (strcmp(type,"HHTHSFixedNumIter") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter();
 
     } else if (strcmp(type,"HHTHSFixedNumIter_TP") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter_TP();
 
     } else if (strcmp(type,"GeneralizedAlpha") == 0) {
 	ti = (TransientIntegrator*)OPS_GeneralizedAlpha();
@@ -1938,9 +1961,9 @@ int OPS_printB()
     }
     if (theSOE != 0) {
 	if (theStaticIntegrator != 0) {
-	    theStaticIntegrator->formTangent();
+	    theStaticIntegrator->formUnbalance();
 	} else if (theTransientIntegrator != 0) {
-	    theTransientIntegrator->formTangent(0);
+	    theTransientIntegrator->formUnbalance();
 	}
 
 	Vector &b = const_cast<Vector&>(theSOE->getB());
@@ -2743,15 +2766,15 @@ int OPS_neesMetaData()
 
 int OPS_defaultUnits()
 {
-    if (OPS_GetNumRemainingInputArgs() < 8) {
-        opserr << "WARNING defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+        opserr << "WARNING defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     const char *force = 0;
     const char *length = 0;
     const char *time = 0;
-    const char *temperature = 0;
+    const char *temperature = "N/A";
 
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char* unitType = OPS_GetString();
@@ -2774,20 +2797,19 @@ int OPS_defaultUnits()
             temperature = OPS_GetString();
         }
         else {
-            opserr << "WARNING defaultUnits - unrecognized unit: " << unitType << " want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+            opserr << "WARNING defaultUnits - unrecognized unit: " << unitType << " want: defaultUnits -Force type? -Length type? -Time type?\n";
             return -1;
         }
     }
 
-    if (length == 0 || force == 0 || time == 0 || temperature == 0) {
-        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (length == 0 || force == 0 || time == 0) {
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     double lb, kip, n, kn, mn, kgf, tonf;
     double in, ft, mm, cm, m;
     double sec, msec;
-    double F, C;
 
     if ((strcmp(force, "lb") == 0) || (strcmp(force, "lbs") == 0)) {
         lb = 1.0;
@@ -2805,10 +2827,10 @@ int OPS_defaultUnits()
         lb = 0.0000044482216152605;
     }
     else if ((strcmp(force, "kgf") == 0)) {
-        lb = 9.80665*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665;
     }
     else if ((strcmp(force, "tonf") == 0)) {
-        lb = 9.80665 / 1000.0*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665 / 1000.0;
     }
     else {
         lb = 1.0;
@@ -2849,33 +2871,19 @@ int OPS_defaultUnits()
         return -1;
     }
 
-    if ((strcmp(temperature, "F") == 0) || (strcmp(temperature, "degF") == 0)) {
-        F = 1.0;
-    }
-    else if ((strcmp(temperature, "C") == 0) || (strcmp(temperature, "degC") == 0)) {
-        F = 9.0 / 5.0 + 32.0;
-    }
-    else {
-        F = 1.0;
-        opserr << "defaultUnits - unknown temperature type, valid options: F, C\n";
-        return -1;
-    }
-
     kip = lb / 0.001;
     n = lb / 4.4482216152605;
     kn = lb / 0.0044482216152605;
     mn = lb / 0.0000044482216152605;
-    kgf = lb / (9.80665*4.4482216152605);
-    tonf = lb / (9.80665 / 1000.0*4.4482216152605);
+    kgf = lb / (4.4482216152605/9.80665);
+    tonf = lb / (4.4482216152605/9.80665/1000.0);
 
     ft = in * 12.0;
-    mm = in / 25.44;
+    mm = in / 25.4;
     cm = in / 2.54;
     m = in / 0.0254;
 
     msec = sec * 0.001;
-
-    C = (F - 32.0)*5.0 / 9.0;
 
     char string[50];
     DL_Interpreter* theInter = cmds->getInterpreter();
@@ -2902,11 +2910,6 @@ int OPS_defaultUnits()
 
     sprintf(string, "sec = %.18e", sec);   theInter->runCommand(string);
     sprintf(string, "msec = %.18e", msec);   theInter->runCommand(string);
-
-    sprintf(string, "F = %.18e", F);   theInter->runCommand(string);
-    sprintf(string, "degF = %.18e", F);   theInter->runCommand(string);
-    sprintf(string, "C = %.18e", C);   theInter->runCommand(string);
-    sprintf(string, "degC = %.18e", C);   theInter->runCommand(string);
 
     double g = 32.174049*ft / (sec*sec);
     sprintf(string, "g = %.18e", g);   theInter->runCommand(string);
