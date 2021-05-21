@@ -1,0 +1,54 @@
+add_library(recorder "")
+
+target_sources(recorder
+    PRIVATE
+      AlgorithmIncrements.cpp
+      DamageRecorder.cpp
+      DatastoreRecorder.cpp
+      DriftRecorder.cpp
+      ElementRecorder.cpp
+      ElementRecorderRMS.cpp
+      EnvelopeDriftRecorder.cpp
+      EnvelopeElementRecorder.cpp
+      EnvelopeNodeRecorder.cpp
+      FilePlotter.cpp
+      GSA_Recorder.cpp
+      GmshRecorder.cpp
+      MPCORecorder.cpp
+      MaxNodeDispRecorder.cpp
+      NodeRecorder.cpp
+      NodeRecorderRMS.cpp
+      NormElementRecorder.cpp
+      NormEnvelopeElementRecorder.cpp
+      PVDRecorder.cpp
+      PatternRecorder.cpp
+      Recorder.cpp
+      RemoveRecorder.cpp
+      VTK_Recorder.cpp
+    PUBLIC
+      AlgorithmIncrements.h
+      DamageRecorder.h
+      DatastoreRecorder.h
+      DriftRecorder.h
+      ElementRecorder.h
+      ElementRecorderRMS.h
+      EnvelopeDriftRecorder.h
+      EnvelopeElementRecorder.h
+      EnvelopeNodeRecorder.h
+      FilePlotter.h
+      GSA_Recorder.h
+      GmshRecorder.h
+      MPCORecorder.h
+      MaxNodeDispRecorder.h
+      NodeRecorder.h
+      NodeRecorderRMS.h
+      NormElementRecorder.h
+      NormEnvelopeElementRecorder.h
+      PVDRecorder.h
+      PatternRecorder.h
+      Recorder.h
+      RemoveRecorder.h
+      VTK_Recorder.h
+)
+
+target_include_directories(recorder PUBLIC $(CMAKE_CURRENT_LIST_DIR))
