@@ -79,6 +79,9 @@ void* OPS_DispBeamColumnAsym3d()
     double mass = 0.0;
     int cmass = 0;
     numData = 1;
+    double dData[2]; //input of ys and zs
+    dData[0] = 0.0;
+    dData[1] = 0.0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
 	if(strcmp(type,"-cMass") == 0) {
@@ -90,7 +93,14 @@ void* OPS_DispBeamColumnAsym3d()
 		    return 0;
 		}
 	    }
-	}
+	} else if (strcmp(type, "-shearCenter") == 0) {
+        // Get the coordinates of shear center w.r.t centroid
+        numData = 2;
+        if (OPS_GetDoubleInput(&numData, dData) < 0) {
+            opserr << "WARNING: invalid ys and zs\n";
+            return 0;
+        }
+    }
     }
 
     // check transf
@@ -125,7 +135,7 @@ void* OPS_DispBeamColumnAsym3d()
     }
     
     Element *theEle =  new DispBeamColumnAsym3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass,cmass);
+					    *bi,*theTransf, dData[0], dData[1], mass,cmass);
     delete [] sections;
     return theEle;
 }

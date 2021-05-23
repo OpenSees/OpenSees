@@ -146,6 +146,8 @@ void * OPS_MixedBeamColumnAsym3d() {
   int iData[10];
   double dData[10];
   double dData2[2]; //input of ys and zs
+  dData2[0] = 0.0;
+  dData2[1] = 0.0;
   int sDataLength = 40;
   char *sData  = new char[sDataLength];
   char *sData2 = new char[sDataLength];
