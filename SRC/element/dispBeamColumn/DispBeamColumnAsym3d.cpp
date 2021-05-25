@@ -56,6 +56,13 @@
 #include <elementAPI.h>
 #include <string>
 
+#include <LobattoBeamIntegration.h>
+#include <LegendreBeamIntegration.h>
+#include <RadauBeamIntegration.h>
+#include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
+#include <RegularizedHingeIntegration.h>
+
 Matrix DispBeamColumnAsym3d::K(12,12);
 Vector DispBeamColumnAsym3d::P(12);
 double DispBeamColumnAsym3d::workArea[200];
@@ -140,6 +147,167 @@ void* OPS_DispBeamColumnAsym3d()
     return theEle;
 }
 
+void* OPS_DispBeamColumnAsym3dTcl() {
+    // Variables to retrieve input
+    int iData[10];
+    double dData[10];
+    double dData2[2]; //input of ys and zs
+    dData2[0] = 0.0;
+    dData2[1] = 0.0;
+    int sDataLength = 40;
+    char* sData = new char[sDataLength];
+    char* sData2 = new char[sDataLength];
+    int numData;
+
+    // Check the number of dimensions
+    if (OPS_GetNDM() != 3) {
+        opserr << "ERROR: DispBeamColumnAsym3d: invalid number of dimensions\n";
+        return 0;
+    }
+
+    // Check the number of degrees of freedom
+    if (OPS_GetNDF() != 6) {
+        opserr << "ERROR: DispBeamColumnAsym3d: invalid number of degrees of freedom\n";
+        return 0;
+    }
+
+    // Check for minimum number of arguments
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+        opserr << "ERROR: DispBeamColumnAsym3d: too few arguments\n";
+        return 0;
+    }
+
+    // Get required input data
+    numData = 6;
+    if (OPS_GetIntInput(&numData, iData) != 0) {
+        opserr << "WARNING invalid element data - DispBeamColumnAsym3d\n";
+        return 0;
+    }
+    int eleTag = iData[0];
+    int nodeI = iData[1];
+    int nodeJ = iData[2];
+    int numIntgrPts = iData[3];
+    int secTag = iData[4];
+    int transfTag = iData[5];
+
+    // Get the section
+    SectionForceDeformation* theSection = OPS_GetSectionForceDeformation(secTag);
+    if (theSection == 0) {
+        opserr << "WARNING section with tag " << secTag << "not found for element " << eleTag << endln;
+        return 0;
+    }
+
+    SectionForceDeformation** sections = new SectionForceDeformation * [numIntgrPts];
+    for (int i = 0; i < numIntgrPts; i++) {
+        sections[i] = theSection;
+    }
+
+    // Get the coordinate transformation
+    CrdTransf* theTransf = OPS_GetCrdTransf(transfTag);
+    if (theTransf == 0) {
+        opserr << "WARNING geometric transformation with tag " << transfTag << "not found for element " << eleTag << endln;
+        return 0;
+    }
+
+    // Set Default Values for Optional Input
+    double massDens = 0.0;
+    int cmass = 0;
+    BeamIntegration* beamIntegr = 0;
+
+    // Loop through remaining arguments to get optional input
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetStringCopy(&sData) != 0) {
+            opserr << "WARNING invalid input";
+            return 0;
+        }
+
+        if (strcmp(sData, "-cMass") == 0) {
+            cmass = 1;
+        }
+        else if (strcmp(sData, "-mass") == 0) {
+            numData = 1;
+            if (OPS_GetDoubleInput(&numData, dData) != 0) {
+                opserr << "WARNING invalid input, want: -mass $massDens \n";
+                return 0;
+            }
+            massDens = dData[0];
+
+        }
+        else if (strcmp(sData, "-integration") == 0) {
+            if (OPS_GetStringCopy(&sData2) != 0) {
+                opserr << "WARNING invalid input, want: -integration $intType";
+                return 0;
+            }
+
+            if (strcmp(sData2, "Lobatto") == 0) {
+                beamIntegr = new LobattoBeamIntegration();
+            }
+            else if (strcmp(sData2, "Legendre") == 0) {
+                beamIntegr = new LegendreBeamIntegration();
+            }
+            else if (strcmp(sData2, "Radau") == 0) {
+                beamIntegr = new RadauBeamIntegration();
+            }
+            else if (strcmp(sData2, "NewtonCotes") == 0) {
+                beamIntegr = new NewtonCotesBeamIntegration();
+            }
+            else if (strcmp(sData2, "Trapezoidal") == 0) {
+                beamIntegr = new TrapezoidalBeamIntegration();
+            }
+            else if (strcmp(sData2, "RegularizedLobatto") == 0 || strcmp(sData2, "RegLobatto") == 0) {
+                numData = 4;
+                if (OPS_GetDoubleInput(&numData, dData) != 0) {
+                    opserr << "WARNING invalid input, want: -integration RegularizedLobatto $lpI $lpJ $zetaI $zetaJ \n";
+                    return 0;
+                }
+                BeamIntegration* otherBeamInt = 0;
+                otherBeamInt = new LobattoBeamIntegration();
+                beamIntegr = new RegularizedHingeIntegration(*otherBeamInt, dData[0], dData[1], dData[2], dData[3]);
+                if (otherBeamInt != 0) {
+                    delete otherBeamInt;
+                }
+            }
+            else {
+                opserr << "WARNING invalid integration type, element: " << eleTag;
+                return 0;
+            }
+
+        }
+        else if (strcmp(sData, "-shearCenter") == 0) {
+            // Get the coordinates of shear center w.r.t centroid
+            numData = 2;
+            if (OPS_GetDoubleInput(&numData, &dData2[0]) < 0) {
+                opserr << "WARNING: invalid ys and zs\n";
+                return 0;
+            }
+        }
+        else {
+            opserr << "WARNING unknown option " << sData << "\n";
+        }
+    }
+
+    // Set the beam integration object if not in options
+    if (beamIntegr == 0) {
+        beamIntegr = new LobattoBeamIntegration();
+    }
+
+    // now create the element and add it to the Domain
+    Element* theElement = new DispBeamColumnAsym3d(eleTag, nodeI, nodeJ, numIntgrPts, sections, *beamIntegr, *theTransf,
+        dData2[0], dData2[1], massDens, cmass);
+
+    if (theElement == 0) {
+        opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
+        return 0;
+    }
+
+    delete[] sections;
+    if (beamIntegr != 0)
+        delete beamIntegr;
+    delete[] sData; //This is temporary. See how to deal with charactor inputs in ForceBeamColume3d.cpp
+    delete[] sData2;//or we can delete these charactor arrays after we understand these options of inputs for beam integration
+
+    return theElement;
+}
 
 DispBeamColumnAsym3d::DispBeamColumnAsym3d(int tag, int nd1, int nd2,
 				   int numSec, SectionForceDeformation **s,
