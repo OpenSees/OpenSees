@@ -91,7 +91,10 @@ TclFeViewer_setProjectionMode(ClientData clientData, Tcl_Interp *interp, int arg
 			      TCL_Char **argv);		   			 
 int
 TclFeViewer_setFillMode(ClientData clientData, Tcl_Interp *interp, int argc, 
-			TCL_Char **argv);		   			 			      
+			TCL_Char **argv);		
+int
+TclFeViewer_setLineWidth(ClientData clientData, Tcl_Interp* interp, int argc,
+    TCL_Char** argv);
 int
 TclFeViewer_setPRP(ClientData clientData, Tcl_Interp *interp, int argc, 
 		   TCL_Char **argv);		   
@@ -172,6 +175,9 @@ TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int h
   
   Tcl_CreateCommand(interp, "fill", TclFeViewer_setFillMode,
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
+
+  Tcl_CreateCommand(interp, "lineWidth", TclFeViewer_setLineWidth,
+            (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
   
   Tcl_CreateCommand(interp, "prp", TclFeViewer_setPRP,
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -240,6 +246,9 @@ TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int h
   
   Tcl_CreateCommand(interp, "fill", TclFeViewer_setFillMode,
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);      
+
+  Tcl_CreateCommand(interp, "lineWidth", TclFeViewer_setLineWidth,
+            (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
   
   Tcl_CreateCommand(interp, "prp", TclFeViewer_setPRP,
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -477,6 +486,17 @@ TclFeViewer::setFillMode(const char *mode)
   return theRenderer->setFillMode(mode);
 #endif
 }                
+
+int
+TclFeViewer::setLineWidth(int width)
+{
+#ifdef _NOGRAPHICS
+    // if no graphics .. just return 0
+    return 0;
+#else
+    return theRenderer->setLineWidth(width);
+#endif
+}
 
 int
 TclFeViewer::setPRP(float uLoc, float vLoc , float nLoc)
@@ -787,6 +807,38 @@ TclFeViewer_setFillMode(ClientData clientData, Tcl_Interp *interp, int argc,
   // set the mode
   theTclFeViewer->setFillMode(argv[1]);    
   return TCL_OK;  
+#endif
+}
+
+int
+TclFeViewer_setLineWidth(ClientData clientData, Tcl_Interp* interp, int argc,
+    TCL_Char** argv)
+{
+#ifdef _NOGRAPHICS
+    // if no graphics .. just return 0
+    return TCL_OK;
+#else
+
+    // check destructor has not been called
+    if (theTclFeViewer == 0)
+        return TCL_OK;
+
+    // ensure corrcet num arguments
+    if (argc < 2) {
+        opserr << "WARNING args incorrect - lineWidth width \n";
+        return TCL_ERROR;
+    }
+
+    // get int input
+    int width;
+    if (Tcl_GetInt(interp, argv[1], &width) != TCL_OK) {
+        opserr << "WARNING invalid line width - lineWidth width\n";
+        return TCL_ERROR;
+    }
+
+    // set the width
+    theTclFeViewer->setLineWidth(width);
+    return TCL_OK;
 #endif
 }
 

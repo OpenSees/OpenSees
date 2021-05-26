@@ -75,8 +75,9 @@ class TclFeViewer : public Recorder
     int setPlaneDist(float, float); // location of
                                // near, view & far clipping planes
 
-    int setProjectionMode(const char *); // 
-    int setFillMode(const char *);    // 1 = wire, otherwise fill
+    int setProjectionMode(const char *); // "parallel" for parallel projection (default), "perspective" for perspective.
+    int setFillMode(const char *);    // "wire" for wire-frame (default), "fill" to fill polygons
+    int setLineWidth(int);    // line width in pixels for renderer. default 1
     
     int setPRP(float, float, float); // eye location, global coords
 
