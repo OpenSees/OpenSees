@@ -76,6 +76,7 @@ void* OPS_EPPGapMaterial();
 void* OPS_ENTMaterial();
 void* OPS_Steel01();
 void* OPS_Steel02();
+void* OPS_Steel02Fatigue();
 void* OPS_Steel03();
 void* OPS_Concrete01();
 void* OPS_Steel4();
@@ -224,6 +225,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("ENT", &OPS_ENTMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel01", &OPS_Steel01));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel02", &OPS_Steel02));
+	uniaxialMaterialsMap.insert(std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel03", &OPS_Steel03));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete01", &OPS_Concrete01));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel4", &OPS_Steel4));
