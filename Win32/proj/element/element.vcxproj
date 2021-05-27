@@ -106,13 +106,16 @@
     <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\tetgen.cxx" />
     <ClCompile Include="..\..\..\OTHER\Triangle\triangle.c" />
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
@@ -135,7 +138,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp" />
-	<ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
@@ -163,6 +166,8 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
@@ -373,6 +378,7 @@
     <ClInclude Include="..\..\..\OTHER\tetgen1.4.3\tetgen.h" />
     <ClInclude Include="..\..\..\OTHER\Triangle\triangle.h" />
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.h" />
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h" />
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h" />
     <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h" />
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h" />
@@ -381,7 +387,9 @@
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.h" />
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h" />
     <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Element.h" />
@@ -403,7 +411,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h" />
-	<ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h" />
+    <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\HigherOrder.h" />
@@ -431,6 +439,8 @@
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriMesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h" />
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGT.h" />
