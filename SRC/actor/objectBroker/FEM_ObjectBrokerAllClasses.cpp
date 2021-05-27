@@ -191,9 +191,7 @@
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
-#if !_DLL
 #include "stressDensityModel/stressDensity.h"
-#endif
 #include "InitStressNDMaterial.h"
 
 // Fibers
@@ -345,7 +343,7 @@
 #include "EnvelopeNodeRecorder.h"
 #include "EnvelopeElementRecorder.h"
 #include "DriftRecorder.h"
-#include "MPCORecorder.h"
+//#include "MPCORecorder.h"
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
@@ -1517,10 +1515,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
-#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-#endif
+
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -1854,8 +1851,8 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
 
-        case RECORDER_TAGS_MPCORecorder:
-          return new MPCORecorder();
+	   //        case RECORDER_TAGS_MPCORecorder:
+	   //          return new MPCORecorder();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";

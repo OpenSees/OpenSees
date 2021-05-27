@@ -132,6 +132,9 @@
     <Filter Include="CEqElement">
       <UniqueIdentifier>{0e9b8d94-5562-43c8-a721-4ab2cc9c0edf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PML">
+      <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -707,7 +710,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
+    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
@@ -922,6 +925,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp">
       <Filter>CEqElement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
+      <Filter>crdTransf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
+      <Filter>PML</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1426,7 +1444,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
-	<ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
+    <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
@@ -1641,6 +1659,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h">
       <Filter>CEqElement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.h">
+      <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
+      <Filter>crdTransf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
+      <Filter>PML</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

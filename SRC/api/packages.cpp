@@ -112,7 +112,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
         typedef int(_cdecl* OPS_GetNumRemainingInputArgsType)();
         typedef int(_cdecl* OPS_ResetCurrentInputArgType)(int);
         //typedef int(_cdecl* OPS_ResetInputType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*, TclModelBuilder*);
-        typedef int(_cdecl* OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
+        //typedef int(_cdecl* OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
         typedef int(_cdecl* OPS_GetIntInputPtrType)(int*, int*);
         typedef int(_cdecl* OPS_GetDoubleInputPtrType)(int*, double*);
         typedef const char* (_cdecl* OPS_GetStringType)();
