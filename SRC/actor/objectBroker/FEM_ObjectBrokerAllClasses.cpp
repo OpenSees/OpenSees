@@ -341,7 +341,7 @@
 #include "EnvelopeNodeRecorder.h"
 #include "EnvelopeElementRecorder.h"
 #include "DriftRecorder.h"
-//#include "MPCORecorder.h"
+#include "MPCORecorder.h"
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
@@ -1846,8 +1846,8 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
 
-	   //        case RECORDER_TAGS_MPCORecorder:
-	   //          return new MPCORecorder();
+	case RECORDER_TAGS_MPCORecorder:
+	  return new MPCORecorder();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
