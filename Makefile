@@ -42,8 +42,8 @@ include Makefile.def
 
 all: 
 ifdef MKDIR
-	$(MKDIR) $(HOME)/bin
-	$(MKDIR) $(HOME)/lib
+	$(MKDIR) $(PROJHOME)/bin
+	$(MKDIR) $(PROJHOME)/lib
 endif
 	@( \
 	for f in $(DIRS); \
@@ -60,8 +60,8 @@ OpenSees: tcl
 
 tcl:
 ifdef MKDIR
-	$(MKDIR) $(HOME)/bin
-	$(MKDIR) $(HOME)/lib
+	$(MKDIR) $(PROJHOME)/bin
+	$(MKDIR) $(PROJHOME)/lib
 endif
 	@$(ECHO) Building OpenSees Program ..;
 	@$(CD) $(FE)/tcl;  $(MAKE) tcl;
@@ -78,8 +78,8 @@ OpenSeesPy: python
 
 python: 
 ifdef MKDIR
-	$(MKDIR) $(HOME)/bin
-	$(MKDIR) $(HOME)/lib
+	$(MKDIR) $(PROJHOME)/bin
+	$(MKDIR) $(PROJHOME)/lib
 endif
 	@( \
 	for f in $(DIRS); \
@@ -93,8 +93,8 @@ endif
 
 pythonmain: 
 ifdef MKDIR
-	$(MKDIR) $(HOME)/bin
-	$(MKDIR) $(HOME)/lib
+	$(MKDIR) $(PROJHOME)/bin
+	$(MKDIR) $(PROJHOME)/lib
 endif
 	@( \
 	for f in $(DIRS); \

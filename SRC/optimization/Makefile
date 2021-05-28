@@ -1,7 +1,7 @@
 include ../../Makefile.def
 
 ifndef OPTIMIZATION_LIBRARY
-  OPTIMIZATION_LIBRARY = $(HOME)/lib/libOptimization.a
+  OPTIMIZATION_LIBRARY = $(OPENSEESHOME)/lib/libOptimization.a
 endif
 
 OPTIMIZATION_OBJS = $(FE)/optimization/domain/Optimization.o \

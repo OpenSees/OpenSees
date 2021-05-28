@@ -12,7 +12,7 @@ all: $(OBJS)
 
 
 libBJsolvers.a: $(OBJS)
-	$(AR) -rv $(HOME)/lib/libBJsolvers.a $(OBJS)
+	$(AR) -rv $(OPENSEESHOME)/lib/libBJsolvers.a $(OBJS)
 
 # Miscellaneous
 tidy:	

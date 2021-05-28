@@ -46,9 +46,9 @@ test: $(OBJS) example.o
 	$(MACHINE_SPECIFIC_LIBS) -o test
 
 test1: 
-	@$(CC) $(CFLAGS) $(INCLUDES) -I$(HOME)/MUMPS_4.6.4/include -c c_example.c   
+	@$(CC) $(CFLAGS) $(INCLUDES) -I$(OPENSEESHOME)/MUMPS_4.6.4/include -c c_example.c   
 	@$(LINKER) $(LINKFLAGS) c_example.o  mumps.o \
-	-L$(HOME)/MUMPS_4.6.4/lib \
+	-L$(OPENSEESHOME)/MUMPS_4.6.4/lib \
 	-ldmumps -lpord  -lessl -lpesslsmp -lblacssmp \
 	$(HPM_LIB) \
 	-lm \
@@ -56,7 +56,7 @@ test1:
 
 test2: c_example1.o
 	@$(LINKER) $(LINKFLAGS) c_example1.o  mumps.o \
-	-L$(HOME)/MUMPS_4.6.4/lib \
+	-L$(OPENSEESHOME)/MUMPS_4.6.4/lib \
 	-ldmumps -lpord  -lessl -lpesslsmp -lblacssmp \
 	$(HPM_LIB) \
 	$(FE)/actor/channel/MPI_Channel.o \

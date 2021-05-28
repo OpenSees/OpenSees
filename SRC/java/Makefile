@@ -6,7 +6,7 @@ include ../Makefile
 
 OBJS       = OpenSeesEvaluator.o OpenSeesEvaluatorKepler.o
 
-FE_LIBRARY      = $(HOME)/lib/libOpenSees.so 
+FE_LIBRARY      = $(OPENSEESHOME)/lib/libOpenSees.so 
 
 all: $(OBJS)
 
