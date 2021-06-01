@@ -77,6 +77,7 @@ void* OPS_FiberSectionAsym3d()
     if (OPS_GetNumRemainingInputArgs() >= 2) {
         const char* opt = OPS_GetString();
         if (strcmp(opt, "-GJ") == 0) {
+            numData = 1;
             if (OPS_GetDoubleInput(&numData, &GJ) < 0) return 0;
             torsion = new ElasticMaterial(0, GJ);
         }
