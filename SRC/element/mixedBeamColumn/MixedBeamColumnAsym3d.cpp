@@ -159,16 +159,18 @@ void* OPS_MixedBeamColumnAsym3d()
     // options
     double mass = 0.0;
     int cmass = 0;
-    numData = 1;
     double dData[2]; //input of ys and zs
     dData[0] = 0.0;
     dData[1] = 0.0;
+    int doRayleigh = 1;
+    bool geomLinear = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char* type = OPS_GetString();
         if (strcmp(type, "-cMass") == 0) {
-            cmass = 1;
+            opserr << "WARNING: consistent mass not implemented\n";
         }
         else if (strcmp(type, "-mass") == 0) {
+            numData = 1;
             if (OPS_GetNumRemainingInputArgs() > 0) {
                 if (OPS_GetDoubleInput(&numData, &mass) < 0) {
                     opserr << "WARNING: invalid mass\n";
@@ -183,6 +185,16 @@ void* OPS_MixedBeamColumnAsym3d()
                 opserr << "WARNING: invalid ys and zs\n";
                 return 0;
             }
+        }
+        else if (strcmp(type, "-doRayleigh") == 0) {
+            numData = 1;
+            if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+                opserr << "WARNING: Invalid doRayleigh in element MixedBeamColumnAsym3d " << iData[0];
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-geomLinear") == 0) {
+            opserr << "WARNING: geometric linear in the basic system not implemented\n";
         }
     }
 
@@ -218,7 +230,7 @@ void* OPS_MixedBeamColumnAsym3d()
     }
 
     Element* theEle = new MixedBeamColumnAsym3d(iData[0], iData[1], iData[2], secTags.Size(), sections,
-        *bi, *theTransf, dData[0], dData[1], mass, cmass);
+        *bi, *theTransf, dData[0], dData[1], mass, doRayleigh, geomLinear);
     delete[] sections;
     return theEle;
 }
