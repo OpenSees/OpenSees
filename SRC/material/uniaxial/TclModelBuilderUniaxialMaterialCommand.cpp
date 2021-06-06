@@ -71,6 +71,11 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <AxialSp.h>
 #include <AxialSpHD.h>
 
+#include <Masonry.h>
+#include <Trilinwp.h>
+#include <Trilinwp2.h>
+#include <Masonryt.h>
+
 // #include <SMAMaterial.h>     // Davide Fugazza
 
 #include <Vector.h>
@@ -173,6 +178,10 @@ extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
 extern void *OPS_SLModel(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+extern void *OPS_Masonry(void);
+extern void *OPS_Trilinwp(void);
+extern void *OPS_Trilinwp2(void);
+extern void *OPS_Masonryt(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -815,6 +824,36 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    }
+	else if (strcmp(argv[1], "Masonry") == 0) {
+	  void *theMat = OPS_Masonry();
+	  if (theMat != 0)
+	    theMaterial = (UniaxialMaterial *)theMat;
+	  else
+	    return TCL_ERROR;
+	}
+	else if (strcmp(argv[1], "Trilinwp") == 0) {
+	  void *theMat = OPS_Trilinwp();
+	  if (theMat != 0)
+	    theMaterial = (UniaxialMaterial *)theMat;
+	  else
+	    return TCL_ERROR;
+	}
+	else if (strcmp(argv[1], "Trilinwp2") == 0) {
+	  void *theMat = OPS_Trilinwp2();
+	  if (theMat != 0)
+	    theMaterial = (UniaxialMaterial *)theMat;
+	  else
+	    return TCL_ERROR;
+	}
+	else if (strcmp(argv[1], "Masonryt") == 0) {
+	  void *theMat = OPS_Masonryt();
+	  if (theMat != 0)
+	    theMaterial = (UniaxialMaterial *)theMat;
+	  else
+	    return TCL_ERROR;
+	  
+	      
     } else if (strcmp(argv[1],"Elastic2") == 0) {
 	if (argc < 4 || argc > 5) {
 	    opserr << "WARNING invalid number of arguments\n";
