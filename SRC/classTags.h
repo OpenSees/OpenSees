@@ -235,6 +235,7 @@
 #define MAT_TAG_Masonryt 218
 #define MAT_TAG_Trilinwp 219
 #define MAT_TAG_Trilinwp2 220
+#define MAT_TAG_Trilinwpd 221
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
