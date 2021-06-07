@@ -31,6 +31,7 @@
 #include <Node.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
+#include <MatrixUtil.h>
 #include <Matrix.h>
 #include <Vector.h>
 #include <ID.h>
@@ -117,7 +118,7 @@ void* OPS_DispBeamColumnNL3d()
     }
     
     Element *theEle =  new DispBeamColumnNL3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass);
+					      *bi,*theTransf,mass);
     delete [] sections;
     return theEle;
 }
@@ -250,7 +251,7 @@ void* OPS_DispBeamColumnNL3d(const ID &info)
     }
     
     Element *theEle =  new DispBeamColumnNL3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass);
+					      *bi,*theTransf,mass);
     delete [] sections;
     return theEle;
 }
@@ -505,14 +506,14 @@ DispBeamColumnNL3d::update(void)
     double xi6 = 6.0*xi[i];
     double zeta = xi[i];
 
-    double theta  = (3*zeta*zeta-4*zeta+1)*v(1) + (3*zeta*zeta-2*zeta)*v(2);
+    double thetaz = (3*zeta*zeta-4*zeta+1)*v(1) + (3*zeta*zeta-2*zeta)*v(2);
     double thetay = (3*zeta*zeta-4*zeta+1)*v(3) + (3*zeta*zeta-2*zeta)*v(4);    
 
     int j;
     for (j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
-	e(j) = oneOverL*v(0) + 0.5*theta*theta + 0.5*thetay*thetay; break;
+	e(j) = oneOverL*v(0) + 0.5*thetaz*thetaz + 0.5*thetay*thetay; break;
       case SECTION_RESPONSE_MZ:
 	e(j) = oneOverL*((xi6-4.0)*v(1) + (xi6-2.0)*v(2)); break;
       case SECTION_RESPONSE_MY:
@@ -570,7 +571,7 @@ DispBeamColumnNL3d::getBasicStiff(Matrix &kb, int initial)
 
     double c1 = 3*zeta*zeta-4*zeta+1;
     double c2 = 3*zeta*zeta-2*zeta;
-    double theta  = c1*v(1) + c2*v(2);
+    double thetaz = c1*v(1) + c2*v(2);
     double thetay = c1*v(3) + c2*v(4);    
 
     // Get the section tangent stiffness and stress resultant
@@ -603,28 +604,32 @@ DispBeamColumnNL3d::getBasicStiff(Matrix &kb, int initial)
     }
 
     Matrix B(order,6);
-    Matrix C(order,6);
-    static Matrix C1(1,6);
+    Matrix Cz(order,6);
+    Matrix Cy(order,6);    
+    static Matrix Cz1(1,6);
+    static Matrix Cy1(1,6);    
     for (j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	B(j,0) = 1.0;
 
-	C(j,1) = c1;
-	C(j,2) = c2;
-	C1(0,1) = c1;
-	C1(0,2) = c2;
+	Cz(j,1) = c1;
+	Cz(j,2) = c2;
+	Cz1(0,1) = c1;
+	Cz1(0,2) = c2;
 
-	C(j,3) = c1;
-	C(j,4) = c2;
-	C1(0,3) = c1;
-	C1(0,4) = c2;	
+	Cy(j,3) = c1;
+	Cy(j,4) = c2;
+	Cy1(0,3) = c1;
+	Cy1(0,4) = c2;	
 	break;
       case SECTION_RESPONSE_T:
-	B(j,5) = 1.0;	
+	B(j,5) = 1.0;
+	break;
       case SECTION_RESPONSE_MZ:
 	B(j,1) = xi6-4.0;
 	B(j,2) = xi6-2.0;
+	break;
       case SECTION_RESPONSE_MY:
 	B(j,3) = xi6-4.0;
 	B(j,4) = xi6-2.0;	
@@ -640,8 +645,10 @@ DispBeamColumnNL3d::getBasicStiff(Matrix &kb, int initial)
     Matrix kC(order,6);
 
     // B'*ks*C*theta
-    kC.addMatrixProduct(0.0, ks, C, 1.0);
-    kb.addMatrixTransposeProduct(1.0, B, kC, theta*wt[i]);
+    kC.addMatrixProduct(0.0, ks, Cz, 1.0);
+    kb.addMatrixTransposeProduct(1.0, B, kC, thetaz*wt[i]);
+    kC.addMatrixProduct(0.0, ks, Cy, 1.0);
+    kb.addMatrixTransposeProduct(1.0, B, kC, thetay*wt[i]);
 
     Matrix ks1(1,order);
     static Matrix ksB(1,6);
@@ -652,12 +659,18 @@ DispBeamColumnNL3d::getBasicStiff(Matrix &kb, int initial)
 	  ks1(0,jj) = ks(j,jj);
 
 	ksB.addMatrixProduct(0.0, ks1, B, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cz1, ksB, thetaz*wt[i]);
+	ksB.addMatrixProduct(0.0, ks1, Cz, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cz1, ksB, thetaz*thetaz*wt[i]*L);
+	ksB.addMatrixProduct(0.0, ks1, Cz, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cy1, ksB, thetaz*thetay*wt[i]*L);	
 
-	kb.addMatrixTransposeProduct(1.0, C1, ksB, theta*wt[i]);
-
-	ksB.addMatrixProduct(0.0, ks1, C, 1.0);
-
-	kb.addMatrixTransposeProduct(1.0, C1, ksB, theta*theta*wt[i]*L);
+	ksB.addMatrixProduct(0.0, ks1, B, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cy1, ksB, thetay*wt[i]);
+	ksB.addMatrixProduct(0.0, ks1, Cy, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cy1, ksB, thetay*thetay*wt[i]*L);
+	ksB.addMatrixProduct(0.0, ks1, Cy, 1.0);
+	kb.addMatrixTransposeProduct(1.0, Cz1, ksB, thetay*thetaz*wt[i]*L);		
       }
     }
 
@@ -678,7 +691,7 @@ DispBeamColumnNL3d::getBasicStiff(Matrix &kb, int initial)
 	for (int jj = 0; jj < order; jj++) {
 	  switch(code(jj)) {
 	  case SECTION_RESPONSE_P:
-	    tmp = ks(k,jj)*wt[i]*theta;
+	    tmp = ks(k,jj)*wt[i]*thetaz;
 	    ka(k,1) += tmp*c1;
 	    ka(k,2) += tmp*c2;
 	    break;
@@ -744,7 +757,7 @@ DispBeamColumnNL3d::getTangentStiff()
     double xi6 = 6.0*xi[i];
     double zeta = xi[i];
 
-    double theta  = (3*zeta*zeta-4*zeta+1)*v(1) + (3*zeta*zeta-2*zeta)*v(2);
+    double thetaz = (3*zeta*zeta-4*zeta+1)*v(1) + (3*zeta*zeta-2*zeta)*v(2);
     double thetay = (3*zeta*zeta-4*zeta+1)*v(3) + (3*zeta*zeta-2*zeta)*v(4);    
 
     // Get the section tangent stiffness and stress resultant
@@ -767,8 +780,8 @@ DispBeamColumnNL3d::getTangentStiff()
 	for (int jj = 0; jj < order; jj++) {
 	  switch(code(jj)) {
 	  case SECTION_RESPONSE_P:
-	    q(1) += (3*zeta*zeta-4*zeta+1)*theta*s(jj)*wt[i]*L;
-	    q(2) += (3*zeta*zeta-2*zeta)*theta*s(jj)*wt[i]*L;
+	    q(1) += (3*zeta*zeta-4*zeta+1)*thetaz*s(jj)*wt[i]*L;
+	    q(2) += (3*zeta*zeta-2*zeta)*thetaz*s(jj)*wt[i]*L;
 	    break;
 	  }
 	}
@@ -1076,7 +1089,7 @@ DispBeamColumnNL3d::getResistingForce()
 
     double c1 = 3*zeta*zeta-4*zeta+1;
     double c2 = 3*zeta*zeta-2*zeta;
-    double theta  = c1*v(1) + c2*v(2);
+    double thetaz = c1*v(1) + c2*v(2);
     double thetay = c1*v(3) + c2*v(4);    
     
     // Get section stress resultant
@@ -1100,8 +1113,8 @@ DispBeamColumnNL3d::getResistingForce()
 	for (int jj = 0; jj < order; jj++) {
 	  switch(code(jj)) {
 	  case SECTION_RESPONSE_P:
-	    q(1) += c1*theta*s(jj)*wt[i]*L;
-	    q(2) += c2*theta*s(jj)*wt[i]*L;
+	    q(1) += c1*thetaz*s(jj)*wt[i]*L;
+	    q(2) += c2*thetaz*s(jj)*wt[i]*L;
 	    break;
 	  }
 	}
@@ -1606,6 +1619,13 @@ DispBeamColumnNL3d::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 12, P);
   }
 
+  else if (strcmp(argv[0],"sectionDisplacements") == 0) {
+    if (argc > 1 && strcmp(argv[1],"local") == 0)
+      theResponse = new ElementResponse(this, 1111, Matrix(numSections,3));
+    else
+      theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
+  }
+  
   else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
     theResponse = new ElementResponse(this, 201, Vector(3));
   
@@ -1712,7 +1732,7 @@ DispBeamColumnNL3d::setResponse(const char **argv, int argc,
   
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
-  
+
   output.endTag();
   return theResponse;
 }
@@ -1834,6 +1854,53 @@ DispBeamColumnNL3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 111 || responseID == 1111) {
+    double L = crdTransf->getInitialLength();
+    double pts[maxNumSections];
+    beamInt->getSectionLocations(numSections, L, pts);
+    // CBDI influence matrix
+    Matrix ls(numSections, numSections);
+    getCBDIinfluenceMatrix(numSections, pts, L, ls);
+    // Curvature vector
+    Vector kappaz(numSections); // about section z
+    Vector kappay(numSections); // about section y
+    for (int i = 0; i < numSections; i++) {
+      const ID &code = theSections[i]->getType();
+      const Vector &e = theSections[i]->getSectionDeformation();
+      int order = theSections[i]->getOrder();
+      for (int j = 0; j < order; j++) {
+	if (code(j) == SECTION_RESPONSE_MZ)
+	  kappaz(i) += e(j);
+	if (code(j) == SECTION_RESPONSE_MY)
+	  kappay(i) += e(j);
+      }
+    }
+    // Displacement vector
+    Vector dispsy(numSections); // along local y
+    Vector dispsz(numSections); // along local z    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
+    beamInt->getSectionLocations(numSections, L, pts);
+    static Vector uxb(3);
+    static Vector uxg(3);
+    Matrix disps(numSections,3);
+    static Vector vp(6);
+    vp = crdTransf->getBasicTrialDisp();
+    for (int i = 0; i < numSections; i++) {
+      uxb(0) = pts[i]*vp(0); // linear shape function
+      uxb(1) = dispsy(i);
+      uxb(2) = dispsz(i);
+      if (responseID == 111)
+	uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      else
+	uxg = crdTransf->getPointLocalDisplFromBasic(pts[i],uxb);
+      disps(i,0) = uxg(0);
+      disps(i,1) = uxg(1);
+      disps(i,2) = uxg(2);            
+    }
+    return eleInfo.setMatrix(disps);
+  }
+  
   else if (responseID >= 201 && responseID <= 203) {
     static Vector xlocal(3);
     static Vector ylocal(3);
