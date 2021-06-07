@@ -1310,7 +1310,7 @@ DispBeamColumnAsym3d::sendSelf(int commitTag, Channel &theChannel)
   int i, j;
   int loc = 0;
   
-  static Vector data(14);
+  static Vector data(16);
   data(0) = this->getTag();
   data(1) = connectedExternalNodes(0);
   data(2) = connectedExternalNodes(1);
@@ -1337,6 +1337,8 @@ DispBeamColumnAsym3d::sendSelf(int commitTag, Channel &theChannel)
   data(11) = betaK;
   data(12) = betaK0;
   data(13) = betaKc;
+  data(14) = ys;
+  data(15) = zs;
   
   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
     opserr << "DispBeamColumnAsym3d::sendSelf() - failed to send data Vector\n";
@@ -1404,7 +1406,7 @@ DispBeamColumnAsym3d::recvSelf(int commitTag, Channel &theChannel,
   int dbTag = this->getDbTag();
   int i;
   
-  static Vector data(14);
+  static Vector data(16);
 
   if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
     opserr << "DispBeamColumnAsym3d::recvSelf() - failed to recv data Vector\n";
@@ -1428,6 +1430,8 @@ DispBeamColumnAsym3d::recvSelf(int commitTag, Channel &theChannel,
   betaK = data(11);
   betaK0 = data(12);
   betaKc = data(13);
+  ys = data(14);
+  zs = data(15);
   
   // create a new crdTransf object if one needed
   if (crdTransf == 0 || crdTransf->getClassTag() != crdTransfClassTag) {

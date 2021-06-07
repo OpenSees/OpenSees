@@ -878,14 +878,16 @@ FiberSectionAsym3d::sendSelf(int commitTag, Channel &theChannel)
 
   // create an id to send objects tag and numFibers, 
   //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(3);
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = numFibers;
   int dbTag = this->getDbTag();
   theTorsion->setDbTag(dbTag);
   data(2) = theTorsion->getClassTag();
+  data(3) = ys;
+  data(4) = zs;
 
-  res += theChannel.sendID(dbTag, commitTag, data);
+  res += theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "FiberSection2d::sendSelf - failed to send ID data\n";
     return res;
@@ -937,20 +939,22 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
+  static Vector data(5);
   
   int dbTag = this->getDbTag();
-  res += theChannel.recvID(dbTag, commitTag, data);
+  res += theChannel.recvVector(dbTag, commitTag, data);
+  ys = data(3);
+  zs = data(4);
 
   if (res < 0) {
    opserr << "FiberSection2d::sendSelf - failed to recv ID data\n";
    return res;
   } 
    
-  this->setTag(data(0));
+  this->setTag((int)data(0));
 
   if (theTorsion == 0) {	
-	  int cTag = data(2);
+	  int cTag = (int)data(2);
 	  theTorsion = theBroker.getNewUniaxialMaterial(cTag);
 	  theTorsion->setDbTag(dbTag);
   } 
@@ -964,8 +968,8 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
   }
   
   // recv data about materials objects, classTag and dbTag
-  if (data(1) != 0) {
-    ID materialData(2*data(1));
+  if ((int)data(1) != 0) {
+    ID materialData(2*(int)data(1));
     res += theChannel.recvID(dbTag, commitTag, materialData);
     if (res < 0) {
      opserr << "FiberSection2d::sendSelf - failed to send material data\n";
@@ -973,7 +977,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
     }    
 
     // if current arrays not of correct size, release old and resize
-    if (theMaterials == 0 || numFibers != data(1)) {
+    if (theMaterials == 0 || numFibers != (int)data(1)) {
       // delete old stuff if outa date
       if (theMaterials != 0) {
 	for (int i=0; i<numFibers; i++)
@@ -986,8 +990,8 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
       }
 
       // create memory to hold material pointers and fiber data
-      numFibers = data(1);
-      sizeFibers = data(1);
+      numFibers = (int)data(1);
+      sizeFibers = (int)data(1);
       if (numFibers != 0) {
 
 	theMaterials = new UniaxialMaterial *[numFibers];
