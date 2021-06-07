@@ -123,7 +123,7 @@ SectionForceDeformation  *LayeredShellFiberSectionThermal::getCopy( )
 					  nLayers,
 					  thickness,
 					  theFibers ) ; //make the copy
-    delete thickness;
+    delete [] thickness;
   }
   return clone ;
 }
