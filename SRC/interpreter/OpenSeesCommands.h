@@ -187,6 +187,19 @@ int OPS_stiffnessDegradation();
 int OPS_strengthDegradation();
 int OPS_unloadingRule();
 
+/* OpenSeesMaterialTestCommands */
+int OPS_testUniaxialMaterial();
+int OPS_testNDMaterial();
+int OPS_testSection();
+int OPS_setStrain();
+int OPS_setTrialStrain();
+int OPS_commitStrain();
+int OPS_getStrain();
+int OPS_getStress();
+int OPS_getTangent();
+int OPS_getDampTangent();
+int OPS_getResponse();
+
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
 int OPS_updateMaterialStage();

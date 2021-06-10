@@ -129,6 +129,39 @@ modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** 
 int
 responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
 
+int
+testUniaxialMaterial(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+testNDMaterial(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+testSection(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+setStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+setTrialStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+commitStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getStress(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getTangent(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getDampTangent(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getResponse(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 

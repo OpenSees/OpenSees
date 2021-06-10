@@ -44,6 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SectionForceDeformation.h>
 #include <elementAPI.h>
 #include <Matrix.h>
+#include <Vector.h>
+#include <DummyStream.h>
+#include <Response.h>
 
 static int testType = 0;
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -143,9 +146,34 @@ int OPS_setStrain()
         opserr << "setStrain WARNING must provide strain values.\n";
         return -1;
     }
-    // call sub-routines
-    OPS_setTrialStrain();
-    OPS_commitStrain();
+    // get strain values from input
+    double strainData;
+    int numData = OPS_GetNumRemainingInputArgs();
+    if (OPS_GetDoubleInput(&numData, &strainData) < 0) {
+        opserr << "invalid double value\n";
+        return -1;
+    }
+    // switch for test type
+    if (testType == 1) {
+        if (numData != 1) {
+            opserr << "setTrialStrain WARNING wrong number of arguments.\n";
+            return -1;
+        }
+        theTestingUniaxialMaterial->setTrialStrain(strainData);
+        theTestingUniaxialMaterial->commitState();
+    }
+    else if (testType == 2) {
+        Vector strains(&strainData, numData);
+        theTestingNDMaterial->setTrialStrain(strains);
+        theTestingNDMaterial->commitState();
+    }
+    else if (testType == 3) {
+        Vector strains(&strainData, numData);
+        theTestingSection->setTrialSectionDeformation(strains);
+        theTestingSection->commitState();
+    }
+
+    return 0;
 }
 
 int OPS_setTrialStrain()
@@ -161,9 +189,9 @@ int OPS_setTrialStrain()
         return -1;
     }
     // get strain values from input
-    double strain;
+    double strainData;
     int numData = OPS_GetNumRemainingInputArgs();
-    if (OPS_GetDoubleInput(&numData, &strain) < 0) {
+    if (OPS_GetDoubleInput(&numData, &strainData) < 0) {
         opserr << "invalid double value\n";
         return -1;
     }
@@ -173,13 +201,15 @@ int OPS_setTrialStrain()
             opserr << "setTrialStrain WARNING wrong number of arguments.\n";
             return -1;
         }
-        theTestingUniaxialMaterial->setTrialStrain(strain);
+        theTestingUniaxialMaterial->setTrialStrain(strainData);
     }
     else if (testType == 2) {
-        theTestingNDMaterial->setTrialStrain(strain);
+        Vector strains(&strainData, numData);
+        theTestingNDMaterial->setTrialStrain(strains);
     }
     else if (testType == 3) {
-        theTestingSection->setTrialSectionDeformation(strain);
+        Vector strains(&strainData, numData);
+        theTestingSection->setTrialSectionDeformation(strains);
     }
 
     return 0;
@@ -201,6 +231,8 @@ int OPS_commitStrain()
     else if (testType == 3) {
         theTestingSection->commitState();
     }
+
+    return 0;
 }
 
 int OPS_getStrain()
@@ -372,9 +404,91 @@ int OPS_getDampTangent()
     }
     else if (testType == 2) {
         opserr << "damping tangent not implemented for nDMaterials\n";
+        return -1;
     }
     else if (testType == 3) {
         opserr << "damping tangent not implemented for sections\n";
+        return -1;
+    }
+
+    return 0;
+}
+
+static Vector responseData(0);
+
+int OPS_getResponse()
+{
+    // switch for test type
+    if (testType == 0) {
+        opserr << "getResponse WARNING no active test\n";
+        return -1;
+    }
+    // check number of input args
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc > 0) {
+        char** argv = new char*[argc];
+        char buffer[128];
+        for (int i = 0; i < argc; i++) {
+            argv[i] = new char[128];
+            // Turn everything in to a string for setResponse
+            strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
+        }
+        // set the response
+        DummyStream dummy;
+        Response* theResponse{};
+        if (testType == 1) {
+            theResponse = theTestingUniaxialMaterial->setResponse((const char**)argv, argc, dummy);
+        }
+        else if (testType == 2) {
+            theResponse = theTestingNDMaterial->setResponse((const char**)argv, argc, dummy);
+        }
+        else if (testType == 3) {
+            theResponse = theTestingSection->setResponse((const char**)argv, argc, dummy);
+        }
+        // get clean up and check for null cases
+        for (int i = 0; i < argc; i++)
+            delete [] argv[i];
+        delete [] argv;
+        if (theResponse == 0) {
+            return 0;
+        }
+        if (theResponse->getResponse() < 0) {
+            delete theResponse;
+            return 0;
+        }
+        // get data from response
+        Information &responseInfo = theResponse->getInformation();
+        responseData = responseInfo.getData();
+        delete theResponse;
+        int size = responseData.Size();
+        // if data not empty, set as output
+        if (size != 0) {
+            double* newdata = new double[size];
+            for (int i = 0; i < size; i++) {
+                newdata[i] = responseData(i);
+            }
+            if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
+                opserr << "WARNING failed to get test response\n";
+                delete [] newdata;
+                return -1;
+            }
+            delete [] newdata;
+        }
+        else {
+            double* newdata = 0;
+            if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
+                opserr << "WARNING failed to get test response\n";
+                return -1;
+            }
+        }
+    }
+    else {
+        int size = 0;
+        double* newdata = 0;
+        if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
+            opserr << "WARNING failed to get test response\n";
+            return -1;
+        }
     }
 
     return 0;
