@@ -229,6 +229,8 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BCell.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BNode.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.cpp" />

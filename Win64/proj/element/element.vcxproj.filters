@@ -941,6 +941,12 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL3d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BCell.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BNode.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
