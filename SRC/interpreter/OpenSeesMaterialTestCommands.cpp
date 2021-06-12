@@ -35,7 +35,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written: Alex Baker
-// Created: 04/21
+// Created: 06/12
 //
 // Description: This file contains the material testing commands
 
@@ -56,9 +56,18 @@ static SectionForceDeformation* theTestingSection = 0;
 void OPS_clearAllTestMaterials(void) 
 {
     testType = 0;
-    theTestingUniaxialMaterial = 0;
-    theTestingNDMaterial = 0;
-    theTestingSection = 0;
+    if (theTestingUniaxialMaterial != 0) {
+        delete theTestingUniaxialMaterial;
+        theTestingUniaxialMaterial = 0;
+    }
+    if (theTestingNDMaterial != 0) {
+        delete theTestingNDMaterial;
+        theTestingNDMaterial = 0;
+    }
+    if (theTestingSection != 0) {
+        delete theTestingSection;
+        theTestingSection = 0;
+    }
 }
 
 int OPS_testUniaxialMaterial()
@@ -75,14 +84,19 @@ int OPS_testUniaxialMaterial()
         return -1;
     }
 
-    UniaxialMaterial* mat = OPS_getUniaxialMaterial(tag);
+    // delete the old test material
+    if (theTestingUniaxialMaterial != 0) {
+        delete theTestingUniaxialMaterial;
+        theTestingUniaxialMaterial = 0;
+    }
 
+    // get the material and create a test copy
+    UniaxialMaterial* mat = OPS_getUniaxialMaterial(tag);
     if (mat == 0) {
         opserr << "testUniaxialMaterial - Material Not Found.\n";
         return -1;
     }
-
-    theTestingUniaxialMaterial = mat;
+    theTestingUniaxialMaterial = mat->getCopy();
     testType = 1;
 
     return 0;
@@ -102,14 +116,19 @@ int OPS_testNDMaterial()
         return -1;
     }
 
-    NDMaterial* mat = OPS_getNDMaterial(tag);
+    // delete the old test material
+    if (theTestingNDMaterial != 0) {
+        delete theTestingNDMaterial;
+        theTestingNDMaterial = 0;
+    }
 
+    // get the material and create a test copy
+    NDMaterial* mat = OPS_getNDMaterial(tag);
     if (mat == 0) {
         opserr << "testNDMaterial - Material Not Found.\n";
         return -1;
     }
-
-    theTestingNDMaterial = mat;
+    theTestingNDMaterial = mat->getCopy();
     testType = 2;
 
     return 0;
@@ -129,14 +148,19 @@ int OPS_testSection()
         return -1;
     }
 
-    SectionForceDeformation* mat = OPS_getSectionForceDeformation(tag);
+    // delete the old test section
+    if (theTestingSection != 0) {
+        delete theTestingSection;
+        theTestingSection = 0;
+    }
 
+    // get the material and create a test copy
+    SectionForceDeformation* mat = OPS_getSectionForceDeformation(tag);
     if (mat == 0) {
         opserr << "testSection - Section Not Found.\n";
         return -1;
     }
-
-    theTestingSection = mat;
+    theTestingSection = mat->getCopy();
     testType = 3;
 
     return 0;
