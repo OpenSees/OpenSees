@@ -71,7 +71,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <AxialSp.h>
 #include <AxialSpHD.h>
 
-// #include <SMAMaterial.h>     // Davide Fugazza
+#include <SMAMaterial.h>     // Davide Fugazza
 
 #include <Vector.h>
 #include <string.h>
@@ -172,6 +172,7 @@ extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
 extern void *OPS_SLModel(void);
+extern void *OPS_SMAMaterial(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -2441,67 +2442,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	}
     }
 
-    /*
     else if (strcmp(argv[1],"SMA") == 0) {
-      
-      if (argc < 9) {
-	opserr << "Warning insufficient arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterialSMA  tag  E  eps_L  sig_AS_s  sig_AS_f  sig_SA_s  sig_SA_f" << endln;
-	
-	return TCL_ERROR;
-      }
-      
-      int tag;
-      double E, eps_L, sig_AS_s, sig_AS_f, sig_SA_s, sig_SA_f;
-      
-      if (Tcl_GetInt(interp,argv[2], &tag) != TCL_OK){
-	opserr << "warning invalid uniaxialMaterial SMA tag" << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[3], &E) != TCL_OK){
-	opserr << "warning invalid E\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[4], &eps_L) != TCL_OK){
-	opserr << "warning invalid eps_L\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[5], &sig_AS_s) != TCL_OK){
-	opserr << "warning invalid sig_AS_s\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[6], &sig_AS_f) != TCL_OK){
-	opserr << "warning invalid sig_AS_f\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[7], &sig_SA_s) != TCL_OK){
-	opserr << "warning invalid sig_SA_s\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp,argv[8], &sig_SA_f) != TCL_OK){
-	opserr << "warning invalid sig_SA_f\n";
-	opserr << "uniaxialMaterial SMA: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      // Parsing was successful, allocate the material
-      
-      theMaterial = new SMAMaterial(tag, E, eps_L, sig_AS_s, sig_AS_f, sig_SA_s, sig_SA_f);
-      
+      void *theMat = OPS_SMAMaterial();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;      
     }
-    */
 
     else if (strcmp(argv[1],"ECC01") == 0) {
       if (argc < 16) {
