@@ -53,6 +53,14 @@ static UniaxialMaterial* theTestingUniaxialMaterial = 0;
 static NDMaterial* theTestingNDMaterial = 0;
 static SectionForceDeformation* theTestingSection = 0;
 
+void OPS_clearAllTestMaterials(void) 
+{
+    testType = 0;
+    theTestingUniaxialMaterial = 0;
+    theTestingNDMaterial = 0;
+    theTestingSection = 0;
+}
+
 int OPS_testUniaxialMaterial()
 {
     if (OPS_GetNumRemainingInputArgs() != 1) {
