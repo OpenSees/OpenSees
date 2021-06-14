@@ -340,6 +340,7 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesCrdTransfCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesFrictionModelCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesMaterialTestCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesMiscCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesNDMaterialCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesOutputCommands.cpp" />

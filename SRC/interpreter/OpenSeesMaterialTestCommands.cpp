@@ -38,6 +38,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Created: 06/12
 //
 // Description: This file contains the material testing commands
+// The test material is set with testUniaxialMaterial, testNDMaterial, or testSection
+// The test strains/deformations are set with setStrain, or setTrialStrain and commitStrain
+// The test state information is then queried with getStrain, getStress, getTangent, getDampTangent, and getResponse
 
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
@@ -53,6 +56,7 @@ static UniaxialMaterial* theTestingUniaxialMaterial = 0;
 static NDMaterial* theTestingNDMaterial = 0;
 static SectionForceDeformation* theTestingSection = 0;
 
+// Method to be invoked by wipe(), clears all test materials and resets the testType flag.
 void OPS_clearAllTestMaterials(void) 
 {
     testType = 0;

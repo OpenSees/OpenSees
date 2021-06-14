@@ -174,12 +174,6 @@ private:
 
 /* OpenSeesUniaxialMaterialCommands.cpp */
 int OPS_UniaxialMaterial();
-int OPS_testUniaxialMaterial();
-int OPS_setStrain();
-int OPS_getStrain();
-int OPS_getStress();
-int OPS_getTangent();
-int OPS_getDampTangent();
 int OPS_LimitCurve();
 
 int OPS_hystereticBackbone();
