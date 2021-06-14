@@ -489,43 +489,45 @@ Domain::addNode(Node * node)
       node->setDomain(this);
       this->domainChange();
 
-      // see if the physical bounds are changed
-      // note this assumes 0,0,0,0,0,0 as startup min,max values
-      const Vector& crds = node->getCrds();
-      int dim = crds.Size();
-      if (initBounds) {
-          if (dim >= 1) {
-              double x = crds(0);
-              theBounds(0) = x;
-              theBounds(3) = x;
+      if (!resetBounds) {
+          // see if the physical bounds are changed
+          // note this assumes 0,0,0,0,0,0 as startup min,max values
+          const Vector& crds = node->getCrds();
+          int dim = crds.Size();
+          if (initBounds) {
+              if (dim >= 1) {
+                  double x = crds(0);
+                  theBounds(0) = x;
+                  theBounds(3) = x;
+              }
+              if (dim >= 2) {
+                  double y = crds(1);
+                  theBounds(1) = y;
+                  theBounds(4) = y;
+              }
+              if (dim == 3) {
+                  double z = crds(2);
+                  theBounds(2) = z;
+                  theBounds(5) = z;
+              }
+              initBounds = false;
           }
-          if (dim >= 2) {
-              double y = crds(1);
-              theBounds(1) = y;
-              theBounds(4) = y;
-          }
-          if (dim == 3) {
-              double z = crds(2);
-              theBounds(2) = z;
-              theBounds(5) = z;
-          }
-          initBounds = false;
-      }
-      else {
-          if (dim >= 1) {
-              double x = crds(0);
-              if (x < theBounds(0)) theBounds(0) = x;
-              if (x > theBounds(3)) theBounds(3) = x;
-          }
-          if (dim >= 2) {
-              double y = crds(1);
-              if (y < theBounds(1)) theBounds(1) = y;
-              if (y > theBounds(4)) theBounds(4) = y;
-          }
-          if (dim == 3) {
-              double z = crds(2);
-              if (z < theBounds(2)) theBounds(2) = z;
-              if (z > theBounds(5)) theBounds(5) = z;
+          else {
+              if (dim >= 1) {
+                  double x = crds(0);
+                  if (x < theBounds(0)) theBounds(0) = x;
+                  if (x > theBounds(3)) theBounds(3) = x;
+              }
+              if (dim >= 2) {
+                  double y = crds(1);
+                  if (y < theBounds(1)) theBounds(1) = y;
+                  if (y > theBounds(4)) theBounds(4) = y;
+              }
+              if (dim == 3) {
+                  double z = crds(2);
+                  if (z < theBounds(2)) theBounds(2) = z;
+                  if (z > theBounds(5)) theBounds(5) = z;
+              }
           }
       }
   } else
