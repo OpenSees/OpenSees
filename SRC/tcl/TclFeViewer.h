@@ -77,7 +77,6 @@ class TclFeViewer : public Recorder
 
     int setProjectionMode(const char *); // "parallel" for parallel projection (default), "perspective" for perspective.
     int setFillMode(const char *);    // "wire" for wire-frame (default), "fill" to fill polygons
-    int setLineWidth(int);    // line width in pixels for renderer. default 1
     
     int setPRP(float, float, float); // eye location, global coords
 
@@ -86,7 +85,7 @@ class TclFeViewer : public Recorder
 
 
     // methods invoked on the FE_Viewer
-    int displayModel(int eleFlag, int nodeFlag, float displayFact);
+    int displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth = 1); // default line width set here.
     int clearImage(void);
     int saveImage(const char *fileName);
     int saveImage(const char *imageName, const char *fileName);
