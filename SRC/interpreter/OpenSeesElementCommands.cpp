@@ -150,6 +150,7 @@ void* OPS_ForceBeamColumn2dThermal();
 void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
+void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
 void* OPS_MixedBeamColumn2d();
@@ -334,7 +335,7 @@ namespace {
 	    ID info;
 	    return OPS_DispBeamColumnNL2d(info);
 	} else {
-	    return OPS_DispBeamColumn3d();
+	    return OPS_DispBeamColumnNL3d();
 	}
     }
 

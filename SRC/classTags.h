@@ -623,6 +623,7 @@
 #define ELE_TAG_DispBeamColumnNL2d        621
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
 #define ELE_TAG_DispBeamColumn3d        64
+#define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641
 #define ELE_TAG_DispBeamColumnAsym3d           642
 #define ELE_TAG_HingedBeam2d            65

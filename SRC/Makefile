@@ -512,6 +512,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
+	$(FE)/element/dispBeamColumn/DispBeamColumnNL3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnWarping3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnAsym3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dThermal.o \
@@ -628,6 +629,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/HigherOrder.o \
 	$(FE)/element/PFEMElement/Mesh.o \
 	$(FE)/element/PFEMElement/PFEMContact2D.o \
+	$(FE)/element/PFEMElement/BNode.o \
+	$(FE)/element/PFEMElement/BCell.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \

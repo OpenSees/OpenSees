@@ -18,59 +18,47 @@
 **                                                                    **
 ** ****************************************************************** */
 
-
-// $Revision: 1.0 $
-// $Date: 2016-1-27  $
-
 // Written: Minjie Zhu
 //
-// Description: This class defines the ParticleGroup class
 //
 
-#ifndef ParticleGroup_h
-#define ParticleGroup_h
-
+#ifndef BNode_h
+#define BNode_h
 
 #include "BackgroundDef.h"
-#include "Particle.h"
-#include "Mesh.h"
 
-class ParticleGroup : public Mesh
-{
-public:
-    explicit ParticleGroup(int tag);
-    ~ParticleGroup();
+// BACKGROUND_FLUID - a grid fluid node
+// BACKGROUND_STRUCTURE - a structural node
+// BACKGROUND_FIXED - a fixed grid fluid node
+class BNode {
+   private:
+    VInt tags;
+    VVDouble crdsn;
+    VVDouble vn;
+    VVDouble dvn;
+    VDouble pn;
+    VDouble dpn;
+    BackgroundType type;
+    VInt sid;  // structure id, <0:fluid, >0:structure, =0:not in
+               // contact
 
-    // particles
-    void addParticle(const VDouble& coord, const VDouble& vel, double p);
-    void addParticle(const VDouble& coord,
-                     const VDouble& vel,
-                     const VDouble& accel, double p);
-    void removeParticles(const VInt& rm);
-    int numParticles() const {return (int)particles.size();}
-    Particle* getParticle(int i) {
-        return (i>=0&&i<numParticles())? particles[i]:0;
-    }
+   public:
+    BNode();
+    void addNode(int tag, const VDouble& crds, const VDouble& v,
+                 const VDouble& dv, double p, double dp, BackgroundType tp,
+                 int id = -1);
+    void clear();
+    void setType(BackgroundType t);
 
-    // dummy mesh
-    int mesh(){return 0;}
-
-    // return particles
-    int pointlist(VDouble& pointdata);
-
-    // create particles
-    int pointlist(const VDouble& pointdata, int ndm);
-    int line(const VDouble& p1, const VDouble& p2, int num,
-	     const VDouble& vel0, double p0);
-    int qua_d(const VDouble& p1, const VDouble& p2, const VDouble& p3,
-	     const VDouble& p4, int m, int n, const VDouble& vel0, double p0);
-    int tri(const VDouble& p1, const VDouble& p2,
-	    const VDouble& p4, int m, int n, const VDouble& vel0, double p0);
-    int cube(const VVDouble& pts, const VInt& num, const VDouble& vel0, double p0);
-
-private:
-
-    VParticle particles;
+    int size() const;
+    VInt& getTags();
+    VVDouble& getCrds();
+    VVDouble& getVel();
+    VVDouble& getAccel();
+    VDouble& getPressure();
+    VDouble& getPdot();
+    BackgroundType getType();
+    VInt& getSid();
 };
 
 #endif
