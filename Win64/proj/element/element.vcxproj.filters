@@ -938,12 +938,6 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp">
-      <Filter>mixedBeamColumn</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.cpp">
-      <Filter>dispBeamColumn</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1676,12 +1670,6 @@
       <Filter>elasticBeamColumn</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.h">
-      <Filter>dispBeamColumn</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h">
-      <Filter>mixedBeamColumn</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.h">
       <Filter>dispBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
