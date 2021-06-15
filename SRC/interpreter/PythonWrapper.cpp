@@ -175,6 +175,30 @@ static PyObject *Py_ops_testUniaxialMaterial(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject* Py_ops_testNDMaterial(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_testNDMaterial() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject* Py_ops_testSection(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_testSection() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_setStrain(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -182,6 +206,30 @@ static PyObject *Py_ops_setStrain(PyObject *self, PyObject *args)
     if (OPS_setStrain() < 0) {
 	opserr<<(void*)0;
 	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject* Py_ops_setTrialStrain(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setTrialStrain() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject* Py_ops_commitStrain(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_commitStrain() < 0) {
+        opserr << (void*)0;
+        return NULL;
     }
 
     return wrapper->getResults();
@@ -230,6 +278,18 @@ static PyObject *Py_ops_getDampTangent(PyObject *self, PyObject *args)
     if (OPS_getDampTangent() < 0) {
 	opserr<<(void*)0;
 	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject* Py_ops_getResponse(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getResponse() < 0) {
+        opserr << (void*)0;
+        return NULL;
     }
 
     return wrapper->getResults();
@@ -2251,11 +2311,16 @@ PythonWrapper::addOpenSeesCommands()
 {
     addCommand("uniaxialMaterial", &Py_ops_UniaxialMaterial);
     addCommand("testUniaxialMaterial", &Py_ops_testUniaxialMaterial);
+    addCommand("testNDMaterial", &Py_ops_testNDMaterial);
+    addCommand("testSection", &Py_ops_testSection);
     addCommand("setStrain", &Py_ops_setStrain);
+    addCommand("setTrialStrain", &Py_ops_setTrialStrain);
+    addCommand("commitStrain", &Py_ops_commitStrain);
     addCommand("getStrain", &Py_ops_getStrain);
     addCommand("getStress", &Py_ops_getStress);
     addCommand("getTangent", &Py_ops_getTangent);
     addCommand("getDampTangent", &Py_ops_getDampTangent);
+    addCommand("getResponse", &Py_ops_getResponse);
     addCommand("wipe", &Py_ops_wipe);
     addCommand("model", &Py_ops_model);
     addCommand("node", &Py_ops_node);
