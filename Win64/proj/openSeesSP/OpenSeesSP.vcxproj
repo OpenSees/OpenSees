@@ -101,10 +101,10 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpi.lib;fmpich2.lib;blacsCinit_MPI-Win32.lib;blacs_MPI-Win32.lib;scalapack.lib;scalapackd.lib;mumps.lib;mumpsFortran.lib;parallel.lib;distributedSuperLU.lib;handler.lib;wsock32.lib;OpenGL32.lib;glu32.lib;GlAux.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libm.lib;IFCONSOL.lib;LIBIFCORE.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>parallel.lib;distributedSuperLu.lib;dmumps_c.lib;dmumps_fortran.lib;mumps_common_c.lib;pord_c.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;mkl_core.lib;mkl_blacs_msmpi_lp64.lib;mkl_scalapack_lp64.lib;libiomp5md.lib;msmpi.lib;msmpifec.lib;ifmodintr.lib;analysis.lib;arpack.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;gdi32.lib;user32.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin/OpenSeesSP.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\MPICH2\lib;c:\program Files\tcl\lib;..\..\lib\release;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64;c:\program Files\tcl\lib;..\..\lib\release;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
     </Link>
     <Midl>
@@ -132,11 +132,11 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpi.lib;fmpich2.lib;blacsCinit_MPI-Win32.lib;blacs_MPI-Win32.lib;scalapack.lib;scalapackd.lib;mumps.lib;mumpsFortran.lib;parallel.lib;distributedSuperLU.lib;handler.lib;wsock32.lib;OpenGL32.lib;glu32.lib;GlAux.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libm.lib;IFCONSOL.lib;LIBIFCORE.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>parallel.lib;distributedSuperLu.lib;dmumps_c.lib;dmumps_fortran.lib;mumps_common_c.lib;pord_c.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;mkl_core.lib;mkl_blacs_msmpi_lp64.lib;mkl_scalapack_lp64.lib;libiomp5md.lib;msmpi.lib;msmpifec.lib;ifmodintr.lib;analysis.lib;arpack.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;gdi32.lib;user32.lib;pml.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin/OpenSeesSP.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\MPICH2\lib;c:\program Files\tcl\lib;..\..\lib\release;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64;c:\program Files\tcl\lib;..\..\lib\release;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
     </Link>
     <Midl>
@@ -166,10 +166,10 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>parallel.lib;distributedSuperLU.lib;handler.lib;OpenGL32.lib;wsock32.lib;glu32.lib;GlAux.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;mpi.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libm.lib;ifconsol.lib;libifcore.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>parallel.lib;distributedSuperLu.lib;dmumps_c.lib;dmumps_fortran.lib;mumps_common_c.lib;pord_c.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;mkl_core.lib;mkl_blacs_msmpi_lp64.lib;mkl_scalapack_lp64.lib;libiomp5md.lib;msmpi.lib;msmpifec.lib;ifmodintr.lib;analysis.lib;arpack.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;gdi32.lib;user32.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin/OpenSeesSP.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\MPICH2\lib;c:\program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64;c:\program Files\tcl\lib;..\..\lib\release;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\..\..\bin/openSeesSP.pdb</ProgramDatabaseFile>
@@ -201,11 +201,11 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>parallel.lib;distributedSuperLU.lib;handler.lib;OpenGL32.lib;wsock32.lib;glu32.lib;GlAux.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;mpi.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libm.lib;ifconsol.lib;libifcore.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>parallel.lib;distributedSuperLu.lib;dmumps_c.lib;dmumps_fortran.lib;mumps_common_c.lib;pord_c.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;mkl_core.lib;mkl_blacs_msmpi_lp64.lib;mkl_scalapack_lp64.lib;libiomp5md.lib;msmpi.lib;msmpifec.lib;ifmodintr.lib;analysis.lib;arpack.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;gdi32.lib;user32.lib;pml.lib</AdditionalDependencies>
       <OutputFile>.\..\..\bin/OpenSeesSP.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\MPICH2\lib;c:\program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64;c:\program Files\tcl\lib;..\..\lib\debug;..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\..\..\bin/openSeesSP.pdb</ProgramDatabaseFile>

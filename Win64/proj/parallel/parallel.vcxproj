@@ -239,6 +239,7 @@
     <ClCompile Include="..\..\..\SRC\actor\channel\MPI_Channel.cpp" />
     <ClCompile Include="..\..\..\SRC\actor\channel\Socket.cpp" />
     <ClCompile Include="..\..\..\SRC\actor\channel\TCP_Socket.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\UDP_Socket.cpp" />
     <ClCompile Include="..\..\..\SRC\actor\machineBroker\MachineBroker.cpp" />
     <ClCompile Include="..\..\..\SRC\actor\machineBroker\MPI_MachineBroker.cpp" />
     <ClCompile Include="..\..\..\SRC\actor\message\Message.cpp" />
@@ -283,6 +284,7 @@
     <ClInclude Include="..\..\..\SRC\actor\channel\MPI_Channel.h" />
     <ClInclude Include="..\..\..\SRC\actor\channel\Socket.h" />
     <ClInclude Include="..\..\..\SRC\actor\channel\TCP_Socket.h" />
+    <ClInclude Include="..\..\..\SRC\actor\channel\UDP_Socket.h" />
     <ClInclude Include="..\..\..\SRC\actor\machineBroker\MachineBroker.h" />
     <ClInclude Include="..\..\..\SRC\actor\machineBroker\MPI_MachineBroker.h" />
     <ClInclude Include="..\..\..\SRC\actor\message\Message.h" />

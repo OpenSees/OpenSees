@@ -302,6 +302,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientDomainDecompositionAnalysis.cpp">
       <Filter>analysis</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\actor\channel\UDP_Socket.cpp">
+      <Filter>actor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\actor\actor\Actor.h">
@@ -435,6 +438,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientDomainDecompositionAnalysis.h">
       <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\actor\channel\UDP_Socket.h">
+      <Filter>actor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
