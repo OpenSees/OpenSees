@@ -323,6 +323,13 @@
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
 
+#include "RCCircularSectionIntegration.h"
+#include "RCSectionIntegration.h"
+#include "RCTBeamSectionIntegration.h"
+#include "RCTunnelSectionIntegration.h"
+#include "TubeSectionIntegration.h"
+#include "WideFlangeSectionIntegration.h"
+
 // node header files
 #include "Node.h"
 
@@ -1105,6 +1112,36 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getBeamIntegration - ";
     opserr << " - no BeamIntegration type exists for class tag ";
+    opserr << classTag << endln;
+    return 0;
+  }
+}
+
+SectionIntegration *
+FEM_ObjectBrokerAllClasses::getNewSectionIntegration(int classTag)
+{
+  switch(classTag) {
+  case SECTION_INTEGRATION_TAG_WideFlange:        
+    return new WideFlangeSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RC:        
+    return new RCSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCT:        
+    return new RCTBeamSectionIntegration();        
+
+  case SECTION_INTEGRATION_TAG_RCCIRCULAR:        
+    return new RCCircularSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCTUNNEL:        
+    return new RCTunnelSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_Tube:        
+    return new TubeSectionIntegration();    
+    
+  default:
+    opserr << "FEM_ObjectBrokerAllClasses::getSectionIntegration - ";
+    opserr << " - no SectionIntegration type exists for class tag ";
     opserr << classTag << endln;
     return 0;
   }

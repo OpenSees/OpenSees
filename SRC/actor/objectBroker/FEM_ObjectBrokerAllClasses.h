@@ -64,6 +64,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     CrdTransf *getNewCrdTransf(int classTag);
 
     BeamIntegration *getNewBeamIntegration(int classTag);
+    SectionIntegration *getNewSectionIntegration(int classTag);    
 
     UniaxialMaterial  *getNewUniaxialMaterial(int classTag);
     SectionForceDeformation  *getNewSection(int classTag);    
