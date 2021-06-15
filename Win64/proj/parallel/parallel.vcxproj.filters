@@ -116,7 +116,7 @@
     <ClCompile Include="..\..\..\SRC\domain\loadBalancer\LoadBalancer.cpp">
       <Filter>partitioner</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\graph\partitioner\Metis.cpp">
+    <ClCompile Include="..\..\..\SRC\graph\partitioner\MetisWrapper.cpp">
       <Filter>partitioner</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\loadBalancer\ShedHeaviest.cpp">
@@ -385,7 +385,7 @@
     <ClInclude Include="..\..\..\SRC\domain\loadBalancer\LoadBalancer.h">
       <Filter>partitioner</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\graph\partitioner\Metis.h">
+    <ClInclude Include="..\..\..\SRC\graph\partitioner\MetisWrapper.h">
       <Filter>partitioner</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\loadBalancer\ShedHeaviest.h">

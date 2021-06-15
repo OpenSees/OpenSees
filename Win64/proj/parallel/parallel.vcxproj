@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -22,7 +30,19 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -34,7 +54,13 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -45,6 +71,7 @@
     <OutDir>.\..\..\lib\release\</OutDir>
     <IntDir>.\..\..\obj\parallel\release\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\..\..\lib\debug\</OutDir>
     <IntDir>.\..\..\obj\parallel\debug\</IntDir>
@@ -52,8 +79,33 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\src\api;..\..\..\src\domain\pattern\drm;..\..\..\src\element\triangle;..\..\..\src\element\frictionBearing\frictionModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\material\uniaxial\snap;..\..\..\src\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\element\upU;..\..\..\OTHER\METIS;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\src\system_of_eqn\linearSOE\mumps;c:\Program Files\MPICH2\include;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\SRC\tcl;..\..\..\SRC\element\UP-ucsd;..\..\..\src\actor\machineBroker;..\..\..\SRC\actor\shadow;..\..\..\src\package;c:\Program Files\tcl\include;..\..\..\src\element\elasticBeamColumn;..\..\..\src\element\shell;..\..\..\src\element\dispBeamColumn;..\..\..\src\element\beamWithHinges;c:\Program Files\tcl\include;..\..\..\src\element\forceBeamColumn;..\..\..\src\material\section\fiber;..\..\..\src\element\fourNodeQuad;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\stiffness;..\..\..\src\material\state\deformation;..\..\..\src\material\state\strength;..\..\..\src\material\nD;..\..\..\src\coordTransformation;..\..\..\src\domain\groundMotion;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\analysis\algorithm\domaindecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\material\section;..\..\..\src\modelbuilder;..\..\..\src\renderer;..\..\..\src\modelbuilder\tcl;..\..\..\src\tagged\storage;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\patch;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\reinfBar;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\reinfLayer;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\cell;..\..\..\src\element\nonlinearBeamColumn;..\..\..\src\element\nonlinearBEamCOlumn\quadrule;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\material;..\..\..\src\element\nonlinearBeamColumn\element;..\..\..\src\domain\load;..\..\..\src\domain\pattern;..\..\..\src\element\zeroLength;..\..\..\src\element\feap;..\..\..\src\element\truss;..\..\..\src\element\beam3d;..\..\..\src\element\beam2d;..\..\..\src\material\uniaxial;..\..\..\src\actor\address;..\..\..\src\actor\message;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\element\8nbrick;..\..\..\src\element\brick;..\..\..\src\material\uniaxial\py;..\..\..\src\material\nd\soil;..\..\..\src\element\joint;..\..\..\src\material\nd\feap;..\..\..\other\SuperLU_3.0\SRC;c:\Program Files\tcl;..\..\..\src\modelbuilder;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_2.5\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\element;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;c:\Program Files\MPICH2\include;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\message;..\..\..\src\actor\actor;..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\SRC\domain;..\..\..\SRC\domain\groundMotion;..\..\..\SRC\analysis\algorithm\domainDecompAlgo;..\..\..\OTHER\METIS;..\..\..\OTHER\MUMPS_5.4.0\MUMPS_5.4.0\SRC\include;C:\Program Files (x86)\Microsoft SDKs\MPI\Include;..\..\..\src\CoordTransformation;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\SRC\system_of_eqn\linearSOE\bandGen;..\..\..\SRC\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\system_of_eqn\linearSOE\cypemumps;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\api;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\element\forceBeamColumn;..\..\..\src\element\shell;..\..\..\src\element;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_4.3\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\actor;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\SRC\material\nD;..\..\..\SRC\material;..\..\..\SRC\material\section;..\..\..\SRC\material\uniaxial;..\..\..\src\nDarray;..\..\..\SRC\renderer;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_LIB;_PARALLEL_PROCESSING;_MUMPS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\parallel\release/parallel.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\parallel\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\parallel\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\parallel\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\parallel.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\SRC\domain;..\..\..\SRC\domain\groundMotion;..\..\..\SRC\analysis\algorithm\domainDecompAlgo;..\..\..\OTHER\METIS;..\..\..\OTHER\Mumps_5.4.0\MUMPS_5.4.0\include;C:\Program Files (x86)\Microsoft SDKs\MPI\Include;..\..\..\src\CoordTransformation;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\SRC\system_of_eqn\linearSOE\bandGen;..\..\..\SRC\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\system_of_eqn\linearSOE\cypemumps;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\api;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\element\forceBeamColumn;..\..\..\src\element\shell;..\..\..\src\element;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_4.3\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\actor;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\SRC\material\nD;..\..\..\SRC\material;..\..\..\SRC\material\section;..\..\..\SRC\material\uniaxial;..\..\..\src\nDarray;..\..\..\SRC\renderer;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_LIB;_PARALLEL_PROCESSING;_MUMPS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -77,7 +129,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\element;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;c:\Program Files\MPICH2\include;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\message;..\..\..\src\actor\actor;..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\SRC\domain;..\..\..\SRC\domain\groundMotion;..\..\..\SRC\analysis\algorithm\domainDecompAlgo;..\..\..\OTHER\METIS;..\..\..\OTHER\MUMPS_5.4.0\MUMPS_5.4.0\SRC\include;C:\Program Files (x86)\Microsoft SDKs\MPI\Include;..\..\..\src\CoordTransformation;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\SRC\system_of_eqn\linearSOE\bandGen;..\..\..\SRC\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\system_of_eqn\linearSOE\cypemumps;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\api;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\element\forceBeamColumn;..\..\..\src\element\shell;..\..\..\src\element;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_4.3\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\actor;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\SRC\material\nD;..\..\..\SRC\material;..\..\..\SRC\material\section;..\..\..\SRC\material\uniaxial;..\..\..\src\nDarray;..\..\..\SRC\renderer;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_PARALLEL_PROCESSING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -90,6 +142,32 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\parallel.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\SRC\domain;..\..\..\SRC\domain\groundMotion;..\..\..\SRC\analysis\algorithm\domainDecompAlgo;..\..\..\OTHER\METIS;..\..\..\OTHER\MUMPS_5.4.0\MUMPS_5.4.0\include;C:\Program Files (x86)\Microsoft SDKs\MPI\Include;..\..\..\src\CoordTransformation;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\SRC\system_of_eqn\linearSOE\bandGen;..\..\..\SRC\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\system_of_eqn\linearSOE\cypemumps;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\api;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\element\forceBeamColumn;..\..\..\src\element\shell;..\..\..\src\element;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_4.3\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\actor;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\SRC\material\nD;..\..\..\SRC\material;..\..\..\SRC\material\section;..\..\..\SRC\material\uniaxial;..\..\..\src\nDarray;..\..\..\SRC\renderer;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MUMPS;WIN32;_DEBUG;_LIB;_PARALLEL_PROCESSING;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\parallel\debug/parallel.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\parallel\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\parallel\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\parallel\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\parallel.lib</OutputFile>
@@ -180,7 +258,7 @@
     <ClCompile Include="..\..\..\SRC\domain\partitioner\DomainPartitioner.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\subdomain\ActorSubdomain.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\subdomain\ShadowSubdomain.cpp" />
-    <ClCompile Include="..\..\..\SRC\graph\partitioner\Metis.cpp" />
+    <ClCompile Include="..\..\..\SRC\graph\partitioner\MetisWrapper.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSOE.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSolver.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSOE.cpp" />
@@ -226,7 +304,7 @@
     <ClInclude Include="..\..\..\SRC\domain\subdomain\ShadowActorSubdomain.h" />
     <ClInclude Include="..\..\..\SRC\domain\subdomain\ShadowSubdomain.h" />
     <ClInclude Include="..\..\..\SRC\graph\partitioner\GraphPartitioner.h" />
-    <ClInclude Include="..\..\..\SRC\graph\partitioner\Metis.h" />
+    <ClInclude Include="..\..\..\SRC\graph\partitioner\MetisWrapper.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSOE.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSolver.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSOE.h" />

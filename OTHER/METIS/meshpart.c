@@ -38,7 +38,7 @@ void METIS_PartMeshNodal(int *ne, int *nn, idxtype *elmnts, int *etype, int *num
 
   METIS_MeshToNodal(ne, nn, elmnts, etype, &pnumflag, xadj, adjncy);
 
-  adjncy = realloc(adjncy, xadj[*nn]*sizeof(idxtype));
+  adjncy = (idxtype *)realloc(adjncy, xadj[*nn]*sizeof(idxtype));
 
   options[0] = 0;
   METIS_PartGraphKway(nn, xadj, adjncy, NULL, NULL, &wgtflag, &pnumflag, nparts, options, edgecut, npart);

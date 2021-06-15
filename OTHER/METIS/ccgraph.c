@@ -548,7 +548,7 @@ void ReAdjustMemory(GraphType *graph, GraphType *cgraph, int dovsize)
 
     if (graph->ncon == 1) {
       if (dovsize) {
-        cgraph->gdata = realloc(cgraph->gdata, (5*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
+        cgraph->gdata = (idxtype *)realloc(cgraph->gdata, (5*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
 
         /* Do this, in case everything was copied into new space */
         cgraph->xadj 		= cgraph->gdata;
@@ -560,7 +560,7 @@ void ReAdjustMemory(GraphType *graph, GraphType *cgraph, int dovsize)
         cgraph->adjwgt 		= cgraph->gdata + 5*cgraph->nvtxs+1 + cgraph->nedges;
       }
       else {
-        cgraph->gdata = realloc(cgraph->gdata, (4*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
+        cgraph->gdata = (idxtype *)realloc(cgraph->gdata, (4*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
 
         /* Do this, in case everything was copied into new space */
         cgraph->xadj 	= cgraph->gdata;
@@ -573,7 +573,7 @@ void ReAdjustMemory(GraphType *graph, GraphType *cgraph, int dovsize)
     }
     else {
       if (dovsize) {
-        cgraph->gdata = realloc(cgraph->gdata, (4*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
+        cgraph->gdata = (idxtype *)realloc(cgraph->gdata, (4*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
 
         /* Do this, in case everything was copied into new space */
         cgraph->xadj 		= cgraph->gdata;
@@ -584,7 +584,7 @@ void ReAdjustMemory(GraphType *graph, GraphType *cgraph, int dovsize)
         cgraph->adjwgt 		= cgraph->gdata + 4*cgraph->nvtxs+1 + cgraph->nedges;
       }
       else {
-        cgraph->gdata = realloc(cgraph->gdata, (3*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
+        cgraph->gdata = (idxtype *)realloc(cgraph->gdata, (3*cgraph->nvtxs+1 + 2*cgraph->nedges)*sizeof(idxtype));
 
         /* Do this, in case everything was copied into new space */
         cgraph->xadj 		= cgraph->gdata;

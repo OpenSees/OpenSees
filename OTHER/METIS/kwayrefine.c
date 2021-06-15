@@ -105,7 +105,7 @@ void RefineKWay(CtrlType *ctrl, GraphType *orggraph, GraphType *graph, int npart
 
   if (mustfree) 
     /*GKfree(&graph->vwgt, &graph->adjwgt, LTERM);*/
-    GKfree2((void *)&graph->vwgt, (void *)&graph->adjwgt);
+    GKfree2((void **)&graph->vwgt, (void **)&graph->adjwgt);
 
   IFSET(ctrl->dbglvl, DBG_TIME, stoptimer(ctrl->UncoarsenTmr));
 }

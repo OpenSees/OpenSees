@@ -167,7 +167,7 @@ void MocRandomBisection(CtrlType *ctrl, GraphType *graph, float *tpwgts, float u
 }
 
 
-
+int SelectQueueOneWay(int ncon, float *npwgts, float *tpwgts, int from, PQueueType queues[MAXNCON][2]);
 
 /*************************************************************************
 * This function balances two partitions by moving the highest gain 

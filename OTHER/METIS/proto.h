@@ -14,6 +14,10 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* balance.c */
 void Balance2Way(CtrlType *, GraphType *, int *, float);
 void Bnd2WayBalance(CtrlType *, GraphType *, int *);
@@ -514,3 +518,6 @@ int VerifyPartmC(int, int, idxtype *, idxtype *, idxtype *, idxtype *, int, floa
 void Test_ND(int, idxtype *, idxtype *);
 int VerifyND(int, idxtype *, idxtype *);
 
+#ifdef __cplusplus
+  }
+#endif
