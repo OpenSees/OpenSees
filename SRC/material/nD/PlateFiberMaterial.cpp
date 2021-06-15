@@ -81,7 +81,8 @@ PlateFiberMaterial::PlateFiberMaterial() :
 NDMaterial(0, ND_TAG_PlateFiberMaterial), 
 strain(5) 
 { 
-
+    Tstrain22 = 0.0;
+    Cstrain22 = 0.0;
 }
 
 
