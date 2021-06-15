@@ -295,7 +295,7 @@ int OPS_getStrain()
         for (int i = 0; i < numData; i++)
             data[i] = strain(i);
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get strain\n";
             return -1;
         }
@@ -309,7 +309,7 @@ int OPS_getStrain()
         for (int i = 0; i < numData; i++)
             data[i] = strain(i);
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get strain\n";
             return -1;
         }
@@ -343,7 +343,7 @@ int OPS_getStress()
         for (int i = 0; i < numData; i++)
             data[i] = stress(i);
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get stress\n";
             return -1;
         }
@@ -357,7 +357,7 @@ int OPS_getStress()
         for (int i = 0; i < numData; i++)
             data[i] = stress(i);
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get stress\n";
             return -1;
         }
@@ -395,7 +395,7 @@ int OPS_getTangent()
                 k++;
             }
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get tangent\n";
             return -1;
         }
@@ -413,7 +413,7 @@ int OPS_getTangent()
                 k++;
             }
         // set output
-        if (OPS_SetDoubleOutput(&numData, data, true) < 0) {
+        if (OPS_SetDoubleOutput(&numData, data, false) < 0) {
             opserr << "failed to get tangent\n";
             return -1;
         }
@@ -461,67 +461,62 @@ int OPS_getResponse()
     }
     // check number of input args
     int argc = OPS_GetNumRemainingInputArgs();
-    if (argc > 0) {
-        char** argv = new char*[argc];
-        char buffer[128];
-        for (int i = 0; i < argc; i++) {
-            argv[i] = new char[128];
-            // Turn everything in to a string for setResponse
-            strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
-        }
-        // set the response
-        DummyStream dummy;
-        Response* theResponse{};
-        if (testType == 1) {
-            theResponse = theTestingUniaxialMaterial->setResponse((const char**)argv, argc, dummy);
-        }
-        else if (testType == 2) {
-            theResponse = theTestingNDMaterial->setResponse((const char**)argv, argc, dummy);
-        }
-        else if (testType == 3) {
-            theResponse = theTestingSection->setResponse((const char**)argv, argc, dummy);
-        }
-        // get clean up and check for null cases
-        for (int i = 0; i < argc; i++)
-            delete [] argv[i];
-        delete [] argv;
-        if (theResponse == 0) {
-            return 0;
-        }
-        if (theResponse->getResponse() < 0) {
-            delete theResponse;
-            return 0;
-        }
-        // get data from response
-        Information &responseInfo = theResponse->getInformation();
-        responseData = responseInfo.getData();
+    if (argc == 0) {
+        opserr << "getResponse WARNING must provide response arguments\n";
+        return -1;
+    }
+    // turn everything in to a string for setResponse
+    char** argv = new char*[argc];
+    char buffer[128];
+    for (int i = 0; i < argc; i++) {
+        argv[i] = new char[128];
+        strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
+    }
+    // set the response
+    DummyStream dummy;
+    Response* theResponse{};
+    if (testType == 1) {
+        theResponse = theTestingUniaxialMaterial->setResponse((const char**)argv, argc, dummy);
+    }
+    else if (testType == 2) {
+        theResponse = theTestingNDMaterial->setResponse((const char**)argv, argc, dummy);
+    }
+    else if (testType == 3) {
+        theResponse = theTestingSection->setResponse((const char**)argv, argc, dummy);
+    }
+    // get clean up and check for null cases
+    for (int i = 0; i < argc; i++)
+        delete [] argv[i];
+    delete [] argv;
+    if (theResponse == 0) {
+        return 0;
+    }
+    if (theResponse->getResponse() < 0) {
         delete theResponse;
-        int size = responseData.Size();
-        // if data not empty, set as output
-        if (size != 0) {
-            double* newdata = new double[size];
-            for (int i = 0; i < size; i++) {
-                newdata[i] = responseData(i);
-            }
-            if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
-                opserr << "WARNING failed to get test response\n";
-                delete [] newdata;
-                return -1;
-            }
+        return 0;
+    }
+    // get data from response
+    Information &responseInfo = theResponse->getInformation();
+    responseData = responseInfo.getData();
+    delete theResponse;
+    int size = responseData.Size();
+    // if data not empty, set as output
+    bool scalarFlag = (testType == 1);
+    if (size != 0) {
+        double* newdata = new double[size];
+        for (int i = 0; i < size; i++) {
+            newdata[i] = responseData(i);
+        }
+        if (OPS_SetDoubleOutput(&size, newdata, scalarFlag) < 0) {
+            opserr << "WARNING failed to get test response\n";
             delete [] newdata;
+            return -1;
         }
-        else {
-            double* newdata = 0;
-            if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
-                opserr << "WARNING failed to get test response\n";
-                return -1;
-            }
-        }
+        delete [] newdata;
     }
     else {
-        int size = 0;
         double* newdata = 0;
-        if (OPS_SetDoubleOutput(&size, newdata, false) < 0) {
+        if (OPS_SetDoubleOutput(&size, newdata, scalarFlag) < 0) {
             opserr << "WARNING failed to get test response\n";
             return -1;
         }
