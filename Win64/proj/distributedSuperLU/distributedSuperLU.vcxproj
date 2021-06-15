@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6AEDF524-0033-4225-BC39-DE5244992677}</ProjectGuid>
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.31401.40</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\..\..\lib\debug\</OutDir>
+    <IntDir>.\..\..\obj\distributedSuperLU\debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\..\..\lib\release\</OutDir>
+    <IntDir>.\..\..\obj\distributedSuperLU\release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files\MPICH2\include;..\..\..\other\SuperLU_DIST_2.0\SRC;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_TIMER;_Win32;UpCase;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\distributedSuperLU\debug/superLU.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\distributedSuperLU\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\distributedSuperLU\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\distributedSuperLU\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\distributedSuperLU.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Include;C:\Program Files\MPICH2\include;..\..\..\other\SuperLU_DIST_2.5\SRC;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_TIMER;_Win32;UpCase;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\distributedSuperLU\debug/superLU.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\distributedSuperLU\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\distributedSuperLU\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\distributedSuperLU\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\distributedSuperLU.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>C:\Program Files\MPICH2\include;..\..\..\other\SuperLU_DIST_2.5\SRC;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_TIMER;_WIN32;UpCase;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\distributedSuperLU\release/superLU.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\distributedSuperLU\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\distributedSuperLU\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\distributedSuperLU\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\distributedSuperLU.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\MPI\Include;C:\Program Files\MPICH2\include;..\..\..\other\SuperLU_DIST_2.5\SRC;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_TIMER;_WIN32;UpCase;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\distributedSuperLU\release/superLU.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\distributedSuperLU\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\distributedSuperLU\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\distributedSuperLU\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\distributedSuperLU.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\Cnames.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dcomplex.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\html_mainpage.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\machines.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_ddefs.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_defs.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_enum_consts.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_zdefs.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\supermatrix.h" />
+    <ClInclude Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\util_dist.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\comm.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dcomplex.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\ddistribute.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dgsequ.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlamch.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlangs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlaqgs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dldperm.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dmemory.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dmyblas2.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dreadhb.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dreadrb.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dsp_blas2.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dsp_blas3.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dutil.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\etree.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\GetDiagU.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\get_perm_c.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\get_perm_c_parmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\lsame.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\mc64ad.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\memory.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\mmd.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pddistribute.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsequ.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsmv.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsmv_AXglobal.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsrfs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsrfs_ABXglobal.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgssvx.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgssvx_ABglobal.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrf.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs1.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrsL.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs_Bglobal.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs_lsum.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdlangs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdlaqgs.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdsymbfact_distdata.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdutil.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact_util.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pxerbla.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\slamch.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\sp_colorder.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\sp_ienv.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_grid.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_timer.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\symbfact.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\util.c" />
+    <ClCompile Include="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\xerbla.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
