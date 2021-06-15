@@ -182,6 +182,7 @@ int OPS_strengthDegradation();
 int OPS_unloadingRule();
 
 /* OpenSeesMaterialTestCommands */
+void OPS_clearAllTestMaterials();
 int OPS_testUniaxialMaterial();
 int OPS_testNDMaterial();
 int OPS_testSection();

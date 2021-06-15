@@ -888,6 +888,9 @@ OpenSeesCommands::wipe()
     OPS_clearAllSectionForceDeformation();
     OPS_clearAllSectionRepres();
 
+    // wipe test materials
+    OPS_clearAllTestMaterials();
+
     // wipe time series
     OPS_clearAllTimeSeries();
 
