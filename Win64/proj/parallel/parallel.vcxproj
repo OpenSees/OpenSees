@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{717759C7-0B99-485F-BB63-C25CE58CC1C5}</ProjectGuid>
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.31401.40</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\..\..\lib\release\</OutDir>
+    <IntDir>.\..\..\obj\parallel\release\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\..\..\lib\debug\</OutDir>
+    <IntDir>.\..\..\obj\parallel\debug\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\src\api;..\..\..\src\domain\pattern\drm;..\..\..\src\element\triangle;..\..\..\src\element\frictionBearing\frictionModel;..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\material\uniaxial\snap;..\..\..\src\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\element\upU;..\..\..\OTHER\METIS;..\..\..\SRC\system_of_eqn\linearSOE\diagonal;..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\src\system_of_eqn\linearSOE\mumps;c:\Program Files\MPICH2\include;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\SRC\tcl;..\..\..\SRC\element\UP-ucsd;..\..\..\src\actor\machineBroker;..\..\..\SRC\actor\shadow;..\..\..\src\package;c:\Program Files\tcl\include;..\..\..\src\element\elasticBeamColumn;..\..\..\src\element\shell;..\..\..\src\element\dispBeamColumn;..\..\..\src\element\beamWithHinges;c:\Program Files\tcl\include;..\..\..\src\element\forceBeamColumn;..\..\..\src\material\section\fiber;..\..\..\src\element\fourNodeQuad;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\stiffness;..\..\..\src\material\state\deformation;..\..\..\src\material\state\strength;..\..\..\src\material\nD;..\..\..\src\coordTransformation;..\..\..\src\domain\groundMotion;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\analysis\algorithm\domaindecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\material\section;..\..\..\src\modelbuilder;..\..\..\src\renderer;..\..\..\src\modelbuilder\tcl;..\..\..\src\tagged\storage;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\patch;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\reinfBar;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\reinfLayer;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\cell;..\..\..\src\element\nonlinearBeamColumn;..\..\..\src\element\nonlinearBEamCOlumn\quadrule;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\material;..\..\..\src\element\nonlinearBeamColumn\element;..\..\..\src\domain\load;..\..\..\src\domain\pattern;..\..\..\src\element\zeroLength;..\..\..\src\element\feap;..\..\..\src\element\truss;..\..\..\src\element\beam3d;..\..\..\src\element\beam2d;..\..\..\src\material\uniaxial;..\..\..\src\actor\address;..\..\..\src\actor\message;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\element\8nbrick;..\..\..\src\element\brick;..\..\..\src\material\uniaxial\py;..\..\..\src\material\nd\soil;..\..\..\src\element\joint;..\..\..\src\material\nd\feap;..\..\..\other\SuperLU_3.0\SRC;c:\Program Files\tcl;..\..\..\src\modelbuilder;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_2.5\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\element;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;c:\Program Files\MPICH2\include;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\message;..\..\..\src\actor\actor;..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_LIB;_PARALLEL_PROCESSING;_MUMPS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\parallel\release/parallel.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\parallel\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\parallel\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\parallel\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\parallel.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\OTHER\MUMPS_4.7.3\include;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\modelbuilder;..\..\..\src\convergenceTest;..\..\..\src\analysis\handler;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\integrator;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\domain\domain\single;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\actor\message;c:\Program Files\MPICH2\include;..\..\..\src\actor\channel;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;..\..\..\src\domain\domain\partitioned;..\..\..\src\tagged\storage;..\..\..\src\domain\pattern;..\..\..\src\domain\domain\domain;..\..\..\src\domain\load;..\..\..\src\utility;..\..\..\src\element;..\..\..\src\domain\partitioner;..\..\..\src\domain\loadBalancer;..\..\..\src\graph\partitioner;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\src\graph\numberer;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\analysis\numberer;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\OTHER\SuperLU_DIST_2.0\SRC;..\..\..\src\system_of_eqn;..\..\..\src\actor\address;..\..\..\src\actor\machineBroker;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\actor\shadow;..\..\..\src\domain\subdomain;c:\Program Files\MPICH2\include;..\..\..\SRC\domain\domain\partitioned;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\package;..\..\..\src\actor\message;..\..\..\src\actor\actor;..\..\..\src\actor\channel;..\..\..\SRC\actor\actor;..\..\..\src\parallel;..\..\..\src\handler;..\..\..\src;..\..\..\src\nDarray;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_PARALLEL_PROCESSING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\parallel\debug/parallel.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\parallel\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\parallel\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\parallel\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\parallel.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\OTHER\METIS\balance.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\bucketsort.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\ccgraph.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\coarsen.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\compress.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\debug.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\estmem.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\fm.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\fortran.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\frename.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\graph.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\initpart.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kvmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kwayfm.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kwayrefine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kwayvolfm.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\kwayvolrefine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\match.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mbalance.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mbalance2.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mcoarsen.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\memory.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mesh.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\meshpart.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mfm.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mfm2.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mincover.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\minitpart.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\minitpart2.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mkmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mkwayfmh.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mkwayrefine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mmatch.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mmd.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mpmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mrefine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mrefine2.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\mutil.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\myqsort.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\ometis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\parmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\pmetis.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\pqueue.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\refine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\separator.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\sfm.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\srefine.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\stat.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\subdomains.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\timing.c" />
+    <ClCompile Include="..\..\..\OTHER\METIS\util.c" />
+    <ClCompile Include="..\..\..\SRC\actor\actor\Actor.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\actor\MovableObject.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\address\MPI_ChannelAddress.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\Channel.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\HTTP.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\MPI_Channel.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\Socket.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\channel\TCP_Socket.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\machineBroker\MachineBroker.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\machineBroker\MPI_MachineBroker.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\message\Message.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\objectBroker\FEM_ObjectBroker.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\objectBroker\FEM_ObjectBrokerAllClasses.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\objectBroker\ObjectBroker.cpp" />
+    <ClCompile Include="..\..\..\SRC\actor\shadow\Shadow.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticDomainDecompositionAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientDomainDecompositionAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\DistributedDisplacementControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\numberer\ParallelNumberer.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomain.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomainEleIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomainSubIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\loadBalancer\LoadBalancer.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\loadBalancer\ShedHeaviest.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\partitioner\DomainPartitioner.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\subdomain\ActorSubdomain.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\subdomain\ShadowSubdomain.cpp" />
+    <ClCompile Include="..\..\..\SRC\graph\partitioner\Metis.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\DistributedProfileSPDLinSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenColLinSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenRowLinSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenRowLinSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSuperLU.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\OTHER\METIS\defs.h" />
+    <ClInclude Include="..\..\..\OTHER\METIS\macros.h" />
+    <ClInclude Include="..\..\..\OTHER\METIS\metis.h" />
+    <ClInclude Include="..\..\..\OTHER\METIS\proto.h" />
+    <ClInclude Include="..\..\..\OTHER\METIS\rename.h" />
+    <ClInclude Include="..\..\..\OTHER\METIS\struct.h" />
+    <ClInclude Include="..\..\..\SRC\actor\actor\Actor.h" />
+    <ClInclude Include="..\..\..\SRC\actor\actor\MovableObject.h" />
+    <ClInclude Include="..\..\..\SRC\actor\address\MPI_ChannelAddress.h" />
+    <ClInclude Include="..\..\..\SRC\actor\channel\Channel.h" />
+    <ClInclude Include="..\..\..\SRC\actor\channel\MPI_Channel.h" />
+    <ClInclude Include="..\..\..\SRC\actor\channel\Socket.h" />
+    <ClInclude Include="..\..\..\SRC\actor\channel\TCP_Socket.h" />
+    <ClInclude Include="..\..\..\SRC\actor\machineBroker\MachineBroker.h" />
+    <ClInclude Include="..\..\..\SRC\actor\machineBroker\MPI_MachineBroker.h" />
+    <ClInclude Include="..\..\..\SRC\actor\message\Message.h" />
+    <ClInclude Include="..\..\..\SRC\actor\objectBroker\FEM_ObjectBroker.h" />
+    <ClInclude Include="..\..\..\SRC\actor\objectBroker\FEM_ObjectBrokerAllClasses.h" />
+    <ClInclude Include="..\..\..\SRC\actor\objectBroker\ObjectBroker.h" />
+    <ClInclude Include="..\..\..\SRC\actor\shadow\Shadow.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\StaticDomainDecompositionAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientDomainDecompositionAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\DistributedDisplacementControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\numberer\ParallelNumberer.h" />
+    <ClInclude Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomain.h" />
+    <ClInclude Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomainEleIter.h" />
+    <ClInclude Include="..\..\..\SRC\domain\domain\partitioned\PartitionedDomainSubIter.h" />
+    <ClInclude Include="..\..\..\SRC\domain\loadBalancer\LoadBalancer.h" />
+    <ClInclude Include="..\..\..\SRC\domain\loadBalancer\ShedHeaviest.h" />
+    <ClInclude Include="..\..\..\SRC\domain\partitioner\DomainPartitioner.h" />
+    <ClInclude Include="..\..\..\SRC\domain\subdomain\ActorSubdomain.h" />
+    <ClInclude Include="..\..\..\SRC\domain\subdomain\ShadowActorSubdomain.h" />
+    <ClInclude Include="..\..\..\SRC\domain\subdomain\ShadowSubdomain.h" />
+    <ClInclude Include="..\..\..\SRC\graph\partitioner\GraphPartitioner.h" />
+    <ClInclude Include="..\..\..\SRC\graph\partitioner\Metis.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsParallelSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\mumps\MumpsSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\DistributedProfileSPDLinSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenColLinSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenRowLinSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSparseGenRowLinSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\DistributedSuperLU.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
