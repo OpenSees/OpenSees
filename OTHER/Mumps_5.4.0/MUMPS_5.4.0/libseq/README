@@ -1,0 +1,6 @@
+
+ This directory contains dummy MPI/BLACS/ScaLAPACK symbols to allow
+ linking/running MUMPS on a platform where MPI is not installed.
+
+ It is used by the main Makefile to build a sequential version of MUMPS.
+

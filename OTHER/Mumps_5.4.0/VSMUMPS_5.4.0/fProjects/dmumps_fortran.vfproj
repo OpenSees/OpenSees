@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{2126FD12-02A7-4271-9C07-5BC461D4E486}">
+	<Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\src;$(ProjectDir)\..\..\MUMPS_5.4.0\include;$(ProjectDir)\..\..\MUMPS_5.4.0\libseq" PreprocessorDefinitions="pord" EnableRecursion="true" SuppressUsageMessages="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Release|Win32" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\src;$(ProjectDir)\..\..\MUMPS_5.4.0\include;$(ProjectDir)\..\..\MUMPS_5.4.0\libseq" PreprocessorDefinitions="pord" EnableRecursion="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Debug|x64" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\src;$(ProjectDir)\..\..\MUMPS_5.4.0\include;$(ProjectDir)\..\..\MUMPS_5.4.0\libseq" PreprocessorDefinitions="pord" EnableRecursion="true" OpenMP="OpenMPParallelCode" DebugParameter="debugParameterAll" WarnTruncateSource="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" NullPointerCheck="true" BoundsCheck="true" DescriptorDataTypeCheck="true" DescriptorDataSizeCheck="true" ArgTempCreatedCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Release|x64" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\src;$(ProjectDir)\..\..\MUMPS_5.4.0\include;$(ProjectDir)\..\..\MUMPS_5.4.0\libseq" PreprocessorDefinitions="pord" EnableRecursion="true" OpenMP="OpenMPParallelCode" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="sources" Filter="f90;f;f77;F;F90">
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_AMDMF.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_blk.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_blk_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_omp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_orderings.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_orderings_wrappers_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\ana_set_ordering.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\bcast_errors.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_aux_ELT.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_aux_par.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_dist_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_LDLT_preprocess.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_lr.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_mtrans.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dana_reordertree.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\darrowheads.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dbcast_int.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dend_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_asm.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_asm_ELT.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_asm_master_ELT_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_asm_master_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_b.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_determinant.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_distrib_distentry.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_distrib_ELT.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_LDLT_type1.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_LDLT_type2.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_LU_type1.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_LU_type2.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_front_type2_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_lastrtnelind.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_lr.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_alloc_cb.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_compress_cb.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_dynamic.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_free_block_cb.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_stack.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_mem_stack_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_omp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_par_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_band.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_bf.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_blfac_slave.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_blocfacto.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_blocfacto_LDLT.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_contrib_type1.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_contrib_type2.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_contrib_type3.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_end_facto_slave.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_maprow.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_master2.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_message.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_root2slave.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_root2son.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_process_rtnelind.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_root_parallel.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_scalings.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_scalings_simScale_util.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_scalings_simScaleAbs.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_sispointers_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_sol_l0omp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_sol_pool.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dfac_type3_symmetrize.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dini_defaults.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dini_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dlr_core.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dlr_stats.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dlr_type.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_comm_buffer.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_config_file.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_f77.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_iXamax.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_load.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_lr_data_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_ooc.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_ooc_buffer.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_save_restore.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_save_restore_files.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_sol_es.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dmumps_struc_def.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\domp_tps_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dooc_panel_piv.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\double_linked_list.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\drank_revealing.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_bwd.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_bwd_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_c.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_distrhs.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_driver.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_fwd.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_fwd_aux.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_lr.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_matvec.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_omp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dsol_root_parallel.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dstatic_ptr_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dtools.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\dtype3_root.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\estim_flops.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_asm_build_sort_index_ELT_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_asm_build_sort_index_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_descband_data_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_future_niv2_mod.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_ibct_data_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\fac_maprow_data_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\front_data_mgt_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\lr_common.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_comm_ibcast.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_l0_omp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_memory_mod.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_mpitoomp_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_ooc_common.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_print_defined.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_static_mapping.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_type2_blocking.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_type_size.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\mumps_version.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\omp_tps_common_m.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\sol_common.F"/>
+		<File RelativePath="..\..\MUMPS_5.4.0\src\tools_common.F"/></Filter></Files>
+	<Globals/></VisualStudioProject>

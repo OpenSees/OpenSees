@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{402c9c3f-7e86-4271-8b1b-548d91cc92de}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx</Extensions>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{80d3d7dd-a03b-4cb4-94ab-3ab1d80e7d11}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_c.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\cmumps_c.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\cmumps_root.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\cmumps_struc.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\mumps_c_types.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MUMPS_5.4.0\include\mumps_compat.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MUMPS_5.4.0\include\mumps_int_def.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

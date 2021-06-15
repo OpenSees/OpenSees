@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{071590FE-3BFD-4285-A2C6-ADAA66A6D3E1}">
+	<Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\libseq\" EnableRecursion="true" SuppressUsageMessages="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Release|Win32" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\libseq\" EnableRecursion="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Debug|x64" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(ProjectDir)\..\..\MUMPS_5.4.0\libseq\" EnableRecursion="true" WarnTruncateSource="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration>
+		<Configuration Name="Release|x64" OutputDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\" IntermediateDirectory="$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(PlatformName)\$(ConfigurationName)\$(ProjectName)_Intermediate\" DeleteExtensionsOnClean="*.obj;*.mod;*.pdb;*.asm;*.map;*.dyn;*.dpi;*.tmp;*.log;*.lib;$(TargetPath)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Preprocess="preprocessYes" AdditionalIncludeDirectories="C:\Program Files (x86)\Microsoft SDKs\MPI\Include;$(ProjectDir)\..\..\MUMPS_5.4.0\libseq\" EnableRecursion="true" ExternalNameInterpretation="extNameUpperCase" ModulePath="$(INTDIR)/" ObjectFile="$(INTDIR)/" PdbFile="$(OutDir)\$(ProjectName).pdb" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" DescriptorDataTypeCheck="true" DescriptorDataSizeCheck="true" ArgTempCreatedCheck="true" StackFrameCheck="true"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64" TypeLibraryName="$(IntDir)/$(InputName).tlb"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool" CommandLine="time /t"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="sources" Filter="f90;f;f77;F;F90">
+		<File RelativePath="..\..\MUMPS_5.4.0\libseq\mpi.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

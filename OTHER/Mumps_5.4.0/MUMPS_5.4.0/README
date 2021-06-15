@@ -1,0 +1,54 @@
+===========================================
+MUMPS 5.4.0
+===========================================
+
+MUMPS 5.4.0 solves a sparse system of linear equations A x = b
+using Gaussian elimination. Please read this README file and
+the documentation (in ./doc/) for a complete list of
+functionalities. Documentation and publications related
+to MUMPS can also be found at http://mumps-solver.org/
+
+For installation problems, bug reports, and to report your
+experience/feedback with the package, please subscribe to the
+MUMPS Users's mailing list.
+
+Please refer to INSTALL for installation instructions.
+
+Please refer to LICENSE for conditions of use the package.
+
+
+Contents of the distribution:
+----------------------------
+
+ChangeLog  LICENSE    CREDITS    INSTALL    README     VERSION
+Makefile   Make.inc/  doc/       src/       lib/       include/
+libseq/    examples/  PORD/      MATLAB/    SCILAB/
+
+doc      contains the users' guide in pdf format.
+
+src      contains the source files (for all arithmetics 's','d','c' or 'z')
+         necessary to generate the MUMPS library.
+
+lib      is the place where the MUMPS libraries libxmumps.a
+         (x='s','d','c' or 'z') and the arith-independent
+         library libmumps_common.a are generated.
+
+include  contains xmumps_struc.h, xmumps_root.h and xmumps_c.h (where x is one
+         of 'd','c','s','z' depending on the arithmetic desired),
+         mumps_c_types.h and mumps_compat.h. The first two files must be
+         available at compile time in order to use MUMPS from external FORTRAN
+         programs. The three others for C programs.
+
+libseq   contains a sequential MPI library used by the purely sequential
+         version of MUMPS.
+
+examples contains illustrative test programs showing how MUMPS can be used.
+
+PORD     contains the PORD package (not part of MUMPS) from University
+         of Paderborn. See PORD/README for more info.
+
+MATLAB   contains a MATLAB interface to the sequential version of MUMPS
+
+SCILAB   contains a SCILAB interface to the sequential version of MUMPS
+         (only tested with scilab version 4)
+

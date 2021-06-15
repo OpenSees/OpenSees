@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?> 
+<!-- Note that "OF THE MUMPS USER'S GUIDE" (lower case) should appear
+     on separate lines. This way, we can grep it out (grep -v) when
+     we want to generate the documentation spec.tex and thus avoid
+     self references
+-->
+<!DOCTYPE MAN SYSTEM "manrev.dtd">
+<MAN>
+  <LANGUAGE>eng</LANGUAGE>
+  <TITLE>dmumps </TITLE>
+  <TYPE>MUMPS interface function</TYPE>
+  <DATE></DATE>
+  <SHORT_DESCRIPTION name="dmumps"> call to MUMPS  </SHORT_DESCRIPTION>
+  <CALLING_SEQUENCE>
+  <CALLING_SEQUENCE_ITEM>[id]=dmumps (id [,mat]) </CALLING_SEQUENCE_ITEM>
+  </CALLING_SEQUENCE>
+  <PARAM target="in">
+  <PARAM_INDENT>
+  <PARAM_ITEM>
+  <PARAM_NAME>mat</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: sparse matrix which has to be provided as the second argument of
+      dmumps if id.JOB is strictly larger than 0.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  <PARAM_ITEM>
+  <PARAM_NAME>id.SYM</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: controls the matrix type (symmetric positive 
+    definite, symmetric indefinite or unsymmetric) and it has do be 
+    initialized by the user before the initialization phase of MUMPS 
+    (see id.JOB). Its value is set to 0 after the call of initmumps.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  <PARAM_ITEM>
+  <PARAM_NAME>id.JOB</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: defines the action that will be realized by
+      MUMPS: initialize, analyze and/or factorize and/or solve and 
+      release MUMPS internal C/Fortran data. It has to be set by the user before 
+      any call to MUMPS (except after a call to initmumps,  which sets
+      its value to -1).
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>	
+  <PARAM_ITEM>
+  <PARAM_NAME>id.ICNTL and id.CNTL</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: define control parameters that can be
+      set after the initialization call (id.JOB = -1). See Section ``Control parameters''
+of the MUMPS user's guide
+      for more details.
+      If the user does not modify an entry in id.ICNTL then MUMPS 
+      uses the default parameter. For example, if the user wants to 
+      use the AMD ordering, he/she should set id.ICNTL(7) = 0.
+      Note that the following 
+      parameters are inhibited because they are automatically set 
+      within the interface: id.ICNTL(19) which controls the Schur 
+      complement option and id.ICNTL(20) which controls the 
+      format of the right-hand side.
+      Note that parameters id.ICNTL(1:4) may not work properly
+      depending on your compiler and your environment. In case of
+      problem, we recommand to swith printing off by setting
+      id.ICNL(1:4)=-1.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>	
+  <PARAM_ITEM>
+  <PARAM_NAME>id.PERM_IN</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: corresponds to the given ordering option 
+      (see Section ``Input and output parameters''
+of the MUMPS user's guide
+for more details). Note that this permutation is only accessed if
+the parameter id.ICNTL(7) is set to 1.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.COLSCA and id.ROWSCA</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: are optional scaling arrays (see Section 
+``Input and output parameters''
+of the MUMPS user's guide
+for more details)
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.RHS</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: defines the right-hand side. The parameter id.ICNTL(20) related to its format (sparse or dense) is automatically set within the interface. Note that id.RHS is not modified (as in MUMPS), the solution is returned in id.SOL.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.VAR_SCHUR</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: corresponds to the list of variables 
+      that appear in the Schur complement matrix (see Section 
+``Input and output parameters''
+of the MUMPS user's guide
+for more details).
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.REDRHS</PARAM_NAME>
+<PARAM_DESCRIPTION>
+(input parameter only if id.VAR_SCHUR was provided during the factorization and
+if ICNTL(26)=2 on entry to the solve phase): partial
+solution on the variables corresponding to the Schur complement. It is provided
+by the user and normally results from both the Schur complement and the reduced right-hand
+side that were returned by MUMPS in a previous call. When ICNTL(26)=2, MUMPS uses this information
+to build the solution id.SOL on the complete problem.
+See Section ``Schur complement''
+of the MUMPS user's guide
+for more details.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  </PARAM_INDENT>
+  </PARAM>
+  <PARAM target="out">
+  <PARAM_INDENT>
+  <PARAM_ITEM>
+  <PARAM_NAME>id.SCHUR</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: if id.VAR_SCHUR is provided of size SIZE_SCHUR, then
+id.SCHUR corresponds to a dense array of size 
+      (SIZE_SCHUR,SIZE_SCHUR) that holds the Schur 
+      complement matrix (see Section 
+``Input and output parameters''
+of the MUMPS user's guide
+for more details). The user does not have to initialize it. 
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  <PARAM_ITEM>
+  <PARAM_NAME>id.REDRHS</PARAM_NAME>
+<PARAM_DESCRIPTION>
+(output parameter only if ICNTL(26)=1 and id.VAR_SCHUR was defined): Reduced right-hand side (or
+condensed right-hand side on the variables associated to the Schur complement). It
+is computed by MUMPS during the solve stage if ICNTL(26)=1. It can then be used
+outside MUMPS, together with the Schur complement, to build a solution on the interface.
+See Section ``Schur complement''
+of the MUMPS user's guide
+for more details.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.INFOG and id.RINFOG</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: information parameters
+      (see Section ``Information parameters''
+of the MUMPS user's guide
+).
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.SYM_PERM</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: corresponds to a symmetric permutation 
+      of the variables
+      (see discussion regarding ICNTL(7) in Section 
+``Control parameters''
+of the MUMPS user's guide
+).  This permutation is computed during the analysis and is
+followed by the numerical factorization except when numerical
+pivoting occurs. 
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM> 
+  <PARAM_ITEM>
+  <PARAM_NAME>id.UNS_PERM</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: column permutation (if any) on exit from the analysis
+      phase of MUMPS
+      (see discussion regarding ICNTL(6) in Section 
+``Control parameters''
+of the MUMPS user's guide
+).
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  <PARAM_ITEM>
+  <PARAM_NAME>id.SOL</PARAM_NAME>
+<PARAM_DESCRIPTION>
+: dense vector or matrix containing the solution after MUMPS 
+      solution phase. Also contains the nullspace in case of
+null space computation, or entries of the inverse, in case of
+computation of inverse entries.
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  </PARAM_INDENT>
+  </PARAM>  
+
+  <SECTION label="Internal Parameters">
+  <ITEMIZE>
+  <ITEM> 
+  id.INST: (MUMPS reserved component) MUMPS internal parameter.
+  </ITEM>
+  <ITEM> 
+  id.TYPE: (MUMPS reserved component) defines the arithmetic 
+      (complex or double precision).
+  </ITEM>
+  </ITEMIZE> 
+  </SECTION>
+
+  <DESCRIPTION>
+  <P>
+    The function dmumps solves systems of
+    linear equations of the form Ax = b where A is square sparse matrix and b
+    is a dense or sparse vector or matrix. The solver MUMPS is used and
+    we refer the user to the MUMPS User's Guide for full details.
+    Before the first call to dmumps, a call to initmumps must have been done:
+  </P>
+  <VERBATIM><![CDATA[
+     [id]=initmumps();
+   ]]></VERBATIM>
+  </DESCRIPTION>
+  <EXAMPLE><![CDATA[
+// this is a small linear system
+// whose solution is [1;2;3;4;5]
+A = sparse( [ 2  3  4  0  0;
+              3  0  -3  0  6; 
+              0 -1 1  2  0; 
+              0  0  2  0  0; 
+              0  4  0  0  1] );
+b = [20 ; 24; 9; 6; 13];
+
+// initialization of the MUMPS structure (here job=-1) 
+id=initmumps();
+[id]=dmumps(id);
+id.RHS=b;
+
+// call to MUMPS for the resolution
+id.JOB=6;
+[id]=dmumps(id,A);
+x=id.SOL
+norm(A*x-b)
+
+// Destruction of the MUMPS instance
+id.JOB=-2;
+[id]=dmumps(id);
+
+   ]]>
+   See also the examples provided in the directory "examples" that
+   comes with the distribution of this interface.
+   </EXAMPLE>
+
+  <SEE_ALSO>
+<!--    <SEE_ALSO_ITEM> <LINK>zmumps</LINK> </SEE_ALSO_ITEM>   -->
+    <SEE_ALSO_ITEM> <LINK>initmumps</LINK> </SEE_ALSO_ITEM>
+    <SEE_ALSO_ITEM> <LINK>zmumps</LINK> </SEE_ALSO_ITEM>
+  </SEE_ALSO>
+
+  <SECTION label='References'>
+  <P>
+    <A href="http://graal.ens-lyon.fr/MUMPS/">http://graal.ens-lyon.fr/MUMPS/</A>
+  </P>
+  <P>
+    <A href="http://www.enseeiht.fr/apo/MUMPS/">http://www.enseeiht.fr/apo/MUMPS/</A>
+  </P>
+  </SECTION>
+  
+</MAN>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{f291375e-f482-47d0-904d-6203108bc1ee}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx</Extensions>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{8331a22d-e6c8-486e-9a70-56029b5f012b}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\bucket.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\ddbisect.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\ddcreate.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\gbipart.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\gbisect.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\gelim.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\graph.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\interface.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\minpriority.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\multisector.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\nestdiss.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\sort.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\symbfac.c">
+<Filter>sources</Filter>
+</ClCompile>
+<ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\lib\tree.c">
+<Filter>sources</Filter>
+</ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\const.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\eval.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\macros.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\params.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\protos.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\space.h">
+<Filter>headers</Filter>
+</ClInclude>
+<ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\types.h">
+<Filter>headers</Filter>
+</ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{39813554-b66c-4178-85cb-a2f00bf10534}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx</Extensions>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{13835c04-d2c6-4c9e-831b-eba880c82ed2}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_common.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_basic.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_err.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_thread.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_size.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_pord.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_thread.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_thread_affinity.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_config_file_C.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_numa.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_register_thread.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\MUMPS_5.4.0\src\mumps_save_restore_C.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_common.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_headers.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_basic.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_err.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_io_thread.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_size.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\src\mumps_tags.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MUMPS_5.4.0\src\mumps_pord.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\mumps_c_types.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectDir)\..\..\MUMPS_5.4.0\include\mumps_compat.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MUMPS_5.4.0\src\mumps_thread_affinity.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MUMPS_5.4.0\include\mumps_int_def.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

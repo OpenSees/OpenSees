@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros"><MUMPS_SourceDir>$(ProjectDir)\..\..\MUMPS_5.4.0</MUMPS_SourceDir>
+<MUMPS_IncludeDir>$(ProjectDir)\..\..\MUMPS_5.4.0</MUMPS_IncludeDir>
+<MUMPS_OutDir>$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS</MUMPS_OutDir>
+<MUMPS_MpiLibs>libseq_c.lib;libseq_fortran.lib</MUMPS_MpiLibs>
+<MUMPS_MpiLibDir>$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(Platform)\$(Configuration)\</MUMPS_MpiLibDir>
+<MUMPS_MpiLibIncludeDir>$(ProjectDir)\..\..\MUMPS_5.4.0\libseq</MUMPS_MpiLibIncludeDir>
+<MUMPS_MpiLibs_64bit>libseq_c.lib;libseq_fortran.lib</MUMPS_MpiLibs_64bit>
+<MUMPS_MpiLibDir_64bit>$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(Platform)\$(Configuration)\</MUMPS_MpiLibDir_64bit>
+<MUMPS_MpiLibIncludeDir_64bit>$(ProjectDir)\..\..\MUMPS_5.4.0\libseq</MUMPS_MpiLibIncludeDir_64bit>
+<MUMPS_PordLib>pord_c.lib</MUMPS_PordLib>
+<MUMPS_PordLibDir>$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(Platform)\$(Configuration)\</MUMPS_PordLibDir>
+<MUMPS_PordLibIncludeDir>$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\</MUMPS_PordLibIncludeDir>
+<MUMPS_PordLibs_64bit>pord_c.lib</MUMPS_PordLibs_64bit>
+<MUMPS_PordLibDir_64bit>$(ProjectDir)\..\..\VS_MUMPS_5.4.0_PRODUCTS\$(Platform)\$(Configuration)\</MUMPS_PordLibDir_64bit>
+<MUMPS_PordLibIncludeDir_64bit>$(ProjectDir)\..\..\MUMPS_5.4.0\PORD\include\</MUMPS_PordLibIncludeDir_64bit>
+    <MUMPS_Libs_64bit>$(MUMPS_MpiLibs_64bit);$(MUMPS_PordLibs_64bit)</MUMPS_Libs_64bit>
+    <MUMPS_LibDir_64bit>$(MUMPS_MpiLibDir_64bit)$(MUMPS_PordLibDir_64bit)</MUMPS_LibDir_64bit>
+    <MUMPS_LibIncludeDir_64bit>$(MUMPS_MpiLibIncludeDir_64bit);$(MUMPS_PordLibIncludeDir_64bit);$(MUMPS_Include)</MUMPS_LibIncludeDir_64bit>
+    <MUMPS_Libs>$(MUMPS_OrderingsLibs);$(MUMPS_MpiLibs)</MUMPS_Libs>
+    <MUMPS_LibDir>$(MUMPS_MpiLibDir);$(MUMPS_PordLibDir)</MUMPS_LibDir>
+    <MUMPS_LibIncludeDir>$(MUMPS_PordLibIncludeDir);$(MUMPS_MpiLibIncludeDir);$(MUMPS_Include)</MUMPS_LibIncludeDir>
+</PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>UPPER;MUMPS_CALL=;UpCase;pord;NOMINMAX;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="MUMPS_SourceDir">
+      <Value>$(MUMPS_SourceDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_IncludeDir">
+      <Value>$(MUMPS_IncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_OutDir">
+      <Value>$(MUMPS_OutDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibs">
+      <Value>$(MUMPS_MpiLibs)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibDir">
+      <Value>$(MUMPS_MpiLibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibIncludeDir">
+      <Value>$(MUMPS_MpiLibIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibs_64bit">
+      <Value>$(MUMPS_MpiLibs_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibDir_64bit">
+      <Value>$(MUMPS_MpiLibDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_MpiLibIncludeDir_64bit">
+      <Value>$(MUMPS_MpiLibIncludeDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibs">
+      <Value>$(MUMPS_PordLibs)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibDir">
+      <Value>$(MUMPS_PordLibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibIncludeDir">
+      <Value>$(MUMPS_PordLibIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibs_64bit">
+      <Value>$(MUMPS_PordLibs_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibDir_64bit">
+      <Value>$(MUMPS_PordLibDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_PordLibIncludeDir_64bit">
+      <Value>$(MUMPS_PordLibIncludeDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_Libs">
+      <Value>$(MUMPS_Libs)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_LibDir">
+      <Value>$(MUMPS_LibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_LibIncludeDir">
+      <Value>$(MUMPS_LibIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_Libs_64bit">
+      <Value>$(MUMPS_Libs_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_LibDir_64bit">
+      <Value>$(MUMPS_LibDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MUMPS_LibIncludeDir_64bit">
+      <Value>$(MUMPS_LibIncludeDir_64bit)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,358 @@
+===========================================
+MUMPS 5.4.0 INSTALLATION
+===========================================
+
+Pre-requisites
+--------------
+
+If you only want to use the sequential version, you need:
+-> an optimized sequential or multithreaded BLAS library
+-> the LAPACK library
+
+If you want to use MUMPS on a multicore machine, you need:
+-> a multithreaded BLAS library
+-> the LAPACK library
+-> additional gains can be expected compiling/linking with OpenMP
+   (see userguide, sections "Combining MPI and multithreaded parallelism"
+    and "Enabling the BLR functionality at installation")
+
+If you want to use the parallel (distributed memory MPI based) version, 
+you need:
+-> MPI
+-> BLAS library 
+-> BLACS library
+-> LAPACK and ScaLAPACK libraries
+
+For performance (time and memory issues) we very strongly recommend to install:
+-> SCOTCH and/or METIS for the sequential and parallel versions
+-> PT-SCOTCH and/or ParMetis to parallelize the analysis phase (parallel version
+only: ParMetis and PT-SCOTCH must be disabled for the sequential version as
+this would otherwise lead to undefined MPI symbols at the link phase)
+
+
+Installation
+------------
+
+The following steps can be applied.
+
+% tar zxvf MUMPS_5.4.0.tar.gz
+% cd MUMPS_5.4.0
+
+You then need to build a file called Makefile.inc corresponding
+to your architecture. A few examples are available in the
+directory Make.inc :
+
+ Makefile.debian.SEQ       : default for debian systems with standard packages, sequential version
+ Makefile.debian.PAR       : default for debian systems with standard packages, parallel version
+ Makefile.FREEBSD10.SEQ    : default Makefile.inc for a FreeBSD system, sequential version.
+ Makefile.FREEBSD10.PAR    : default Makefile.inc for a FreeBSD system, parallel version.
+ Makefile.G95.SEQ          : default Makefile.inc for the G95 compiler, sequential version.
+ Makefile.G95.PAR          : default Makefile.inc for the G95 compiler, parallel version.
+ Makefile.INTEL.SEQ        : default for PC with the Intel suite (compilers and MKL), sequential.
+ Makefile.INTEL.PAR        : default for PC with the Intel suite (compilers, MPI and MKL), parallel.
+ Makefile.NEC.SEQ          : default Makefile.inc for a NEC, sequential version.
+ Makefile.NEC.PAR          : default Makefile.inc for a NEC, parallel version.
+ Makefile.SGI.SEQ          : default Makefile.inc for an Origin, sequential version.
+ Makefile.SGI.PAR          : default Makefile.inc for an Origin, parallel version.
+ Makefile.SUN.SEQ          : default Makefile.inc for a SUN, sequential version.
+ Makefile.SUN.PAR          : default Makefile.inc for a SUN, parallel version.
+ Makefile.SP.SEQ           : default for SP (32 bits), sequential version.
+ Makefile.SP.PAR           : default for SP (32 bits), parallel version.
+ Makefile.SP64.SEQ         : default for SP (64 bits), sequential version.
+ Makefile.SP64.PAR         : default for SP (64 bits), parallel version.
+ Makefile.WIN.MS-Intel.SEQ : default for Windows with Intel compiler, sequential, with GNU make.
+ Makefile.WIN.MS-G95.SEQ   : default for Windows with g95 compiler, sequential, with GNU make.
+
+For example, a parallel version of MUMPS on a debian or ubuntu system and
+standard packages copy Make.inc/Makefile.debian.PAR into Makefile.inc:
+
+% cp Make.inc/Makefile.debian.PAR ./Makefile.inc
+
+However, in most cases, Makefile.inc should be adapted to fit with
+your architecture, libraries and compilers (see comments in the
+Makefile.inc.generic or Makefile.inc.generic.SEQ for details).  The
+variables LIBBLAS (BLAS library), SCALAP (ScaLAPACK and LAPACK libraries),
+INCPAR (include files for MPI), LIBPAR (library files for MPI) are concerned.
+We also strongly recommend to install METIS and/or SCOTCH, see the
+ordering section of Makefile.inc.
+
+By default, only the double precision version of MUMPS will be
+installed. The command:
+% make <ARITH>
+will build the version for a specific arithmetic, where <ARITH> is
+one of 's', 'd','c','z' (for single precision real, double precision real,
+complex, and double complex). The command:
+% make all
+will compile versions of MUMPS for all 4 arithmetics.
+
+
+After issuing the command:
+% make all
+, ./lib will contain the mumps libraries libxmumps.a (with x = 'd', 'c',
+'s' or 'z') and libmumps_common.a. Both must be included at link time in
+an external program.
+
+A simple Fortran test driver in ./examples (see ./examples/README) will
+also be compiled as well as an example of using MUMPS from a C main
+program.
+
+
+
+Preprocessing constants (Makefile.inc)
+--------------------------------------
+
+-DDETERMINISTIC_PARALLEL_GRAPH:
+When using several MPI processes, the order of the edges of the graphs
+constructed by MUMPS in parallel may vary between successive execuions.
+Ordering packages (e.g., SCOTCH, PT-SCOTCH, METIS, parMETIS) are
+sensitive to this order, possibly leading to different flops and
+memory estimates between executions.
+
+When compiling MUMPS with -DDETERMINISTIC_PARALLEL_GRAPH, the order of
+the edges of the graph passed to ordering packages will be identical
+for each run.
+
+
+-DMAIN_COMP:
+Note that some Fortran runtime libraries define the "main" symbol.
+This can cause problems when using MUMPS from C if Fortran is used
+for the link phase. One approach is to use a specific flag (such
+as -nofor_main for Intel ifort compiler). Another approach is to
+use the C linker (gcc, etc...) and add manually the Fortran runtime
+libraries (that should not define the symbol "main"). Finally, if
+the previous approaches do not work, compile the C example with
+"-DMAIN_COMP". This might not work well with some MPI implementations
+(see options in Makefiles and the FAQ page at http://mumps-solver.org). 
+
+-DAdd_ , -DAdd__ and -DUPPER:
+These options are used for defining the calling
+convention from C to Fortran or Fortran to C. 
+
+Some other preprocessing options correspond to default
+architectures and are defined in specific Makefiles.
+
+
+Sequential version
+------------------
+
+You can use the parallel MPI version of MUMPS on a single
+processor. If you only plan to use MUMPS on a uniprocessor
+machine, and do not want to install parallel libraries
+such as MPI, ScaLAPACK, etc... then it might be more convenient
+to use one of the Makefile.<ARCH>.SEQ to build a sequential
+version of MUMPS instead of a parallel one.
+
+For that, a dummy MPI library (available in ./libseq) defining
+all symbols related to parallel libraries is used at the link
+phase.
+
+Note that you should use 'make clean' before building the
+MUMPS sequential library if you had previously built a parallel
+version. And vice versa.
+
+
+Compiling and linking your program with MUMPS
+---------------------------------------------
+
+Basically, ./lib/lib[sdcz]mumps.a and ./lib/libmumps_common.a constitute the
+MUMPS library and ./include/*.h are the include files. Also, some BLAS, LAPACK,
+ScaLAPACK, BLACS, and MPI are needed. (Except for the sequential version
+where ./libseq/libmpiseq.a is used.) Please refer to the Makefile
+available in the directory ./examples for an example of how to link your
+program with MUMPS. We advise to use the same compiler alignment options
+for compiling your program as were used for compiling MUMPS. Otherwise
+some derived datatypes may not match.
+
+Using MUMPS from an existing project
+------------------------------------
+
+If you want to use MUMPS from outside the MUMPS installation directory,
+please make sure the ./lib/ and ./include/ directories can be accessed,
+and start from the Makefile.inc used at installation and the Makefile
+available in ./examples as models.
+
+
+Interface with the Metis and ParMetis orderings
+-----------------------------------------------
+
+Since the release of MUMPS 4.10.0, the Metis API has changed.
+MUMPS 5.0 and later versions assume that Metis 5.1.0 or 
+ParMetis 4.0.3 or later are installed, and that the newer
+versions of Metis/ParMetis are backward compatible with Metis
+5.1.0/ParMetis 4.0.3.
+
+It is however still possible to continue using Metis
+versions 4.0.3 or lower by forcing the compilation flag -Dmetis4
+in your Makefile.inc, and to continue using ParMetis versions
+3.2.0 or lower by forcing the compilation flag -Dparmetis3.
+
+Note that Metis 5.0.3 and ParMetis 4.0.1/4.0.2 have
+never been supported in MUMPS.
+
+
+32-bit versus 64-bit Fortran integers
+-------------------------------------
+
+MUMPS uses a mix of 32-bit and 64-bit integers depending on the
+possible sizes of the integers that must be manipulated.
+
+Most integers at the MUMPS interface level are 32-bit integers: only
+NNZ and NNZ_loc are 64-bit integers, as the number of non-zeros in a
+matrix can exceed the 32-bit integer limit on large problems.
+Internally, MUMPS uses a mix of 32-bit and 64-bit integers. 64-bit
+integers are mainly used for data proportional to NNZ or NNZ_loc
+or to address large arrays. However, external libraries like BLAS,
+MPI, (Sca)LAPACK, can remain 32-bit.
+
+For each ordering, the user should decide at installation time if
+the ordering manipulates 32-bit or 64-bit indices. 64-bit integers
+are recommended if the number of nonzeros in the matrix becomes
+significant as compared to 2^31-1
+
+- for PORD: by default, PORD is installed in a way compatible with
+standard integers (Fortran INTEGER). Installation of MUMPS with
+-DPORD_INTSIZE64 (i.e.  adding the -DPORD_INTSIZE64 option to the 
+OPTC variable from your Makefile.inc) will install PORD with 
+64-bit integers and MUMPS will also call PORD with 64-bit integers.
+Warning: if you activate or deactivate -DPORD_INTSIZE64 between two
+installations, the previously installed pord library should be
+cleaned before recompilation. This can be done with "make clean".
+
+- for METIS/parMETIS: in the file metis.h (assuming here a version of
+metis >= 5), it is possible to modify the line
+"#define IDXTYPEWIDTH 32"
+by 
+"#define IDXTYPEWIDTH 64"
+in order to use 64-bit integers for indices (see comments in metis.h
+for more information). MUMPS will then check the value of IDXTYPE in
+metis.h in order to call METIS with integer parameters of the
+correct datatype.
+
+- for scotch/pt-SCOTCH: in scotch.h, you can compile SCOTCH either
+with -DINTSIZE32 (default) or with -DINTSIZE64, in order to process
+large graphs. MUMPS will then check the size of a SCOTCH integer in
+scotch.h in order to call SCOTCH with integer parameters of the
+correct datatype
+
+Finally, it is possible to force all integers to be 64-bit at installation.
+This can be useful, if, for example, MUMPS is called from an environment
+where all integers are 64-bit. This approach relies:
+i) on a Fortran compiler flag (e.g., -i8, -fdefault-integer-8, or something
+else, depending on your compiler) that should be added in the OPTF variable
+from the Makefile.inc corresponding to your local configuration.
+ii) on forcing a 64-bit default integer in C code, by adding the -DINTSIZE64
+option to the OPTC variable from your Makefile.inc (remark that this option
+will also force an installation of PORD with 64-bit integers, since PORD
+installation is also based on the same OPTC)
+iii) on the fact that all external libraries called by MUMPS should use
+64-bit integers. In particular, all external orderings must have been compiled
+with 64-bit integers as we have not developed 64-bit to 32-bit wrappers.
+Furthermore:
+- for the MPI-free version, METIS, SCOTCH, BLAS, LAPACK should thus
+also rely on 64-bit integers.
+- for the MPI version, one also needs an MPI (and ScaLAPACK) implementation
+  where all integers are 64-bit (both MPI_INTEGER and counts).
+
+  Remark that for this latter point, Intel provides an ilp64 version of
+  MPI where integers (counts, MPI_INTEGER, ...) are 64-bit. However, in
+  the MPI versions we have tested, MPI_2INTEGER which could be expected
+  to be 128-bit in that case is only 64-bit, see Intel documentation.
+  In order to have MUMPS working correcly with such MPI versions, please
+  try adding -DWORKAROUNDINTELILP64MPI2INTEGER to the OPTF variable of
+  your Makefile.inc
+
+  Finally, when including MUMPS headers files from a  C application,
+  one can check at compilation time the preprocessing constants
+  MUMPS_INTSIZE32 and MUMPS_INTSIZE64 (see include/mumps_int_def.h generated
+  during the build process and include/mumps_c_types.h) in order
+  to see how MUMPS_INT was defined. At runtime, one can simply check
+  sizeof(MUMPS_INT).
+
+
+Using BLAS extension GEMMT
+--------------------------
+
+If the BLAS library includes the GEMMT level-3 BLAS
+extension, we strongly recommend to use it.
+-DGEMMT_AVAILABLE should then be added to the OPTF variable of your Makefile.inc. 
+This can significantly improve the performance of the factorization of
+symmetric matrices.  To be compatible, the GEMMT signature should be the
+same as the one described at
+
+https://software.intel.com/en-us/mkl-developer-reference-fortran-gemmt.
+
+
+Platform and software dependencies
+----------------------------------
+
+Versions of MUMPS have been tested on a large range of platforms.
+MUMPS is potentially portable to any platform having a C and
+Fortran 90 compiler as well as MPI, BLACS, and ScaLAPACK installed.
+
+* WINDOWS
+  -------
+
+Although the MUMPS development team is not using Windows, you
+may be interested by discussions on this topic in the archives
+of MUMPS users, or by links to contributions from users (see the
+MUMPS website, and follow "Links").
+
+
+* FREEBSD AND SOLARIS
+  -------------------
+
+Under FreeBSD and Solaris, please check that the spaces are
+kept after the definition of commands. For example, use
+AR = ar -vr "" 
+to force keeping the space after ar -vr
+See the example Makefile.FREEBSD10 in the Make.inc/ directory.
+
+Note that the absence of space in the main Makefile
+is motivated by portability on Windows environments.
+
+* gfortran-10
+  -----------
+
+For MUMPS to compile with gfortran-10, the option '-fallow-argument-mismatch'
+should be added to OPTF in your Makefile.inc
+
+* MAC OSX
+  -------
+
+Dominique Orban has developed a Homebrew formula for MUMPS.
+Please check the "Links" page at http://mumps-solver.org and
+http://brew.sh
+
+
+* IBM SP
+  ------
+On SP machines, use of PESSL, BLACS, MPI and ESSL is made.
+
+Note that MUMPS requires PESSL release 2 or greater. The version
+of MUMPS based on PESSL release 1.1 (that used descriptors of
+size 8) is no longer available. If PESSL release 2 is not
+available on your system, the public domain version of
+ScaLAPACK should be used instead. PESSL usually does not
+include single precision versions of the ScaLAPACK routines
+required by MUMPS. If the single precision or single
+complex versions of MUMPS are needed, then ScaLAPACK should
+then be used in place of PESSL.
+
+* LAM
+  ---
+lam version 6.5.6 or greater is required for the double complex
+version of MUMPS to work correctly.
+
+* MPICH
+  -----
+The double complex version does not work correctly with MPICH2 v 1.0.3,
+due to truncated messages when using double complex types.
+
+* CRAY
+  ----
+On the CRAY, we recommend to link with the standard BLACS
+library from netlib, based on MPI. We observed problems
+(deadlock) when using the CRAY BLACS in host-node mode or
+when MUMPS is used on a subcommunicator of MPI_COMM_WORLD
+of more than 1 processor.
+

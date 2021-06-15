@@ -1,0 +1,98 @@
+README 
+************************************************************************
+*  This SCILAB interface to MUMPS is provided to you free of charge    *
+*  and is part of the MUMPS package (see ../LICENSE for the            *
+*  conditions of use), http://mumps-solver.org                         *
+*                                                                      *
+*  THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY	       *
+*  EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.                 *
+*                                                                      *
+*  More information is available in the main MUMPS userguide and in:   *
+*                                                                      *
+*   [2006] Aurelia Fevre, Jean-Yves L'Excellent and Stephane Pralet    *
+*   MATLAB and Scilab interfaces to MUMPS. LIP Report RR2006-06.       *
+*   Also available as an INRIA and an ENSEEIHT-IRIT Technical Report.  *
+*                                                                      *
+************************************************************************
+*                                                                      *
+*  IMPORTANT NOTICE:  This interface does not include the most recent  *
+*            MUMPS features (e.g., entries of the inverse) and was     *
+*            only tested with Scilab 4 version. We plan to upgrade it  *
+*            in the future.                                            *
+*                                                                      *
+************************************************************************
+
+CONTENTS OF THE DIRECTORY:
+
+	README               :  this file
+	builder.sce          :  Scilab script to build the makefile, the loader_inc.sce
+	                        and to compile intdmumpsc.c and intzmumps.c
+                                (to be executed once)
+	intdmumpsc.c         :  C interface file to double precision version of MUMPS
+	intzmumpsc.c         :  C interface file for double complex version of MUMPS
+	loader.sce           :  installation script (to be executed each time scilab is launched)
+	initmumps.sci        :  Scilab file for the initialisation of the mumps structure
+	dmumps.sci           :  Scilab file for double precision version
+	zmumps.sci           :  Scilab file for double complex version
+	
+	loader_inc.sce, Makefile, object files:  Generated when executing the builder
+
+	examples/
+	  double_example.sce    :  file containing an example of using MUMPS in Scilab
+	  cmplx_example.sce 	:  file containing an example of using MUMPS in Scilab,
+	  			with a complex matrix
+	  schur_example.sce 	:  file containing an example of using MUMPS in Scilab, 
+	  			with the schur option
+	  sparseRHS_example.sce	:  file containing an example of using MUMPS in Scilab,
+	  			with a sparse multiple right hand side
+	  ex.sci            	:  small sparse matrix used to run the examples  
+	  ex2.sci            	:  small sparse matrix used to run the schur_example  
+	  ex_rhs.sci        	:  small sparse right hand side used to run the examples
+		
+
+***************************************************************************************
+
+INSTALLATION :
+
+You need:
+        1- scilab version 3.x or 4.x (not tested with recent versions of scilab)
+	2- to have compiled/linked a sequential version of MUMPS with both double precision
+	   and double complex arithmetics ("make d" and "make z", or "make all")
+	3- to modify the paths in the builder.sce. In particular you will need to give 
+	   the path to the runtime libraries of your FORTRAN 90 compiler.
+	4- to execute builder.sce and loader.sce by using the "exec" 
+	   instruction within Scilab:
+		exec('builder.sce');
+		exec('loader.sce'); 	
+
+SOME EXPLANATIONS: 
+- Modifications of builder.sce
+In this file, you will find a variable part to customize. The following modifications
+have to be done after the installation of MUMPS, i.e., after having a working MUMPS 
+library.
+
+o  First, the paths until libmpiseq.a, libdmumpsc.a and libpord.a. If you have not
+installed these libraries in specific places, and assuming that you are using MUMPS
+version 4.5.5, the path should be:
+		xxxx/MUMPS_4.5.5/Include/
+		xxxx/MUMPS_4.5.5/lib/
+		xxxx/MUMPS_4.5.5/libseq/		
+o  Second, the C compiler with the flag for compilation only. For example: cc -c -O or 
+gcc -c -O.
+o  Finally, the harder part: you must define the libraries used by the Fortran 
+compiler that was used to compile MUMPS. 
+
+- Modifications of loader.sce
+The only thing to do in this file is to change the path DIR_SCIMUMPS; it has to be the
+path to Scilab files 
+
+
+***************************************************************************************
+
+LIMITATIONS: 
+The behaviour of the interface strongly depends on the Fortran compilers
+and platform used. It has been tested on a limited set of these (for example,
+the g95 compiler with Scilab 3.0 and 3.1 under a Linux PC).
+This interface does not support MUMPS parallel versions, and has not
+been tested under Windows environments).
+

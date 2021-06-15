@@ -1,0 +1,174 @@
+C
+C  This file is part of MUMPS 5.4.0, released
+C  on Tue Apr 13 15:26:30 UTC 2021
+C
+C
+C  Copyright 1991-2021 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
+C
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
+C
+      SUBROUTINE SMUMPS_PROCESS_MASTER2(MYID,BUFR, LBUFR, 
+     &     LBUFR_BYTES,
+     &     PROCNODE_STEPS, SLAVEF,
+     &     IWPOS, IWPOSCB, IPTRLU, LRLU, LRLUS,
+     &     N, IW, LIW, A, LA,
+     &     PTRIST, PTRAST, STEP, PIMASTER, PAMASTER, NSTK_S,
+     &     COMP,
+     &     IFLAG, IERROR, COMM, COMM_LOAD,
+     &     IPOOL, LPOOL, LEAF, KEEP, KEEP8, DKEEP,
+     &     ND, FILS, DAD, FRERE, ITLOC, RHS_MUMPS,
+     &     ISTEP_TO_INIV2, TAB_POS_IN_PERE )
+      USE SMUMPS_LOAD
+      IMPLICIT NONE
+      INCLUDE 'mpif.h'
+      INTEGER IERR
+      INTEGER MYID
+      INTEGER KEEP(500)
+      INTEGER(8) KEEP8(150)
+      REAL DKEEP(230)
+      INTEGER LBUFR, LBUFR_BYTES
+      INTEGER BUFR( LBUFR )
+      INTEGER SLAVEF
+      INTEGER(8) :: IPTRLU, LRLU, LRLUS, LA
+      INTEGER IWPOS, IWPOSCB
+      INTEGER N, LIW
+      INTEGER IW( LIW )
+      REAL A( LA )
+      INTEGER(8) :: PTRAST(KEEP(28))
+      INTEGER(8) :: PAMASTER(KEEP(28))
+      INTEGER PTRIST(KEEP(28)), STEP(N), PIMASTER(KEEP(28))
+      INTEGER PROCNODE_STEPS( KEEP(28) ), ITLOC( N +KEEP(253) )
+      REAL :: RHS_MUMPS(KEEP(255))
+      INTEGER COMP
+      INTEGER NSTK_S( KEEP(28) )
+      INTEGER IFLAG, IERROR, COMM, COMM_LOAD
+      INTEGER LPOOL, LEAF
+      INTEGER IPOOL( LPOOL )
+      INTEGER ND(KEEP(28)), FILS( N ), DAD(KEEP(28)), FRERE(KEEP(28))
+      INTEGER ISTEP_TO_INIV2(KEEP(71)), 
+     &        TAB_POS_IN_PERE(SLAVEF+2,max(1,KEEP(56)))
+      INTEGER POSITION, IFATH, ISON, NROW, NCOL, NELIM, 
+     &        NSLAVES
+      INTEGER(8) :: NOREAL
+      INTEGER NOINT, INIV2, NCOL_EFF
+      DOUBLE PRECISION FLOP1
+      INTEGER NBROWS_ALREADY_SENT, NBROWS_PACKET
+      INTEGER NOREAL_PACKET
+      LOGICAL PERETYPE2
+      INCLUDE 'mumps_headers.h'
+      INTEGER  MUMPS_TYPENODE
+      EXTERNAL MUMPS_TYPENODE
+      POSITION = 0
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &          IFATH, 1, MPI_INTEGER
+     &        , COMM, IERR)
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        ISON , 1, MPI_INTEGER, 
+     &        COMM, IERR)
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        NSLAVES, 1,
+     &        MPI_INTEGER, COMM, IERR )
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &          NROW , 1, MPI_INTEGER
+     &        , COMM, IERR)
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &          NCOL , 1, MPI_INTEGER
+     &        , COMM, IERR)
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &          NBROWS_ALREADY_SENT, 1,
+     &          MPI_INTEGER, COMM, IERR)
+      CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &          NBROWS_PACKET, 1,
+     &          MPI_INTEGER, COMM, IERR)
+      IF ( NSLAVES .NE. 0 .and. KEEP(50).ne.0 ) THEN
+        NCOL_EFF = NROW
+      ELSE
+        NCOL_EFF = NCOL
+      ENDIF
+      NOREAL_PACKET = NBROWS_PACKET * NCOL_EFF
+      IF (NBROWS_ALREADY_SENT .EQ. 0) THEN
+        NOINT = 6 + NROW + NCOL + NSLAVES + KEEP(IXSZ)
+        NOREAL= int(NROW,8) * int(NCOL_EFF,8)
+        CALL SMUMPS_ALLOC_CB(.FALSE.,0_8,.FALSE.,.FALSE.,
+     &   MYID,N,KEEP,KEEP8,DKEEP,IW,LIW,A,LA,
+     &   LRLU, IPTRLU,IWPOS,IWPOSCB, SLAVEF, PROCNODE_STEPS, DAD,
+     &   PTRIST,PTRAST,STEP, PIMASTER, PAMASTER,
+     &   NOINT, NOREAL, ISON, S_NOTFREE, .TRUE.,
+     &   COMP, LRLUS, KEEP8(67), IFLAG, IERROR
+     &     )
+        IF ( IFLAG .LT. 0 ) THEN
+          RETURN
+        ENDIF
+        PIMASTER(STEP( ISON )) = IWPOSCB + 1
+        PAMASTER(STEP( ISON )) = IPTRLU  + 1_8
+        IW( IWPOSCB + 1 + XXNBPR ) = 0  
+        IW( IWPOSCB + 1 + KEEP(IXSZ) ) = NCOL
+        NELIM = NROW
+        IW( IWPOSCB + 2 + KEEP(IXSZ) ) = NELIM
+        IW( IWPOSCB + 3 + KEEP(IXSZ) ) = NROW
+        IF ( NSLAVES .NE. 0 .and. KEEP(50).ne.0 ) THEN
+          IW( IWPOSCB + 4 + KEEP(IXSZ) ) = NROW - NCOL
+          IF ( NROW - NCOL .GE. 0 ) THEN
+            WRITE(*,*) 'Error in PROCESS_MAITRE2:',NROW,NCOL
+            CALL MUMPS_ABORT()
+          END IF
+        ELSE
+          IW( IWPOSCB + 4 + KEEP(IXSZ) ) = 0
+        END IF
+        IW( IWPOSCB + 5 + KEEP(IXSZ) ) = 1
+        IW( IWPOSCB + 6 + KEEP(IXSZ) ) = NSLAVES
+        IF (NSLAVES.GT.0) THEN
+         CALL MPI_UNPACK( BUFR, LBUFR_BYTES, POSITION,
+     &                 IW( IWPOSCB + 7 + KEEP(IXSZ) ),
+     &                 NSLAVES, MPI_INTEGER, COMM, IERR )
+        ENDIF
+        CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        IW(IWPOSCB + 7 + KEEP(IXSZ) + NSLAVES),
+     &        NROW, MPI_INTEGER, COMM, IERR)
+        CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        IW(IWPOSCB + 7 + KEEP(IXSZ) + NROW + NSLAVES),
+     &        NCOL, MPI_INTEGER, COMM, IERR)
+        IF ( NSLAVES .GT. 0 ) THEN
+          INIV2 = ISTEP_TO_INIV2 ( STEP(ISON) )
+          CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        TAB_POS_IN_PERE(1,INIV2),
+     &        NSLAVES+1, MPI_INTEGER, COMM, IERR)
+          TAB_POS_IN_PERE(SLAVEF+2,INIV2) = NSLAVES
+        ENDIF
+      ENDIF
+      IF (NOREAL_PACKET.GT.0) THEN
+        CALL MPI_UNPACK(BUFR, LBUFR_BYTES, POSITION,
+     &        A(PAMASTER(STEP(ISON)) +
+     &        int(NBROWS_ALREADY_SENT,8) * int(NCOL_EFF,8)),
+     &        NOREAL_PACKET, MPI_REAL, COMM, IERR)
+      ENDIF
+      IF ( NBROWS_ALREADY_SENT + NBROWS_PACKET .EQ. NROW ) THEN
+        PERETYPE2 = ( MUMPS_TYPENODE(PROCNODE_STEPS(STEP(IFATH)),
+     &                KEEP(199)) .EQ. 2 )
+        NSTK_S( STEP(IFATH ))       = NSTK_S( STEP(IFATH) ) - 1
+        IF ( NSTK_S( STEP(IFATH)) .EQ. 0 ) THEN
+          CALL SMUMPS_INSERT_POOL_N(N, IPOOL, LPOOL, PROCNODE_STEPS,
+     &         SLAVEF, KEEP(199),
+     &         KEEP(28), KEEP(76), KEEP(80), KEEP(47),
+     &         STEP, IFATH )
+          IF (KEEP(47) .GE. 3) THEN
+             CALL SMUMPS_LOAD_POOL_UPD_NEW_POOL(
+     &            IPOOL, LPOOL, 
+     &            PROCNODE_STEPS, KEEP,KEEP8, SLAVEF, COMM_LOAD,
+     &            MYID, STEP, N, ND, FILS )
+          ENDIF
+          CALL MUMPS_ESTIM_FLOPS( IFATH, N, PROCNODE_STEPS,
+     &                            KEEP(199), ND,
+     &                            FILS,FRERE, STEP, PIMASTER,
+     &                            KEEP(28), KEEP(50), KEEP(253),
+     &                            FLOP1,IW, LIW, KEEP(IXSZ) )
+          IF (IFATH.NE.KEEP(20))
+     &    CALL SMUMPS_LOAD_UPDATE(1, .FALSE., FLOP1, KEEP,KEEP8)
+        END IF
+      ENDIF
+      RETURN
+      END SUBROUTINE SMUMPS_PROCESS_MASTER2

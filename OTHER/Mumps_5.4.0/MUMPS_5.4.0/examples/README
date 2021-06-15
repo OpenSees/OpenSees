@@ -1,0 +1,70 @@
+
+* Supposing the MUMPS libraries with appropriate arithmetic have been
+generated, you may compile the example drivers by typing either
+
+   make (which defaults to make d)
+   make s
+   make d
+   make c
+   make z
+   make multi
+or make all
+
+
+* For the small Fortran driver, see comments in simpletest.F and try for example
+    "mpirun -np 2 ./ssimpletest < input_simpletest_real"
+    "mpirun -np 2 ./dsimpletest < input_simpletest_real"
+    "mpirun -np 2 ./csimpletest < input_simpletest_cmplx"
+    "mpirun -np 2 ./zsimpletest < input_simpletest_cmplx"
+  if you are using the parallel version of MUMPS, or
+
+    "./ssimpletest < input_simpletest_real"
+    "./dsimpletest < input_simpletest_real"
+    "./csimpletest < input_simpletest_cmplx"
+    "./zsimpletest < input_simpletest_cmplx"
+
+  if you are using the sequential version.
+
+  The solution should be (1,2,3,4,5)
+
+
+* For the small C driver, only an example using double arithmetic is available.
+  Try for example
+    "mpirun -np 3 ./c_example" (parallel version),or
+    "./c_example" (sequential version).
+  The solution should be (1,2)
+
+
+* For multiple instances using different arithmetics,
+  a small example is available in multiple_arithmetics_example.F.
+  Supposing the MUMPS libraries with all arithmetic have been generated,
+  you may compile the example driver by typing :
+
+   make multi
+
+   Then try for example:
+   	"mpirun -np 3 ./multiple_arithmetics_example" (parallel version),or
+   	"./multiple_arithmetics_example" (sequential version).
+	
+* For the small Fortran driver using the save/restore feature, see comments in simpletest_save_restore.F and try for example
+    "mpirun -np 2 ./ssimpletest_save_restore < input_simpletest_real"
+    "mpirun -np 2 ./dsimpletest_save_restore < input_simpletest_real"
+    "mpirun -np 2 ./csimpletest_save_restore < input_simpletest_cmplx"
+    "mpirun -np 2 ./zsimpletest_save_restore < input_simpletest_cmplx"
+  if you are using the parallel version of MUMPS, or
+
+    "./ssimpletest_save_restore < input_simpletest_real"
+    "./dsimpletest_save_restore < input_simpletest_real"
+    "./csimpletest_save_restore < input_simpletest_cmplx"
+    "./zsimpletest_save_restore < input_simpletest_cmplx"
+
+  if you are using the sequential version.
+
+  The solution should be (1,2,3,4,5)
+
+
+* For the small C driver using the save/restore feature, only an example using double arithmetic is available.
+  Try for example
+    "mpirun -np 3 ./c_example_save_restore" (parallel version),or
+    "./c_example_save_restore" (sequential version).
+  The solution should be (1,2)

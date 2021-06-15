@@ -1,0 +1,3 @@
+After a successful build, this directory should contain the MUMPS libraries:
+ - arithmetic-independent library: libmumps_common.a
+ - aritmetic-dependent  libraries: libxmumps.a, x=d, s, c, z

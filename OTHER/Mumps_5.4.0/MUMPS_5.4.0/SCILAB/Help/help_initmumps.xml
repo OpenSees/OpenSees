@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?> 
+<!DOCTYPE MAN SYSTEM "manrev.dtd">
+<MAN>
+  <LANGUAGE>eng</LANGUAGE>
+  <TITLE>initmumps </TITLE>
+  <TYPE>Mumps interface's function</TYPE>
+  <DATE></DATE>
+  <SHORT_DESCRIPTION name="initmumps"> Initialisation of the mumps structure  </SHORT_DESCRIPTION>
+  
+  <CALLING_SEQUENCE>
+  <CALLING_SEQUENCE_ITEM>[id]=initmumps() </CALLING_SEQUENCE_ITEM>
+   </CALLING_SEQUENCE>
+  
+  <PARAM>
+ <PARAM_INDENT>
+  <PARAM_ITEM>
+  <PARAM_NAME>id </PARAM_NAME>
+  <PARAM_DESCRIPTION>
+     : a structure (mlist)
+  </PARAM_DESCRIPTION> 
+  </PARAM_ITEM>
+  </PARAM_INDENT>
+  </PARAM>
+  
+  <DESCRIPTION>
+  <P>
+    This function initializes a MUMPS structure to its default components, so that the structure can then be used in subsequent calls to dmumps or zmumps
+  </P>
+  </DESCRIPTION>
+  
+   <SEE_ALSO>
+    <SEE_ALSO_ITEM> <LINK>dmumps</LINK> </SEE_ALSO_ITEM>     
+    <SEE_ALSO_ITEM> <LINK>zmumps</LINK> </SEE_ALSO_ITEM>     
+   </SEE_ALSO>
+  
+  <SECTION label='References'>
+  <P>
+    <A href="http://graal.ens-lyon.fr/MUMPS/">http://graal.ens-lyon.fr/MUMPS/</A>
+    <A href="http://www.enseeiht.fr/apo/MUMPS/">http://www.enseeiht.fr/apo/MUMPS/</A>
+  </P>
+  </SECTION>
+  
+</MAN>
