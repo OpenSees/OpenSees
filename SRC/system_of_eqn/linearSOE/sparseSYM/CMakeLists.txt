@@ -1,4 +1,3 @@
-add_library(systemOfEqn "")
 
 target_sources(systemOfEqn
     PRIVATE
@@ -11,7 +10,7 @@ target_sources(systemOfEqn
 	utility.c
 	newordr.c
 	nnsim.c
-	genmmd.c
+	genmmd.f
     PUBLIC
 	SymSparseLinSOE.h
 	SymSparseLinSolver.h

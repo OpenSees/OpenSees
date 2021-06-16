@@ -1,4 +1,3 @@
-
 add_subdirectory(domain)
 add_subdirectory(damage)
 add_subdirectory(actor)
@@ -7,16 +6,20 @@ add_subdirectory(convergenceTest)
 add_subdirectory(coordTransformation)
 add_subdirectory(graph)
 add_subdirectory(handler)
-add_subdirectory(element)
+#add_subdirectory(element)
 add_subdirectory(material)
 add_subdirectory(matrix)
 add_subdirectory(recorder)
 add_subdirectory(tagged)
 add_subdirectory(utility)
+if (EXISTS base)
+add_subdirectory(base)
+endif()
+add_subdirectory(system_of_eqn)
+if(OPS_OPTION_RENDERER)
+add_subdirectory(renderer)
+endif()
 
-
-#
-#add_subdirectory(utility)
 
 
 

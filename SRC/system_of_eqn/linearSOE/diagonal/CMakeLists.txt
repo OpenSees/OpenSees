@@ -1,4 +1,3 @@
-add_library(systemOfEqn "")
 
 target_sources(systemOfEqn
     PRIVATE
@@ -18,3 +17,4 @@ target_sources(systemOfEqn
 
 
 target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

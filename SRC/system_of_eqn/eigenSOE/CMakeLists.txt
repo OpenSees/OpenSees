@@ -1,0 +1,30 @@
+
+target_sources(systemOfEqn
+    PRIVATE
+        ArpackSOE.cpp
+        ArpackSolver.cpp
+	#BandArpackSOE.cpp
+	#BandArpackSolver.cpp
+        EigenSOE.cpp
+        EigenSolver.cpp
+        FullGenEigenSOE.cpp
+        FullGenEigenSolver.cpp
+	#SymArpackSOE.cpp
+	#SymArpackSolver.cpp
+        SymBandEigenSOE.cpp
+        SymBandEigenSolver.cpp
+    PUBLIC
+        ArpackSOE.h
+        ArpackSolver.h
+	#BandArpackSOE.h
+	#BandArpackSolver.h
+        EigenSOE.h
+        EigenSolver.h
+        FullGenEigenSOE.h
+        FullGenEigenSolver.h
+	#SymArpackSOE.h
+	#SymArpackSolver.h
+        SymBandEigenSOE.h
+        SymBandEigenSolver.h
+)
+

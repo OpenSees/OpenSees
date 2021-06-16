@@ -2,8 +2,8 @@ target_sources(material
     PRIVATE
 	stressDensity.cpp
 	SDM-UC.f
-	sdm3d.f90
-	sdm2d.f90
+	SDM3D.f90
+	SDM2D.f90
 	MODULE_ALL_INTERFACES_3D.f90
 	MODULE_ALL_INTERFACES_2D.f90
 	StressDensityModel.cpp

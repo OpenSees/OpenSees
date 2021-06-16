@@ -34,3 +34,4 @@ elseif(PARALLEL)
 endif
 
 target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

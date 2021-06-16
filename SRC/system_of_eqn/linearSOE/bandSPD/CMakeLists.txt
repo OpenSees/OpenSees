@@ -1,4 +1,3 @@
-add_library(systemOfEqn "")
 
 target_sources(systemOfEqn
     PRIVATE

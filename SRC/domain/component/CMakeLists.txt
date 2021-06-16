@@ -22,7 +22,7 @@ target_sources(domain
 	ElementStateParameter.h
 )
 
-if(RELIABILITY)
+if(OPS_OPTION_RELIABILITY)
 target_sources(domain
     PRIVATE
 	RVParameter.cpp
