@@ -173,6 +173,7 @@ extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
 extern void *OPS_SLModel(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+extern void* OPS_GyroMassMaterial(void); //Edbert Rainer Lumbantobing
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -883,7 +884,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
     }
-    
+
+    else if (strcmp(argv[1], "GyroMassMaterial") == 0) {
+    void* theMat = OPS_GyroMassMaterial();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+    else
+        return TCL_ERROR;
+    }
+
     else if (strcmp(argv[1],"ElasticPPGap") == 0) {
       void *theMat = OPS_EPPGapMaterial();
       if (theMat != 0) 
