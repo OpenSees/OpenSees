@@ -197,18 +197,29 @@ namespace {
 	    theSec = OPS_FiberSection2d();
 	    theActiveFiberSection2d = (FiberSection2d*)theSec;
 	} else if(ndm == 3) {
-	  if (ndf == 7) {
-	    theSec = OPS_FiberSectionWarping3d();
-	    theActiveFiberSectionWarping3d = (FiberSectionWarping3d*)theSec;
-	  } else {
 	    theSec = OPS_FiberSection3d();
 	    theActiveFiberSection3d = (FiberSection3d*)theSec;
-	  }
 	}
 
 	return theSec;
     }
 
+    static void* OPS_FiberSectionWarping()
+    {
+	void* theSec = 0;
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();	
+	if(ndm == 2) {
+	  //theSec = OPS_FiberSectionWarping2d();
+	  //theActiveFiberSectionWarping2d = (FiberSectionWarping2d*)theSec;
+	} else if(ndm == 3) {
+	  theSec = OPS_FiberSectionWarping3d();
+	  theActiveFiberSectionWarping3d = (FiberSectionWarping3d*)theSec;
+	}
+
+	return theSec;
+    }
+  
     static void* OPS_FiberSectionThermal()
     {
 	void* theSec = 0;
@@ -1042,8 +1053,9 @@ namespace {
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
 	functionMap.insert(std::make_pair("Fiber", &OPS_FiberSection));
-	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));
 	functionMap.insert(std::make_pair("fiberSec", &OPS_FiberSection));
+	functionMap.insert(std::make_pair("FiberWarping", &OPS_FiberSectionWarping));
+	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));	
 	functionMap.insert(std::make_pair("NDFiber", &OPS_NDFiberSection));
 	functionMap.insert(std::make_pair("Uniaxial", &OPS_UniaxialSection));
 	functionMap.insert(std::make_pair("Generic1D", &OPS_UniaxialSection));

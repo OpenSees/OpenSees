@@ -1838,7 +1838,7 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getKiSensitivity(int gradNumber)
+DispBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;

@@ -1,0 +1,29 @@
+target_sources(analysis
+    PRIVATE
+      Accelerator.cpp
+      MillerAccelerator.cpp 
+      naccel.f
+      RaphsonAccelerator.cpp 
+      PeriodicAccelerator.cpp 
+      KrylovAccelerator.cpp 
+      KrylovAccelerator2.cpp 
+      DifferenceAccelerator.cpp 
+      DifferenceAccelerator2.cpp
+      SecantAccelerator1.cpp 
+      SecantAccelerator2.cpp 
+      SecantAccelerator3.cpp
+    PUBLIC
+      Accelerator.h
+      MillerAccelerator.h 
+      RaphsonAccelerator.h 
+      PeriodicAccelerator.h 
+      KrylovAccelerator.h 
+      KrylovAccelerator2.h 
+      DifferenceAccelerator.h 
+      DifferenceAccelerator2.h
+      SecantAccelerator1.h 
+      SecantAccelerator2.h 
+      SecantAccelerator3.h
+)
+
+target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))

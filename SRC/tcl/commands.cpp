@@ -1018,6 +1018,17 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "retainedDOFs", &retainedDOFs,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
+    Tcl_CreateCommand(interp, "getNumElements", &getNumElements,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getEleClassTags", &getEleClassTags,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getEleLoadClassTags", &getEleLoadClassTags,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getEleLoadTags", &getEleLoadTags,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getEleLoadData", &getEleLoadData,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
     Tcl_CreateCommand(interp, "sdfResponse", &sdfResponse, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
 
@@ -8883,6 +8894,224 @@ getNP(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;  
+}
+
+int
+getNumElements(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  char buffer[20];
+
+  sprintf(buffer, "%d ", theDomain.getNumElements());
+  Tcl_AppendResult(interp, buffer, NULL);
+
+  return TCL_OK;
+}
+
+int
+getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	Element *theEle;
+	ElementIter &eleIter = theDomain.getElements();
+
+	char buffer[20];
+
+        while ((theEle = eleIter()) != 0) {
+          sprintf(buffer, "%d ", theEle->getClassTag());
+          Tcl_AppendResult(interp, buffer, NULL);
+        }
+  } else if (argc == 2) {
+	int eleTag;
+
+	if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
+	  opserr << "WARNING getParamValue -- could not read paramTag \n";
+	  return TCL_ERROR;
+	}
+
+	Element *theEle = theDomain.getElement(eleTag);
+
+	char buffer[20];
+
+	sprintf(buffer, "%d ", theEle->getClassTag());
+	Tcl_AppendResult(interp, buffer, NULL);
+
+  } else {
+    opserr << "WARNING want - getEleClassTags <eleTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
+getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[20];
+
+	while ((thePattern = thePatterns()) != 0) {
+	  ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad *theLoad;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		sprintf(buffer, "%d ", theLoad->getClassTag());
+		Tcl_AppendResult(interp, buffer, NULL);
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getEleLoadClassTags -- could not read patternTag\n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadClassTags\n";
+	  return TCL_ERROR;
+	}
+
+	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	char buffer[20];
+
+	while ((theLoad = theEleLoads()) != 0) {
+	  sprintf(buffer, "%d ", theLoad->getClassTag());
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+  } else {
+    opserr << "WARNING want - getEleLoadClassTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
+getEleLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[20];
+
+	while ((thePattern = thePatterns()) != 0) {
+	  ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad *theLoad;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		sprintf(buffer, "%d ", theLoad->getElementTag());
+		Tcl_AppendResult(interp, buffer, NULL);
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getEleLoadTags -- could not read patternTag \n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
+	  return TCL_ERROR;
+	}
+
+	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	char buffer[20];
+
+	while ((theLoad = theEleLoads()) != 0) {
+	  sprintf(buffer, "%d ", theLoad->getElementTag());
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+  } else {
+    opserr << "WARNING want - getEleLoadTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
+getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[40];
+	int typeEL;
+
+	while ((thePattern = thePatterns()) != 0) {
+	  ElementalLoadIter &theEleLoads = thePattern->getElementalLoads();
+	  ElementalLoad *theLoad;
+
+	  while ((theLoad = theEleLoads()) != 0) {
+		const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+
+		int eleLoadDataSize = eleLoadData.Size();
+		opserr << "eleLoadDataSize: "<< eleLoadDataSize << "\n";
+		for (int i = 0; i < eleLoadDataSize; i++) {
+		  sprintf(buffer, "%35.20f ", eleLoadData(i));
+		  Tcl_AppendResult(interp, buffer, NULL);
+		}
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getEleLoadData -- could not read patternTag \n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadData\n";
+	  return TCL_ERROR;
+	}
+
+	ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
+	ElementalLoad* theLoad;
+
+	int typeEL;
+	char buffer[40];
+
+	while ((theLoad = theEleLoads()) != 0) {
+		const Vector &eleLoadData = theLoad->getData(typeEL, 1.0);
+
+		int eleLoadDataSize = eleLoadData.Size();
+		for (int i = 0; i < eleLoadDataSize; i++) {
+		  sprintf(buffer, "%35.20f ", eleLoadData(i));
+		  Tcl_AppendResult(interp, buffer, NULL);
+		}
+
+	}
+
+  } else {
+    opserr << "WARNING want - getEleLoadTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
 }
 
 int

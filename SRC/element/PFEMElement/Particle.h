@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-
-// $Revision: 1.0 $
-// $Date: 2016-1-27  $
-
 // Written: Minjie Zhu
 //
 // Description: This class defines the Particle class
@@ -33,8 +29,7 @@
 #include "BackgroundDef.h"
 
 class Particle {
-
-public:
+   public:
     Particle();
 
     ~Particle();
@@ -54,47 +49,26 @@ public:
     void setVel(const VDouble &vel) {
         if (!updated) {
             this->velocity = vel;
-            this->coordn = this->coord;
             updated = true;
         }
     }
 
-    void incrVel(const VDouble &dv) {
-        if (!updated) {
-            this->velocity += dv;
-            this->coordn = this->coord;
-            updated = true;
-        }
-    }
+    void setVelOnly(const VDouble &vel) { this->velocity = vel; }
 
-    void setPressure(double p) {
-        pressure = p;
-    }
+    void setPressure(double p) { pressure = p; }
 
-    void setAccel(const VDouble &accel) {
-        this->accel = accel;
-    }
+    void setAccel(const VDouble &accel) { this->accel = accel; }
 
-    void setPdot(double pdot) {
-        this->pdot = pdot;
-    }
+    void setPdot(double pdot) { this->pdot = pdot; }
 
-    void setGroupTag(int tag) {
-        this->gtag = tag;
-    }
+    void setGroupTag(int tag) { this->gtag = tag; }
 
     void needUpdate(double dt) {
         updated = false;
         this->dt = dt;
     }
 
-    void setFixed() {
-        fixed = true;
-    }
-
     const VDouble &getCrds() const { return coord; }
-
-    const VDouble &getCrdsn() const { return coordn; }
 
     const VDouble &getVel() const { return velocity; }
 
@@ -108,25 +82,21 @@ public:
 
     bool isUpdated() const { return updated; }
 
-    bool isFixed() const { return fixed; }
-
     double getDt() const { return dt; }
 
-    size_t getTag() const {return tag;}
+    size_t getTag() const { return tag; }
 
-private:
-    VDouble coord, coordn;
+   private:
+    VDouble coord;
     VDouble velocity;
     VDouble accel;
     double pressure, pdot;
     int gtag;
     bool updated;
     double dt;
-    bool fixed;
     size_t tag;
 
     static size_t curr_tag;
 };
-
 
 #endif
