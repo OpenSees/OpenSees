@@ -281,6 +281,20 @@ int
 sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 // AddingSensitivity:END ///////////////////////////////////////////////////
 
+int 
+getNumElements(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);

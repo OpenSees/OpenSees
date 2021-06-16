@@ -18,27 +18,55 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.0 $
-// $Date: 2016-1-27  $
-
 // Written: Minjie Zhu
 //
-// Description: This class defines the Particle class
 //
 
-#include "Particle.h"
+#include "BNode.h"
 
-size_t Particle::curr_tag = 1;
+BNode::BNode()
+    : tags(), crdsn(), vn(), dvn(), pn(), dpn(), type(BACKGROUND_FLUID) {}
 
-Particle::Particle()
-    : coord(),
-      velocity(),
-      accel(),
-      pressure(0),
-      pdot(0),
-      gtag(0),
-      updated(false),
-      dt(0.0),
-      tag(curr_tag++) {}
+void BNode::addNode(int tag, const VDouble& crds, const VDouble& v,
+                    const VDouble& dv, double p, double dp,
+                    BackgroundType tp, int id) {
+    tags.push_back(tag);
+    crdsn.push_back(crds);
+    vn.push_back(v);
+    dvn.push_back(dv);
+    pn.push_back(p);
+    dpn.push_back(dp);
+    type = tp;
+    sid.push_back(id);
+}
 
-Particle::~Particle() {}
+void BNode::clear() {
+    tags.clear();
+    crdsn.clear();
+    vn.clear();
+    dvn.clear();
+    pn.clear();
+    dpn.clear();
+    type = BACKGROUND_FLUID;
+    sid.clear();
+}
+
+void BNode::setType(BackgroundType t) { type = t; }
+
+int BNode::size() const { return (int)tags.size(); }
+
+VInt& BNode::getTags() { return tags; }
+
+VVDouble& BNode::getCrds() { return crdsn; }
+
+VVDouble& BNode::getVel() { return vn; }
+
+VVDouble& BNode::getAccel() { return dvn; }
+
+VDouble& BNode::getPressure() { return pn; }
+
+VDouble& BNode::getPdot() { return dpn; }
+
+BackgroundType BNode::getType() { return type; }
+
+VInt& BNode::getSid() { return sid; }
