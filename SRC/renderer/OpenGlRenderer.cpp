@@ -77,7 +77,7 @@ OpenGLRenderer::OpenGLRenderer(const char *_title, int _xLoc, int _yLoc,
   count(-1), theOutputFileName(0), 
   theDevice(0),
   vrp(3), vuv(3), vpn(3), cop(3), ViewMat(4,4), 
-  projectionMode(0), lineWidth(1), vpWindow(4), ProjMat(4,4),
+  projectionMode(0), lineWidth(2), vpWindow(4), ProjMat(4,4),
   portWindow(4)
 {
 
@@ -121,7 +121,7 @@ OpenGLRenderer::OpenGLRenderer(const char *_title, int _xLoc, int _yLoc,
   count(-1), theOutputFileName(0), 
   theDevice(0),
   vrp(3), vuv(3), vpn(3), cop(3), ViewMat(4,4), 
-  projectionMode(0), lineWidth(1), vpWindow(4), ProjMat(4,4),
+  projectionMode(0), lineWidth(2), vpWindow(4), ProjMat(4,4),
   portWindow(4)
 {
   // set the WindowDevices title, height, wdth, xLoc and yLoc
