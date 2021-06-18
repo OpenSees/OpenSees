@@ -77,7 +77,7 @@ OpenGLRenderer::OpenGLRenderer(const char *_title, int _xLoc, int _yLoc,
   count(-1), theOutputFileName(0), 
   theDevice(0),
   vrp(3), vuv(3), vpn(3), cop(3), ViewMat(4,4), 
-  projectionMode(0), vpWindow(4), ProjMat(4,4),
+  projectionMode(0), lineWidth(2), vpWindow(4), ProjMat(4,4),
   portWindow(4)
 {
 
@@ -121,7 +121,7 @@ OpenGLRenderer::OpenGLRenderer(const char *_title, int _xLoc, int _yLoc,
   count(-1), theOutputFileName(0), 
   theDevice(0),
   vrp(3), vuv(3), vpn(3), cop(3), ViewMat(4,4), 
-  projectionMode(0), vpWindow(4), ProjMat(4,4),
+  projectionMode(0), lineWidth(2), vpWindow(4), ProjMat(4,4),
   portWindow(4)
 {
   // set the WindowDevices title, height, wdth, xLoc and yLoc
@@ -341,9 +341,9 @@ OpenGLRenderer::startImage(void)
 	double VRPn = -PRPn;  // VRP after T(-PRP)
 	float near2 = PRPn-F;
 	float far2  = PRPn-B;
-	float zMin = near2/far2;
 
 	/**************** Having trouble with the following transformation ******
+	float zMin = near2/far2;
 	float a,b,c,e,f,g,h;
 
 	a = 2.0*PRPn/(diffU * far);
@@ -480,13 +480,13 @@ OpenGLRenderer::drawPoint(const Vector &pos1, const Vector &rgb, int tag, int mo
 
 int 
 OpenGLRenderer::drawLine(const Vector &pos1, const Vector &pos2, 
-			 float V1, float V2, int tag, int mode, int width, int style)
+			 float V1, float V2, int tag, int mode)
 {
     // open gl does a divide by zero error if points are the same - so check
     if (pos1(0) == pos2(0) && pos1(1) == pos2(1) && pos1(2) == pos2(2))
       return 0;
 
-    glLineWidth(width);
+    glLineWidth(lineWidth);
 
     glBegin(GL_LINES);
     float r, g, b;
@@ -519,14 +519,13 @@ OpenGLRenderer::drawLine(const Vector &pos1, const Vector &pos2,
 
 int 
 OpenGLRenderer::drawLine(const Vector &end1, const Vector &end2, 
-			 const Vector &rgb1, const Vector &rgb2,
-			 int tag, int mode, int width, int style)
+			 const Vector &rgb1, const Vector &rgb2, int tag, int mode)
 {
     // open gl does a divide by zero error if points are the same
     if (end1(0) == end2(0) && end1(1) == end2(1) && end1(2) == end2(2))
       return 0;
 
-    glLineWidth(width);
+    glLineWidth(lineWidth);
 
     glBegin(GL_LINES);
     float r, g, b;
@@ -749,6 +748,13 @@ OpenGLRenderer::setFillMode(const char *newMode)
     fillMode = FILL_MODE;
 
   return 0;
+}
+
+int
+OpenGLRenderer::setLineWidth(int width)
+{
+    lineWidth = width;
+    return 0;
 }
 
 // eye location

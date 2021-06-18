@@ -36,7 +36,10 @@
 #include <TclModelBuilder.h> //MRL
 
 #include <string.h>
+#include <tcl.h>
 #include <elementAPI.h>//MRL
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <packages.h>//MRL
 #include <LimitCurve.h>//**MRL
 
