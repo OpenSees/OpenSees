@@ -47,5 +47,6 @@ target_sources(domain
 )
 
 target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
-
+if (OPS_OPTION_DRM)
 add_subdirectory(drm)
+endif()

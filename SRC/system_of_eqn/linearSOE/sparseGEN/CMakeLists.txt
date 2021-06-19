@@ -14,7 +14,7 @@ target_sources(systemOfEqn
 	SuperLU.h
 )
 
-if (OPS_LIB_PFEM)
+if (OPS_OPTION_PFEM)
     target_sources(systemOfEqn
 	PRIVATE
 	    PFEMSolver.cpp
@@ -47,7 +47,7 @@ endif()
 
 
 if(PARALLEL)
-    target_sources(systemOfEqn
+    target_sources(OpenSeesMP
         PRIVATE 
             DistributedSuperLU.cpp
     	    DistributedSparseGenColLinSOE.cpp

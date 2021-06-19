@@ -10,53 +10,53 @@ target_sources(analysis
        ArcLength1.cpp
        BackwardEuler.cpp
        CentralDifference.cpp
-       CentralDifferenceAlternative.cpp
-       CentralDifferenceNoDamping.cpp
-       Collocation.cpp
-       CollocationHSFixedNumIter.cpp
-       CollocationHSIncrLimit.cpp
-       CollocationHSIncrReduct.cpp
-       DisplacementControl.cpp
-       DistributedDisplacementControl.cpp
-       EigenIntegrator.cpp
-       GeneralizedAlpha.cpp
-       HHT.cpp
-       HHT_TP.cpp
-       HHTExplicit.cpp
-       HHTExplicit_TP.cpp
-       HHTGeneralized.cpp
-       HHTGeneralized_TP.cpp
-       HHTGeneralizedExplicit.cpp
-       HHTGeneralizedExplicit_TP.cpp
-       HHTHSFixedNumIter.cpp
-       HHTHSFixedNumIter_TP.cpp
-       HHTHSIncrLimit.cpp
-       HHTHSIncrLimit_TP.cpp
-       HHTHSIncrReduct.cpp
-       HHTHSIncrReduct_TP.cpp
-       Houbolt.cpp
-       HSConstraint.cpp
+       #CentralDifferenceAlternative.cpp
+       #CentralDifferenceNoDamping.cpp
+       #Collocation.cpp
+       #CollocationHSFixedNumIter.cpp
+       #CollocationHSIncrLimit.cpp
+       #CollocationHSIncrReduct.cpp
+       #DisplacementControl.cpp
+       #DistributedDisplacementControl.cpp
+       #EigenIntegrator.cpp
+       #GeneralizedAlpha.cpp
+       #HHT.cpp
+       #HHT_TP.cpp
+       #HHTExplicit.cpp
+       #HHTExplicit_TP.cpp
+       #HHTGeneralized.cpp
+       #HHTGeneralized_TP.cpp
+       #HHTGeneralizedExplicit.cpp
+       #HHTGeneralizedExplicit_TP.cpp
+       #HHTHSFixedNumIter.cpp
+       #HHTHSFixedNumIter_TP.cpp
+       #HHTHSIncrLimit.cpp
+       #HHTHSIncrLimit_TP.cpp
+       #HHTHSIncrReduct.cpp
+       #HHTHSIncrReduct_TP.cpp
+       #Houbolt.cpp
+       #HSConstraint.cpp
        IncrementalIntegrator.cpp
        Integrator.cpp
-       KRAlphaExplicit.cpp
-       KRAlphaExplicit_TP.cpp
+       #KRAlphaExplicit.cpp
+       #KRAlphaExplicit_TP.cpp
        LoadControl.cpp
        LoadPath.cpp
        MinUnbalDispNorm.cpp
        Newmark.cpp
        Newmark1.cpp
        NewmarkExplicit.cpp
-       NewmarkHSFixedNumIter.cpp
-       NewmarkHSIncrLimit.cpp
-       NewmarkHSIncrReduct.cpp
-       ParkLMS3.cpp
-       PFEMIntegrator.cpp
+       #NewmarkHSFixedNumIter.cpp
+       #NewmarkHSIncrLimit.cpp
+       #NewmarkHSIncrReduct.cpp
+       #ParkLMS3.cpp
+       #PFEMIntegrator.cpp
        StaticIntegrator.cpp
        TransientIntegrator.cpp
-       TRBDF2.cpp
-       TRBDF3.cpp
-       WilsonTheta.cpp
-       GimmeMCK.cpp
+       #TRBDF2.cpp
+       #TRBDF3.cpp
+       #WilsonTheta.cpp
+       #GimmeMCK.cpp
     PUBLIC
        AlphaOS.h
        AlphaOS_TP.h
@@ -68,53 +68,54 @@ target_sources(analysis
        ArcLength1.h
        BackwardEuler.h
        CentralDifference.h
-       CentralDifferenceAlternative.h
-       CentralDifferenceNoDamping.h
-       Collocation.h
-       CollocationHSFixedNumIter.h
-       CollocationHSIncrLimit.h
-       CollocationHSIncrReduct.h
-       DisplacementControl.h
-       DistributedDisplacementControl.h
-       EigenIntegrator.h
-       GeneralizedAlpha.h
-       HHT.h
-       HHT_TP.h
-       HHTExplicit.h
-       HHTExplicit_TP.h
-       HHTGeneralized.h
-       HHTGeneralized_TP.h
-       HHTGeneralizedExplicit.h
-       HHTGeneralizedExplicit_TP.h
-       HHTHSFixedNumIter.h
-       HHTHSFixedNumIter_TP.h
-       HHTHSIncrLimit.h
-       HHTHSIncrLimit_TP.h
-       HHTHSIncrReduct.h
-       HHTHSIncrReduct_TP.h
-       Houbolt.h
-       HSConstraint.h
+       #CentralDifferenceAlternative.h
+       #CentralDifferenceNoDamping.h
+       #Collocation.h
+       #CollocationHSFixedNumIter.h
+       #CollocationHSIncrLimit.h
+       #CollocationHSIncrReduct.h
+       #DisplacementControl.h
+       #DistributedDisplacementControl.h
+       #EigenIntegrator.h
+       #GeneralizedAlpha.h
+       #HHT.h
+       #HHT_TP.h
+       #HHTExplicit.h
+       #HHTExplicit_TP.h
+       #HHTGeneralized.h
+       #HHTGeneralized_TP.h
+       #HHTGeneralizedExplicit.h
+       #HHTGeneralizedExplicit_TP.h
+       #HHTHSFixedNumIter.h
+       #HHTHSFixedNumIter_TP.h
+       #HHTHSIncrLimit.h
+       #HHTHSIncrLimit_TP.h
+       #HHTHSIncrReduct.h
+       #HHTHSIncrReduct_TP.h
+       #Houbolt.h
+       #HSConstraint.h
        IncrementalIntegrator.h
        Integrator.h
-       KRAlphaExplicit.h
-       KRAlphaExplicit_TP.h
+       #KRAlphaExplicit.h
+       #KRAlphaExplicit_TP.h
        LoadControl.h
        LoadPath.h
        MinUnbalDispNorm.h
        Newmark.h
        Newmark1.h
        NewmarkExplicit.h
-       NewmarkHSFixedNumIter.h
-       NewmarkHSIncrLimit.h
-       NewmarkHSIncrReduct.h
-       ParkLMS3.h
-       PFEMIntegrator.h
+       #NewmarkHSFixedNumIter.h
+       #NewmarkHSIncrLimit.h
+       #NewmarkHSIncrReduct.h
+       #ParkLMS3.h
+       #PFEMIntegrator.h # Uses ops_Dt
        StaticIntegrator.h
        TransientIntegrator.h
-       TRBDF2.h
-       TRBDF3.h
-       WilsonTheta.h
-       GimmeMCK.h
+       #TRBDF2.h
+       #TRBDF3.h
+       #WilsonTheta.h
+       #GimmeMCK.h
 )
 
 target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

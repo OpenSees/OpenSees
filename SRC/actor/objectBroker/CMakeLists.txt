@@ -1,10 +1,16 @@
 target_sources(actor
     PRIVATE
       FEM_ObjectBroker.cpp
-      FEM_ObjectBrokerAllClasses.cpp
     PUBLIC
       FEM_ObjectBroker.h
-      FEM_ObjectBrokerAllClasses.h
 )
+if (OSP_OPTION_BROKER_ALL)
+    target_sources(actor
+        PRIVATE
+            FEM_ObjectBrokerAllClasses.cpp
+        PUBLIC
+            FEM_ObjectBrokerAllClasses.h
+    )
+endif()
 
 target_include_directories(actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
