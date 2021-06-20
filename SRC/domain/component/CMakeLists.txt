@@ -1,5 +1,5 @@
 
-target_sources(domain
+target_sources(libg3
     PRIVATE
 	DomainComponent.cpp
 	Parameter.cpp
@@ -35,3 +35,4 @@ endif()
 
 
 target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

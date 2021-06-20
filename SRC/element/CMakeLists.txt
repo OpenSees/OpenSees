@@ -1,6 +1,6 @@
 add_library(element "")
 
-target_sources(element
+target_sources(libg3
     PRIVATE
       Element.cpp
       ElementalLoad.cpp
@@ -14,4 +14,5 @@ target_sources(element
 target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(elasticBeamColumn)
+add_subdirectory(zeroLength)
 

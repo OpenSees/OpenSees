@@ -1,6 +1,6 @@
 add_library(material "")
 
-target_sources(material
+target_sources(libg3
     PRIVATE
       Material.cpp
     PUBLIC

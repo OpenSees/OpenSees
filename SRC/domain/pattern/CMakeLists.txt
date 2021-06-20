@@ -1,5 +1,5 @@
 
-target_sources(domain
+target_sources(libg3
     PRIVATE
 	EarthquakePattern.cpp
 	LinearSeries.cpp

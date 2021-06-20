@@ -1,5 +1,5 @@
 
-target_sources(domain
+target_sources(libg3
     PRIVATE
 	Node.cpp
 	NodalLoad.cpp

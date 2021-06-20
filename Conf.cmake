@@ -43,13 +43,6 @@ option(OPS_OPTION_RELIABILITY
 option(OPS_OPTION_PFEM 
     "Include PFEM library"                                   OFF)
 
-option(OPS_OPTION_DRM
-    "Include DRM library"                                    OFF)
-
-option(OPS_OPTION_BROKER_ALL
-    "Include broker for all classes"                         OFF)
-
-
 option(OPS_OPTION_HDF5
     "HDF5 Dependent Code"                                    OFF)
 
@@ -70,8 +63,6 @@ define_property(TARGET
     FULL_DOCS  "..."
 )
 
-
-
 #----------------------------------------------------------------
 #                      External Libraries
 #----------------------------------------------------------------
@@ -86,15 +77,17 @@ define_property(TARGET
 # - PATHS:  Provide specific paths for library.
 #
 #----------------------------------------------------------------
-opensees_load(TCL      FIND)
+opensees_load(TCL                                            FIND)
 
-opensees_load(BLAS   SEARCH)
+opensees_load(BLAS                                         SEARCH)
 
-opensees_load(LAPACK SEARCH)
+opensees_load(LAPACK                                       SEARCH)
 
-opensees_load(ARPACK SEARCH)
+opensees_load(ARPACK                                       SEARCH)
 
-opensees_load(METIS  SEARCH)
+opensees_load(METIS                                        SEARCH)
+
+#opensees_load(SUPERLU                                      SEARCH)
 
 
 #----------------------------------------------------------------
@@ -142,7 +135,7 @@ endif()
 if(UNIX AND NOT APPLE)
    message(STATUS ">>> LINUX")
    add_compile_definitions(_LINUX _UNIX)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fPIC -ffloat-store")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
 endif()
 
 if(WIN32)
@@ -230,9 +223,6 @@ include_directories(${OPS_SRC_DIR}
 #
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-#include_directories(ext/CSPARSE)
-#include_directories(ext/AMD)
-#include_directories(ext/UMFPACK)
 
 #
 # build

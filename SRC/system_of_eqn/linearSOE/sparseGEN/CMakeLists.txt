@@ -5,13 +5,13 @@ target_sources(systemOfEqn
 	SparseGenColLinSolver.cpp
 	SparseGenRowLinSOE.cpp
 	SparseGenRowLinSolver.cpp
-	SuperLU.cpp
+	#SuperLU.cpp
     PUBLIC
     	SparseGenColLinSOE.h
 	SparseGenColLinSolver.h
 	SparseGenRowLinSOE.h
 	SparseGenRowLinSolver.h
-	SuperLU.h
+	#SuperLU.h
 )
 
 if (OPS_OPTION_PFEM)
@@ -46,23 +46,21 @@ if (OPS_OPTION_PFEM)
 endif()
 
 
-if(PARALLEL)
-    target_sources(OpenSeesMP
-        PRIVATE 
-            DistributedSuperLU.cpp
-    	    DistributedSparseGenColLinSOE.cpp
-    	    DistributedSparseGenRowLinSOE.cpp
-    	    PFEMSolver_Mumps.cpp
-    	    PFEMSolver_LumpM.cpp
-    	    PFEMCompressibleSolver_Mumps.cpp
-        PUBLIC
-    	    DistributedSuperLU.h
-    	    DistributedSparseGenColLinSOE.h
-    	    DistributedSparseGenRowLinSOE.h
-    	    PFEMSolver_Mumps.h
-    	    PFEMCompressibleSolver_Mumps.h
-    )
-endif()
+target_sources(OpenSeesMP
+  PRIVATE 
+    DistributedSuperLU.cpp
+    DistributedSparseGenColLinSOE.cpp
+    DistributedSparseGenRowLinSOE.cpp
+    PFEMSolver_Mumps.cpp
+    PFEMSolver_LumpM.cpp
+    PFEMCompressibleSolver_Mumps.cpp
+  PUBLIC
+    DistributedSuperLU.h
+    DistributedSparseGenColLinSOE.h
+    DistributedSparseGenRowLinSOE.h
+    PFEMSolver_Mumps.h
+    PFEMCompressibleSolver_Mumps.h
+)
 
 target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

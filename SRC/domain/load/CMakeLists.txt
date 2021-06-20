@@ -1,8 +1,9 @@
 
-target_sources(domain
+target_sources(libg3
     PRIVATE
 	Load.cpp
-	ElementalLoadIter.cpp
+	#ElementalLoad.cpp
+	#ElementalLoadIter.cpp
 	NodalLoadIter.cpp
 	Beam2dUniformLoad.cpp
 	Beam2dPointLoad.cpp
@@ -11,18 +12,13 @@ target_sources(domain
 	Beam3dPointLoad.cpp
 	Beam3dPartialUniformLoad.cpp
 	BrickSelfWeight.cpp
-	Beam2dTempLoad.cpp
-	Beam2dThermalAction.cpp
-	NodalThermalAction.cpp
-	ThermalActionWrapper.cpp
-	Beam3dThermalAction.cpp
-	ShellThermalAction.cpp
 	SurfaceLoader.cpp
 	SelfWeight.cpp
 	LysmerVelocityLoader.cpp
     PUBLIC
 	Load.h
-	ElementalLoadIter.h
+	#ElementalLoad.h
+	#ElementalLoadIter.h
 	NodalLoadIter.h
 	Beam2dUniformLoad.h
 	Beam2dPointLoad.h
@@ -31,15 +27,26 @@ target_sources(domain
 	Beam3dPointLoad.h
 	Beam3dPartialUniformLoad.h
 	BrickSelfWeight.h
-	Beam2dTempLoad.h
-	Beam2dThermalAction.h
-	NodalThermalAction.h
-	ThermalActionWrapper.h
-	Beam3dThermalAction.h
-	ShellThermalAction.h
 	SurfaceLoader.h
 	SelfWeight.h
 	LysmerVelocityLoader.h
 )
-
+if(OPS_OPTION_THERMAL)
+    target_sources(domain
+	PRIVATE
+	    Beam2dTempLoad.cpp
+	    Beam2dThermalAction.cpp
+	    NodalThermalAction.cpp
+	    ThermalActionWrapper.cpp
+	    Beam3dThermalAction.cpp
+	    ShellThermalAction.cpp
+        PUBLIC
+	    Beam2dTempLoad.h
+	    Beam2dThermalAction.h
+	    NodalThermalAction.h
+	    ThermalActionWrapper.h
+	    Beam3dThermalAction.h
+	    ShellThermalAction.h
+    )
+endif()
 target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))

@@ -1,4 +1,4 @@
-target_sources(material
+target_sources(libg3
     PRIVATE
 	SectionForceDeformation.cpp
 	FiberSection.cpp

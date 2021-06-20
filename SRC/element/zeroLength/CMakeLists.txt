@@ -1,4 +1,4 @@
-target_sources(element
+target_sources(libg3
     PRIVATE
 	ZeroLength.cpp
 	ZeroLengthSection.cpp

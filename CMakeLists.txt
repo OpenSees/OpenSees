@@ -207,7 +207,7 @@ include_directories(src
 #------------------------------------------------------------------------------
 #                            Targets
 #------------------------------------------------------------------------------
-#add_library(libg3)
+add_library(libg3)
 add_library(libPFEM       EXCLUDE_FROM_ALL)
 add_executable(OpenSees   EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclMain.cpp)
 add_executable(OpenSeesSP EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclMain.cpp)

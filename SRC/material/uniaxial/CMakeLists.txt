@@ -1,6 +1,6 @@
-
-target_sources(material
+target_sources(libg3
     PRIVATE
+      MaterialState.cpp
       UniaxialMaterial.cpp
       ElasticMaterial.cpp
       Elastic2Material.cpp
@@ -15,7 +15,6 @@ target_sources(material
       OriginCentered.cpp
       ConcretewBeta.cpp
       ConcreteD.cpp
-      ConcreteSakaiKawashima.cpp
       ConcreteCM.cpp
       SteelMPF.cpp
       c14-SK-M.f
@@ -28,104 +27,8 @@ target_sources(material
       BWBN.cpp
       AxialSpHD.cpp
       AxialSp.cpp
-      Neoprene.cpp
-      Maxwell.cpp
-      ViscousDamper.cpp
-      BilinearOilDamper.cpp
-      Cast.cpp
-      HardeningMaterial.cpp
-      HardeningMaterial2.cpp
-      Concrete01.cpp
-      Concrete02Thermal.cpp
-      Steel02Thermal.cpp
-      Steel01Thermal.cpp
-      Concrete04.cpp
-      Concrete06.cpp
-      Concrete07.cpp
-      ResilienceMaterialHR.cpp
-      RambergOsgoodSteel.cpp
-      Steel01.cpp
-      HystereticMaterial.cpp
-      EPPGapMaterial.cpp
-      ViscousMaterial.cpp
-      SeriesMaterial.cpp
-      InitStrainMaterial.cpp
-      InitStressMaterial.cpp
-      SimpleFractureMaterial.cpp
-      MinMaxMaterial.cpp
-      TensionOnlyMaterial.cpp
-      PathIndependentMaterial.cpp
-      CableMaterial.cpp
-      ENTMaterial.cpp
-      FedeasMaterial.cpp
-      DrainMaterial.cpp
-      BoucWenOriginal.cpp
-      BoucWenMaterial.cpp
-      HardeningMaterial2.cpp
-      Pinching4Material.cpp
-      BarSlipMaterial.cpp
-      FatigueMaterial.cpp
-      SteelMP.cpp
-      SmoothPSConcrete.cpp
-      Steel02.cpp
-      Steel02Fatigue.cpp
-      GNGMaterial.cpp
-      Concrete02.cpp
-      Concrete02IS.cpp
-      Steel03.cpp
-      MultiLinear.cpp
-      HookGap.cpp
-      Bond_SP01.cpp
-      UniaxialJ2Plasticity.cpp
-      HyperbolicGapMaterial.cpp
-      ImpactMaterial.cpp
-      ReinforcingSteel.cpp
-      ContinuumUniaxial.cpp
-      SecantConcrete.cpp
-      Concrete01WithSITC.cpp
-      ConcretewBeta.cpp
-      FRPConfinedConcrete.cpp
-      FRPConfinedConcrete02.cpp
-      KikuchiAikenHDR.cpp
-      KikuchiAikenLRB.cpp
-      Concrete05.cpp
-      ECC01.cpp
-      PrestressedSteelMaterial.cpp
-      ElasticBDMaterial.cpp
-      ShearPanelMaterial.cpp
-      SelfCenteringMaterial.cpp
-      BackboneMaterial.cpp
-      SAWSMaterial.cpp
-      ConfinedConcrete01.cpp
-      ModIMKPeakOriented.cpp
-      ModIMKPeakOriented02.cpp
-      ModIMKPinching.cpp
-      ModIMKPinching02.cpp
-      pyUCLA.cpp
-      Dodd_Restrepo.cpp
-      DoddRestrepo.f
-      STEELDR.f
-      DoddRestr.cpp
-      SteelBRB.cpp
-      CubicSpline.cpp
-      TriMatrix.cpp
-      CFSSSWP.cpp
-      CFSWSWP.cpp
-      Steel4.cpp
-      ConcreteECThermal.cpp
-      ElasticMaterialThermal.cpp
-      StainlessECThermal.cpp
-      SteelECThermal.cpp
-      DamperMaterial.cpp
-      MaterialState.cpp
-      OOHystereticMaterial.cpp
-      SPSW02.cpp
-      TDConcrete.cpp
-      TDConcreteEXP.cpp
-      TDConcreteMC10.cpp
-      TDConcreteMC10NL.cpp
-      DegradingPinchedBW.cpp
     PUBLIC
+      MaterialState.h
       UniaxialMaterial.h
       ElasticMaterial.h
       Elastic2Material.h
@@ -140,7 +43,6 @@ target_sources(material
       OriginCentered.h
       ConcretewBeta.h
       ConcreteD.h
-      ConcreteSakaiKawashima.h
       ConcreteCM.h
       SteelMPF.h
       ElasticMultiLinear.h
@@ -152,110 +54,224 @@ target_sources(material
       BWBN.h
       AxialSpHD.h
       AxialSp.h
-      Neoprene.h
-      Maxwell.h
-      ViscousDamper.h
-      BilinearOilDamper.h
-      Cast.h
-      HardeningMaterial.h
-      HardeningMaterial2.h
-      Concrete01.h
-      Concrete02Thermal.h
-      Steel02Thermal.h
-      Steel01Thermal.h
-      Concrete04.h
-      Concrete06.h
-      Concrete07.h
-      ResilienceMaterialHR.h
-      RambergOsgoodSteel.h
-      Steel01.h
-      HystereticMaterial.h
-      EPPGapMaterial.h
-      ViscousMaterial.h
-      SeriesMaterial.h
-      InitStrainMaterial.h
-      InitStressMaterial.h
-      SimpleFractureMaterial.h
-      MinMaxMaterial.h
-      TensionOnlyMaterial.h
-      PathIndependentMaterial.h
-      CableMaterial.h
-      ENTMaterial.h
-      FedeasMaterial.h
-      DrainMaterial.h
-      BoucWenOriginal.h
-      BoucWenMaterial.h
-      SecantConcrete.h
-      HardeningMaterial2.h
-      Pinching4Material.h
+)
+
+target_sources(material
+    PRIVATE
+      BackboneMaterial.cpp
+      BarSlipMaterial.cpp
+      BilinearOilDamper.cpp
+      Bond_SP01.cpp
+      BoucWenMaterial.cpp
+      BoucWenOriginal.cpp
+      CFSSSWP.cpp
+      CFSWSWP.cpp
+      CableMaterial.cpp
+      Cast.cpp
+      Concrete01.cpp
+      Concrete01WithSITC.cpp
+      Concrete02.cpp
+      Concrete02IS.cpp
+      Concrete02Thermal.cpp
+      Concrete04.cpp
+      Concrete05.cpp
+      Concrete06.cpp
+      Concrete07.cpp
+      ConcreteECThermal.cpp
+      ConcreteSakaiKawashima.cpp
+      ConcretewBeta.cpp
+      ConfinedConcrete01.cpp
+      ContinuumUniaxial.cpp
+      CubicSpline.cpp
+      DamperMaterial.cpp
+      DegradingPinchedBW.cpp
+      DoddRestr.cpp
+      DoddRestrepo.f
+      Dodd_Restrepo.cpp
+      DrainMaterial.cpp
+      ECC01.cpp
+      ENTMaterial.cpp
+      EPPGapMaterial.cpp
+      ElasticBDMaterial.cpp
+      ElasticMaterialThermal.cpp
+      FRPConfinedConcrete.cpp
+      FRPConfinedConcrete02.cpp
+      FatigueMaterial.cpp
+      FedeasMaterial.cpp
+      GNGMaterial.cpp
+      HookGap.cpp
+      HyperbolicGapMaterial.cpp
+      HystereticMaterial.cpp
+      ImpactMaterial.cpp
+      InitStrainMaterial.cpp
+      InitStressMaterial.cpp
+      KikuchiAikenHDR.cpp
+      KikuchiAikenLRB.cpp
+      Maxwell.cpp                      # Uses ops_Dt
+      MinMaxMaterial.cpp
+      ModIMKPeakOriented.cpp
+      ModIMKPeakOriented02.cpp
+      ModIMKPinching.cpp
+      ModIMKPinching02.cpp
+      MultiLinear.cpp
+      Neoprene.cpp
+      OOHystereticMaterial.cpp
+      PathIndependentMaterial.cpp
+      Pinching4Material.cpp
+      PrestressedSteelMaterial.cpp
+      RambergOsgoodSteel.cpp
+      ReinforcingSteel.cpp
+      ResilienceMaterialHR.cpp
+      SAWSMaterial.cpp
+      SPSW02.cpp
+      STEELDR.f
+      SecantConcrete.cpp
+      SelfCenteringMaterial.cpp
+      SeriesMaterial.cpp
+      ShearPanelMaterial.cpp
+      SimpleFractureMaterial.cpp
+      SmoothPSConcrete.cpp
+      StainlessECThermal.cpp
+      Steel01.cpp
+      Steel01Thermal.cpp
+      Steel02.cpp
+      Steel02Fatigue.cpp
+      Steel02Thermal.cpp
+      Steel03.cpp
+      Steel4.cpp
+      SteelBRB.cpp
+      SteelECThermal.cpp
+      SteelMP.cpp
+      TDConcrete.cpp
+      TDConcreteEXP.cpp
+      TDConcreteMC10.cpp
+      TDConcreteMC10NL.cpp
+      TensionOnlyMaterial.cpp
+      TriMatrix.cpp
+      UniaxialJ2Plasticity.cpp
+      ViscousDamper.cpp
+      ViscousMaterial.cpp
+      c14-SK-M.f
+      pyUCLA.cpp
+    PUBLIC
+      BackboneMaterial.h
       BarSlipMaterial.h
-      FatigueMaterial.h
-      SteelMP.h
-      SmoothPSConcrete.h
-      Steel02.h
-      Steel02Fatigue.h
-      GNGMaterial.h
+      BilinearOilDamper.h
+      Bond_SP01.h
+      BoucWenMaterial.h
+      BoucWenOriginal.h
+      CFSSSWP.h
+      CFSWSWP.h
+      CableMaterial.h
+      Cast.h
+      Concrete01.h
+      Concrete01WithSITC.h
       Concrete02.h
       Concrete02IS.h
-      Steel03.h
-      MultiLinear.h
-      HookGap.h
-      Bond_SP01.h
-      UniaxialJ2Plasticity.h
-      HyperbolicGapMaterial.h
-      ImpactMaterial.h
-      ReinforcingSteel.h
-      ContinuumUniaxial.h
-      Concrete01WithSITC.h
+      Concrete02Thermal.h
+      Concrete04.h
+      Concrete05.h
+      Concrete06.h
+      Concrete07.h
+      ConcreteECThermal.h
+      ConcreteSakaiKawashima.h
       ConcretewBeta.h
+      ConfinedConcrete01.h
+      ContinuumUniaxial.h
+      CubicSpline.h
+      DamperMaterial.h
+      DegradingPinchedBW.h
+      DoddRestr.h
+      Dodd_Restrepo.h
+      DrainMaterial.h
+      ECC01.h
+      ENTMaterial.h
+      EPPGapMaterial.h
+      ElasticBDMaterial.h
+      ElasticMaterialThermal.h
       FRPConfinedConcrete.h
       FRPConfinedConcrete02.h
+      FatigueMaterial.h
+      FedeasMaterial.h
+      GNGMaterial.h
+      HardeningMaterial.cpp
+      HardeningMaterial.h
+      HardeningMaterial2.cpp
+      HardeningMaterial2.h
+      HookGap.h
+      HyperbolicGapMaterial.h
+      HystereticMaterial.h
+      ImpactMaterial.h
+      InitStrainMaterial.h
+      InitStressMaterial.h
       KikuchiAikenHDR.h
       KikuchiAikenLRB.h
-      Concrete05.h
-      ECC01.h
-      PrestressedSteelMaterial.h
-      ElasticBDMaterial.h
-      ShearPanelMaterial.h
-      SelfCenteringMaterial.h
-      BackboneMaterial.h
-      WrapperUniaxialMaterial.h
-      SAWSMaterial.h
-      ConfinedConcrete01.h
+      Maxwell.h
+      MinMaxMaterial.h
       ModIMKPeakOriented.h
       ModIMKPeakOriented02.h
       ModIMKPinching.h
       ModIMKPinching02.h
-      pyUCLA.h
-      Dodd_Restrepo.h
-      DoddRestr.h
-      SteelBRB.h
-      CubicSpline.h
-      TriMatrix.h
-      CFSSSWP.h
-      CFSWSWP.h
-      Steel4.h
-      ConcreteECThermal.h
-      ElasticMaterialThermal.h
-      StainlessECThermal.h
-      SteelECThermal.h
-      DamperMaterial.h
-      MaterialState.h
+      MultiLinear.h
+      Neoprene.h
       OOHystereticMaterial.h
+      PathIndependentMaterial.h
+      Pinching4Material.h
+      PrestressedSteelMaterial.h
+      RambergOsgoodSteel.h
+      ReinforcingSteel.h
+      ResilienceMaterialHR.h
+      SAWSMaterial.h
       SPSW02.h
+      SecantConcrete.h
+      SelfCenteringMaterial.h
+      SeriesMaterial.h
+      ShearPanelMaterial.h
+      SimpleFractureMaterial.h
+      SmoothPSConcrete.h
+      StainlessECThermal.h
+      Steel01.h
+      Steel01Thermal.h
+      Steel02.h
+      Steel02Fatigue.h
+      Steel02Thermal.h
+      Steel03.h
+      Steel4.h
+      SteelBRB.h
+      SteelECThermal.h
+      SteelMP.h
       TDConcrete.h
       TDConcreteEXP.h
       TDConcreteMC10.h
       TDConcreteMC10NL.h
-      DegradingPinchedBW.h
+      TensionOnlyMaterial.h
+      TriMatrix.h
+      UniaxialJ2Plasticity.h
+      ViscousDamper.h
+      ViscousMaterial.h
+      WrapperUniaxialMaterial.h
+      pyUCLA.h
 )
+
+if (NOT OPS_THREADSAFE)
+    target_sources(material
+	  PRIVATE
+	  PUBLIC
+    ) 
+endif()
 
 target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
-add_subdirectory(PY)
-add_subdirectory(snap)
 add_subdirectory(backbone)
 add_subdirectory(stiffness)
 add_subdirectory(strength)
 add_subdirectory(unloading)
 add_subdirectory(limitState)
+
+if(OPS_MATERIAL_UNIAXIAL_PY)
+    add_subdirectory(PY)
+endif()
+if(OPS_MATERIAL_UNIAXIAL_SNAP)
+    add_subdirectory(snap)
+endif()
+

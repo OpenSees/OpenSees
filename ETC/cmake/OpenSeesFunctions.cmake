@@ -1,3 +1,4 @@
+# Claudio Perez
 function (opensees_load lib_name)
     cmake_parse_arguments(
         PARSE_ARGV 1
@@ -12,6 +13,7 @@ function (opensees_load lib_name)
     if(OPS_LOAD_ARG_BUILD)
         message("Using OpenSees provided ${lib_name}")
 	set(${OPS_PKG_FOUND_VAR} TRUE)#PARENT_SCOPE)
+	opensees_build(${lib_name})
         return()
     elseif(OPS_LOAD_ARG_PATHS)
         message("Provided ${lib_name} paths are:")
@@ -35,6 +37,7 @@ endfunction()
 
 function (opensees_build lib_name)
     add_subdirectory("${OPS_EXTERNALS_DIR}/${lib_name}")
+    include_directories("${OPS_EXTERNALS_DIR}/${lib_name}")
     #message("(OpenSees build not yet implemented)")
 endfunction()
 
