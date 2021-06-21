@@ -91,7 +91,7 @@ TclFeViewer_setProjectionMode(ClientData clientData, Tcl_Interp *interp, int arg
 			      TCL_Char **argv);		   			 
 int
 TclFeViewer_setFillMode(ClientData clientData, Tcl_Interp *interp, int argc, 
-			TCL_Char **argv);		   			 			      
+			TCL_Char **argv);		
 int
 TclFeViewer_setPRP(ClientData clientData, Tcl_Interp *interp, int argc, 
 		   TCL_Char **argv);		   
@@ -502,7 +502,7 @@ TclFeViewer::setPortWindow(float left, float right, float bottom, float top)
 }
 
 int
-TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact)
+TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth)
 {
 #ifdef _NOGRAPHICS
   // if no graphics .. just return 0
@@ -512,6 +512,7 @@ TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact)
   theEleMode = eleFlag;
   theNodeMode = nodeFlag;    
   theDisplayFact = displayFact;    
+  theRenderer->setLineWidth(lineWidth);
   return this->record(0, 0.0);
 #endif
 }
@@ -885,8 +886,8 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_OK;    
   
   // check number of args  
-  if (argc != 3 && argc != 4) {
-      opserr << "WARNING args incorrect - display eleMode <nodeMode> fact\n";
+  if (argc < 3 || argc > 5) {
+      opserr << "WARNING args incorrect - display eleMode <nodeMode> displayFact <lineWidth>\n";
       return TCL_ERROR;
   }    
 
@@ -905,24 +906,32 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
       theTclFeViewer->displayModel(displayMode, -1, float(displayFact));
       return TCL_OK;    
   } else {
-      
-      int eleFlag, nodeFlag;
+      int eleMode, nodeMode;
       double displayFact;
-      if (Tcl_GetInt(interp, argv[1], &eleFlag) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlag displayFact\n";
+      if (Tcl_GetInt(interp, argv[1], &eleMode) != TCL_OK) {
+	  opserr << "WARNING invalid eleMode - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
 	      }
-      if (Tcl_GetInt(interp, argv[2], &nodeFlag) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlahg displayFact\n";
+      if (Tcl_GetInt(interp, argv[2], &nodeMode) != TCL_OK) {
+	  opserr << "WARNING invalid nodeMode - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
 	      }      
       if (Tcl_GetDouble(interp, argv[3], &displayFact) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlahg displayFact\n";
+	  opserr << "WARNING invalid displayFact - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
       }  
-
-      theTclFeViewer->displayModel(eleFlag, nodeFlag, float(displayFact));
-      return TCL_OK;    
+      // line width
+      if (argc == 5) {
+          int lineWidth;
+          if (Tcl_GetInt(interp, argv[4], &lineWidth) != TCL_OK) {
+              opserr << "WARNING invalid lineWidth - display eleMode nodeMode displayFact lineWidth\n";
+              return TCL_ERROR;
+          }
+          theTclFeViewer->displayModel(eleMode, nodeMode, float(displayFact), lineWidth);
+          return TCL_OK;
+      }
+      theTclFeViewer->displayModel(eleMode, nodeMode, float(displayFact));
+      return TCL_OK;
   }
 #endif
 }

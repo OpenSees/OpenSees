@@ -79,9 +79,11 @@ void* OPS_PlateFiberMaterial()
 //null constructor
 PlateFiberMaterial::PlateFiberMaterial() : 
 NDMaterial(0, ND_TAG_PlateFiberMaterial), 
+theMaterial(0),
 strain(5) 
 { 
-
+    Tstrain22 = 0.0;
+    Cstrain22 = 0.0;
 }
 
 
