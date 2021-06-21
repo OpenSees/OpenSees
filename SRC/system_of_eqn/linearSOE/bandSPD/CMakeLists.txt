@@ -1,5 +1,5 @@
 
-target_sources(systemOfEqn
+target_sources(libg3
     PRIVATE
 	BandSPDLinSOE.cpp
 	BandSPDLinSolver.cpp

@@ -1,4 +1,4 @@
-add_library(actor "")
+add_library(actor OBJECT)
 
 add_subdirectory(address)
 add_subdirectory(channel)

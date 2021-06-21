@@ -1,4 +1,4 @@
-add_library(material "")
+add_library(material OBJECT)
 
 target_sources(libg3
     PRIVATE

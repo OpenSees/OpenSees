@@ -207,8 +207,15 @@ include_directories(src
 #------------------------------------------------------------------------------
 #                            Targets
 #------------------------------------------------------------------------------
-add_library(libg3)
-add_library(libPFEM       EXCLUDE_FROM_ALL)
+add_library(libg3             )
+add_library(LG3_Analysis          OBJECT)
+add_library(OPS_Analysis          OBJECT)
+add_library(OPS_ConvergenceTest   OBJECT)
+add_library(libPFEM               EXCLUDE_FROM_ALL)
+add_library(OPS_ASDEA             EXCLUDE_FROM_ALL)
+add_library(OPS_Paraview          EXCLUDE_FROM_ALL)
+add_library(OPS_Renderer          EXCLUDE_FROM_ALL)
+
 add_executable(OpenSees   EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclMain.cpp)
 add_executable(OpenSeesSP EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclMain.cpp)
 add_executable(OpenSeesMP EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclMain.cpp)
@@ -231,4 +238,10 @@ target_compile_definitions(OpenSeesMP
 #
 add_subdirectory(${OPS_SRC_DIR})
 
+target_link_libraries(libg3 
+	LG3_Analysis actor graph 
+	OPS_ConvergenceTest 
+	#OPS_Matrix
+	matrix
+	tagged utility)
 

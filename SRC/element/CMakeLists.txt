@@ -1,4 +1,4 @@
-add_library(element "")
+add_library(element OBJECT)
 
 target_sources(libg3
     PRIVATE

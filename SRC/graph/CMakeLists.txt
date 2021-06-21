@@ -1,4 +1,4 @@
-add_library(graph "")
+add_library(graph OBJECT)
 
 add_subdirectory(graph)
 add_subdirectory(numberer)

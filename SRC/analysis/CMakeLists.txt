@@ -1,4 +1,4 @@
-add_library(analysis "")
+#add_library(OPS_Analysis "")
 
 add_subdirectory(algorithm)
 add_subdirectory(numberer)
@@ -9,6 +9,6 @@ add_subdirectory(model)
 add_subdirectory(integrator)
 add_subdirectory(analysis)
 
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(LG3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 

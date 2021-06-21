@@ -1,4 +1,4 @@
-target_sources(libg3
+target_sources(LG3_Analysis
     PRIVATE
        AlphaOS.cpp
        AlphaOS_TP.cpp
@@ -42,7 +42,7 @@ target_sources(libg3
        StaticIntegrator.h
        TransientIntegrator.h
 )
-target_sources(analysis
+target_sources(OPS_Analysis
     PRIVATE
        CentralDifferenceAlternative.cpp
        CentralDifferenceNoDamping.cpp
@@ -126,5 +126,5 @@ target_sources(libPFEM
        PFEMIntegrator.h  # Uses ops_Dt
 )
 
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

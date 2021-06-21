@@ -1,4 +1,4 @@
-target_sources(recorder
+target_sources(libg3
 	PRIVATE 
 	    Response.cpp
 	    MaterialResponse.cpp

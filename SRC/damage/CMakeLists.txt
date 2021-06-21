@@ -1,4 +1,4 @@
-add_library(damage "")
+add_library(damage OBJECT)
 
 target_sources(damage
     PRIVATE

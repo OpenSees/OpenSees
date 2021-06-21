@@ -1,5 +1,4 @@
-
-target_sources(analysis
+target_sources(LG3_Analysis
     PRIVATE
       DomainUser.cpp 
       Analysis.cpp 
@@ -12,7 +11,6 @@ target_sources(analysis
       VariableTimeStepDirectIntegrationAnalysis.cpp
       StaticDomainDecompositionAnalysis.cpp 
       TransientDomainDecompositionAnalysis.cpp 
-      PFEMAnalysis.cpp 
     PUBLIC
       DomainUser.h 
       Analysis.h 
@@ -25,9 +23,13 @@ target_sources(analysis
       VariableTimeStepDirectIntegrationAnalysis.h
       StaticDomainDecompositionAnalysis.h 
       TransientDomainDecompositionAnalysis.h 
-      PFEMAnalysis.h 
 )
-
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(libPFEM
+    PRIVATE
+        PFEMAnalysis.cpp 
+    PUBLIC
+        PFEMAnalysis.h 
+)
+#target_include_directories(LG3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 #add_subdirectory(analysis)

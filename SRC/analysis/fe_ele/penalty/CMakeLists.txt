@@ -1,4 +1,4 @@
-target_sources(analysis
+target_sources(LG3_Analysis
     PRIVATE
       PenaltySP_FE.cpp
       PenaltyMP_FE.cpp
@@ -7,4 +7,4 @@ target_sources(analysis
       PenaltyMP_FE.h
 )
 
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(LG3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))

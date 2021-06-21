@@ -1,4 +1,4 @@
-add_library(utility "")
+add_library(utility OBJECT)
 
 target_sources(utility
     PRIVATE

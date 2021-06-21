@@ -1,6 +1,6 @@
-add_library(handler "")
+#add_library(handler OBJECT)
 
-target_sources(handler
+target_sources(libg3
     PRIVATE
 	OPS_Stream.cpp
         StandardStream.cpp
@@ -27,4 +27,4 @@ target_sources(handler
         ChannelStream.h
 )
 
-target_include_directories(handler PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(libg3 PUBLIC $(CMAKE_CURRENT_LIST_DIR))

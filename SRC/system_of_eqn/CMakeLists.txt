@@ -1,6 +1,6 @@
 add_library(systemOfEqn "")
 
-target_sources(systemOfEqn
+target_sources(libg3
     PRIVATE
     PUBLIC
 	Solver.h

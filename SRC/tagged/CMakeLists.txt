@@ -1,4 +1,4 @@
-add_library(tagged "")
+add_library(tagged OBJECT)
 
 target_sources(tagged
     PRIVATE

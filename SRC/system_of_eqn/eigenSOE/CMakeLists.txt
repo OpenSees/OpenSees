@@ -1,30 +1,34 @@
 
-target_sources(systemOfEqn
+target_sources(libg3
     PRIVATE
         ArpackSOE.cpp
         ArpackSolver.cpp
-	#BandArpackSOE.cpp
-	#BandArpackSolver.cpp
         EigenSOE.cpp
         EigenSolver.cpp
         FullGenEigenSOE.cpp
         FullGenEigenSolver.cpp
-	#SymArpackSOE.cpp
-	#SymArpackSolver.cpp
         SymBandEigenSOE.cpp
         SymBandEigenSolver.cpp
     PUBLIC
         ArpackSOE.h
         ArpackSolver.h
-	#BandArpackSOE.h
-	#BandArpackSolver.h
         EigenSOE.h
         EigenSolver.h
         FullGenEigenSOE.h
         FullGenEigenSolver.h
-	#SymArpackSOE.h
-	#SymArpackSolver.h
         SymBandEigenSOE.h
         SymBandEigenSolver.h
 )
 
+target_sources(systemOfEqn
+    PRIVATE
+	BandArpackSOE.cpp
+	BandArpackSolver.cpp
+	SymArpackSOE.cpp
+	SymArpackSolver.cpp
+    PUBLIC
+	BandArpackSOE.h
+	BandArpackSolver.h
+	SymArpackSOE.h
+	SymArpackSolver.h
+)

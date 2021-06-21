@@ -1,4 +1,4 @@
-add_library(matrix "")
+add_library(matrix OBJECT)
 
 target_sources(matrix
     PRIVATE
