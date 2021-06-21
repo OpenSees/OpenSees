@@ -54,7 +54,6 @@ extern "C" {
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
-extern void OPS_clearAllTestMaterials(void);
 
 extern void OPS_clearAllHystereticBackbone(void);
 extern void OPS_clearAllStiffnessDegradation(void);
@@ -87,7 +86,6 @@ OPS_Stream *opserrPtr = &sserr;
 #include <string.h>
 
 #include <elementAPI.h>
-#include <OpenSeesCommands.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 #include <packages.h>
@@ -824,7 +822,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "getNDF", &getNDF,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-  
+
     Tcl_CreateCommand(interp, "wipe", &wipeModel,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 
@@ -894,30 +892,6 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "responseSpectrum", &responseSpectrum,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-
-    Tcl_CreateCommand(interp, "testUniaxialMaterial", &testUniaxialMaterial,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "testNDMaterial", &testNDMaterial,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "testSection", &testSection,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "setStrain", &setStrain,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "setTrialStrain", &setTrialStrain,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "commitStrain", &commitStrain,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "getStrain", &getStrain,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "getStress", &getStress,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "getTangent", &getTangent,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "getDampTangent", &getDampTangent,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "getResponse", &getResponse,
-        (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-
     Tcl_CreateCommand(interp, "video", &videoPlayer, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "remove", &removeObject, 
@@ -1029,7 +1003,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
-
+              
     Tcl_CreateCommand(interp, "fixedNodes", &fixedNodes,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
     Tcl_CreateCommand(interp, "fixedDOFs", &fixedDOFs,
@@ -1428,7 +1402,6 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
-  OPS_clearAllTestMaterials();
 
   OPS_clearAllHystereticBackbone();
   OPS_clearAllStiffnessDegradation();
@@ -5735,84 +5708,6 @@ responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char**
     return TCL_OK;
 }
 
-// Added material testing commands -ambaker1
-int
-testUniaxialMaterial(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_testUniaxialMaterial();
-}
-
-int
-testNDMaterial(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_testNDMaterial();
-}
-
-int
-testSection(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_testSection();
-}
-
-int
-setStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_setStrain();
-}
-
-int
-setTrialStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_setTrialStrain();
-}
-
-int
-commitStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_commitStrain();
-}
-
-int
-getStrain(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_getStrain();
-}
-
-int
-getStress(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_getStress();
-}
-
-int
-getTangent(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_getTangent();
-}
-
-int
-getDampTangent(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_getDampTangent();
-}
-
-int
-getResponse(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
-{
-    OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    return OPS_getResponse();
-}
-
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, 
 	    TCL_Char **argv)
@@ -6630,7 +6525,7 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
     int tag;
 
     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-	opserr << "WARNING eleResponse eleTag? eleArgs... - could not read eleTag? \n";
+	opserr << "WARNING eleForce eleTag? dof? - could not read nodeTag? \n";
 	return TCL_ERROR;	        
     }    
 
@@ -6771,6 +6666,7 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   return TCL_ERROR;
 }
+
 
 int
 fixedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)

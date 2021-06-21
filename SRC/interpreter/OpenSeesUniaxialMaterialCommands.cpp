@@ -443,6 +443,139 @@ OPS_UniaxialMaterial()
 
 }
 
+int OPS_testUniaxialMaterial()
+{
+    if (OPS_GetNumRemainingInputArgs() != 1) {
+	opserr<<"testUniaxialMaterial - You must provide a material tag.\n";
+	return -1;
+    }
+
+    int tag;
+    int numData = 1;
+    if (OPS_GetIntInput(&numData, &tag) < 0) {
+	opserr<<"invalid int value\n";
+	return -1;
+    }
+
+    UniaxialMaterial* mat =OPS_getUniaxialMaterial(tag);
+
+    if (mat == 0) {
+	opserr<<"testUniaxialMaterial - Material Not Found.\n";
+	return -1;
+    }
+
+    theTestingUniaxialMaterial = mat;
+
+    return 0;
+}
+
+int OPS_setStrain()
+{
+    if (OPS_GetNumRemainingInputArgs() != 1) {
+	opserr<<"testUniaxialMaterial - You must provide a strain value.\n";
+	return -1;
+    }
+
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+
+    if (material == 0) {
+	opserr<<"setStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+	return -1;
+    }
+
+    double strain;
+    int numData = 1;
+    if (OPS_GetDoubleInput(&numData, &strain) < 0) {
+	opserr<<"invalid double value\n";
+	return -1;
+    }
+
+    material->setTrialStrain(strain);
+    material->commitState();
+
+    return 0;
+}
+
+int OPS_getStrain()
+{
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+    if (material == 0) {
+	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+	return -1;
+    }
+
+    double strain = material->getStrain();
+
+    int numData = 1;
+
+    if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
+	opserr<<"failed to set strain\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_getStress()
+{
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+    if (material == 0) {
+	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+	return -1;
+    }
+
+    double stress = material->getStress();
+
+    int numData = 1;
+
+    if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
+	opserr<<"failed to set stress\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_getTangent()
+{
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+    if (material == 0) {
+	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+	return -1;
+    }
+
+    double tangent = material->getTangent();
+
+    int numData = 1;
+
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
+	opserr<<"failed to set tangent\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_getDampTangent()
+{
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+    if (material == 0) {
+	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
+	return -1;
+    }
+
+    double tangent = material->getDampTangent();
+
+    int numData = 1;
+
+    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
+	opserr<<"failed to set damp tangent\n";
+	return -1;
+    }
+
+    return 0;
+}
+
 void* OPS_RotationShearCurve();
 void* OPS_ThreePointCurve();
 void* OPS_ShearCurve();
