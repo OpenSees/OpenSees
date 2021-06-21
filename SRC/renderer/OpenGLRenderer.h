@@ -65,10 +65,9 @@ class OpenGLRenderer : public Renderer
     virtual int drawPoint(const Vector &, const Vector &rgb1, int tag = 0, int mode=0, int width = 1);    
 
     virtual int drawLine(const Vector &, const Vector &, 
-			 float V1, float V2, int tag = 0, int mode = 0, int width = 1, int style = 1);
+			 float V1, float V2, int tag = 0, int mode = 0);
     virtual int drawLine(const Vector &end1, const Vector &end2, 
-			 const Vector &rgb1, const Vector &rgb2,
-			 int tag = 0, int mode = 0, int width = 1, int style = 1);
+			 const Vector &rgb1, const Vector &rgb2, int tag = 0, int mode = 0);
    
     virtual int drawPolygon(const Matrix &points, const Vector &values, int tag = 0, int mode = 0);
     virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues, int tag = 0, int mode = 0);
@@ -90,6 +89,7 @@ class OpenGLRenderer : public Renderer
 
     virtual int setProjectionMode(const char *mode); // parallel or perspective
     virtual int setFillMode(const char *mode);    // wire or  fill
+    virtual int setLineWidth(int width);    // width in pixels
     
     virtual int setPRP(float u, float v, float n); // eye location if 
 	                         // perspective, dirn to +ViewPlane if parallel
@@ -130,6 +130,7 @@ class OpenGLRenderer : public Renderer
     Vector portWindow;  // mapping to window - port window coords [-1,-1] to [1,1]
 
     int fillMode;        // flag indicating fill mode
+    int lineWidth; // line width for drawing lines
 
     float viewData[16];
     float projData[16];

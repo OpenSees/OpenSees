@@ -114,7 +114,7 @@ double ShellNLDKGT::wg[4] ;
 //null constructor
 ShellNLDKGT::ShellNLDKGT( ) :                              
 Element( 0, ELE_TAG_ShellNLDKGT ),
-connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)
+connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0), nodePointers(), xl(), g1(), g2(), g3()
 { 
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
@@ -150,8 +150,8 @@ ShellNLDKGT::ShellNLDKGT(  int tag,
                          int node2,
    	                     int node3,
 	                     SectionForceDeformation &theMaterial ) :
-Element( tag, ELE_TAG_ShellDKGT ),
-connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)
+Element( tag, ELE_TAG_ShellNLDKGT),
+connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0), nodePointers(), xl(), g1(), g2(), g3()
 {
   int i;
   connectedExternalNodes(0) = node1 ;           
