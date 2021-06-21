@@ -1346,6 +1346,10 @@ PartitionedDomain::revertToStart(void)
         return res;
       }
     }
+
+#ifdef _PARALLEL_PROCESSING
+    this->barrierCheck(result);
+#endif
   }
 
   return 0;

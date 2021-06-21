@@ -665,7 +665,9 @@ opserr << "ActorSubdomain::addSP_AXIS :: DONE\n";
 	  case ShadowActorSubdomain_revertToStart:
 	    this->revertToStart();
 	    this->sendID(msgData);
-
+		#ifdef _PARALLEL_PROCESSING
+		this->barrierCheck(0);
+		#endif
 	    break;	    	    
 
 	  case ShadowActorSubdomain_addRecorder:
