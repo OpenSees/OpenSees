@@ -55,9 +55,6 @@
     <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesMaterialTestCommands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">
