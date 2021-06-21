@@ -174,18 +174,26 @@ private:
 
 /* OpenSeesUniaxialMaterialCommands.cpp */
 int OPS_UniaxialMaterial();
-int OPS_testUniaxialMaterial();
-int OPS_setStrain();
-int OPS_getStrain();
-int OPS_getStress();
-int OPS_getTangent();
-int OPS_getDampTangent();
 int OPS_LimitCurve();
 
 int OPS_hystereticBackbone();
 int OPS_stiffnessDegradation();
 int OPS_strengthDegradation();
 int OPS_unloadingRule();
+
+/* OpenSeesMaterialTestCommands */
+void OPS_clearAllTestMaterials();
+int OPS_testUniaxialMaterial();
+int OPS_testNDMaterial();
+int OPS_testSection();
+int OPS_setStrain();
+int OPS_setTrialStrain();
+int OPS_commitStrain();
+int OPS_getStrain();
+int OPS_getStress();
+int OPS_getTangent();
+int OPS_getDampTangent();
+int OPS_getResponse();
 
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
