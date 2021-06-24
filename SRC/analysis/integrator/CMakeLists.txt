@@ -1,4 +1,4 @@
-target_sources(LG3_Analysis
+target_sources(G3_Analysis
     PRIVATE
        AlphaOS.cpp
        AlphaOS_TP.cpp
@@ -119,7 +119,7 @@ target_sources(OPS_Analysis
        GimmeMCK.h
 )
 
-target_sources(libPFEM
+target_sources(OPS_PFEM
     PRIVATE
        PFEMIntegrator.cpp
     PUBLIC

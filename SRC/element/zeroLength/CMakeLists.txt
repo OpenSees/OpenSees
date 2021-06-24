@@ -1,4 +1,4 @@
-target_sources(libg3
+target_sources(OPS_Element
     PRIVATE
 	ZeroLength.cpp
 	CoupledZeroLength.cpp
@@ -17,7 +17,7 @@ target_sources(libg3
 	ZeroLengthVG_HG.h
 )
 
-target_sources(element
+target_sources(OPS_Element
     PRIVATE
 	ZeroLength.cpp
 	CoupledZeroLength.cpp
@@ -43,4 +43,4 @@ target_sources(element
 	ZeroLengthSection.h
 	ZeroLengthVG_HG.h
 )
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

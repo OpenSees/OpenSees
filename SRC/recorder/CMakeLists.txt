@@ -1,6 +1,6 @@
 #add_library(recorder OBJECT)
 
-target_sources(libg3
+target_sources(G3_Recorder
     PRIVATE
       DamageRecorder.cpp
       DatastoreRecorder.cpp

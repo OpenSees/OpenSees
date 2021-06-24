@@ -1,5 +1,3 @@
-add_library(actor OBJECT)
-
 add_subdirectory(address)
 add_subdirectory(channel)
 add_subdirectory(machineBroker)

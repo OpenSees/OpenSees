@@ -9,6 +9,6 @@ add_subdirectory(model)
 add_subdirectory(integrator)
 add_subdirectory(analysis)
 
-#target_include_directories(LG3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 

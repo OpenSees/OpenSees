@@ -20,6 +20,13 @@
 #set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/src/)
 include(OpenSeesFunctions)
 #------------------------------------------------------------------------------
+#                           Select Executable
+#
+#------------------------------------------------------------------------------
+set(OPS_FINAL_TARGET "OpenSeesTcl" 
+    CACHE STRING "OpenSees final target"
+)
+#------------------------------------------------------------------------------
 #                            Basic Switches
 #
 #------------------------------------------------------------------------------
@@ -77,8 +84,10 @@ define_property(TARGET
 # - PATHS:  Provide specific paths for library.
 #
 #----------------------------------------------------------------
-opensees_load(TCL                                            FIND)
-
+opensees_load(TCL     
+	LIBRARY /home/claudio/miniconda3/lib/libtcl8.6.so
+	INCLUDE /home/claudio/miniconda3/include 
+)
 opensees_load(BLAS                                         SEARCH)
 
 opensees_load(LAPACK                                       SEARCH)
@@ -89,61 +98,9 @@ opensees_load(METIS                                        SEARCH)
 
 #opensees_load(SUPERLU                                      SEARCH)
 
-
-#----------------------------------------------------------------
-# Compilers
-#
-#----------------------------------------------------------------
-
-# Fortran
-#--------------------------------------
-enable_language(Fortran)
-
-# C++
-#--------------------------------------
+#opensees_load(HDF5                                         SEARCH)
 
 
-#----------------------------------------------------------------
-# Compilers
-#
-#----------------------------------------------------------------
-
-
-if(FMK)
-   add_compile_definitions(
-	_HAVE_Damage2p    
-        _HAVE_PSUMAT
-        _HAVE_PML
-        _FILIP_LHNMYS)    
-endif()
-
-if(OPS_OPTION_HDF5)
-   find_package(HDF5)
-    if(HDF5_FOUND)
-        include_directories(${HDF5_INCLUDE_DIR})
-        set(_hdf5_libs hdf5 hdf5_cpp)
-    add_compile_definitions(-D_H5DRM)
-    else()
-     message(STATUS ">>> Could not find HDF5")
-    endif()
-endif()
-
-if(APPLE)
- message(STATUS ">>> MacOS")
-endif()
-
-if(UNIX AND NOT APPLE)
-   message(STATUS ">>> LINUX")
-   add_compile_definitions(_LINUX _UNIX)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
-endif()
-
-if(WIN32)
- message(STATUS ">>> WIN32")
-endif()
-#
-# include paths to main abstract classes
-#
 
 # NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
@@ -203,24 +160,6 @@ include_directories(${OPS_SRC_DIR}
 
 
 
-#------------------------------------------------------------------------------
-#                            Targets
-#------------------------------------------------------------------------------
-#add_library(libg3)
-#add_executable(OpenSees   EXCLUDE_FROM_ALL src/tcl/tclMain.cpp)
-#add_executable(OpenSeesSP EXCLUDE_FROM_ALL src/tcl/tclMain.cpp)
-#add_executable(OpenSeesMP EXCLUDE_FROM_ALL src/tcl/tclMain.cpp)
-#add_executable(openseespy EXCLUDE_FROM_ALL src/interpreter/pythonMain.cpp)
-#
-#
-## Set properties for targets
-#target_compile_definitions(OpenSeesSP 
-#    PUBLIC _OPS_PARALLEL_INTERPRETERS
-#)
-#target_compile_definitions(OpenSeesMP
-#    PUBLIC _OPS_PARALLEL_PROCESSING
-#)
-#
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 

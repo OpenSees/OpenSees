@@ -1,5 +1,4 @@
-
-target_sources(libg3
+target_sources(G3_SysOfEqn
     PRIVATE
         ArpackSOE.cpp
         ArpackSolver.cpp
@@ -20,7 +19,7 @@ target_sources(libg3
         SymBandEigenSolver.h
 )
 
-target_sources(systemOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
 	BandArpackSOE.cpp
 	BandArpackSolver.cpp
@@ -32,3 +31,4 @@ target_sources(systemOfEqn
 	SymArpackSOE.h
 	SymArpackSolver.h
 )
+

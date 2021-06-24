@@ -1,5 +1,5 @@
 
-target_sources(libg3
+target_sources(G3_SysOfEqn
     PRIVATE 
     	SparseGenColLinSOE.cpp
 	SparseGenColLinSolver.cpp
@@ -14,7 +14,7 @@ target_sources(libg3
 	SuperLU.h
 )
 
-target_sources(libPFEM
+target_sources(OPS_PFEM
     PRIVATE
         PFEMSolver.cpp
         PFEMLinSOE.cpp
@@ -59,5 +59,5 @@ target_sources(OpenSeesMP
         PFEMCompressibleSolver_Mumps.h
 )
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

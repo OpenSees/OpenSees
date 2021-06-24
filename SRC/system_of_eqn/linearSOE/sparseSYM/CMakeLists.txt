@@ -1,5 +1,5 @@
 
-target_sources(libg3
+target_sources(G3_SysOfEqn
     PRIVATE
 	SymSparseLinSOE.cpp
 	SymSparseLinSolver.cpp
@@ -16,4 +16,4 @@ target_sources(libg3
 	SymSparseLinSolver.h
 )
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))

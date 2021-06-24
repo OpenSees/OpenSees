@@ -1,4 +1,4 @@
-target_sources(actor
+target_sources(G3_Actor
     PRIVATE
       Actor.cpp
       MovableObject.cpp
@@ -7,4 +7,4 @@ target_sources(actor
       MovableObject.h
 )
 
-target_include_directories(actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))

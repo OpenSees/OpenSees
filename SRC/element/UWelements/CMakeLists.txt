@@ -1,5 +1,5 @@
 
-target_sources(element
+target_sources(OPS_Element
     PRIVATE
 	SimpleContact2D.cpp
 	SimpleContact3D.cpp
@@ -42,4 +42,4 @@ target_sources(element
 	EmbeddedEPBeamInterface.h
 )
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

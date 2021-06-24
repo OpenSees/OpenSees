@@ -1,4 +1,4 @@
-target_sources(element
+target_sources(OPS_Element
     PRIVATE
 	ForceBeamColumn2d.cpp
 	ForceBeamColumn3d.cpp
@@ -60,4 +60,4 @@ target_sources(element
 	GaussQBeamIntegration.h
 )
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

@@ -1,5 +1,5 @@
 
-target_sources(domain
+target_sources(OPS_DRM
     PRIVATE
 	Mesh3DSubdomain.cpp
 	GeometricBrickDecorator.cpp
@@ -17,14 +17,14 @@ target_sources(domain
 	DRMInputHandler.h
 	PlaneDRMInputHandler.h
 )
-
-if(DRM)
-  target_sources(domain
+if (OPS_OPTION_HDF5)
+target_sources(OPS_DRM
     PRIVATE
-	H5DRM.cpp
+        H5DRM.cpp
     PUBLIC
-	H5DRM.h    
-  )
+        H5DRM.h    
+)
 endif()
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_DRM PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

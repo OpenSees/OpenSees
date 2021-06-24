@@ -1,26 +1,26 @@
 
-target_sources(libg3
+target_sources(G3_Domain
+    PRIVATE
+	MP_Constraint.cpp 
+	RigidBeam.cpp 
+	RigidDiaphragm.cpp
+	RigidRod.cpp 
+	SP_Constraint.cpp 
+    PUBLIC
+	MP_Constraint.h 
+	RigidBeam.h 
+	RigidDiaphragm.h
+	RigidRod.h 
+	SP_Constraint.h 
+)
+target_sources(OPS_Domain
     PRIVATE
 	ImposedMotionSP.cpp 
 	ImposedMotionSP1.cpp
-	SP_Constraint.cpp 
-	MP_Constraint.cpp 
-	RigidDiaphragm.cpp
-	RigidRod.cpp 
-	RigidBeam.cpp 
+	Pressure_Constraint.cpp
     PUBLIC
 	ImposedMotionSP.h 
 	ImposedMotionSP1.h
-	SP_Constraint.h 
-	MP_Constraint.h 
-	RigidDiaphragm.h
-	RigidRod.h 
-	RigidBeam.h 
-)
-target_sources(domain
-    PRIVATE
-	Pressure_Constraint.cpp
-    PUBLIC
 	Pressure_Constraint.h
 )
 target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))

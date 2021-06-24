@@ -1,4 +1,4 @@
-target_sources(libg3
+target_sources(G3_Recorder
 	PRIVATE 
 	    Response.cpp
 	    MaterialResponse.cpp

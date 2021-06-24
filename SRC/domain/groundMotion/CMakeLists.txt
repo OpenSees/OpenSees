@@ -1,5 +1,5 @@
 
-target_sources(libg3
+target_sources(G3_Domain
     PRIVATE	
     	GroundMotion.cpp
 	GroundMotionRecord.cpp

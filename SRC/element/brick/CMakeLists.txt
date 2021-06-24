@@ -1,4 +1,4 @@
-target_sources(element
+target_sources(OPS_Element
     PRIVATE
 	Brick.cpp
 	Twenty_Node_Brick.cpp
@@ -13,4 +13,4 @@ target_sources(element
 	BbarBrickWithSensitivity.h
 )
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

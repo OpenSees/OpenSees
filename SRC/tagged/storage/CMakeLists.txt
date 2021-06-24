@@ -1,4 +1,4 @@
-target_sources(tagged
+target_sources(G3_Tagged
     PRIVATE
       ArrayOfTaggedObjects.cpp 
       ArrayOfTaggedObjectsIter.cpp
@@ -11,5 +11,5 @@ target_sources(tagged
       MapOfTaggedObjects.h
 )
 
-target_include_directories(tagged PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Tagged PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

@@ -1,6 +1,5 @@
-add_library(systemOfEqn "")
 
-target_sources(systemOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
 	ProfileSPDLinSOE.cpp
 	ProfileSPDLinSolver.cpp
@@ -8,8 +7,8 @@ target_sources(systemOfEqn
 	ProfileSPDLinSubstrSolver.cpp
 	ProfileSPDLinDirectBlockSolver.cpp
 	ProfileSPDLinDirectSkypackSolver.cpp
-	ProfileSPDLinSolverGather.cpp
-	ProfileSPDLinSOEGather.cpp
+	#ProfileSPDLinSolverGather.cpp
+	#ProfileSPDLinSOEGather.cpp
 	DistributedProfileSPDLinSOE.cpp
 	SProfileSPDLinSOE.cpp
 	SProfileSPDLinSolver.cpp
@@ -20,8 +19,8 @@ target_sources(systemOfEqn
 	ProfileSPDLinSubstrSolver.h
 	ProfileSPDLinDirectBlockSolver.h
 	ProfileSPDLinDirectSkypackSolver.h
-	ProfileSPDLinSolverGather.h
-	ProfileSPDLinSOEGather.h
+	#ProfileSPDLinSolverGather.h
+	#ProfileSPDLinSOEGather.h
 	DistributedProfileSPDLinSOE.h
 	SProfileSPDLinSOE.h
 	SProfileSPDLinSolver.h
@@ -31,7 +30,7 @@ if(PARALLEL_INTERPRETERS)
 
 elseif(PARALLEL)
 
-endif
+endif()
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

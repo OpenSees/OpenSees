@@ -1,6 +1,4 @@
-add_library(utility OBJECT)
-
-target_sources(utility
+target_sources(G3_Utilities
     PRIVATE
 	Timer.cpp 
 	FileIter.cpp 
@@ -15,4 +13,4 @@ target_sources(utility
 	StringContainer.h 
 )
 
-target_include_directories(utility PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Utilities PUBLIC $(CMAKE_CURRENT_LIST_DIR))

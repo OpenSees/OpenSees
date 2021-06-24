@@ -12,13 +12,18 @@ add_subdirectory(matrix)
 add_subdirectory(recorder)
 add_subdirectory(tagged)
 add_subdirectory(utility)
+
+add_subdirectory(modelbuilder)
+
+add_subdirectory(tcl)
 if (EXISTS base)
 add_subdirectory(base)
 endif()
 add_subdirectory(system_of_eqn)
-if(OPS_OPTION_RENDERER)
+
+#if(OPS_OPTION_RENDERER)
 add_subdirectory(renderer)
-endif()
+#endif()
 
 
 

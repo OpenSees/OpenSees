@@ -27,7 +27,7 @@ target_sources(OPS_ConvergenceTest
 	NormDispOrUnbalance.h
 )
 
-target_sources(libPFEM
+target_sources(OPS_PFEM
     PRIVATE
 	CTestPFEM.cpp
     PUBLIC

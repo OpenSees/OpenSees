@@ -1,5 +1,5 @@
 
-target_sources(libg3
+target_sources(G3_Domain
     PRIVATE
 	DomainComponent.cpp
 	Parameter.cpp
@@ -8,7 +8,6 @@ target_sources(libg3
 	LoadFactorParameter.cpp
 	MaterialStageParameter.cpp
 	MatParameter.cpp
-	InitialStateParameter.cpp
 	ElementStateParameter.cpp
     PUBLIC
 	DomainComponent.h
@@ -18,12 +17,17 @@ target_sources(libg3
 	LoadFactorParameter.h
 	MaterialStageParameter.h
 	MatParameter.h
-	InitialStateParameter.h
 	ElementStateParameter.h
 )
 
-if(OPS_OPTION_RELIABILITY)
-target_sources(domain
+target_sources(OPS_Domain
+    PRIVATE
+	InitialStateParameter.cpp
+    PUBLIC
+	InitialStateParameter.h
+)
+        
+target_sources(OPS_Reliability
     PRIVATE
 	RVParameter.cpp
 	DVParameter.cpp
@@ -31,8 +35,7 @@ target_sources(domain
 	RVParameter.h
 	DVParameter.h
 )
-endif()
 
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

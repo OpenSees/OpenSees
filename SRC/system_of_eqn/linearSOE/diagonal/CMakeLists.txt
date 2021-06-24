@@ -1,5 +1,5 @@
 
-target_sources(systemOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
 	DiagonalSOE.cpp
 	DiagonalSolver.cpp
@@ -16,5 +16,5 @@ target_sources(systemOfEqn
 
 
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

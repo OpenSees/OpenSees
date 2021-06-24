@@ -1,4 +1,4 @@
-target_sources(actor
+target_sources(G3_Actor
     PRIVATE
       Channel.cpp
       HTTP.cpp
@@ -14,14 +14,14 @@ target_sources(actor
 
 
 if(PARALLEL_INTERPRETERS)
-target_sources(actor
+target_sources(G3_Actor
     PRIVATE
       MPI_Channel.cpp
     PUBLIC
       MPI_Channel.h
 )
 elseif(PARALLEL)
-target_sources(actor
+target_sources(G3_Actor
     PRIVATE
       MPI_Channel.cpp
     PUBLIC
@@ -30,4 +30,4 @@ target_sources(actor
 endif()
 
 
-target_include_directories(actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))

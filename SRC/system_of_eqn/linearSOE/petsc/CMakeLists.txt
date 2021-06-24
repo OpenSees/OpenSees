@@ -1,5 +1,5 @@
 
-target_sources(systemOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
         ActorPetscSOE.cpp
         badPetscSOE.cpp

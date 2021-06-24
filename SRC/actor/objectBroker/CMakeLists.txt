@@ -1,4 +1,4 @@
-target_sources(libg3
+target_sources(G3_SysOfEqn
     PRIVATE
       FEM_ObjectBroker.cpp
     PUBLIC
@@ -6,7 +6,7 @@ target_sources(libg3
 )
 
 if (OSP_OPTION_BROKER_ALL)
-    target_sources(actor
+    target_sources(G3_Actor
       PRIVATE
         FEM_ObjectBrokerAllClasses.cpp
       PUBLIC
@@ -14,4 +14,4 @@ if (OSP_OPTION_BROKER_ALL)
 )
 endif()
 
-target_include_directories(actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
