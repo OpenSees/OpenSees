@@ -29,11 +29,17 @@ option(OPS_THREADSAFE
 # Component Libraries
 #--------------------------------------
 
-option(OPS_Use_RELIABILITY   
+option(OPS_Use_Reliability   
     "Include reliability"                                    OFF)
 
+option(OPS_Use_Thermal
+    "Include thermal components"                             OFF)
+
+option(OPS_Use_Graphics
+    "Include graphics"                                       OFF)
+
 option(OPS_Use_PFEM 
-    "Include PFEM library"                                   OFF)
+    "Include PFEM library"                                    ON)
 
 option(OPS_Use_DRM
     "DRM lib"                                                OFF)
@@ -41,11 +47,6 @@ option(OPS_Use_DRM
 option(OPS_Use_HDF5
     "HDF5 Dependent Code"                                    OFF)
 
-option(OPS_Use_Thermal
-    "Include thermal components"                             OFF)
-
-option(OPS_Use_RENDERER
-    "Include renderer"                                        ON)
 
 # TODO: Implement material options like elements
 option(OPS_MATERIAL_UNIAXIAL_PY 
@@ -138,5 +139,4 @@ set(OPS_Element_List
     OPS_Element_UP_ucsd
 )
 
-# NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
