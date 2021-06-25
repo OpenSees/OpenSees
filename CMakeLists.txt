@@ -21,16 +21,16 @@ cmake_minimum_required(VERSION 3.18)
 #
 # - Option Application
 #==============================================================================
-#project(
-#                              OpenSees
-#)
+project(
+                              OpenSees
+)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/ETC/cmake)
 set(OPS_EXTERN_SOURCE_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_EXTERNALS_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 
 set(OPS_BUNDLED_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/SRC/)
-
+include(OpenSeesFunctions)
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 #message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
 #message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}")
@@ -105,60 +105,62 @@ endif()
 #
 # NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
-include_directories(src
-#    src/base
-#    src/matrix
-#    src/handler
-#    src/database
-#    #src/element
-    src/element/forceBeamColumn
-    src/element/nonlinearBeamColumn/matrixutil
-#    src/coordTransformation
-#    src/tagged
-#    src/tagged/storage
-#    src/recorder
-#    src/renderer
-#    src/damage
-#    src/recorder/response
-#    src/material
-#    src/material/section
-#    src/material/uniaxial
-#    #src/material/nD
-#    src/graph/graph
-#    src/graph/numberer
-#    src/graph/partitioner
-#    src/domain/component
-#    src/domain/domain
-#    src/domain/subdomain
-#    src/domain/load
-#    src/domain/loadBalancer
-#    src/domain/pattern
-#    src/domain/groundMotion
-#    src/domain/node
-#    src/domain/constraints
-#    src/domain/region
-#    src/analysis/algorithm
-#    src/analysis/dof_grp
-#    src/analysis/fe_ele
-#    src/analysis/algorithm/equiSolnAlgo
-#    src/analysis/algorithm/eigenAlgo
-#    src/analysis/algorithm/domainDecompAlgo
-#    src/analysis/analysis
-#    src/analysis/integrator
-#    src/analysis/handler
-#    src/analysis/numberer
-#    src/analysis/model
-#    src/convergenceTest
-#    src/modelbuilder
-#    src/system_of_eqn
-#    src/system_of_eqn/linearSOE
-#    src/system_of_eqn/eigenSOE
-#    src/actor/actor
-#    src/actor/channel
-#    src/actor/objectBroker
-#    src/actor/message
+include_directories(
+    ${OPS_SRC_DIR}
+    ${OPS_SRC_DIR}/matrix
+    ${OPS_SRC_DIR}/handler
+    ${OPS_SRC_DIR}/database
+    ${OPS_SRC_DIR}/element
+    ${OPS_SRC_DIR}/element/forceBeamColumn
+    ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
+    ${OPS_SRC_DIR}/coordTransformation
+    ${OPS_SRC_DIR}/tagged
+    ${OPS_SRC_DIR}/tagged/storage
+    ${OPS_SRC_DIR}/recorder
+    ${OPS_SRC_DIR}/renderer
+    ${OPS_SRC_DIR}/damage
+    ${OPS_SRC_DIR}/recorder/response
+    ${OPS_SRC_DIR}/material
+    ${OPS_SRC_DIR}/material/section
+    ${OPS_SRC_DIR}/material/uniaxial
+    ${OPS_SRC_DIR}/material/nD
+    ${OPS_SRC_DIR}/graph/graph
+    ${OPS_SRC_DIR}/graph/numberer
+    ${OPS_SRC_DIR}/graph/partitioner
+    ${OPS_SRC_DIR}/domain/component
+    ${OPS_SRC_DIR}/domain/domain
+    ${OPS_SRC_DIR}/domain/subdomain
+    ${OPS_SRC_DIR}/domain/load
+    ${OPS_SRC_DIR}/domain/loadBalancer
+    ${OPS_SRC_DIR}/domain/pattern
+    ${OPS_SRC_DIR}/domain/groundMotion
+    ${OPS_SRC_DIR}/domain/node
+    ${OPS_SRC_DIR}/domain/constraints
+    ${OPS_SRC_DIR}/domain/region
+    ${OPS_SRC_DIR}/analysis/algorithm
+    ${OPS_SRC_DIR}/analysis/dof_grp
+    ${OPS_SRC_DIR}/analysis/fe_ele
+    ${OPS_SRC_DIR}/analysis/algorithm/equiSolnAlgo
+    ${OPS_SRC_DIR}/analysis/algorithm/eigenAlgo
+    ${OPS_SRC_DIR}/analysis/algorithm/domainDecompAlgo
+    ${OPS_SRC_DIR}/analysis/analysis
+    ${OPS_SRC_DIR}/analysis/integrator
+    ${OPS_SRC_DIR}/analysis/handler
+    ${OPS_SRC_DIR}/analysis/numberer
+    ${OPS_SRC_DIR}/analysis/model
+    ${OPS_SRC_DIR}/convergenceTest
+    ${OPS_SRC_DIR}/modelbuilder
+    ${OPS_SRC_DIR}/system_of_eqn
+    ${OPS_SRC_DIR}/system_of_eqn/linearSOE
+    ${OPS_SRC_DIR}/system_of_eqn/eigenSOE
+    ${OPS_SRC_DIR}/actor/actor
+    ${OPS_SRC_DIR}/actor/channel
+    ${OPS_SRC_DIR}/actor/objectBroker
+    ${OPS_SRC_DIR}/actor/message
 )
-#
+# Temporary fix
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 
 
 #==============================================================================

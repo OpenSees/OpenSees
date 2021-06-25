@@ -21,9 +21,7 @@ add_subdirectory(base)
 endif()
 add_subdirectory(system_of_eqn)
 
-#if(OPS_Use_RENDERER)
 add_subdirectory(renderer)
-#endif()
 
 
 
