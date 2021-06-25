@@ -264,4 +264,6 @@ add_subdirectory(limitState)
 
 add_subdirectory(PY)
 add_subdirectory(snap)
+add_subdirectory(fedeas)
+add_subdirectory(drain)
 

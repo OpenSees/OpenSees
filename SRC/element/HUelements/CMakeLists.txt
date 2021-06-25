@@ -2,15 +2,15 @@ target_sources(OPS_Element
     PRIVATE
 	MultipleShearSpring.cpp
 	MultipleNormalSpring.cpp
-	DBESI0.cpp
-	DBESI1.cpp
+	DBESI0.C
+	DBESI1.C
 	YamamotoBiaxialHDR.cpp
 	KikuchiBearing.cpp
     PUBLIC
 	MultipleShearSpring.h
 	MultipleNormalSpring.h
-	DBESI0.h
-	DBESI1.h
+	#DBESI0.h
+	#DBESI1.h
 	YamamotoBiaxialHDR.h
 	KikuchiBearing.h
 )

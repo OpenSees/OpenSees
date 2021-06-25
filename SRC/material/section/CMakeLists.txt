@@ -68,4 +68,7 @@ target_sources(G3_Material
 target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(fiber)
+add_subdirectory(repres)
+add_subdirectory(yieldSurface)
 add_subdirectory(integration)
+

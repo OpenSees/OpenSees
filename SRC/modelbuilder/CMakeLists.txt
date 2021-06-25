@@ -6,4 +6,5 @@ target_sources(G3_ModelBuilder
         ModelBuilder.h
 	#PartitionedModelBuilder.h
 )
+add_subdirectory(tcl)
 

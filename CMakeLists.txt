@@ -209,7 +209,7 @@ add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
-add_library(G3 )
+add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp)
 add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
@@ -254,6 +254,9 @@ target_link_libraries(OpenSees
     OPS_ConvergenceTest
     OPS_Element
     OPS_Material
+    OPS_Material_YieldSurface
+    OPS_Section_Repres
+    OPS_Section_YieldSurface
     OPS_Damage
     OPS_SysOfEqn
     OPS_Analysis
@@ -309,7 +312,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
-	PRIVATE OPS_Tcl OpenSees ${OPS_Element_List} ${CMAKE_DL_LIBS}
+	PRIVATE OPS_Tcl ${OPS_Element_List} OpenSees  ${CMAKE_DL_LIBS}
 )
 
 #----------------------------

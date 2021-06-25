@@ -1,4 +1,6 @@
-target_sources(OPS_Element
+add_library(OPS_Element_forceBeamColumn OBJECT)
+
+target_sources(OPS_Element_forceBeamColumn
     PRIVATE
 	ForceBeamColumn2d.cpp
 	ForceBeamColumn3d.cpp
@@ -27,7 +29,7 @@ target_sources(OPS_Element
 	FixedLocationBeamIntegration.cpp
 	LowOrderBeamIntegration.cpp
 	MidDistanceBeamIntegration.cpp
-	GaussQBeamIntegration.cpp
+	#GaussQBeamIntegration.cpp
 	gaussq.f
     PUBLIC
 	ForceBeamColumn2d.h
@@ -57,7 +59,7 @@ target_sources(OPS_Element
 	FixedLocationBeamIntegration.h
 	LowOrderBeamIntegration.h
 	MidDistanceBeamIntegration.h
-	GaussQBeamIntegration.h
+	#GaussQBeamIntegration.h
 )
 
 target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

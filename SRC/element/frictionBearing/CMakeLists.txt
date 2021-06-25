@@ -31,5 +31,7 @@ target_sources(OPS_Element_frictionBearing
         TPB1D.h
         TripleFrictionPendulum.h
 )
+
+add_subdirectory(frictionModel)
 target_include_directories(OPS_Element_frictionBearing PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
