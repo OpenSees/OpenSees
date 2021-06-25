@@ -1,5 +1,5 @@
 
-target_sources(material
+target_sources(OPS_Material
     PRIVATE
 	DrainHardeningMaterial.cpp
 	anal00.f
@@ -16,6 +16,6 @@ target_sources(material
 	DrainPinch1Material.h
 )
 
-target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 

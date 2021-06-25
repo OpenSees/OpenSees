@@ -1,6 +1,6 @@
-add_library(damage OBJECT)
+#add_library(OPS_Damage OBJECT)
 
-target_sources(damage
+target_sources(OPS_Damage
     PRIVATE
 	DamageModel.cpp
 	HystereticEnergy.cpp
@@ -19,4 +19,5 @@ target_sources(damage
 	DamageResponse.h
 )
 
-target_include_directories(damage PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Damage PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+

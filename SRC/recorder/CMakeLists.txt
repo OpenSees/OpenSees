@@ -57,7 +57,7 @@ target_sources(OPS_ASDEA
 )
 
 
-#if (OPS_Use_RENDERER)
+#if (OPS_Use_Graphics)
 target_sources(OPS_Renderer
     PRIVATE
       AlgorithmIncrements.cpp

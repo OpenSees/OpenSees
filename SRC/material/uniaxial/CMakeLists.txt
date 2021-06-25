@@ -56,7 +56,7 @@ target_sources(G3_Material
       AxialSp.h
 )
 
-target_sources(material
+target_sources(OPS_Material
     PRIVATE
       BackboneMaterial.cpp
       BarSlipMaterial.cpp
@@ -253,14 +253,8 @@ target_sources(material
       pyUCLA.h
 )
 
-if (NOT OPS_THREADSAFE)
-    target_sources(material
-	  PRIVATE
-	  PUBLIC
-    ) 
-endif()
 
-target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(backbone)
 add_subdirectory(stiffness)
@@ -268,10 +262,6 @@ add_subdirectory(strength)
 add_subdirectory(unloading)
 add_subdirectory(limitState)
 
-if(OPS_MATERIAL_UNIAXIAL_PY)
-    add_subdirectory(PY)
-endif()
-if(OPS_MATERIAL_UNIAXIAL_SNAP)
-    add_subdirectory(snap)
-endif()
+add_subdirectory(PY)
+add_subdirectory(snap)
 

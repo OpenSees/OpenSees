@@ -1,5 +1,5 @@
 
-target_sources(material
+target_sources(OPS_Material
     PRIVATE
 	UnloadingRule.cpp
 	ConstantUnloadingRule.cpp 
@@ -14,6 +14,6 @@ target_sources(material
 	TakedaUnloadingRule.h
 )
 
-target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 

@@ -67,6 +67,9 @@ enable_language(Fortran)
 
 # C++
 #--------------------------------------
+
+set(CMAKE_CXX_STANDARD 11)
+
 # Warnings
 opensees_add_cxx_flag(
     GNU  -Wall
@@ -194,6 +197,8 @@ add_library(OPS_Analysis           OBJECT)
 add_library(OPS_ConvergenceTest    OBJECT)
 add_library(OPS_Thermal            OBJECT)
 add_library(OPS_Element            OBJECT)
+add_library(OPS_Material           OBJECT)
+add_library(OPS_Damage             OBJECT)
 
 # Optional Extensions
 add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
@@ -202,7 +207,6 @@ add_library(OPS_ASDEA              OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
-
 
 add_library(G3 )
 add_library(OpenSees         EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp)
@@ -244,10 +248,13 @@ target_link_libraries(G3
 #----------------------------
 target_link_libraries(OpenSees
     #OPS_Paraview
+    OPS_ConvergenceTest
     OPS_Element
-    OPS_Domain
+    OPS_Material
+    OPS_Damage
     OPS_SysOfEqn
     OPS_Analysis
+    OPS_Domain
     G3 
 )
 
@@ -287,6 +294,8 @@ target_sources(OPS_Tcl PRIVATE
 message("TCL INCLUDE: ${TCL_INCLUDE_DIRS}")
 target_include_directories(OPS_Tcl PUBLIC ${TCL_INCLUDE_DIRS})
 target_link_libraries(OPS_Tcl PRIVATE ${TCL_LIBRARIES})
+
+target_compile_definitions(OPS_Tcl PUBLIC _TCL85)
 
 opensees_add_cxx_flag(TARGETS OPS_Tcl
     GNU -fpermissive -fvisibility=hidden
@@ -340,14 +349,16 @@ endif()
 #----------------------------
 # Renderer
 #----------------------------
-if (OPS_Use_Renderer)
+if (OPS_Use_Graphics)
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Renderer)
+else()
+	add_compile_definitions(_NOGRAPHICS)
 endif()
 
 #----------------------------
 # Reliability
 #----------------------------
-if (OPS_Use_RELIABILITY)
+if (OPS_Use_Reliability)
     add_compile_definitions(_RELIABILITY)
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
 endif()
