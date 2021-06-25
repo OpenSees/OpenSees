@@ -116,12 +116,12 @@ set(OPS_Element_List
     OPS_Element_absorbentBoundaries
     OPS_Element_adapter
     OPS_Element_beam3d
-    OPS_Element_beamWithHinges
+    #OPS_Element_beamWithHinges
     OPS_Element_catenaryCable
     OPS_Element_componentElement
     OPS_Element_dispBeamColumnInt
     OPS_Element_elastomericBearing
-    OPS_Element_feap
+    #OPS_Element_feap
     OPS_Element_frictionBearing
     OPS_Element_generic
     OPS_Element_gradientInelasticBeamColumn
@@ -129,7 +129,7 @@ set(OPS_Element_List
     OPS_Element_LHMYS
     OPS_Element_mixedBeamColumn
     OPS_Element_mvlem
-    OPS_Element_PFEMElement
+    #OPS_Element_PFEMElement
     OPS_Element_PML
     OPS_Element_pyMacro
     OPS_Element_RockingBC

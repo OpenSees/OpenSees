@@ -241,7 +241,8 @@ target_link_libraries(G3
     G3_SysOfEqn
     G3_Tagged 
     G3_Utilities
-    graph 
+    graph
+    coordTransformation
     OPS_ConvergenceTest
     G3_Numerics 
 )
@@ -308,7 +309,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
-	PRIVATE OPS_Tcl OpenSees ${OPS_Element_List}  ${CMAKE_DL_LIBS}
+	PRIVATE OPS_Tcl OpenSees ${OPS_Element_List} ${CMAKE_DL_LIBS}
 )
 
 #----------------------------
