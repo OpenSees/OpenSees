@@ -23,6 +23,7 @@ add_subdirectory(system_of_eqn)
 
 add_subdirectory(renderer)
 
+add_subdirectory(api)
 
 
 

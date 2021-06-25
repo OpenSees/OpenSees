@@ -82,6 +82,7 @@ opensees_add_cxx_flag(
     MSVC /fp:precise
 )
 
+
 #----------------------------------------------------------------
 # OS Configuration
 #----------------------------------------------------------------
@@ -229,9 +230,10 @@ add_subdirectory(${OPS_SRC_DIR})
 #----------------------------
 target_link_libraries(G3 
     G3_Actor 
-    G3_ModelBuilder
     G3_Analysis 
+    G3_ModelBuilder
     G3_Element
+    G3_Material
     G3_Domain
     G3_Matrix
     G3_Recorder
@@ -255,6 +257,7 @@ target_link_libraries(OpenSees
     OPS_SysOfEqn
     OPS_Analysis
     OPS_Domain
+    OPS_Api
     G3 
 )
 
@@ -305,7 +308,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
-	PRIVATE OpenSees OPS_Tcl #${TCL_LIBRARY}
+	PRIVATE OPS_Tcl OpenSees ${CMAKE_DL_LIBS}
 )
 
 #----------------------------
