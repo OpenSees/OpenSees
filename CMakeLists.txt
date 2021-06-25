@@ -308,7 +308,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
-	PRIVATE OPS_Tcl OpenSees ${CMAKE_DL_LIBS}
+	PRIVATE OPS_Tcl OpenSees ${OPS_Element_List}  ${CMAKE_DL_LIBS}
 )
 
 #----------------------------
