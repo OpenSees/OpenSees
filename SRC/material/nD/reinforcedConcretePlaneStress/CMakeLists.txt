@@ -1,4 +1,4 @@
-target_sources(material
+target_sources(OPS_Material
     PRIVATE
 	ConcreteL01.cpp
 	ConcreteZ01.cpp
@@ -27,4 +27,4 @@ target_sources(material
 	RAFourSteelPCPlaneStress.h
 )
 
-target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))

@@ -1,4 +1,4 @@
-target_sources(material
+target_sources(G3_Material
     PRIVATE
 	Fiber.cpp
 	UniaxialFiber2d.cpp
@@ -13,5 +13,5 @@ target_sources(material
 	NDFiber3d.h
 )
 
-target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
