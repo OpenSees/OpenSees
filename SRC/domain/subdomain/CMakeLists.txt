@@ -10,11 +10,11 @@ target_sources(G3_Domain
 	ActorSubdomain.h
 )
 
-target_sources(domain
+target_sources(OPS_Domain
     PRIVATE
 	ShadowSubdomain.cpp 
     PUBLIC
 	ShadowSubdomain.h 
 )
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))

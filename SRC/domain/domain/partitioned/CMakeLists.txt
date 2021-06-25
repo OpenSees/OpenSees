@@ -1,5 +1,5 @@
 
-target_sources(domain
+target_sources(G3_Domain
     PRIVATE
 	PartitionedDomainEleIter.cpp 
 	PartitionedDomainSubIter.cpp
@@ -10,4 +10,4 @@ target_sources(domain
 	PartitionedDomain.h
 )
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))

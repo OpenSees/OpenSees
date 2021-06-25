@@ -1,8 +1,29 @@
-target_sources(OPS_Element
+add_library(OPS_Element_elastomericBearing OBJECT)
+
+target_sources(OPS_Element_elastomericBearing
     PRIVATE
-
+        ElastomericBearingBoucWen2d.cpp
+        ElastomericBearingBoucWen3d.cpp
+        ElastomericBearingBoucWenMod3d.cpp
+        ElastomericBearingPlasticity2d.cpp
+        ElastomericBearingPlasticity3d.cpp
+        ElastomericBearingUFRP2d.cpp
+        ElastomericX.cpp
+        HDR.cpp
+        LeadRubberX.cpp
+        #TclElastomericBearingBoucWenCommand.cpp
+        #TclElastomericBearingPlasticityCommand.cpp
+        #TclElastomericBearingUFRPCommand.cpp
     PUBLIC
-
+        ElastomericBearingBoucWen2d.h
+        ElastomericBearingBoucWen3d.h
+        ElastomericBearingBoucWenMod3d.h
+        ElastomericBearingPlasticity2d.h
+        ElastomericBearingPlasticity3d.h
+        ElastomericBearingUFRP2d.h
+        ElastomericX.h
+        HDR.h
+        LeadRubberX.h
 )
+target_include_directories(OPS_Element_elastomericBearing PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

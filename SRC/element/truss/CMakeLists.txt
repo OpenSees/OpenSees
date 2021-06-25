@@ -1,4 +1,6 @@
-target_sources(OPS_Element
+add_library(OPS_Element_truss OBJECT)
+
+target_sources(OPS_Element_truss
     PRIVATE
 	Truss.cpp
 	TrussSection.cpp

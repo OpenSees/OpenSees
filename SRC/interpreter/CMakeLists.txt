@@ -1,6 +1,6 @@
-target_sources(
-    PRIVATE
-        TclWrapper.cpp
-	TclInterpreter.cpp
-)
+#target_sources(OPS_Interpreter
+#    PRIVATE
+#        TclWrapper.cpp
+#	TclInterpreter.cpp
+#)
 

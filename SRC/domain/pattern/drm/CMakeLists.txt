@@ -17,7 +17,7 @@ target_sources(OPS_DRM
 	DRMInputHandler.h
 	PlaneDRMInputHandler.h
 )
-if (OPS_OPTION_HDF5)
+if (OPS_Use_HDF5)
 target_sources(OPS_DRM
     PRIVATE
         H5DRM.cpp

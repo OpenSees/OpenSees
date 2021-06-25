@@ -1,6 +1,6 @@
 add_library(material OBJECT)
 
-target_sources(G3_SysOfEqn
+target_sources(G3_Material
     PRIVATE
       Material.cpp
     PUBLIC

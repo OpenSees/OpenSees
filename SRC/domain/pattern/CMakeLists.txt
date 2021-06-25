@@ -50,12 +50,12 @@ target_sources(OPS_Domain
         PeerMotion.h
         PeerNGAMotion.h
 )
-target_sources(OPS_Tcl
-    PRIVATE
-        TclSeriesCommand.cpp
-        TclSeriesIntegratorCommand.cpp
-        TclPatternCommand.cpp
-)
+#target_sources(OPS_Tcl
+#    PRIVATE
+#        TclSeriesCommand.cpp
+#        TclSeriesIntegratorCommand.cpp
+#        TclPatternCommand.cpp
+#)
 
 target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 

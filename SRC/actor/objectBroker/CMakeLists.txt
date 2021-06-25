@@ -1,4 +1,4 @@
-target_sources(G3_SysOfEqn
+target_sources(G3_Actor
     PRIVATE
       FEM_ObjectBroker.cpp
     PUBLIC

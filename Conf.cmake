@@ -11,25 +11,21 @@
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-#project(
-#                              OpenSees
-#)
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/etc/cmake)
-#set(OPS_EXTERN_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/)
-#set(OPS_EXTERNALS_DIR ${PROJECT_SOURCE_DIR}/ext/)
-#set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/src/)
+project(
+                              OpenSees
+)
 include(OpenSeesFunctions)
-#------------------------------------------------------------------------------
+#==============================================================================
 #                           Select Executable
 #
-#------------------------------------------------------------------------------
+#==============================================================================
 set(OPS_FINAL_TARGET "OpenSeesTcl" 
     CACHE STRING "OpenSees final target"
 )
-#------------------------------------------------------------------------------
+#==============================================================================
 #                            Basic Switches
 #
-#------------------------------------------------------------------------------
+#==============================================================================
 option(FMK
     "Special FMK Code"                                       OFF)
 
@@ -38,31 +34,35 @@ option(OPS_THREADSAFE
 
 # Component Libraries
 #--------------------------------------
+
+option(OPS_Use_RELIABILITY   
+    "Include reliability"                                    OFF)
+
+option(OPS_Use_PFEM 
+    "Include PFEM library"                                   OFF)
+
+option(OPS_Use_DRM
+    "DRM lib"                                                OFF)
+
+option(OPS_Use_HDF5
+    "HDF5 Dependent Code"                                    OFF)
+
+option(OPS_Use_Thermal
+    "Include thermal components"                             OFF)
+
+option(OPS_Use_RENDERER
+    "Include renderer"                                        ON)
+
 option(OPS_MATERIAL_UNIAXIAL_PY 
     "Include PY material library"                            OFF)
 
 option(OPS_MATERIAL_UNIAXIAL_SNAP 
     "Include snap material library"                          OFF)
 
-option(OPS_OPTION_RELIABILITY   
-    "Include reliability"                                    OFF)
-
-option(OPS_OPTION_PFEM 
-    "Include PFEM library"                                   OFF)
-
-option(OPS_OPTION_HDF5
-    "HDF5 Dependent Code"                                    OFF)
-
-option(OPS_OPTION_THERMAL
-    "Include thermal components"                             OFF)
-
-option(OPS_OPTION_RENDERER
-     "Include renderer"                                      OFF)
-
-#------------------------------------------------------------------------------
+#==============================================================================
 #                            Properties
 #
-#------------------------------------------------------------------------------
+#==============================================================================
 
 define_property(TARGET
     PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
@@ -70,9 +70,10 @@ define_property(TARGET
     FULL_DOCS  "..."
 )
 
-#----------------------------------------------------------------
+#==============================================================================
 #                      External Libraries
-#----------------------------------------------------------------
+#
+#==============================================================================
 # Synopsis
 # - opensees_load(<PACKAGE> [BUILD|FIND|SEARCH|PATHS] [<PATHS>])
 #
@@ -88,19 +89,59 @@ opensees_load(TCL
 	LIBRARY /home/claudio/miniconda3/lib/libtcl8.6.so
 	INCLUDE /home/claudio/miniconda3/include 
 )
-opensees_load(BLAS                                         SEARCH)
 
-opensees_load(LAPACK                                       SEARCH)
+opensees_load(BLAS                                         #SEARCH)
+    LIBRARY /home/claudio/lib/libBlas.a
+)
+#opensees_load(CBLAS                                        SEARCH)
 
+opensees_load(LAPACK                                       #SEARCH)
+    LIBRARY /home/claudio/lib/libLapack.a
+)
 opensees_load(ARPACK                                       SEARCH)
 
 opensees_load(METIS                                        SEARCH)
 
-#opensees_load(SUPERLU                                      SEARCH)
+opensees_load(SUPERLU                                      #SEARCH)
+    LIBRARY /home/claudio/lib/libSuperLU.a
+    INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
+)
 
-#opensees_load(HDF5                                         SEARCH)
+opensees_load(HDF5                                         SEARCH)
 
 
+#==============================================================================
+#                           Select Element Libraries
+#
+# Each element in this list ows and associated macro definition
+#==============================================================================
+set(OPS_Element_List
+
+    OPS_Element_absorbentBoundaries
+    OPS_Element_adapter
+    OPS_Element_beam3d
+    OPS_Element_beamWithHinges
+    OPS_Element_catenaryCable
+    OPS_Element_componentElement
+    OPS_Element_dispBeamColumnInt
+    OPS_Element_elastomericBearing
+    OPS_Element_feap
+    OPS_Element_frictionBearing
+    OPS_Element_generic
+    OPS_Element_gradientInelasticBeamColumn
+    OPS_Element_joint
+    OPS_Element_LHMYS
+    OPS_Element_mixedBeamColumn
+    OPS_Element_mvlem
+    OPS_Element_PFEMElement
+    OPS_Element_PML
+    OPS_Element_pyMacro
+    OPS_Element_RockingBC
+    OPS_Element_shell
+    OPS_Element_surfaceLoad
+    OPS_Element_updatedLagrangianBeamColumn
+    OPS_Element_UP_ucsd
+)
 
 # NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
@@ -159,13 +200,9 @@ include_directories(${OPS_SRC_DIR}
 )
 
 
-
+# Temporary fix
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 
-
-#
-# build
-#
-#add_subdirectory(${OPS_SRC_DIR})
 
 

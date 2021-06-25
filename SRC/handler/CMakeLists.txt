@@ -1,6 +1,6 @@
 #add_library(handler OBJECT)
 
-target_sources(G3_SysOfEqn
+target_sources(G3_Handler
     PRIVATE
 	OPS_Stream.cpp
         StandardStream.cpp
@@ -27,4 +27,4 @@ target_sources(G3_SysOfEqn
         ChannelStream.h
 )
 
-target_include_directories(G3_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Handler PUBLIC $(CMAKE_CURRENT_LIST_DIR))

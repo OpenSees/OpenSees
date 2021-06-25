@@ -1,7 +1,7 @@
 
-add_library(domain OBJECT)
+#add_library(domain OBJECT)
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(component)
 add_subdirectory(domain)
