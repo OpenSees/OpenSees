@@ -18,27 +18,31 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.0 $
-// $Date: 2016-1-27  $
-
 // Written: Minjie Zhu
 //
-// Description: This class defines the Particle class
 //
 
-#include "Particle.h"
+#include "BCell.h"
 
-size_t Particle::curr_tag = 1;
+#include "BNode.h"
 
-Particle::Particle()
-    : coord(),
-      velocity(),
-      accel(),
-      pressure(0),
-      pdot(0),
-      gtag(0),
-      updated(false),
-      dt(0.0),
-      tag(curr_tag++) {}
+BCell::BCell() : pts(), type(BACKGROUND_FLUID), bnodes(), bindices() {}
 
-Particle::~Particle() {}
+void BCell::add(Particle* pt) { pts.push_back(pt); }
+
+void BCell::setType(BackgroundType t) { type = t; }
+
+BackgroundType BCell::getType() const { return type; }
+
+VParticle& BCell::getPts() { return pts; }
+
+std::vector<BNode*>& BCell::getNodes() { return bnodes; }
+
+std::vector<VInt>& BCell::getIndices() { return bindices; }
+
+void BCell::addNode(BNode* bnode, const VInt& index) {
+    bnodes.push_back(bnode);
+    bindices.push_back(index);
+}
+
+void BCell::clearParticles() { pts.clear(); }
