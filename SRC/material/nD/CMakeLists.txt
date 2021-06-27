@@ -48,6 +48,7 @@ target_sources(OPS_Material
 	CycLiqCPSPPlaneStrain.cpp
 	WrapperNDMaterial.cpp
 	InitStressNDMaterial.cpp
+	IncrementalElasticIsotropicThreeDimensional.cpp
 	ConcreteMcftNonLinear5.cpp
 	ConcreteMcftNonLinear7.cpp
 	CapPlasticity.cpp
@@ -115,6 +116,7 @@ target_sources(OPS_Material
 	CycLiqCPSPPlaneStrain.h
 	WrapperNDMaterial.h
 	InitStressNDMaterial.h
+	IncrementalElasticIsotropicThreeDimensional.h
 	ConcreteMcftNonLinear5.h
 	ConcreteMcftNonLinear7.h
 	CapPlasticity.h

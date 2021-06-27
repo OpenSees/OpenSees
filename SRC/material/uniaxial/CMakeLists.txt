@@ -58,6 +58,7 @@ target_sources(G3_Material
 
 target_sources(OPS_Material
     PRIVATE
+      ASD_SMA_3K.cpp
       BackboneMaterial.cpp
       BarSlipMaterial.cpp
       BilinearOilDamper.cpp
@@ -102,6 +103,7 @@ target_sources(OPS_Material
       HookGap.cpp
       HyperbolicGapMaterial.cpp
       HystereticMaterial.cpp
+      HystereticPoly.cpp
       ImpactMaterial.cpp
       InitStrainMaterial.cpp
       InitStressMaterial.cpp
@@ -151,9 +153,11 @@ target_sources(OPS_Material
       UniaxialJ2Plasticity.cpp
       ViscousDamper.cpp
       ViscousMaterial.cpp
+      WrapperUniaxialMaterial.cpp
       c14-SK-M.f
       pyUCLA.cpp
     PUBLIC
+      ASD_SMA_3K.h
       BackboneMaterial.h
       BarSlipMaterial.h
       BilinearOilDamper.h
@@ -201,6 +205,7 @@ target_sources(OPS_Material
       HookGap.h
       HyperbolicGapMaterial.h
       HystereticMaterial.h
+      HystereticPoly.h
       ImpactMaterial.h
       InitStrainMaterial.h
       InitStressMaterial.h

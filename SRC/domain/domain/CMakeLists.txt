@@ -14,6 +14,12 @@ target_sources(G3_Domain
 	SubdomainIter.h
 )
 
+target_sources(OPS_ASDEA 
+	PRIVATE DomainModalProperties.cpp
+	PUBLIC DomainModalProperties.h
+)
+
+
 target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(single)

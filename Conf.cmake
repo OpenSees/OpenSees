@@ -33,7 +33,7 @@ option(OPS_Use_Reliability
     "Include reliability"                                    OFF)
 
 option(OPS_Use_Thermal
-    "Include thermal components"                             OFF)
+    "Include thermal components"                              ON)
 
 option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
@@ -41,8 +41,11 @@ option(OPS_Use_Graphics
 option(OPS_Use_PFEM 
     "Include PFEM library"                                    ON)
 
+option(OPS_Use_ASDEA
+    "Include ASDEA library"                                   ON)
+
 option(OPS_Use_DRM
-    "DRM lib"                                                OFF)
+    "DRM lib"                                                 ON)
 
 option(OPS_Use_HDF5
     "HDF5 Dependent Code"                                    OFF)

@@ -79,6 +79,7 @@ target_sources(OPS_Analysis
        TRBDF2.cpp
        TRBDF3.cpp
        WilsonTheta.cpp
+       StagedNewmark.cpp
        GimmeMCK.cpp
     PUBLIC
        CentralDifferenceAlternative.h
@@ -116,6 +117,7 @@ target_sources(OPS_Analysis
        TRBDF2.h
        TRBDF3.h
        WilsonTheta.h
+       StagedNewmark.h
        GimmeMCK.h
 )
 

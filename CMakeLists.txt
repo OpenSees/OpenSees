@@ -165,6 +165,7 @@ include_directories(
 # Temporary fix
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/incl)
+include_directories(${TCL_INCLUDE_DIRS})
 
 
 #==============================================================================
@@ -210,7 +211,7 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
 add_library(G3) 
-add_library(OpenSees         EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp)
+add_library(OpenSees         EXCLUDE_FROM_ALL )
 add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesMP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
@@ -249,6 +250,12 @@ target_link_libraries(G3
 #----------------------------
 # OpenSees
 #----------------------------
+target_sources(OpenSees
+    PRIVATE
+        ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp
+        ${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp
+)
 target_link_libraries(OpenSees
     #OPS_Paraview
     OPS_ConvergenceTest
@@ -312,7 +319,8 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
-	PRIVATE OPS_Tcl ${OPS_Element_List} OpenSees  ${CMAKE_DL_LIBS}
+	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
+        ${SUPERLU_LIBRARIES}
 )
 
 #----------------------------
@@ -357,9 +365,10 @@ endif()
 # Renderer
 #----------------------------
 if (OPS_Use_Graphics)
+    message("OPS >>> Including OPS_Graphics option")
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Renderer)
 else()
-	add_compile_definitions(_NOGRAPHICS)
+    add_compile_definitions(_NOGRAPHICS)
 endif()
 
 #----------------------------
@@ -374,14 +383,15 @@ endif()
 # ASDEA
 #----------------------------
 if (OPS_Use_ASDEA)
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_ASDEA)
+    target_link_libraries(${OPS_FINAL_TARGET}  OPS_ASDEA)
 endif()
 
 #----------------------------
 # PFEM
 #----------------------------
 if (OPS_Use_PFEM)
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_PFEM)
+    message("OPS >>> Including OPS_PFEM option")
+    target_link_libraries(${OPS_FINAL_TARGET}  OPS_PFEM)
 endif()
 
 #----------------------------
@@ -402,13 +412,16 @@ endif()
 # Thermal
 #----------------------------
 if (OPS_Use_Thermal)
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_Thermal)
+    message("OPS >>> Including OPS_Thermal option")
+    #target_link_libraries(${OPS_FINAL_TARGET} PUBLIC OPS_Thermal)
+    target_link_libraries(OpenSees OPS_Thermal)
 endif()
 
 #----------------------------
 # DRM
 #----------------------------
 if (OPS_Use_DRM)
+    message("OPS >>> Including OPS_DRM option")
     target_sources(OPS_Tcl 
 	PRIVATE
 	   ${OPS_SRC_DIR}/domain/pattern/drm/TclPatternCommand.cpp

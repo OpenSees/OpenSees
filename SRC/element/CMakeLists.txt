@@ -52,6 +52,11 @@ add_subdirectory(gradientInelasticBeamColumn)
 add_subdirectory(updatedLagrangianBeamColumn)
 
 add_subdirectory(fourNodeQuad)
+add_subdirectory(twoNodeLink)
+
+add_subdirectory(nonlinearBeamColumn)
+
+add_subdirectory(tetrahedron)
 
 add_subdirectory(frictionBearing)
 add_subdirectory(elastomericBearing)
