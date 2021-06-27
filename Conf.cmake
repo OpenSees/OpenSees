@@ -89,24 +89,24 @@ opensees_load(TCL
     INCLUDE /home/claudio/miniconda3/include 
 )
 
-opensees_load(BLAS                                         #SEARCH)
-    LIBRARY /home/claudio/lib/libBlas.a
-)
+opensees_load(BLAS                                         SEARCH)
+	#LIBRARY /home/claudio/lib/libBlas.a
+	#)
 
-opensees_load(LAPACK                                       #SEARCH)
-    LIBRARY /home/claudio/lib/libLapack.a
-)
+opensees_load(LAPACK                                       SEARCH)
+#LIBRARY /home/claudio/lib/libLapack.a
+#)
 
-opensees_load(SUPERLU                                      #SEARCH)
-    LIBRARY /home/claudio/lib/libSuperLU.a
-    INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
-)
+opensees_load(SUPERLU                                      SEARCH)
+	#LIBRARY /home/claudio/lib/libSuperLU.a
+    	#INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
+	#)
 
 opensees_load(ARPACK                                       SEARCH)
 
 opensees_load(METIS                                        SEARCH)
 
-opensees_load(HDF5                                         SEARCH)
+opensees_load(HDF5                                           FIND)
 
 
 #==============================================================================

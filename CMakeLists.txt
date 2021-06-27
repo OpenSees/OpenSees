@@ -166,6 +166,17 @@ include_directories(
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 include_directories(${TCL_INCLUDE_DIRS})
+file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
+	${OPS_SRC_DIR}/*.h
+)
+set(OPS_INCLUDE_DIRS "")
+foreach(filepath ${ops_include_files})
+    get_filename_component(dir_path ${filepath} PATH)
+    set(OPS_INCLUDE_DIRS ${OPS_INCLUDE_DIRS} ${dir_path})
+endforeach()
+list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
+include_directories(${OPS_INCLUDE_DIRS})
+message(${OPS_INCLUDE_DIRS})
 
 
 #==============================================================================
