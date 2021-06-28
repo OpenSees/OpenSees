@@ -243,8 +243,8 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   dData2[0] = 0.0;
   dData2[1] = 0.0;
   int sDataLength = 40;
-  char *sData  = new char[sDataLength];
-  char *sData2 = new char[sDataLength];
+  //char *sData  = new char[sDataLength];
+  //char *sData2 = new char[sDataLength];
   int numData;
 
   // Check the number of dimensions
@@ -279,7 +279,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   int transfTag = iData[5];
 
   // Get the section
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(secTag);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);
   if (theSection == 0) {
     opserr << "WARNING section with tag " << secTag << "not found for element " << eleTag << endln;
     return 0;
@@ -291,7 +291,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   }
 
   // Get the coordinate transformation
-  CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+  CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
   if (theTransf == 0) {
     opserr << "WARNING geometric transformation with tag " << transfTag << "not found for element " << eleTag << endln;
     return 0;
@@ -305,10 +305,11 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
 
   // Loop through remaining arguments to get optional input
   while ( OPS_GetNumRemainingInputArgs() > 0 ) {
-    if ( OPS_GetStringCopy(&sData) != 0 ) {
-      opserr << "WARNING invalid input";
-      return 0;
-    }
+    const char *sData = OPS_GetString();
+    //if ( OPS_GetStringCopy(&sData) != 0 ) {
+    //  opserr << "WARNING invalid input";
+    //  return 0;
+    //}
 
     if ( strcmp(sData,"-mass") == 0 ) {
       numData = 1;
@@ -319,10 +320,11 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
       massDens = dData[0];
 
     } else if ( strcmp(sData,"-integration") == 0 ) {
-      if ( OPS_GetStringCopy(&sData2) != 0 ) {
-        opserr << "WARNING invalid input, want: -integration $intType";
-        return 0;
-      }
+      const char *sData2 = OPS_GetString();
+      //if ( OPS_GetStringCopy(&sData2) != 0 ) {
+      //  opserr << "WARNING invalid input, want: -integration $intType";
+      //  return 0;
+      //}
 
       if (strcmp(sData2,"Lobatto") == 0) {
         beamIntegr = new LobattoBeamIntegration();
@@ -350,6 +352,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
         opserr << "WARNING invalid integration type, element: " << eleTag;
         return 0;
       }
+      delete [] sData2;
 
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
@@ -371,6 +374,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
 	} else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
+    delete [] sData;
   }
 
 
@@ -391,8 +395,6 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   delete[] sections;
   if (beamIntegr != 0)
 	  delete beamIntegr;
-  delete[] sData; //This is temporary. See how to deal with charactor inputs in ForceBeamColume3d.cpp
-  delete[] sData2;//or we can delete these charactor arrays after we understand these options of inputs for beam integration
 
   return theElement;
 }
