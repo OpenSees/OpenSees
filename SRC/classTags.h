@@ -644,6 +644,7 @@
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
 #define ELE_TAG_MixedBeamColumn2d 30766
 #define ELE_TAG_MixedBeamColumn3d 30765
+#define ELE_TAG_MixedBeamColumnAsym3d 30767
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81

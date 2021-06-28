@@ -53,9 +53,6 @@ class Response;
 class BeamIntegration;
 class SectionForceDeformation;
 
-
-#define ELE_TAG_MixedBeamColumnAsym3d 30765
-
 class MixedBeamColumnAsym3d : public Element
 {
   public:
