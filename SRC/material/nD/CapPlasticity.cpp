@@ -446,7 +446,7 @@ int CapPlasticity::getResponse (int responseID, Information &matInfo)  {
     return 0;
   }
   
-  return NDMateria::getResponse(responseID, matInfo);
+  return NDMaterial::getResponse(responseID, matInfo);
   
 };
 
