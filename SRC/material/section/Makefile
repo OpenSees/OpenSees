@@ -21,6 +21,7 @@ OBJS       = SectionForceDeformation.o \
 	FiberSection2dThermal.o \
 	FiberSection3d.o \
 	FiberSectionWarping3d.o \
+	FiberSectionAsym3d.o \
 	FiberSectionGJ.o \
 	Bidirectional.o \
 	Elliptical.o \

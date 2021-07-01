@@ -188,6 +188,9 @@ extern void *OPS_MasonPan12(void);
 extern void *OPS_MasonPan3D(void);
 extern void *OPS_BeamGT(void);
 
+extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
+extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
+
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
@@ -1481,6 +1484,34 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }
 
+  //Xinlong Du
+  else if ((strcmp(argv[1], "dispBeamColumnAsym") == 0) || (strcmp(argv[1], "dispBeamAsym")) == 0) {
+  Element* theEle = 0;
+  if (OPS_GetNDM() == 3)
+      theEle = (Element*)OPS_DispBeamColumnAsym3dTcl();
+  if (theEle != 0)
+      theElement = theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+
+  }
+
+  else if ((strcmp(argv[1], "mixedBeamColumnAsym") == 0) || (strcmp(argv[1], "mixedBeamAsym") == 0)) {
+  Element* theEle = 0;
+  if (OPS_GetNDM() == 3)
+      theEle = (Element*)OPS_MixedBeamColumnAsym3dTcl();
+  if (theEle != 0)
+      theElement = theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+
+  }
+  //Xinlong Du
+  
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {

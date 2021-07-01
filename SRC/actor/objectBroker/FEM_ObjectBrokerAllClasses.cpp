@@ -138,6 +138,7 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
+#include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
@@ -259,6 +260,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
+#include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -713,6 +716,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d(); 
+
+	case ELE_TAG_DispBeamColumnAsym3d:
+		return new DispBeamColumnAsym3d();    //Xinlong Du
+
+	case ELE_TAG_MixedBeamColumnAsym3d:
+		return new MixedBeamColumnAsym3d();   //Xinlong Du
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
@@ -1366,6 +1375,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
       
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
+
+	case SEC_TAG_FiberSectionAsym3d:
+		return new FiberSectionAsym3d(); //Xinlong Du
 
 	case SEC_TAG_ElasticPlateSection:
 		return new ElasticPlateSection();
