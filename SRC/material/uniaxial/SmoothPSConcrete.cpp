@@ -611,7 +611,7 @@ void SmoothPSConcrete::Print (OPS_Stream& s, int flag)
 
 
 /*Response* 
-SmoothPSConcrete::setResponse(const char **argv, int argc, Information &matInfo)
+SmoothPSConcrete::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 
 
@@ -628,7 +628,7 @@ SmoothPSConcrete::setResponse(const char **argv, int argc, Information &matInfo)
   
  
   //by default, See if the response is one of the defaults
-  Response *res = UniaxialMaterial::setResponse(argv, argc, matInfo);
+  Response *res = UniaxialMaterial::setResponse(argv, argc, output);
   if (res != 0)      return res;
   else	return 0;
 }
