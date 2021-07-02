@@ -60,7 +60,7 @@ OPS_PFEMIntegrator(void)
     TransientIntegrator *theIntegrator = 0;
 
     int dispFlag = 2;
-    int init = 1;
+    int init = 2;
     double dData[2] = {-1.0, -1.0};
     int numData = 2;
     if (OPS_GetNumRemainingInputArgs() > 1) {
@@ -262,10 +262,10 @@ int PFEMIntegrator::newStep(double deltaT)
         *U = *Ut;
         *Udotdot = *Utdotdot;
         if (gamma>0 && beta>0) {
-            U->addVector(1.0, *Utdot, deltaT*(1-beta/gamma));
+            U->addVector(1.0, *Utdot, deltaT*(1.0-beta/gamma));
             U->addVector(1.0, *Udot, deltaT*beta/gamma);
             U->addVector(1.0, *Utdotdot, deltaT*deltaT*(0.5-beta/gamma));
-            Udotdot->addVector((1-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
+            Udotdot->addVector((1.0-1.0/gamma), *Udot, 1.0/(gamma*deltaT));
             Udotdot->addVector(1.0, *Utdot, -1.0/(gamma*deltaT));
         } else {
             U->addVector(1.0, *Udot, deltaT);
@@ -369,13 +369,6 @@ PFEMIntegrator::formTangent(int statFlag)
     DOF_Group *dofPtr;
 
     while ((dofPtr = theDOFs()) != 0) {
-        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
-        if (soe != 0) {
-            if (soe->skipFluid() && soe->isFluidID(dofPtr->getID())) {
-                continue;
-            }
-        }
-
         if (theLinSOE->addA(dofPtr->getTangent(this),dofPtr->getID()) <0) {
             opserr << "TransientIntegrator::formTangent() - failed to addA:dof\n";
             result = -1;
@@ -386,12 +379,6 @@ PFEMIntegrator::formTangent(int statFlag)
     FE_EleIter &theEles2 = theModel->getFEs();
     FE_Element *elePtr;
     while((elePtr = theEles2()) != 0)     {
-        PFEMLinSOE* soe = dynamic_cast<PFEMLinSOE*>(getLinearSOE());
-        if (soe != 0) {
-            if (soe->skipFluid() && soe->isFluidID(elePtr->getID())) {
-                continue;
-            }
-        }
         if (theLinSOE->addA(elePtr->getTangent(this),elePtr->getID()) < 0) {
             opserr << "TransientIntegrator::formTangent() - failed to addA:ele\n";
             result = -2;
