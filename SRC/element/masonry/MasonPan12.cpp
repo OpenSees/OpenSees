@@ -124,8 +124,8 @@ void* OPS_MasonPan12()
 
   if (thePanel == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
-    delete [] theMaterial;
-	delete [] theMaterial2;
+    delete theMaterial;
+	delete theMaterial2;
     return 0;
   }
 
@@ -251,6 +251,7 @@ MasonPan12::~MasonPan12()
     if (theMaterial[i] != 0)
         delete theMaterial[i];    
 }
+	delete [] theMaterial;
 	delete theMaterial2;
 }
 

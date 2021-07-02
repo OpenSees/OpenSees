@@ -134,9 +134,9 @@ void* OPS_BeamGT()
 
   if (theBeam == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
-    delete [] theMaterial;
-	delete [] theMaterial2;
-	delete [] theMaterial3;
+    delete theMaterial;
+	delete theMaterial2;
+	delete theMaterial3;
 	return 0;
   }
 
@@ -226,6 +226,7 @@ BeamGT::~BeamGT()
 	    if (theMaterial[i] != 0)
         delete theMaterial[i];    
 	 }
+	 delete [] theMaterial;
  	delete theMaterial2;
 	delete theMaterial3;
 }

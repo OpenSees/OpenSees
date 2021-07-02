@@ -124,8 +124,8 @@ OPS_MasonPan3D()
 
   if (thePanel == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
-    delete [] theMaterial;
-	delete [] theMaterial2;
+    delete theMaterial;
+	delete theMaterial2;
     return 0;
   }
 
@@ -243,6 +243,7 @@ MasonPan3D::~MasonPan3D()
     if (theMaterial[i] != 0)
         delete theMaterial[i];    
 }
+	delete [] theMaterial;
 	delete theMaterial2;
 }
 
