@@ -178,6 +178,7 @@ private:
 	double Theta_y_x, cTheta_y_x;
 	double MpeProject_x, cMpeProject_x;
 
+	double Mi_temp;
 };
 
 
