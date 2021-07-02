@@ -84,6 +84,7 @@ class ENTMaterial : public UniaxialMaterial
     
   private:
     double E;
+    double commitStrain;
     double trialStrain;
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////

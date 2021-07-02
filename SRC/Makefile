@@ -514,6 +514,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnWarping3d.o \
+	$(FE)/element/dispBeamColumn/DispBeamColumnAsym3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.o \
@@ -534,6 +535,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/gradientInelasticBeamColumn/TclGradientInelasticBeamColumnCommand.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn2d.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn3d.o \
+	$(FE)/element/mixedBeamColumn/MixedBeamColumnAsym3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuadWithSensitivity.o \
@@ -1022,6 +1024,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/FiberSectionGJThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
 	$(FE)/material/section/FiberSectionWarping3d.o \
+	$(FE)/material/section/FiberSectionAsym3d.o \
 	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
 	$(FE)/material/section/ParallelSection.o \

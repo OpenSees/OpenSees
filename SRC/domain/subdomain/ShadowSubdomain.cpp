@@ -1093,6 +1093,15 @@ ShadowSubdomain::revertToStart(void)
 {
   msgData(0) = ShadowActorSubdomain_revertToStart;
   this->sendID(msgData);
+
+#ifdef _PARALLEL_PROCESSING
+  // CYPE Software: revertToStart() invokes update on ActorSubdomain which asks for barrierCheck.
+  {
+      int res = this->barrierCheckIN();
+      this->barrierCheckOUT(res);
+  }
+#endif
+
   if (this->recvID(msgData) != 0) {
     opserr << "ShadowSubdomain::revertToStart ERROR ERROR\n";
   }
