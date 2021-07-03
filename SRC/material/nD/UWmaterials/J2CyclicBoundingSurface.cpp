@@ -26,6 +26,8 @@
 //            
 
 #include <J2CyclicBoundingSurface.h>
+#include <J2CyclicBoundingSurface3D.h>
+#include <J2CyclicBoundingSurfacePlaneStrain.h>
 #include <Information.h>
 #include <Parameter.h>
 #include <string.h>
@@ -544,12 +546,34 @@ void J2CyclicBoundingSurface::Print(OPS_Stream & s, int flag)
 {
 }
 
-NDMaterial*
-J2CyclicBoundingSurface::getCopy(void)
-{
+NDMaterial* J2CyclicBoundingSurface::getCopy(void)
+{	
 	opserr << "J2CyclicBoundingSurface::getCopy -- subclass responsibilitynot implemented.\n";
 	exit(-1);
 	return 0;
+}
+
+NDMaterial*
+J2CyclicBoundingSurface::getCopy(const char* type)
+{
+	if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
+		J2CyclicBoundingSurface3D* clone;
+		clone = new J2CyclicBoundingSurface3D(this->getTag(), m_shear, m_bulk, m_su, m_density, m_h_par, m_m_par, m_h0_par, m_chi, m_beta);
+		return clone;
+	}
+	else if (strcmp(type, "PlaneStrain2D") == 0 || strcmp(type, "PlaneStrain") == 0) {
+		J2CyclicBoundingSurfacePlaneStrain* clone;
+		clone = new J2CyclicBoundingSurfacePlaneStrain(this->getTag(), m_shear, m_bulk, m_su, m_density, m_h_par, m_m_par, m_h0_par, m_chi, m_beta);
+		return clone;
+	}
+	else {
+		opserr << "J2CyclicBoundingSurface::getCopy failed to get copy: " << type << endln;
+		return 0;
+	}
+
+	//opserr << "J2CyclicBoundingSurface::getCopy -- subclass responsibilitynot implemented.\n";
+	//exit(-1);
+	//return 0;
 }
 
 const char*
@@ -564,21 +588,6 @@ J2CyclicBoundingSurface::getOrder(void) const
 	opserr << "J2CyclicBoundingSurface::getOrder -- subclass responsibility\n";
 	exit(-1);
 	return 0;
-}
-
-
-NDMaterial * J2CyclicBoundingSurface::getCopy(const char * type)
-{
-
-	if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
-		J2CyclicBoundingSurface *clone;
-		clone = new J2CyclicBoundingSurface(this->getTag(), m_shear, m_bulk, m_su, m_density, m_h_par, m_m_par, m_h0_par, m_chi, m_beta);
-		return clone;
-	}
-	else {
-		opserr << "J2CyclicBoundingSurface::getCopy failed to get copy: " << type << endln;
-		return 0;
-	}
 }
 
 int
@@ -676,46 +685,45 @@ J2CyclicBoundingSurface::recvSelf(int commitTag, Channel &theChannel,
 	return 0;
 }
 
-// get the strain and integrate plasticity equations
-int
-J2CyclicBoundingSurface::setTrialStrain(const Vector &strain_from_element)
-{
-	m_strain_np1 = strain_from_element;
-	this->integrate();
-
-	return 0;
-}
-
-// unused trial strain functions
-int
-J2CyclicBoundingSurface::setTrialStrain(const Vector &v, const Vector &r)
-{
-	m_strainRate_n1 = r;
-	m_strain_np1 = v;
-	this->integrate();
-
-	return 0;
-}
-
-// send back the strain
-const Vector&
-J2CyclicBoundingSurface::getStrain()
-{
-	return m_strain_np1;
-}
-
-// send back the stress 
-const Vector&
-J2CyclicBoundingSurface::getStress()
-{
-	//return m_stress_np1;
-	return m_stress_t_n1;
-}
-
+//// get the strain and integrate plasticity equations
+//int
+//J2CyclicBoundingSurface::setTrialStrain(const Vector &strain_from_element)
+//{
+//	m_strain_np1 = strain_from_element;
+//	this->integrate();
+//
+//	return 0;
+//}
+//
+//// unused trial strain functions
+//int
+//J2CyclicBoundingSurface::setTrialStrain(const Vector &v, const Vector &r)
+//{
+//	m_strainRate_n1 = r;
+//	m_strain_np1 = v;
+//	this->integrate();
+//
+//	return 0;
+//}
+//
+//// send back the strain
+//const Vector&
+//J2CyclicBoundingSurface::getStrain()
+//{
+//	return m_strain_np1;
+//}
+//
+//// send back the stress 
+//const Vector&
+//J2CyclicBoundingSurface::getStress()
+//{
+//	//return m_stress_np1;
+//	return m_stress_t_n1;
+//}
 
 // send back the tangent 
 const Matrix&
-J2CyclicBoundingSurface::getTangent()
+J2CyclicBoundingSurface::calcTangent()
 {
 	// Force elastic response
 	if (m_ElastFlag == 0) {
@@ -759,8 +767,8 @@ J2CyclicBoundingSurface::getTangent()
 }
 
 // send back the tangent 
-const Matrix&
-J2CyclicBoundingSurface::getInitialTangent()
-{
-	return m_Ce;
-}
+//const Matrix&
+//J2CyclicBoundingSurface::calcInitialTangent()
+//{
+//	return m_Ce;
+//}

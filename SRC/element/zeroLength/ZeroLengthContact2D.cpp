@@ -623,7 +623,7 @@ ZeroLengthContact2D::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-ZeroLengthContact2D::setResponse(const char **argv, int argc, Information &eleInformation)
+ZeroLengthContact2D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
      if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
      return new ElementResponse(this, 1, resid);
@@ -642,7 +642,7 @@ ZeroLengthContact2D::setResponse(const char **argv, int argc, Information &eleIn
      return new ElementResponse(this, 4, gap);
 
   	else
-	return 0;
+	  return Element::setResponse(argv, argc, output);
 
 }
 
@@ -662,7 +662,7 @@ ZeroLengthContact2D::getResponse(int responseID, Information &eleInfo)
   return eleInfo.setDouble(this->gap);
 
  else
-	 return -1;
+   return Element::getResponse(responseID, eleInfo);
 }
 
 
