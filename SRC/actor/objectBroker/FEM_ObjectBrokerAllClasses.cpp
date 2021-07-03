@@ -190,6 +190,9 @@
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
+#include "J2CyclicBoundingSurface.h"
+#include "J2CyclicBoundingSurface3D.h"
+#include "J2CyclicBoundingSurfacePlaneStrain.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
@@ -1506,6 +1509,15 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PM4Silt:
 	return new PM4Silt();
+
+  case ND_TAG_J2CyclicBoundingSurface:
+	  return new J2CyclicBoundingSurface();
+
+  case ND_TAG_J2CyclicBoundingSurface3D:
+	  return new J2CyclicBoundingSurface3D();
+  
+  case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
+	  return new J2CyclicBoundingSurfacePlaneStrain();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
