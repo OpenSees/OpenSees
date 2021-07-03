@@ -37,7 +37,7 @@ public:
 	virtual int	revertToLastCommit(void);
 	virtual YS_Evolution *getCopy(void) = 0;
 
-	virtual Response *setResponse(char **argv, int argc, Information &info)=0;
+	virtual Response *setResponse(char **argv, int argc, OPS_Stream &output)=0;
 	virtual int 	getResponse(int responseID, Information &info)=0;
 	virtual int	 displaySelf(Renderer &theViewer, int displayMode, float fact)=0;
 

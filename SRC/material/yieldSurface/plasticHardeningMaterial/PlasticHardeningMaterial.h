@@ -26,7 +26,7 @@ class PlasticHardeningMaterial : public Material
 			 double getTrialValue(void);
     virtual PlasticHardeningMaterial *getCopy (void) = 0;
 
-    virtual Response *setResponse (char **argv, int argc, Information &matInformation);
+    virtual Response *setResponse (char **argv, int argc, OPS_Stream &output);
     virtual int getResponse (int responseID, Information &matInformation);
 	virtual void Print(OPS_Stream &s, int flag =0);
 

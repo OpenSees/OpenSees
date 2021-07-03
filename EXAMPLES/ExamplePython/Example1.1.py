@@ -29,11 +29,7 @@ wipe()
 # create ModelBuilder (with two-dimensions and 2 DOF/node)
 model("BasicBuilder", "-ndm",2, "-ndf",2)
 
-# set default units
-defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
-
 # create nodes & add to Domain - command: node nodeId xCrd yCrd
-#node(1, 0.0,    0.0, "-disp",0.0,0.0, "-vel", 0.0,0.0, "-mass", 0.0,0.0)
 node(1, 0.0,    0.0)
 node(2, 144.0,  0.0)
 node(3, 168.0,  0.0)
