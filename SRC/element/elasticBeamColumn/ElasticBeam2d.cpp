@@ -71,6 +71,8 @@ void *OPS_ElasticBeam2d(const ID &info) {
     double data[3];
     int transfTag;
     double mass = 0.0, alpha = 0.0, depth = 0.0;
+    int dampingTag = 0;
+    Damping *theDamping = 0;
     int cMass = 0;
     int release = 0;
     int numData = 0;
@@ -166,6 +168,15 @@ to get element data
                 }
             } else if (type == "-cMass") {
                 cMass = 1;
+	          } else if (type == "-damp") {
+	              if(OPS_GetNumRemainingInputArgs() > 0) {
+                    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+	          	      theDamping = OPS_getDamping(dampingTag);
+                    if(theDamping == 0) {
+	                      opserr<<"damping not found\n";
+	                      return 0;
+                    }
+	              }
             }
         }
     }
@@ -239,11 +250,11 @@ to get element data
         }
         return new ElasticBeam2d(iData[0], iData[1], iData[2],
                                  *theSection, *theTransf, alpha,
-                                 depth, mass, cMass, release);
+                                 depth, mass, cMass, release, theDamping);
     } else {
         return new ElasticBeam2d(iData[0], data[0], data[1], data[2],
                                  iData[1], iData[2], *theTransf,
-                                 alpha, depth, mass, cMass, release);
+                                 alpha, depth, mass, cMass, release, theDamping);
     }
 }
 
