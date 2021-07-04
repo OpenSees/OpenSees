@@ -294,7 +294,10 @@
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
 
+#ifdef _OPS_Element_PFEM
 #include "PFEMElement/PFEMElement2D.h"
+#endif // _OPS_Element_PFEM
+
 #include "RockingBC/RockingBC.h"
 
 #include "LinearCrdTransf2d.h"
@@ -458,7 +461,11 @@
 #include "NewmarkHSFixedNumIter.h"
 #include "NewmarkHSIncrLimit.h"
 #include "NewmarkHSIncrReduct.h"
+
+#ifdef _OPS_Element_PFEM
 #include "PFEMIntegrator.h"
+#endif // _OPS_Element_PFEM
+
 #include "TRBDF2.h"
 #include "TRBDF3.h"
 #include "WilsonTheta.h"
@@ -876,8 +883,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
+#ifdef _OPS_Element_PFEM
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
+#endif // _OPS_Element_PFEM
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
@@ -2164,8 +2173,10 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
+#ifdef _OPS_Element_PFEM
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
+#endif // _OPS_Element_PFEM
 
     case INTEGRATOR_TAGS_TRBDF2:  
 	     return new TRBDF2();

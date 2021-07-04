@@ -147,14 +147,17 @@ extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
+#ifdef _OPS_Element_PFEM
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
+#endif
 #ifdef _HAVE_LHNMYS
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
+
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_CatenaryCableElement(void);
@@ -1133,7 +1136,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
   }
-
+#ifdef _OPS_Element_PFEM
   else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
@@ -1168,7 +1171,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 	  return TCL_ERROR;
       }
   }
-
+#endif
   else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
       if (theEle != 0) {
