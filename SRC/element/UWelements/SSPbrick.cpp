@@ -1366,6 +1366,7 @@ SSPbrick::GetStab(void)
 
 	// constitutive constants from material
 	const Matrix &CmatI = theMaterial->getInitialTangent();
+
 	double C1 = CmatI(0,0);
 	double C2 = CmatI(0,1);
 	double C3 = CmatI(3,3);

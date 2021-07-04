@@ -1563,7 +1563,7 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
-    ti = (TransientIntegrator*)OPS_Explicitdifference();
+    ti = (TransientIntegrator*)OPS_ExplicitDifference();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";

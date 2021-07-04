@@ -1158,10 +1158,10 @@ SimpleContact3D::Print(OPS_Stream &s, int flag)
 
 
 Response*
-SimpleContact3D::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
+SimpleContact3D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 #ifdef DEBUG
-        opserr << "SimpleContact3D::setResponse(const char **argv, int argc, Information &eleInfo): " << MyTag << endln;
+        opserr << "SimpleContact3D::setResponse(const char **argv, int argc, OPS_Stream &output): " << MyTag << endln;
 #endif
     if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
       return new ElementResponse(this, 1, Vector(3));

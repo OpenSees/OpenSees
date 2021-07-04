@@ -375,7 +375,7 @@ ZeroLengthInterface2D::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-ZeroLengthInterface2D::setResponse(const char **argv, int argc, Information &eleInformation)
+ZeroLengthInterface2D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
     return new ElementResponse(this, 1, resid);
@@ -389,7 +389,7 @@ ZeroLengthInterface2D::setResponse(const char **argv, int argc, Information &ele
     } else if (strcmp(argv[0],"gap")== 0)
     return new ElementResponse(this, 4, normal_gap);
   else
-    return 0;
+    return Element::setResponse(argv, argc, output);
 }
 
 int
@@ -404,7 +404,7 @@ ZeroLengthInterface2D::getResponse(int responseID, Information &eleInfo)
  else if (responseID == 4)
 	 return eleInfo.setVector(this->normal_gap);
  else
-	 return -1;
+   return Element::getResponse(responseID, eleInfo);
 }
 
 // Private methods

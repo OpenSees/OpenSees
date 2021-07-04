@@ -211,6 +211,7 @@ extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
 extern void *OPS_AlphaOSGeneralized_TP(void);
+extern void *OPS_ExplicitDifference(void);
 extern void *OPS_CentralDifference(void);
 extern void *OPS_CentralDifferenceAlternative(void);
 extern void *OPS_CentralDifferenceNoDamping(void);
@@ -5244,12 +5245,19 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
+  else if (strcmp(argv[1],"ExplicitDifference") == 0) {
+    theTransientIntegrator = (TransientIntegrator *)OPS_ExplicitDifference();
+    
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
   else if (strcmp(argv[1],"CentralDifference") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifference();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }
+  }  
   
   else if (strcmp(argv[1],"CentralDifferenceAlternative") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceAlternative();
