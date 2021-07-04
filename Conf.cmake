@@ -97,7 +97,7 @@ opensees_load(LAPACK                                       SEARCH)
 #LIBRARY /home/claudio/lib/libLapack.a
 #)
 
-opensees_load(SUPERLU                                      SEARCH)
+#opensees_load(SUPERLU                                      SEARCH)
 	#LIBRARY /home/claudio/lib/libSuperLU.a
     	#INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
 	#)

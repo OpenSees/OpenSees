@@ -24,6 +24,8 @@ cmake_minimum_required(VERSION 3.18)
 project(
                               OpenSees
 )
+
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/ETC/cmake)
 set(OPS_EXTERN_SOURCE_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_EXTERNALS_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
@@ -176,7 +178,7 @@ foreach(filepath ${ops_include_files})
 endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 include_directories(${OPS_INCLUDE_DIRS})
-message(${OPS_INCLUDE_DIRS})
+#message(${OPS_INCLUDE_DIRS})
 
 
 #==============================================================================
@@ -195,10 +197,11 @@ add_library(G3_Utilities           OBJECT)
 add_library(G3_Element             OBJECT)
 add_library(G3_Material            OBJECT)
 add_library(G3_ModelBuilder        OBJECT)
-add_library(G3_Numerics            OBJECT 
+add_library(G3_Numerics            OBJECT)
+target_link_libraries(G3_Numerics
     ${ARPACK_LIBRARIES}
-    ${SUPERLU_LIBRARIES}
-    ${UMFPACK_LIBRARIES}
+    #${SUPERLU_LIBRARIES}
+    #${UMFPACK_LIBRARIES}
     ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES}
 )
 
@@ -265,7 +268,7 @@ target_sources(OpenSees
     PRIVATE
         ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp
         ${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp
+        ${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp
 )
 target_link_libraries(OpenSees
     #OPS_Paraview
@@ -331,7 +334,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
 	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
-        ${SUPERLU_LIBRARIES}
+        #${SUPERLU_LIBRARIES}
 )
 
 #----------------------------
