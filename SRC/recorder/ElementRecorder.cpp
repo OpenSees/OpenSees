@@ -249,13 +249,14 @@ OPS_ElementRecorder()
             nargrem = 1 + OPS_GetNumRemainingInputArgs();
             data = new const char *[nargrem];
             data[0] = option;
-	    argv = new char*[nargrem];
+	    //argv = new char*[nargrem];
 	    char buffer[128];
             for (int i = 1; i < nargrem; i++) {
-	      argv[i] = new char[128];
+	      data[i] = new char[128];
 
 	      // Turn everything in to a string for setResponse
-	      data[i] = OPS_GetStringFromAll(buffer, 128);
+	      //data[i] = OPS_GetStringFromAll(buffer, 128);
+	      OPS_GetStringFromAll((char*)data[i], 128);
 	    }
         }
     }
@@ -287,11 +288,11 @@ OPS_ElementRecorder()
         data, nargrem, echoTimeFlag, *domain, *theOutputStream,
         dT, &dofs);
 
-    if (argv != 0) {
+    if (data != 0) {
       for (int i=1; i<nargrem; ++i) {
-	delete [] argv[i];
+	delete [] data[i];
       }
-      delete [] argv;
+      delete [] data;
     }
     
     return recorder;
