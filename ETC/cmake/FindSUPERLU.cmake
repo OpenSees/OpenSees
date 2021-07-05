@@ -25,10 +25,12 @@ find_path(SUPERLU_INCLUDES
   SRC
 )
 
+message("Looking for SuperLu in $ENV{SUPERLU_DIR}")
 find_library(SUPERLU_LIBRARIES
   NAMES "superlu_5.2.1" "superlu_5.2" "superlu_5.1.1" "superlu_5.1" "superlu_5.0" "superlu_4.3" "superlu_4.2" "superlu_4.1" "superlu_4.0" "superlu_3.1" "superlu_3.0" "superlu"
-  PATHS $ENV{SUPERLUDIR} ${LIB_INSTALL_DIR}
+  PATHS $ENV{SUPERLU_DIR} ${LIB_INSTALL_DIR}
   PATH_SUFFIXES lib)
+
 
 if(SUPERLU_INCLUDES AND SUPERLU_LIBRARIES)
 

@@ -30,9 +30,8 @@ target_sources(ARPACK PUBLIC
 set_target_properties(${PROJECT_NAME}
                       PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-#target_link_libraries(${PROJECT_NAME})
 
-# Expose B's public includes to other subprojects through cache variable.
+# Expose public includes to other subprojects through cache variable.
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
     CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
 

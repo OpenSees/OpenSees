@@ -31,7 +31,7 @@ function (opensees_load lib_name)
         PARSE_ARGV 1
         OPS_LOAD_ARG # prefix of output variables
         "SEARCH;BUILD;FIND" # list of names of the boolean arguments (only defined ones will be true)
-	"LIBRARY;INCLUDE;VENDOR" # list of names of mono-valued arguments
+	    "BUNDLED;LIBRARY;INCLUDE" # list of names of mono-valued arguments
         "PATHS" # list of names of multi-valued arguments (output variables are lists)
         #${ARGN} # arguments of the function to parse, here we take the all original ones
     )
@@ -42,6 +42,11 @@ function (opensees_load lib_name)
         set(${OPS_PKG_FOUND_VAR} TRUE PARENT_SCOPE)
         opensees_build(${lib_name})
         return()
+    elseif(OPS_LOAD_ARG_BUNDLED)
+        include_directories("${OPS_LOAD_ARG_BUNDLED}")
+	    set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_BUNDLED}/SRC PARENT_SCOPE)
+        set("${lib_name}_LIBRARIES" ${lib_name} PARENT_SCOPE)
+
     elseif(OPS_LOAD_ARG_LIBRARY)
 	    message("OPS >>> ${lib_name}")
 	    set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY} PARENT_SCOPE)
@@ -69,8 +74,8 @@ function (opensees_load lib_name)
 endfunction()
 
 function (opensees_build lib_name)
-    add_subdirectory("${OPS_EXTERNALS_DIR}/${lib_name}")
-    include_directories("${OPS_EXTERNALS_DIR}/${lib_name}") 
+    add_subdirectory("${OPS_BUNDLED_DIR}/${lib_name}")
+    include_directories("${OPS_BUNDLED_DIR}/${lib_name}") 
     message(${${lib_name}_LIBRARIES})
 endfunction()
 

@@ -1,5 +1,3 @@
-include ../../Makefile.def
-
 #######################################################################
 #  This is the makefile to create a library for C-BLAS.
 #  The files are organized as follows:
