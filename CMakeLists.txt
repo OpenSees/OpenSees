@@ -169,7 +169,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 include_directories(${TCL_INCLUDE_DIRS})
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
-	${PROJECT_SOURCE_DIR}/*.h
+	${OPS_SRC_DIR}/*.h
+	${OPS_BUNDLED_DIR}/*.h
 )
 set(OPS_INCLUDE_DIRS "")
 foreach(filepath ${ops_include_files})
