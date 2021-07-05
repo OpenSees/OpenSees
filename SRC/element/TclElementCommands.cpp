@@ -192,8 +192,10 @@ extern void* OPS_LehighJoint2d(void);
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
 
+#ifdef _OPS_Element_FEAP
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
+#endif // _OPS_Element_FEAP
 
 extern int
 Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -1477,13 +1479,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
 
+#ifdef _OPS_Element_FEAP
   if (strcmp(argv[1],"fTruss") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addFeapTruss(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
 
-  } else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
+  } else 
+#endif // _OPS_Element_FEAP
+
+  if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
     int result = TclModelBuilder_addDispBeamColumnInt(clientData, interp, argc, argv,
 						   theTclDomain, theTclBuilder);
     return result;

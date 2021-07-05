@@ -158,13 +158,18 @@
 #include "J2ThreeDimensional.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
+
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
 //#include "ConcreteS.h"
 #include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
+
+#ifdef _OPS_Element_FEAP
 #include "feap/FeapMaterial03.h"
+#endif // _OPS_Element_FEAP
+
 #include "CycLiqCP3D.h"
 #include "CycLiqCPPlaneStrain.h"
 #include "CycLiqCPSP3D.h"
@@ -1483,8 +1488,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
+#ifdef _OPS_Element_FEAP
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
+#endif // _OPS_Element_FEAP
 
   case ND_TAG_ContactMaterial2D:
     return new ContactMaterial2D();			
