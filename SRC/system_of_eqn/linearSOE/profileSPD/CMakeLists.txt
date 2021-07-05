@@ -1,5 +1,5 @@
 
-target_sources(OPS_SysOfEqn
+target_sources(G3_SysOfEqn
     PRIVATE
 	ProfileSPDLinSOE.cpp
 	ProfileSPDLinSolver.cpp

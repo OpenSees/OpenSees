@@ -1,8 +1,10 @@
 target_sources(G3_Actor
     PRIVATE
       FEM_ObjectBroker.cpp
+      FEM_ObjectBrokerAllClasses.cpp
     PUBLIC
       FEM_ObjectBroker.h
+      FEM_ObjectBrokerAllClasses.h
 )
 
 if (OSP_OPTION_BROKER_ALL)

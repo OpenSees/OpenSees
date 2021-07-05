@@ -34,13 +34,13 @@ set(OPS_BUNDLED_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/SRC/)
 include(OpenSeesFunctions)
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
-#message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-#message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}")
-#message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-#message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-#message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-#message("OPS >>> TCL:     ${TCL_LIBRARIES}")
- 
+message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
+message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}")
+message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
+message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
+message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
+message("OPS >>> TCL:     ${TCL_LIBRARY}")
+set(TCL_LIBRARIES ${TCL_LIBRARY})
 
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
     G3 OpenSeesTcl OpenSeesMP OpenSeesSP OpenSeesPy
@@ -168,6 +168,8 @@ include_directories(
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 include_directories(${TCL_INCLUDE_DIRS})
+include_directories(${MYSQL_INCLUDE_DIR})
+
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
 	${OPS_SRC_DIR}/*.h
 	${OPS_BUNDLED_DIR}/*.h
@@ -204,7 +206,8 @@ target_link_libraries(G3_Numerics INTERFACE
     ${ARPACK_LIBRARIES}
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
-    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
+    -llapack -lblas -lamd
 )
 
 # Core OpenSees
@@ -217,6 +220,7 @@ add_library(OPS_Thermal            OBJECT)
 add_library(OPS_Element            OBJECT)
 add_library(OPS_Material           OBJECT)
 add_library(OPS_Damage             OBJECT)
+add_library(OPS_Database           OBJECT)
 
 # Optional Extensions
 add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
@@ -224,7 +228,7 @@ add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_ASDEA              OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
-add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
+#add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL )
@@ -249,10 +253,10 @@ add_subdirectory(${OPS_SRC_DIR})
 # G3
 #----------------------------
 target_link_libraries(G3 
-    G3_Actor 
     G3_Analysis 
     G3_ModelBuilder
     G3_Element
+    G3_Actor 
     G3_Material
     G3_Domain
     G3_Matrix
@@ -271,12 +275,21 @@ target_link_libraries(G3
 #----------------------------
 target_sources(OpenSees
     PRIVATE
+	${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp
         ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp
-        ${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp
         ${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp
+	${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp
+        ${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp
 )
 target_link_libraries(OpenSees
     #OPS_Paraview
+    OPS_Renderer
+    OPS_Database
     OPS_ConvergenceTest
     OPS_Element
     OPS_Material
@@ -288,7 +301,8 @@ target_link_libraries(OpenSees
     OPS_Analysis
     OPS_Domain
     OPS_Api
-    G3 
+    G3
+    ${MYSQL_LIBRARIES}
 )
 
 target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_DIRS})
@@ -300,7 +314,7 @@ file(GLOB_RECURSE OPS_TCL_SOURCES CONFIGURE_DEPENDS
 	${OPS_SRC_DIR}/Tcl*.cpp 
 )
 # TODO: Properly list out Tcl files
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX "${OPS_SRC_DIR}/database/.*")
+list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX "${OPS_SRC_DIR}/database/TclBerkeley.*")
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*PFEM.*")
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/reliability/.*")
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/drm/.*")
@@ -311,8 +325,10 @@ list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*Interpreter.*")
 
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/petsc/.*")
 
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclFeViewer.*")
+#list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclFeViewer.*")
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclVideoP.*")
+
+list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclFeap.*")
 
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*nonlinearBeamColumn.*")
 list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclNewUniaxialMaterial.*")

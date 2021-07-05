@@ -31,6 +31,7 @@ target_sources(OPS_Element_forceBeamColumn
 	MidDistanceBeamIntegration.cpp
 	#GaussQBeamIntegration.cpp
 	gaussq.f
+	d1mach.f
     PUBLIC
 	ForceBeamColumn2d.h
 	ForceBeamColumn3d.h

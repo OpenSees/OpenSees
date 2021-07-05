@@ -1,28 +1,30 @@
 target_sources(G3_Analysis
     PRIVATE
-      DomainUser.cpp 
       Analysis.cpp 
-      StaticAnalysis.cpp 
-      TransientAnalysis.cpp
       DirectIntegrationAnalysis.cpp 
       DomainDecompositionAnalysis.cpp
-      SubstructuringAnalysis.cpp	
+      DomainUser.cpp 
       EigenAnalysis.cpp
-      VariableTimeStepDirectIntegrationAnalysis.cpp
+      ResponseSpectrumAnalysis.cpp
+      StaticAnalysis.cpp 
       StaticDomainDecompositionAnalysis.cpp 
+      SubstructuringAnalysis.cpp	
+      TransientAnalysis.cpp
       TransientDomainDecompositionAnalysis.cpp 
+      VariableTimeStepDirectIntegrationAnalysis.cpp
     PUBLIC
-      DomainUser.h 
       Analysis.h 
-      StaticAnalysis.h 
-      TransientAnalysis.h
       DirectIntegrationAnalysis.h 
       DomainDecompositionAnalysis.h
-      SubstructuringAnalysis.h	
+      DomainUser.h 
       EigenAnalysis.h
-      VariableTimeStepDirectIntegrationAnalysis.h
+      ResponseSpectrumAnalysis.h
+      StaticAnalysis.h 
       StaticDomainDecompositionAnalysis.h 
+      SubstructuringAnalysis.h	
+      TransientAnalysis.h
       TransientDomainDecompositionAnalysis.h 
+      VariableTimeStepDirectIntegrationAnalysis.h
 )
 target_sources(OPS_PFEM
     PRIVATE

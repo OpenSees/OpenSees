@@ -5,11 +5,13 @@ target_sources(graph
       AMDNumberer.cpp
       SimpleNumberer.cpp
       GraphNumberer.cpp
+      MyRCM.cpp
     PUBLIC
       RCM.h
       AMDNumberer.h
       SimpleNumberer.h
       GraphNumberer.h
+      MyRCM.h
 )
 
 

@@ -5,6 +5,7 @@ target_sources(OPS_Element
 	FourNodeQuad.cpp
 	FourNodeQuad3d.cpp
 	FourNodeQuadWithSensitivity.cpp
+	EightNodeQuad.cpp
 	NineNodeMixedQuad.cpp
 	NineNodeQuad.cpp
 	SixNodeTri.cpp
@@ -14,6 +15,7 @@ target_sources(OPS_Element
 	FourNodeQuad.h
 	FourNodeQuad3d.h
 	FourNodeQuadWithSensitivity.h
+	EightNodeQuad.h
 	NineNodeMixedQuad.h
 	NineNodeQuad.h
 	SixNodeTri.h

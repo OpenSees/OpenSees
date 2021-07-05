@@ -1,21 +1,20 @@
-
 target_sources(OPS_Renderer
     PRIVATE
-        AGL_Device.cpp
+        #AGL_Device.cpp
         Clipping.cpp
         db.cpp
         Device.cpp
         DofColorMap.cpp
         gMatrix.cpp
-        main.cpp
-        mainTriangle.cpp
-        OpenGlDevice.cpp
-        OpenGlRenderer.cpp
+	#main.cpp
+	#mainTriangle.cpp
+	#OpenGlDevice.cpp
+	#OpenGlRenderer.cpp
         PlainMap.cpp
         Projection.cpp
         Renderer.cpp
         Scan.cpp
-        simple.c
+	#simple.c
         View.cpp
         Viewport.cpp
         VrmlViewer.cpp
@@ -24,13 +23,13 @@ target_sources(OPS_Renderer
         X11Device.cpp
         X11Renderer.cpp
     PUBLIC
-        AGL_Device.h
+        #AGL_Device.h
         Clipping.h
         ColorMap.h
         Device.h
         DofColorMap.h
         OpenGlDevice.h
-        OpenGLRenderer.h
+	#OpenGLRenderer.h
         PlainMap.h
         Projection.h
         Renderer.h

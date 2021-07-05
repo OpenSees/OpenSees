@@ -19,6 +19,7 @@ target_sources(G3_Analysis
        Newmark1.cpp
        NewmarkExplicit.cpp
        StaticIntegrator.cpp
+       StagedLoadControl.cpp
        TransientIntegrator.cpp
     PUBLIC
        AlphaOS.h
@@ -40,6 +41,7 @@ target_sources(G3_Analysis
        Newmark1.h
        NewmarkExplicit.h
        StaticIntegrator.h
+       StagedLoadControl.h
        TransientIntegrator.h
 )
 target_sources(OPS_Analysis

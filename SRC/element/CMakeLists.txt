@@ -4,10 +4,12 @@ target_sources(G3_Element
     PRIVATE
       Element.cpp
       ElementalLoad.cpp
+      WrapperElement.cpp
       #Information.cpp
     PUBLIC
       Element.h
       ElementalLoad.h
+      WrapperElement.h
       #Information.h
 )
 
@@ -30,6 +32,7 @@ add_subdirectory(zeroLength)
 add_subdirectory(brick)
 
 add_subdirectory(truss)
+
 
 add_subdirectory(beam2d)
 add_subdirectory(beam3d)
@@ -57,6 +60,7 @@ add_subdirectory(twoNodeLink)
 add_subdirectory(nonlinearBeamColumn)
 
 add_subdirectory(tetrahedron)
+add_subdirectory(triangle)
 
 add_subdirectory(frictionBearing)
 add_subdirectory(elastomericBearing)

@@ -4,7 +4,8 @@ target_sources(G3_Utilities
 	FileIter.cpp 
 	File.cpp 
 	SimulationInformation.cpp 
-	StringContainer.cpp 
+	StringContainer.cpp
+	PeerNGA.cpp
     PUBLIC
 	Timer.h 
 	FileIter.h 

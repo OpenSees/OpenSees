@@ -1,6 +1,5 @@
 add_subdirectory(domain)
 add_subdirectory(damage)
-add_subdirectory(actor)
 add_subdirectory(analysis)
 add_subdirectory(convergenceTest)
 add_subdirectory(coordTransformation)
@@ -25,5 +24,8 @@ add_subdirectory(renderer)
 
 add_subdirectory(api)
 
+add_subdirectory(actor)
+
+add_subdirectory(database)
 
 

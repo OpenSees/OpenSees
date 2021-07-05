@@ -132,6 +132,7 @@ target_sources(OPS_Material
       SeriesMaterial.cpp
       ShearPanelMaterial.cpp
       SimpleFractureMaterial.cpp
+      SLModel.cpp
       SmoothPSConcrete.cpp
       StainlessECThermal.cpp
       Steel01.cpp
@@ -233,6 +234,7 @@ target_sources(OPS_Material
       SeriesMaterial.h
       ShearPanelMaterial.h
       SimpleFractureMaterial.h
+      SLModel.h
       SmoothPSConcrete.h
       StainlessECThermal.h
       Steel01.h

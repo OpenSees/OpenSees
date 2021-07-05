@@ -9,15 +9,17 @@ target_sources(OPS_Material
       DruckerPrager3D.cpp
       DruckerPragerPlaneStrain.cpp
       InitialStateAnalysisWrapper.cpp
+      J2CyclicBoundingSurface.cpp
+      J2CyclicBoundingSurface3D.cpp
+      J2CyclicBoundingSurfacePlaneStrain.cpp
       ManzariDafalias.cpp
       ManzariDafalias3D.cpp
-      ManzariDafaliasPlaneStrain.cpp
-      ManzariDafaliasRO.cpp
       ManzariDafalias3DRO.cpp
+      ManzariDafaliasPlaneStrain.cpp
       ManzariDafaliasPlaneStrainRO.cpp
+      ManzariDafaliasRO.cpp
       PM4Sand.cpp
       PM4Silt.cpp
-      J2CyclicBoundingSurface.cpp
     PUBLIC
       BoundingCamClay.h
       BoundingCamClay3D.h
@@ -28,15 +30,17 @@ target_sources(OPS_Material
       DruckerPrager3D.h
       DruckerPragerPlaneStrain.h
       InitialStateAnalysisWrapper.h
+      J2CyclicBoundingSurface.h
+      J2CyclicBoundingSurface3D.h
+      J2CyclicBoundingSurfacePlaneStrain.h
       ManzariDafalias.h
       ManzariDafalias3D.h
-      ManzariDafaliasPlaneStrain.h
-      ManzariDafaliasRO.h
       ManzariDafalias3DRO.h
+      ManzariDafaliasPlaneStrain.h
       ManzariDafaliasPlaneStrainRO.h
+      ManzariDafaliasRO.h
       PM4Sand.h
       PM4Silt.h
-      J2CyclicBoundingSurface.h
 )
 
 target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))

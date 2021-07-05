@@ -1,6 +1,7 @@
 target_sources(G3_Analysis
     PRIVATE
       EquiSolnAlgo.cpp 
+      ExpressNewton.cpp
       Linear.cpp 
       NewtonRaphson.cpp
       ModifiedNewton.cpp 
@@ -18,6 +19,7 @@ target_sources(G3_Analysis
       BisectionLineSearch.cpp
     PUBLIC
       EquiSolnAlgo.h 
+      ExpressNewton.h
       Linear.h 
       NewtonRaphson.h
       ModifiedNewton.h 

@@ -2,6 +2,7 @@ target_sources(OPS_Element
     PRIVATE
 	DispBeamColumn2d.cpp
 	DispBeamColumn3d.cpp
+	DispBeamColumnAsym3d.cpp
 	DispBeamColumn2dThermal.cpp
 	DispBeamColumn3dThermal.cpp
 	DispBeamColumnNL2d.cpp
@@ -13,6 +14,7 @@ target_sources(OPS_Element
     PUBLIC
 	DispBeamColumn2d.h
 	DispBeamColumn3d.h
+	DispBeamColumnAsym3d.h
 	DispBeamColumn2dThermal.h
 	DispBeamColumn3dThermal.h
 	DispBeamColumnNL2d.h
