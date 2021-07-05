@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 #==============================================================================
 # 
 #        OpenSees -- Open System For Earthquake Engineering Simulation
@@ -86,7 +86,7 @@ opensees_add_cxx_flag(
 
 
 #----------------------------------------------------------------
-# OS Configuration
+# OS Specific Configuration
 #----------------------------------------------------------------
 
 if(APPLE)
@@ -167,7 +167,7 @@ include_directories(
 # Temporary fix
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/incl)
-include_directories(${TCL_INCLUDE_DIRS})
+include_directories(${TCL_INCLUDE_PATH})
 include_directories(${MYSQL_INCLUDE_DIR})
 
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
@@ -305,7 +305,7 @@ target_link_libraries(OpenSees
     ${MYSQL_LIBRARIES}
 )
 
-target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_DIRS})
+target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 
 #----------------------------
 # OPS_Tcl
@@ -340,8 +340,8 @@ target_sources(OPS_Tcl PRIVATE
 	"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
 	"${OPS_SRC_DIR}/tcl/commands.cpp"
 )
-message("TCL INCLUDE: ${TCL_INCLUDE_DIRS}")
-target_include_directories(OPS_Tcl PUBLIC ${TCL_INCLUDE_DIRS})
+
+target_include_directories(OPS_Tcl PUBLIC ${TCL_INCLUDE_PATH})
 target_link_libraries(OPS_Tcl PRIVATE ${TCL_LIBRARIES})
 
 target_compile_definitions(OPS_Tcl PUBLIC _TCL85)
@@ -353,11 +353,9 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 #----------------------------
 # OpenSeesTcl
 #----------------------------
-#target_include_directories(OpenSeesTcl PUBLIC ${OPS_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesTcl 	
 	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
-        #${SUPERLU_LIBRARIES}
 )
 
 #----------------------------
