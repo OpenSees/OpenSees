@@ -36,7 +36,9 @@ include(OpenSeesFunctions)
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
 message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}")
+
 message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
+
 message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
 message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
 message("OPS >>> TCL:     ${TCL_LIBRARY}")
@@ -207,7 +209,7 @@ target_link_libraries(G3_Numerics INTERFACE
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
     ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
-    -llapack -lblas -lamd
+    -lamd
 )
 
 # Core OpenSees

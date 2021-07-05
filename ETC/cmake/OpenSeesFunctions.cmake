@@ -51,16 +51,19 @@ function (opensees_load lib_name)
 	    message("OPS >>> ${lib_name}")
 	    set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY} PARENT_SCOPE)
 	    set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_INCLUDE} PARENT_SCOPE)
+
     elseif(OPS_LOAD_ARG_PATHS)
         message("Provided ${lib_name} paths are:")
         foreach(src ${OPS_LOAD_ARG_PATHS})
             message("- ${src}")
         endforeach(src)
         find_package(${lib_name} PATHS ${OPS_LOAD_ARG_PATHS})
+
     else()
         message("OPS>>> find_package(${lib_name})")
         find_package(${lib_name})
         message("OPS>>> status: ${OPS_PKG_FOUND_VAR}=${${OPS_PKG_FOUND_VAR}}")
+
     endif()
 
     if(OPS_LOAD_ARG_SEARCH)
@@ -71,6 +74,8 @@ function (opensees_load lib_name)
             set("${lib_name}_LIBRARIES" ${lib_name} PARENT_SCOPE)
         endif()
     endif()
+    set("${lib_name}_LIBRARIES"    ${${lib_name}_LIBRARIES}    PARENT_SCOPE)
+    set("${lib_name}_INCLUDE_DIRS" ${${lib_name}_INCLUDE_DIRS} PARENT_SCOPE)
 endfunction()
 
 function (opensees_build lib_name)
