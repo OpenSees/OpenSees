@@ -1367,6 +1367,9 @@
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionWarping3d.cpp">
       <Filter>section</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\FiberSectionAsym3d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2553,6 +2556,9 @@
       <Filter>nD\UWmaterials</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionWarping3d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\FiberSectionAsym3d.h">
       <Filter>section</Filter>
     </ClInclude>
   </ItemGroup>

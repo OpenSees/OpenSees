@@ -67,7 +67,7 @@ class J2CyclicBoundingSurface3D : public J2CyclicBoundingSurface
   const Matrix& getInitialTangent();
 
   private :
-
+  static Matrix tangent;
 };
 
 
