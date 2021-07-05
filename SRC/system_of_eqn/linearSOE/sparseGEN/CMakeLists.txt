@@ -16,31 +16,33 @@ target_sources(G3_SysOfEqn
 
 target_sources(OPS_PFEM
     PRIVATE
-        PFEMSolver.cpp
-        PFEMLinSOE.cpp
-        PFEMCompressibleSolver.cpp
         PFEMCompressibleLinSOE.cpp
-        PFEMSolver_LumpM.cpp
-        PFEMSolver_Umfpack.cpp
-        PFEMQuasiLinSOE.cpp
-        PFEMQuasiSolver.cpp
+        PFEMCompressibleSolver.cpp
         PFEMDiaLinSOE.cpp
         PFEMDiaSolver.cpp
+        PFEMLinSOE.cpp
+        PFEMQuasiLinSOE.cpp
+        PFEMQuasiSolver.cpp
+
+        PFEMSolver.cpp
         PFEMSolver_Laplace.cpp
         PFEMSolver_LumpM.cpp
+        PFEMSolver_LumpM.cpp
+        PFEMSolver_Umfpack.cpp
     PUBLIC
-        PFEMSolver.h
-        PFEMLinSOE.h
-        PFEMCompressibleSolver.h
         PFEMCompressibleLinSOE.h
-        PFEMSolver_LumpM.h
-        PFEMSolver_Umfpack.h
-        PFEMQuasiLinSOE.h
-        PFEMQuasiSolver.h
+        PFEMCompressibleSolver.h
         PFEMDiaLinSOE.h
         PFEMDiaSolver.h
+        PFEMLinSOE.h
+        PFEMQuasiLinSOE.h
+        PFEMQuasiSolver.h
+
+        PFEMSolver.h
         PFEMSolver_Laplace.h
         PFEMSolver_LumpM.h
+        PFEMSolver_LumpM.h
+        PFEMSolver_Umfpack.h
 )
 
 target_sources(OpenSeesMP

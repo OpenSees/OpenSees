@@ -39,7 +39,7 @@ option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
 
 option(OPS_Use_PFEM 
-    "Include PFEM library"                                    ON)
+    "Include PFEM library"                                   OFF)
 
 option(OPS_Use_ASDEA
     "Include ASDEA library"                                   ON)
@@ -89,18 +89,18 @@ opensees_load(TCL
     INCLUDE /home/claudio/miniconda3/include 
 )
 
-opensees_load(BLAS                                         SEARCH)
-	#LIBRARY /home/claudio/lib/libBlas.a
-	#)
+opensees_load(BLAS                                         #SEARCH)
+    LIBRARY /home/claudio/lib/libBlas.a
+)
 
-opensees_load(LAPACK                                       SEARCH)
-#LIBRARY /home/claudio/lib/libLapack.a
-#)
+opensees_load(LAPACK                                       #SEARCH)
+    LIBRARY /home/claudio/lib/libLapack.a
+)
 
-#opensees_load(SUPERLU                                      SEARCH)
-	#LIBRARY /home/claudio/lib/libSuperLU.a
-    	#INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
-	#)
+opensees_load(SUPERLU                                      #SEARCH)
+    LIBRARY /home/claudio/lib/libSuperLU.a
+    INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
+)
 
 opensees_load(ARPACK                                       SEARCH)
 

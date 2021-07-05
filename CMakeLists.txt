@@ -177,6 +177,7 @@ foreach(filepath ${ops_include_files})
     set(OPS_INCLUDE_DIRS ${OPS_INCLUDE_DIRS} ${dir_path})
 endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
+
 include_directories(${OPS_INCLUDE_DIRS})
 #message(${OPS_INCLUDE_DIRS})
 
@@ -197,12 +198,12 @@ add_library(G3_Utilities           OBJECT)
 add_library(G3_Element             OBJECT)
 add_library(G3_Material            OBJECT)
 add_library(G3_ModelBuilder        OBJECT)
-add_library(G3_Numerics            OBJECT)
-target_link_libraries(G3_Numerics
+add_library(G3_Numerics            INTERFACE)
+target_link_libraries(G3_Numerics INTERFACE
     ${ARPACK_LIBRARIES}
-    #${SUPERLU_LIBRARIES}
-    #${UMFPACK_LIBRARIES}
-    ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES}
+    ${SUPERLU_LIBRARIES}
+    ${UMFPACK_LIBRARIES}
+    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}
 )
 
 # Core OpenSees
@@ -226,7 +227,10 @@ add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL )
-add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
+add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL 
+    ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+    ${OPS_SRC_DIR}/tcl/tclMain.cpp
+)
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesMP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
@@ -332,7 +336,9 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 #----------------------------
 # OpenSeesTcl
 #----------------------------
-target_link_libraries(OpenSeesTcl
+#target_include_directories(OpenSeesTcl PUBLIC ${OPS_INCLUDE_DIRS})
+
+target_link_libraries(OpenSeesTcl 	
 	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
         #${SUPERLU_LIBRARIES}
 )
@@ -405,7 +411,7 @@ endif()
 #----------------------------
 if (OPS_Use_PFEM)
     message("OPS >>> Including OPS_PFEM option")
-    target_link_libraries(${OPS_FINAL_TARGET}  OPS_PFEM)
+    #target_link_libraries(${OPS_FINAL_TARGET}  OPS_PFEM)
 endif()
 
 #----------------------------
