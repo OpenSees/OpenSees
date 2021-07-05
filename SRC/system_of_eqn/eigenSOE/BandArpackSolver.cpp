@@ -15,6 +15,7 @@
 #include <FE_Element.h>
 #include <Integrator.h>
 #include <string.h>
+#include <f2c.h>
 
 BandArpackSolver::BandArpackSolver(int numE)
 :EigenSolver(EigenSOLVER_TAGS_BandArpackSolver),
