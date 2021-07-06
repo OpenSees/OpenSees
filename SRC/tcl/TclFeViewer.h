@@ -85,7 +85,7 @@ class TclFeViewer : public Recorder
 
 
     // methods invoked on the FE_Viewer
-    int displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth = 1); // default line width set here.
+    int displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth = 2); // default line width set here.
     int clearImage(void);
     int saveImage(const char *fileName);
     int saveImage(const char *imageName, const char *fileName);

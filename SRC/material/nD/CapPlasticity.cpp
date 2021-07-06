@@ -377,7 +377,6 @@ int CapPlasticity::sendSelf(int commitTag, Channel &theChannel)  {return 0;};
 int CapPlasticity::recvSelf(int commitTag, Channel &theChannel,  
 			    FEM_ObjectBroker &theBroker )  {return 0;};
 
-//Response * CapPlasticity::setResponse (const char **argv, int argc, Information &matInformation)  {
   
 Response*
 CapPlasticity::setResponse (const char **argv, int argc, OPS_Stream &output) {
@@ -404,7 +403,7 @@ CapPlasticity::setResponse (const char **argv, int argc, OPS_Stream &output) {
   }
   
   else
-    return 0;
+    return NDMaterial::setResponse(argv, argc, output);
   
   
 };
@@ -447,7 +446,7 @@ int CapPlasticity::getResponse (int responseID, Information &matInfo)  {
     return 0;
   }
   
-  return 0;
+  return NDMaterial::getResponse(responseID, matInfo);
   
 };
 
