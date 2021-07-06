@@ -7,70 +7,19 @@
 #                             All Rights Reserved
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
-#------------------------------------------------------------------------------
-
 #==============================================================================
-#                           Select Executable
+#                             External Libraries
 #
-#==============================================================================
-set(OPS_FINAL_TARGET "OpenSeesTcl" 
-    CACHE STRING "OpenSees final target"
-)
-#==============================================================================
-#                            Basic Switches
+# - BLAS_LIBRARIES
+# - BLAS_INCLUDE_DIRS
 #
-#==============================================================================
-option(FMK
-    "Special FMK Code"                                       OFF)
-
-option(OPS_THREADSAFE
-    "Only build thread safe components"                       ON)
-
-# Component Libraries
-#--------------------------------------
-
-option(OPS_Use_Reliability   
-    "Include reliability"                                    OFF)
-
-option(OPS_Use_Thermal
-    "Include thermal components"                              ON)
-
-option(OPS_Use_Graphics
-    "Include graphics"                                       OFF)
-
-option(OPS_Use_PFEM 
-    "Include PFEM library"                                   OFF)
-
-option(OPS_Use_ASDEA
-    "Include ASDEA library"                                   ON)
-
-option(OPS_Use_DRM
-    "DRM lib"                                                 ON)
-
-option(OPS_Use_HDF5
-    "HDF5 Dependent Code"                                    OFF)
-
-
-# TODO: Implement material options like elements
-option(OPS_MATERIAL_UNIAXIAL_PY 
-    "Include PY material library"                            OFF)
-
-option(OPS_MATERIAL_UNIAXIAL_SNAP 
-    "Include snap material library"                          OFF)
-
-#==============================================================================
-#                            Properties
+# - LAPACK_LIBRARIES
+# - LAPACK_INCLUDE_DIRS
 #
-#==============================================================================
-
-define_property(TARGET
-    PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
-    BRIEF_DOCS "Include functionality for using global interpreter"
-    FULL_DOCS  "..."
-)
-
-#==============================================================================
-#                      External Libraries
+# - ARPACK_LIBRARIES
+#
+# - SUPERLU_LIBRARIES
+# - SUPERLU_INCLUDE_DIRS
 #
 #==============================================================================
 # Synopsis
@@ -83,7 +32,7 @@ define_property(TARGET
 #           Version if not found.
 # - PATHS:  Provide specific paths for library.
 #
-#----------------------------------------------------------------
+#==============================================================================
 set(CONDA_DIR "C:/Users/claud/miniconda3")
 set(CONDA_ENV "c/Users/claud/miniconda3/envs/sim")
 
@@ -91,15 +40,16 @@ opensees_load(TCL                                          #FIND
 	LIBRARY ${CONDA_DIR}/Library/lib/tcl86t.lib
 	INCLUDE ${CONDA_DIR}/Library/include 
 )
+
 set(TCL_INCLUDE_PATH ${TCL_INCLUDE_DIRS})
 message("TCL: ${TCL_INCLUDE_PATH}")
 
 opensees_load(BLAS                                         SEARCH
-	#LIBRARY /home/claudio/lib/libBlas.a
+    #LIBRARY /home/claudio/lib/libBlas.a
 )
 
 opensees_load(LAPACK                                       SEARCH
-#LIBRARY /home/claudio/lib/libLapack.a
+    #LIBRARY /home/claudio/lib/libLapack.a
 )
 
 set(ENV{SUPERLU_DIR}  )
@@ -130,7 +80,6 @@ set(MYSQL_INCLUDE_DIR "${CONDA_ENV}/Library/include/mysql/")
 # Each element in this list ows and associated macro definition
 #==============================================================================
 set(OPS_Element_List
-
     #OPS_Element_PFEMElement
     #OPS_Element_beamWithHinges
     #OPS_Element_feap

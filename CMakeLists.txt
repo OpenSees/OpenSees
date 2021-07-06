@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 #==============================================================================
 # 
 #        OpenSees -- Open System For Earthquake Engineering Simulation
@@ -34,26 +34,54 @@ set(OPS_BUNDLED_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/SRC/)
 include(OpenSeesFunctions)
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
-message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}")
-
-message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-
-message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-message("OPS >>> TCL:     ${TCL_LIBRARY}")
-set(TCL_LIBRARIES ${TCL_LIBRARY})
 
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
     G3 OpenSeesTcl OpenSeesMP OpenSeesSP OpenSeesPy
 )
 
 #==============================================================================
+#                            OS Configuration
+#
+#==============================================================================
+if (UNIX)
+    include(OpenSeesDependenciesUnix)
+
+    if(APPLE)
+     message(STATUS ">>> MacOS")
+    
+    else()
+       message(STATUS ">>> LINUX")
+       add_compile_definitions(_LINUX _UNIX)
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
+    endif()
+endif()
+
+if(WIN32)
+    include(OpenSeesDependenciesBundled)
+    message(STATUS ">>> WIN32")
+endif()
+
+message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
+message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
+
+message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
+
+message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
+
+message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
+
+message("OPS >>> TCL:     ${TCL_LIBRARY}")
+set(TCL_LIBRARIES ${TCL_LIBRARY})
+
+message("OPS >>> AMD:     ${AMD_LIBRARIES}")
+
+
+#==============================================================================
 #                            General Setup
 #
 #==============================================================================
-##                            Properties
-#
+#                             Properties
+
 #define_property(TARGET
 #    PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
 #    BRIEF_DOCS "Include functionality for using global interpreter"
@@ -61,13 +89,10 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 #)
 
 
-#----------------------------------------------------------------
-# Compilers
-#----------------------------------------------------------------
-
 # Fortran
 #--------------------------------------
 enable_language(Fortran)
+
 
 # C++
 #--------------------------------------
@@ -88,29 +113,11 @@ opensees_add_cxx_flag(
 
 
 #----------------------------------------------------------------
-# OS Specific Configuration
-#----------------------------------------------------------------
-
-if(APPLE)
- message(STATUS ">>> MacOS")
-endif()
-
-if(UNIX AND NOT APPLE)
-   message(STATUS ">>> LINUX")
-   add_compile_definitions(_LINUX _UNIX)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
-endif()
-
-if(WIN32)
- message(STATUS ">>> WIN32")
-endif()
-
-#----------------------------------------------------------------
 # Global Includes
 #----------------------------------------------------------------
-#
+ 
 # include paths to main abstract classes
-#
+ 
 # NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
 include_directories(
@@ -209,7 +216,7 @@ target_link_libraries(G3_Numerics INTERFACE
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
     ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
-    -lamd
+    ${AMD_LIBRARIES}
 )
 
 # Core OpenSees
@@ -224,6 +231,8 @@ add_library(OPS_Material           OBJECT)
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
 
+
+
 # Optional Extensions
 add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
@@ -232,8 +241,13 @@ add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 #add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
+
+# Packaged libraries
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL )
+
+# Executables
+#------------------------------------------------------------------------------
 add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL 
     ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
@@ -242,8 +256,11 @@ add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesMP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
 add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
 
-# Build selected frontend by default
+
+# Set selected frontend to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
+
+
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
 
@@ -272,6 +289,7 @@ target_link_libraries(G3
     OPS_ConvergenceTest
     G3_Numerics 
 )
+
 #----------------------------
 # OpenSees
 #----------------------------

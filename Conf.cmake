@@ -62,53 +62,11 @@ option(OPS_MATERIAL_UNIAXIAL_SNAP
 #                            Properties
 #
 #==============================================================================
-
 define_property(TARGET
     PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
     BRIEF_DOCS "Include functionality for using global interpreter"
     FULL_DOCS  "..."
 )
-
-#==============================================================================
-#                      External Libraries
-#
-#==============================================================================
-# Synopsis
-# - opensees_load(<PACKAGE> [BUILD|FIND|SEARCH|PATHS] [<PATHS>])
-#
-# Options:
-# - BUILD:  Build OpenSees provided library
-# - FIND:   Use CMake to find library, fail if not found
-# - SEARCH: Try finding library with CMake, build OpenSees
-#           Version if not found.
-# - PATHS:  Provide specific paths for library.
-#
-#----------------------------------------------------------------
-opensees_load(TCL                                          FIND
-	#LIBRARY /home/claudio/miniconda3/lib/libtcl8.6.so
-	#INCLUDE /home/claudio/miniconda3/include 
-)
-
-opensees_load(BLAS                                         SEARCH
-	#LIBRARY /home/claudio/lib/libBlas.a
-)
-
-opensees_load(LAPACK                                       SEARCH
-#LIBRARY /home/claudio/lib/libLapack.a
-)
-
-opensees_load(SUPERLU                                      SEARCH
-#LIBRARY /home/claudio/lib/libSuperLU.a
-#INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
-)
-
-opensees_load(ARPACK                                       SEARCH)
-
-opensees_load(METIS                                        SEARCH)
-
-opensees_load(HDF5                                           FIND)
-
-opensees_load(MySQL                                          FIND)
 
 
 #==============================================================================
@@ -118,33 +76,36 @@ opensees_load(MySQL                                          FIND)
 #==============================================================================
 set(OPS_Element_List
 
-    #OPS_Element_PFEMElement
+    OPS_Element_truss
+    OPS_Element_beam3d
+    #OPS_Element_beam2d
+    OPS_Element_dispBeamColumnInt
+    OPS_Element_forceBeamColumn
+    OPS_Element_mixedBeamColumn
+
     #OPS_Element_beamWithHinges
-    #OPS_Element_feap
     OPS_Element_LHMYS
     OPS_Element_PML
     OPS_Element_RockingBC
     OPS_Element_UP_ucsd
     OPS_Element_absorbentBoundaries
     OPS_Element_adapter
-    OPS_Element_beam3d
-    #OPS_Element_beam2d
     OPS_Element_catenaryCable
     OPS_Element_componentElement
-    OPS_Element_dispBeamColumnInt
-    OPS_Element_forceBeamColumn
+
     OPS_Element_elastomericBearing
     OPS_Element_frictionBearing
+
     OPS_Element_generic
     OPS_Element_gradientInelasticBeamColumn
     OPS_Element_joint
-    OPS_Element_mixedBeamColumn
     OPS_Element_mvlem
     OPS_Element_pyMacro
     OPS_Element_shell
     OPS_Element_surfaceLoad
-    OPS_Element_truss
     OPS_Element_updatedLagrangianBeamColumn
+    #OPS_Element_feap
+    #OPS_Element_PFEMElement
 )
 
 
