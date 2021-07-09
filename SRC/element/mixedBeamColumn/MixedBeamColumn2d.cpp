@@ -241,6 +241,7 @@ void * OPS_MixedBeamColumn2d() {
     return 0;
   }
 
+  delete [] sections;
   return theElement;
 }
 
