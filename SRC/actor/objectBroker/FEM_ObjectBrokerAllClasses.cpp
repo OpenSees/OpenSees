@@ -138,7 +138,6 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
-#include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
@@ -191,9 +190,6 @@
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
-#include "J2CyclicBoundingSurface.h"
-#include "J2CyclicBoundingSurface3D.h"
-#include "J2CyclicBoundingSurfacePlaneStrain.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
@@ -216,6 +212,7 @@
 #include "truss/TrussSection.h"
 #include "truss/CorotTruss.h"
 #include "truss/CorotTrussSection.h"
+#include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
 #include "zeroLength/ZeroLengthContact2D.h"
@@ -263,8 +260,6 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
-#include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
-#include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -661,6 +656,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_CorotTrussSection:  
       return new CorotTrussSection(); 	     
       
+	case ELE_TAG_InertiaTruss:
+		return new InertiaTruss();
+
     case ELE_TAG_ZeroLength:  
       return new ZeroLength(); 	     
       
@@ -719,12 +717,6 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d(); 
-
-	case ELE_TAG_DispBeamColumnAsym3d:
-		return new DispBeamColumnAsym3d();    //Xinlong Du
-
-	case ELE_TAG_MixedBeamColumnAsym3d:
-		return new MixedBeamColumnAsym3d();   //Xinlong Du
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
@@ -1379,9 +1371,6 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
 
-	case SEC_TAG_FiberSectionAsym3d:
-		return new FiberSectionAsym3d(); //Xinlong Du
-
 	case SEC_TAG_ElasticPlateSection:
 		return new ElasticPlateSection();
 
@@ -1521,15 +1510,6 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PM4Silt:
 	return new PM4Silt();
-
-  case ND_TAG_J2CyclicBoundingSurface:
-	  return new J2CyclicBoundingSurface();
-
-  case ND_TAG_J2CyclicBoundingSurface3D:
-	  return new J2CyclicBoundingSurface3D();
-  
-  case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
-	  return new J2CyclicBoundingSurfacePlaneStrain();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
