@@ -1,3 +1,4 @@
+
 target_sources(G3_Material
     PRIVATE
       MaterialState.cpp
@@ -56,6 +57,11 @@ target_sources(G3_Material
       AxialSp.h
 )
 
+
+add_library(OPS_Material_f OBJECT
+      DoddRestrepo.f
+)
+
 target_sources(OPS_Material
     PRIVATE
       ASD_SMA_3K.cpp
@@ -87,7 +93,6 @@ target_sources(OPS_Material
       DamperMaterial.cpp
       DegradingPinchedBW.cpp
       DoddRestr.cpp
-      DoddRestrepo.f
       Dodd_Restrepo.cpp
       DrainMaterial.cpp
       ECC01.cpp
@@ -260,7 +265,6 @@ target_sources(OPS_Material
       pyUCLA.h
 )
 
-
 target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
 add_subdirectory(backbone)
@@ -273,4 +277,7 @@ add_subdirectory(PY)
 add_subdirectory(snap)
 add_subdirectory(fedeas)
 add_subdirectory(drain)
+
+target_link_libraries(OPS_Material OPS_Material_f)
+
 
