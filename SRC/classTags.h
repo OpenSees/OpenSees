@@ -292,7 +292,6 @@
 #define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
 #define SEC_TAG_FiberSectionWarping3d		        1010
-#define SEC_TAG_FiberSectionAsym3d		        1011
 #define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
@@ -459,7 +458,7 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
+// J2CyclicBoundingSurface material - D.Turello
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
@@ -623,9 +622,7 @@
 #define ELE_TAG_DispBeamColumnNL2d        621
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
 #define ELE_TAG_DispBeamColumn3d        64
-#define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641
-#define ELE_TAG_DispBeamColumnAsym3d           642
 #define ELE_TAG_HingedBeam2d            65
 #define ELE_TAG_HingedBeam3d            66
 #define ELE_TAG_TwoPointHingedBeam2d    67
@@ -644,7 +641,6 @@
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
 #define ELE_TAG_MixedBeamColumn2d 30766
 #define ELE_TAG_MixedBeamColumn3d 30765
-#define ELE_TAG_MixedBeamColumnAsym3d 30767
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
@@ -780,6 +776,7 @@
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
 #define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
+#define ELE_TAG_InertiaTruss              214	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
 #define ELE_TAG_ExternalElement           99990
 
 
