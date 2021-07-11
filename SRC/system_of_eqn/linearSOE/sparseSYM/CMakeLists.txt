@@ -14,6 +14,7 @@ target_sources(G3_SysOfEqn
 	    SymSparseLinSOE.h
 	    SymSparseLinSolver.h
 )
+
 add_library(G3_SysOfEqn_f OBJECT)
 target_sources(G3_SysOfEqn_f PUBLIC genmmd.f)
 target_link_libraries(G3_SysOfEqn G3_SysOfEqn_f)
