@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 #==============================================================================
 # 
 #        OpenSees -- Open System For Earthquake Engineering Simulation
@@ -14,7 +14,7 @@ cmake_minimum_required(VERSION 3.18)
 #   Project wide includes, properties, libraries, etc
 #
 # - Target definitions
-#   Define component libraries
+#   Declarations/definitions of component libraries
 #
 # - Target Configuration
 #   Specify target-specific compiler options, linking, etc
@@ -80,23 +80,16 @@ message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 #                            General Setup
 #
 #==============================================================================
-#                             Properties
-
-#define_property(TARGET
-#    PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
-#    BRIEF_DOCS "Include functionality for using global interpreter"
-#    FULL_DOCS  "..."
-#)
-
+#----------------------------------------------------------------
+# Compilers
+#---------------------------------------------------------------- 
 
 # Fortran
 #--------------------------------------
 enable_language(Fortran)
 
-
 # C++
 #--------------------------------------
-
 set(CMAKE_CXX_STANDARD 11)
 
 # Warnings
@@ -110,7 +103,6 @@ opensees_add_cxx_flag(
     GNU  -ffloat-store
     MSVC /fp:precise
 )
-
 
 #----------------------------------------------------------------
 # Global Includes
@@ -173,12 +165,10 @@ include_directories(
     ${OPS_SRC_DIR}/actor/objectBroker
     ${OPS_SRC_DIR}/actor/message
 )
-# Temporary fix
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/incl)
 include_directories(${TCL_INCLUDE_PATH})
 include_directories(${MYSQL_INCLUDE_DIR})
 
+# Temporary fix: include all directories with .h files by glob
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
 	${OPS_SRC_DIR}/*.h
 	${OPS_BUNDLED_DIR}/*.h
@@ -191,7 +181,6 @@ endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
 include_directories(${OPS_INCLUDE_DIRS})
-#message(${OPS_INCLUDE_DIRS})
 
 
 #==============================================================================
@@ -210,13 +199,14 @@ add_library(G3_Utilities           OBJECT)
 add_library(G3_Element             OBJECT)
 add_library(G3_Material            OBJECT)
 add_library(G3_ModelBuilder        OBJECT)
+
 add_library(G3_Numerics            INTERFACE)
-target_link_libraries(G3_Numerics INTERFACE
+target_link_libraries(G3_Numerics  INTERFACE
     ${ARPACK_LIBRARIES}
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
-    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
     ${AMD_LIBRARIES}
+    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
 )
 
 # Core OpenSees
@@ -230,8 +220,6 @@ add_library(OPS_Element            OBJECT)
 add_library(OPS_Material           OBJECT)
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
-
-
 
 # Optional Extensions
 add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
@@ -295,17 +283,18 @@ target_link_libraries(G3
 #----------------------------
 target_sources(OpenSees
     PRIVATE
-	${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp
-        ${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp
-        ${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp
-	${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp
-        ${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp
+	"${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+    "${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+	"${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
 )
+
 target_link_libraries(OpenSees
     #OPS_Paraview
     OPS_Renderer
@@ -330,35 +319,100 @@ target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 #----------------------------
 # OPS_Tcl
 #----------------------------
-file(GLOB_RECURSE OPS_TCL_SOURCES CONFIGURE_DEPENDS 
-	${OPS_SRC_DIR}/Tcl*.cpp 
-)
-# TODO: Properly list out Tcl files
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX "${OPS_SRC_DIR}/database/TclBerkeley.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*PFEM.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/reliability/.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/drm/.*")
-
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*tclMain.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*tclAppInit.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*Interpreter.*")
-
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*/petsc/.*")
-
-#list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclFeViewer.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclVideoP.*")
-
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclFeap.*")
-
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*nonlinearBeamColumn.*")
-list(FILTER OPS_TCL_SOURCES EXCLUDE REGEX ".*TclNewUniaxialMaterial.*")
-# END
-
 # Add sources to OPS_Tcl target
 target_sources(OPS_Tcl PRIVATE 
-	 ${OPS_TCL_SOURCES}
+    "${OPS_SRC_DIR}/coordTransformation/TclGeomTransfCommand.cpp"
+
+    "${OPS_SRC_DIR}/database/TclDatabaseCommands.cpp"
+    "${OPS_SRC_DIR}/database/TclMySQL.cpp"
+    #"${OPS_SRC_DIR}/database/TclBerkeleyDB.cpp"
+
+    "${OPS_SRC_DIR}/domain/component/TclParameterCommands.cpp"
+    "${OPS_SRC_DIR}/domain/component/TclUpdateMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/domain/groundMotion/TclGroundMotionCommand.cpp"
+    "${OPS_SRC_DIR}/domain/pattern/TclPatternCommand.cpp"
+    "${OPS_SRC_DIR}/domain/pattern/TclSeriesCommand.cpp"
+    "${OPS_SRC_DIR}/domain/pattern/TclSeriesIntegratorCommand.cpp"
+    #"${OPS_SRC_DIR}/domain/pattern/drm/TclPatternCommand.cpp"
+    "${OPS_SRC_DIR}/domain/region/TclRegionCommands.cpp"
+
+    "${OPS_SRC_DIR}/element/TclElementCommands.cpp"
+    "${OPS_SRC_DIR}/element/UP-ucsd/TclFourNodeQuadUPCommand.cpp"
+    "${OPS_SRC_DIR}/element/UWelements/Tcl_generateInterfacePoints.cpp"
+    "${OPS_SRC_DIR}/element/adapter/TclActuatorCommand.cpp"
+    "${OPS_SRC_DIR}/element/adapter/TclActuatorCorotCommand.cpp"
+    "${OPS_SRC_DIR}/element/adapter/TclAdapterCommand.cpp"
+    "${OPS_SRC_DIR}/element/beamWithHinges/TclBeamWithHingesBuilder.cpp"
+    "${OPS_SRC_DIR}/element/brick/TclBrickCommand.cpp"
+    "${OPS_SRC_DIR}/element/brick/TclTwenty_Node_BrickCommand.cpp"
+    "${OPS_SRC_DIR}/element/dispBeamColumnInt/TclDispBeamColumnIntCommand.cpp"
+    "${OPS_SRC_DIR}/element/elasticBeamColumn/TclElasticBeamCommand.cpp"
+    "${OPS_SRC_DIR}/element/elastomericBearing/TclElastomericBearingBoucWenCommand.cpp"
+    "${OPS_SRC_DIR}/element/elastomericBearing/TclElastomericBearingPlasticityCommand.cpp"
+    "${OPS_SRC_DIR}/element/elastomericBearing/TclElastomericBearingUFRPCommand.cpp"
+    "${OPS_SRC_DIR}/element/forceBeamColumn/TclForceBeamColumnCommand.cpp"
+    "${OPS_SRC_DIR}/element/fourNodeQuad/TclFourNodeQuadCommand.cpp"
+    "${OPS_SRC_DIR}/element/frictionBearing/TclFlatSliderCommand.cpp"
+    "${OPS_SRC_DIR}/element/frictionBearing/TclRJWatsonEQSCommand.cpp"
+    "${OPS_SRC_DIR}/element/frictionBearing/TclSingleFPCommand.cpp"
+    "${OPS_SRC_DIR}/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.cpp"
+    "${OPS_SRC_DIR}/element/generic/TclGenericClientCommand.cpp"
+    "${OPS_SRC_DIR}/element/generic/TclGenericCopyCommand.cpp"
+    "${OPS_SRC_DIR}/element/gradientInelasticBeamColumn/TclGradientInelasticBeamColumnCommand.cpp"
+    "${OPS_SRC_DIR}/element/joint/TclBeamColumnJointCommand.cpp"
+    "${OPS_SRC_DIR}/element/joint/TclJoint2dCommand.cpp"
+    "${OPS_SRC_DIR}/element/joint/TclJoint3dCommand.cpp"
+    "${OPS_SRC_DIR}/element/twoNodeLink/TclTwoNodeLinkCommand.cpp"
+    "${OPS_SRC_DIR}/element/updatedLagrangianBeamColumn/TclCyclicModelCommands.cpp"
+    "${OPS_SRC_DIR}/element/updatedLagrangianBeamColumn/TclElement2dGNL.cpp"
+    "${OPS_SRC_DIR}/element/updatedLagrangianBeamColumn/TclElement2dYS.cpp"
+    "${OPS_SRC_DIR}/element/zeroLength/TclZeroLength.cpp"
+    #"${OPS_SRC_DIR}/element/PFEMElement/TclModelBuilder_addPFEMElement.cpp"
+    #"${OPS_SRC_DIR}/element/PFEMElement/TclPFEMCommands.cpp"
+    #"${OPS_SRC_DIR}/element/feap/TclFeapElementCommand.cpp"
+    #"${OPS_SRC_DIR}/element/nonlinearBeamColumn/tcl/TclElmtBuilder.cpp"
+    # Materials
+    "${OPS_SRC_DIR}/material/nD/TclModelBuilderNDMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/nD/feap/TclFeapMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/nD/soil/TclUpdateMaterialStageCommand.cpp"
+    "${OPS_SRC_DIR}/material/section/TclModelBuilderSectionCommand.cpp"
+    "${OPS_SRC_DIR}/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/PY/TclPyTzQzMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/backbone/TclModelBuilderBackboneCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/drain/TclDrainMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/fedeas/TclFedeasMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/limitState/TclLimitState.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/snap/TclSnapMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/stiffness/TclModelBuilderStiffnessDegradationCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/strength/TclModelBuilderStrengthDegradationCommand.cpp"
+    "${OPS_SRC_DIR}/material/uniaxial/unloading/TclModelBuilderUnloadingRuleCommand.cpp"
+    "${OPS_SRC_DIR}/material/yieldSurface/evolution/TclModelBuilderYS_EvolutionCommand.cpp"
+    "${OPS_SRC_DIR}/material/yieldSurface/plasticHardeningMaterial/TclModelBuilderYSPlasticMaterialCommand.cpp"
+    "${OPS_SRC_DIR}/material/yieldSurface/yieldSurfaceBC/TclModelBuilderYieldSurfaceBCCommand.cpp"
+    #"${OPS_SRC_DIR}/material/uniaxial/TclNewUniaxialMaterial.cpp"
+    # Model Builders
+    "${OPS_SRC_DIR}/modelbuilder/tcl/TclModelBuilder.cpp"
+    "${OPS_SRC_DIR}/modelbuilder/tcl/TclPlaneStressMaterialTester.cpp"
+    "${OPS_SRC_DIR}/modelbuilder/tcl/TclSectionTester.cpp"
+    "${OPS_SRC_DIR}/modelbuilder/tcl/TclUniaxialMaterialTester.cpp"
+    "${OPS_SRC_DIR}/optimization/tcl/TclOptimizationBuilder.cpp"
+    "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
+    "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
+
 	"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
 	"${OPS_SRC_DIR}/tcl/commands.cpp"
+    "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
+    
+    #"${OPS_SRC_DIR}/interpreter/TclInterpreter.cpp"
+    "${OPS_SRC_DIR}/interpreter/TclWrapper.cpp"
+
+    #"${OPS_SRC_DIR}/reliability/analysis/gFunction/TclGFunEvaluator.cpp"
+    #"${OPS_SRC_DIR}/reliability/analysis/gFunction/TclMatlabGFunEvaluator.cpp"
+    #"${OPS_SRC_DIR}/reliability/domain/functionEvaluator/TclEvaluator.cpp"
+    #"${OPS_SRC_DIR}/reliability/tcl/TclReliabilityBuilder.cpp"
+    #"${OPS_SRC_DIR}/system_of_eqn/linearSOE/petsc/TclPetsc.cpp"
+    #"${OPS_SRC_DIR}/tcl/TclVideoPlayer.cpp"
 )
 
 target_include_directories(OPS_Tcl PUBLIC ${TCL_INCLUDE_PATH})
@@ -373,7 +427,6 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 #----------------------------
 # OpenSeesTcl
 #----------------------------
-
 target_link_libraries(OpenSeesTcl 	
 	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
 )
@@ -393,6 +446,7 @@ target_link_libraries(OpenSeesMP OpenSees)
 target_compile_definitions(OpenSeesSP 
     PUBLIC _OPS_PARALLEL_INTERPRETERS
 )
+
 #----------------------------
 # OpenSeesPy
 #----------------------------
