@@ -267,6 +267,7 @@
     <ClCompile Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\truss\InertiaTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\Inerter.cpp" />
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.cpp" />
@@ -543,6 +544,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGT.h" />
     <ClInclude Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h" />
+    <ClInclude Include="..\..\..\SRC\element\truss\InertiaTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\Inerter.h" />
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\LinearElasticSpring.h" />

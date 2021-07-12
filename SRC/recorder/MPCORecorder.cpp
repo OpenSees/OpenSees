@@ -3639,6 +3639,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_CorotTruss ||
 					elem_class_tag == ELE_TAG_CorotTruss2 ||
 					elem_class_tag == ELE_TAG_CorotTrussSection ||
+					elem_class_tag == ELE_TAG_InertiaTruss ||
 					// ./zeroLength
 					elem_class_tag == ELE_TAG_ZeroLength ||
 					elem_class_tag == ELE_TAG_ZeroLengthSection ||

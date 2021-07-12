@@ -780,6 +780,7 @@
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
 #define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
+#define ELE_TAG_InertiaTruss              214	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
 #define ELE_TAG_ExternalElement           99990
 
 
