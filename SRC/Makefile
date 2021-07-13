@@ -901,6 +901,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface3D.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
 	$(FE)/material/nD/LinearCap.o \
