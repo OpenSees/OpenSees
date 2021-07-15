@@ -109,6 +109,7 @@ const double  MembranePlateFiberSection::wg[] = { 0.1,
 //null constructor
 MembranePlateFiberSection::MembranePlateFiberSection( ) : 
 SectionForceDeformation( 0, SEC_TAG_MembranePlateFiberSection ), 
+h(0.),
 strainResultant(8) 
 { 
   for ( int i = 0; i < numFibers; i++ )
@@ -515,6 +516,14 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   // object - don't want to have to do the check if sending data
   int dataTag = this->getDbTag();
   
+  static Vector vectData(1);
+  vectData(0) = h;
+
+  res += theChannel.sendVector(dataTag, commitTag, vectData);
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send vectData\n";
+      return res;
+  }
 
   // Now quad sends the ids of its materials
   int matDbTag;
@@ -563,6 +572,16 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   int res = 0;
   
   int dataTag = this->getDbTag();
+
+  static Vector vectData(1);
+  res += theChannel.recvVector(dataTag, commitTag, vectData);
+
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::recvSelf() - " << this->getTag() << " failed to recv vectData\n";
+      return res;
+  }
+
+  h = vectData(0);
 
   static ID idData(2*numFibers+1);
   // Quad now receives the tags of its four external nodes

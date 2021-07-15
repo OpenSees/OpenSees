@@ -55,6 +55,8 @@ class Response;
 #define SECTION_RESPONSE_T		6	
 #define SECTION_RESPONSE_R		7	
 #define SECTION_RESPONSE_Q		8	
+#define SECTION_RESPONSE_B              9 // Bi-moment (FiberSectionWarping3d)
+#define SECTION_RESPONSE_W             10 // (FiberSectionWarping3d)
 
 class SectionForceDeformation : public Material
 {

@@ -138,6 +138,7 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
+#include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
@@ -190,10 +191,11 @@
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
+#include "J2CyclicBoundingSurface.h"
+#include "J2CyclicBoundingSurface3D.h"
+#include "J2CyclicBoundingSurfacePlaneStrain.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
-#if !_DLL
 #include "stressDensityModel/stressDensity.h"
-#endif
 #include "InitStressNDMaterial.h"
 
 // Fibers
@@ -261,6 +263,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
+#include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -276,6 +280,7 @@
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
 #include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM_3D.h"		// Kristijan Kolozvari
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -342,7 +347,7 @@
 #include "EnvelopeNodeRecorder.h"
 #include "EnvelopeElementRecorder.h"
 #include "DriftRecorder.h"
-#include "MPCORecorder.h"
+//#include "MPCORecorder.h"
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
@@ -714,6 +719,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d(); 
+
+	case ELE_TAG_DispBeamColumnAsym3d:
+		return new DispBeamColumnAsym3d();    //Xinlong Du
+
+	case ELE_TAG_MixedBeamColumnAsym3d:
+		return new MixedBeamColumnAsym3d();   //Xinlong Du
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
@@ -810,6 +821,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_MVLEM_3D:		// Kristijan Kolozvari
 		return new MVLEM_3D();	// Kristijan Kolozvari
+
+	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
+		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -1365,6 +1379,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
 
+	case SEC_TAG_FiberSectionAsym3d:
+		return new FiberSectionAsym3d(); //Xinlong Du
+
 	case SEC_TAG_ElasticPlateSection:
 		return new ElasticPlateSection();
 
@@ -1505,13 +1522,21 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PM4Silt:
 	return new PM4Silt();
 
+  case ND_TAG_J2CyclicBoundingSurface:
+	  return new J2CyclicBoundingSurface();
+
+  case ND_TAG_J2CyclicBoundingSurface3D:
+	  return new J2CyclicBoundingSurface3D();
+  
+  case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
+	  return new J2CyclicBoundingSurfacePlaneStrain();
+
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
-#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-#endif
+
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -1845,8 +1870,8 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
 
-        case RECORDER_TAGS_MPCORecorder:
-          return new MPCORecorder();
+	   //        case RECORDER_TAGS_MPCORecorder:
+	   //          return new MPCORecorder();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";

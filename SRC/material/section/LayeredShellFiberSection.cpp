@@ -106,7 +106,7 @@ void* OPS_LayeredShellFiberSection()
     }
       
     SectionForceDeformation* theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-    if (thickness != 0) delete thickness;
+    if (thickness != 0) delete [] thickness;
     if (theMats != 0) delete [] theMats;
 
     return theSection;
@@ -195,7 +195,7 @@ SectionForceDeformation  *LayeredShellFiberSection::getCopy( )
 					 nLayers,
 					 thickness,
 					 theFibers ) ; //make the copy
-    delete thickness;
+    delete [] thickness;
   }
   
   return clone ;

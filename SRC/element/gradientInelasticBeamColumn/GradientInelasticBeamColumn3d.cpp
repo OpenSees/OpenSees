@@ -810,8 +810,8 @@ GradientInelasticBeamColumn3d::revertToLastCommit(void)
 		sections[i]->setTrialSectionDeformation(d_sec[i]);
 	}
 
-	d_tot = d_tot_commit;
-	d_nl_tot = d_nl_tot_commit;
+	*d_tot = *d_tot_commit;
+	*d_nl_tot = *d_nl_tot_commit;
 
 	// Revert Coordinate Transformation Object to Last Committed State
 	if ((err = crdTransf->revertToLastCommit()))

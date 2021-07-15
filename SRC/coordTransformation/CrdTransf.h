@@ -30,7 +30,7 @@
 // CrdTransf.h. CrdTransf provides the abstraction of a frame 
 // coordinate transformation. It is an abstract base class and 
 // thus no objects of  it's type can be instatiated. It has pure 
-// virtual functions which  must be implemented in it's derived classes.
+// virtual functions which  must be implemented in its derived classes.
 //
 // What: "@(#) CrdTransf.h, revA"
 
@@ -43,6 +43,7 @@
 class Vector;
 class Matrix;
 class Node;
+class Response;
 
 // class definition
 
@@ -95,6 +96,11 @@ public:
     virtual const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords) = 0;
     virtual const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
     virtual const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
+
+    // method for obtaining information specific to a coordinate transformation
+    virtual Response *setResponse(const char **argv, int argc, 
+				  OPS_Stream &theHandler) {return 0;}
+    virtual int getResponse(int responseID, Information &eleInformation) {return -1;}
     
 protected:
     

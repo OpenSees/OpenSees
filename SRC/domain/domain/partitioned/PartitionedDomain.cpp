@@ -1346,6 +1346,10 @@ PartitionedDomain::revertToStart(void)
         return res;
       }
     }
+
+#ifdef _PARALLEL_PROCESSING
+    this->barrierCheck(result);
+#endif
   }
 
   return 0;
@@ -1402,8 +1406,9 @@ PartitionedDomain::removeRecorders(void)
   if (this->Domain::removeRecorders() < 0)
     return -1;
 
+#ifdef _PARALLEL_PROCESSING
   this->barrierCheck(1.0);
-
+#endif
   return 0;
 }
 
@@ -1498,7 +1503,7 @@ PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitio
   Graph &theEleGraph = this->getElementGraph();
 
   // now we call partition on the domainPartitioner which does the partitioning
-  DomainPartitioner *thePartitioner = 0;//this->getPartitioner();
+  DomainPartitioner *thePartitioner = this->getPartitioner();
   if (thePartitioner != 0) {
     thePartitioner->setPartitionedDomain(*this);
     result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID, specialElementTag);
