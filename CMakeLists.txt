@@ -33,6 +33,7 @@ set(OPS_EXTERNALS_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_BUNDLED_DIR ${PROJECT_SOURCE_DIR}/OTHER/)
 set(OPS_SRC_DIR ${PROJECT_SOURCE_DIR}/SRC/)
 include(OpenSeesFunctions)
+
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
@@ -415,6 +416,17 @@ if(FMK)
         _FILIP_LHNMYS
     )    
 endif()
+
+#----------------------------
+# Extensions
+#----------------------------
+message("OPS >>> Configuring OpenSees extensions")
+foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
+    string(TOUPPER "${extension}" ext_flag) 
+    set(ext_flag "_${ext_flag}")
+    message("    Adding definition '${ext_flag}'")
+    add_compile_definitions(${ext_flag})
+endforeach()
 
 #----------------------------
 # Renderer
