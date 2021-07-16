@@ -83,7 +83,7 @@ class Channel
     
     virtual int recvMsgUnknownSize(int dbTag, int commitTag, 
 			Message &theMessage, 
-			ChannelAddress *theAddress =0) ; //=0;  
+			ChannelAddress *theAddress =0) =0;  
 
     virtual int sendMatrix(int dbTag, int commitTag, 
 			const Matrix &theMatrix, 

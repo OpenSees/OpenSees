@@ -147,17 +147,14 @@ extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
-#ifdef _OPS_Element_PFEM
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
-#endif
 #ifdef _HAVE_LHNMYS
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
-
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_CatenaryCableElement(void);
@@ -192,10 +189,8 @@ extern void* OPS_LehighJoint2d(void);
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
 
-#ifdef _OPS_Element_FEAP
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
-#endif // _OPS_Element_FEAP
 
 extern int
 Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -1141,7 +1136,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
   }
-#ifdef _OPS_Element_PFEM
+
   else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
@@ -1176,7 +1171,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 	  return TCL_ERROR;
       }
   }
-#endif
+
   else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
       if (theEle != 0) {
@@ -1479,17 +1474,13 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
 
-#ifdef _OPS_Element_FEAP
   if (strcmp(argv[1],"fTruss") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addFeapTruss(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
 
-  } else 
-#endif // _OPS_Element_FEAP
-
-  if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
+  } else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
     int result = TclModelBuilder_addDispBeamColumnInt(clientData, interp, argc, argv,
 						   theTclDomain, theTclBuilder);
     return result;

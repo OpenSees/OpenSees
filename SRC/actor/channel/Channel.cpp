@@ -67,11 +67,3 @@ Channel::getTag(void)
 {
 		return tag;
 }
-
-int
-Channel::recvMsgUnknownSize(int dataTag, int commitTag, Message &, ChannelAddress *theAddress)
-{
-    // opserr << "Channel::recvMsgUnknownSize() - not yet implemented\n";
-    return -1;
-}
-

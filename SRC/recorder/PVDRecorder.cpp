@@ -35,7 +35,6 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
-
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
 #include "PFEMElement/ParticleGroup.h"

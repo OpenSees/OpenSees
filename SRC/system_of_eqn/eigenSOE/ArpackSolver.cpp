@@ -44,10 +44,7 @@
 #include <ArpackSolver.h>
 #include <ArpackSOE.h>
 #include <LinearSOE.h>
-
 #include <math.h>
-#include <f2c.h>
-
 #include <stdio.h>
 #include <AnalysisModel.h>
 #include <DOF_GrpIter.h>
@@ -176,7 +173,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     eigenvalues = new double[nev];
     eigenvectors = new double[n * nev];
     resid = new double[n];
-    select = new int[ncv];
+    select = new logical[ncv];
 
     for (int i=0; i<lworkl+1; i++)
 	   workl[i] = 0;
@@ -368,11 +365,11 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       unsigned int sizeBmat =1;
       unsigned int sizeHowmany =1;
       
-      DSEUPD(&rvec, &howmy, (logical*)(select), eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
+      DSEUPD(&rvec, &howmy, select, eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
 	     &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 	     workl, &lworkl, &info);
 #else
-      dseupd_(&rvec, &howmy, (logical*)(select), eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
+      dseupd_(&rvec, &howmy, select, eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
 	      &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 	      workl, &lworkl, &info);
 #endif

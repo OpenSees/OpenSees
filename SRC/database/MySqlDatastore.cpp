@@ -21,7 +21,7 @@
 // $Revision: 1.7 $
 // $Date: 2005-11-07 21:34:25 $
 // $Source: /usr/local/cvs/OpenSees/SRC/database/MySqlDatastore.cpp,v $
-#include <stdio.h>
+
 #include <MySqlDatastore.h>
 #include <Vector.h>
 #include <Matrix.h>
