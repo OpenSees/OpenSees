@@ -57,7 +57,7 @@ if (UNIX)
     endif()
 endif()
 
-if(WIN32)
+if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
     message(STATUS ">>> WIN32")
 endif()
