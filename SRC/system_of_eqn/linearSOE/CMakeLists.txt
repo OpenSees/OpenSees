@@ -10,7 +10,7 @@ target_sources(G3_SysOfEqn
 	LinearSOESolver.h
 )
 
-target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(bandGEN)
 add_subdirectory(bandSPD)

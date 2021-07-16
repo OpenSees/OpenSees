@@ -242,8 +242,12 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
-add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
-add_executable(OpenSeesMP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
+add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+)
+add_executable(OpenSeesMP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+)
 add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
 
 
@@ -479,7 +483,7 @@ message("OPS >>> Configuring OpenSees extensions")
 foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
     string(TOUPPER "${extension}" ext_flag) 
     set(ext_flag "_${ext_flag}")
-    message("    Adding definition '${ext_flag}'")
+    message("    Adding macro definition '${ext_flag}'")
     add_compile_definitions(${ext_flag})
 endforeach()
 

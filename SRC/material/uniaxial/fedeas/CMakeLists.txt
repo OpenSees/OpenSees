@@ -28,5 +28,5 @@ target_sources(OPS_Material
         FedeasSteel2Material.h
         PlasticDamageMaterial.h
 )
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

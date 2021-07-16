@@ -11,5 +11,5 @@ target_sources(OPS_Element_dispBeamColumnInt
         FiberSection2dInt.h
         LinearCrdTransf2dInt.h
 )
-target_include_directories(OPS_Element_dispBeamColumnInt PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_dispBeamColumnInt PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

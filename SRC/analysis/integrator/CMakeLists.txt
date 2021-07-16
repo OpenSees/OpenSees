@@ -1,11 +1,6 @@
 target_sources(G3_Analysis
     PRIVATE
-       AlphaOS.cpp
-       AlphaOS_TP.cpp
-       EQPath.cpp
-       AlphaOSGeneralized.cpp
        ExplicitDifference.cpp
-       AlphaOSGeneralized_TP.cpp
        ArcLength.cpp
        ArcLength1.cpp
        BackwardEuler.cpp
@@ -17,17 +12,11 @@ target_sources(G3_Analysis
        MinUnbalDispNorm.cpp
        Newmark.cpp
        Newmark1.cpp
-       NewmarkExplicit.cpp
        StaticIntegrator.cpp
        StagedLoadControl.cpp
        TransientIntegrator.cpp
     PUBLIC
-       AlphaOS.h
-       AlphaOS_TP.h
-       EQPath.h
-       AlphaOSGeneralized.h
        ExplicitDifference.h
-       AlphaOSGeneralized_TP.h
        ArcLength.h
        ArcLength1.h
        BackwardEuler.h
@@ -39,22 +28,26 @@ target_sources(G3_Analysis
        MinUnbalDispNorm.h
        Newmark.h
        Newmark1.h
-       NewmarkExplicit.h
        StaticIntegrator.h
        StagedLoadControl.h
        TransientIntegrator.h
 )
 target_sources(OPS_Analysis
     PRIVATE
-       CentralDifferenceAlternative.cpp
+       AlphaOS.cpp
+       AlphaOS_TP.cpp
+       AlphaOSGeneralized.cpp
+       AlphaOSGeneralized_TP.cpp            # Andreas Schellenberg
+       CentralDifferenceAlternative.cpp     # fmk
        CentralDifferenceNoDamping.cpp
-       Collocation.cpp
+       Collocation.cpp                      # Andreas Schellenberg
        CollocationHSFixedNumIter.cpp
        CollocationHSIncrLimit.cpp
        CollocationHSIncrReduct.cpp
        DisplacementControl.cpp
        DistributedDisplacementControl.cpp
-       EigenIntegrator.cpp
+       EigenIntegrator.cpp                  # Jun Peng
+       EQPath.cpp                           # M. Salehi
        GeneralizedAlpha.cpp
        HHT.cpp
        HHT_TP.cpp
@@ -70,20 +63,25 @@ target_sources(OPS_Analysis
        HHTHSIncrLimit_TP.cpp
        HHTHSIncrReduct.cpp
        HHTHSIncrReduct_TP.cpp
-       Houbolt.cpp
+       Houbolt.cpp                      # krm
        HSConstraint.cpp
        KRAlphaExplicit.cpp
        KRAlphaExplicit_TP.cpp
-       NewmarkHSFixedNumIter.cpp
-       NewmarkHSIncrLimit.cpp
-       NewmarkHSIncrReduct.cpp
+       NewmarkExplicit.cpp              # Andreas Schellenberg
+       NewmarkHSFixedNumIter.cpp        # Andreas Schellenberg
+       NewmarkHSIncrLimit.cpp           # Andreas Schellenberg
+       NewmarkHSIncrReduct.cpp          # Andreas Schellenberg
        ParkLMS3.cpp
        TRBDF2.cpp
        TRBDF3.cpp
        WilsonTheta.cpp
        StagedNewmark.cpp
-       GimmeMCK.cpp
+       GimmeMCK.cpp                     # MHS
     PUBLIC
+       AlphaOS.h
+       AlphaOS_TP.h
+       AlphaOSGeneralized.h
+       AlphaOSGeneralized_TP.h
        CentralDifferenceAlternative.h
        CentralDifferenceNoDamping.h
        Collocation.h
@@ -93,6 +91,7 @@ target_sources(OPS_Analysis
        DisplacementControl.h
        DistributedDisplacementControl.h
        EigenIntegrator.h
+       EQPath.h
        GeneralizedAlpha.h
        HHT.h
        HHT_TP.h
@@ -112,6 +111,7 @@ target_sources(OPS_Analysis
        HSConstraint.h
        KRAlphaExplicit.h
        KRAlphaExplicit_TP.h
+       NewmarkExplicit.h
        NewmarkHSFixedNumIter.h
        NewmarkHSIncrLimit.h
        NewmarkHSIncrReduct.h
@@ -130,5 +130,5 @@ target_sources(OPS_PFEM
        PFEMIntegrator.h  # Uses ops_Dt
 )
 
-target_include_directories(OPS_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

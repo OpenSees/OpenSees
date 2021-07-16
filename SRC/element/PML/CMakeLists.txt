@@ -10,5 +10,5 @@ target_sources(OPS_Element_PML
         PML2D.h
         PML3D.h
 )
-target_include_directories(OPS_Element_PML PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_PML PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

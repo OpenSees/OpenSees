@@ -26,5 +26,5 @@ target_sources(OPS_DRM
 )
 endif()
 
-target_include_directories(OPS_DRM PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_DRM PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

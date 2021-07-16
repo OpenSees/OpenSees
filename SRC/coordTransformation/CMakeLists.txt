@@ -21,4 +21,4 @@ target_sources(coordTransformation
 	CorotCrdTransfWarping2d.cpp
 )
 
-target_include_directories(coordTransformation PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(coordTransformation PUBLIC ${CMAKE_CURRENT_LIST_DIR})

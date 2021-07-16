@@ -5,23 +5,19 @@ target_sources(G3_Actor
       ChannelAddress.h
 )
 
-
-if(PARALLEL_INTERPRETERS)
-target_sources(G3_Actor
-    PRIVATE
-      MPI_Address.cpp
-    PUBLIC
-      MPI_Address.h
+target_sources(OpenSeesMP
+  PRIVATE
+    MPI_ChannelAddress.cpp
+  PUBLIC
+    MPI_ChannelAddress.h
 )
-elseif(PARALLEL)
-target_sources(G3_Actor
-    PRIVATE
-      MPI_Address.cpp
-    PUBLIC
-      MPI_Address.h
+
+target_sources(OpenSeesSP
+  PRIVATE
+    MPI_ChannelAddress.cpp
+  PUBLIC
+    MPI_ChannelAddress.h
 )
-endif()
 
-
-target_include_directories(G3_Actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Actor PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

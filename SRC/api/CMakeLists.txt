@@ -10,5 +10,5 @@ target_sources(OPS_Api
         elementAPI.h
         packages.h
 )
-target_include_directories(OPS_Api PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Api PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

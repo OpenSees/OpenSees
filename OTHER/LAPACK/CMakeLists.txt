@@ -57,61 +57,61 @@ target_sources(LAPACK PUBLIC
   dgbtf2.f
   dgbtrf.f
   dgbtrs.f
-	dgttrf.f
+  dgttrf.f
   dgttrs.f
   dpttrf.f
   dpttrs.f
   dlaswp.f
   dgbsv.f
   dpbtrs.f
-	dgesv.f
+  dgesv.f
   dgetrs.f
   dpbsv.f
   dgetrf.f
   dgetf2.f
   dpbtrf.f
   dpotf2.f
-	dpbtf2.f
+  dpbtf2.f
   dgels.f
   dgeqrf.f
   dgelqf.f
   dormqr.f
   dormlq.f
-	dgelq2.f
+  dgelq2.f
   dlarft.f
   dlarfb.f
   dorml2.f
-	dlaebz.f
+  dlaebz.f
   dlagtf.f
   dlagts.f
   dlansb.f
   dlar2v.f
   dlargv.f
-	dlartv.f
+  dlartv.f
   dsbevx.f
   dsbtrd.f
   dstebz.f
   dstein.f
   dsterf.f
-	dgetri.f
+  dgetri.f
   dtrtri.f
   dtrti2.f
   dgebak.f
   dgebal.f
   dgeev.f
-	dgehd2.f
+  dgehd2.f
   dgehrd.f
   dhseqr.f
   dlahrd.f
   
-	dorg2r.f
+  dorg2r.f
   dorghr.f
   dorgqr.f
   dpotrf.f
   dpotrs.f
   dtrtrs.f
   
-	dggbak.f
+  dggbak.f
   dggbal.f
   dggev.f
   dgghrd.f
@@ -120,21 +120,21 @@ target_sources(LAPACK PUBLIC
   dlasv2.f
   dtgevc.f
   
-	dgesvxx.f
+  dgesvxx.f
   dla_gerfsx_extended.f
   dlascl2.f
   dlaqge.f
   dgeequb.f
   dgerfsx.f
   
-	chla_transtype.f
+  chla_transtype.f
   dla_gercond.f
   dla_wwaddw.f
   ilaprec.f
   ilatrans.f
   dgecon.f
   
-	dla_geamv.f
+  dla_geamv.f
   dlacn2.f
   dla_lin_berr.f
   drscl.f
@@ -145,9 +145,9 @@ target_sources(LAPACK PUBLIC
 
 add_library(LAPACK_C)
 target_sources(LAPACK_C PUBLIC
-	BLAS_dgemv2_x.c 
+  BLAS_dgemv2_x.c 
   BLAS_dgemv2_x-f2c.c 
-	BLAS_dgemv_x.c 
+  BLAS_dgemv_x.c 
   BLAS_dgemv_x-f2c.c 
   BLAS_error.c 
   BLAS_error.c

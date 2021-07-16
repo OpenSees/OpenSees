@@ -14,4 +14,4 @@ target_sources(G3_Utilities
 	StringContainer.h 
 )
 
-target_include_directories(G3_Utilities PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Utilities PUBLIC ${CMAKE_CURRENT_LIST_DIR})

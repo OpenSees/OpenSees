@@ -7,4 +7,4 @@ target_sources(G3_Analysis
       PenaltyMP_FE.h
 )
 
-#target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})

@@ -42,4 +42,4 @@ target_sources(OPS_Element
 	EmbeddedEPBeamInterface.h
 )
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})

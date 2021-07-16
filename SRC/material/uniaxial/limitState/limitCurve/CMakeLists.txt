@@ -15,5 +15,5 @@ target_sources(OPS_Material
         ThreePointCurve.h
         WrapperLimitCurve.h
 )
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

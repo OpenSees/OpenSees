@@ -5,5 +5,5 @@ target_sources(OPS_Section_Repres
     PUBLIC
         ReinfBar.h
 )
-target_include_directories(OPS_Section_Repres PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Section_Repres PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
