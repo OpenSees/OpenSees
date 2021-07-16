@@ -1,48 +1,159 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#     (c) Copyright 1999-2021 The Regents of the University of California
+#                             All Rights Reserved
+# (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
+#
+#------------------------------------------------------------------------------
+# Claudio Perez
+
 project(LAPACK)
-target_sources(LAPACK
-        dgeqr2.o dlabad.o dlacon.o dlacpy.o dladiv.o dlae2.o dlaev2.o
-        dlaexc.o dlagtm.o dlahqr.o dlaln2.o dlamch.o dlange.o dlanhs.o
-        dlanst.o dlanv2.o dlaptm.o dlapy2.o dlapy3.o dlaran.o dlarf.o
-        dlarfg.o dlarfx.o dlarnd.o dlarnv.o dlartg.o dlaruv.o dlascl.o
-        dlaset.o dlasr.o  dlasrt.o dlassq.o dlasy2.o dorm2r.o dsteqr.o
-        dtrevc.o dtrexc.o dtrsen.o dtrsyl.o dgbtf2.o dgbtrf.o dgbtrs.o
-	dgttrf.o dgttrs.o dpttrf.o dpttrs.o dlaswp.o dgbsv.o dpbtrs.o
-	dgesv.o dgetrs.o dpbsv.o dgetrf.o dgetf2.o dpbtrf.o dpotf2.o
-	dpbtf2.o dgels.o dgeqrf.o dgelqf.o dormqr.o dormlq.o
-	dgelq2.o dlarft.o dlarfb.o dorml2.o
-	dlaebz.o dlagtf.o dlagts.o dlansb.o dlar2v.o dlargv.o
-	dlartv.o dsbevx.o dsbtrd.o dstebz.o dstein.o dsterf.o
-	dgetri.o dtrtri.o dtrti2.o dgebak.o dgebal.o dgeev.o
-	dgehd2.o dgehrd.o dhseqr.o dlahrd.o 
-	dorg2r.o dorghr.o dorgqr.o dpotrf.o dpotrs.o dtrtrs.o 
-	dggbak.o dggbal.o dggev.o dgghrd.o dhgeqz.o dlag2.o dlasv2.o dtgevc.o 
-	dgesvxx.o dla_gerfsx_extended.o dlascl2.o dlaqge.o dgeequb.o dgerfsx.o 
-	chla_transtype.o dla_gercond.o dla_wwaddw.o ilaprec.o ilatrans.o dgecon.o 
-	dla_geamv.o dlacn2.o dla_lin_berr.o drscl.o dlatrs.o dla_rpvgrw.o dla_gerpvgrw.o 
-	BLAS_dgemv2_x.o BLAS_dgemv2_x-f2c.o 
-	BLAS_dgemv_x.o BLAS_dgemv_x-f2c.o BLAS_error.o BLAS_error.o
+
+add_library(LAPACK)
+
+target_sources(LAPACK PUBLIC
+  dgeqr2.f
+  dlabad.f
+  dlacon.f
+  dlacpy.f
+  dladiv.f
+  dlae2.f
+  dlaev2.f
+  dlaexc.f
+  dlagtm.f
+  dlahqr.f
+  dlaln2.f
+  dlamch.f
+  dlange.f
+  dlanhs.f
+  dlanst.f
+  dlanv2.f
+  dlaptm.f
+  dlapy2.f
+  dlapy3.f
+  dlaran.f
+  dlarf.f
+  dlarfg.f
+  dlarfx.f
+  dlarnd.f
+  dlarnv.f
+  dlartg.f
+  dlaruv.f
+  dlascl.f
+  dlaset.f
+  dlasr.f
+  dlasrt.f
+  dlassq.f
+  dlasy2.f
+  dorm2r.f
+  dsteqr.f
+  dtrevc.f
+  dtrexc.f
+  dtrsen.f
+  dtrsyl.f
+  dgbtf2.f
+  dgbtrf.f
+  dgbtrs.f
+  dgttrf.f
+  dgttrs.f
+  dpttrf.f
+  dpttrs.f
+  dlaswp.f
+  dgbsv.f
+  dpbtrs.f
+  dgesv.f
+  dgetrs.f
+  dpbsv.f
+  dgetrf.f
+  dgetf2.f
+  dpbtrf.f
+  dpotf2.f
+  dpbtf2.f
+  dgels.f
+  dgeqrf.f
+  dgelqf.f
+  dormqr.f
+  dormlq.f
+  dgelq2.f
+  dlarft.f
+  dlarfb.f
+  dorml2.f
+  dlaebz.f
+  dlagtf.f
+  dlagts.f
+  dlansb.f
+  dlar2v.f
+  dlargv.f
+  dlartv.f
+  dsbevx.f
+  dsbtrd.f
+  dstebz.f
+  dstein.f
+  dsterf.f
+  dgetri.f
+  dtrtri.f
+  dtrti2.f
+  dgebak.f
+  dgebal.f
+  dgeev.f
+  dgehd2.f
+  dgehrd.f
+  dhseqr.f
+  dlahrd.f
+  
+  dorg2r.f
+  dorghr.f
+  dorgqr.f
+  dpotrf.f
+  dpotrs.f
+  dtrtrs.f
+  
+  dggbak.f
+  dggbal.f
+  dggev.f
+  dgghrd.f
+  dhgeqz.f
+  dlag2.f
+  dlasv2.f
+  dtgevc.f
+  
+  dgesvxx.f
+  dla_gerfsx_extended.f
+  dlascl2.f
+  dlaqge.f
+  dgeequb.f
+  dgerfsx.f
+  
+  chla_transtype.f
+  dla_gercond.f
+  dla_wwaddw.f
+  ilaprec.f
+  ilatrans.f
+  dgecon.f
+  
+  dla_geamv.f
+  dlacn2.f
+  dla_lin_berr.f
+  drscl.f
+  dlatrs.f
+  dla_rpvgrw.f
+  dla_gerpvgrw.f
+)  
+
+add_library(LAPACK_C)
+target_sources(LAPACK_C PUBLIC
+  BLAS_dgemv2_x.c 
+  BLAS_dgemv2_x-f2c.c 
+  BLAS_dgemv_x.c 
+  BLAS_dgemv_x-f2c.c 
+  BLAS_error.c 
+  BLAS_error.c
 )
 
+target_link_libraries(LAPACK PUBLIC LAPACK_C)
 
 
-IOBJ  = ilaenv.o lsame.o lsamen.o xerbla.o xlaenv.o ieeeck.o
 
-all: double 
- 
-double: $(DOBJ) $(IOBJ)
-	@$(RM) $(RMFLAGS) $(LAPACK_LIBRARY)
-	@$(AR) $(ARFLAGS) $(LAPACK_LIBRARY) $(DOBJ) $(IOBJ)
-	@$(RANLIB) $(LAPACK_LIBRARY)
-
-# Miscellaneous
-tidy:	
-	@$(RM) $(RMFLAGS) Makefile.bak *~ #*# core go
-
-clean: tidy
-	@$(RM) $(RMFLAGS) $(OBJS) *.o test go
-
-spotless: clean
-
-wipe: spotless
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.

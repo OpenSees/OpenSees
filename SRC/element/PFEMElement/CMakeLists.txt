@@ -25,8 +25,8 @@ target_sources(OPS_Element_PFEMElement
         PFEMElement2DQuasi.cpp
         PFEMElement3DBubble.cpp
         PFEMElement3D.cpp
-	#PFEMElement3Dmini.cpp
-	#PFEMMesher2D.cpp
+    #PFEMElement3Dmini.cpp
+    #PFEMMesher2D.cpp
         PFEMMesher3D.cpp
         QuadMesh.cpp
         QuadMeshGenerator.cpp
@@ -62,8 +62,8 @@ target_sources(OPS_Element_PFEMElement
         PFEMElement2DQuasi.h
         PFEMElement3DBubble.h
         PFEMElement3D.h
-	#PFEMElement3Dmini.h
-	#PFEMMesher2D.h
+    #PFEMElement3Dmini.h
+    #PFEMMesher2D.h
         PFEMMesher3D.h
         QuadMeshGenerator.h
         QuadMesh.h
@@ -75,5 +75,5 @@ target_sources(OPS_Element_PFEMElement
         TriGaussPoints.h
         TriMesh.h
 )
-target_include_directories(OPS_Element_PFEMElement PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_PFEMElement PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

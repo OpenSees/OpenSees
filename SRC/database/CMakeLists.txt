@@ -5,19 +5,19 @@ target_sources(OPS_Database
         #BerkeleyDbDatastore.cpp
         FE_Datastore.cpp
         FileDatastore.cpp
-	#main.cpp
+    #main.cpp
         MySqlDatastore.cpp
-	#NEESData.cpp
-	#NeesDataTest.cpp
+    #NEESData.cpp
+    #NeesDataTest.cpp
         OracleDatastore.cpp
-	#quick.cpp
+    #quick.cpp
     PUBLIC
         #BerkeleyDbDatastore.h
         FE_Datastore.h
         FileDatastore.h
         MySqlDatastore.h
-	#NEESData.h
+    #NEESData.h
         OracleDatastore.h
 )
-target_include_directories(OPS_Database PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Database PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

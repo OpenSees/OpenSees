@@ -1,10 +1,10 @@
 target_sources(G3_ModelBuilder
     PRIVATE
         ModelBuilder.cpp
-	#PartitionedModelBuilder.cpp
+    #PartitionedModelBuilder.cpp
     PUBLIC
         ModelBuilder.h
-	#PartitionedModelBuilder.h
+    #PartitionedModelBuilder.h
 )
 add_subdirectory(tcl)
 

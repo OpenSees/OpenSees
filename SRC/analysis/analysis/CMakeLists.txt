@@ -8,7 +8,7 @@ target_sources(G3_Analysis
       ResponseSpectrumAnalysis.cpp
       StaticAnalysis.cpp 
       StaticDomainDecompositionAnalysis.cpp 
-      SubstructuringAnalysis.cpp	
+      SubstructuringAnalysis.cpp    
       TransientAnalysis.cpp
       TransientDomainDecompositionAnalysis.cpp 
       VariableTimeStepDirectIntegrationAnalysis.cpp
@@ -21,7 +21,7 @@ target_sources(G3_Analysis
       ResponseSpectrumAnalysis.h
       StaticAnalysis.h 
       StaticDomainDecompositionAnalysis.h 
-      SubstructuringAnalysis.h	
+      SubstructuringAnalysis.h    
       TransientAnalysis.h
       TransientDomainDecompositionAnalysis.h 
       VariableTimeStepDirectIntegrationAnalysis.h
@@ -32,6 +32,6 @@ target_sources(OPS_PFEM
     PUBLIC
         PFEMAnalysis.h 
 )
-#target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 #add_subdirectory(analysis)

@@ -29,5 +29,5 @@ target_sources(OPS_Material_YieldSurface
         YS_Evolution2D.h
         YS_Evolution.h
 )
-target_include_directories(OPS_Material_YieldSurface PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material_YieldSurface PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

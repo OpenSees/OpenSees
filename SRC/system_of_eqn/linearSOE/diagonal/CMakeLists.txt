@@ -1,20 +1,20 @@
 
 target_sources(OPS_SysOfEqn
     PRIVATE
-	DiagonalSOE.cpp
-	DiagonalSolver.cpp
-	DiagonalDirectSolver.cpp
-	DistributedDiagonalSOE.cpp
-	DistributedDiagonalSolver.cpp
+    DiagonalSOE.cpp
+    DiagonalSolver.cpp
+    DiagonalDirectSolver.cpp
+    DistributedDiagonalSOE.cpp
+    DistributedDiagonalSolver.cpp
     PUBLIC 
-    	DiagonalSOE.h
-	DiagonalSolver.h
-	DiagonalDirectSolver.h
-	DistributedDiagonalSOE.h
-	DistributedDiagonalSolver.h
+        DiagonalSOE.h
+    DiagonalSolver.h
+    DiagonalDirectSolver.h
+    DistributedDiagonalSOE.h
+    DistributedDiagonalSolver.h
 )
 
 
 
-target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

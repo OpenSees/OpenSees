@@ -1,42 +1,42 @@
 
 target_sources(G3_Domain
     PRIVATE
-	DomainComponent.cpp
-	Parameter.cpp
-	ElementParameter.cpp
-	NodeResponseParameter.cpp
-	LoadFactorParameter.cpp
-	MaterialStageParameter.cpp
-	MatParameter.cpp
-	ElementStateParameter.cpp
+    DomainComponent.cpp
+    Parameter.cpp
+    ElementParameter.cpp
+    NodeResponseParameter.cpp
+    LoadFactorParameter.cpp
+    MaterialStageParameter.cpp
+    MatParameter.cpp
+    ElementStateParameter.cpp
     PUBLIC
-	DomainComponent.h
-	Parameter.h
-	ElementParameter.h
-	NodeResponseParameter.h
-	LoadFactorParameter.h
-	MaterialStageParameter.h
-	MatParameter.h
-	ElementStateParameter.h
+    DomainComponent.h
+    Parameter.h
+    ElementParameter.h
+    NodeResponseParameter.h
+    LoadFactorParameter.h
+    MaterialStageParameter.h
+    MatParameter.h
+    ElementStateParameter.h
 )
 
 target_sources(OPS_Domain
     PRIVATE
-	InitialStateParameter.cpp
+    InitialStateParameter.cpp
     PUBLIC
-	InitialStateParameter.h
+    InitialStateParameter.h
 )
         
 #target_sources(OPS_Reliability
 target_sources(OPS_Domain
     PRIVATE
-	RVParameter.cpp
-	DVParameter.cpp
+    RVParameter.cpp
+    DVParameter.cpp
     PUBLIC
-	RVParameter.h
-	DVParameter.h
+    RVParameter.h
+    DVParameter.h
 )
 
 
-target_include_directories(OPS_Domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

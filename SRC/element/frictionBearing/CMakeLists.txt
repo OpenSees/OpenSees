@@ -33,5 +33,5 @@ target_sources(OPS_Element_frictionBearing
 )
 
 add_subdirectory(frictionModel)
-target_include_directories(OPS_Element_frictionBearing PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_frictionBearing PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

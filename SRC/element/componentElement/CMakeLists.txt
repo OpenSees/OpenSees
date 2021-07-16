@@ -6,5 +6,5 @@ target_sources(OPS_Element_componentElement
     PUBLIC
         ComponentElement2d.h
 )
-target_include_directories(OPS_Element_componentElement PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_componentElement PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

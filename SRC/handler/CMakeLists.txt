@@ -2,7 +2,7 @@
 
 target_sources(G3_Handler
     PRIVATE
-	OPS_Stream.cpp
+    OPS_Stream.cpp
         StandardStream.cpp
         FileStream.cpp
         XmlFileStream.cpp
@@ -14,7 +14,7 @@ target_sources(G3_Handler
         TCP_Stream.cpp
         ChannelStream.cpp
     PUBLIC
-	OPS_Stream.h
+    OPS_Stream.h
         StandardStream.h
         FileStream.h
         XmlFileStream.h
@@ -27,4 +27,4 @@ target_sources(G3_Handler
         ChannelStream.h
 )
 
-target_include_directories(G3_Handler PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Handler PUBLIC ${CMAKE_CURRENT_LIST_DIR})

@@ -1,17 +1,17 @@
 
 target_sources(G3_SysOfEqn
     PRIVATE 
-    	SparseGenColLinSOE.cpp
-	SparseGenColLinSolver.cpp
-	SparseGenRowLinSOE.cpp
-	SparseGenRowLinSolver.cpp
-	SuperLU.cpp
+        SparseGenColLinSOE.cpp
+    SparseGenColLinSolver.cpp
+    SparseGenRowLinSOE.cpp
+    SparseGenRowLinSolver.cpp
+    SuperLU.cpp
     PUBLIC
-    	SparseGenColLinSOE.h
-	SparseGenColLinSolver.h
-	SparseGenRowLinSOE.h
-	SparseGenRowLinSolver.h
-	SuperLU.h
+        SparseGenColLinSOE.h
+    SparseGenColLinSolver.h
+    SparseGenRowLinSOE.h
+    SparseGenRowLinSolver.h
+    SuperLU.h
 )
 
 target_sources(OPS_PFEM
@@ -61,5 +61,5 @@ target_sources(OpenSeesMP
         PFEMCompressibleSolver_Mumps.h
 )
 
-target_include_directories(OPS_SysOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

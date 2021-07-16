@@ -1,21 +1,21 @@
 
 target_sources(OPS_Material
     PRIVATE
-	DrainHardeningMaterial.cpp
-	anal00.f
-	common00.f
-	DrainBilinearMaterial.cpp
-	DrainClough1Material.cpp
-	DrainClough2Material.cpp
-	DrainPinch1Material.cpp
+    DrainHardeningMaterial.cpp
+    anal00.f
+    common00.f
+    DrainBilinearMaterial.cpp
+    DrainClough1Material.cpp
+    DrainClough2Material.cpp
+    DrainPinch1Material.cpp
     PUBLIC
-	DrainHardeningMaterial.h
-	DrainBilinearMaterial.h
-	DrainClough1Material.h
-	DrainClough2Material.h
-	DrainPinch1Material.h
+    DrainHardeningMaterial.h
+    DrainBilinearMaterial.h
+    DrainClough1Material.h
+    DrainClough2Material.h
+    DrainPinch1Material.h
 )
 
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 

@@ -68,5 +68,5 @@ target_sources(OPS_Renderer
 )
 #endif()
 add_subdirectory(response)
-#target_include_directories(recorder PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(recorder PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

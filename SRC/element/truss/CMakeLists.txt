@@ -2,21 +2,21 @@ add_library(OPS_Element_truss OBJECT)
 
 target_sources(OPS_Element_truss
     PRIVATE
-	Truss.cpp
-	TrussSection.cpp
-	CorotTruss.cpp
-	CorotTrussSection.cpp
-	Truss2.cpp
-	N4BiaxialTruss.cpp
-	CorotTruss2.cpp
+    Truss.cpp
+    TrussSection.cpp
+    CorotTruss.cpp
+    CorotTrussSection.cpp
+    Truss2.cpp
+    N4BiaxialTruss.cpp
+    CorotTruss2.cpp
     PUBLIC
-	Truss.h
-	TrussSection.h
-	CorotTruss.h
-	CorotTrussSection.h
-	Truss2.h
-	N4BiaxialTruss.h
-	CorotTruss2.h
+    Truss.h
+    TrussSection.h
+    CorotTruss.h
+    CorotTrussSection.h
+    Truss2.h
+    N4BiaxialTruss.h
+    CorotTruss2.h
 )
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
