@@ -1,60 +1,69 @@
+
 target_sources(G3_Material
     PRIVATE
-      MaterialState.cpp
-      UniaxialMaterial.cpp
-      ElasticMaterial.cpp
-      Elastic2Material.cpp
-      ElasticPowerFunc.cpp
-      UVCuniaxial.cpp
+      AxialSp.cpp
+      AxialSp.cpp
+      AxialSpHD.cpp
+      BWBN.cpp
       Bilin.cpp
       Bilin02.cpp
+
+      ConcreteCM.cpp
+      ConcreteD.cpp
+      ConcretewBeta.cpp
+
+      Elastic2Material.cpp
+      ElasticBilin.cpp
+      ElasticMaterial.cpp
+      ElasticMultiLinear.cpp
+      ElasticPPMaterial.cpp
+      ElasticPowerFunc.cpp
+
       IMKBilin.cpp
       IMKPeakOriented.cpp
       IMKPinching.cpp
-      Steel2.cpp
+
+      MaterialState.cpp
       OriginCentered.cpp
-      ConcretewBeta.cpp
-      ConcreteD.cpp
-      ConcreteCM.cpp
-      SteelMPF.cpp
-      c14-SK-M.f
-      ElasticMultiLinear.cpp
-      ElasticPPMaterial.cpp
-      ElasticBilin.cpp
       ParallelMaterial.cpp
       ResilienceLow.cpp
-      AxialSp.cpp
-      BWBN.cpp
-      AxialSpHD.cpp
-      AxialSp.cpp
+      Steel2.cpp
+      SteelMPF.cpp
+      UVCuniaxial.cpp
+      UniaxialMaterial.cpp
     PUBLIC
-      MaterialState.h
-      UniaxialMaterial.h
-      ElasticMaterial.h
-      Elastic2Material.h
-      ElasticPowerFunc.h
-      UVCuniaxial.h
+      AxialSp.h
+      AxialSp.h
+      AxialSpHD.h
+      BWBN.h
       Bilin.h
       Bilin02.h
+
+      ConcreteCM.h
+      ConcreteD.h
+      ConcretewBeta.h
+
+      Elastic2Material.h
+      ElasticBilin.h
+      ElasticMaterial.h
+      ElasticMultiLinear.h
+      ElasticPPMaterial.h
+      ElasticPowerFunc.h
+
       IMKBilin.h
       IMKPeakOriented.h
       IMKPinching.h
-      Steel2.h
+
+      MaterialState.h
       OriginCentered.h
-      ConcretewBeta.h
-      ConcreteD.h
-      ConcreteCM.h
-      SteelMPF.h
-      ElasticMultiLinear.h
-      ElasticPPMaterial.h
-      ElasticBilin.h
       ParallelMaterial.h
       ResilienceLow.h
-      AxialSp.h
-      BWBN.h
-      AxialSpHD.h
-      AxialSp.h
+      Steel2.h
+      SteelMPF.h
+      UVCuniaxial.h
+      UniaxialMaterial.h
 )
+
 
 target_sources(OPS_Material
     PRIVATE
@@ -87,7 +96,6 @@ target_sources(OPS_Material
       DamperMaterial.cpp
       DegradingPinchedBW.cpp
       DoddRestr.cpp
-      DoddRestrepo.f
       Dodd_Restrepo.cpp
       DrainMaterial.cpp
       ECC01.cpp
@@ -126,7 +134,6 @@ target_sources(OPS_Material
       ResilienceMaterialHR.cpp
       SAWSMaterial.cpp
       SPSW02.cpp
-      STEELDR.f
       SecantConcrete.cpp
       SelfCenteringMaterial.cpp
       SeriesMaterial.cpp
@@ -155,7 +162,6 @@ target_sources(OPS_Material
       ViscousDamper.cpp
       ViscousMaterial.cpp
       WrapperUniaxialMaterial.cpp
-      c14-SK-M.f
       pyUCLA.cpp
     PUBLIC
       ASD_SMA_3K.h
@@ -260,6 +266,15 @@ target_sources(OPS_Material
       pyUCLA.h
 )
 
+add_library(OPS_Material_f OBJECT)
+
+target_sources(OPS_Material_f PUBLIC
+      DoddRestrepo.f
+      STEELDR.f
+      c14-SK-M.f
+)
+
+target_link_libraries(OPS_Material PUBLIC OPS_Material_f)
 
 target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
 
@@ -273,4 +288,6 @@ add_subdirectory(PY)
 add_subdirectory(snap)
 add_subdirectory(fedeas)
 add_subdirectory(drain)
+
+
 

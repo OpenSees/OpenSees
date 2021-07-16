@@ -2,7 +2,6 @@ target_sources(G3_Analysis
     PRIVATE
       Accelerator.cpp
       MillerAccelerator.cpp 
-      naccel.f
       RaphsonAccelerator.cpp 
       PeriodicAccelerator.cpp 
       KrylovAccelerator.cpp 
@@ -25,5 +24,9 @@ target_sources(G3_Analysis
       SecantAccelerator2.h 
       SecantAccelerator3.h
 )
+# Build files are not properly generated for Windows
+# when libraries contain both C++ and Fortran files
+add_library(G3_Analysis_Naccel OBJECT naccel.f)
+target_link_libraries(G3_Analysis G3_Analysis_Naccel)
 
 target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))

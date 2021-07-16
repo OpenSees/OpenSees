@@ -34,7 +34,7 @@
 #
 #==============================================================================
 set(CONDA_DIR "C:/Users/claud/miniconda3")
-set(CONDA_ENV "c/Users/claud/miniconda3/envs/sim")
+set(CONDA_ENV "C:/Users/claud/miniconda3/envs/sim")
 
 opensees_load(TCL                                          #FIND
 	LIBRARY ${CONDA_DIR}/Library/lib/tcl86t.lib
@@ -42,6 +42,8 @@ opensees_load(TCL                                          #FIND
 )
 
 set(TCL_INCLUDE_PATH ${TCL_INCLUDE_DIRS})
+set(TCL_LIBRARY ${TCL_LIBRARIES})
+
 message("TCL: ${TCL_INCLUDE_PATH}")
 
 opensees_load(BLAS                                         SEARCH
@@ -52,14 +54,16 @@ opensees_load(LAPACK                                       SEARCH
     #LIBRARY /home/claudio/lib/libLapack.a
 )
 
-set(ENV{SUPERLU_DIR}  )
+set(ENV{SUPERLU_DIR})
 opensees_load(SUPERLU                                       #SEARCH
     BUNDLED ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
     #LIBRARY ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
     #INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
 )
 
-opensees_load(ARPACK                                       SEARCH)
+opensees_load(ARPACK                                       SEARCH
+    BUNDLED ${OPS_BUNDLED_DIR}/ARPACK/
+)
 
 opensees_load(METIS                                        SEARCH)
 
