@@ -210,6 +210,7 @@ add_library(G3_Utilities           OBJECT)
 add_library(G3_Element             OBJECT)
 add_library(G3_Material            OBJECT)
 add_library(G3_ModelBuilder        OBJECT)
+
 add_library(G3_Numerics            INTERFACE)
 target_link_libraries(G3_Numerics INTERFACE
     ${ARPACK_LIBRARIES}
@@ -218,6 +219,7 @@ target_link_libraries(G3_Numerics INTERFACE
     ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
     ${AMD_LIBRARIES}
 )
+
 
 # Core OpenSees
 add_library(OPS_Tcl                STATIC)
