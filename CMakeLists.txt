@@ -33,6 +33,7 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 include(OpenSeesFunctions)
+
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
@@ -58,7 +59,7 @@ if (UNIX)
     endif()
 endif()
 
-if(WIN32)
+if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
     target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
@@ -218,6 +219,7 @@ target_link_libraries(G3_Numerics  INTERFACE
     ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
 )
 
+
 # Core OpenSees
 add_library(OPS_Tcl                STATIC)
 add_library(OPS_Domain             OBJECT)
@@ -249,8 +251,12 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
-add_executable(OpenSeesSP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
-add_executable(OpenSeesMP    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/tcl/tclAppInit.cpp)
+add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+)
+add_executable(OpenSeesMP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+)
 add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
 
 
@@ -479,6 +485,17 @@ if(FMK)
         _FILIP_LHNMYS
     )    
 endif()
+
+#----------------------------
+# Extensions
+#----------------------------
+message("OPS >>> Configuring OpenSees extensions")
+foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
+    string(TOUPPER "${extension}" ext_flag) 
+    set(ext_flag "_${ext_flag}")
+    message("    Adding macro definition '${ext_flag}'")
+    add_compile_definitions(${ext_flag})
+endforeach()
 
 #----------------------------
 # Renderer

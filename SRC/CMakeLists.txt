@@ -1,5 +1,7 @@
+
 add_subdirectory(domain)
 add_subdirectory(damage)
+add_subdirectory(actor)
 add_subdirectory(analysis)
 add_subdirectory(convergenceTest)
 add_subdirectory(coordTransformation)
@@ -13,19 +15,9 @@ add_subdirectory(tagged)
 add_subdirectory(utility)
 
 add_subdirectory(modelbuilder)
-
 add_subdirectory(tcl)
-if (EXISTS base)
-add_subdirectory(base)
-endif()
 add_subdirectory(system_of_eqn)
-
 add_subdirectory(renderer)
-
 add_subdirectory(api)
-
-add_subdirectory(actor)
-
 add_subdirectory(database)
-
 

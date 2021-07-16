@@ -25,5 +25,5 @@ target_sources(OPS_Element_elastomericBearing
         HDR.h
         LeadRubberX.h
 )
-target_include_directories(OPS_Element_elastomericBearing PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_elastomericBearing PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

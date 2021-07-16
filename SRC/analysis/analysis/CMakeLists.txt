@@ -32,6 +32,6 @@ target_sources(OPS_PFEM
     PUBLIC
         PFEMAnalysis.h 
 )
-#target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 #add_subdirectory(analysis)

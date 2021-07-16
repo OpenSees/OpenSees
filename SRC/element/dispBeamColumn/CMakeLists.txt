@@ -1,5 +1,6 @@
+# TODO: Create new dispBeamColumn target
 target_sources(OPS_Element
-    PRIVATE
+  PRIVATE
     DispBeamColumn2d.cpp
     DispBeamColumn3d.cpp
     DispBeamColumnAsym3d.cpp
@@ -11,7 +12,7 @@ target_sources(OPS_Element
     AxEqDispBeamColumn2d.cpp
     TimoshenkoBeamColumn2d.cpp
     DispBeamColumn3dID.cpp
-    PUBLIC
+  PUBLIC
     DispBeamColumn2d.h
     DispBeamColumn3d.h
     DispBeamColumnAsym3d.h
@@ -25,4 +26,4 @@ target_sources(OPS_Element
     DispBeamColumn3dID.h
 )
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})

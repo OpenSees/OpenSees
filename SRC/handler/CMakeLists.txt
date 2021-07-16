@@ -27,4 +27,4 @@ target_sources(G3_Handler
         ChannelStream.h
 )
 
-target_include_directories(G3_Handler PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Handler PUBLIC ${CMAKE_CURRENT_LIST_DIR})

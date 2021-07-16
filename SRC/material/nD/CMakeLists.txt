@@ -138,7 +138,7 @@ target_sources(OPS_Material
     PlateRebarMaterialThermal.h
 )
 
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 if(FMK)
    target_sources(OPS_Material

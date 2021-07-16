@@ -20,11 +20,6 @@ target_sources(G3_Utilities
       Information.h
 )
 
-#target_sources(OPS_Tcl
-#    PRIVATE
-#        TclElementCommands.cpp
-#    #PUBLIC
-#)
 
 add_subdirectory(fourNodeQuad)
 add_subdirectory(twoNodeLink)
@@ -76,5 +71,5 @@ add_subdirectory(UWelements)
 add_subdirectory(HUelements)
 add_subdirectory(XMUelements)
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

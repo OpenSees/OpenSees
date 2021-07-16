@@ -5,7 +5,7 @@ target_sources(G3_Analysis
       FE_Element.h
 )
 
-#target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(penalty)
 add_subdirectory(lagrange)

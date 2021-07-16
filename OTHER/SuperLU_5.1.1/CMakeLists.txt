@@ -1,14 +1,21 @@
-#  sparse supernodal LU, implemented in ANSI C
-
-#######################################################################
-#  This is the makefile to create a library for SuperLU.
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#     (c) Copyright 1999-2021 The Regents of the University of California
+#                             All Rights Reserved
+# (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
+#
+#------------------------------------------------------------------------------
+##-Extracted from accompanying Makefile-###############################
 #  The files are organized as follows:
 #
-#       ALLAUX -- Auxiliary routines called from all precisions of SuperLU
-#    SLUSRC -- Single precision real SuperLU routines
-#       DLUSRC -- Double precision real SuperLU routines
-#    CLUSRC -- Single precision complex SuperLU routines
-#       ZLUSRC -- Double precision complex SuperLU routines
+#   ALLAUX -- Auxiliary routines called from all precisions of SuperLU
+#   SLUSRC -- Single precision real SuperLU routines
+#   DLUSRC -- Double precision real SuperLU routines
+#   CLUSRC -- Single precision complex SuperLU routines
+#   ZLUSRC -- Double precision complex SuperLU routines
 #
 #  The library can be set up to include routines for any combination
 #  of the four precisions.  To create or add to the library, enter make
@@ -27,14 +34,12 @@
 #       make clean
 #
 #######################################################################
+# Claudio Perez
 
 project(SUPERLU C)
 set(SUPERLU_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/SRC")
 
 add_library(SUPERLU)
-
-### return machine parameters
-#SCAUX     = smach.o
 
 add_library(DZLAUX  OBJECT
     ${SUPERLU_SRC_DIR}/dmach.c
@@ -241,43 +246,4 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
 export(TARGETS ALLAUX DZLAUX DLUSRC SUPERLU
        FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/SUPERLU.cmake"
 )
-
-#all:    double 
-#
-#single: $(SLUSRC) $(ALLAUX) $(SCAUX)
-#    $(ARCH) $(ARCHFLAGS) $(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SCAUX)
-#    $(RANLIB) $(SUPERLULIB)
-#
-#double: $(DLUSRC) $(ALLAUX) $(DZLAUX)
-#    $(ARCH) $(ARCHFLAGS) $(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZLAUX)
-#    $(RANLIB) $(SUPERLULIB)
-#
-#complex: $(CLUSRC) $(ALLAUX) $(SCAUX)
-#    $(ARCH) $(ARCHFLAGS) $(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SCAUX)
-#    $(RANLIB) $(SUPERLULIB)
-#
-#complex16: $(ZLUSRC) $(ALLAUX) $(DZLAUX)
-#    $(ARCH) $(ARCHFLAGS) $(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZLAUX)
-#    $(RANLIB) $(SUPERLULIB)
-#
-#
-###################################
-## Do not optimize these routines #
-###################################
-#smach.o: smach.c
-#    ${SUPERLU_SRC_DIR}/; $(CC) -c -fPIC $(NOOPTS) $(CDEFS) $<
-#dmach.o: dmach.c
-#    ${SUPERLU_SRC_DIR}/; $(CC) -c -fPIC $(NOOPTS) $(CDEFS) $<
-#superlu_timer.o:  superlu_timer.c
-#    ${SUPERLU_SRC_DIR}/; $(CC) -c -fPIC $(NOOPTS) $<
-###################################
-#
-#.c.o:
-#    $(CC) $(CFLAGS) $(CDEFS) $(BLASDEF) -c $< $(VERBOSE)
-#
-#.f.o:
-#    $(FORTRAN) $(FFLAGS) -c $<
-#
-#clean:    
-#    rm -f *.o $(SUPERLULIB)
 

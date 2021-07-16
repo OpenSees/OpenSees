@@ -17,5 +17,5 @@ target_sources(OPS_Element_PML_f
 )
 
 target_link_libraries(OPS_Element_PML PUBLIC OPS_Element_PML_f)
-target_include_directories(OPS_Element_PML PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_PML PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

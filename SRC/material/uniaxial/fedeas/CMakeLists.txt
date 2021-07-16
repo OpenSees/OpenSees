@@ -26,6 +26,7 @@ target_sources(OPS_Material
         FedeasSteel2Material.h
         PlasticDamageMaterial.h
 )
+<<<<<<< HEAD
 
 add_library(OPS_Material_Uniaxial_Fedeas OBJECT)
 target_sources(OPS_Material_Uniaxial_Fedeas 
@@ -33,7 +34,5 @@ target_sources(OPS_Material_Uniaxial_Fedeas
         Hard1.f
         PD1.f
 )
-target_link_libraries(OPS_Material PUBLIC OPS_Material_Uniaxial_Fedeas)
-
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

@@ -42,5 +42,5 @@ add_library(OPS_Renderer_X11 OBJECT
         #X11Renderer.h
 )
 
-target_include_directories(OPS_Renderer PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Renderer PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
