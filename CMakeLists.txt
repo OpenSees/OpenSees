@@ -9,7 +9,22 @@ cmake_minimum_required(VERSION 3.16)
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
 #------------------------------------------------------------------------------
-# Major sections:
+# The CMake build system is primarily composed of 3 files:
+#
+# 1) /CMakeLists.txt (this): The root-level CMakeLists.txt defines most of the
+#    logic for generating the OpenSees build system. It is responsible for
+#    sourcing all other CMake files.
+#
+# 2) /Conf.cmake: This file is meant to be modified by intermediate to advanced
+#    users who may wish to use non-default configuration options.
+#
+# 3) /ETC/cmake/OpenSeesDependencies*.cmake: This file is used to configure a
+#    strategy for locating build dependencies. Users should not have to modify
+#    these files for standard builds on common operating systems; a correct
+#    strategy should be automatically configured based on the detected OS.
+#
+#    
+# Major sections in this file:
 # - General Setup
 #   Project wide includes, properties, libraries, etc
 #
@@ -44,6 +59,8 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 #                            OS Configuration
 #
 #==============================================================================
+add_library(OPS_OS_Specific_libs INTERFACE)
+
 if (UNIX)
     include(OpenSeesDependenciesUnix)
 
@@ -59,7 +76,14 @@ endif()
 
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
+    target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
     message(STATUS ">>> WIN32")
+endif()
+if(WIN64)
+    include(OpenSeesDependenciesWin)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock64 ws2_64)
+    message(STATUS ">>> WIN64")
 endif()
 
 message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
@@ -203,7 +227,7 @@ add_library(G3_ModelBuilder        OBJECT)
 
 add_library(G3_Numerics            INTERFACE)
 target_link_libraries(G3_Numerics  INTERFACE
-    ${ARPACK_LIBRARIES}
+    ${ARPACK_LIBRARIES} 
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
     ${AMD_LIBRARIES}
@@ -316,6 +340,7 @@ target_link_libraries(OpenSees
     OPS_Analysis
     OPS_Domain
     OPS_Api
+    OPS_OS_Specific_libs
     G3
     ${MYSQL_LIBRARIES}
 )
@@ -406,7 +431,7 @@ target_sources(OPS_Tcl PRIVATE
     "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
     "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
 
-	"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
+	#"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
 	"${OPS_SRC_DIR}/tcl/commands.cpp"
     "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
     

@@ -60,7 +60,7 @@ target_sources(ARPACK PUBLIC
   ivout.f
   second.f
 )
-
+target_link_libraries(ARPACK PUBLIC ${LAPACK_LIBRARIES})
 
 # Required on Unix OS family to be able to be linked into shared libraries.
 set_target_properties(${PROJECT_NAME}
