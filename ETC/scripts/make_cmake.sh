@@ -7,27 +7,32 @@ for i in */
 do 
 	# remove trailing slash
 	i=${i%*/}
-	name=`echo $i | sed 's|-|_|g'`;
+	#name=`echo $i | sed 's|-|_|g' | sed -r 's/\<./\U&/g'`;
+	name="Renderer";
 	if [ -f $i/CMakeLists.txt ]; then
 		:
 		#echo $i;
 		#cat $i/CMakeLists.txt;
 	else 
-		echo "OPS_Element_$name"
+		#echo "OPS_$name"
 		{
-		echo "add_library(OPS_Element_$name OBJECT)";
+		echo "add_library(OPS_$name OBJECT)";
 		echo "";
 		cd "$i";
-		echo "target_sources(OPS_Element_$name";
+		echo "target_sources(OPS_$name";
 		echo "    PRIVATE";
-		ls -1 *.[cfF]* | sed 's|^\([A-z]\)|        \1|g';
+		ls -1 *.[cfF]* | sed 's|^\([A-z]\)|        \1|g' | grep -v Tcl;
 		echo "    PUBLIC";
-		ls -1 *.h | sed 's|^\([A-z]\)|        \1|g';
-		cd ../;
+		ls -1 *.h | sed 's|^\([A-z]\)|        \1|g' | grep -v Tcl;
 		echo ")";
-		echo "target_include_directories(OPS_Element_$name PUBLIC \$(CMAKE_CURRENT_LIST_DIR))";
+		echo "target_include_directories(OPS_$name PUBLIC \$(CMAKE_CURRENT_LIST_DIR))";
 		echo "";
-		} > $i/CMakeLists.txt 2>&1
+		for d in ./*/
+		do
+			echo "add_subdirectory($d)" | grep -v '/\*/';
+		done
+		cd ../;
+		} 2>&1 #> $i/CMakeLists.txt
 	fi;
 done
 
