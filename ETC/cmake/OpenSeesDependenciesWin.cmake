@@ -46,19 +46,24 @@ set(TCL_LIBRARY ${TCL_LIBRARIES})
 
 message("TCL: ${TCL_INCLUDE_PATH}")
 
-opensees_load(BLAS                                         SEARCH
-    #LIBRARY /home/claudio/lib/libBlas.a
+opensees_load(BLAS                                         #FIND
+	LIBRARY ${CONDA_ENV}/Library/lib/blas.lib
+	INCLUDE ${CONDA_ENV}/Library/include/
 )
 
-opensees_load(LAPACK                                       SEARCH
-    #LIBRARY /home/claudio/lib/libLapack.a
+opensees_load(CBLAS                                         #FIND
+	LIBRARY ${CONDA_ENV}/Library/lib/cblas.lib
+	INCLUDE ${CONDA_ENV}/Library/include/
+)
+
+opensees_load(LAPACK                                       #FIND
+	LIBRARY ${CONDA_ENV}/Library/lib/lapack.lib
+	INCLUDE ${CONDA_ENV}/Library/include/
 )
 
 set(ENV{SUPERLU_DIR})
 opensees_load(SUPERLU                                       #SEARCH
     BUNDLED ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
-    #LIBRARY ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
-    #INCLUDE ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
 )
 
 opensees_load(ARPACK                                       SEARCH

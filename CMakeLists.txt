@@ -43,6 +43,8 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 #                            OS Configuration
 #
 #==============================================================================
+add_library(OPS_OS_Specific_libs INTERFACE)
+
 if (UNIX)
     include(OpenSeesDependenciesUnix)
 
@@ -58,7 +60,14 @@ endif()
 
 if(WIN32)
     include(OpenSeesDependenciesWin)
+    target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
     message(STATUS ">>> WIN32")
+endif()
+if(WIN64)
+    include(OpenSeesDependenciesWin)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock64 ws2_64)
+    message(STATUS ">>> WIN64")
 endif()
 
 message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
@@ -202,7 +211,7 @@ add_library(G3_ModelBuilder        OBJECT)
 
 add_library(G3_Numerics            INTERFACE)
 target_link_libraries(G3_Numerics  INTERFACE
-    ${ARPACK_LIBRARIES}
+    ${ARPACK_LIBRARIES} 
     ${SUPERLU_LIBRARIES}
     ${UMFPACK_LIBRARIES}
     ${AMD_LIBRARIES}
@@ -310,6 +319,7 @@ target_link_libraries(OpenSees
     OPS_Analysis
     OPS_Domain
     OPS_Api
+    OPS_OS_Specific_libs
     G3
     ${MYSQL_LIBRARIES}
 )
@@ -400,7 +410,7 @@ target_sources(OPS_Tcl PRIVATE
     "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
     "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
 
-	"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
+	#"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
 	"${OPS_SRC_DIR}/tcl/commands.cpp"
     "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
     
