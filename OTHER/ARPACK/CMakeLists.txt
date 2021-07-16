@@ -32,14 +32,14 @@ target_sources(ARPACK PUBLIC
   dsortr.f
   dstatn.f
   dstats.f
-	dnaitr.f
+  dnaitr.f
   dnapps.f
   dnaup2.f
   dnaupd.f
   dnconv.f
   dneigh.f
   dngets.f
-	dsaitr.f
+  dsaitr.f
   dsapps.f
   dsaup2.f
   dsaupd.f
@@ -47,13 +47,13 @@ target_sources(ARPACK PUBLIC
   dseigt.f
   dsgets.f
   
-	dneupd.f
+  dneupd.f
   dseupd.f
   dsesrt.f
   dvout.f
   dmout.f
   
-	icnteq.f
+  icnteq.f
   icopy.f
   iset.f
   iswap.f
