@@ -9,5 +9,5 @@ target_sources(OPS_Element_beam3d
         beam3d02.h
 )
 
-target_include_directories(OPS_Element_beam3d PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_beam3d PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

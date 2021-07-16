@@ -76,5 +76,5 @@ add_subdirectory(UWelements)
 add_subdirectory(HUelements)
 add_subdirectory(XMUelements)
 
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

@@ -6,5 +6,5 @@ target_sources(OPS_String
     PUBLIC
         G3string.h
 )
-target_include_directories(OPS_String PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_String PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

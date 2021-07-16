@@ -69,7 +69,7 @@ target_sources(G3_Material
 	TimoshenkoSection3d.h
 )
 
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(fiber)
 add_subdirectory(repres)

@@ -27,5 +27,5 @@ target_sources(OPS_Material
         ReeseStiffClayBelowWS.h
         TrilinearBackbone.h
 )
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

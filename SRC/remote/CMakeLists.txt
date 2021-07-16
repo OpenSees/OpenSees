@@ -4,5 +4,5 @@ target_sources(OPS_Remote
     PRIVATE
         remote.c
 )
-target_include_directories(OPS_Remote PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Remote PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

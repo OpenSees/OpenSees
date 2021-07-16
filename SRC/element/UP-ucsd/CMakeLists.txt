@@ -21,5 +21,5 @@ target_sources(OPS_Element_UP_ucsd
         shp3dv.h
         Twenty_Eight_Node_BrickUP.h
 )
-target_include_directories(OPS_Element_UP_ucsd PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_UP_ucsd PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

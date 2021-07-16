@@ -9,4 +9,4 @@ target_sources(G3_Analysis
       TransformationDOF_Group.h
 )
 
-target_include_directories(G3_Analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})

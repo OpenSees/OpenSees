@@ -19,5 +19,5 @@ target_sources(OPS_Damage
 	DamageResponse.h
 )
 
-target_include_directories(OPS_Damage PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Damage PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

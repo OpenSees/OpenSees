@@ -25,5 +25,5 @@ target_sources(OPS_Element_feap
 
 opensees_add_cxx_flag(OPS_Element_feap GNU -fpermissive)
 
-target_include_directories(OPS_Element_feap PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_feap PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

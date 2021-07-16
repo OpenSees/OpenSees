@@ -5,4 +5,4 @@ target_sources(OPS_Material
 	MaterialCMM.h
 )
 
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

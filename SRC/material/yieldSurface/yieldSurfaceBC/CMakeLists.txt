@@ -19,5 +19,5 @@ target_sources(OPS_Material_YieldSurface
         YieldSurface_BC2D.h
         YieldSurface_BC.h
 )
-target_include_directories(OPS_Material_YieldSurface PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material_YieldSurface PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

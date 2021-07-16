@@ -19,5 +19,5 @@ target_sources(OPS_Database
 	#NEESData.h
         OracleDatastore.h
 )
-target_include_directories(OPS_Database PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Database PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

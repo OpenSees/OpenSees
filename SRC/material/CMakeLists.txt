@@ -7,7 +7,7 @@ target_sources(G3_Material
       Material.h
 )
 
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(uniaxial)
 add_subdirectory(nD)

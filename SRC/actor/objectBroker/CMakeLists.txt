@@ -16,4 +16,4 @@ if (OSP_OPTION_BROKER_ALL)
 )
 endif()
 
-target_include_directories(G3_Actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(G3_Actor PUBLIC ${CMAKE_CURRENT_LIST_DIR})

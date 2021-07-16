@@ -6,5 +6,5 @@ target_sources(OPS_Element_absorbentBoundaries
     PUBLIC
         LysmerTriangle.h
 )
-target_include_directories(OPS_Element_absorbentBoundaries PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element_absorbentBoundaries PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
