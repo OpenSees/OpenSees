@@ -48,6 +48,7 @@ message("TCL: ${TCL_INCLUDE_PATH}")
 
 opensees_load(BLAS                                         #FIND
 	LIBRARY ${CONDA_ENV}/Library/lib/blas.lib
+	INCLUDE ${CONDA_ENV}/Library/include/
 )
 
 opensees_load(CBLAS                                         #FIND
