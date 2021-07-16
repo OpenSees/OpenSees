@@ -7,8 +7,6 @@
 #                             All Rights Reserved
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
-#------------------------------------------------------------------------------
-
 #==============================================================================
 #                           Select Executable
 #
@@ -23,12 +21,14 @@ set(OPS_FINAL_TARGET "OpenSeesTcl"
 option(FMK
     "Special FMK Code"                                       OFF)
 
-option(OPS_THREADSAFE
-    "Only build thread safe components"                       ON)
+# G3 Options
+#--------------------------------------
+option(G3_Api_OPS_Global
+    "Compile G3 library with bindings \
+     to the global OpenSees API"                              ON)
 
 # Component Libraries
 #--------------------------------------
-
 option(OPS_Use_Reliability   
     "Include reliability"                                    OFF)
 
@@ -68,17 +68,34 @@ define_property(TARGET
     FULL_DOCS  "..."
 )
 
-
 #==============================================================================
-#                           Select Element Libraries
+#                           Select Auxiliary Libraries
 #
-# Each element in this list ows and associated macro definition
+# Each element in this list owns an associated macro definition that is the
+# name of the lib converted to uppercase, and prepended with an underscore
+# (e.g. using OPS_Element_truss defines the macro _OPS_ELEMENT_TRUSS)
 #==============================================================================
+set(OPS_Extension_List
+
+    OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
+
+    OPS_NumLib_PETSC
+    OPS_NumLib_METIS
+    OPS_NumLib_UMFPACK
+
+    OPS_ExtLib_PFEM
+
+    OPS_Graphics
+    OPS_Renderer 
+    OPS_Renderer_GLX      # TODO: replace existing tests on '_GLX'
+    OPS_Renderer_X11
+)
+
 set(OPS_Element_List
 
     OPS_Element_truss
-    OPS_Element_beam3d
     #OPS_Element_beam2d
+    OPS_Element_beam3d
     OPS_Element_dispBeamColumnInt
     OPS_Element_forceBeamColumn
     OPS_Element_mixedBeamColumn
