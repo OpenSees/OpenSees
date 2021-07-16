@@ -1,21 +1,21 @@
 
 target_sources(OPS_DRM
     PRIVATE
-	Mesh3DSubdomain.cpp
-	GeometricBrickDecorator.cpp
-	DRMBoundaryLayerDecorator.cpp
-	DRMLoadPattern.cpp
-	DRMLoadPatternWrapper.cpp
-	DRMInputHandler.cpp
-	PlaneDRMInputHandler.cpp
+    Mesh3DSubdomain.cpp
+    GeometricBrickDecorator.cpp
+    DRMBoundaryLayerDecorator.cpp
+    DRMLoadPattern.cpp
+    DRMLoadPatternWrapper.cpp
+    DRMInputHandler.cpp
+    PlaneDRMInputHandler.cpp
     PUBLIC
-	Mesh3DSubdomain.h
-	GeometricBrickDecorator.h
-	DRMBoundaryLayerDecorator.h
-	DRMLoadPattern.h
-	DRMLoadPatternWrapper.h
-	DRMInputHandler.h
-	PlaneDRMInputHandler.h
+    Mesh3DSubdomain.h
+    GeometricBrickDecorator.h
+    DRMBoundaryLayerDecorator.h
+    DRMLoadPattern.h
+    DRMLoadPatternWrapper.h
+    DRMInputHandler.h
+    PlaneDRMInputHandler.h
 )
 if (OPS_Use_HDF5)
 target_sources(OPS_DRM

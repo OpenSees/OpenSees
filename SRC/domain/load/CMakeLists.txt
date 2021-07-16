@@ -1,35 +1,35 @@
 
 target_sources(G3_Domain
     PRIVATE
-	Load.cpp
-	#ElementalLoad.cpp
-	ElementalLoadIter.cpp
-	NodalLoadIter.cpp
-	Beam2dUniformLoad.cpp
-	Beam2dPointLoad.cpp
-	Beam2dPartialUniformLoad.cpp
-	Beam3dUniformLoad.cpp
-	Beam3dPointLoad.cpp
-	Beam3dPartialUniformLoad.cpp
-	BrickSelfWeight.cpp
-	SurfaceLoader.cpp
-	SelfWeight.cpp
-	LysmerVelocityLoader.cpp
+    Load.cpp
+    #ElementalLoad.cpp
+    ElementalLoadIter.cpp
+    NodalLoadIter.cpp
+    Beam2dUniformLoad.cpp
+    Beam2dPointLoad.cpp
+    Beam2dPartialUniformLoad.cpp
+    Beam3dUniformLoad.cpp
+    Beam3dPointLoad.cpp
+    Beam3dPartialUniformLoad.cpp
+    BrickSelfWeight.cpp
+    SurfaceLoader.cpp
+    SelfWeight.cpp
+    LysmerVelocityLoader.cpp
     PUBLIC
-	Load.h
-	#ElementalLoad.h
-	ElementalLoadIter.h
-	NodalLoadIter.h
-	Beam2dUniformLoad.h
-	Beam2dPointLoad.h
-	Beam2dPartialUniformLoad.h
-	Beam3dUniformLoad.h
-	Beam3dPointLoad.h
-	Beam3dPartialUniformLoad.h
-	BrickSelfWeight.h
-	SurfaceLoader.h
-	SelfWeight.h
-	LysmerVelocityLoader.h
+    Load.h
+    #ElementalLoad.h
+    ElementalLoadIter.h
+    NodalLoadIter.h
+    Beam2dUniformLoad.h
+    Beam2dPointLoad.h
+    Beam2dPartialUniformLoad.h
+    Beam3dUniformLoad.h
+    Beam3dPointLoad.h
+    Beam3dPartialUniformLoad.h
+    BrickSelfWeight.h
+    SurfaceLoader.h
+    SelfWeight.h
+    LysmerVelocityLoader.h
 )
 
 target_sources(OPS_Thermal

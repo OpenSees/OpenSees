@@ -1,8 +1,8 @@
 target_sources(G3_Matrix
     PRIVATE
-	MatrixUtil.cpp
+    MatrixUtil.cpp
     PUBLIC
-	MatrixUtil.h
+    MatrixUtil.h
 )
 
 target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))

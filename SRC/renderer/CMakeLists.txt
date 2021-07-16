@@ -6,8 +6,8 @@ target_sources(OPS_Renderer
         Device.cpp
         DofColorMap.cpp
         gMatrix.cpp
-	#OpenGlDevice.cpp
-	#OpenGlRenderer.cpp
+    #OpenGlDevice.cpp
+    #OpenGlRenderer.cpp
         PlainMap.cpp
         Projection.cpp
         Renderer.cpp
@@ -24,7 +24,7 @@ target_sources(OPS_Renderer
         Device.h
         DofColorMap.h
         OpenGlDevice.h
-	#OpenGLRenderer.h
+    #OpenGLRenderer.h
         PlainMap.h
         Projection.h
         Renderer.h

@@ -21,14 +21,14 @@ target_sources(G3_SysOfEqn
 
 target_sources(OPS_SysOfEqn
     PRIVATE
-	BandArpackSOE.cpp
-	BandArpackSolver.cpp
-	SymArpackSOE.cpp
-	SymArpackSolver.cpp
+    BandArpackSOE.cpp
+    BandArpackSolver.cpp
+    SymArpackSOE.cpp
+    SymArpackSolver.cpp
     PUBLIC
-	BandArpackSOE.h
-	BandArpackSolver.h
-	SymArpackSOE.h
-	SymArpackSolver.h
+    BandArpackSOE.h
+    BandArpackSolver.h
+    SymArpackSOE.h
+    SymArpackSolver.h
 )
 

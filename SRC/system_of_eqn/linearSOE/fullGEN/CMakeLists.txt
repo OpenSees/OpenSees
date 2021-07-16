@@ -2,13 +2,13 @@
 target_sources(OPS_SysOfEqn
     PRIVATE
         FullGenLinSOE.cpp
-	FullGenLinSolver.cpp
-    	FullGenLinLapackSolver.cpp
+    FullGenLinSolver.cpp
+        FullGenLinLapackSolver.cpp
 
     PUBLIC
         FullGenLinSOE.h
-	FullGenLinSolver.h
-    	FullGenLinLapackSolver.h
+    FullGenLinSolver.h
+        FullGenLinLapackSolver.h
 
 )
 
