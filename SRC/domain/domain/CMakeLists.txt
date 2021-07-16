@@ -1,22 +1,22 @@
 
 target_sources(G3_Domain
     PRIVATE
-	Domain.cpp
+    Domain.cpp
     PUBLIC
-	Domain.h
-	ElementIter.h
-	LoadCaseIter.h
-	MP_ConstraintIter.h
-	NodeIter.h
-	ParameterIter.h
-	Pressure_ConstraintIter.h
-	SP_ConstraintIter.h
-	SubdomainIter.h
+    Domain.h
+    ElementIter.h
+    LoadCaseIter.h
+    MP_ConstraintIter.h
+    NodeIter.h
+    ParameterIter.h
+    Pressure_ConstraintIter.h
+    SP_ConstraintIter.h
+    SubdomainIter.h
 )
 
 target_sources(OPS_ASDEA 
-	PRIVATE DomainModalProperties.cpp
-	PUBLIC DomainModalProperties.h
+    PRIVATE DomainModalProperties.cpp
+    PUBLIC DomainModalProperties.h
 )
 
 

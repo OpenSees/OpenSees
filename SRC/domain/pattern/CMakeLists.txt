@@ -50,6 +50,10 @@ target_sources(OPS_Domain
         PeerMotion.h
         PeerNGAMotion.h
 )
+
+# The following files are currently being added to the OPS_Tcl target
+# in the root-level CMakeLists.txt file
+
 #target_sources(OPS_Tcl
 #    PRIVATE
 #        TclSeriesCommand.cpp

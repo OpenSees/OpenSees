@@ -1,18 +1,18 @@
 
 target_sources(G3_SysOfEqn
     PRIVATE
-	    SymSparseLinSOE.cpp
-	    SymSparseLinSolver.cpp
-	    grcm.c
-	    nest.c
-	    nmat.c
-	    symbolic.c
-	    utility.c
-	    newordr.c
-	    nnsim.c
+        SymSparseLinSOE.cpp
+        SymSparseLinSolver.cpp
+        grcm.c
+        nest.c
+        nmat.c
+        symbolic.c
+        utility.c
+        newordr.c
+        nnsim.c
     PUBLIC
-	    SymSparseLinSOE.h
-	    SymSparseLinSolver.h
+        SymSparseLinSOE.h
+        SymSparseLinSolver.h
 )
 
 add_library(G3_SysOfEqn_f OBJECT)

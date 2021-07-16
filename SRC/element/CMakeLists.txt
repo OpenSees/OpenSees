@@ -20,11 +20,6 @@ target_sources(G3_Utilities
       Information.h
 )
 
-#target_sources(OPS_Tcl
-#    PRIVATE
-#        TclElementCommands.cpp
-#    #PUBLIC
-#)
 
 add_subdirectory(fourNodeQuad)
 add_subdirectory(twoNodeLink)
