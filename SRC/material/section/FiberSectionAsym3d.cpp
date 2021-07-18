@@ -28,7 +28,8 @@
 // Description: This file contains the class implementation of FiberSection2d.
 
 // Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
-// Description: Modified FiberSectionAsym3d.cpp to include shear center coordinates and high-order longitudinal strain terms.
+// Description: Modified FiberSection3d.cpp (from version 3.0.0 on 11/5/2018) 
+//              to include shear center coordinates and high-order longitudinal strain terms.
 // References:
 // Du, X., & Hajjar, J. (2021). Three-dimensional nonlinear displacement-based beam element
 // for members with angle and tee sections. Engineering Structures, 239, 112239.
@@ -55,7 +56,7 @@
 #include <elementAPI.h>
 #include <string.h>
 
-ID FiberSectionAsym3d::code(4);
+ID FiberSectionAsym3d::code(5);
 
 void* OPS_FiberSectionAsym3d()
 {
@@ -73,18 +74,23 @@ void* OPS_FiberSectionAsym3d()
     if (OPS_GetDoubleInput(&numData, dData) < 0) return 0;
 
     double GJ = 0.0;
-    ElasticMaterial *torsion = 0;
+    UniaxialMaterial *torsion = 0;
+    bool deleteTorsion = false;
     if (OPS_GetNumRemainingInputArgs() >= 2) {
         const char* opt = OPS_GetString();
         if (strcmp(opt, "-GJ") == 0) {
             numData = 1;
             if (OPS_GetDoubleInput(&numData, &GJ) < 0) return 0;
             torsion = new ElasticMaterial(0, GJ);
+            deleteTorsion = true;
         }
     }
     
     int num = 30;
-    return new FiberSectionAsym3d(tag, num, torsion,dData[0],dData[1]);
+    SectionForceDeformation* section = new FiberSectionAsym3d(tag, num, torsion, dData[0], dData[1]);
+    if (deleteTorsion)
+        delete torsion;
+    return section;
 }
 
 // constructors:
@@ -134,13 +140,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, Fiber **fibers, Uniaxia
     zBar = QyBar/Abar;
   }
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
+  theTorsion = torsion->getCopy();
   if (theTorsion == 0) {
     opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
   }
@@ -161,6 +161,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, Fiber **fibers, Uniaxia
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
+  code(4) = SECTION_RESPONSE_W;
 }
 
 FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsion, double yss, double zss):    //Xinlong 
@@ -191,13 +192,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsi
 	}
     }
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
+  theTorsion = torsion->getCopy();
   if (theTorsion == 0) {
     opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
   }
@@ -218,6 +213,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsi
     code(1) = SECTION_RESPONSE_MZ;
     code(2) = SECTION_RESPONSE_MY;
     code(3) = SECTION_RESPONSE_T;
+    code(4) = SECTION_RESPONSE_W;
 }
 
 FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats,
@@ -271,13 +267,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats
   yBar = QzBar/Abar;  
   zBar = QyBar/Abar;  
 
-  if (torsion != 0) {
-    theTorsion = torsion->getCopy();
-  } else {
-    // assign zero torsional stiffness because people often use
-    // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 1.0E-10);
-  }
+  theTorsion = torsion->getCopy();
   if (theTorsion == 0) {
     opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
   }
@@ -295,6 +285,7 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
+  code(4) = SECTION_RESPONSE_W;
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -319,6 +310,7 @@ FiberSectionAsym3d::FiberSectionAsym3d():
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
+  code(4) = SECTION_RESPONSE_W;
 }
 
 int
@@ -516,9 +508,11 @@ FiberSectionAsym3d::setTrialSectionDeformation (const Vector &deforms)
   kData[16] = kData[8];
   kData[17] = kData[13];
 
-  res += theTorsion->setTrial(d4, stress, tangent);
-  sData[4] = stress;   //T
-  kData[24] = tangent; //GJ
+  if (theTorsion != 0) {
+      res += theTorsion->setTrial(d4, stress, tangent);
+      sData[4] = stress;   //T
+      kData[24] = tangent; //GJ
+  }
 
   return res;
 }
@@ -585,7 +579,8 @@ FiberSectionAsym3d::getInitialTangent(void)
   kInitialData[16] = kInitialData[8];
   kInitialData[17] = kInitialData[13];
 
-  kInitialData[24] = theTorsion->getInitialTangent();
+  if (theTorsion != 0)
+      kInitialData[24] = theTorsion->getInitialTangent();
 
   return kInitial;
 }
@@ -697,7 +692,8 @@ FiberSectionAsym3d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  err += theTorsion->commitState();
+  if (theTorsion != 0)
+      err += theTorsion->commitState();
 
   return err;
 }
@@ -780,8 +776,12 @@ FiberSectionAsym3d::revertToLastCommit(void)
   kData[16] = kData[8];
   kData[17] = kData[13];
 
-  err += theTorsion->revertToLastCommit();
-  kData[24] = theTorsion->getTangent();
+  if (theTorsion != 0) {
+      err += theTorsion->revertToLastCommit();
+      kData[24] = theTorsion->getTangent();
+  }
+  else
+      kData[24] = 0.0;
   //why do not have sData[4] here?
   return err;
 }
@@ -864,9 +864,15 @@ FiberSectionAsym3d::revertToStart(void)
   kData[16] = kData[8];
   kData[17] = kData[13];
 
-  err += theTorsion->revertToStart();
-  kData[24] = theTorsion->getTangent();
-  sData[4] = theTorsion->getStress();
+  if (theTorsion != 0) {
+      err += theTorsion->revertToStart();
+      kData[24] = theTorsion->getTangent();
+      sData[4] = theTorsion->getStress();
+  }
+  else {
+      kData[24] = 0.0;
+      sData[4] = 0.0;
+  }
 
   return err;
 }
