@@ -681,7 +681,7 @@ FiberSectionAsym3d::getType ()
 int
 FiberSectionAsym3d::getOrder () const
 {
-  return 4;
+  return 5;
 }
 
 int
@@ -883,23 +883,27 @@ FiberSectionAsym3d::sendSelf(int commitTag, Channel &theChannel)
   int res = 0;
 
   // create an id to send objects tag and numFibers, 
-  //     size 3 so no conflict with matData below if just 1 fiber
-  static Vector data(5);
+  //     size 6 so no conflict with matData below if just 2 fibers
+  static Vector data(6);
   data(0) = this->getTag();
   data(1) = numFibers;
+  data(2) = (theTorsion != 0) ? 1 : 0;
   int dbTag = this->getDbTag();
-  theTorsion->setDbTag(dbTag);
-  data(2) = theTorsion->getClassTag();
-  data(3) = ys;
-  data(4) = zs;
+  if (theTorsion != 0) {
+      theTorsion->setDbTag(dbTag);
+      data(3) = theTorsion->getClassTag();
+  }
+  data(4) = ys;
+  data(5) = zs;
 
   res += theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "FiberSection2d::sendSelf - failed to send ID data\n";
+    opserr << "FiberSectionAsym3d::sendSelf - failed to send Vector data\n";
     return res;
   }    
 
-  theTorsion->sendSelf(commitTag, theChannel);
+  if (theTorsion != 0)
+      theTorsion->sendSelf(commitTag, theChannel);
 
   if (numFibers != 0) {
     
@@ -919,7 +923,7 @@ FiberSectionAsym3d::sendSelf(int commitTag, Channel &theChannel)
     
     res += theChannel.sendID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSectionAsym3d::sendSelf - failed to send material data\n";
      return res;
     }    
 
@@ -927,7 +931,7 @@ FiberSectionAsym3d::sendSelf(int commitTag, Channel &theChannel)
     Vector fiberData(matData, 3*numFibers);
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSectionAsym3d::sendSelf - failed to send fiber data\n";
      return res;
     }    
 
@@ -945,31 +949,32 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static Vector data(5);
+  static Vector data(6);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvVector(dbTag, commitTag, data);
-  ys = data(3);
-  zs = data(4);
+  ys = data(4);
+  zs = data(5);
 
   if (res < 0) {
-   opserr << "FiberSection2d::sendSelf - failed to recv ID data\n";
+   opserr << "FiberSectionAsym3d::recvSelf - failed to recv Vector data\n";
    return res;
   } 
    
   this->setTag((int)data(0));
 
-  if (theTorsion == 0) {	
-	  int cTag = (int)data(2);
-	  theTorsion = theBroker.getNewUniaxialMaterial(cTag);
-	  theTorsion->setDbTag(dbTag);
-  } 
-  if (theTorsion == 0) {
-	    opserr << "FiberSectionAsym3d::sendSelf - failed to get torsion material \n";
-		return -1;
+  if ((int)data(2) == 1 && theTorsion == 0) {
+      int cTag = (int)data(3);
+      theTorsion = theBroker.getNewUniaxialMaterial(cTag);
+      if (theTorsion == 0) {
+          opserr << "FiberSectionAsym3d::recvSelf - failed to get torsion material \n";
+          return -1;
+      }
+      theTorsion->setDbTag(dbTag);
   }
+
   if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	   opserr << "FiberSectionAsym3d::sendSelf - torsion failed to recvSelf \n";
+	   opserr << "FiberSectionAsym3d::recvSelf - torsion failed to recvSelf \n";
        return -2;
   }
   
@@ -978,7 +983,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
     ID materialData(2*(int)data(1));
     res += theChannel.recvID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSectionAsym3d::recvSelf - failed to send material data\n";
      return res;
     }    
 
@@ -1003,7 +1008,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
 	theMaterials = new UniaxialMaterial *[numFibers];
 	
 	if (theMaterials == 0) {
-	  opserr << "FiberSection2d::recvSelf -- failed to allocate Material pointers\n";
+	  opserr << "FiberSectionAsym3d::recvSelf -- failed to allocate Material pointers\n";
 	  exit(-1);
 	}
 
@@ -1013,7 +1018,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
 	matData = new double [numFibers*3];
 
 	if (matData == 0) {
-	  opserr << "FiberSection2d::recvSelf  -- failed to allocate double array for material data\n";
+	  opserr << "FiberSectionAsym3d::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
       }
@@ -1022,7 +1027,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
     Vector fiberData(matData, 3*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSectionAsym3d::recvSelf - failed to recv fiber data\n";
      return res;
     }    
     
@@ -1041,7 +1046,7 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
       }
 
       if (theMaterials[i] == 0) {
-	opserr << "FiberSection2d::recvSelf -- failed to allocate double array for material data\n";
+	opserr << "FiberSectionAsym3d::recvSelf -- failed to allocate double array for material data\n";
 	exit(-1);
       }
 
