@@ -5,11 +5,11 @@
 # Usage in a Python script
 #   exec(open('toOpenSeesPy.py').read())
 #   ...
-#   outfile = open('model.py','w')
-#   toOpenSeesPy('model.tcl',outfile)
-#   toOpenSeesPy('anotherScript.tcl',outfile)
+
+#   toOpenSeesPy('model.tcl','model.py')
+#   toOpenSeesPy('anotherScript.tcl','anotherScript.py')
 #   ...
-#   outfile.close()
+
 #
 # - Assumes the OpenSees(.tcl) file defines the model line by line
 #   without any loops, conditionals, variables, expressions, etc.
@@ -58,6 +58,7 @@ def isfloat(value):
 # Function that does the conversion
 #
 def toOpenSeesPy(infile, outfile):
+    outfile = open(outfile,'w')
     outfile.write('\n\n')
     infile = open(infile,'r')
     for line in infile:
@@ -114,3 +115,4 @@ def toOpenSeesPy(infile, outfile):
         if writeClose:
             outfile.write(')\n')        
     infile.close()
+    outfile.close()
