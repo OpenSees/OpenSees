@@ -2,10 +2,10 @@ add_library(OPS_Api OBJECT)
 
 target_sources(OPS_Api
     PRIVATE
-        elementAPI_Dummy.cpp
+        #elementAPI_Dummy.cpp
         elementAPI_TCL.cpp
         packages.cpp
-    #win32Functions.cpp
+        #win32Functions.cpp
     PUBLIC
         elementAPI.h
         packages.h

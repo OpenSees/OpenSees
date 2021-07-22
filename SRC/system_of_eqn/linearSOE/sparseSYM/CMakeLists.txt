@@ -15,9 +15,9 @@ target_sources(G3_SysOfEqn
         SymSparseLinSolver.h
 )
 
-add_library(G3_SysOfEqn_f OBJECT)
-target_sources(G3_SysOfEqn_f PUBLIC genmmd.f)
-target_link_libraries(G3_SysOfEqn G3_SysOfEqn_f)
+add_library(G3_SysOfEqn_f STATIC)
+target_sources(G3_SysOfEqn_f PRIVATE genmmd.f)
+target_link_libraries(G3_SysOfEqn PUBLIC G3_SysOfEqn_f)
 
 #target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

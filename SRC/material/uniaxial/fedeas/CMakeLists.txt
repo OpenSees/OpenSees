@@ -11,9 +11,7 @@ target_sources(OPS_Material
         FedeasHyster2Material.cpp
         FedeasSteel1Material.cpp
         FedeasSteel2Material.cpp
-        Hard1.f
         PD1.c
-        PD1.f
         PlasticDamageMaterial.cpp
     PUBLIC
         FedeasBond1Material.h
@@ -27,6 +25,13 @@ target_sources(OPS_Material
         FedeasSteel1Material.h
         FedeasSteel2Material.h
         PlasticDamageMaterial.h
+)
+
+add_library(OPS_Material_Uniaxial_Fedeas OBJECT)
+target_sources(OPS_Material_Uniaxial_Fedeas 
+    PRIVATE
+        Hard1.f
+        PD1.f
 )
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

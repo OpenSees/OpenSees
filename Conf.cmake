@@ -21,19 +21,11 @@ set(OPS_FINAL_TARGET "OpenSeesTcl"
 option(FMK
     "Special FMK Code"                                       OFF)
 
-# G3 Options
-#--------------------------------------
-option(G3_Api_OPS_Global
-    "Compile G3 library with bindings \
-     to the global OpenSees API"                              ON)
-
-# Component Libraries
+# Optional Extensions
 #--------------------------------------
 option(OPS_Use_Reliability   
     "Include reliability"                                    OFF)
 
-option(OPS_Use_Thermal
-    "Include thermal components"                              ON)
 
 option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
@@ -58,15 +50,8 @@ option(OPS_MATERIAL_UNIAXIAL_PY
 option(OPS_MATERIAL_UNIAXIAL_SNAP 
     "Include snap material library"                          OFF)
 
-#==============================================================================
-#                            Properties
-#
-#==============================================================================
-define_property(TARGET
-    PROPERTY   OPS_INTERPRETER_GLOBAL #TODO
-    BRIEF_DOCS "Include functionality for using global interpreter"
-    FULL_DOCS  "..."
-)
+option(OPS_Use_Thermal
+    "Include thermal components"                              ON)
 
 #==============================================================================
 #                           Select Auxiliary Libraries

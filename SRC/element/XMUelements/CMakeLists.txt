@@ -10,7 +10,6 @@ target_sources(OPS_Element
       ASI3D8QuadWithSensitivity.h
       AV3D4QuadWithSensitivity.h
       VS3D4QuadWithSensitivity.h
-
 )
 
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
