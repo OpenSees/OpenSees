@@ -21,9 +21,7 @@ cmake_minimum_required(VERSION 3.16)
 #
 # - Option Application
 #==============================================================================
-project(
-                              OpenSees
-)
+project(OpenSees C CXX Fortran)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
@@ -100,7 +98,7 @@ enable_language(Fortran)
 
 # C++
 #--------------------------------------
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 
 # Warnings
 opensees_add_cxx_flag(
@@ -251,6 +249,7 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
+set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
 )
