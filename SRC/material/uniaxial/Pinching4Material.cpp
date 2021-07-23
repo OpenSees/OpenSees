@@ -1486,8 +1486,12 @@ Pinching4Material::updateParameter(int parameterID, Information& info)
 		return -1;
 	}
 
-	// Changed a parameter: we need to update the envelope?
+	// Changed a parameter: we need to update the envelope
 	this->SetEnvelope();
+
+	// Then we need to force the update of damaged envelope
+	envlpPosDamgdStress = envlpPosStress * (1 - gammaFUsed);
+	envlpNegDamgdStress = envlpNegStress * (1 - gammaFUsed);
 
 
 	return 0;

@@ -140,6 +140,8 @@ class ConvergenceTest;
 #define OPS_InvokeMaterialDirectly ops_invokematerialdirectly_
 #define OPS_GetInt ops_getintinput_
 #define OPS_GetDouble ops_getdoubleinput_
+#define OPS_GetDoubleListInput ops_getdoublelistinput_
+#define OPS_EvalDoubleTclStringExpression ops_evaldoubletclstringexpression_
 #define OPS_GetString ops_getstring
 #define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
@@ -181,6 +183,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 extern "C" int         OPS_GetIntInput(int* numData, int* data);
 extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
+extern "C" int         OPS_GetDoubleListInput(int* size, Vector * data);
+extern "C" int         OPS_EvalDoubleTclStringExpression(const char* theExpression, double& current_val);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
 extern "C" const char* OPS_GetString(); // does a strcpy
 extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a strcpy
