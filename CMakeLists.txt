@@ -304,7 +304,7 @@ target_sources(OpenSees
 	"${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
 	"${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
 	"${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-    "${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
     "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
 	"${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
     "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
@@ -418,7 +418,7 @@ target_sources(OPS_Tcl PRIVATE
 
 	#"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
 	"${OPS_SRC_DIR}/tcl/commands.cpp"
-    "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
+  "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
     
     #"${OPS_SRC_DIR}/interpreter/TclInterpreter.cpp"
     "${OPS_SRC_DIR}/interpreter/TclWrapper.cpp"

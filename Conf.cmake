@@ -68,7 +68,7 @@ set(OPS_Extension_List
     OPS_NumLib_METIS
     OPS_NumLib_UMFPACK
 
-    OPS_ExtLib_PFEM
+    #OPS_ExtLib_PFEM
 
     OPS_Graphics
     OPS_Renderer 
@@ -87,7 +87,8 @@ set(OPS_Element_List
 
     #OPS_Element_beamWithHinges
     OPS_Element_LHMYS
-    OPS_Element_PML
+    #OPS_Element_Dmglib
+    #OPS_Element_PML
     OPS_Element_RockingBC
     OPS_Element_UP_ucsd
     OPS_Element_absorbentBoundaries

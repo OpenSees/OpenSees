@@ -70,6 +70,7 @@ add_subdirectory(UP-ucsd)
 add_subdirectory(UWelements)
 add_subdirectory(HUelements)
 add_subdirectory(XMUelements)
+add_subdirectory(dmglib)
 
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

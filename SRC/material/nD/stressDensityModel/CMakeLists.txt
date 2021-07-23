@@ -12,7 +12,7 @@ target_sources(OPS_Material
 )
 add_library(OPS_Material_nD_StressDensity_f OBJECT)
 target_sources(OPS_Material_nD_StressDensity_f
-    PRIVATE
+  PUBLIC
         SDM-UC.f
         SDM3D.f90
         SDM2D.f90

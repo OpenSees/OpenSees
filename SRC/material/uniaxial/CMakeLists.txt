@@ -268,7 +268,7 @@ target_sources(OPS_Material
 
 add_library(OPS_Material_f OBJECT)
 
-target_sources(OPS_Material_f PRIVATE
+target_sources(OPS_Material_f PUBLIC
       DoddRestrepo.f
       STEELDR.f
       c14-SK-M.f

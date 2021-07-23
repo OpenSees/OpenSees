@@ -1,7 +1,7 @@
 add_library(OPS_Api OBJECT)
 
 target_sources(OPS_Api
-    PRIVATE
+    PUBLIC
         #elementAPI_Dummy.cpp
         elementAPI_TCL.cpp
         packages.cpp
