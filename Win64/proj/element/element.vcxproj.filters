@@ -132,6 +132,9 @@
     <Filter Include="RockingBC">
       <UniqueIdentifier>{962a9734-043f-43c1-8e90-1a79eeef085f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="masonry">
+      <UniqueIdentifier>{61bce605-5c0a-4311-b059-28f47dbe6364}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -952,6 +955,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp">
       <Filter>mixedBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp">
+      <Filter>masonry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -222,6 +222,9 @@
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp" />
