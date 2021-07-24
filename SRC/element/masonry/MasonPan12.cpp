@@ -22,6 +22,9 @@
 //
 // What: "@(#) Truss2D.C, revA"
 
+// Developed by: Francisco Crisafulli (1997)
+// Written in C++ by: Stavroula Skafida (2013)
+// Modified by : Gonzalo Torrisi, Universidad Nacional de Cuyo, 2014
 
 // we specify what header files we need
 #include "MasonPan12.h"

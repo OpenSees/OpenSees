@@ -21,7 +21,11 @@
 // $Revision: 1.2 $
 // $Date: 2008/12/10 00:05:21 $
 // $Source: /usr/local/cvs/OpenSees/PACKAGES/NewElement/cpp/Truss2D.h,v $
-                                                                        
+
+// Developed by: Francisco Crisafulli (1997)
+// Written in C++ by: Stavroula Skafida (2013)
+// Modified by : Gonzalo Torrisi, Universidad Nacional de Cuyo, 2014
+
 #ifndef MasonPan3D_h
 #define MasonPan3D_h
 

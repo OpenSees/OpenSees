@@ -6,7 +6,11 @@
 // constitutive law is defined in terms of Axial Force - Axial Displacement, considering varying Area for the  
 // diagonal strut according to the rate of the Axial deformation. It is thus suitable for elements where Force-
 // Deformation relation is considered (e.g. zerolength element) 
-// 
+//
+// Developed by: Francisco Crisafulli (1997)
+// Written in C++ by: Stavroula Skafida (2013)
+// Modified by : Gonzalo Torrisi, Universidad Nacional de Cuyo, 2014
+  
 #include <stdlib.h> 
 #include "Masonry.h" 
 #include <OPS_Globals.h> 
