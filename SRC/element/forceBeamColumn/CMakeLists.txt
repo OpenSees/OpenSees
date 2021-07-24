@@ -1,4 +1,4 @@
-add_library(OPS_Element_forceBeamColumn OBJECT)
+add_library(OPS_Element_forceBeamColumn)
 add_library(OPS_Element_forceBeamColumn_f OBJECT)
 
 target_sources(OPS_Element_forceBeamColumn
