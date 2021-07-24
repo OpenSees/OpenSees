@@ -1331,7 +1331,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
   }
 
   output.endTag();
-  return theResponse;
+  return SectionForceDeformation::setResponse(argv, argc, output);
 }
 
 

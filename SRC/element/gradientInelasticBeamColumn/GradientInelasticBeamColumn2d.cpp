@@ -61,9 +61,9 @@
 void* OPS_GradientInelasticBeamColumn2d()
 {
 	// Necessary Arguments
-	if (OPS_GetNumRemainingInputArgs() < 11) {
+	if (OPS_GetNumRemainingInputArgs() < 8) {
 		opserr << "WARNING! gradientInelasticBeamColumn2d - insufficient arguments\n" <<
-			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
+			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lambda1? lambda2? lc?\n" <<
 			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
 		return 0;
 	}
@@ -89,13 +89,17 @@ void* OPS_GradientInelasticBeamColumn2d()
 	int transfTag = iData[3];
 	int integrTag = iData[4];
 
-	double LC;
-	numData = 1;
-	if (OPS_GetDoubleInput(&numData, &LC) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid lc\n";
+	double ddata[3];
+	numData = 3;
+	if (OPS_GetDoubleInput(&numData, ddata) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid double input\n";
 		return 0;
 	}
 
+	double lam1 = ddata[0];
+	double lam2 = ddata[1];
+	double lc = ddata[2];
+	
 	// Optional Arguments
 	int maxIter = 50;
 	double minTol = 1E-10, maxTol = 1E-8;
@@ -173,7 +177,7 @@ void* OPS_GradientInelasticBeamColumn2d()
 	int numIntegrPoints = secTags.Size();
 
 	for (int i = 2; i < numIntegrPoints; i++) {
-		if (secTags(i) == secTags(i - 1)) {
+		if (secTags(i) != secTags(i - 1)) {
 			opserr << "WARNING! gradientInelasticBeamColumn2d - internal integration points should have identical tags\n"
 				<< "continued using section tag of integration point 2 for all internal integration points\n";
 			return 0;
@@ -199,7 +203,7 @@ void* OPS_GradientInelasticBeamColumn2d()
 	}
 
 	Element* theEle = new GradientInelasticBeamColumn2d(eleTag, nodeTagI, nodeTagJ, numIntegrPoints, &endSection1, &intSection, &endSection2,
-		0.01, 0.01, *beamIntegr, *theTransf, LC, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
+		lam1, lam2, *beamIntegr, *theTransf, lc, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
 
 	return theEle;
 }

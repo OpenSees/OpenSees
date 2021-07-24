@@ -13,19 +13,19 @@
 #define OPS_Export 
 
 
-void* OPS_Explicitdifference(void)
+void* OPS_ExplicitDifference(void)
 {
 	TransientIntegrator *theIntegrator = 0;
-	theIntegrator = new Explicitdifference();
+	theIntegrator = new ExplicitDifference();
 
 	if (theIntegrator == 0)
-		opserr << "WARNING - out of memory creating Explicitdifference integrator\n";
+		opserr << "WARNING - out of memory creating ExplicitDifference integrator\n";
 
 	return theIntegrator;
 }
 
 
-Explicitdifference::Explicitdifference()
+ExplicitDifference::ExplicitDifference()
 	: TransientIntegrator(INTEGRATOR_TAGS_ExplicitDifference),
 	deltaT(0.0),
 	alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
@@ -37,7 +37,7 @@ Explicitdifference::Explicitdifference()
 }
 
 
-Explicitdifference::Explicitdifference(
+ExplicitDifference::ExplicitDifference(
 	double _alphaM, double _betaK, double _betaKi, double _betaKc)
 	: TransientIntegrator(INTEGRATOR_TAGS_ExplicitDifference),
 	deltaT(0.0),
@@ -50,7 +50,7 @@ Explicitdifference::Explicitdifference(
 }
 
 
-Explicitdifference::~Explicitdifference()
+ExplicitDifference::~ExplicitDifference()
 {
 	// clean up the memory created
 
@@ -72,14 +72,14 @@ Explicitdifference::~Explicitdifference()
 }
 
 
-int Explicitdifference::newStep(double _deltaT)
+int ExplicitDifference::newStep(double _deltaT)
 {
 	updateCount = 0;
 
 	deltaT = _deltaT;
 
 	if (deltaT <= 0.0)  {
-		opserr << "Explicitdifference::newStep() - error in variable\n";
+		opserr << "ExplicitDifference::newStep() - error in variable\n";
 		opserr << "dT = " << deltaT << endln;
 		return -1;
 	}
@@ -94,7 +94,7 @@ int Explicitdifference::newStep(double _deltaT)
 	int size = Utdotdot->Size();
 
 	if (Ut == 0)  {
-		opserr << "Explicitdifference::newStep() - domainChange() failed or hasn't been called\n";
+		opserr << "ExplicitDifference::newStep() - domainChange() failed or hasn't been called\n";
 		return -2;
 	}
 
@@ -109,7 +109,7 @@ int Explicitdifference::newStep(double _deltaT)
 	// increment the time to t and apply the load
 	double time = theModel->getCurrentDomainTime();
 	if (theModel->updateDomain(time, deltaT) < 0)  {
-		opserr << "Explicitdifference::newStep() - failed to update the domain\n";
+		opserr << "ExplicitDifference::newStep() - failed to update the domain\n";
 		return -3;
 	}
 
@@ -120,7 +120,7 @@ int Explicitdifference::newStep(double _deltaT)
 }
 
 
-int Explicitdifference::formEleTangent(FE_Element *theEle)
+int ExplicitDifference::formEleTangent(FE_Element *theEle)
 {
 	theEle->zeroTangent();
 
@@ -130,7 +130,7 @@ int Explicitdifference::formEleTangent(FE_Element *theEle)
 }
 
 
-int Explicitdifference::formNodTangent(DOF_Group *theDof)
+int ExplicitDifference::formNodTangent(DOF_Group *theDof)
 {
 	theDof->zeroTangent();
 
@@ -140,7 +140,7 @@ int Explicitdifference::formNodTangent(DOF_Group *theDof)
 }
 
 
-int Explicitdifference::domainChanged()
+int ExplicitDifference::domainChanged()
 {
 
 	AnalysisModel *theModel = this->getAnalysisModel();
@@ -195,7 +195,7 @@ int Explicitdifference::domainChanged()
 			Utdot1 == 0 || Utdot1->Size() != size 
 		)  {
 
-			opserr << "Explicitdifference::domainChanged - ran out of memory\n";
+			opserr << "ExplicitDifference::domainChanged - ran out of memory\n";
 
 			// delete the old
 	
@@ -261,36 +261,36 @@ int Explicitdifference::domainChanged()
 		}
 	}
 
-	opserr << "WARNING: Explicitdifference::domainChanged() - assuming Ut-1 = Ut\n";
+	opserr << "WARNING: ExplicitDifference::domainChanged() - assuming Ut-1 = Ut\n";
 
 	return 0;
 }
 
 
-int Explicitdifference::update(const Vector &Udotdot)
+int ExplicitDifference::update(const Vector &Udotdot)
 {
 	updateCount++;
 	if (updateCount > 2)  {
-		opserr << "WARNING Explicitdifference::update() - called more than once -";
-		opserr << " Explicitdifference integration scheme requires a LINEAR solution algorithm\n";
+		opserr << "WARNING ExplicitDifference::update() - called more than once -";
+		opserr << " ExplicitDifference integration scheme requires a LINEAR solution algorithm\n";
 		return -1;
 	}
 
 	AnalysisModel *theModel = this->getAnalysisModel();
 	if (theModel == 0)  {
-		opserr << "WARNING Explicitdifference::update() - no souAnalysisModel set\n";
+		opserr << "WARNING ExplicitDifference::update() - no souAnalysisModel set\n";
 		return -2;
 	}
 
 	// check domainChanged() has been called, i.e. Ut will not be zero
 	if (Ut == 0)  {
-		opserr << "WARNING Explicitdifference::update() - domainChange() failed or not called\n";
+		opserr << "WARNING ExplicitDifference::update() - domainChange() failed or not called\n";
 		return -3;
 	}
 
 	// check Udotdot is of correct size
 	if (Udotdot.Size() != Utdotdot->Size()) {
-		opserr << "WARNING Explicitdifference::update() - Vectors of incompatible size ";
+		opserr << "WARNING ExplicitDifference::update() - Vectors of incompatible size ";
 		opserr << " expecting " << Utdotdot->Size() << " obtained " << Udotdot.Size() << endln;
 		return -4;
 	}
@@ -312,7 +312,7 @@ int Explicitdifference::update(const Vector &Udotdot)
 	theModel->setResponse(*Ut, *Utdot1, Udotdot);
 
 	if (theModel->updateDomain() < 0)  {
-		opserr << "Explicitdifference::update() - failed to update the domain\n";
+		opserr << "ExplicitDifference::update() - failed to update the domain\n";
 		return -5;
 	}
 
@@ -330,11 +330,11 @@ int Explicitdifference::update(const Vector &Udotdot)
 }
 
 
-int Explicitdifference::commit(void)
+int ExplicitDifference::commit(void)
 {
 	AnalysisModel *theModel = this->getAnalysisModel();
 	if (theModel == 0) {
-		opserr << "WARNING Explicitdifference::commit() - no AnalysisModel set\n";
+		opserr << "WARNING ExplicitDifference::commit() - no AnalysisModel set\n";
 		return -1;
 	}
 
@@ -347,7 +347,7 @@ int Explicitdifference::commit(void)
 }
 
 
-int Explicitdifference::sendSelf(int cTag, Channel &theChannel)
+int ExplicitDifference::sendSelf(int cTag, Channel &theChannel)
 {
 	Vector data(4);
 	data(0) = alphaM;
@@ -356,7 +356,7 @@ int Explicitdifference::sendSelf(int cTag, Channel &theChannel)
 	data(3) = betaKc;
 
 	if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
-		opserr << "WARNING Explicitdifference::sendSelf() - could not send data\n";
+		opserr << "WARNING ExplicitDifference::sendSelf() - could not send data\n";
 		return -1;
 	}
 
@@ -364,11 +364,11 @@ int Explicitdifference::sendSelf(int cTag, Channel &theChannel)
 }
 
 
-int Explicitdifference::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int ExplicitDifference::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
 	Vector data(4);
 	if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
-		opserr << "WARNING Explicitdifference::recvSelf() - could not receive data\n";
+		opserr << "WARNING ExplicitDifference::recvSelf() - could not receive data\n";
 		return -1;
 	}
 
@@ -381,24 +381,24 @@ int Explicitdifference::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
 }
 
 
-void Explicitdifference::Print(OPS_Stream &s, int flag)
+void ExplicitDifference::Print(OPS_Stream &s, int flag)
 {
 	AnalysisModel *theModel = this->getAnalysisModel();
 	if (theModel != 0) {
 		double currentTime = theModel->getCurrentDomainTime();
-		s << "Explicitdifference - currentTime: " << currentTime << endln;
+		s << "ExplicitDifference - currentTime: " << currentTime << endln;
 		s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
 		s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;
 	}
 	else
-		s << "Explicitdifference - no associated AnalysisModel\n";
+		s << "ExplicitDifference - no associated AnalysisModel\n";
 }
 
 
 
 //a interface to get velosity for modal damping
 const Vector &
-Explicitdifference::getVel()
+ExplicitDifference::getVel()
 {
 	return *Utdot;
 }
