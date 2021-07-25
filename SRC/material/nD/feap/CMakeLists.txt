@@ -9,7 +9,7 @@ target_sources(OPS_Material
     FeapMaterial03.h
 )
 
-add_library(OPS_Material_nD_Feap_f OBJECT)
+add_library(OPS_Material_nD_Feap_f)
 target_sources(OPS_Material_nD_Feap_f
   PRIVATE
     feapCommon.f

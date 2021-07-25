@@ -266,7 +266,7 @@ target_sources(OPS_Material
       pyUCLA.h
 )
 
-add_library(OPS_Material_f OBJECT)
+add_library(OPS_Material_f)
 
 target_sources(OPS_Material_f PUBLIC
       DoddRestrepo.f

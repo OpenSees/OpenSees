@@ -1,7 +1,7 @@
 
 target_sources(OPS_Material
-    PRIVATE
-        NDMaterial.cpp
+  PRIVATE
+    NDMaterial.cpp
     BeamFiberMaterial.cpp
     PlasticDamageConcretePlaneStress.cpp
     BeamFiberMaterial2d.cpp
@@ -68,8 +68,8 @@ target_sources(OPS_Material
     UVCmultiaxial.cpp
     UVCplanestress.cpp
     PlateRebarMaterialThermal.cpp
-    PUBLIC
-        NDMaterial.h
+  PUBLIC
+    NDMaterial.h
     BeamFiberMaterial.h
     PlasticDamageConcretePlaneStress.h
     BeamFiberMaterial2d.h
@@ -141,9 +141,9 @@ target_sources(OPS_Material
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 if(FMK)
-   target_sources(OPS_Material
-      PRIVATE
-        forumat.f
+target_sources(OPS_Material
+  PRIVATE
+    forumat.f
     PlainConcrete.f
     Damage2p.cpp
     Damage2p3D.cpp 
@@ -158,7 +158,7 @@ if(FMK)
     Faria1998PlaneStress.cpp
     Faria1998PlaneStress2d.cpp
     Faria1998ThreeDimensional.cpp
-      PUBLIC
+  PUBLIC
     Damage2p.h 
     Damage2p3D.h 
     Damage2ppstress.h
@@ -172,7 +172,7 @@ if(FMK)
     Faria1998PlaneStress.h
     Faria1998PlaneStress2d.h
     Faria1998ThreeDimensional.h
-   )
+)
 endif()
 
 

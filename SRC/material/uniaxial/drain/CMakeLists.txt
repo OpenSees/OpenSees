@@ -14,7 +14,7 @@ target_sources(OPS_Material
     DrainPinch1Material.h
 )
 
-add_library(OPS_Material_Uniaxial_Drain_f OBJECT)
+add_library(OPS_Material_Uniaxial_Drain_f)
 target_sources(OPS_Material_Uniaxial_Drain_f PUBLIC anal00.f common00.f)
 target_link_libraries(OPS_Material PUBLIC OPS_Material_Uniaxial_Drain_f) 
 

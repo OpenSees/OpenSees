@@ -1,5 +1,5 @@
 #add_library(OPS_Element_PML OBJECT)
-add_library(OPS_Element_PML_f OBJECT)
+add_library(OPS_Element_PML_f)
 
 target_sources(OPS_Element
     PRIVATE

@@ -1,3 +1,4 @@
+
 target_sources(OPS_Material
   PRIVATE
     stressDensity.cpp
@@ -10,15 +11,17 @@ target_sources(OPS_Material
     StressDensityModel2D.h
     StressDensityModel3D.h
 )
-add_library(OPS_Material_nD_StressDensity_f OBJECT)
+
+add_library(OPS_Material_nD_StressDensity_f)
 target_sources(OPS_Material_nD_StressDensity_f
-  PUBLIC
-        SDM-UC.f
-        SDM3D.f90
-        SDM2D.f90
-        MODULE_ALL_INTERFACES_3D.f90
-        MODULE_ALL_INTERFACES_2D.f90
+  PRIVATE
+    SDM-UC.f
+    SDM3D.f90
+    SDM2D.f90
+    MODULE_ALL_INTERFACES_3D.f90
+    MODULE_ALL_INTERFACES_2D.f90
 )
+
 target_link_libraries(OPS_Material PUBLIC OPS_Material_nD_StressDensity_f)
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
