@@ -22,16 +22,6 @@
 // $Date: 2008-12-18 23:40:51 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Trilinwp.h,v $
 
-// Written: MHS
-// Created: July 2000
-//
-// Description: This file contains the class definition for 
-// Trilinwp.  Trilinwp provides the implementation
-// of a one-dimensional hysteretic model with pinching of both
-// force and deformation, damage due to deformation and energy, and
-// degraded unloading stiffness based on maximum ductility.  This
-// is a modified implementation of Hyster2.f90 by Filippou.
-
 #ifndef Trilinwp_h
 #define Trilinwp_h
 

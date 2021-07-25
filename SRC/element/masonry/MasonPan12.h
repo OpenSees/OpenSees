@@ -22,22 +22,10 @@
 // $Date: 2008/12/10 00:05:21 $
 // $Source: /usr/local/cvs/OpenSees/PACKAGES/NewElement/cpp/Truss2D.h,v $
 
-// Developed by: Francisco Crisafulli (1997)
-// Written in C++ by: Stavroula Skafida (2013)
-// Modified by : Gonzalo Torrisi, Universidad Nacional de Cuyo, 2014
+// Written by: Gonzalo Torrisi, Universidad Nacional de Cuyo
 
 #ifndef MasonPan12_h
 #define MasonPan12_h
-
-// Written: fmk 
-//
-// Description: This file contains the interface for the Truss2D class.
-// It defines the class interface and the class attributes. Truss2D 
-// provides the abstraction of a simple truss element for 2-d problems.
-// The stress-strain relationship for the truss being performed in the
-// associated UniaxialMaterial object.
-//
-// What: "@(#) Truss2D.h, revA"
 
 #include <Element.h>
 #include <Matrix.h>

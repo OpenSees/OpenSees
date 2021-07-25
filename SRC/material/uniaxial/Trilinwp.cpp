@@ -22,13 +22,6 @@
 // $Date: 2009/03/23 23:17:04 $
 // $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/Trilinwp.cpp,v $
                                                                         
-// Written: fmk 
-//
-// Description: This file contains the class implementation for 
-// ElasticMaterial. 
-//
-// What: "@(#) Trilinwp.C, revA"
-
 #include <elementAPI.h>
 #include <Trilinwp.h>
 

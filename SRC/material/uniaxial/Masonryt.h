@@ -22,10 +22,6 @@
 // $Date: 2007-06-28 21:46:43 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Masonryt.h,v $
                                                                         
-// Developed by: Francisco Crisafulli (1997)
-// Written in C++ by: Stavroula Skafida (2013)
-// Modified by : Gonzalo Torrisi, Universidad Nacional de Cuyo, 2014
-
 // Written: Gonzalo Torrisi, UNCuyo
 // Created: 10/2014
 //
