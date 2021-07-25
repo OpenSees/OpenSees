@@ -230,6 +230,7 @@
 #define MAT_TAG_PySimple3                    214
 #define MAT_TAG_PlateBearingConnectionThermal 215
 #define MAT_TAG_ASD_SMA_3K                    216
+#define MAT_TAG_SteelFractureDI			217 // galvisf
 
 
 #define MAT_TAG_FedeasMaterial    1000
