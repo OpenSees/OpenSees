@@ -352,7 +352,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
         opserr << "WARNING invalid integration type, element: " << eleTag;
         return 0;
       }
-      delete [] sData2;
+      //delete [] sData2;
 
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
@@ -374,7 +374,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
 	} else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
-    delete [] sData;
+    //delete [] sData;
   }
 
 
