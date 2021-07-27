@@ -219,7 +219,7 @@ target_link_libraries(G3_Numerics  INTERFACE
 
 
 # Core OpenSees
-add_library(OPS_Tcl                STATIC)
+add_library(OPS_Interp_Tcl         STATIC)
 add_library(OPS_Domain             OBJECT)
 add_library(OPS_SysOfEqn           OBJECT)
 add_library(OPS_Analysis           OBJECT)
@@ -241,7 +241,7 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 
 # Packaged libraries
 add_library(G3) 
-add_library(OpenSees         EXCLUDE_FROM_ALL )
+add_library(OpenSees         EXCLUDE_FROM_ALL)
 
 # Executables
 #------------------------------------------------------------------------------
@@ -250,9 +250,11 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
+
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
 )
+
 add_executable(OpenSeesMP    EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
 )
@@ -296,17 +298,18 @@ target_link_libraries(G3
 # OpenSees
 #----------------------------
 target_sources(OpenSees
-    PRIVATE
-	"${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+  PRIVATE
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
     "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-	"${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
     "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
+    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
 )
 
 target_link_libraries(OpenSees
@@ -332,10 +335,10 @@ target_link_libraries(OpenSees
 target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 
 #----------------------------
-# OPS_Tcl
+# OPS_Interp_Tcl
 #----------------------------
-# Add sources to OPS_Tcl target
-target_sources(OPS_Tcl PRIVATE 
+# Add sources to OPS_Interp_Tcl target
+target_sources(OPS_Interp_Tcl PRIVATE 
     "${OPS_SRC_DIR}/coordTransformation/TclGeomTransfCommand.cpp"
 
     "${OPS_SRC_DIR}/database/TclDatabaseCommands.cpp"
@@ -390,8 +393,10 @@ target_sources(OPS_Tcl PRIVATE
     "${OPS_SRC_DIR}/material/nD/TclModelBuilderNDMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/nD/feap/TclFeapMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/nD/soil/TclUpdateMaterialStageCommand.cpp"
+
     "${OPS_SRC_DIR}/material/section/TclModelBuilderSectionCommand.cpp"
     "${OPS_SRC_DIR}/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.cpp"
+
     "${OPS_SRC_DIR}/material/uniaxial/PY/TclPyTzQzMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/backbone/TclModelBuilderBackboneCommand.cpp"
@@ -402,10 +407,11 @@ target_sources(OPS_Tcl PRIVATE
     "${OPS_SRC_DIR}/material/uniaxial/stiffness/TclModelBuilderStiffnessDegradationCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/strength/TclModelBuilderStrengthDegradationCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/unloading/TclModelBuilderUnloadingRuleCommand.cpp"
+    #"${OPS_SRC_DIR}/material/uniaxial/TclNewUniaxialMaterial.cpp"
+
     "${OPS_SRC_DIR}/material/yieldSurface/evolution/TclModelBuilderYS_EvolutionCommand.cpp"
     "${OPS_SRC_DIR}/material/yieldSurface/plasticHardeningMaterial/TclModelBuilderYSPlasticMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/yieldSurface/yieldSurfaceBC/TclModelBuilderYieldSurfaceBCCommand.cpp"
-    #"${OPS_SRC_DIR}/material/uniaxial/TclNewUniaxialMaterial.cpp"
     # Model Builders
     "${OPS_SRC_DIR}/modelbuilder/tcl/TclModelBuilder.cpp"
     "${OPS_SRC_DIR}/modelbuilder/tcl/TclPlaneStressMaterialTester.cpp"
@@ -430,12 +436,12 @@ target_sources(OPS_Tcl PRIVATE
     #"${OPS_SRC_DIR}/tcl/TclVideoPlayer.cpp"
 )
 
-target_include_directories(OPS_Tcl PUBLIC ${TCL_INCLUDE_PATH})
-target_link_libraries(OPS_Tcl PRIVATE ${TCL_LIBRARIES})
+target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
+target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
 
-target_compile_definitions(OPS_Tcl PUBLIC _TCL85)
+target_compile_definitions(OPS_Interp_Tcl PUBLIC _TCL85)
 
-opensees_add_cxx_flag(TARGETS OPS_Tcl
+opensees_add_cxx_flag(TARGETS OPS_Interp_Tcl
     GNU -fpermissive -fvisibility=hidden
 )
 
@@ -443,7 +449,7 @@ opensees_add_cxx_flag(TARGETS OPS_Tcl
 # OpenSeesTcl
 #----------------------------
 target_link_libraries(OpenSeesTcl 	
-	OPS_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
+	OPS_Interp_Tcl ${OPS_Element_List} OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
 )
 
 #----------------------------
@@ -557,9 +563,9 @@ endif()
 #----------------------------
 if (OPS_Use_DRM)
     message("OPS >>> Including OPS_DRM option")
-    target_sources(OPS_Tcl 
-	PRIVATE
-	   ${OPS_SRC_DIR}/domain/pattern/drm/TclPatternCommand.cpp
+    target_sources(OPS_Interp_Tcl 
+      PRIVATE
+	      ${OPS_SRC_DIR}/domain/pattern/drm/TclPatternCommand.cpp
     )
     target_link_libraries(${OPS_FINAL_TARGET} OPS_DRM)
 endif()

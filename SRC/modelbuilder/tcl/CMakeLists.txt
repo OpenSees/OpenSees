@@ -1,5 +1,5 @@
 
-target_sources(OPS_Tcl
+target_sources(OPS_Interp_Tcl
     PRIVATE
         Block2D.cpp
         Block3D.cpp
@@ -8,5 +8,5 @@ target_sources(OPS_Tcl
         Block2D.h
         Block3D.h
 )
-target_include_directories(OPS_Tcl PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Interp_Tcl PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
