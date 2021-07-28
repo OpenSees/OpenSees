@@ -857,9 +857,9 @@ Response*
 FiberSection2d::setResponse(const char **argv, int argc,
 			    OPS_Stream &output)
 {
-  Response *theResponse =0;
-
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  Response *theResponse = 0;
+  
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
     static double fiberLocs[10000];
     
@@ -947,12 +947,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.0);
       output.attr("area",matData[2*key+1]);
       
-      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
-
-    return theResponse;
 
   } else if (strcmp(argv[0],"fiberData") == 0) {
     int numData = numFibers*5;
@@ -969,26 +967,27 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.endTag();
     }
     Vector theResponseData(numData);
-    return theResponse = new MaterialResponse(this, 5, theResponseData);
-
+    theResponse = new MaterialResponse(this, 5, theResponseData);
   
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
-    return theResponse = new MaterialResponse(this, 6, count);
+    theResponse = new MaterialResponse(this, 6, count);
 
   } else if ((strcmp(argv[0],"sectionFailed") == 0) || 
 	     (strcmp(argv[0],"hasSectionFailed") == 0) ||
 	     (strcmp(argv[0],"hasFailed") == 0)) {
     int count = 0;
-    return theResponse = new MaterialResponse(this, 7, count);
+    theResponse = new MaterialResponse(this, 7, count);
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
-	  return theResponse = new MaterialResponse(this, 8, getEnergy());
+	  theResponse = new MaterialResponse(this, 8, getEnergy());
   }
 
-// If not a fiber response, call the base class method
-return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
