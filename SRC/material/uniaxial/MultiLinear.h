@@ -61,8 +61,19 @@ class MultiLinear : public UniaxialMaterial
 	       FEM_ObjectBroker &theBroker);    
   
   void Print(OPS_Stream &s, int flag =0);
+
+  int setParameter(const char **argv, int argc, Parameter &param);
+  int updateParameter(int parameterID, Information &info);
+  int activateParameter(int parameterID);
+
+  int getActiveParameter(double &param);
   
  protected:
+  int getNumHistoryVariables(void) {return 3;}
+  int getTrialHistoryVariables(double *hstv);
+  int setTrialHistoryVariables(const double *hstv);
+  int getCommittedHistoryVariables(double *hstv);
+  int setCommittedHistoryVariables(const double *hstv);
   
  private:
   Matrix data;
@@ -75,6 +86,8 @@ class MultiLinear : public UniaxialMaterial
   double cStrain;     // last ced strain
   double cStress;     // last ced stress
   double cTangent;    // last cted  tangent
+
+  int parameterID;
 };
 
 #endif

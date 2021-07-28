@@ -79,7 +79,18 @@ class HystereticMaterial : public UniaxialMaterial
   //by SAJalali
   double getEnergy() { return CenergyD; }
 
+  int setParameter(const char **argv, int argc, Parameter &param);
+  int updateParameter(int parameterID, Information &info);
+  int activateParameter(int parameterID);
+
+  int getActiveParameter(double &param);
+  
  protected:
+  int getNumHistoryVariables(void) {return 9;}
+  int getTrialHistoryVariables(double *hstv);
+  int setTrialHistoryVariables(const double *hstv);
+  int getCommittedHistoryVariables(double *hstv);
+  int setCommittedHistoryVariables(const double *hstv);  
   
  private:
   // Pinching parameters
@@ -132,6 +143,8 @@ class HystereticMaterial : public UniaxialMaterial
   double Eup, Eun;
 
   double energyA;
+
+  int parameterID;
   
   void setEnvelope(void);
   

@@ -37,6 +37,7 @@
 #include <math.h>
 #include <float.h>
 #include <Channel.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 
@@ -96,7 +97,8 @@ HystereticMaterial::HystereticMaterial(int tag,
 UniaxialMaterial(tag, MAT_TAG_Hysteretic),
 pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
 mom1p(m1p), rot1p(r1p), mom2p(m2p), rot2p(r2p), mom3p(m3p), rot3p(r3p),
-mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n)
+mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n),
+parameterID(0)
 {
   bool error = false;
   // Positive backbone parameters
@@ -143,7 +145,8 @@ HystereticMaterial::HystereticMaterial(int tag,
 UniaxialMaterial(tag, MAT_TAG_Hysteretic),
 pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
 mom1p(m1p), rot1p(r1p), mom3p(m2p), rot3p(r2p),
-mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n)
+mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n),
+parameterID(0)
 {
 	bool error = false;
 	
@@ -189,7 +192,8 @@ HystereticMaterial::HystereticMaterial():
 UniaxialMaterial(0, MAT_TAG_Hysteretic),
 pinchX(0.0), pinchY(0.0), damfc1(0.0), damfc2(0.0), beta(0.0),
 mom1p(0.0), rot1p(0.0), mom2p(0.0), rot2p(0.0), mom3p(0.0), rot3p(0.0),
-mom1n(0.0), rot1n(0.0), mom2n(0.0), rot2n(0.0), mom3n(0.0), rot3n(0.0)
+mom1n(0.0), rot1n(0.0), mom2n(0.0), rot2n(0.0), mom3n(0.0), rot3n(0.0),
+parameterID(0)
 {
 
 }
@@ -622,7 +626,8 @@ HystereticMaterial::recvSelf(int commitTag, Channel &theChannel,
 void
 HystereticMaterial::Print(OPS_Stream &s, int flag)
 {
-    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL ||
+	flag == OPS_PRINT_CURRENTSTATE) {
         s << "HHystereticMaterial, tag: " << this->getTag() << endln;
         s << "s1p: " << mom1p << endln;
         s << "e1p: " << rot1p << endln;
@@ -803,4 +808,129 @@ HystereticMaterial::negEnvlpRotlim(double strain)
     return NEG_INF_STRAIN;
   else
     return strainLimit;
+}
+
+int
+HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"Fy") == 0) {
+    param.setValue(mom1p);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"pinchX") == 0) {
+    param.setValue(pinchX);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"pinchY") == 0) {
+    param.setValue(pinchY);
+    return param.addObject(3, this);
+  }    
+  return -1;
+}
+
+int
+HystereticMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    mom1p =  info.theDouble;
+    mom1n = -info.theDouble;
+    this->setEnvelope();
+    break;
+  case 2:
+    pinchX = info.theDouble;
+    break;
+  case 3:
+    pinchY = info.theDouble;
+    break;    
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+HystereticMaterial::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+  
+  return 0;
+}
+
+int
+HystereticMaterial::getActiveParameter(double &param)
+{
+  if (parameterID == 1)
+    param = mom1p;
+  if (parameterID == 2)
+    param = pinchX;
+  if (parameterID == 3)
+    param = pinchY;
+  
+  return parameterID;
+}
+
+int
+HystereticMaterial::getTrialHistoryVariables(double *hstv)
+{
+  hstv[0] = TrotMax;
+  hstv[1] = TrotMin;
+  hstv[2] = TrotPu;
+  hstv[3] = TrotNu;
+  hstv[4] = TenergyD;
+  hstv[5] = TloadIndicator;
+  hstv[6] = Ttangent;
+  hstv[7] = Tstress;
+  hstv[8] = Tstrain;
+  
+  return 0;
+}
+
+int
+HystereticMaterial::setTrialHistoryVariables(const double *hstv)
+{
+  TrotMax = hstv[0];
+  TrotMin = hstv[1];
+  TrotPu = hstv[2];
+  TrotNu = hstv[3];
+  TenergyD = hstv[4];
+  TloadIndicator = (int)hstv[5];
+  Ttangent = hstv[6];
+  Tstress = hstv[7];
+  Tstrain = hstv[8];
+
+  return 0;
+}
+
+int
+HystereticMaterial::getCommittedHistoryVariables(double *hstv)
+{
+  hstv[0] = CrotMax;
+  hstv[1] = CrotMin;
+  hstv[2] = CrotPu;
+  hstv[3] = CrotNu;
+  hstv[4] = CenergyD;
+  hstv[5] = CloadIndicator;
+  //hstv[6] = Ctangent;
+  hstv[7] = Cstress;
+  hstv[8] = Cstrain;  
+
+  return 0;
+}
+
+int
+HystereticMaterial::setCommittedHistoryVariables(const double *hstv)
+{
+  CrotMax = hstv[0];
+  CrotMin = hstv[1];
+  CrotPu = hstv[2];
+  CrotNu = hstv[3];
+  CenergyD = hstv[4];
+  CloadIndicator = (int)hstv[5];
+  //Ctangent = hstv[6];
+  Cstress = hstv[7];
+  Cstrain = hstv[8];
+
+  return 0;
 }
