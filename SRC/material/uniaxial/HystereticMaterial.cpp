@@ -743,6 +743,14 @@ HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(rot3n);
     return param.addObject(12, this);
   }
+  if (strcmp(argv[0],"pinchX") == 0) {
+    param.setValue(pinchX);
+    return param.addObject(13, this);
+  }
+  if (strcmp(argv[0],"pinchY") == 0) {
+    param.setValue(pinchY);
+    return param.addObject(14, this);
+  }    
   
   return -1;
 }
@@ -789,6 +797,12 @@ HystereticMaterial::updateParameter(int parameterID, Information &info)
   case 12:
     this->rot3n = info.theDouble;
     break;
+  case 13:
+    this->pinchX = info.theDouble;
+    break;
+  case 14:
+    this->pinchY = info.theDouble;
+    break;    
   default:
     return -1;
   }
@@ -914,46 +928,6 @@ HystereticMaterial::negEnvlpRotlim(double strain)
     return NEG_INF_STRAIN;
   else
     return strainLimit;
-}
-
-int
-HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
-{
-  if (strcmp(argv[0],"Fy") == 0) {
-    param.setValue(mom1p);
-    return param.addObject(1, this);
-  }
-  if (strcmp(argv[0],"pinchX") == 0) {
-    param.setValue(pinchX);
-    return param.addObject(2, this);
-  }
-  if (strcmp(argv[0],"pinchY") == 0) {
-    param.setValue(pinchY);
-    return param.addObject(3, this);
-  }    
-  return -1;
-}
-
-int
-HystereticMaterial::updateParameter(int parameterID, Information &info)
-{
-  switch (parameterID) {
-  case 1:
-    mom1p =  info.theDouble;
-    mom1n = -info.theDouble;
-    this->setEnvelope();
-    break;
-  case 2:
-    pinchX = info.theDouble;
-    break;
-  case 3:
-    pinchY = info.theDouble;
-    break;    
-  default:
-    return -1;
-  }
-  
-  return 0;
 }
 
 int

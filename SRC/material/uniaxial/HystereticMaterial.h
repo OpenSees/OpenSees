@@ -77,14 +77,11 @@ class HystereticMaterial : public UniaxialMaterial
   
   void Print(OPS_Stream &s, int flag =0);
 
-  int setParameter(const char **argv, int argc, Parameter &param);
-  int updateParameter(int parameterID, Information &info);
-  
   //by SAJalali
   double getEnergy() { return CenergyD; }
 
   int setParameter(const char **argv, int argc, Parameter &param);
-  int updateParameter(int parameterID, Information &info);
+  int updateParameter(int parameterID, Information &info);  
   int activateParameter(int parameterID);
 
   int getActiveParameter(double &param);
