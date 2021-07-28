@@ -83,6 +83,9 @@ class SectionAggregator : public SectionForceDeformation
     int recvSelf(int cTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);
 
+    Response *setResponse(const char **argv, int argc, OPS_Stream &s);
+  int getResponse(int responseID, Information &info);
+
     void Print(OPS_Stream &s, int flag =0);
 
     int getVariable(const char *, Information &);
