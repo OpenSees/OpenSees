@@ -20,46 +20,31 @@
                                                                         
 // $Revision: 1.8 $
 // $Date: 2008-12-18 23:40:51 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HystereticMaterial.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Trilinwp.h,v $
 
-// Written: MHS
-// Created: July 2000
-//
-// Description: This file contains the class definition for 
-// HystereticMaterial.  HystereticMaterial provides the implementation
-// of a one-dimensional hysteretic model with pinching of both
-// force and deformation, damage due to deformation and energy, and
-// degraded unloading stiffness based on maximum ductility.  This
-// is a modified implementation of Hyster2.f90 by Filippou.
-
-#ifndef HystereticMaterial_h
-#define HystereticMaterial_h
+#ifndef Trilinwp_h
+#define Trilinwp_h
 
 #include <UniaxialMaterial.h>
 
-class HystereticMaterial : public UniaxialMaterial
+class Trilinwp : public UniaxialMaterial
 {
  public:
-  HystereticMaterial(int tag,
+  Trilinwp(int tag, 
 		     double mom1p, double rot1p, double mom2p, double rot2p,
 		     double mom3p, double rot3p,
 		     double mom1n, double rot1n, double mom2n, double rot2n,
 		     double mom3n, double rot3n,
 		     double pinchX, double pinchY,
 		     double damfc1 = 0.0, double damfc2 = 0.0,
-		     double beta = 0.0);
-  HystereticMaterial(int tag,
-		     double mom1p, double rot1p, double mom2p, double rot2p,
-		     double mom1n, double rot1n, double mom2n, double rot2n,
-		     double pinchX, double pinchY,
-		     double damfc1 = 0.0, double damfc2 = 0.0,
-		     double beta = 0.0);
-  HystereticMaterial();
-  ~HystereticMaterial();
+		     double beta = 0.0, 
+			 double pt= 0.0, double pb= 0.0, int itype=0);
+  Trilinwp();
+  ~Trilinwp();
 
-  const char *getClassType(void) const {return "HystereticMaterial";};
+  const char *getClassType(void) const {return "Trilinwp";};
   
-  int setTrialStrain(double strain, double strainRate = 0.0);
+  int setTrialStrain(double strain, double strainRate =0.0 );
   double getStrain(void);
   double getStress(void);
   double getTangent(void);
@@ -76,25 +61,8 @@ class HystereticMaterial : public UniaxialMaterial
 	       FEM_ObjectBroker &theBroker);    
   
   void Print(OPS_Stream &s, int flag =0);
-
-  int setParameter(const char **argv, int argc, Parameter &param);
-  int updateParameter(int parameterID, Information &info);
-  
-  //by SAJalali
-  double getEnergy() { return CenergyD; }
-
-  int setParameter(const char **argv, int argc, Parameter &param);
-  int updateParameter(int parameterID, Information &info);
-  int activateParameter(int parameterID);
-
-  int getActiveParameter(double &param);
   
  protected:
-  int getNumHistoryVariables(void) {return 9;}
-  int getTrialHistoryVariables(double *hstv);
-  int setTrialHistoryVariables(const double *hstv);
-  int getCommittedHistoryVariables(double *hstv);
-  int setCommittedHistoryVariables(const double *hstv);  
   
  private:
   // Pinching parameters
@@ -147,9 +115,14 @@ class HystereticMaterial : public UniaxialMaterial
   double Eup, Eun;
 
   double energyA;
+  double pt;
+  double pb;
+  double mom1pi,mom2pi,mom3pi;
+  double mom1ni, mom2ni, mom3ni;
+  double rot1pi, rot2pi, rot3pi;
+  int itype;
+  double duct;
 
-  int parameterID;
-  
   void setEnvelope(void);
   
   double posEnvlpStress(double strain);
