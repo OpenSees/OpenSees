@@ -1233,7 +1233,7 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
     static double yLocs[10000];
     static double zLocs[10000];
@@ -1335,16 +1335,17 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
       output.attr("zLoc",matData[3*key+1]);
       output.attr("area",matData[3*key+2]);
       
-      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
