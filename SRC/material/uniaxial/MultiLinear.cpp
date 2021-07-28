@@ -35,6 +35,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 
@@ -85,7 +86,7 @@ OPS_MultiLinear(void)
 
 MultiLinear::MultiLinear(int tag, const Vector& s, const Vector& e)
     :UniaxialMaterial(tag, MAT_TAG_MultiLinear),
-    numSlope(0)
+     numSlope(0), parameterID(0)
 {
     numSlope = e.Size();
     data.resize(numSlope, 6);
@@ -127,7 +128,7 @@ MultiLinear::MultiLinear(int tag, const Vector& s, const Vector& e)
 
 MultiLinear::MultiLinear()
     :UniaxialMaterial(0, MAT_TAG_MultiLinear),
-    numSlope(0)
+     numSlope(0), parameterID(0)
 {
     tStrain = 0;
     tStress = 0;
@@ -379,4 +380,85 @@ MultiLinear::Print(OPS_Stream& s, int flag)
     s << "  stress: " << tStress << " tangent: " << tTangent << endln;
     s << "tSlope: " << tSlope << "numSlope: " << numSlope << endln;
     s << data;
+}
+
+int
+MultiLinear::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"fy") == 0) {
+    param.setValue(data(0,3));
+    return param.addObject(1, this);
+  }
+  
+  return -1;
+}
+  
+int
+MultiLinear::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    data(0,3) = info.theDouble;
+    data(0,2) = -data(0,3);
+    data(0,4) = data(0,3)/data(0,1);
+    break;
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
+
+int
+MultiLinear::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+  
+  return 0;
+}
+
+int
+MultiLinear::getActiveParameter(double &param)
+{
+  return parameterID;
+}
+
+int
+MultiLinear::getTrialHistoryVariables(double *hstv)
+{
+  hstv[0] = tStrain;
+  hstv[1] = tStress;
+  hstv[2] = tTangent;
+
+  return 0;
+}
+
+int
+MultiLinear::setTrialHistoryVariables(const double *hstv)
+{
+  tStrain = hstv[0];
+  tStress = hstv[1];
+  tTangent = hstv[2];
+
+  return 0;
+}
+
+int
+MultiLinear::getCommittedHistoryVariables(double *hstv)
+{
+  hstv[0] = cStrain;
+  hstv[1] = cStress;
+  hstv[2] = cTangent;
+
+  return 0;
+}
+
+int
+MultiLinear::setCommittedHistoryVariables(const double *hstv)
+{
+  cStrain = hstv[0];
+  cStress = hstv[1];
+  cTangent = hstv[2];
+
+  return 0;
 }
