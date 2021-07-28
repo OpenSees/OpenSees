@@ -231,6 +231,11 @@
 #define MAT_TAG_PlateBearingConnectionThermal 215
 #define MAT_TAG_ASD_SMA_3K                    216
 
+#define MAT_TAG_Masonry 217
+#define MAT_TAG_Masonryt 218
+#define MAT_TAG_Trilinwp 219
+#define MAT_TAG_Trilinwp2 220
+#define MAT_TAG_Trilinwpd 221
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -459,7 +464,7 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - D.Turello
+// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
@@ -780,6 +785,9 @@
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
 #define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
+#define ELE_TAG_BeamGT                    214
+#define ELE_TAG_MasonPan12                    215
+#define ELE_TAG_MasonPan3D                    216
 #define ELE_TAG_ExternalElement           99990
 
 

@@ -422,15 +422,15 @@ FiberSection2d::getInitialTangent(void)
 
   static double fiberLocs[10000];
   static double fiberArea[10000];
-
+  
   if (sectionIntegr != 0) {
     sectionIntegr->getFiberLocations(numFibers, fiberLocs);
-    sectionIntegr->getFiberWeights(numFibers, fiberArea);
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);    
   }  
   else {
     for (int i = 0; i < numFibers; i++) {
       fiberLocs[i] = matData[2*i];
-      fiberArea[i] = matData[2*i+1];
+      fiberArea[i] = matData[2*i+1];      
     }
   }
 
@@ -860,7 +860,18 @@ FiberSection2d::setResponse(const char **argv, int argc,
   Response *theResponse =0;
 
   if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+
+    static double fiberLocs[10000];
     
+    if (sectionIntegr != 0) {
+      sectionIntegr->getFiberLocations(numFibers, fiberLocs);
+    }  
+    else {
+      for (int i = 0; i < numFibers; i++) {
+	fiberLocs[i] = matData[2*i];
+      }
+    }
+  
     int key = numFibers;
     int passarg = 2;
     
@@ -880,9 +891,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];
 	  dy = ySearch-yCoord;
-	  closestDist = fabs(dy);
+	  closestDist = dy*dy;
 	  key = j;
 	  break;
 	}
@@ -890,9 +902,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];	  
 	  dy = ySearch-yCoord;
-	  distance = fabs(dy);
+	  distance = dy*dy;
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -909,15 +922,17 @@ FiberSection2d::setResponse(const char **argv, int argc,
       double ySearch, dy;
       double distance;
       
-      ySearch = matData[0];
+      //ySearch = matData[0];
+      ySearch = fiberLocs[0];      
       dy = ySearch-yCoord;
       closestDist = fabs(dy);
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	ySearch = matData[2*j];
+	//ySearch = matData[2*j];
+	ySearch = fiberLocs[j];	  	
 	dy = ySearch-yCoord;
 	
-	distance = fabs(dy);
+	distance = dy*dy;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;

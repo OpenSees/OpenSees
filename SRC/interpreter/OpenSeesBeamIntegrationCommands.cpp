@@ -51,6 +51,7 @@ void* OPS_NewtonCotesBeamIntegration(int&,ID&);
 void* OPS_RadauBeamIntegration(int&,ID&);
 void* OPS_TrapezoidalBeamIntegration(int&,ID&);
 void* OPS_CompositeSimpsonBeamIntegration(int&,ID&);
+void* OPS_SimpsonBeamIntegration(int&,ID&);
 void* OPS_UserDefinedBeamIntegration(int&,ID&);
 void* OPS_FixedLocationBeamIntegration(int&,ID&);
 void* OPS_LowOrderBeamIntegration(int&,ID&);
@@ -81,6 +82,7 @@ namespace {
 	functionMap.insert(std::make_pair("Radau", &OPS_RadauBeamIntegration));
 	functionMap.insert(std::make_pair("Trapezoidal", &OPS_TrapezoidalBeamIntegration));
 	functionMap.insert(std::make_pair("CompositeSimpson", &OPS_CompositeSimpsonBeamIntegration));
+	functionMap.insert(std::make_pair("Simpson", &OPS_SimpsonBeamIntegration));
 	functionMap.insert(std::make_pair("UserDefined", &OPS_UserDefinedBeamIntegration));
 	functionMap.insert(std::make_pair("FixedLocation", &OPS_FixedLocationBeamIntegration));
 	functionMap.insert(std::make_pair("LowOrder", &OPS_LowOrderBeamIntegration));

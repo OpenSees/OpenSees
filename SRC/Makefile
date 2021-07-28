@@ -653,7 +653,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
         $(FE)/element/PML/PML3D.o \
         $(FE)/element/PML/pml_2d.o \
         $(FE)/element/PML/PML2D.o \
-	$(FE)/element/RockingBC/RockingBC.o
+	$(FE)/element/RockingBC/RockingBC.o \
+	$(FE)/element/masonry/MasonPan12.o \
+	$(FE)/element/masonry/MasonPan3D.o \
+	$(FE)/element/masonry/BeamGT.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -851,6 +854,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/unloading/TakedaUnloadingRule.o \
 	$(FE)/material/uniaxial/unloading/EnergyUnloadingRule.o \
 	$(FE)/material/uniaxial/unloading/KarsanUnloadingRule.o \
+	$(FE)/material/uniaxial/Masonry.o \
+	$(FE)/material/uniaxial/Masonryt.o \
+	$(FE)/material/uniaxial/Trilinwpd.o \
+	$(FE)/material/uniaxial/Trilinwp.o \
+	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -902,6 +910,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface3D.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
 	$(FE)/material/nD/LinearCap.o \
