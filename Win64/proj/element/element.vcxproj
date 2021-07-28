@@ -208,6 +208,7 @@
     <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp" />
