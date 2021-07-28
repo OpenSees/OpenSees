@@ -36,7 +36,7 @@ public:
   YS_Evolution* getCopy();
 
   int getResponse(int responseID, Information & info);
-  Response* setResponse(char **argv, int argc, Information & info);
+  Response* setResponse(char **argv, int argc, OPS_Stream &output);
   
   int	 displaySelf(Renderer &theViewer, int displayMode, float fact) { return 0;}
 

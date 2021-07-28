@@ -132,6 +132,9 @@
     <Filter Include="RockingBC">
       <UniqueIdentifier>{962a9734-043f-43c1-8e90-1a79eeef085f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="masonry">
+      <UniqueIdentifier>{61bce605-5c0a-4311-b059-28f47dbe6364}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -731,6 +734,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
       <Filter>componentElement</Filter>
     </ClCompile>
@@ -925,6 +931,39 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
       <Filter>RockingBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
+      <Filter>crdTransf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BCell.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BNode.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp">
+      <Filter>mixedBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp">
+      <Filter>masonry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1447,6 +1486,9 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
       <Filter>componentElement</Filter>
     </ClInclude>
@@ -1647,6 +1689,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
+      <Filter>crdTransf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.h">
+      <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h">
+      <Filter>mixedBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

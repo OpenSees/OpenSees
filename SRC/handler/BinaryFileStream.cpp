@@ -875,7 +875,7 @@ BinaryFileStream::setOrder(const ID &orderData)
       count++;
     }
     
-    opserr << printMapping;
+    //opserr << printMapping;
   }
 
   return 0;

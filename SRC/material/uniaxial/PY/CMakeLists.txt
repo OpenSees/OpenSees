@@ -1,0 +1,30 @@
+target_sources(material
+    PRIVATE
+	PySimple1.cpp
+	QzSimple1.cpp
+	TzSimple1.cpp
+	PySimple2.cpp
+	PySimple3.cpp
+	QzSimple2.cpp
+	TzSimple2.cpp
+	ShallowFoundationGen.cpp
+	PyLiq1.cpp
+	TzLiq1.cpp
+	PySimple1Gen.cpp
+	TzSimple1Gen.cpp
+    PUBLIC
+	PySimple1.h
+	QzSimple1.h
+	TzSimple1.h
+	PySimple2.h
+	PySimple3.h
+	QzSimple2.h
+	TzSimple2.h
+	ShallowFoundationGen.h
+	PyLiq1.h
+	TzLiq1.h
+	PySimple1Gen.h
+	TzSimple1Gen.h
+)
+
+target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))

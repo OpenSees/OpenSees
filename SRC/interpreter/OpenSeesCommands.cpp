@@ -1563,7 +1563,7 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
-    ti = (TransientIntegrator*)OPS_Explicitdifference();
+    ti = (TransientIntegrator*)OPS_ExplicitDifference();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
@@ -1961,9 +1961,9 @@ int OPS_printB()
     }
     if (theSOE != 0) {
 	if (theStaticIntegrator != 0) {
-	    theStaticIntegrator->formTangent();
+	    theStaticIntegrator->formUnbalance();
 	} else if (theTransientIntegrator != 0) {
-	    theTransientIntegrator->formTangent(0);
+	    theTransientIntegrator->formUnbalance();
 	}
 
 	Vector &b = const_cast<Vector&>(theSOE->getB());

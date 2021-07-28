@@ -41,7 +41,10 @@ extern void *OPS_EnergyUnloadingRule(void);
 extern void *OPS_ConstantUnloadingRule(void);
 extern void *OPS_KarsanUnloadingRule(void);
 
+#include <tcl.h>
 #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <packages.h>
 
 int

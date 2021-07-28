@@ -4009,6 +4009,130 @@ namespace mpco {
 
 }
 
+/*utilities for serialization into a string*/
+namespace mpco
+{
+
+	namespace serialization
+	{
+
+#define SerializerFormatDouble std::setprecision(std::numeric_limits<double>::digits10 + 1)
+
+		class Serializer
+		{
+		private:
+			std::stringstream ss;
+
+		public:
+			Serializer() = default;
+			Serializer(const char* c)
+				: ss(c)
+			{}
+			inline std::string str() const {
+				return ss.str();
+			}
+			explicit operator bool() const {
+				return !ss.fail();
+			}
+			bool operator!() const {
+				return ss.fail();
+			}
+
+		public:
+			inline Serializer& operator << (const std::string& x) {
+				ss << x.length() << ' ' << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (bool x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (int x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (mpco::OutputFrequency::IncrementType x) {
+				ss << static_cast<int>(x) << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (std::size_t x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (double x) {
+				ss << SerializerFormatDouble << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (const std::vector<int>& x) {
+				ss << x.size() << '\n';
+				for (auto i : x)
+					ss << i << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (const std::vector<mpco::NodalResultType::Enum>& x) {
+				ss << x.size() << '\n';
+				for (auto i : x)
+					ss << i << '\n';
+				return *this;
+			}
+
+		public:
+			inline Serializer& operator >> (std::string& x) {
+				std::size_t n;
+				ss >> n; // needed to make it work even when string is not the first entry
+				char dummy;
+				ss.read(&dummy, 1); // 1 white space
+				std::getline(ss, x, '\n');
+				return *this;
+			}
+			inline Serializer& operator >> (bool& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (int& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (mpco::OutputFrequency::IncrementType& x) {
+				int temp;
+				ss >> temp;
+				x = static_cast<mpco::OutputFrequency::IncrementType>(temp);
+				return *this;
+			}
+			inline Serializer& operator >> (std::size_t& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (double& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (std::vector<int>& x) {
+				std::size_t n;
+				if (!(ss >> n))
+					return *this;
+				x.resize(n);
+				for(std::size_t i = 0; i < n; ++i)
+					ss >> x[i];
+				return *this;
+			}
+			inline Serializer& operator >> (std::vector<mpco::NodalResultType::Enum>& x) {
+				std::size_t n;
+				if (!(ss >> n))
+					return *this;
+				x.resize(n);
+				for (std::size_t i = 0; i < n; ++i) {
+					int temp;
+					ss >> temp;
+					x[i] = static_cast<mpco::NodalResultType::Enum>(temp);
+				}
+				return *this;
+			}
+		};
+
+	}
+}
+
 /*************************************************************************************
 
 private_data class.
@@ -4047,7 +4171,6 @@ public:
 
 	// domain changed stuff...
 	bool first_domain_changed_done;
-	int domain_changed_stamp;
 
 	// info
 	mpco::ProcessInfo info;
@@ -4262,123 +4385,73 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 
 	m_data->send_self_count++;
 
-	std::stringstream _info;
-	_info << "MPCORecorder sendSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	std::cout << _info.str();
-
 	// element results requests
 	std::string elem_res_merged_string;
 	{
 		std::stringstream ss;
 		for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-			if (i > 0) {
+			if (i > 0) 
 				ss << ':'; // char separator for results
-			}
-			const std::vector<std::string> &i_request = m_data->elemental_results_requests[i];
+			const std::vector<std::string>& i_request = m_data->elemental_results_requests[i];
 			for (size_t j = 0; j < i_request.size(); j++) {
-				if (j > 0) {
+				if (j > 0) 
 					ss << '.'; // char separator for jth token
-				}
+				ss << i_request[j];
 			}
 		}
 		elem_res_merged_string = ss.str();
 	}
+
+	// serializer
+	mpco::serialization::Serializer ser;
 	
-	// send misc info
+	// serialize everything
+	if (!(ser
+		// misc info
+		<< getTag()
+		<< m_data->send_self_count
+		// filename
+		<< m_data->filename
+		// output frequency
+		<< m_data->output_freq.type
+		<< m_data->output_freq.dt
+		<< m_data->output_freq.nsteps
+		// node result requests
+		<< m_data->nodal_results_requests
+		// node result requests (sens grad indices)
+		<< m_data->sens_grad_indices
+		// element result requests
+		<< elem_res_merged_string
+		// region
+		<< m_data->has_region
+		<< m_data->node_set
+		<< m_data->elem_set
+		))
 	{
-		ID aux(9);
-		aux(0) = getTag();
-		aux(1) = m_data->send_self_count; // use the send self counter as p_id in the receiver
-		aux(2) = static_cast<int>(m_data->filename.size());
-		aux(3) = static_cast<int>(m_data->nodal_results_requests.size());
-		aux(4) = static_cast<int>(elem_res_merged_string.size());
-		aux(5) = static_cast<int>(m_data->has_region);
-		aux(6) = static_cast<int>(m_data->node_set.size());
-		aux(7) = static_cast<int>(m_data->elem_set.size());
-		aux(8) = static_cast<int>(m_data->sens_grad_indices.size());
-
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send misc info\n";
-			return -1;
-		}
+		opserr << "MPCORecorder::sendSelf() - failed to serialzie data\n";
+		return -1;
 	}
 
-	// send filename
-	if (m_data->filename.size() > 0) {
-		std::vector<char> aux(m_data->filename.begin(), m_data->filename.end());
-		Message msg(aux.data(), static_cast<int>(m_data->filename.size()));
-		if (theChannel.sendMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send filename\n";
-			return -1;
-		}
+	// get message string and size
+	std::string msg_string = ser.str();
+	std::vector<char> msg_data(msg_string.size() + 1);
+	std::copy(msg_string.begin(), msg_string.end(), msg_data.begin());
+	msg_data.back() = '\0';
+	int msg_data_size = static_cast<int>(msg_string.size());
+
+	// send message size
+	ID idata(1);
+	idata(0) = msg_data_size;
+	if (theChannel.sendID(0, commitTag, idata) < 0) {
+		opserr << "MPCORecorder::sendSelf() - failed to send message size\n";
+		return -1;
 	}
 
-	// send output frequency
-	{
-		Vector aux(3);
-		aux(0) = static_cast<double>(m_data->output_freq.type);
-		aux(1) = static_cast<double>(m_data->output_freq.dt);
-		aux(2) = static_cast<double>(m_data->output_freq.nsteps);
-		if (theChannel.sendVector(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send output frequency\n";
-			return -1;
-		}
-	}
-
-	// send node result requests
-	if (m_data->nodal_results_requests.size() > 0) {
-		ID aux(static_cast<int>(m_data->nodal_results_requests.size()));
-		for (size_t i = 0; i < m_data->nodal_results_requests.size(); i++)
-			aux(static_cast<int>(i)) = static_cast<int>(m_data->nodal_results_requests[i]);
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send node result requests\n";
-			return -1;
-		}
-	}
-
-	// send node result requests (sens grad indices)
-	if (m_data->sens_grad_indices.size() > 0) {
-		ID aux(static_cast<int>(m_data->sens_grad_indices.size()));
-		for (size_t i = 0; i < m_data->sens_grad_indices.size(); i++)
-			aux(static_cast<int>(i)) = static_cast<int>(m_data->sens_grad_indices[i]);
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send node result requests (sensitivity parameter indices)\n";
-			return -1;
-		}
-	}
-
-	// send element result requests
-	if (elem_res_merged_string.size() > 0) {
-		std::vector<char> aux(elem_res_merged_string.begin(), elem_res_merged_string.end());
-		Message msg(aux.data(), static_cast<int>(elem_res_merged_string.size()));
-		if (theChannel.sendMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send element result requests\n";
-			return -1;
-		}
-	}
-
-	if (m_data->has_region) {
-		// send node set
-		if (m_data->node_set.size()) {
-			ID aux(static_cast<int>(m_data->node_set.size()));
-			for (size_t i = 0; i < m_data->node_set.size(); i++)
-				aux(static_cast<int>(i)) = m_data->node_set[i];
-			if (theChannel.sendID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to send node set\n";
-				return -1;
-			}
-		}
-
-		// send elem set
-		if (m_data->elem_set.size()) {
-			ID aux(static_cast<int>(m_data->elem_set.size()));
-			for (size_t i = 0; i < m_data->elem_set.size(); i++)
-				aux(static_cast<int>(i)) = m_data->elem_set[i];
-			if (theChannel.sendID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to send element set\n";
-				return -1;
-			}
-		}
+	// send message
+	Message msg(msg_data.data(), msg_data_size);
+	if (theChannel.sendMsg(0, commitTag, msg) < 0) {
+		opserr << "MPCORecorder::sendSelf() - failed to send message\n";
+		return -1;
 	}
 
 	return 0;
@@ -4399,86 +4472,64 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	m_data = new private_data();
 	m_data->send_self_count = -1;
 
-	// recv misc info
-	size_t aux_filename_size(0);
-	size_t aux_node_res_size(0);
-	size_t aux_res_merged_string_size(0);
-	size_t aux_node_set_size(0);
-	size_t aux_elem_set_size(0);
-	size_t aux_sens_grad_indices_size(0);
+	// recv message size
+	ID idata(1);
+	if (theChannel.recvID(0, commitTag, idata) < 0) {
+		opserr << "MPCORecorder::recvSelf() - failed to recv message size\n";
+		return -1;
+	}
+	int msg_data_size = idata(0);
+
+	// recv message
+	std::vector<char> msg_data(static_cast<size_t>(msg_data_size) + 1);
+	Message msg(msg_data.data(), msg_data_size);
+	if (theChannel.recvMsg(0, commitTag, msg) < 0) {
+		opserr << "MPCORecorder::recvSelf() - failed to recv message\n";
+		return -1;
+	}
+	msg_data.back() = '\0';
+
+	// serializer
+	mpco::serialization::Serializer ser(msg_data.data());
+
+	// aux data for de-serialziation
+	int my_tag;
+	std::string elem_res_merged_string;
+
+	// de-serialize everything
+	if (!(ser
+		// misc info
+		>> my_tag
+		>> m_data->p_id // use the send self counter as p_id in the receiver
+		// filename
+		>> m_data->filename
+		// output frequency
+		>> m_data->output_freq.type
+		>> m_data->output_freq.dt
+		>> m_data->output_freq.nsteps
+		// node result requests
+		>> m_data->nodal_results_requests
+		// node result requests (sens grad indices)
+		>> m_data->sens_grad_indices
+		// element result requests
+		>> elem_res_merged_string
+		// region
+		>> m_data->has_region
+		>> m_data->node_set
+		>> m_data->elem_set
+		))
 	{
-		ID aux(9);
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - " << m_data->p_id  << " - failed to recv misc info\n";
-			return -1;
-		}
-		setTag(aux(0));
-		m_data->p_id = aux(1); // use the send self counter as p_id in the receiver
-		aux_filename_size = aux(2);
-		aux_node_res_size = aux(3);
-		aux_res_merged_string_size = aux(4);
-		m_data->has_region = aux(5);// != 0;
-		aux_node_set_size = static_cast<size_t>(aux(6));
-		aux_elem_set_size = static_cast<size_t>(aux(7));
+		opserr << "MPCORecorder::recvSelf() - failed to de-serialzie data\n";
+		return -1;
 	}
 
-	// recv filename
-	if (aux_filename_size > 0) {
-		std::vector<char> aux(aux_filename_size);
-		Message msg(aux.data(), static_cast<int>(aux_filename_size));
-		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv filename\n";
-			return -1;
-		}
-		m_data->filename = std::string(aux.begin(), aux.end());
-	}
-
-	// recv output frequency
-	{
-		Vector aux(3);
-		if (theChannel.recvVector(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv output frequency\n";
-			return -1;
-		}
-		m_data->output_freq.type = static_cast<mpco::OutputFrequency::IncrementType>(static_cast<int>(aux(0)));
-		m_data->output_freq.dt = aux(1);
-		m_data->output_freq.nsteps = static_cast<int>(aux(2));
-	}
-
-	// recv node result requests
-	if (aux_node_res_size > 0) {
-		ID aux(static_cast<int>(aux_node_res_size));
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests\n";
-			return -1;
-		}
-		m_data->nodal_results_requests.resize(aux_node_res_size);
-		for (size_t i = 0; i < aux_node_res_size; i++)
-			m_data->nodal_results_requests[i] = static_cast<mpco::NodalResultType::Enum>(aux(static_cast<int>(i)));
-	}
-
-	// recv node result requests (sens grad indices)
-	if (aux_sens_grad_indices_size > 0) {
-		ID aux(static_cast<int>(aux_sens_grad_indices_size));
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests (sensitivity parameter indices)\n";
-			return -1;
-		}
-		m_data->sens_grad_indices.resize(aux_sens_grad_indices_size);
-		for (size_t i = 0; i < aux_sens_grad_indices_size; i++)
-			m_data->sens_grad_indices[i] = aux(static_cast<int>(i));
-	}
+	// set tag
+	setTag(my_tag);
 
 	// recv element result requests
-	if (aux_res_merged_string_size > 0) {
-		std::vector<char> aux(aux_res_merged_string_size);
-		Message msg(aux.data(), static_cast<int>(aux_res_merged_string_size));
-		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv element result requests\n";
-			return -1;
-		}
+	if (elem_res_merged_string.size() > 0) {
 		std::vector<std::string> aux_1;
-		utils::strings::split(std::string(aux.begin(), aux.end()), ':', aux_1, true);
+		utils::strings::split(std::string(elem_res_merged_string.begin(), elem_res_merged_string.end()), ':', aux_1, true);
 		for (size_t i = 0; i < aux_1.size(); i++) {
 			std::vector<std::string> aux_2;
 			utils::strings::split(aux_1[i], '.', aux_2, true);
@@ -4486,82 +4537,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		}
 	}
 
-	if (m_data->has_region) {
-		// recv node set
-		if (aux_node_set_size > 0) {
-			ID aux(static_cast<int>(aux_node_set_size));
-			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::recvSelf() - failed to recv node set\n";
-				return -1;
-			}
-			m_data->node_set.resize(aux_node_set_size);
-			for (size_t i = 0; i < aux_node_set_size; i++)
-				m_data->node_set[i] = aux(static_cast<int>(i));
-		}
-
-		// recv elem set
-		if (aux_elem_set_size > 0) {
-			ID aux(static_cast<int>(aux_elem_set_size));
-			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::recvSelf() - failed to recv elem set\n";
-				return -1;
-			}
-			m_data->elem_set.resize(aux_elem_set_size);
-			for (size_t i = 0; i < aux_elem_set_size; i++)
-				m_data->elem_set[i] = aux(static_cast<int>(i));
-		}
-	}
-
-	std::stringstream _info;
-	_info << "MPCORecorder recvSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	_info << "filename = " << m_data->filename << "\n";
-	_info << "freq: ";
-	if (m_data->output_freq.type == mpco::OutputFrequency::DeltaTime) 
-		_info << "dt = " << m_data->output_freq.dt << "\n";
-	else 
-		_info << "nsteps = " << m_data->output_freq.nsteps << "\n";
-	_info << "nodal results [" << m_data->nodal_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->nodal_results_requests.size(); i++) {
-		_info << "   " << m_data->nodal_results_requests[i] << "\n";
-	}
-	_info << "elemental results [" << m_data->elemental_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-		const std::vector<std::string> &ireq = m_data->elemental_results_requests[i];
-		for (size_t j = 0; j < ireq.size(); j++) {
-			if (j > 0)
-				_info << ".";
-			_info << ireq[j];
-		}
-		_info << "\n";
-	}
-	_info << "node set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->node_set.size(); i++) {
-			_info << m_data->node_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]\n";
-	_info << "elem set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->elem_set.size(); i++) {
-			_info << m_data->elem_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]" << "\n";
-	std::cout << _info.str();
-
+	// done
 	return 0;
 }
 
@@ -4626,7 +4602,7 @@ int MPCORecorder::initialize()
 		for (size_t i = 0; i < filename_words.size() - 1; i++)
 			ss_filename << filename_words[i] << '.';
 		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in secondary procs, = 0 -> not in parallel
-			ss_filename << "p" << m_data->p_id << '.';
+			ss_filename << "part-" << m_data->p_id << '.';
 		}
 		ss_filename << filename_words.back();
 		the_filename = ss_filename.str();
@@ -5435,7 +5411,7 @@ int MPCORecorder::writeSections()
 			FiberSection3d SEC_TAG_FiberSection3d
 			FiberSectionGJ SEC_TAG_FiberSectionGJ
 			*/
-			switch (sfd->getClassTag()) {
+			/*switch (sfd->getClassTag()) {
 			case SEC_TAG_FiberSection3d:
 			case SEC_TAG_FiberSectionGJ: {
 				mpco::element::SectionAssignment &i_sec_asgn = it->second;
@@ -5443,7 +5419,12 @@ int MPCORecorder::writeSections()
 					i_sec_asgn.fiber_section_data.fibers[fiber_id].y *= -1.0;
 				}
 			}
-			}
+			}*/
+			/*
+			$MP(2021/02/05). Update: This bug in the FiberSection3d has been solved by prof. Scott
+			in commit: https://github.com/OpenSees/OpenSees/commit/948b6f94c602e5d0140645c95a836ffb806e1eb6
+			(Making centroid computation an option for fiber sections)
+			*/
 		}
 	}
 	/*
