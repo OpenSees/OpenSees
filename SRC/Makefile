@@ -817,6 +817,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/SPSW02.o \
 	$(FE)/material/uniaxial/TDConcrete.o \
@@ -1031,7 +1032,6 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/LayeredShellFiberSectionThermal.o \
 	$(FE)/material/section/FiberSection3dThermal.o \
 	$(FE)/material/section/MembranePlateFiberSectionThermal.o \
-	$(FE)/material/section/FiberSectionGJThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
 	$(FE)/material/section/FiberSectionWarping3d.o \
 	$(FE)/material/section/FiberSectionAsym3d.o \
