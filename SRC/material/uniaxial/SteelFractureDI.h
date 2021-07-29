@@ -42,7 +42,7 @@ public:
 	SteelFractureDI(int tag,
 		double fy, double E0, double b,
 		double R0, double cR1, double cR2,
-		double a1, double a2, double a3, double a4, double sigcr, double m, double sigmin);
+		double a1, double a2, double a3, double a4, double sigcr, double m, double sigmin, double FI_lim);
 	/*SteelFracture(int tag,
 	double fy, double E0, double b);*/
 
@@ -81,7 +81,7 @@ public:
 	void Print(OPS_Stream &s, int flag = 0);
 
 	// counting function
-	void calcDI(double sigcr, double m, double sigmin, int &isStart, double sig, double &sigPDI, double &DI, double &slopeP, double& sumTenP, double& sumCompP);
+	void calcDI(double sigcr, double m, double sigmin, double FI_lim, int &isStart, double sig, double &sigPDI, double &DI, double &slopeP, double& sumTenP, double& sumCompP);
 	int returnSign(double v);
 
 	// override get-response function
@@ -150,8 +150,9 @@ private:
 
 	// ************** added for fracture ***************
 	// ************** added for DI ********************
-	double sigcr;
+	double sigcr;	
 	double m;
+	double FI_lim;
 	double sigmin;
 
 	double DIP;

@@ -50,36 +50,36 @@ OPS_SteelFractureDI()
 	UniaxialMaterial *theMaterial = 0;
 
 	int    iData[1];
-	double dData[13];
+	double dData[14];
 	int numData = 1;
 
 	if (OPS_GetIntInput(&numData, iData) != 0) {
-		opserr << "WARNING invalid uniaxialMaterial SteelFracture tag" << endln;
+		opserr << "WARNING invalid uniaxialMaterial SteelFractureDI tag" << endln;
 		return 0;
 	}
 
 	numData = OPS_GetNumRemainingInputArgs();
 
-	if (numData != 13) {
-		opserr << "Invalid #args, want: uniaxialMaterial SteelFracture " << iData[0] <<
-			" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin?" << endln;
+	if (numData != 14) {
+		opserr << "Invalid #args, want: uniaxialMaterial SteelFractureDI " << iData[0] <<
+			" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
 		return 0;
 	}
 	else {
 		if (OPS_GetDoubleInput(&numData, dData) != 0) {
-			opserr << "Invalid arggs: uniaxialMaterial Steel02 " << iData[0] <<
-				" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin?" << endln;
+			opserr << "Invalid arggs: uniaxialMaterial SteelFractureDI " << iData[0] <<
+				" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
 			return 0;
 		}
 		theMaterial = new SteelFractureDI(iData[0], dData[0], dData[1], dData[2],
 			dData[3], dData[4], dData[5], dData[6],
-			dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
+			dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13]);
 	}
 
 
 
 	if (theMaterial == 0) {
-		opserr << "WARNING could not create uniaxialMaterial of type SteelFracture Material\n";
+		opserr << "WARNING could not create uniaxialMaterial of type SteelFractureDI Material\n";
 		return 0;
 	}
 
@@ -91,11 +91,11 @@ OPS_SteelFractureDI()
 SteelFractureDI::SteelFractureDI(int tag,
 	double _Fy, double _E0, double _b,
 	double _R0, double _cR1, double _cR2,
-	double _a1, double _a2, double _a3, double _a4, double _sigcr, double _m, double _sigmin) :
+	double _a1, double _a2, double _a3, double _a4, double _sigcr, double _m, double _sigmin, double _FI_lim):
 	UniaxialMaterial(tag, MAT_TAG_SteelFractureDI),
 	//UniaxialMaterial(tag, 0),
 	Fy(_Fy), E0(_E0), b(_b), R0(_R0), cR1(_cR1), cR2(_cR2), a1(_a1), a2(_a2), a3(_a3), a4(_a4),
-	sigcr(_sigcr), m(_m), sigmin(_sigmin)
+	sigcr(_sigcr), m(_m), sigmin(_sigmin), FI_lim(_FI_lim)
 {
 	konP = 0;
 	kon = 0;
@@ -162,7 +162,7 @@ UniaxialMaterial*
 SteelFractureDI::getCopy(void)
 {
 	//Steel02 *theCopy = new Steel02(this->getTag(), Fy, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigini);
-	SteelFractureDI *theCopy = new SteelFractureDI(this->getTag(), Fy, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigcr, m, sigmin);
+	SteelFractureDI *theCopy = new SteelFractureDI(this->getTag(), Fy, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigcr, m, sigmin, FI_lim);
 
 	return theCopy;
 }
@@ -302,10 +302,10 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 		e = e * (sigs0 - sigr) / (epss0 - epsr);
 
 		// calculate DI
-		calcDI(sigcr, m, sigmin, isStart, sig, sigPDI, DI, slopeP, sumTenP, sumCompP);
+		calcDI(sigcr, m, sigmin, FI_lim, isStart, sig, sigPDI, DI, slopeP, sumTenP, sumCompP);
 
 		// check if fractured
-		if (DI >= 1) {
+		if (DI >= FI_lim) {
 			kon = 4;
 			konf = 1;
 
@@ -421,7 +421,7 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 }
 
 void
-SteelFractureDI::calcDI(double sigcr, double m, double sigmin, int& isStart, double sig, double& sigPDI, double& DI, double& slopeP, double& sumTenP, double& sumCompP)
+SteelFractureDI::calcDI(double sigcr, double m, double sigmin, double FI_lim, int& isStart, double sig, double& sigPDI, double& DI, double& slopeP, double& sumTenP, double& sumCompP)
 {
 	// initialize variables ****
 	double slope;
@@ -430,7 +430,7 @@ SteelFractureDI::calcDI(double sigcr, double m, double sigmin, int& isStart, dou
 	double sumTen;
 
 	// Already fractured
-	if (DI > 1) {
+	if (DI > FI_lim) {
 		return;
 	}
 
@@ -680,6 +680,7 @@ SteelFractureDI::Print(OPS_Stream &s, int flag)
 		s << "  sigcr: " << sigcr << ", ";
 		s << "  m: " << m << ", ";
 		s << "  sigmin: " << sigmin << ", ";
+		s << "  FI_lim: " << FI_lim << ", ";
 	}
 
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
@@ -699,6 +700,7 @@ SteelFractureDI::Print(OPS_Stream &s, int flag)
 		s << "  sigcr: " << sigcr << ", ";
 		s << "  m: " << m << ", ";
 		s << "  sigmin: " << sigmin << ", ";
+		s << "  FI_lim: " << FI_lim << ", ";
 	}
 }
 
