@@ -444,26 +444,6 @@ ParallelSection::Print(OPS_Stream &s, int flag)
     }
 }
 
-Response*
-ParallelSection::setResponse(const char **argv, int argc, OPS_Stream &output)
-{
-  // See if the response is one of the defaults
-  Response *res = SectionForceDeformation::setResponse(argv, argc, output);
-  if (res != 0)
-    return res;
-  else
-    return 0;
-}
-
-int
-ParallelSection::getResponse(int responseID, Information &info)
-{
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
-  return SectionForceDeformation::getResponse(responseID, info);
-}
-
-
 // AddingSensitivity:BEGIN ////////////////////////////////////
 int
 ParallelSection::setParameter(const char **argv, int argc, Parameter &param)

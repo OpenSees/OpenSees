@@ -323,6 +323,8 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\InitStressMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonry.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonryt.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\MaterialState.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Maxwell.cpp" />
     <ClCompile Include="..\..\..\Src\material\uniaxial\MinMaxMaterial.cpp" />
@@ -353,6 +355,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ShearPanelMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SMAMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SPSW02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.cpp" />
@@ -389,6 +392,8 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialMaterial.cpp" />

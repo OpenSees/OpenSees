@@ -18,167 +18,121 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.19 $
-// $Date: 2008-12-18 23:40:51 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HystereticMaterial.cpp,v $
+// $Revision: 1.7 $
+// $Date: 2009/03/23 23:17:04 $
+// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/trilinwpd.cpp,v $
+                                                                        
+#include <elementAPI.h>
+#include <Trilinwpd.h>
 
-// Written: MHS
-// Created: July 2000
-//
-// Description: This file contains the implementation of 
-// HystereticMaterial.  HystereticMaterial is
-// a one-dimensional hysteretic model with pinching of both
-// force and deformation, damage due to deformation and energy, and
-// degraded unloading stiffness based on maximum ductility.  This
-// is a modified implementation of Hyster2.f90 by Filippou.
-#include <stdlib.h>
+#include <Vector.h>
+#include <Channel.h>
 #include <math.h>
 #include <float.h>
 
-#include <HystereticMaterial.h>
-#include <Channel.h>
-#include <Information.h>
-#include <Parameter.h>
 
-#include <OPS_Globals.h>
-#include <elementAPI.h>
+static int numTrilinwpd = 0;
 
 void *
-OPS_HystereticMaterial(void)
+OPS_Trilinwpd()
 {
+  // print out some KUDO's
+  if (numTrilinwpd == 0) {
+    opserr << "Trilineal with pinching unaxial material - Written by GST UNcuyo Copyright 2017 - Use at your Own Peril\n";
+    numTrilinwpd =1;
+  }
+
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
-  int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs != 18 && numArgs != 17 && numArgs != 14 && numArgs != 13) {
-    opserr << "Want: uniaxialMaterial Hysteretic tag? mom1p? rot1p? mom2p? rot2p? <mom3p? rot3p?> "
-	   << "\nmom1n? rot1n? mom2n? rot2n? <mom3n? rot3n?> pinchX? pinchY? damfc1? damfc2? <beta?>";
-    return 0;
-  }
-  
-  int iData[1];
-  double dData[17];
-  for (int i=0; i<17; i++) 
-    dData[i] = 0.0;
+  //
+  // parse the input line for the material parameters
+  //
 
-  int numData = 1;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid tag for uniaxialMaterial Hysteretic" << endln;
+  int    iData[2];
+  double dData[19];
+  int numData;
+
+  numData = 1;
+  if (OPS_GetIntInput(&numData, &iData[0]) != 0) {
+    opserr << "WARNING invalid uniaxialMaterial trilinwpd tag" << endln;
     return 0;
   }
 
-  numData = numArgs-1;
+  numData = 19;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid data for uniaxial Hysteretic " << iData[0] << endln;
+    opserr << "WARNING invalid parameters\n";
     return 0;	
   }
-
-  // Parsing was successful, allocate the material
-  if (numData > 13) 
-    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
-  					 dData[13], dData[14], dData[15], dData[16]);
-  else
-    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
-
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type Hysteretic\n";
+   numData = 1;
+  if (OPS_GetIntInput(&numData, &iData[1]) != 0) {
+    opserr << "WARNING invalid uniaxialMaterial trilinwpd type" << endln;
     return 0;
   }
 
+   int itype=iData[1];
+
+  // 
+  // create a new material
+  //
+
+  theMaterial = new trilinwpd(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], iData[1]);       
+
+
+  if (theMaterial == 0) {
+    opserr << "WARNING could not create uniaxialMaterial of type trilinwpd\n";
+    return 0;
+  }
+
+  // return the material
   return theMaterial;
 }
 
 
 
-HystereticMaterial::HystereticMaterial(int tag,
-				       double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
-				       double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
-				       double px, double py, double d1, double d2, double b):
-UniaxialMaterial(tag, MAT_TAG_Hysteretic),
+
+trilinwpd::trilinwpd(int tag,
+			double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
+			double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
+			double px, double py, double d1, double d2, double b, double ptn, double pbn, int it):
+UniaxialMaterial(tag, MAT_TAG_Trilinwpd),
 pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
 mom1p(m1p), rot1p(r1p), mom2p(m2p), rot2p(r2p), mom3p(m3p), rot3p(r3p),
-mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n)
-{
-  bool error = false;
-  // Positive backbone parameters
-  if (rot1p <= 0.0)
-    error = true;
-  
-  if (rot2p <= rot1p)
-    error = true;
-  
-  if (rot3p <= rot2p)
-    error = true;
-  
-  // Negative backbone parameters
-  if (rot1n >= 0.0)
-    error = true;
-  
-  if (rot2n >= rot1n)
-    error = true;
-  
-  if (rot3n >= rot2n)
-    error = true;
-  
-  if (error) {
-    opserr << "HystereticMaterial::HystereticMaterial -- input backbone is not unique (one-to-one)\n";
-    exit(-1);
-  }		
-  
-  energyA = 0.5 * (rot1p*mom1p + (rot2p-rot1p)*(mom2p+mom1p) + (rot3p-rot2p)*(mom3p+mom2p) +
-		   rot1n*mom1n + (rot2n-rot1n)*(mom2n+mom1n) + (rot3n-rot2n)*(mom3n+mom2n));
-  
-  // Set envelope slopes
-  this->setEnvelope();
-  
-  // Initialize history variables
-  this->revertToStart();
-  this->revertToLastCommit();
-  
-}
-
-HystereticMaterial::HystereticMaterial(int tag,
-			double m1p, double r1p, double m2p, double r2p,
-			double m1n, double r1n, double m2n, double r2n,
-			double px, double py, double d1, double d2, double b):
-UniaxialMaterial(tag, MAT_TAG_Hysteretic),
-pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
-mom1p(m1p), rot1p(r1p), mom3p(m2p), rot3p(r2p),
-mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n)
+mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n),pt(ptn), pb(pbn),itype(it)
 {
 	bool error = false;
-	
 	// Positive backbone parameters
 	if (rot1p <= 0.0)
 		error = true;
 
-	if (rot3p <= rot1p)
+	if (rot2p <= rot1p)
+		error = true;
+
+	if (rot3p <= rot2p)
 		error = true;
 
 	// Negative backbone parameters
 	if (rot1n >= 0.0)
 		error = true;
 
-	if (rot3n >= rot1n)
+	if (rot2n >= rot1n)
 		error = true;
 
+	if (rot3n >= rot2n)
+		error = true;
+	
 	if (error) {
-	  opserr << "HystereticMaterial::HystereticMaterial -- input backbone is not unique (one-to-one)\n";
-	  exit(-1);
-	}
-
-				      
-
-	energyA = 0.5 * (rot1p*mom1p + (rot3p-rot1p)*(mom3p+mom1p) +
-		rot1n*mom1n + (rot3n-rot1n)*(mom3n+mom1n));
-
-	mom2p = 0.5*(mom1p+mom3p);
-	mom2n = 0.5*(mom1n+mom3n);
-
-	rot2p = 0.5*(rot1p+rot3p);
-	rot2n = 0.5*(rot1n+rot3n);
+	  opserr << "trilinwpd::trilinwpd -- input backbone is not unique (one-to-one)\n";
+	 exit(-1);
+	 }		
+	mom1pi=mom1p;
+	mom2pi=mom2p;
+	mom3pi=mom3p;
+	mom1ni=mom1n;
+	mom2ni=mom2n;
+	mom3ni=mom3n;
+	energyA = 0.5 * (rot1p*mom1p + (rot2p-rot1p)*(mom2p+mom1p) + (rot3p-rot2p)*(mom3p+mom2p) +
+		rot1n*mom1n + (rot2n-rot1n)*(mom2n+mom1n) + (rot3n-rot2n)*(mom3n+mom2n));
 
 	// Set envelope slopes
 	this->setEnvelope();
@@ -186,27 +140,130 @@ mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n)
 	// Initialize history variables
 	this->revertToStart();
 	this->revertToLastCommit();
+
 }
 
-HystereticMaterial::HystereticMaterial():
-UniaxialMaterial(0, MAT_TAG_Hysteretic),
+
+
+trilinwpd::trilinwpd():
+UniaxialMaterial(0, MAT_TAG_Trilinwpd),
 pinchX(0.0), pinchY(0.0), damfc1(0.0), damfc2(0.0), beta(0.0),
 mom1p(0.0), rot1p(0.0), mom2p(0.0), rot2p(0.0), mom3p(0.0), rot3p(0.0),
-mom1n(0.0), rot1n(0.0), mom2n(0.0), rot2n(0.0), mom3n(0.0), rot3n(0.0)
+mom1n(0.0), rot1n(0.0), mom2n(0.0), rot2n(0.0), mom3n(0.0), rot3n(0.0), pt(0.0), pb(0.0),itype(0)
 {
 
 }
 
-HystereticMaterial::~HystereticMaterial()
+trilinwpd::~trilinwpd()
 {
 	// Nothing to do
 }
 
 int
-HystereticMaterial::setTrialStrain(double strain, double strainRate)
+trilinwpd::setTrialStrain(double strain, double strainRate)
 {
-  if (TloadIndicator == 0 && strain == 0.0)
+ 
+	
+	
+if (TloadIndicator == 0 && strain == 0.0)
     return 0;
+double N=strainRate;   //Fuerza axial >0= traccion
+
+N=-1.0*(strainRate);
+
+if (itype==1){
+
+if (N>0 && N<pt){
+	mom1p=mom1pi-mom1pi*N/pt;
+	mom1n=mom1ni-mom1ni*N/pt;
+	mom2p=mom2pi-mom2pi*N/pt;
+	mom2n=mom2ni-mom2ni*N/pt;
+	mom3p=mom3pi-mom3pi*N/pt;
+	mom3n=mom3ni-mom3ni*N/pt;
+}
+else if(N>pt){
+	mom1p=mom1pi/100.0;
+	mom1n=mom1ni/100.0;
+	mom2p=mom2pi/100.0;
+	mom2n=mom2ni/100.0;
+	mom3p=mom3pi/100.0;
+	mom3n=mom3ni/100.0;
+
+}
+else if(N<0 && N>pb){
+	mom1p=mom1pi+(mom2pi-mom1pi)*N/pb;
+	mom1n=mom1ni+(mom2ni-mom1ni)*N/pb;
+	mom2p=mom2pi+(mom3pi-mom2pi)*N/pb;
+	mom2n=mom2ni+(mom3ni-mom2ni)*N/pb;
+	mom3p=mom3pi*N/pb;
+	mom3n=mom3ni*N/pb;
+}
+else if(N<0 && N<pb){
+	mom1p=mom1pi-(mom2pi-mom1pi)*N/(2*pb);
+	mom1n=mom1ni-(mom2ni-mom1ni)*N/(2*pb);
+	mom2p=mom2pi-(mom3pi-mom2pi)*N/(2*pb);
+	mom2n=mom2ni-(mom3ni-mom2ni)*N/(2*pb);
+	mom3p=mom3pi*N/(2*pb);
+	mom3n=mom3ni*N/(2*pb);
+}
+else {
+	mom1p=mom1pi;
+	mom1n=mom1ni;
+	mom2p=mom2pi;
+	mom2n=mom2ni;
+	mom3p=mom3pi;
+	mom3n=mom3ni;
+}
+
+}
+else if (itype==2){
+if (N>0 && N<pt){
+	double expo=2.5;
+	mom1p=mom1pi*(1.0-pow(N/pt,expo));
+	mom1n=mom1ni*(1.0-pow(N/pt,expo));
+	mom2p=mom2pi*(1.0-pow(N/pt,expo));
+	mom2n=mom2ni*(1.0-pow(N/pt,expo));
+	mom3p=mom3pi*(1.0-pow(N/pt,expo));
+	mom3n=mom3ni*(1.0-pow(N/pt,expo));
+}
+else if(N>pt){
+	mom1p=mom1pi/100.0;
+	mom1n=mom1ni/100.0;
+	mom2p=mom2pi/100.0;
+	mom2n=mom2ni/100.0;
+	mom3p=mom3pi/100.0;
+	mom3n=mom3ni/100.0;
+
+}
+
+else if(N<0 && N>pb){
+	mom1p=mom1pi*(1.0+pow(N/pb,2));
+	mom1n=mom1ni*(1.0+pow(N/pb,2));
+	mom2p=mom2pi*(1.0+pow(N/pb,2));
+	mom2n=mom2ni*(1.0+pow(N/pb,2));
+	mom3p=mom3pi*(1.0+pow(N/pb,2));
+	mom3n=mom3ni*(1.0+pow(N/pb,2));
+}
+else if(N<0 && N<pb){
+	mom1p=mom1pi*(1.0+pow(N/pb,2));
+	mom1n=mom1ni*(1.0+pow(N/pb,2));
+	mom2p=mom2pi*(1.0+pow(N/pb,2));
+	mom2n=mom2ni*(1.0+pow(N/pb,2));
+	mom3p=mom3pi*(1.0+pow(N/pb,2));
+	mom3n=mom3ni*(1.0+pow(N/pb,2));
+}
+else {
+	mom1p=mom1pi;
+	mom1n=mom1ni;
+	mom2p=mom2pi;
+	mom2n=mom2ni;
+	mom3p=mom3pi;
+	mom3n=mom3ni;
+}
+
+}
+
+this->setEnvelope();
 
   TrotMax = CrotMax;
   TrotMin = CrotMin;
@@ -245,35 +302,32 @@ HystereticMaterial::setTrialStrain(double strain, double strainRate)
   }
   
   TenergyD = CenergyD + 0.5*(Cstress+Tstress)*dStrain;
-
-
-  //  if (this->getTag() == 40)
-  //    opserr << "setTrial: " << Tstrain << " " << Ttangent << " " << Tstress << endln;
   
   return 0;
 }
 
 
 double
-HystereticMaterial::getStrain(void)
+trilinwpd::getStrain(void)
 {
 	return Tstrain;
 }
 
 double
-HystereticMaterial::getStress(void)
+trilinwpd::getStress(void)
 {
 	return Tstress;
 }
 
+
 double
-HystereticMaterial::getTangent(void)
+trilinwpd::getTangent(void)
 {
   return Ttangent;
 }
 
 void
-HystereticMaterial::positiveIncrement(double dStrain)
+trilinwpd::positiveIncrement(double dStrain)
 {
 	double kn = pow(CrotMin/rot1n,beta);
 	kn = (kn < 1.0) ? 1.0 : 1.0/kn;
@@ -297,24 +351,14 @@ HystereticMaterial::positiveIncrement(double dStrain)
 
   TloadIndicator = 1;
 
-  if (TrotMax > POS_INF_STRAIN)
-    TrotMax = POS_INF_STRAIN;
-
 	TrotMax = (TrotMax > rot1p) ? TrotMax : rot1p;
 
 	double maxmom = posEnvlpStress(TrotMax);
 	double rotlim = negEnvlpRotlim(CrotMin);
 	double rotrel = (rotlim > TrotNu) ? rotlim : TrotNu;
 
-	// rotrel = TrotNu;
-	// if (negEnvlpStress(CrotMin) >= 0.0)
-	//    rotrel = rotlim;
-	
-	//	double rotmp1 = rotrel + pinchY*(TrotMax-rotrel);
 
 	double rotmp2 = TrotMax - (1.0-pinchY)*maxmom/(Eup*kp);
-	//double rotmp2 = TrotMax-(1-pinchY)*maxmom/Eup;
-	//	double rotch = rotmp1 + (rotmp2-rotmp1)*pinchX;
 	double rotch = rotrel + (rotmp2-rotrel)*pinchX;                   // changed on 7/11/2006
 
 	double tmpmo1;
@@ -361,7 +405,7 @@ HystereticMaterial::positiveIncrement(double dStrain)
 }
 
 void
-HystereticMaterial::negativeIncrement(double dStrain)
+trilinwpd::negativeIncrement(double dStrain)
 {
 	double kn = pow(CrotMin/rot1n,beta);
 	kn = (kn < 1.0) ? 1.0 : 1.0/kn;
@@ -385,23 +429,15 @@ HystereticMaterial::negativeIncrement(double dStrain)
 
   TloadIndicator = 2;
 
-  if (TrotMin < NEG_INF_STRAIN)
-    TrotMin = NEG_INF_STRAIN;
-
 	TrotMin = (TrotMin < rot1n) ? TrotMin : rot1n;
 
 	double minmom = negEnvlpStress(TrotMin);
 	double rotlim = posEnvlpRotlim(CrotMax);
 	double rotrel = (rotlim < TrotPu) ? rotlim : TrotPu;
 
-	//rotrel = TrotPu;
-	//if (posEnvlpStress(CrotMax) <= 0.0)
-	//  rotrel = rotlim;
 
-	//double rotmp1 = rotrel + pinchY*(TrotMin-rotrel);
 	double rotmp2 = TrotMin - (1.0-pinchY)*minmom/(Eun*kn);
-	//double rotmp2 = TrotMin-(1-pinchY)*minmom/Eun;	
-	//double rotch = rotmp1 + (rotmp2-rotmp1)*pinchX;
+
 	double rotch = rotrel + (rotmp2-rotrel)*pinchX;                   // changed on 7/11/2006
 
 	double tmpmo1;
@@ -448,7 +484,7 @@ HystereticMaterial::negativeIncrement(double dStrain)
 }
 
 int
-HystereticMaterial::commitState(void)
+trilinwpd::commitState(void)
 {
 	CrotMax = TrotMax;
 	CrotMin = TrotMin;
@@ -462,8 +498,9 @@ HystereticMaterial::commitState(void)
 	return 0;
 }
 
+
 int
-HystereticMaterial::revertToLastCommit(void)
+trilinwpd::revertToLastCommit(void)
 {
 	TrotMax = CrotMax;
 	TrotMin = CrotMin;
@@ -478,8 +515,9 @@ HystereticMaterial::revertToLastCommit(void)
 	return 0;
 }
 
+
 int
-HystereticMaterial::revertToStart(void)
+trilinwpd::revertToStart(void)
 {
 	CrotMax = 0.0;
 	CrotMin = 0.0;
@@ -495,16 +533,23 @@ HystereticMaterial::revertToStart(void)
 	Tstress = 0;
 	Ttangent = E1p;
 
+	mom1pi=mom1p;
+	mom2pi=mom2p;
+	mom3pi=mom3p;
+	mom1ni=mom1n;
+	mom2ni=mom2n;
+	mom3ni=mom3n;
 	return 0;
 }
 
+
 UniaxialMaterial*
-HystereticMaterial::getCopy(void)
+trilinwpd::getCopy(void)
 {
-	HystereticMaterial *theCopy = new HystereticMaterial (this->getTag(),
+	trilinwpd *theCopy = new trilinwpd (this->getTag(),
 		mom1p, rot1p, mom2p, rot2p, mom3p, rot3p,
 		mom1n, rot1n, mom2n, rot2n, mom3n, rot3n,
-		pinchX, pinchY, damfc1, damfc2, beta);
+		pinchX, pinchY, damfc1, damfc2, beta,pt,pb, itype);
 
 	theCopy->CrotMax = CrotMax;
 	theCopy->CrotMin = CrotMin;
@@ -518,13 +563,12 @@ HystereticMaterial::getCopy(void)
 
 	return theCopy;
 }
-
 int
-HystereticMaterial::sendSelf(int commitTag, Channel &theChannel)
+trilinwpd::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(27);
+  static Vector data(30);
   
   data(0) = this->getTag();
   data(1) = mom1p;
@@ -553,26 +597,29 @@ HystereticMaterial::sendSelf(int commitTag, Channel &theChannel)
   data(24) = Cstress;
   data(25) = Cstrain;
   data(26) = Ttangent;
+  data(27) = pt;
+  data(28) = pb;
+  data(29)=itype;
 
   res = theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) 
-    opserr << "HystereticMaterial::sendSelf() - failed to send data\n";
+    opserr << "trilinwpd::sendSelf() - failed to send data\n";
 
 
   return res;
 }
 
 int
-HystereticMaterial::recvSelf(int commitTag, Channel &theChannel, 
+trilinwpd::recvSelf(int commitTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
   int res = 0;
   
-  static Vector data(27);
+  static Vector data(30);
   res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
   if (res < 0) {
-      opserr << "HystereticMaterial::recvSelf() - failed to receive data\n";
+      opserr << "trilinwpd::recvSelf() - failed to receive data\n";
       return res;
   }
   else {
@@ -604,7 +651,9 @@ HystereticMaterial::recvSelf(int commitTag, Channel &theChannel,
     Cstress = data(24);
     Cstrain = data(25);
     Ttangent = data(26);
-
+	pt = data(27);
+	pb = data(29);
+	itype=data(30);
     // set the trial values
     TrotMax = CrotMax;
     TrotMin = CrotMin;
@@ -621,179 +670,50 @@ HystereticMaterial::recvSelf(int commitTag, Channel &theChannel,
   
   return 0;
 }
-    
+
 void
-HystereticMaterial::Print(OPS_Stream &s, int flag)
+trilinwpd::Print(OPS_Stream &s, int flag)
 {
-    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
-        s << "HHystereticMaterial, tag: " << this->getTag() << endln;
-        s << "s1p: " << mom1p << endln;
-        s << "e1p: " << rot1p << endln;
-        s << "E1p: " << E1p << endln;
-        s << "s2p: " << mom2p << endln;
-        s << "e2p: " << rot2p << endln;
-        s << "E2p: " << E2p << endln;
-        s << "s3p: " << mom3p << endln;
-        s << "e3p: " << rot3p << endln;
-        s << "E3p: " << E3p << endln;
-        
-        s << "s1n: " << mom1n << endln;
-        s << "e1n: " << rot1n << endln;
-        s << "E1n: " << E1n << endln;
-        s << "s2n: " << mom2n << endln;
-        s << "e2n: " << rot2n << endln;
-        s << "E2n: " << E2n << endln;
-        s << "s3n: " << mom3n << endln;
-        s << "e3n: " << rot3n << endln;
-        s << "E3n: " << E3n << endln;
-        
-        s << "pinchX: " << pinchX << endln;
-        s << "pinchY: " << pinchY << endln;
-        s << "damfc1: " << damfc1 << endln;
-        s << "damfc2: " << damfc2 << endln;
-        s << "energyA: " << energyA << endln;
-        s << "beta: " << beta << endln;
-    }
-    
-    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-        s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
-        s << "\"type\": \"HystereticMaterial\", ";
-        s << "\"s1p\": " << mom1p << ", ";
-        s << "\"e1p\": " << rot1p << ", ";
-        s << "\"E1p\": " << E1p << ", ";
-        s << "\"s2p\": " << mom2p << ", ";
-        s << "\"e2p\": " << rot2p << ", ";
-        s << "\"E2p\": " << E2p << ", ";
-        s << "\"s3p\": " << mom3p << ", ";
-        s << "\"e3p\": " << rot3p << ", ";
-        s << "\"E3p\": " << E3p << ", ";
-        
-        s << "\"s1n\": " << mom1n << ", ";
-        s << "\"e1n\": " << rot1n << ", ";
-        s << "\"E1n\": " << E1n << ", ";
-        s << "\"s2n\": " << mom2n << ", ";
-        s << "\"e2n\": " << rot2n << ", ";
-        s << "\"E2n\": " << E2n << ", ";
-        s << "\"s3n\": " << mom3n << ", ";
-        s << "\"e3n\": " << rot3n << ", ";
-        s << "\"E3n\": " << E3n << ", ";
-        
-        s << "\"pinchX\": " << pinchX << ", ";
-        s << "\"pinchY\": " << pinchY << ", ";
-        s << "\"damfc1\": " << damfc1 << ", ";
-        s << "\"damfc2\": " << damfc2 << ", ";
-        s << "\"energyA\": " << energyA << ", ";
-        s << "\"beta\": " << beta << "}";
-    }
-}
+	s << "Trilineal with pinching material - GST(2017), tag: " << this->getTag() << endln;
+	s << "mom1p: " << mom1p << endln;
+	s << "rot1p: " << rot1p << endln;
+	s << "E1p: " << E1p << endln;
+	s << "mom2p: " << mom2p << endln;
+	s << "rot2p: " << rot2p << endln;
+	s << "E2p: " << E2p << endln;
+	s << "mom3p: " << mom3p << endln;
+	s << "rot3p: " << rot3p << endln;
+	s << "E3p: " << E3p << endln;
 
-int
-HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
-{
-  if (strcmp(argv[0],"mom1p") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
-    param.setValue(mom1p);
-    return param.addObject(1, this);
-  }
-  if (strcmp(argv[0],"rot1p") == 0) {
-    param.setValue(rot1p);
-    return param.addObject(2, this);
-  }
-  if (strcmp(argv[0],"mom2p") == 0) {
-    param.setValue(mom2p);
-    return param.addObject(3, this);
-  }
-  if (strcmp(argv[0],"rot2p") == 0) {
-    param.setValue(rot2p);
-    return param.addObject(4, this);
-  }
-  if (strcmp(argv[0],"mom3p") == 0) {
-    param.setValue(mom3p);
-    return param.addObject(5, this);
-  }
-  if (strcmp(argv[0],"rot3p") == 0) {
-    param.setValue(rot3p);
-    return param.addObject(6, this);
-  }
-  if (strcmp(argv[0],"mom1n") == 0) {
-    param.setValue(mom1n);
-    return param.addObject(7, this);
-  }
-  if (strcmp(argv[0],"rot1n") == 0) {
-    param.setValue(rot1n);
-    return param.addObject(8, this);
-  }
-  if (strcmp(argv[0],"mom2n") == 0) {
-    param.setValue(mom2n);
-    return param.addObject(9, this);
-  }
-  if (strcmp(argv[0],"rot2n") == 0) {
-    param.setValue(rot2n);
-    return param.addObject(10, this);
-  }
-  if (strcmp(argv[0],"mom3n") == 0) {
-    param.setValue(mom3n);
-    return param.addObject(11, this);
-  }
-  if (strcmp(argv[0],"rot3n") == 0) {
-    param.setValue(rot3n);
-    return param.addObject(12, this);
-  }
-  
-  return -1;
-}
+	s << "mom1n: " << mom1n << endln;
+	s << "rot1n: " << rot1n << endln;
+	s << "E1n: " << E1n << endln;
+	s << "mom2n: " << mom2n << endln;
+	s << "rot2n: " << rot2n << endln;
+	s << "E2n: " << E2n << endln;
+	s << "mom3n: " << mom3n << endln;
+	s << "rot3n: " << rot3n << endln;
+	s << "E3n: " << E3n << endln;
 
-int
-HystereticMaterial::updateParameter(int parameterID, Information &info)
-{
-  switch (parameterID) {
-  case -1:
-    return -1;
-  case 1:
-    this->mom1p = info.theDouble;
-    break;
-  case 2:
-    this->rot1p = info.theDouble;
-    break;
-  case 3:
-    this->mom2p = info.theDouble;
-    break;
-  case 4:
-    this->rot2p = info.theDouble;
-    break;
-  case 5:
-    this->mom3p = info.theDouble;
-    break;
-  case 6:
-    this->rot3p = info.theDouble;
-    break;
-  case 7:
-    this->mom1n = info.theDouble;
-    break;
-  case 8:
-    this->rot1n = info.theDouble;
-    break;
-  case 9:
-    this->mom2n = info.theDouble;
-    break;
-  case 10:
-    this->rot2n = info.theDouble;
-    break;
-  case 11:
-    this->mom3n = info.theDouble;
-    break;
-  case 12:
-    this->rot3n = info.theDouble;
-    break;
-  default:
-    return -1;
-  }
-
-  return 0;
+	s << "pinchX: " << pinchX << endln;
+	s << "pinchY: " << pinchY << endln;
+	s << "damfc1: " << damfc1 << endln;
+	s << "damfc2: " << damfc2 << endln;
+	s << "energyA: " << energyA << endln;
+	s << "beta: " << beta << endln;
+	s << "Pt: " << pt << endln;	
+	s << "Pb: " << pb << endln;
+	s << "itype "<< itype<< endln;
+	if(itype==1){
+	s << "Type: Flexure" << endln;
+	}
+	else if(itype==2){
+	s << "Type: Shear" << endln;
+	}
 }
 
 void
-HystereticMaterial::setEnvelope(void)
+trilinwpd::setEnvelope(void)
 {
 	E1p = mom1p/rot1p;
 	E2p = (mom2p-mom1p)/(rot2p-rot1p);
@@ -810,10 +730,12 @@ HystereticMaterial::setEnvelope(void)
 	Eun = E1n;
 	if (E2n > Eun) Eun = E2n;
 	if (E3n > Eun) Eun = E3n;
+
+
 }
 
 double
-HystereticMaterial::posEnvlpStress(double strain)
+trilinwpd::posEnvlpStress(double strain)
 {
 	if (strain <= 0.0)
 		return 0.0;
@@ -821,14 +743,15 @@ HystereticMaterial::posEnvlpStress(double strain)
 		return E1p*strain;
 	else if (strain <= rot2p)
 		return mom1p + E2p*(strain-rot1p);
-	else if (strain <= rot3p || E3p > 0.0)
+	else if (strain <= rot3p )
 		return mom2p + E3p*(strain-rot2p);
 	else
-		return mom3p;
+
+		return mom1p*0.1-E1p*.001*(strain-rot3p);
 }
 
 double
-HystereticMaterial::negEnvlpStress(double strain)
+trilinwpd::negEnvlpStress(double strain)
 {
 	if (strain >= 0.0)
 		return 0.0;
@@ -836,14 +759,15 @@ HystereticMaterial::negEnvlpStress(double strain)
 		return E1n*strain;
 	else if (strain >= rot2n)
 		return mom1n + E2n*(strain-rot1n);
-	else if (strain >= rot3n || E3n > 0.0)
+	else if (strain >= rot3n )
 		return mom2n + E3n*(strain-rot2n);
 	else
-		return mom3n;
+
+		return mom1n*0.1-E1n*.001*(strain-rot3n);
 }
 
 double
-HystereticMaterial::posEnvlpTangent(double strain)
+trilinwpd::posEnvlpTangent(double strain)
 {
   if (strain < 0.0)
     return E1p*1.0e-9;
@@ -851,14 +775,15 @@ HystereticMaterial::posEnvlpTangent(double strain)
     return E1p;
   else if (strain <= rot2p)
     return E2p;
-  else if (strain <= rot3p || E3p > 0.0)
+  else if (strain <= rot3p )
     return E3p;
   else
-    return E1p*1.0e-9;
+
+   return -1.0*E1p*.001;
 }
 
 double
-HystereticMaterial::negEnvlpTangent(double strain)
+trilinwpd::negEnvlpTangent(double strain)
 {
   if (strain > 0.0)
     return E1n*1.0e-9;
@@ -866,14 +791,15 @@ HystereticMaterial::negEnvlpTangent(double strain)
     return E1n;
   else if (strain >= rot2n)
     return E2n;
-  else if (strain >= rot3n || E3n > 0.0)
+  else if (strain >= rot3n )
     return E3n;
   else
-    return E1n*1.0e-9;
+
+  return -1*E1n*.001;
 }
 
 double
-HystereticMaterial::posEnvlpRotlim(double strain)
+trilinwpd::posEnvlpRotlim(double strain)
 {
   double strainLimit = POS_INF_STRAIN;
 
@@ -893,7 +819,7 @@ HystereticMaterial::posEnvlpRotlim(double strain)
 }
 
 double
-HystereticMaterial::negEnvlpRotlim(double strain)
+trilinwpd::negEnvlpRotlim(double strain)
 {
   double strainLimit = NEG_INF_STRAIN;
 

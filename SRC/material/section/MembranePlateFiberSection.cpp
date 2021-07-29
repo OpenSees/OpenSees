@@ -654,20 +654,21 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
     
     int passarg = 2;
     int key = atoi(argv[1]);    
     
     if (key > 0 && key <= numFibers) {
-      theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
