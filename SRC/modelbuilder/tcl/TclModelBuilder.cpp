@@ -654,6 +654,8 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
   nodeLoadTag = 0;
   eleArgStart = 0;
+  Tcl_SetAssocData(interp, "OPS::theTclModelBuilder", NULL, (ClientData)this);
+  Tcl_SetAssocData(interp, "OPS::theTclDomain", NULL, (ClientData)&theDomain);
 }
 
 TclModelBuilder::~TclModelBuilder()

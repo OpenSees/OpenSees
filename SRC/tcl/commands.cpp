@@ -1150,7 +1150,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     // create an error handler
 
-#ifdef _NOGRAPHICS
+#if defined(_NOGRAPHICS)
 
 #else
     theTclVideoPlayer = 0;
