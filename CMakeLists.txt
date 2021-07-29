@@ -52,7 +52,7 @@ if (UNIX)
     
     else()
        message(STATUS ">>> LINUX")
-       add_compile_definitions(_LINUX _UNIX)
+       add_compile_definitions(_LINUX _UNIX _TCL85)
        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
     endif()
 endif()
@@ -99,6 +99,8 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #set(CMAKE_CXX_STANDARD 11)
+add_link_options(-rdynamic)
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 
 # Warnings
 opensees_add_cxx_flag(
@@ -249,7 +251,7 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
     ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
-set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
+# set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
 
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
@@ -276,13 +278,13 @@ add_subdirectory(${OPS_SRC_DIR})
 # G3
 #----------------------------
 target_link_libraries(G3 
+    G3_Matrix
     G3_Analysis 
     G3_ModelBuilder
-    G3_Element
-    G3_Actor 
-    G3_Material
     G3_Domain
-    G3_Matrix
+    OPS_ConvergenceTest
+    G3_Element
+    G3_Material
     G3_Recorder
     G3_Handler
     G3_SysOfEqn
@@ -290,7 +292,7 @@ target_link_libraries(G3
     G3_Utilities
     graph
     coordTransformation
-    OPS_ConvergenceTest
+    G3_Actor 
     G3_Numerics 
 )
 
