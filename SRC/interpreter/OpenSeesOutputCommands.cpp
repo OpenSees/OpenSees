@@ -314,6 +314,10 @@ int OPS_nodeEigenvector()
 
     // get eigen vectors
     Node* theNode = theDomain->getNode(data[0]);
+    if (theNode == 0) {
+	    opserr << "nodeEigenvector - node with tag " << data[0] << " not found\n";
+	    return -1;
+    }
     const Matrix &theEigenvectors = theNode->getEigenvectors();
 
     int size = theEigenvectors.noRows();

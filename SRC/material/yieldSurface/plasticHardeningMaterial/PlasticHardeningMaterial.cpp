@@ -70,7 +70,7 @@ int PlasticHardeningMaterial::revertToStart (void)
 }
 
 
-Response *PlasticHardeningMaterial::setResponse (char **argv, int argc, Information &matInformation)
+Response *PlasticHardeningMaterial::setResponse (char **argv, int argc, OPS_Stream &output)
 {
 	return 0;
 }

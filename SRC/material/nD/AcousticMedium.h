@@ -69,7 +69,7 @@ class AcousticMedium : public NDMaterial
 		 FEM_ObjectBroker &theBroker);    
    
 
-      Response *setResponse (const char **argv, int argc, OPS_Stream &matInformation);
+      Response *setResponse (const char **argv, int argc, OPS_Stream &output);
       int getResponse (int responseID, Information &matInformation);
 
 
