@@ -1306,7 +1306,7 @@ Response*
 {
 	Response *theResponse =0;
 
-	if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+	if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
 		int key = numFibers;
 		int passarg = 2;
@@ -1329,7 +1329,7 @@ Response*
 				if (matTag == theMaterials[j]->getTag()) {
 					ySearch = matData[2*j];
 					dy = ySearch-yCoord;
-					closestDist = fabs(dy);
+					closestDist = dy*dy;
 					key = j;
 					break;
 				}
@@ -1339,7 +1339,7 @@ Response*
 				if (matTag == theMaterials[j]->getTag()) {
 					ySearch = matData[2*j];
 					dy = ySearch-yCoord;
-					distance = fabs(dy);
+					distance = dy*dy;
 					if (distance < closestDist) {
 						closestDist = distance;
 						key = j;
@@ -1358,13 +1358,13 @@ Response*
 
 			ySearch = matData[0];
 			dy = ySearch-yCoord;
-			closestDist = fabs(dy);
+			closestDist = dy*dy;
 			key = 0;
 			for (int j = 1; j < numFibers; j++) {
 				ySearch = matData[2*j];
 				dy = ySearch-yCoord;
 
-				distance = fabs(dy);
+				distance = dy*dy;
 				if (distance < closestDist) {
 					closestDist = distance;
 					key = j;
@@ -1384,16 +1384,17 @@ Response*
 			output.endTag();
 		}
 
-		return theResponse;
 	}
 
-	// If not a fiber response, call the base class method
-	return SectionForceDeformation::setResponse(argv, argc, output);
+	if (theResponse == 0)
+	  return SectionForceDeformation::setResponse(argv, argc, output);
+
+	return theResponse;
 }
 
 
 int 
-	NDFiberSectionWarping2d::getResponse(int responseID, Information &sectInfo)
+NDFiberSectionWarping2d::getResponse(int responseID, Information &sectInfo)
 {
 	// Just call the base class method ... don't need to define
 	// this function, but keeping it here just for clarity

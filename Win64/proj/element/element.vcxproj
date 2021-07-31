@@ -208,6 +208,7 @@
     <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp" />
@@ -222,6 +223,9 @@
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp" />

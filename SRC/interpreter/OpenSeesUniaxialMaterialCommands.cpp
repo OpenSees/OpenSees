@@ -176,6 +176,7 @@ void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
 void* OPS_SLModel();
+void* OPS_SMAMaterial();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -346,6 +347,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
+	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
 	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 	return 0;
