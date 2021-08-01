@@ -31,7 +31,8 @@
 // stress resultants are obtained by summing fiber contributions.
 
 // Modified by: Xinlong Du and Jerome F. Hajjar, Northeastern University, USA; Year 2019
-// Description: Modified FiberSectionAsym3d.h to include shear center coordinates and high-order longitudinal strain terms.
+// Description: Modified FiberSection3d.h (from version 3.0.0 on 11/5/2018)
+//              to include shear center coordinates and high-order longitudinal strain terms.
 // References:
 // Du, X., & Hajjar, J. (2021). Three-dimensional nonlinear displacement-based beam element
 // for members with angle and tee sections. Engineering Structures, 239, 112239.
