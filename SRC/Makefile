@@ -240,6 +240,7 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/TrapezoidalBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/FixedLocationBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LowOrderBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/ChebyshevBeamIntegration.o \
 	$(FE)/coordTransformation/CrdTransf.o \
 	$(FE)/coordTransformation/LinearCrdTransf2d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf2d.o \
@@ -515,6 +516,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnWarping3d.o \
+	$(FE)/element/dispBeamColumn/DispBeamColumnAsym3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.o \
@@ -535,6 +537,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/gradientInelasticBeamColumn/TclGradientInelasticBeamColumnCommand.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn2d.o \
 	$(FE)/element/mixedBeamColumn/MixedBeamColumn3d.o \
+	$(FE)/element/mixedBeamColumn/MixedBeamColumnAsym3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuadWithSensitivity.o \
@@ -652,7 +655,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
         $(FE)/element/PML/PML3D.o \
         $(FE)/element/PML/pml_2d.o \
         $(FE)/element/PML/PML2D.o \
-	$(FE)/element/RockingBC/RockingBC.o
+	$(FE)/element/RockingBC/RockingBC.o \
+	$(FE)/element/masonry/MasonPan12.o \
+	$(FE)/element/masonry/MasonPan3D.o \
+	$(FE)/element/masonry/BeamGT.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -812,6 +818,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/SPSW02.o \
 	$(FE)/material/uniaxial/TDConcrete.o \
@@ -849,6 +856,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/unloading/TakedaUnloadingRule.o \
 	$(FE)/material/uniaxial/unloading/EnergyUnloadingRule.o \
 	$(FE)/material/uniaxial/unloading/KarsanUnloadingRule.o \
+	$(FE)/material/uniaxial/Masonry.o \
+	$(FE)/material/uniaxial/Masonryt.o \
+	$(FE)/material/uniaxial/Trilinwpd.o \
+	$(FE)/material/uniaxial/Trilinwp.o \
+	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -900,6 +912,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface3D.o \
+	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
 	$(FE)/material/nD/LinearCap.o \
@@ -1019,9 +1033,9 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/LayeredShellFiberSectionThermal.o \
 	$(FE)/material/section/FiberSection3dThermal.o \
 	$(FE)/material/section/MembranePlateFiberSectionThermal.o \
-	$(FE)/material/section/FiberSectionGJThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
 	$(FE)/material/section/FiberSectionWarping3d.o \
+	$(FE)/material/section/FiberSectionAsym3d.o \
 	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
 	$(FE)/material/section/ParallelSection.o \

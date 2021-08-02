@@ -231,6 +231,11 @@
 #define MAT_TAG_PlateBearingConnectionThermal 215
 #define MAT_TAG_ASD_SMA_3K                    216
 
+#define MAT_TAG_Masonry 217
+#define MAT_TAG_Masonryt 218
+#define MAT_TAG_Trilinwp 219
+#define MAT_TAG_Trilinwp2 220
+#define MAT_TAG_Trilinwpd 221
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -292,6 +297,7 @@
 #define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
 #define SEC_TAG_FiberSectionWarping3d		        1010
+#define SEC_TAG_FiberSectionAsym3d		        1011
 #define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
@@ -458,7 +464,7 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - D.Turello
+// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
@@ -624,6 +630,7 @@
 #define ELE_TAG_DispBeamColumn3d        64
 #define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641
+#define ELE_TAG_DispBeamColumnAsym3d           642
 #define ELE_TAG_HingedBeam2d            65
 #define ELE_TAG_HingedBeam3d            66
 #define ELE_TAG_TwoPointHingedBeam2d    67
@@ -642,6 +649,7 @@
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
 #define ELE_TAG_MixedBeamColumn2d 30766
 #define ELE_TAG_MixedBeamColumn3d 30765
+#define ELE_TAG_MixedBeamColumnAsym3d 30767
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
@@ -777,7 +785,10 @@
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
 #define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
-#define ELE_TAG_ZeroLengthImplexContact   215  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+#define ELE_TAG_BeamGT                    214
+#define ELE_TAG_MasonPan12                    215
+#define ELE_TAG_MasonPan3D                    216
+#define ELE_TAG_ZeroLengthImplexContact   217  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 
