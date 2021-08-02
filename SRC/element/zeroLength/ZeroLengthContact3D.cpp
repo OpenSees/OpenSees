@@ -522,7 +522,7 @@ ZeroLengthContact3D::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-ZeroLengthContact3D::setResponse(const char **argv, int argc, Information &eleInformation)
+ZeroLengthContact3D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
      if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
      return new ElementResponse(this, 1, resid);
@@ -532,7 +532,7 @@ ZeroLengthContact3D::setResponse(const char **argv, int argc, Information &eleIn
      return new ElementResponse(this, 2, stiff);
 
  	 else 
-		return 0;
+	   return Element::setResponse(argv, argc, output);
 }
 
 
@@ -544,7 +544,7 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
  else if (responseID == 2)
 	 return eleInfo.setMatrix(this->getTangentStiff());
  else
-	 return -1;
+   return Element::getResponse(responseID, eleInfo);
 }
 
 

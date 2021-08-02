@@ -36,6 +36,8 @@
 #include <ElementResponse.h>
 #include <FrictionModel.h>
 #include <UniaxialMaterial.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <float.h>
 #include <math.h>
@@ -1161,4 +1163,30 @@ double SingleFPSimple2d::sgn(double x)
         return -1.0;
     else
         return 0.0;
+}
+
+int
+SingleFPSimple2d::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 1)
+    return -1;
+
+  if (strcmp(argv[0],"R") == 0 || strcmp(argv[0],"Reff") == 0) {
+    param.setValue(Reff);
+    return param.addObject(1,this);
+  }
+  else
+    return theFrnMdl->setParameter(argv, argc, param);
+}
+
+int
+SingleFPSimple2d::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    Reff = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
 }

@@ -107,20 +107,20 @@ public:
 
 	virtual const Matrix& getDampTangent();
 
-	virtual int setTrialStrain(const Vector &strain_from_element);
-	virtual int setTrialStrain(const Vector &v, const Vector &r);
+	//virtual int setTrialStrain(const Vector &strain_from_element);
+	//virtual int setTrialStrain(const Vector &v, const Vector &r);
 
-	// send back the strain
-	virtual const Vector&	 getStrain();
+	//// send back the strain
+	//virtual const Vector&	 getStrain();
 
-	// send back the stress 
-	virtual const Vector&	  getStress();
+	//// send back the stress 
+	//virtual const Vector&	  getStress();
 
-	// send back the tangent 
-	virtual const Matrix&	 getTangent();
+	//// send back the tangent 
+	//virtual const Matrix&	 getTangent();
 
-	// send back the tangent 
-	virtual const Matrix&  getInitialTangent();
+	//// send back the tangent 
+	//virtual const Matrix&  getInitialTangent();
 
 
 protected:
@@ -178,6 +178,7 @@ protected:
 	void    viscoElastic_integrator();
 
 	void    calcInitialTangent();
+	const Matrix& calcTangent();
 
 	//hardening function
 	double H(double kappa);

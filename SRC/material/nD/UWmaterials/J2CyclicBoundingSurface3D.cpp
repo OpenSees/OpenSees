@@ -26,6 +26,9 @@
 // Description: This file contains the implementation of the J2CyclicBoundingSurface3D class.
 #include "J2CyclicBoundingSurface3D.h"
 
+Matrix J2CyclicBoundingSurface3D::tangent(3, 3);
+
+
 // full constructor
 J2CyclicBoundingSurface3D::J2CyclicBoundingSurface3D( int tag, double G, double K, double su, double rho, double h, double m, double h0, double chi, double beta)
 	:J2CyclicBoundingSurface (tag, ND_TAG_J2CyclicBoundingSurface3D, G, K, su, rho, h, m, h0, chi, beta)
@@ -107,17 +110,12 @@ J2CyclicBoundingSurface3D::getStress()
 const Matrix& 
 J2CyclicBoundingSurface3D::getTangent()
 {
-	Matrix C(6, 6);
-	C = J2CyclicBoundingSurface::getTangent();
-    return C;
+	return calcTangent();
 } 
 
 // send back the tangent 
 const Matrix& 
 J2CyclicBoundingSurface3D::getInitialTangent()
 {
-	Matrix C(6, 6);
-	J2CyclicBoundingSurface::calcInitialTangent();
-	C = m_Ce;
-	return C;
+	return m_Ce;
 }
