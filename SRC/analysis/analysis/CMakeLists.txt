@@ -1,4 +1,4 @@
-target_sources(G3_Analysis
+target_sources(OPS_Analysis
     PRIVATE
       Analysis.cpp 
       DirectIntegrationAnalysis.cpp 
@@ -32,6 +32,6 @@ target_sources(OPS_PFEM
     PUBLIC
         PFEMAnalysis.h 
 )
-#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+#target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 #add_subdirectory(analysis)

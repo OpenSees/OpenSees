@@ -1,4 +1,4 @@
-target_sources(G3_Matrix
+target_sources(OPS_Matrix
     PRIVATE
     MatrixUtil.cpp
     PUBLIC
@@ -6,6 +6,6 @@ target_sources(G3_Matrix
 )
 
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-target_include_directories(G3_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 

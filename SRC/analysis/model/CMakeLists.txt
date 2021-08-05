@@ -1,4 +1,4 @@
-target_sources(G3_Analysis
+target_sources(OPS_Analysis
     PRIVATE
       AnalysisModel.cpp
       FE_EleIter.cpp
@@ -9,4 +9,4 @@ target_sources(G3_Analysis
       DOF_GrpIter.h
 )
 
-#target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+#target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})

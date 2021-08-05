@@ -1,6 +1,6 @@
 #add_library(OPS_Element OBJECT)
 
-target_sources(G3_Element
+target_sources(OPS_Element
     PRIVATE
       Element.cpp
       ElementalLoad.cpp
@@ -13,7 +13,7 @@ target_sources(G3_Element
       #Information.h
 )
 
-target_sources(G3_Utilities
+target_sources(OPS_Utilities
     PRIVATE
       Information.cpp
     PUBLIC

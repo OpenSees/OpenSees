@@ -767,13 +767,13 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-
+#if defined(_OPS_ELEMENT_PML)
 	case ELE_TAG_PML2D:
-		return new PML2D();
+	  return new PML2D();
 
 	case ELE_TAG_PML3D:
-		return new PML3D();
-      
+	  return new PML3D();
+#endif      
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -900,7 +900,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
-#ifdef _OPS_Element_PFEM
+#if defined(_OPS_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 #endif // _OPS_Element_PFEM
