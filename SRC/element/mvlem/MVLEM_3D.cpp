@@ -2787,7 +2787,7 @@ void MVLEM_3D::Print(OPS_Stream &s, int flag)
 		// Print out element properties
 		s << "Element: " << this->getTag() << endln;
 		s << "  type: MVLEM_3D" << endln;
-		s << "  iNode: " << externalNodes(0) << ", jNode: " << externalNodes(1) << "  kNode: " << externalNodes(3) << ", lNode: " << externalNodes(2) << endln;
+		s << "  iNode: " << externalNodes(0) << ", jNode: " << externalNodes(1) << "  kNode: " << externalNodes(2) << ", lNode: " << externalNodes(3) << endln;
 		s << "Element height: " << h << endln;
 		s << "Number of uniaxial fibers elements: " << m << endln << endln;
 
@@ -2827,8 +2827,8 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 	s.attr("eleTag", this->getTag());
 	s.attr("node1", externalNodes[0]);
 	s.attr("node2", externalNodes[1]);
-	s.attr("node3", externalNodes[3]);
-	s.attr("node4", externalNodes[2]);
+	s.attr("node3", externalNodes[2]);
+	s.attr("node4", externalNodes[3]);
 
 	// Nodal forces in global cs
 	if (strcmp(argv[0], "forceG") == 0 || strcmp(argv[0], "forcesG") == 0 ||
