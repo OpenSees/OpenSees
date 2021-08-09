@@ -87,7 +87,7 @@ void* OPS_PySimple2()
     }
     
     UniaxialMaterial *theMaterial = 0;
-    theMaterial = new PySimple1(idata[0], MAT_TAG_PySimple1, idata[1], ddata[0], ddata[1],
+    theMaterial = new PySimple2(idata[0], MAT_TAG_PySimple1, idata[1], ddata[0], ddata[1],
     				ddata[2], ddata[3]);
     
     return theMaterial;

@@ -87,7 +87,7 @@ void* OPS_TzSimple2()
     }
     
     UniaxialMaterial *theMaterial = 0;
-    theMaterial = new TzSimple1(idata[0], MAT_TAG_PySimple1, idata[1], ddata[0], ddata[1],
+    theMaterial = new TzSimple2(idata[0], MAT_TAG_PySimple1, idata[1], ddata[0], ddata[1],
     				ddata[2]);
     
     return theMaterial;
