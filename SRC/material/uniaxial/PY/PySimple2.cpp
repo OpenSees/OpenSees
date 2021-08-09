@@ -67,7 +67,7 @@ void* OPS_PySimple2()
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: uniaxialMaterial PySimple1 tag? soilType? pult? y50? drag? dashpot?\n";
+	opserr << "Want: uniaxialMaterial PySimple2 tag? soilType? pult? y50? drag? dashpot?\n";
 	return 0;
     }
     
