@@ -117,68 +117,68 @@ opensees_add_cxx_flag(
 #----------------------------------------------------------------
 # Global Includes
 #----------------------------------------------------------------
- 
 # include paths to main abstract classes
  
 # NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
 
 include_directories(
-    ${OPS_SRC_DIR}
-    ${OPS_SRC_DIR}/matrix
-    ${OPS_SRC_DIR}/handler
-    ${OPS_SRC_DIR}/database
-    ${OPS_SRC_DIR}/element
-    ${OPS_SRC_DIR}/element/forceBeamColumn
-    ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
-    ${OPS_SRC_DIR}/coordTransformation
-    ${OPS_SRC_DIR}/tagged
-    ${OPS_SRC_DIR}/tagged/storage
-    ${OPS_SRC_DIR}/recorder
-    ${OPS_SRC_DIR}/renderer
-    ${OPS_SRC_DIR}/damage
-    ${OPS_SRC_DIR}/recorder/response
-    ${OPS_SRC_DIR}/material
-    ${OPS_SRC_DIR}/material/section
-    ${OPS_SRC_DIR}/material/uniaxial
-    ${OPS_SRC_DIR}/material/nD
-    ${OPS_SRC_DIR}/graph/graph
-    ${OPS_SRC_DIR}/graph/numberer
-    ${OPS_SRC_DIR}/graph/partitioner
-    ${OPS_SRC_DIR}/domain/component
-    ${OPS_SRC_DIR}/domain/domain
-    ${OPS_SRC_DIR}/domain/subdomain
-    ${OPS_SRC_DIR}/domain/load
-    ${OPS_SRC_DIR}/domain/loadBalancer
-    ${OPS_SRC_DIR}/domain/pattern
-    ${OPS_SRC_DIR}/domain/groundMotion
-    ${OPS_SRC_DIR}/domain/node
-    ${OPS_SRC_DIR}/domain/constraints
-    ${OPS_SRC_DIR}/domain/region
-    ${OPS_SRC_DIR}/analysis/algorithm
-    ${OPS_SRC_DIR}/analysis/dof_grp
-    ${OPS_SRC_DIR}/analysis/fe_ele
-    ${OPS_SRC_DIR}/analysis/algorithm/equiSolnAlgo
-    ${OPS_SRC_DIR}/analysis/algorithm/eigenAlgo
-    ${OPS_SRC_DIR}/analysis/algorithm/domainDecompAlgo
-    ${OPS_SRC_DIR}/analysis/analysis
-    ${OPS_SRC_DIR}/analysis/integrator
-    ${OPS_SRC_DIR}/analysis/handler
-    ${OPS_SRC_DIR}/analysis/numberer
-    ${OPS_SRC_DIR}/analysis/model
-    ${OPS_SRC_DIR}/convergenceTest
-    ${OPS_SRC_DIR}/modelbuilder
-    ${OPS_SRC_DIR}/system_of_eqn
-    ${OPS_SRC_DIR}/system_of_eqn/linearSOE
-    ${OPS_SRC_DIR}/system_of_eqn/eigenSOE
-    ${OPS_SRC_DIR}/actor/actor
-    ${OPS_SRC_DIR}/actor/channel
-    ${OPS_SRC_DIR}/actor/objectBroker
-    ${OPS_SRC_DIR}/actor/message
+  ${OPS_SRC_DIR}
+  ${OPS_SRC_DIR}/matrix
+  ${OPS_SRC_DIR}/handler
+  ${OPS_SRC_DIR}/database
+  ${OPS_SRC_DIR}/element
+  ${OPS_SRC_DIR}/element/forceBeamColumn
+  ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
+  ${OPS_SRC_DIR}/coordTransformation
+  ${OPS_SRC_DIR}/tagged
+  ${OPS_SRC_DIR}/tagged/storage
+  ${OPS_SRC_DIR}/recorder
+  ${OPS_SRC_DIR}/renderer
+  ${OPS_SRC_DIR}/damage
+  ${OPS_SRC_DIR}/recorder/response
+  ${OPS_SRC_DIR}/material
+  ${OPS_SRC_DIR}/material/section
+  ${OPS_SRC_DIR}/material/uniaxial
+  ${OPS_SRC_DIR}/material/nD
+  ${OPS_SRC_DIR}/graph/graph
+  ${OPS_SRC_DIR}/graph/numberer
+  ${OPS_SRC_DIR}/graph/partitioner
+  ${OPS_SRC_DIR}/domain/component
+  ${OPS_SRC_DIR}/domain/domain
+  ${OPS_SRC_DIR}/domain/subdomain
+  ${OPS_SRC_DIR}/domain/load
+  ${OPS_SRC_DIR}/domain/loadBalancer
+  ${OPS_SRC_DIR}/domain/pattern
+  ${OPS_SRC_DIR}/domain/groundMotion
+  ${OPS_SRC_DIR}/domain/node
+  ${OPS_SRC_DIR}/domain/constraints
+  ${OPS_SRC_DIR}/domain/region
+  ${OPS_SRC_DIR}/analysis/algorithm
+  ${OPS_SRC_DIR}/analysis/dof_grp
+  ${OPS_SRC_DIR}/analysis/fe_ele
+  ${OPS_SRC_DIR}/analysis/algorithm/equiSolnAlgo
+  ${OPS_SRC_DIR}/analysis/algorithm/eigenAlgo
+  ${OPS_SRC_DIR}/analysis/algorithm/domainDecompAlgo
+  ${OPS_SRC_DIR}/analysis/analysis
+  ${OPS_SRC_DIR}/analysis/integrator
+  ${OPS_SRC_DIR}/analysis/handler
+  ${OPS_SRC_DIR}/analysis/numberer
+  ${OPS_SRC_DIR}/analysis/model
+  ${OPS_SRC_DIR}/convergenceTest
+  ${OPS_SRC_DIR}/modelbuilder
+  ${OPS_SRC_DIR}/system_of_eqn
+  ${OPS_SRC_DIR}/system_of_eqn/linearSOE
+  ${OPS_SRC_DIR}/system_of_eqn/eigenSOE
+  ${OPS_SRC_DIR}/actor/actor
+  ${OPS_SRC_DIR}/actor/channel
+  ${OPS_SRC_DIR}/actor/objectBroker
+  ${OPS_SRC_DIR}/actor/message
 )
+
 include_directories(${TCL_INCLUDE_PATH})
 include_directories(${MYSQL_INCLUDE_DIR})
 
-# Temporary fix: include all directories with .h files by glob
+# Temporary fix: include all directories with .h files through glob
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
 	${OPS_SRC_DIR}/*.h
 	${OPS_BUNDLED_DIR}/*.h
@@ -197,31 +197,23 @@ include_directories(${OPS_INCLUDE_DIRS})
 #                            Define Targets
 #
 #==============================================================================
-add_library(G3_Matrix              OBJECT)
-add_library(G3_Actor               OBJECT)
-add_library(G3_Domain              OBJECT)
-add_library(G3_SysOfEqn            OBJECT)
-add_library(G3_Handler             OBJECT)
-add_library(G3_Analysis            OBJECT)
-add_library(G3_Recorder            OBJECT)
-add_library(G3_Tagged              OBJECT)
-add_library(G3_Utilities           OBJECT)
-add_library(G3_Element             OBJECT)
-add_library(G3_Material            OBJECT)
-add_library(G3_ModelBuilder        OBJECT)
+add_library(OPS_Matrix             OBJECT)
+add_library(OPS_Actor              OBJECT)
+add_library(OPS_Handler            OBJECT)
+add_library(OPS_Recorder           OBJECT)
+add_library(OPS_Tagged             OBJECT)
+add_library(OPS_Utilities          OBJECT)
+add_library(OPS_ModelBuilder       OBJECT)
 
-add_library(G3_Numerics            INTERFACE)
-target_link_libraries(G3_Numerics  INTERFACE
-    ${ARPACK_LIBRARIES} 
-    ${SUPERLU_LIBRARIES}
-    ${UMFPACK_LIBRARIES}
-    ${AMD_LIBRARIES}
-    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
+add_library(OPS_Numerics           INTERFACE)
+target_link_libraries(OPS_Numerics INTERFACE
+  ${ARPACK_LIBRARIES} 
+  ${SUPERLU_LIBRARIES}
+  ${UMFPACK_LIBRARIES}
+  ${AMD_LIBRARIES}
+  ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
 )
-
-
 # Core OpenSees
-add_library(OPS_Interp_Tcl         STATIC)
 add_library(OPS_Domain             OBJECT)
 add_library(OPS_SysOfEqn           OBJECT)
 add_library(OPS_Analysis           OBJECT)
@@ -231,6 +223,7 @@ add_library(OPS_Element            OBJECT)
 add_library(OPS_Material           OBJECT)
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
+add_library(OPS_Interp_Tcl         STATIC)
 
 # Optional Extensions
 add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
@@ -244,61 +237,6 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 # Packaged libraries
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
-
-# Executables
-#------------------------------------------------------------------------------
-add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL 
-    ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
-    ${OPS_SRC_DIR}/tcl/tclMain.cpp
-)
-# set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
-
-add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
-  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
-)
-
-add_executable(OpenSeesMP    EXCLUDE_FROM_ALL 
-  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
-)
-add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
-
-
-# Set selected frontend to be built by default
-set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
-
-
-# Add sources to targets
-add_subdirectory(${OPS_SRC_DIR})
-
-#==============================================================================
-#                            Configure targets
-#
-#==============================================================================
-#----------------------------
-# G3
-#----------------------------
-target_link_libraries(G3 
-    G3_Matrix
-    G3_Analysis 
-    G3_ModelBuilder
-    G3_Domain
-    OPS_ConvergenceTest
-    G3_Element
-    G3_Material
-    G3_Recorder
-    G3_Handler
-    G3_SysOfEqn
-    G3_Tagged 
-    G3_Utilities
-    graph
-    coordTransformation
-    G3_Actor 
-    G3_Numerics 
-)
-
-#----------------------------
-# OpenSees
-#----------------------------
 target_sources(OpenSees
   PRIVATE
 	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
@@ -313,6 +251,67 @@ target_sources(OpenSees
     "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
     "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
 )
+
+# Executables
+#------------------------------------------------------------------------------
+# Adding EXCLUDE_FROM_ALL prevents these from being made by default.
+
+add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+  ${OPS_SRC_DIR}/tcl/tclMain.cpp
+)
+
+# an attempt to solve linking problems on Windows
+# set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
+
+add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+  ${OPS_SRC_DIR}/tcl/tclMain.cpp
+)
+
+add_executable(OpenSeesMP    EXCLUDE_FROM_ALL 
+  ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
+  ${OPS_SRC_DIR}/tcl/tclMain.cpp
+)
+
+add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
+
+
+# Set selected executable to be built by default
+set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
+
+# Add sources to targets
+add_subdirectory(${OPS_SRC_DIR})
+
+#==============================================================================
+#                            Configure targets
+#
+#==============================================================================
+#----------------------------
+# G3
+#----------------------------
+target_link_libraries(G3 
+    OPS_Matrix
+    OPS_Analysis 
+    OPS_ModelBuilder
+    OPS_Domain
+    OPS_ConvergenceTest
+    OPS_Element
+    OPS_Material
+    OPS_Recorder
+    OPS_Handler
+    OPS_SysOfEqn
+    OPS_Tagged 
+    OPS_Utilities
+    graph
+    coordTransformation
+    OPS_Actor 
+    OPS_Numerics 
+)
+
+#----------------------------
+# OpenSees
+#----------------------------
 
 target_link_libraries(OpenSees
     #OPS_Paraview
