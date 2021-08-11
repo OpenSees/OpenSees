@@ -36,6 +36,8 @@
 #include <ElementResponse.h>
 #include <FrictionModel.h>
 #include <UniaxialMaterial.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <float.h>
 #include <math.h>
@@ -1309,4 +1311,30 @@ void SingleFPSimple3d::setUp()
     Tlb(1,11) = -(1.0 - shearDistI)*L;
     Tlb(2,4) = -Tlb(1,5);
     Tlb(2,10) = -Tlb(1,11);
+}
+
+int
+SingleFPSimple3d::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 1)
+    return -1;
+
+  if (strcmp(argv[0],"R") == 0 || strcmp(argv[0],"Reff") == 0) {
+    param.setValue(Reff);
+    return param.addObject(1,this);
+  }
+  else
+    return theFrnMdl->setParameter(argv, argc, param);
+}
+
+int
+SingleFPSimple3d::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    Reff = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
 }

@@ -22,19 +22,16 @@ OBJS       = SectionForceDeformation.o \
 	FiberSection3d.o \
 	FiberSectionWarping3d.o \
 	FiberSectionAsym3d.o \
-	FiberSectionGJ.o \
 	Bidirectional.o \
 	Elliptical.o \
 	Elliptical2.o \
-	TimoshenkoSection3d.o \
 	Isolator2spring.o \
 	BiaxialHysteretic.o \
 	McftSection2dfiber.o \
 	LayeredShellFiberSection.o \
 	LayeredShellFiberSectionThermal.o \
 	FiberSection3dThermal.o \
-	MembranePlateFiberSectionThermal.o \
-	FiberSectionGJThermal.o
+	MembranePlateFiberSectionThermal.o
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/section/repres; $(MAKE);
