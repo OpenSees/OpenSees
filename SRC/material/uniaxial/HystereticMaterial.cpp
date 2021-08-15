@@ -807,6 +807,8 @@ HystereticMaterial::updateParameter(int parameterID, Information &info)
     return -1;
   }
 
+  this->setEnvelope();
+  opserr << E1p << ' ' << E2p << ' ' << E3p << endln;
   return 0;
 }
 

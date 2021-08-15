@@ -398,7 +398,7 @@ HardeningMaterial::activateParameter(int passedParameterID)
 
 
 
-
+/*
 double
 HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
@@ -477,7 +477,6 @@ HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 	return sensitivity;
 }
 
-
 double
 HardeningMaterial::getTangentSensitivity(int gradIndex)
 {
@@ -528,7 +527,6 @@ HardeningMaterial::getInitialTangentSensitivity(int gradIndex)
   else
     return 0.0;
 }
-
 
 int
 HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, int numGrads)
@@ -608,5 +606,68 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 
 	return 0;
 }
+*/
 // AddingSensitivity:END /////////////////////////////////////////////
 
+int
+HardeningMaterial::getActiveParameter(double &param)
+{
+  if (parameterID == 1)
+    param = sigmaY;
+  if (parameterID == 2)
+    param = E;
+  if (parameterID == 3)
+    param = Hkin;
+  if (parameterID == 4)
+    param = Hiso;  
+
+  return parameterID;
+}
+
+int
+HardeningMaterial::getTrialHistoryVariables(double *hstv)
+{
+  hstv[0] = TplasticStrain;
+  hstv[1] = Thardening;
+  hstv[2] = Tstrain;
+  hstv[3] = Tstress;
+  hstv[4] = Ttangent;  
+
+  return 0;
+}
+
+int
+HardeningMaterial::setTrialHistoryVariables(const double *hstv)
+{
+  TplasticStrain = hstv[0];
+  Thardening = hstv[1];
+  Tstrain = hstv[2];
+  Tstress = hstv[3];
+  Ttangent = hstv[4];
+  
+  return 0;
+}
+
+int
+HardeningMaterial::getCommittedHistoryVariables(double *hstv)
+{
+  hstv[0] = CplasticStrain;
+  hstv[1] = Chardening;
+  hstv[2] = Tstrain;
+  hstv[3] = Tstress;
+  hstv[4] = Ttangent;
+  
+  return 0;
+}
+
+int
+HardeningMaterial::setCommittedHistoryVariables(const double *hstv)
+{
+  CplasticStrain = hstv[0];
+  Chardening = hstv[1];
+  Tstrain = hstv[2];
+  Tstress = hstv[3];
+  Ttangent = hstv[4];
+  
+  return 0;
+}
