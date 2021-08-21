@@ -792,7 +792,7 @@ SteelFractureDI::getResponse(int responseID, Information &matInfo)
 		return 0;
 
 	case 6:
-		if (DI > 1)
+		if (DI > FI_lim)
 			matInfo.setInt(1);
 		else
 			matInfo.setInt(0);
