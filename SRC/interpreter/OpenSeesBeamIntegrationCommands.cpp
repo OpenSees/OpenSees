@@ -56,6 +56,7 @@ void* OPS_UserDefinedBeamIntegration(int&,ID&);
 void* OPS_FixedLocationBeamIntegration(int&,ID&);
 void* OPS_LowOrderBeamIntegration(int&,ID&);
 void* OPS_MidDistanceBeamIntegration(int&,ID&);
+void* OPS_ChebyshevBeamIntegration(int&,ID&);
 void* OPS_UserHingeBeamIntegration(int&,ID&);
 void* OPS_HingeMidpointBeamIntegration(int&,ID&);
 void* OPS_HingeRadauBeamIntegration(int&,ID&);
@@ -78,6 +79,7 @@ namespace {
     int setUpFunctions(void) {
 	functionMap.insert(std::make_pair("Lobatto", &OPS_LobattoBeamIntegration));
 	functionMap.insert(std::make_pair("Legendre", &OPS_LegendreBeamIntegration));
+	functionMap.insert(std::make_pair("Chebyshev", &OPS_ChebyshevBeamIntegration));	
 	functionMap.insert(std::make_pair("NewtonCotes", &OPS_NewtonCotesBeamIntegration));
 	functionMap.insert(std::make_pair("Radau", &OPS_RadauBeamIntegration));
 	functionMap.insert(std::make_pair("Trapezoidal", &OPS_TrapezoidalBeamIntegration));

@@ -1233,7 +1233,20 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
+
+    static double yLocs[10000];
+    static double zLocs[10000];
+    
+    if (sectionIntegr != 0) {
+      sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+    }  
+    else {
+      for (int i = 0; i < numFibers; i++) {
+	yLocs[i] = matData[3*i];
+	zLocs[i] = matData[3*i+1];
+      }
+    }
     
     int key = numFibers;
     int passarg = 2;
@@ -1254,11 +1267,13 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[3*j];
-	  zSearch = matData[3*j+1];
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    	  
 	  dy = ySearch-yCoord;
 	  dz = zSearch-zCoord;
-	  closestDist = sqrt(dy*dy + dz*dz);
+	  closestDist = dy*dy + dz*dz;
 	  key = j;
 	  break;
 	}
@@ -1266,11 +1281,13 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[3*j];
-	  zSearch = matData[3*j+1];
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    	  	  
 	  dy = ySearch-yCoord;
 	  dz = zSearch-zCoord;
-	  distance = sqrt(dy*dy + dz*dz);
+	  distance = dy*dy + dz*dz;
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -1288,18 +1305,22 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
       double ySearch, zSearch, dy, dz;
       double distance;
       
-      ySearch = matData[0];
-      zSearch = matData[1];
+      //ySearch = matData[0];
+      //zSearch = matData[1];
+      ySearch = yLocs[0];
+      zSearch = zLocs[0];	    	  	        
       dy = ySearch-yCoord;
       dz = zSearch-zCoord;
-      closestDist = sqrt(dy*dy + dz*dz);
+      closestDist = dy*dy + dz*dz;
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	ySearch = matData[3*j];
-	zSearch = matData[3*j+1];
+	//ySearch = matData[3*j];
+	//zSearch = matData[3*j+1];
+	ySearch = yLocs[j];
+	zSearch = zLocs[j];	    	
 	dy = ySearch-yCoord;
 	dz = zSearch-zCoord;
-	distance = sqrt(dy*dy + dz*dz);
+	distance = dy*dy + dz*dz;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -1314,16 +1335,17 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
       output.attr("zLoc",matData[3*key+1]);
       output.attr("area",matData[3*key+2]);
       
-      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
