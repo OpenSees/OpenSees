@@ -1,4 +1,4 @@
-target_sources(G3_ModelBuilder
+target_sources(OPS_ModelBuilder
     PRIVATE
         ModelBuilder.cpp
     #PartitionedModelBuilder.cpp

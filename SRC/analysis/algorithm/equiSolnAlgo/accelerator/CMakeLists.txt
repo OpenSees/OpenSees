@@ -1,4 +1,4 @@
-target_sources(G3_Analysis
+target_sources(OPS_Analysis
     PRIVATE
       Accelerator.cpp
       MillerAccelerator.cpp 
@@ -26,7 +26,7 @@ target_sources(G3_Analysis
 )
 # Build files are not properly generated for Windows
 # when libraries contain both C++ and Fortran files
-add_library(G3_Analysis_Naccel OBJECT naccel.f)
-target_link_libraries(G3_Analysis G3_Analysis_Naccel)
+add_library(OPS_Analysis_Naccel OBJECT naccel.f)
+target_link_libraries(OPS_Analysis OPS_Analysis_Naccel)
 
-target_include_directories(G3_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})

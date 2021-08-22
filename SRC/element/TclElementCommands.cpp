@@ -46,7 +46,6 @@
 #include <YamamotoBiaxialHDR.h>
 #include <WheelRail.h>
 
-#include "dmglib/Elem01.h"
 extern 
 #ifdef _WIN32
 int __cdecl
@@ -158,11 +157,6 @@ extern void *OPS_PFEMElement2D();
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
-#endif
-#if defined(_OPS_ELEMENT_DMGLIB)
-extern int
-TclModelBuilder_addDegrElem01(ClientData clientData, Tcl_Interp *interp, int argc,
-	TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 #endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
@@ -595,19 +589,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 #endif
-
-// #if defined(_OPS_ELEMENT_DMGLIB)
-  } else if((strcmp(argv[1], "DmgElem01") == 0)) {
-    Element *theEle = 0;
-    ID info;
-    theEle = (Element *)OPS_Elem01();
-    if (theEle != 0) {
-      theElement = theEle;
-    } else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-// #endif
 
 #if defined(_OPS_ELEMENT_WHEELRAIL)
   // Beginning of WheelRail element TCL command

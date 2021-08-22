@@ -1,5 +1,5 @@
 
-target_sources(G3_SysOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
     BandGenLinSOE.cpp
     BandGenLinSolver.cpp

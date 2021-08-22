@@ -1,5 +1,5 @@
 
-target_sources(G3_SysOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
     DomainSolver.cpp
     LinearSOE.cpp

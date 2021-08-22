@@ -1,4 +1,4 @@
-target_sources(G3_Recorder
+target_sources(OPS_Recorder
     PRIVATE 
         Response.cpp
         MaterialResponse.cpp

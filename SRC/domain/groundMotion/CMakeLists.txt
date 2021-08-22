@@ -1,5 +1,5 @@
 
-target_sources(G3_Domain
+target_sources(OPS_Domain
     PRIVATE    
         GroundMotion.cpp
     GroundMotionRecord.cpp

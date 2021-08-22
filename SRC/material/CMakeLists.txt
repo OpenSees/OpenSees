@@ -1,6 +1,6 @@
-#add_library(G3_Material OBJECT)
+#add_library(OPS_Material OBJECT)
 
-target_sources(G3_Material
+target_sources(OPS_Material
     PRIVATE
       Material.cpp
     PUBLIC

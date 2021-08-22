@@ -1,6 +1,6 @@
 #add_library(matrix OBJECT)
 
-target_sources(G3_Matrix
+target_sources(OPS_Matrix
     PRIVATE
       Matrix.cpp
       Vector.cpp
@@ -12,4 +12,4 @@ target_sources(G3_Matrix
 )
 
 
-target_include_directories(G3_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})

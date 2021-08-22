@@ -1,4 +1,4 @@
-target_sources(G3_Analysis
+target_sources(OPS_Analysis
     PRIVATE
        ExplicitDifference.cpp
        ArcLength.cpp

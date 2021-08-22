@@ -1,4 +1,4 @@
-target_sources(G3_Material
+target_sources(OPS_Material
     PRIVATE
     BiaxialHysteretic.cpp
     Bidirectional.cpp
