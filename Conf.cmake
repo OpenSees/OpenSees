@@ -107,6 +107,7 @@ set(OPS_Element_List
     OPS_Element_shell
     OPS_Element_surfaceLoad
     OPS_Element_updatedLagrangianBeamColumn
+    OPS_Element_masonry
     #OPS_Element_feap
     #OPS_Element_PFEMElement
 )

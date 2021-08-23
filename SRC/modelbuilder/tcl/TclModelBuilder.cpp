@@ -172,7 +172,7 @@ TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 int
 TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
 		  TCL_Char **argv);
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 int 
 TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 #endif // _OPS_Element_PFEM
@@ -469,7 +469,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "remesh", TclCommand_remesh,
 		    (ClientData)NULL, NULL);
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
   Tcl_CreateCommand(interp, "background", &TclCommand_backgroundMesh, 
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 #endif // _OPS_Element_PFEM
@@ -1359,7 +1359,7 @@ TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
 }
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 extern int OPS_BgMesh();
 
 int 
