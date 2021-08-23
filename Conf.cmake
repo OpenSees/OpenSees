@@ -75,7 +75,6 @@ set(OPS_Element_List
     OPS_Element_dispBeamColumnInt
     OPS_Element_forceBeamColumn
     OPS_Element_mixedBeamColumn
-
     #OPS_Element_beamWithHinges
     OPS_Element_LHMYS
     #OPS_Element_Dmglib
@@ -100,7 +99,7 @@ set(OPS_Element_List
     OPS_Element_updatedLagrangianBeamColumn
     OPS_Element_masonry
     #OPS_Element_feap
-    #OPS_Element_PFEMElement
+    OPS_Element_PFEMElement
 )
 
 

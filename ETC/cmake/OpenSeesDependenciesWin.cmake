@@ -8,20 +8,6 @@
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
 #==============================================================================
-#                             External Libraries
-#
-# - BLAS_LIBRARIES
-# - BLAS_INCLUDE_DIRS
-#
-# - LAPACK_LIBRARIES
-# - LAPACK_INCLUDE_DIRS
-#
-# - ARPACK_LIBRARIES
-#
-# - SUPERLU_LIBRARIES
-# - SUPERLU_INCLUDE_DIRS
-#
-#==============================================================================
 # Synopsis
 # - opensees_load(<PACKAGE> [BUILD|FIND|SEARCH|PATHS] [<PATHS>])
 #
@@ -37,7 +23,7 @@ set(CONDA_DIR "C:/Users/claud/miniconda3")
 set(CONDA_ENV "C:/Users/claud/miniconda3/envs/sim")
 set(BUNDLE_LIBS "${PROJECT_SOURCE_DIR}/Win64/lib/debug/")
 
-opensees_load(TCL                                          #FIND
+opensees_load(TCL 
     LIBRARY ${CONDA_DIR}/Library/lib/tcl86t.lib
     #LIBRARY "${BUNDLE_LIBS}/tcl.lib"
     INCLUDE ${CONDA_DIR}/Library/include 
@@ -60,7 +46,7 @@ opensees_load(LAPACK
     LIBRARY "${BUNDLE_LIBS}/lapack.lib"
 )
 
-set(ENV{SUPERLU_DIR})
+#set(ENV{SUPERLU_DIR})
 opensees_load(SUPERLU
     BUNDLED ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
 )
