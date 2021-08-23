@@ -974,128 +974,92 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 Response*
 FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
+  Response *theResponse = 0;
+  
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
-  const ID &type = this->getType();
-  int typeSize = this->getOrder();
+    int key = numFibers;
+    int passarg = 2;
 
-  Response *theResponse =0;
-
-  output.tag("SectionOutput");
-  output.attr("secType", this->getClassType());
-  output.attr("secTag", this->getTag());
-
-  // deformations
-  if (strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"deformation") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
+    if (argc <= 3)	{  // fiber number was input directly
+      
+      key = atoi(argv[1]);
+      
+    } else if (argc > 4) {         // find fiber closest to coord. with mat tag
+      int matTag = atoi(argv[3]);
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      int j;
+      
+      // Find first fiber with specified material tag
+      for (j = 0; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  ySearch = -matData[3*j];
+	  zSearch =  matData[3*j+1];
+	  dy = ySearch-yCoord;
+	  dz = zSearch-zCoord;
+	  closestDist = sqrt(dy*dy + dz*dz);
+	  key = j;
+	  break;
+	}
       }
-    }
-    theResponse =  new MaterialResponse(this, 1, this->getSectionDeformation());
-
-  // forces
-  } else if (strcmp(argv[0],"forces") == 0 || strcmp(argv[0],"force") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
+      
+      // Search the remaining fibers
+      for ( ; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  ySearch = -matData[3*j];
+	  zSearch =  matData[3*j+1];
+	  dy = ySearch-yCoord;
+	  dz = zSearch-zCoord;
+	  distance = sqrt(dy*dy + dz*dz);
+	  if (distance < closestDist) {
+	    closestDist = distance;
+	    key = j;
+	  }
+	}
       }
+      passarg = 4;
     }
-    theResponse =  new MaterialResponse(this, 2, this->getStressResultant());
-
-  // force and deformation
-  } else if (strcmp(argv[0],"forceAndDeformation") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
+    
+    else {                  // fiber near-to coordinate specified
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      ySearch = -matData[0];
+      zSearch =  matData[1];
+      dy = ySearch-yCoord;
+      dz = zSearch-zCoord;
+      closestDist = sqrt(dy*dy + dz*dz);
+      key = 0;
+      for (int j = 1; j < numFibers; j++) {
+	ySearch = -matData[3*j];
+	zSearch =  matData[3*j+1];
+	dy = ySearch-yCoord;
+	dz = zSearch-zCoord;
+	distance = sqrt(dy*dy + dz*dz);
+	if (distance < closestDist) {
+	  closestDist = distance;
+	  key = j;
+	}
       }
+      passarg = 3;
     }
-    for (int j=0; j<typeSize; j++) {
-      int code = type(j);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
+    
+    if (key < numFibers && key >= 0) {
+      output.tag("FiberOutput");
+      output.attr("yLoc",matData[3*key]);
+      output.attr("zLoc",matData[3*key+1]);
+      output.attr("area",matData[3*key+2]);
+      
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      
+      output.endTag();
     }
-
-    theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
 
   } else if (strcmp(argv[0],"fiberData") == 0) {
     int numData = numFibers*5;
@@ -1115,97 +1079,9 @@ FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &outp
     theResponse = new MaterialResponse(this, 5, theResponseData);
   }
 
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
 
-  else {
-    if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
-
-      int key = numFibers;
-      int passarg = 2;
-
-
-      if (argc <= 3)	{  // fiber number was input directly
-
-	key = atoi(argv[1]);
-
-      } else if (argc > 4) {         // find fiber closest to coord. with mat tag
-	int matTag = atoi(argv[3]);
-	double yCoord = atof(argv[1]);
-	double zCoord = atof(argv[2]);
-	double closestDist;
-	double ySearch, zSearch, dy, dz;
-	double distance;
-	int j;
-
-	// Find first fiber with specified material tag
-	for (j = 0; j < numFibers; j++) {
-	  if (matTag == theMaterials[j]->getTag()) {
-	    ySearch = -matData[3*j];
-	    zSearch =  matData[3*j+1];
-	    dy = ySearch-yCoord;
-	    dz = zSearch-zCoord;
-	    closestDist = sqrt(dy*dy + dz*dz);
-	    key = j;
-	    break;
-	  }
-	}
-
-	// Search the remaining fibers
-	for ( ; j < numFibers; j++) {
-	  if (matTag == theMaterials[j]->getTag()) {
-	    ySearch = -matData[3*j];
-	    zSearch =  matData[3*j+1];
-	    dy = ySearch-yCoord;
-	    dz = zSearch-zCoord;
-	    distance = sqrt(dy*dy + dz*dz);
-	    if (distance < closestDist) {
-	      closestDist = distance;
-	      key = j;
-	    }
-	  }
-	}
-	passarg = 4;
-      }
-
-      else {                  // fiber near-to coordinate specified
-	double yCoord = atof(argv[1]);
-	double zCoord = atof(argv[2]);
-	double closestDist;
-	double ySearch, zSearch, dy, dz;
-	double distance;
-	ySearch = -matData[0];
-	zSearch =  matData[1];
-	dy = ySearch-yCoord;
-	dz = zSearch-zCoord;
-	closestDist = sqrt(dy*dy + dz*dz);
-	key = 0;
-	for (int j = 1; j < numFibers; j++) {
-	  ySearch = -matData[3*j];
-	  zSearch =  matData[3*j+1];
-	  dy = ySearch-yCoord;
-	  dz = zSearch-zCoord;
-	  distance = sqrt(dy*dy + dz*dz);
-	  if (distance < closestDist) {
-	    closestDist = distance;
-	    key = j;
-	  }
-	}
-	passarg = 3;
-      }
-
-      if (key < numFibers && key >= 0) {
-	output.tag("FiberOutput");
-	output.attr("yLoc",matData[3*key]);
-	output.attr("zLoc",matData[3*key+1]);
-	output.attr("area",matData[3*key+2]);
-
-	theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
-
-	output.endTag();
-      }
-    }
-  }
-
-  output.endTag();
   return theResponse;
 }
 
@@ -1213,8 +1089,6 @@ FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &outp
 int
 FiberSection3dThermal::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
   if (responseID == 5) {
     int numData = 5*numFibers;
     Vector data(numData);
@@ -1231,9 +1105,8 @@ FiberSection3dThermal::getResponse(int responseID, Information &sectInfo)
       count += 5;
     }
     return sectInfo.setVector(data);
-  } else {
+  } else
     return SectionForceDeformation::getResponse(responseID, sectInfo);
-  }
 }
 
 int
