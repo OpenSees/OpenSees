@@ -26,11 +26,6 @@ option(FMK
 option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
 
-option(OPS_Use_PFEM 
-    "Include PFEM library"                                   OFF)
-
-option(OPS_Use_ASDEA
-    "Include ASDEA library"                                   ON)
 
 option(OPS_Use_DRM
     "DRM lib"                                                 ON)
@@ -57,8 +52,8 @@ option(OPS_Use_Thermal
 # (e.g. using OPS_Element_truss defines the macro _OPS_ELEMENT_TRUSS)
 #==============================================================================
 set(OPS_Extension_List
-
-    OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
+    OPS_ASDEA
+    #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
 
     OPS_NumLib_PETSC
     OPS_NumLib_METIS

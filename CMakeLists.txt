@@ -499,13 +499,11 @@ endif()
 message("OPS >>> Configuring OpenSees extensions")
 foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
     string(TOUPPER "${extension}" ext_flag) 
-    #set(ext_flag "_${ext_flag}")
     string(REGEX REPLACE "^OPS_" "OPSDEF_" ext_flag "${ext_flag}")
     message("    Adding macro definition '${ext_flag}'")
     add_compile_definitions(${ext_flag})
 endforeach()
 
-#----------------------------
 # Renderer
 #----------------------------
 if (OPS_Use_Graphics)
@@ -515,7 +513,6 @@ else()
     add_compile_definitions(_NOGRAPHICS)
 endif()
 
-#----------------------------
 # Reliability
 #----------------------------
 if ("OPS_Reliability" IN_LIST OPS_Extension_List)
@@ -523,20 +520,7 @@ if ("OPS_Reliability" IN_LIST OPS_Extension_List)
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
 endif()
 
-#----------------------------
-# ASDEA
-#----------------------------
-if (OPS_Use_ASDEA)
-    target_link_libraries(${OPS_FINAL_TARGET}  OPS_ASDEA)
-endif()
 
-#----------------------------
-# PFEM
-#----------------------------
-if (OPS_Use_PFEM)
-    message("OPS >>> Including OPS_PFEM option")
-    #target_link_libraries(${OPS_FINAL_TARGET}  OPS_PFEM)
-endif()
 
 #----------------------------
 # HDF5
