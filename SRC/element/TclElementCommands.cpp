@@ -590,7 +590,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 #endif
 
-#if defined(_OPS_ELEMENT_WHEELRAIL)
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
     
@@ -600,8 +599,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
+
   // End of WheelRail element TCL command
-#endif
 
   } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
     Element *theEle = 0;
