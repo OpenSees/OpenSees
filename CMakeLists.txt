@@ -59,7 +59,7 @@ endif()
 
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
-    target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
+    # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
     message(STATUS ">>> WIN32")
 endif()
@@ -237,20 +237,20 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 # Packaged libraries
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
-target_sources(OpenSees
-  PRIVATE
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
-    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
-)
+#target_sources(OpenSees
+#  PRIVATE
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+#    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
+#    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
+#)
 
 # Executables
 #------------------------------------------------------------------------------
