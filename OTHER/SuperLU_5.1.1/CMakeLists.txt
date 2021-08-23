@@ -237,6 +237,10 @@ add_library(DLUSRC OBJECT
 #    ${SUPERLU_SRC_DIR}/dzsum1.c
 #    ${SUPERLU_SRC_DIR}/izmax1.c
 #)
+
+if (WIN32)
+  target_compile_definitions(SUPERLU PUBLIC UpCase)
+endif()
 include_directories(${SUPERLUS_SRC_DIR})
 target_link_libraries(SUPERLU DLUSRC ALLAUX DZLAUX)
 

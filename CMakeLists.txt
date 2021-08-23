@@ -60,7 +60,8 @@ endif()
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
     # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
-    target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
+    #target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
     message(STATUS ">>> WIN32")
 endif()
 if(WIN64)
@@ -99,7 +100,7 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #set(CMAKE_CXX_STANDARD 11)
-add_link_options(-rdynamic)
+#add_link_options(-rdynamic)
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 
 # Warnings
