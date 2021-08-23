@@ -3685,4 +3685,3 @@ int Domain::deactivateElements(const ID& elementList)
     }
     return 0;
 }
-
