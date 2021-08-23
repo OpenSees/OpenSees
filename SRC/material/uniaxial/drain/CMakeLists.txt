@@ -15,7 +15,7 @@ target_sources(OPS_Material
 )
 
 add_library(OPS_Material_Uniaxial_Drain_f)
-target_sources(OPS_Material_Uniaxial_Drain_f PUBLIC anal00.f common00.f)
+target_sources(OPS_Material_Uniaxial_Drain_f PRIVATE anal00.f common00.f)
 target_link_libraries(OPS_Material PUBLIC OPS_Material_Uniaxial_Drain_f) 
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

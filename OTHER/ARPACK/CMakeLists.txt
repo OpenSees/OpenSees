@@ -60,12 +60,12 @@ target_sources(ARPACK PUBLIC
   ivout.f
   second.f
 )
-target_link_libraries(ARPACK PUBLIC ${LAPACK_LIBRARIES})
+
+target_link_libraries(ARPACK PRIVATE ${LAPACK_LIBRARIES})
 
 # Required on Unix OS family to be able to be linked into shared libraries.
 set_target_properties(${PROJECT_NAME}
                       PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
 
 # Expose public includes to other subprojects through cache variable.
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
