@@ -23,10 +23,6 @@ option(FMK
 
 # Optional Extensions
 #--------------------------------------
-option(OPS_Use_Reliability   
-    "Include reliability"                                    OFF)
-
-
 option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
 
