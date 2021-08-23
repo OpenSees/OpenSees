@@ -518,7 +518,7 @@ endif()
 #----------------------------
 # Reliability
 #----------------------------
-if (OPS_Use_Reliability)
+if ("OPS_Reliability" IN_LIST OPS_Extension_List)
     add_compile_definitions(_RELIABILITY)
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
 endif()
