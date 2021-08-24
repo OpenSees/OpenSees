@@ -7103,7 +7103,7 @@ eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
         return TCL_ERROR;
     }
 
-    char buffer[20];
+    char buffer[80];
     Element* theElement = theDomain.getElement(tag);
     if (theElement == 0) {
         opserr << "WARNING eleType ele " << tag << " not found" << endln;
