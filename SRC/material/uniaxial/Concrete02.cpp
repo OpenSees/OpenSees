@@ -67,19 +67,22 @@ OPS_Concrete02()
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 7) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+  if (numData != 4 && numData != 7) {
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << " fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << " fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
 
   // Parsing was successful, allocate the material
-  theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  if (numData == 7)
+    theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  else
+    theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3]);
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Concrete02 Material\n";
@@ -147,9 +150,11 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu, double _
   sig = 0.0;
   e = 2.0*fc/epsc0;
 
-  ft = -0.1*fc;
-  rat = 0.05;
-  Ets = 0.2*fc/epsc0;
+  rat = 0.1;
+  ft = 0.1*fc;
+  if (ft < 0.0)
+    ft = -ft;
+  Ets = 0.1*fc/epsc0;
 }
 
 Concrete02::Concrete02(void):
