@@ -132,6 +132,8 @@ void* OPS_BWBN();
 void* OPS_PySimple1();
 void* OPS_TzSimple1();
 void* OPS_QzSimple1();
+void* OPS_PySimple2();
+void* OPS_TzSimple2();
 void* OPS_QzSimple2();
 void* OPS_PyLiq1();
 void* OPS_TzLiq1();
