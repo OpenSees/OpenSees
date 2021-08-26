@@ -657,7 +657,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
-	$(FE)/element/masonry/BeamGT.o
+	$(FE)/element/masonry/BeamGT.o \
+	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \

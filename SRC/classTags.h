@@ -789,6 +789,7 @@
 #define ELE_TAG_BeamGT                    214
 #define ELE_TAG_MasonPan12                    215
 #define ELE_TAG_MasonPan3D                    216
+#define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 
