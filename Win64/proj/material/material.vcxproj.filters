@@ -1370,6 +1370,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionAsym3d.cpp">
       <Filter>section</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.cpp">
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonry.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -2575,6 +2576,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionAsym3d.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
