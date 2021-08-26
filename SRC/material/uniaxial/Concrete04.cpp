@@ -586,6 +586,11 @@ Concrete04::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(fpc);
     return param.addObject(1, this);
   }
+
+  if (strcmp(argv[0],"Ec") == 0) {
+    param.setValue(Ec0);
+    return param.addObject(2, this);
+  }  
   
   return 0;
 }
@@ -599,6 +604,9 @@ Concrete04::updateParameter(int parameterID, Information &info)
   case 1:
     fpc = info.theDouble;
     break;
+  case 2:
+    Ec0 = info.theDouble;
+    break;    
   default:
     return -1;
   }
@@ -619,6 +627,9 @@ Concrete04::getActiveParameter(double &param)
 {
   if (parameterID == 1)
     param = fpc;
+
+  if (parameterID == 2)
+    param = Ec0;  
 
   return parameterID;
 }
