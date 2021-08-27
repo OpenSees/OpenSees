@@ -230,6 +230,7 @@
 #define MAT_TAG_PySimple3                    214
 #define MAT_TAG_PlateBearingConnectionThermal 215
 #define MAT_TAG_ASD_SMA_3K                    216
+#define MAT_TAG_SteelFractureDI			217 // galvisf
 
 #define MAT_TAG_Masonry 217
 #define MAT_TAG_Masonryt 218
@@ -788,6 +789,7 @@
 #define ELE_TAG_BeamGT                    214
 #define ELE_TAG_MasonPan12                    215
 #define ELE_TAG_MasonPan3D                    216
+#define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 

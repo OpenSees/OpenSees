@@ -303,6 +303,8 @@
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
 
+#include "CEqElement/ASDEmbeddedNodeElement.h"
+
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
 #include "PDeltaCrdTransf2d.h"
@@ -893,6 +895,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
+
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
