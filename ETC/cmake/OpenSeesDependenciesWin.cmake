@@ -55,6 +55,10 @@ opensees_load(ARPACK                                       SEARCH
     BUNDLED ${OPS_BUNDLED_DIR}/ARPACK/
 )
 
+opensees_load(AMD
+    BUNDLED ${OPS_BUNDLED_DIR}/AMD/
+)
+
 opensees_load(METIS                                        SEARCH)
 
 opensees_load(HDF5                                           FIND)
