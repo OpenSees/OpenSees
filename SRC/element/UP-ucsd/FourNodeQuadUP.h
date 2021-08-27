@@ -78,9 +78,9 @@ class FourNodeQuadUP : public Element
     int updateParameter(int parameterID, Information &info);
 
     // RWB; PyLiq1 & TzLiq1 need to see the excess pore pressure and initial stresses.
-
     friend class PyLiq1;
     friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
   protected:
 

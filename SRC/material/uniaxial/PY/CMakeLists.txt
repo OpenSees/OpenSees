@@ -10,6 +10,7 @@ target_sources(material
 	ShallowFoundationGen.cpp
 	PyLiq1.cpp
 	TzLiq1.cpp
+	QzLiq1.cpp
 	PySimple1Gen.cpp
 	TzSimple1Gen.cpp
     PUBLIC
@@ -23,6 +24,7 @@ target_sources(material
 	ShallowFoundationGen.h
 	PyLiq1.h
 	TzLiq1.h
+	QzLiq1.h
 	PySimple1Gen.h
 	TzSimple1Gen.h
 )
