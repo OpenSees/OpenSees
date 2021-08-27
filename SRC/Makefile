@@ -344,6 +344,7 @@ PY_SJB_RWB_BJ_LIBS = $(FE)/material/uniaxial/PY/PySimple1.o \
 	$(FE)/material/uniaxial/PY/ShallowFoundationGen.o \
 	$(FE)/material/uniaxial/PY/PyLiq1.o \
 	$(FE)/material/uniaxial/PY/TzLiq1.o \
+	$(FE)/material/uniaxial/PY/QzLiq1.o \
 	$(FE)/material/uniaxial/PY/PySimple1Gen.o \
 	$(FE)/material/uniaxial/PY/TzSimple1Gen.o
 
@@ -657,7 +658,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
-	$(FE)/element/masonry/BeamGT.o
+	$(FE)/element/masonry/BeamGT.o \
+	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -860,6 +862,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Trilinwpd.o \
 	$(FE)/material/uniaxial/Trilinwp.o \
 	$(FE)/material/uniaxial/Trilinwp2.o \
+	$(FE)/material/uniaxial/SteelFractureDI.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \

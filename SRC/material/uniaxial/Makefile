@@ -141,6 +141,7 @@ OBJS       = UniaxialMaterial.o \
 	Trilinwpd.o \
 	Trilinwp.o \
 	Trilinwp2.o \
+	SteelFractureDI.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
