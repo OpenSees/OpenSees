@@ -232,7 +232,6 @@
 #define MAT_TAG_PlateBearingConnectionThermal 216
 #define MAT_TAG_ASD_SMA_3K                    217
 #define MAT_TAG_SteelFractureDI			218 // galvisf
-
 #define MAT_TAG_Masonry 219
 #define MAT_TAG_Masonryt 220
 #define MAT_TAG_Trilinwp 221
