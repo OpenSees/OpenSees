@@ -39,11 +39,17 @@
 project(SUPERLU C)
 set(SUPERLU_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/SRC")
 
+if (WIN32)
+  #target_compile_definitions(SUPERLU PUBLIC UpCase)
+  add_definitions(-DUpCase)
+endif()
+
 add_library(SUPERLU)
 
 add_library(DZLAUX  OBJECT
     ${SUPERLU_SRC_DIR}/dmach.c
 )
+
 
 add_library(ALLAUX OBJECT
     ${SUPERLU_SRC_DIR}/superlu_timer.c
@@ -238,11 +244,8 @@ add_library(DLUSRC OBJECT
 #    ${SUPERLU_SRC_DIR}/izmax1.c
 #)
 
-if (WIN32)
-  target_compile_definitions(SUPERLU PUBLIC UpCase)
-endif()
-include_directories(${SUPERLUS_SRC_DIR})
-target_link_libraries(SUPERLU DLUSRC ALLAUX DZLAUX)
+include_directories(${SUPERLU_SRC_DIR})
+target_link_libraries(SUPERLU DLUSRC ALLAUX DZLAUX ${LAPACK_LIBRARIES})
 
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}
     CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
