@@ -135,6 +135,9 @@
     <Filter Include="masonry">
       <UniqueIdentifier>{61bce605-5c0a-4311-b059-28f47dbe6364}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CEqElement">
+      <UniqueIdentifier>{44a1f5d6-7e75-44f5-a5a5-b79b65801b24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -935,6 +938,9 @@
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
       <Filter>RockingBC</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp">
+      <Filter>CEqElement</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
       <Filter>crdTransf</Filter>
     </ClCompile>
@@ -1698,6 +1704,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h">
+      <Filter>CEqElement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
       <Filter>crdTransf</Filter>

@@ -741,6 +741,14 @@ static int Tcl_ops_eleNodes(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+static int Tcl_ops_eleType(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_eleType() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 

@@ -2264,19 +2264,24 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   FileStream outputFile;
   OPS_Stream *output = &opserr;
 
+  bool ret = false;
   int currentArg = 1;
+  while (currentArg < argc) {
+      if ((strcmp(argv[currentArg], "file") == 0) ||
+          (strcmp(argv[currentArg], "-file") == 0)) {
+          currentArg++;
 
-  if (argc > 2) {
-    if ((strcmp(argv[currentArg],"file") == 0) || 
-	(strcmp(argv[currentArg],"-file") == 0)) {
-      currentArg++;
-      
-      if (outputFile.setFile(argv[currentArg]) != 0) {
-	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
-	return TCL_ERROR;
+          if (outputFile.setFile(argv[currentArg]) != 0) {
+              opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+              return TCL_ERROR;
+          }
+          output = &outputFile;
       }
-      output = &outputFile;
-    }
+      else if ((strcmp(argv[currentArg], "ret") == 0) ||
+          (strcmp(argv[currentArg], "-ret") == 0)) {
+          ret = true;
+      }
+      currentArg++;
   }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
@@ -2286,12 +2291,26 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       
     const Matrix *A = theSOE->getA();
     if (A != 0) {
-      *output << *A;
+        if (ret) {
+            int n = A->noRows();
+            int m = A->noCols();
+            if (n * m > 0) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        char buffer[40];
+                        sprintf(buffer, "%.10e ", (*A)(i, j));
+                        Tcl_AppendResult(interp, buffer, NULL);
+                    }
+                }
+            }
+        }
+        else {
+            *output << *A;
+            // close the output file
+            outputFile.close();
+        }
     }
   }
-  
-  // close the output file
-  outputFile.close();
   
   return res;
 }
@@ -2305,19 +2324,24 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_Stream *output = &opserr;
   //  bool done = false;
 
+  bool ret = false;
   int currentArg = 1;
+  while (currentArg < argc) {
+      if ((strcmp(argv[currentArg], "file") == 0) ||
+          (strcmp(argv[currentArg], "-file") == 0)) {
+          currentArg++;
 
-  if (argc > 2) {
-    if ((strcmp(argv[currentArg],"file") == 0) || 
-	(strcmp(argv[currentArg],"-file") == 0)) {
-      currentArg++;
-      
-      if (outputFile.setFile(argv[currentArg]) != 0) {
-	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
-	return TCL_ERROR;
+          if (outputFile.setFile(argv[currentArg]) != 0) {
+              opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+              return TCL_ERROR;
+          }
+          output = &outputFile;
       }
-      output = &outputFile;
-    }
+      else if ((strcmp(argv[currentArg], "ret") == 0) ||
+          (strcmp(argv[currentArg], "-ret") == 0)) {
+          ret = true;
+      }
+      currentArg++;
   }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
@@ -2326,11 +2350,22 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theTransientIntegrator->formUnbalance();
       
     const Vector &b = theSOE->getB();
-    *output << b;
+    if (ret) {
+        int n = b.Size();
+        if (n > 0) {
+            for (int i = 0; i < n; i++) {
+                char buffer[40];
+                sprintf(buffer, "%.10e ", b(i));
+                Tcl_AppendResult(interp, buffer, NULL);
+            }
+        }
+    }
+    else {
+        *output << b;
+        // close the output file
+        outputFile.close();
+    }
   }
-  
-  // close the output file
-  outputFile.close();
   
   return res;
 }
@@ -7103,7 +7138,7 @@ eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
         return TCL_ERROR;
     }
 
-    char buffer[20];
+    char buffer[80];
     Element* theElement = theDomain.getElement(tag);
     if (theElement == 0) {
         opserr << "WARNING eleType ele " << tag << " not found" << endln;
