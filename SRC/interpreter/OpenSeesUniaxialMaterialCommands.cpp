@@ -346,6 +346,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
 	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+	uniaxialMaterialsMap.insert(std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));	
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
