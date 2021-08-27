@@ -68,6 +68,7 @@ set(OPS_Extension_List
 )
 
 set(OPS_Element_List
+    #OPS_Material_StressDensity
 
     OPS_Element_truss
     #OPS_Element_beam2d
@@ -99,7 +100,7 @@ set(OPS_Element_List
     OPS_Element_updatedLagrangianBeamColumn
     OPS_Element_masonry
     #OPS_Element_feap
-    OPS_Element_PFEMElement
+    #OPS_Element_PFEMElement
 )
 
 

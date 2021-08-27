@@ -198,6 +198,16 @@ include_directories(${OPS_INCLUDE_DIRS})
 #                            Define Targets
 #
 #==============================================================================
+add_library(OPS_Numerics           INTERFACE)
+target_link_libraries(OPS_Numerics INTERFACE
+  ${ARPACK_LIBRARIES} 
+  ${SUPERLU_LIBRARIES}
+  ${UMFPACK_LIBRARIES}
+  ${AMD_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  ${BLAS_LIBRARIES} 
+)
+# Core OpenSees
 add_library(OPS_Matrix             OBJECT)
 add_library(OPS_Actor              OBJECT)
 add_library(OPS_Handler            OBJECT)
@@ -205,16 +215,6 @@ add_library(OPS_Recorder           OBJECT)
 add_library(OPS_Tagged             OBJECT)
 add_library(OPS_Utilities          OBJECT)
 add_library(OPS_ModelBuilder       OBJECT)
-
-add_library(OPS_Numerics           INTERFACE)
-target_link_libraries(OPS_Numerics INTERFACE
-  ${ARPACK_LIBRARIES} 
-  ${SUPERLU_LIBRARIES}
-  ${UMFPACK_LIBRARIES}
-  ${AMD_LIBRARIES}
-  ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
-)
-# Core OpenSees
 add_library(OPS_Domain             OBJECT)
 add_library(OPS_SysOfEqn           OBJECT)
 add_library(OPS_Analysis           OBJECT)

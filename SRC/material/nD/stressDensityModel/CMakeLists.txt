@@ -1,5 +1,6 @@
+add_library(OPS_Material_StressDensity)
 
-target_sources(OPS_Material
+target_sources(OPS_Material_StressDensity
   PRIVATE
     stressDensity.cpp
     StressDensityModel.cpp
@@ -22,7 +23,7 @@ target_sources(OPS_Material_nD_StressDensity_f
     MODULE_ALL_INTERFACES_2D.f90
 )
 
-target_link_libraries(OPS_Material PRIVATE OPS_Material_nD_StressDensity_f)
+target_link_libraries(OPS_Material_StressDensity PRIVATE OPS_Material_nD_StressDensity_f)
 
-target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Material_StressDensity PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
