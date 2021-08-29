@@ -59,15 +59,18 @@ endif()
 
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
+
     # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
     #target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
+# =======
+    add_compile_definitions(_WIN32)
+    # file(GLOB_RECURSE ops_precompiled CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Win64/lib/debug/*.lib")
+    # message("OPS >>> Including the following precompiled libs: '${ops_precompiled}'")
+    # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
+    # target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} ${ops_precompiled} wsock32 ws2_32)
+
     message(STATUS ">>> WIN32")
-endif()
-if(WIN64)
-    include(OpenSeesDependenciesWin)
-    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock64 ws2_64)
-    message(STATUS ">>> WIN64")
 endif()
 
 message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
@@ -181,8 +184,8 @@ include_directories(${MYSQL_INCLUDE_DIR})
 
 # Temporary fix: include all directories with .h files through glob
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
-	${OPS_SRC_DIR}/*.h
-	${OPS_BUNDLED_DIR}/*.h
+    ${OPS_SRC_DIR}/*.h
+    ${OPS_BUNDLED_DIR}/*.h
 )
 set(OPS_INCLUDE_DIRS "")
 foreach(filepath ${ops_include_files})
@@ -313,6 +316,22 @@ target_link_libraries(G3
 #----------------------------
 # OpenSees
 #----------------------------
+#<<<<<<< Updated upstream
+#=======
+#target_sources(OpenSees
+#    PRIVATE
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+#  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
+#)
+#>>>>>>> Stashed changes
 
 target_link_libraries(OpenSees
     #OPS_Paraview
@@ -423,8 +442,8 @@ target_sources(OPS_Interp_Tcl PRIVATE
     "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
     "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
 
-	#"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
-	"${OPS_SRC_DIR}/tcl/commands.cpp"
+    #"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
+    "${OPS_SRC_DIR}/tcl/commands.cpp"
   "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
     
     #"${OPS_SRC_DIR}/interpreter/TclInterpreter.cpp"
