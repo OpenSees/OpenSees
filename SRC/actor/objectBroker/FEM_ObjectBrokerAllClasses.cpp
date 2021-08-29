@@ -166,7 +166,7 @@
 #include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
 
-#ifdef _OPS_Element_FEAP
+#if defined(OPSDEF_Element_FEAP)
 #include "feap/FeapMaterial03.h"
 #endif // _OPS_Element_FEAP
 
@@ -305,7 +305,7 @@
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include "PFEMElement/PFEMElement2D.h"
 #endif // _OPS_Element_PFEM
 
@@ -473,7 +473,7 @@
 #include "NewmarkHSIncrLimit.h"
 #include "NewmarkHSIncrReduct.h"
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include "PFEMIntegrator.h"
 #endif // _OPS_Element_PFEM
 
@@ -767,7 +767,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-#if defined(_OPS_ELEMENT_PML)
+#if defined(OPSDEF_ELEMENT_PML)
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -900,7 +900,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
-#if defined(_OPS_ELEMENT_PFEM)
+#if defined(OPSDEF_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 #endif // _OPS_Element_PFEM
@@ -1488,7 +1488,7 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
-#ifdef _OPS_Element_FEAP
+#if defined(OPSDEF_Element_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
 #endif // _OPS_Element_FEAP
@@ -1549,10 +1549,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-
+#ifdef OPSDEF_MATERIAL_STRESSDENSITY
   case ND_TAG_stressDensity:
       return new stressDensity();
-
+#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -2204,7 +2204,7 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
 #endif // _OPS_Element_PFEM

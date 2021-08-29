@@ -23,18 +23,9 @@ option(FMK
 
 # Optional Extensions
 #--------------------------------------
-option(OPS_Use_Reliability   
-    "Include reliability"                                    OFF)
-
-
 option(OPS_Use_Graphics
     "Include graphics"                                       OFF)
 
-option(OPS_Use_PFEM 
-    "Include PFEM library"                                   OFF)
-
-option(OPS_Use_ASDEA
-    "Include ASDEA library"                                   ON)
 
 option(OPS_Use_DRM
     "DRM lib"                                                 ON)
@@ -61,8 +52,8 @@ option(OPS_Use_Thermal
 # (e.g. using OPS_Element_truss defines the macro _OPS_ELEMENT_TRUSS)
 #==============================================================================
 set(OPS_Extension_List
-
-    OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
+    OPS_ASDEA
+    #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
 
     OPS_NumLib_PETSC
     OPS_NumLib_METIS
@@ -77,6 +68,7 @@ set(OPS_Extension_List
 )
 
 set(OPS_Element_List
+    #OPS_Material_StressDensity
 
     OPS_Element_truss
     #OPS_Element_beam2d
@@ -84,7 +76,6 @@ set(OPS_Element_List
     OPS_Element_dispBeamColumnInt
     OPS_Element_forceBeamColumn
     OPS_Element_mixedBeamColumn
-
     #OPS_Element_beamWithHinges
     OPS_Element_LHMYS
     #OPS_Element_Dmglib
@@ -107,6 +98,7 @@ set(OPS_Element_List
     OPS_Element_shell
     OPS_Element_surfaceLoad
     OPS_Element_updatedLagrangianBeamColumn
+    OPS_Element_masonry
     #OPS_Element_feap
     #OPS_Element_PFEMElement
 )

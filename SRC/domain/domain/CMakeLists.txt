@@ -2,8 +2,10 @@
 target_sources(OPS_Domain
     PRIVATE
     Domain.cpp
+    DomainModalProperties.cpp
     PUBLIC
     Domain.h
+    DomainModalProperties.h
     ElementIter.h
     LoadCaseIter.h
     MP_ConstraintIter.h
@@ -12,11 +14,6 @@ target_sources(OPS_Domain
     Pressure_ConstraintIter.h
     SP_ConstraintIter.h
     SubdomainIter.h
-)
-
-target_sources(OPS_ASDEA 
-    PRIVATE DomainModalProperties.cpp
-    PUBLIC DomainModalProperties.h
 )
 
 

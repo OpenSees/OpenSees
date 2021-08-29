@@ -59,11 +59,17 @@ endif()
 
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
+
+    # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
+    #target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
+    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
+# =======
     add_compile_definitions(_WIN32)
     # file(GLOB_RECURSE ops_precompiled CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Win64/lib/debug/*.lib")
     # message("OPS >>> Including the following precompiled libs: '${ops_precompiled}'")
     # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
-    target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} ${ops_precompiled} wsock32 ws2_32)
+    # target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} ${ops_precompiled} wsock32 ws2_32)
+
     message(STATUS ">>> WIN32")
 endif()
 
@@ -97,7 +103,7 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #set(CMAKE_CXX_STANDARD 11)
-add_link_options(-rdynamic)
+#add_link_options(-rdynamic)
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 
 # Warnings
@@ -195,6 +201,16 @@ include_directories(${OPS_INCLUDE_DIRS})
 #                            Define Targets
 #
 #==============================================================================
+add_library(OPS_Numerics           INTERFACE)
+target_link_libraries(OPS_Numerics INTERFACE
+  ${ARPACK_LIBRARIES} 
+  ${SUPERLU_LIBRARIES}
+  ${UMFPACK_LIBRARIES}
+  ${AMD_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  ${BLAS_LIBRARIES} 
+)
+# Core OpenSees
 add_library(OPS_Matrix             OBJECT)
 add_library(OPS_Actor              OBJECT)
 add_library(OPS_Handler            OBJECT)
@@ -202,16 +218,6 @@ add_library(OPS_Recorder           OBJECT)
 add_library(OPS_Tagged             OBJECT)
 add_library(OPS_Utilities          OBJECT)
 add_library(OPS_ModelBuilder       OBJECT)
-
-add_library(OPS_Numerics           INTERFACE)
-target_link_libraries(OPS_Numerics INTERFACE
-  ${ARPACK_LIBRARIES} 
-  ${SUPERLU_LIBRARIES}
-  ${UMFPACK_LIBRARIES}
-  ${AMD_LIBRARIES}
-  ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} 
-)
-# Core OpenSees
 add_library(OPS_Domain             OBJECT)
 add_library(OPS_SysOfEqn           OBJECT)
 add_library(OPS_Analysis           OBJECT)
@@ -235,20 +241,20 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 # Packaged libraries
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
-target_sources(OpenSees
-  PRIVATE
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
-    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
-)
+#target_sources(OpenSees
+#  PRIVATE
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+#    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+#	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+#    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
+#    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
+#)
 
 # Executables
 #------------------------------------------------------------------------------
@@ -512,12 +518,11 @@ endif()
 message("OPS >>> Configuring OpenSees extensions")
 foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
     string(TOUPPER "${extension}" ext_flag) 
-    set(ext_flag "_${ext_flag}")
+    string(REGEX REPLACE "^OPS_" "OPSDEF_" ext_flag "${ext_flag}")
     message("    Adding macro definition '${ext_flag}'")
     add_compile_definitions(${ext_flag})
 endforeach()
 
-#----------------------------
 # Renderer
 #----------------------------
 if (OPS_Use_Graphics)
@@ -527,28 +532,14 @@ else()
     add_compile_definitions(_NOGRAPHICS)
 endif()
 
-#----------------------------
 # Reliability
 #----------------------------
-if (OPS_Use_Reliability)
+if ("OPS_Reliability" IN_LIST OPS_Extension_List)
     add_compile_definitions(_RELIABILITY)
     target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
 endif()
 
-#----------------------------
-# ASDEA
-#----------------------------
-if (OPS_Use_ASDEA)
-    target_link_libraries(${OPS_FINAL_TARGET}  OPS_ASDEA)
-endif()
 
-#----------------------------
-# PFEM
-#----------------------------
-if (OPS_Use_PFEM)
-    message("OPS >>> Including OPS_PFEM option")
-    #target_link_libraries(${OPS_FINAL_TARGET}  OPS_PFEM)
-endif()
 
 #----------------------------
 # HDF5

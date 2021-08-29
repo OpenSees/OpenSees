@@ -157,12 +157,15 @@ target_sources(OPS_Material
       TDConcreteMC10.cpp
       TDConcreteMC10NL.cpp
       TensionOnlyMaterial.cpp
-      TriMatrix.cpp
       UniaxialJ2Plasticity.cpp
       ViscousDamper.cpp
       ViscousMaterial.cpp
       WrapperUniaxialMaterial.cpp
       pyUCLA.cpp
+      SMAMaterial.cpp
+      
+      TriMatrix.cpp
+
     PUBLIC
       ASD_SMA_3K.h
       BackboneMaterial.h
@@ -258,17 +261,19 @@ target_sources(OPS_Material
       TDConcreteMC10.h
       TDConcreteMC10NL.h
       TensionOnlyMaterial.h
-      TriMatrix.h
       UniaxialJ2Plasticity.h
       ViscousDamper.h
       ViscousMaterial.h
       WrapperUniaxialMaterial.h
       pyUCLA.h
+
+      TriMatrix.h  # move to SRC/matrix ?
 )
+
 
 add_library(OPS_Material_f)
 
-target_sources(OPS_Material_f PUBLIC
+target_sources(OPS_Material_f PRIVATE
       DoddRestrepo.f
       STEELDR.f
       c14-SK-M.f
