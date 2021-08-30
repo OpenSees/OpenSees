@@ -1388,6 +1388,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SMAMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp">
+      <Filter>uniaxial\py_tz_qz</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
