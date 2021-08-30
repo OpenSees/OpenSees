@@ -218,11 +218,12 @@
 #define MAT_TAG_QzSimple1                    207
 #define MAT_TAG_PyLiq1                       208
 #define MAT_TAG_TzLiq1                       209
-#define MAT_TAG_PySimple2                    210
-#define MAT_TAG_TzSimple2                    211
-#define MAT_TAG_QzSimple2                    212
-#define MAT_TAG_SteelBRB                     213
-#define MAT_TAG_PySimple3                    214
+#define MAT_TAG_QzLiq1                       210
+#define MAT_TAG_PySimple2                    211
+#define MAT_TAG_TzSimple2                    212
+#define MAT_TAG_QzSimple2                    213
+#define MAT_TAG_SteelBRB                     214
+#define MAT_TAG_PySimple3                    215
 
 
 

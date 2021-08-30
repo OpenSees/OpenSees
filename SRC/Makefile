@@ -344,6 +344,7 @@ PY_SJB_RWB_BJ_LIBS = $(FE)/material/uniaxial/PY/PySimple1.o \
 	$(FE)/material/uniaxial/PY/ShallowFoundationGen.o \
 	$(FE)/material/uniaxial/PY/PyLiq1.o \
 	$(FE)/material/uniaxial/PY/TzLiq1.o \
+	$(FE)/material/uniaxial/PY/QzLiq1.o \
 	$(FE)/material/uniaxial/PY/PySimple1Gen.o \
 	$(FE)/material/uniaxial/PY/TzSimple1Gen.o
 
