@@ -1,6 +1,7 @@
-
-target_sources(OPS_Material
+add_library(OPS_Uniaxial_Fedeas)
+target_sources(OPS_Uniaxial_Fedeas
     PRIVATE
+        ../FedeasMaterial.cpp
         FedeasBond1Material.cpp
         FedeasBond2Material.cpp
         FedeasConcr1Material.cpp
@@ -14,6 +15,7 @@ target_sources(OPS_Material
         PD1.c
         PlasticDamageMaterial.cpp
     PUBLIC
+        ../FedeasMaterial.h
         FedeasBond1Material.h
         FedeasBond2Material.h
         FedeasConcr1Material.h
@@ -27,11 +29,14 @@ target_sources(OPS_Material
         PlasticDamageMaterial.h
 )
 
-add_library(OPS_Material_Uniaxial_Fedeas OBJECT)
-target_sources(OPS_Material_Uniaxial_Fedeas 
+add_library(OPS_Uniaxial_Fedeas_f OBJECT)
+target_sources(OPS_Uniaxial_Fedeas_f 
     PRIVATE
         Hard1.f
         PD1.f
 )
-target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_link_libraries(OPS_Uniaxial_Fedeas PUBLIC
+  OPS_Uniaxial_Fedeas_f
+  ${BUNDLE_LIBS}/fedeas.lib)
+#target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

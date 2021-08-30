@@ -106,7 +106,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete.cpp
       FRPConfinedConcrete02.cpp
       FatigueMaterial.cpp
-      FedeasMaterial.cpp
+      #FedeasMaterial.cpp
       GNGMaterial.cpp
       HookGap.cpp
       HyperbolicGapMaterial.cpp
@@ -206,7 +206,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete.h
       FRPConfinedConcrete02.h
       FatigueMaterial.h
-      FedeasMaterial.h
+      #FedeasMaterial.h
       GNGMaterial.h
       HardeningMaterial.cpp
       HardeningMaterial.h
