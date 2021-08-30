@@ -2893,8 +2893,9 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
     else {
       // Fedeas
+ #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
       theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
-      
+ #endif
       // Drain
       if (theMaterial == 0)
 	theMaterial = TclModelBuilder_addDrainMaterial(clientData, interp, argc, argv);

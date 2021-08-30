@@ -1264,7 +1264,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
-
+#if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
 
@@ -1294,7 +1294,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-
+#endif
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 
