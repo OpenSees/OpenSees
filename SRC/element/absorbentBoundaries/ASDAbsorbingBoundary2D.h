@@ -55,6 +55,7 @@ public:
         int node3,
         int node4,
         double G,
+        double v,
         double rho,
         double thickness);
     virtual ~ASDAbsorbingBoundary2D();
@@ -91,6 +92,9 @@ public:
     const Vector& getResistingForce();
     const Vector& getResistingForceIncInertia();
 
+    // computation of reactions
+    int addResistingForceToNodalReaction(int flag);
+
     // public methods for element output
     int sendSelf(int commitTag, Channel& theChannel);
     int recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
@@ -104,9 +108,41 @@ private:
     // compute a consistent penalty value
     double penaltyFactor();
     // fills the penalty stiffness matrix in stage = 0
-    void addKPenalty(Matrix& K);
-    // fills the penalty resisting forces
-    void addRPenalty(Vector& R);
+    void addKPenaltyStage0(Matrix& K);
+    // fills the penalty resisting forces in stage = 0
+    void addRPenaltyStage0(Vector& R);
+    // update stage
+    void updateStage();
+    // fills the penalty stiffness matrix in stage = 1
+    void addKPenaltyStage1(Matrix& K);
+    // fills the penalty resisting forces in stage = 1
+    void addRPenaltyStage1(Vector& R);
+    // restore reactions
+    void addRReactions(Vector& R);
+    // fills the mass matrix of the free-field
+    void addMff(Matrix& M, double scale = 1.0);
+    // fills the force vector due to mass*acc
+    void addRMff(Vector& R);
+    // fills the stiffness matrix of the free-field
+    void addKff(Matrix& K, double scale = 1.0);
+    // fills the resisting forces of the free-field
+    void addRff(Vector& R);
+    // fills the stiffness matrix of the free-field forces tranfered to the soil domain
+    void addKffToSoil(Matrix& K);
+    // fills the forces transfered from the free-field to the soil domain
+    void addRffToSoil(Vector& R);
+    // compute damping parameters
+    void getDampParam(double& alpha, double& beta);
+    // fills the damping matrix of the free-field
+    void addCff(Matrix& C);
+    // fills the damping forces of the free-field
+    void addRCff(Vector& R);
+    // computes the dashpot coefficients
+    void getLKcoeff(double& ap, double& as);
+    // fills the damping matrix of the L-K dashpots
+    void addClk(Matrix& C);
+    // filld the damping forces of the L-K dashpots
+    void addRlk(Vector& R);
 
 private:
 
@@ -116,6 +152,8 @@ private:
     std::vector<Node*> m_nodes;
     // shear modulus
     double m_G = 0.0;
+    // poisson's ratio
+    double m_v = 0.0;
     // mass density
     double m_rho = 0.0;
     // thickness
@@ -135,10 +173,14 @@ private:
     // a vector containing the local id mapping for assembling
     // into the element matrix and vectors
     ID m_mapping = ID(8);
-    // initial displacement
+    // initial displacement (local dofset)
     Vector m_U0 = Vector(8);
-    // initial velocity
+    // initial velocity (local dofset)
     Vector m_V0 = Vector(8);
+    // reaction forces saved at the end of stage 0 (local dofset)
+    Vector m_R0 = Vector(8);
+    // flag for computation of reactions
+    bool m_is_computing_reactions = false;
 
 };
 
