@@ -60,17 +60,12 @@ void *OPS_ExpressNewton()
   double kMultiplier = 1.0;
 
   int nArgs = OPS_GetNumRemainingInputArgs();
-  if (nArgs < 2) {
-    opserr << "WARNING ExpressNewton insufficient arguments -- algorithm ExpressNewton nIter? kMultiplier? <options>\n";
-    return 0;
-  }
-  
   int numData = 1;
-  if (nArgs >= 2 && OPS_GetIntInput(&numData,&nIter) < 0) {
+  if (nArgs > 0 && OPS_GetIntInput(&numData,&nIter) < 0) {
     opserr << "WARNING ExpressNewton -- error reading nIter\n";
     return 0;
   }
-  if (nArgs >= 3 && OPS_GetDoubleInput(&numData,&kMultiplier) < 0) {
+  if (nArgs > 1 && OPS_GetDoubleInput(&numData,&kMultiplier) < 0) {
     opserr << "WARNING ExpressNewton -- error reading kMultiplier\n";
     return 0;
   }
