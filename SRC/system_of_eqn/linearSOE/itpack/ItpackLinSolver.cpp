@@ -34,6 +34,22 @@
 #include <ItpackLinSolver.h>
 #include <ItpackLinSOE.h>
 #include <ID.h>
+#include <elementAPI.h>
+
+void* OPS_ItpackLinSolver()
+{
+  int method = 1;
+  int numData = 1;
+  
+  int nArgs = OPS_GetNumRemainingInputArgs();
+  if (nArgs > 0 && OPS_GetIntInput(&numData,&method) < 0) {
+    opserr << "WARNING Itpack -- error reading method\n";
+    return 0;
+  }
+  
+  ItpackLinSolver *theSolver = new ItpackLinSolver(method);
+  return new ItpackLinSOE(*theSolver);  
+}
 
 ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om)
   :LinearSOESolver(SOLVER_TAGS_Itpack),
