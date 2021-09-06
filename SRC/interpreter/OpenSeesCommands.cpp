@@ -1618,6 +1618,8 @@ int OPS_Algorithm()
     } else if (strcmp(type, "PeriodicNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_PeriodicNewton();
 
+    } else if (strcmp(type, "ExpressNewton") == 0) {
+	theAlgo = (EquiSolnAlgo*) OPS_ExpressNewton();	
 
     } else if (strcmp(type, "Broyden") == 0) {
 	theAlgo = (EquiSolnAlgo*)OPS_Broyden();
