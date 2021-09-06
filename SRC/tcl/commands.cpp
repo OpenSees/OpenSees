@@ -75,6 +75,7 @@ using std::ofstream;
 #include <DummyStream.h>
 
 bool OPS_suppressOpenSeesOutput = false;
+bool OPS_showHeader = true;
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
