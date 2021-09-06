@@ -3585,9 +3585,10 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
     
     return TCL_OK;
+  } else {
+	opserr << "WARNING system " << argv[1] << " is unknown or not installed\n";
+	return TCL_ERROR;
   }
-
-  return TCL_ERROR;
 }
 
 
