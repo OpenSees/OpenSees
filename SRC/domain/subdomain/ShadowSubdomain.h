@@ -38,7 +38,7 @@
 // What: "@(#) ShadowSubdomain.h, revA"
 
 #include <Subdomain.h>
-#include <Shadow.h>
+#include <actor/shadow/Shadow.h>
 #include <remote.h>
 
 class ShadowSubdomain: public Shadow, public Subdomain

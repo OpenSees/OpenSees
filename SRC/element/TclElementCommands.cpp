@@ -13,8 +13,7 @@
 **                                                                    **
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       ** **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
 
@@ -130,10 +129,8 @@ extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_Truss2(void);
-#ifdef _HAVE_PML
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
-#endif
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -144,9 +141,10 @@ extern void *OPS_AC3D8HexWithSensitivity(void);
 extern void *OPS_ASID8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
-extern void *OPS_MVLEM(void);
-extern void *OPS_SFI_MVLEM(void);
-extern void *OPS_SFI_MVLEM(void);
+extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
+extern void *OPS_SFI_MVLEM(void);   // Kristijan Kolozvari
+extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
+extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
@@ -154,11 +152,13 @@ extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 #ifdef _HAVE_LHNMYS
 extern void* OPS_BeamColumn2DwLHNMYS(void);
+extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_CatenaryCableElement(void);
+extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
@@ -183,8 +183,14 @@ extern void *OPS_RJWatsonEQS2d(void);
 extern void *OPS_RJWatsonEQS3d(void);
 //extern void* OPS_GradientInelasticBeamColumn2d();
 //extern void* OPS_GradientInelasticBeamColumn3d();
-
+extern void *OPS_RockingBC(void);
 extern void* OPS_LehighJoint2d(void);
+extern void *OPS_MasonPan12(void);
+extern void *OPS_MasonPan3D(void);
+extern void *OPS_BeamGT(void);
+
+extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
+extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -283,6 +289,18 @@ TclModelBuilder_addDispBeamColumnInt(ClientData, Tcl_Interp *, int, TCL_Char **,
 extern int
 TclModelBuilder_addForceBeamColumn(ClientData, Tcl_Interp *, int, TCL_Char **,
 				   Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addMasonPan12(ClientData , Tcl_Interp *, int argc,
+	TCL_Char **argv, Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addMasonPan3D(ClientData , Tcl_Interp *, int argc,
+	TCL_Char **argv, Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addBeamGT(ClientData , Tcl_Interp *, int argc,
+	TCL_Char **argv, Domain*, TclModelBuilder *);
 
 // NM
 extern int
@@ -503,7 +521,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-#ifdef _HAVE_PML
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -517,8 +534,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
-#endif
 
   /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
@@ -535,8 +550,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
   }*/
-
+    
 #ifdef _HAVE_LHNMYS
+    
   } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
@@ -547,6 +563,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+    
+  } else if (strcmp(argv[1],"beamColumn2DwLHNMYS_Damage") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_BeamColumn2DwLHNMYS_Damage();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }    
   
   } else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
     Element *theEle = 0;
@@ -563,6 +590,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
+    
   } else if((strcmp(argv[1], "WheelRail") == 0)) {
     // ------------------------------add------------------------------------------
     int eleArgStart = 1;
@@ -725,7 +753,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  } else if (strcmp(argv[1],"MVLEM") == 0) {
+  } else if (strcmp(argv[1],"MVLEM") == 0) {    // Kristijan Kolozvari
     
     void *theEle = OPS_MVLEM();
     if (theEle != 0) 
@@ -735,7 +763,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  } else if (strcmp(argv[1],"SFI_MVLEM") == 0) {
+  } else if (strcmp(argv[1],"SFI_MVLEM") == 0) {    // Kristijan Kolozvari
     
     void *theEle = OPS_SFI_MVLEM();
     if (theEle != 0) 
@@ -744,6 +772,64 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
+
+  } else if (strcmp(argv[1], "MVLEM_3D") == 0) {    // Kristijan Kolozvari
+
+    void* theEle = OPS_MVLEM_3D();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+
+  }
+  else if (strcmp(argv[1], "SFI_MVLEM_3D") == 0) {    // Kristijan Kolozvari
+
+    void* theEle = OPS_SFI_MVLEM_3D();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+  }
+  
+  else if ((strcmp(argv[1], "MasonPan12") == 0)) {
+
+	  void *theEle = OPS_MasonPan12();
+
+	  if (theEle != 0)
+		  theElement = (Element *)theEle;
+	  else {
+		  opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+		  return TCL_ERROR;
+	  }
+  }
+  else if ((strcmp(argv[1], "MasonPan3D") == 0)) {
+
+	  void *theEle = OPS_MasonPan3D();
+
+	  if (theEle != 0)
+		  theElement = (Element *)theEle;
+	  else {
+		  opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+		  return TCL_ERROR;
+	  }
+
+  }
+  else if ((strcmp(argv[1], "BeamGT") == 0)) {
+
+	  void *theEle = OPS_BeamGT();
+
+	  if (theEle != 0)
+		  theElement = (Element *)theEle;
+	  else {
+		  opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+		  return TCL_ERROR;
+	  }
+
 
   } else if ((strcmp(argv[1],"MultiFP2d") == 0) || (strcmp(argv[1],"MultiFPB2d") == 0)){
     
@@ -1148,6 +1234,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
+  else if (strcmp(argv[1], "ASDEmbeddedNodeElement") == 0) {
+      void *theEle = OPS_ASDEmbeddedNodeElement();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
   else if (strcmp(argv[1], "ShellANDeS") == 0) {
       void *theEle = OPS_ShellANDeS();
       if (theEle != 0) {
@@ -1388,7 +1485,45 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
   }
   }
+  
+  else if ((strcmp(argv[1],"RockingBC") == 0)) {
+    void *theEle = OPS_RockingBC();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
 
+  //Xinlong Du
+  else if ((strcmp(argv[1], "dispBeamColumnAsym") == 0) || (strcmp(argv[1], "dispBeamAsym")) == 0) {
+  Element* theEle = 0;
+  if (OPS_GetNDM() == 3)
+      theEle = (Element*)OPS_DispBeamColumnAsym3dTcl();
+  if (theEle != 0)
+      theElement = theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+
+  }
+
+  else if ((strcmp(argv[1], "mixedBeamColumnAsym") == 0) || (strcmp(argv[1], "mixedBeamAsym") == 0)) {
+  Element* theEle = 0;
+  if (OPS_GetNDM() == 3)
+      theEle = (Element*)OPS_MixedBeamColumnAsym3dTcl();
+  if (theEle != 0)
+      theElement = theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+
+  }
+  //Xinlong Du
+  
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {

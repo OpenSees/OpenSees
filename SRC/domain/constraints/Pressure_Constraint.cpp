@@ -46,6 +46,44 @@
 #include <NodalLoad.h>
 #include <Element.h>
 #include <DOF_Group.h>
+#include <elementAPI.h>
+
+int OPS_Pressure_Constraint() {
+    Domain* theDomain = OPS_GetDomain();
+
+    if (theDomain == 0) {
+        opserr << "WARNING: domain is not defined\n";
+        return -1;
+    }
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr << "WARNING: need nodeTag, pNodeTag\n";
+        return -1;
+    }
+
+    // get node tags
+    int tags[2];
+    int num = 2;
+    if (OPS_GetIntInput(&num, &tags[0]) < 0) {
+        opserr << "WARNING: invalid node tag\n";
+        return -1;
+    }
+
+    // set domain
+    Pressure_Constraint* pc = new Pressure_Constraint(tags[0], tags[1]);
+    if (pc == 0) {
+        opserr << "WARNING: failed to create pc\n";
+        return -1;
+    }
+
+    if (theDomain->addPressure_Constraint(pc) == false) {
+        opserr << "WARNING: failed to add pc to domain\n";
+        delete pc;
+        return -1;
+    }
+    
+    return 0;
+}
 
 Pressure_Constraint::Pressure_Constraint(int classTag)
     :DomainComponent(0,classTag), pTag(0), fluidEleTags(), otherEleTags(),

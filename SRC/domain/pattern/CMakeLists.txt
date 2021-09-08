@@ -1,0 +1,51 @@
+
+target_sources(domain
+    PRIVATE
+	EarthquakePattern.cpp
+	LinearSeries.cpp
+	LoadPattern.cpp
+	FireLoadPattern.cpp
+	LoadPatternIter.cpp
+	PathSeries.cpp
+	PathTimeSeries.cpp
+	PathTimeSeriesThermal.cpp
+	RectangularSeries.cpp
+	TimeSeries.cpp
+	TrigSeries.cpp
+	ConstantSeries.cpp
+	UniformExcitation.cpp
+	TimeSeriesIntegrator.cpp
+	TrapezoidalTimeSeriesIntegrator.cpp
+	SimpsonTimeSeriesIntegrator.cpp
+	MultiSupportPattern.cpp
+	PulseSeries.cpp
+	TriangleSeries.cpp
+	PeerMotion.cpp
+	PeerNGAMotion.cpp
+    PUBLIC
+	EarthquakePattern.h
+	LinearSeries.h
+	LoadPattern.h
+	FireLoadPattern.h
+	LoadPatternIter.h
+	PathSeries.h
+	PathTimeSeries.h
+	PathTimeSeriesThermal.h
+	RectangularSeries.h
+	TimeSeries.h
+	TrigSeries.h
+	ConstantSeries.h
+	UniformExcitation.h
+	TimeSeriesIntegrator.h
+	TrapezoidalTimeSeriesIntegrator.h
+	SimpsonTimeSeriesIntegrator.h
+	MultiSupportPattern.h
+	PulseSeries.h
+	TriangleSeries.h
+	PeerMotion.h
+	PeerNGAMotion.h
+)
+
+target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+
+add_subdirectory(drm)

@@ -1629,95 +1629,65 @@ int
 NineFourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    static Vector v5(3);
+    static Vector v6(3);
+    static Vector v7(3);
+    static Vector v8(3);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+    theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+    theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+    theNodes[4]->getDisplayCrds(v5, fact, displayMode);
+    theNodes[5]->getDisplayCrds(v6, fact, displayMode);
+    theNodes[6]->getDisplayCrds(v7, fact, displayMode);
+    theNodes[7]->getDisplayCrds(v8, fact, displayMode);
 
-    // first set the quantity to be displayed at the nodes;
-
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-
-
-    static Vector values(9);
-
-
-
-    for (int j=0; j<9; j++)
-
-	   values(j) = 0.0;
-
-
-
-    if (displayMode < 4 && displayMode > 0) {
-
-	for (int i=0; i<9; i++) {
-
-	  const Vector &stress = theMaterial[i]->getStress();
-
-	  values(i) = stress(displayMode-1);
-
-	}
-
+    // place values in coords matrix
+    static Matrix coords(8, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v5(i);
+        coords(2, i) = v2(i);
+        coords(3, i) = v6(i);
+        coords(4, i) = v3(i);
+        coords(5, i) = v7(i);
+        coords(6, i) = v4(i);
+        coords(7, i) = v8(i);
     }
 
-
-
-    // now  determine the end points of the quad based on
-
-    // the display factor (a measure of the distorted image)
-
-    // store this information in 4 3d vectors v1 through v4
-
-    /*const Vector &end1Crd = nd1Ptr->getCrds();
-
-    const Vector &end2Crd = nd2Ptr->getCrds();
-
-    const Vector &end3Crd = nd3Ptr->getCrds();
-
-    const Vector &end4Crd = nd4Ptr->getCrds();
-
-
-
-    const Vector &end1Disp = nd1Ptr->getDisp();
-
-    const Vector &end2Disp = nd2Ptr->getDisp();
-
-    const Vector &end3Disp = nd3Ptr->getDisp();
-
-    const Vector &end4Disp = nd4Ptr->getDisp();
-
-
-
-    static Matrix coords(4,3);
-
-
-
-    for (int i = 0; i < 2; i++) {
-
-      coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-
-      coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-
-      coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-
-      coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-
+    // set the quantity to be displayed at the nodes;
+    // if displayMode is 1 through 8 we will plot material stresses otherwise 0.0
+    static Vector values(8);
+    if (displayMode < 8 && displayMode > 0) {
+        const Vector& stress1 = theMaterial[0]->getStress();
+        const Vector& stress2 = theMaterial[1]->getStress();
+        const Vector& stress3 = theMaterial[2]->getStress();
+        const Vector& stress4 = theMaterial[3]->getStress();
+        const Vector& stress5 = theMaterial[4]->getStress();
+        const Vector& stress6 = theMaterial[5]->getStress();
+        const Vector& stress7 = theMaterial[6]->getStress();
+        const Vector& stress8 = theMaterial[7]->getStress();
+        values(0) = stress1(displayMode - 1);
+        values(1) = stress5(displayMode - 1);
+        values(2) = stress2(displayMode - 1);
+        values(3) = stress6(displayMode - 1);
+        values(4) = stress3(displayMode - 1);
+        values(5) = stress7(displayMode - 1);
+        values(6) = stress4(displayMode - 1);
+        values(7) = stress8(displayMode - 1);
+    }
+    else {
+        for (int i = 0; i < 8; i++)
+            values(i) = 0.0;
     }
 
-
-
-    int error = 0;
-
-
-
-    // finally we draw the element using drawPolygon
-
-    error += theViewer.drawPolygon (coords, values);
-
-
-
-    return error;*/
-
-	return 0;
-
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 

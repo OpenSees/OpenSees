@@ -36,11 +36,14 @@
 
  #include <tcl.h>
 
+
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include <Domain.h>
  #include <EquiSolnAlgo.h>
+
+
 
  // recorders
  #include <NodeRecorder.h>
@@ -53,7 +56,7 @@
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
  #include <PVDRecorder.h>
- #include <MPCORecorder.h>
+// #include <MPCORecorder.h>
  #include <GmshRecorder.h>
  #include <VTK_Recorder.h>
 extern void* OPS_PVDRecorder();
@@ -88,6 +91,7 @@ extern void* OPS_NodeRecorderRMS();
 
  #include <packages.h>
  #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 
  extern TimeSeries *TclSeriesCommand(ClientData clientData, Tcl_Interp *interp, TCL_Char *arg);
@@ -1666,7 +1670,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        int xLoc, yLoc, width, height;
        if (argc < 9) {
-	 opserr << "WARNING recorder display fileName? windowTitle? xLoc yLoc pixelsX pixelsY -columns colX1 colY1 -columns colX2 ...";
+	 opserr << "WARNING recorder plot fileName? windowTitle? xLoc yLoc xPixels yPixels -columns colX1 colY1 -columns colX2 ...";
 	 return TCL_ERROR;
        }    
 
@@ -1852,6 +1856,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
      }
+     /*
      else if (strcmp(argv[1], "mpco") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*)OPS_MPCORecorder();
@@ -1859,6 +1864,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 return TCL_ERROR;
        }
      }
+     */
      else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_GmshRecorder();

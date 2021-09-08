@@ -1728,26 +1728,27 @@ Node::Print(OPS_Stream &s, int flag)
 }
   
 int
-Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
+Node::displaySelf(Renderer &theRenderer, int theEleMode, int theNodeMode, float fact)
 {
 
-  if (displayMode == 0)
+  if (theNodeMode == 0)
     return 0;
 
 //  const Vector &theDisp = this->getDisp();
   static Vector position(3);
 
-  this->getDisplayCrds(position, fact, displayMode);
+// display coordinates should be based on eleMode, not on nodeMode - ambaker1
+  this->getDisplayCrds(position, fact, theEleMode);
   
-  if (displayMode == -1) { 
+  if (theNodeMode == -1) {
     // draw a text string containing tag
     static char theText[20];
     sprintf(theText,"%d",this->getTag());
     return theRenderer.drawText(position, theText, (int) strlen(theText));
 
-  } else if (displayMode > 0) {
+  } else if (theNodeMode > 0) {
     // draw a point - pixel size equals displayMode tag
-    return theRenderer.drawPoint(position, 0.0, this->getTag(), 0, displayMode);
+    return theRenderer.drawPoint(position, 0.0, this->getTag(), 0, theNodeMode);
   }
 
 
@@ -2244,49 +2245,76 @@ Node::setCrds(const Vector &newCrds)
 }
 
 int
+Node::getDisplayRots(Vector& res, double fact, int mode)
+{
+    int ndm = Crd->Size();
+    int resSize = res.Size();
+    int nRotDOFs = numberDOF - ndm;
+    if (resSize < nRotDOFs)
+        return -1;
+
+    if (mode < 0) {
+        int eigenMode = -mode;
+        for (int i = ndm; i < resSize; i++)
+            res(i) = (*theEigenvectors)(i, eigenMode - 1) * fact;
+    }
+    else {
+        for (int i = ndm; i < resSize; i++)
+            res(i) = (*commitDisp)(i) * fact;
+    }
+
+    // zero rest
+    for (int i = nRotDOFs; i < resSize; i++)
+        res(i) = 0;
+
+    return 0;
+}
+
+int
 Node::getDisplayCrds(Vector &res, double fact, int mode) 
 {
-  int ndm = Crd->Size();
-  int resSize = res.Size();
+    // Get all DOFs
+    int ndm = Crd->Size();
+    int resSize = res.Size();
 
-  if (resSize < ndm)
-    return -1;
+    if (resSize < ndm)
+        return -1;
 
-  if (mode < 0) {
-    int eigenMode = -mode;
-    if ((theEigenvectors != 0) && ((*theEigenvectors).noCols() > eigenMode)) {
-      if (displayLocation != 0)
-	for (int i=0; i<ndm; i++)
-	  res(i) = (*displayLocation)(i)+(*theEigenvectors)(i,eigenMode-1)*fact;
-      else
-	for (int i=0; i<ndm; i++)
-	  res(i) = (*Crd)(i)+(*theEigenvectors)(i,eigenMode-1)*fact;
+    if (mode < 0) {
+        int eigenMode = -mode;
+        if ((theEigenvectors != 0) && ((*theEigenvectors).noCols() >= eigenMode)) {
+            if (displayLocation != 0)
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*displayLocation)(i) + (*theEigenvectors)(i, eigenMode - 1) * fact;
+            else
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*Crd)(i) + (*theEigenvectors)(i, eigenMode - 1) * fact;
+        }
     }
-  } else {    
-  
-    if (commitDisp != 0) {
-      if (displayLocation != 0)
-	for (int i=0; i<ndm; i++)
-	  res(i) = (*displayLocation)(i)+(*commitDisp)(i)*fact;
-      else
-      for (int i=0; i<ndm; i++)
-	res(i) = (*Crd)(i)+(*commitDisp)(i)*fact;
-    } else {
-      if (displayLocation != 0)
-	for (int i=0; i<ndm; i++)
-	  res(i) = (*displayLocation)(i);
-      else
-	for (int i=0; i<ndm; i++)
-	  res(i) = (*Crd)(i);
+    else {
+        if (commitDisp != 0) {
+            if (displayLocation != 0)
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*displayLocation)(i) + (*commitDisp)(i) * fact;
+            else
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*Crd)(i) + (*commitDisp)(i) * fact;
+        }
+        else {
+            if (displayLocation != 0)
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*displayLocation)(i);
+            else
+                for (int i = 0; i < ndm; i++)
+                    res(i) = (*Crd)(i);
+        }
     }
-    
-  }
 
-  // zero rest
-  for (int i=ndm; i<resSize; i++)
-    res(i) = 0;
+    // zero rest
+    for (int i = ndm; i < resSize; i++)
+        res(i) = 0;
 
-  return 0;
+    return 0;
 }
 
 int

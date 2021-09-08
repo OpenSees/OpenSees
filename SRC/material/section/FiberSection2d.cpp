@@ -58,17 +58,26 @@ void* OPS_FiberSection2d()
 
     numData = 1;
     int tag;
-    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+    if (OPS_GetIntInput(&numData,&tag) < 0) return 0;
 
+    bool computeCentroid = true;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noCentroid") == 0)
+	computeCentroid = false;
+    }
+    
     int num = 30;
-    return new FiberSection2d(tag,num);
+    return new FiberSection2d(tag, num, computeCentroid);
 }
 
 // constructors:
-FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers): 
+FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers, bool compCentroid): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection2d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), ABar(0.0), yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
+  QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
+  sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
+
 {
   if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -103,7 +112,8 @@ FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers):
       }
     }    
 
-    yBar = QzBar/ABar;  
+    if (computeCentroid)
+      yBar = QzBar/ABar;
   }
 
   s = new Vector(sData, 2);
@@ -122,10 +132,11 @@ FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers):
 }
 
 // allocate memory for fibers
-FiberSection2d::FiberSection2d(int tag, int num): 
+FiberSection2d::FiberSection2d(int tag, int num, bool compCentroid): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection2d),
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), ABar(0.0), yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
+  QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
+  sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
 {
     if(sizeFibers > 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
@@ -165,10 +176,11 @@ FiberSection2d::FiberSection2d(int tag, int num):
 }
 
 FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
-			       SectionIntegration &si):
+			       SectionIntegration &si, bool compCentroid):
   SectionForceDeformation(tag, SEC_TAG_FiberSection2d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), ABar(0.0), yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
+  QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
+  sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -209,9 +221,10 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
       exit(-1);
     }
   }    
-  
-  yBar = QzBar/ABar;  
 
+  if (computeCentroid)
+    yBar = QzBar/ABar;
+  
   s = new Vector(sData, 2);
   ks = new Matrix(kData, 2, 2);
   
@@ -231,7 +244,8 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
 FiberSection2d::FiberSection2d():
   SectionForceDeformation(0, SEC_TAG_FiberSection2d),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
-  QzBar(0.0), ABar(0.0), yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
+  QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(true),
+  sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
 {
   s = new Vector(sData, 2);
   ks = new Matrix(kData, 2, 2);
@@ -306,10 +320,12 @@ FiberSection2d::addFiber(Fiber &newFiber)
   numFibers++;
 
   // Recompute centroid
-  ABar += Area;
-  QzBar += yLoc*Area;
-  yBar = QzBar/ABar;
-
+  if (computeCentroid) {
+    ABar += Area;
+    QzBar += yLoc*Area;
+    yBar = QzBar/ABar;
+  }
+  
   return 0;
 }
 
@@ -406,15 +422,15 @@ FiberSection2d::getInitialTangent(void)
 
   static double fiberLocs[10000];
   static double fiberArea[10000];
-
+  
   if (sectionIntegr != 0) {
     sectionIntegr->getFiberLocations(numFibers, fiberLocs);
-    sectionIntegr->getFiberWeights(numFibers, fiberArea);
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);    
   }  
   else {
     for (int i = 0; i < numFibers; i++) {
       fiberLocs[i] = matData[2*i];
-      fiberArea[i] = matData[2*i+1];
+      fiberArea[i] = matData[2*i+1];      
     }
   }
 
@@ -498,6 +514,8 @@ FiberSection2d::getCopy(void)
   theCopy->sData[0] = sData[0];
   theCopy->sData[1] = sData[1];
 
+  theCopy->computeCentroid = computeCentroid;
+  
   if (sectionIntegr != 0)
     theCopy->sectionIntegr = sectionIntegr->getCopy();
   else
@@ -638,6 +656,7 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
   static ID data(3);
   data(0) = this->getTag();
   data(1) = numFibers;
+  data(2) = computeCentroid ? 1 : 0; // Now the ID data is really 3
   int dbTag = this->getDbTag();
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
@@ -779,15 +798,20 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
     ABar  = 0.0;
     double yLoc, Area;
 
+    computeCentroid = data(2) ? true : false;
+    
     // Recompute centroid
-    for (i = 0; i < numFibers; i++) {
+    for (i = 0; computeCentroid && i < numFibers; i++) {
       yLoc = matData[2*i];
       Area = matData[2*i+1];
       ABar  += Area;
       QzBar += yLoc*Area;
     }
-    
-    yBar = QzBar/ABar;
+
+    if (computeCentroid)
+      yBar = QzBar/ABar;
+    else
+      yBar = 0.0;
   }    
 
   return res;
@@ -833,10 +857,21 @@ Response*
 FiberSection2d::setResponse(const char **argv, int argc,
 			    OPS_Stream &output)
 {
-  Response *theResponse =0;
+  Response *theResponse = 0;
+  
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+    static double fiberLocs[10000];
     
+    if (sectionIntegr != 0) {
+      sectionIntegr->getFiberLocations(numFibers, fiberLocs);
+    }  
+    else {
+      for (int i = 0; i < numFibers; i++) {
+	fiberLocs[i] = matData[2*i];
+      }
+    }
+  
     int key = numFibers;
     int passarg = 2;
     
@@ -856,9 +891,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];
 	  dy = ySearch-yCoord;
-	  closestDist = fabs(dy);
+	  closestDist = dy*dy;
 	  key = j;
 	  break;
 	}
@@ -866,9 +902,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];	  
 	  dy = ySearch-yCoord;
-	  distance = fabs(dy);
+	  distance = dy*dy;
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -885,15 +922,17 @@ FiberSection2d::setResponse(const char **argv, int argc,
       double ySearch, dy;
       double distance;
       
-      ySearch = matData[0];
+      //ySearch = matData[0];
+      ySearch = fiberLocs[0];      
       dy = ySearch-yCoord;
       closestDist = fabs(dy);
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	ySearch = matData[2*j];
+	//ySearch = matData[2*j];
+	ySearch = fiberLocs[j];	  	
 	dy = ySearch-yCoord;
 	
-	distance = fabs(dy);
+	distance = dy*dy;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -908,12 +947,10 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.0);
       output.attr("area",matData[2*key+1]);
       
-      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
-
-    return theResponse;
 
   } else if (strcmp(argv[0],"fiberData") == 0) {
     int numData = numFibers*5;
@@ -930,26 +967,27 @@ FiberSection2d::setResponse(const char **argv, int argc,
       output.endTag();
     }
     Vector theResponseData(numData);
-    return theResponse = new MaterialResponse(this, 5, theResponseData);
-
+    theResponse = new MaterialResponse(this, 5, theResponseData);
   
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
-    return theResponse = new MaterialResponse(this, 6, count);
+    theResponse = new MaterialResponse(this, 6, count);
 
   } else if ((strcmp(argv[0],"sectionFailed") == 0) || 
 	     (strcmp(argv[0],"hasSectionFailed") == 0) ||
 	     (strcmp(argv[0],"hasFailed") == 0)) {
     int count = 0;
-    return theResponse = new MaterialResponse(this, 7, count);
+    theResponse = new MaterialResponse(this, 7, count);
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
-	  return theResponse = new MaterialResponse(this, 8, getEnergy());
+	  theResponse = new MaterialResponse(this, 8, getEnergy());
   }
 
-// If not a fiber response, call the base class method
-return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 

@@ -224,6 +224,7 @@ void * OPS_MixedBeamColumn3d() {
     return 0;
   }
 
+  delete [] sections;
   return theElement;
 }
 
@@ -1925,4 +1926,15 @@ int MixedBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   // @todo write MixedBeamColumn3d::recvSelf
   opserr << "Error: MixedBeamColumn3d::sendSelf -- not yet implemented for MixedBeamColumn3d element";
   return -1;
+}
+
+int MixedBeamColumn3d::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+{
+    static Vector v1(3);
+    static Vector v2(3);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

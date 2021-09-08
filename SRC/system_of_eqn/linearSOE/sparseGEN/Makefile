@@ -59,7 +59,8 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMSolver_LumpM.o
 else
 
-OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \
+OBJS       = $(CULA_SOLVER) \
+	SparseGenColLinSOE.o \
 	SparseGenColLinSolver.o \
 	SparseGenRowLinSOE.o \
 	SparseGenRowLinSolver.o \

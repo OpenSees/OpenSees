@@ -41,18 +41,23 @@
 
 void* OPS_CTestFixedNumIter()
 {
-
-    int idata[3] = {0,0,2};
-    if (OPS_GetNumRemainingInputArgs() >= 3) {
-	int numdata = 3;
-	if (OPS_GetIntInput(&numdata, idata) < 0) {
-	    opserr << "WARNING FixedNumIter test failed to get int values\n";
-	    return 0;
-	}
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "insufficient number of arguments\n";
+        return 0;
     }
-
-    return new CTestFixedNumIter(idata[0],idata[1],idata[2]);
+    
+    // maxIter
+    int numData = OPS_GetNumRemainingInputArgs();
+    if (numData > 3) numData = 3;
+    int data[3] = { 0,0,2 };
+    if (OPS_GetIntInput(&numData, &data[0]) < 0) {
+        opserr << "WARNING FixedNumIter failed to read int values\n";
+        return 0;
+    }
+    
+    return new CTestFixedNumIter(data[0], data[1], data[2]);
 }
+
 
 CTestFixedNumIter::CTestFixedNumIter()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestFixedNumIter),

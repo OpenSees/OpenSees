@@ -1004,49 +1004,45 @@ Truss::displaySelf(Renderer &theViewer, int displayMode, float fact,
   int res = 0;
   if (L == 0.0)
     return res;
-  
+
   static Vector v1(3);
   static Vector v2(3);
   float d1 = 0.0;
   float d2 = 0.0;
-  
-  theNodes[0]->getDisplayCrds(v1, fact);
-  theNodes[1]->getDisplayCrds(v2, fact);
 
+  theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+  theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+  res += theViewer.drawLine(v1, v2, d1, d2, this->getTag());
+
+  // only add force, material, etc. when displayMode > 0...
+  // ...doesn't make sense for mode shapes -ambaker1
   if (displayMode > 0) {
-    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+      for (int i = 0; i < numModes; i++) {
+          const char* mode = displayModes[i];
+          if (strcmp(mode, "axialForce") == 0) {
+              double force = A * theMaterial->getStress();
+              d1 = force;
+              d2 = force;
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "material") == 0) {
+              d1 = theMaterial->getTag();
+              d2 = theMaterial->getTag();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStress") == 0) {
+              d1 = theMaterial->getStress();
+              d2 = theMaterial->getStress();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+          else if (strcmp(mode, "materialStrain") == 0) {
+              d1 = theMaterial->getStrain();
+              d2 = theMaterial->getStrain();
+              res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+          }
+      }
   }
-  
-  for (int i=0; i<numModes; i++) {
-    
-    const char *mode = displayModes[i];
-    if (strcmp(mode, "axialForce") == 0) {
-      double force = A*theMaterial->getStress();    	  
-      d1 = force; 
-      d2 = force;
-
-      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "material") == 0) {
-      d1 = theMaterial->getTag();
-      d2 = theMaterial->getTag();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "materialStress") == 0) {
-      d1 = theMaterial->getStress();
-      d2 = theMaterial->getStress();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-      } else if (strcmp(mode, "materialStrain") == 0) {
-      
-      d1 = theMaterial->getStrain();
-      d2 = theMaterial->getStrain();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-    }
-  }    
   return res;
 }
 
@@ -1199,8 +1195,33 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
 	    
     // a material quantity
     } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"-material") == 0) {
-
-        theResponse =  theMaterial->setResponse(&argv[1], argc-1, output);
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+            // there is no need to forward this call to the material
+            // by default assume the old call style for backward compatibility "material result"
+            int offset = 1;
+            bool is_valid = true;
+            // in case the user specifies the gauss point id... "material 1 result"
+            if (argc > 2) {
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 1) {
+                    // this is the only supported gauss id
+                    offset = 2;
+                }
+                else if (sectionNum > 1) {
+                    // this is a number, but not within the valid range
+                    is_valid = false;
+                }
+                // if it is 0, then it is not a number, forward it as usual...
+            }
+            if (is_valid) {
+                output.tag("GaussPointOutput");
+                output.attr("number", 1);
+                output.attr("eta", 0.0);
+                theResponse = theMaterial->setResponse(&argv[offset], argc - offset, output);
+                output.endTag();
+            }
+        }
     }
 
     output.endTag();

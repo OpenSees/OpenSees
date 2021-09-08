@@ -73,6 +73,7 @@ public:
 
     DL_Interpreter* getInterpreter();
     Domain* getDomain();
+    AnalysisModel** getAnalysisModel();
 
     int getNDF() const {return ndf;}
     void setNDF(int n) {ndf = n;}
@@ -250,9 +251,11 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_eleType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
+int OPS_setNodePressure();
 int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
@@ -280,6 +283,11 @@ int OPS_sensNodeAccel();
 int OPS_sensLambda();
 int OPS_sensSectionForce();
 int OPS_sensNodePressure();
+int OPS_getNumElements();
+int OPS_getEleClassTags();
+int OPS_getEleLoadClassTags();
+int OPS_getEleLoadTags();
+int OPS_getEleLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
@@ -374,6 +382,7 @@ void* OPS_MillerNewton();
 void* OPS_SecantNewton();
 void* OPS_PeriodicNewton();
 void* OPS_NewtonLineSearch();
+void* OPS_ExpressNewton();
 
 void* OPS_ParallelNumberer();
 void* OPS_ParallelRCM();
@@ -396,6 +405,7 @@ int OPS_HomogeneousBC_X();
 int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();
 int OPS_ShallowFoundationGen();
+int OPS_Pressure_Constraint();
 
 void* OPS_TimeSeriesIntegrator();
 
@@ -482,7 +492,7 @@ void* OPS_WilsonTheta();
 void* OPS_CentralDifference();
 void* OPS_CentralDifferenceAlternative();
 void* OPS_CentralDifferenceNoDamping();
-void* OPS_Explicitdifference();
+void* OPS_ExplicitDifference();
 
 void* OPS_LinearAlgorithm();
 void* OPS_NewtonRaphsonAlgorithm();

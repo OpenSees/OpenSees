@@ -108,6 +108,7 @@ class SSPquadUP : public Element
     // allow PyLiq1 and TzLiq1 classes to get stresses from SSPquadUP class
     friend class PyLiq1;
     friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
   protected:
 
