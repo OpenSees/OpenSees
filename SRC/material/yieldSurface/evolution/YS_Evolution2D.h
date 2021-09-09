@@ -21,7 +21,7 @@ public:
 //  Methods inherited
 	virtual void	Print(OPS_Stream &s, int flag =0) =0;
 	virtual YS_Evolution *getCopy(void) = 0;
-    virtual Response *setResponse(char **argv, int argc, Information &info);
+    virtual Response *setResponse(char **argv, int argc, OPS_Stream &output);
 	virtual int 	getResponse(int responseID, Information &info);
 	virtual int	 displaySelf(Renderer &theViewer, int displayMode, float fact);
 	

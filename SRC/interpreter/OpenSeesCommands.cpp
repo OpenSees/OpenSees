@@ -1563,7 +1563,7 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
-    ti = (TransientIntegrator*)OPS_Explicitdifference();
+    ti = (TransientIntegrator*)OPS_ExplicitDifference();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
@@ -1618,6 +1618,8 @@ int OPS_Algorithm()
     } else if (strcmp(type, "PeriodicNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_PeriodicNewton();
 
+    } else if (strcmp(type, "ExpressNewton") == 0) {
+	theAlgo = (EquiSolnAlgo*) OPS_ExpressNewton();	
 
     } else if (strcmp(type, "Broyden") == 0) {
 	theAlgo = (EquiSolnAlgo*)OPS_Broyden();

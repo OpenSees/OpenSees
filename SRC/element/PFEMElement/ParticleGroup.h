@@ -43,7 +43,7 @@ public:
 
     // particles
     void addParticle(const VDouble& coord, const VDouble& vel, double p);
-    void addParticle(const VDouble& coordn, const VDouble& coord,
+    void addParticle(const VDouble& coord,
                      const VDouble& vel,
                      const VDouble& accel, double p);
     void removeParticles(const VInt& rm);

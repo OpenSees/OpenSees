@@ -109,6 +109,7 @@ const double  MembranePlateFiberSection::wg[] = { 0.1,
 //null constructor
 MembranePlateFiberSection::MembranePlateFiberSection( ) : 
 SectionForceDeformation( 0, SEC_TAG_MembranePlateFiberSection ), 
+h(0.),
 strainResultant(8) 
 { 
   for ( int i = 0; i < numFibers; i++ )
@@ -515,6 +516,14 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   // object - don't want to have to do the check if sending data
   int dataTag = this->getDbTag();
   
+  static Vector vectData(1);
+  vectData(0) = h;
+
+  res += theChannel.sendVector(dataTag, commitTag, vectData);
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send vectData\n";
+      return res;
+  }
 
   // Now quad sends the ids of its materials
   int matDbTag;
@@ -563,6 +572,16 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   int res = 0;
   
   int dataTag = this->getDbTag();
+
+  static Vector vectData(1);
+  res += theChannel.recvVector(dataTag, commitTag, vectData);
+
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::recvSelf() - " << this->getTag() << " failed to recv vectData\n";
+      return res;
+  }
+
+  h = vectData(0);
 
   static ID idData(2*numFibers+1);
   // Quad now receives the tags of its four external nodes
@@ -635,20 +654,21 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
     
     int passarg = 2;
     int key = atoi(argv[1]);    
     
     if (key > 0 && key <= numFibers) {
-      theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 

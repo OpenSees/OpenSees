@@ -1,0 +1,42 @@
+target_sources(material
+    PRIVATE
+      BoundingCamClay.cpp
+      BoundingCamClay3D.cpp
+      BoundingCamClayPlaneStrain.cpp
+      ContactMaterial2D.cpp
+      ContactMaterial3D.cpp
+      DruckerPrager.cpp
+      DruckerPrager3D.cpp
+      DruckerPragerPlaneStrain.cpp
+      InitialStateAnalysisWrapper.cpp
+      ManzariDafalias.cpp
+      ManzariDafalias3D.cpp
+      ManzariDafaliasPlaneStrain.cpp
+      ManzariDafaliasRO.cpp
+      ManzariDafalias3DRO.cpp
+      ManzariDafaliasPlaneStrainRO.cpp
+      PM4Sand.cpp
+      PM4Silt.cpp
+      J2CyclicBoundingSurface.cpp
+    PUBLIC
+      BoundingCamClay.h
+      BoundingCamClay3D.h
+      BoundingCamClayPlaneStrain.h
+      ContactMaterial2D.h
+      ContactMaterial3D.h
+      DruckerPrager.h
+      DruckerPrager3D.h
+      DruckerPragerPlaneStrain.h
+      InitialStateAnalysisWrapper.h
+      ManzariDafalias.h
+      ManzariDafalias3D.h
+      ManzariDafaliasPlaneStrain.h
+      ManzariDafaliasRO.h
+      ManzariDafalias3DRO.h
+      ManzariDafaliasPlaneStrainRO.h
+      PM4Sand.h
+      PM4Silt.h
+      J2CyclicBoundingSurface.h
+)
+
+target_include_directories(material PUBLIC $(CMAKE_CURRENT_LIST_DIR))

@@ -205,6 +205,7 @@ char *TclGetStartupScriptFileName()
  */
 
 extern bool OPS_suppressOpenSeesOutput;
+extern bool OPS_showHeader;
 
 void
 g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np)
@@ -224,9 +225,13 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
     DummyStream dummy;
     for (int i=0; i<argc; i++) {
       if (strcmp(argv[i],"-suppressOutput") == 0) {
-	opserrPtr = & dummy;
-	OPS_suppressOpenSeesOutput = true;
-      }
+		opserrPtr = & dummy;
+		OPS_suppressOpenSeesOutput = true;
+		OPS_showHeader = false;
+	  }
+	  else if (strcmp(argv[i], "-noHeader") == 0) {
+		OPS_showHeader = false;
+	  }
     }	
 
 #ifdef _PARALLEL_INTERPRETERS
@@ -234,7 +239,7 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
 #endif
 
 	/* fmk - beginning of modifications for OpenSees */
-      if (OPS_suppressOpenSeesOutput == false) {
+      if (OPS_showHeader) {
 	fprintf(stderr,"\n\n");
 	fprintf(stderr,"         OpenSees -- Open System For Earthquake Engineering Simulation\n");
 	fprintf(stderr,"                 Pacific Earthquake Engineering Research Center\n");

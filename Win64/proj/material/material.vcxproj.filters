@@ -1256,15 +1256,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\FeapMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
       <Filter>nD\UWmaterials</Filter>
     </ClCompile>
@@ -1366,6 +1357,30 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionWarping3d.cpp">
       <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\FiberSectionAsym3d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonry.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp2.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonryt.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SMAMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp">
+      <Filter>uniaxial\py_tz_qz</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2447,15 +2462,6 @@
     <ClInclude Include="..\..\..\SRC\material\nD\FeapMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h">
       <Filter>nD\UWmaterials</Filter>
     </ClInclude>
@@ -2554,6 +2560,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionWarping3d.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\FiberSectionAsym3d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -129,6 +129,9 @@
     <Filter Include="RockingBC">
       <UniqueIdentifier>{91ebcb15-2aac-4ce7-ad6a-0b8c7b83b286}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CEqElement">
+      <UniqueIdentifier>{0e9b8d94-5562-43c8-a721-4ab2cc9c0edf}</UniqueIdentifier>
+    </Filter>
     <Filter Include="PML">
       <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
@@ -920,6 +923,9 @@
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
       <Filter>RockingBC</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp">
+      <Filter>CEqElement</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.cpp">
       <Filter>elasticBeamColumn</Filter>
     </ClCompile>
@@ -1650,6 +1656,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h">
+      <Filter>CEqElement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.h">
       <Filter>elasticBeamColumn</Filter>

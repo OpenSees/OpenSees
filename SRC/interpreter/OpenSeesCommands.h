@@ -251,6 +251,7 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_eleType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
@@ -282,6 +283,11 @@ int OPS_sensNodeAccel();
 int OPS_sensLambda();
 int OPS_sensSectionForce();
 int OPS_sensNodePressure();
+int OPS_getNumElements();
+int OPS_getEleClassTags();
+int OPS_getEleLoadClassTags();
+int OPS_getEleLoadTags();
+int OPS_getEleLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
@@ -376,6 +382,7 @@ void* OPS_MillerNewton();
 void* OPS_SecantNewton();
 void* OPS_PeriodicNewton();
 void* OPS_NewtonLineSearch();
+void* OPS_ExpressNewton();
 
 void* OPS_ParallelNumberer();
 void* OPS_ParallelRCM();
@@ -485,7 +492,7 @@ void* OPS_WilsonTheta();
 void* OPS_CentralDifference();
 void* OPS_CentralDifferenceAlternative();
 void* OPS_CentralDifferenceNoDamping();
-void* OPS_Explicitdifference();
+void* OPS_ExplicitDifference();
 
 void* OPS_LinearAlgorithm();
 void* OPS_NewtonRaphsonAlgorithm();
