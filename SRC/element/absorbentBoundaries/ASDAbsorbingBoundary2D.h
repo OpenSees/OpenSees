@@ -32,16 +32,14 @@
 #include <Matrix.h>
 #include <vector>
 
+class TimeSeries;
+
 class ASDAbsorbingBoundary2D : public Element
 {
 public:
     enum StageType {
         Stage_StaticConstraint = 0,
         Stage_Absorbing = 1
-    };
-    enum BoundaryType {
-        Boundary_Horizontal = 0,
-        Boundary_Vertical = 1
     };
 
 public:
@@ -57,7 +55,10 @@ public:
         double G,
         double v,
         double rho,
-        double thickness);
+        double thickness,
+        int btype,
+        TimeSeries* actionx,
+        TimeSeries* actiony);
     virtual ~ASDAbsorbingBoundary2D();
 
     // class type
@@ -105,14 +106,21 @@ public:
 
 private:
 
+    // methods to get displacement/velocity
+    void addDisplacement(Vector& U);
+    const Vector& getDisplacement();
+    const Vector& getVelocity();
+    const Vector& getAcceleration();
+    // get element sizes
+    void getElementSizes(double& lx, double& ly, double& nx);
+    // update stage
+    void updateStage();
     // compute a consistent penalty value
     double penaltyFactor();
     // fills the penalty stiffness matrix in stage = 0
     void addKPenaltyStage0(Matrix& K);
     // fills the penalty resisting forces in stage = 0
     void addRPenaltyStage0(Vector& R);
-    // update stage
-    void updateStage();
     // fills the penalty stiffness matrix in stage = 1
     void addKPenaltyStage1(Matrix& K);
     // fills the penalty resisting forces in stage = 1
@@ -141,15 +149,17 @@ private:
     void getLKcoeff(double& ap, double& as);
     // fills the damping matrix of the L-K dashpots
     void addClk(Matrix& C);
-    // filld the damping forces of the L-K dashpots
+    // fills the damping forces of the L-K dashpots
     void addRlk(Vector& R);
+    // fills the input action forces
+    void addBaseActions(Vector& R);
 
 private:
 
     // nodal ids
     ID m_node_ids = ID(4);
     // node pointers
-    std::vector<Node*> m_nodes;
+    std::vector<Node*> m_nodes = std::vector<Node*>(4, nullptr);
     // shear modulus
     double m_G = 0.0;
     // poisson's ratio
@@ -161,26 +171,25 @@ private:
     // stage
     StageType m_stage = Stage_StaticConstraint;
     // boundary type
-    BoundaryType m_boundary = Boundary_Horizontal;
-    // direction sign
-    double m_n = 1.0;
-    // length in X
-    double m_lx = 0.0;
-    // length in Y
-    double m_ly = 0.0;
+    int m_boundary = 0;
     // total number of dofs
     int m_num_dofs = 0;
-    // a vector containing the local id mapping for assembling
+    // a vector containing the local DOF mapping for assembling
     // into the element matrix and vectors
-    ID m_mapping = ID(8);
-    // initial displacement (local dofset)
-    Vector m_U0 = Vector(8);
-    // initial velocity (local dofset)
-    Vector m_V0 = Vector(8);
-    // reaction forces saved at the end of stage 0 (local dofset)
-    Vector m_R0 = Vector(8);
+    ID m_dof_map = ID(8);
+    // a vector containing the local node id mapping
+    std::vector<std::size_t> m_node_map = std::vector<std::size_t>(4, 0);
+    // initial displacement
+    Vector m_U0;
+    // reaction forces saved at the end of stage 0
+    Vector m_R0;
     // flag for computation of reactions
     bool m_is_computing_reactions = false;
+    // initialized flag
+    bool m_initialized = false;
+    // time series for base actions
+    TimeSeries* m_tsx = nullptr;
+    TimeSeries* m_tsy = nullptr;
 
 };
 

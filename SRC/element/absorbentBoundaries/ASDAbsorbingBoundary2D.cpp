@@ -34,15 +34,107 @@
 #include <elementAPI.h>
 #include <Renderer.h>
 #include <Parameter.h>
+#include <TimeSeries.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>
+#include <algorithm>
+#include <string>
 
 namespace {
 
-    static Vector RVector;
+    // flags for boundary types
+    static constexpr int BND_NONE = 0;
+    static constexpr int BND_BOTTOM = (1 << 1);
+    static constexpr int BND_LEFT = (1 << 2);
+    static constexpr int BND_RIGHT = (1 << 3);
+
+    // a simple wrapper for sorting nodes
+    struct SortedNode {
+        // local position of this node (0 to 3)
+        std::size_t pos = 0;
+        // cartesian coordinates
+        double x = 0.0;
+        double y = 0.0;
+        // number of dofs at this node
+        int ndf = 0;
+        // tolerance against round-off errors in formatting of floating-point numbers in input files...
+        double tolerance = 1.0e-12;
+        SortedNode() = default;
+        SortedNode(std::size_t _pos, Node* n)
+            : pos(_pos)
+        {
+            const Vector& v = n->getCrds();
+            x = v(0);
+            y = v(1);
+            ndf = n->getNumberDOF();
+        }
+    };
+
+    // compute tolerance
+    inline void computeTolerance(std::vector<SortedNode>& n) {
+        double xmin = std::numeric_limits<double>::max();
+        double xmax = -xmin;
+        double ymin = xmin;
+        double ymax = xmax;
+        for (const SortedNode& ni : n) {
+            xmin = std::min(xmin, ni.x);
+            xmax = std::max(xmax, ni.x);
+            ymin = std::min(ymin, ni.y);
+            ymax = std::max(ymax, ni.y);
+        }
+        double dx = std::abs(xmax - xmin);
+        double dy = std::abs(ymax - ymin);
+        double dmax = std::max(dx, dy);
+        double tol = std::max(1.0e-10 * dmax, std::numeric_limits<double>::epsilon());
+        for (SortedNode& ni : n)
+            ni.tolerance = tol;
+    }
+
+    // sorts a node left-to-right (first) and bottom-to-top (second)
+    struct SorterLeft {
+        bool operator()(const SortedNode& a, const SortedNode& b) const {
+            if (a.x < b.x - a.tolerance) return true;
+            if (a.x > b.x + a.tolerance) return false;
+            return a.y < b.y - a.tolerance;
+        }
+    };
+
+    // sorts a node right-to-left (first) and bottom-to-top (second)
+    struct SorterRight {
+        bool operator()(const SortedNode& a, const SortedNode& b) const {
+            if (a.x > b.x + a.tolerance) return true;
+            if (a.x < b.x - a.tolerance) return false;
+            return a.y < b.y - a.tolerance;
+        }
+    };
+
+    // sort nodes with a custom sorter rule
+    template<class T>
+    inline void sortNodes(const std::vector<SortedNode>& nodes, std::vector<std::size_t>& ids, ID& dofs, int& ndf) {
+        std::vector<SortedNode> aux = nodes;
+        computeTolerance(aux);
+        std::sort(aux.begin(), aux.end(), T());
+        ids.resize(aux.size());
+        dofs.resize(static_cast<int>(aux.size()) * 2);
+        ndf = 0;
+        for (std::size_t i = 0; i < aux.size(); ++i) {
+            ids[i] = aux[i].pos;
+            int j = static_cast<int>(i) * 2;
+            dofs[j] = ndf;
+            dofs[j + 1] = ndf + 1;
+            ndf += nodes[i].ndf;
+        }
+        ID aux_dofs = dofs;
+        for (std::size_t i = 0; i < aux.size(); ++i) {
+            int j = static_cast<int>(i) * 2;
+            int q = static_cast<int>(ids[i]) * 2;
+            dofs[j] = aux_dofs[q];
+            dofs[j + 1] = aux_dofs[q + 1];
+        }
+    }
 
 }
 
@@ -55,10 +147,10 @@ OPS_ASDAbsorbingBoundary2D(void)
         first_done = true;
     }
 
-    const char* descr = "Want: element ASDAbsorbingBoundary2D $tag $n1 $n2 $n3 $n4 $G $v $rho $thickness\n";
+    const char* descr = "Want: element ASDAbsorbingBoundary2D $tag $n1 $n2 $n3 $n4 $G $v $rho $thickness $btype <-fx $tsxTag> <-fy $tsyTag>\n";
 
     int numArgs = OPS_GetNumRemainingInputArgs();
-    if (numArgs < 9) {
+    if (numArgs < 10) {
         opserr << "ASDAbsorbingBoundary2D ERROR : Few arguments:\n" << descr;
         return 0;
     }
@@ -79,8 +171,105 @@ OPS_ASDAbsorbingBoundary2D(void)
         return 0;
     }
 
+    // string parameter
+    const char* btype = OPS_GetString();
+    int bflag = BND_NONE;
+    if (strcmp(btype, "L") == 0) {
+        bflag = BND_LEFT;
+    }
+    else if (strcmp(btype, "R") == 0) {
+        bflag = BND_RIGHT;
+    }
+    else if (strcmp(btype, "BL") == 0) {
+        bflag = BND_BOTTOM | BND_LEFT;
+    }
+    else if (strcmp(btype, "BR") == 0) {
+        bflag = BND_BOTTOM | BND_RIGHT;
+    }
+    else if (strcmp(btype, "B") == 0) {
+        bflag = BND_BOTTOM;
+    }
+    else {
+        opserr << "ASDAbsorbingBoundary2D ERROR: Invalid string mandatory value: the $btype argument should be either "
+            "'B', 'L', 'R', 'BL', or 'BR', not '" << btype << "'.\n" << descr;
+        return 0;
+    }
+
+    // optional time series
+    TimeSeries* fx = nullptr;
+    TimeSeries* fy = nullptr;
+    // only on bottom boundaries
+    if (bflag & BND_BOTTOM) {
+        numData = 1;
+        int tsTag = 0;
+        // util: get x
+        auto get_fx = [&numData, &tsTag, &fx, descr]() -> bool {
+            if (OPS_GetInt(&numData, &tsTag) != 0) {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Invalid integer for -fx optional time series.\n" << descr;
+                return false;
+            }
+            fx = OPS_getTimeSeries(tsTag);
+            if (fx == nullptr) {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Cannot find -fx time series with id = " << tsTag << ".\n" << descr;
+                return false;
+            }
+            return true;
+        };
+        // util: get y
+        auto get_fy = [&numData, &tsTag, &fy, descr]() -> bool {
+            if (OPS_GetInt(&numData, &tsTag) != 0) {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Invalid integer for -fy optional time series.\n" << descr;
+                return false;
+            }
+            fy = OPS_getTimeSeries(tsTag);
+            if (fy == nullptr) {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Cannot find -fy time series with id = " << tsTag << ".\n" << descr;
+                return false;
+            }
+            return true;
+        };
+        // parse first
+        numArgs = OPS_GetNumRemainingInputArgs();
+        if (numArgs > 1) {
+            const char* key = OPS_GetString();
+            if (strcmp(key, "-fx") == 0) {
+                if (!get_fx()) return 0;
+            }
+            else if (strcmp(key, "-fy") == 0) {
+                if (!get_fy()) return 0;
+            }
+            else {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Invalid optional flag \"" << key << "\".\n" << descr;
+                return 0;
+            }
+        }
+        // parse second
+        numArgs = OPS_GetNumRemainingInputArgs();
+        if (numArgs > 1) {
+            const char* key = OPS_GetString();
+            if (strcmp(key, "-fx") == 0) {
+                if (fx) {
+                    opserr << "ASDAbsorbingBoundary2D ERROR: -fx flag specified twice!.\n" << descr;
+                    return 0;
+                }
+                if (!get_fx()) return 0;
+            }
+            else if (strcmp(key, "-fy") == 0) {
+                if (fy) {
+                    opserr << "ASDAbsorbingBoundary2D ERROR: -fy flag specified twice!.\n" << descr;
+                    return 0;
+                }
+                if (!get_fy()) return 0;
+            }
+            else {
+                opserr << "ASDAbsorbingBoundary2D ERROR: Invalid optional flag \"" << key << "\".\n" << descr;
+                return 0;
+            }
+        }
+    }
+
     // done
-    return new ASDAbsorbingBoundary2D(iData[0], iData[1], iData[2], iData[3], iData[4], dData[0], dData[1], dData[2], dData[3]);
+    return new ASDAbsorbingBoundary2D(iData[0], iData[1], iData[2], iData[3], iData[4], dData[0], dData[1], dData[2], dData[3], bflag, fx, fy);
 }
 
 ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D()
@@ -88,12 +277,25 @@ ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D()
 {
 }
 
-ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D(int tag, int node1, int node2, int node3, int node4, double G, double v, double rho, double thickness)
+ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D(
+    int tag,
+    int node1,
+    int node2,
+    int node3,
+    int node4,
+    double G,
+    double v,
+    double rho,
+    double thickness,
+    int btype,
+    TimeSeries* actionx,
+    TimeSeries* actiony)
 	: Element(tag, ELE_TAG_ASDAbsorbingBoundary2D)
     , m_G(G)
     , m_v(v)
     , m_rho(rho)
     , m_thickness(thickness)
+    , m_boundary(btype)
 {
     // save node ids
     m_node_ids(0) = node1;
@@ -101,12 +303,20 @@ ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D(int tag, int node1, int node2, in
     m_node_ids(2) = node3;
     m_node_ids(3) = node4;
 
-    // initialize node vector
-    m_nodes.resize(4, nullptr);
+    // copy time-series
+    if (actionx)
+        m_tsx = actionx->getCopy();
+    if (actiony)
+        m_tsy = actiony->getCopy();
 }
 
 ASDAbsorbingBoundary2D::~ASDAbsorbingBoundary2D()
 {
+    // delete time-series
+    if (m_tsx)
+        delete m_tsx;
+    if (m_tsy)
+        delete m_tsy;
 }
 
 const char* ASDAbsorbingBoundary2D::getClassType(void) const
@@ -123,8 +333,7 @@ void ASDAbsorbingBoundary2D::setDomain(Domain* theDomain)
         return;
     }
 
-    // check nodes and mapping
-    int local_pos = 0;
+    // check nodes and sort them in the in-coming order.
     for (std::size_t i = 0; i < m_nodes.size(); ++i) {
 
         // check node
@@ -147,73 +356,39 @@ void ASDAbsorbingBoundary2D::setDomain(Domain* theDomain)
 
         // check NDF
         int ndf = node->getNumberDOF();
-        if (ndf != 2 && ndf != 3) {
-            opserr << "ASDAbsorbingBoundary2D Error in setDomain: In 2D only 2 or 3 DOFs are allowed, not " << ndf << "\n";
+        if (ndf < 2) {
+            opserr << "ASDAbsorbingBoundary2D Error in setDomain: In 2D at least 2 DOFs are required, not " << ndf << "\n";
             exit(-1);
         }
 
-        // set up mapping
-        int index = static_cast<int>(i) * 2;
-        m_mapping(index) = local_pos; // Ux
-        m_mapping(index + 1) = local_pos + 1;// Uy
-        local_pos += ndf;
-    }
-    m_num_dofs = local_pos;
-
-    // check direction 1->2 and length 1-2
-    static Vector D12(2);
-    D12 = m_nodes[1]->getCrds();
-    D12 -= m_nodes[0]->getCrds();
-    double L12 = D12.Norm();
-    if (L12 < std::numeric_limits<double>::epsilon()) {
-        opserr << "ASDAbsorbingBoundary2D Error in setDomain: The distance between nodes 1-2 cannot be zero.\n";
-        exit(-1);
-    }
-    D12 /= L12;
-    if (std::abs(D12(0)) > 0.99) {
-        m_boundary = Boundary_Vertical;
-    }
-    else if (std::abs(D12(1)) > 0.99) {
-        m_boundary = Boundary_Horizontal;
-    }
-    else {
-        opserr << "ASDAbsorbingBoundary2D Error in setDomain: The direction 1-2 can only be X or Y, not [" << D12(0) << ", " << D12(1) << "].\n";
-        exit(-1);
     }
 
-    // check direction 1->4 and length 1->4 (make sure they are orthogonal)
-    static Vector D14(2);
-    D14 = m_nodes[3]->getCrds();
-    D14 -= m_nodes[0]->getCrds();
-    double L14 = D14.Norm();
-    if (L14 < std::numeric_limits<double>::epsilon()) {
-        opserr << "ASDAbsorbingBoundary2D Error in setDomain: The distance between nodes 1-4 cannot be zero.\n";
-        exit(-1);
-    }
-    D14 /= L14;
-    if (m_boundary == Boundary_Vertical) {
-        if (std::abs(D14(1)) < 0.99) {
-            opserr << "ASDAbsorbingBoundary2D Error in setDomain: The direction 1-4 can only be Y, not [" << D14(0) << ", " << D14(1) << "].\n";
-            exit(-1);
+    // only on setDomain during creation, not after a recvSelf
+    if (!m_initialized) {
+
+        // reorder nodes and compute node and dof mapping
+        std::vector<SortedNode> sortednodes(4);
+        for (std::size_t i = 0; i < 4; ++i)
+            sortednodes[i] = SortedNode(i, m_nodes[i]);
+        // all boundaries are sorted as LEFT, unless they are on the RIGHT side
+        if (m_boundary & BND_RIGHT) {
+            sortNodes<SorterRight>(sortednodes, m_node_map, m_dof_map, m_num_dofs);
         }
-    }
-    else {
-        if (std::abs(D14(0)) < 0.99) {
-            opserr << "ASDAbsorbingBoundary2D Error in setDomain: The direction 1-4 can only be X, not [" << D14(0) << ", " << D14(1) << "].\n";
-            exit(-1);
+        else {
+            sortNodes<SorterLeft>(sortednodes, m_node_map, m_dof_map, m_num_dofs);
         }
-    }
 
-    // compute variables which define the geometry
-    if (m_boundary == Boundary_Vertical) {
-        m_lx = L12;
-        m_ly = L14;
+        // allocate initial displacement vector and also the static constraints
+        m_U0.resize(m_num_dofs);
+        m_U0.Zero();
+        addDisplacement(m_U0);
+        m_R0.resize(m_num_dofs);
+        m_R0.Zero();
+
+        // done with initialization
+        m_initialized = true;
+
     }
-    else {
-        m_lx = L14;
-        m_ly = L12;
-    }
-    m_n = 1;// D12(0) > 0.0 ? 1.0 : -1.0;
 
     // call base class implementation
     DomainComponent::setDomain(theDomain);
@@ -336,7 +511,7 @@ int ASDAbsorbingBoundary2D::addInertiaLoadToUnbalance(const Vector& accel)
 const Vector& ASDAbsorbingBoundary2D::getResistingForce()
 {
     // initialize vector
-    Vector& R = RVector;
+    static Vector R;
     R.resize(m_num_dofs);
     R.Zero();
 
@@ -349,6 +524,7 @@ const Vector& ASDAbsorbingBoundary2D::getResistingForce()
         addRff(R);
         addRffToSoil(R);
         addRReactions(R);
+        addBaseActions(R);
     }
 
     // done
@@ -357,20 +533,27 @@ const Vector& ASDAbsorbingBoundary2D::getResistingForce()
 
 const Vector& ASDAbsorbingBoundary2D::getResistingForceIncInertia()
 {
-    // initialize vector with resisting forces
-    getResistingForce();
-    Vector& R = RVector;
+    // initialize vector
+    static Vector R;
+    R.resize(m_num_dofs);
+    R.Zero();
 
-    // done if in stage 0
-    if (m_stage == Stage_StaticConstraint)
-        return R;
-
-    // add damping term
-    addRCff(R);
-    addRlk(R);
-
-    // add mass term
-    addRMff(R);
+    // fill R vector
+    if (m_stage == Stage_StaticConstraint) {
+        addRPenaltyStage0(R);
+    }
+    else {
+        addRPenaltyStage1(R);
+        addRff(R);
+        addRffToSoil(R);
+        addRReactions(R);
+        addBaseActions(R);
+        // add damping term
+        addRCff(R);
+        addRlk(R);
+        // add mass term
+        addRMff(R);
+    }
 
     // done
     return R;
@@ -386,14 +569,231 @@ int ASDAbsorbingBoundary2D::addResistingForceToNodalReaction(int flag)
 
 int ASDAbsorbingBoundary2D::sendSelf(int commitTag, Channel& theChannel)
 {
-    // todo
-    return -1;
+    int res = 0;
+
+    // note: we don't check for dataTag == 0 for Element
+    // objects as that is taken care of in a commit by the Domain
+    // object - don't want to have to do the check if sending data
+    int dataTag = this->getDbTag();
+
+    // aux
+    int pos = 0;
+
+    // INT data
+    static ID idData(28);
+
+    // tag
+    idData(pos++) = getTag();
+    // nodes
+    for(int i = 0; i < 4; ++i)
+        idData(pos++) = m_node_ids(i);
+    // stage
+    idData(pos++) = static_cast<int>(m_stage);
+    // boundary
+    idData(pos++) = m_boundary;
+    // num dofs
+    idData(pos++) = m_num_dofs;
+    // dof map
+    for (int i = 0; i < 8; ++i)
+        idData(pos++) = m_dof_map(i);
+    // node map
+    for (std::size_t i = 0; i < 4; ++i)
+        idData(pos++) = static_cast<int>(m_node_map[i]);
+    // time series data
+    if (m_tsx) {
+        idData(pos++) = 1;
+        int dbtag = m_tsx->getDbTag();
+        int classtag = m_tsx->getClassTag();
+        if (dbtag == 0) {
+            dbtag = theChannel.getDbTag();
+            m_tsx->setDbTag(dbtag);
+        }
+        idData(pos++) = classtag;
+        idData(pos++) = dbtag;
+    }
+    else {
+        idData(pos++) = 0;
+        idData(pos++) = 0;
+        idData(pos++) = 0;
+    }
+    if (m_tsy) {
+        idData(pos++) = 1;
+        int dbtag = m_tsy->getDbTag();
+        int classtag = m_tsy->getClassTag();
+        if (dbtag == 0) {
+            dbtag = theChannel.getDbTag();
+            m_tsy->setDbTag(dbtag);
+        }
+        idData(pos++) = classtag;
+        idData(pos++) = dbtag;
+    }
+    else {
+        idData(pos++) = 0;
+        idData(pos++) = 0;
+        idData(pos++) = 0;
+    }
+    // initialization flag
+    idData(pos++) = static_cast<int>(m_initialized);
+    // double data size (not known at compile-time)
+    int dsize = 4 + 2 * m_num_dofs;
+    idData(pos++) = dsize;
+
+    res += theChannel.sendID(dataTag, commitTag, idData);
+    if (res < 0) {
+        opserr << "WARNING ASDAbsorbingBoundary2D::sendSelf() - " << this->getTag() << " failed to send ID\n";
+        return res;
+    }
+
+    // DOUBLE data
+    static Vector vectData;
+    vectData.resize(dsize);
+
+    pos = 0;
+    vectData(pos++) = m_G;
+    vectData(pos++) = m_v;
+    vectData(pos++) = m_rho;
+    vectData(pos++) = m_thickness;
+    for (int i = 0; i < m_num_dofs; ++i)
+        vectData(pos++) = m_U0(i);
+    for (int i = 0; i < m_num_dofs; ++i)
+        vectData(pos++) = m_R0(i);
+
+    res += theChannel.sendVector(dataTag, commitTag, vectData);
+    if (res < 0) {
+        opserr << "WARNING ASDAbsorbingBoundary2D::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+        return res;
+    }
+
+    // send time-series
+    if (m_tsx) {
+        if (m_tsx->sendSelf(commitTag, theChannel) < 0) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::sendSelf() - " << this->getTag() << " failed to send TimeSeries (X)\n";
+            return -1;
+        }
+    }
+    if (m_tsy) {
+        if (m_tsy->sendSelf(commitTag, theChannel) < 0) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::sendSelf() - " << this->getTag() << " failed to send TimeSeries (Y)\n";
+            return -1;
+        }
+    }
+
+    // done
+    return res;
 }
 
 int ASDAbsorbingBoundary2D::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
-    // todo
-    return -1;
+    int res = 0;
+
+    int dataTag = this->getDbTag();
+
+    // aux
+    int pos = 0;
+
+    // INT data
+    static ID idData(28);
+    res += theChannel.recvID(dataTag, commitTag, idData);
+    if (res < 0) {
+        opserr << "WARNING ASDAbsorbingBoundary2D::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+        return res;
+    }
+
+    // tag
+    setTag(idData(pos++));
+    // nodes
+    for (int i = 0; i < 4; ++i)
+        m_node_ids(i) = idData(pos++);
+    // stage
+    m_stage = static_cast<StageType>(idData(pos++));
+    // boundary
+    m_boundary = idData(pos++);
+    // num dofs
+    m_num_dofs = idData(pos++);
+    // dof map
+    for (int i = 0; i < 8; ++i)
+        m_dof_map(i) = idData(pos++);
+    // node map
+    for (std::size_t i = 0; i < 4; ++i)
+        m_node_map[i] = static_cast<std::size_t>(idData(pos++));
+    // time series
+    m_tsx = nullptr;
+    m_tsy = nullptr;
+    bool has_tsx = idData(pos++) == 1;
+    int tsx_classtag = 0;
+    int tsx_dbtag = 0;
+    if (has_tsx) {
+        tsx_classtag = idData(pos++);
+        tsx_dbtag = idData(pos++);
+    }
+    else {
+        pos += 2;
+    }
+    bool has_tsy = idData(pos++) == 1;
+    int tsy_classtag = 0;
+    int tsy_dbtag = 0;
+    if (has_tsy) {
+        tsy_classtag = idData(pos++);
+        tsy_dbtag = idData(pos++);
+    }
+    else {
+        pos += 2;
+    }
+    // initialization flag
+    m_initialized = static_cast<bool>(idData(pos++));
+    // double data size (not known at compile-time)
+    int dsize = idData(pos++);
+
+    // DOUBLE data
+    static Vector vectData;
+    vectData.resize(dsize);
+
+    res += theChannel.recvVector(dataTag, commitTag, vectData);
+    if (res < 0) {
+        opserr << "WARNING ASDAbsorbingBoundary2D::sendSelf() - " << this->getTag() << " failed to receive Vector\n";
+        return res;
+    }
+
+    pos = 0;
+    m_G = vectData(pos++);
+    m_v = vectData(pos++);
+    m_rho = vectData(pos++);
+    m_thickness = vectData(pos++);
+    m_U0.resize(m_num_dofs);
+    m_R0.resize(m_num_dofs);
+    for (int i = 0; i < m_num_dofs; ++i)
+        m_U0(i) = vectData(pos++);
+    for (int i = 0; i < m_num_dofs; ++i)
+        m_R0(i) = vectData(pos++);
+
+    // receive time-series
+    if (has_tsx) {
+        m_tsx = theBroker.getNewTimeSeries(tsx_classtag);
+        if (m_tsx == nullptr) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::recvSelf() - " << this->getTag() << " failed to create TimeSeries (X)\n";
+            return -1;
+        }
+        m_tsx->setDbTag(tsx_dbtag);
+        if (m_tsx->recvSelf(commitTag, theChannel, theBroker) < 0) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::recvSelf() - " << this->getTag() << " failed to recv TimeSeries (X)\n";
+            return -1;
+        }
+    }
+    if (has_tsy) {
+        m_tsy = theBroker.getNewTimeSeries(tsy_classtag);
+        if (m_tsy == nullptr) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::recvSelf() - " << this->getTag() << " failed to create TimeSeries (Y)\n";
+            return -1;
+        }
+        m_tsy->setDbTag(tsy_dbtag);
+        if (m_tsy->recvSelf(commitTag, theChannel, theBroker) < 0) {
+            opserr << "WARNING ASDAbsorbingBoundary2D::recvSelf() - " << this->getTag() << " failed to recv TimeSeries (Y)\n";
+            return -1;
+        }
+    }
+
+    // done
+    return res;
 }
 
 int ASDAbsorbingBoundary2D::setParameter(const char** argv, int argc, Parameter& param)
@@ -434,7 +834,7 @@ int ASDAbsorbingBoundary2D::updateParameter(int parameterID, Information& info)
                 return 0;
             }
             else {
-                opserr << "Error in ASDAbsorbingBoundary2D::updateParameter.\n"
+                opserr << "Error in ASDAbsorbingBoundary2D::updateParameter (element = " << getTag() << ").\n"
                     "Current stage = 0 (Stage_StaticConstraint).\n"
                     "The next stage can only be 1 (Stage_Absorbing), not " << istage << "!\n";
                 exit(-1);
@@ -442,14 +842,93 @@ int ASDAbsorbingBoundary2D::updateParameter(int parameterID, Information& info)
         }
         else {
             // We cannot move from the Stage_Absorbing
-            opserr << "Error in ASDAbsorbingBoundary2D::updateParameter.\n"
-                "Current stage = 1 (Stage_Absorbing).\n"
+            opserr << "Error in ASDAbsorbingBoundary2D::updateParameter (element = " << getTag() << ").\n"
+                "Current stage = " << static_cast<int>(m_stage) << " (Stage_Absorbing).\n"
                 "You cannot change the stage at this point!\n";
             exit(-1);
         }
     default:
         return -1;
     }
+}
+
+void ASDAbsorbingBoundary2D::addDisplacement(Vector& U)
+{
+    int counter = 0;
+    for (Node* node : m_nodes) {
+        const Vector& iU = node->getTrialDisp();
+        for (int i = 0; i < iU.Size(); ++i)
+            U(counter++) += iU(i);
+    }
+}
+
+const Vector& ASDAbsorbingBoundary2D::getDisplacement()
+{
+    static Vector U;
+    U.resize(m_num_dofs);
+    U.Zero();
+    addDisplacement(U);
+    U.addVector(1.0, m_U0, -1.0);
+    return U;
+}
+
+const Vector& ASDAbsorbingBoundary2D::getVelocity()
+{
+    static Vector U;
+    U.resize(m_num_dofs);
+    int counter = 0;
+    for (Node* node : m_nodes) {
+        const Vector& iU = node->getTrialVel();
+        for (int i = 0; i < iU.Size(); ++i)
+            U(counter++) = iU(i);
+    }
+    return U;
+}
+
+const Vector& ASDAbsorbingBoundary2D::getAcceleration()
+{
+    static Vector U;
+    U.resize(m_num_dofs);
+    int counter = 0;
+    for (Node* node : m_nodes) {
+        const Vector& iU = node->getTrialAccel();
+        for (int i = 0; i < iU.Size(); ++i)
+            U(counter++) = iU(i);
+    }
+    return U;
+}
+
+void ASDAbsorbingBoundary2D::getElementSizes(double& lx, double& ly, double& nx)
+{
+    // get nodes
+    Node* N0 = m_nodes[m_node_map[0]];
+    Node* N1 = m_nodes[m_node_map[1]];
+    Node* N2 = m_nodes[m_node_map[2]];
+    // this should be always positive due to sorting...
+    ly = std::abs(N1->getCrds()(1) - N0->getCrds()(1));
+    // this can be negative on right element
+    lx = std::abs(N2->getCrds()(0) - N0->getCrds()(0));
+    // nx positive if the outward normal vector from soil domain
+    // points in the positive +X direction.
+    // note: change the sign here: external forces on soil domain
+    if (m_boundary & BND_RIGHT)
+        nx = -1.0;
+    else
+        nx = 1.0;
+}
+
+void ASDAbsorbingBoundary2D::updateStage()
+{
+    // save reactions
+    m_R0.Zero();
+    addRPenaltyStage0(m_R0);
+    m_R0 *= -1.0;
+
+    // accumulate current displacements
+    addDisplacement(m_U0);
+
+    // update stage
+    m_stage = Stage_Absorbing;
 }
 
 double ASDAbsorbingBoundary2D::penaltyFactor()
@@ -476,26 +955,37 @@ void ASDAbsorbingBoundary2D::addKPenaltyStage0(Matrix& K)
     double p = penaltyFactor();
 
     // SP and diagonal part of the MP
-    for (int i = 0; i < 4; ++i) {
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        j1 = m_mapping(j1);
-        j2 = m_mapping(j2);
-        K(j1, j1) += p;
-        K(j2, j2) += p;
+    for (int i = 0; i < 8; ++i) {
+        int ig = m_dof_map(i);
+        K(ig, ig) += p;
     }
 
     // off-diagonal part of the MP
-    int dof = m_boundary == Boundary_Horizontal ? 0 : 1;
-    for (int i = 0; i < 2; ++i) {
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        int q1 = j1 * 2 + dof;
-        int q2 = j2 * 2 + dof;
-        q1 = m_mapping(q1);
-        q2 = m_mapping(q2);
-        K(q1, q2) -= p;
-        K(q2, q1) -= p;
+    if (m_boundary & BND_BOTTOM) {
+        // edof Ux at nodes 0-1 and 2-3
+        for (int i = 0; i < 2; ++i) {
+            int n1 = i * 2; 
+            int n2 = n1 + 1;
+            int j1 = n1 * 2;
+            int j2 = n2 * 2;
+            int q1 = m_dof_map(j1);
+            int q2 = m_dof_map(j2);
+            K(q1, q2) -= p;
+            K(q2, q1) -= p;
+        }
+    }
+    else {
+        // edof Uy at nodes 0-2 and 1-3
+        for (int i = 0; i < 2; ++i) {
+            int n1 = i;
+            int n2 = i + 2;
+            int j1 = n1 * 2 + 1;
+            int j2 = n2 * 2 + 1;
+            int q1 = m_dof_map(j1);
+            int q2 = m_dof_map(j2);
+            K(q1, q2) -= p;
+            K(q2, q1) -= p;
+        }
     }
 }
 
@@ -515,65 +1005,41 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage0(Vector& R)
     // penalty factor
     double p = penaltyFactor();
 
+    // get displacement vector
+    const Vector& U = getDisplacement();
+
     // SP and diagonal part of the MP
-    for (int i = 0; i < 4; ++i) {
-        const Vector& iU = m_nodes[static_cast<std::size_t>(i)]->getTrialDisp();
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        j1 = m_mapping(j1);
-        j2 = m_mapping(j2);
-        R(j1) += p * iU(0);
-        R(j2) += p * iU(1);
+    for (int i = 0; i < 8; ++i) {
+        int q1 = m_dof_map(i);
+        R(q1) += p * U(q1);
     }
 
     // off-diagonal part of the MP
-    int dof = m_boundary == Boundary_Horizontal ? 0 : 1;
-    for (int i = 0; i < 2; ++i) {
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        const Vector& U1 = m_nodes[static_cast<std::size_t>(j1)]->getTrialDisp();
-        const Vector& U2 = m_nodes[static_cast<std::size_t>(j2)]->getTrialDisp();
-        int q1 = j1 * 2 + dof;
-        int q2 = j2 * 2 + dof;
-        q1 = m_mapping(q1);
-        q2 = m_mapping(q2);
-        R(q1) -= p * U2(dof);
-        R(q2) -= p * U1(dof);
+    if (m_boundary & BND_BOTTOM) {
+        // edof Ux at nodes 0-1 and 2-3
+        for (int i = 0; i < 2; ++i) {
+            int n1 = i * 2;
+            int n2 = n1 + 1;
+            int j1 = n1 * 2;
+            int j2 = n2 * 2;
+            int q1 = m_dof_map(j1);
+            int q2 = m_dof_map(j2);
+            R(q1) -= p * U(q2);
+            R(q2) -= p * U(q1);
+        }
     }
-}
-
-void ASDAbsorbingBoundary2D::updateStage()
-{
-    // update stage
-    m_stage = Stage_Absorbing;
-
-    // save current displacement and velocities (in local dofset)
-    for (int i = 0; i < 4; ++i) {
-        Node* inode = m_nodes[static_cast<std::size_t>(i)];
-        const Vector& iU = inode->getTrialDisp();
-        const Vector& iV = inode->getTrialVel();
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        m_U0(j1) = iU(0);
-        m_U0(j2) = iU(1);
-        m_V0(j1) = iV(0);
-        m_V0(j2) = iV(1);
-    }
-
-    // save reactions (in local dofset)
-    static Vector R;
-    R.resize(m_num_dofs);
-    R.Zero();
-    addRPenaltyStage0(R);
-    for (int i = 0; i < 4; ++i) {
-        // local dofset index
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        // global dofset index
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        m_R0(j1) = -R(q1);
-        m_R0(j2) = -R(q2);
+    else {
+        // edof Uy at nodes 0-2 and 1-3
+        for (int i = 0; i < 2; ++i) {
+            int n1 = i;
+            int n2 = i + 2;
+            int j1 = n1 * 2 + 1;
+            int j2 = n2 * 2 + 1;
+            int q1 = m_dof_map(j1);
+            int q2 = m_dof_map(j2);
+            R(q1) -= p * U(q2);
+            R(q2) -= p * U(q1);
+        }
     }
 }
 
@@ -584,20 +1050,22 @@ void ASDAbsorbingBoundary2D::addKPenaltyStage1(Matrix& K)
     // 1) is fixed in both X and Y only on Horizontal boundary [SP constraint].
 
     // skip vertical boundary
-    if (m_boundary == Boundary_Vertical)
+    if (!(m_boundary & BND_BOTTOM))
         return;
 
     // penalty factor
     double p = penaltyFactor();
 
     // SP Ux and Uy for all nodes not in the soil domain
-    // todo: only in horizontal boundary (1 and 4)
+    // (nodes 0 and 2 in bottom boundary)
+    // nodes:  0     2
+    //  dofs: 0 1   4 5
     for (int i = 0; i < 2; ++i) {
-        int j = i * 3; // i=0 -> j=0, i=1 -> j=3
+        int j = i * 2;
         int j1 = j * 2;
         int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
+        int q1 = m_dof_map(j1);
+        int q2 = m_dof_map(j2);
         K(q1, q1) += p;
         K(q2, q2) += p;
     }
@@ -610,7 +1078,7 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage1(Vector& R)
     // 1) is fixed in both X and Y only on Horizontal boundary [SP constraint].
 
     // skip vertical boundary
-    if (m_boundary == Boundary_Vertical)
+    if (!(m_boundary & BND_BOTTOM))
         return;
 
     // skip if computing reactions
@@ -620,17 +1088,21 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage1(Vector& R)
     // penalty factor
     double p = penaltyFactor();
 
+    // get displacement vector
+    const Vector& U = getDisplacement();
+
     // SP Ux and Uy for all nodes not in the soil domain
-    // todo: only in horizontal boundary (1 and 4)
+    // (nodes 0 and 2 in bottom boundary)
+    // nodes:  0     2
+    //  dofs: 0 1   4 5
     for (int i = 0; i < 2; ++i) {
-        int j = i * 3; // i=0 -> j=0, i=1 -> j=3
-        const Vector& iU = m_nodes[static_cast<std::size_t>(j)]->getTrialDisp();
+        int j = i * 2;
         int j1 = j * 2;
         int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        R(q1) += p * (iU(0) - m_U0(j1));
-        R(q2) += p * (iU(1) - m_U0(j2));
+        int q1 = m_dof_map(j1);
+        int q2 = m_dof_map(j2);
+        R(q1) += p * U(q1);
+        R(q2) += p * U(q2);
     }
 }
 
@@ -640,38 +1112,34 @@ void ASDAbsorbingBoundary2D::addRReactions(Vector& R)
     // In stage 2 those constraints are removed, so we need to restore
     // those reactions as external forces.
 
+    // todo: skip if computing reactions??
+    if (m_is_computing_reactions)
+        return;
+
     // add restoring reaction forces as external loads (-)
-    for (int i = 0; i < 4; ++i) {
-        // local dofset index
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        // global dofset index
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        R(q1) -= m_R0(j1);
-        R(q2) -= m_R0(j2);
-    }
+    R.addVector(1.0, m_R0, -1.0);
 }
 
 void ASDAbsorbingBoundary2D::addMff(Matrix& M, double scale)
 {
     // Add the mass terms due to the Free-Field columns, thus only 
-    // on vertical boundaries (nodes 1-4).
+    // on vertical boundaries (nodes 0-1).
     // The optional scale parameter can be used while assembling
     // the damping due to the free-field
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // lumped mass (half mass of the whole element)
-    double hm = scale * m_rho * m_thickness * m_lx * m_ly / 2.0;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
+    double hm = scale * m_rho * m_thickness * lx * ly / 2.0;
     for (int i = 0; i < 2; ++i) {
-        int j = i * 3; // i=0 -> j=0, i=1 -> j=3
-        int j1 = j * 2;
+        int j1 = i * 2;
         int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
+        int q1 = m_dof_map(j1);
+        int q2 = m_dof_map(j2);
         M(q1, q1) += hm;
         M(q2, q2) += hm;
     }
@@ -680,35 +1148,38 @@ void ASDAbsorbingBoundary2D::addMff(Matrix& M, double scale)
 void ASDAbsorbingBoundary2D::addRMff(Vector& R)
 {
     // Add the mass terms due to the Free-Field columns, thus only 
-    // on vertical boundaries (nodes 1-4).
+    // on vertical boundaries (nodes 0-1).
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
+    // get acceleration
+    const Vector& A = getAcceleration();
+
     // lumped mass (half mass of the whole element)
-    double hm = m_rho * m_thickness * m_lx * m_ly / 2.0;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
+    double hm = m_rho * m_thickness * lx * ly / 2.0;
     for (int i = 0; i < 2; ++i) {
-        int j = i * 3; // i=0 -> j=0, i=1 -> j=3
-        const Vector& jA = m_nodes[static_cast<std::size_t>(j)]->getTrialAccel();
-        int j1 = j * 2;
+        int j1 = i * 2;
         int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        R(q1) += hm * jA(0);
-        R(q2) += hm * jA(1);
+        int q1 = m_dof_map(j1);
+        int q2 = m_dof_map(j2);
+        R(q1) += hm * A(q1);
+        R(q2) += hm * A(q2);
     }
 }
 
 void ASDAbsorbingBoundary2D::addKff(Matrix& K, double scale)
 {
     // Add the stiffness matrix of the free-field column.
-    // Only on vertical boundaries on nodes 1-4.
+    // Only on vertical boundaries on nodes 0-1.
     // The optional scale parameter can be used while assembling
     // the damping due to the free-field
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // elasticity constants
@@ -716,34 +1187,30 @@ void ASDAbsorbingBoundary2D::addKff(Matrix& K, double scale)
     double lam = 2.0 * mu * m_v / (1.0 - 2.0 * m_v);
 
     // stiffness coefficients
-    double b = m_lx;
-    double h = m_ly;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
     double t = m_thickness;
-    double kx = scale * b * mu * t / h;
-    double ky = scale * b * t * (lam + 2.0 * mu) / h;
+    double kx = scale * lx * mu * t / ly;
+    double ky = scale * lx * t * (lam + 2.0 * mu) / ly;
 
     // fill
-    int x1 = m_mapping(0);
-    int y1 = m_mapping(1);
-    int x4 = m_mapping(6);
-    int y4 = m_mapping(7);
-    K(x1, x1) += kx;
-    K(x4, x4) += kx;
-    K(y1, y1) += ky;
-    K(y1, y1) += ky;
-    K(x1, x4) -= kx;
-    K(x4, x1) -= kx;
-    K(y1, y4) -= ky;
-    K(y4, y1) -= ky;
+    K(m_dof_map(0), m_dof_map(0)) += kx;
+    K(m_dof_map(0), m_dof_map(2)) += -kx;
+    K(m_dof_map(1), m_dof_map(1)) += ky;
+    K(m_dof_map(1), m_dof_map(3)) += -ky;
+    K(m_dof_map(2), m_dof_map(0)) += -kx;
+    K(m_dof_map(2), m_dof_map(2)) += kx;
+    K(m_dof_map(3), m_dof_map(1)) += -ky;
+    K(m_dof_map(3), m_dof_map(3)) += ky;
 }
 
 void ASDAbsorbingBoundary2D::addRff(Vector& R)
 {
     // Add the stiffness matrix of the free-field column.
-    // Only on vertical boundaries on nodes 1-4
+    // Only on vertical boundaries on nodes 0-1
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // elasticity constants
@@ -751,44 +1218,30 @@ void ASDAbsorbingBoundary2D::addRff(Vector& R)
     double lam = 2.0 * mu * m_v / (1.0 - 2.0 * m_v);
 
     // stiffness coefficients
-    double b = m_lx;
-    double h = m_ly;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
     double t = m_thickness;
-    double kx = b * mu * t / h;
-    double ky = b * t * (lam + 2.0 * mu) / h;
+    double kx = lx * mu * t / ly;
+    double ky = lx * t * (lam + 2.0 * mu) / ly;
 
-    // displacement of nodes 1-4, subtracting initial
-    // values at stage = 0
-    const Vector& U1 = m_nodes[0]->getTrialDisp();
-    const Vector& U4 = m_nodes[3]->getTrialDisp();
-    double Ux1 = U1(0) - m_U0(0);
-    double Uy1 = U1(1) - m_U0(1);
-    double Ux4 = U4(0) - m_U0(6);
-    double Uy4 = U4(1) - m_U0(7);
-
-    // forces
-    double fx = kx * (Ux1 - Ux4);
-    double fy = ky * (Uy1 - Uy4);
+    // get displacement
+    const Vector& U = getDisplacement();
 
     // fill
-    int x1 = m_mapping(0);
-    int y1 = m_mapping(1);
-    int x4 = m_mapping(6);
-    int y4 = m_mapping(7);
-    R(x1) += fx;
-    R(x4) -= fx;
-    R(y1) += fy;
-    R(y4) -= fy;
+    R(m_dof_map(0)) += kx * (U(m_dof_map(0)) - U(m_dof_map(2)));
+    R(m_dof_map(1)) += ky * (U(m_dof_map(1)) - U(m_dof_map(3)));
+    R(m_dof_map(2)) += kx * (-U(m_dof_map(0)) + U(m_dof_map(2)));
+    R(m_dof_map(3)) += ky * (-U(m_dof_map(1)) + U(m_dof_map(3)));
 }
 
 void ASDAbsorbingBoundary2D::addKffToSoil(Matrix& K)
 {
     // Add the stiffness matrix of the forces transfered from the
     // free-field column to the soil domain.
-    // Only on vertical boundaries on nodes 1-4
+    // Only on vertical boundaries
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // elasticity constants
@@ -796,59 +1249,48 @@ void ASDAbsorbingBoundary2D::addKffToSoil(Matrix& K)
     double lam = 2.0 * mu * m_v / (1.0 - 2.0 * m_v);
 
     // geometry
-    double h = -1.0;// m_ly;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
     double t = m_thickness;
-    double n = m_n;
 
     // fill
-    K(m_mapping(2), m_mapping(1)) += h * lam * n * t / 2.0;
-    K(m_mapping(2), m_mapping(7)) += -h * lam * n * t / 2.0;
-    K(m_mapping(3), m_mapping(0)) += h * mu * n * t / 2.0;
-    K(m_mapping(3), m_mapping(6)) += -h * mu * n * t / 2.0;
-    K(m_mapping(4), m_mapping(1)) += h * lam * n * t / 2.0;
-    K(m_mapping(4), m_mapping(7)) += -h * lam * n * t / 2.0;
-    K(m_mapping(5), m_mapping(0)) += h * mu * n * t / 2.0;
-    K(m_mapping(5), m_mapping(6)) += -h * mu * n * t / 2.0;
+    K(m_dof_map(4), m_dof_map(1)) += -lam * nx * t / 2.0;
+    K(m_dof_map(4), m_dof_map(3)) += lam * nx * t / 2.0;
+    K(m_dof_map(5), m_dof_map(0)) += -mu * nx * t / 2.0;
+    K(m_dof_map(5), m_dof_map(2)) += mu * nx * t / 2.0;
+    K(m_dof_map(6), m_dof_map(1)) += -lam * nx * t / 2.0;
+    K(m_dof_map(6), m_dof_map(3)) += lam * nx * t / 2.0;
+    K(m_dof_map(7), m_dof_map(0)) += -mu * nx * t / 2.0;
+    K(m_dof_map(7), m_dof_map(2)) += mu * nx * t / 2.0;
 }
 
 void ASDAbsorbingBoundary2D::addRffToSoil(Vector& R)
 {
-    // Add the stiffness matrix of the forces transfered from the
+    // Add the forces transfered from the
     // free-field column to the soil domain.
-    // Only on vertical boundaries on nodes 1-4
+    // Only on vertical boundaries
 
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
-
-    // get velocity vector
-    static Vector U;
-    U.resize(m_num_dofs);
-    U.Zero();
-    for (int i = 0; i < 4; ++i) {
-        const Vector& iU = m_nodes[static_cast<std::size_t>(i)]->getTrialDisp();
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        U(q1) = iU(0) - m_U0(j1);
-        U(q2) = iU(1) - m_U0(j2);
-    }
 
     // elasticity constants
     double mu = m_G;
     double lam = 2.0 * mu * m_v / (1.0 - 2.0 * m_v);
 
     // geometry
-    double h = -1.0;// m_ly;
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
     double t = m_thickness;
-    double n = m_n;
+
+    // get displacement 
+    const Vector& U = getDisplacement();
 
     // fill
-    R(m_mapping(2)) += -h * lam * n * t * (-U(m_mapping(1)) + U(m_mapping(7))) / 2.0;
-    R(m_mapping(3)) += -h * mu * n * t * (-U(m_mapping(0)) + U(m_mapping(6))) / 2.0;
-    R(m_mapping(4)) += -h * lam * n * t * (-U(m_mapping(1)) + U(m_mapping(7))) / 2.0;
-    R(m_mapping(5)) += -h * mu * n * t * (-U(m_mapping(0)) + U(m_mapping(6))) / 2.0;
+    R(m_dof_map(4)) += lam * nx * t * (-U(m_dof_map(1)) + U(m_dof_map(3))) / 2.0;
+    R(m_dof_map(5)) += mu * nx * t * (-U(m_dof_map(0)) + U(m_dof_map(2))) / 2.0;
+    R(m_dof_map(6)) += lam * nx * t * (-U(m_dof_map(1)) + U(m_dof_map(3))) / 2.0;
+    R(m_dof_map(7)) += mu * nx * t * (-U(m_dof_map(0)) + U(m_dof_map(2))) / 2.0;
 }
 
 void ASDAbsorbingBoundary2D::getDampParam(double& alpha, double& beta)
@@ -864,8 +1306,10 @@ void ASDAbsorbingBoundary2D::getDampParam(double& alpha, double& beta)
 
 void ASDAbsorbingBoundary2D::addCff(Matrix& C)
 {
+    // Add the rayleigh damping matrix of the free-field
+
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // compute alpha and beta parameters
@@ -885,8 +1329,10 @@ void ASDAbsorbingBoundary2D::addCff(Matrix& C)
 
 void ASDAbsorbingBoundary2D::addRCff(Vector& R)
 {
+    // Add the rayleigh damping forces of the free-field
+
     // skip horizontal boundary
-    if (m_boundary == Boundary_Horizontal)
+    if (m_boundary & BND_BOTTOM)
         return;
 
     // compute alpha and beta parameters
@@ -911,18 +1357,9 @@ void ASDAbsorbingBoundary2D::addRCff(Vector& R)
     }
 
     // get velocity vector
-    static Vector V;
-    V.resize(m_num_dofs);
-    V.Zero();
-    for (int i = 0; i < 4; ++i) {
-        const Vector& iV = m_nodes[static_cast<std::size_t>(i)]->getTrialVel();
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        V(q1) = iV(0) - m_V0(j1);
-        V(q2) = iV(1) - m_V0(j2);
-    }
+    const Vector& V = getVelocity();
+
+    // compute damping forces
     R.addMatrixVector(1.0, C, V, 1.0);
 }
 
@@ -933,23 +1370,30 @@ void ASDAbsorbingBoundary2D::getLKcoeff(double& ap, double& as)
     double lam = 2.0 * mu * m_v / (1.0 - 2.0 * m_v);
 
     // wave velocities
-    double cp = std::sqrt((lam + 2.0 * mu) / m_rho);
-    double cs = std::sqrt(mu / m_rho);
+    double vp = std::sqrt((lam + 2.0 * mu) / m_rho);
+    double vs = std::sqrt(mu / m_rho);
 
-    // coefficients
-    double h = m_ly;
-    if (m_boundary == Boundary_Horizontal) {
+    // sizes
+    double lx, ly, nx;
+    getElementSizes(lx, ly, nx);
+    double t = m_thickness;
+    double h = ly;
+
+    // swap coefficients and lumping size on horizontal
+    // boundaries
+    if (m_boundary & BND_BOTTOM) {
         // if the boundary is horizontal:
         // 1) the element size is lx
-        // 2) the cp and cs should be swapped
-        h = m_lx;
-        double aux = cp;
-        cp = cs;
-        cs = aux;
+        // 2) the vp and vs should be swapped
+        h = lx;
+        double aux = vp;
+        vp = vs;
+        vs = aux;
     }
-    double t = m_thickness;
-    ap = -cp * h * m_rho * t / 2.0;
-    as = -cs * h * m_rho * t / 2.0;
+    
+    // coefficients (put the minus sign here: external forces acting on soil domain)
+    ap = -vp * h * m_rho * t / 2.0;
+    as = -vs * h * m_rho * t / 2.0;
 }
 
 void ASDAbsorbingBoundary2D::addClk(Matrix& C)
@@ -958,49 +1402,126 @@ void ASDAbsorbingBoundary2D::addClk(Matrix& C)
     double ap, as;
     getLKcoeff(ap, as);
 
-    // compute derivatives of dashpot forces between nodes:
-    // 1->2
-    // 4->3
-    C(m_mapping(2), m_mapping(0)) += ap;
-    C(m_mapping(2), m_mapping(2)) += -ap;
-    C(m_mapping(3), m_mapping(1)) += as;
-    C(m_mapping(3), m_mapping(3)) += -as;
-    C(m_mapping(4), m_mapping(4)) += -ap;
-    C(m_mapping(4), m_mapping(6)) += ap;
-    C(m_mapping(5), m_mapping(5)) += -as;
-    C(m_mapping(5), m_mapping(7)) += as;
+    // compute derivatives of dashpot forces
+    if (m_boundary & BND_BOTTOM) {
+        // if it's on the corners, add only to nodes 1-0 with twice the ap and sp coefficients
+        if (m_boundary != BND_BOTTOM) {
+            // for BOTTOM-LEFT and BOTTOM-RIGHT (corner) boundaries
+            C(m_dof_map(2), m_dof_map(0)) += 2.0 * ap;
+            C(m_dof_map(2), m_dof_map(2)) += -2.0 * ap;
+            C(m_dof_map(3), m_dof_map(1)) += 2.0 * as;
+            C(m_dof_map(3), m_dof_map(3)) += -2.0 * as;
+        }
+        else {
+            // for BOTTOM (horizontal) boundaries
+            C(m_dof_map(2), m_dof_map(0)) += ap;
+            C(m_dof_map(2), m_dof_map(2)) += -ap;
+            C(m_dof_map(3), m_dof_map(1)) += as;
+            C(m_dof_map(3), m_dof_map(3)) += -as;
+            C(m_dof_map(6), m_dof_map(4)) += ap;
+            C(m_dof_map(6), m_dof_map(6)) += -ap;
+            C(m_dof_map(7), m_dof_map(5)) += as;
+            C(m_dof_map(7), m_dof_map(7)) += -as;
+        }
+    }
+    else {
+        // for LEFT and RIGHT (vertical) boundaries
+        C(m_dof_map(4), m_dof_map(0)) += ap;
+        C(m_dof_map(4), m_dof_map(4)) += -ap;
+        C(m_dof_map(5), m_dof_map(1)) += as;
+        C(m_dof_map(5), m_dof_map(5)) += -as;
+        C(m_dof_map(6), m_dof_map(2)) += ap;
+        C(m_dof_map(6), m_dof_map(6)) += -ap;
+        C(m_dof_map(7), m_dof_map(3)) += as;
+        C(m_dof_map(7), m_dof_map(7)) += -as;
+    }
 }
 
 void ASDAbsorbingBoundary2D::addRlk(Vector& R)
 {
-    // get velocity vector
-    static Vector V;
-    V.resize(m_num_dofs);
-    V.Zero();
-    for (int i = 0; i < 4; ++i) {
-        const Vector& iV = m_nodes[static_cast<std::size_t>(i)]->getTrialVel();
-        int j1 = i * 2;
-        int j2 = j1 + 1;
-        int q1 = m_mapping(j1);
-        int q2 = m_mapping(j2);
-        V(q1) = iV(0) - m_V0(j1);
-        V(q2) = iV(1) - m_V0(j2);
-    }
+    // get velocity
+    const Vector& V = getVelocity();
 
-    // compute dashpot forces between nodes:
-    // 1->2
-    // 4->3
+    // dashpot coefficients
     double ap, as;
     getLKcoeff(ap, as);
 
-    // X1 = 2 = 0 - 2
-    // Y1 = 3 = 1 - 3
-    R(m_mapping(2)) += ap * (V(m_mapping(0)) - V(m_mapping(2)));
-    R(m_mapping(3)) += as * (V(m_mapping(1)) - V(m_mapping(3)));
-    // X2 = 4 = 6 - 4
-    // Y2 = 5 = 7 - 5
-    R(m_mapping(4)) += ap * (V(m_mapping(6)) - V(m_mapping(4)));
-    R(m_mapping(5)) += as * (V(m_mapping(7)) - V(m_mapping(5)));
+    // compute dashpot forces
+    if (m_boundary & BND_BOTTOM) {
+        // if it's on the corners, add only to nodes 1-0 with twice the ap and sp coefficients
+        if (m_boundary != BND_BOTTOM) {
+            // for BOTTOM-LEFT and BOTTOM-RIGHT (corner) boundaries
+            R(m_dof_map(2)) += 2.0 * ap * (V(m_dof_map(0)) - V(m_dof_map(2)));
+            R(m_dof_map(3)) += 2.0 * as * (V(m_dof_map(1)) - V(m_dof_map(3)));
+        }
+        else {
+            // for BOTTOM (horizontal) boundaries
+            R(m_dof_map(2)) += ap * (V(m_dof_map(0)) - V(m_dof_map(2)));
+            R(m_dof_map(3)) += as * (V(m_dof_map(1)) - V(m_dof_map(3)));
+            R(m_dof_map(6)) += ap * (V(m_dof_map(4)) - V(m_dof_map(6)));
+            R(m_dof_map(7)) += as * (V(m_dof_map(5)) - V(m_dof_map(7)));
+        }
+    }
+    else {
+        // for LEFT and RIGHT (vertical) boundaries
+        R(m_dof_map(4)) += ap * (V(m_dof_map(0)) - V(m_dof_map(4)));
+        R(m_dof_map(5)) += as * (V(m_dof_map(1)) - V(m_dof_map(5)));
+        R(m_dof_map(6)) += ap * (V(m_dof_map(2)) - V(m_dof_map(6)));
+        R(m_dof_map(7)) += as * (V(m_dof_map(3)) - V(m_dof_map(7)));
+    }
+}
+
+void ASDAbsorbingBoundary2D::addBaseActions(Vector& R)
+{
+    // skip vertical boundaries
+    if (!(m_boundary & BND_BOTTOM))
+        return;
+
+    // re-use the getLKcoeff utilty
+    double ap, as;
+    getLKcoeff(ap, as);
+    // swap back...
+    double aux = ap;
+    ap = as;
+    as = aux;
+
+    // add forces
+    if (m_tsx) {
+        Domain* domain = getDomain();
+        if (domain == nullptr) {
+            opserr << "ASDAbsorbingBoundary2D Error: cannot get domain!\n";
+            exit(-1);
+        }
+        double vel = m_tsx->getFactor(domain->getCurrentTime());
+        double fx = 2.0 * vel * as;
+        if (m_boundary != BND_BOTTOM) {
+            // on corners only on node 1 with twice the intensity
+            R(m_dof_map(2)) += 2.0 * fx;
+        }
+        else {
+            // on standard bottom boundary
+            R(m_dof_map(2)) += fx;
+            R(m_dof_map(6)) += fx;
+        }
+    }
+    if (m_tsy) {
+        Domain* domain = getDomain();
+        if (domain == nullptr) {
+            opserr << "ASDAbsorbingBoundary2D Error: cannot get domain!\n";
+            exit(-1);
+        }
+        double vel = m_tsy->getFactor(domain->getCurrentTime());
+        double fy = 2.0 * vel * ap;
+        if (m_boundary != BND_BOTTOM) {
+            // on corners only on node 1 with twice the intensity
+            R(m_dof_map(3)) += 2.0 * fy;
+        }
+        else {
+            // on standard bottom boundary
+            R(m_dof_map(3)) += fy;
+            R(m_dof_map(7)) += fy;
+        }
+    }
 }
 
 
