@@ -1078,17 +1078,11 @@ bool H5DRM::drm_differentiate_displacements(double t)
         bool nanfound = false;
         for (int i = 0; i < 3; ++i)
         {
-<<<<<<< HEAD
-	  if ( isnan(d1[i])  ||
-               isnan(a1[i])  ||
-               isnan(d2[i])  ||
-               isnan(a2[i]) )
-=======
+
             if ( isnan(d1[i])  ||
                  isnan(a1[i])  ||
                  isnan(d2[i])  ||
                  isnan(a2[i]) )
->>>>>>> 732044f5b1846fa0047e4516e0717dc0d22bffc3
             {
                 nanfound = true;
             }
@@ -1150,283 +1144,283 @@ bool H5DRM::drm_integrate_velocity(double next_integration_time)
     exit(-1);
     return false;
 
-    FILE * fptr = 0;
-    if (DEBUG_DRM_INTEGRATION)
-    {
-        char debugfilename[100];
-        sprintf(debugfilename, "drmintegration.%d.txt", myrank);
-        fptr = fopen(debugfilename, "w");
-    }
+//     FILE * fptr = 0;
+//     if (DEBUG_DRM_INTEGRATION)
+//     {
+//         char debugfilename[100];
+//         sprintf(debugfilename, "drmintegration.%d.txt", myrank);
+//         fptr = fopen(debugfilename, "w");
+//     }
 
 
-    if (Nodes.Size() == 0)
-        return false;
+//     if (Nodes.Size() == 0)
+//         return false;
 
-    if (next_integration_time < tstart || next_integration_time > tend)
-    {
-        DRMDisplacements.Zero();
-        DRMAccelerations.Zero();
-        return false;
-    }
+//     if (next_integration_time < tstart || next_integration_time > tend)
+//     {
+//         DRMDisplacements.Zero();
+//         DRMAccelerations.Zero();
+//         return false;
+//     }
 
-    int dir = 1;
-    double t1 = last_integration_time;
-    double t2 = next_integration_time;
-    if (t1 > t2)
-    {
-        // Integrating backwards
-        t1 = next_integration_time;
-        t2 = last_integration_time;
-        dir = -1;
-    }
-    hsize_t i1 = (hsize_t) (t1 - tstart) / dt;
-    hsize_t i2 = (hsize_t) (t2 - tstart) / dt + 1;
-    hsize_t Nt = i2 - i1;
+//     int dir = 1;
+//     double t1 = last_integration_time;
+//     double t2 = next_integration_time;
+//     if (t1 > t2)
+//     {
+//         // Integrating backwards
+//         t1 = next_integration_time;
+//         t2 = last_integration_time;
+//         dir = -1;
+//     }
+//     hsize_t i1 = (hsize_t) (t1 - tstart) / dt;
+//     hsize_t i2 = (hsize_t) (t2 - tstart) / dt + 1;
+//     hsize_t Nt = i2 - i1;
 
-    hsize_t motions_dims[2];
-    id_velocity_dataspace = H5Dget_space(id_velocity);
+//     hsize_t motions_dims[2];
+//     id_velocity_dataspace = H5Dget_space(id_velocity);
 
-    hsize_t imax_t = motions_dims[1] - 1;
-
-
-    i1 = i1 < 0 ? 0 : i1 ;
-    i1 = i1 > imax_t ? imax_t : i1;
-    i2 = i2 < 0 ? 0 : i2 ;
-    i2 = i2 > imax_t ? imax_t : i2;
-    Nt = i1 == i2 ? 1 : Nt;
-
-    for (int n = 0; n < Nodes.Size(); ++n)
-    {
-        int nodeTag = Nodes(n);
-        int station_id = nodetag2station_id[nodeTag];
-        int data_pos = station_id2data_pos[station_id];
-        int local_pos = nodetag2local_pos[nodeTag];
-
-        double v[3][Nt];
-
-        hsize_t start[2]  = {(hsize_t) data_pos , (hsize_t)i1};
-        hsize_t stride[2] = {1                  , 1};
-        hsize_t count[2]  = {1                  , 1};
-        hsize_t block[2]  = {3                  , (hsize_t) Nt};
-
-        //Selection in dataspace
-        H5Sselect_hyperslab(
-            id_velocity_dataspace,
-            H5S_SELECT_SET, start, stride, count, block );
-
-        //Selection in memspace
-        hsize_t rank_two_array = 2;
-        hsize_t one_node_data_dims[2] = {3, Nt};
-        hsize_t one_node_data_maxdims[2] = {3, Nt};
-        hid_t memspace  = H5Screate_simple(rank_two_array, one_node_data_dims, one_node_data_maxdims);       // create dataspace of memory
+//     hsize_t imax_t = motions_dims[1] - 1;
 
 
-        hsize_t mem_start[2] = {0 , 0};
-        H5Sselect_hyperslab(
-            memspace,
-            H5S_SELECT_SET, mem_start, stride, count, block );
+//     i1 = i1 < 0 ? 0 : i1 ;
+//     i1 = i1 > imax_t ? imax_t : i1;
+//     i2 = i2 < 0 ? 0 : i2 ;
+//     i2 = i2 > imax_t ? imax_t : i2;
+//     Nt = i1 == i2 ? 1 : Nt;
 
-        //Read data
-        herr_t errorflag = H5Dread( id_velocity, H5T_NATIVE_DOUBLE, memspace,
-                                    id_velocity_dataspace, id_xfer_plist,  v );
+//     for (int n = 0; n < Nodes.Size(); ++n)
+//     {
+//         int nodeTag = Nodes(n);
+//         int station_id = nodetag2station_id[nodeTag];
+//         int data_pos = station_id2data_pos[station_id];
+//         int local_pos = nodetag2local_pos[nodeTag];
 
-        H5Sclose(memspace);
+//         double v[3][Nt];
 
-        if (errorflag < 0)
-        {
-            H5DRMerror << "Failed to read velocity array!!\n" <<
-                       " n = " << n << endln <<
-                       " nodeTag = " << nodeTag << endln <<
-                       " station_id = " << station_id << endln <<
-                       " i1 = " << i1 << endln <<
-                       " data_pos = " << data_pos << endln <<
-                       " local_pos = " << local_pos << endln <<
-                       " Nt = " << Nt << endln <<
-                       " last_integration_time = " << last_integration_time << endln <<
-                       " start   = [" << start[0] << ", " << start[1] << "]" << endln <<
-                       " mem_start  = [" << mem_start[0] << ", " << mem_start[1] << "]" << endln <<
-                       " stride  = [" << stride[0] << ", " << stride[1] << "]" << endln <<
-                       " count   = [" << count[0] << ", " << count[1] << "]" << endln <<
-                       " block   = [" << block[0] << ", " << block[1] << "]" << endln;
-            exit(-1);
-        }
+//         hsize_t start[2]  = {(hsize_t) data_pos , (hsize_t)i1};
+//         hsize_t stride[2] = {1                  , 1};
+//         hsize_t count[2]  = {1                  , 1};
+//         hsize_t block[2]  = {3                  , (hsize_t) Nt};
 
-        for (hsize_t i = 0; i <  Nt; ++i)
-        {
-            double v0 = v[0][i];
-            double v1 = v[1][i];
-            v[0][i] = v0;
-            v[1][i] = v1;
-            v[2][i] = -v[2][i];
-        }
+//         //Selection in dataspace
+//         H5Sselect_hyperslab(
+//             id_velocity_dataspace,
+//             H5S_SELECT_SET, start, stride, count, block );
+
+//         //Selection in memspace
+//         hsize_t rank_two_array = 2;
+//         hsize_t one_node_data_dims[2] = {3, Nt};
+//         hsize_t one_node_data_maxdims[2] = {3, Nt};
+//         hid_t memspace  = H5Screate_simple(rank_two_array, one_node_data_dims, one_node_data_maxdims);       // create dataspace of memory
 
 
-<<<<<<< HEAD
-		for (hsize_t i = 0; i < Nt; ++i)
-		{
-			double dtau = 0;
-			double tau_1 = tstart + i * dt;
-			double tau_2 = tstart + (i + 1) * dt;
-			tau_1 = tau_1 > t1 ? tau_1 : t1;
-			tau_2 = tau_2 < t2 ? tau_2 : t2;
-			dtau = tau_2 - tau_1;
+//         hsize_t mem_start[2] = {0 , 0};
+//         H5Sselect_hyperslab(
+//             memspace,
+//             H5S_SELECT_SET, mem_start, stride, count, block );
 
-			if (dtau <= 0)
-				continue;
+//         //Read data
+//         herr_t errorflag = H5Dread( id_velocity, H5T_NATIVE_DOUBLE, memspace,
+//                                     id_velocity_dataspace, id_xfer_plist,  v );
+
+//         H5Sclose(memspace);
+
+//         if (errorflag < 0)
+//         {
+//             H5DRMerror << "Failed to read velocity array!!\n" <<
+//                        " n = " << n << endln <<
+//                        " nodeTag = " << nodeTag << endln <<
+//                        " station_id = " << station_id << endln <<
+//                        " i1 = " << i1 << endln <<
+//                        " data_pos = " << data_pos << endln <<
+//                        " local_pos = " << local_pos << endln <<
+//                        " Nt = " << Nt << endln <<
+//                        " last_integration_time = " << last_integration_time << endln <<
+//                        " start   = [" << start[0] << ", " << start[1] << "]" << endln <<
+//                        " mem_start  = [" << mem_start[0] << ", " << mem_start[1] << "]" << endln <<
+//                        " stride  = [" << stride[0] << ", " << stride[1] << "]" << endln <<
+//                        " count   = [" << count[0] << ", " << count[1] << "]" << endln <<
+//                        " block   = [" << block[0] << ", " << block[1] << "]" << endln;
+//             exit(-1);
+//         }
+
+//         for (hsize_t i = 0; i <  Nt; ++i)
+//         {
+//             double v0 = v[0][i];
+//             double v1 = v[1][i];
+//             v[0][i] = v0;
+//             v[1][i] = v1;
+//             v[2][i] = -v[2][i];
+//         }
 
 
+// <<<<<<< HEAD
+// 		for (hsize_t i = 0; i < Nt; ++i)
+// 		{
+// 			double dtau = 0;
+// 			double tau_1 = tstart + i * dt;
+// 			double tau_2 = tstart + (i + 1) * dt;
+// 			tau_1 = tau_1 > t1 ? tau_1 : t1;
+// 			tau_2 = tau_2 < t2 ? tau_2 : t2;
+// 			dtau = tau_2 - tau_1;
 
-			if (DEBUG_DRM_INTEGRATION)
-			{
-				/* FMK
-				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-				******/
-				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * Nt], v[0 + (i + 1)*3]);
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * Nt], v[1 + (i + 1)*3]);
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * Nt], v[2 + (i + 1)*3]);
-
-			}
-
-			double u1 = DRMDisplacements(3 * local_pos + 0);
-			double u2 = DRMDisplacements(3 * local_pos + 1);
-			double u3 = DRMDisplacements(3 * local_pos + 2);
-			/* FMK
-			double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
-			double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
-			double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
-			******/
-			double du1 = (v[0 + i * 3] + v[0 + (i + 1)*3]) * (dir * dtau / 2);
-			double du2 = (v[1 + i * 3] + v[1 + (i + 1)*3]) * (dir * dtau / 2);
-			double du3 = (v[2 + i * 3] + v[2 + (i + 1)*3]) * (dir * dtau / 2);
-
-			DRMDisplacements(3 * local_pos + 0) += du1;
-			DRMDisplacements(3 * local_pos + 1) += du2;
-			DRMDisplacements(3 * local_pos + 2) += du3;
-
-			if (DEBUG_DRM_INTEGRATION)
-			{
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0));
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1));
-				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2));
-			}
-
-			// bool found_nan = false;
-			if (isnan(u1) || isnan(du1) ||
-				isnan(u2) || isnan(du2) ||
-				isnan(u3) || isnan(du3) ||
-				isnan(dt) || isnan(dtau))
-			{
-				H5DRMerror << "NAN Detected!!! \n";
-				H5DRMerror << "    nodeTag = " << nodeTag << endln;
-				H5DRMerror << "    local_pos = " << local_pos << endln;
-				printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
-				printf("        u1 = %f du1 = %f \n", u1, du1);
-				printf("        u2 = %f du2 = %f \n", u2, du2);
-				printf("        u3 = %f du3 = %f \n", u3, du3);
-				/* FMK
-				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-				*/
-				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * 3], v[0 + (i + 1)*3]);
-				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * 3], v[1 + (i + 1)*3]);
-				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * 3], v[2 + (i + 1)*3]);
-				exit(-1);
-			}
-
-		}
-=======
-        for (hsize_t i = 0; i <  Nt; ++i)
-        {
-            double dtau = 0;
-            double tau_1 = tstart + i * dt;
-            double tau_2 = tstart + (i + 1) * dt;
-            tau_1 = tau_1 > t1 ? tau_1 : t1;
-            tau_2 = tau_2 < t2 ? tau_2 : t2;
-            dtau = tau_2 - tau_1;
-
-            if (dtau <= 0)
-                continue;
+// 			if (dtau <= 0)
+// 				continue;
 
 
 
-            if (DEBUG_DRM_INTEGRATION)
-            {
-                fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-            }
+// 			if (DEBUG_DRM_INTEGRATION)
+// 			{
+// 				/* FMK
+// 				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+// 				******/
+// 				fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * Nt], v[0 + (i + 1)*3]);
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * Nt], v[1 + (i + 1)*3]);
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * Nt], v[2 + (i + 1)*3]);
 
-            double u1 = DRMDisplacements(3 * local_pos + 0);
-            double u2 = DRMDisplacements(3 * local_pos + 1);
-            double u3 = DRMDisplacements(3 * local_pos + 2);
-            double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
-            double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
-            double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+// 			}
 
-            DRMDisplacements(3 * local_pos + 0) += du1;
-            DRMDisplacements(3 * local_pos + 1) += du2;
-            DRMDisplacements(3 * local_pos + 2) += du3;
+// 			double u1 = DRMDisplacements(3 * local_pos + 0);
+// 			double u2 = DRMDisplacements(3 * local_pos + 1);
+// 			double u3 = DRMDisplacements(3 * local_pos + 2);
+// 			/* FMK
+// 			double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
+// 			double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
+// 			double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+// 			******/
+// 			double du1 = (v[0 + i * 3] + v[0 + (i + 1)*3]) * (dir * dtau / 2);
+// 			double du2 = (v[1 + i * 3] + v[1 + (i + 1)*3]) * (dir * dtau / 2);
+// 			double du3 = (v[2 + i * 3] + v[2 + (i + 1)*3]) * (dir * dtau / 2);
 
-            if (DEBUG_DRM_INTEGRATION)
-            {
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0) );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1) );
-                fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2) );
-            }
+// 			DRMDisplacements(3 * local_pos + 0) += du1;
+// 			DRMDisplacements(3 * local_pos + 1) += du2;
+// 			DRMDisplacements(3 * local_pos + 2) += du3;
 
-            // bool found_nan = false;
-            if (isnan(u1) || isnan(du1) ||
-                    isnan(u2) || isnan(du2) ||
-                    isnan(u3) || isnan(du3) ||
-                    isnan(dt) || isnan(dtau) )
-            {
-                H5DRMerror << "NAN Detected!!! \n";
-                H5DRMerror << "    nodeTag = " << nodeTag << endln;
-                H5DRMerror << "    local_pos = " << local_pos << endln;
-                printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i,  dtau, tau_1, tau_2, dt, local_pos, dir );
-                printf("        u1 = %f du1 = %f \n", u1, du1);
-                printf("        u2 = %f du2 = %f \n", u2, du2);
-                printf("        u3 = %f du3 = %f \n", u3, du3);
-                printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
-                printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
-                printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
-                exit(-1);
-            }
+// 			if (DEBUG_DRM_INTEGRATION)
+// 			{
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0));
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1));
+// 				fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2));
+// 			}
 
-        }
->>>>>>> 732044f5b1846fa0047e4516e0717dc0d22bffc3
+// 			// bool found_nan = false;
+// 			if (isnan(u1) || isnan(du1) ||
+// 				isnan(u2) || isnan(du2) ||
+// 				isnan(u3) || isnan(du3) ||
+// 				isnan(dt) || isnan(dtau))
+// 			{
+// 				H5DRMerror << "NAN Detected!!! \n";
+// 				H5DRMerror << "    nodeTag = " << nodeTag << endln;
+// 				H5DRMerror << "    local_pos = " << local_pos << endln;
+// 				printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i, dtau, tau_1, tau_2, dt, local_pos, dir);
+// 				printf("        u1 = %f du1 = %f \n", u1, du1);
+// 				printf("        u2 = %f du2 = %f \n", u2, du2);
+// 				printf("        u3 = %f du3 = %f \n", u3, du3);
+// 				/* FMK
+// 				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+// 				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+// 				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+// 				*/
+// 				printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0 + i * 3], v[0 + (i + 1)*3]);
+// 				printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1 + i * 3], v[1 + (i + 1)*3]);
+// 				printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2 + i * 3], v[2 + (i + 1)*3]);
+// 				exit(-1);
+// 			}
 
-        int eval_i = (int) (t2 - t1) / dt;
+// 		}
+// =======
+//         for (hsize_t i = 0; i <  Nt; ++i)
+//         {
+//             double dtau = 0;
+//             double tau_1 = tstart + i * dt;
+//             double tau_2 = tstart + (i + 1) * dt;
+//             tau_1 = tau_1 > t1 ? tau_1 : t1;
+//             tau_2 = tau_2 < t2 ? tau_2 : t2;
+//             dtau = tau_2 - tau_1;
 
-
-        DRMAccelerations(3 * local_pos + 0) = (v[0][eval_i] - v[0][eval_i + 1]) / dt;
-        DRMAccelerations(3 * local_pos + 1) = (v[1][eval_i] - v[1][eval_i + 1]) / dt;
-        DRMAccelerations(3 * local_pos + 2) = (v[2][eval_i] - v[2][eval_i + 1]) / dt;
-
-        if (DEBUG_DRM_INTEGRATION)
-        {
-            fprintf(fptr, "eval_i = %d \n", eval_i );
-            fprintf(fptr, "     v[0][eval_i] = %f  v[0][eval_i+1] = %f\n",  v[0][eval_i], v[0][eval_i + 1] );
-            fprintf(fptr, "     v[1][eval_i] = %f  v[1][eval_i+1] = %f\n",  v[1][eval_i], v[1][eval_i + 1] );
-            fprintf(fptr, "     v[2][eval_i] = %f  v[2][eval_i+1] = %f\n",  v[2][eval_i], v[2][eval_i + 1] );
-            fprintf(fptr, "     DRMAccelerations(3 * local_pos + 0) = %f\n",  DRMAccelerations(3 * local_pos + 0) );
-            fprintf(fptr, "     DRMAccelerations(3 * local_pos + 1) = %f\n",  DRMAccelerations(3 * local_pos + 1) );
-            fprintf(fptr, "     DRMAccelerations(3 * local_pos + 2) = %f\n",  DRMAccelerations(3 * local_pos + 2) );
-
-        }
-    }
+//             if (dtau <= 0)
+//                 continue;
 
 
 
-    last_integration_time = t2;
+//             if (DEBUG_DRM_INTEGRATION)
+//             {
+//                 fprintf(fptr, "i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int) i, dtau, tau_1, tau_2, dt, local_pos, dir );
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+//             }
 
-    return true;
+//             double u1 = DRMDisplacements(3 * local_pos + 0);
+//             double u2 = DRMDisplacements(3 * local_pos + 1);
+//             double u3 = DRMDisplacements(3 * local_pos + 2);
+//             double du1 = (v[0][i] + v[0][i + 1]) * (dir * dtau / 2);
+//             double du2 = (v[1][i] + v[1][i + 1]) * (dir * dtau / 2);
+//             double du3 = (v[2][i] + v[2][i + 1]) * (dir * dtau / 2);
+
+//             DRMDisplacements(3 * local_pos + 0) += du1;
+//             DRMDisplacements(3 * local_pos + 1) += du2;
+//             DRMDisplacements(3 * local_pos + 2) += du3;
+
+//             if (DEBUG_DRM_INTEGRATION)
+//             {
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 0) = %f \n", DRMDisplacements(3 * local_pos + 0) );
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 1) = %f \n", DRMDisplacements(3 * local_pos + 1) );
+//                 fprintf(fptr, "    DRMDisplacements(3 * local_pos + 2) = %f \n", DRMDisplacements(3 * local_pos + 2) );
+//             }
+
+//             // bool found_nan = false;
+//             if (isnan(u1) || isnan(du1) ||
+//                     isnan(u2) || isnan(du2) ||
+//                     isnan(u3) || isnan(du3) ||
+//                     isnan(dt) || isnan(dtau) )
+//             {
+//                 H5DRMerror << "NAN Detected!!! \n";
+//                 H5DRMerror << "    nodeTag = " << nodeTag << endln;
+//                 H5DRMerror << "    local_pos = " << local_pos << endln;
+//                 printf("    i = %d dtau=%f tau_1=%f tau_2=%f dt=%f local_pos=%d dir=%d\n", (int)i,  dtau, tau_1, tau_2, dt, local_pos, dir );
+//                 printf("        u1 = %f du1 = %f \n", u1, du1);
+//                 printf("        u2 = %f du2 = %f \n", u2, du2);
+//                 printf("        u3 = %f du3 = %f \n", u3, du3);
+//                 printf("        DRMDisplacements(3 * local_pos + 0) = %f -->  v[0][i] = %f  v[0][i+1] = %f\n", DRMDisplacements(3 * local_pos + 0), v[0][i], v[0][i + 1] );
+//                 printf("        DRMDisplacements(3 * local_pos + 1) = %f -->  v[1][i] = %f  v[1][i+1] = %f\n", DRMDisplacements(3 * local_pos + 1), v[1][i], v[1][i + 1] );
+//                 printf("        DRMDisplacements(3 * local_pos + 2) = %f -->  v[2][i] = %f  v[2][i+1] = %f\n", DRMDisplacements(3 * local_pos + 2), v[2][i], v[2][i + 1] );
+//                 exit(-1);
+//             }
+
+//         }
+// >>>>>>> 732044f5b1846fa0047e4516e0717dc0d22bffc3
+
+//         int eval_i = (int) (t2 - t1) / dt;
+
+
+//         DRMAccelerations(3 * local_pos + 0) = (v[0][eval_i] - v[0][eval_i + 1]) / dt;
+//         DRMAccelerations(3 * local_pos + 1) = (v[1][eval_i] - v[1][eval_i + 1]) / dt;
+//         DRMAccelerations(3 * local_pos + 2) = (v[2][eval_i] - v[2][eval_i + 1]) / dt;
+
+//         if (DEBUG_DRM_INTEGRATION)
+//         {
+//             fprintf(fptr, "eval_i = %d \n", eval_i );
+//             fprintf(fptr, "     v[0][eval_i] = %f  v[0][eval_i+1] = %f\n",  v[0][eval_i], v[0][eval_i + 1] );
+//             fprintf(fptr, "     v[1][eval_i] = %f  v[1][eval_i+1] = %f\n",  v[1][eval_i], v[1][eval_i + 1] );
+//             fprintf(fptr, "     v[2][eval_i] = %f  v[2][eval_i+1] = %f\n",  v[2][eval_i], v[2][eval_i + 1] );
+//             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 0) = %f\n",  DRMAccelerations(3 * local_pos + 0) );
+//             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 1) = %f\n",  DRMAccelerations(3 * local_pos + 1) );
+//             fprintf(fptr, "     DRMAccelerations(3 * local_pos + 2) = %f\n",  DRMAccelerations(3 * local_pos + 2) );
+
+//         }
+//     }
+
+
+
+//     last_integration_time = t2;
+
+//     return true;
 }
 
 
