@@ -881,6 +881,9 @@
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.cpp">
       <Filter>absorbentBoundaries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
@@ -1643,6 +1646,9 @@
       <Filter>absorbentBoundaries</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.h">
       <Filter>absorbentBoundaries</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h">

@@ -1173,6 +1173,7 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
 }
 
 

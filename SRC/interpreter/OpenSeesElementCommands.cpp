@@ -229,6 +229,7 @@ void* OPS_GradientInelasticBeamColumn2d();
 void* OPS_GradientInelasticBeamColumn3d();
 void* OPS_RockingBC();
 void *OPS_ASDAbsorbingBoundary2D(void);
+void *OPS_ASDAbsorbingBoundary3D(void);
 
 namespace {
 
@@ -689,6 +690,7 @@ namespace {
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
 	functionMap.insert(std::make_pair("RockingBC", &OPS_RockingBC));
 	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
 
 	return 0;
     }

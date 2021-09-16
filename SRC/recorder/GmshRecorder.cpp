@@ -1432,4 +1432,5 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ShellDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellNLDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ASDAbsorbingBoundary2D] = GMSH_QUAD;
+    gmshtypes[ELE_TAG_ASDAbsorbingBoundary3D] = GMSH_HEXAHEDRON;
 }
