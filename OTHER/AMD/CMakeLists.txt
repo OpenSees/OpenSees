@@ -8,6 +8,13 @@
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
 #------------------------------------------------------------------------------
+#
+#  NOTE: THIS BUILD SOLUTION HAS BEEN DEVELOPED FOR USE WITH THE OPENSEES 
+#     FRAMEWORK AND MAY DIFFER CONSIDERABLY FROM THE UPSTREAM LIBRARY.
+# 
+#           AMD Version 2.4, Copyright (c) 1996-2013 by Timothy A. Davis
+#                  people.engr.tamu.edu/davis/suitesparse.html
+#==============================================================================
 # Claudio Perez
 
 project(AMD)

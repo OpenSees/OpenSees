@@ -10,7 +10,7 @@ function (opensees_add_cxx_flag)
     )
     set(flg "PUBLIC")
     if (NOT ${OPS_COMPILE_OPT_ARG_TARGETS})
-        add_compile_options(${flg} $<$<COMPILE_LANGUAGE:CXX>:${${OPS_COMPILE_OPT_ARG_}${CXX_COMPILER_ID}}>)
+        add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${${OPS_COMPILE_OPT_ARG_}${CXX_COMPILER_ID}}>)
     endif()
     foreach(src ${OPS_COMPILE_OPT_ARG_TARGETS})
         if(MSVC)
@@ -28,12 +28,11 @@ endfunction()
 
 function (opensees_load lib_name)
     cmake_parse_arguments(
-        PARSE_ARGV 1
-        OPS_LOAD_ARG # prefix of output variables
-        "BUILD;FIND" # list of names of the boolean arguments (only defined ones will be true)
-	"BUNDLED;LIBRARY;INCLUDE" # list of names of mono-valued arguments
-	"PATHS;AS" # list of names of multi-valued arguments (output variables are lists)
-        #${ARGN} # arguments of the function to parse, here we take the all original ones
+      PARSE_ARGV 1
+      OPS_LOAD_ARG # prefix of output variables
+      "BUILD;FIND" # list of names of the boolean arguments (only defined ones will be true)
+	    "BUNDLED;LIBRARY;INCLUDE" # list of names of mono-valued arguments
+	    "PATHS;AS" # list of names of multi-valued arguments (output variables are lists)
     )
     set(OPS_PKG_FOUND_VAR "${lib_name}_FOUND")# PARENT_SCOPE) 
     set(${OPS_PKG_FOUND_VAR} FALSE)# PARENT_SCOPE)
@@ -46,10 +45,10 @@ function (opensees_load lib_name)
 
     if(OPS_LOAD_ARG_LIBRARY)
         if(NOT ${${OPS_PKG_FOUND_VAR}})
-	    message("OPS >>> ${lib_name}")
-	    set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY})# PARENT_SCOPE)
-	    set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_INCLUDE})# PARENT_SCOPE)
-	endif()
+	        message("OPS >>> ${lib_name}")
+	        set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY})# PARENT_SCOPE)
+	        set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_INCLUDE})# PARENT_SCOPE)
+	      endif()
     endif()
 
     if(OPS_LOAD_ARG_PATHS)

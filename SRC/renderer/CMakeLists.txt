@@ -34,14 +34,14 @@ target_sources(OPS_Renderer
     WindowRenderer.h
 )
 
-add_library(OPS_Renderer_X11 OBJECT
+add_library(OPS_Renderer_X11 OBJECT EXCLUDE_FROM_ALL
         X11Device.cpp
         X11Renderer.cpp
         #X11Device.h
         #X11Renderer.h
 )
 
-add_library(OPS_Renderer_OpenGL OBJECT
+add_library(OPS_Renderer_OpenGL OBJECT EXCLUDE_FROM_ALL
     OpenGlDevice.cpp
     OpenGlRenderer.cpp
 )

@@ -30,13 +30,13 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
-include(OpenSeesFunctions)
 
+include(OpenSeesFunctions)
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
+# define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
-    G3 OpenSeesTcl OpenSeesMP OpenSeesSP OpenSeesPy
-)
+    G3 OpenSeesTcl OpenSeesMP OpenSeesSP OpenSeesPy)
 
 #==============================================================================
 #                            OS Configuration
@@ -61,30 +61,20 @@ if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
 
     # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
-    #target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} wsock32 ws2_32)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
-# =======
     add_compile_definitions(_WIN32)
-    # file(GLOB_RECURSE ops_precompiled CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Win64/lib/debug/*.lib")
     # message("OPS >>> Including the following precompiled libs: '${ops_precompiled}'")
     # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
-    # target_link_libraries(OPS_OS_Specific_libs INTERFACE ${CBLAS_LIBRARIES} ${ops_precompiled} wsock32 ws2_32)
-
     message(STATUS ">>> WIN32")
 endif()
 
 message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
 message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
-
 message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-
 message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-
 message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-
 message("OPS >>> TCL:     ${TCL_LIBRARY}")
 set(TCL_LIBRARIES ${TCL_LIBRARY})
-
 message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 
 
@@ -102,9 +92,9 @@ enable_language(Fortran)
 
 # C++
 #--------------------------------------
-#set(CMAKE_CXX_STANDARD 11)
 #add_link_options(-rdynamic)
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
+#add_compile_options(-g)
 
 # Warnings
 opensees_add_cxx_flag(
@@ -182,7 +172,7 @@ include_directories(
 include_directories(${TCL_INCLUDE_PATH})
 include_directories(${MYSQL_INCLUDE_DIR})
 
-# Temporary fix: include all directories with .h files through glob
+# TODO: Temporary fix; include all directories with .h files through glob
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
     ${OPS_SRC_DIR}/*.h
     ${OPS_BUNDLED_DIR}/*.h
@@ -195,7 +185,7 @@ endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
 include_directories(${OPS_INCLUDE_DIRS})
-
+# end TODO
 
 #==============================================================================
 #                            Define Targets
@@ -205,7 +195,6 @@ add_library(OPS_Numerics           INTERFACE)
 target_link_libraries(OPS_Numerics INTERFACE
   ${ARPACK_LIBRARIES} 
   ${SUPERLU_LIBRARIES}
-  ${UMFPACK_LIBRARIES}
   ${AMD_LIBRARIES}
   ${LAPACK_LIBRARIES}
   ${BLAS_LIBRARIES} 
@@ -241,22 +230,8 @@ add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 # Packaged libraries
 add_library(G3) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
-#target_sources(OpenSees
-#  PRIVATE
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-#    #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-#	  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
-#    "${OPS_SRC_DIR}/renderer/PlainMap.cpp"
-#)
 
-# Executables
+# Executables and final targets
 #------------------------------------------------------------------------------
 # Adding EXCLUDE_FROM_ALL prevents these from being made by default.
 
@@ -264,9 +239,6 @@ add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
-
-# an attempt to solve linking problems on Windows
-# set_property(TARGET OpenSeesTcl PROPERTY LINKER_LANGUAGE Fortran)
 
 add_executable(OpenSeesSP    EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
@@ -278,8 +250,9 @@ add_executable(OpenSeesMP    EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 
-add_executable(OpenSeesPy    EXCLUDE_FROM_ALL ${OPS_SRC_DIR}/interpreter/pythonMain.cpp)
-
+add_executable(OpenSeesPy    EXCLUDE_FROM_ALL
+  ${OPS_SRC_DIR}/interpreter/pythonMain.cpp
+)
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
@@ -523,6 +496,18 @@ foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
     add_compile_definitions(${ext_flag})
 endforeach()
 
+# PFEM
+#----------------------------
+if (OPS_Use_PFEM)
+  add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
+  #add_subdirectory("${OPS_EXTERNALS_DIR}/UMFPACK")
+  add_subdirectory("${OPS_EXTERNALS_DIR}/CSPARSE")
+  message("umfpack: ${umfpack}")
+  target_link_libraries(${OPS_FINAL_TARGET}
+    OPS_Element_PFEMElement OPS_PFEM UMFPACK CSPARSE #tet
+  )
+endif()
+
 # Renderer
 #----------------------------
 if (OPS_Use_Graphics)
@@ -531,6 +516,7 @@ if (OPS_Use_Graphics)
 else()
     add_compile_definitions(_NOGRAPHICS)
 endif()
+
 
 # Reliability
 #----------------------------
@@ -555,14 +541,6 @@ if(OPS_Use_HDF5)
     endif()
 endif()
 
-#----------------------------
-# Thermal
-#----------------------------
-if (OPS_Use_Thermal)
-    message("OPS >>> Including OPS_Thermal option")
-    #target_link_libraries(${OPS_FINAL_TARGET} PUBLIC OPS_Thermal)
-    target_link_libraries(OpenSees OPS_Thermal)
-endif()
 
 #----------------------------
 # DRM

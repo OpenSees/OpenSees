@@ -1,4 +1,4 @@
-add_library(OPS_Element_PFEMElement OBJECT)
+add_library(OPS_Element_PFEMElement )#OBJECT)
 
 target_sources(OPS_Element_PFEMElement
     PRIVATE

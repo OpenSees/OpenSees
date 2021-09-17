@@ -11,45 +11,35 @@
 #                           Select Executable
 #
 #==============================================================================
-set(OPS_FINAL_TARGET "OpenSeesTcl" 
-    CACHE STRING "OpenSees final target"
-)
+set(OPS_FINAL_TARGET "OpenSeesTcl" CACHE STRING "OpenSees final target")
 #==============================================================================
 #                            Basic Switches
 #
 #==============================================================================
 option(FMK
-    "Special FMK Code"                                       OFF)
+  "Special FMK Code"                                       OFF)
 
 # Optional Extensions
 #--------------------------------------
 option(OPS_Use_Graphics
-    "Include graphics"                                       OFF)
-
+  "Include graphics"                                       OFF)
 
 option(OPS_Use_DRM
-    "DRM lib"                                                 ON)
+  "DRM lib"                                                ON )
 
 option(OPS_Use_HDF5
-    "HDF5 Dependent Code"                                    OFF)
+  "HDF5 Dependent Code"                                    OFF)
 
+option(OPS_Use_PFEM
+  "                   "                                    ON )
 
-# TODO: Implement material options like elements
-option(OPS_MATERIAL_UNIAXIAL_PY 
-    "Include PY material library"                            OFF)
-
-option(OPS_MATERIAL_UNIAXIAL_SNAP 
-    "Include snap material library"                          OFF)
-
-option(OPS_Use_Thermal
-    "Include thermal components"                              ON)
 
 #==============================================================================
-#                           Select Auxiliary Libraries
+#                           Select Auxiliary Components
 #
 # Each element in this list owns an associated macro definition that is the
-# name of the lib converted to uppercase, and prepended with an underscore
-# (e.g. using OPS_Element_truss defines the macro _OPS_ELEMENT_TRUSS)
+# name of the lib converted to uppercase and prepended with "OPSDEF_"
+# (e.g. using OPS_Element_truss defines the macro OPSDEF_ELEMENT_TRUSS)
 #==============================================================================
 set(OPS_Extension_List
     OPS_ASDEA
@@ -57,9 +47,7 @@ set(OPS_Extension_List
 
     OPS_NumLib_PETSC
     OPS_NumLib_METIS
-    OPS_NumLib_UMFPACK
-
-    #OPS_ExtLib_PFEM
+    OPS_UMFPACK
 
     OPS_Graphics
     OPS_Renderer 

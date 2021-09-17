@@ -49,7 +49,11 @@ opensees_load(ARPACK                                        #FIND
   BUNDLED ${OPS_BUNDLED_DIR}/ARPACK/ 
 )
 
-opensees_load(AMD                                            FIND
+opensees_load(UMFPACK                                        #FIND
+  BUNDLED ${OPS_BUNDLED_DIR}/UMFPACK/ 
+)
+
+opensees_load(AMD                                           #FIND
 	BUNDLED ${OPS_BUNDLED_DIR}/AMD/ 
 )
 
