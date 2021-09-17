@@ -3535,13 +3535,14 @@ namespace mpco {
 					get class tag, geometry and integration rule type
 					*/
 					int elem_type = current_element->getClassTag();
-
-					if (elem_type == ELE_TAG_Subdomain)
+					/*
+					skip element classes tht we don't want to record
+					*/
+					if (elem_type == ELE_TAG_Subdomain ||
+						elem_type == ELE_TAG_ASDEmbeddedNodeElement)
 					{
-						//Skip subdomains
 						continue;
 					}
-
 					ElementGeometryType::Enum geom_type;
 					ElementIntegrationRuleType::Enum int_rule_type;
 					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type);

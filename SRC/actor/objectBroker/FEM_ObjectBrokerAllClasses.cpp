@@ -107,6 +107,7 @@
 #include "PY/QzSimple2.h"
 #include "PY/PyLiq1.h"
 #include "PY/TzLiq1.h"
+#include "PY/QzLiq1.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
@@ -303,6 +304,8 @@
 
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
+
+#include "CEqElement/ASDEmbeddedNodeElement.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -898,6 +901,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_RockingBC:
       return new RockingBC();
 
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
+
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
       opserr << " - no Element type exists for class tag " ;
@@ -1213,7 +1219,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
-       case MAT_TAG_TzLiq1:
+    case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
@@ -1221,6 +1227,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_QzSimple2:
 		return new QzSimple2();
+
+    case MAT_TAG_QzLiq1:
+		return new QzLiq1();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();

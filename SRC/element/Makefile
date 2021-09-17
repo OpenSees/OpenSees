@@ -52,6 +52,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/RockingBC; $(MAKE);
 	@$(CD) $(FE)/element/masonry; $(MAKE);
+	@$(CD) $(FE)/element/CEqElement; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -102,6 +103,7 @@ spotless: clean
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/RockingBC; $(MAKE) wipe;
 	@$(CD) $(FE)/element/masonry; $(MAKE) wipe;
+	@$(CD) $(FE)/element/CEqElement; $(MAKE) wipe;
 
 wipe: spotless
 

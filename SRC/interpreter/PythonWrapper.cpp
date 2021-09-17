@@ -1127,6 +1127,18 @@ static PyObject *Py_ops_eleNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_eleType(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_eleType() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeDOFs(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2303,6 +2315,17 @@ static PyObject *Py_ops_pc(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_domainCommitTag(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_domainCommitTag() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -2390,6 +2413,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("eleNodes", &Py_ops_eleNodes);
+    addCommand("eleType", &Py_ops_eleType);    
     addCommand("nodeDOFs", &Py_ops_nodeDOFs);
     addCommand("nodeMass", &Py_ops_nodeMass);
     addCommand("nodePressure", &Py_ops_nodePressure);
@@ -2492,6 +2516,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("unloadingRule", &Py_ops_unloadingRule);
     addCommand("partition", &Py_ops_partition);
     addCommand("pressureConstraint", &Py_ops_pc);
+    addCommand("domainCommitTag", &Py_ops_domainCommitTag);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

@@ -33,6 +33,7 @@
 #include <QzSimple2.h> 
 #include <PyLiq1.h>    // RWB
 #include <TzLiq1.h>    // RWB
+#include <QzLiq1.h>    // Sumeet
 #include <PySimple1Gen.h>
 #include <TzSimple1Gen.h>
 #include <TimeSeries.h>
@@ -153,7 +154,7 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
  	    opserr << "WARNING insufficient arguments\n";
  	    printCommand(argc,argv);
  	    opserr << "Want: uniaxialMaterial PyLiq1 tag? soilType? pult? y50? drag? dashpot? pRes? solidElem1? solidElem2?" << endln;
-		opserr << "or: uniaxialMaterial PyLiq1 tag? soilType? pult? y50? drag? dashpot? -timeSeries seriesTag?" << endln;
+		opserr << "or: uniaxialMaterial PyLiq1 tag? soilType? pult? y50? drag? dashpot? pRes? -timeSeries seriesTag?" << endln;
  	    return 0;
  	}
  
@@ -302,7 +303,97 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
 	    theMaterial = new QzSimple2(tag, QzType, Qult, z50, suction, dashpot);  
     }
 
+	//  INSERTING THE EXTRA LINES FOR QzLiq1 //////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+ 	else if (strcmp(argv[1],"QzLiq1") == 0) {
+ 	if (argc < 11) {
+ 	    opserr << "WARNING insufficient arguments\n";
+ 	    printCommand(argc,argv);
+ 	    opserr << "Want: uniaxialMaterial QzLiq1 tag? qzType? qult? z50? suction? dashpot? alpha solidElem1? solidElem2?" << endln;
+		opserr << "or: uniaxialMaterial QzLiq1 tag? qzType? qult? z50? suction? dashpot? alpha -timeSeries seriesTag?" << endln;
+ 	    return 0;
+ 	}
+ 
+ 	int tag, qzType, solidElem1, solidElem2, seriesTag;
+ 	double qult, z50,  suction, dashpot, alpha;
+ 
+ 	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+ 	    opserr << "WARNING invalid uniaxialMaterial QzLiq1 tag" << endln;
+ 	    return 0;		
+ 	}
+ 
+ 	if (Tcl_GetInt(interp, argv[3], &qzType) != TCL_OK) {
+ 	    opserr << "WARNING invalid qzType\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;	
+ 	}
+ 
+ 	if (Tcl_GetDouble(interp, argv[4], &qult) != TCL_OK) {
+ 	    opserr << "WARNING invalid qult\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;
+ 	}
+ 
+ 	if (Tcl_GetDouble(interp, argv[5], &z50) != TCL_OK) {
+ 	    opserr << "WARNING invalid z50\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;	
+ 	}
+
+ 	if (Tcl_GetDouble(interp, argv[6], &suction) != TCL_OK) {
+ 	    opserr << "WARNING invalid suction\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;	
+ 	}
+ 
+ 	if (Tcl_GetDouble(interp, argv[7], &dashpot) != TCL_OK) {
+ 	    opserr << "WARNING invalid dashpot\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;	
+ 	}
+
+ 	if (Tcl_GetDouble(interp, argv[8], &alpha) != TCL_OK) {
+ 	    opserr << "WARNING invalid alpha\n";
+ 	    opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 	    return 0;	
+ 	}
+
+	if (strcmp(argv[9],"-timeSeries")!=0)
+	{
+ 		if (Tcl_GetInt(interp, argv[9], &solidElem1) != TCL_OK) {
+ 			opserr << "WARNING invalid solidElem\n";
+ 			opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 			return 0;	
+ 		}
+ 	
+ 		if (Tcl_GetInt(interp, argv[10], &solidElem2) != TCL_OK) {
+ 			opserr << "WARNING invalid solidElem\n";
+ 			opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+ 			return 0;	
+ 		}
+ 
+ 		// Parsing was successful, allocate the material
+ 		theMaterial = new QzLiq1(tag, qzType, qult, z50, suction, dashpot,alpha,
+ 								solidElem1, solidElem2, theDomain);
+	}
+	else
+	{
+		if (Tcl_GetInt(interp, argv[10], &seriesTag) != TCL_OK) {
+ 			opserr << "WARNING time Series\n";
+ 			opserr << "uniaxialMaterial QzLiq1: " << tag << endln;
+			return 0;
+
+ 		}
+		theSeries = OPS_getTimeSeries(seriesTag);
+ 
+ 		// Parsing was successful, allocate the material
+ 		theMaterial = new QzLiq1(tag, qzType, qult, z50, suction, dashpot,alpha,
+ 								theDomain, theSeries);
+	}
+
+     }
+ 
 //  INSERTING THE EXTRA LINES FOR TzSimple1 //////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
