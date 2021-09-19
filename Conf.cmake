@@ -31,7 +31,7 @@ option(OPS_Use_HDF5
   "HDF5 Dependent Code"                                    OFF)
 
 option(OPS_Use_PFEM
-  "                   "                                    ON )
+  "                   "                                    OFF)
 
 
 #==============================================================================

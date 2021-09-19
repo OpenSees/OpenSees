@@ -26,17 +26,16 @@ cmake_minimum_required(VERSION 3.16)
 project(OpenSees C CXX Fortran)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
 set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
 include(OpenSeesFunctions)
+
 # pseudo target modeling all exteral packages
 add_library(OPS_External_packages INTERFACE)
-
 #add_library(OPS_Element_libraries INTERFACE)
 
 # include user config
@@ -214,8 +213,6 @@ add_library(OPS_ModelBuilder       OBJECT)
 add_library(OPS_Domain             OBJECT)
 
 add_library(OPS_SysOfEqn           OBJECT)
-add_library(OPS_SysOfEqn_UMF       OBJECT)
-#add_library(OPS_SysOfEqn_SuperLU   OBJECT)
 
 add_library(OPS_Analysis           OBJECT)
 add_library(OPS_ConvergenceTest    OBJECT)
@@ -232,7 +229,9 @@ add_library(OPS_ASDEA              OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 #add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
-opensees_library(OPS_PFEM          LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES})
+
+opensees_library(OPS_SysOfEqn_UMF LINK ${UMFPACK_LIBRARIES})
+opensees_library(OPS_PFEM         LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES})
 
 
 # Packaged libraries
@@ -292,6 +291,7 @@ target_link_libraries(G3
     OPS_Recorder
     OPS_Handler
     OPS_SysOfEqn
+    ${OPS_SysOfEqn_List}
     OPS_Tagged 
     OPS_Utilities
     graph
@@ -421,7 +421,6 @@ if (OPS_Use_PFEM)
   add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
   #add_subdirectory("${OPS_EXTERNALS_DIR}/UMFPACK")
   #add_subdirectory("${OPS_EXTERNALS_DIR}/CSPARSE")
-  message("umfpack: ${umfpack}")
   target_link_libraries(${OPS_FINAL_TARGET}
     OPS_Element_PFEMElement OPS_PFEM  #tet
   )
