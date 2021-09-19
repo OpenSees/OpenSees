@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 #==============================================================================
 # 
 #        OpenSees -- Open System For Earthquake Engineering Simulation
@@ -9,6 +8,7 @@ cmake_minimum_required(VERSION 3.16)
 # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
 #
 #------------------------------------------------------------------------------
+#
 # Major sections:
 # - General Setup
 #   Project wide includes, properties, libraries, etc
@@ -20,7 +20,9 @@ cmake_minimum_required(VERSION 3.16)
 #   Specify target-specific compiler options, linking, etc
 #
 # - Option Application
+#
 #==============================================================================
+cmake_minimum_required(VERSION 3.16)
 project(OpenSees C CXX Fortran)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
