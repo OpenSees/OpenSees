@@ -48,7 +48,7 @@ add_subdirectory(nonlinearBeamColumn)
 
 add_subdirectory(catenaryCable)
 add_subdirectory(LHMYS)
-#add_subdirectory(PML)
+add_subdirectory(PML)
 add_subdirectory(RockingBC)
 add_subdirectory(absorbentBoundaries)
 add_subdirectory(adapter)

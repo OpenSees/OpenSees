@@ -1,5 +1,5 @@
 
-target_sources(OPS_SysOfEqn
+target_sources(OPS_SysOfEqn_UMF
     PRIVATE
         UmfpackGenLinSOE.cpp
         UmfpackGenLinSolver.cpp

@@ -41,13 +41,20 @@ option(OPS_Use_PFEM
 # name of the lib converted to uppercase and prepended with "OPSDEF_"
 # (e.g. using OPS_Element_truss defines the macro OPSDEF_ELEMENT_TRUSS)
 #==============================================================================
+set(OPS_Numlib_List
+)
+
+set(OPS_SysOfEqn_List
+  OPS_SysOfEqn_UMF
+)
+
 set(OPS_Extension_List
     OPS_ASDEA
     #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
 
-    OPS_NumLib_PETSC
-    OPS_NumLib_METIS
-    OPS_UMFPACK
+    #OPS_NumLib_PETSC
+    #OPS_NumLib_METIS
+    #OPS_UMFPACK
 
     OPS_Graphics
     OPS_Renderer 
@@ -67,7 +74,7 @@ set(OPS_Element_List
     #OPS_Element_beamWithHinges
     OPS_Element_LHMYS
     #OPS_Element_Dmglib
-    #OPS_Element_PML
+    OPS_Element_PML
     OPS_Element_RockingBC
     OPS_Element_UP_ucsd
     OPS_Element_absorbentBoundaries

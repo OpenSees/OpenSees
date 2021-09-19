@@ -1,18 +1,30 @@
 # Claudio Perez
 
-function (opensees_elements elemlib)
+function (opensees_library elemlib)
+  # opensees_library(<lib_name> [REQUIRES <requirement>] <sources>...)
+  cmake_parse_arguments(PARSE_ARGV 1 OPS_LIB_ARG "" "" "LINK;SOURCES")
   add_library(${elemlib} EXCLUDE_FROM_ALL)
-  set(private_sources ${ARGN})
-  set(public_sources ${ARGN})
+  set(private_sources ${OPS_LIB_ARG_SOURCES})
+  set(public_sources  ${OPS_LIB_ARG_SOURCES})
   list(FILTER private_sources INCLUDE REGEX ".*\.cpp")
   list(FILTER public_sources INCLUDE REGEX ".*\.h")
   target_sources(${elemlib} PRIVATE ${private_sources} PUBLIC ${public_sources})
+  if (OPS_LIB_ARG_LINK)
+    target_link_libraries(${elemlib} INTERFACE ${OPS_LIB_ARG_LINK}) 
+  endif()
   set_target_properties(${elemlib} PROPERTIES LINKER_LANGUAGE CXX)
-  message("PRIVATE ${private_sources} PUBLIC ${public_sources}")
+  #foreach(lib ${OPS_LIB_ARG_REQUIRE_NUMLIB})
+  #  list(APPEND OPS_Numlib_List ${lib})
+  #endforeach()
+  #set(OPS_Numlib_List ${OPS_Numlib_List} PARENT_SCOPE)
+endfunction()
+
+function (opensees_elements elemlib)
+  opensees_library(${elemlib} ${ARGN})
 endfunction()
 
 function (opensees_uniaxials unilib)
-  opensees_elements(${unilib} ${ARGN})
+  opensees_library(${unilib} ${ARGN})
 endfunction()
 
 
