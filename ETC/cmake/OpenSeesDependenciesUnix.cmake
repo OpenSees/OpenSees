@@ -63,4 +63,8 @@ opensees_load(HDF5                                           FIND)
 
 opensees_load(MySQL                                          FIND)
 
+# Integrated exteral libraries
+opensees_load(FEDEAS_Uniaxial
+  LIBRARY FALSE
+)
 

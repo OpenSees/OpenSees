@@ -32,7 +32,22 @@ set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
 include(OpenSeesFunctions)
+# pseudo target modeling all exteral packages
+add_library(OPS_External_packages INTERFACE)
+
+#add_library(OPS_Element_libraries INTERFACE)
+
+# include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
+
+message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
+message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
+message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
+message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
+message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
+message("OPS >>> TCL:     ${TCL_LIBRARY}")
+set(TCL_LIBRARIES ${TCL_LIBRARY})
+message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
@@ -46,10 +61,8 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 
 if (UNIX)
     include(OpenSeesDependenciesUnix)
-
     if(APPLE)
      message(STATUS ">>> MacOS")
-    
     else()
        message(STATUS ">>> LINUX")
        add_compile_definitions(_LINUX _UNIX _TCL85)
@@ -59,23 +72,11 @@ endif()
 
 if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     include(OpenSeesDependenciesWin)
-
-    # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
     add_compile_definitions(_WIN32)
-    # message("OPS >>> Including the following precompiled libs: '${ops_precompiled}'")
-    # target_sources(OPS_OS_Specific_libs INTERFACE  ${OPS_SRC_DIR}/api/win32Functions.cpp)
     message(STATUS ">>> WIN32")
 endif()
 
-message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
-message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-message("OPS >>> TCL:     ${TCL_LIBRARY}")
-set(TCL_LIBRARIES ${TCL_LIBRARY})
-message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 
 
 #==============================================================================

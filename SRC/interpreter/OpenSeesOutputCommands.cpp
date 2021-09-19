@@ -1574,6 +1574,41 @@ int OPS_updateElementDomain()
     return 0;
 }
 
+int OPS_eleType()
+{
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - eleType eleTag?\n";
+	return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING eleType eleTag? \n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+    
+    char buffer[80];
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+        opserr << "WARNING eleType ele " << tag << " not found" << endln;
+        return -1;
+    }
+    const char* type = theElement->getClassType();
+    sprintf(buffer, "%s", type);    
+    
+    if (OPS_SetString(buffer) < 0) {
+      opserr << "WARNING failed to set eleType\n";
+      return -1;
+    }
+
+    return 0;
+}
+
 int OPS_eleNodes()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {

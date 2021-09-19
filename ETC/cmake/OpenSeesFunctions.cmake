@@ -1,4 +1,21 @@
 # Claudio Perez
+
+function (opensees_elements elemlib)
+  add_library(${elemlib} EXCLUDE_FROM_ALL)
+  set(private_sources ${ARGN})
+  set(public_sources ${ARGN})
+  list(FILTER private_sources INCLUDE REGEX ".*\.cpp")
+  list(FILTER public_sources INCLUDE REGEX ".*\.h")
+  target_sources(${elemlib} PRIVATE ${private_sources} PUBLIC ${public_sources})
+  set_target_properties(${elemlib} PROPERTIES LINKER_LANGUAGE CXX)
+  message("PRIVATE ${private_sources} PUBLIC ${public_sources}")
+endfunction()
+
+function (opensees_uniaxials unilib)
+  opensees_elements(${unilib} ${ARGN})
+endfunction()
+
+
 function (opensees_add_cxx_flag)
     cmake_parse_arguments(
         PARSE_ARGV 0
@@ -27,6 +44,9 @@ endfunction()
 
 
 function (opensees_load lib_name)
+#
+#
+#
     cmake_parse_arguments(
       PARSE_ARGV 1
       OPS_LOAD_ARG # prefix of output variables
@@ -36,12 +56,6 @@ function (opensees_load lib_name)
     )
     set(OPS_PKG_FOUND_VAR "${lib_name}_FOUND")# PARENT_SCOPE) 
     set(${OPS_PKG_FOUND_VAR} FALSE)# PARENT_SCOPE)
-
-    #if(OPS_LOAD_ARG_BUILD)
-    #    message("OPS >>> Using OpenSees bundled library '${lib_name}'")
-    #    set(${OPS_PKG_FOUND_VAR} TRUE PARENT_SCOPE)
-    #    opensees_build(${lib_name})
-    #    return()
 
     if(OPS_LOAD_ARG_LIBRARY)
         if(NOT ${${OPS_PKG_FOUND_VAR}})
@@ -64,7 +78,7 @@ function (opensees_load lib_name)
           message("OPS >>> find_package(${lib_name})")
           find_package(${lib_name})
           message("OPS >>> status: ${OPS_PKG_FOUND_VAR}=${${OPS_PKG_FOUND_VAR}}")
-	endif()
+	      endif()
     endif()
 
     if(OPS_LOAD_ARG_BUNDLED)
@@ -78,8 +92,10 @@ function (opensees_load lib_name)
             set("${lib_name}_LIBRARIES" "${lib_name}") 
         endif()
     endif()
+
     set("${lib_name}_LIBRARIES"    ${${lib_name}_LIBRARIES}    PARENT_SCOPE)
     set("${lib_name}_INCLUDE_DIRS" ${${lib_name}_INCLUDE_DIRS} PARENT_SCOPE)
+    target_compile_definitions(OPS_External_packages INTERFACE "OPSDEF_${lib_name}")
     message("    status: ${lib_name}_LIBRARIES    =${${lib_name}_LIBRARIES}")
     message("    status: ${lib_name}_INCLUDE_DIRS =${${lib_name}_INCLUDE_DIRS}\n")
 endfunction()
