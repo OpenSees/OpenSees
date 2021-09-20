@@ -31,6 +31,7 @@ target_sources(OPS_Material
       SteelMPF.cpp
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
+      TclDegradingUniaxial.cpp
     PUBLIC
       AxialSp.h
       AxialSp.h

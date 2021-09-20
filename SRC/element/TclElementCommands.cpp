@@ -148,11 +148,9 @@ extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
-#if defined(OPSDEF_ELEMENT_PFEM)
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
-#endif
 #if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
@@ -161,6 +159,7 @@ extern void* OPS_BeamColumn3DwLHNMYS(void);
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_CatenaryCableElement(void);
+extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
@@ -194,10 +193,8 @@ extern void *OPS_BeamGT(void);
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
 
-#if defined(OPSDEF_Element_FEAP)
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
-#endif // _OPS_Element_FEAP
 
 extern int
 Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -1222,6 +1219,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 #endif
   } else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "ASDEmbeddedNodeElement") == 0) {
+      void *theEle = OPS_ASDEmbeddedNodeElement();
       if (theEle != 0) {
     theElement = (Element*)theEle;
       } else {

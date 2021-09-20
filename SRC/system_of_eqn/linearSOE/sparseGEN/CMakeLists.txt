@@ -1,13 +1,13 @@
 
 target_sources(OPS_SysOfEqn
-    PRIVATE 
-        SparseGenColLinSOE.cpp
+  PRIVATE 
+    SparseGenColLinSOE.cpp
     SparseGenColLinSolver.cpp
     SparseGenRowLinSOE.cpp
     SparseGenRowLinSolver.cpp
     SuperLU.cpp
-    PUBLIC
-        SparseGenColLinSOE.h
+  PUBLIC
+    SparseGenColLinSOE.h
     SparseGenColLinSolver.h
     SparseGenRowLinSOE.h
     SparseGenRowLinSolver.h

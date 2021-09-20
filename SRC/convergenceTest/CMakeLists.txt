@@ -1,8 +1,8 @@
 #add_library(convergenceTest OBJECT)
 
 target_sources(OPS_ConvergenceTest
-    PRIVATE
-        ConvergenceTest.cpp
+  PRIVATE
+    ConvergenceTest.cpp
     CTestNormUnbalance.cpp
     CTestNormDispIncr.cpp
     CTestEnergyIncr.cpp
@@ -13,8 +13,8 @@ target_sources(OPS_ConvergenceTest
     CTestRelativeTotalNormDispIncr.cpp
     NormDispAndUnbalance.cpp
     NormDispOrUnbalance.cpp
-    PUBLIC
-        ConvergenceTest.h
+  PUBLIC
+    ConvergenceTest.h
     CTestNormUnbalance.h
     CTestNormDispIncr.h
     CTestEnergyIncr.h
@@ -28,9 +28,10 @@ target_sources(OPS_ConvergenceTest
 )
 
 target_sources(OPS_PFEM
-    PRIVATE
+  PRIVATE
     CTestPFEM.cpp
-    PUBLIC
+  PUBLIC
     CTestPFEM.h
 )
 target_include_directories(OPS_ConvergenceTest PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

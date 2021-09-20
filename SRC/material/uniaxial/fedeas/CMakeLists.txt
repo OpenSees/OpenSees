@@ -37,6 +37,8 @@ target_sources(OPS_Uniaxial_Fedeas_f
 )
 target_link_libraries(OPS_Uniaxial_Fedeas PUBLIC
   OPS_Uniaxial_Fedeas_f
-  ${BUNDLE_LIBS}/fedeas.lib)
+  ${FEDEAS_Uniaxial_LIBRARIES}
+  #${BUNDLE_LIBS}/fedeas.lib
+)
 #target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
