@@ -760,7 +760,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-#if defined(OPSDEF_ELEMENT_PML)
+#if !defined(OPS_EXCLUDE_ELEMENT_PML)
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -893,10 +893,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
-#if defined(OPSDEF_ELEMENT_PFEM)
+#if !defined(OPS_EXCLUDE_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
-#endif // OPSDEF_ELEMENT_PFEM
+#endif // OPS_EXCLUDE_ELEMENT_PFEM
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
@@ -1293,7 +1293,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-#endif
+#endif // OPSDEF_UNIAXIAL_FEDEAS
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 

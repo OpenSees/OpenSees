@@ -414,16 +414,22 @@ foreach(extension IN LISTS OPS_SysOfEqn_List OPS_Element_List OPS_Extension_List
     # message("    Adding macro definition '${ext_flag}'")
     add_compile_definitions(${ext_flag})
 endforeach()
+foreach(extension IN LISTS OPS_Exclude_List)
+    string(TOUPPER "${extension}" ext_flag) 
+    string(REGEX REPLACE "^OPS_" "OPS_EXCLUDE_" ext_flag "${ext_flag}")
+    message("    Adding macro definition '${ext_flag}'")
+    add_compile_definitions(${ext_flag})
+endforeach()
 
 # PFEM
 #----------------------------
 if (OPS_Use_PFEM)
-  add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
-  #add_subdirectory("${OPS_EXTERNALS_DIR}/UMFPACK")
-  #add_subdirectory("${OPS_EXTERNALS_DIR}/CSPARSE")
+  #add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
   target_link_libraries(${OPS_FINAL_TARGET}
     OPS_Element_PFEMElement OPS_PFEM  #tet
   )
+  else()
+    add_compile_definitions(OPS_EXCLUDE_PFEMELEMENT)
 endif()
 
 # Renderer

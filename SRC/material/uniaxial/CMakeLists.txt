@@ -31,7 +31,7 @@ target_sources(OPS_Material
       SteelMPF.cpp
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
-      TclDegradingUniaxial.cpp
+      #TclDegradingUniaxial.cpp
     PUBLIC
       AxialSp.h
       AxialSp.h
@@ -152,6 +152,7 @@ target_sources(OPS_Material
       Steel4.cpp
       SteelBRB.cpp
       SteelECThermal.cpp
+      SteelFractureDI.cpp
       SteelMP.cpp
       TDConcrete.cpp
       TDConcreteEXP.cpp

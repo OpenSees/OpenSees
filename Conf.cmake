@@ -31,7 +31,7 @@ option(OPS_Use_HDF5
   "HDF5 Dependent Code"                                    OFF)
 
 option(OPS_Use_PFEM
-  "                   "                                    OFF)
+  "                   "                                    ON )
 
 
 #==============================================================================
@@ -47,8 +47,6 @@ set(OPS_Numlib_List
 set(OPS_SysOfEqn_List
   OPS_SysOfEqn_UMF
   #OPS_SysOfEqn_ITPACK
-  #OPS_NumLib_PETSC
-  #OPS_NumLib_METIS
 )
 
 set(OPS_Extension_List
@@ -94,9 +92,11 @@ set(OPS_Element_List
   OPS_Element_surfaceLoad
   OPS_Element_updatedLagrangianBeamColumn
   OPS_Element_masonry
-  #OPS_Element_feap
-  #OPS_Element_PFEMElement
+  OPS_Element_PFEMElement
   OPS_Element_CEq
 )
 
+set(OPS_Exclude_List
+  OPS_Element_feap
+)
 

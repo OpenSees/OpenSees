@@ -2923,9 +2923,10 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
     
 
+#if defined(OPSDEF_DAMAGE_FEDEAS)
       if (theMaterial == 0)
         theMaterial = TclModelBuilder_addDegradingMaterial(clientData, interp, argc, argv);
-
+#endif
     }
 
     if (theMaterial == 0) {
