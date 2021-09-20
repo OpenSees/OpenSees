@@ -1548,7 +1548,7 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-#ifdef OPSDEF_MATERIAL_STRESSDENSITY
+#if !defined(OPS_EXCLUDE_MATERIAL_STRESSDENSITY)
   case ND_TAG_stressDensity:
       return new stressDensity();
 #endif
