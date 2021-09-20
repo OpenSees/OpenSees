@@ -48,15 +48,18 @@ opensees_load(LAPACK
 
 #set(ENV{SUPERLU_DIR})
 opensees_load(SUPERLU
-    BUNDLED ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
+  #BUNDLED ${OPS_BUNDLED_DIR}/SuperLU_5.1.1/
+  LIBRARY ${OPS_BUNDLED_DIR}/bin/SuperLU_5.1.1/Debug/SUPERLU.lib
 )
 
 opensees_load(ARPACK                                       SEARCH
-    BUNDLED ${OPS_BUNDLED_DIR}/ARPACK/
+  #BUNDLED ${OPS_BUNDLED_DIR}/ARPACK/
+  LIBRARY ${OPS_BUNDLED_DIR}/bin/ARPACK/Debug/ARPACK.lib
 )
 
 opensees_load(AMD
-    BUNDLED ${OPS_BUNDLED_DIR}/AMD/
+  #BUNDLED ${OPS_BUNDLED_DIR}/AMD/
+  LIBRARY ${OPS_BUNDLED_DIR}/bin/AMD/Debug/AMD.lib
 )
 
 opensees_load(METIS                                        SEARCH)
