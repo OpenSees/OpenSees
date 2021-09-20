@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 #add_library(handler OBJECT)
 
 target_sources(OPS_Handler

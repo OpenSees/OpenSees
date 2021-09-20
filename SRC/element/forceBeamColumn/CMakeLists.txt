@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 add_library(OPS_Element_forceBeamColumn)
 add_library(OPS_Element_forceBeamColumn_f)
 

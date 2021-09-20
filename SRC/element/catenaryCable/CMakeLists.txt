@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 add_library(OPS_Element_catenaryCable OBJECT)
 
 target_sources(OPS_Element_catenaryCable

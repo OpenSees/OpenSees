@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 add_library(OPS_Uniaxial_Fedeas)
 target_sources(OPS_Uniaxial_Fedeas
     PRIVATE

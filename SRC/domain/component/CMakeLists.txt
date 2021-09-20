@@ -1,6 +1,11 @@
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     DomainComponent.cpp
     Parameter.cpp
     ElementParameter.cpp
@@ -9,7 +14,7 @@ target_sources(OPS_Domain
     MaterialStageParameter.cpp
     MatParameter.cpp
     ElementStateParameter.cpp
-    PUBLIC
+  PUBLIC
     DomainComponent.h
     Parameter.h
     ElementParameter.h
@@ -21,18 +26,18 @@ target_sources(OPS_Domain
 )
 
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     InitialStateParameter.cpp
-    PUBLIC
+  PUBLIC
     InitialStateParameter.h
 )
         
 #target_sources(OPS_Reliability
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     RVParameter.cpp
     DVParameter.cpp
-    PUBLIC
+  PUBLIC
     RVParameter.h
     DVParameter.h
 )

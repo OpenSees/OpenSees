@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
 # add_library(OPS_Tcl OBJECT)
 # Uncomment once all tcl-related files are moved under the SRC/tcl

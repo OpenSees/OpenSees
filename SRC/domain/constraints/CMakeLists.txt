@@ -1,13 +1,18 @@
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     MP_Constraint.cpp 
     RigidBeam.cpp 
     RigidDiaphragm.cpp
     RigidRod.cpp 
     SP_Constraint.cpp 
     Pressure_Constraint.cpp
-    PUBLIC
+  PUBLIC
     MP_Constraint.h 
     RigidBeam.h 
     RigidDiaphragm.h
@@ -16,10 +21,10 @@ target_sources(OPS_Domain
     Pressure_Constraint.h
 )
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     ImposedMotionSP.cpp 
     ImposedMotionSP1.cpp
-    PUBLIC
+  PUBLIC
     ImposedMotionSP.h 
     ImposedMotionSP1.h
 )

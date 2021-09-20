@@ -1,11 +1,16 @@
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Domain
-    PRIVATE    
-        GroundMotion.cpp
+  PRIVATE    
+    GroundMotion.cpp
     GroundMotionRecord.cpp
     InterpolatedGroundMotion.cpp
-    PUBLIC
-        GroundMotion.h
+  PUBLIC
+    GroundMotion.h
     GroundMotionRecord.h
     InterpolatedGroundMotion.h
 )

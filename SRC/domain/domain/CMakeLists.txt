@@ -1,9 +1,14 @@
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     Domain.cpp
     DomainModalProperties.cpp
-    PUBLIC
+  PUBLIC
     Domain.h
     DomainModalProperties.h
     ElementIter.h
@@ -16,8 +21,8 @@ target_sources(OPS_Domain
     SubdomainIter.h
 )
 
+add_subdirectory(single)
+add_subdirectory(partitioned)
 
 target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(single)
-add_subdirectory(partitioned)

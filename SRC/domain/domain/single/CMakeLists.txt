@@ -1,6 +1,11 @@
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Domain
-    PRIVATE
+  PRIVATE
     SingleDomEleIter.cpp 
     SingleDomNodIter.cpp
     SingleDomSP_Iter.cpp 
@@ -8,7 +13,7 @@ target_sources(OPS_Domain
     SingleDomAllSP_Iter.cpp
     SingleDomParamIter.cpp  
     SingleDomPC_Iter.cpp
-    PUBLIC
+  PUBLIC
     SingleDomEleIter.h 
     SingleDomNodIter.h
     SingleDomSP_Iter.h 
