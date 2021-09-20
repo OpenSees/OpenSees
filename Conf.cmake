@@ -61,7 +61,6 @@ set(OPS_Extension_List
 )
 
 set(OPS_Element_List
-  OPS_Uniaxial_Fedeas
   OPS_Element_truss
   #OPS_Element_beam2d
   OPS_Element_beam3d
@@ -99,5 +98,7 @@ set(OPS_Element_List
 set(OPS_Exclude_List
   OPS_Element_feap
   OPS_Material_StressDensity
+  OPS_Recorder_PVD
+  OPS_Uniaxial_Fedeas
 )
 

@@ -1,7 +1,11 @@
-#add_library(OPS_Damage OBJECT)
-
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(OPS_Damage
-    PRIVATE
+  PRIVATE
     DamageModel.cpp
     HystereticEnergy.cpp
     Kratzig.cpp
@@ -9,7 +13,7 @@ target_sources(OPS_Damage
     ParkAng.cpp
     NormalizedPeak.cpp
     DamageResponse.cpp
-    PUBLIC
+  PUBLIC
     DamageModel.h
     HystereticEnergy.h
     Kratzig.h
