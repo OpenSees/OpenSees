@@ -424,7 +424,7 @@ endforeach()
 # PFEM
 #----------------------------
 if (OPS_Use_PFEM)
-  add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
+  #add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
   target_link_libraries(${OPS_FINAL_TARGET}
     OPS_Element_PFEMElement OPS_PFEM  #tet
   )

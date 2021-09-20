@@ -152,6 +152,7 @@ target_sources(OPS_Material
       Steel4.cpp
       SteelBRB.cpp
       SteelECThermal.cpp
+      SteelFractureDI.cpp
       SteelMP.cpp
       TDConcrete.cpp
       TDConcreteEXP.cpp
