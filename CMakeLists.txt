@@ -230,8 +230,8 @@ add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 #add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
-opensees_library(OPS_SysOfEqn_UMF LINK ${UMFPACK_LIBRARIES})
-opensees_library(OPS_PFEM         LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES})
+opensees_library(OPS_SysOfEqn_UMF LINK ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
+opensees_library(OPS_PFEM         LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
 
 
 # Packaged libraries

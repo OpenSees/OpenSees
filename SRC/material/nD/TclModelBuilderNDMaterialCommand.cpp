@@ -528,7 +528,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-#ifdef OPSDEF_MATERIAL_STRESSDENSITY
     else if ((strcmp(argv[1],"stressDensity") == 0) || (strcmp(argv[1],"StressDensity") == 0)) {
       
       void *theMat = OPS_StressDensityMaterial();
@@ -537,7 +536,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else
 	return TCL_ERROR;
     }
-#endif
 
     else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0)) {
 
