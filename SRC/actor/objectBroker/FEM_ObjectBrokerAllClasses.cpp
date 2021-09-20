@@ -891,10 +891,8 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
-#if !defined(OPS_EXCLUDE_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
-#endif // OPS_EXCLUDE_ELEMENT_PFEM
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
