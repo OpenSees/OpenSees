@@ -159,16 +159,13 @@
 #include "J2ThreeDimensional.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
-
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
 //#include "ConcreteS.h"
 #include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
-
 #include "feap/FeapMaterial03.h"
-
 #include "CycLiqCP3D.h"
 #include "CycLiqCPPlaneStrain.h"
 #include "CycLiqCPSP3D.h"
@@ -305,7 +302,6 @@
 #include "frictionBearing/TripleFrictionPendulum.h"
 
 #include "PFEMElement/PFEMElement2D.h"
-
 #include "RockingBC/RockingBC.h"
 
 #include "CEqElement/ASDEmbeddedNodeElement.h"
