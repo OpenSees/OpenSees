@@ -291,7 +291,6 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 // #include <BandSPDLinThreadSolver.h>
 
 #include <SparseGenColLinSOE.h>
-
 #include <PFEMSolver.h>
 #include <PFEMSolver_Umfpack.h>
 #include <PFEMLinSOE.h>
@@ -343,12 +342,8 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 #include <SparseGenRowLinSOE.h>
 #include <SymSparseLinSOE.h>
 #include <SymSparseLinSolver.h>
-
-#if defined(OPSDEF_Numerics_UMFPACK)
 #include <UmfpackGenLinSOE.h>
 #include <UmfpackGenLinSolver.h>
-#endif // _OPS_Numerics_UMFPACK
-
 #include <EigenSOE.h>
 #include <EigenSolver.h>
 #include <ArpackSOE.h>
@@ -2491,7 +2486,6 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
-
     } else if(strcmp(argv[1], "PFEM") == 0) {
 
         if(argc < 5) {
@@ -3339,7 +3333,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     SymSparseLinSolver *theSolver = new SymSparseLinSolver();
     theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
   }    
-#if defined(OPSDEF_Numerics_UMFPACK) 
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
     
     // now must determine the type of solver to create from rest of args
@@ -3365,7 +3358,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
-#endif // OPS_Numerics_UMFPACK
   
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {

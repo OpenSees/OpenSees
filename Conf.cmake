@@ -51,13 +51,14 @@ set(OPS_SysOfEqn_List
 
 set(OPS_Extension_List
   OPS_ASDEA
+  OPS_Paraview
   #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
 
 
-  OPS_Graphics
-  OPS_Renderer 
-  OPS_Renderer_GLX      # TODO: replace existing tests on '_GLX'
-  OPS_Renderer_X11
+  #OPS_Graphics
+  #OPS_Renderer 
+  #OPS_Renderer_GLX      # TODO: replace existing tests on '_GLX'
+  #OPS_Renderer_X11
 )
 
 set(OPS_Element_List

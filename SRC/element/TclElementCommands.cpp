@@ -521,7 +521,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-#if !defined(OPS_EXCLUDE_ELEMENT_PML)
+// #if !defined(OPS_EXCLUDE_ELEMENT_PML)
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -535,7 +535,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-#endif
+// #endif
   /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
     Element *theEle = 0;

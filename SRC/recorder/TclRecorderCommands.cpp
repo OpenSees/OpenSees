@@ -1840,12 +1840,10 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 (*theRecorder) = thePlotter;
  #endif // _NOGRAPHICS
      } 
-#if !defined(OPS_EXCLUDE_RECORDER_PVD)
      else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
-#endif // OPS_EXCLUDE_RECORDER_PVD
 
      else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);

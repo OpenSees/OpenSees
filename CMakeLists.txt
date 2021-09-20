@@ -322,7 +322,7 @@ target_link_libraries(G3
 #>>>>>>> Stashed changes
 
 target_link_libraries(OpenSees
-    #OPS_Paraview
+    ${OPS_Extension_List}
     OPS_Renderer
     OPS_Database
     OPS_ConvergenceTest
