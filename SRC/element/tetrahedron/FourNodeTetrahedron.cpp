@@ -1701,7 +1701,7 @@ FourNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output
 
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
   {
-    for (int i=1; i<=3; i++) 
+    for (int i=1; i<=4; i++) 
     {
       sprintf(outputData,"P1_%d",i);
       output.tag("ResponseType",outputData);

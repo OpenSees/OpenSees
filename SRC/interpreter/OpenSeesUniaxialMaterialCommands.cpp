@@ -76,6 +76,7 @@ void* OPS_EPPGapMaterial();
 void* OPS_ENTMaterial();
 void* OPS_Steel01();
 void* OPS_Steel02();
+void* OPS_SteelFractureDI();
 void* OPS_Steel02Fatigue();
 void* OPS_Steel03();
 void* OPS_Concrete01();
@@ -131,9 +132,12 @@ void* OPS_BWBN();
 void* OPS_PySimple1();
 void* OPS_TzSimple1();
 void* OPS_QzSimple1();
+void* OPS_PySimple2();
+void* OPS_TzSimple2();
 void* OPS_QzSimple2();
 void* OPS_PyLiq1();
 void* OPS_TzLiq1();
+void* OPS_QzLiq1();
 void* OPS_KikuchiAikenHDR();
 void* OPS_KikuchiAikenLRB();
 void* OPS_AxialSp();
@@ -176,6 +180,7 @@ void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
 void* OPS_SLModel();
+void* OPS_SMAMaterial();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -298,6 +303,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("QzSimple2", &OPS_QzSimple2));
 	uniaxialMaterialsMap.insert(std::make_pair("PyLiq1", &OPS_PyLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("TzLiq1", &OPS_TzLiq1));
+	uniaxialMaterialsMap.insert(std::make_pair("QzLiq1", &OPS_QzLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenHDR", &OPS_KikuchiAikenHDR));
 	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenLRB", &OPS_KikuchiAikenLRB));
 	uniaxialMaterialsMap.insert(std::make_pair("AxialSp", &OPS_AxialSp));
@@ -342,10 +348,12 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
 	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+	uniaxialMaterialsMap.insert(std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));	
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
+	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
 	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 	return 0;

@@ -1,6 +1,6 @@
 
-#ifndef Explicitdifference_h
-#define Explicitdifference_h
+#ifndef ExplicitDifference_h
+#define ExplicitDifference_h
 
 
 #include<TransientIntegrator.h>
@@ -9,12 +9,12 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class Explicitdifference : public TransientIntegrator
+class ExplicitDifference : public TransientIntegrator
 {
 public:
-	Explicitdifference();
-	Explicitdifference(double alphaM, double betaK, double betaKi, double betaKc);
-	~Explicitdifference();                                                                //constructors and unconstructor
+	ExplicitDifference();
+	ExplicitDifference(double alphaM, double betaK, double betaKi, double betaKc);
+	~ExplicitDifference();                                                                //constructors and unconstructor
 
 	                                                 
 

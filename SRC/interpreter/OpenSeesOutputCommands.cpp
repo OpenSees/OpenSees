@@ -314,6 +314,10 @@ int OPS_nodeEigenvector()
 
     // get eigen vectors
     Node* theNode = theDomain->getNode(data[0]);
+    if (theNode == 0) {
+	    opserr << "nodeEigenvector - node with tag " << data[0] << " not found\n";
+	    return -1;
+    }
     const Matrix &theEigenvectors = theNode->getEigenvectors();
 
     int size = theEigenvectors.noRows();
@@ -1570,6 +1574,41 @@ int OPS_updateElementDomain()
     return 0;
 }
 
+int OPS_eleType()
+{
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - eleType eleTag?\n";
+	return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING eleType eleTag? \n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+    
+    char buffer[80];
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+        opserr << "WARNING eleType ele " << tag << " not found" << endln;
+        return -1;
+    }
+    const char* type = theElement->getClassType();
+    sprintf(buffer, "%s", type);    
+    
+    if (OPS_SetString(buffer) < 0) {
+      opserr << "WARNING failed to set eleType\n";
+      return -1;
+    }
+
+    return 0;
+}
+
 int OPS_eleNodes()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -2263,8 +2302,8 @@ int OPS_sectionFlexibility()
 int OPS_sectionLocation()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr << "WARNING want - sectionLocation eleTag? secNum? \n";
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionLocation eleTag? <secNum?> \n";
 	return -1;
     }
 
@@ -2273,17 +2312,21 @@ int OPS_sectionLocation()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 2;
-    int data[2];
-
-    if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionLocation eleTag? secNum? - could not read int input? \n";
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
 	return -1;
     }
 
-    int tag = data[0];
-    int secNum = data[1];
-
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+    
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
@@ -2309,20 +2352,27 @@ int OPS_sectionLocation()
     Information &info = theResponse->getInformation();
 
     const Vector &theVec = *(info.theVector);
-    if (secNum <= 0 || secNum > theVec.Size()) {
-	opserr << "WARNING invalid secNum\n";
-	delete theResponse;
-	return -1;
-    }
+    int Np = theVec.Size();
 
-    double value = theVec(secNum-1);
-    numdata = 1;
-
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    if (secNum > 0 && secNum <= Np) { // One IP
+      double value = theVec(secNum-1);
+      numdata = 1;
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
-    }
+      }
+    } else { // All IPs in a list
+      std::vector<double> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theVec(i);
+      numdata = Np;
+      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
+    }        
 
     delete theResponse;
 
@@ -2332,8 +2382,8 @@ int OPS_sectionLocation()
 int OPS_sectionWeight()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr << "WARNING want - sectionWeight eleTag? secNum? \n";
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionWeight eleTag? <secNum?> \n";
 	return -1;
     }
 
@@ -2342,17 +2392,21 @@ int OPS_sectionWeight()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 2;
-    int data[2];
-
-    if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionWeight eleTag? secNum? - could not read int input? \n";
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
 	return -1;
     }
 
-    int tag = data[0];
-    int secNum = data[1];
-
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+    
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
@@ -2378,19 +2432,106 @@ int OPS_sectionWeight()
     Information &info = theResponse->getInformation();
 
     const Vector &theVec = *(info.theVector);
-    if (secNum <= 0 || secNum > theVec.Size()) {
-	opserr << "WARNING invalid secNum\n";
-	delete theResponse;
-	return -1;
-    }
+    int Np = theVec.Size();
 
-    double value = theVec(secNum-1);
-    numdata = 1;
-
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    if (secNum > 0 && secNum <= Np) { // One IP
+      double value = theVec(secNum-1);
+      numdata = 1;
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<double> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theVec(i);
+      numdata = Np;
+      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
+    }    
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionTag()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionTag eleTag? <secNum?> \n";
+	return -1;
+    }
+
+    //opserr << "sectionLocation: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+    }
+
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionTag - element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "sectionTags";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const ID &theID = *(info.theID);
+    int Np = theID.Size();
+
+    if (secNum > 0 && secNum <= Np) { // One IP
+      int value = theID(secNum-1);
+      numdata = 1;
+      if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<int> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theID(i);
+      numdata = Np;
+      if (OPS_SetIntOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;

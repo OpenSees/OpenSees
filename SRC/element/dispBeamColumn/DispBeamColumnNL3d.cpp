@@ -1733,6 +1733,9 @@ DispBeamColumnNL3d::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+  
   output.endTag();
   return theResponse;
 }
@@ -1854,6 +1857,13 @@ DispBeamColumnNL3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111 || responseID == 1111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];
