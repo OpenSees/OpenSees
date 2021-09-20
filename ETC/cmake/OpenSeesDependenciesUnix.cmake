@@ -74,6 +74,6 @@ opensees_load(MySQL                                          FIND)
 
 # Integrated exteral libraries
 opensees_load(FEDEAS_Uniaxial
-  LIBRARY FALSE
+  LIBRARY /home/claudio/pkgs/FEDEAS/bin/src/uniaxial/libfedeas_uniaxial.a
 )
 

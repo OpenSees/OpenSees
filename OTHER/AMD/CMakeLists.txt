@@ -14,15 +14,10 @@
 # Claudio Perez
 
 project(AMD)
-
-add_library(AMD)
-
-target_compile_options(AMD PRIVATE -fexceptions -fPIC -I.)
-
 #-------------------------------------------------------------------------------
 # source files
 #-------------------------------------------------------------------------------
-target_sources(AMD PRIVATE
+set(AMD_SOURCES
   amd_aat.c
   amd_1.c
   amd_2.c
@@ -35,23 +30,23 @@ target_sources(AMD PRIVATE
   amd_info.c
   amd_valid.c
   amd_preprocess.c
-  SuiteSparse_config.c
 )
-
 
 #-------------------------------------------------------------------------------
 # compile each int and long routine (with no real/complex version)
 #-------------------------------------------------------------------------------
 
-#amd_i_%.o: amd_%.c $(INC)
-#	$(C) -DDINT -c $< -o $@
-#
-## amd_l_%.o: amd_%.c $(INC)
-## 	$(C) -DDLONG -c $< -o $@
-#
-#$(AMD_LIBRARY): $(AMDI) SuiteSparse_config.o
-#	@$(RM) $(RMFLAGS) $(AMD_LIBRARY)
-#	@$(AR) $(ARFLAGS) $(AMD_LIBRARY) $(AMDI) SuiteSparse_config.o
-#	@$(RANLIB) $(AMD_LIBRARY)
+add_library(AMD_DINT ${AMD_SOURCES})
+target_compile_definitions(AMD_DINT PRIVATE DINT)
+target_compile_options(AMD_DINT PRIVATE -fexceptions -fPIC -I.)
+
+add_library(AMD_DLNG ${AMD_SOURCES})
+target_compile_definitions(AMD_DINT PRIVATE DLONG)
+target_compile_options(AMD_DLNG PRIVATE -fexceptions -fPIC -I.)
+
+#-------------------------------------------------------------------------------
+
+add_library(AMD SuiteSparse_config.c)
+target_link_libraries(AMD PRIVATE AMD_DINT AMD_DLNG)
 
 

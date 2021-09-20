@@ -3,10 +3,6 @@
 #        OpenSees -- Open System For Earthquake Engineering Simulation
 #                Pacific Earthquake Engineering Research Center
 #
-#     (c) Copyright 1999-2021 The Regents of the University of California
-#                             All Rights Reserved
-#        (Licensing @ http://www.berkeley.edu/OpenSees/copyright.html)
-#
 #------------------------------------------------------------------------------
 #                       CSPARSE version 3.1.0, Jun 1 2012
 #                Timothy A. Davis, http://www.suitesparse.com

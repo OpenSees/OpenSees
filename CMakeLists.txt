@@ -408,7 +408,7 @@ endif()
 # Extensions
 #----------------------------
 message("OPS >>> Configuring OpenSees extensions")
-foreach(extension IN LISTS OPS_Element_List OPS_Extension_List)
+foreach(extension IN LISTS OPS_SysOfEqn_List OPS_Element_List OPS_Extension_List)
     string(TOUPPER "${extension}" ext_flag) 
     string(REGEX REPLACE "^OPS_" "OPSDEF_" ext_flag "${ext_flag}")
     # message("    Adding macro definition '${ext_flag}'")

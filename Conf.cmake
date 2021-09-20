@@ -46,57 +46,57 @@ set(OPS_Numlib_List
 
 set(OPS_SysOfEqn_List
   OPS_SysOfEqn_UMF
+  #OPS_SysOfEqn_ITPACK
+  #OPS_NumLib_PETSC
+  #OPS_NumLib_METIS
 )
 
 set(OPS_Extension_List
-    OPS_ASDEA
-    #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
+  OPS_ASDEA
+  #OPS_Reliability       # TODO: replace existing tests on '_RELIABILITY'
 
-    #OPS_NumLib_PETSC
-    #OPS_NumLib_METIS
-    #OPS_UMFPACK
 
-    OPS_Graphics
-    OPS_Renderer 
-    OPS_Renderer_GLX      # TODO: replace existing tests on '_GLX'
-    OPS_Renderer_X11
+  OPS_Graphics
+  OPS_Renderer 
+  OPS_Renderer_GLX      # TODO: replace existing tests on '_GLX'
+  OPS_Renderer_X11
 )
 
 set(OPS_Element_List
-    #OPS_Material_StressDensity
-    #OPS_Uniaxial_Fedeas
-    OPS_Element_truss
-    #OPS_Element_beam2d
-    OPS_Element_beam3d
-    OPS_Element_dispBeamColumnInt
-    OPS_Element_forceBeamColumn
-    OPS_Element_mixedBeamColumn
-    #OPS_Element_beamWithHinges
-    OPS_Element_LHMYS
-    #OPS_Element_Dmglib
-    OPS_Element_PML
-    OPS_Element_RockingBC
-    OPS_Element_UP_ucsd
-    OPS_Element_absorbentBoundaries
-    OPS_Element_adapter
-    OPS_Element_catenaryCable
-    OPS_Element_componentElement
+  #OPS_Material_StressDensity
+  OPS_Uniaxial_Fedeas
+  OPS_Element_truss
+  #OPS_Element_beam2d
+  OPS_Element_beam3d
+  OPS_Element_dispBeamColumnInt
+  OPS_Element_forceBeamColumn
+  OPS_Element_mixedBeamColumn
+  #OPS_Element_beamWithHinges
+  OPS_Element_LHMYS
+  #OPS_Element_Dmglib
+  OPS_Element_PML
+  OPS_Element_RockingBC
+  OPS_Element_UP_ucsd
+  OPS_Element_absorbentBoundaries
+  OPS_Element_adapter
+  OPS_Element_catenaryCable
+  OPS_Element_componentElement
 
-    OPS_Element_elastomericBearing
-    OPS_Element_frictionBearing
+  OPS_Element_elastomericBearing
+  OPS_Element_frictionBearing
 
-    OPS_Element_generic
-    OPS_Element_gradientInelasticBeamColumn
-    OPS_Element_joint
-    OPS_Element_mvlem
-    OPS_Element_pyMacro
-    OPS_Element_shell
-    OPS_Element_surfaceLoad
-    OPS_Element_updatedLagrangianBeamColumn
-    OPS_Element_masonry
-    #OPS_Element_feap
-    #OPS_Element_PFEMElement
-    OPS_Element_CEq
+  OPS_Element_generic
+  OPS_Element_gradientInelasticBeamColumn
+  OPS_Element_joint
+  OPS_Element_mvlem
+  OPS_Element_pyMacro
+  OPS_Element_shell
+  OPS_Element_surfaceLoad
+  OPS_Element_updatedLagrangianBeamColumn
+  OPS_Element_masonry
+  #OPS_Element_feap
+  #OPS_Element_PFEMElement
+  OPS_Element_CEq
 )
 
 
