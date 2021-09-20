@@ -42,28 +42,28 @@ opensees_load(LAPACK                                         FIND
 )
 
 opensees_load(SUPERLU                                       #FIND 
-  #BUNDLED "${OPS_BUNDLED_DIR}/SuperLU_5.1.1/"
-  LIBRARY "${OPS_BUNDLED_DIR}/bin/SuperLU_5.1.1/libSUPERLU.a"
+  BUNDLED "${OPS_BUNDLED_DIR}/SuperLU_5.1.1/"
+  #LIBRARY "${OPS_BUNDLED_DIR}/bin/SuperLU_5.1.1/libSUPERLU.a"
 )
 
 opensees_load(ARPACK                                        #FIND
-  #BUNDLED "${OPS_BUNDLED_DIR}/ARPACK/"
-  LIBRARY "${OPS_BUNDLED_DIR}/bin/ARPACK/libARPACK.a"
+  BUNDLED "${OPS_BUNDLED_DIR}/ARPACK/"
+  #LIBRARY "${OPS_BUNDLED_DIR}/bin/ARPACK/libARPACK.a"
 )
 
 opensees_load(UMFPACK                                        #FIND
-  #BUNDLED "${OPS_BUNDLED_DIR}/UMFPACK/" 
-  LIBRARY "${OPS_BUNDLED_DIR}/bin/UMFPACK/libUMFPACK.a" 
+  BUNDLED "${OPS_BUNDLED_DIR}/UMFPACK/" 
+  #LIBRARY "${OPS_BUNDLED_DIR}/bin/UMFPACK/libUMFPACK.a" 
 )
 
 opensees_load(CSPARSE                                        #FIND
-  #BUNDLED "${OPS_BUNDLED_DIR}/CSPARSE/"
-  LIBRARY "${OPS_BUNDLED_DIR}/bin/CSPARSE/libCSPARSE.a"
+  BUNDLED "${OPS_BUNDLED_DIR}/CSPARSE/"
+  #LIBRARY "${OPS_BUNDLED_DIR}/bin/CSPARSE/libCSPARSE.a"
 )
 
 opensees_load(AMD                                           #FIND
-	#BUNDLED "${OPS_BUNDLED_DIR}/AMD/"
-  LIBRARY "${OPS_BUNDLED_DIR}/bin/AMD/libAMD.a"
+	BUNDLED "${OPS_BUNDLED_DIR}/AMD/"
+  #LIBRARY "${OPS_BUNDLED_DIR}/bin/AMD/libAMD.a"
 )
 
 opensees_load(METIS                                          FIND)

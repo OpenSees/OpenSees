@@ -1186,7 +1186,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-#if defined(OPSDEF_ELEMENT_PFEM)
   } else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
@@ -1216,7 +1215,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-#endif
   } else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
       if (theEle != 0) {

@@ -1548,10 +1548,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-#if !defined(OPS_EXCLUDE_MATERIAL_STRESSDENSITY)
   case ND_TAG_stressDensity:
       return new stressDensity();
-#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
