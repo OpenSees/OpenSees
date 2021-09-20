@@ -41,12 +41,17 @@ target_compile_definitions(AMD_DINT PRIVATE DINT)
 target_compile_options(AMD_DINT PRIVATE -fexceptions -fPIC -I.)
 
 add_library(AMD_DLNG ${AMD_SOURCES})
-target_compile_definitions(AMD_DINT PRIVATE DLONG)
+target_compile_definitions(AMD_DLNG PRIVATE DLONG)
 target_compile_options(AMD_DLNG PRIVATE -fexceptions -fPIC -I.)
 
 #-------------------------------------------------------------------------------
 
-add_library(AMD SuiteSparse_config.c)
-target_link_libraries(AMD PRIVATE AMD_DINT AMD_DLNG)
+add_library(AMD)
+target_sources(AMD PRIVATE
+  SuiteSparse_config.c
+  $<TARGET_OBJECTS:AMD_DINT>
+  $<TARGET_OBJECTS:AMD_DLNG>
+)
+#target_link_libraries(AMD PUBLIC AMD_DINT AMD_DLNG)
 
 
