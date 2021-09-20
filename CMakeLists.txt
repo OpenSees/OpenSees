@@ -101,7 +101,7 @@ set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 # Warnings
 opensees_add_cxx_flag(
     GNU  -Wall
-    MSVC /W4
+    MSVC /W0
 )
 
 # Floating-point
