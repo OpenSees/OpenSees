@@ -1186,7 +1186,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-  } else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
+  } 
+  else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
       if (theEle != 0) {
@@ -1196,7 +1197,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } else if (strcmp(argv[1], "PFEMElement2DMini") == 0) {
+  } 
+
+  else if (strcmp(argv[1], "PFEMElement2DMini") == 0) {
       ID info;
       void *theEle = OPS_PFEMElement2Dmini(info);
       if (theEle != 0) {
@@ -1206,7 +1209,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } else if (strcmp(argv[1], "PFEMElement2D") == 0) {
+  } 
+
+  else if (strcmp(argv[1], "PFEMElement2D") == 0) {
       void *theEle = OPS_PFEMElement2D();
       if (theEle != 0) {
 	  theElement = (Element*)theEle;
@@ -1215,7 +1220,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } else if (strcmp(argv[1], "CatenaryCable") == 0) {
+  } 
+
+  else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
       if (theEle != 0) {
     theElement = (Element*)theEle;
