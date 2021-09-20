@@ -211,13 +211,16 @@ add_library(OPS_Tagged             OBJECT)
 add_library(OPS_Utilities          OBJECT)
 add_library(OPS_ModelBuilder       OBJECT)
 add_library(OPS_Domain             OBJECT)
-
 add_library(OPS_SysOfEqn           OBJECT)
+#add_library(OPS_SysOfEqn_MP        OBJECT)
+#add_library(OPS_SysOfEqn_SP        OBJECT)
 
 add_library(OPS_Analysis           OBJECT)
 add_library(OPS_ConvergenceTest    OBJECT)
 add_library(OPS_Thermal            OBJECT)
 add_library(OPS_Element            OBJECT)
+#add_library(OPS_Element_MP         OBJECT)
+#add_library(OPS_Element_SP         OBJECT)
 add_library(OPS_Material           OBJECT)
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
@@ -257,8 +260,22 @@ add_executable(OpenSeesMP    EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 
-add_executable(OpenSeesPy    EXCLUDE_FROM_ALL
-  ${OPS_SRC_DIR}/interpreter/pythonMain.cpp
+add_library(OpenSeesPy    SHARED EXCLUDE_FROM_ALL
+  #${OPS_SRC_DIR}/interpreter/pythonMain.cpp
+  ${OPS_SRC_DIR}/interpreter/PythonWrapper.cpp
+  ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
+  ${OPS_SRC_DIR}/interpreter/DL_Interpreter.cpp
+  #${OPS_SRC_DIR}/interpreter/PythonAnalysisBuilder.cpp
+  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+  "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
 )
 
 # Set selected executable to be built by default
@@ -304,22 +321,6 @@ target_link_libraries(G3
 #----------------------------
 # OpenSees
 #----------------------------
-#<<<<<<< Updated upstream
-#=======
-#target_sources(OpenSees
-#    PRIVATE
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-#  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-#    "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
-#)
-#>>>>>>> Stashed changes
 
 target_link_libraries(OpenSees
     ${OPS_Extension_List}
@@ -354,7 +355,7 @@ target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
 target_compile_definitions(OPS_Interp_Tcl PUBLIC _TCL85)
 
 opensees_add_cxx_flag(TARGETS OPS_Interp_Tcl
-    GNU -fpermissive -fvisibility=hidden
+  GNU -fpermissive -fvisibility=hidden
 )
 
 #----------------------------
@@ -380,10 +381,18 @@ target_link_libraries(OpenSeesMP OpenSees)
 target_compile_definitions(OpenSeesSP 
     PUBLIC _PARALLEL_INTERPRETERS
 )
+target_link_libraries(OpenSeesSP OpenSees)
 
 #----------------------------
 # OpenSeesPy
 #----------------------------
+add_compile_options(-fPIC)
+target_include_directories(OpenSeesPy PRIVATE ${Python_INCLUDE_DIRS})
+
+target_link_libraries(OpenSeesPy
+  OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
+)
+
 opensees_add_cxx_flag(TARGETS OpenSeesPy
     GNU  -fPIC
 )

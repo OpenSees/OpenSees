@@ -66,6 +66,8 @@ opensees_load(AMD                                           #FIND
   #LIBRARY "${OPS_BUNDLED_DIR}/bin/AMD/libAMD.a"
 )
 
+find_package(Python COMPONENTS Development)
+
 opensees_load(METIS                                          FIND)
 
 opensees_load(HDF5                                           FIND)

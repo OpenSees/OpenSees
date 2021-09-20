@@ -4,8 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-#add_library(OPS_Analysis "")
-
 add_subdirectory(algorithm)
 add_subdirectory(numberer)
 add_subdirectory(dof_grp)

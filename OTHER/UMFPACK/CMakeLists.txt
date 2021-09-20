@@ -183,3 +183,4 @@ add_library(UMFPACK #INTERFACE)
 )
 target_link_libraries(UMFPACK PUBLIC ${UMF_CREATED})
 set_target_properties(UMFPACK PROPERTIES LINKER_LANGUAGE C)
+
