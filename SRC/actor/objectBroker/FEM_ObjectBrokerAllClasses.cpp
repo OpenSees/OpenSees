@@ -167,9 +167,7 @@
 #include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
 
-#if defined(OPSDEF_Element_FEAP)
 #include "feap/FeapMaterial03.h"
-#endif // _OPS_Element_FEAP
 
 #include "CycLiqCP3D.h"
 #include "CycLiqCPPlaneStrain.h"
@@ -306,9 +304,7 @@
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
 
-#if defined(OPSDEF_Element_PFEM)
 #include "PFEMElement/PFEMElement2D.h"
-#endif // _OPS_Element_PFEM
 
 #include "RockingBC/RockingBC.h"
 
@@ -476,9 +472,7 @@
 #include "NewmarkHSIncrLimit.h"
 #include "NewmarkHSIncrReduct.h"
 
-#if defined(OPSDEF_Element_PFEM)
 #include "PFEMIntegrator.h"
-#endif // _OPS_Element_PFEM
 
 #include "TRBDF2.h"
 #include "TRBDF3.h"
@@ -906,7 +900,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 #if defined(OPSDEF_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
-#endif // _OPS_Element_PFEM
+#endif // OPSDEF_ELEMENT_PFEM
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
@@ -1497,10 +1491,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
-#if defined(OPSDEF_Element_FEAP)
+#if defined(OPSDEF_ELEMENT_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
-#endif // _OPS_Element_FEAP
+#endif // OPSDEF_ELEMENT_FEAP
 
   case ND_TAG_ContactMaterial2D:
     return new ContactMaterial2D();			
@@ -2213,10 +2207,10 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
-#if defined(OPSDEF_Element_PFEM)
+#if defined(OPSDEF_ELEMENT_PFEM)
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
-#endif // _OPS_Element_PFEM
+#endif // OPSDEF_ELEMENT_PFEM
 
     case INTEGRATOR_TAGS_TRBDF2:  
 	     return new TRBDF2();
