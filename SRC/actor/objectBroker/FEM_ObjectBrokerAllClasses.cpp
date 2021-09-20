@@ -467,9 +467,7 @@
 #include "NewmarkHSFixedNumIter.h"
 #include "NewmarkHSIncrLimit.h"
 #include "NewmarkHSIncrReduct.h"
-
 #include "PFEMIntegrator.h"
-
 #include "TRBDF2.h"
 #include "TRBDF3.h"
 #include "WilsonTheta.h"
@@ -760,13 +758,13 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-#if !defined(OPS_EXCLUDE_ELEMENT_PML)
+
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
 	case ELE_TAG_PML3D:
 	  return new PML3D();
-#endif      
+
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -2201,10 +2199,8 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
-#if defined(OPSDEF_ELEMENT_PFEM)
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
-#endif // OPSDEF_ELEMENT_PFEM
 
     case INTEGRATOR_TAGS_TRBDF2:  
 	     return new TRBDF2();
