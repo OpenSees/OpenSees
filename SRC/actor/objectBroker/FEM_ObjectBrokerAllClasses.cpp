@@ -107,6 +107,7 @@
 #include "PY/QzSimple2.h"
 #include "PY/PyLiq1.h"
 #include "PY/TzLiq1.h"
+#include "PY/QzLiq1.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
@@ -166,7 +167,7 @@
 #include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
 
-#ifdef _OPS_Element_FEAP
+#if defined(OPSDEF_Element_FEAP)
 #include "feap/FeapMaterial03.h"
 #endif // _OPS_Element_FEAP
 
@@ -305,11 +306,13 @@
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include "PFEMElement/PFEMElement2D.h"
 #endif // _OPS_Element_PFEM
 
 #include "RockingBC/RockingBC.h"
+
+#include "CEqElement/ASDEmbeddedNodeElement.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -473,7 +476,7 @@
 #include "NewmarkHSIncrLimit.h"
 #include "NewmarkHSIncrReduct.h"
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include "PFEMIntegrator.h"
 #endif // _OPS_Element_PFEM
 
@@ -767,7 +770,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-#if defined(_OPS_ELEMENT_PML)
+#if defined(OPSDEF_ELEMENT_PML)
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -900,13 +903,16 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
-#if defined(_OPS_ELEMENT_PFEM)
+#if defined(OPSDEF_ELEMENT_PFEM)
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 #endif // _OPS_Element_PFEM
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
+
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
@@ -1223,7 +1229,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
-       case MAT_TAG_TzLiq1:
+    case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
@@ -1231,6 +1237,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_QzSimple2:
 		return new QzSimple2();
+
+    case MAT_TAG_QzLiq1:
+		return new QzLiq1();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
@@ -1264,7 +1273,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
-
+#if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
 
@@ -1294,7 +1303,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-
+#endif
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 
@@ -1488,7 +1497,7 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
-#ifdef _OPS_Element_FEAP
+#if defined(OPSDEF_Element_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
 #endif // _OPS_Element_FEAP
@@ -1549,10 +1558,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-
+#ifdef OPSDEF_MATERIAL_STRESSDENSITY
   case ND_TAG_stressDensity:
       return new stressDensity();
-
+#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -2204,7 +2213,7 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_NewmarkHSIncrReduct:  
 	     return new NewmarkHSIncrReduct();
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
 #endif // _OPS_Element_PFEM

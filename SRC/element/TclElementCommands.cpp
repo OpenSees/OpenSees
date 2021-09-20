@@ -46,7 +46,6 @@
 #include <YamamotoBiaxialHDR.h>
 #include <WheelRail.h>
 
-#include "dmglib/Elem01.h"
 extern 
 #ifdef _WIN32
 int __cdecl
@@ -149,24 +148,18 @@ extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
-#if defined(_OPS_ELEMENT_PFEM)
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
-#endif
-#if defined(_HAVE_LHNMYS) || defined(_OPS_ELEMENT_LHNMYS)
+#if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
-#if defined(_OPS_ELEMENT_DMGLIB)
-extern int
-TclModelBuilder_addDegrElem01(ClientData clientData, Tcl_Interp *interp, int argc,
-	TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
-#endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_CatenaryCableElement(void);
+extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
@@ -200,10 +193,8 @@ extern void *OPS_BeamGT(void);
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
 
-#if defined(_OPS_Element_FEAP)
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
-#endif // _OPS_Element_FEAP
 
 extern int
 Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -530,7 +521,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-#if defined(_OPS_ELEMENT_PML)
+#if defined(OPSDEF_ELEMENT_PML)
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -561,7 +552,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }*/
     
-#if defined(_HAVE_LHNMYS) || defined(_OPS_ELEMENT_LHNMYS)    
+#if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)    
   } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
@@ -594,22 +585,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
 #endif
 
-// #if defined(_OPS_ELEMENT_DMGLIB)
-  } else if((strcmp(argv[1], "DmgElem01") == 0)) {
-    Element *theEle = 0;
-    ID info;
-    theEle = (Element *)OPS_Elem01();
-    if (theEle != 0) {
-      theElement = theEle;
-    } else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-// #endif
-
-#if defined(_OPS_ELEMENT_WHEELRAIL)
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
     
@@ -620,7 +598,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
   // End of WheelRail element TCL command
-#endif
 
   } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
     Element *theEle = 0;
@@ -1209,7 +1186,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-#if defined(_OPS_ELEMENT_PFEM)
+#if defined(OPSDEF_ELEMENT_PFEM)
   } else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
@@ -1242,6 +1219,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 #endif
   } else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "ASDEmbeddedNodeElement") == 0) {
+      void *theEle = OPS_ASDEmbeddedNodeElement();
       if (theEle != 0) {
     theElement = (Element*)theEle;
       } else {
@@ -1542,7 +1530,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
 
-#ifdef _OPS_ELEMENT_FEAP
+#if defined(OPSDEF_ELEMENT_FEAP)
   if (strcmp(argv[1],"fTruss") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addFeapTruss(clientData, interp, argc, argv,

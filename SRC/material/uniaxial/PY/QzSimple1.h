@@ -89,15 +89,6 @@ class QzSimple1 : public UniaxialMaterial
 
    
   protected:
-    
-  private:
-
-	// Functions to get Q & z for each component individually
-	void getGap(double zlast, double dz, double dz_old);
-	void getClosure(double zlast, double dz);
-	void getSuction(double zlast, double zy);
-	void getNearField(double zlast, double dz, double dz_old);
-	void getFarField(double z);
 
     // Material parameters
 	int    QzType;		// Q-z relation selection
@@ -110,6 +101,17 @@ class QzSimple1 : public UniaxialMaterial
 	double maxElast;	// max size of elastic range (in terms of dQ/Qult)
 	double nd;			// exponent for hardening shape of suction component
 	double dashpot;     // dashpot on the far-field (elastic) component
+	
+  private:
+
+	// Functions to get Q & z for each component individually
+	void getGap(double zlast, double dz, double dz_old);
+	void getClosure(double zlast, double dz);
+	void getSuction(double zlast, double zy);
+	void getNearField(double zlast, double dz, double dz_old);
+	void getFarField(double z);
+
+
 
 	// Generated parameters or constants (not user input)
 	double NFkrig;		// stiffness of the "rigid" portion of Near Field 

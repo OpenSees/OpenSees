@@ -244,8 +244,13 @@ OPS_EnvelopeElementRecorder()
             nargrem = 1 + OPS_GetNumRemainingInputArgs();
             data = new const char *[nargrem];
             data[0] = option;
-            for (int i = 1; i < nargrem; i++)
-                data[i] = OPS_GetString();
+            for (int i = 1; i < nargrem; i++) {
+	      data[i] = new char[128];
+
+	      // Turn everything in to a string for setResponse
+	      //data[i] = OPS_GetStringFromAll(buffer, 128);
+	      OPS_GetStringFromAll((char*)data[i], 128);
+	    }
         }
     }
 

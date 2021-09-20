@@ -2,6 +2,9 @@
 
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" 
+#endif
 double dbesi1(double x)
 {
     int k;

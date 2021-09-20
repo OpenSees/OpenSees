@@ -1,4 +1,33 @@
 # Claudio Perez
+
+function (opensees_library elemlib)
+  # opensees_library(<lib_name> [REQUIRES <requirement>] <sources>...)
+  cmake_parse_arguments(PARSE_ARGV 1 OPS_LIB_ARG "" "" "LINK;SOURCES")
+  add_library(${elemlib} EXCLUDE_FROM_ALL)
+  set(private_sources ${OPS_LIB_ARG_SOURCES})
+  set(public_sources  ${OPS_LIB_ARG_SOURCES})
+  list(FILTER private_sources INCLUDE REGEX ".*\.cpp")
+  list(FILTER public_sources INCLUDE REGEX ".*\.h")
+  target_sources(${elemlib} PRIVATE ${private_sources} PUBLIC ${public_sources})
+  if (OPS_LIB_ARG_LINK)
+    target_link_libraries(${elemlib} INTERFACE ${OPS_LIB_ARG_LINK}) 
+  endif()
+  set_target_properties(${elemlib} PROPERTIES LINKER_LANGUAGE CXX)
+  #foreach(lib ${OPS_LIB_ARG_REQUIRE_NUMLIB})
+  #  list(APPEND OPS_Numlib_List ${lib})
+  #endforeach()
+  #set(OPS_Numlib_List ${OPS_Numlib_List} PARENT_SCOPE)
+endfunction()
+
+function (opensees_elements elemlib)
+  opensees_library(${elemlib} ${ARGN})
+endfunction()
+
+function (opensees_uniaxials unilib)
+  opensees_library(${unilib} ${ARGN})
+endfunction()
+
+
 function (opensees_add_cxx_flag)
     cmake_parse_arguments(
         PARSE_ARGV 0
@@ -10,7 +39,7 @@ function (opensees_add_cxx_flag)
     )
     set(flg "PUBLIC")
     if (NOT ${OPS_COMPILE_OPT_ARG_TARGETS})
-        add_compile_options(${flg} $<$<COMPILE_LANGUAGE:CXX>:${${OPS_COMPILE_OPT_ARG_}${CXX_COMPILER_ID}}>)
+        add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${${OPS_COMPILE_OPT_ARG_}${CXX_COMPILER_ID}}>)
     endif()
     foreach(src ${OPS_COMPILE_OPT_ARG_TARGETS})
         if(MSVC)
@@ -27,29 +56,25 @@ endfunction()
 
 
 function (opensees_load lib_name)
+#
+#
+#
     cmake_parse_arguments(
-        PARSE_ARGV 1
-        OPS_LOAD_ARG # prefix of output variables
-        "BUILD;FIND" # list of names of the boolean arguments (only defined ones will be true)
-	"BUNDLED;LIBRARY;INCLUDE" # list of names of mono-valued arguments
-	"PATHS;AS" # list of names of multi-valued arguments (output variables are lists)
-        #${ARGN} # arguments of the function to parse, here we take the all original ones
+      PARSE_ARGV 1
+      OPS_LOAD_ARG # prefix of output variables
+      "BUILD;FIND" # list of names of the boolean arguments (only defined ones will be true)
+	    "BUNDLED;LIBRARY;INCLUDE" # list of names of mono-valued arguments
+	    "PATHS;AS" # list of names of multi-valued arguments (output variables are lists)
     )
     set(OPS_PKG_FOUND_VAR "${lib_name}_FOUND")# PARENT_SCOPE) 
     set(${OPS_PKG_FOUND_VAR} FALSE)# PARENT_SCOPE)
 
-    #if(OPS_LOAD_ARG_BUILD)
-    #    message("OPS >>> Using OpenSees bundled library '${lib_name}'")
-    #    set(${OPS_PKG_FOUND_VAR} TRUE PARENT_SCOPE)
-    #    opensees_build(${lib_name})
-    #    return()
-
     if(OPS_LOAD_ARG_LIBRARY)
         if(NOT ${${OPS_PKG_FOUND_VAR}})
-	    message("OPS >>> ${lib_name}")
-	    set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY})# PARENT_SCOPE)
-	    set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_INCLUDE})# PARENT_SCOPE)
-	endif()
+	        message("OPS >>> ${lib_name}")
+	        set("${lib_name}_LIBRARIES"    ${OPS_LOAD_ARG_LIBRARY})# PARENT_SCOPE)
+	        set("${lib_name}_INCLUDE_DIRS" ${OPS_LOAD_ARG_INCLUDE})# PARENT_SCOPE)
+	      endif()
     endif()
 
     if(OPS_LOAD_ARG_PATHS)
@@ -65,7 +90,7 @@ function (opensees_load lib_name)
           message("OPS >>> find_package(${lib_name})")
           find_package(${lib_name})
           message("OPS >>> status: ${OPS_PKG_FOUND_VAR}=${${OPS_PKG_FOUND_VAR}}")
-	endif()
+	      endif()
     endif()
 
     if(OPS_LOAD_ARG_BUNDLED)
@@ -79,8 +104,10 @@ function (opensees_load lib_name)
             set("${lib_name}_LIBRARIES" "${lib_name}") 
         endif()
     endif()
+
     set("${lib_name}_LIBRARIES"    ${${lib_name}_LIBRARIES}    PARENT_SCOPE)
     set("${lib_name}_INCLUDE_DIRS" ${${lib_name}_INCLUDE_DIRS} PARENT_SCOPE)
+    target_compile_definitions(OPS_External_packages INTERFACE "OPSDEF_${lib_name}")
     message("    status: ${lib_name}_LIBRARIES    =${${lib_name}_LIBRARIES}")
     message("    status: ${lib_name}_INCLUDE_DIRS =${${lib_name}_INCLUDE_DIRS}\n")
 endfunction()

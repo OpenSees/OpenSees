@@ -75,6 +75,7 @@ using std::ofstream;
 #include <DummyStream.h>
 
 bool OPS_suppressOpenSeesOutput = false;
+bool OPS_showHeader = true;
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
@@ -139,7 +140,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <NormDispAndUnbalance.h>
 #include <NormDispOrUnbalance.h>
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include <CTestPFEM.h>
 #endif
 
@@ -191,7 +192,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <DisplacementControl.h>
 #include <EQPath.h>
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include <PFEMIntegrator.h>
 #endif
 
@@ -201,6 +202,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <Recorder.h> //SAJalali
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
+extern void *OPS_ExpressNewton(void);
 extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
 
@@ -260,7 +262,7 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 #include <DirectIntegrationAnalysis.h>
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include <PFEMAnalysis.h>
 #endif
 
@@ -296,7 +298,7 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 
 #include <SparseGenColLinSOE.h>
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 #include <PFEMSolver.h>
 #include <PFEMSolver_Umfpack.h>
 #include <PFEMLinSOE.h>
@@ -350,7 +352,7 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 #include <SymSparseLinSOE.h>
 #include <SymSparseLinSolver.h>
 
-#ifdef _OPS_Numerics_UMFPACK
+#if defined(OPSDEF_Numerics_UMFPACK)
 #include <UmfpackGenLinSOE.h>
 #include <UmfpackGenLinSolver.h>
 #endif // _OPS_Numerics_UMFPACK
@@ -543,7 +545,7 @@ DirectIntegrationAnalysis *theTransientAnalysis = 0;
 VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
 int numEigen = 0;
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
 static PFEMAnalysis* thePFEMAnalysis = 0;
 #endif
 
@@ -1150,7 +1152,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     // create an error handler
 
-#ifdef _NOGRAPHICS
+#if defined(_NOGRAPHICS)
 
 #else
     theTclVideoPlayer = 0;
@@ -1510,7 +1512,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;   
   //  theSensitivityAlgorithm=0; 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
   thePFEMAnalysis = 0;
 #endif
   theTest = 0;
@@ -1922,7 +1924,7 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       return TCL_ERROR;	      
 
     result = theStaticAnalysis->analyze(numIncr);
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
   } else if(thePFEMAnalysis != 0) {
       result = thePFEMAnalysis->analyze();
 #endif
@@ -2285,19 +2287,24 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   FileStream outputFile;
   OPS_Stream *output = &opserr;
 
+  bool ret = false;
   int currentArg = 1;
+  while (currentArg < argc) {
+      if ((strcmp(argv[currentArg], "file") == 0) ||
+          (strcmp(argv[currentArg], "-file") == 0)) {
+          currentArg++;
 
-  if (argc > 2) {
-    if ((strcmp(argv[currentArg],"file") == 0) || 
-	(strcmp(argv[currentArg],"-file") == 0)) {
-      currentArg++;
-      
-      if (outputFile.setFile(argv[currentArg]) != 0) {
-	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
-	return TCL_ERROR;
+          if (outputFile.setFile(argv[currentArg]) != 0) {
+              opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+              return TCL_ERROR;
+          }
+          output = &outputFile;
       }
-      output = &outputFile;
-    }
+      else if ((strcmp(argv[currentArg], "ret") == 0) ||
+          (strcmp(argv[currentArg], "-ret") == 0)) {
+          ret = true;
+      }
+      currentArg++;
   }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
@@ -2307,12 +2314,26 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       
     const Matrix *A = theSOE->getA();
     if (A != 0) {
-      *output << *A;
+        if (ret) {
+            int n = A->noRows();
+            int m = A->noCols();
+            if (n * m > 0) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        char buffer[40];
+                        sprintf(buffer, "%.10e ", (*A)(i, j));
+                        Tcl_AppendResult(interp, buffer, NULL);
+                    }
+                }
+            }
+        }
+        else {
+            *output << *A;
+            // close the output file
+            outputFile.close();
+        }
     }
   }
-  
-  // close the output file
-  outputFile.close();
   
   return res;
 }
@@ -2326,19 +2347,24 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_Stream *output = &opserr;
   //  bool done = false;
 
+  bool ret = false;
   int currentArg = 1;
+  while (currentArg < argc) {
+      if ((strcmp(argv[currentArg], "file") == 0) ||
+          (strcmp(argv[currentArg], "-file") == 0)) {
+          currentArg++;
 
-  if (argc > 2) {
-    if ((strcmp(argv[currentArg],"file") == 0) || 
-	(strcmp(argv[currentArg],"-file") == 0)) {
-      currentArg++;
-      
-      if (outputFile.setFile(argv[currentArg]) != 0) {
-	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
-	return TCL_ERROR;
+          if (outputFile.setFile(argv[currentArg]) != 0) {
+              opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+              return TCL_ERROR;
+          }
+          output = &outputFile;
       }
-      output = &outputFile;
-    }
+      else if ((strcmp(argv[currentArg], "ret") == 0) ||
+          (strcmp(argv[currentArg], "-ret") == 0)) {
+          ret = true;
+      }
+      currentArg++;
   }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
@@ -2347,11 +2373,22 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theTransientIntegrator->formUnbalance();
       
     const Vector &b = theSOE->getB();
-    *output << b;
+    if (ret) {
+        int n = b.Size();
+        if (n > 0) {
+            for (int i = 0; i < n; i++) {
+                char buffer[40];
+                sprintf(buffer, "%.10e ", b(i));
+                Tcl_AppendResult(interp, buffer, NULL);
+            }
+        }
+    }
+    else {
+        *output << b;
+        // close the output file
+        outputFile.close();
+    }
   }
-  
-  // close the output file
-  outputFile.close();
   
   return res;
 }
@@ -2469,7 +2506,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 #endif
 // AddingSensitivity:END /////////////////////////////////
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
     } else if(strcmp(argv[1], "PFEM") == 0) {
 
         if(argc < 5) {
@@ -3029,7 +3066,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 #endif
 
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
   else if(strcmp(argv[1], "PFEM") == 0) {
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
@@ -3320,7 +3357,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     SymSparseLinSolver *theSolver = new SymSparseLinSolver();
     theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
   }    
-#ifdef _OPS_Numerics_UMFPACK 
+#if defined(OPSDEF_Numerics_UMFPACK) 
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
     
     // now must determine the type of solver to create from rest of args
@@ -3576,9 +3613,10 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
     
     return TCL_OK;
+  } else {
+	opserr << "WARNING system " << argv[1] << " is unknown or not installed\n";
+	return TCL_ERROR;
   }
-
-  return TCL_ERROR;
 }
 
 
@@ -4100,24 +4138,13 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   else if (strcmp(argv[1],"ExpressNewton") == 0) {
-    int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
-    double kMultiplier = 1.0;
-	  if (argc >= 3 && Tcl_GetInt(interp, argv[2], &nIter) != TCL_OK)
+    void *theNewtonAlgo = OPS_ExpressNewton();
+    if (theNewtonAlgo == 0)
       return TCL_ERROR;
-	  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &kMultiplier) != TCL_OK)
-      return TCL_ERROR;
-    int count = 4;
-    while (argc > count) {
-      if ((strcmp(argv[count],"-initialTangent") == 0) || (strcmp(argv[count],"-InitialTangent") == 0)) {
-        formTangent = INITIAL_TANGENT;
-      } else if ((strcmp(argv[count],"-currentTangent") == 0) || (strcmp(argv[count],"-CurrentTangent") ==0 )) {
-        formTangent = CURRENT_TANGENT;
-      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-        factorOnce = 1;
-      }
-      count++;
-    }
-    theNewAlgo = new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
+
+    theNewAlgo = (EquiSolnAlgo *)theNewtonAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else {
@@ -4220,7 +4247,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[7], &maxIncr) != TCL_OK)	
 	return TCL_ERROR;
     }
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
   } else if (strcmp(argv[1],"PFEM") == 0) {
       if(argc > 8) {
           if(Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
@@ -4349,7 +4376,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       theNewTest = new CTestRelativeEnergyIncr(tol,numIter,printIt,normType);             
     else if (strcmp(argv[1],"RelativeTotalNormDispIncr") == 0) 
       theNewTest = new CTestRelativeTotalNormDispIncr(tol,numIter,printIt,normType);
-#ifdef _OPS_Element_PFEM
+#if defined(OPSDEF_Element_PFEM)
     else if (strcmp(argv[1],"PFEM") == 0) 
         theNewTest = new CTestPFEM(tol,tolp,tol2,tolp2,tolrel,tolprel,numIter,maxIncr,printIt,normType);
 #endif // _OPS_Element_PFEM
@@ -4772,7 +4799,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
-#ifdef _OPS_Element_PFEM 
+#if defined(OPSDEF_Element_PFEM) 
   else if (strcmp(argv[1],"PFEM") == 0) {
     theTransientIntegrator = new PFEMIntegrator();
 
@@ -7135,7 +7162,7 @@ eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
         return TCL_ERROR;
     }
 
-    char buffer[20];
+    char buffer[80];
     Element* theElement = theDomain.getElement(tag);
     if (theElement == 0) {
         opserr << "WARNING eleType ele " << tag << " not found" << endln;

@@ -20,6 +20,7 @@ target_sources(OPS_Utilities
       Information.h
 )
 
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(fourNodeQuad)
 add_subdirectory(twoNodeLink)
@@ -47,7 +48,7 @@ add_subdirectory(nonlinearBeamColumn)
 
 add_subdirectory(catenaryCable)
 add_subdirectory(LHMYS)
-#add_subdirectory(PML)
+add_subdirectory(PML)
 add_subdirectory(RockingBC)
 add_subdirectory(absorbentBoundaries)
 add_subdirectory(adapter)
@@ -70,7 +71,8 @@ add_subdirectory(UP-ucsd)
 add_subdirectory(UWelements)
 add_subdirectory(HUelements)
 add_subdirectory(XMUelements)
+add_subdirectory(masonry)
 #add_subdirectory(dmglib)
+add_subdirectory(CEqElement)
 
-target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

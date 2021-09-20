@@ -178,7 +178,7 @@ void QzSimple1::getClosure(double zlast, double dz)
 	//
 	if(TClose_z > 0.0) 
 	{
-		TClose_tang = 0.001*Qult/z50;
+		TClose_tang = 1e-6*Qult/z50;
 		TClose_Q    = TClose_z * TClose_tang;
 	}
 
@@ -374,6 +374,7 @@ void QzSimple1::getNearField(double zlast, double dz, double dz_old)
 int 
 QzSimple1::setTrialStrain (double newz, double zRate)
 {
+
 	// Set trial values for displacement and load in the material
 	// based on the last Tangent modulus.
 	//

@@ -1,10 +1,10 @@
 
 target_sources(OPS_SysOfEqn
-    PRIVATE
+  PRIVATE
     DomainSolver.cpp
     LinearSOE.cpp
     LinearSOESolver.cpp
-    PUBLIC
+  PUBLIC
     DomainSolver.h
     LinearSOE.h
     LinearSOESolver.h
@@ -18,7 +18,7 @@ add_subdirectory(diagonal)
 add_subdirectory(fullGEN)
 add_subdirectory(sparseGEN)
 add_subdirectory(sparseSYM)
-#add_subdirectory(umfGEN)
+add_subdirectory(umfGEN)
 
 add_subdirectory(profileSPD)
 #add_subdirectory(cg)
