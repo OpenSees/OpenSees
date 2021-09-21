@@ -870,6 +870,17 @@ DispBeamColumnNL3d::getInitialBasicStiff()
 	  ka(k,2) += (xi6-2.0)*tmp;
 	}
 	break;
+      case SECTION_RESPONSE_MY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += (xi6-4.0)*tmp;
+	  ka(k,4) += (xi6-2.0)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_T:
+	for (k = 0; k < order; k++)
+	  ka(k,5) += ks(k,j)*wti;
+	break;	
       default:
 	break;
       }
@@ -877,16 +888,26 @@ DispBeamColumnNL3d::getInitialBasicStiff()
     for (j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
-	for (k = 0; k < 3; k++)
+	for (k = 0; k < 6; k++)
 	  kb(0,k) += ka(j,k);
 	break;
       case SECTION_RESPONSE_MZ:
-	for (k = 0; k < 3; k++) {
+	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
 	  kb(1,k) += (xi6-4.0)*tmp;
 	  kb(2,k) += (xi6-2.0)*tmp;
 	}
 	break;
+      case SECTION_RESPONSE_MY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += (xi6-4.0)*tmp;
+	  kb(4,k) += (xi6-2.0)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_T:
+	for (k = 0; k < 6; k++)
+	  kb(5,k) += ka(j,k);	
       default:
 	break;
       }
