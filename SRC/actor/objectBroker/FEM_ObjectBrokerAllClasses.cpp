@@ -2287,8 +2287,7 @@ FEM_ObjectBrokerAllClasses::getNewLinearSOE(int classTagSOE)
 
 #ifdef _PETSC
     case LinSOE_TAGS_PetscSOE:
-        thePetscSolver = new PetscSolver();
-        theSOE = new PetscSOE(*thePetscSolver);
+        theSOE = new PetscSOE(*( new PetscSolver()));
 	  return theSOE;
 #endif
 
