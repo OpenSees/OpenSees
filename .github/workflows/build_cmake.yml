@@ -11,7 +11,8 @@ jobs:
     name: Ubuntu Build
     runs-on: ubuntu-latest
     steps:
-    - uses: claudioperez/OpenSees@cmake-build
+    #- uses: claudioperez/OpenSees@cmake-build
+    - uses: actions/checkout@cmake-build
     - run: |
         mkdir build
         cd build
