@@ -1,0 +1,16 @@
+name: CMake Build
+
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: Ubuntu Build
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+      mkdir build && cd build
+      cmake ..
+      cmake --build . --target OpenSeesTcl
+
