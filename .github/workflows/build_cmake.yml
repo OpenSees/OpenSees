@@ -1,14 +1,17 @@
+
 name: CMake Build
 
 env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Debug
+
 on:
   push:
     branches: [cmake-build]
+
 jobs:
   build-ubuntu:
-    name: Ubuntu Build
+    name: Ubuntu bundled build
     runs-on: ubuntu-latest
     steps:
     #- uses: claudioperez/OpenSees@cmake-build
@@ -25,4 +28,5 @@ jobs:
         cd build
         cmake ..
         cmake --build . --target OpenSeesTcl -j5
+
 
