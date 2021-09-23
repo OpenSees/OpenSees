@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: |
+        git checkout cmake-build
         mkdir build
         cd build
         cmake ..
