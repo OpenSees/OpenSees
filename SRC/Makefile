@@ -422,7 +422,6 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
-	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/VTK_Recorder.o 
@@ -678,6 +677,7 @@ endif
 ifdef FILIP_FLAG
 	FILIP = $(FE)/element/filip/BeamColumn2DwLHNMYS.o \
 	$(FE)/element/filip/BeamColumn2DwLHNMYS_Damage.o \
+	$(FE)/element/filip/Beam2D_Damage.o \
 	$(FE)/element/filip/BeamColumn3DwLHNMYS.o \
 	$(FE)/element/filip/Damage4NM.o \
 	$(FE)/element/filip/BetaDist.o \
