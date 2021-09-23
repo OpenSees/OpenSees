@@ -107,6 +107,7 @@
 #include "PY/QzSimple2.h"
 #include "PY/PyLiq1.h"
 #include "PY/TzLiq1.h"
+#include "PY/QzLiq1.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
@@ -138,6 +139,7 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
+#include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
@@ -190,6 +192,9 @@
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
+#include "J2CyclicBoundingSurface.h"
+#include "J2CyclicBoundingSurface3D.h"
+#include "J2CyclicBoundingSurfacePlaneStrain.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
@@ -259,6 +264,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
+#include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -296,6 +303,8 @@
 
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
+
+#include "CEqElement/ASDEmbeddedNodeElement.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -713,6 +722,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d(); 
+
+	case ELE_TAG_DispBeamColumnAsym3d:
+		return new DispBeamColumnAsym3d();    //Xinlong Du
+
+	case ELE_TAG_MixedBeamColumnAsym3d:
+		return new MixedBeamColumnAsym3d();   //Xinlong Du
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
@@ -881,6 +896,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
+
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
@@ -1197,7 +1215,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
-       case MAT_TAG_TzLiq1:
+    case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
@@ -1205,6 +1223,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_QzSimple2:
 		return new QzSimple2();
+
+    case MAT_TAG_QzLiq1:
+		return new QzLiq1();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
@@ -1367,6 +1388,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
 
+	case SEC_TAG_FiberSectionAsym3d:
+		return new FiberSectionAsym3d(); //Xinlong Du
+
 	case SEC_TAG_ElasticPlateSection:
 		return new ElasticPlateSection();
 
@@ -1506,6 +1530,15 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PM4Silt:
 	return new PM4Silt();
+
+  case ND_TAG_J2CyclicBoundingSurface:
+	  return new J2CyclicBoundingSurface();
+
+  case ND_TAG_J2CyclicBoundingSurface3D:
+	  return new J2CyclicBoundingSurface3D();
+  
+  case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
+	  return new J2CyclicBoundingSurfacePlaneStrain();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
@@ -2254,8 +2287,7 @@ FEM_ObjectBrokerAllClasses::getNewLinearSOE(int classTagSOE)
 
 #ifdef _PETSC
     case LinSOE_TAGS_PetscSOE:
-        thePetscSolver = new PetscSolver();
-        theSOE = new PetscSOE(*thePetscSolver);
+        theSOE = new PetscSOE(*( new PetscSolver()));
 	  return theSOE;
 #endif
 

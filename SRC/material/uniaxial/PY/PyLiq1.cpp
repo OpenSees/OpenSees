@@ -222,9 +222,11 @@ PyLiq1::setTrialStrain (double newy, double yRate)
 			meanStress = getEffectiveStress(theSeries);
 		else
 			meanStress = getEffectiveStress();
-
+		if(meanStress>meanConsolStress)
+			meanStress=meanConsolStress;
 		Tru = 1.0 - meanStress/meanConsolStress;
 		if(Tru > 1.0-pRes/PySimple1::pult) Tru = 1.0-pRes/PySimple1::pult;
+		if(Tru < 0) Tru = 0;
 	}
 	else {
 		Tru = 0.0;
