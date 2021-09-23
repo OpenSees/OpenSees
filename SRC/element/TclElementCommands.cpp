@@ -13,7 +13,8 @@
 **                                                                    **
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       ** **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       ** 
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
 
@@ -152,6 +153,7 @@ extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 #ifdef _HAVE_LHNMYS
 extern void* OPS_BeamColumn2DwLHNMYS(void);
+extern void* OPS_Beam2dDamage(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
@@ -563,6 +565,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
+  } else if (strcmp(argv[1],"beamColumn2dDamage") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_Beam2dDamage();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }    
     
   } else if (strcmp(argv[1],"beamColumn2DwLHNMYS_Damage") == 0) {
     Element *theEle = 0;
