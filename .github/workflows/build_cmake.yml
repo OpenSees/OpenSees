@@ -7,17 +7,22 @@ on:
   push:
     branches: [cmake-build]
 jobs:
-  build:
+  build-ubuntu:
     name: Ubuntu Build
     runs-on: ubuntu-latest
     steps:
     #- uses: claudioperez/OpenSees@cmake-build
     - uses: actions/checkout@v2
       with: {ref: cmake-build}
-    - run: |
+
+    - name: Install Tcl
+      run:
         sudo apt-get install tcl-dev
+
+    - name: Build
+      run: |
         mkdir build
         cd build
         cmake ..
-        cmake --build . --target OpenSeesTcl
+        cmake --build . --target OpenSeesTcl -j5
 
