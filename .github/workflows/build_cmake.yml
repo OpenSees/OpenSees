@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: |
-      mkdir build && cd build
+      mkdir build
+      cd build
       cmake ..
       cmake --build . --target OpenSeesTcl
 
