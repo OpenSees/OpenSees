@@ -16,11 +16,12 @@ set(OPS_FINAL_TARGET "OpenSeesTcl" CACHE STRING "OpenSees final target")
 #                            Basic Switches
 #
 #==============================================================================
-option(FMK
-  "Special FMK Code"                                       OFF)
 
 # Optional Extensions
 #--------------------------------------
+option(OPS_Use_Dev_Directories
+  "Include files in DEVELOPER directory"                   OFF)
+
 option(OPS_Use_Graphics
   "Include graphics"                                       OFF)
 
@@ -32,6 +33,9 @@ option(OPS_Use_HDF5
 
 option(OPS_Use_PFEM
   "                   "                                    ON )
+
+option(FMK
+  "Special FMK Code"                                       OFF)
 
 
 #==============================================================================
