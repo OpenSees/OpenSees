@@ -940,6 +940,7 @@ FiberSection2d::setResponse(const char **argv, int argc,
     return theResponse;
 
   } else if (strcmp(argv[0],"fiberData") == 0) {
+    
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
@@ -997,6 +998,7 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
     }
     return sectInfo.setVector(data);	
   } else  if (responseID == 6) {
+    
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
       if (theMaterials[j]->hasFailed() == true)
