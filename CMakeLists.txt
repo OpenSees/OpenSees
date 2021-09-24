@@ -42,15 +42,6 @@ add_library(OPS_External_packages INTERFACE)
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
-message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
-message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-message("OPS >>> TCL:     ${TCL_LIBRARY}")
-set(TCL_LIBRARIES ${TCL_LIBRARY})
-message("OPS >>> AMD:     ${AMD_LIBRARIES}")
-
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
     G3 OpenSeesTcl OpenSeesMP OpenSeesSP OpenSeesPy)
@@ -79,6 +70,16 @@ if(WIN32) # NOTE: this will execute for both 32-bit and 64-bit builds.
     message(STATUS ">>> WIN32")
 endif()
 
+message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
+message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
+message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
+message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
+message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
+message("OPS >>> UMFPACK: ${UMFPACK_LIBRARIES}")
+message("OPS >>> CSPARSE: ${CSPARSE_LIBRARIES}")
+message("OPS >>> TCL:     ${TCL_LIBRARY}")
+set(TCL_LIBRARIES ${TCL_LIBRARY})
+message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 
 
 #==============================================================================
@@ -234,8 +235,11 @@ add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 #add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
-opensees_library(OPS_SysOfEqn_UMF LINK ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
-opensees_library(OPS_PFEM         LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
+opensees_library(OPS_SysOfEqn_UMF
+  LINK ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
+
+opensees_library(OPS_PFEM
+  LINK ${CSPARSE_LIBRARIES} ${UMFPACK_LIBRARIES} ${AMD_LIBRARIES})
 
 
 # Packaged libraries
@@ -435,7 +439,7 @@ endforeach()
 if (OPS_Use_PFEM)
   #add_subdirectory("${OPS_EXTERNALS_DIR}/Tetgen")
   target_link_libraries(${OPS_FINAL_TARGET}
-    OPS_Element_PFEMElement OPS_PFEM  #tet
+    OPS_Element_PFEMElement OPS_PFEM  ${UMFPACK_LIBRARIES} ${CSPARSE_LIBRARIES}
   )
   else()
     add_compile_definitions(OPS_EXCLUDE_PFEMELEMENT)
