@@ -4,7 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-
 target_sources(OPS_Material
   PRIVATE
     NDMaterial.cpp
@@ -145,42 +144,6 @@ target_sources(OPS_Material
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
-if(FMK)
-target_sources(OPS_Material
-  PRIVATE
-    forumat.f
-    PlainConcrete.f
-    Damage2p.cpp
-    Damage2p3D.cpp 
-    Damage2ppstress.cpp
-    Concrete.cpp 
-    CPlaneStress.cpp 
-    CPlaneStrain.cpp 
-    CPlaneStress2d.cpp
-    CThreeDimensional.cpp
-    Faria1998.cpp
-    Faria1998PlaneStrain.cpp
-    Faria1998PlaneStress.cpp
-    Faria1998PlaneStress2d.cpp
-    Faria1998ThreeDimensional.cpp
-  PUBLIC
-    Damage2p.h 
-    Damage2p3D.h 
-    Damage2ppstress.h
-    Concrete.h 
-    CPlaneStress.h 
-    CPlaneStrain.h 
-    CPlaneStress2d.h
-    CThreeDimensional.h
-    Faria1998.h
-    Faria1998PlaneStrain.h
-    Faria1998PlaneStress.h
-    Faria1998PlaneStress2d.h
-    Faria1998ThreeDimensional.h
-)
-endif()
-
 
 add_subdirectory(soil)
 add_subdirectory(feap)
