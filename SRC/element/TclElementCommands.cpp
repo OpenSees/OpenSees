@@ -522,7 +522,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-// #if !defined(OPS_EXCLUDE_ELEMENT_PML)
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -536,7 +535,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-// #endif
   /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
     Element *theEle = 0;
@@ -609,6 +607,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
+
   // End of WheelRail element TCL command
 
   } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
@@ -1209,7 +1208,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } 
+  }
 
   else if (strcmp(argv[1], "PFEMElement2DMini") == 0) {
       ID info;
@@ -1221,7 +1220,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } 
+  }
 
   else if (strcmp(argv[1], "PFEMElement2D") == 0) {
       void *theEle = OPS_PFEMElement2D();
@@ -1232,7 +1231,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 		<<argv[1]<<endln;
 	  return TCL_ERROR;
       }
-  } 
+  }
 
   else if (strcmp(argv[1], "CatenaryCable") == 0) {
       void *theEle = OPS_CatenaryCableElement();
