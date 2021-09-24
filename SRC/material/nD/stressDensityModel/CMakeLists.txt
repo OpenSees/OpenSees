@@ -9,12 +9,12 @@ add_library(OPS_Material_StressDensity)
 target_sources(OPS_Material_StressDensity
   PRIVATE
     stressDensity.cpp
-    StressDensityModel.cpp
+    #StressDensityModel.cpp
     StressDensityModel2D.cpp 
     StressDensityModel3D.cpp
   PUBLIC
     stressDensity.h
-    StressDensityModel.h
+    #StressDensityModel.h
     StressDensityModel2D.h
     StressDensityModel3D.h
 )
