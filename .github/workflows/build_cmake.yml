@@ -25,4 +25,5 @@ jobs:
         cd build
         cmake ..
         cmake --build . --target OpenSeesTcl -j5
-
+  build-win32:
+    name: Build on Windows
