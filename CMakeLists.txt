@@ -33,6 +33,7 @@ set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
 include(OpenSeesFunctions)
+include(conan)
 
 # pseudo target modeling all exteral packages
 add_library(OPS_External_packages INTERFACE)
