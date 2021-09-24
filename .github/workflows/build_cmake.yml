@@ -1,0 +1,42 @@
+
+name: CMake Build
+
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Debug
+
+on:
+  push:
+    branches: [cmake-build]
+
+jobs:
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    steps:
+    #- uses: claudioperez/OpenSees@cmake-build
+    - uses: actions/checkout@v2
+      with: {ref: cmake-build}
+
+    - name: Install Tcl
+      run:
+        sudo apt-get install tcl-dev
+
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --target OpenSeesTcl -j5
+
+
+  build-win32:
+    name: Build on Windows
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --target OpenSeesTcl -j5
+
+

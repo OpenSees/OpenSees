@@ -1,18 +1,30 @@
-target_sources(element
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Element
     PRIVATE
-	FourNodeQuad.cpp
-	ConstantPressureVolumeQuad.cpp
-	EnhancedQuad.cpp
-	FourNodeQuad3d.cpp
-	NineNodeMixedQuad.cpp
-	FourNodeQuadWithSensitivity.cpp
+    ConstantPressureVolumeQuad.cpp
+    EnhancedQuad.cpp
+    FourNodeQuad.cpp
+    FourNodeQuad3d.cpp
+    FourNodeQuadWithSensitivity.cpp
+    EightNodeQuad.cpp
+    NineNodeMixedQuad.cpp
+    NineNodeQuad.cpp
+    SixNodeTri.cpp
     PUBLIC
-	FourNodeQuad.h
-	ConstantPressureVolumeQuad.h
-	EnhancedQuad.h
-	FourNodeQuad3d.h
-	NineNodeMixedQuad.h
-	FourNodeQuadWithSensitivity.h
+    ConstantPressureVolumeQuad.h
+    EnhancedQuad.h
+    FourNodeQuad.h
+    FourNodeQuad3d.h
+    FourNodeQuadWithSensitivity.h
+    EightNodeQuad.h
+    NineNodeMixedQuad.h
+    NineNodeQuad.h
+    SixNodeTri.h
 )
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})

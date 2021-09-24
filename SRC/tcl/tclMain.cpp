@@ -257,6 +257,7 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
     Tcl_FindExecutable(argv[0]);
 
     interp = Tcl_CreateInterp();
+    Tcl_Eval(interp, "rename load import;");
 
     numParam = OpenSeesParseArgv(argc, argv);
 

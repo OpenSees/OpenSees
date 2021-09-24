@@ -1,11 +1,56 @@
-if(APPLE)
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Renderer
+  PRIVATE
+    PlainMap.cpp   # currently added in libOpenSees
+    #AGL_Device.cpp
+    Clipping.cpp
+    db.cpp
+    Device.cpp
+    DofColorMap.cpp
+    gMatrix.cpp
+    Projection.cpp
+    Renderer.cpp
+    Scan.cpp
+    View.cpp
+    Viewport.cpp
+    VrmlViewer.cpp
+    WindowDevice.cpp
+    WindowRenderer.cpp
+  PUBLIC
+    #AGL_Device.h
+    Clipping.h
+    ColorMap.h
+    Device.h
+    DofColorMap.h
+    OpenGlDevice.h
+    #OpenGLRenderer.h
+    PlainMap.h
+    Projection.h
+    Renderer.h
+    Scan.h
+    View.h
+    Viewport.h
+    VrmlViewer.h
+    WindowDevice.h
+    WindowRenderer.h
+)
 
-endif()
+add_library(OPS_Renderer_X11 OBJECT EXCLUDE_FROM_ALL
+        X11Device.cpp
+        X11Renderer.cpp
+        #X11Device.h
+        #X11Renderer.h
+)
 
-if(UNIX AND NOT APPLE)
+add_library(OPS_Renderer_OpenGL OBJECT EXCLUDE_FROM_ALL
+    OpenGlDevice.cpp
+    OpenGlRenderer.cpp
+)
 
-endif()
+target_include_directories(OPS_Renderer PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-if(WIN32)
-
-endif()
