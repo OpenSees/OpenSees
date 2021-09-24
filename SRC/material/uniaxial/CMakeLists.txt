@@ -115,6 +115,8 @@ target_sources(OPS_Material
       FatigueMaterial.cpp
       #FedeasMaterial.cpp
       GNGMaterial.cpp
+      HardeningMaterial.cpp
+      #HardeningMaterial2.cpp
       HookGap.cpp
       HyperbolicGapMaterial.cpp
       HystereticMaterial.cpp
@@ -216,9 +218,7 @@ target_sources(OPS_Material
       FatigueMaterial.h
       #FedeasMaterial.h
       GNGMaterial.h
-      HardeningMaterial.cpp
-      HardeningMaterial.h
-      HardeningMaterial2.cpp
+      #HardeningMaterial.h
       HardeningMaterial2.h
       HookGap.h
       HyperbolicGapMaterial.h
