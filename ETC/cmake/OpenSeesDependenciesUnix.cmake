@@ -28,8 +28,9 @@
 # - LIBRARY <path/to/lib.a> INCLUDE <path/to/include/>
 #
 #----------------------------------------------------------------
-opensees_load(TCL                                            FIND
-)
+opensees_load(TCL CONAN tcl/8.6.10)
+#opensees_load(TCL                                            FIND
+#)
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
 

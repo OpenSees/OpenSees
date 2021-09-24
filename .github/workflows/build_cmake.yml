@@ -32,6 +32,23 @@ jobs:
 
   build-win32:
     name: Build on Windows
+    runs-on: [windows]
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+      with: {ref: cmake-build}
+    
+    #- name: Install package manager
+    #  run: |
+    #    cd .. git clone https://github.com/Microsoft/vcpkg.git
+    #    cd vcpkg
+    #    git checkout --force 2020.01
+    #    .\bootstrap-vcpkg.bat
+    #    .\vcpkg.exe install cppzmq:x64-windows
+
+    - name: Install Conan
+      uses: turtlebrowser/get-conan@main
+
     - name: Build
       run: |
         mkdir build
