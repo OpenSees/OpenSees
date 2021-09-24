@@ -35,15 +35,25 @@ set(TCL_LIBRARY ${TCL_LIBRARIES})
 message("TCL: ${TCL_INCLUDE_PATH}")
 
 opensees_load(BLAS
-    LIBRARY "${BUNDLE_LIBS}/blas.lib"
+  LIBRARY "${BUNDLE_LIBS}/blas.lib"
 )
 
 opensees_load(CBLAS
-    LIBRARY "${BUNDLE_LIBS}/cblas.lib"
+  LIBRARY "${BUNDLE_LIBS}/cblas.lib"
+)
+
+opensees_load(UMFPACK
+  #LIBRARY "${BUNDLE_LIBS}/umfpackC.lib"
+  LIBRARY ${OPS_BUNDLED_DIR}/bin/UMFPACK/Debug/UMFPACK.lib
+)
+
+opensees_load(CSPARSE
+  #LIBRARY "${BUNDLE_LIBS}/csparse.lib"
+  LIBRARY ${OPS_BUNDLED_DIR}/bin/CSPARSE/Debug/CSPARSE.lib
 )
 
 opensees_load(LAPACK
-    LIBRARY "${BUNDLE_LIBS}/lapack.lib"
+  LIBRARY "${BUNDLE_LIBS}/lapack.lib"
 )
 
 #set(ENV{SUPERLU_DIR})
