@@ -31,13 +31,18 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/TOOLS/cmake")
 include(OpenSeesFunctions)
 include(conan)
 
+# add Conan stuff for external dependencies
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  conan_basic_setup(TARGETS)
+endif()
+
 # pseudo target modeling all exteral packages
 add_library(OPS_External_packages INTERFACE)
-#add_library(OPS_Element_libraries INTERFACE)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
@@ -56,10 +61,12 @@ if (UNIX)
     include(OpenSeesDependenciesUnix)
     if(APPLE)
      message(STATUS ">>> MacOS")
+     add_compile_definitions(_LINUX _UNIX _TCL85)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17 ")
     else()
        message(STATUS ">>> LINUX")
        add_compile_definitions(_LINUX _UNIX _TCL85)
-       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17")
     endif()
 endif()
 
@@ -97,6 +104,9 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #add_link_options(-rdynamic)
+
+set(CMAKE_CXX_STANDARD 17)
+
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 #add_compile_options(-g)
 
