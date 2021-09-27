@@ -790,7 +790,7 @@
 #define ELE_TAG_MasonPan12                    215
 #define ELE_TAG_MasonPan3D                    216
 #define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
-#define ELE_TAG_ZeroLengthImplexContact   218  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+#define ELE_TAG_ZeroLengthImplexContact   220  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 

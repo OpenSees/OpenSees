@@ -722,7 +722,6 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
-#define ELE_TAG_ZeroLengthImplexContact   218  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 
 #define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 
