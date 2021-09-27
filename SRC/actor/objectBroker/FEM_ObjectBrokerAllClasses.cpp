@@ -763,11 +763,11 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new SSPbrickUP();
 
 	case ELE_TAG_PML2D:
-		return new PML2D();
+	  return new PML2D();
 
 	case ELE_TAG_PML3D:
-		return new PML3D();
-      
+	  return new PML3D();
+
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -1262,7 +1262,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
-
+#if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
 
@@ -1292,7 +1292,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-
+#endif // OPSDEF_UNIAXIAL_FEDEAS
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 
@@ -1486,8 +1486,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
+#if defined(OPSDEF_ELEMENT_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
+#endif // OPSDEF_ELEMENT_FEAP
 
   case ND_TAG_ContactMaterial2D:
     return new ContactMaterial2D();			
@@ -1545,10 +1547,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-
   case ND_TAG_stressDensity:
       return new stressDensity();
-
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -2290,8 +2290,7 @@ FEM_ObjectBrokerAllClasses::getNewLinearSOE(int classTagSOE)
 
 #ifdef _PETSC
     case LinSOE_TAGS_PetscSOE:
-        thePetscSolver = new PetscSolver();
-        theSOE = new PetscSOE(*thePetscSolver);
+        theSOE = new PetscSOE(*( new PetscSolver()));
 	  return theSOE;
 #endif
 

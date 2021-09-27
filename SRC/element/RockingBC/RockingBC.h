@@ -61,7 +61,7 @@
 
 // #include "Eigen/Dense" // REMOVE EIGEN
 
-using Vec = std::vector<double>;
+using RBCVec = std::vector<double>;
 using Vecint = std::vector<int>;
 using VecVecOS = std::vector< Vector >;
 using VecVecXd = std::vector<Vector>;
@@ -194,7 +194,7 @@ private:
 	VecVec Ysi, Si, Yupi, Upi, Ysi_com, Si_com, Yupi_com, Upi_com, Ua_pos;
 	VecMatOS dYsi_dW{}; VecMatOS dSi_dW{};
 
-	Vec ysi_new, si_new, yupi_new, upi_new;
+	RBCVec ysi_new, si_new, yupi_new, upi_new;
 
 	Vector Ys, S, Ud;
 	Matrix dYs_dW, dS_dW;
@@ -364,7 +364,7 @@ private:
 
 	Vector Ks, Ks_com, Ydks, Kup, Kup_com, DS, Dks, DDKs;
 	Matrix dKs_dW, dYdks_dW, dDks_dW, dDDKs_dW, dDS_dW;
-	Vec rnotfound{};
+	RBCVec rnotfound{};
 	std::vector<int> rfoundi{};
 	std::vector<int> ifound{};
 	std::vector<int> inotfound{};
@@ -374,10 +374,10 @@ private:
 	Matrix dUnf_dR;
 	Matrix UB{};
 	Matrix dUB_dR{};
-	Vec UB_R{};
+	RBCVec UB_R{};
 	Matrix UBnew{};
 	Matrix dUBnew_dR{};
-	Vec UBnew_R{};
+	RBCVec UBnew_R{};
 	Vector Im1, Jm1;
 	Vector Uel_com;
 
@@ -531,36 +531,36 @@ private:
 	Vector array_join(const VecVec& X_ints);
 	Matrix array_join(const VecMatOS& X_ints);
 
-	void commony(const Vec& ya, const Vec& fa, const Vec& yb, const Vec& fb, Vec& Y, Vec& FA, Vec& FB);
+	void commony(const RBCVec& ya, const RBCVec& fa, const RBCVec& yb, const RBCVec& fb, RBCVec& Y, RBCVec& FA, RBCVec& FB);
 
-	void interval_interior(double wl, double wr, double ey, double dy, const Vec& up_com, const Vec& yup_com,
-		const Vec& ys_com, const Vec& s_com, double beta_Dt,
-		Vec& ys_new, Vec& s_new, Vecint& ys_cats, Vec& yup_new, Vec& up_new,
-		Vec& dys_new_dwl, Vec& dys_new_dwr, Vec& ds_new_dwl, Vec& ds_new_dwr,
-		Vec& ua_pos);
+	void interval_interior(double wl, double wr, double ey, double dy, const RBCVec& up_com, const RBCVec& yup_com,
+		const RBCVec& ys_com, const RBCVec& s_com, double beta_Dt,
+		RBCVec& ys_new, RBCVec& s_new, Vecint& ys_cats, RBCVec& yup_new, RBCVec& up_new,
+		RBCVec& dys_new_dwl, RBCVec& dys_new_dwr, RBCVec& ds_new_dwl, RBCVec& ds_new_dwr,
+		RBCVec& ua_pos);
 
-	void NM_calc_int(const Vec& Ys, const Matrix& dYs_dW, const Vec& S, const Matrix& dS_dW, double& N, double& M, Vector& dN_dW, Vector& dM_dW);
+	void NM_calc_int(const RBCVec& Ys, const Matrix& dYs_dW, const RBCVec& S, const Matrix& dS_dW, double& N, double& M, Vector& dN_dW, Vector& dM_dW);
 
 	void interval_dists(const Vector& Yw, const Vector& W, const VecVec& Yupi_com, const VecVec& Upi_com, const VecVec& Ysi_com, const VecVec& Si_com, double ey, double beta_Dt,
 		VecVec& Ysi, VecVec& Si, VecVec& Yupi_new, VecVec& Upi_new,
 		VecVecint& Ys_cats, Vector& Nints, Vector& Mints, Matrix& dNints_dW, Matrix& dMints_dW, VecVec& Ua_pos, VecMatOS& dYsi_dW, VecMatOS& dSi_dW);
 
-	void critpoints(const Vec& y, const Vec& s, int rinit, int rend, Vecint& cp);
+	void critpoints(const RBCVec& y, const RBCVec& s, int rinit, int rend, Vecint& cp);
 
-	void int_bilin(const Vecint& ys_cats, const Vec& ys, const Vec& s, const Vec& yup, const Vec& up, const Vec& ua_pos, double ey,
-		Vec& ys_new, Vec& s_new, Vec& yup_new, Vec& up_new);
+	void int_bilin(const Vecint& ys_cats, const RBCVec& ys, const RBCVec& s, const RBCVec& yup, const RBCVec& up, const RBCVec& ua_pos, double ey,
+		RBCVec& ys_new, RBCVec& s_new, RBCVec& yup_new, RBCVec& up_new);
 
 	void Up_interval_split_K(const Vector& Yup, const Vector& Up, const Vector& Kup, const Vector& Yw,
 		VecVecOS& Yup_ints, VecVecOS& Up_ints, VecVecOS& Kup_ints);
 
-	void commony_K(const Vector& ya, const Vector& fa, const Vector& ka, const Vector& yb, const Vector& fb, const Vector& kb, Vec& Y, Vec& FA, Vec& FB, Vec& KA, Vec& KB);
+	void commony_K(const Vector& ya, const Vector& fa, const Vector& ka, const Vector& yb, const Vector& fb, const Vector& kb, RBCVec& Y, RBCVec& FA, RBCVec& FB, RBCVec& KA, RBCVec& KB);
 
 	void interval_interior_K(double wl, double wr, double ey, double dy, const Vector& up_com, const Vector& yup_com, const Vector& kup_com,
 		const Vector& ys_com, const Vector& s_com, const Vector& ks_com, double beta_Dt,
-		Vec& ys_new, Vec& s_new, Vec& ks_new, Vecint& ys_cats, Vec& yup_new, Vec& up_new, Vec& kup_new,
-		Vec& dys_new_dwl, Vec& dys_new_dwr, Vec& ds_new_dwl, Vec& ds_new_dwr, Vec& dks_new_dwl, Vec& dks_new_dwr,
-		Vec& ydks, Vec& dks, Vec& dydks_dwl, Vec& dydks_dwr, Vec& ddks_dwl, Vec& ddks_dwr,
-		Vec& ds, Vec& dds_dwl, Vec& dds_dwr);
+		RBCVec& ys_new, RBCVec& s_new, RBCVec& ks_new, Vecint& ys_cats, RBCVec& yup_new, RBCVec& up_new, RBCVec& kup_new,
+		RBCVec& dys_new_dwl, RBCVec& dys_new_dwr, RBCVec& ds_new_dwl, RBCVec& ds_new_dwr, RBCVec& dks_new_dwl, RBCVec& dks_new_dwr,
+		RBCVec& ydks, RBCVec& dks, RBCVec& dydks_dwl, RBCVec& dydks_dwr, RBCVec& ddks_dwl, RBCVec& ddks_dwr,
+		RBCVec& ds, RBCVec& dds_dwl, RBCVec& dds_dwr);
 
 	void interval_dists_K(const Vector& Yw, const Vector& W, const Vector& Yup_com, const Vector& Up_com, const Vector& Kup_com, const Vector& Ys_com, const Vector& S_com, const Vector& Ks_com, double ey, double beta_Dt,
 		Vector& Ys, Vector& S, Vector& Ks, Vector& Yup_new, Vector& Up_new, Vector& Kup_new,
@@ -570,14 +570,14 @@ private:
 
 	// bilin
 
-	void commony_BL(const Vec& ya, const Vec& fa, const Vec& yb, const Vec& fb, Vec& Y, Vec& FA, Vec& FB);
-	bool distintersec(const Vec& YP, const Vec& P, const Vec& YQ, const Vec& Q);
+	void commony_BL(const RBCVec& ya, const RBCVec& fa, const RBCVec& yb, const RBCVec& fb, RBCVec& Y, RBCVec& FA, RBCVec& FB);
+	bool distintersec(const RBCVec& YP, const RBCVec& P, const RBCVec& YQ, const RBCVec& Q);
 	bool twobilinintersec(double y1, double y2, double p1, double p2, double q1, double q2, double yp, double p0, double yq, double q0);
-	void NM_BL(const Vec& Y, const Vec& S, double& N, double& M, double& Nd, double& Md);
+	void NM_BL(const RBCVec& Y, const RBCVec& S, double& N, double& M, double& Nd, double& Md);
 	bool bilinable(double Nd, double Md, double y1, double y2, double BILINLIM = 1.0e-18);
-	void bilindist(const Vec& Y, const Vec& S, double Nd, double Md, Vec& Ybl, Vec& Sbl, double BILINLIM = 1.0e-18);
-	bool bilin_two(const Vec& YP, const Vec& P, const Vec& YQ, const Vec& Q, Vec& YPn, Vec& Pn, Vec& YQn, Vec& Qn);
-	bool bilin_one(const Vec& YP, const Vec& P, Vec& YPn, Vec& Pn);
+	void bilindist(const RBCVec& Y, const RBCVec& S, double Nd, double Md, RBCVec& Ybl, RBCVec& Sbl, double BILINLIM = 1.0e-18);
+	bool bilin_two(const RBCVec& YP, const RBCVec& P, const RBCVec& YQ, const RBCVec& Q, RBCVec& YPn, RBCVec& Pn, RBCVec& YQn, RBCVec& Qn);
+	bool bilin_one(const RBCVec& YP, const RBCVec& P, RBCVec& YPn, RBCVec& Pn);
 
 
 
