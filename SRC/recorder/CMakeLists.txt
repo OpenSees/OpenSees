@@ -64,7 +64,7 @@ target_sources(OPS_ASDEA
 
 
 #if (OPS_Use_Graphics)
-target_sources(OPS_Renderer
+target_sources(OPS_Graphics
     PRIVATE
       AlgorithmIncrements.cpp
       FilePlotter.cpp
