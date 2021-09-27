@@ -31,16 +31,17 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/TOOLS/cmake")
 include(OpenSeesFunctions)
 
 # add Conan stuff for external dependencies
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  conan_basic_setup(TARGETS)
+endif()
 
 # pseudo target modeling all exteral packages
 add_library(OPS_External_packages INTERFACE)
-#add_library(OPS_Element_libraries INTERFACE)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
