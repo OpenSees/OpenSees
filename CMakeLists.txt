@@ -31,16 +31,18 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/ETC/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
 include(OpenSeesFunctions)
+include(conan)
 
 # add Conan stuff for external dependencies
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  conan_basic_setup(TARGETS)
+endif()
 
 # pseudo target modeling all exteral packages
 add_library(OPS_External_packages INTERFACE)
-#add_library(OPS_Element_libraries INTERFACE)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
@@ -60,11 +62,11 @@ if (UNIX)
     if(APPLE)
      message(STATUS ">>> MacOS")
      add_compile_definitions(_LINUX _UNIX _TCL85)
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17 ")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     else()
        message(STATUS ">>> LINUX")
        add_compile_definitions(_LINUX _UNIX _TCL85)
-       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17")
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
     endif()
 endif()
 
@@ -102,7 +104,6 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #add_link_options(-rdynamic)
-
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -241,6 +242,9 @@ add_library(OPS_DRM                OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_ASDEA              OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
+add_library(OPS_Graphics           OBJECT EXCLUDE_FROM_ALL)
+add_library(OPS_Graphics_Default   OBJECT EXCLUDE_FROM_ALL)
+add_library(OPS_Graphics_GL        OBJECT EXCLUDE_FROM_ALL)
 #add_library(OPS_Reliability        OBJECT EXCLUDE_FROM_ALL)
 
 opensees_library(OPS_SysOfEqn_UMF
@@ -455,11 +459,25 @@ endif()
 
 # Renderer
 #----------------------------
-if (OPS_Use_Graphics)
-    message("OPS >>> Including OPS_Graphics option")
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_Renderer)
+if (${OPS_Use_Graphics_Option} STREQUAL "Base")
+  target_link_libraries(${OPS_FINAL_TARGET} OPS_Graphics_Default OPS_Graphics)
+
+elseif (${OPS_Use_Graphics_Option} STREQUAL "OpenGL")
+  message("OPS >>> Including OpenGL graphics option")
+  set_source_files_properties(
+      "${OPS_SRC_DIR}/recorder/AlgorithmIncrements.cpp"
+      "${OPS_SRC_DIR}/recorder/FilePlotter.cpp"
+      "${OPS_SRC_DIR}/renderer/main.cpp"
+      "${OPS_SRC_DIR}/renderer/OpenGlDevice.cpp"
+      "${OPS_SRC_DIR}/renderer/OpenGlRenderer.cpp"
+      "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
+      "${OPS_SRC_DIR}/tcl/TclVideoPlayer.cpp"
+
+    PROPERTIES COMPILE_DEFINITIONS _AGL
+  )
+  target_link_libraries(${OPS_FINAL_TARGET} OPS_Graphics_GL OPS_Graphics)
 else()
-    add_compile_definitions(_NOGRAPHICS)
+  add_compile_definitions(_NOGRAPHICS)
 endif()
 
 

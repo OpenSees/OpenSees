@@ -23,11 +23,7 @@ set(CONDA_DIR "C:/Users/claud/miniconda3")
 set(CONDA_ENV "C:/Users/claud/miniconda3/envs/sim")
 set(BUNDLE_LIBS "${PROJECT_SOURCE_DIR}/Win64/lib/debug/")
 
-opensees_load(TCL 
-    LIBRARY ${CONDA_DIR}/Library/lib/tcl86t.lib
-    #LIBRARY "${BUNDLE_LIBS}/tcl.lib"
-    INCLUDE ${CONDA_DIR}/Library/include 
-)
+opensees_load(TCL CONAN tcl/8.6.10)
 
 set(TCL_INCLUDE_PATH ${TCL_INCLUDE_DIRS})
 set(TCL_LIBRARY ${TCL_LIBRARIES})
@@ -76,9 +72,9 @@ opensees_load(METIS                                        SEARCH)
 
 opensees_load(HDF5                                           FIND)
 
-opensees_load(MySQL                                          #FIND
-    LIBRARY ${CONDA_ENV}/Library/lib/libmysql.lib
-    INCLUDE ${CONDA_ENV}/Library/include/mysql
+opensees_load(MySQL CONAN mysql-connector-c/6.1.11
+    #LIBRARY ${CONDA_ENV}/Library/lib/libmysql.lib
+    #INCLUDE ${CONDA_ENV}/Library/include/mysql
 )
 
 set(MYSQL_INCLUDE_DIR "${CONDA_ENV}/Library/include/mysql/")
