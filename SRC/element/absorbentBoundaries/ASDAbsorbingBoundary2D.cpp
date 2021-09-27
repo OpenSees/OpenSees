@@ -174,24 +174,13 @@ OPS_ASDAbsorbingBoundary2D(void)
     // string parameter
     const char* btype = OPS_GetString();
     int bflag = BND_NONE;
-    if (strcmp(btype, "L") == 0) {
-        bflag = BND_LEFT;
-    }
-    else if (strcmp(btype, "R") == 0) {
-        bflag = BND_RIGHT;
-    }
-    else if (strcmp(btype, "BL") == 0) {
-        bflag = BND_BOTTOM | BND_LEFT;
-    }
-    else if (strcmp(btype, "BR") == 0) {
-        bflag = BND_BOTTOM | BND_RIGHT;
-    }
-    else if (strcmp(btype, "B") == 0) {
-        bflag = BND_BOTTOM;
-    }
-    else {
-        opserr << "ASDAbsorbingBoundary2D ERROR: Invalid string mandatory value: the $btype argument should be either "
-            "'B', 'L', 'R', 'BL', or 'BR', not '" << btype << "'.\n" << descr;
+    if (strstr(btype, "B")) bflag |= BND_BOTTOM;
+    if (strstr(btype, "L")) bflag |= BND_LEFT;
+    if (strstr(btype, "R")) bflag |= BND_RIGHT;
+    if(bflag == BND_NONE) {
+        opserr << "ASDAbsorbingBoundary2D ERROR: Invalid string mandatory value: the $btype "
+            "argument should contain at least one of the following characters:\n"
+            "'B', 'L', 'R'.\n" << descr;
         return 0;
     }
 
@@ -328,7 +317,7 @@ void ASDAbsorbingBoundary2D::setDomain(Domain* theDomain)
 {
     // Check Domain is not null - invoked when object removed from a domain
     if (theDomain == 0) {
-        for (int i = 0; i < 4; ++i)
+        for (std::size_t i = 0; i < m_nodes.size(); ++i)
             m_nodes[i] = nullptr;
         return;
     }
@@ -367,8 +356,8 @@ void ASDAbsorbingBoundary2D::setDomain(Domain* theDomain)
     if (!m_initialized) {
 
         // reorder nodes and compute node and dof mapping
-        std::vector<SortedNode> sortednodes(4);
-        for (std::size_t i = 0; i < 4; ++i)
+        std::vector<SortedNode> sortednodes(m_nodes.size());
+        for (std::size_t i = 0; i < m_nodes.size(); ++i)
             sortednodes[i] = SortedNode(i, m_nodes[i]);
         // all boundaries are sorted as LEFT, unless they are on the RIGHT side
         if (m_boundary & BND_RIGHT) {

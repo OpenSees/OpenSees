@@ -52,13 +52,17 @@ public:
         int node2,
         int node3,
         int node4,
+        int node5,
+        int node6,
+        int node7,
+        int node8,
         double G,
         double v,
         double rho,
-        double thickness,
         int btype,
         TimeSeries* actionx,
-        TimeSeries* actiony);
+        TimeSeries* actiony,
+        TimeSeries* actionz);
     virtual ~ASDAbsorbingBoundary3D();
 
     // class type
@@ -112,11 +116,11 @@ private:
     const Vector& getVelocity();
     const Vector& getAcceleration();
     // get element sizes
-    void getElementSizes(double& lx, double& ly, double& nx);
+    void getElementSizes(double& lx, double& ly, double& lz, double& nx, double& ny);
     // update stage
     void updateStage();
     // compute a consistent penalty value
-    double penaltyFactor();
+    void penaltyFactor(double& sp, double& mp);
     // fills the penalty stiffness matrix in stage = 0
     void addKPenaltyStage0(Matrix& K);
     // fills the penalty resisting forces in stage = 0
@@ -131,10 +135,14 @@ private:
     void addMff(Matrix& M, double scale = 1.0);
     // fills the force vector due to mass*acc
     void addRMff(Vector& R);
+    // get ff mapping vector
+    const ID& ffMapping();
     // fills the stiffness matrix of the free-field
     void addKff(Matrix& K, double scale = 1.0);
     // fills the resisting forces of the free-field
     void addRff(Vector& R);
+    // obtain the N matrix
+    const Matrix& computeNmatrix();
     // fills the stiffness matrix of the free-field forces tranfered to the soil domain
     void addKffToSoil(Matrix& K);
     // fills the forces transfered from the free-field to the soil domain
@@ -145,8 +153,6 @@ private:
     void addCff(Matrix& C);
     // fills the damping forces of the free-field
     void addRCff(Vector& R);
-    // computes the dashpot coefficients
-    void getLKcoeff(double& ap, double& as);
     // fills the damping matrix of the L-K dashpots
     void addClk(Matrix& C);
     // fills the damping forces of the L-K dashpots
@@ -157,17 +163,15 @@ private:
 private:
 
     // nodal ids
-    ID m_node_ids = ID(4);
+    ID m_node_ids = ID(8);
     // node pointers
-    std::vector<Node*> m_nodes = std::vector<Node*>(4, nullptr);
+    std::vector<Node*> m_nodes = std::vector<Node*>(8, nullptr);
     // shear modulus
     double m_G = 0.0;
     // poisson's ratio
     double m_v = 0.0;
     // mass density
     double m_rho = 0.0;
-    // thickness
-    double m_thickness = 1.0;
     // stage
     StageType m_stage = Stage_StaticConstraint;
     // boundary type
@@ -176,9 +180,9 @@ private:
     int m_num_dofs = 0;
     // a vector containing the local DOF mapping for assembling
     // into the element matrix and vectors
-    ID m_dof_map = ID(8);
+    ID m_dof_map = ID(24);
     // a vector containing the local node id mapping
-    std::vector<std::size_t> m_node_map = std::vector<std::size_t>(4, 0);
+    std::vector<std::size_t> m_node_map = std::vector<std::size_t>(8, 0);
     // initial displacement
     Vector m_U0;
     // reaction forces saved at the end of stage 0
@@ -190,6 +194,7 @@ private:
     // time series for base actions
     TimeSeries* m_tsx = nullptr;
     TimeSeries* m_tsy = nullptr;
+    TimeSeries* m_tsz = nullptr;
 
 };
 
