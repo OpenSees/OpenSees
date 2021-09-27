@@ -62,11 +62,11 @@ if (UNIX)
     if(APPLE)
      message(STATUS ">>> MacOS")
      add_compile_definitions(_LINUX _UNIX _TCL85)
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17 ")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     else()
        message(STATUS ">>> LINUX")
        add_compile_definitions(_LINUX _UNIX _TCL85)
-       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store -std=c++17")
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -ffloat-store")
     endif()
 endif()
 
@@ -104,7 +104,6 @@ enable_language(Fortran)
 # C++
 #--------------------------------------
 #add_link_options(-rdynamic)
-
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
