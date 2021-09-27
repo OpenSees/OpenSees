@@ -1,23 +1,31 @@
-
-target_sources(domain
-    PRIVATE
-	SP_Constraint.cpp 
-	MP_Constraint.cpp 
-	RigidDiaphragm.cpp
-	RigidRod.cpp 
-	RigidBeam.cpp 
-	ImposedMotionSP.cpp 
-	ImposedMotionSP1.cpp
-	Pressure_Constraint.cpp
-    PUBLIC
-	SP_Constraint.h 
-	MP_Constraint.h 
-	RigidDiaphragm.h
-	RigidRod.h 
-	RigidBeam.h 
-	ImposedMotionSP.h 
-	ImposedMotionSP1.h
-	Pressure_Constraint.h
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Domain
+  PRIVATE
+    MP_Constraint.cpp 
+    RigidBeam.cpp 
+    RigidDiaphragm.cpp
+    RigidRod.cpp 
+    SP_Constraint.cpp 
+    Pressure_Constraint.cpp
+  PUBLIC
+    MP_Constraint.h 
+    RigidBeam.h 
+    RigidDiaphragm.h
+    RigidRod.h 
+    SP_Constraint.h 
+    Pressure_Constraint.h
 )
-
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(OPS_Domain
+  PRIVATE
+    ImposedMotionSP.cpp 
+    ImposedMotionSP1.cpp
+  PUBLIC
+    ImposedMotionSP.h 
+    ImposedMotionSP1.h
+)
+target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
