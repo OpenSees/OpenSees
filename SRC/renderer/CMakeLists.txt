@@ -6,7 +6,7 @@
 #==============================================================================
 target_sources(OPS_Renderer
   PRIVATE
-    PlainMap.cpp   # currently added in libOpenSees
+    PlainMap.cpp
     Renderer.cpp
   PUBLIC
     PlainMap.h
