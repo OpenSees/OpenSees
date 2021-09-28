@@ -1,10 +1,17 @@
-target_sources(element
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Matrix
     PRIVATE
-	MatrixUtil.cpp
+    MatrixUtil.cpp
     PUBLIC
-	MatrixUtil.h
+    MatrixUtil.h
 )
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 

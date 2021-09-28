@@ -13,7 +13,8 @@
 **                                                                    **
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       ** **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       ** 
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
 
@@ -151,8 +152,10 @@ extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 extern void* OPS_InertiaTrussElement(void);     //Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
-#ifdef _HAVE_LHNMYS
+
+#if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
 extern void* OPS_BeamColumn2DwLHNMYS(void);
+extern void* OPS_Beam2dDamage(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
@@ -521,7 +524,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -535,7 +537,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
   /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
     Element *theEle = 0;
@@ -552,8 +553,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }*/
     
-#ifdef _HAVE_LHNMYS
-    
+#if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)    
   } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
@@ -564,6 +564,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
+  } else if (strcmp(argv[1],"beamColumn2dDamage") == 0) {
+    Element *theEle = 0;
+    ID info;
+    theEle = (Element *)OPS_Beam2dDamage();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }    
     
   } else if (strcmp(argv[1],"beamColumn2DwLHNMYS_Damage") == 0) {
     Element *theEle = 0;
@@ -586,7 +597,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  
+
 #endif
 
   // Beginning of WheelRail element TCL command
@@ -598,8 +609,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
-    
-  //End of WheelRail element TCL command*/
+
+  // End of WheelRail element TCL command
 
   } else if ((strcmp(argv[1],"ElasticTimoshenkoBeam") == 0) || (strcmp(argv[1],"elasticTimoshenkoBeam")) == 0) {
     Element *theEle = 0;
@@ -1187,8 +1198,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  }
 
+  } 
   else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
@@ -1549,13 +1560,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
 
+#if defined(OPSDEF_ELEMENT_FEAP)
   if (strcmp(argv[1],"fTruss") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addFeapTruss(clientData, interp, argc, argv,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
 
-  } else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
+  }  
+#endif // _OPS_Element_FEAP
+
+  else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
     int result = TclModelBuilder_addDispBeamColumnInt(clientData, interp, argc, argv,
 						   theTclDomain, theTclBuilder);
     return result;
