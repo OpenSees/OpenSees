@@ -22,9 +22,6 @@ set(OPS_FINAL_TARGET "OpenSeesTcl" CACHE STRING "OpenSees final target")
 option(OPS_Use_Dev_Directories
   "Include files in DEVELOPER directory"                   OFF)
 
-option(OPS_Use_Graphics
-  "Include graphics"                                       OFF)
-
 option(OPS_Use_DRM
   "DRM lib"                                                ON )
 
@@ -37,6 +34,11 @@ option(OPS_Use_PFEM
 option(FMK
   "Special FMK Code"                                       OFF)
 
+set(OPS_Use_Graphics_Option
+  None
+  # Base
+  # OpenGL
+)
 
 #==============================================================================
 #                           Select Auxiliary Components
