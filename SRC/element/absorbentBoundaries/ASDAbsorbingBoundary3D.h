@@ -115,8 +115,6 @@ private:
     const Vector& getDisplacement();
     const Vector& getVelocity();
     const Vector& getAcceleration();
-    // get element sizes
-    void getElementSizes(double& lx, double& ly, double& lz, double& nx, double& ny);
     // update stage
     void updateStage();
     // compute a consistent penalty value
@@ -172,6 +170,10 @@ private:
     double m_v = 0.0;
     // mass density
     double m_rho = 0.0;
+    // sizes
+    double m_lx = 0.0;
+    double m_ly = 0.0;
+    double m_lz = 0.0;
     // stage
     StageType m_stage = Stage_StaticConstraint;
     // boundary type

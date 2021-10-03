@@ -296,13 +296,21 @@ namespace {
     constexpr std::array<double, 8> H8_GZ = { {-H8_G, -H8_G, -H8_G, -H8_G,   H8_G, H8_G, H8_G, H8_G} };
     constexpr std::array<double, 8> H8_GW = { {1.0, 1.0, 1.0, 1.0,   1.0, 1.0, 1.0, 1.0} };
     // H8 node coordinate matrix
-    inline void H8_nodeMatrix(const std::vector<Node*>& nodes, const std::vector<std::size_t>& node_map, Matrix& P) {
+    inline void H8_nodeMatrix(const std::vector<Node*>& nodes, Matrix& P) {
         for (int j = 0; j < 8; ++j) {
             const Node* n = nodes[static_cast<std::size_t>(j)];
             const Vector& x = n->getCrds();
             for (int i = 0; i < 3; ++i) {
                 P(i, j) = x(i);
             }
+        }
+    }
+    inline void H8_nodeMatrix(const std::vector<SortedNode>& nodes, Matrix& P) {
+        for (int j = 0; j < 8; ++j) {
+            const SortedNode& n = nodes[static_cast<std::size_t>(j)];
+            P(0, j) = n.x;
+            P(1, j) = n.y;
+            P(2, j) = n.z;
         }
     }
     // H8 shape function local gradients at a gauss point
@@ -363,6 +371,101 @@ namespace {
         }
     }
     
+    // handle sorted node distortion
+    inline void handleDistortion(std::vector<SortedNode>& nodes) {
+
+        // H8 node matrix
+        static Matrix P(3, 8);
+        H8_nodeMatrix(nodes, P);
+
+        // jacobian at center
+        static Matrix dN(8, 3);
+        static Matrix J0(3, 3);
+        H8_dN(0.0, 0.0, 0.0, dN);
+        J0.addMatrixProduct(0.0, P, dN, 1.0);
+        double detJ0 = H8_det3(J0);
+        double v0 = detJ0 * 8.0;
+
+        // modified Jacobian
+        static Matrix J(3, 3);
+        static Vector Jnorms(3);
+        J = J0;
+        for (int j = 0; j < 3; ++j) {
+            double jn = std::sqrt(std::pow(J(0, j), 2) + std::pow(J(1, j), 2) + std::pow(J(2, j), 2));
+            if (jn == 0.0) {
+                opserr << "ASDAbsorbingBoundary3D: Element has a singular jacobian. Make sure the element is not excessively distorted!\n";
+                exit(-1);
+            }
+            J(0, j) /= jn;
+            J(1, j) /= jn;
+            J(2, j) /= jn;
+            Jnorms(j) = jn;
+        }
+        for (int i = 0; i < 3; ++i) { // x y z
+            double imax = std::abs(J(i, 0));
+            int imax_id = 0;
+            for (int j = 1; j < 3; ++j) { // axis
+                double jval = std::abs(J(i, j));
+                if (jval > imax) {
+                    imax = jval;
+                    imax_id = j;
+                }
+            }
+            for (int j = 0; j < 3; ++j) {
+                if (j != i) {
+                    J(j, imax_id) = 0.0;
+                }
+            }
+        }
+        for (int j = 0; j < 3; ++j) {
+            double jn = Jnorms(j);
+            for (int i = 0; i < 3; ++i) {
+                J(i, j) *= jn;
+            }
+        }
+        double detJ = H8_det3(J);
+        double v = detJ * 8.0;
+        double scale = std::cbrt(v0 / v);
+        J *= scale;
+
+        // centroid
+        static Vector C(3);
+        for (int j = 0; j < 8; ++j)
+            for (int i = 0; i < 3; ++i)
+                C(i) += P(i, j);
+        C /= 3.0;
+
+        // un-distored points of an equivalent-volume element
+        static Matrix P0(3, 8);
+        P0.Zero();
+        P0(0, 1) = 1.0;
+        P0(0, 2) = 1.0;
+        P0(0, 5) = 1.0;
+        P0(0, 6) = 1.0;
+        P0(1, 2) = 1.0;
+        P0(1, 3) = 1.0;
+        P0(1, 6) = 1.0;
+        P0(1, 7) = 1.0;
+        P0(2, 4) = 1.0;
+        P0(2, 5) = 1.0;
+        P0(2, 6) = 1.0;
+        P0(2, 7) = 1.0;
+        P0 *= 2.0;
+        P0 -= 1.0;
+        static Matrix PE(3, 8);
+        for (int j = 0; j < 8; ++j)
+            for (int i = 0; i < 3; ++i)
+                PE(i, j) = C(i);
+        PE.addMatrixProduct(1.0, J, P0, 1.0);
+
+        // modify sorted nodes with PE
+        for (int j = 0; j < 8; ++j) {
+            SortedNode& node = nodes[static_cast<std::size_t>(j)];
+            node.x = PE(0, j);
+            node.y = PE(1, j);
+            node.z = PE(2, j);
+        }
+    }
 
 }
 
@@ -630,6 +733,10 @@ void ASDAbsorbingBoundary3D::setDomain(Domain* theDomain)
         std::vector<SortedNode> sortednodes(m_nodes.size());
         for (std::size_t i = 0; i < m_nodes.size(); ++i)
             sortednodes[i] = SortedNode(i, m_nodes[i]);
+
+        // handle distortion before reordering and before computing sizes
+        handleDistortion(sortednodes);
+
         // choose appropriate sorting: 17 combinations
         if (m_boundary & BND_LEFT) {
             if (m_boundary & BND_BACK) {
@@ -662,6 +769,54 @@ void ASDAbsorbingBoundary3D::setDomain(Domain* theDomain)
         else if(m_boundary & BND_BOTTOM) {
             // BOTTOM
             sortNodes<SorterLeft>(sortednodes, m_node_map, m_dof_map, m_num_dofs);
+        }
+
+        // compute sizes after sorting
+        SortedNode& N0 = sortednodes[m_node_map[0]];
+        SortedNode& N1 = sortednodes[m_node_map[1]];
+        SortedNode& N2 = sortednodes[m_node_map[2]];
+        SortedNode& N4 = sortednodes[m_node_map[4]];
+        // this should be always positive due to sorting...
+        m_lz = std::abs(N1.z - N0.z);
+        // choose m_lx,m_ly,nx,ny: 17 combinations
+        if (m_boundary & BND_LEFT) {
+            if (m_boundary & BND_BACK) {
+                // LEFT-BACK, LEFT-BACK-BOTTOM
+                m_lx = std::abs(N4.x - N0.x);
+                m_ly = std::abs(N2.y - N0.y);
+            }
+            else {
+                // LEFT, LEFT-FRONT, LEFT-BOTTOM, LEFT-FRONT-BOTTOM
+                m_lx = std::abs(N2.x - N0.x);
+                m_ly = std::abs(N4.y - N0.y);
+            }
+        }
+        else if (m_boundary & BND_RIGHT) {
+            if (m_boundary & BND_BACK) {
+                // RIGHT-BACK, RIGHT-BACK-BOTTOM
+                m_lx = std::abs(N4.x - N0.x);
+                m_ly = std::abs(N2.y - N0.y);
+            }
+            else {
+                // RIGHT, RIGHT-FRONT, RIGHT-BOTTOM, RIGHT-FRONT-BOTTOM
+                m_lx = std::abs(N2.x - N0.x);
+                m_ly = std::abs(N4.y - N0.y);
+            }
+        }
+        else if (m_boundary & BND_FRONT) {
+            // FRONT FRONT-BOTTOM
+            m_lx = std::abs(N4.x - N0.x);
+            m_ly = std::abs(N2.y - N0.y);
+        }
+        else if (m_boundary & BND_BACK) {
+            // BACK BACK-BOTTOM
+            m_lx = std::abs(N4.x - N0.x);
+            m_ly = std::abs(N2.y - N0.y);
+        }
+        else if (m_boundary & BND_BOTTOM) {
+            // BOTTOM
+            m_lx = std::abs(N2.x - N0.x);
+            m_ly = std::abs(N4.y - N0.y);
         }
 
         // allocate initial displacement vector and also the static constraints
@@ -937,7 +1092,7 @@ int ASDAbsorbingBoundary3D::sendSelf(int commitTag, Channel& theChannel)
     // initialization flag
     idData(pos++) = static_cast<int>(m_initialized);
     // double data size (not known at compile-time)
-    int dsize = 3 + 2 * m_num_dofs;
+    int dsize = 6 + 2 * m_num_dofs;
     idData(pos++) = dsize;
 
     res += theChannel.sendID(dataTag, commitTag, idData);
@@ -954,6 +1109,9 @@ int ASDAbsorbingBoundary3D::sendSelf(int commitTag, Channel& theChannel)
     vectData(pos++) = m_G;
     vectData(pos++) = m_v;
     vectData(pos++) = m_rho;
+    vectData(pos++) = m_lx;
+    vectData(pos++) = m_ly;
+    vectData(pos++) = m_lz;
     for (int i = 0; i < m_num_dofs; ++i)
         vectData(pos++) = m_U0(i);
     for (int i = 0; i < m_num_dofs; ++i)
@@ -1076,6 +1234,9 @@ int ASDAbsorbingBoundary3D::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
     m_G = vectData(pos++);
     m_v = vectData(pos++);
     m_rho = vectData(pos++);
+    m_lx = vectData(pos++);
+    m_ly = vectData(pos++);
+    m_lz = vectData(pos++);
     m_U0.resize(m_num_dofs);
     m_R0.resize(m_num_dofs);
     for (int i = 0; i < m_num_dofs; ++i)
@@ -1227,69 +1388,6 @@ const Vector& ASDAbsorbingBoundary3D::getAcceleration()
     return U;
 }
 
-void ASDAbsorbingBoundary3D::getElementSizes(double& lx, double& ly, double& lz, double& nx, double& ny)
-{
-    // get nodes
-    Node* N0 = m_nodes[m_node_map[0]];
-    Node* N1 = m_nodes[m_node_map[1]];
-    Node* N2 = m_nodes[m_node_map[2]];
-    Node* N4 = m_nodes[m_node_map[4]];
-
-    // this should be always positive due to sorting...
-    lz = std::abs(N1->getCrds()(2) - N0->getCrds()(2));
-
-    // nx/ny positive if the outward normal vector from soil domain
-    // points in the positive +X/+Y direction.
-    // note: change the sign here: external forces on soil domain
-    nx = ny = 1.0; // default
-
-    // choose lx,ly,nx,ny: 17 combinations
-    if (m_boundary & BND_LEFT) {
-        if (m_boundary & BND_BACK) {
-            // LEFT-BACK, LEFT-BACK-BOTTOM
-            lx = std::abs(N4->getCrds()(0) - N0->getCrds()(0));
-            ly = std::abs(N2->getCrds()(1) - N0->getCrds()(1));
-            ny = -1.0;
-        }
-        else {
-            // LEFT, LEFT-FRONT, LEFT-BOTTOM, LEFT-FRONT-BOTTOM
-            lx = std::abs(N2->getCrds()(0) - N0->getCrds()(0));
-            ly = std::abs(N4->getCrds()(1) - N0->getCrds()(1));
-        }
-    }
-    else if (m_boundary & BND_RIGHT) {
-        if (m_boundary & BND_BACK) {
-            // RIGHT-BACK, RIGHT-BACK-BOTTOM
-            lx = std::abs(N4->getCrds()(0) - N0->getCrds()(0));
-            ly = std::abs(N2->getCrds()(1) - N0->getCrds()(1));
-            ny = -1.0;
-        }
-        else {
-            // RIGHT, RIGHT-FRONT, RIGHT-BOTTOM, RIGHT-FRONT-BOTTOM
-            lx = std::abs(N2->getCrds()(0) - N0->getCrds()(0));
-            ly = std::abs(N4->getCrds()(1) - N0->getCrds()(1));
-            nx = -1.0;
-        }
-    }
-    else if (m_boundary & BND_FRONT) {
-        // FRONT FRONT-BOTTOM
-        lx = std::abs(N4->getCrds()(0) - N0->getCrds()(0));
-        ly = std::abs(N2->getCrds()(1) - N0->getCrds()(1));
-    }
-    else if (m_boundary & BND_BACK) {
-        // BACK BACK-BOTTOM
-        lx = std::abs(N4->getCrds()(0) - N0->getCrds()(0));
-        ly = std::abs(N2->getCrds()(1) - N0->getCrds()(1));
-        ny = -1.0;
-    }
-    else if (m_boundary & BND_BOTTOM) {
-        // BOTTOM
-        lx = std::abs(N2->getCrds()(0) - N0->getCrds()(0));
-        ly = std::abs(N4->getCrds()(1) - N0->getCrds()(1));
-    }
-
-}
-
 void ASDAbsorbingBoundary3D::updateStage()
 {
     // save reactions
@@ -1307,9 +1405,7 @@ void ASDAbsorbingBoundary3D::updateStage()
 void ASDAbsorbingBoundary3D::penaltyFactor(double& sp, double& mp)
 {
     // get characteristic length
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
-    double lch = std::cbrt(lx * ly * lz);
+    double lch = std::cbrt(m_lx * m_ly * m_lz);
     // order of magnitude of the (approximate) max stiffness value
     // of an equivalent 3D solid element with this G
     int oom = static_cast<int>(std::round(std::log10(m_G * lch)));
@@ -1617,9 +1713,7 @@ void ASDAbsorbingBoundary3D::addMff(Matrix& M, double scale)
         return;
 
     // get the whole element free-field mass
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
-    double hm = scale * m_rho * lx * ly * lz;
+    double hm = scale * m_rho * m_lx * m_ly * m_lz;
 
     if (
         (m_boundary == BND_LEFT) || 
@@ -1667,9 +1761,7 @@ void ASDAbsorbingBoundary3D::addRMff(Vector& R)
     const Vector& A = getAcceleration();
 
     // get the whole element free-field mass
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
-    double hm = m_rho * lx * ly * lz;
+    double hm = m_rho * m_lx * m_ly * m_lz;
 
     if (
         (m_boundary == BND_LEFT) ||
@@ -1773,7 +1865,7 @@ void ASDAbsorbingBoundary3D::addKff(Matrix& K, double scale)
 
     // H8 node matrix
     static Matrix P(3, 8);
-    H8_nodeMatrix(m_nodes, m_node_map, P);
+    H8_nodeMatrix(m_nodes, P);
 
     // elasticity constants
     double mu = m_G;
@@ -1841,7 +1933,7 @@ void ASDAbsorbingBoundary3D::addRff(Vector& R)
 
     // H8 node matrix
     static Matrix P(3, 8);
-    H8_nodeMatrix(m_nodes, m_node_map, P);
+    H8_nodeMatrix(m_nodes, P);
 
     // elasticity constants
     double mu = m_G;
@@ -1918,10 +2010,6 @@ const Matrix& ASDAbsorbingBoundary3D::computeNmatrix()
     // choose ff-ss pairs (same as per LK dashpots)
     const std::vector<LKnodes>& pairs = LKselectPairs(m_boundary);
 
-    // obtain element sizes
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
-
     // process each pair
     for (const LKnodes& ip : pairs) {
 
@@ -1942,10 +2030,10 @@ const Matrix& ASDAbsorbingBoundary3D::computeNmatrix()
         // also include the weight of the LK pair, to account for side elements with only 2 ff nodes
         double dA = 0.0;
         if (std::abs(n(0)) > 0.99) { // X
-            dA = ly * lz * ip.w / 8.0 / 4.0;
+            dA = m_ly * m_lz * ip.w / 8.0 / 4.0;
         }
         else if (std::abs(n(1)) > 0.99) { // Y
-            dA = lx * lz * ip.w / 8.0 / 4.0;
+            dA = m_lx * m_lz * ip.w / 8.0 / 4.0;
         }
         else { // others
             opserr << "ASDAbsordbinBoundary3D Error: normal vector can be only X or Y, not " << n << "\n";
@@ -1994,7 +2082,7 @@ void ASDAbsorbingBoundary3D::addKffToSoil(Matrix& K)
 
     // H8 node matrix
     static Matrix P(3, 8);
-    H8_nodeMatrix(m_nodes, m_node_map, P);
+    H8_nodeMatrix(m_nodes, P);
 
     // elasticity constants
     double mu = m_G;
@@ -2068,7 +2156,7 @@ void ASDAbsorbingBoundary3D::addRffToSoil(Vector& R)
 
     // H8 node matrix
     static Matrix P(3, 8);
-    H8_nodeMatrix(m_nodes, m_node_map, P);
+    H8_nodeMatrix(m_nodes, P);
 
     // elasticity constants
     double mu = m_G;
@@ -2209,8 +2297,9 @@ void ASDAbsorbingBoundary3D::addClk(Matrix& C)
     double vs = std::sqrt(mu / m_rho);
 
     // sizes
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
+    double lx = m_lx;
+    double ly = m_ly;
+    double lz = m_lz;
 
     // divide all sizes for initial lumping
     lx *= 0.5;
@@ -2289,8 +2378,9 @@ void ASDAbsorbingBoundary3D::addRlk(Vector& R)
     double vs = std::sqrt(mu / m_rho);
 
     // sizes
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
+    double lx = m_lx;
+    double ly = m_ly;
+    double lz = m_lz;
 
     // divide all sizes for initial lumping
     lx *= 0.5;
@@ -2387,14 +2477,10 @@ void ASDAbsorbingBoundary3D::addBaseActions(Vector& R)
     double vp = std::sqrt((lam + 2.0 * mu) / m_rho);
     double vs = std::sqrt(mu / m_rho);
 
-    // sizes
-    double lx, ly, lz, nx, ny;
-    getElementSizes(lx, ly, lz, nx, ny);
-
     // lumped coefficients:
     // - put the minus sign here: external forces acting on soil domain
-    double ap = -vp * m_rho * lx * ly / 4.0;
-    double as = -vs * m_rho * lx * ly / 4.0;
+    double ap = -vp * m_rho * m_lx * m_ly / 4.0;
+    double as = -vs * m_rho * m_lx * m_ly / 4.0;
 
     // lumped forces (2: accounts for half force absorbed by dashpots)
     std::array<double, 3> f = { {2.0 * as * vx, 2.0 * as * vy, 2.0 * ap * vz} };
