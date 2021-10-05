@@ -177,7 +177,7 @@ OPS_ASDAbsorbingBoundary2D(void)
     if (strstr(btype, "B")) bflag |= BND_BOTTOM;
     if (strstr(btype, "L")) bflag |= BND_LEFT;
     if (strstr(btype, "R")) bflag |= BND_RIGHT;
-    if(bflag == BND_NONE) {
+    if (bflag == BND_NONE) {
         opserr << "ASDAbsorbingBoundary2D ERROR: Invalid string mandatory value: the $btype "
             "argument should contain at least one of the following characters:\n"
             "'B', 'L', 'R'.\n" << descr;
@@ -262,7 +262,7 @@ OPS_ASDAbsorbingBoundary2D(void)
 }
 
 ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D()
-	: Element(0, ELE_TAG_ASDAbsorbingBoundary2D)
+    : Element(0, ELE_TAG_ASDAbsorbingBoundary2D)
 {
 }
 
@@ -279,7 +279,7 @@ ASDAbsorbingBoundary2D::ASDAbsorbingBoundary2D(
     int btype,
     TimeSeries* actionx,
     TimeSeries* actiony)
-	: Element(tag, ELE_TAG_ASDAbsorbingBoundary2D)
+    : Element(tag, ELE_TAG_ASDAbsorbingBoundary2D)
     , m_G(G)
     , m_v(v)
     , m_rho(rho)
@@ -574,7 +574,7 @@ int ASDAbsorbingBoundary2D::sendSelf(int commitTag, Channel& theChannel)
     // tag
     idData(pos++) = getTag();
     // nodes
-    for(int i = 0; i < 4; ++i)
+    for (int i = 0; i < 4; ++i)
         idData(pos++) = m_node_ids(i);
     // stage
     idData(pos++) = static_cast<int>(m_stage);
@@ -947,26 +947,35 @@ void ASDAbsorbingBoundary2D::addKPenaltyStage0(Matrix& K)
     double sp, mp;
     penaltyFactor(sp, mp);
 
-    // off-diagonal part of the MP
     if (m_boundary & BND_BOTTOM) {
+        // fix Uy at all nodes
+        for (int i = 0; i < 4; ++i) {
+            int j1 = i * 2 + 1;
+            int q1 = m_dof_map(j1);
+            K(q1, q1) += sp;
+        }
+        // edof Ux at nodes 0-1 and 2-3
         for (int i = 0; i < 2; ++i) {
-            int n1 = i * 2; 
+            int n1 = i * 2;
             int n2 = n1 + 1;
             int j1 = n1 * 2;
             int j2 = n2 * 2;
             int q1 = m_dof_map(j1);
             int q2 = m_dof_map(j2);
-            // edof Ux at nodes 0-1 and 2-3
             K(q1, q1) += mp;
             K(q2, q2) += mp;
             K(q1, q2) -= mp;
             K(q2, q1) -= mp;
-            // fix Uy at nodes 0 and 2
-            q1 = m_dof_map(j1 + 1);
-            K(q1, q1) += sp;
         }
     }
     else {
+        // fix Ux at all nodes
+        for (int i = 0; i < 4; ++i) {
+            int j1 = i * 2;
+            int q1 = m_dof_map(j1);
+            K(q1, q1) += sp;
+        }
+        // edof Uy at nodes 0-2 and 1-3
         for (int i = 0; i < 2; ++i) {
             int n1 = i;
             int n2 = i + 2;
@@ -974,14 +983,10 @@ void ASDAbsorbingBoundary2D::addKPenaltyStage0(Matrix& K)
             int j2 = n2 * 2 + 1;
             int q1 = m_dof_map(j1);
             int q2 = m_dof_map(j2);
-            // edof Uy at nodes 0-2 and 1-3
             K(q1, q1) += mp;
             K(q2, q2) += mp;
             K(q1, q2) -= mp;
             K(q2, q1) -= mp;
-            // fix Ux at nodes 0 and 1
-            q1 = m_dof_map(j1 - 1);
-            K(q1, q1) += sp;
         }
     }
 }
@@ -1006,8 +1011,14 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage0(Vector& R)
     // get displacement vector
     const Vector& U = getDisplacement();
 
-    // off-diagonal part of the MP
     if (m_boundary & BND_BOTTOM) {
+        // fix Uy at all nodes
+        for (int i = 0; i < 4; ++i) {
+            int j1 = i * 2 + 1;
+            int q1 = m_dof_map(j1);
+            R(q1) += sp * U(q1);
+        }
+        // edof Ux at nodes 0-1 and 2-3
         for (int i = 0; i < 2; ++i) {
             int n1 = i * 2;
             int n2 = n1 + 1;
@@ -1015,15 +1026,18 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage0(Vector& R)
             int j2 = n2 * 2;
             int q1 = m_dof_map(j1);
             int q2 = m_dof_map(j2);
-            // edof Ux at nodes 0-1 and 2-3
             R(q1) += mp * (U(q1) - U(q2));
             R(q2) += mp * (U(q2) - U(q1));
-            // fix Uy at nodes 0 and 2
-            q1 = m_dof_map(j1 + 1);
-            R(q1) += sp * U(q1);
         }
     }
     else {
+        // fix Ux at all nodes
+        for (int i = 0; i < 4; ++i) {
+            int j1 = i * 2;
+            int q1 = m_dof_map(j1);
+            R(q1) += sp * U(q1);
+        }
+        // edof Uy at nodes 0-2 and 1-3
         for (int i = 0; i < 2; ++i) {
             int n1 = i;
             int n2 = i + 2;
@@ -1031,12 +1045,8 @@ void ASDAbsorbingBoundary2D::addRPenaltyStage0(Vector& R)
             int j2 = n2 * 2 + 1;
             int q1 = m_dof_map(j1);
             int q2 = m_dof_map(j2);
-            // edof Uy at nodes 0-2 and 1-3
             R(q1) += mp * (U(q1) - U(q2));
             R(q2) += mp * (U(q2) - U(q1));
-            // fix Ux at nodes 0 and 1
-            q1 = m_dof_map(j1 - 1);
-            R(q1) += sp * U(q1);
         }
     }
 }
@@ -1390,7 +1400,7 @@ void ASDAbsorbingBoundary2D::getLKcoeff(double& ap, double& as)
         vp = vs;
         vs = aux;
     }
-    
+
     // coefficients (put the minus sign here: external forces acting on soil domain)
     ap = -vp * h * m_rho * t / 2.0;
     as = -vs * h * m_rho * t / 2.0;
