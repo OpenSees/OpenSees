@@ -116,7 +116,7 @@ private:
     // update stage
     void updateStage();
     // compute a consistent penalty value
-    double penaltyFactor();
+    void penaltyFactor(double& sp, double& mp);
     // fills the penalty stiffness matrix in stage = 0
     void addKPenaltyStage0(Matrix& K);
     // fills the penalty resisting forces in stage = 0
