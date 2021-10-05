@@ -976,6 +976,8 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
+    <ClCompile Include="..\..\..\SRC\element\truss\InertiaTruss.cpp">
+      <Filter>truss</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1722,6 +1724,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h">
       <Filter>mixedBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\truss\InertiaTruss.h">
+      <Filter>truss</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

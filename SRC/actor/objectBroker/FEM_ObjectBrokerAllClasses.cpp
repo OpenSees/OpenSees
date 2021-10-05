@@ -217,6 +217,7 @@
 #include "truss/TrussSection.h"
 #include "truss/CorotTruss.h"
 #include "truss/CorotTrussSection.h"
+#include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
 #include "zeroLength/ZeroLengthContact2D.h"
@@ -663,7 +664,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new CorotTruss(); 
       
     case ELE_TAG_CorotTrussSection:  
-      return new CorotTrussSection(); 	     
+      return new CorotTrussSection(); 
+
+	case ELE_TAG_InertiaTruss:
+		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
       return new ZeroLength(); 	     

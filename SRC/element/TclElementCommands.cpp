@@ -151,6 +151,8 @@ extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
+extern void* OPS_InertiaTrussElement(void);     //Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+
 #if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_Beam2dDamage(void);
@@ -1534,6 +1536,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   }
   //Xinlong Du
+  
+  else if ((strcmp(argv[1], "InertiaTruss") == 0)) {
+
+  void* theEle = OPS_InertiaTrussElement();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+  }
   
   else if (strcmp(argv[1], "zeroLengthImplexContact") == 0) {
       void* theEle = OPS_ZeroLengthImplexContact();

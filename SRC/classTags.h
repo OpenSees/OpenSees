@@ -237,6 +237,10 @@
 #define MAT_TAG_Trilinwp 221
 #define MAT_TAG_Trilinwp2 222
 #define MAT_TAG_Trilinwpd 223
+#define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteEXP 225
+#define MAT_TAG_TDConcreteMC10 226
+#define MAT_TAG_TDConcreteMC10NL 227
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -790,7 +794,8 @@
 #define ELE_TAG_MasonPan12                    215
 #define ELE_TAG_MasonPan3D                    216
 #define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
-#define ELE_TAG_ZeroLengthImplexContact   220  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+#define ELE_TAG_InertiaTruss              218	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+#define ELE_TAG_ZeroLengthImplexContact   221  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 
