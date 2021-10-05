@@ -4,7 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-#add_library(recorder OBJECT)
 
 target_sources(OPS_Recorder
     PRIVATE
@@ -63,8 +62,7 @@ target_sources(OPS_ASDEA
 )
 
 
-#if (OPS_Use_Graphics)
-target_sources(OPS_Renderer
+target_sources(OPS_Graphics
     PRIVATE
       AlgorithmIncrements.cpp
       FilePlotter.cpp
@@ -72,7 +70,6 @@ target_sources(OPS_Renderer
       AlgorithmIncrements.h
       FilePlotter.h
 )
-#endif()
+
 add_subdirectory(response)
-#target_include_directories(recorder PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
