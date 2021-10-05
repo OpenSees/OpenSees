@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
 target_sources(domain
     PRIVATE
@@ -6,4 +12,4 @@ target_sources(domain
 
 )
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})

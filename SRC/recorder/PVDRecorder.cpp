@@ -35,6 +35,7 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
+
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
 #include "PFEMElement/ParticleGroup.h"
@@ -1977,6 +1978,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
 }

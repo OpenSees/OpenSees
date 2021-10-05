@@ -1256,15 +1256,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\FeapMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
       <Filter>nD\UWmaterials</Filter>
     </ClCompile>
@@ -2470,15 +2461,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\FeapMaterial.h">
       <Filter>nD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
-      <Filter>nD\stressDensityModel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h">
       <Filter>nD\UWmaterials</Filter>

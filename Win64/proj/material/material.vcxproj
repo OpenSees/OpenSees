@@ -221,9 +221,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\PlateRebarMaterialThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield03.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UVCmultiaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UVCplanestress.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp" />
@@ -649,9 +646,6 @@
     <ClInclude Include="..\..\..\SRC\material\nD\PlateRebarMaterialThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield03.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.h" />
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UVCmultiaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UVCplanestress.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h" />

@@ -421,8 +421,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
-	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/MPCORecorder.o \
+	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/VTK_Recorder.o 
@@ -680,6 +680,7 @@ endif
 ifdef FILIP_FLAG
 	FILIP = $(FE)/element/filip/BeamColumn2DwLHNMYS.o \
 	$(FE)/element/filip/BeamColumn2DwLHNMYS_Damage.o \
+	$(FE)/element/filip/Beam2D_Damage.o \
 	$(FE)/element/filip/BeamColumn3DwLHNMYS.o \
 	$(FE)/element/filip/Damage4NM.o \
 	$(FE)/element/filip/BetaDist.o \
@@ -1079,6 +1080,13 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o 
 
+PETSC_SOE_OBJ = 
+ifeq ($(HAVEPETSC), YES)
+	PETSC_SOE_OBJ = $(FE)/system_of_eqn/linearSOE/petsc/PetscSOE.o \
+		$(FE)/system_of_eqn/linearSOE/petsc/PetscSolver.o \
+		$(FE)/system_of_eqn/linearSOE/petsc/PetscSparseSeqSolver.o 
+endif
+
 ifeq ($(PROGRAMMING_MODE), THREADS)
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/ThreadedSuperLU.o
 endif
@@ -1090,7 +1098,8 @@ SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
-	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o
+	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
+	$(PETSC_SOE_OBJ)
 endif
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
@@ -1102,6 +1111,8 @@ SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o
 endif
+
+
 
 CUDA_CLASSES = 
 
