@@ -6,7 +6,8 @@ OBJS       = Truss.o \
 	CorotTrussSection.o \
 	Truss2.o \
 	N4BiaxialTruss.o \
-	CorotTruss2.o
+	CorotTruss2.o \
+	InertiaTruss.o
 
 all:         $(OBJS)
 
