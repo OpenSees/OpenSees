@@ -10506,7 +10506,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 2) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10561,7 +10561,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 4) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10616,7 +10616,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 3) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10671,7 +10671,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 9) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10727,7 +10727,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 8) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
