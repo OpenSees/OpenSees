@@ -51,10 +51,10 @@ and path to HDF5 lib dir
 #define MPCO_LIBLOADER_VERBOSE
 
 /* max number of iterations to guess the number of cross sections in elements */
-#define MPCO_MAX_TRIAL_NSEC 1000
+#define MPCO_MAX_TRIAL_NSEC 100
 
 /* max number of iterations to guess the number of fibers in cross sections */
-#define MPCO_MAX_TRIAL_NFIB 1000000
+#define MPCO_MAX_TRIAL_NFIB 100000
 
 //#define MPCO_WRITE_SECTION_IS_VERBOSE
 //#define MPCO_WRITE_LOC_AX_IS_VERBOSE
@@ -64,7 +64,7 @@ and path to HDF5 lib dir
 enables SWMR (Single Writer - Multiple Readers) to allow reading this database from multiple processes
 while opensees is writing data. Warning: this is a new feature in hdf5 version 1.10.0.
 */
-#define MPCO_USE_SWMR
+//#define MPCO_USE_SWMR
 
 // opensees
 #include "MPCORecorder.h"
