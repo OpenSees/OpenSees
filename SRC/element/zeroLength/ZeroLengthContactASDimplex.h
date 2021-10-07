@@ -18,12 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthImplexContact.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthContactASDimplex.h,v $
 // $Revision: 1.0 $
 // $Date: 2020-XX-XX XX:XX:XX $
 
-#ifndef ZeroLengthImplexContact_h
-#define ZeroLengthImplexContact_h
+#ifndef ZeroLengthContactASDimplex_h
+#define ZeroLengthContactASDimplex_h
 
 // Written: Onur Deniz Akan         (onur.akan@iusspavia.it)
 //          Dr. Massimo Petracca    
@@ -36,7 +36,7 @@
 
  /*----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----*
  |                                                                                |
- |                         ZeroLengthImplexContact element                        |
+ |                        ZeroLengthContactASDimplex element                      |
  +                                                                                +
  |--------------------------------------------------------------------------------|
  |                                                                                |
@@ -61,7 +61,7 @@
 
  /* command
 
-  element zeroLengthImplexContact $eleID $mNdID $sNdID $Kn $Kt $mu <-orient $x1 $x2 $x3> <-intType $type>
+  element zeroLengthContactASDimplex $eleID $mNdID $sNdID $Kn $Kt $mu <-orient $x1 $x2 $x3> <-intType $type>
 
   where:
    $eleID   : element ID of this contact element
@@ -77,8 +77,8 @@
                 rFlag = 0 implicit, backward-euler integration scheme (default)
                 rFlag = 1 impl-ex, implicit/explicit integration scheme
 
-  Description: This file contains the class definition for ZeroLengthImplexContact.
-  (1) A ZeroLengthImplexContact element is defined by two nodes in R^2 (x,y) or R^3 (x,y,z).
+  Description: This file contains the class definition for ZeroLengthContactASDimplex.
+  (1) A ZeroLengthContactASDimplex element is defined by two nodes in R^2 (x,y) or R^3 (x,y,z).
   (2) Penalty (Kn,Kt) method is used to constrain displacements in the normal direction,
       and in the tangential direction along with a Mohr-Coulomb frictional yield surface.
   (3) In 2D and 3D, 2, 4, 6 or 12 DOFs with the possibility of having  different DOFsets at
@@ -95,11 +95,11 @@
       the convergence criteria is achieved, extrapolated material parameters are corrected with a
       step of traditional implicit computation from the last commited step (n). Finally, corrected
       parameters are saved as the current step (n+1) commited variables.
-  (8) In a Newton-Raphson scheme, IMPL-EX integration translates to a step-linear solution of the material
+  (8) In a Newton-Raphson scheme, IMPL-EX integration translates to a step-wise linear solution of the material
       non-linearity, and a symmetric, semi-positive definite tangent tensor regardless of what the analytical
-      tangent migh be, hence improving the robustness of the solution. The order of accuracy is the same with
+      tangent might be, hence improving the robustness of the solution. The order of accuracy is the same with
       the implicit (backward) euler integration scheme, however the commited error at a time step is larger.
-      An automatic time-stepping algorithm should be employed in order to a priori control this error. (Oliver et al, 2008)
+      An automatic time-stepping algorithm should be employed in order to control (a-priori) this error. (Oliver et al, 2008)
 
    References:
    Oliver, J., Huespe, A.E. and Cante, J.C. "An Implicit/Explicit Integration Scheme to
@@ -115,7 +115,7 @@ class Node;
 class Channel;
 class Response;
 
-class ZeroLengthImplexContact : public Element {
+class ZeroLengthContactASDimplex : public Element {
 
 public:
     class StateVariables {
@@ -151,13 +151,13 @@ public:
 
 public:
     // constructor
-    ZeroLengthImplexContact(int tag, int Nd1, int Nd2,
+    ZeroLengthContactASDimplex(int tag, int Nd1, int Nd2,
         double Kn, double Kt, double fs,
         int ndm, bool itype, double xN, double yN, double zN);
 
     // null constructor & destructor
-    ZeroLengthImplexContact();
-    ~ZeroLengthImplexContact();
+    ZeroLengthContactASDimplex();
+    ~ZeroLengthContactASDimplex();
 
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;

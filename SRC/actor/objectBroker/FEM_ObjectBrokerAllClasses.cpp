@@ -224,7 +224,7 @@
 #include "zeroLength/ZeroLengthContact3D.h"
 #include "zeroLength/ZeroLengthContactNTS2D.h"
 #include "zeroLength/ZeroLengthInterface2D.h"
-#include "zeroLength/ZeroLengthImplexContact.h"
+#include "zeroLength/ZeroLengthContactASDimplex.h"
 //#include "ZeroLengthND.h"
 
 #include "fourNodeQuad/FourNodeQuad.h"
@@ -687,8 +687,8 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ZeroLengthContactNTS2D:  
       return new ZeroLengthContactNTS2D(); 	     
     
-    case ELE_TAG_ZeroLengthImplexContact:
-      return new ZeroLengthImplexContact();
+    case ELE_TAG_ZeroLengthContactASDimplex:
+      return new ZeroLengthContactASDimplex();
       
       //case ELE_TAG_ZeroLengthND:  
       //return new ZeroLengthND(); 	     

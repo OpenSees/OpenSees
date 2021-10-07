@@ -195,7 +195,7 @@ extern void *OPS_BeamGT(void);
 
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
-extern void* OPS_ZeroLengthImplexContact(void); // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+extern void* OPS_ZeroLengthContactASDimplex(void); // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -1548,8 +1548,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
   }
   
-  else if (strcmp(argv[1], "zeroLengthImplexContact") == 0) {
-      void* theEle = OPS_ZeroLengthImplexContact();
+  else if (strcmp(argv[1], "zeroLengthContactASDimplex") == 0) {
+      void* theEle = OPS_ZeroLengthContactASDimplex();
       if (theEle != 0)
           theElement = (Element*)theEle;
       else {

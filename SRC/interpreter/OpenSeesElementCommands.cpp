@@ -190,7 +190,7 @@ void* OPS_BbarBrickWithSensitivity();
 void* OPS_ZeroLengthRocking();
 void* OPS_ZeroLengthContact2D();
 void* OPS_ZeroLengthContact3D();
-void* OPS_ZeroLengthImplexContact();
+void* OPS_ZeroLengthContactASDimplex();
 void* OPS_Joint2D();
 void* OPS_Joint3D();
 void* OPS_LehighJoint2d();
@@ -541,7 +541,7 @@ namespace {
 	functionMap.insert(std::make_pair("LehighJoint2d", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("zeroLengthContact2D", &OPS_ZeroLengthContact2D));
 	functionMap.insert(std::make_pair("zeroLengthContact3D", &OPS_ZeroLengthContact3D));
-	functionMap.insert(std::make_pair("zeroLengthImplexContact", &OPS_ZeroLengthImplexContact));
+	functionMap.insert(std::make_pair("zeroLengthContactASDimplex", &OPS_ZeroLengthContactASDimplex));
 	functionMap.insert(std::make_pair("zeroLengthRocking", &OPS_ZeroLengthRocking));
 	functionMap.insert(std::make_pair("bbarBrickWithSensitivity", &OPS_BbarBrickWithSensitivity));
 	functionMap.insert(std::make_pair("bbarBrick", &OPS_BbarBrick));

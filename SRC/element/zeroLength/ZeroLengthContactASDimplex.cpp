@@ -18,7 +18,7 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthImplexContact.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthContactASDimplex.cpp,v $
 // $Revision: 1.0 $
 // $Date: 2020-May $
 
@@ -30,9 +30,9 @@
 //
 // Created: May 2020
 //
-// Description: This file contains the implementation for the ZeroLengthImplexContact class.
+// Description: This file contains the implementation for the ZeroLengthContactASDimplex class.
 
-#include "ZeroLengthImplexContact.h"
+#include "ZeroLengthContactASDimplex.h"
 #include <Information.h>
 #include <Domain.h>
 #include <Node.h>
@@ -91,7 +91,7 @@ namespace
     }
 }
 
-void* OPS_ZeroLengthImplexContact(void) {
+void* OPS_ZeroLengthContactASDimplex(void) {
 
     double SmallNumber = 1.0e-6;
     Element* theElement = nullptr;
@@ -99,19 +99,19 @@ void* OPS_ZeroLengthImplexContact(void) {
     // some kudos
     static int counter = 0;
     if (++counter == 1)
-        opserr << "ZeroLengthImplexContact element - Implemented: Akan, OD., Petracca, M., Camata, G., Spacone, E. & Lai, CG. (2020)\n";
+        opserr << "ZeroLengthContactASDimplex element - Implemented: Akan, OD., Petracca, M., Camata, G., Spacone, E. & Lai, CG. (2020)\n";
 
     // model dimension
     int ndm = OPS_GetNDM();
     if (ndm < 2 || ndm > 3) {
-        opserr << "ZeroLengthImplexContact: Unsupported NDM (" << ndm << "). It should be 2 or 3\n";
+        opserr << "ZeroLengthContactASDimplex: Unsupported NDM (" << ndm << "). It should be 2 or 3\n";
         return theElement;
     }
 
     // a quick check on number of args
-    if (OPS_GetNumRemainingInputArgs() < 7) {
-        opserr << "ZeroLengthImplexContact: WARNING: too few arguments \n" <<
-            "want - element zeroLengthImplexContact eleTag? iNode? jNode? Kn? Kt? mu? C? <-orient $x1 $x2 $x3> <-intType type?>\n";
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+        opserr << "ZeroLengthContactASDimplex: WARNING: too few arguments \n" <<
+            "want - element zeroLengthContactASDimplex eleTag? iNode? jNode? Kn? Kt? mu? <-orient $x1 $x2 $x3> <-intType type?>\n";
         return theElement;
     }
 
@@ -120,7 +120,7 @@ void* OPS_ZeroLengthImplexContact(void) {
     int idata[3];
     int numdata = 3;
     if (OPS_GetIntInput(&numdata, idata) < 0) {
-        opserr << "ZeroLengthImplexContact: WARNING: invalid int inputs\n";
+        opserr << "ZeroLengthContactASDimplex: WARNING: invalid int inputs\n";
         return theElement;
     }
 
@@ -128,7 +128,7 @@ void* OPS_ZeroLengthImplexContact(void) {
     double ddata[3];
     numdata = 3;
     if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
-        opserr << "ZeroLengthImplexContact: WARNING: invalid double inputs\n";
+        opserr << "ZeroLengthContactASDimplex: WARNING: invalid double inputs\n";
         return theElement;
     }
 
@@ -140,35 +140,35 @@ void* OPS_ZeroLengthImplexContact(void) {
         if (strcmp(inputstring, "-orient") == 0) {                                  // #1 read global element orientation
             if (ndm == 2) {
                 if (OPS_GetNumRemainingInputArgs() < 2) {
-                    opserr << "ZeroLengthImplexContact: WARNING: insufficient orient values in 2D\n";
+                    opserr << "ZeroLengthContactASDimplex: WARNING: insufficient orient values in 2D\n";
                     return theElement;
                 }
                 numdata = 3;
                 if (OPS_GetDoubleInput(&numdata, &x_e(0)) < 0) {
-                    opserr << "ZeroLengthImplexContact: WARNING: invalid double input after -orient\n";
+                    opserr << "ZeroLengthContactASDimplex: WARNING: invalid double input after -orient\n";
                     return theElement;
                 }
             }
             else if (ndm == 3) {
                 if (OPS_GetNumRemainingInputArgs() < 3) {
-                    opserr << "ZeroLengthImplexContact: WARNING: insufficient orient values in 3D\n";
+                    opserr << "ZeroLengthContactASDimplex: WARNING: insufficient orient values in 3D\n";
                     return theElement;
                 }
                 numdata = 3;
                 if (OPS_GetDoubleInput(&numdata, &x_e(0)) < 0) {
-                    opserr << "ZeroLengthImplexContact: WARNING: invalid double input after -orient\n";
+                    opserr << "ZeroLengthContactASDimplex: WARNING: invalid double input after -orient\n";
                     return theElement;
                 }
             }
             else {
-                opserr << "ZeroLengthImplexContact: WARNING: -orient: model dimension is invalid! \n";
+                opserr << "ZeroLengthContactASDimplex: WARNING: -orient: model dimension is invalid! \n";
                 return theElement;
             }
         }
         else if (strcmp(inputstring, "-intType") == 0) {                             // #2 read type of integration 
             numdata = 1;
             if (OPS_GetIntInput(&numdata, &integrationType) < 0) {
-                opserr << "ZeroLengthImplexContact: WARNING: invalid integer after -intType\n";
+                opserr << "ZeroLengthContactASDimplex: WARNING: invalid integer after -intType\n";
                 return theElement;
             }
         }
@@ -177,32 +177,32 @@ void* OPS_ZeroLengthImplexContact(void) {
 
     // check integration type and pick implicit if neither 1 or 0
     if (integrationType != 1 && integrationType != 0) {
-        opserr << "ZeroLengthImplexContact: WARNING: type of integration is set to IMPLICIT due to invalid flag\n";
+        opserr << "ZeroLengthContactASDimplex: WARNING: type of integration is set to IMPLICIT due to invalid flag\n";
         integrationType = false;
     }
     // check the normal vector and normalize
     if (x_e.Norm() < SmallNumber) {
-        opserr << "ZeroLengthImplexContact: WARNING: normal vector is NOT valid!: -orient $x1 $x2 $x3 cannot be < 0, 0, 0 >\n";
+        opserr << "ZeroLengthContactASDimplex: WARNING: normal vector is NOT valid!: -orient $x1 $x2 $x3 cannot be < 0, 0, 0 >\n";
         return theElement;
     }
     x_e.Normalize(); // normalized it on input!
 
     // finally, create the element
-    theElement = new ZeroLengthImplexContact(idata[0], idata[1], idata[2], ddata[0], ddata[1],
+    theElement = new ZeroLengthContactASDimplex(idata[0], idata[1], idata[2], ddata[0], ddata[1],
         ddata[2], ndm, integrationType, x_e[0], x_e[1], x_e[2]);
 
     if (theElement == 0) {
-        opserr << "WARNING: out of memory: element zeroLengthImplexContact " << idata[0] <<
+        opserr << "WARNING: out of memory: element zeroLengthContactASDimplex " << idata[0] <<
             " iNode? jNode? Kn? Kt? mu? <-orient $x1 $x2 $x3> <-intType type?>\n";
     }
 
     return theElement;
 }
 
-ZeroLengthImplexContact::ZeroLengthImplexContact(int tag, int Nd1, int Nd2,
+ZeroLengthContactASDimplex::ZeroLengthContactASDimplex(int tag, int Nd1, int Nd2,
     double Kn, double Kt, double fcoeff,
     int ndm, bool itype, double xN, double yN, double zN)
-    : Element(tag, ELE_TAG_ZeroLengthImplexContact)
+    : Element(tag, ELE_TAG_ZeroLengthContactASDimplex)
     , connectedExternalNodes(2)
     , Knormal(Kn)
     , Kfriction(Kt)
@@ -217,36 +217,36 @@ ZeroLengthImplexContact::ZeroLengthImplexContact(int tag, int Nd1, int Nd2,
     Xorient[2] = zN;
 }
 
-ZeroLengthImplexContact::ZeroLengthImplexContact()
-    : Element(0, ELE_TAG_ZeroLengthImplexContact)
+ZeroLengthContactASDimplex::ZeroLengthContactASDimplex()
+    : Element(0, ELE_TAG_ZeroLengthContactASDimplex)
 {
 }
 
-ZeroLengthImplexContact::~ZeroLengthImplexContact()
+ZeroLengthContactASDimplex::~ZeroLengthContactASDimplex()
 {
 }
 
-int ZeroLengthImplexContact::getNumExternalNodes() const
+int ZeroLengthContactASDimplex::getNumExternalNodes() const
 {
     return 2;
 }
 
-const ID& ZeroLengthImplexContact::getExternalNodes()
+const ID& ZeroLengthContactASDimplex::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
-Node** ZeroLengthImplexContact::getNodePtrs()
+Node** ZeroLengthContactASDimplex::getNodePtrs()
 {
     return theNodes.data();
 }
 
-int ZeroLengthImplexContact::getNumDOF()
+int ZeroLengthContactASDimplex::getNumDOF()
 {
     return numDOF[0] + numDOF[1];
 }
 
-void ZeroLengthImplexContact::setDomain(Domain* theDomain)
+void ZeroLengthContactASDimplex::setDomain(Domain* theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (theDomain == 0) {
@@ -264,7 +264,7 @@ void ZeroLengthImplexContact::setDomain(Domain* theDomain)
     // check nodes
     if ((theNodes[0] == nullptr) || (theNodes[1] == nullptr)) {
         opserr <<
-            "FATAL ERROR ZeroLengthImplexContact::setDomain() - Nd1: " << Nd1 <<
+            "FATAL ERROR ZeroLengthContactASDimplex::setDomain() - Nd1: " << Nd1 <<
             " and/or Nd2: " << Nd2 << " do not exist in the model.\n";
         exit(-1);
     }
@@ -272,7 +272,7 @@ void ZeroLengthImplexContact::setDomain(Domain* theDomain)
     // check NDM
     if (theNodes[0]->getCrds().Size() != numDIM || theNodes[1]->getCrds().Size() != numDIM) {
         opserr <<
-            "FATAL ERROR ZeroLengthImplexContact::setDomain() - Nd1: " << Nd1 <<
+            "FATAL ERROR ZeroLengthContactASDimplex::setDomain() - Nd1: " << Nd1 <<
             " and/or Nd2: " << Nd2 << " have an incorrect number of coordinates.\n"
             "Element NDM = " << numDIM << "\n"
             "NDM at Nd1: " << theNodes[0]->getCrds().Size() << "\n"
@@ -290,7 +290,7 @@ void ZeroLengthImplexContact::setDomain(Domain* theDomain)
             int idof = numDOF[i];
             if (idof < 2 || idof > 3) {
                 opserr <<
-                    "FATAL ERROR ZeroLengthImplexContact::setDomain() - #DOFs ("
+                    "FATAL ERROR ZeroLengthContactASDimplex::setDomain() - #DOFs ("
                     << idof << ") at node " << i + 1
                     << " is not supported! it can be either 2 or 3\n";
                 exit(-1);
@@ -302,7 +302,7 @@ void ZeroLengthImplexContact::setDomain(Domain* theDomain)
             int idof = numDOF[i];
             if ((idof != 3) && (idof != 4) && (idof != 6)) {
                 opserr <<
-                    "FATAL ERROR ZeroLengthImplexContact::setDomain() - #DOFs ("
+                    "FATAL ERROR ZeroLengthContactASDimplex::setDomain() - #DOFs ("
                     << idof << ") at node " << i + 1
                     << " is not supported! it can be either 3, 4 or 6\n";
                 exit(-1);
@@ -327,7 +327,7 @@ void ZeroLengthImplexContact::setDomain(Domain* theDomain)
     DomainComponent::setDomain(theDomain);
 }
 
-int ZeroLengthImplexContact::commitState(void)
+int ZeroLengthContactASDimplex::commitState(void)
 {
     // do the implicit correction if impl-ex
     if (use_implex) {
@@ -350,7 +350,7 @@ int ZeroLengthImplexContact::commitState(void)
     return 0;
 }
 
-int ZeroLengthImplexContact::revertToLastCommit(void)
+int ZeroLengthContactASDimplex::revertToLastCommit(void)
 {
     // restore committed internal variables
     sv.eps = sv.eps_commit;
@@ -365,7 +365,7 @@ int ZeroLengthImplexContact::revertToLastCommit(void)
     return 0;
 }
 
-int ZeroLengthImplexContact::revertToStart()
+int ZeroLengthContactASDimplex::revertToStart()
 {
     // reset state variables
     sv = StateVariables();
@@ -373,7 +373,7 @@ int ZeroLengthImplexContact::revertToStart()
     return 0;
 }
 
-int ZeroLengthImplexContact::update()
+int ZeroLengthContactASDimplex::update()
 {
     if (!sv.dtime_is_user_defined) {
         sv.dtime_n = ops_Dt;
@@ -411,7 +411,7 @@ int ZeroLengthImplexContact::update()
     return 0;
 }
 
-const Matrix& ZeroLengthImplexContact::getTangentStiff()
+const Matrix& ZeroLengthContactASDimplex::getTangentStiff()
 {
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     auto& stiff = gs.K;
@@ -420,7 +420,7 @@ const Matrix& ZeroLengthImplexContact::getTangentStiff()
     return stiff;
 }
 
-const Matrix& ZeroLengthImplexContact::getInitialStiff()
+const Matrix& ZeroLengthContactASDimplex::getInitialStiff()
 {
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     auto& stiff = gs.K0;
@@ -436,7 +436,7 @@ const Matrix& ZeroLengthImplexContact::getInitialStiff()
     return stiff;
 }
 
-const Matrix& ZeroLengthImplexContact::getDamp()
+const Matrix& ZeroLengthContactASDimplex::getDamp()
 {
     // get global storage for gloabl DOFset
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
@@ -444,7 +444,7 @@ const Matrix& ZeroLengthImplexContact::getDamp()
     return gs.D;
 }
 
-const Matrix& ZeroLengthImplexContact::getMass()
+const Matrix& ZeroLengthContactASDimplex::getMass()
 {
     // get global storage for global DOFset
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
@@ -452,7 +452,7 @@ const Matrix& ZeroLengthImplexContact::getMass()
     return gs.M;
 }
 
-const Vector& ZeroLengthImplexContact::getResistingForce() {
+const Vector& ZeroLengthContactASDimplex::getResistingForce() {
 
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     auto& R = gs.R;
@@ -480,12 +480,12 @@ const Vector& ZeroLengthImplexContact::getResistingForce() {
     return R;
 }
 
-const Vector& ZeroLengthImplexContact::getResistingForceIncInertia()
+const Vector& ZeroLengthContactASDimplex::getResistingForceIncInertia()
 {
     return getResistingForce();
 }
 
-int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
+int ZeroLengthContactASDimplex::sendSelf(int commitTag, Channel& theChannel) {
 
     int res = 0;
     int dataTag = this->getDbTag();
@@ -504,7 +504,7 @@ int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
     idata(9) = gap0_initialized ? 1 : 0;
     res = theChannel.sendID(dataTag, commitTag, idata);
     if (res < 0) {
-        opserr << "WARNING ZeroLengthImplexContact::sendSelf() - " << this->getTag() << " failed to send ID\n";
+        opserr << "WARNING ZeroLengthContactASDimplex::sendSelf() - " << this->getTag() << " failed to send ID\n";
         return -1;
     }
 
@@ -543,7 +543,7 @@ int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
     ddata(30) = gap0(2);
     res = theChannel.sendVector(dataTag, commitTag, ddata);
     if (res < 0) {
-        opserr << "WARNING ZeroLengthImplexContact::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+        opserr << "WARNING ZeroLengthContactASDimplex::sendSelf() - " << this->getTag() << " failed to send Vector\n";
         return -1;
     }
     
@@ -551,7 +551,7 @@ int ZeroLengthImplexContact::sendSelf(int commitTag, Channel& theChannel) {
     return 0;
 }
 
-int ZeroLengthImplexContact::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker) {
+int ZeroLengthContactASDimplex::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker) {
 
     int res;
     int dataTag = this->getDbTag();
@@ -560,7 +560,7 @@ int ZeroLengthImplexContact::recvSelf(int commitTag, Channel& theChannel, FEM_Ob
     static ID idata(10);
     res = theChannel.recvID(dataTag, commitTag, idata);
     if (res < 0) {
-        opserr << "WARNING ZeroLengthImplexContact::recvSelf() - failed to receive ID\n";
+        opserr << "WARNING ZeroLengthContactASDimplex::recvSelf() - failed to receive ID\n";
         return -1;
     }
     setTag(idata(0));
@@ -578,7 +578,7 @@ int ZeroLengthImplexContact::recvSelf(int commitTag, Channel& theChannel, FEM_Ob
     static Vector ddata(31);
     res = theChannel.recvVector(dataTag, commitTag, ddata);
     if (res < 0) {
-        opserr << "WARNING ZeroLengthImplexContact::recvSelf() - failed to receive Vector\n";
+        opserr << "WARNING ZeroLengthContactASDimplex::recvSelf() - failed to receive Vector\n";
         return -1;
     }
     Knormal = ddata(0);
@@ -616,7 +616,7 @@ int ZeroLengthImplexContact::recvSelf(int commitTag, Channel& theChannel, FEM_Ob
     return 0;
 }
 
-int ZeroLengthImplexContact::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+int ZeroLengthContactASDimplex::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
     if (theNodes[0] == 0 || theNodes[1] == 0)
         return 0;
@@ -630,11 +630,11 @@ int ZeroLengthImplexContact::displaySelf(Renderer& theViewer, int displayMode, f
     return theViewer.drawPoint(v1, d1, 10);
 }
 
-void ZeroLengthImplexContact::Print(OPS_Stream& strm, int flag) {
+void ZeroLengthContactASDimplex::Print(OPS_Stream& strm, int flag) {
 
     if (flag == 0) {
         strm << "Element: " << this->getTag();
-        strm << " type: ZeroLengthImplexContact  iNode: " << connectedExternalNodes(0);
+        strm << " type: ZeroLengthContactASDimplex  iNode: " << connectedExternalNodes(0);
         strm << " jNode: " << connectedExternalNodes(1) << endln;
     }
     else if (flag == 1) {
@@ -642,12 +642,12 @@ void ZeroLengthImplexContact::Print(OPS_Stream& strm, int flag) {
     }
 }
 
-Response* ZeroLengthImplexContact::setResponse(const char** argv, int argc, OPS_Stream& output)
+Response* ZeroLengthContactASDimplex::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
     Response* theResponse = nullptr;
 
     output.tag("ElementOutput");
-    output.attr("eleType", "zeroLengthImplexContact");
+    output.attr("eleType", "zeroLengthContactASDimplex");
     output.attr("eleTag", this->getTag());
     output.attr("node1", connectedExternalNodes[0]);
     output.attr("node2", connectedExternalNodes[1]);
@@ -783,7 +783,7 @@ Response* ZeroLengthImplexContact::setResponse(const char** argv, int argc, OPS_
     return theResponse;
 }
 
-int ZeroLengthImplexContact::getResponse(int responseID, Information& eleInfo) {
+int ZeroLengthContactASDimplex::getResponse(int responseID, Information& eleInfo) {
 
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     static Vector small(numDIM);
@@ -857,7 +857,7 @@ int ZeroLengthImplexContact::getResponse(int responseID, Information& eleInfo) {
     }
 }
 
-int ZeroLengthImplexContact::updateParameter(int parameterID, double value)
+int ZeroLengthContactASDimplex::updateParameter(int parameterID, double value)
 {
     if (parameterID == 1) {
         // set user defined current time increment
@@ -877,7 +877,7 @@ int ZeroLengthImplexContact::updateParameter(int parameterID, double value)
     return 0;
 }
 
-const Matrix& ZeroLengthImplexContact::getRotationMatrix33()
+const Matrix& ZeroLengthContactASDimplex::getRotationMatrix33()
 {
     static Matrix T(3, 3);
 
@@ -921,7 +921,7 @@ const Matrix& ZeroLengthImplexContact::getRotationMatrix33()
     return T;
 }
 
-const Matrix& ZeroLengthImplexContact::getRotationMatrix66()
+const Matrix& ZeroLengthContactASDimplex::getRotationMatrix66()
 {
     static Matrix T2(6, 6);
     T2.Zero();
@@ -938,7 +938,7 @@ const Matrix& ZeroLengthImplexContact::getRotationMatrix66()
     return T2;
 }
 
-const Vector& ZeroLengthImplexContact::getInitialGap()
+const Vector& ZeroLengthContactASDimplex::getInitialGap()
 {
     // compute local gap vector
     static Vector LGap(3);
@@ -947,7 +947,7 @@ const Vector& ZeroLengthImplexContact::getInitialGap()
     return LGap;
 }
 
-void ZeroLengthImplexContact::computeStrain()
+void ZeroLengthContactASDimplex::computeStrain()
 {
     // get global displacement for global DOFset
     const Vector& U1 = theNodes[0]->getTrialDisp();
@@ -974,7 +974,7 @@ void ZeroLengthImplexContact::computeStrain()
     sv.eps.addVector(1.0, LGap, 1.0);
 }
 
-void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
+void ZeroLengthContactASDimplex::updateInternal(bool do_implex, bool do_tangent)
 {
     // strain layout
     // [Normal, Tangential1, Tangential2]
@@ -1100,7 +1100,7 @@ void ZeroLengthImplexContact::updateInternal(bool do_implex, bool do_tangent)
     }
 }
 
-void ZeroLengthImplexContact::formStiffnessMatrix(const Matrix& C, Matrix& K)
+void ZeroLengthContactASDimplex::formStiffnessMatrix(const Matrix& C, Matrix& K)
 {
     // element stiffness in local system
     static Matrix KL(6, 6);
@@ -1125,7 +1125,7 @@ void ZeroLengthImplexContact::formStiffnessMatrix(const Matrix& C, Matrix& K)
     }
 }
 
-const Matrix& ZeroLengthImplexContact::theBMatrix()
+const Matrix& ZeroLengthContactASDimplex::theBMatrix()
 {
     // this is the strain-displacement matrix.
     // the strain is a actually the displacement jump U2-U1
