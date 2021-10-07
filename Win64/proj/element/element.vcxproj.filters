@@ -979,6 +979,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\truss\InertiaTruss.cpp">
       <Filter>truss</Filter>
     </ClCompile>
