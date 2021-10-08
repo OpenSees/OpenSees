@@ -34,7 +34,7 @@ jobs:
 
     - name: Verification
       run: |
-        cd ../EXAMPLES/verification && ../../build/OpenSeesTcl runVerificationSuite.tcl
+        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
