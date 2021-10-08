@@ -19,7 +19,7 @@ jobs:
     steps:
     #- uses: claudioperez/OpenSees@cmake-build
     - uses: actions/checkout@v2
-      with: {ref: cmake-build}
+      #with: {ref: cmake-build}
 
     - name: Install Tcl
       run:
