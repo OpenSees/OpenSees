@@ -9,6 +9,9 @@ on:
   push:
     branches: [cmake-build]
 
+  pull_request:
+    branches: [master]
+
 jobs:
   build-ubuntu:
     name: Ubuntu bundled build
