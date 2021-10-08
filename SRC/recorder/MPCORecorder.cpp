@@ -3067,6 +3067,7 @@ namespace mpco {
 				, descr(_d)
 				, current_level(0)
 				, pending_close_tag(false)
+				, is_valid(true)
 			{}
 			~OutputDescriptorStream() {}
 
@@ -3315,11 +3316,14 @@ namespace mpco {
 			void ensureItemsOfUniformType(mpco::element::OutputDescriptor *parent, mpco::element::OutputDescriptor *child) {
 				if (parent->items.size() > 0) {
 					if (child->type != parent->items.back()->type) {
-						opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
+						/*opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
 							"Responses at the same level of the response tree must be of the same type.\n"
 							"Expected: " << mpco::ElementOutputDescriptorType::toString(parent->items.back()->type)
 							<< ", given: " << mpco::ElementOutputDescriptorType::toString(child->type) << "\n";
-						exit(-1);
+						exit(-1);*/
+						// M.Petracca - due to a recent commit (08/10/2021)
+						// this one can be converted from a fatal error to a silent-skip...
+						is_valid = false;
 					}
 				}
 			}
@@ -3328,6 +3332,7 @@ namespace mpco {
 			mpco::element::OutputDescriptor *descr;
 			int current_level;
 			bool pending_close_tag;
+			bool is_valid;
 		};
 
 		class OutputResponse
@@ -5929,7 +5934,7 @@ int MPCORecorder::initElementRecorders()
 						if (do_all_fibers) {
 							eo_descriptor.purge();
 						}
-						if (eo_response) {
+						if (eo_response && eo_stream.is_valid) {
 							/*
 							get (or create and get) the list of MPCORecorder_ElementResultRecorder mapped to this descriptor
 							and add the new element-response pair
