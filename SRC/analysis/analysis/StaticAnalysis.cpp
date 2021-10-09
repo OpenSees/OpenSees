@@ -135,7 +135,7 @@ StaticAnalysis::analyze(int numSteps)
 
 	if (result < 0) {
 	    opserr << "StaticAnalysis::analyze() - the AnalysisModel failed";
-	    opserr << " at iteration: " << i << " with domain at load factor ";
+	    opserr << " at step: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();
 	    return -2;
@@ -163,7 +163,7 @@ StaticAnalysis::analyze(int numSteps)
 	result = theIntegrator->newStep();
 	if (result < 0) {
 	    opserr << "StaticAnalysis::analyze() - the Integrator failed";
-	    opserr << " at iteration: " << i << " with domain at load factor ";
+	    opserr << " at step: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();
 	    theIntegrator->revertToLastStep();
@@ -175,7 +175,7 @@ StaticAnalysis::analyze(int numSteps)
            result = theAlgorithm->solveCurrentStep();
 	if (result < 0) {
 	    opserr << "StaticAnalysis::analyze() - the Algorithm failed";
-	    opserr << " at iteration: " << i << " with domain at load factor ";
+	    opserr << " at step: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();	    
 	    theIntegrator->revertToLastStep();
@@ -192,7 +192,7 @@ StaticAnalysis::analyze(int numSteps)
 	    result = theIntegrator->computeSensitivities();
 	    if (result < 0) {
 		opserr << "StaticAnalysis::analyze() - the SensitivityAlgorithm failed";
-		opserr << " at iteration: " << i << " with domain at load factor ";
+		opserr << " at step: " << i << " with domain at load factor ";
 		opserr << the_Domain->getCurrentTime() << endln;
 		the_Domain->revertToLastCommit();	    
 		theIntegrator->revertToLastStep();
@@ -208,7 +208,7 @@ StaticAnalysis::analyze(int numSteps)
 	if (result < 0) {
 	    opserr << "StaticAnalysis::analyze() - ";
 	    opserr << "the Integrator failed to commit";
-	    opserr << " at iteration: " << i << " with domain at load factor ";
+	    opserr << " at step: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();	    
 	    theIntegrator->revertToLastStep();
