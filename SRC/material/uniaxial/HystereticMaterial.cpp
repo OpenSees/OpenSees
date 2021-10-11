@@ -789,6 +789,8 @@ HystereticMaterial::updateParameter(int parameterID, Information &info)
     return -1;
   }
 
+  this->setEnvelope();
+	
   return 0;
 }
 
