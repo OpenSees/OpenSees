@@ -916,10 +916,12 @@ InertiaTruss::getResponse(int responseID, Information &eleInfo)
     double strain;
     const Vector& acc1 = theNodes[0]->getAccel();
     const Vector& acc2 = theNodes[1]->getAccel();
-    Vector& toret = acc1 - acc2;
-    fVec2(0) = toret(0);
-    fVec2(1) = toret(1);
-    fVec2(2) = toret(2);
+    //Vector& toret = acc1 - acc2;
+    //fVec2(0) = toret(0);
+    //fVec2(1) = toret(1);
+    //fVec2(2) = toret(2);
+    fVec2.addVector(0.0, acc1, 1.0);
+    fVec2.addVector(1.0, acc2, -1.0);
     switch (responseID) {
     case 1:
         return eleInfo.setVector(fVec2);

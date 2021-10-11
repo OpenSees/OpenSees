@@ -3739,7 +3739,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPquad ||
-					elem_class_tag == ELE_TAG_SSPquadUP
+					elem_class_tag == ELE_TAG_SSPquadUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D
 					)
 				{
 					geom_type = ElementGeometryType::Quadrilateral_4N;
@@ -3800,7 +3802,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPbrick ||
-					elem_class_tag == ELE_TAG_SSPbrickUP
+					elem_class_tag == ELE_TAG_SSPbrickUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary3D
 					)
 				{
 					geom_type = ElementGeometryType::Hexahedron_8N;

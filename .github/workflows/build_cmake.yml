@@ -9,6 +9,9 @@ on:
   push:
     branches: [cmake-build]
 
+  pull_request:
+    branches: [master]
+
 jobs:
   build-ubuntu:
     name: Ubuntu bundled build
@@ -16,7 +19,7 @@ jobs:
     steps:
     #- uses: claudioperez/OpenSees@cmake-build
     - uses: actions/checkout@v2
-      with: {ref: cmake-build}
+      #with: {ref: cmake-build}
 
     - name: Install Tcl
       run:
@@ -28,6 +31,10 @@ jobs:
         cd build
         cmake ..
         cmake --build . --target OpenSeesTcl -j5
+
+    - name: Verification
+      run: |
+        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions

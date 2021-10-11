@@ -308,6 +308,9 @@
 
 #include "CEqElement/ASDEmbeddedNodeElement.h"
 
+#include "absorbentBoundaries/ASDAbsorbingBoundary2D.h"
+#include "absorbentBoundaries/ASDAbsorbingBoundary3D.h"
+
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
 #include "PDeltaCrdTransf2d.h"
@@ -906,6 +909,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_ASDEmbeddedNodeElement:
       return new ASDEmbeddedNodeElement();
+
+    case ELE_TAG_ASDAbsorbingBoundary2D:
+      return new ASDAbsorbingBoundary2D();
+
+    case ELE_TAG_ASDAbsorbingBoundary3D:
+      return new ASDAbsorbingBoundary3D();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
