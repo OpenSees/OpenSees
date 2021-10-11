@@ -29,6 +29,7 @@ target_sources(OPS_Element
     CoupledZeroLength.cpp
     ZeroLengthContact2D.cpp
     ZeroLengthContact3D.cpp
+    ZeroLengthContactASDimplex.cpp
     ZeroLengthContactNTS2D.cpp
     ZeroLengthImpact3D.cpp
     ZeroLengthInterface2D.cpp
@@ -41,6 +42,7 @@ target_sources(OPS_Element
     CoupledZeroLength.h
     ZeroLengthContact2D.h
     ZeroLengthContact3D.h
+    ZeroLengthContactASDimplex.h
     ZeroLengthContactNTS2D.h
     ZeroLengthImpact3D.h
     ZeroLengthInterface2D.h
