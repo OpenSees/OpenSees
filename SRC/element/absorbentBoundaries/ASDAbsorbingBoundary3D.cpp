@@ -38,11 +38,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <limits.h>
+
 #include <algorithm>
 #include <string>
 #include <array>
+#include <cmath>
 
 namespace {
 
