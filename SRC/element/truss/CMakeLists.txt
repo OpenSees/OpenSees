@@ -7,7 +7,7 @@
 add_library(OPS_Element_truss OBJECT)
 
 target_sources(OPS_Element_truss
-    PRIVATE
+  PRIVATE
     Truss.cpp
     TrussSection.cpp
     CorotTruss.cpp
@@ -15,7 +15,7 @@ target_sources(OPS_Element_truss
     Truss2.cpp
     N4BiaxialTruss.cpp
     CorotTruss2.cpp
-    PUBLIC
+  PUBLIC
     Truss.h
     TrussSection.h
     CorotTruss.h
@@ -25,4 +25,14 @@ target_sources(OPS_Element_truss
     CorotTruss2.h
 )
 
+add_library(OPS_Element_InertiaTruss OBJECT)
+
+target_sources(OPS_Element_InertiaTruss
+  PRIVATE
+    InertiaTruss.cpp
+  PUBLIC
+    InertiaTruss.h
+)
+
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

@@ -795,6 +795,8 @@
 #define ELE_TAG_MasonPan3D                    216
 #define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 #define ELE_TAG_InertiaTruss              218	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+#define ELE_TAG_ASDAbsorbingBoundary2D    219  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDAbsorbingBoundary3D    220  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 
