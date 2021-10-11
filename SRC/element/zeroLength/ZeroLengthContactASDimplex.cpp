@@ -319,7 +319,7 @@ void ZeroLengthContactASDimplex::setDomain(Domain* theDomain)
         const Vector& U1 = theNodes[1]->getTrialDisp();
         gap0.Zero();
         for (int i = 0; i < numDIM; ++i)
-            gap0(i) = P1(i) + U1(i) - P0(i) - U0(i);
+            gap0(i) = P1(i) - U1(i) - P0(i) + U0(i);
         gap0_initialized = true;
     }
 
