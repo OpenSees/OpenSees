@@ -228,6 +228,9 @@ void *OPS_ASDEmbeddedNodeElement(void);
 void* OPS_GradientInelasticBeamColumn2d();
 void* OPS_GradientInelasticBeamColumn3d();
 void* OPS_RockingBC();
+void* OPS_InertiaTrussElement();
+void *OPS_ASDAbsorbingBoundary2D(void);
+void *OPS_ASDAbsorbingBoundary3D(void);
 
 namespace {
 
@@ -687,7 +690,9 @@ namespace {
 	functionMap.insert(std::make_pair("ASDEmbeddedNodeElement", &OPS_ASDEmbeddedNodeElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
 	functionMap.insert(std::make_pair("RockingBC", &OPS_RockingBC));
-
+	functionMap.insert(std::make_pair("InertiaTruss", &OPS_InertiaTrussElement));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
 	return 0;
     }
 }

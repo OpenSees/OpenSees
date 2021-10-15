@@ -217,6 +217,7 @@
 #include "truss/TrussSection.h"
 #include "truss/CorotTruss.h"
 #include "truss/CorotTrussSection.h"
+#include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
 #include "zeroLength/ZeroLengthContact2D.h"
@@ -305,6 +306,9 @@
 #include "RockingBC/RockingBC.h"
 
 #include "CEqElement/ASDEmbeddedNodeElement.h"
+
+#include "absorbentBoundaries/ASDAbsorbingBoundary2D.h"
+#include "absorbentBoundaries/ASDAbsorbingBoundary3D.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -662,7 +666,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new CorotTruss(); 
       
     case ELE_TAG_CorotTrussSection:  
-      return new CorotTrussSection(); 	     
+      return new CorotTrussSection(); 
+
+	case ELE_TAG_InertiaTruss:
+		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
       return new ZeroLength(); 	     
@@ -899,6 +906,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_ASDEmbeddedNodeElement:
       return new ASDEmbeddedNodeElement();
+
+    case ELE_TAG_ASDAbsorbingBoundary2D:
+      return new ASDAbsorbingBoundary2D();
+
+    case ELE_TAG_ASDAbsorbingBoundary3D:
+      return new ASDAbsorbingBoundary3D();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";

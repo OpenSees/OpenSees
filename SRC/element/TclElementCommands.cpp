@@ -151,6 +151,8 @@ extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
+extern void* OPS_InertiaTrussElement(void);     //Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+
 #if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
 extern void* OPS_BeamColumn2DwLHNMYS(void);
 extern void* OPS_Beam2dDamage(void);
@@ -164,6 +166,8 @@ extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
+extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
+extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_TwoNodeLink(void);
 extern void *OPS_LinearElasticSpring(void);
 extern void *OPS_Inerter(void);
@@ -1277,6 +1281,28 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
+  else if (strcmp(argv[1], "ASDAbsorbingBoundary2D") == 0) {
+      void *theEle = OPS_ASDAbsorbingBoundary2D();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "ASDAbsorbingBoundary3D") == 0) {
+      void *theEle = OPS_ASDAbsorbingBoundary3D();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
   else if (strcmp(argv[1], "FourNodeTetrahedron") == 0) {
       void *theEle = OPS_FourNodeTetrahedron();
       if (theEle != 0) 
@@ -1534,6 +1560,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
   //Xinlong Du
   
+
+  else if ((strcmp(argv[1], "InertiaTruss") == 0)) {
+
+  void* theEle = OPS_InertiaTrussElement();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+  }
+
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {

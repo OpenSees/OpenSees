@@ -69,6 +69,7 @@ set(OPS_Extension_List
 
 set(OPS_Element_List
   OPS_Element_truss
+  OPS_Element_InertiaTruss
   #OPS_Element_beam2d
   OPS_Element_beam3d
   OPS_Element_dispBeamColumnInt
