@@ -421,6 +421,7 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
+	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
@@ -471,6 +472,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/truss/Truss2.o \
 	$(FE)/element/truss/CorotTruss2.o \
 	$(FE)/element/truss/N4BiaxialTruss.o \
+	$(FE)/element/truss/InertiaTruss.o \
 	$(FE)/element/zeroLength/ZeroLengthContact2D.o \
 	$(FE)/element/zeroLength/ZeroLengthContact3D.o \
 	$(FE)/element/zeroLength/ZeroLengthContactNTS2D.o \
@@ -646,6 +648,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/catenaryCable/CatenaryCable.o \
 	$(FE)/element/tetrahedron/FourNodeTetrahedron.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
+	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
+	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
