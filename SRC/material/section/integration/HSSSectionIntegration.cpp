@@ -310,7 +310,7 @@ HSSSectionIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"b") == 0) {
+  if (strcmp(argv[0],"h") == 0) {
     param.setValue(h);
     return param.addObject(1, this);    
   }
@@ -458,10 +458,11 @@ void
 HSSSectionIntegration::Print(OPS_Stream &s, int flag)
 {
   s << "HSS" << endln;
-  s << " h = "  << h;
-  s << " b = " << b; 
-  s << " Nfh = " << Nfh;
-  s << " Nfb = " << Nfb;  
+  s << " h = "  << h << endln;
+  s << " b = " << b << endln;
+  s << " t = " << t << endln;
+  s << " Nfh = " << Nfh << endln;
+  s << " Nfb = " << Nfb << endln;  
   s << " Nft = " << Nft << endln;
 
   return;
