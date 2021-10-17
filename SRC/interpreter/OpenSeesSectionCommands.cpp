@@ -47,6 +47,7 @@
 #include <ReinfBar.h>
 #include <TubeSectionIntegration.h>
 #include <WideFlangeSectionIntegration.h>
+#include <HSSSectionIntegration.h>
 #include <NDFiberSectionWarping2d.h>
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
@@ -271,6 +272,126 @@ namespace {
 	return theSec;
     }
 
+  static void* OPS_HSSSection()
+  {
+    if (OPS_GetNumRemainingInputArgs() < 7) {
+      opserr << "WARNING insufficient arguments\n";
+      opserr << "Want: section HSS tag? matTag? h? b? t? nfh? nfb? <-nd shape?>" << endln;
+      return 0;
+    }
+
+	int tag, matTag;
+	double h, b, t;
+	int nfh, nfb;
+	int nft = 1;
+
+	SectionForceDeformation* theSection = 0;
+
+	int numdata = 1;
+	if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	    opserr << "WARNING invalid section HSS tag" << endln;
+	    return 0;
+	}
+
+	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	    opserr << "WARNING invalid section HSS matTag" << endln;
+	    return 0;
+	}
+
+	if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	    opserr << "WARNING invalid h" << endln;
+	    opserr << "HSS section: " << tag << endln;
+	    return 0;
+	}
+
+	if (OPS_GetDoubleInput(&numdata, &b) < 0) {
+	    opserr << "WARNING invalid b" << endln;
+	    opserr << "HSS section: " << tag << endln;
+	    return 0;
+	}
+
+	if (OPS_GetDoubleInput(&numdata, &t) < 0) {
+	    opserr << "WARNING invalid t" << endln;
+	    opserr << "HSS section: " << tag << endln;
+	    return 0;
+	}
+
+	if (OPS_GetIntInput(&numdata, &nfh) < 0) {
+	    opserr << "WARNING invalid nfh" << endln;
+	    opserr << "HSS section: " << tag << endln;
+	    return 0;
+	}
+
+	if (OPS_GetIntInput(&numdata, &nfb) < 0) {
+	    opserr << "WARNING invalid nfb" << endln;
+	    opserr << "HSS section: " << tag << endln;
+	    return 0;
+	}
+
+	HSSSectionIntegration hsssect(h, b, t, nfh, nfb, nft);
+
+	int numFibers = hsssect.getNumFibers();
+
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+
+	    double shape = 1.0;
+	    if (OPS_GetNumRemainingInputArgs() > 1) {
+		if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
+		    opserr << "WARNING invalid shape" << endln;
+		    opserr << "HSS section: " << tag << endln;
+		    return 0;
+		}
+	    }
+
+	    NDMaterial *theSteel = OPS_getNDMaterial(matTag);
+
+	    if (theSteel == 0) {
+		opserr << "WARNING ND material does not exist\n";
+		opserr << "material: " << matTag;
+		opserr << "\nHSS section: " << tag << endln;
+		return 0;
+	    }
+
+	    NDMaterial **theMats = new NDMaterial *[numFibers];
+
+	    hsssect.arrangeFibers(theMats, theSteel);
+
+	    // Parsing was successful, allocate the section
+	    theSection = 0;
+	    if (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* flag = OPS_GetString();
+		if (strcmp(flag,"-nd") == 0) {
+		    theSection = new NDFiberSection3d(tag, numFibers, theMats, hsssect, shape);
+		} else if (strcmp(flag,"-ndWarping") == 0) {
+		    theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, hsssect, shape);
+		}
+	    }
+	    delete [] theMats;
+	}
+	else {
+	    UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+
+	    if (theSteel == 0) {
+		opserr << "WARNING uniaxial material does not exist\n";
+		opserr << "material: " << matTag;
+		opserr << "\nTube section: " << tag << endln;
+		return 0;
+	    }
+
+	    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+	    hsssect.arrangeFibers(theMats, theSteel);
+
+	    // Parsing was successful, allocate the section
+            ElasticMaterial theTorsion(0,1.0);
+	    theSection = new FiberSection3d(tag, numFibers, theMats, hsssect, theTorsion);
+
+	    delete [] theMats;
+	}
+	
+	return theSection;
+  }
+  
     static void* OPS_UniaxialSection()
     {
 	int numdata = OPS_GetNumRemainingInputArgs();
@@ -1086,6 +1207,7 @@ namespace {
 	functionMap.insert(std::make_pair("ElasticWarpingShear", &OPS_ElasticWarpingShearSection2d));
 	functionMap.insert(std::make_pair("ElasticTube", &OPS_ElasticTubeSection3d));
 	functionMap.insert(std::make_pair("Tube", &OPS_TubeSection));
+	functionMap.insert(std::make_pair("HSS", &OPS_HSSSection));
 	functionMap.insert(std::make_pair("WFSection2d", &OPS_WFSection2d));	
 	functionMap.insert(std::make_pair("WSection2d", &OPS_WFSection2d));
 	functionMap.insert(std::make_pair("RCSection2d", &OPS_RCSection2d));
