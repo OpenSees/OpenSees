@@ -359,15 +359,17 @@ target_link_libraries(OpenSees
     ${MYSQL_LIBRARIES}
 )
 
-target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 
 #----------------------------
 # OPS_Interp_Tcl
 #----------------------------
 # Add sources to OPS_Interp_Tcl target
 
-target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
-target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+  target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
+  target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
+endif()
 
 target_compile_definitions(OPS_Interp_Tcl PUBLIC _TCL85)
 
