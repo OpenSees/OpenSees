@@ -4,6 +4,7 @@ OBJS       = ZeroLength.o \
 	ZeroLengthSection.o \
 	ZeroLengthContact2D.o \
 	ZeroLengthContact3D.o \
+	ZeroLengthContactASDimplex.o \
 	ZeroLengthND.o \
 	ZeroLengthContactNTS2D.o \
 	ZeroLengthInterface2D.o \
