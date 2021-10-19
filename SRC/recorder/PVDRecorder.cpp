@@ -35,6 +35,7 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
+
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
 #include "PFEMElement/ParticleGroup.h"
@@ -552,27 +553,27 @@ PVDRecorder::savePart0(int nodendf)
     // node displacement
     if(nodedata.disp) {
 	// all displacement
-    this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
-	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
-	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
-	this->incrLevel();
-	for(int i=0; i<(int)nodes.size(); i++) {
-	    const Vector& vel = nodes[i]->getTrialDisp();
-	    this->indent();
-	    for(int j=0; j<nodendf; j++) {
-		if(j < vel.Size()) {
-		    theFile<<vel(j)<<' ';
-		} else {
-		    theFile<<0.0<<' ';
-		}
-	    }
-	    theFile<<std::endl;
-	}
-	this->decrLevel();
-	this->indent();
-	theFile<<"</DataArray>\n";
+    // this->indent();
+	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
+	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	// this->incrLevel();
+	// for(int i=0; i<(int)nodes.size(); i++) {
+	//     const Vector& vel = nodes[i]->getTrialDisp();
+	//     this->indent();
+	//     for(int j=0; j<nodendf; j++) {
+	// 	if(j < vel.Size()) {
+	// 	    theFile<<vel(j)<<' ';
+	// 	} else {
+	// 	    theFile<<0.0<<' ';
+	// 	}
+	//     }
+	//     theFile<<std::endl;
+	// }
+	// this->decrLevel();
+	// this->indent();
+	// theFile<<"</DataArray>\n";
 
     // displacement
     this->indent();
@@ -972,7 +973,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     this->incrLevel();
     for(int i=0; i<(int)particles.size(); i++) {
 	this->indent();
-	theFile<<i<<std::endl;
+	theFile<<particles[i]->getTag()<<std::endl;
     }
     this->decrLevel();
     this->indent();
@@ -1449,27 +1450,27 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node displacement
     if(nodedata.disp) {
 	// all displacement
-    this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
-	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
-	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
-	this->incrLevel();
-	for(int i=0; i<ndtags.Size(); i++) {
-	    const Vector& vel = nodes[i]->getTrialDisp();
-	    this->indent();
-	    for(int j=0; j<nodendf; j++) {
-		if(j < vel.Size()) {
-		    theFile<<vel(j)<<' ';
-		} else {
-		    theFile<<0.0<<' ';
-		}
-	    }
-	    theFile<<std::endl;
-	}
-	this->decrLevel();
-	this->indent();
-	theFile<<"</DataArray>\n";
+    // this->indent();
+	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
+	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	// this->incrLevel();
+	// for(int i=0; i<ndtags.Size(); i++) {
+	//     const Vector& vel = nodes[i]->getTrialDisp();
+	//     this->indent();
+	//     for(int j=0; j<nodendf; j++) {
+	// 	if(j < vel.Size()) {
+	// 	    theFile<<vel(j)<<' ';
+	// 	} else {
+	// 	    theFile<<0.0<<' ';
+	// 	}
+	//     }
+	//     theFile<<std::endl;
+	// }
+	// this->decrLevel();
+	// this->indent();
+	// theFile<<"</DataArray>\n";
 
     // displacement
     this->indent();
@@ -1814,6 +1815,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ZeroLengthND] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContactASDimplex] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContactNTS2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthInterface2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_CoupledZeroLength] = VTK_POLY_VERTEX;
@@ -1963,6 +1965,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_YamamotoBiaxialHDR] = VTK_LINE;
     vtktypes[ELE_TAG_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_MVLEM_3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_TaylorHood2D] = VTK_QUADRATIC_TRIANGLE;
     vtktypes[ELE_TAG_PFEMElement2DQuasi] = VTK_TRIANGLE;
@@ -1975,6 +1979,9 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
 }
 
 void

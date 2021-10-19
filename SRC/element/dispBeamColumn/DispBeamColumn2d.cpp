@@ -1413,32 +1413,13 @@ DispBeamColumn2d::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-  static Vector v1(3);
-  static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-  if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    theNodes[0]->getDisplayCrds(v1, fact);
-    theNodes[1]->getDisplayCrds(v2, fact);
-
-  } else {
-
-    theNodes[0]->getDisplayCrds(v1, 0.);
-    theNodes[1]->getDisplayCrds(v2, 0.);
-
-    // add eigenvector values
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) += eigen1(i,mode-1)*fact;
-	v2(i) += eigen2(i,mode-1)*fact;    
-      }    
-    }
-  }
-	
-  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1622,6 +1603,9 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+  
   else if (strcmp(argv[0], "energy") == 0) //by SAJalali
   {
   return new ElementResponse(this, 10, 0.0);
@@ -1754,6 +1738,14 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
       weights(i) = wt[i]*L;
     return eleInfo.setVector(weights);
   }
+
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   //by SAJalali
   else if (responseID == 10) {
 	  double xi[maxNumSections];

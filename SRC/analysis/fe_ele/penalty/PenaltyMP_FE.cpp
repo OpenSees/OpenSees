@@ -218,35 +218,35 @@ PenaltyMP_FE::getResidual(Integrator *theNewIntegrator)
 const Vector &
 PenaltyMP_FE::getTangForce(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltySP_FE::getTangForce() - not yet implemented\n";
+ opserr << "WARNING PenaltyMP_FE::getTangForce() - not yet implemented\n";
  return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getK_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltySP_FE::getK_Force() - not yet implemented\n";
+ opserr << "WARNING PenaltyMP_FE::getK_Force() - not yet implemented\n";
  return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getKi_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltySP_FE::getK_Force() - not yet implemented\n";
+ opserr << "WARNING PenaltyMP_FE::getK_Force() - not yet implemented\n";
  return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getC_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltySP_FE::getC_Force() - not yet implemented\n";
+ opserr << "WARNING PenaltyMP_FE::getC_Force() - not yet implemented\n";
  return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getM_Force(const Vector &disp, double fact)
 {
-  // opserr << "WARNING PenaltySP_FE::getM_Force() - not yet implemented\n";
+  // opserr << "WARNING PenaltyMP_FE::getM_Force() - not yet implemented\n";
  return *resid;
 }
 

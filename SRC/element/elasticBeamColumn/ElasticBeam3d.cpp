@@ -147,8 +147,10 @@ void* OPS_ElasticBeam3d(void)
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
-  A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
-   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0), releasez(0), releasey(0)
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
+   releasez(0), releasey(0),
+   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
+   connectedExternalNodes(2), theCoordTransf(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -172,9 +174,10 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-  A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
-   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
-   releasez(relz), releasey(rely)
+   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
+   releasez(relz), releasey(rely),
+   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
+   connectedExternalNodes(2), theCoordTransf(0)   
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -212,8 +215,10 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section,  
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
-   releasez(relz), releasey(rely)
+   releasez(relz), releasey(rely),
+   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
+   connectedExternalNodes(2), theCoordTransf(0)
+
 {
   if (section != 0) {
     E = 1.0;
@@ -583,6 +588,10 @@ ElasticBeam3d::zeroLoad(void)
   p0[3] = 0.0;
   p0[4] = 0.0;
 
+  wx = 0.0;
+  wy = 0.0;
+  wz = 0.0;
+    
   return;
 }
 
@@ -598,6 +607,10 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double wz = data(1)*loadFactor;  // Transverse
     double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
 
+    this->wx += wx;
+    this->wy += wy;
+    this->wz += wz;    
+    
     double Vy = 0.5*wy*L;
     double Mz = Vy*L/6.0; // wy*L*L/12
     double Vz = 0.5*wz*L;
@@ -1141,33 +1154,16 @@ ElasticBeam3d::displaySelf(Renderer &theViewer, int displayMode, float fact, con
     static Vector v1(3);
     static Vector v2(3);
 
-    theNodes[0]->getDisplayCrds(v1, fact);
-    theNodes[1]->getDisplayCrds(v2, fact);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
     float d1 = 0.0;
     float d2 = 0.0;
     int res = 0;
-  
-    if (displayMode > 0) {
 
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
-
-    } else if (displayMode < 0) {
-
-      theNodes[0]->getDisplayCrds(v1, 0.);
-      theNodes[1]->getDisplayCrds(v2, 0.);
-
-      // add eigenvector values
-      int mode = displayMode * -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < 3; i++) {
-	  v1(i) += eigen1(i,mode-1)*fact;
-	  v2(i) += eigen2(i,mode-1)*fact;    
-	}    
-      }
-      return theViewer.drawLine (v1, v2, 0.0, 0.0, this->getTag(), 0);
-    }
+    if (displayMode > 0 && numMode == 0)
+        res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+    else if (displayMode < 0)
+        return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag(), 0);
 
     if (numMode > 0) {
       // calculate q for potential need below
@@ -1270,6 +1266,21 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 5, Vector(6));
   }
 
+  else if (strcmp(argv[0],"sectionX") == 0) {
+    if (argc > 2) {
+      float xL = atof(argv[1]);
+      if (xL < 0.0)
+	xL = 0.0;
+      if (xL > 1.0)
+	xL = 1.0;
+      if (strcmp(argv[2],"forces") == 0) {
+	theResponse = new ElementResponse(this,6,Vector(6));
+	Information &info = theResponse->getInformation();
+	info.theDouble = xL;
+      }
+    }   
+  }
+  
   else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
     theResponse = new ElementResponse(this, 201, Vector(3));
   
@@ -1292,7 +1303,8 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   double oneOverL = 1.0/L;
   static Vector Res(12);
   Res = this->getResistingForce();
-
+  static Vector s(6);
+  
   switch (responseID) {
   case 1: // stiffness
     return eleInfo.setMatrix(this->getTangentStiff());
@@ -1338,6 +1350,19 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   case 5:
     return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
 
+  case 6: {
+    double xL = eleInfo.theDouble;
+    double x = xL*L;
+    
+    s(0) = q(0) + wx*(L-x);
+    s(1) = q(1)*(xL-1.0) + q(2)*xL + 0.5*wy*x*(x-L);
+    s(2) = (q(1)+q(2))/L + wy*(x-0.5*L);
+    s(3) = q(3)*(xL-1.0) + q(4)*xL - 0.5*wz*x*(x-L);
+    s(4) = (q(3)+q(4))/L - wz*(x-0.5*L);
+    s(5) = q(5);
+
+    return eleInfo.setVector(s);
+  }
   default:
     break;
   }

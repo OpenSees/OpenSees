@@ -277,7 +277,7 @@ const char* OPS_GetString(void)
 {
     const char* res = 0;
     if (currentArg >= maxArg) {
-        opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
+        //opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
         return res;
     }
     res = currentArgv[currentArg];
@@ -285,6 +285,12 @@ const char* OPS_GetString(void)
     currentArg++;
 
     return res;
+}
+
+extern "C"
+const char* OPS_GetStringFromAll(char *buffer, int len)
+{
+  return OPS_GetString(); // Everything's a string in Tcl
 }
 
 extern "C"

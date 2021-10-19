@@ -52,7 +52,7 @@ class UniaxialFiber3d: public Fiber
   public:
     UniaxialFiber3d ();    
     UniaxialFiber3d (int tag, UniaxialMaterial &theMat, double Area, 
-                     const Vector &position);
+                     const Vector &position, double dvalue=1.0);
  
     ~UniaxialFiber3d();
 
@@ -78,12 +78,14 @@ class UniaxialFiber3d: public Fiber
     void getFiberLocation(double &y, double &z);
     UniaxialMaterial *getMaterial(void) {return theMaterial;};
     double getArea(void) {return area;};
+    double getd(void) {return dValue;};
 
   protected:
     
   private:
     UniaxialMaterial *theMaterial;   // pointer to a material
-    double area;                          // area of the fiber 
+    double area;                          // area of the fiber
+    double dValue;
     double as[2];                            // matrix that transforms
 	                            // section deformations into fiber strain	
     static Matrix ks;       // static class wide matrix object for returns

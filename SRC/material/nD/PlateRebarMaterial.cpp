@@ -250,14 +250,14 @@ PlateRebarMaterial::getTangent( )
     tangent(1,1) = tan;
   else {
     tangent(0,0) = tan * c * c * c * c ;
-    tangent(0,2) = tan * c * c * c * s ;
-    tangent(0,1) = tan * c * c * s * s ;
-    tangent(2,0) = tangent(0,1) ;
-    tangent(2,2) = tangent(0,2) ;
-    tangent(2,1) = tan * c * s * s * s ;
-    tangent(1,0) = tangent(0,2) ;
-    tangent(1,2) = tangent(1,2) ;
-    tangent(1,1) = tan * s * s * s * s ;
+    tangent(0,1) = tan * c * c * c * s ;
+    tangent(0,2) = tan * c * c * s * s ;
+    tangent(1,0) = tangent(0,1) ;
+    tangent(1,1) = tangent(0,2) ;
+    tangent(1,2) = tan * c * s * s * s ;
+    tangent(2,0) = tangent(0,2) ;
+    tangent(2,1) = tangent(1,2) ;
+    tangent(2,2) = tan * s * s * s * s ;
   }
 
   return tangent ;

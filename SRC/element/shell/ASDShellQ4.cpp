@@ -42,6 +42,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+#include <Renderer.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +59,7 @@ OPS_ASDShellQ4(void)
 
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs < 6) {
-        opserr << "Want: element ASDShellQ4 $tag $iNode $jNoe $kNode $lNode $secTag <-corotational>";
+        opserr << "Want: element ASDShellQ4 $tag $iNode $jNode $kNode $lNode $secTag <-corotational>";
         return 0;
     }
 
@@ -675,6 +676,9 @@ ASDShellQ4::~ASDShellQ4( )
 
 void  ASDShellQ4::setDomain(Domain* theDomain)
 {
+    //node pointers
+    for (int i = 0; i < 4; i++)
+        nodePointers[i] = theDomain->getNode(m_node_ids(i));
     // set domain on transformation
     m_transformation->setDomain(theDomain, m_node_ids);
 
@@ -1644,3 +1648,33 @@ void ASDShellQ4::AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& refer
     BQ_mean /= Atot;
 }
 
+int
+ASDShellQ4::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+{
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+
+    // place values in coords matrix
+    static Matrix coords(4, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
+        coords(3, i) = v4(i);
+    }
+
+    // set the quantity to be displayed at the nodes;
+    static Vector values(4);
+    for (int i = 0; i < 4; i++)
+        values(i) = 0.0;
+
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
+}

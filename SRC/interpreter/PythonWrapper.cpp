@@ -571,6 +571,22 @@ static PyObject *Py_ops_eigen(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+void OPS_DomainModalProperties(void);
+static PyObject* Py_ops_modalProperties(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    OPS_DomainModalProperties();
+    return wrapper->getResults();
+}
+
+void OPS_ResponseSpectrumAnalysis(void);
+static PyObject* Py_ops_responseSpectrum(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    OPS_ResponseSpectrumAnalysis();
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nDMaterial(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1111,6 +1127,18 @@ static PyObject *Py_ops_eleNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_eleType(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_eleType() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeDOFs(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1140,6 +1168,18 @@ static PyObject *Py_ops_nodePressure(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_nodePressure() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodePressure(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodePressure() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1452,6 +1492,18 @@ static PyObject *Py_ops_sectionWeight(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_sectionWeight() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sectionTag(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sectionTag() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1976,6 +2028,66 @@ static PyObject *Py_ops_sensNodePressure(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getNumElements(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getNumElements() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getEleClassTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getEleClassTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getEleLoadClassTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getEleLoadClassTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getEleLoadTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getEleLoadTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getEleLoadData(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getEleLoadData() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2204,6 +2316,27 @@ static PyObject *Py_ops_partition(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_pc(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Pressure_Constraint() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_domainCommitTag(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_domainCommitTag() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
 
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
@@ -2245,6 +2378,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("reactions", &Py_ops_reactions);
     addCommand("nodeReaction", &Py_ops_nodeReaction);
     addCommand("eigen", &Py_ops_eigen);
+    addCommand("modalProperties", &Py_ops_modalProperties);
+    addCommand("responseSpectrum", &Py_ops_responseSpectrum);
     addCommand("nDMaterial", &Py_ops_nDMaterial);
     addCommand("block2D", &Py_ops_block2d);
     addCommand("block3D", &Py_ops_block3d);
@@ -2290,9 +2425,11 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("eleNodes", &Py_ops_eleNodes);
+    addCommand("eleType", &Py_ops_eleType);    
     addCommand("nodeDOFs", &Py_ops_nodeDOFs);
     addCommand("nodeMass", &Py_ops_nodeMass);
     addCommand("nodePressure", &Py_ops_nodePressure);
+    addCommand("setNodePressure", &Py_ops_setNodePressure);
     addCommand("nodeBounds", &Py_ops_nodeBounds);
     addCommand("start", &Py_ops_startTimer);
     addCommand("stop", &Py_ops_stopTimer);
@@ -2319,6 +2456,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sectionFlexibility", &Py_ops_sectionFlexibility);
     addCommand("sectionLocation", &Py_ops_sectionLocation);
     addCommand("sectionWeight", &Py_ops_sectionWeight);
+    addCommand("sectionTag", &Py_ops_sectionTag);
     addCommand("sectionDisplacement", &Py_ops_sectionDisplacement);
     addCommand("cbdiDisplacement", &Py_ops_cbdiDisplacement);        
     addCommand("basicDeformation", &Py_ops_basicDeformation);
@@ -2363,6 +2501,11 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sensLambda", &Py_ops_sensLambda);
     addCommand("sensSectionForce", &Py_ops_sensSectionForce);
     addCommand("sensNodePressure", &Py_ops_sensNodePressure);
+    addCommand("getNumElements", &Py_ops_getNumElements);
+    addCommand("getEleClassTags", &Py_ops_getEleClassTags);
+    addCommand("getEleLoadClassTags", &Py_ops_getEleLoadClassTags);
+    addCommand("getEleLoadTags", &Py_ops_getEleLoadTags);
+    addCommand("getEleLoadData", &Py_ops_getEleLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("getRVTags", &Py_ops_getRVTags);
     addCommand("getMean", &Py_ops_getRVMean);
@@ -2385,6 +2528,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("strengthDegradation", &Py_ops_strengthDegradation);
     addCommand("unloadingRule", &Py_ops_unloadingRule);
     addCommand("partition", &Py_ops_partition);
+    addCommand("pressureConstraint", &Py_ops_pc);
+    addCommand("domainCommitTag", &Py_ops_domainCommitTag);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

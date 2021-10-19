@@ -59,7 +59,7 @@ void* OPS_PFEMElement2DBubble(const ID &info)
     }
 
     int idata[4];
-    double data[6] = {0,0,0,0,1.0,-1};
+    double data[7] = {0,0,0,0,1.0,-1,1e-16};
     int numdata;
 
     // regular element, not in a mesh, get tags
@@ -81,13 +81,13 @@ void* OPS_PFEMElement2DBubble(const ID &info)
     // regular element, or save data
     if (info.Size()==0 || info(0)==1) {
         if(OPS_GetNumRemainingInputArgs() < 4) {
-            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
+            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa,minJ)\n";
             return 0;
         }
 
-        // rho, mu, b1, b2, (thinknes,kappa)
+        // rho, mu, b1, b2, (thinknes,kappa,minJ)
         numdata = OPS_GetNumRemainingInputArgs();
-        if(numdata > 6) numdata = 6;
+        if(numdata > 7) numdata = 7;
         if(OPS_GetDoubleInput(&numdata,data) < 0) {
             opserr << "WARNING: failed to get fluid properties\n";
             return 0;
@@ -104,8 +104,8 @@ void* OPS_PFEMElement2DBubble(const ID &info)
 
         // save the data for a mesh
         Vector& mdata = meshdata[info(1)];
-        mdata.resize(6);
-        for (int i=0; i<6; ++i) {
+        mdata.resize(7);
+        for (int i=0; i<7; ++i) {
             mdata(i) = data[i];
         }
         return &meshdata;
@@ -125,7 +125,7 @@ void* OPS_PFEMElement2DBubble(const ID &info)
             idata[i+1] = info(3+i);
         }
 
-        for (int i=0; i<6; ++i) {
+        for (int i=0; i<7; ++i) {
             data[i] = mdata(i);
         }
 
@@ -141,14 +141,14 @@ void* OPS_PFEMElement2DBubble(const ID &info)
     }
 
     return new PFEMElement2DBubble(idata[0],idata[1],idata[2],idata[3],
-                                   data[0],data[1],data[2],data[3],data[4],data[5]);
+                                   data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
 }
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2DBubble::PFEMElement2DBubble()
         :Element(0, ELE_TAG_PFEMElement2DBubble), ntags(6),
          rho(0), mu(0), bx(0), by(0), J(0.0), dJ(6),
-         numDOFs(),thickness(1.0), kappa(-1), parameterID(0),
+         numDOFs(),thickness(1.0), kappa(-1), minJ(1e-16),parameterID(0),
          M(), D(), F(), Fp()
 {
     for(int i=0;i<3;i++)
@@ -164,10 +164,10 @@ PFEMElement2DBubble::PFEMElement2DBubble()
 // for object
 PFEMElement2DBubble::PFEMElement2DBubble(int tag, int nd1, int nd2, int nd3,
                                          double r, double m, double b1, double b2,
-                                         double thk, double ka)
+                                         double thk, double ka, double minj)
         :Element(tag, ELE_TAG_PFEMElement2DBubble), ntags(6),
          rho(r), mu(m), bx(b1), by(b2), J(0.0), dJ(6), numDOFs(),
-         thickness(thk), kappa(ka), parameterID(0),
+         thickness(thk), kappa(ka), minJ(minj), parameterID(0),
          M(), D(), F(), Fp()
 {
     ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
@@ -292,7 +292,7 @@ PFEMElement2DBubble::update()
     }
 
     // this is the trick to check negative jacobian
-    if((kappa==-2 && J<0) || (kappa!=-2 && fabs(J)<1e-15)) {
+    if((kappa==-2 && J<0) || (kappa!=-2 && fabs(J)<minJ)) {
         opserr<<"WARING: element "<<this->getTag()<<" area is "<<J<<"\n";
         for (int i=0; i<3; i++) {
             opserr << "node "<<nodes[2*i]->getTag()<<": \n";
@@ -570,55 +570,33 @@ PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fac
     }
     */
 
-    static Vector values(3);
-
-    // now  determine the end points of the Tri31 based on
+    // determine the end points of the Tri31 based on
     // the display factor (a measure of the distorted image)
     // store this information in 3 3d vectors v1 through v3
-    const Vector &end1Crd = nodes[0]->getCrds();
-    const Vector &end2Crd = nodes[2]->getCrds();
-    const Vector &end3Crd = nodes[4]->getCrds();
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
 
-    const int numnodes = 3;
-    static Matrix coords(numnodes,3);
+    nodes[0]->getDisplayCrds(v1, fact, displayMode);
+    nodes[2]->getDisplayCrds(v2, fact, displayMode);
+    nodes[4]->getDisplayCrds(v3, fact, displayMode);
 
-    if (displayMode >= 0) {
-
-        const Vector &end1Disp = nodes[0]->getDisp();
-        const Vector &end2Disp = nodes[2]->getDisp();
-        const Vector &end3Disp = nodes[4]->getDisp();
-
-        for (int i = 0; i < 2; i++) {
-            coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-            coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-            coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-        }
-    } else {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = nodes[0]->getEigenvectors();
-        const Matrix &eigen2 = nodes[2]->getEigenvectors();
-        const Matrix &eigen3 = nodes[4]->getEigenvectors();
-        if (eigen1.noCols() >= mode) {
-            for (int i = 0; i < 2; i++) {
-                coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-                coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-            }
-        } else {
-            for (int i = 0; i < 2; i++) {
-                coords(0,i) = end1Crd(i);
-                coords(1,i) = end2Crd(i);
-                coords(2,i) = end3Crd(i);
-            }
-        }
+    // point coordinates for polygon
+    static Matrix coords(3, 3);
+    for (int i = 0; i < 2; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
     }
 
-    int error = 0;
+    // color map
+    static Vector values(3);
+    values(0) = 0.0;
+    values(1) = 0.0;
+    values(2) = 0.0;
 
     // finally we draw the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+    return theViewer.drawPolygon(coords, values);
 }
 
 // C = [0 0 0 1 0 -1]

@@ -58,8 +58,8 @@ class Adapter : public Element
 {
 public:
     // constructors
-    Adapter(int tag, ID nodes, ID *dof,
-        const Matrix &stif, int ipPort,
+    Adapter(int tag, ID nodes, ID *dof, const Matrix &stif,
+        int ipPort, int ssl = 0, int udp = 0,
         int addRayleigh = 0, const Matrix *mass = 0);
     Adapter();
     
@@ -120,6 +120,8 @@ private:
     
     Matrix kb;                  // stiffness matrix in basic system
     int ipPort;                 // ipPort
+    int ssl;                    // secure socket layer flag
+    int udp;                    // udp socket flag
     int addRayleigh;            // flag to add Rayleigh damping
     Matrix *mb;                 // mass matrix in basic system
     double tPast;               // past time

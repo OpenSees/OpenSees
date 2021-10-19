@@ -39,13 +39,8 @@ static int numBilinMaterials = 0;
 static int numCastMaterials = 0;
 
 void *
-OPS_Cast(void)
+OPS_BraceMaterial(void)
 {
-  if (numCastMaterials == 0) {
-    numCastMaterials++;
-    opserr << "Cast Fuse uniaxial material - Written by Dimitrios G. Lignos, Ph.D.\n";
-  }
-  
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
   

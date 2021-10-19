@@ -70,6 +70,7 @@ class ZeroLengthSection : public Element
     void setDomain(Domain *theDomain);
 
     // public methods to set the state of the element    
+    int update(void);       // added by MSN to allow errors in setting section trial deformation
     int commitState(void);
     int revertToLastCommit(void);        
     int revertToStart(void);        

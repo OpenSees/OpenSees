@@ -477,7 +477,7 @@ ZeroLengthContactNTS2D::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-ZeroLengthContactNTS2D::setResponse(const char **argv, int argc, Information &eleInformation)
+ZeroLengthContactNTS2D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
      if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
 		 return new ElementResponse(this, 1, resid);
@@ -491,7 +491,7 @@ ZeroLengthContactNTS2D::setResponse(const char **argv, int argc, Information &el
 	 } else if (strcmp(argv[0],"gap")== 0)
 		 return new ElementResponse(this, 4, normal_gap);
   	 else
-		 return 0;
+	   return Element::setResponse(argv, argc, output);
 }
 
 int
@@ -506,7 +506,7 @@ ZeroLengthContactNTS2D::getResponse(int responseID, Information &eleInfo)
  else if (responseID == 4)
 	 return eleInfo.setVector(this->normal_gap);
  else
-	 return -1;
+   return Element::Element::getResponse(responseID, eleInfo);
 }
 
 // Private methods
