@@ -256,6 +256,7 @@ opensees_library(OPS_PFEM
 
 # Packaged libraries
 add_library(G3) 
+add_library(G3_API           EXCLUDE_FROM_ALL) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
 
 # Executables and final targets
@@ -315,6 +316,7 @@ target_link_libraries(OPS_Interp_Tcl   PRIVATE ${OPS_Element_List})
 # G3
 #----------------------------
 target_link_libraries(G3 
+    OPS_Database
     OPS_Matrix
     OPS_Analysis 
     OPS_ModelBuilder
@@ -338,11 +340,9 @@ target_link_libraries(G3
 #----------------------------
 # OpenSees
 #----------------------------
-
 target_link_libraries(OpenSees
     ${OPS_Extension_List}
     OPS_Renderer
-    OPS_Database
     OPS_ConvergenceTest
     OPS_Element
     OPS_Material
@@ -523,3 +523,6 @@ endif()
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
 endif()
+
+enable_testing()
+add_subdirectory(BuildTools/Tests/)
