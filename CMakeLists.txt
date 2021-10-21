@@ -34,6 +34,7 @@ set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
 include(OpenSeesFunctions)
 include(conan)
+enable_testing()
 
 # add Conan stuff for external dependencies
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
@@ -524,5 +525,5 @@ if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
 endif()
 
-enable_testing()
-add_subdirectory(BuildTools/Tests/)
+add_subdirectory(EXAMPLES/)
+
