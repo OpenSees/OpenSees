@@ -30,11 +30,11 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        cmake --build . --target OpenSeesTcl -j5
+        cmake --build . --target OpenSeesTcl -j8
 
     - name: Verification
-      run: |
-        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+      run: ctest
+        #cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions

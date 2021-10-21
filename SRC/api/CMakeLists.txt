@@ -5,6 +5,12 @@
 #
 #==============================================================================
 add_library(OPS_Api OBJECT)
+
+target_sources(G3_API
+  PRIVATE
+    elementAPI_Dummy.cpp
+)
+
 target_sources(OPS_Interp_Tcl
   PRIVATE
     elementAPI_TCL.cpp

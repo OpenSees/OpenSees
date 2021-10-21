@@ -34,6 +34,7 @@ set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
 include(OpenSeesFunctions)
 include(conan)
+enable_testing()
 
 # add Conan stuff for external dependencies
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
@@ -256,6 +257,7 @@ opensees_library(OPS_PFEM
 
 # Packaged libraries
 add_library(G3) 
+add_library(G3_API           EXCLUDE_FROM_ALL) 
 add_library(OpenSees         EXCLUDE_FROM_ALL)
 
 # Executables and final targets
@@ -315,6 +317,7 @@ target_link_libraries(OPS_Interp_Tcl   PRIVATE ${OPS_Element_List})
 # G3
 #----------------------------
 target_link_libraries(G3 
+    OPS_Database
     OPS_Matrix
     OPS_Analysis 
     OPS_ModelBuilder
@@ -338,11 +341,9 @@ target_link_libraries(G3
 #----------------------------
 # OpenSees
 #----------------------------
-
 target_link_libraries(OpenSees
     ${OPS_Extension_List}
     OPS_Renderer
-    OPS_Database
     OPS_ConvergenceTest
     OPS_Element
     OPS_Material
@@ -359,15 +360,17 @@ target_link_libraries(OpenSees
     ${MYSQL_LIBRARIES}
 )
 
-target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 
 #----------------------------
 # OPS_Interp_Tcl
 #----------------------------
 # Add sources to OPS_Interp_Tcl target
 
-target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
-target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+  target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
+  target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
+endif()
 
 target_compile_definitions(OPS_Interp_Tcl PUBLIC _TCL85)
 
@@ -521,3 +524,6 @@ endif()
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
 endif()
+
+add_subdirectory(EXAMPLES/)
+

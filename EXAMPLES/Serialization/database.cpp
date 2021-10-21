@@ -30,7 +30,7 @@
 // model and to perform a linear static analysis on that model.
 // 
 //
-
+#include <fstream> // ofstream
 #include <stdlib.h>
 
 #include <OPS_Globals.h>
@@ -48,15 +48,19 @@
 #include <FEM_ObjectBroker.h>
 #include <bool.h>
 
-double ops_Dt;
-Domain * ops_TheActiveDomain;
+// double ops_Dt;
+// Domain * ops_TheActiveDomain;
 #include <StandardStream.h>
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
 int main(int argc, char **argv)
 {
-  bool fail = false;
+  int success = 0;
+  if (argc < 2)
+    exit(-1);
+  const char *database_file = argv[1];
+  std::ofstream db(database_file);
 
   //
   //	now create a domain and a modelbuilder
@@ -66,7 +70,7 @@ int main(int argc, char **argv)
   Domain *theDomain = new Domain();
   
   FileDatastore *theDatabase 
-    = new FileDatastore("/tmp/database/test1",*theDomain,theBroker);
+    = new FileDatastore(database_file,*theDomain,theBroker);
   FileDatastore &theDb = *theDatabase;
   
   opserr << "TESTING IDs: \n";
@@ -291,7 +295,8 @@ int main(int argc, char **argv)
     //  opserr << *theDomain;
 
     delete theDatabase;
+    std::remove(database_file);
 
-    exit(0);
+    exit(success);
 }	
 	
