@@ -33,7 +33,7 @@ jobs:
         cmake --build . --target OpenSeesTcl -j8
 
     - name: Verification
-      run: ctest
+      run: cd build && ctest
         #cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
