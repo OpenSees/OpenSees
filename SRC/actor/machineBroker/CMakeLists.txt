@@ -1,4 +1,10 @@
-target_sources(actor
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Actor
     PRIVATE
       MachineBroker.cpp
     PUBLIC
@@ -6,21 +12,21 @@ target_sources(actor
 )
 
 
-if(PARALLEL_INTERPRETERS)
-  target_sources(actor
+
+target_sources(OpenSeesMP
     PRIVATE
-      MPI_Machine.cpp
+      MPI_MachineBroker.cpp
     PUBLIC
       MPI_MachineBroker.h
 )
-elseif(PARALLEL)
-   target_sources(actor
+
+target_sources(OpenSeesSP
      PRIVATE
-       MPI_Machine.cpp
+       MPI_MachineBroker.cpp
      PUBLIC
        MPI_MachineBroker.h
 )
-endif()
 
 
-target_include_directories(actor PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Actor PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

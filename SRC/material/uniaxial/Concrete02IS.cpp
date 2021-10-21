@@ -68,19 +68,22 @@ OPS_Concrete02IS()
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 8) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "E0? fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+  if (numData != 5 && numData != 8) {
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << " E0? fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << "E0? fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02IS " << iData[0] << " E0? fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
 
   // Parsing was successful, allocate the material
-  theMaterial = new Concrete02IS(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7]);
+  if (numData == 8)
+    theMaterial = new Concrete02IS(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7]);
+  else
+    theMaterial = new Concrete02IS(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4]);
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Concrete02IS Material\n";
@@ -104,8 +107,30 @@ Concrete02IS::Concrete02IS(int tag, double _E0, double _fc, double _epsc0, doubl
   eps = 0.0;
   sig = 0.0;
   e = E0;//2.0*fc/epsc0; // Marafi Change 2018/01/31
-  E0 = E0;
+  //E0 = E0;
+}
 
+Concrete02IS::Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
+		       double _epscu):
+  UniaxialMaterial(tag, MAT_TAG_Concrete02IS),
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), E0(_E0)
+{
+  ecminP = 0.0;
+  deptP = 0.0;
+
+  eP = E0;//2.0*fc / epsc0; // Marafi Change 2018/01/31
+  epsP = 0.0;
+  sigP = 0.0;
+  eps = 0.0;
+  sig = 0.0;
+  e = E0;//2.0*fc/epsc0; // Marafi Change 2018/01/31
+  //E0 = E0;
+
+  rat = 0.1;
+  ft = 0.1*fc;
+  if (ft < 0.0)
+    ft = -ft;
+  Ets = 0.1*fc/epsc0;  
 }
 
 Concrete02IS::Concrete02IS(void):

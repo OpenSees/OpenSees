@@ -15,7 +15,7 @@
 
 
 # Instructuction for building OpenSees on Ubuntu 20.04
-# NOTE: if you plan to contribue code, fork your own github reo in the browser
+# NOTE: if you plan to contribue code, fork your own github repo in the browser
 #       and make change to git clone below to point to your own fork. We will
 #       never give anyone access to repo itself.
 
@@ -23,21 +23,14 @@
 # mkdir $HOME/lib
 # mkdir $HOME/bin
 # sudo apt-get update 
-# sudo apt-get install git
-# sudo apt-get install emacs
-# sudo apt-get install build-essential
-# sudo apt-get install gfortran
-# wget https://prdownloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz
-# tar zxBf tcl8.6.tar.gz
-# cd tcl8.6.10/unix
-# configure --prefix=$HOME/tcl8.6 --enable-static --disable-shared --enable-64bit
+# sudo apt-get install -y git emacs build-essential gfortran tcl8.6  tcl8.6-dev
 # make
 # make install
 # cd $HOME
 # git clone https://github.com/OpenSees/OpenSees.git
 # cd OpenSees
 # cp ./MAKES/Makefile.def.Ubuntu20.04 ./Makefile.def 
-# make
+# make ## For faster compilation, add -j $(numberOfCores)
 
 
 #INTERPRETER_LANGUAGE = PYTHON
@@ -115,8 +108,7 @@ UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
 
-TCL_LIBRARY = $(HOME)/tcl8.6/lib/libtcl8.6.a
-
+TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.6.so
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 
@@ -267,8 +259,7 @@ MACHINE_INCLUDES        = -I/usr/include \
 # this file contains all the OpenSees/SRC includes
 include $(FE)/Makefile.incl
 
-#TCL_INCLUDES = -I/usr/includes/tcl-private/generic
-TCL_INCLUDES = -I$(HOME)/tcl8.6/include
+TCL_INCLUDES = -I/usr/include/tcl8.6
 PYTHON_INCLUDES = -I/usr/include/python3.5
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)

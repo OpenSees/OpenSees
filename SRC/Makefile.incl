@@ -113,6 +113,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/twoNodeLink \
                -I$(FE)/element/updatedLagrangianBeamColumn \
 			   -I$(FE)/element/RockingBC \
+			   -I$(FE)/element/CEqElement \
 	       -I$(FE)/element/UWelements \
 	       -I$(FE)/element/HUelements \
                -I$(FE)/analysis    \

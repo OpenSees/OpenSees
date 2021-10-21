@@ -54,6 +54,35 @@
 #include <elementAPI.h>
 #include <string>
 
+void *OPS_ExpressNewton()
+{
+  int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
+  double kMultiplier = 1.0;
+
+  int nArgs = OPS_GetNumRemainingInputArgs();
+  int numData = 1;
+  if (nArgs > 0 && OPS_GetIntInput(&numData,&nIter) < 0) {
+    opserr << "WARNING ExpressNewton -- error reading nIter\n";
+    return 0;
+  }
+  if (nArgs > 1 && OPS_GetDoubleInput(&numData,&kMultiplier) < 0) {
+    opserr << "WARNING ExpressNewton -- error reading kMultiplier\n";
+    return 0;
+  }
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *type = OPS_GetString();
+    if ((strcmp(type,"-initialTangent") == 0) || (strcmp(type,"-InitialTangent") == 0)) {
+      formTangent = INITIAL_TANGENT;
+    } else if ((strcmp(type,"-currentTangent") == 0) || (strcmp(type,"-CurrentTangent") ==0 )) {
+      formTangent = CURRENT_TANGENT;
+    } else if ((strcmp(type,"-factorOnce") == 0) || (strcmp(type,"-FactorOnce") ==0 )) {
+      factorOnce = 1;
+    }
+  }
+    
+    return new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
+}
+
 // Constructor
 ExpressNewton::ExpressNewton(int ni, double km, int tg, int fo)
   :EquiSolnAlgo(EquiALGORITHM_TAGS_ExpressNewton), nIter(ni), factorOnce(fo) 

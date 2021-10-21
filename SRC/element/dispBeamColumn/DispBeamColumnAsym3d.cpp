@@ -154,9 +154,6 @@ void* OPS_DispBeamColumnAsym3dTcl() {
     double dData2[2]; //input of ys and zs
     dData2[0] = 0.0;
     dData2[1] = 0.0;
-    int sDataLength = 40;
-    //char* sData = new char[sDataLength];
-    //char* sData2 = new char[sDataLength];
     int numData;
 
     // Check the number of dimensions
@@ -217,10 +214,6 @@ void* OPS_DispBeamColumnAsym3dTcl() {
     // Loop through remaining arguments to get optional input
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *sData = OPS_GetString();
-      //if (OPS_GetStringCopy(&sData) != 0) {
-      //    opserr << "WARNING invalid input";
-      //    return 0;
-      //}
 
         if (strcmp(sData, "-cMass") == 0) {
             cmass = 1;
@@ -236,10 +229,6 @@ void* OPS_DispBeamColumnAsym3dTcl() {
         }
         else if (strcmp(sData, "-integration") == 0) {
 	  const char *sData2 = OPS_GetString();
-	  //if (OPS_GetStringCopy(&sData2) != 0) {
-	  //    opserr << "WARNING invalid input, want: -integration $intType";
-	  //    return 0;
-	  //}
 
             if (strcmp(sData2, "Lobatto") == 0) {
                 beamIntegr = new LobattoBeamIntegration();
@@ -273,8 +262,6 @@ void* OPS_DispBeamColumnAsym3dTcl() {
                 opserr << "WARNING invalid integration type, element: " << eleTag;
                 return 0;
             }
-	    delete [] sData2;
-
         }
         else if (strcmp(sData, "-shearCenter") == 0) {
             // Get the coordinates of shear center w.r.t centroid
@@ -287,7 +274,6 @@ void* OPS_DispBeamColumnAsym3dTcl() {
         else {
             opserr << "WARNING unknown option " << sData << "\n";
         }
-	delete [] sData;
     }
 
     // Set the beam integration object if not in options
@@ -1753,6 +1739,9 @@ DispBeamColumnAsym3d::setResponse(const char **argv, int argc, OPS_Stream &outpu
 
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
+
+    else if (strcmp(argv[0],"sectionTags") == 0)
+      theResponse = new ElementResponse(this, 110, ID(numSections));
     
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
@@ -1913,6 +1902,13 @@ DispBeamColumnAsym3d::getResponse(int responseID, Information &eleInfo)
     for (int i = 0; i < numSections; i++)
       weights(i) = wts[i]*L;
     return eleInfo.setVector(weights);
+  }
+
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
   }
   
   else

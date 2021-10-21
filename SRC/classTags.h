@@ -223,14 +223,24 @@
 #define MAT_TAG_QzSimple1                    207
 #define MAT_TAG_PyLiq1                       208
 #define MAT_TAG_TzLiq1                       209
-#define MAT_TAG_PySimple2                    210
-#define MAT_TAG_TzSimple2                    211
-#define MAT_TAG_QzSimple2                    212
-#define MAT_TAG_SteelBRB                     213
-#define MAT_TAG_PySimple3                    214
-#define MAT_TAG_PlateBearingConnectionThermal 215
-#define MAT_TAG_ASD_SMA_3K                    216
-
+#define MAT_TAG_QzLiq1                       210
+#define MAT_TAG_PySimple2                    211
+#define MAT_TAG_TzSimple2                    212
+#define MAT_TAG_QzSimple2                    213
+#define MAT_TAG_SteelBRB                     214
+#define MAT_TAG_PySimple3                    215
+#define MAT_TAG_PlateBearingConnectionThermal 216
+#define MAT_TAG_ASD_SMA_3K                    217
+#define MAT_TAG_SteelFractureDI			218 // galvisf
+#define MAT_TAG_Masonry 219
+#define MAT_TAG_Masonryt 220
+#define MAT_TAG_Trilinwp 221
+#define MAT_TAG_Trilinwp2 222
+#define MAT_TAG_Trilinwpd 223
+#define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteEXP 225
+#define MAT_TAG_TDConcreteMC10 226
+#define MAT_TAG_TDConcreteMC10NL 227
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -780,6 +790,14 @@
 #define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
 #define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
 #define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
+#define ELE_TAG_BeamGT                    214
+#define ELE_TAG_MasonPan12                    215
+#define ELE_TAG_MasonPan3D                    216
+#define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
+#define ELE_TAG_InertiaTruss              218	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+#define ELE_TAG_ASDAbsorbingBoundary2D    219  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDAbsorbingBoundary3D    220  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ZeroLengthContactASDimplex  221  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
 #define ELE_TAG_ExternalElement           99990
 
 
