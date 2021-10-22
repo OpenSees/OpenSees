@@ -125,6 +125,7 @@ extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
 extern void* OPS_UVCmultiaxial(void);
 extern void* OPS_UVCplanestress(void);
+extern  void *OPS_SAniSandMSMaterial(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -571,6 +572,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
         theMaterial = (NDMaterial *)theMat;
       else
         return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"SAniSandMS") == 0)){
+
+      void *theMat = OPS_SAniSandMSMaterial();
+      if (theMat != 0) 
+  theMaterial = (NDMaterial *)theMat;
+      else 
+  return TCL_ERROR;
     }
 
 

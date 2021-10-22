@@ -497,6 +497,9 @@
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
+#define ND_TAG_SAniSandMS 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMSPlaneStrain 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMS3D 7011 //UANDES - Chile
 
 
 #define FIBER_TAG_Uniaxial2d	1
