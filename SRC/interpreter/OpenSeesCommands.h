@@ -268,6 +268,7 @@ int OPS_sectionStiffness();
 int OPS_sectionFlexibility();
 int OPS_sectionLocation();
 int OPS_sectionWeight();
+int OPS_sectionTag();
 int OPS_sectionDisplacement();
 int OPS_cbdiDisplacement();
 int OPS_basicDeformation();
@@ -375,6 +376,7 @@ int OPS_numFact();
 int OPS_numIter();
 int* OPS_GetNumEigen();
 int OPS_systemSize();
+int OPS_domainCommitTag();
 
 void* OPS_KrylovNewton();
 void* OPS_RaphsonNewton();

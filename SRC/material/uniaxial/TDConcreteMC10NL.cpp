@@ -144,7 +144,7 @@ using namespace std; //Added by AMK for debugging
 
 
 TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem): 
-  UniaxialMaterial(tag, 0), //Changed by ntosic (from TDConcrete by AMK)
+  UniaxialMaterial(tag, MAT_TAG_TDConcreteMC10NL),
   fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
 {
   ecminP = 0.0;
@@ -193,7 +193,7 @@ TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _eps
 }
 
 TDConcreteMC10NL::TDConcreteMC10NL(void):
-  UniaxialMaterial(0, 0) //Changed by AMK (from MAT_TAG_Concrete02 to 0)
+  UniaxialMaterial(0, MAT_TAG_TDConcreteMC10NL)
 {
  
 }

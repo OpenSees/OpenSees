@@ -3064,6 +3064,28 @@ int OPS_systemSize()
     return 0;
 }
 
+int OPS_domainCommitTag() {
+    if (cmds == 0) {
+        return 0;
+    }
+
+    int commitTag = cmds->getDomain()->getCommitTag();
+    int numdata = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetIntInput(&numdata, &commitTag) < 0) {
+            opserr << "WARNING: failed to get commitTag\n";
+            return -1;
+        }
+        cmds->getDomain()->setCommitTag(commitTag);
+    }
+    if (OPS_SetIntOutput(&numdata, &commitTag, true) < 0) {
+        opserr << "WARNING failed to set commitTag\n";
+        return 0;
+    }
+
+    return 0;
+}
+
 void* OPS_ParallelRCM() {
 
 #ifdef _PARALLEL_INTERPRETERS

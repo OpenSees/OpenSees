@@ -35,6 +35,7 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
+
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
 #include "PFEMElement/ParticleGroup.h"
@@ -1814,6 +1815,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ZeroLengthND] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContactASDimplex] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContactNTS2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthInterface2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_CoupledZeroLength] = VTK_POLY_VERTEX;
@@ -1977,6 +1979,9 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
 }
 
 void

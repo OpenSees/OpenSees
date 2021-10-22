@@ -60,14 +60,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <InitialStateAnalysisWrapper.h>
-#include <SSPquadUP.h>
-#include <SSPquad.h>
+#include <UWelements/SSPquadUP.h>
+#include <UWelements/SSPquad.h>
 #include <elementAPI.h>
 #include <TimeSeries.h>
 
-#include <FourNodeQuad.h>
-#include <FourNodeQuadUP.h>
-#include <Nine_Four_Node_QuadUP.h>
+#include <fourNodeQuad/FourNodeQuad.h>
+#include <UP-ucsd/FourNodeQuadUP.h>
+#include <UP-ucsd/Nine_Four_Node_QuadUP.h>
 #include <FluidSolidPorousMaterial.h>
 #include <PressureDependMultiYield.h>
 
