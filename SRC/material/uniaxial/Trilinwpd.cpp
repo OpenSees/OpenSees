@@ -123,7 +123,7 @@ mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n),pt(ptn), 
 	
 	if (error) {
 	  opserr << "trilinwpd::trilinwpd -- input backbone is not unique (one-to-one)\n";
-	  //exit(-1);
+	 exit(-1);
 	 }		
 	mom1pi=mom1p;
 	mom2pi=mom2p;
