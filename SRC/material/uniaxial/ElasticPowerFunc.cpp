@@ -134,7 +134,7 @@ ElasticPowerFunc::ElasticPowerFunc(int tag,
     if (numTerms != exponents.Size())  {
         opserr << "ElasticPowerFunc::ElasticPowerFunc() "
             << "- coefficient and exponent arrays do not have same length.\n";
-        //exit(-1);        
+        exit(-1);        
     }
     
     this->revertToStart();
