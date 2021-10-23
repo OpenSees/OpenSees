@@ -652,8 +652,8 @@ trilinwpd::recvSelf(int commitTag, Channel &theChannel,
     Cstrain = data(25);
     Ttangent = data(26);
 	pt = data(27);
-	pb = data(29);
-	itype=data(30);
+	pb = data(28);
+	itype=data(29);
     // set the trial values
     TrotMax = CrotMax;
     TrotMin = CrotMin;
