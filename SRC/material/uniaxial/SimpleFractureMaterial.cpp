@@ -92,7 +92,7 @@ SimpleFractureMaterial::SimpleFractureMaterial(int tag, UniaxialMaterial &materi
 
   if (theMaterial == 0) {
     opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material\n";
-    exit(-1);
+    //exit(-1);
   }
 }
 
@@ -348,7 +348,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
 
   maxStrain = dataVec(0);
   
-  if (dataVec(2) == 1.0)
+  if (dataVec(1) == 1.0)
     Cfailed = true;
   else
     Cfailed = false;
