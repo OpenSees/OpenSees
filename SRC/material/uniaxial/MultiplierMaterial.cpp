@@ -394,17 +394,17 @@ MultiplierMaterial::getDampTangentSensitivity(int gradIndex)
 double
 MultiplierMaterial::getRhoSensitivity(int gradIndex)
 {
-  if (theMaterial == 0)
+  if (theMaterial)
+    return theMaterial->getRhoSensitivity(gradIndex);
+  else
     return 0.0;
-  
-  return theMaterial->getRhoSensitivity(gradIndex);
 }
 
 int
 MultiplierMaterial::commitSensitivity(double strainGradient, int gradIndex, int numGrads)
 {
-  if (theMaterial == 0)
+  if (theMaterial)
+    return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
+  else
     return -1;
-  
-  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
 }
