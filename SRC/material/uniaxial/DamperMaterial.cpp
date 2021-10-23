@@ -253,7 +253,8 @@ DamperMaterial::recvSelf(int cTag, Channel &theChannel,
     if (theMaterial  == 0) {
       opserr << "FATAL DamperMaterial::recvSelf() ";
       opserr << " could not get a UniaxialMaterial \n";
-      exit(-1);
+      //exit(-1);
+      return -1;
     }    	    
     theMaterial->setDbTag(dbTag);
     theMaterial->recvSelf(cTag, theChannel, theBroker);
