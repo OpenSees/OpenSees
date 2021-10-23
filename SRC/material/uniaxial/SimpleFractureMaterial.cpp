@@ -348,7 +348,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
 
   maxStrain = dataVec(0);
   
-  if (dataVec(2) == 1.0)
+  if (dataVec(1) == 1.0)
     Cfailed = true;
   else
     Cfailed = false;
