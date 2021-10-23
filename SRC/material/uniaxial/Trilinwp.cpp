@@ -129,7 +129,7 @@ Trilinwp::Trilinwp(int tag,
 	
 	if (error) {
 	  opserr << "Trilinwp::Trilinwp -- input backbone is not unique (one-to-one)\n";
-	  exit(-1);
+	  //exit(-1);
 	}		
 	mom1pi=mom1p;
 	mom2pi=mom2p;
