@@ -79,7 +79,7 @@ PathIndependentMaterial::PathIndependentMaterial(int tag, UniaxialMaterial &mate
 
   if (theMaterial == 0) {
     opserr <<  "PathIndependentMaterial::PathIndependentMaterial -- failed to get copy of material\n";
-    exit(-1);
+    //exit(-1);
   }
 }
 
@@ -235,7 +235,8 @@ PathIndependentMaterial::recvSelf(int cTag, Channel &theChannel,
     theMaterial = theBroker.getNewUniaxialMaterial(classTags(0));
     if (theMaterial == 0) {
       opserr << "PathIndependentMaterial::recvSelf -- could not get a UniaxialMaterial\n";
-      exit(-1);
+      //exit(-1);
+      return -1;
     }
   }
   
