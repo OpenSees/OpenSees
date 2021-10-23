@@ -88,7 +88,7 @@ InitStrainMaterial::InitStrainMaterial(int tag,
 
   if (theMaterial == 0) {
     opserr <<  "InitStrainMaterial::InitStrainMaterial -- failed to get copy of material\n";
-    exit(-1);
+    //exit(-1);
   }
   theMaterial->setTrialStrain(epsInit);
   theMaterial->commitState();
