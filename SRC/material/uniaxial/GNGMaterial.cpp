@@ -143,7 +143,7 @@ GNGMaterial::GNGMaterial(int tag, double e, double sigY0, double p, double eta0)
 	    E = fabs(sigY)/0.002;
 	  else {
 	    opserr << "GNGMaterial::GNGMaterial -- E and sigY are zero\n";
-	    exit(-1);
+	    //exit(-1);
 	  }
 	}
 	else
