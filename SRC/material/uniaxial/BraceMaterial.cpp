@@ -116,7 +116,7 @@ BraceMaterial::BraceMaterial(int tag,
   
   if (error) {
     opserr << "BraceMaterial::BraceMaterial -- input backbone is not unique (one-to-one)\n";
-    exit(-1);
+    //exit(-1);
   }	
   energyA = 0.5 * (rot1p*mom1p + (rot2p-rot1p)*(mom2p+mom1p) + (rot3p-rot2p)*(mom3p+mom2p) +
 		   rot1n*mom1n + (rot3n-rot1n)*(mom3n+mom1n));
@@ -153,7 +153,7 @@ BraceMaterial::BraceMaterial(int tag,
     error = true;
   if (error) {
     opserr << "BraceMaterial::BraceMaterial -- input backbone is not unique (one-to-one)\n";
-    exit(-1);
+    //exit(-1);
   }
   
   energyA = 0.5 * (rot1p*mom1p + (rot3p-rot1p)*(mom3p+mom1p) +
