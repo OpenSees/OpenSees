@@ -85,12 +85,14 @@ SimpleFractureMaterial::SimpleFractureMaterial(int tag, UniaxialMaterial &materi
 
   if (theMaterial == 0) {
     opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material\n";
-    exit(-1);
+    Cstress = 0.0;
+    Ctangent = 0.0;
+    Cstrain = 0.0;
+  } else {
+    Cstress = theMaterial->getStress();
+    Ctangent = theMaterial->getTangent();
+    Cstrain = theMaterial->getStrain();
   }
-  
-  Cstress = theMaterial->getStress();
-  Ctangent = theMaterial->getTangent();
-  Cstrain = theMaterial->getStrain();
   Tstress = Cstress;
   Ttangent = Ctangent;
   Tstrain = Cstrain;
