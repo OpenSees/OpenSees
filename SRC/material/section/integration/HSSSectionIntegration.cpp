@@ -32,22 +32,28 @@
 
 #include <elementAPI.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
 #include <NDMaterial.h>
 #include <FiberSection2d.h>
+#include <FiberSection3d.h>
 #include <NDFiberSection2d.h>
+#include <NDFiberSection3d.h>
 #include <NDFiberSectionWarping2d.h>
 
-void* OPS_HSSSection2d()
+void* OPS_HSSSection()
 {
-  if (OPS_GetNumRemainingInputArgs() < 8) {
+  if (OPS_GetNumRemainingInputArgs() < 7) {
     opserr << "WARNING insufficient arguments\n";
-    opserr << "Want: section HSS tag? matTag? h? b? t? Nfh? Nfb? Nft? <-nd shape?>" << endln;
+    opserr << "Want: section HSS tag? matTag? h? b? t? nfh? nfb? <-nd> <-shape shape?> <-GJ GJ?> <-torsion tag?>" << endln;
     return 0;
   }
   
+  int ndm = OPS_GetNDM();
+  
   int tag, matTag;
   double h, b, t;
-  int Nfh, Nfb, Nft;
+  int nfh, nfb;
+  int nft = 1;
   
   SectionForceDeformation* theSection = 0;
   
@@ -80,41 +86,61 @@ void* OPS_HSSSection2d()
     return 0;
   }
   
-  if (OPS_GetIntInput(&numdata, &Nfh) < 0) {
-    opserr << "WARNING invalid Nfh" << endln;
+  if (OPS_GetIntInput(&numdata, &nfh) < 0) {
+    opserr << "WARNING invalid nfh" << endln;
     opserr << "HSS section: " << tag << endln;
     return 0;
   }
   
-  if (OPS_GetIntInput(&numdata, &Nfb) < 0) {
-    opserr << "WARNING invalid Nfb" << endln;
+  if (OPS_GetIntInput(&numdata, &nfb) < 0) {
+    opserr << "WARNING invalid nfb" << endln;
     opserr << "HSS section: " << tag << endln;
     return 0;
   }
-
-  if (OPS_GetIntInput(&numdata, &Nft) < 0) {
-    opserr << "WARNING invalid Nft" << endln;
-    opserr << "HSS section: " << tag << endln;
-    return 0;
-  }  
   
-  HSSSectionIntegration hsssect(h, b, t, Nfh, Nfb, Nft);
+  HSSSectionIntegration hsssect(h, b, t, nfh, nfb, nft);
   
   int numFibers = hsssect.getNumFibers();
-  
-  if (OPS_GetNumRemainingInputArgs() > 0) {
-    
-    double shape = 1.0;
-    if (OPS_GetNumRemainingInputArgs() > 1) {
+  bool isND = false; double shape = 1.0;
+  UniaxialMaterial *torsion = 0;
+  bool deleteTorsion = false;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* flag = OPS_GetString();
+    // read <-nd>
+    if (strcmp(flag,"-nd") == 0)
+      isND = true;
+    // read <-shape shape>
+    if (strcmp(flag,"-shape") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
       if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
 	opserr << "WARNING invalid shape" << endln;
 	opserr << "HSS section: " << tag << endln;
 	return 0;
       }
+      isND = true;
     }
-    
+    // read <-GJ GJ>
+    if (strcmp(flag,"-GJ") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      double GJ;
+      if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	opserr << "WARNING: failed to read GJ\n";
+	return 0;
+      }
+      torsion = new ElasticMaterial(0,GJ);
+      deleteTorsion = true;	    
+    }
+    // read <-torsion tag>
+    if (strcmp(flag,"-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      int torsionTag;
+      if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	opserr << "WARNING: failed to read torsion\n";
+	return 0;
+      }
+      torsion = OPS_getUniaxialMaterial(torsionTag);	    
+    }
+  }
+  
+  if (isND) {
     NDMaterial *theSteel = OPS_getNDMaterial(matTag);
-    
     if (theSteel == 0) {
       opserr << "WARNING ND material does not exist\n";
       opserr << "material: " << matTag;
@@ -123,24 +149,18 @@ void* OPS_HSSSection2d()
     }
     
     NDMaterial **theMats = new NDMaterial *[numFibers];
-    
     hsssect.arrangeFibers(theMats, theSteel);
+
+    if (ndm == 2)
+      theSection = new NDFiberSection2d(tag, numFibers, theMats, hsssect);
+    if (ndm == 3)
+      theSection = new NDFiberSection3d(tag, numFibers, theMats, hsssect, shape);
     
-    // Parsing was successful, allocate the section
-    theSection = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* flag = OPS_GetString();
-      if (strcmp(flag,"-nd") == 0) {
-	theSection = new NDFiberSection2d(tag, numFibers, theMats, hsssect, shape);
-      } else if (strcmp(flag,"-ndWarping") == 0) {
-	theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, hsssect, shape);
-      }
-    }
     delete [] theMats;
   }
+
   else {
     UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
-    
     if (theSteel == 0) {
       opserr << "WARNING uniaxial material does not exist\n";
       opserr << "material: " << matTag;
@@ -148,17 +168,27 @@ void* OPS_HSSSection2d()
       return 0;
     }
     
-    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+    if (torsion == 0) {
+      opserr << "WARNING torsion not speified for FiberSection\n";
+      opserr << "\nHSS section: " << tag << endln;
+      return 0;
+    }
     
+    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
     hsssect.arrangeFibers(theMats, theSteel);
     
-    // Parsing was successful, allocate the section
-    theSection = new FiberSection2d(tag, numFibers, theMats, hsssect);
+    if (ndm == 2)
+      theSection = new FiberSection2d(tag, numFibers, theMats, hsssect);
+    if (ndm == 3)
+      theSection = new FiberSection3d(tag, numFibers, theMats, hsssect, *torsion);
+    
+    if (deleteTorsion)
+      delete torsion;
     
     delete [] theMats;
   }
   
-  return theSection;
+  return theSection;  
 }  
 
 HSSSectionIntegration::HSSSectionIntegration(double H, double B, double T,
