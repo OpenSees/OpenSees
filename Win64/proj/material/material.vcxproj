@@ -239,6 +239,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionAsym3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionGJThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionWarping3d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\integration\HSSSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
