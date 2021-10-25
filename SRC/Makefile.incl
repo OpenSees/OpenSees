@@ -28,6 +28,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
 	       -I$(FE)/material/nD/FiniteDeformation/fdEvolution \
 	       -I$(FE)/material/nD/cyclicSoil \
 		   -I$(FE)/material/nD/UWmaterials \
+           -I$(FE)/material/nD/UANDESmaterials \
 		   -I$(FE)/material/nD/stressDensityModel \
 	       -I$(FE)/material/section \
                -I$(FE)/material/section/repres/cell \

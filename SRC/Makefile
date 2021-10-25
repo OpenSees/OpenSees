@@ -923,6 +923,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMS.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMS3D.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMSPlaneStrain.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \
 	$(FE)/material/nD/FeapMaterial.o \
