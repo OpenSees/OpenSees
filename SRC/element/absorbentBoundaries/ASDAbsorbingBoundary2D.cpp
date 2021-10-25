@@ -36,12 +36,13 @@
 #include <Parameter.h>
 #include <TimeSeries.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include <limits.h>
+#include <cmath>
 #include <algorithm>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 namespace {
 

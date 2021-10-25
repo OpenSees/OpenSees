@@ -13,6 +13,7 @@ target_sources(OPS_Material
     RCCircularSectionIntegration.cpp
     TubeSectionIntegration.cpp 
     RCTunnelSectionIntegration.cpp
+    HSSSectionIntegration.cpp    
     PUBLIC
     SectionIntegration.h 
     WideFlangeSectionIntegration.h 
@@ -21,6 +22,7 @@ target_sources(OPS_Material
     RCCircularSectionIntegration.h
     TubeSectionIntegration.h 
     RCTunnelSectionIntegration.h
+    HSSSectionIntegration.h    
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

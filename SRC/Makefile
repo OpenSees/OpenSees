@@ -475,6 +475,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/truss/InertiaTruss.o \
 	$(FE)/element/zeroLength/ZeroLengthContact2D.o \
 	$(FE)/element/zeroLength/ZeroLengthContact3D.o \
+	$(FE)/element/zeroLength/ZeroLengthContactASDimplex.o \
 	$(FE)/element/zeroLength/ZeroLengthContactNTS2D.o \
 	$(FE)/element/zeroLength/ZeroLengthInterface2D.o \
 	$(FE)/element/zeroLength/ZeroLengthRocking.o \
@@ -1061,6 +1062,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/integration/WideFlangeSectionIntegration.o \
 	$(FE)/material/section/integration/RCTBeamSectionIntegration.o \
 	$(FE)/material/section/integration/TubeSectionIntegration.o \
+	$(FE)/material/section/integration/HSSSectionIntegration.o \
 	$(FE)/material/section/repres/patch/Patch.o \
 	$(FE)/material/section/repres/patch/QuadPatch.o \
 	$(FE)/material/section/repres/patch/CircPatch.o \
