@@ -96,19 +96,18 @@ OPS_SAniSandMSMaterial(void)
 
 	if (numArgs < 20) {
 		opserr << "Want: nDMaterial SAniSandMS tag? G0? nu? e_init? Mc? c? lambda_c? e0? ksi?" <<
-			" P_atm? m? h0? Ch? nb? A0? nd? zeta? mu0? beta? Rho? <fabric_flag? flow_flag? IntScheme? TanType? JacoType? TolF? TolR?>" << endln;
+			" P_atm? m? h0? Ch? nb? A0? nd? zeta? mu0? beta? Rho? < IntScheme? TanType? JacoType? TolF? TolR?>" << endln;
 		return 0;
 	}
 
 	int    tag;
 	double dData[19];
-	int flags[5];
+	int flags[3];
 	double oData[2];
-	flags[0] = 1;          // fabric_flag
-	flags[1] = 1;          // flow_flag
-	flags[2] = 3;          // IntScheme
-	flags[3] = 2;          // TanType
-	flags[4] = 1;          // JacoType
+
+	flags[0] = 3;          // IntScheme
+	flags[1] = 2;          // TanType
+	flags[2] = 1;          // JacoType
 	oData[0] = 1.0e-7;     // TolF
 	oData[1] = 1.0e-7;     // TolR
 
@@ -132,7 +131,7 @@ OPS_SAniSandMSMaterial(void)
 	if (numData != 0)
 	{
 		int pos = 0;
-		while (pos < std::min(numData, 5))
+		while (pos < std::min(numData, 3))
 		{
 			OPS_GetInt(&one, &flags[pos]);
 			++pos;
@@ -154,7 +153,7 @@ OPS_SAniSandMSMaterial(void)
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11],
 		dData[12], dData[13], dData[14], dData[15], dData[16],
 		dData[17], dData[18], 
-		flags[0], flags[1], flags[2], flags[3], flags[4],
+		flags[2], flags[3], flags[4],
 		oData[0], oData[1]);
 
 
@@ -172,7 +171,6 @@ SAniSandMS::SAniSandMS(int tag, double G0, double nu,
 	double zeta, double mu0,
 	double beta,
 	double mDen,
-	int fabric_flag, int flow_flag,
 	int integrationScheme, int tangentType,
 	int JacoType, double TolF, double TolR) : NDMaterial(tag, ND_TAG_SAniSandMS),
 	mEpsilon(6),
@@ -212,8 +210,6 @@ SAniSandMS::SAniSandMS(int tag, double G0, double nu,
 	m_zeta = zeta;
 	m_mu0 = mu0;
 	m_beta = beta;
-	m_fabric_flag = fabric_flag;
-	m_flow_flag = flow_flag;
 
 	
 	mMM_plus = m;
@@ -242,8 +238,7 @@ SAniSandMS::SAniSandMS(int tag, double G0, double nu,
 	// opserr << "mu0 = " << mu0 << endln;
 	// opserr << "beta = " << m_beta << endln;
 	// opserr << "mDen = " << mDen << endln;
-	// opserr << "fabric_flag = " << m_fabric_flag << endln;
-	// opserr << "flow_flag = " << m_flow_flag << endln;
+
 	// opserr << "integrationScheme = " << integrationScheme << endln;
 	// opserr << "tangentType = " << tangentType << endln;
 	// opserr << "JacoType = " << JacoType << endln;
@@ -272,7 +267,6 @@ SAniSandMS::SAniSandMS(int tag, int classTag, double G0, double nu,
 	double zeta, double mu0,
 	double beta,
 	double mDen,
-	int fabric_flag, int flow_flag,
 	int integrationScheme, int tangentType,
 	int JacoType, double TolF, double TolR) : NDMaterial(tag, classTag),
 	mEpsilon(6),
@@ -311,8 +305,6 @@ SAniSandMS::SAniSandMS(int tag, int classTag, double G0, double nu,
 	m_zeta = zeta;
 	m_mu0 = mu0;
 	m_beta = beta;
-	m_fabric_flag = fabric_flag;
-	m_flow_flag = flow_flag;
 
 	mMM_plus = m;
 	mMM_plus_n = m;
@@ -339,8 +331,6 @@ SAniSandMS::SAniSandMS(int tag, int classTag, double G0, double nu,
 	opserr << "mu0 = " << mu0 << endln;
 	opserr << "beta = " << m_beta << endln;
 	opserr << "mDen = " << mDen << endln;
-	opserr << "fabric_flag = " << m_fabric_flag << endln;
-	opserr << "flow_flag = " << m_flow_flag << endln;
 	opserr << "integrationScheme = " << integrationScheme << endln;
 	opserr << "tangentType = " << tangentType << endln;
 	opserr << "JacoType = " << JacoType << endln;
@@ -402,8 +392,7 @@ SAniSandMS::SAniSandMS()
 	m_zeta = 0.0;
 	m_mu0 = 0.0;
 	m_beta = 0.0;
-	m_fabric_flag = 1;
-	m_flow_flag = 1;
+
 
 
 	mMM_plus = 0;
@@ -439,7 +428,6 @@ SAniSandMS::getCopy(const char *type)
 			m_c, m_lambda_c, m_e0, m_ksi, m_P_atm, m_m, m_h0, m_ch, m_nb, m_A0,
 			m_nd, m_zeta, m_mu0,
 			m_beta, massDen,
-			m_fabric_flag, m_flow_flag,
 			mScheme, mTangType, mJacoType, mTolF, mTolR);
 		return clone;
 	}
@@ -448,7 +436,6 @@ SAniSandMS::getCopy(const char *type)
 		clone = new SAniSandMS3D(this->getTag(), m_G0, m_nu, m_e_init, m_Mc, m_c, m_lambda_c,
 			m_e0, m_ksi, m_P_atm, m_m, m_h0, m_ch, m_nb, m_A0, m_nd, m_zeta, m_mu0,
 			m_beta, massDen,
-			m_fabric_flag, m_flow_flag,
 			mScheme, mTangType, mJacoType, mTolF, mTolR);
 		return clone;
 	}

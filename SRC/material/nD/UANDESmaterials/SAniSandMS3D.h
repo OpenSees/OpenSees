@@ -40,7 +40,6 @@ class SAniSandMS3D : public SAniSandMS
         double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double zeta, double mu0, 
           double beta,
           double mDen, 
-          int fabric_flag, int flow_flag, 
         int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     
 

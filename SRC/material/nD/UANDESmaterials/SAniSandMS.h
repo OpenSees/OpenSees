@@ -70,7 +70,6 @@ class SAniSandMS : public NDMaterial
     	double A0, double nd, double zeta, double mu0, 
     		double beta,
 			double mDen, 
-			int fabric_flag, int flow_flag, 
 		int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
 
     // full constructor
@@ -82,7 +81,6 @@ class SAniSandMS : public NDMaterial
 				double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double zeta, double mu0, 
 					double beta,
 			 	 	double mDen, 
-					int fabric_flag, int flow_flag, 
 				int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     
 
@@ -153,8 +151,7 @@ class SAniSandMS : public NDMaterial
 	double m_mu0;
 	// double m_beta;  old formulation
 	double m_beta;   	//new formulation
-	int m_fabric_flag;  //new formulation
-	int m_flow_flag;   	//new formulation
+
 	
 	// internal variables
 	Vector mEpsilon;    // strain tensor

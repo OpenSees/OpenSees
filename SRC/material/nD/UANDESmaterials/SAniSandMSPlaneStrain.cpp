@@ -36,11 +36,9 @@ SAniSandMSPlaneStrain::SAniSandMSPlaneStrain(int tag, double G0, double nu, doub
 				double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double zeta, double mu0, 
 					double beta,
 			 	 	double mDen, 
-					int fabric_flag, int flow_flag, 
 				int integrationScheme, int tangentType, int JacoType, double TolF, double TolR)
 :SAniSandMS(tag, ND_TAG_SAniSandMSPlaneStrain, G0, nu, e_init, Mc, c, lambda_c, e0, ksi, P_atm, m, h0, ch, nb, A0, nd, zeta, mu0, 
 			beta, mDen, 
-			fabric_flag, flow_flag,
 			integrationScheme, tangentType, JacoType, TolF, TolR)
 {
 }
