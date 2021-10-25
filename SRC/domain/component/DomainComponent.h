@@ -51,7 +51,7 @@ class DomainComponent: public TaggedObject, public MovableObject
   public:
     virtual ~DomainComponent();
 
-    virtual void setDomain(Domain *theDomain);
+    virtual int setDomain(Domain *theDomain);
     virtual Domain *getDomain(void) const;
 
     // Method for visualisation, default does nothing

@@ -49,11 +49,12 @@ DomainComponent::~DomainComponent()
 }
 
 
-void
+int
 DomainComponent::setDomain(Domain *model)
 {
     // sets the pointer 
     theDomain = model;
+    return 0;
 }
 
 
