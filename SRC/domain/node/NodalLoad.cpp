@@ -334,8 +334,6 @@ NodalLoad::applyLoad(Vector& loadFactors) {
 
 const Vector&
 NodalLoad::getData(int& type) {
-  // Vector* Empty = new Vector();
-  // return *Empty;
   return *load;
 }
 

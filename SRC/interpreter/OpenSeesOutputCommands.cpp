@@ -3575,6 +3575,78 @@ int OPS_getNodeLoadTags()
     return 0;
 }
 
+int OPS_getNodeLoadData()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+
+	std::vector <double> data;
+
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+	  int typeEL;
+
+	  while ((thePattern = thePatterns()) != 0) {
+		NodalLoadIter &theNodLoads = thePattern->getNodalLoads();
+		NodalLoad* theNodLoad;
+
+		while ((theNodLoad = theNodLoads()) != 0) {
+		  const Vector &nodeLoadData = theNodLoad->getData(typeEL);
+
+		  int nodeLoadDataSize = nodeLoadData.Size();
+		  for (int i = 0; i < nodeLoadDataSize; i++) {
+			data.push_back(nodeLoadData(i));
+		  }
+		}
+	  }
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadData\n";
+		return -1;
+	  }
+	  NodalLoadIter& theNodLoads = thePattern->getNodalLoads();
+	  NodalLoad* theNodLoad;
+
+	  int typeEL;
+
+	  while ((theNodLoad = theNodLoads()) != 0) {
+		const Vector &nodeLoadData = theNodLoad->getData(typeEL);
+
+		int nodeLoadDataSize = nodeLoadData.Size();
+		for (int i = 0; i < nodeLoadDataSize; i++) {
+		  data.push_back(nodeLoadData(i));
+		}
+	  }
+
+	} else {
+	opserr << "WARNING want - getNodeLoadData <patternTag?>\n";
+	return -1;
+    }
+
+	int size = data.size();
+
+	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
 int OPS_getNumElements()
 {
     Domain* theDomain = OPS_GetDomain();

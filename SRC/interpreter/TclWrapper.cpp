@@ -1370,6 +1370,15 @@ static int Tcl_ops_getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, in
     return TCL_OK;
 }
 
+static int Tcl_ops_getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNodeLoadData() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_randomVariable(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1721,6 +1730,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"getEleLoadTags", &Tcl_ops_getEleLoadTags);
     addCommand(interp,"getEleLoadData", &Tcl_ops_getEleLoadData);
     addCommand(interp,"getNodeLoadTags", &Tcl_ops_getNodeLoadTags);
+    addCommand(interp,"getNodeLoadData", &Tcl_ops_getNodeLoadData);
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
     addCommand(interp,"getRVTags", &Tcl_ops_getRVTags);
     addCommand(interp,"getMean", &Tcl_ops_getRVMean);

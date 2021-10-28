@@ -290,6 +290,7 @@ int OPS_getEleLoadClassTags();
 int OPS_getEleLoadTags();
 int OPS_getEleLoadData();
 int OPS_getNodeLoadTags();
+int OPS_getNodeLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
