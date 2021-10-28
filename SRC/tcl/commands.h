@@ -47,6 +47,12 @@ OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * con
 int
 OPS_SourceCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * const *argv);
 
+int
+getNDM(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getNDF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -123,6 +129,12 @@ groundExcitation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 int 
 eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int
+modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 videoPlayer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -166,6 +178,9 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 int 
 updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int
+eleType(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -198,6 +213,27 @@ getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
 int 
 getEleTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
+fixedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+fixedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+constrainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+constrainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+retainedNodes(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+retainedDOFs(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int 
+nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -245,6 +281,20 @@ int
 sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 // AddingSensitivity:END ///////////////////////////////////////////////////
 
+int 
+getNumElements(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -317,12 +367,8 @@ numIter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 systemSize(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-
-
-
-
-
-
-
-
+int
+elementActivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+int
+elementDeactivate(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 

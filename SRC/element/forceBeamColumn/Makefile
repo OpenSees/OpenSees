@@ -4,7 +4,7 @@ OBJS       = ForceBeamColumn2d.o ForceBeamColumn3d.o \
 	ForceBeamColumn2dThermal.o \
 	ElasticForceBeamColumn2d.o ElasticForceBeamColumn3d.o \
 	ElasticForceBeamColumnWarping2d.o \
-	ForceBeamColumnCBDI2d.o \
+	ForceBeamColumnCBDI2d.o ForceBeamColumnCBDI3d.o \
 	ForceBeamColumnWarping2d.o \
 	TclForceBeamColumnCommand.o \
 	BeamIntegration.o \
@@ -27,6 +27,7 @@ OBJS       = ForceBeamColumn2d.o ForceBeamColumn3d.o \
 	LowOrderBeamIntegration.o \
 	MidDistanceBeamIntegration.o \
 	GaussQBeamIntegration.o \
+	ChebyshevBeamIntegration.o \
 	gaussq.o d1mach.o
 
 # Compilation control

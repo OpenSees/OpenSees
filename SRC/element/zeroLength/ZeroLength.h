@@ -153,6 +153,10 @@ class ZeroLength : public Element
 
     void updateDir (const Vector& x, const Vector& y);
 
+    void onActivate();
+    void onDeactivate();
+
+
   protected:
     
   private:

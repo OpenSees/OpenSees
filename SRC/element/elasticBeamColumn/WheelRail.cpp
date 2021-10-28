@@ -1,4 +1,4 @@
-/*/ 
+/* 
 Written by: Quan Gu_1,  Yongdou Liu_1, Wei Guo_23, Weiquan Li_1, Zhiwu Yu_23, Lizhong Jiang_23 and Hanyun Liu_2 
 (1.School of Architecture and Civil Engineering, Xiamen University, 361005, China;
  2.School of Civil Engineering, Central South University, 410075, China;
@@ -41,60 +41,78 @@ Vector WheelRail::contactData(7);
 Vector WheelRail::localActiveForce(5);
 Vector WheelRail::activeData(7);
 
-WheelRail::WheelRail(int pTag, double pDeltT, double pVel, double pInitLocation, int pNd1, 
-		double pRWheel,double pI,double pE,double pA,CrdTransf *pCoordTransf,int pnLoad,
-		Vector * pNodeList,	Vector * pDeltaYList,Vector * pDeltaYLocationList)
- :Element(pTag,ELE_TAG_WheelRail),P(0),
-   theTangent(0),connectedExternalNodes(0),activeDof(5),
-   rearRailNode(2),frontRailNode(2),railDisp(3), shapFun1(2),shapFun2(4)
+WheelRail::WheelRail(int pTag, 
+		     double pDeltT, 
+		     double pVel, 
+		     double pInitLocation, 
+		     int pNd1, 
+		     double pRWheel,
+		     double pI,
+		     double pE,
+		     double pA,
+		     CrdTransf *pCoordTransf,
+		     int pnLoad,
+		     Vector *pNodeList,
+		     Vector *pDeltaYList,
+		     Vector *pDeltaYLocationList)
+  :Element(pTag,ELE_TAG_WheelRail),
+  P(0),
+  theTangent(0),
+  activeDof(5),
+  shapFun1(2),
+  shapFun2(4),
+  rearRailNode(2),
+  frontRailNode(2),
+  railDisp(3)
 {
-//-----------members in the construtor list----------------------- 
-	deltT = pDeltT;
-	vel = pVel;   
-	initLocation = pInitLocation;
-	wheelNodeNum = pNd1;   // ÂÖ½Úµã±àºÅ
+  //  
+  //-----------members in the construtor list----------------------- 
 
-	rollingRadiusWheel=pRWheel;
-	I=pI;
-	E=pE;
-	A=pA;//     useless and should be deleted.
+  deltT = pDeltT;
+  vel = pVel;   
+  initLocation = pInitLocation;
+  wheelNodeNum = pNd1;   
+  
+  rollingRadiusWheel=pRWheel;
+  I=pI;
+  E=pE;
+  A=pA;//     useless and should be deleted.
+  
+  theCoordTransf= pCoordTransf;
+  //theCoordTransf = theCoordTransf.getCopy2d();
+  nLoad=pnLoad;
+  
+  if (pNodeList !=0){
+    theNodeList = new Vector(*pNodeList);
+  }
+  if ((pDeltaYList !=0)&&((pDeltaYLocationList !=0))){
+    theDeltaYList = new Vector(*pDeltaYList);
+    theDeltaYLocationList=new Vector(*pDeltaYLocationList);
+  }
 
-	theCoordTransf= pCoordTransf;
-	//theCoordTransf = theCoordTransf.getCopy2d();
-	nLoad=pnLoad;
-
-	if (pNodeList !=0){
-		theNodeList = new Vector(*pNodeList);
-	}
-	if ((pDeltaYList !=0)&&((pDeltaYLocationList !=0))){
-		theDeltaYList = new Vector(*pDeltaYList);
-		theDeltaYLocationList=new Vector(*pDeltaYLocationList);
-	}
-
-	numRailNodeList=pNodeList->Size();
-	theNumOfDeltaYList=(*theDeltaYList).Size();
-
-	this->connectedExternalNodes.resize(numRailNodeList+1);
-	connectedExternalNodes(0) = pNd1;
-	for(int i=1;i<numRailNodeList+1;i++)
-		connectedExternalNodes(i) =int( (*theNodeList)(i-1) );
-
-	this->P=new Vector((numRailNodeList+1)*3);
-	P->Zero();
-
-	this->theTangent = new Matrix( (numRailNodeList+1)*3,(numRailNodeList+1)*3);
-	theTangent->Zero();
-
-	currentLocation = initLocation;
-	this->getDeltaY();
-
-	Fhz = 0.0;
-	G=4.57*1.0e-8*pow(rollingRadiusWheel,-0.149);
-	
-	deltaU = 0;
-	uF = 0;
-
-	loadStep  = 1;
+  numRailNodeList=pNodeList->Size();
+  theNumOfDeltaYList=(*theDeltaYList).Size();
+  
+  this->connectedExternalNodes.resize(numRailNodeList+1);
+  connectedExternalNodes(0) = pNd1;
+  for(int i=1;i<numRailNodeList+1;i++)
+    connectedExternalNodes(i) =int( (*theNodeList)(i-1) );
+  
+  this->P=new Vector((numRailNodeList+1)*3);
+  P->Zero();
+  
+  this->theTangent = new Matrix( (numRailNodeList+1)*3,(numRailNodeList+1)*3);
+  theTangent->Zero();
+  
+  currentLocation = initLocation;
+  this->getDeltaY();
+  
+  Fhz = 0.0;
+  G=4.57*1.0e-8*pow(rollingRadiusWheel,-0.149);
+  
+  deltaU = 0;
+  uF = 0;
+  loadStep  = 1;
 }
 
 WheelRail::~WheelRail()
@@ -541,7 +559,6 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 	double FHzi=0.5*(FHL+FHH);
 	double dDeltaUi=0,dDeltaU=0;
 	double R = pow(a*b,3.0)/3/E/I/theEleLength/theEleLength/theEleLength;
-	double dUbaldFH=0;
 	int i=0;
 	bool converge=false;
 	while (i<maxIterT&& converge==false) {

@@ -66,7 +66,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
      */
     int iData[3];
     bool section = false;
-    int sectionTag;
+    int sectionTag = -1;
     double data[3];
     int transfTag;
     double mass = 0.0, alpha = 0.0, depth = 0.0;
@@ -216,6 +216,10 @@ to get element data
         depth = mdata(8);
         cMass = (int) mdata(9);
         release = (int) mdata(10);
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
     }
 
     // check transf
@@ -548,6 +552,7 @@ ElasticBeam2d::getTangentStiff(void)
 
   // determine q = kv + q0
   q(0) = EAoverL*v(0);
+  kb.Zero();
   kb(0,0) = EAoverL;  
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
@@ -587,7 +592,8 @@ ElasticBeam2d::getInitialStiff(void)
 
   double EoverL   = E/L;
   double EAoverL  = A*EoverL;			// EA/L
-  
+
+  kb.Zero();
   kb(0,0) = EAoverL;
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
@@ -695,6 +701,7 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
   }
 
   else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+	// These equations should works for partial trapezoidal load
     double waa = data(2)*loadFactor;  // Axial
     double wab = data(3)*loadFactor;  // Axial
     double wya = data(0)*loadFactor;  // Transverse
@@ -1102,8 +1109,8 @@ ElasticBeam2d::displaySelf(Renderer &theViewer, int displayMode, float fact, con
   static Vector v2(3);
   static Vector vp(3);
 
-  theNodes[0]->getDisplayCrds(v1, fact);
-  theNodes[1]->getDisplayCrds(v2, fact);
+  theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+  theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
   float d1 = 0.0;
   float d2 = 0.0;
@@ -1111,29 +1118,10 @@ ElasticBeam2d::displaySelf(Renderer &theViewer, int displayMode, float fact, con
 
   int res = 0;
 
-  if (displayMode > 0 && numMode == 0) {
-
-    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
-    
-  } else if (displayMode < 0) {
-    
-    theNodes[0]->getDisplayCrds(v1, 0.);
-    theNodes[1]->getDisplayCrds(v2, 0.);
-    
-    // add eigenvector values
-    int mode = displayMode  *  -1;
-
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) += eigen1(i,mode-1)*fact;
-	v2(i) += eigen2(i,mode-1)*fact;    
-      }    
-    }
-
-    res = theViewer.drawLine (v1, v2, 0.0, 0.0, this->getTag(), 0);
-  }
+  if (displayMode > 0 && numMode == 0)
+      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+  else if (displayMode < 0)
+      return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag(), 0);
 
   if (numMode > 0) {
     // calculate q for potential need below

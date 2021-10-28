@@ -753,26 +753,14 @@ ZeroLengthND::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
     if (end1Ptr == 0 || end2Ptr == 0)
 		return 0;
 
-    // first determine the two end points of the ZeroLengthND based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = end1Ptr->getCrds();
-    const Vector &end2Crd = end2Ptr->getCrds();	
-    const Vector &end1Disp = end1Ptr->getDisp();
-    const Vector &end2Disp = end2Ptr->getDisp();    
+	// get the end point display coords    
+	static Vector v1(3);
+	static Vector v2(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    if (displayMode == 1 || displayMode == 2) {
-		static Vector v1(3);
-		static Vector v2(3);
-		for (int i = 0; i < dimension; i++) {
-			v1(i) = end1Crd(i)+end1Disp(i)*fact;
-			v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-		}
-		
-		return theViewer.drawLine(v1, v2, 0.0, 0.0);
-    }
-
-    return 0;
+	// draw the line
+	return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag());
 }
 
 void

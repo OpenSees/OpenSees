@@ -858,7 +858,7 @@ TCP_Socket::getBytesAvailable()
 char *
 TCP_Socket::addToProgram()
 {
-    char *tcp = " 1 ";
+    const char *tcp = " 1 ";
 
     char  my_InetAddr[MAX_INET_ADDR];
     char  myPortNum[8];
@@ -897,7 +897,8 @@ TCP_Socket::addToProgram()
 static int
 GetHostAddr(char *host, char *IntAddr)
 {
-    register struct hostent *hostptr;
+  //    register struct hostent *hostptr;
+  struct hostent *hostptr;
 
     if ( (hostptr = gethostbyname(host)) == NULL) 
         return (-1);

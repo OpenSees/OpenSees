@@ -522,7 +522,7 @@ ZeroLengthContact3D::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-ZeroLengthContact3D::setResponse(const char **argv, int argc, Information &eleInformation)
+ZeroLengthContact3D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
      if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
      return new ElementResponse(this, 1, resid);
@@ -532,7 +532,7 @@ ZeroLengthContact3D::setResponse(const char **argv, int argc, Information &eleIn
      return new ElementResponse(this, 2, stiff);
 
  	 else 
-		return 0;
+	   return Element::setResponse(argv, argc, output);
 }
 
 
@@ -544,12 +544,12 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
  else if (responseID == 2)
 	 return eleInfo.setMatrix(this->getTangentStiff());
  else
-	 return -1;
+   return Element::getResponse(responseID, eleInfo);
 }
 
 
 // Private methods
-// determine the slave/master pair in contact, and setup Vectors (N,T1,T2)
+// determine the secondary/primary pair in contact, and setup Vectors (N,T1,T2)
  int ZeroLengthContact3D::contactDetect(void)
  {
   			  	
@@ -558,8 +558,8 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
 	  int transientgap; 
 	  transientgap = 1;   // 1: transient gap; 0: dynamic gap
 
-	  Vector  slaveNd;
-	  Vector  masterNd;
+	  Vector  secondaryNd;
+	  Vector  primaryNd;
 
       //+--------------+-----------------+----------------+----------------+---------------+
       // NOTES: some methods to get displacements from nodes
@@ -573,22 +573,22 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
 	  if (transientgap) 
 	  {  ///////////// for transient gap //////////////////////////
 
-		   slaveNd = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
-           masterNd= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
+		   secondaryNd = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
+           primaryNd= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
 	  }  else {
          ///////////// for dynamic gap ////////////////////////////
-    	  slaveNd = nodePointers[0]->getCrds() + nodePointers[0]->getIncrDisp();
-          masterNd= nodePointers[1]->getCrds() + nodePointers[1]->getIncrDisp();
+    	  secondaryNd = nodePointers[0]->getCrds() + nodePointers[0]->getIncrDisp();
+          primaryNd= nodePointers[1]->getCrds() + nodePointers[1]->getIncrDisp();
 	  }
       
-      double Xs=slaveNd(0)  - origin(0);
-      double Ys=slaveNd(1)  - origin(1);
-	  double Zs=slaveNd(2);
+      double Xs=secondaryNd(0)  - origin(0);
+      double Ys=secondaryNd(1)  - origin(1);
+	  double Zs=secondaryNd(2);
       double Rs=sqrt(Xs*Xs +Ys*Ys); 
 
-      double Xm=masterNd(0) - origin(0);
-	  double Ym=masterNd(1) - origin(1);
-      double Zm=masterNd(2);
+      double Xm=primaryNd(0) - origin(0);
+	  double Ym=primaryNd(1) - origin(1);
+      double Zm=primaryNd(2);
 
 	  double Rm=sqrt(Xm*Xm +Ym*Ym);
 
@@ -674,7 +674,7 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
 
 
 
-	 	case 1:   // normal of master plane pointing to +X direction
+	 	case 1:   // normal of primary plane pointing to +X direction
 
 				if (transientgap) {
 
@@ -750,7 +750,7 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
 
 
 
-		case 2:  // normal of master plane pointing to +Y direction
+		case 2:  // normal of primary plane pointing to +Y direction
 
 				if (transientgap) {
 
@@ -820,19 +820,19 @@ ZeroLengthContact3D::getResponse(int responseID, Information &eleInfo)
 
 
 
-		case 3:   // normal of master plane pointing to +Z direction
+		case 3:   // normal of primary plane pointing to +Z direction
 
 			//          ___________ 
 
             //         |           |
 
-			//         |   slave   |  
+			//         | secondary |  
 
 			//         |___________| 
 
 			//         |           |
 
-			//         |   Master  |
+			//         |  primary  |
 
             //         |           |
 
@@ -930,9 +930,9 @@ void  ZeroLengthContact3D::formResidAndTangent( int tang_flag )
 
 	// trial displacement vectors
 
- 	Vector DispTrialS(3); // trial disp for slave node
+ 	Vector DispTrialS(3); // trial disp for secondary node
 
-	Vector DispTrialM(3); // trial disp for master node
+	Vector DispTrialP(3); // trial disp for primary node
 
 	// trial frictional force vectors (in local coordinate)
 
@@ -984,7 +984,7 @@ void  ZeroLengthContact3D::formResidAndTangent( int tang_flag )
 
 		DispTrialS=nodePointers[0]->getTrialDisp();
 
-        DispTrialM=nodePointers[1]->getTrialDisp();
+        DispTrialP=nodePointers[1]->getTrialDisp();
 
 
 
@@ -1000,11 +1000,11 @@ void  ZeroLengthContact3D::formResidAndTangent( int tang_flag )
 
 		ul[2]=DispTrialS(2);
 
-		ul[3]=DispTrialM(0);
+		ul[3]=DispTrialP(0);
 
-		ul[4]=DispTrialM(1);
+		ul[4]=DispTrialP(1);
 
-		ul[5]=DispTrialM(2);
+		ul[5]=DispTrialP(2);
 
 
 

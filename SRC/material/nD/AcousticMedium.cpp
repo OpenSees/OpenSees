@@ -281,7 +281,7 @@ AcousticMedium::recvSelf (int commitTag, Channel &theChannel,
 
 
 
-Response * AcousticMedium::setResponse (const char **argv, int argc, OPS_Stream &matInformation)  {
+Response * AcousticMedium::setResponse (const char **argv, int argc, OPS_Stream &output)  {
 
   if (strcmp(argv[0],"sigma") == 0 )
 		return new MaterialResponse(this, 1, sigma);
@@ -290,7 +290,7 @@ Response * AcousticMedium::setResponse (const char **argv, int argc, OPS_Stream 
 		return new MaterialResponse(this, 2, epsilon);
 
 
-		return 0;
+  return NDMaterial::setResponse(argv, argc, output);
 
 };
 
@@ -312,7 +312,7 @@ int AcousticMedium::getResponse (int responseID, Information &matInfo)  {
 
 		}
 
-	return 0;
+		return NDMaterial::getResponse(responseID, matInfo);
 
 };
 

@@ -49,6 +49,8 @@ class Concrete02IS : public UniaxialMaterial
   public:
     Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
 	     double _epscu, double _rat, double _ft, double _Ets);
+    Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
+	     double _epscu);  
 
     Concrete02IS(void);
 

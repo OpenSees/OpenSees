@@ -32,19 +32,13 @@
 #include <FrictionModel.h>
 #include <tcl.h>
 #include <elementAPI.h>
+extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 extern void *OPS_Coulomb();
 extern void *OPS_VelDependent();
 extern void *OPS_VelDepMultiLinear();
 extern void *OPS_VelNormalFrcDep();
 extern void *OPS_VelPressureDep();
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData,
-    Tcl_Interp *interp,
-    int cArg,
-    int mArg,
-    TCL_Char **argv,
-    Domain *domain);
 
 
 static void printCommand(int argc, TCL_Char **argv)

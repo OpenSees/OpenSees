@@ -51,6 +51,9 @@
     <ClCompile Include="..\..\..\SRC\domain\domain\Domain.cpp">
       <Filter>domain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\DomainModalProperties.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomAllSP_Iter.cpp">
       <Filter>domain</Filter>
     </ClCompile>
@@ -318,6 +321,9 @@
       <Filter>node</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\domain\Domain.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\DomainModalProperties.h">
       <Filter>domain</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\domain\ElementIter.h">

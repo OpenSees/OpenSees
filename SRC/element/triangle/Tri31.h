@@ -98,6 +98,7 @@ class Tri31 : public Element
     // RWB; PyLiq1 & TzLiq1 need to see the excess pore pressure and initial stresses.
     friend class PyLiq1;
     friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
   protected:
     
@@ -115,6 +116,10 @@ class Tri31 : public Element
     static Vector P;		// Element resisting force vector
     Vector Q;		        // Applied nodal loads
     double b[2];		// Body forces
+
+	double appliedB[2]; // Body forces applied with load pattern
+	int applyLoad;      // flag for body force in load
+
     Vector pressureLoad;	// Pressure load at nodes
 
     double thickness;	        // Element thickness
@@ -131,8 +136,8 @@ class Tri31 : public Element
 
     Matrix *Ki;
 
-    int numgp; // number of guess points
-	int numnodes; // number of nodes
+    static constexpr int numgp = 1; // number of gauss points
+	static constexpr int numnodes = 3; // number of nodes
 };
 
 #endif

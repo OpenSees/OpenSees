@@ -50,7 +50,7 @@
 #include <LoadPatternIter.h>
 #include <elementAPI.h>
 #include <fstream>
-#include<ReliabilityDomain.h>//Abbas
+//#include<ReliabilityDomain.h>//Abbas
 #include<Parameter.h>
 #include<ParameterIter.h>//Abbas
 static bool converged = false;
@@ -102,9 +102,9 @@ OPS_Newmark(void)
 }
 
 
-Newmark::Newmark()
-    : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
-      displ(1), gamma(0), beta(0), 
+Newmark::Newmark(int classTag)
+    : TransientIntegrator(classTag),
+      displ(true), gamma(0), beta(0), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
@@ -116,8 +116,8 @@ Newmark::Newmark()
 }
 
 
-Newmark::Newmark(double _gamma, double _beta, int dispFlag, bool aflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_Newmark),
+Newmark::Newmark(double _gamma, double _beta, bool dispFlag, bool aflag, int classTag_)
+    : TransientIntegrator(classTag_),
       displ(dispFlag), gamma(_gamma), beta(_beta), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
@@ -411,6 +411,11 @@ int Newmark::domainChanged()
             }
         }
 
+	    // The remaining get**Sensitivity methods cause seg faults with Lagrange constraint
+	    // handler in dynamic (transient) analysis even when there is no sensitivity algorithm.
+	    // However, I don't think these methods need to be called in domainChanged -- MHS
+	    continue;
+	    
 	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
 	for (i=0; i < idSize; i++) {
 	    int loc = id(i);
@@ -479,7 +484,7 @@ int Newmark::update(const Vector &deltaU)
         
         (*Udotdot) += deltaU;
     }
-    
+
     // update the response at the DOFs
     theModel->setResponse(*U,*Udot,*Udotdot);
     if (theModel->updateDomain() < 0)  {

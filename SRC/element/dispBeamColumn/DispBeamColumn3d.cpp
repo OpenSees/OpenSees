@@ -1282,31 +1282,13 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
-  static Vector v1(3);
-  static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-  if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-      theNodes[0]->getDisplayCrds(v1, fact);
-      theNodes[1]->getDisplayCrds(v2, fact);
-
-  } else {
-
-    theNodes[0]->getDisplayCrds(v1, 0.);
-    theNodes[1]->getDisplayCrds(v2, 0.);
-
-    // add eigenvector values
-    int mode = displayMode * -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 3; i++) {
-	v1(i) += eigen1(i,mode-1)*fact;
-	v2(i) += eigen2(i,mode-1)*fact;    
-      }    
-    }
-  }
-  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1399,6 +1381,18 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
+
+    else if (strcmp(argv[0],"sectionTags") == 0)
+      theResponse = new ElementResponse(this, 110, ID(numSections));
+
+    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
+      theResponse = new ElementResponse(this, 201, Vector(3));
+
+    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
+      theResponse = new ElementResponse(this, 202, Vector(3));
+
+    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
+      theResponse = new ElementResponse(this, 203, Vector(3));
     
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
@@ -1565,6 +1559,29 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
       weights(i) = wts[i]*L;
     return eleInfo.setVector(weights);
   }
+
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
+  else if (responseID >= 201 && responseID <= 203) {
+    static Vector xlocal(3);
+    static Vector ylocal(3);
+    static Vector zlocal(3);
+
+    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
+    
+    if (responseID == 201)
+      return eleInfo.setVector(xlocal);
+    if (responseID == 202)
+      return eleInfo.setVector(ylocal);
+    if (responseID == 203)
+      return eleInfo.setVector(zlocal);    
+  }
+  
   //by SAJalali
   else if (responseID == 13) {
 	  double xi[maxNumSections];
@@ -1684,7 +1701,7 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getKiSensitivity(int gradNumber)
+DispBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;

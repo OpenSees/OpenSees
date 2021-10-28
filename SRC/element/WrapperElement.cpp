@@ -44,8 +44,8 @@ ID WrapperElement::connectedNodes;
 
 WrapperElement::WrapperElement(const char *name, eleObject *ele)
   :Element(ele->tag,ELEMENT_TAGS_WrapperElement),
- funcName(0), theEle(ele),
- theNodes(0), u(0), R(0), K(0), M(0)
+   funcName(0), theEle(ele),
+   theNodes(0), u(0), R(0), K(0), M(0), committedTime(0.), committedDt(0.)
 {
 
   funcName = new char[strlen(name)+1];
@@ -56,7 +56,7 @@ WrapperElement::WrapperElement(const char *name, eleObject *ele)
 WrapperElement::WrapperElement()
 :Element(0,ELEMENT_TAGS_WrapperElement), 
  funcName(0), theEle(0),
- theNodes(0), u(0), R(0), K(0), M(0)
+ theNodes(0), u(0), R(0), K(0), M(0), committedTime(0), committedDt(0)
 {
 
 }
@@ -116,6 +116,9 @@ WrapperElement::setDomain(Domain *theDomain)
     return;
   }    
 
+  committedTime = theDomain->getCurrentTime();
+  committedDt = 0;
+  
   int numNodes = theEle->nNode;
 
   theNodes = new Node *[numNodes];
@@ -148,11 +151,13 @@ WrapperElement::commitState()
 {
   // get the current load factor
   Domain *theDomain=this->getDomain();
+
   double time = theDomain->getCurrentTime();
-  double dt = theDomain->getCurrentTime() - time;
+  committedDt = time - committedTime;
+  committedTime = theDomain->getCurrentTime();
   
-  theModelState.time = time;
-  theModelState.dt = dt;
+  theModelState.time = committedTime;
+  theModelState.dt = committedDt;
 
   // invoke the element routine
   int isw = ISW_COMMIT;
@@ -166,11 +171,9 @@ WrapperElement::revertToLastCommit()
 {
   // get the current load factor
   Domain *theDomain=this->getDomain();
-  double time = theDomain->getCurrentTime();
-  double dt = theDomain->getCurrentTime() - time;
   
-  theModelState.time = time;
-  theModelState.dt = dt;
+  theModelState.time = committedTime;
+  theModelState.dt = committedDt;
 
   // invoke the element routine
   int isw = ISW_REVERT;
@@ -184,11 +187,11 @@ WrapperElement::revertToStart()
 {
   // get the current load factor
   Domain *theDomain=this->getDomain();
-  double time = theDomain->getCurrentTime();
-  double dt = theDomain->getCurrentTime() - time;
-  
-  theModelState.time = time;
-  theModelState.dt = dt;
+
+  committedTime=0.;
+  committedDt= 0.;
+  theModelState.time = 0;
+  theModelState.dt = 0;
 
   // invoke the element routine
   int isw = ISW_REVERT_TO_START;
@@ -200,12 +203,6 @@ WrapperElement::revertToStart()
 const Matrix &
 WrapperElement::getTangentStiff(void)
 {
-    //// set the vector
-    //Kmatrix.setData(K, theEle->nDOF, theEle->nDOF);
-
-    //return  Kmatrix;
-
-	//this->update();
     // set the vector
     Kmatrix.setData(K, theEle->nDOF, theEle->nDOF);
 
@@ -218,7 +215,7 @@ WrapperElement::getMass(void)
     // get the current load factor
     Domain *theDomain=this->getDomain();
     double time = theDomain->getCurrentTime();
-    double dt = theDomain->getCurrentTime() - time;
+    double dt = time - committedTime;
 
     theModelState.time = time;
     theModelState.dt = dt;
@@ -228,7 +225,7 @@ WrapperElement::getMass(void)
     int error = 0;
     theEle->eleFunctPtr(theEle, &theModelState, M , R, &isw, &error);
 
-	//this->update();
+    //this->update();
     // set the matrix
     Mmatrix.setData(M,theEle->nDOF, theEle->nDOF);
 
@@ -274,11 +271,10 @@ WrapperElement::Print(OPS_Stream &s, int flag)
 int
 WrapperElement::update()
 {
-
     // get the current load factor
     Domain *theDomain=this->getDomain();
     double time = theDomain->getCurrentTime();
-    double dt = theDomain->getCurrentTime() - time;
+    double dt = committedTime - time;
 
     theModelState.time = time;
     theModelState.dt = dt;

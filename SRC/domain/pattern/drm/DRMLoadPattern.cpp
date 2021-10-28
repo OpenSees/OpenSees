@@ -9,8 +9,20 @@
 
 
 #include "DRMLoadPattern.h"
+#include <PlaneDRMInputHandler.h>
+#include <LoadPattern.h>
+#include <Domain.h>
+#include "DRMBoundaryLayerDecorator.h"
+#include "DRMInputHandler.h"
+#include "Mesh3DSubdomain.h"
+#include <Vector.h>
+#include <Matrix.h>
+#include <Element.h>
 #include <math.h>
 #include <iostream>
+
+//using namespace::std;
+
 DRMLoadPattern::DRMLoadPattern(int tag, double cfact, DRMInputHandler* my_handler, Domain* domain)
 :LoadPattern(tag, PATTERN_TAG_DRMLoadPattern)
 {

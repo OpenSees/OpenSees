@@ -36,11 +36,14 @@
 
  #include <tcl.h>
 
+
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include <Domain.h>
  #include <EquiSolnAlgo.h>
+
+
 
  // recorders
  #include <NodeRecorder.h>
@@ -52,14 +55,20 @@
  #include <EnvelopeElementRecorder.h>
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
+
  #include <PVDRecorder.h>
- #include <MPCORecorder.h>
+
+// #include <MPCORecorder.h>
  #include <GmshRecorder.h>
  #include <VTK_Recorder.h>
+
 extern void* OPS_PVDRecorder();
+
 extern void* OPS_GmshRecorder();
 extern void* OPS_MPCORecorder();
 extern void* OPS_VTK_Recorder();
+extern void* OPS_ElementRecorderRMS();
+extern void* OPS_NodeRecorderRMS();
 
 
  #include <NodeIter.h>
@@ -86,6 +95,7 @@ extern void* OPS_VTK_Recorder();
 
  #include <packages.h>
  #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 
  extern TimeSeries *TclSeriesCommand(ClientData clientData, Tcl_Interp *interp, TCL_Char *arg);
@@ -93,13 +103,6 @@ extern void* OPS_VTK_Recorder();
  extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
 
  //extern TclModelBuilder *theDamageTclModelBuilder;
-
- extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				    Tcl_Interp *interp,  
-				    int cArg, 
-				    int mArg, 
-				    TCL_Char **argv, 
-				    Domain *domain);
 
  typedef struct externalRecorderCommand {
    char *funcName;
@@ -654,15 +657,15 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        const char *fileNameinf = 0;
 
        //  end of new
-       int numSlaveEle = 0;
+       int numSecondaryEle = 0;
 
        // create an ID to hold ele tags
        //ID eleIDs(numEle, numEle+1); 
        ID eleIDs;
        eleIDs = ID(1);
-       ID slaveEleIDs = ID(1);
-       slaveEleIDs[0] = 0;
-       bool slaveFlag = false;
+       ID secondaryEleIDs = ID(1);
+       secondaryEleIDs[0] = 0;
+       bool secondaryFlag = false;
        ID secIDs = 0;
        //	secIDs = 0;
 
@@ -731,8 +734,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
 	 //    end of new
 
-	 else if ((strcmp(argv[loc],"-slave") == 0)) {
-	   slaveFlag = true;
+	 else if ((strcmp(argv[loc],"-slave") == 0) || (strcmp(argv[loc],"-secondary") == 0)) {
+	   secondaryFlag = true;
 	   loc++;
 	 }
 
@@ -752,11 +755,11 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   loc++;
 	   int eleTag;
 	   while (loc < argc && Tcl_GetInt(interp, argv[loc], &eleTag) == TCL_OK) {
-	     if (slaveFlag == false)
+	     if (secondaryFlag == false)
 	       eleIDs[numEle++] = eleTag;
 	     else
-	       slaveEleIDs[numSlaveEle++] = eleTag;
-	     slaveFlag = false;
+	       secondaryEleIDs[numSecondaryEle++] = eleTag;
+	     secondaryFlag = false;
 	     loc++;
 	   }
 
@@ -805,12 +808,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   }
 
 	   for (int i=start; i<=end; i++)
-	     if (slaveFlag == false)
+	     if (secondaryFlag == false)
 	       eleIDs[numEle++] = i;
 	     else
-	       slaveEleIDs[numSlaveEle++] = i;
+	       secondaryEleIDs[numSecondaryEle++] = i;
 
-	   slaveFlag = false;    
+	   secondaryFlag = false;    
 	   loc += 3;
 	 } 
 
@@ -833,12 +836,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   }      
 	   const ID &eleRegion = theRegion->getElements();
 	   for (int i=0; i<eleRegion.Size(); i++)
-	     if (slaveFlag == false)
+	     if (secondaryFlag == false)
 	       eleIDs[numEle++] = eleRegion(i);
 	     else
-	       slaveEleIDs[numSlaveEle++] = eleRegion(i);
+	       secondaryEleIDs[numSecondaryEle++] = eleRegion(i);
 
-	   slaveFlag = false;
+	   secondaryFlag = false;
 	   loc += 2;
 	 } 
 
@@ -1024,7 +1027,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        (*theRecorder) = new RemoveRecorder( nodeTag, 
 					    eleIDs, 
 					    secIDs, 
-					    slaveEleIDs, 
+					    secondaryEleIDs, 
 					    remCriteria, 
 					    theDomain,
 					    *theOutputStream,
@@ -1671,7 +1674,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        int xLoc, yLoc, width, height;
        if (argc < 9) {
-	 opserr << "WARNING recorder display fileName? windowTitle? xLoc yLoc pixelsX pixelsY -columns colX1 colY1 -columns colX2 ...";
+	 opserr << "WARNING recorder plot fileName? windowTitle? xLoc yLoc xPixels yPixels -columns colX1 colY1 -columns colX2 ...";
 	 return TCL_ERROR;
        }    
 
@@ -1835,16 +1838,30 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 								    argv[2], xLoc, yLoc, width, height, 
 								    displayRecord, fileName);
 	 (*theRecorder) = thePlotter;
- #endif
+ #endif // _NOGRAPHICS
      } 
      else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
+
      else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
      }
+     else if (strcmp(argv[1],"ElementRMS") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_ElementRecorderRMS();
+     }
+     else if (strcmp(argv[1],"NodeRMS") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_NodeRecorderRMS();
+     }
+     else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
+       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+       (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
+     }
+     /*
      else if (strcmp(argv[1], "mpco") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*)OPS_MPCORecorder();
@@ -1852,6 +1869,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 return TCL_ERROR;
        }
      }
+     */
      else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_GmshRecorder();

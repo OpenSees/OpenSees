@@ -33,6 +33,7 @@
 
 #include <tcl.h>
 #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 #include <TrilinearBackbone.h>
 #include <MultilinearBackbone.h>
@@ -55,13 +56,6 @@ extern void *OPS_BilinearBackbone(void);
 extern void *OPS_MultilinearBackbone(void);
 
 #include <packages.h>
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				   Tcl_Interp *interp,  
-				   int cArg, 
-				   int mArg, 
-				   TCL_Char **argv, 
-				   Domain *domain);
 
 static void printCommand(int argc, TCL_Char **argv)
 {

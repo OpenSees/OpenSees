@@ -10,6 +10,7 @@ OBJS       = UniaxialMaterial.o \
 	IMKBilin.o \
 	IMKPeakOriented.o \
 	IMKPinching.o \
+	SLModel.o \
 	Steel2.o \
 	OriginCentered.o \
 	ConcretewBeta.o \
@@ -34,6 +35,7 @@ OBJS       = UniaxialMaterial.o \
 	Cast.o \
         HardeningMaterial.o \
         HardeningMaterial2.o \
+	ASD_SMA_3K.o \
 	Concrete01.o \
 	Concrete02Thermal.o \
 	Steel02Thermal.o \
@@ -84,6 +86,7 @@ OBJS       = UniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
 	PenaltyMaterial.o \
+	MultiplierMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
 	SecantMaterial.o \
@@ -129,6 +132,16 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
+	PlateBearingConnectionThermal.o \
+	DegradingPinchedBW.o \
+	HystereticPoly.o \
+	SMAMaterial.o \
+	Masonry.o \
+	Masonryt.o \
+	Trilinwpd.o \
+	Trilinwp.o \
+	Trilinwp2.o \
+	SteelFractureDI.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

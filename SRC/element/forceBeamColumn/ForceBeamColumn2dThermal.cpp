@@ -87,9 +87,9 @@ Matrix ForceBeamColumn2dThermal::theMatrix(6,6);
 Vector ForceBeamColumn2dThermal::theVector(6);
 double ForceBeamColumn2dThermal::workArea[200];
 
-Vector *ForceBeamColumn2dThermal::vsSubdivide = 0;
-Matrix *ForceBeamColumn2dThermal::fsSubdivide = 0;
-Vector *ForceBeamColumn2dThermal::SsrSubdivide = 0;
+Vector ForceBeamColumn2dThermal::vsSubdivide[maxNumSections];
+Matrix ForceBeamColumn2dThermal::fsSubdivide[maxNumSections];
+Vector ForceBeamColumn2dThermal::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2dThermal()
 {
@@ -173,17 +173,6 @@ ForceBeamColumn2dThermal::ForceBeamColumn2dThermal():
 {
   theNodes[0] = 0;  
   theNodes[1] = 0;
-
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2dThermal::ForceBeamColumn2dThermal() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
 }
 
 // constructor which takes the unique element tag, sections,
@@ -228,17 +217,6 @@ ForceBeamColumn2dThermal::ForceBeamColumn2dThermal (int tag, int nodeI, int node
   if(Vsth0==0)
 	  Vsth0 = new Vector[maxNumSections];
   
-  if (vsSubdivide == 0)
-    vsSubdivide  = new Vector [maxNumSections];
-  if (fsSubdivide == 0)
-    fsSubdivide  = new Matrix [maxNumSections];
-  if (SsrSubdivide == 0)
-    SsrSubdivide  = new Vector [maxNumSections];
-  if (!vsSubdivide || !fsSubdivide || !SsrSubdivide) {
-    opserr << "ForceBeamColumn2dThermal::ForceBeamColumn2dThermal() -- failed to allocate Subdivide arrays";   
-    exit(-1);
-  }
-
   for (int m=0; m<numSections; m++) {
  Vsth0[m] = Vector(2);
  Vsth0[m].Zero();
@@ -2468,35 +2446,13 @@ ForceBeamColumn2dThermal::setSectionPointers(int numSec, SectionForceDeformation
 int
 ForceBeamColumn2dThermal::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-	static Vector v1(3);
-	static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-	if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-		theNodes[0]->getDisplayCrds(v1, fact);
-		theNodes[1]->getDisplayCrds(v2, fact);
-
-	}
-	else {
-
-		theNodes[0]->getDisplayCrds(v1, 0.);
-		theNodes[1]->getDisplayCrds(v2, 0.);
-
-		// add eigenvector values
-		int mode = displayMode  *  -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 2; i++) {
-				v1(i) += eigen1(i, mode - 1)*fact;
-				v2(i) += eigen2(i, mode - 1)*fact;
-			}
-		}
-	}
-
-
-
-	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*

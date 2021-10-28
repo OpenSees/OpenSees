@@ -16,6 +16,7 @@
 #include <ID.h>
 #include <FEM_ObjectBroker.h>
 #include <Parameter.h>
+#include <MultiYieldSurface.h>
 
 #include <string.h>
 #include <elementAPI.h>

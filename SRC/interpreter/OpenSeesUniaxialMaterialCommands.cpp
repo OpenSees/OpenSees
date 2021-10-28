@@ -76,6 +76,8 @@ void* OPS_EPPGapMaterial();
 void* OPS_ENTMaterial();
 void* OPS_Steel01();
 void* OPS_Steel02();
+void* OPS_SteelFractureDI();
+void* OPS_Steel02Fatigue();
 void* OPS_Steel03();
 void* OPS_Concrete01();
 void* OPS_Steel4();
@@ -85,6 +87,7 @@ void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
 void* OPS_SteelMPF();
 void* OPS_Concrete02();
+void* OPS_Concrete02IS();
 void* OPS_Concrete04();
 void* OPS_Concrete06();
 void* OPS_Concrete07();
@@ -122,14 +125,19 @@ void* OPS_PathIndependentMaterial();
 void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
+void* OPS_ASD_SMA_3K();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BWBN();
 void* OPS_PySimple1();
 void* OPS_TzSimple1();
 void* OPS_QzSimple1();
+void* OPS_PySimple2();
+void* OPS_TzSimple2();
+void* OPS_QzSimple2();
 void* OPS_PyLiq1();
 void* OPS_TzLiq1();
+void* OPS_QzLiq1();
 void* OPS_KikuchiAikenHDR();
 void* OPS_KikuchiAikenLRB();
 void* OPS_AxialSp();
@@ -171,6 +179,8 @@ void* OPS_UVCuniaxial();
 void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
+void* OPS_SLModel();
+void* OPS_SMAMaterial();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -193,6 +203,8 @@ void *OPS_ConstantUnloadingRule();
 void *OPS_TakedaUnloadingRule();
 void *OPS_EnergyUnloadingRule();
 void *OPS_KarsanUnloadingRule();
+
+void* OPS_HystereticPoly(); // Salvatore Sessa 14-01-2021 Mail: salvatore.sessa2@unina.it
 
 namespace {
 
@@ -219,6 +231,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("ENT", &OPS_ENTMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel01", &OPS_Steel01));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel02", &OPS_Steel02));
+	uniaxialMaterialsMap.insert(std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel03", &OPS_Steel03));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete01", &OPS_Concrete01));
 	uniaxialMaterialsMap.insert(std::make_pair("Steel4", &OPS_Steel4));
@@ -231,6 +244,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgood", &OPS_RambergOsgoodSteel));
 	uniaxialMaterialsMap.insert(std::make_pair("SteelMPF", &OPS_SteelMPF));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete02", &OPS_Concrete02));
+	uniaxialMaterialsMap.insert(std::make_pair("Concrete02IS", &OPS_Concrete02IS));	
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete04", &OPS_Concrete04));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete06", &OPS_Concrete06));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete07", &OPS_Concrete07));
@@ -279,14 +293,17 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("Pinching4", &OPS_Pinching4Material));
 	uniaxialMaterialsMap.insert(std::make_pair("ECC01", &OPS_ECC01));
 	uniaxialMaterialsMap.insert(std::make_pair("SelfCentering", &OPS_SelfCenteringMaterial));
+    uniaxialMaterialsMap.insert(std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
 	uniaxialMaterialsMap.insert(std::make_pair("Viscous", &OPS_ViscousMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("BoucWen", &OPS_BoucWenMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
 	uniaxialMaterialsMap.insert(std::make_pair("PySimple1", &OPS_PySimple1));
 	uniaxialMaterialsMap.insert(std::make_pair("TzSimple1", &OPS_TzSimple1));
 	uniaxialMaterialsMap.insert(std::make_pair("QzSimple1", &OPS_QzSimple1));
+	uniaxialMaterialsMap.insert(std::make_pair("QzSimple2", &OPS_QzSimple2));
 	uniaxialMaterialsMap.insert(std::make_pair("PyLiq1", &OPS_PyLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("TzLiq1", &OPS_TzLiq1));
+	uniaxialMaterialsMap.insert(std::make_pair("QzLiq1", &OPS_QzLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenHDR", &OPS_KikuchiAikenHDR));
 	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenLRB", &OPS_KikuchiAikenLRB));
 	uniaxialMaterialsMap.insert(std::make_pair("AxialSp", &OPS_AxialSp));
@@ -331,9 +348,13 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
 	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+	uniaxialMaterialsMap.insert(std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));	
 	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
 	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
+	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
+	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
+	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 
 	return 0;
     }

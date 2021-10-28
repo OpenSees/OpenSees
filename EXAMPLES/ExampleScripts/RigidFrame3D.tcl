@@ -64,24 +64,24 @@ fix 2  1  1  1  1  1  1
 fix 3  1  1  1  1  1  1
 fix 4  1  1  1  1  1  1
 
-# Mass lumped at master node
+# Mass lumped at retained node
 set m [expr ($dl+$ll)*$bx*$by/$g]
 
-# Rotary inertia of floor about master node
+# Rotary inertia of floor about retained node
 set i [expr $m*($bx^2+$by^2)/12.0]
 
-# Master nodes for rigid diaphragm
+# Retained nodes for rigid diaphragm
 node  9 0 0         $h  -mass $m $m 0 0 0 $i
 node 14 0 0 [expr 2*$h] -mass $m $m 0 0 0 $i
 node 19 0 0 [expr 3*$h] -mass $m $m 0 0 0 $i
 
 # Define rigid diaphragm constraints
-#               normalDir  master     slaves
+#               normalDir  retained     constrained
 rigidDiaphragm     3         9      5  6  7  8
 rigidDiaphragm     3        14     10 11 12 13
 rigidDiaphragm     3        19     15 16 17 18
 
-# Constraints for rigid diaphragm master nodes
+# Constraints for rigid diaphragm retained nodes
 fix  9  0 0 1 1 1 0
 fix 14  0 0 1 1 1 0
 fix 19  0 0 1 1 1 0

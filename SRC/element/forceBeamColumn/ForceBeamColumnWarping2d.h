@@ -112,7 +112,7 @@ class ForceBeamColumnWarping2d: public Element
   
   int sendSelf(int cTag, Channel &theChannel);
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-  int displaySelf(Renderer &theViewer, int displayMode, float fact);        
+  int displaySelf(Renderer &theViewer, int displayMode, float fact, const char** displayModes = 0, int numModes = 0);
   
   friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumnWarping2d &E);        
   void Print(OPS_Stream &s, int flag =0);    
@@ -200,9 +200,9 @@ class ForceBeamColumnWarping2d: public Element
   // following are added for subdivision of displacement increment
   int    maxSubdivisions;       // maximum number of subdivisons of dv for local iterations
   
-  static Vector *vsSubdivide;
-  static Vector *SsrSubdivide;
-  static Matrix *fsSubdivide;
+  static Vector vsSubdivide[];
+  static Vector SsrSubdivide[];
+  static Matrix fsSubdivide[];
   //static int maxNumSections;
 
   // AddingSensitivity:BEGIN //////////////////////////////////////////

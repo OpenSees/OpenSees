@@ -31,6 +31,8 @@
 #include <SectionAggregator.h>
 #include <FiberSection2d.h>
 #include <FiberSection3d.h>
+#include <FiberSectionWarping3d.h>
+#include <FiberSectionAsym3d.h>
 #include <NDFiberSection2d.h>
 #include <NDFiberSection3d.h>
 #include <UniaxialFiber2d.h>
@@ -45,6 +47,7 @@
 #include <ReinfBar.h>
 #include <TubeSectionIntegration.h>
 #include <WideFlangeSectionIntegration.h>
+#include <HSSSectionIntegration.h>
 #include <NDFiberSectionWarping2d.h>
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
@@ -63,6 +66,8 @@ void* OPS_ElasticShearSection2d();
 void* OPS_ElasticShearSection3d();
 void* OPS_FiberSection2d();
 void* OPS_FiberSection3d();
+void* OPS_FiberSectionWarping3d();
+void* OPS_FiberSectionAsym3d();
 void* OPS_NDFiberSection2d();
 void* OPS_NDFiberSection3d();
 void* OPS_UniaxialFiber2d();
@@ -81,16 +86,19 @@ void* OPS_ElasticTubeSection3d();
 void* OPS_ParallelSection();
 void* OPS_SectionAggregator();
 void* OPS_ElasticPlateSection();
-void* OPS_ElasticMembranePlateSection();
 void* OPS_MembranePlateFiberSection();
 void* OPS_LayeredShellFiberSection();
 void* OPS_Bidirectional();
+void* OPS_Elliptical2();
 void* OPS_Isolator2spring();
 void* OPS_FiberSection2dThermal();
+void* OPS_HSSSection();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
     static FiberSection3d* theActiveFiberSection3d = 0;
+    static FiberSectionWarping3d* theActiveFiberSectionWarping3d = 0;  
+	static FiberSectionAsym3d* theActiveFiberSectionAsym3d = 0;
     static NDFiberSection2d* theActiveNDFiberSection2d = 0;
     static NDFiberSection3d* theActiveNDFiberSection3d = 0;
 
@@ -189,6 +197,7 @@ namespace {
     {
 	void* theSec = 0;
 	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();	
 	if(ndm == 2) {
 	    theSec = OPS_FiberSection2d();
 	    theActiveFiberSection2d = (FiberSection2d*)theSec;
@@ -199,6 +208,39 @@ namespace {
 
 	return theSec;
     }
+
+    static void* OPS_FiberSectionWarping()
+    {
+	void* theSec = 0;
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();	
+	if(ndm == 2) {
+	  //theSec = OPS_FiberSectionWarping2d();
+	  //theActiveFiberSectionWarping2d = (FiberSectionWarping2d*)theSec;
+	} else if(ndm == 3) {
+	  theSec = OPS_FiberSectionWarping3d();
+	  theActiveFiberSectionWarping3d = (FiberSectionWarping3d*)theSec;
+	}
+
+	return theSec;
+    }
+  
+	static void* OPS_FiberSectionAsym()
+	{
+		void* theSec = 0;
+		int ndm = OPS_GetNDM();
+		int ndf = OPS_GetNDF();
+		if (ndm == 2) {
+			//theSec = OPS_FiberSectionAsym2d();
+			//theActiveFiberSectionAsym2d = (FiberSectionAsym2d*)theSec;
+		}
+		else if (ndm == 3) {
+			theSec = OPS_FiberSectionAsym3d();
+			theActiveFiberSectionAsym3d = (FiberSectionAsym3d*)theSec;
+		}
+
+		return theSec;
+	}
 
     static void* OPS_FiberSectionThermal()
     {
@@ -1033,8 +1075,10 @@ namespace {
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
 	functionMap.insert(std::make_pair("Fiber", &OPS_FiberSection));
-	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));
 	functionMap.insert(std::make_pair("fiberSec", &OPS_FiberSection));
+	functionMap.insert(std::make_pair("FiberWarping", &OPS_FiberSectionWarping));
+	functionMap.insert(std::make_pair("FiberAsym", &OPS_FiberSectionAsym));
+	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));	
 	functionMap.insert(std::make_pair("NDFiber", &OPS_NDFiberSection));
 	functionMap.insert(std::make_pair("Uniaxial", &OPS_UniaxialSection));
 	functionMap.insert(std::make_pair("Generic1D", &OPS_UniaxialSection));
@@ -1044,6 +1088,7 @@ namespace {
 	functionMap.insert(std::make_pair("ElasticWarpingShear", &OPS_ElasticWarpingShearSection2d));
 	functionMap.insert(std::make_pair("ElasticTube", &OPS_ElasticTubeSection3d));
 	functionMap.insert(std::make_pair("Tube", &OPS_TubeSection));
+	functionMap.insert(std::make_pair("HSS", &OPS_HSSSection));
 	functionMap.insert(std::make_pair("WFSection2d", &OPS_WFSection2d));	
 	functionMap.insert(std::make_pair("WSection2d", &OPS_WFSection2d));
 	functionMap.insert(std::make_pair("RCSection2d", &OPS_RCSection2d));
@@ -1053,10 +1098,10 @@ namespace {
 	functionMap.insert(std::make_pair("Aggregator", &OPS_SectionAggregator));
 	functionMap.insert(std::make_pair("AddDeformation", &OPS_SectionAggregator));
 	functionMap.insert(std::make_pair("ElasticPlateSection", &OPS_ElasticPlateSection));
-	functionMap.insert(std::make_pair("ElasticMembranePlateSection", &OPS_ElasticMembranePlateSection));
 	functionMap.insert(std::make_pair("PlateFiber", &OPS_MembranePlateFiberSection));
 	functionMap.insert(std::make_pair("LayeredShell", &OPS_LayeredShellFiberSection));
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
+	functionMap.insert(std::make_pair("Elliptical", &OPS_Elliptical2));	
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
@@ -1070,6 +1115,8 @@ int OPS_Section()
 {
     theActiveFiberSection2d = 0;
     theActiveFiberSection3d = 0;
+    theActiveFiberSectionWarping3d = 0;    
+	theActiveFiberSectionAsym3d = 0;
     theActiveNDFiberSection2d = 0;
     theActiveNDFiberSection3d = 0;
 
@@ -1106,6 +1153,8 @@ int OPS_Section()
 	opserr<<"ERROR could not add section.\n";
 	theActiveFiberSection2d = 0;
 	theActiveFiberSection3d = 0;
+	theActiveFiberSectionWarping3d = 0;	
+	theActiveFiberSectionAsym3d = 0;
 	theActiveNDFiberSection2d = 0;
 	theActiveNDFiberSection3d = 0;
 
@@ -1129,7 +1178,7 @@ int OPS_Fiber()
 
 	theFiber = (UniaxialFiber2d*) OPS_UniaxialFiber2d();
 
-    } else if (theActiveFiberSection3d != 0 || theActiveFiberSection3dThermal!=0) {
+    } else if (theActiveFiberSection3d != 0 || theActiveFiberSectionWarping3d != 0 || theActiveFiberSectionAsym3d != 0 || theActiveFiberSection3dThermal!=0) {
 
 	theFiber = (UniaxialFiber3d*) OPS_UniaxialFiber3d();
 
@@ -1159,6 +1208,14 @@ int OPS_Fiber()
     } else if (theActiveFiberSection3d != 0) {
 
 	res = theActiveFiberSection3d->addFiber(*theFiber);
+
+    } else if (theActiveFiberSectionWarping3d != 0) {
+
+	res = theActiveFiberSectionWarping3d->addFiber(*theFiber);	
+
+	} else if (theActiveFiberSectionAsym3d != 0) {
+
+	res = theActiveFiberSectionAsym3d->addFiber(*theFiber);
 
     } else if (theActiveNDFiberSection2d != 0) {
 
@@ -1265,6 +1322,28 @@ int OPS_Patch()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveFiberSectionWarping3d != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete thePatch;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSectionWarping3d->addFiber(*theFiber);	
+
+	} else if (theActiveFiberSectionAsym3d != 0) {
+
+		material = OPS_getUniaxialMaterial(matTag);
+		if (material == 0) {
+			opserr << "WARNING material " << matTag << " cannot be found\n";
+			delete thePatch;
+			return -1;
+		}
+		theFiber = new UniaxialFiber3d(j, *material, area, cPos);
+		theActiveFiberSectionAsym3d->addFiber(*theFiber);
 
 	} else if (theActiveFiberSection3dThermal != 0) {
 
@@ -1388,6 +1467,28 @@ int OPS_Layer()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveFiberSectionWarping3d != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete theLayer;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSectionWarping3d->addFiber(*theFiber);	    
+
+	} else if (theActiveFiberSectionAsym3d != 0) {
+
+		material = OPS_getUniaxialMaterial(matTag);
+		if (material == 0) {
+			opserr << "WARNING material " << matTag << " cannot be found\n";
+			delete theLayer;
+			return -1;
+		}
+		theFiber = new UniaxialFiber3d(j, *material, area, cPos);
+		theActiveFiberSectionAsym3d->addFiber(*theFiber);
 
 	} else if (theActiveFiberSection3dThermal != 0) {
 

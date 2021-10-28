@@ -74,6 +74,7 @@ class Fiber : public TaggedObject, public MovableObject
 
     virtual void getFiberLocation(double &y, double &z) =0;
     virtual double getArea(void) =0;
+    virtual double getd(void) =0;
 
     virtual UniaxialMaterial *getMaterial(void) {return 0;}
     virtual NDMaterial *getNDMaterial(void) {return 0;}

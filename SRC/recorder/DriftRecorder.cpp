@@ -437,7 +437,7 @@ DriftRecorder::initialize(void)
 
 	 theOutputHandler->tag("DriftOutput");	 
 	 theOutputHandler->attr("node1", ni);	 
-	 theOutputHandler->attr("node2", ni);	 
+	 theOutputHandler->attr("node2", nj);	 
 	 theOutputHandler->attr("perpDirn", perpDirn);	 
 	 theOutputHandler->attr("lengthPerpDirn", fabs(crdJ(perpDirn) - crdI(perpDirn)));
 	 theOutputHandler->tag("ResponseType", "drift");

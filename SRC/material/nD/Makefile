@@ -41,6 +41,7 @@ OBJS       = NDMaterial.o \
 	ElasticIsotropicPlaneStress2D.o \
 	ElasticIsotropicPlateFiber.o \
 	ElasticIsotropicThreeDimensional.o \
+	IncrementalElasticIsotropicThreeDimensional.o \
 	ElasticOrthotropicMaterial.o \
 	ElasticOrthotropicThreeDimensional.o \
 	PressureDependentElastic3D.o \
@@ -100,6 +101,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE);
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE);
+	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
 
 # Miscellaneous
 
