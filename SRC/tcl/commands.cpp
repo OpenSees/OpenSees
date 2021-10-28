@@ -112,6 +112,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <NodeIter.h>
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
+#include <NodalLoad.h>
+#include <NodalLoadIter.h>
 #include <ElementalLoad.h>
 #include <ElementalLoadIter.h>
 #include <ParameterIter.h>
@@ -1033,6 +1035,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "getEleLoadTags", &getEleLoadTags,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "getEleLoadData", &getEleLoadData,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getNodeLoadTags", &getNodeLoadTags,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
     Tcl_CreateCommand(interp, "sdfResponse", &sdfResponse, 
@@ -9135,6 +9139,58 @@ getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 
   } else {
     opserr << "WARNING want - getEleLoadTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
+getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[20];
+
+	while ((thePattern = thePatterns()) != 0) {
+	  NodalLoadIter theNodLoads = thePattern->getNodalLoads();
+	  NodalLoad *theNodLoad;
+
+	  while ((theNodLoad = theNodLoads()) != 0) {
+		sprintf(buffer, "%d ", theNodLoad->getNodeTag());
+		Tcl_AppendResult(interp, buffer, NULL);
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getNodeLoadTags -- could not read patternTag \n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadTags\n";
+	  return TCL_ERROR;
+	}
+
+	NodalLoadIter theNodLoads = thePattern->getNodalLoads();
+	NodalLoad* theNodLoad;
+
+	char buffer[20];
+
+	while ((theNodLoad = theNodLoads()) != 0) {
+	  sprintf(buffer, "%d ", theNodLoad->getNodeTag());
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+  } else {
+    opserr << "WARNING want - getNodeLoadTags <patternTag?>\n" << endln;
     return TCL_ERROR;
   }
 
