@@ -21,6 +21,7 @@ add_subdirectory(tagged)
 add_subdirectory(utility)
 
 add_subdirectory(modelbuilder)
+add_subdirectory(interpreter)
 add_subdirectory(tcl)
 add_subdirectory(system_of_eqn)
 add_subdirectory(renderer)

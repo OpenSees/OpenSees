@@ -108,7 +108,7 @@ enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
-#add_compile_options(-g)
+add_compile_options(-g)
 
 # Warnings
 opensees_add_cxx_flag(
@@ -263,7 +263,6 @@ add_library(OpenSees         EXCLUDE_FROM_ALL)
 # Executables and final targets
 #------------------------------------------------------------------------------
 # Adding EXCLUDE_FROM_ALL prevents these from being made by default.
-
 add_executable(OpenSeesTcl   EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
@@ -280,21 +279,21 @@ add_executable(OpenSeesMP    EXCLUDE_FROM_ALL
 )
 
 add_library(OpenSeesPy    SHARED EXCLUDE_FROM_ALL
-  #${OPS_SRC_DIR}/interpreter/pythonMain.cpp
-  ${OPS_SRC_DIR}/interpreter/PythonWrapper.cpp
-  ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
-  ${OPS_SRC_DIR}/interpreter/DL_Interpreter.cpp
-  #${OPS_SRC_DIR}/interpreter/PythonAnalysisBuilder.cpp
-  "${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-  "${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
+  ##${OPS_SRC_DIR}/interpreter/pythonMain.cpp
+  #${OPS_SRC_DIR}/interpreter/PythonWrapper.cpp
+  #${OPS_SRC_DIR}/interpreter/PythonModule.cpp
+  #${OPS_SRC_DIR}/interpreter/DL_Interpreter.cpp
+  ##${OPS_SRC_DIR}/interpreter/PythonAnalysisBuilder.cpp
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
+  #"${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
 )
 
 # Set selected executable to be built by default
@@ -381,10 +380,29 @@ opensees_add_cxx_flag(TARGETS OPS_Interp_Tcl
 #----------------------------
 # OpenSeesTcl
 #----------------------------
-target_link_libraries(OpenSeesTcl 	
-	OPS_Interp_Tcl #${OPS_Element_List} 
+target_link_libraries(OpenSeesTcl
+	OPS_Interp_Tcl #${OPS_Element_List}
   OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
 )
+
+#----------------------------
+# OpenSeesPy
+#----------------------------
+add_compile_options(-fPIC)
+target_include_directories(OpenSeesPy PRIVATE ${Python_INCLUDE_DIRS})
+
+target_link_libraries(OpenSeesPy
+  OPS_InterpreterModule_Python OPS_Thermal 
+  #-Wl,--whole-archive 
+  OpenSees 
+  #-Wl,--no-whole-archive 
+  ${CMAKE_DL_LIBS}
+)
+
+opensees_add_cxx_flag(TARGETS OpenSeesPy
+    GNU  -fPIC
+)
+
 
 #----------------------------
 # OpenSeesMP
@@ -402,20 +420,6 @@ target_compile_definitions(OpenSeesSP
     PUBLIC _PARALLEL_INTERPRETERS
 )
 target_link_libraries(OpenSeesSP OpenSees)
-
-#----------------------------
-# OpenSeesPy
-#----------------------------
-add_compile_options(-fPIC)
-target_include_directories(OpenSeesPy PRIVATE ${Python_INCLUDE_DIRS})
-
-target_link_libraries(OpenSeesPy
-  OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
-)
-
-opensees_add_cxx_flag(TARGETS OpenSeesPy
-    GNU  -fPIC
-)
 
 #==============================================================================
 #                            Apply Options
@@ -525,5 +529,6 @@ if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
 endif()
 
+# Include test suite
 add_subdirectory(EXAMPLES/)
 

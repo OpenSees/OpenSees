@@ -52,6 +52,7 @@ target_sources(AMD PRIVATE
   $<TARGET_OBJECTS:AMD_DINT>
   $<TARGET_OBJECTS:AMD_DLNG>
 )
+target_compile_options(AMD PRIVATE -fPIC)
 #target_link_libraries(AMD PUBLIC AMD_DINT AMD_DLNG)
 
 

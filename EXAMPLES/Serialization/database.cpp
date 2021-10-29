@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 {
   int success = 0;
   if (argc < 2)
-    exit(-1);
+    exit(0);
   const char *database_file = argv[1];
   std::ofstream db(database_file);
 

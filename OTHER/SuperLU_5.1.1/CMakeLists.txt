@@ -245,6 +245,10 @@ add_library(DLUSRC OBJECT
 #)
 
 include_directories(${SUPERLU_SRC_DIR})
+target_compile_options(SUPERLU PRIVATE -fPIC)
+target_compile_options(DLUSRC  PRIVATE -fPIC)
+target_compile_options(ALLAUX  PRIVATE -fPIC)
+target_compile_options(DZLAUX  PRIVATE -fPIC)
 target_link_libraries(SUPERLU DLUSRC ALLAUX DZLAUX ${LAPACK_LIBRARIES})
 
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}

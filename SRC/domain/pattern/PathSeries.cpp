@@ -242,7 +242,7 @@ PathSeries::PathSeries(int tag,
   // create a copy of the vector containing path points
   if (prependZero == false) {
     thePath = new Vector(theLoadPath);
-  } else {
+  } else if (theLoadPath != 0) {
     // prepend a zero value
     thePath = new Vector(1 + theLoadPath.Size());
     thePath->Assemble(theLoadPath, 1);
@@ -250,8 +250,8 @@ PathSeries::PathSeries(int tag,
 
   // ensure we did not run out of memory
   if (thePath == 0 || thePath->Size() == 0) {
-    opserr << "PathSeries::PathSeries() - ran out of memory constructing";
-    opserr << " a Vector of size: " <<  theLoadPath.Size() << endln;
+    opserr << "PathSeries::PathSeries() - unable to construct a valid";
+    opserr << " PathSeries object" << endln;
     if (thePath != 0)
       delete thePath; 
     thePath = 0;
@@ -338,8 +338,14 @@ PathSeries::~PathSeries()
 
 TimeSeries *
 PathSeries::getCopy(void) {
-  return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
+  if (thePath != 0) {
+    return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
                         useLast, false, startTime);
+  } else {
+    return 0;
+    // return new PathSeries(this->getTag(), 0, pathTimeIncr, cFactor,
+    //                     useLast, false, startTime);
+  }
 }
 
 double
