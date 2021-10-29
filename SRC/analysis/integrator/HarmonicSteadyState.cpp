@@ -18,21 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.6 $
-// $Date: 2007-04-02 23:42:26 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HarmonicSteadyState.cpp,v $
-
-
+// Written: Seweryn Kokot, Opole University of Technology, Poland
+// Created: 2021
 //
-// Written: fmk
-// Created: 07/98
-// Revision: A
+// based on LoadControl.cpp
+// written: fmk
 //
 // Description: This file contains the class definition for HarmonicSteadyState.
-// HarmonicSteadyState is an algorithmic class for performing a static analysis
-// using a load control integration scheme.
-//
-// What: "@(#) HarmonicSteadyState.h, revA"
+// HarmonicSteadyState is an algorithmic class for performing a quasi-static harmonic
+// steady-state analysis.
 
 #include "HarmonicSteadyState.h"
 #include <AnalysisModel.h>

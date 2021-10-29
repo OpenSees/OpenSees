@@ -4472,7 +4472,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
         theStaticAnalysis->setIntegrator(*theStaticIntegrator);
       }
 
-  else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSteadyState") == 0) {
+  else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSS") == 0) {
     theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
    }
 
