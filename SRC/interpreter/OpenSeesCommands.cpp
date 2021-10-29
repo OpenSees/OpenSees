@@ -1440,7 +1440,7 @@ int OPS_Integrator()
     } else if (strcmp(type,"MinUnbalDispNorm") == 0) {
 	si = (StaticIntegrator*)OPS_MinUnbalDispNorm();
 
-    } else if (strcmp(type,"HarmonicSteadyState") == 0 || strcmp(type,"HarmonicSteadyState") == 0) {
+    } else if (strcmp(type,"HarmonicSteadyState") == 0 || strcmp(type,"HarmonicSS") == 0) {
 	si = (StaticIntegrator*)OPS_HarmonicSteadyState();
 
     } else if (strcmp(type,"Newmark") == 0) {
