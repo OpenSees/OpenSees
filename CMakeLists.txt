@@ -217,6 +217,7 @@ target_link_libraries(OPS_Numerics INTERFACE
 add_library(OPS_Matrix             OBJECT)
 add_library(OPS_Actor              OBJECT)
 add_library(OPS_ObjectBroker       OBJECT)
+add_library(G3_ObjectBroker        OBJECT)
 add_library(OPS_Handler            OBJECT)
 add_library(OPS_Recorder           OBJECT)
 add_library(OPS_Tagged             OBJECT)
@@ -278,23 +279,7 @@ add_executable(OpenSeesMP    EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 
-add_library(OpenSeesPy    SHARED EXCLUDE_FROM_ALL
-  ##${OPS_SRC_DIR}/interpreter/pythonMain.cpp
-  #${OPS_SRC_DIR}/interpreter/PythonWrapper.cpp
-  #${OPS_SRC_DIR}/interpreter/PythonModule.cpp
-  #${OPS_SRC_DIR}/interpreter/DL_Interpreter.cpp
-  ##${OPS_SRC_DIR}/interpreter/PythonAnalysisBuilder.cpp
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesBeamIntegrationCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesCrdTransfCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesFrictionModelCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesNDMaterialCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesOutputCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesElementCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesSectionCommands.cpp"
-  #"${OPS_SRC_DIR}/interpreter/OpenSeesUniaxialMaterialCommands.cpp"
-)
+add_library(OpenSeesPy    SHARED EXCLUDE_FROM_ALL)
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
@@ -318,22 +303,28 @@ target_link_libraries(OPS_Interp_Tcl   PRIVATE ${OPS_Element_List})
 target_link_libraries(G3 
     OPS_Database
     OPS_Matrix
+    OPS_Actor
     OPS_Analysis 
-    OPS_ModelBuilder
     OPS_Domain
+    OPS_Thermal
     OPS_ConvergenceTest
     OPS_Element
+    OPS_Renderer
     OPS_Material
+    OPS_Material_YieldSurface
+    OPS_Section_Repres
+    OPS_Section_YieldSurface
     OPS_Recorder
     OPS_Handler
     OPS_SysOfEqn
     ${OPS_SysOfEqn_List}
-    OPS_Tagged 
+    OPS_Tagged
     OPS_Utilities
     graph
     coordTransformation
-    OPS_Actor 
-    OPS_ObjectBroker
+    #OPS_Actor 
+    #OPS_ObjectBroker
+    G3_ObjectBroker
     OPS_Numerics 
 )
 
@@ -341,20 +332,17 @@ target_link_libraries(G3
 # OpenSees
 #----------------------------
 target_link_libraries(OpenSees
+    OPS_ModelBuilder
     ${OPS_Extension_List}
-    OPS_Renderer
-    OPS_ConvergenceTest
-    OPS_Element
-    OPS_Material
     OPS_Material_YieldSurface
     OPS_Section_Repres
     OPS_Section_YieldSurface
     OPS_Damage
-    OPS_SysOfEqn
     OPS_Analysis
     OPS_Domain
     OPS_Api
     OPS_OS_Specific_libs
+    OPS_ObjectBroker
     G3
     ${MYSQL_LIBRARIES}
 )
@@ -382,13 +370,14 @@ opensees_add_cxx_flag(TARGETS OPS_Interp_Tcl
 #----------------------------
 target_link_libraries(OpenSeesTcl
 	OPS_Interp_Tcl #${OPS_Element_List}
-  OPS_Thermal OpenSees ${CMAKE_DL_LIBS}
+   OpenSees ${CMAKE_DL_LIBS}
 )
 
 #----------------------------
 # OpenSeesPy
 #----------------------------
 add_compile_options(-fPIC)
+set_property(TARGET OpenSeesPy PROPERTY POSITION_INDEPENDENT_CODE 1)
 target_include_directories(OpenSeesPy PRIVATE ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy
@@ -472,14 +461,13 @@ if (${OPS_Use_Graphics_Option} STREQUAL "Base")
 elseif (${OPS_Use_Graphics_Option} STREQUAL "OpenGL")
   message("OPS >>> Including OpenGL graphics option")
   set_source_files_properties(
-      "${OPS_SRC_DIR}/recorder/AlgorithmIncrements.cpp"
-      "${OPS_SRC_DIR}/recorder/FilePlotter.cpp"
-      "${OPS_SRC_DIR}/renderer/main.cpp"
-      "${OPS_SRC_DIR}/renderer/OpenGlDevice.cpp"
-      "${OPS_SRC_DIR}/renderer/OpenGlRenderer.cpp"
-      "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
-      "${OPS_SRC_DIR}/tcl/TclVideoPlayer.cpp"
-
+    "${OPS_SRC_DIR}/recorder/AlgorithmIncrements.cpp"
+    "${OPS_SRC_DIR}/recorder/FilePlotter.cpp"
+    "${OPS_SRC_DIR}/renderer/main.cpp"
+    "${OPS_SRC_DIR}/renderer/OpenGlDevice.cpp"
+    "${OPS_SRC_DIR}/renderer/OpenGlRenderer.cpp"
+    "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
+    "${OPS_SRC_DIR}/tcl/TclVideoPlayer.cpp"
     PROPERTIES COMPILE_DEFINITIONS _AGL
   )
   target_link_libraries(${OPS_FINAL_TARGET} OPS_Graphics_GL OPS_Graphics)

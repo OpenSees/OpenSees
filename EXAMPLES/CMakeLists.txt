@@ -11,7 +11,7 @@ add_subdirectory(verification)
 
 # ModelBuilder tests
 #-------------------------------------------------------------------------
-#add_subdirectory(PlaneFrame)
+add_subdirectory(PlaneFrame)
 add_subdirectory(Example1)
 
 # Serialization tests
