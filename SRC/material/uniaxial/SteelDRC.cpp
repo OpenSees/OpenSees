@@ -37,7 +37,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <Channel.h>
-#include <cmath>
+#include <math.h>
 #include <float.h>
 
 /*
