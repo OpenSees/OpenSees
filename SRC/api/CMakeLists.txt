@@ -27,7 +27,7 @@ target_sources(OPS_Api
 )
 target_include_directories(OPS_Api PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-if (EXISTS "tclCommandPackage/CMakeLists.txt")
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/tclCommandPackage/CMakeLists.txt")
 add_subdirectory(tclCommandPackage)
 endif()
 
