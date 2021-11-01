@@ -334,8 +334,7 @@ NodalLoad::applyLoad(Vector& loadFactors) {
 
 const Vector&
 NodalLoad::getData(int& type) {
-  Vector* Empty = new Vector();
-  return *Empty;
+  return *load;
 }
 
 //Adding general function for using NodalThermalAction, L.Jiang [SIF]

@@ -297,6 +297,12 @@ int
 getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
