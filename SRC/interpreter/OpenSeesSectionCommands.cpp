@@ -47,6 +47,7 @@
 #include <ReinfBar.h>
 #include <TubeSectionIntegration.h>
 #include <WideFlangeSectionIntegration.h>
+#include <HSSSectionIntegration.h>
 #include <NDFiberSectionWarping2d.h>
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
@@ -91,6 +92,7 @@ void* OPS_Bidirectional();
 void* OPS_Elliptical2();
 void* OPS_Isolator2spring();
 void* OPS_FiberSection2dThermal();
+void* OPS_HSSSection();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
@@ -1086,6 +1088,7 @@ namespace {
 	functionMap.insert(std::make_pair("ElasticWarpingShear", &OPS_ElasticWarpingShearSection2d));
 	functionMap.insert(std::make_pair("ElasticTube", &OPS_ElasticTubeSection3d));
 	functionMap.insert(std::make_pair("Tube", &OPS_TubeSection));
+	functionMap.insert(std::make_pair("HSS", &OPS_HSSSection));
 	functionMap.insert(std::make_pair("WFSection2d", &OPS_WFSection2d));	
 	functionMap.insert(std::make_pair("WSection2d", &OPS_WFSection2d));
 	functionMap.insert(std::make_pair("RCSection2d", &OPS_RCSection2d));

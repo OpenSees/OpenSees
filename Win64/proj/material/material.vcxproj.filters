@@ -1382,6 +1382,18 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp">
       <Filter>uniaxial\py_tz_qz</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\integration\HSSSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UANDESmaterials\SAniSandMS.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UANDESmaterials\SAniSandMS3D.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UANDESmaterials\SAniSandMSPlaneStrain.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
