@@ -1011,8 +1011,8 @@ double SteelDRC::omegaFun(double eam, double sam, double e0, int S, int K) {
 	// Compute internal variables sigP and sigT (see Restrepo et. al. 1994)
 	double sigP = fuN*(S - eush[K] + eam) - sam;
 	double sigT = fuN*(2 - eush[0] + eush[1]);
-	double epsp = abs(0.2*S + e0 - eam) / 0.2;
-	double sigN = abs(sigP / sigT);
+	double epsp = fabs(0.2*S + e0 - eam) / 0.2;
+	double sigN = fabs(sigP / sigT);
 
 	// Compute percent area term Omega
 	double omega = (0.001 + 0.00108 / (1.043 - epsp)) / 0.18*(sigN - 0.69) + 0.085;
@@ -1154,7 +1154,7 @@ void SteelDRC::bausch1(double eps_N, double &sig_N,double &tan_N, double *pointA
 			FsigN = sigNorm - C1*(1 - auxroot) - C2;
 
 			// Loop over value of normalized stress until convergence
-			while (abs(FsigN) > tolNR2 && j <= itNR2){
+			while (fabs(FsigN) > tolNR2 && j <= itNR2){
 				sigNnew = sigNold - 2 * Pwr*auxroot*(sigNold - C1*(1 - auxroot) - C2) /
 					(2 * Pwr*auxroot - C1*pow(sigNold, 1 / Pwr - 1));
 
