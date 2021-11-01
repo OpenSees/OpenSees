@@ -370,6 +370,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel4.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelBRB.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelDRC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMP.cpp" />
