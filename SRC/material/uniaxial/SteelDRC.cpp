@@ -81,9 +81,9 @@ OPS_SteelDRC()
 	}
 	// Initialize default value for optional variables
 	double Psh = 3.0;							// Default exponent for the strain hardening branch of the backbone curve
-	double efract = -1;							// fracture strain post uniform strain in tension
+	double efract = -1;							// fracture strain post uniform strain in tension (efract = -1 means no drop in stress capacity post uniform strain)
 	double omegaFac = 1.0;						// Factor to control the area under the curve in the bauschinger effect
-	int bauschType = 1;							// Function to use to generate the bauschinger effect
+	int bauschType = 1;							// Function to use to generate the bauschinger effect (bauschType = 1  for cubic Bezier curve)
 	int stiffopt = 0;							// Type of stiffness to be returned by the material.
 	double temp[2] = { 0.0,0.0 };				// Temporary array to store the (esh1,fsh1) point if given as input
 	double temp1[2] = { 0.0,1.0 };				//Temporary array to store properties of viscous damper if given as input
@@ -237,7 +237,6 @@ SteelDRC::SteelDRC(int tag, double Es, double fy, double eu, double fu, double e
 	eng2natural(aux0);
 	eshN = aux0[0];
 	aux0[0] = eft;
-	// 2021-04-18 : Added case where the input for efract is -1 to indicate a horizontal line following uniform strain in tension
 	if (eft == -1) {
 		eftN = -1;
 	}
@@ -1049,7 +1048,6 @@ void SteelDRC::bauschMinor(int flag, double *ptA, double *ptB, double omega,doub
 		bausch1(eps_N, sig_N, tan_N, ptA, ptB, Pwr);
 		break;
 	case 1:
-		//double omega = 0.04;
 		wcubic = bezierWeightCubic(omega);
 		wcubicarray[3] = wcubic;
 		bauschBezierCubic(eps_N, sig_N, tan_N, ptA, ptB, xi, wcubicarray);
@@ -1473,27 +1471,18 @@ void SteelDRC::State_Determination(int S, int K, int M, int Klmr, double Eun)
 		return;
 	}
 	// Case 2 : Material is in the linear unloading branch
-	if (Tlmr*Ter < Tlmr*Teps && Tlmr*Teps < Tlmr*Tea[Klmr])
+	if (Tlmr * Ter < Tlmr * Teps && Tlmr * Teps < Tlmr * Tea[Klmr])
 	{
 		Tsig = Eun * (Teps - Ter) + Tsr;
 		Ttan = Eun;
 		return;
 	}
-	// Case 3 : Stress strain curve has rejoined the shifted 
-	// skeleton curve. Last reversal occured in the Yield Plateau or in the linear unloading branch following the first 
-	// major reversal
-	if (!isnan(Terejoin[K]) && S * Teps > S * Terejoin[K])	{
+	// Case 3 : Stress strain curve rejoins shifter skeleton curve 
+	if ((!isnan(Terejoin[K]) && (S * Teps > S * Terejoin[K])) || (!isnan(TerejoinL[K]) && (S * Teps > S * TerejoinL[K]))) {
 		skeleton(Teps - Te0[K], Tsig, Ttan);
 		return;
 	}
-	// ============================================================================================================
-	// Log 2021/08/01:Case 3.1 :
-	// ============================================================================================================
-	// Case 3.1: Stress-strain curve has rejoined the shifted skeleton curve post localization point in either direction
-	if (!isnan(TerejoinL[K]) && (S*Teps > S*TerejoinL[K])) {
-		skeleton(Teps - Te0[K], Tsig, Ttan);
-		return;
-	}	
+	
 	// ============================================================================================================
 	// Log 2018/09/07:Case 3.2 :
 	// ============================================================================================================
@@ -1505,8 +1494,7 @@ void SteelDRC::State_Determination(int S, int K, int M, int Klmr, double Eun)
 	// in the direction of the first major reversal, instead of the 
 	// backbone curve, see State_Reversal code, case 5.
 
-	//if ((S * Tsa[K] > S*Tsrm[K]) && !isnan(Terejoin[K]) && (TshOnset == 1)) {
-	if (((S * (Tsa[K] + TErm[K]*(Term[K]-Tea[K]))) > S * Tsrm[K]) && (TshOnset == 1)) {
+	if ((((S * (Tsa[K] + TErm[K]*(Term[K]-Tea[K]))) > S * Tsrm[K]) ||  ((S * (Tsa[K] + Eun * (Term[K] - Tea[K]))) < S * Tsrm[K])) && (TshOnset == 1)) {
 		// Use Bauschinger curve between Tea[K] and the shifted ultimate strain
 		ptA[0] = Tea[K];
 		ptA[1] = Tsa[K];
@@ -1517,9 +1505,6 @@ void SteelDRC::State_Determination(int S, int K, int M, int Klmr, double Eun)
 		ptB[2] = TErejoinL[K];
 
 		bauschMajor(bauschFlag, ptA, ptB, Team[K], Tsam[K], Te0[K], S, K,Teps,Tsig,Ttan);
-
-		// log: 2021/10/20
-		// The coordinates of the major reversal point being update
 
 		return;
 	}
@@ -1613,7 +1598,7 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 		// Update strain shift
 		Te0[K] = Ter - Tsr / Eun;
 		// Update rejoin strain in the opposite direction
-		Terejoin[K] = Te0[K] + S*fyEng / Eun;
+		Terejoin[K] = Te0[K] + Te0[M] - Ter;
 
 		// Update uniform strain point in the opposite direction
 		TerejoinL[K] = S * euN + Te0[K];
@@ -1626,14 +1611,15 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 		return;
 	}
 
-	// Case 5 : First major reversal (from strain hardening or post-localization branch in backbone curve)
-	//if (!isnan(Terejoin[M]) && TshOnset == 1) {
-	if (!isnan(Terejoin[M]) && !isnan(Terejoin[K]) && TshOnset == 1) { 
+	// Case 5 : First major reversal from backbone curve.
+	// (from strain hardening or post-localization branch in backbone curve)
+	if (!isnan(Terejoin[M]) && TshOnset == 1) {
+	//if (!isnan(Terejoin[M]) && !isnan(Terejoin[K]) && TshOnset == 1) { 
 		// Save copy of Tfract flag for cases when skeleton curve is called
 		int Tfract0;
 		// Save reversal strain in case there is a reversal in the linear unloading branch and need to return through same path 
 		Terejoin[M] = Ter;
-		// Curve will not rejoin Yield plateau of  backbone curve in the opposite direction
+		// Curve will not rejoin backbone curve in the opposite direction
 		Terejoin[K] = NAN;
 
 		Te0[K] = Ter - Tsr / Eun;
@@ -1655,24 +1641,75 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 		if (TErejoinL[K] < 0)
 			TErejoinL[K] = 0;
 
-		// Since this is the first major reversal, the initial point of the major
-		// bauschinger curve in the previous direction is defined by Team[M] and Tsam[M]
-		//Team[M] = Te0[M];
-		//Tsam[M] = 0;
-		Team[M] = Te0[M] - S * eyN;
-		Tsam[M] = -S * fyN;
+		// This being the first major reversal, I need to define a unloading branch followed by the bauschinger curve coinciding in stress with the most recent reversal point
+		// Coordinates of end point of bauschinger curve are known (strain,stress and slope), but only the slope and line defining strain/stress of the initial point are known
+		// The point is found iteratively using bisection algorithm (note this iterative process is only performed a limited number of times for the material model, most often only once, 
+		// thus it should not negatively impact the processing speed of the model.)
 
+		double eam_min = Te0[M];
+		double eam_max = Te0[M] - S * fuN / Eun;
+		double eam0 = 0.5 * (eam_min + eam_max);
+		double sam0 = Eun * (eam0 - Te0[M]);
+		double aux[3] = { Ter,Tsr,Eun };
+		
+		// Set initial point of bauschinger curve as estimate of end of unloading curve: (eam0,sam0,Eun)
+		double ptA[3] = { eam0, sam0, Eun };
+		// Final point if bauschinger curve matches the end of the shifted skeleton curve
+		double ptB[3] = { TerejoinL[M], TsrejoinL[M], TErejoinL[M] };
+
+		// Compute stress and slope of bauschinger curve at the reversal point
+		bauschMajor(bauschFlag, ptA, ptB, eam0, sam0, Te0[M], -S, M, Ter, aux[1], aux[2]);
+
+		// Compute stress difference between aux[1] and reversal point
+		double diff = -S * (Tsr - aux[1]);
+		double delta = fabs((Tsr - aux[1])/Tsr);
+		// Define tolerance for algorithm
+		double tol0 = 1E-8;
+
+		// Run bisection method to find optimal ptA to match stress Tsr at Ter
+
+		if (fabs(Tsr) > DBL_EPSILON) {
+			while (delta > tol0 && fabs(eam_max-eam_min) > tol0) {
+				if (diff > 0){
+					eam_min = eam0;
+					eam0 = 0.5 * (eam0 + eam_max);
+				}
+				else {
+					eam_max = eam0;
+					eam0 = 0.5 * (eam_min + eam0);
+				}
+					
+				// Compute the stress corresponding to eam0
+				sam0 = Eun * (eam0 - Te0[M]);
+				// Redefine initial point of the bauschinger curve
+				ptA[0] = eam0;
+				ptA[1] = sam0;
+				// Compute stress and slope of bauschinger curve at the reversal point
+				bauschMajor(bauschFlag, ptA, ptB, eam0, sam0, Te0[M], -S, M, Ter, aux[1], aux[2]);
+				diff = -S * (Tsr - aux[1]);
+				delta = fabs((Tsr - aux[1]) / Tsr);
+			}
+		}
+
+		// Define Tam and Tsam based on results of iterative process
+		Team[M] = eam0;
+		Tsam[M] = sam0;
+
+		// Redefine vector with coordinates and slope of initial point in bauschinger curve
+		ptA[0] = Team[M];
+		ptA[1] = Tsam[M];
+ 		//Team[M] = Te0[M] - S * eyN;
+		//Tsam[M] = -S * fyN;
 
 		// Major reversal parameters are updated
 		// - Update strain Term[M]
 		Term[M] = Ter;
 		// - Update stress and slope Tsrm[M] & TErm[M] respectively
 		// Compute stress and slope from the bauschinger curve
-		// define vector containing boundary conditions for the bauschinger curve
-		double ptA[3] = { Team[M], Tsam[M], Eun };
-		double ptB[3] = { TerejoinL[M], TsrejoinL[M], TErejoinL[M]};
 		bauschMajor(bauschFlag, ptA, ptB, Team[M], Tsam[M], Te0[M], -S, M, Ter, Tsrm[M], TErm[M]);
 
+
+		// Define coordinates of end of unloading branch after the reversal
 		Team[K] = Tea[K];
 		Tsam[K] = Tsa[K];
 		// Activate minor reversal flag in the opposite direction
@@ -1687,12 +1724,13 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 	// difference between last major reversal and current reversal
 	// is greater than 2*fyEng or if strain exceeds strain at the 
 	// last major reversal in the current straining direction.
-	if (S * (Ter - Tsr / Eun) < S * Te0[K] || S * (Tsrm[K] - Tsr) > 2 * fyEng || (S * Ter < S * Term[M] && Tfrm[M] == -1)) {
+	if (S * (Ter - Tsr / Eun) < S * Te0[K] || S * (Tsrm[K] - Tsr) > 2 * Dfu* fyEng || (S * Ter < S * Term[M] && Tfrm[M] == -1)) {
 		// Save copy of Tfract for instances where the skeleton function is called
 		int Tfract0;
-		//if (S*(Ter - Tsr / Eun) < S*Te0[K] || (S*Ter < S*Term[M] && Tfrm[M] == -1)) {
-			// No more rejoing the skeleton curve at the yield plateau
+		
+		// No more rejoing the skeleton curve at the yield plateau
 		Terejoin[K] = NAN;
+		Terejoin[M] = NAN; // 2021-10-23 : CHECK IF THIS LINE WORKS
 
 		// Update localization point in direction pre-reversal if reversal strain exceeds previous shifted uniform strain
 		if (-S*Ter > -S*TerejoinL[M]) {
@@ -1728,6 +1766,7 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 	if (Tfrm[M] == 1 || S*Ter < S*Term[M]){
 		// No more rejoining backbone curve at the yield plateau
 		Terejoin[K] = NAN;
+		Terejoin[M] = NAN; // 2021-10-23 : CHECK IF THIS LINE WORKS
 		// Update reversal point opposite to last major reversal
 		Term[M] = Ter;
 		Tsrm[M] = Tsr;
@@ -1737,204 +1776,3 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 		return;
 	}
 }
-/*
-void SteelDRC::tensionFracture(int S,int K,int M, int Klmr,double Eun) {
-	double eu_shift;
-	// If material has passed the zero stress state no more steps required
-	if (Tsig == 0 && Ttan == 0)
-		return;
-	// If a reversal has just occurred
-	if ((Ceps - Ter)*(Teps - Ceps) < 0) {
-		// Case 1: Reversal in linear unloading branch. No parameter updated
-		if ((Tlmr*Ter < Tlmr*Ceps) && (Tlmr*Ceps < Tlmr*Tea[Klmr])) {
-		}
-		else {
-			// Update reveral state parameters
-			Ter = Ceps;
-			Tsr = Csig;
-			TEr = Ctan;
-			Tlmr = S;
-			Klmr = K;
-			Tsa[K] = Tsr + S*Dfu*fyEng;
-
-			// If Te0max is updated, so does Eun
-			if (S*(Tsr / Eun - Ter) > Te0max) {
-				Te0max = S*(Tsr / Eun - Ter);
-				Eun = E*(0.82 + 1 / (5.5 + 1000 * Te0max));
-			}
-			// Compute strain at end of linear unloading branch
-			Tea[K] = Ter + S*Dfu*fyEng / Eun;
-		}
-
-		// If reversal from bauschinger curve post-necking
-		if (Teps - Ceps > 0) {
-			// Two cases: 
-			// 1. the post-necking quadratic (or horizontal) curve has been rejoined 
-			// 2. the curve is transitioning towards rejoining post-necking strain
-			// Case 1:
-			if (S*Teps > S*Term[K]) {
-				// Compute strain at onset of necking
-				eu_shift = Te0[1] + euN;
-				// 2021-04-18 : Added the case where eftN == -1 for horizontal stress-strain line post-necking
-				if (eftN == -1) {
-					Tsig = fuEng*exp(Teps-Te0[1]);
-					Ttan = fuEng*exp(Teps-Te0[1]);
-				}
-				else {
-					// Compute factor a of quadratic curve following the onset of necking
-						double a = -fuN*(1 + eftN - euN) / pow(eftN - euN, 2.0);
-					// Compute stress corresponding to Teps
-					Tsig = fmax(a*pow(Teps - eu_shift, 2.0) + fuN*(Teps - eu_shift) + S*fuN, 0);
-					// Compute slope
-					Ttan = 2 * a*(Teps - eu_shift) + fuN;
-					if (Tsig == 0)
-						Ttan = 0.0;
-				}
-			}
-			// Case 2:
-			else {
-				double ptA[3] = { Ter, Tsr, Eun };
-				double ptB[3] = { Term[K], Tsrm[K], fuN };
-				double omega = 0.09;
-				bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-			}
-		}
-		// Reversal from the post-necking curve, or from curve reloading towards post-necking curve
-		else {
-			// Reversal from post-necking curve, requires to update reversal state variables
-			if (S*Ter < S*Term[M]) { 
-				Te0[K] = Ter - Tsig / Eun;
-				// Increase e0max
-				if (Te0max < Te0[K])
-					Te0max = Te0[K];
-				Term[M] = Ter;
-				Tsrm[M] = Tsr;
-				Term[K] = Te0[K] - (Ter - Te0[M]);
-				eu_shift = Te0[1] - euN;
-				Tsrm[K] = fuN*(Term[K] - eu_shift) - fuN;
-			}
-			if (S*Teps <= S*Term[K]) { // strain is in the unloading curve
-				double ptA[3] = { Ter, Tsr, Eun };
-				double ptB[3] = { Term[K],S*fuN + (Term[K] - (Te0[K] + S * euN))*fuN, fuN };
-				double omega = 0.09;
-
-				bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-			}
-			else { // Strain is beyond the uniform strain in compression
-				Tfract = 2;
-				eu_shift = Te0[K] + S*euN;
-				Ter = NAN;
-				Tsig = fuN*(Teps - eu_shift) - fuN;
-				Ttan = fuN;
-			}
-		}
-	} // End of case of strain reversal
-	else if (Teps - Ceps > 0) { // Material continues to load in tension
-		if (S*Teps > S*Term[K]) { // Continue in the necking curve
-			eu_shift = Te0[K] + S*euN;
-
-			// 2021-04-18 : Adding case where eftN == -1, meaning constant stress post uniform strain in tension
-			if (eftN == -1) {
-				Tsig = fuEng*exp(Teps-Te0[K]);
-				Ttan = fuEng*exp(Teps-Te0[K]);
-			}
-			else {
-				// Constant for quadratic term in post-necking curve
-				double a = -fuN*(1 + eftN - euN) / pow(eftN - euN, 2.0);
-				Tsig = fmax(a*pow(Teps - eu_shift, 2.0) + fuN*(Teps - eu_shift) + S*fuN, 0);
-				Ttan = 2 * a*(Teps - eu_shift) + fuN;
-				if (Tsig == 0)
-					Ttan = 0;
-			}
-		}
-		else { // Continue reloading towards the post-necking curve following unloading curve
-			double ptA[3] = { Ter, Tsr, Eun };
-			double ptB[3] = { Term[K], Tsrm[K], fuN };
-			double omega = 0.09;
-			bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-
-			//MP_curve(R0, cR1, cR2, fuN / Eun, S, K, M, Eun);
-		}
-	}
-	else { // Material continues to go in compression
-		if (S*Teps < S*Term[K]) { // strain has not reached previous peak strain in compression
-			// The unloading curve needs to end at the ultimate point in compression (stress,strain and slope)
-			// Use then the MP_curve2 function
-			//MP_curve2(R0, cR1, cR2, fuN / Eun, Eun, Te0[K] + S*euN, S*fuN, M);
-			double ptA[3] = { Ter, Tsr, Eun };
-			double ptB[3] = { Term[K],S*fuN + (Term[K] - (Te0[K] + S * euN))*fuN, fuN };
-			double omega = 0.09;
-			bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-		}
-		else { // The post "failure" in compression is reached
-			Tfract = 2;
-			eu_shift = Te0[K] + S*euN;
-			Ter = NAN;
-			Tsig = fuN*(Teps - eu_shift) - fuN;
-			Ttan = fuN;
-		}
-	}
-}
-void SteelDRC::compressionFracture(int S, int K, int M, double Eun) {
-	// If material has unloaded all the way to zero from compression to tension, capacity of the material has been loss
-	// for both loading directions (assuming that once the two ends of the bar detach they won't be in touch again)
-	if (Tsig == 0 && Ttan == 0)
-		return;
-
-	// Compute shifted fracture strain in compression
-	double eu_shift = Te0[1] - euN;
-
-	if (!isnan(Ter)) {
-		// If new strain goes beyond the latest reversal in the post-fracture
-		// in compression, reset the reversal strain and stress, compute new stress
-		if (Teps < Ter) {
-			Ter = NAN;
-			// Compute stress at current strain
-			Tsig = fuN*(Teps - eu_shift) - fuN;
-			Ttan = fuN;
-		}
-		// New strain within unloading branch defined by a MP curve
-		else {
-			if (Tsr < 0) {
-				double ptA[3] = { Ter, Tsr, Eun };
-				double ptB[3] = { eu_shift+fuN/Eun,0,0};
-				double omega = 0.09;
-
-				if (Teps >= (eu_shift + fuN / Eun)) {
-					Tsig = 0.0;
-					Ttan = 0.0;
-				}
-				else {
-					bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-				}
-			}
-		}
-
-	}
-	// Ter is nan, meaning the previous state is within extension of the skeleton 
-	// curve past the fracture in compression
-	else { 
-		if (S == -1) { // continue linear increment of compressive stress
-			Tsig = fuN*(Teps - eu_shift) - fuN;
-			Ttan = fuN;
-		}
-		else if (S == 1) { // reversal from the post-necking skeleton curve
-			Ter = Ceps;
-			Tsr = Csig;
-			if (Tsig < 0) {
-
-				double ptA[3] = { Ter, Tsr, Eun };
-				double ptB[3] = { eu_shift+fuN/Eun,0 ,0};
-				double omega = 0.09;
-
-				if (Teps >= (eu_shift + fuN / Eun)) {
-					Tsig = 0.0;
-					Ttan = 0.0;
-				}
-				else {
-					bauschMinor(bauschFlag, ptA, ptB, omega, Teps, Tsig, Ttan);
-				}
-			}		
-		}
-	}
-}*/

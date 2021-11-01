@@ -142,6 +142,7 @@
 #define MAT_TAG_Steel02				26
 #define MAT_TAG_Bond_SP01                       27
 #define MAT_TAG_Hysteretic2			28
+#define MAT_TAG_SteelDRC			29
 #define MAT_TAG_Concrete04                      30
 #define MAT_TAG_SecantConcrete                  31
 #define MAT_TAG_ContinuumUniaxial               32
