@@ -1576,6 +1576,49 @@ int OPS_updateElementDomain()
     return 0;
 }
 
+int OPS_getNDMM()
+{
+
+	int ndm;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+
+	  int tag;
+
+	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+		opserr << "WARNING getNDM nodeTag? \n";
+		return -1;
+	  }
+
+	  Domain* theDomain = OPS_GetDomain();
+	  if (theDomain == 0) return -1;
+	  Node *theNode = theDomain->getNode(tag);
+
+	  if (theNode == 0) {
+		opserr << "WARNING node "<< tag <<" does not exist\n";
+		return -1;
+	  }
+
+	  const Vector& crds = theNode->getCrds();
+	  ndm = crds.Size();
+
+    } else {
+
+	  ndm = OPS_GetNDM();
+
+	}
+
+	int size = 1;
+
+	if (OPS_SetIntOutput(&size, &ndm, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
 int OPS_getNDFF()
 {
 
