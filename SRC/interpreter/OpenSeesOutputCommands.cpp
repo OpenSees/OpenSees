@@ -1576,6 +1576,50 @@ int OPS_updateElementDomain()
     return 0;
 }
 
+int OPS_getNDFF()
+{
+
+	int ndf;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+
+	  int tag;
+
+	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+		opserr << "WARNING getNDFF nodeTag? \n";
+		return -1;
+	  }
+
+	  Domain* theDomain = OPS_GetDomain();
+	  if (theDomain == 0) return -1;
+	  Node *theNode = theDomain->getNode(tag);
+
+	  if (theNode == 0) {
+		opserr << "WARNING node "<< tag <<" does not exist\n";
+		return -1;
+	  }
+
+	  ndf = theNode->getNumberDOF();
+
+    } else {
+
+	  ndf = OPS_GetNDF();
+	  return -1;
+
+	}
+
+	int size = 1;
+
+	if (OPS_SetIntOutput(&size, &ndf, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
 int OPS_eleType()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
