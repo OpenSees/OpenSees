@@ -7062,7 +7062,7 @@ getNDM(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     if (argc > 1) {
         int tag;
         if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-            opserr << "WARNING ndm nodeTag? \n";
+            opserr << "WARNING getNDM nodeTag? \n";
             return TCL_ERROR;
         }
         Node* theNode = theDomain.getNode(tag);
@@ -7096,7 +7096,7 @@ getNDF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     if (argc > 1) {
         int tag;
         if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-            opserr << "WARNING ndf nodeTag? \n";
+            opserr << "WARNING getNDF nodeTag? \n";
             return TCL_ERROR;
         }
         Node* theNode = theDomain.getNode(tag);
