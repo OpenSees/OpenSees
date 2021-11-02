@@ -421,10 +421,10 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
-	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
+	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/VTK_Recorder.o 
 
 
@@ -721,6 +721,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
 	$(FE)/material/uniaxial/ElasticMultiLinear.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
+	$(FE)/material/uniaxial/SteelDRC.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
 	$(FE)/material/uniaxial/ElasticBilin.o \
 	$(FE)/material/uniaxial/ElasticPowerFunc.o \

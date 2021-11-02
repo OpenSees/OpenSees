@@ -104,6 +104,7 @@ extern void *OPS_SteelFractureDI(void); // galvisf
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
+extern void *OPS_SteelDRC(void); // R. Carreno
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
 extern void *OPS_Concrete02IS(void);
@@ -553,7 +554,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"Steel2") == 0) {
+    } else if (strcmp(argv[1], "SteelDRC") == 0) {
+		void *theMat = OPS_SteelDRC();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	} else if (strcmp(argv[1],"Steel2") == 0) {
       void *theMat = OPS_Steel2();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;

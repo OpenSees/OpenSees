@@ -2088,6 +2088,30 @@ static PyObject *Py_ops_getEleLoadData(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getNodeLoadTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getNodeLoadTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getNodeLoadData(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getNodeLoadData() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2506,6 +2530,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getEleLoadClassTags", &Py_ops_getEleLoadClassTags);
     addCommand("getEleLoadTags", &Py_ops_getEleLoadTags);
     addCommand("getEleLoadData", &Py_ops_getEleLoadData);
+    addCommand("getNodeLoadTags", &Py_ops_getNodeLoadTags);
+    addCommand("getNodeLoadData", &Py_ops_getNodeLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("getRVTags", &Py_ops_getRVTags);
     addCommand("getMean", &Py_ops_getRVMean);
