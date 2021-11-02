@@ -1582,12 +1582,12 @@ int OPS_getNDFF()
 	int ndf;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 1) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 
 	  int tag;
 
 	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
-		opserr << "WARNING getNDFF nodeTag? \n";
+		opserr << "WARNING getNDF nodeTag? \n";
 		return -1;
 	  }
 
@@ -1605,7 +1605,6 @@ int OPS_getNDFF()
     } else {
 
 	  ndf = OPS_GetNDF();
-	  return -1;
 
 	}
 
@@ -1618,7 +1617,6 @@ int OPS_getNDFF()
 
     return 0;
 }
-
 
 int OPS_eleType()
 {
