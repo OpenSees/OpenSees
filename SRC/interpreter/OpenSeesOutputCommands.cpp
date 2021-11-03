@@ -55,8 +55,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Element.h>
 #include <ElementIter.h>
 #include <CrdTransf.h>
+#include <SP_Constraint.h>
+#include <SP_ConstraintIter.h>
 #include <map>
 #include <set>
+#include <algorithm>
 #include <Recorder.h>
 #include <Pressure_Constraint.h>
 #include <vector>
@@ -1562,6 +1565,78 @@ int OPS_setNodeCoord()
     Vector coords(theNode->getCrds());
     coords(dim-1) = value;
     theNode->setCrds(coords);
+
+    return 0;
+}
+
+int OPS_fixedNodes()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    SP_ConstraintIter &spIter = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint *theSP;
+
+	std::vector <int> data;
+
+    while ((theSP = spIter()) != 0) {
+        data.push_back(theSP->getNodeTag());
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_fixedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - fixedDOFs fNodeTag?\n";
+	return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING fixedDOFs fNodeTag? \n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    SP_ConstraintIter &spIter = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint *theSP;
+
+	Vector fixed(6);
+    while ((theSP = spIter()) != 0) {
+        if (theSP->getNodeTag() == tag) {
+            fixed(theSP->getDOF_Number()) = 1;
+        }
+    }
+
+	int size = fixed.Size();
+
+	int* data = new int[size];
+	for (int i=0; i<size; i++) {
+	    data[i] = fixed(i);
+	}
+
+	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
 
     return 0;
 }

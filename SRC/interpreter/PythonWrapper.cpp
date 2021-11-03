@@ -1103,6 +1103,30 @@ static PyObject *Py_ops_setNodeCoord(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_fixedNodes(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_fixedNodes() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_fixedDOFs(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_fixedDOFs() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_updateElementDomain(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2659,6 +2683,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeResponse", &Py_ops_nodeResponse);
     addCommand("nodeCoord", &Py_ops_nodeCoord);
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
+    addCommand("fixedNodes", &Py_ops_fixedNodes);
+    addCommand("fixedDOFs", &Py_ops_fixedDOFs);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("getNDM", &Py_ops_getNDMM);
     addCommand("getNDF", &Py_ops_getNDFF);

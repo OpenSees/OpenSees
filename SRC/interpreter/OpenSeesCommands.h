@@ -253,6 +253,8 @@ int OPS_nodeAccel();
 int OPS_nodeResponse();
 int OPS_nodeCoord();
 int OPS_setNodeCoord();
+int OPS_fixedNodes();
+int OPS_fixedDOFs();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
 int OPS_getNDMM();
