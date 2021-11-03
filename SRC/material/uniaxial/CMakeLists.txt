@@ -35,6 +35,7 @@ target_sources(OPS_Material
       ResilienceLow.cpp
       Steel2.cpp
       SteelMPF.cpp
+      SteelDRC.cpp      
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
       #TclDegradingUniaxial.cpp
@@ -67,6 +68,7 @@ target_sources(OPS_Material
       ResilienceLow.h
       Steel2.h
       SteelMPF.h
+      SteelDRC.h      
       UVCuniaxial.h
       UniaxialMaterial.h
 )

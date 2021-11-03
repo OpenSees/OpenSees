@@ -759,7 +759,7 @@ J2BeamFiber3d::setParameter(const char **argv, int argc,
     param.setValue(nu);
     return param.addObject(2, this);  
   }
-  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0) {
+  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0  || strcmp(argv[0],"Fy") == 0) {
     param.setValue(sigmaY);
     return param.addObject(5, this);
   }

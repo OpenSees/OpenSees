@@ -142,6 +142,7 @@
 #define MAT_TAG_Steel02				26
 #define MAT_TAG_Bond_SP01                       27
 #define MAT_TAG_Hysteretic2			28
+#define MAT_TAG_SteelDRC			29
 #define MAT_TAG_Concrete04                      30
 #define MAT_TAG_SecantConcrete                  31
 #define MAT_TAG_ContinuumUniaxial               32
@@ -340,6 +341,7 @@
 #define SECTION_INTEGRATION_TAG_RCCIRCULAR 5
 #define SECTION_INTEGRATION_TAG_RCTUNNEL 6
 #define SECTION_INTEGRATION_TAG_Tube 7
+#define SECTION_INTEGRATION_TAG_HSS 8
 
 #define ND_TAG_WrapperNDMaterial		9
 #define ND_TAG_ElasticIsotropic			10
@@ -497,6 +499,9 @@
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
+#define ND_TAG_SAniSandMS 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMSPlaneStrain 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMS3D 7011 //UANDES - Chile
 
 
 #define FIBER_TAG_Uniaxial2d	1
