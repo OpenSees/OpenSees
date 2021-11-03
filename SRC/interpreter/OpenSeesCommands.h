@@ -251,6 +251,8 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_getNDMM();
+int OPS_getNDFF();
 int OPS_eleType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
@@ -289,6 +291,8 @@ int OPS_getEleClassTags();
 int OPS_getEleLoadClassTags();
 int OPS_getEleLoadTags();
 int OPS_getEleLoadData();
+int OPS_getNodeLoadTags();
+int OPS_getNodeLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */

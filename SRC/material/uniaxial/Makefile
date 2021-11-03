@@ -47,6 +47,7 @@ OBJS       = UniaxialMaterial.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
+        SteelDRC.o \
 	EPPGapMaterial.o \
         ViscousMaterial.o \
 	SeriesMaterial.o \
