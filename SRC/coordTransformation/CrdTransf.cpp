@@ -95,7 +95,7 @@ void OPS_printCrdTransf(OPS_Stream &s, int flag) {
 
 ID OPS_getAllCrdTransfTags() {
 
-    ID tags(0);
+    ID allCrdTransfTags(0);
       
     MapOfTaggedObjectsIter theObjects = theCrdTransfObjects.getIter();
     theObjects.reset();
@@ -103,8 +103,10 @@ ID OPS_getAllCrdTransfTags() {
 
     while ((theObject = theObjects()) != 0) {
       CrdTransf *theTransf = (CrdTransf *)theObject;    
-      tags.insert(theTransf->getTag());
+      allCrdTransfTags.insert(theTransf->getTag());
     }
+
+    return allCrdTransfTags;
 }
 
 

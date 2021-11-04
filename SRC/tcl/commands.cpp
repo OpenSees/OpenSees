@@ -199,6 +199,9 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 //  recorders
 #include <Recorder.h> //SAJalali
 
+// transformations
+#include <CrdTransf.h>
+
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ExpressNewton(void);
 extern void *OPS_ModifiedNewton(void);
@@ -1008,6 +1011,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getNodeTags", &getNodeTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "getCrdTransfTags", &getCrdTransfTags, 
+          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
     Tcl_CreateCommand(interp, "getParamTags", &getParamTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
@@ -9291,6 +9296,22 @@ getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
   while ((theEle = eleIter()) != 0) {
     sprintf(buffer, "%d ", theEle->getTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+
+  return TCL_OK;
+}
+
+int
+getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  ID crdTransfTags = OPS_getAllCrdTransfTags();  // Function defined in CrdTransf.h
+
+  char buffer[20];
+
+  for (int i = 0; i < crdTransfTags.Size(); ++i)
+  {
+    sprintf(buffer, "%d ", crdTransfTags(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
 
