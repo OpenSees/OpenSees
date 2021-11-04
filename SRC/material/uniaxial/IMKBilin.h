@@ -158,7 +158,15 @@ private:
 	double Mreversal, cMreversal;
 	double TangentK, cTangentK;
 
+<<<<<<< HEAD
 
+=======
+	double beta_Sx, cbeta_Sx;
+	double slope_p_x, cslope_p_x;
+	double Mpe_x, cMpe_x;
+	double Theta_y_x, cTheta_y_x;
+	double MpeProject_x, cMpeProject_x;
+>>>>>>> b6266149a97dc285d766a59024ab57dafc9c1437
 };
 
 
