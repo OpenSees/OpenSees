@@ -357,6 +357,8 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
   target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
   target_include_directories(OPS_Interp_Tcl PUBLIC ${TCL_INCLUDE_PATH})
   target_link_libraries(OPS_Interp_Tcl PRIVATE ${TCL_LIBRARIES})
+else()
+  target_link_libraries(OPS_Interp_Tcl PRIVATE CONAN_PKG::tcl)
 endif()
 
 target_compile_definitions(OPS_Interp_Tcl PUBLIC _TCL85)

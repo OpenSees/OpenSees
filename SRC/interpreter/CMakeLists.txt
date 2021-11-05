@@ -27,14 +27,22 @@ target_sources(OPS_Commands
 
 # Tcl interpreter
 #-------------------------------------------------------------------
-add_library(OPS_Interpreter_Tcl)
+add_executable(OPS_Interpreter_Tcl)
 target_sources(OPS_Interpreter_Tcl
   PRIVATE
     tclMain.cpp
     TclInterpreter.cpp
     TclWrapper.cpp
 )
-target_link_libraries(OPS_Interpreter_Tcl PRIVATE OPS_Commands)
+target_link_libraries(OPS_Interpreter_Tcl PRIVATE
+  OPS_Element_PFEMElement 
+  OPS_Commands 
+  OPS_PFEM
+  ${UMFPACK_LIBRARIES}
+  ${CSPARSE_LIBRARIES}
+  OpenSees 
+  ${CMAKE_DL_LIBS}
+)
 #tcl: $(TclOBJS)
 #	$(LINKER) $(LINKFLAGS) $(TclOBJS)
 #	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(TCL_LIBRARY)
