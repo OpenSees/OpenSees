@@ -57,6 +57,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <CrdTransf.h>
 #include <SP_Constraint.h>
 #include <SP_ConstraintIter.h>
+#include <MP_Constraint.h>
+#include <MP_ConstraintIter.h>
 #include <map>
 #include <set>
 #include <algorithm>
@@ -1609,8 +1611,8 @@ int OPS_fixedDOFs()
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING fixedDOFs fNodeTag? \n";
-	return -1;
+	  opserr << "WARNING fixedDOFs fNodeTag? \n";
+	  return -1;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -1640,6 +1642,98 @@ int OPS_fixedDOFs()
 
     return 0;
 }
+
+int OPS_constrainedNodes()
+{
+
+    bool all = 1;
+    int rNodeTag;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 2) {
+	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
+		opserr << "WARNING constrainedNodes <rNodeTag?> - could not read rNodeTag\n";
+		return -1;
+	  }
+	all = 0;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+	std::vector <int> data;
+
+    while ((theMP = mpIter()) != 0) {
+        if (all || rNodeTag == theMP->getNodeRetained()) {
+			data.push_back(theMP->getNodeConstrained());
+        }
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_retainedNodes()
+{
+    bool all = 1;
+    int cNodeTag;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 2) {
+	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
+		opserr << "WARNING retainedNodes <cNodeTag?> - could not read cNodeTag\n";
+		return -1;
+	  }
+	all = 0;
+    }
+
+    if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
+	  opserr << "WARNING retainedNodes cNodeTag? \n";
+	  return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+	std::vector <int> data;
+
+    while ((theMP = mpIter()) != 0) {
+        if (all || cNodeTag == theMP->getNodeConstrained()) {
+			data.push_back(theMP->getNodeRetained());
+        }
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
 
 int OPS_updateElementDomain()
 {
