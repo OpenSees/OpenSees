@@ -916,13 +916,13 @@ int ASDAbsorbingBoundary2D::getResponse(int responseID, Information& eleInfo)
 {
     static Vector r1(1);
     switch (responseID) {
-    case 1: r1(0) = static_cast<double>(m_stage); break;
-    case 2: r1(0) = m_G; break;
-    case 3: r1(0) = m_v; break;
-    case 4: r1(0) = m_rho; break;
-    case 5: r1(0) = 2.0 * m_G * (1.0 + m_v); break;
+    case 1: r1(0) = static_cast<double>(m_stage); return eleInfo.setVector(r1);
+    case 2: r1(0) = m_G; return eleInfo.setVector(r1);
+    case 3: r1(0) = m_v; return eleInfo.setVector(r1);
+    case 4: r1(0) = m_rho; return eleInfo.setVector(r1);
+    case 5: r1(0) = 2.0 * m_G * (1.0 + m_v); return eleInfo.setVector(r1);
     default:
-        return -1;
+        return Element::getResponse(responseID, eleInfo);
     }
 }
 
