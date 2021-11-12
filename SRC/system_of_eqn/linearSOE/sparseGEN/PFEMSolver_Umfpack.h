@@ -24,7 +24,7 @@
                                                                         
                                                                         
 #ifndef PFEMSolverUmfpack_h
-#define PFEMSolver_Umfpack_h
+#define PFEMSolverUmfpack_h
 
 // File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.h
 //
