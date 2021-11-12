@@ -54,6 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ElementalLoadIter.h>
 #include <Element.h>
 #include <ElementIter.h>
+#include <CrdTransf.h>
 #include <map>
 #include <set>
 #include <Recorder.h>
@@ -2002,6 +2003,25 @@ int OPS_getEleTags()
     }
 
     return 0;
+}
+
+int OPS_getCrdTransfTags()
+{
+  // Defined in CrdTransf.cpp
+  ID transfTags = OPS_getAllCrdTransfTags();
+
+  int size = transfTags.Size();
+  int *data = 0;
+  if (size > 0) {
+    data = &transfTags[0];
+  }
+  
+  if (OPS_SetIntOutput(&size, data, false) < 0) {
+    opserr << "WARNING failed to set outputs\n";
+    return -1;
+  }
+  
+  return 0;
 }
 
 int OPS_getNodeTags() {
