@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Domain.h>
 
 #include <ProbabilityTransformation.h>
+#include <RandomNumberGenerator.h>
 
 class OpenSeesReliabilityCommands
 {
@@ -58,12 +59,15 @@ public:
 
     void setProbabilityTransformation(ProbabilityTransformation *transform);
     ProbabilityTransformation* getProbabilityTransformation() {return theProbabilityTransformation;}
+  void setRandomNumberGenerator(RandomNumberGenerator *generator);
+  RandomNumberGenerator *getRandomNumberGenerator() {return theRandomNumberGenerator;}
     
 private:
 
     ReliabilityDomain* theDomain;
 
     ProbabilityTransformation *theProbabilityTransformation;
+  RandomNumberGenerator *theRandomNumberGenerator;
 };
 
 #endif

@@ -345,6 +345,7 @@ int OPS_addCorrelate();
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
 int OPS_startPoint();
+int OPS_randomNumberGenerator();
 int OPS_wipeReliability();
 
 /* OpenSeesCommands.cpp */

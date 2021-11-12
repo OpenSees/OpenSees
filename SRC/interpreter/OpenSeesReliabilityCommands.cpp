@@ -73,12 +73,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <AllIndependentTransformation.h>
 #include <NatafProbabilityTransformation.h>
 
+#include <CStdLibRandGenerator.h>
 
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
 OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomain)
-  :theDomain(0), theProbabilityTransformation(0)
+  :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -754,6 +755,19 @@ OpenSeesReliabilityCommands::setProbabilityTransformation(ProbabilityTransformat
     return;
 }
 
+void
+OpenSeesReliabilityCommands::setRandomNumberGenerator(RandomNumberGenerator *generator)
+{
+  if (theRandomNumberGenerator != 0) {
+    delete theRandomNumberGenerator;
+    theRandomNumberGenerator = 0;
+  }
+
+  theRandomNumberGenerator = generator;
+  if (generator == 0)
+    return;
+}
+
 int
 OPS_startPoint()
 {
@@ -789,6 +803,33 @@ OPS_startPoint()
     return -1;
   }
 
+  return 0;
+}
+
+int
+OPS_randomNumberGenerator()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to randomNumberGenerator" << endln;
+    return -1;
+  }
+
+  // Get the type of generator
+  const char *type = OPS_GetString();
+  if (strcmp(type,"CStdLib") != 0) {
+    opserr << "ERROR: unrecognized type of RandomNumberGenerator " << type << endln;
+    return -1;
+  }
+
+  RandomNumberGenerator *theGenerator = new CStdLibRandGenerator();
+  if (theGenerator == 0) {
+    opserr << "ERROR: could not create randomNumberGenerator" << endln;
+    return -1;
+  } 
+  if (cmds != 0) {
+    cmds->setRandomNumberGenerator(theGenerator);
+  }
+  
   return 0;
 }
 
