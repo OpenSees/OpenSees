@@ -754,6 +754,44 @@ OpenSeesReliabilityCommands::setProbabilityTransformation(ProbabilityTransformat
     return;
 }
 
+int
+OPS_startPoint()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to startPoint" << endln;
+    return -1;
+  }
+
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  int nrv = theReliabilityDomain->getNumberOfRandomVariables();
+  RandomVariable *aRandomVariable;
+
+  // Get the type of start point
+  const char *type = OPS_GetString();
+  int meanOrZero = -1;
+  if (strcmp(type,"Mean") == 0)
+    meanOrZero = 1;
+  if (strcmp(type,"Zero") == 0)
+    meanOrZero = 0;  
+
+  RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
+  while ((aRandomVariable = rvIter()) != 0) {
+    if (meanOrZero == 0)
+      aRandomVariable->setStartValue(0.0);
+    if (meanOrZero == 1) {
+      double mean = aRandomVariable->getMean();
+      aRandomVariable->setStartValue(mean);      
+    }
+  }
+
+  if (strcmp(type,"-file") == 0) {
+    opserr << "ERROR: startPoint read from file option not implemented" << endln;
+    return -1;
+  }
+
+  return 0;
+}
+
 int OPS_probabilityTransformation()
 {
   //
