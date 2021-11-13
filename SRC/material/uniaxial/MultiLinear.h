@@ -76,9 +76,9 @@ class MultiLinear : public UniaxialMaterial
   int setCommittedHistoryVariables(const double *hstv);
   
  private:
-  Matrix data;
-  int numSlope;
-  int tSlope;
+    Matrix data;
+    int numSlope;
+    int tSlope;
 
   double tStrain;     // current t strain
   double tStress;     // current t stress
