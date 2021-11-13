@@ -100,9 +100,11 @@ extern void *OPS_Bilin02(void);
 extern void *OPS_Steel01(void);
 extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_Steel02(void);
+extern void *OPS_SteelFractureDI(void); // galvisf
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
+extern void *OPS_SteelDRC(void); // R. Carreno
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
 extern void *OPS_Concrete02IS(void);
@@ -243,7 +245,9 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
 
 UniaxialMaterial *
 TclModelBuilder_FRPCnfinedConcrete(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
-				  
+
+UniaxialMaterial *
+TclModelBuilder_addDegradingMaterial(ClientData, Tcl_Interp *, int , TCL_Char **);				  
 
 
 int
@@ -332,6 +336,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+
+    }
+    else if (strcmp(argv[1], "SteelFractureDI") == 0) {
+        void* theMat = OPS_SteelFractureDI();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
     } else if (strcmp(argv[1],"Steel02Fatigue") == 0) {
       void *theMat = OPS_Steel02Fatigue();
       if (theMat != 0) 
@@ -541,7 +554,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"Steel2") == 0) {
+    } else if (strcmp(argv[1], "SteelDRC") == 0) {
+		void *theMat = OPS_SteelDRC();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	} else if (strcmp(argv[1],"Steel2") == 0) {
       void *theMat = OPS_Steel2();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -2882,17 +2901,18 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     else if (strcmp(argv[1],"AxialSpHD") == 0) { 
       return TclCommand_AxialSpHD(clientData, interp, argc, argv);
     }
-    else if (strcmp(argv[1], "HystereticPoly") == 0) {		// BEGIN Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+    if (strcmp(argv[1], "HystereticPoly") == 0) {		// BEGIN Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 	void* theMat = OPS_HystereticPoly();
 	if (theMat != 0)
 		theMaterial = (UniaxialMaterial*)theMat;
 	else
 		return TCL_ERROR;
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
-    else {
       // Fedeas
+ #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
+    if (theMaterial == 0)
       theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
-      
+ #endif
       // Drain
       if (theMaterial == 0)
 	theMaterial = TclModelBuilder_addDrainMaterial(clientData, interp, argc, argv);
@@ -2908,7 +2928,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       // LimitState
       if (theMaterial == 0)
 	theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
-    }
+    
+
+#if defined(OPSDEF_DAMAGE_FEDEAS)
+      if (theMaterial == 0)
+        theMaterial = TclModelBuilder_addDegradingMaterial(clientData, interp, argc, argv);
+#endif
 
     if (theMaterial == 0) {
       

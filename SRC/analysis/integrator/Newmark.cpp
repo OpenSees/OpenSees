@@ -411,6 +411,11 @@ int Newmark::domainChanged()
             }
         }
 
+	    // The remaining get**Sensitivity methods cause seg faults with Lagrange constraint
+	    // handler in dynamic (transient) analysis even when there is no sensitivity algorithm.
+	    // However, I don't think these methods need to be called in domainChanged -- MHS
+	    continue;
+	    
 	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
 	for (i=0; i < idSize; i++) {
 	    int loc = id(i);

@@ -1,0 +1,59 @@
+
+name: CMake Build
+
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Debug
+
+on:
+  push:
+    branches: [cmake-build]
+
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    steps:
+    #- uses: claudioperez/OpenSees@cmake-build
+    - uses: actions/checkout@v2
+      #with: {ref: cmake-build}
+
+    - name: Install Tcl
+      run:
+        sudo apt-get install tcl-dev
+
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --target OpenSeesTcl -j5
+
+    - name: Verification
+      run: |
+        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+
+# Not building on Windows until we can figure out how to use Fortran
+# with Github Actions
+    #  build-win32:
+    #    name: Build on Windows
+    #    runs-on: [windows-latest]
+    #    steps:
+    #    - name: Checkout sources
+    #      uses: actions/checkout@v2
+    #      with: {ref: cmake-build}
+    #    
+    #    - name: Install Conan
+    #      uses: turtlebrowser/get-conan@main
+    #
+    #    - name: Build
+    #      run: |
+    #        mkdir build
+    #        cd build
+    #        cmake ..
+    #        cmake --build . --target OpenSeesTcl -j5
+
+

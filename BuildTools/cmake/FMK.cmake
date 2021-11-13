@@ -1,0 +1,41 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(FMK_Material
+  PRIVATE
+    "${OPS_SRC_DIR}/material/nD/Damage2p.cpp"
+    "${OPS_SRC_DIR}/material/nD/Damage2p3D.cpp"
+    "${OPS_SRC_DIR}/material/nD/Damage2ppstress.cpp"
+    "${OPS_SRC_DIR}/material/nD/Concrete.cpp"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStress.cpp"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStrain.cpp"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStress2d.cpp"
+    "${OPS_SRC_DIR}/material/nD/CThreeDimensional.cpp"
+    "${OPS_SRC_DIR}/material/nD/Faria1998.cpp"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStrain.cpp"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStress.cpp"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStress2d.cpp"
+    "${OPS_SRC_DIR}/material/nD/Faria1998ThreeDimensional.cpp"
+  PUBLIC
+    "${OPS_SRC_DIR}/material/nD/Damage2p.h"
+    "${OPS_SRC_DIR}/material/nD/Damage2p3D.h"
+    "${OPS_SRC_DIR}/material/nD/Damage2ppstress.h"
+    "${OPS_SRC_DIR}/material/nD/Concrete.h"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStress.h"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStrain.h"
+    "${OPS_SRC_DIR}/material/nD/CPlaneStress2d.h"
+    "${OPS_SRC_DIR}/material/nD/CThreeDimensional.h"
+    "${OPS_SRC_DIR}/material/nD/Faria1998.h"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStrain.h"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStress.h"
+    "${OPS_SRC_DIR}/material/nD/Faria1998PlaneStress2d.h"
+    "${OPS_SRC_DIR}/material/nD/Faria1998ThreeDimensional.h"
+)
+target_sources(FMK_Material_f
+  PRIVATE
+    forumat.f
+    PlainConcrete.f
+)

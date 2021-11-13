@@ -739,7 +739,31 @@ HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(rot3n);
     return param.addObject(12, this);
   }
-  
+  if (strcmp(argv[0],"mom1") == 0) {
+    param.setValue(mom1p);
+    return param.addObject(13, this);
+  }
+  if (strcmp(argv[0],"rot1") == 0) {
+    param.setValue(rot1p);
+    return param.addObject(14, this);
+  }
+  if (strcmp(argv[0],"mom2") == 0) {
+    param.setValue(mom2p);
+    return param.addObject(15, this);
+  }
+  if (strcmp(argv[0],"rot2") == 0) {
+    param.setValue(rot2p);
+    return param.addObject(16, this);
+  }
+  if (strcmp(argv[0],"mom3") == 0) {
+    param.setValue(mom3p);
+    return param.addObject(17, this);
+  }
+  if (strcmp(argv[0],"rot3") == 0) {
+    param.setValue(rot3p);
+    return param.addObject(18, this);
+  }
+	
   return -1;
 }
 
@@ -785,10 +809,36 @@ HystereticMaterial::updateParameter(int parameterID, Information &info)
   case 12:
     this->rot3n = info.theDouble;
     break;
+  case 13:
+    this->mom1p = info.theDouble;
+    this->mom1n = -mom1p;
+    break;
+  case 14:
+    this->rot1p = info.theDouble;
+    this->rot1n = -rot1p;
+    break;
+  case 15:
+    this->mom2p = info.theDouble;
+    this->mom2n = -mom2p;
+    break;
+  case 16:
+    this->rot2p = info.theDouble;
+    this->rot2n = -rot2p;
+    break;
+  case 17:
+    this->mom3p = info.theDouble;
+    this->mom3n = -mom3p;
+    break;
+  case 18:
+    this->rot3p = info.theDouble;
+    this->rot3n = -rot3p;
+    break;		  
   default:
     return -1;
   }
 
+  this->setEnvelope();
+	
   return 0;
 }
 
