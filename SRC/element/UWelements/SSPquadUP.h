@@ -65,6 +65,8 @@ class SSPquadUP : public Element
 					   double Pup = 0.0, double Plow = 0.0, double Pleft = 0.0, double Pright = 0.0);
     SSPquadUP();
     ~SSPquadUP();
+
+    const char* getClassType()  const { return "SSPquadUP"; };
     // LM change
 
     // public methods to obtain information about dof and connectivity

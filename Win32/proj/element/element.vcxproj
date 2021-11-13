@@ -108,6 +108,8 @@
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
@@ -203,6 +205,7 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactASDimplex.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthImpact3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthInterface2D.cpp" />
@@ -380,6 +383,8 @@
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h" />
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.h" />
     <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h" />
     <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h" />
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h" />
@@ -473,6 +478,7 @@
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLength.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.h" />
+    <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactASDimplex.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthImpact3D.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthInterface2D.h" />

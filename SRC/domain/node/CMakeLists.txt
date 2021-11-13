@@ -1,11 +1,16 @@
-
-target_sources(domain
-    PRIVATE
-	Node.cpp
-	NodalLoad.cpp
-    PUBLIC
-	Node.h
-	NodalLoad.h
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Domain
+  PRIVATE
+    Node.cpp
+    NodalLoad.cpp
+  PUBLIC
+    Node.h
+    NodalLoad.h
 )
 
-target_include_directories(domain PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})

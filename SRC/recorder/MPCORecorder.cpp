@@ -3640,6 +3640,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_CorotTruss ||
 					elem_class_tag == ELE_TAG_CorotTruss2 ||
 					elem_class_tag == ELE_TAG_CorotTrussSection ||
+					elem_class_tag == ELE_TAG_InertiaTruss ||
 					// ./zeroLength
 					elem_class_tag == ELE_TAG_ZeroLength ||
 					elem_class_tag == ELE_TAG_ZeroLengthSection ||
@@ -3648,6 +3649,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthRocking ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact2D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
+					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
@@ -3737,7 +3739,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPquad ||
-					elem_class_tag == ELE_TAG_SSPquadUP
+					elem_class_tag == ELE_TAG_SSPquadUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D
 					)
 				{
 					geom_type = ElementGeometryType::Quadrilateral_4N;
@@ -3798,7 +3802,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPbrick ||
-					elem_class_tag == ELE_TAG_SSPbrickUP
+					elem_class_tag == ELE_TAG_SSPbrickUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary3D
 					)
 				{
 					geom_type = ElementGeometryType::Hexahedron_8N;

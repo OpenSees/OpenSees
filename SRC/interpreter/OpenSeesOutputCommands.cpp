@@ -48,10 +48,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <LoadPatternIter.h>
 #include <FileStream.h>
 #include <ID.h>
+#include <NodalLoad.h>
+#include <NodalLoadIter.h>
 #include <ElementalLoad.h>
 #include <ElementalLoadIter.h>
 #include <Element.h>
 #include <ElementIter.h>
+#include <CrdTransf.h>
 #include <map>
 #include <set>
 #include <Recorder.h>
@@ -794,7 +797,7 @@ int OPS_printModelGID()
 		if (nNode == 2) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    Vector tagNodes(nNode);
+		    ID tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -849,7 +852,7 @@ int OPS_printModelGID()
 		if (nNode == 4) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    Vector tagNodes(nNode);
+		    ID tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -904,7 +907,7 @@ int OPS_printModelGID()
 		if (nNode == 3) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    Vector tagNodes(nNode);
+		    ID tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -959,7 +962,7 @@ int OPS_printModelGID()
 		if (nNode == 9) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    Vector tagNodes(nNode);
+		    ID tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -1015,7 +1018,7 @@ int OPS_printModelGID()
 		if (nNode == 8) {
 		    Node **NodePtrs;
 		    NodePtrs = theElement->getNodePtrs();
-		    Vector tagNodes(nNode);
+		    ID tagNodes(nNode);
 		    for (int i = 0; i < nNode; i++) {
 			tagNodes(i)=NodePtrs[i]->getTag();
 		    }
@@ -1574,6 +1577,91 @@ int OPS_updateElementDomain()
     return 0;
 }
 
+int OPS_getNDMM()
+{
+
+	int ndm;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+
+	  int tag;
+
+	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+		opserr << "WARNING getNDM nodeTag? \n";
+		return -1;
+	  }
+
+	  Domain* theDomain = OPS_GetDomain();
+	  if (theDomain == 0) return -1;
+	  Node *theNode = theDomain->getNode(tag);
+
+	  if (theNode == 0) {
+		opserr << "WARNING node "<< tag <<" does not exist\n";
+		return -1;
+	  }
+
+	  const Vector& crds = theNode->getCrds();
+	  ndm = crds.Size();
+
+    } else {
+
+	  ndm = OPS_GetNDM();
+
+	}
+
+	int size = 1;
+
+	if (OPS_SetIntOutput(&size, &ndm, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getNDFF()
+{
+
+	int ndf;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+
+	  int tag;
+
+	  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+		opserr << "WARNING getNDF nodeTag? \n";
+		return -1;
+	  }
+
+	  Domain* theDomain = OPS_GetDomain();
+	  if (theDomain == 0) return -1;
+	  Node *theNode = theDomain->getNode(tag);
+
+	  if (theNode == 0) {
+		opserr << "WARNING node "<< tag <<" does not exist\n";
+		return -1;
+	  }
+
+	  ndf = theNode->getNumberDOF();
+
+    } else {
+
+	  ndf = OPS_GetNDF();
+
+	}
+
+	int size = 1;
+
+	if (OPS_SetIntOutput(&size, &ndf, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
 int OPS_eleType()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1915,6 +2003,25 @@ int OPS_getEleTags()
     }
 
     return 0;
+}
+
+int OPS_getCrdTransfTags()
+{
+  // Defined in CrdTransf.cpp
+  ID transfTags = OPS_getAllCrdTransfTags();
+
+  int size = transfTags.Size();
+  int *data = 0;
+  if (size > 0) {
+    data = &transfTags[0];
+  }
+  
+  if (OPS_SetIntOutput(&size, data, false) < 0) {
+    opserr << "WARNING failed to set outputs\n";
+    return -1;
+  }
+  
+  return 0;
 }
 
 int OPS_getNodeTags() {
@@ -3514,6 +3621,136 @@ int OPS_getEleLoadData()
 
     return 0;
 }
+
+int OPS_getNodeLoadTags()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+
+	std::vector <int> data;
+
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+	  while ((thePattern = thePatterns()) != 0) {
+		NodalLoadIter theNodLoads = thePattern->getNodalLoads();
+		NodalLoad* theNodLoad;
+
+		while ((theNodLoad = theNodLoads()) != 0) {
+		  data.push_back(theNodLoad->getNodeTag());
+		}
+
+	  }
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getEleLoadTags\n";
+		return -1;
+	  }
+	  NodalLoadIter& theNodLoads = thePattern->getNodalLoads();
+	  NodalLoad* theNodLoad;
+
+	  while ((theNodLoad = theNodLoads()) != 0) {
+		data.push_back(theNodLoad->getNodeTag());
+	  }
+
+	} else {
+	opserr << "WARNING want - getNodeLoadTags <patternTag?>\n";
+	return -1;
+    }
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getNodeLoadData()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+
+	std::vector <double> data;
+
+    if (numdata < 1) {
+	  LoadPattern *thePattern;
+	  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+	  int typeEL;
+
+	  while ((thePattern = thePatterns()) != 0) {
+		NodalLoadIter &theNodLoads = thePattern->getNodalLoads();
+		NodalLoad* theNodLoad;
+
+		while ((theNodLoad = theNodLoads()) != 0) {
+		  const Vector &nodeLoadData = theNodLoad->getData(typeEL);
+
+		  int nodeLoadDataSize = nodeLoadData.Size();
+		  for (int i = 0; i < nodeLoadDataSize; i++) {
+			data.push_back(nodeLoadData(i));
+		  }
+		}
+	  }
+
+	} else if (numdata == 1) {
+
+	  int patternTag;
+	  if (OPS_GetIntInput(&numdata, &patternTag) < 0) {
+		opserr << "could not read patternTag\n";
+		return -1;
+	  }
+
+	  LoadPattern* thePattern = theDomain->getLoadPattern(patternTag);
+	  if (thePattern == nullptr) {
+		opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadData\n";
+		return -1;
+	  }
+	  NodalLoadIter& theNodLoads = thePattern->getNodalLoads();
+	  NodalLoad* theNodLoad;
+
+	  int typeEL;
+
+	  while ((theNodLoad = theNodLoads()) != 0) {
+		const Vector &nodeLoadData = theNodLoad->getData(typeEL);
+
+		int nodeLoadDataSize = nodeLoadData.Size();
+		for (int i = 0; i < nodeLoadDataSize; i++) {
+		  data.push_back(nodeLoadData(i));
+		}
+	  }
+
+	} else {
+	opserr << "WARNING want - getNodeLoadData <patternTag?>\n";
+	return -1;
+    }
+
+	int size = data.size();
+
+	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
 
 int OPS_getNumElements()
 {
