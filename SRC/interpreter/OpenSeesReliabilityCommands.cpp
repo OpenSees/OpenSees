@@ -75,11 +75,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <CStdLibRandGenerator.h>
 
+#include <StandardReliabilityConvergenceCheck.h>
+#include <OptimalityConditionReliabilityConvergenceCheck.h>
+
+#include <HLRFSearchDirection.h>
+#include <PolakHeSearchDirectionAndMeritFunction.h>
+#include <SQPsearchDirectionMeritFunctionAndHessian.h>
+#include <GradientProjectionSearchDirection.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
 OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomain)
-  :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0)
+  :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0),
+   theReliabilityConvergenceCheck(0), theSearchDirection(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -768,6 +777,32 @@ OpenSeesReliabilityCommands::setRandomNumberGenerator(RandomNumberGenerator *gen
     return;
 }
 
+void
+OpenSeesReliabilityCommands::setReliabilityConvergenceCheck(ReliabilityConvergenceCheck *check)
+{
+  if (theReliabilityConvergenceCheck != 0) {
+    delete theReliabilityConvergenceCheck;
+    theReliabilityConvergenceCheck = 0;
+  }
+
+  theReliabilityConvergenceCheck = check;
+  if (check == 0)
+    return;
+}
+
+void
+OpenSeesReliabilityCommands::setSearchDirection(SearchDirection *search)
+{
+  if (theSearchDirection != 0) {
+    delete theSearchDirection;
+    theSearchDirection = 0;
+  }
+
+  theSearchDirection = search;
+  if (search == 0)
+    return;
+}
+
 int
 OPS_startPoint()
 {
@@ -829,6 +864,107 @@ OPS_randomNumberGenerator()
   if (cmds != 0) {
     cmds->setRandomNumberGenerator(theGenerator);
   }
+  
+  return 0;
+}
+
+int
+OPS_reliabilityConvergenceCheck()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to reliabilityConvergenceCheck" << endln;
+    return -1;
+  }
+
+  // Get the type of convergence check
+  const char *type = OPS_GetString();
+
+  double e1 = 1.0e-3;
+  double e2 = 1.0e-3;  
+  double scaleValue = 0.0;
+  int print = 1;
+
+  // Standard and Optimality convergence checks have the same optional arguments
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *arg = OPS_GetString();
+    int numdata = 1;
+    if (strcmp(arg,"-e1") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata,&e1) < 0) {
+	opserr << "ERROR: unable to read -e1 value for reliability convergence check" << endln;
+	return -1;
+      }
+    }
+    if (strcmp(arg,"-e2") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata,&e2) < 0) {
+	opserr << "ERROR: unable to read -e2 value for reliability convergence check" << endln;
+	return -1;
+      }
+    }
+    if (strcmp(arg,"-scaleValue") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata,&scaleValue) < 0) {
+	opserr << "ERROR: unable to read -scaleValue value for reliability convergence check" << endln;
+	return -1;
+      }
+    }
+    if (strcmp(arg,"-print") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata,&print) < 0) {
+	opserr << "ERROR: unable to read -print value for reliability convergence check" << endln;
+	return -1;
+      }
+    }            
+  }
+
+  ReliabilityConvergenceCheck *theCheck = 0;
+  if (strcmp(type,"Standard") == 0) {
+    theCheck = new StandardReliabilityConvergenceCheck(e1,e2,scaleValue,print);
+  }
+  else if (strcmp(type,"OptimalityCondition") == 0) {
+    theCheck = new OptimalityConditionReliabilityConvergenceCheck(e1,e2,scaleValue,print);
+  }
+  else {
+    opserr << "ERROR: unrecognized type of reliabilityConvergenceCheck " << type << endln;
+    return -1;
+  }
+
+  if (theCheck == 0) {
+    opserr << "ERROR: could not create reliabilityConvergenceCheck" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setReliabilityConvergenceCheck(theCheck);
+  }
+  
+  return 0;
+}
+
+int
+OPS_searchDirection()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to searchDirection" << endln;
+    return -1;
+  }
+
+  // Get the type of search direction
+  const char *type = OPS_GetString();
+
+  SearchDirection *theSearch = 0;
+  if (strcmp(type,"iHLRF") == 0) {
+    theSearch = new HLRFSearchDirection();
+  }
+  else if (strcmp(type,"PolakHe") == 0) {
+
+  }
+  else if (strcmp(type,"GradientProjection") == 0) {
+
+  }
+  else if (strcmp(type,"SQP") == 0) {
+
+  }
+  else {
+    opserr << "ERROR: unrecognized type of searchDirection " << type << endln;
+    return -1;
+  }  
   
   return 0;
 }

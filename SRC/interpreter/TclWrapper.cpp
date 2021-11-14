@@ -1495,6 +1495,24 @@ static int Tcl_ops_randomNumberGenerator(ClientData clientData, Tcl_Interp *inte
     return TCL_OK;
 }
 
+static int Tcl_ops_reliabilityConvergenceCheck(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_reliabilityConvergenceCheck() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_searchDirection(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_searchDirection() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1771,7 +1789,9 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
     addCommand(interp,"probabilityTransformation", &Tcl_ops_probabilityTransformation);
     addCommand(interp,"startPoint", &Tcl_ops_startPoint);
-    addCommand(interp,"randomNumberGenerator", &Tcl_ops_randomNumberGenerator);    
+    addCommand(interp,"randomNumberGenerator", &Tcl_ops_randomNumberGenerator);
+    addCommand(interp,"reliabilityConvergenceCheck", &Tcl_ops_reliabilityConvergenceCheck);
+    addCommand(interp,"searchDirection", &Tcl_ops_searchDirection);    
     addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
     addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
     addCommand(interp,"logFile", &Tcl_ops_logFile);

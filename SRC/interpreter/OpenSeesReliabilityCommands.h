@@ -47,6 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <ProbabilityTransformation.h>
 #include <RandomNumberGenerator.h>
+#include <ReliabilityConvergenceCheck.h>
+#include <SearchDirection.h>
 
 class OpenSeesReliabilityCommands
 {
@@ -61,6 +63,12 @@ public:
     ProbabilityTransformation* getProbabilityTransformation() {return theProbabilityTransformation;}
   void setRandomNumberGenerator(RandomNumberGenerator *generator);
   RandomNumberGenerator *getRandomNumberGenerator() {return theRandomNumberGenerator;}
+
+  void setReliabilityConvergenceCheck(ReliabilityConvergenceCheck *check);
+  ReliabilityConvergenceCheck *getReliabilityConvergenceCheck() {return theReliabilityConvergenceCheck;}
+
+  void setSearchDirection(SearchDirection *search);
+  SearchDirection *getSearchDirection() {return theSearchDirection;}
     
 private:
 
@@ -68,6 +76,8 @@ private:
 
     ProbabilityTransformation *theProbabilityTransformation;
   RandomNumberGenerator *theRandomNumberGenerator;
+  ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
+  SearchDirection *theSearchDirection;
 };
 
 #endif
