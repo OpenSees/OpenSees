@@ -132,7 +132,8 @@ H5DRM::H5DRM()
       crd_scale(0),
       distance_tolerance(0),
       maxnodetag(0),
-      station_id2data_pos(100)
+      station_id2data_pos(100),
+      do_coordinate_transformation(true)
 {
     is_initialized = false;
     t1 =  t2 =  tend = 0;
@@ -155,7 +156,8 @@ H5DRM::H5DRM(
     std::string HDF5filename_,
     double cFactor_,
     double crd_scale_,
-    double distance_tolerance_)
+    double distance_tolerance_,
+    bool do_coordinate_transformation_)
     : LoadPattern(tag, PATTERN_TAG_H5DRM),
       HDF5filename(HDF5filename_),
       DRMForces(100),
@@ -165,7 +167,8 @@ H5DRM::H5DRM(
       crd_scale(crd_scale_),
       distance_tolerance(distance_tolerance_),
       maxnodetag(0),
-      station_id2data_pos(100)
+      station_id2data_pos(100),
+      do_coordinate_transformation(do_coordinate_transformation_)
 {
 
     id_velocity = id_displacement = id_acceleration = 0;
@@ -271,8 +274,11 @@ void H5DRM::intitialize()
     drmbox_zmax *= crd_scale;
     drmbox_zmin *= crd_scale;
 
-    convert_h5drmcrd_to_ops_crd(drmbox_x0);
-    convert_h5drmcrd_to_ops_crd(xyz);
+    if(do_coordinate_transformation)
+    {
+        convert_h5drmcrd_to_ops_crd(drmbox_x0);
+        convert_h5drmcrd_to_ops_crd(xyz);
+    }
 
     int NDRM_points = xyz.noRows();
     double d_tol = distance_tolerance;
@@ -780,16 +786,27 @@ H5DRM::applyLoad(double time)
 bool H5DRM::ComputeDRMMotions(double next_integration_time)
 {
     bool have_displacement = id_displacement > 0;
-    // bool have_velocity = id_velocity > 0;
-    // bool have_acceleration = id_acceleration > 0;
+    bool have_acceleration = id_acceleration > 0;
 
-    if(have_displacement )//&& !have_acceleration)
-        return drm_differentiate_displacements(next_integration_time);
+    if(!have_displacement)
+    {
+        opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have a displacements dataset. " << endln;
+    }
+
+    if(!have_acceleration)
+    {
+        opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have an acceleration dataset. " << endln;
+    }
+
+    // bool have_velocity = id_velocity > 0;
+
+    // if(have_displacement )//&& !have_acceleration)
+    //     return drm_differentiate_displacements(next_integration_time);
 
     //JAA Disable these modes for now
 
-    // if(have_displacement && have_acceleration) // Note: disabled!
-    //     return drm_direct_read(next_integration_time);
+    if(have_displacement && have_acceleration) // Note: disabled!
+        return drm_direct_read(next_integration_time);
 
     // if(!have_displacement && !have_acceleration && have_velocity) 
     //     return drm_integrate_velocity(next_integration_time);
@@ -2096,9 +2113,12 @@ Plane::Plane(const hid_t & id_h5drm_file, int plane_number, double crd_scale) :
     v1 *= crd_scale;  //Convert scales km -> m
     v2 *= crd_scale;  //Convert scales km -> m
 
-    convert_h5drmcrd_to_ops_crd(v0);
-    convert_h5drmcrd_to_ops_crd(v1);
-    convert_h5drmcrd_to_ops_crd(v2);
+    // if(do_coordinate_transformation)
+    // {
+        convert_h5drmcrd_to_ops_crd(v0);
+        convert_h5drmcrd_to_ops_crd(v1);
+        convert_h5drmcrd_to_ops_crd(v2);
+    // }
 }
 
 
@@ -2198,22 +2218,22 @@ void Plane::print(FILE * fptr) const
 
 void convert_h5drmcrd_to_ops_crd(Vector & v )
 {
-    // static Vector v_tmp(3);
-    // v_tmp = v;
-    // v(0) = v_tmp(1);
-    // v(1) = v_tmp(0);
-    // v(2) = -v_tmp(2);
+    static Vector v_tmp(3);
+    v_tmp = v;
+    v(0) = v_tmp(1);
+    v(1) = v_tmp(0);
+    v(2) = -v_tmp(2);
 }
 
 void convert_h5drmcrd_to_ops_crd(Matrix & xyz )
 {
-    // int nrows = xyz.noRows();
-    // Matrix tmp_xyz(xyz);
-    // for (int i = 0; i < nrows; ++i)
-    // {
-    //     xyz(i, 0) = tmp_xyz(i, 1);
-    //     xyz(i, 1) = tmp_xyz(i, 0);
-    //     xyz(i, 2) = -tmp_xyz(i, 2);
-    // }
+    int nrows = xyz.noRows();
+    Matrix tmp_xyz(xyz);
+    for (int i = 0; i < nrows; ++i)
+    {
+        xyz(i, 0) = tmp_xyz(i, 1);
+        xyz(i, 1) = tmp_xyz(i, 0);
+        xyz(i, 2) = -tmp_xyz(i, 2);
+    }
 }
 

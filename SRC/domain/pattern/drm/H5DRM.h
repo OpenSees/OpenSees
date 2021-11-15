@@ -149,7 +149,7 @@ class H5DRM : public LoadPattern
 {
 public:
     H5DRM();
-    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3);
+    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3, bool do_coordinate_transformation = true);
     ~H5DRM();
     void clean_all_data(); // Called by destructor and if domain changes
 
@@ -232,6 +232,8 @@ private:
     int myrank;         // MPI Process-id (rank) in the case of parallel processing
 
     std::vector<Plane*> planes;
+
+    bool do_coordinate_transformation;
 };
 
 #endif
