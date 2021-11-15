@@ -1477,6 +1477,15 @@ static int Tcl_ops_transformUtoX(ClientData clientData, Tcl_Interp *interp, int 
     return TCL_OK;
 }
 
+static int Tcl_ops_performanceFunction(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_performanceFunction() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_startPoint(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1531,6 +1540,15 @@ static int Tcl_ops_stepSizeRule(ClientData clientData, Tcl_Interp *interp, int a
     return TCL_OK;
 }
 
+static int Tcl_ops_rootFinding(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_rootFinding() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_functionEvaluator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1540,14 +1558,15 @@ static int Tcl_ops_functionEvaluator(ClientData clientData, Tcl_Interp *interp, 
     return TCL_OK;
 }
 
-static int Tcl_ops_rootFinding(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+static int Tcl_ops_gradientEvaluator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
 
-    if (OPS_rootFinding() < 0) return TCL_ERROR;
+    if (OPS_gradientEvaluator() < 0) return TCL_ERROR;
 
     return TCL_OK;
 }
+
 
 static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
@@ -1821,6 +1840,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"getInverseCDF", &Tcl_ops_getRVInverseCDF);
     addCommand(interp,"correlate", &Tcl_ops_addCorrelate);
     addCommand(interp,"transformUtoX", &Tcl_ops_transformUtoX);
+    addCommand(interp,"performanceFunction", &Tcl_ops_performanceFunction);    
     addCommand(interp,"updateMaterialStage", &Tcl_ops_updateMaterialStage);
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
     addCommand(interp,"probabilityTransformation", &Tcl_ops_probabilityTransformation);
@@ -1830,8 +1850,9 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"searchDirection", &Tcl_ops_searchDirection);
     addCommand(interp,"meritFunctionCheck", &Tcl_ops_meritFunctionCheck);
     addCommand(interp,"stepSizeRule", &Tcl_ops_stepSizeRule);
-    addCommand(interp,"functionEvaluator", &Tcl_ops_functionEvaluator);
     addCommand(interp,"rootFinding", &Tcl_ops_rootFinding);            
+    addCommand(interp,"functionEvaluator", &Tcl_ops_functionEvaluator);
+    addCommand(interp,"gradientEvaluator", &Tcl_ops_gradientEvaluator);
     addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
     addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
     addCommand(interp,"logFile", &Tcl_ops_logFile);

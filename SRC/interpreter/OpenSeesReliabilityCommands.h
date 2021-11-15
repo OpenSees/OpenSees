@@ -52,8 +52,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MeritFunctionCheck.h>
 #include <StepSizeRule.h>
 #include <RootFinding.h>
+
 #include <FunctionEvaluator.h>
-#include <RootFinding.h>
+#include <GradientEvaluator.h>
 
 class OpenSeesReliabilityCommands
 {
@@ -63,6 +64,7 @@ public:
     ~OpenSeesReliabilityCommands();
 
     ReliabilityDomain* getDomain();
+    Domain* getStructuralDomain();  
 
     void setProbabilityTransformation(ProbabilityTransformation *transform);
     ProbabilityTransformation* getProbabilityTransformation() {return theProbabilityTransformation;}
@@ -81,24 +83,30 @@ public:
   void setStepSizeRule(StepSizeRule *rule);
   StepSizeRule *getStepSizeRule() {return theStepSizeRule;}
 
+  void setRootFinding(RootFinding *root);
+  RootFinding *getRootFinding() {return theRootFinding;}      
+
   void setFunctionEvaluator(FunctionEvaluator *eval);
   FunctionEvaluator *getFunctionEvaluator() {return theFunctionEvaluator;}
 
-  void setRootFinding(RootFinding *root);
-  RootFinding *getRootFinding() {return theRootFinding;}      
-    
+  void setGradientEvaluator(GradientEvaluator *eval);
+  GradientEvaluator *getGradientEvaluator() {return theGradientEvaluator;}  
+
 private:
 
-    ReliabilityDomain* theDomain;
-
-    ProbabilityTransformation *theProbabilityTransformation;
+  ReliabilityDomain* theDomain;
+  Domain *theStructuralDomain;
+  
+  ProbabilityTransformation *theProbabilityTransformation;
   RandomNumberGenerator *theRandomNumberGenerator;
   ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
   SearchDirection *theSearchDirection;
   MeritFunctionCheck *theMeritFunctionCheck;
   StepSizeRule *theStepSizeRule;
-  FunctionEvaluator *theFunctionEvaluator;
   RootFinding *theRootFinding;
+
+  FunctionEvaluator *theFunctionEvaluator;
+  GradientEvaluator *theGradientEvaluator;  
 };
 
 #endif

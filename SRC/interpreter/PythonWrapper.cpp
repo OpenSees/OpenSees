@@ -2244,6 +2244,18 @@ static PyObject *Py_ops_transformUtoX(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_performanceFunction(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_performanceFunction() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_startPoint(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2316,6 +2328,18 @@ static PyObject *Py_ops_stepSizeRule(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_rootFinding(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_rootFinding() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_functionEvaluator(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2328,11 +2352,11 @@ static PyObject *Py_ops_functionEvaluator(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_rootFinding(PyObject *self, PyObject *args)
+static PyObject *Py_ops_gradientEvaluator(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_rootFinding() < 0) {
+    if (OPS_gradientEvaluator() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2675,6 +2699,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getCDF", &Py_ops_getRVCDF);
     addCommand("getInverseCDF", &Py_ops_getRVInverseCDF);
     addCommand("correlate", &Py_ops_addCorrelate);
+    addCommand("performanceFunction", &Py_ops_performanceFunction);
     addCommand("transformUtoX", &Py_ops_transformUtoX);
     addCommand("wipeReliability", &Py_ops_wipeReliability);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
@@ -2686,8 +2711,9 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("searchDirection", &Py_ops_searchDirection);
     addCommand("meritFunctionCheck", &Py_ops_meritFunctionCheck);
     addCommand("stepSizeRule", &Py_ops_stepSizeRule);
-    addCommand("functionEvaluator", &Py_ops_functionEvaluator);
     addCommand("rootFinding", &Py_ops_rootFinding);            
+    addCommand("functionEvaluator", &Py_ops_functionEvaluator);
+    addCommand("gradientEvaluator", &Py_ops_gradientEvaluator);
     addCommand("getNumThreads", &Py_ops_getNumThreads);
     addCommand("setNumThreads", &Py_ops_setNumThreads);
     addCommand("logFile", &Py_ops_logFile);

@@ -343,6 +343,7 @@ int OPS_getRVPDF();
 int OPS_getRVCDF();
 int OPS_getRVInverseCDF();
 int OPS_addCorrelate();
+int OPS_performanceFunction(); // limit state function
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
 int OPS_startPoint();
@@ -351,8 +352,9 @@ int OPS_reliabilityConvergenceCheck();
 int OPS_searchDirection();
 int OPS_meritFunctionCheck();
 int OPS_stepSizeRule();
-int OPS_functionEvaluator();
 int OPS_rootFinding();
+int OPS_functionEvaluator();
+int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 
 /* OpenSeesCommands.cpp */

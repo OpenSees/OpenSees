@@ -90,11 +90,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SecantRootFinding.h>
 
+#include <FiniteDifferenceGradient.h>
+#include <ImplicitGradient.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
 OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomain)
-  :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0),
+  :theDomain(0), theStructuralDomain(structuralDomain),
+   theProbabilityTransformation(0), theRandomNumberGenerator(0),
    theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0),
    theStepSizeRule(0), theFunctionEvaluator(0)
 {
@@ -117,11 +121,67 @@ OpenSeesReliabilityCommands::getDomain()
     return theDomain;
 }
 
+Domain*
+OpenSeesReliabilityCommands::getStructuralDomain()
+{
+    return theStructuralDomain;
+}
+
 int OPS_wipeReliability()
 {
     ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
     theReliabilityDomain->clearAll();
     return 0;
+}
+
+int OPS_performanceFunction()
+{
+  LimitStateFunction *theLSF = 0;
+  int tag;
+
+  // Check enough arguments
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "ERROR: invalid number of arguments to performanceFunction command: performanceFunction tag ...\n";
+    return -1;
+  }
+
+  // Get tag
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for performanceFunction: tag \n";
+    return -1;
+  }
+
+  ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
+
+  // Evaluate performance function
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    if (theEvaluator == 0) {
+      opserr << "Function evaluator must be defined in order to evaluate performance function" << endln;
+      return -1;
+    }    
+    theReliabilityDomain->setTagOfActiveLimitStateFunction(tag);
+    double g = theEvaluator->evaluateExpression();
+    if (OPS_SetDoubleOutput(&numdata, &g, true) < 0) {
+      opserr << "ERROR: performanceFunction - failed to set double output\n";
+      return -1;
+    }
+    return 0;
+  }
+  // Create new performance function
+  const char *lsf = OPS_GetString();
+  theLSF = new LimitStateFunction(tag, lsf);
+  
+  // Add the performance function to the domain
+  if (theReliabilityDomain->addLimitStateFunction(theLSF) == false) {
+    opserr << "ERROR: failed to add performance function to the reliability domain\n";
+    opserr << "performanceFunction: " << tag << "\n";
+    delete theLSF; // otherwise memory leak
+    return -1;
+  }
+
+  return 0;
 }
 
 int OPS_randomVariable()
@@ -838,19 +898,6 @@ OpenSeesReliabilityCommands::setStepSizeRule(StepSizeRule *rule)
 }
 
 void
-OpenSeesReliabilityCommands::setFunctionEvaluator(FunctionEvaluator *eval)
-{
-  if (theFunctionEvaluator != 0) {
-    delete theFunctionEvaluator;
-    theFunctionEvaluator = 0;
-  }
-
-  theFunctionEvaluator = eval;
-  if (eval == 0)
-    return;
-}
-
-void
 OpenSeesReliabilityCommands::setRootFinding(RootFinding *root)
 {
   if (theRootFinding != 0) {
@@ -860,6 +907,19 @@ OpenSeesReliabilityCommands::setRootFinding(RootFinding *root)
 
   theRootFinding = root;
   if (root == 0)
+    return;
+}
+
+void
+OpenSeesReliabilityCommands::setGradientEvaluator(GradientEvaluator *eval)
+{
+  if (theGradientEvaluator != 0) {
+    delete theGradientEvaluator;
+    theGradientEvaluator = 0;
+  }
+
+  theGradientEvaluator = eval;
+  if (eval == 0)
     return;
 }
 
@@ -1252,34 +1312,6 @@ OPS_stepSizeRule()
 }
 
 int
-OPS_functionEvaluator()
-{
-  if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to functionEvaluator" << endln;
-    return -1;
-  }
-
-  FunctionEvaluator *theEval = 0;
-  
-  // Get the type of functionEvaluator
-  const char *type = OPS_GetString();
-  if (strcmp(type,"Matlab") == 0) {
-    opserr << "ERROR: Matlab function evaluator not implemented" << endln;
-    return -1;
-  }
-  else if (strcmp(type,"Tcl") == 0) {
-    opserr << "ERROR: Tcl function evaluator not implemented" << endln;
-    return -1;
-  }
-  else if (strcmp(type,"Python") == 0) {
-    opserr << "ERROR: Python function evaluator not implemented" << endln;
-    return -1;
-  }    
-
-  return 0;
-}
-
-int
 OPS_rootFinding()
 {
   if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1345,6 +1377,121 @@ OPS_rootFinding()
   } else {
     if (cmds != 0)
       cmds->setRootFinding(theFinding);
+  }
+  
+  return 0;
+}
+
+int
+OPS_functionEvaluator()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to functionEvaluator" << endln;
+    return -1;
+  }
+
+  FunctionEvaluator *theEval = 0;
+  
+  // Get the type of functionEvaluator
+  const char *type = OPS_GetString();
+  if (strcmp(type,"Matlab") == 0) {
+    opserr << "ERROR: Matlab function evaluator not implemented" << endln;
+    return -1;
+  }
+  else if (strcmp(type,"Tcl") == 0) {
+    opserr << "ERROR: Tcl function evaluator not implemented" << endln;
+    return -1;
+  }
+  else if (strcmp(type,"Python") == 0) {
+    opserr << "ERROR: Python function evaluator not implemented" << endln;
+    return -1;
+  }    
+  else {
+    opserr << "ERROR: unrecognized type of function evaluator: " << type << endln;
+    return -1;
+  }  
+
+  if (theEval == 0) {
+    opserr << "ERROR: could not create function evaluator" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setFunctionEvaluator(theEval);
+  }
+  
+  return 0;
+}
+
+int
+OPS_gradientEvaluator()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to gradientEvaluator" << endln;
+    return -1;
+  }
+
+  GradientEvaluator *theEval = 0;
+  
+  // Get the type of gradientEvaluator
+  const char *type = OPS_GetString();
+  if (strcmp(type,"FiniteDifference") == 0) {
+    double perturbationFactor = 1000.0;
+    bool doGradientCheck = false;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+      if (strcmp(arg,"-pert") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&perturbationFactor) < 0) {
+	  opserr << "ERROR: unable to read -pert value for " << type << " gradient evaluator" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-check") == 0) {
+	doGradientCheck = true;
+      }
+    }
+
+    ReliabilityDomain *theRelDomain = cmds->getDomain();
+    Domain *theStrDomain = cmds->getStructuralDomain();
+    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    if (theEvaluator == 0) {
+      opserr << "Function evaluator must be defined before gradient evaluator" << endln;
+      return -1;
+    }
+    
+    theEval = new FiniteDifferenceGradient(theEvaluator, theRelDomain, theStrDomain);
+  }
+  else if (strcmp(type,"OpenSees") == 0 || strcmp(type,"Implicit") == 0) {
+    bool doGradientCheck = false;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      if (strcmp(arg,"-check") == 0) {
+	doGradientCheck = true;
+      }
+    }
+
+    ReliabilityDomain *theRelDomain = cmds->getDomain();
+    Domain *theStrDomain = cmds->getStructuralDomain();
+    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    if (theEvaluator == 0) {
+      opserr << "Function evaluator must be defined before gradient evaluator" << endln;
+      return -1;
+    }    
+    theEval = new ImplicitGradient(theEvaluator, theRelDomain, theStrDomain,
+				   0/*theSensitivityAlgorithm*/);
+    
+  }
+  else {
+    opserr << "ERROR: unrecognized type of gradient evaluator: " << type << endln;
+    return -1;
+  }  
+
+  if (theEval == 0) {
+    opserr << "ERROR: could not create function evaluator" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setGradientEvaluator(theEval);
   }
   
   return 0;
