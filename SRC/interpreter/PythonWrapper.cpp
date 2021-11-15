@@ -2304,6 +2304,42 @@ static PyObject *Py_ops_meritFunctionCheck(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_stepSizeRule(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_stepSizeRule() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_functionEvaluator(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_functionEvaluator() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_rootFinding(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_rootFinding() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_updateMaterialStage(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2648,7 +2684,10 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("randomNumberGenerator", &Py_ops_randomNumberGenerator);
     addCommand("reliabilityConvergenceCheck", &Py_ops_reliabilityConvergenceCheck);
     addCommand("searchDirection", &Py_ops_searchDirection);
-    addCommand("meritFunctionCheck", &Py_ops_meritFunctionCheck);        
+    addCommand("meritFunctionCheck", &Py_ops_meritFunctionCheck);
+    addCommand("stepSizeRule", &Py_ops_stepSizeRule);
+    addCommand("functionEvaluator", &Py_ops_functionEvaluator);
+    addCommand("rootFinding", &Py_ops_rootFinding);            
     addCommand("getNumThreads", &Py_ops_getNumThreads);
     addCommand("setNumThreads", &Py_ops_setNumThreads);
     addCommand("logFile", &Py_ops_logFile);

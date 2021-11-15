@@ -50,6 +50,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ReliabilityConvergenceCheck.h>
 #include <SearchDirection.h>
 #include <MeritFunctionCheck.h>
+#include <StepSizeRule.h>
+#include <RootFinding.h>
+#include <FunctionEvaluator.h>
+#include <RootFinding.h>
 
 class OpenSeesReliabilityCommands
 {
@@ -72,7 +76,16 @@ public:
   SearchDirection *getSearchDirection() {return theSearchDirection;}
 
   void setMeritFunctionCheck(MeritFunctionCheck *merit);
-  MeritFunctionCheck *getMeritFunctionCheck() {return theMeritFunctionCheck;}  
+  MeritFunctionCheck *getMeritFunctionCheck() {return theMeritFunctionCheck;}
+
+  void setStepSizeRule(StepSizeRule *rule);
+  StepSizeRule *getStepSizeRule() {return theStepSizeRule;}
+
+  void setFunctionEvaluator(FunctionEvaluator *eval);
+  FunctionEvaluator *getFunctionEvaluator() {return theFunctionEvaluator;}
+
+  void setRootFinding(RootFinding *root);
+  RootFinding *getRootFinding() {return theRootFinding;}      
     
 private:
 
@@ -83,6 +96,9 @@ private:
   ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
   SearchDirection *theSearchDirection;
   MeritFunctionCheck *theMeritFunctionCheck;
+  StepSizeRule *theStepSizeRule;
+  FunctionEvaluator *theFunctionEvaluator;
+  RootFinding *theRootFinding;
 };
 
 #endif

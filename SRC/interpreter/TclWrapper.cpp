@@ -1522,6 +1522,33 @@ static int Tcl_ops_meritFunctionCheck(ClientData clientData, Tcl_Interp *interp,
     return TCL_OK;
 }
 
+static int Tcl_ops_stepSizeRule(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_stepSizeRule() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_functionEvaluator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_functionEvaluator() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_rootFinding(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_rootFinding() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1801,7 +1828,10 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"randomNumberGenerator", &Tcl_ops_randomNumberGenerator);
     addCommand(interp,"reliabilityConvergenceCheck", &Tcl_ops_reliabilityConvergenceCheck);
     addCommand(interp,"searchDirection", &Tcl_ops_searchDirection);
-    addCommand(interp,"meritFunctionCheck", &Tcl_ops_meritFunctionCheck);        
+    addCommand(interp,"meritFunctionCheck", &Tcl_ops_meritFunctionCheck);
+    addCommand(interp,"stepSizeRule", &Tcl_ops_stepSizeRule);
+    addCommand(interp,"functionEvaluator", &Tcl_ops_functionEvaluator);
+    addCommand(interp,"rootFinding", &Tcl_ops_rootFinding);            
     addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
     addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
     addCommand(interp,"logFile", &Tcl_ops_logFile);

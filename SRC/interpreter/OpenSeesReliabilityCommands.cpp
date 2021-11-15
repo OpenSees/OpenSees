@@ -85,12 +85,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <AdkZhangMeritFunctionCheck.h>
 
+#include <ArmijoStepSizeRule.h>
+#include <FixedStepSizeRule.h>
+
+#include <SecantRootFinding.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
 OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomain)
   :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0),
-   theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0)
+   theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0),
+   theStepSizeRule(0), theFunctionEvaluator(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -818,6 +824,45 @@ OpenSeesReliabilityCommands::setMeritFunctionCheck(MeritFunctionCheck *merit)
     return;
 }
 
+void
+OpenSeesReliabilityCommands::setStepSizeRule(StepSizeRule *rule)
+{
+  if (theStepSizeRule != 0) {
+    delete theStepSizeRule;
+    theStepSizeRule = 0;
+  }
+
+  theStepSizeRule = rule;
+  if (rule == 0)
+    return;
+}
+
+void
+OpenSeesReliabilityCommands::setFunctionEvaluator(FunctionEvaluator *eval)
+{
+  if (theFunctionEvaluator != 0) {
+    delete theFunctionEvaluator;
+    theFunctionEvaluator = 0;
+  }
+
+  theFunctionEvaluator = eval;
+  if (eval == 0)
+    return;
+}
+
+void
+OpenSeesReliabilityCommands::setRootFinding(RootFinding *root)
+{
+  if (theRootFinding != 0) {
+    delete theRootFinding;
+    theRootFinding = 0;
+  }
+
+  theRootFinding = root;
+  if (root == 0)
+    return;
+}
+
 int
 OPS_startPoint()
 {
@@ -1078,6 +1123,228 @@ OPS_meritFunctionCheck()
   } else {
     if (cmds != 0)
       cmds->setMeritFunctionCheck(theFunction);
+  }
+  
+  return 0;
+}
+
+int
+OPS_stepSizeRule()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to stepSizeRule" << endln;
+    return -1;
+  }
+
+  // Get the type of step size rule
+  const char *type = OPS_GetString();
+
+  StepSizeRule *theRule = 0;
+  if (strcmp(type,"Armijo") == 0) {
+    double base = 0.5;
+    int maxNumReductions = 10;
+    double b0 = 1.0;
+    int numberOfShortSteps = 2;
+    double radius = 50.0;
+    double surfaceDistance = 0.1;
+    double evolution = 0.5;
+    int printFlag = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+      if (strcmp(arg,"-print") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetIntInput(&numdata,&printFlag) < 0) {
+	  opserr << "ERROR: unable to read -print value for Armijo step size rule" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-maxNum") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetIntInput(&numdata,&maxNumReductions) < 0) {
+	  opserr << "ERROR: unable to read -maxNum value for Armijo step size rule" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-base") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&base) < 0) {
+	  opserr << "ERROR: unable to read -base value for Armijo step size rule" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-initial") == 0 && OPS_GetNumRemainingInputArgs() > 1) {
+	if (OPS_GetDoubleInput(&numdata,&b0) < 0) {
+	  opserr << "ERROR: unable to read -initial b0 value for Armijo step size rule" << endln;
+	  return -1;
+	}
+	if (OPS_GetIntInput(&numdata,&numberOfShortSteps) < 0) {
+	  opserr << "ERROR: unable to read -initial numberOfShortSteps value for Armijo step size rule" << endln;
+	  return -1;
+	}	
+      }
+      if (strcmp(arg,"-sphere") == 0 && OPS_GetNumRemainingInputArgs() > 2) {
+	if (OPS_GetDoubleInput(&numdata,&radius) < 0) {
+	  opserr << "ERROR: unable to read -sphere radius value for Armijo step size rule" << endln;
+	  return -1;
+	}
+	if (OPS_GetDoubleInput(&numdata,&surfaceDistance) < 0) {
+	  opserr << "ERROR: unable to read -sphere surfaceDistance value for Armijo step size rule" << endln;
+	  return -1;
+	}
+	if (OPS_GetDoubleInput(&numdata,&evolution) < 0) {
+	  opserr << "ERROR: unable to read -sphere evolution value for Armijo step size rule" << endln;
+	  return -1;
+	}		
+      }                        
+    }
+
+    ReliabilityDomain *theRelDomain = cmds->getDomain();
+    RootFinding *theAlgorithm = cmds->getRootFinding();
+    ProbabilityTransformation *theTransformation = cmds->getProbabilityTransformation();
+    if (theTransformation == 0) {
+      opserr << "Probability transformation must be defined before ArmijoStepSize rule" << endln;
+      return -1;
+    }
+    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    if (theEvaluator == 0) {
+      opserr << "Function evaluator must be defined before ArmijoStepSize rule" << endln;
+      return -1;
+    }
+    MeritFunctionCheck *theMeritFunction = cmds->getMeritFunctionCheck();
+    if (theMeritFunction == 0) {
+      opserr << "Merit function check must be defined before ArmijoStepSize rule" << endln;
+      return -1;
+    }
+    
+    theRule = new ArmijoStepSizeRule(theRelDomain, theEvaluator, theTransformation,
+				     theMeritFunction, theAlgorithm,
+				     base, maxNumReductions,
+				     b0, numberOfShortSteps,
+				     radius, surfaceDistance, evolution,
+				     printFlag);      
+  }
+  else if (strcmp(type,"Fixed") == 0) {
+    double stepSize = 1.0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+      if (strcmp(arg,"-stepSize") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&stepSize) < 0) {
+	  opserr << "ERROR: unable to read -stepSize value for Fixed step size rule" << endln;
+	  return -1;
+	}
+      }
+    }
+    theRule = new FixedStepSizeRule(stepSize);
+  }
+  else {
+    opserr << "ERROR: unrecognized type of stepSizeRule " << type << endln;
+    return -1;
+  }  
+
+  if (theRule == 0) {
+    opserr << "ERROR: could not create stepSizeRule" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setStepSizeRule(theRule);
+  }
+  
+  return 0;
+}
+
+int
+OPS_functionEvaluator()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to functionEvaluator" << endln;
+    return -1;
+  }
+
+  FunctionEvaluator *theEval = 0;
+  
+  // Get the type of functionEvaluator
+  const char *type = OPS_GetString();
+  if (strcmp(type,"Matlab") == 0) {
+    opserr << "ERROR: Matlab function evaluator not implemented" << endln;
+    return -1;
+  }
+  else if (strcmp(type,"Tcl") == 0) {
+    opserr << "ERROR: Tcl function evaluator not implemented" << endln;
+    return -1;
+  }
+  else if (strcmp(type,"Python") == 0) {
+    opserr << "ERROR: Python function evaluator not implemented" << endln;
+    return -1;
+  }    
+
+  return 0;
+}
+
+int
+OPS_rootFinding()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to rootFinding" << endln;
+    return -1;
+  }
+
+  // Get the type of rootFinding
+  const char *type = OPS_GetString();
+
+  int maxIter = 50;
+  double tol = 1.0e-3;
+  double maxStepLength = 1.0;
+  RootFinding *theFinding = 0;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *arg = OPS_GetString();
+    int numdata = 1;
+    if (strcmp(arg,"-maxIter") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata,&maxIter) < 0) {
+	opserr << "ERROR: unable to read -maxIter value for " << type << " root finding" << endln;
+	return -1;
+      }
+    }
+    if (strcmp(arg,"-tol") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata,&tol) < 0) {
+	opserr << "ERROR: unable to read -tol value for " << type << " root finding" << endln;
+	return -1;
+      }
+    }
+    if (strcmp(arg,"-maxStepLength") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata,&maxStepLength) < 0) {
+	opserr << "ERROR: unable to read -maxStepLength value for " << type << " root finding" << endln;
+	return -1;
+      }
+    }        
+  }
+
+  if (strcmp(type,"Secant") == 0) {
+    ReliabilityDomain *theRelDomain = cmds->getDomain();
+    ProbabilityTransformation *theTransformation = cmds->getProbabilityTransformation();
+    if (theTransformation == 0) {
+      opserr << "Probability transformation must be defined before ArmijoStepSize rule" << endln;
+      return -1;
+    }
+    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    if (theEvaluator == 0) {
+      opserr << "Function evaluator must be defined before ArmijoStepSize rule" << endln;
+      return -1;
+    }    
+    theFinding = new SecantRootFinding(theRelDomain,
+				       theTransformation,
+				       theEvaluator,
+				       maxIter, tol, maxStepLength);
+  }
+  else {
+    opserr << "ERROR: unrecognized type of rootFinding: " << type << endln;
+    return -1;
+  }  
+  
+  if (theFinding == 0) {
+    opserr << "ERROR: could not create rootFinding" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setRootFinding(theFinding);
   }
   
   return 0;
