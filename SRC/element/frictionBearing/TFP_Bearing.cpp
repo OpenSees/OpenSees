@@ -67,7 +67,7 @@ OPS_TFP_Bearing()
     return theEle;
   }
 
-  if (numRemainingArgs != 25 && numRemainingArgs != 24 && numRemainingArgs != 26 != numRemainingArgs != 27) {
+  if (numRemainingArgs < 24 || numRemainingArgs > 27) {
     opserr << "ERROR - TFP_Bearing incorrect # args provided, want: element TFP_Bearing tag? iNode? jNode? ";
     opserr << "$R1 $R2 $R3 $R4 $do1 $do2 $do3 $do4 $din1 $din2 $din3 $din4 $mu1 $mu2 $mu3 $mu4";
     opserr << " $h1 $h2 $h3 $h4 $H0 <$a> <$K>\n";
