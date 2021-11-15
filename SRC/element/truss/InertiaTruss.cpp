@@ -89,7 +89,7 @@ OPS_InertiaTrussElement()
 
   int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
-  if (numRemainingArgs < 4) {
+  if (numRemainingArgs != 4) {
     opserr << "Invalid Args want: element InertiaTruss $tag $iNode $jNode $mr\n";
     return 0;	
   }
@@ -458,23 +458,9 @@ InertiaTruss::update(void)
 const Matrix &
 InertiaTruss::getTangentStiff(void)
 {
-
-    // come back later and redo this if too slow
+    // set stiffness 0
     Matrix &stiff = *theMatrix;
-
-    int numDOF2 = numDOF/2;
-    double temp;
-    double EAoverL = 0.0000000001;
-    for (int i = 0; i < dimension; i++) {
-      for (int j = 0; j < dimension; j++) {
-	temp = cosX[i]*cosX[j]*EAoverL;
-	stiff(i,j) = temp;
-	stiff(i+numDOF2,j) = -temp;
-	stiff(i,j+numDOF2) = -temp;
-	stiff(i+numDOF2,j+numDOF2) = temp;
-      }
-    }
-
+    stiff.Zero();
     return stiff;
 }
 
@@ -482,22 +468,9 @@ InertiaTruss::getTangentStiff(void)
 const Matrix &
 InertiaTruss::getInitialStiff(void)
 {
-    // come back later and redo this if too slow
+    // set stiffness 0
     Matrix &stiff = *theMatrix;
-
-    int numDOF2 = numDOF/2;
-    double temp;
-    double EAoverL = 0.0000000001;
-    for (int i = 0; i < dimension; i++) {
-      for (int j = 0; j < dimension; j++) {
-	temp = cosX[i]*cosX[j]*EAoverL;
-	stiff(i,j) = temp;
-	stiff(i+numDOF2,j) = -temp;
-	stiff(i,j+numDOF2) = -temp;
-	stiff(i+numDOF2,j+numDOF2) = temp;
-      }
-    }
-
+    stiff.Zero();
     return *theMatrix;
 }
 
@@ -757,54 +730,14 @@ int
 InertiaTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, 
 		   const char **displayModes, int numModes)
 {
-  int res = 0;
-  if (L == 0.0)
-    return res;
-  
-  static Vector v1(3);
-  static Vector v2(3);
-  static Vector relativeaccel(dimension);
-  float d1 = 0.0;
-  float d2 = 0.0;
-  
-  theNodes[0]->getDisplayCrds(v1, fact);
-  theNodes[1]->getDisplayCrds(v2, fact);
-
-  if (displayMode > 0) {
-    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
-  }
-  
-  for (int i=0; i<numModes; i++) {
-    
-    const char *mode = displayModes[i];
-    if (strcmp(mode, "axialForce") == 0) {
-      double force = 0;    	  
-      d1 = force; 
-      d2 = force;
-
-      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "material") == 0) {
-      d1 = theMaterial->getTag();
-      d2 = theMaterial->getTag();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-    } else if (strcmp(mode, "materialStress") == 0) {
-      d1 = theMaterial->getStress();
-      d2 = theMaterial->getStress();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-      
-      } else if (strcmp(mode, "materialStrain") == 0) {
-      
-      d1 = theMaterial->getStrain();
-      d2 = theMaterial->getStrain();
-
-      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
-    }
-  }    
-  return res;
+    static Vector v1(3);
+    static Vector v2(3);
+    int res = 0;
+    if (L == 0.0)
+        return res;
+    theNodes[0]->getDisplayCrds(v1, fact);
+    theNodes[1]->getDisplayCrds(v2, fact);  
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(),0);
 }
 
 
@@ -889,20 +822,20 @@ InertiaTruss::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
 
-    // we compare argv[0] for known response types for the InertiaTruss
-    if ((strcmp(argv[0], "force") == 0) || (strcmp(argv[0], "forces") == 0)
-        || (strcmp(argv[0], "axialForce") == 0) ){
-            output.tag("ResponseType", "F");
-            theResponse = new ElementResponse(this, 2, Vector(3));
-
-    } else if ((strcmp(argv[0],"relativeAcceleration") == 0) || 
-	       (strcmp(argv[0],"acceleration") == 0) || 
-	       (strcmp(argv[0],"accel") == 0) || 
-	       (strcmp(argv[0],"relAccel") == 0)) {
-            output.tag("ResponseType", "acceleration");
-            theResponse =  new ElementResponse(this, 1, Vector(3));
-
-    } 
+   // we compare argv[0] for known response types for the InertiaTruss
+    if ((strcmp(argv[0], "relativeAcceleration") == 0) ||
+        (strcmp(argv[0], "acceleration") == 0) ||
+        (strcmp(argv[0], "accel") == 0) ||
+        (strcmp(argv[0], "relAccel") == 0)) {
+        output.tag("ResponseType", "acceleration");
+        theResponse = new ElementResponse(this, 1, Vector(1));
+    }
+    else if ((strcmp(argv[0], "axialForce") == 0) ||
+        (strcmp(argv[0], "basicForce") == 0) ||
+        (strcmp(argv[0], "basicForces") == 0)) {
+        output.tag("ResponseType", "N");
+        theResponse = new ElementResponse(this, 2, Vector(1));
+    }
     output.endTag();
     return theResponse;
 }
@@ -910,26 +843,29 @@ InertiaTruss::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 InertiaTruss::getResponse(int responseID, Information &eleInfo)
 {
-    static Vector fVec(3);
-    static Vector fVec2(3);
-    static Matrix kVec(1, 1);
-    double strain;
-    const Vector& acc1 = theNodes[0]->getAccel();
-    const Vector& acc2 = theNodes[1]->getAccel();
-    //Vector& toret = acc1 - acc2;
-    //fVec2(0) = toret(0);
-    //fVec2(1) = toret(1);
-    //fVec2(2) = toret(2);
-    fVec2.addVector(0.0, acc1, 1.0);
-    fVec2.addVector(1.0, acc2, -1.0);
+    int numDOF2 = numDOF / 2;
+    static Vector fVec_Acc(1);
+    static Vector fVec_AxialForce(1);
+    const Vector& acc1 = theNodes[0]->getTrialAccel();
+    const Vector& acc2 = theNodes[1]->getTrialAccel();
+    Vector& toret = acc2 - acc1;
+
     switch (responseID) {
-    case 1:
-        return eleInfo.setVector(fVec2);
-    case 2:
-        fVec(0) = fVec2(0) * mass;
-        fVec(1) = fVec2(1) * mass;
-        fVec(2) = fVec2(2) * mass;
-        return eleInfo.setVector(fVec);   
+    case 1://accel
+        fVec_Acc(0) = 0;
+        for (int i = 0; i < dimension; i++)
+        {
+            fVec_Acc(0) += toret(i) * cosX[i];
+        }
+        return eleInfo.setVector(fVec_Acc);
+
+    case 2://axial force
+        fVec_AxialForce(0) = 0;
+        for (int i = 0; i < dimension; i++)
+        {
+            fVec_AxialForce(0) += toret(i) * mass * cosX[i];
+        }
+        return eleInfo.setVector(fVec_AxialForce);
     default:
         return 0;
     }
