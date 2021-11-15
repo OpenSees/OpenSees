@@ -23,6 +23,7 @@ target_sources(OPS_Recorder
       NormElementRecorder.cpp
       NormEnvelopeElementRecorder.cpp
       PatternRecorder.cpp
+      PVDRecorder.cpp      
       Recorder.cpp
       RemoveRecorder.cpp
       VTK_Recorder.cpp
@@ -43,6 +44,7 @@ target_sources(OPS_Recorder
       NormElementRecorder.h
       NormEnvelopeElementRecorder.h
       PatternRecorder.h
+      PVDRecorder.h      
       Recorder.h
       RemoveRecorder.h
       VTK_Recorder.h

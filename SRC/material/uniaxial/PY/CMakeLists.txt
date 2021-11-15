@@ -61,7 +61,6 @@ target_sources(OPS_Material
 #	TzSimple1.h
 #	TzSimple1Gen.h
 #	TzSimple2.h
-#>>>>>>> 43054b546a2d9dcbd550bec5bb9a915a6e738b1d
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
