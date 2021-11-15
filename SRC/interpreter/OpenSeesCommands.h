@@ -349,6 +349,7 @@ int OPS_startPoint();
 int OPS_randomNumberGenerator();
 int OPS_reliabilityConvergenceCheck();
 int OPS_searchDirection();
+int OPS_meritFunctionCheck();
 int OPS_wipeReliability();
 
 /* OpenSeesCommands.cpp */

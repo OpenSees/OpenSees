@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <RandomNumberGenerator.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <SearchDirection.h>
+#include <MeritFunctionCheck.h>
 
 class OpenSeesReliabilityCommands
 {
@@ -69,6 +70,9 @@ public:
 
   void setSearchDirection(SearchDirection *search);
   SearchDirection *getSearchDirection() {return theSearchDirection;}
+
+  void setMeritFunctionCheck(MeritFunctionCheck *merit);
+  MeritFunctionCheck *getMeritFunctionCheck() {return theMeritFunctionCheck;}  
     
 private:
 
@@ -78,6 +82,7 @@ private:
   RandomNumberGenerator *theRandomNumberGenerator;
   ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
   SearchDirection *theSearchDirection;
+  MeritFunctionCheck *theMeritFunctionCheck;
 };
 
 #endif

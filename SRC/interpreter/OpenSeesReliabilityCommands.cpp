@@ -83,12 +83,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SQPsearchDirectionMeritFunctionAndHessian.h>
 #include <GradientProjectionSearchDirection.h>
 
+#include <AdkZhangMeritFunctionCheck.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
 OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomain)
   :theDomain(0), theProbabilityTransformation(0), theRandomNumberGenerator(0),
-   theReliabilityConvergenceCheck(0), theSearchDirection(0)
+   theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -803,6 +805,19 @@ OpenSeesReliabilityCommands::setSearchDirection(SearchDirection *search)
     return;
 }
 
+void
+OpenSeesReliabilityCommands::setMeritFunctionCheck(MeritFunctionCheck *merit)
+{
+  if (theMeritFunctionCheck != 0) {
+    delete theMeritFunctionCheck;
+    theMeritFunctionCheck = 0;
+  }
+
+  theMeritFunctionCheck = merit;
+  if (merit == 0)
+    return;
+}
+
 int
 OPS_startPoint()
 {
@@ -992,6 +1007,77 @@ OPS_searchDirection()
   } else {
     if (cmds != 0)
       cmds->setSearchDirection(theSearch);
+  }
+  
+  return 0;
+}
+
+int
+OPS_meritFunctionCheck()
+{
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to meritFunctionCheck" << endln;
+    return -1;
+  }
+
+  // Get the type of merit function check
+  const char *type = OPS_GetString();
+
+  MeritFunctionCheck *theFunction = 0;
+  if (strcmp(type,"AdkZhang") == 0) {
+    double multi = 2.0;
+    double add = 2.0;
+    double factor = 0.0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+      if (strcmp(arg,"-multi") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&multi) < 0) {
+	  opserr << "ERROR: unable to read -multi value for AdkZhang merit function check" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-add") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&add) < 0) {
+	  opserr << "ERROR: unable to read -add value for AdkZhang merit function check" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-factor") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&factor) < 0) {
+	  opserr << "ERROR: unable to read -factor value for AdkZhang merit function check" << endln;
+	  return -1;
+	}
+      }
+    }
+      
+    // Do a quick input check
+    if (multi < 1.0 || add < 0.0) {
+      opserr << "ERROR: Invalid values of multi/add parameters to AdkZhang merit function check" << endln;
+      return -1;
+    }
+    
+    theFunction = new AdkZhangMeritFunctionCheck(multi,add,factor);      
+  }
+  else if (strcmp(type,"PolakHe") == 0) {
+    opserr << "ERROR: PolakHe merit function check not yet implemented" << endln;
+    return -1;
+  }
+  else if (strcmp(type,"SQP") == 0) {
+    opserr << "ERROR: SQP merit function check not yet implemented" << endln;
+    return -1;
+  }
+  else {
+    opserr << "ERROR: unrecognized type of meritFunctionCheck " << type << endln;
+    return -1;
+  }  
+
+  if (theFunction == 0) {
+    opserr << "ERROR: could not create meritFunctionCheck" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setMeritFunctionCheck(theFunction);
   }
   
   return 0;
