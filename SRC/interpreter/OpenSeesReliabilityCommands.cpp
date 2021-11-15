@@ -1085,32 +1085,40 @@ OPS_meritFunctionCheck()
 
 int OPS_probabilityTransformation()
 {
-  //
-  //
-  // Check for replacement
-  //
-  //
-
-  if (OPS_GetNumRemainingInputArgs() != 1 && OPS_GetNumRemainingInputArgs() != 3) {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
     opserr << "ERROR: wrong number of arguments to probabilityTransformation" << endln;
     return -1;
   }
 
   // Get transformation type
-  const char* arg = OPS_GetString();
+  const char* type = OPS_GetString();
 
   ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
   ProbabilityTransformation *theTransf = 0;
-  if (strcmp(arg,"Nataf") == 0) {
-    theTransf = new NatafProbabilityTransformation(theReliabilityDomain,0);
+
+  // Nataf and AllIndependent have the same optional arguments
+  int print = 0;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *arg = OPS_GetString();
+    int numdata = 1;
+    if (strcmp(arg,"-print") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata,&print) < 0) {
+	opserr << "ERROR: unable to read -print value for probability transformation" << endln;
+	return -1;
+      }
+    }            
+  }
+  
+  if (strcmp(type,"Nataf") == 0) {
+    theTransf = new NatafProbabilityTransformation(theReliabilityDomain, print);
   }
 
-  else if (strcmp(arg,"AllIndependent") == 0) {
-    theTransf = new AllIndependentTransformation(theReliabilityDomain,0);
+  else if (strcmp(type,"AllIndependent") == 0) {
+    theTransf = new AllIndependentTransformation(theReliabilityDomain, print);
   }
 
   else {
-    opserr << "ERROR: unrecognized type of probabilityTransformation" << endln;
+    opserr << "ERROR: unrecognized type of probabilityTransformation " << type << endln;
     return -1;
   }
 
@@ -1121,7 +1129,6 @@ int OPS_probabilityTransformation()
     if (cmds != 0)
       cmds->setProbabilityTransformation(theTransf);
   }
-
   
   return 0;
 }
