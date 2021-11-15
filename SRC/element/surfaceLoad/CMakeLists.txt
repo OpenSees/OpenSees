@@ -4,9 +4,8 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_surfaceLoad OBJECT)
 
-target_sources(OPS_Element_surfaceLoad
+target_sources(OPS_Element
     PRIVATE
         SurfaceLoad.cpp
         TriSurfaceLoad.cpp
@@ -14,5 +13,5 @@ target_sources(OPS_Element_surfaceLoad
         SurfaceLoad.h
         TriSurfaceLoad.h
 )
-target_include_directories(OPS_Element_surfaceLoad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
