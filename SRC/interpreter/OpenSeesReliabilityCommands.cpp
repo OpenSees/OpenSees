@@ -953,18 +953,46 @@ OPS_searchDirection()
     theSearch = new HLRFSearchDirection();
   }
   else if (strcmp(type,"PolakHe") == 0) {
-
+    double gamma = 1.0;
+    double delta = 1.0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+      if (strcmp(arg,"-gamma") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&gamma) < 0) {
+	  opserr << "ERROR: unable to read -gamma value for PolakHe search direction" << endln;
+	  return -1;
+	}
+      }
+      if (strcmp(arg,"-delta") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetDoubleInput(&numdata,&delta) < 0) {
+	  opserr << "ERROR: unable to read -delta value for PolakHe search direction" << endln;
+	  return -1;
+	}
+      }      
+    }
+    theSearch = new PolakHeSearchDirectionAndMeritFunction(gamma, delta);
   }
   else if (strcmp(type,"GradientProjection") == 0) {
-
+    opserr << "ERROR: GradientProjection search direction not yet implemented" << endln;
+    return -1;
   }
   else if (strcmp(type,"SQP") == 0) {
-
+    opserr << "ERROR: SQP search direction not yet implemented" << endln;
+    return -1;
   }
   else {
     opserr << "ERROR: unrecognized type of searchDirection " << type << endln;
     return -1;
   }  
+
+  if (theSearch == 0) {
+    opserr << "ERROR: could not create searchDirection" << endln;
+    return -1;
+  } else {
+    if (cmds != 0)
+      cmds->setSearchDirection(theSearch);
+  }
   
   return 0;
 }
