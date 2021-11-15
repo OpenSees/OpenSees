@@ -564,8 +564,8 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
   KsPlusKsrest += ksrest;
   KsPlusKsrest(0,2) = KsPlusKsrest(0,2) + N[0]/R[2];
   KsPlusKsrest(1,3) = KsPlusKsrest(1,3) + N[1]/R[5];
-  KsPlusKsrest(4,6) = KsPlusKsrest(4,6) + N[4]/R[6];
-  KsPlusKsrest(5,7) = KsPlusKsrest(5,7) + N[5]/R[7];
+  KsPlusKsrest(4,6) = KsPlusKsrest(4,6) + N[2]/R[6];
+  KsPlusKsrest(5,7) = KsPlusKsrest(5,7) + N[3]/R[7];
     
   kt.addMatrixTripleProduct(0.0, Af, KsPlusKsrest,1.0);
 
