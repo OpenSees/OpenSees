@@ -848,7 +848,7 @@ InertiaTruss::getResponse(int responseID, Information &eleInfo)
     static Vector fVec_AxialForce(1);
     const Vector& acc1 = theNodes[0]->getTrialAccel();
     const Vector& acc2 = theNodes[1]->getTrialAccel();
-    Vector& toret = acc2 - acc1;
+    Vector toret = acc2 - acc1;
 
     switch (responseID) {
     case 1://accel
