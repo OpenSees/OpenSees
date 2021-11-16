@@ -355,7 +355,9 @@
 #include "EnvelopeNodeRecorder.h"
 #include "EnvelopeElementRecorder.h"
 #include "DriftRecorder.h"
+#ifdef _HDF5
 #include "MPCORecorder.h"
+#endif // _HDF5
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
@@ -1894,10 +1896,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
-
+#ifdef HDF5
 	case RECORDER_TAGS_MPCORecorder:
 	  return new MPCORecorder();
-	     
+#endif // HDF5
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
 	     opserr << " - no Recorder type exists for class tag ";
