@@ -4,24 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-target_sources(OPS_Element
-    PRIVATE
-    ZeroLength.cpp
-    CoupledZeroLength.cpp
-    ZeroLengthInterface2D.cpp
-    ZeroLengthND.cpp
-    ZeroLengthRocking.cpp
-    ZeroLengthSection.cpp
-    ZeroLengthVG_HG.cpp
-    PUBLIC
-    ZeroLength.h
-    CoupledZeroLength.h
-    ZeroLengthInterface2D.h
-    ZeroLengthND.h
-    ZeroLengthRocking.h
-    ZeroLengthSection.h
-    ZeroLengthVG_HG.h
-)
 
 target_sources(OPS_Element
     PRIVATE

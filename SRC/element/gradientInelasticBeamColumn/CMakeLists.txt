@@ -4,9 +4,10 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_gradientInelasticBeamColumn OBJECT)
 
-target_sources(OPS_Element_gradientInelasticBeamColumn
+#add_library(OPS_Element_gradientInelasticBeamColumn OBJECT)
+
+target_sources(OPS_Element
     PRIVATE
         GradientInelasticBeamColumn2d.cpp
         GradientInelasticBeamColumn3d.cpp
@@ -15,5 +16,5 @@ target_sources(OPS_Element_gradientInelasticBeamColumn
         GradientInelasticBeamColumn2d.h
         GradientInelasticBeamColumn3d.h
 )
-target_include_directories(OPS_Element_gradientInelasticBeamColumn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

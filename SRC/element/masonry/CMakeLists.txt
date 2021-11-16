@@ -4,9 +4,9 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_masonry)
+#add_library(OPS_Element_masonry)
 
-target_sources(OPS_Element_masonry
+target_sources(OPS_Element
   PUBLIC
   BeamGT.cpp
   MasonPan12.cpp

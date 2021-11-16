@@ -53,6 +53,8 @@ class SSPbrick : public Element
     SSPbrick();
     ~SSPbrick();
 
+	const char* getClassType()  const { return "SSPbrick"; };
+
     // public methods to obtain information about dof and connectivity
     int getNumExternalNodes(void) const; 
     const ID &getExternalNodes(void);

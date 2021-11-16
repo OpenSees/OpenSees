@@ -4,7 +4,7 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-target_sources(OPS_SysOfEqn_UMF
+target_sources(OPS_SysOfEqn
     PRIVATE
         UmfpackGenLinSOE.cpp
         UmfpackGenLinSolver.cpp

@@ -46,9 +46,10 @@
 
 
 #ifdef _WIN32
-#define pml_	      PML_2D
 
-extern "C" void  pml_(double* kMatrix,
+#define pml2d_	      PML_2D
+
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
 	double* mMatrix,
 	int* NDOFEL,
@@ -60,9 +61,9 @@ extern "C" void  pml_(double* kMatrix,
 
 #else
 
-#define pml_	      pml_2d_
+#define pml2d_	      pml_2d_
 
-extern "C" void  pml_(double* kMatrix,
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
 	double* mMatrix,
 	int* NDOFEL,

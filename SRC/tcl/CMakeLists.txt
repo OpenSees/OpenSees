@@ -11,13 +11,11 @@
 
 #target_sources(OPS_Tcl PRIVATE tclMain.cpp)
 
-target_sources(OPS_Interp_Tcl PRIVATE 
+target_sources(OPS_InterpTcl PRIVATE 
     "${OPS_SRC_DIR}/coordTransformation/TclGeomTransfCommand.cpp"
-
     "${OPS_SRC_DIR}/database/TclDatabaseCommands.cpp"
     "${OPS_SRC_DIR}/database/TclMySQL.cpp"
     #"${OPS_SRC_DIR}/database/TclBerkeleyDB.cpp"
-
     "${OPS_SRC_DIR}/domain/component/TclParameterCommands.cpp"
     "${OPS_SRC_DIR}/domain/component/TclUpdateMaterialCommand.cpp"
     "${OPS_SRC_DIR}/domain/groundMotion/TclGroundMotionCommand.cpp"
@@ -26,7 +24,6 @@ target_sources(OPS_Interp_Tcl PRIVATE
     "${OPS_SRC_DIR}/domain/pattern/TclSeriesIntegratorCommand.cpp"
     #"${OPS_SRC_DIR}/domain/pattern/drm/TclPatternCommand.cpp"
     "${OPS_SRC_DIR}/domain/region/TclRegionCommands.cpp"
-
     "${OPS_SRC_DIR}/element/TclElementCommands.cpp"
     "${OPS_SRC_DIR}/element/UP-ucsd/TclFourNodeQuadUPCommand.cpp"
     "${OPS_SRC_DIR}/element/UWelements/Tcl_generateInterfacePoints.cpp"
@@ -66,10 +63,8 @@ target_sources(OPS_Interp_Tcl PRIVATE
     "${OPS_SRC_DIR}/material/nD/TclModelBuilderNDMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/nD/feap/TclFeapMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/nD/soil/TclUpdateMaterialStageCommand.cpp"
-
     "${OPS_SRC_DIR}/material/section/TclModelBuilderSectionCommand.cpp"
     "${OPS_SRC_DIR}/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.cpp"
-
     "${OPS_SRC_DIR}/material/uniaxial/PY/TclPyTzQzMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/backbone/TclModelBuilderBackboneCommand.cpp"
@@ -81,7 +76,6 @@ target_sources(OPS_Interp_Tcl PRIVATE
     "${OPS_SRC_DIR}/material/uniaxial/strength/TclModelBuilderStrengthDegradationCommand.cpp"
     "${OPS_SRC_DIR}/material/uniaxial/unloading/TclModelBuilderUnloadingRuleCommand.cpp"
     #"${OPS_SRC_DIR}/material/uniaxial/TclNewUniaxialMaterial.cpp"
-
     "${OPS_SRC_DIR}/material/yieldSurface/evolution/TclModelBuilderYS_EvolutionCommand.cpp"
     "${OPS_SRC_DIR}/material/yieldSurface/plasticHardeningMaterial/TclModelBuilderYSPlasticMaterialCommand.cpp"
     "${OPS_SRC_DIR}/material/yieldSurface/yieldSurfaceBC/TclModelBuilderYieldSurfaceBCCommand.cpp"
@@ -93,7 +87,6 @@ target_sources(OPS_Interp_Tcl PRIVATE
     "${OPS_SRC_DIR}/optimization/tcl/TclOptimizationBuilder.cpp"
     "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
     "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
-
     #"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
     "${OPS_SRC_DIR}/tcl/commands.cpp"
   "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
