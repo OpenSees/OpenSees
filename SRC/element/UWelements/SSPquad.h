@@ -53,6 +53,8 @@ class SSPquad : public Element
     SSPquad();
     ~SSPquad();
 
+	const char* getClassType()  const { return "SSPquad"; };
+
     // public methods to obtain information about dof and connectivity
     int getNumExternalNodes(void) const; 
     const ID &getExternalNodes(void);

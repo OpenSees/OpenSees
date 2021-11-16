@@ -167,7 +167,7 @@ int RespSurfaceSimulation::runSimulationAnalysis()
 	double govCov =1.0;
 
 	bool isFirstSimulation = true;
-	while( (k<=numOfSimulations && govCov>targetCOV || k<=2) ) {
+	while( (k<=numOfSimulations && govCov>targetCOV) || k<=2) {
 
 		
 

@@ -167,7 +167,7 @@ c     %----------------------%
 c     | External Subroutines |
 c     %----------------------%
 c
-      external   dlarnv, dvout, dcopy, dgemv, second
+      external   dlarnv, dvout, dcopy, dgemv, second, dvout1
 c
 c     %--------------------%
 c     | External Functions |
@@ -364,9 +364,9 @@ c     | Check for further orthogonalization. |
 c     %--------------------------------------%
 c
       if (msglvl .gt. 2) then
-          call dvout (logfil, 1, rnorm0, ndigit, 
+          call dvout1 (logfil, 1, rnorm0, ndigit, 
      &                '_getv0: re-orthonalization ; rnorm0 is')
-          call dvout (logfil, 1, rnorm, ndigit, 
+          call dvout1 (logfil, 1, rnorm, ndigit, 
      &                '_getv0: re-orthonalization ; rnorm is')
       end if
 c
@@ -397,7 +397,7 @@ c
    50 continue
 c
       if (msglvl .gt. 0) then
-         call dvout (logfil, 1, rnorm, ndigit,
+         call dvout1 (logfil, 1, rnorm, ndigit,
      &        '_getv0: B-norm of initial / restarted starting vector')
       end if
       if (msglvl .gt. 3) then
