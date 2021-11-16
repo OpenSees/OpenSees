@@ -31,8 +31,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 #include(OpenSeesFunctions)
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
+# for OpenSeesPY
+add_Compile_options(-fPIC)
+
 #
-# externa; packages
+# external packages
 #
 
 add_library(OPS_External_packages INTERFACE)
@@ -349,14 +352,11 @@ add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 
 add_library(OPS_InterpTcl          STATIC)
 
+target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
   target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
   target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
 endif()
-
-target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
-
 
 #
 # OpenSees G3 Library - a slimmed down OpenSees
@@ -432,6 +432,11 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+endif()
+
+
 target_link_libraries(OpenSees
   OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${CONAN_LIBS}
 )
@@ -474,7 +479,6 @@ target_link_libraries(OpenSeesMP OpenSeesLIB)
 
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL)
 
-# add_Compile_options(-fPIC)
 target_compile_options(OpenSeesPy PUBLIC -fPIC)
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
