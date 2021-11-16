@@ -38,14 +38,11 @@ in STKO components are assumed all different!
 // some definitions
 
 /* 
-loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked dynamically.
-If uncommeted, then you need to define the macro H5_BUILT_AS_DYNAMIC_LIB to tell hdf5 that
-we want to dynamic link (shared library).
-Then we need to set the HDF5 include directory.
-And finally for the linker: hdf5 or libhdf5
-and path to HDF5 lib dir
+loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked statically.
 */
-#define MPCO_HDF5_LOADED_AT_RUNTIME 
+#ifndef _HDF5
+#define MPCO_HDF5_LOADED_AT_RUNTIME
+#endif // !_HDF5 
 
 /* if hdf5 is loaded at runtime, this macro makes the process of loading hdf5 verbose */
 #define MPCO_LIBLOADER_VERBOSE
