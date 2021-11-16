@@ -59,6 +59,9 @@ opensees_load(AMD
   #LIBRARY "${OPS_BUNDLED_DIR}/bin/AMD/libAMD.a"
 )
 
+opensees_load(tet BUNDLED "${OPS_BUNDLED_DIR}/Tetgen/")
+opensees_load(triangle BUNDLED "${OPS_BUNDLED_DIR}/Triangle/")
+
 opensees_load(METIS                                          FIND)
 
 opensees_load(HDF5                                           FIND)

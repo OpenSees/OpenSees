@@ -11,7 +11,7 @@
 #                           Select Executable
 #
 #==============================================================================
-set(OPS_FINAL_TARGET "OpenSeesTcl" CACHE STRING "OpenSees final target")
+set(OPS_FINAL_TARGET "OpenSees" CACHE STRING "OpenSees final target")
 #==============================================================================
 #                            Basic Switches
 #
