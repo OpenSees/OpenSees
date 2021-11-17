@@ -53,6 +53,7 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
    set (HDF5_FOUND TRUE)
+   set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
 else()
@@ -295,16 +296,6 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${BLAS_LIBRARIES} 
 )
 
-
-message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
-message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-message("OPS >>> UMFPACK: ${UMFPACK_LIBRARIES}")
-message("OPS >>> CSPARSE: ${CSPARSE_LIBRARIES}")
-message("OPS >>> AMD:     ${AMD_LIBRARIES}")
-
 set(TCL_LIBRARIES ${TCL_LIBRARY})
 
 #
@@ -340,7 +331,6 @@ add_library(OPS_INTERPRETER        OBJECT)
 # Optional Extensions
 #
 
-add_library(OPS_ASDEA              OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Graphics           OBJECT EXCLUDE_FROM_ALL)
@@ -485,7 +475,7 @@ target_compile_options(OpenSeesPy PUBLIC -fPIC)
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy
-  OpenSeesLIB OPS_Thermal OPS_Reliability ${Python_LIBRARIES}
+  OpenSeesLIB OPS_Thermal OPS_Reliability ${HDF5_LIBRARIES} ${CONAN_LIBRARIES} ${Python_LIBRARIES}
 )
 
 # Set selected executable to be built by default
@@ -499,18 +489,11 @@ add_subdirectory(${OPS_SRC_DIR})
 #
 #==============================================================================
 
-target_link_libraries(OPS_Numerics     INTERFACE ${OPS_Numlib_List})
-message("Numlibs: ${OPS_Numlib_List}")
-
+#target_link_libraries(OPS_Numerics     INTERFACE ${OPS_Numlib_List})
+#message("Numlibs: ${OPS_Numlib_List}")
 #target_link_libraries(OPS_Element      PRIVATE ${OPS_Element_List})
 #target_link_libraries(OPS_ObjectBroker PRIVATE ${OPS_Element_List})
 #target_link_libraries(OPS_InterpTcl    PRIVATE ${OPS_Element_List})
-
-
-#----------------------------
-# OpenSeesPy
-#----------------------------
-
 
 
 
