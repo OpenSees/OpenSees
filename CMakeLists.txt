@@ -438,7 +438,7 @@ endif()
 
 
 target_link_libraries(OpenSees
-  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${CONAN_LIBS}
+  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${HDF5_LIBRARIES} ${CONAN_LIBS}
 )
 
 
@@ -581,15 +581,16 @@ endif()
 #----------------------------
 # HDF5
 #----------------------------
-if(OPS_Use_HDF5)
-   find_package(HDF5)
-    if(HDF5_FOUND)
-        include_directories(${HDF5_INCLUDE_DIR})
-        set(_hdf5_libs hdf5 hdf5_cpp)
-    add_compile_definitions(-D_H5DRM)
-    else()
-        message(STATUS "OPS >>> Could not find HDF5")
-    endif()
+
+if(HDF5_FOUND)
+   include_directories(${HDF5_INCLUDE_DIR})
+   set(_hdf5_libs hdf5 hdf5_cpp)
+   add_compile_definitions(_H5DRM)
+   if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
+      add_compile_definitions(_HDF5)
+   endif()
+else()
+   message(STATUS "OPS >>> Could not find HDF5")
 endif()
 
 
