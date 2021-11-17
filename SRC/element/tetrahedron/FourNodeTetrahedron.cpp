@@ -71,7 +71,7 @@ void* OPS_FourNodeTetrahedron()
     if (mat == 0) 
     {
       opserr << "WARNING material not found\n";
-      opserr << "material tag: " << idata[9];
+      opserr << "material tag: " << idata[5];
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
     }
 

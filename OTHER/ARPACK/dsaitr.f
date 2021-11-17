@@ -262,7 +262,7 @@ c     | External Subroutines |
 c     %----------------------%
 c
       external   daxpy, dcopy, dscal, dgemv, dgetv0, dvout, dmout,
-     &           dlascl, ivout, second
+     &           dlascl, ivout, second, ivout1, dvout1
 c
 c     %--------------------%
 c     | External Functions |
@@ -364,9 +364,9 @@ c
  1000 continue
 c
          if (msglvl .gt. 2) then
-            call ivout (logfil, 1, j, ndigit, 
+            call ivout1 (logfil, 1, j, ndigit, 
      &                  '_saitr: generating Arnoldi vector no.')
-            call dvout (logfil, 1, rnorm, ndigit, 
+            call dvout1 (logfil, 1, rnorm, ndigit, 
      &                  '_saitr: B-norm of the current residual =')
          end if
 c 
@@ -384,7 +384,7 @@ c           | basis and continue the iteration.                 |
 c           %---------------------------------------------------%
 c
             if (msglvl .gt. 0) then
-               call ivout (logfil, 1, j, ndigit,
+               call ivout1 (logfil, 1, j, ndigit,
      &                     '_saitr: ****** restart at step ******')
             end if
 c 
@@ -735,7 +735,7 @@ c
          end if
 c
          if (msglvl .gt. 0 .and. iter .gt. 0) then
-            call ivout (logfil, 1, j, ndigit,
+            call ivout1 (logfil, 1, j, ndigit,
      &           '_saitr: Iterative refinement for Arnoldi residual')
             if (msglvl .gt. 2) then
                 xtemp(1) = rnorm

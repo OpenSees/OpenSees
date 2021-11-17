@@ -29,7 +29,7 @@
 #include <stdlib.h> 
 #include <math.h> 
 
-#include <SAniSandMS.h>
+#include "SAniSandMS.h"
 
 class SAniSandMS3D : public SAniSandMS
 {

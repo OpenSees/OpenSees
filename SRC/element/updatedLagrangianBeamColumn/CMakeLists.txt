@@ -4,9 +4,9 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_updatedLagrangianBeamColumn OBJECT)
+#add_library(OPS_Element_updatedLagrangianBeamColumn OBJECT)
 
-target_sources(OPS_Element_updatedLagrangianBeamColumn
+target_sources(OPS_Element
     PRIVATE
         BilinearCyclic.cpp
         CyclicModel.cpp
@@ -33,5 +33,5 @@ target_sources(OPS_Element_updatedLagrangianBeamColumn
         QuadraticCyclic.h
         UpdatedLagrangianBeam2D.h
 )
-target_include_directories(OPS_Element_updatedLagrangianBeamColumn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

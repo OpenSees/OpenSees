@@ -38,23 +38,20 @@ in STKO components are assumed all different!
 // some definitions
 
 /* 
-loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked dynamically.
-If uncommeted, then you need to define the macro H5_BUILT_AS_DYNAMIC_LIB to tell hdf5 that
-we want to dynamic link (shared library).
-Then we need to set the HDF5 include directory.
-And finally for the linker: hdf5 or libhdf5
-and path to HDF5 lib dir
+loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked statically.
 */
-#define MPCO_HDF5_LOADED_AT_RUNTIME 
+#ifndef _HDF5
+#define MPCO_HDF5_LOADED_AT_RUNTIME
+#endif // !_HDF5 
 
 /* if hdf5 is loaded at runtime, this macro makes the process of loading hdf5 verbose */
 #define MPCO_LIBLOADER_VERBOSE
 
 /* max number of iterations to guess the number of cross sections in elements */
-#define MPCO_MAX_TRIAL_NSEC 1000
+#define MPCO_MAX_TRIAL_NSEC 100
 
 /* max number of iterations to guess the number of fibers in cross sections */
-#define MPCO_MAX_TRIAL_NFIB 1000000
+#define MPCO_MAX_TRIAL_NFIB 100000
 
 //#define MPCO_WRITE_SECTION_IS_VERBOSE
 //#define MPCO_WRITE_LOC_AX_IS_VERBOSE
@@ -64,7 +61,7 @@ and path to HDF5 lib dir
 enables SWMR (Single Writer - Multiple Readers) to allow reading this database from multiple processes
 while opensees is writing data. Warning: this is a new feature in hdf5 version 1.10.0.
 */
-#define MPCO_USE_SWMR
+//#define MPCO_USE_SWMR
 
 // opensees
 #include "MPCORecorder.h"
@@ -165,19 +162,19 @@ typedef int64_t hid_t;
 typedef int herr_t;
 typedef unsigned long long 	hsize_t;
 typedef int H5T_str_t; // enum (int) in hdf5
-typedef unsigned int H5F_libver_t; // enum (uint) in hdf5
-typedef unsigned int H5F_scope_t; // enum (uint) in hdf5
+typedef int H5F_libver_t; // enum (int) in hdf5
+typedef int H5F_scope_t; // enum (int) in hdf5
 
 /*
 HDF5 version info
 */
 
 #define H5_VERS_MAJOR	1	/* For major interface/format changes  	     */
-#define H5_VERS_MINOR	10	/* For minor interface/format changes  	     */
-#define H5_VERS_RELEASE	1	/* For tweaks, bug-fixes, or development     */
+#define H5_VERS_MINOR	12	/* For minor interface/format changes  	     */
+#define H5_VERS_RELEASE	0	/* For tweaks, bug-fixes, or development     */
 #define H5_VERS_SUBRELEASE ""	/* For pre-releases like snap0       */
                               /* Empty string for real releases.           */
-#define H5_VERS_INFO    "HDF5 library version: 1.10.1"      /* Full version string */
+#define H5_VERS_INFO    "HDF5 library version: 1.12.0"      /* Full version string */
 
 /*
 cout wrapper for library loader verbosity
@@ -3067,6 +3064,7 @@ namespace mpco {
 				, descr(_d)
 				, current_level(0)
 				, pending_close_tag(false)
+				, is_valid(true)
 			{}
 			~OutputDescriptorStream() {}
 
@@ -3315,11 +3313,14 @@ namespace mpco {
 			void ensureItemsOfUniformType(mpco::element::OutputDescriptor *parent, mpco::element::OutputDescriptor *child) {
 				if (parent->items.size() > 0) {
 					if (child->type != parent->items.back()->type) {
-						opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
+						/*opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
 							"Responses at the same level of the response tree must be of the same type.\n"
 							"Expected: " << mpco::ElementOutputDescriptorType::toString(parent->items.back()->type)
 							<< ", given: " << mpco::ElementOutputDescriptorType::toString(child->type) << "\n";
-						exit(-1);
+						exit(-1);*/
+						// M.Petracca - due to a recent commit (08/10/2021)
+						// this one can be converted from a fatal error to a silent-skip...
+						is_valid = false;
 					}
 				}
 			}
@@ -3328,6 +3329,7 @@ namespace mpco {
 			mpco::element::OutputDescriptor *descr;
 			int current_level;
 			bool pending_close_tag;
+			bool is_valid;
 		};
 
 		class OutputResponse
@@ -5929,7 +5931,7 @@ int MPCORecorder::initElementRecorders()
 						if (do_all_fibers) {
 							eo_descriptor.purge();
 						}
-						if (eo_response) {
+						if (eo_response && eo_stream.is_valid) {
 							/*
 							get (or create and get) the list of MPCORecorder_ElementResultRecorder mapped to this descriptor
 							and add the new element-response pair
