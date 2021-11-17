@@ -31,8 +31,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 #include(OpenSeesFunctions)
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
+# for OpenSeesPY
+add_Compile_options(-fPIC)
+
 #
-# externa; packages
+# external packages
 #
 
 add_library(OPS_External_packages INTERFACE)
@@ -49,6 +52,8 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
+   set (HDF5_FOUND TRUE)
+   set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
 else()
   include(OpenSeesFunctions)
@@ -349,14 +354,11 @@ add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 
 add_library(OPS_InterpTcl          STATIC)
 
+target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
   target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
   target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
 endif()
-
-target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
-
 
 #
 # OpenSees G3 Library - a slimmed down OpenSees
@@ -432,8 +434,13 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
 )
 
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+endif()
+
+
 target_link_libraries(OpenSees
-  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${CONAN_LIBS}
+  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${HDF5_LIBRARIES} ${CONAN_LIBS}
 )
 
 
@@ -474,7 +481,6 @@ target_link_libraries(OpenSeesMP OpenSeesLIB)
 
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL)
 
-# add_Compile_options(-fPIC)
 target_compile_options(OpenSeesPy PUBLIC -fPIC)
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
@@ -577,15 +583,17 @@ endif()
 #----------------------------
 # HDF5
 #----------------------------
-if(OPS_Use_HDF5)
-   find_package(HDF5)
-    if(HDF5_FOUND)
-        include_directories(${HDF5_INCLUDE_DIR})
-        set(_hdf5_libs hdf5 hdf5_cpp)
-    add_compile_definitions(-D_H5DRM)
-    else()
-        message(STATUS "OPS >>> Could not find HDF5")
-    endif()
+
+if(HDF5_FOUND)
+   include_directories(${HDF5_INCLUDE_DIR})
+   set(_hdf5_libs hdf5 hdf5_cpp)
+   add_compile_definitions(_H5DRM)
+   if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
+      add_compile_definitions(_HDF5)
+         message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")      
+   endif()
+else()
+   message(STATUS "OPS >>> Could not find HDF5")
 endif()
 
 
