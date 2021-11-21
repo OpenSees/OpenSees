@@ -142,11 +142,11 @@ int CTestRelativeNormDispIncr::test(void)
     // print the data if required
     if (printFlag == 1) {
         opserr << "CTestRelativeNormDispIncr::test() - iteration: " << currentIter;
-        opserr << " current Ratio (|dR|/|dR1|): " << norm << " (max: " << tol << ")\n";
+        opserr << " current Ratio (|dX|/|dX1|): " << norm << " (max: " << tol << ")\n";
     } 
     if (printFlag == 4) {
         opserr << "CTestRelativeNormDispIncr::test() - iteration: " << currentIter;
-        opserr << " current Ratio (|dR|/|dR1|): " << norm << " (max: " << tol << ")\n";
+        opserr << " current Ratio (|dX|/|dX1|): " << norm << " (max: " << tol << ")\n";
         opserr << "\tNorm deltaX: " << norm << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << endln;
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << theSOE->getB();
     } 
@@ -164,7 +164,7 @@ int CTestRelativeNormDispIncr::test(void)
                 opserr << endln;
             else if (printFlag == 2 || printFlag == 6) {
                 opserr << "CTestRelativeNormDispIncr::test() - iteration: " << currentIter;
-                opserr << " current Ratio (|dR|/|dR1|): " << norm << " (max: " << tol << ")\n";
+                opserr << " current Ratio (|dX|/|dX1|): " << norm << " (max: " << tol << ")\n";
             }
         }
         
@@ -175,7 +175,7 @@ int CTestRelativeNormDispIncr::test(void)
     // algo failed to converged after specified number of iterations - but RETURN OK
     else if ((printFlag == 5 || printFlag == 6) && currentIter >= maxNumIter) {
         opserr << "WARNING: CTestRelativeNormDispIncr::test() - failed to converge but going on -";
-        opserr << " current Ratio (|dR|/|dR1|): " << norm << " (max: " << tol;
+        opserr << " current Ratio (|dX|/|dX1|): " << norm << " (max: " << tol;
         opserr << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << ")\n";
         return currentIter;
     }
