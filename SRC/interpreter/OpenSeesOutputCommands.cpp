@@ -2835,7 +2835,7 @@ int OPS_basicDeformation()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicDeformation eleTag? dofNum? - could not read eleTag? \n";
+	opserr << "WARNING basicDeformation eleTag? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -2863,18 +2863,31 @@ int OPS_basicDeformation()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    const Vector &theVec = *(info.theVector);
-    int nbf = theVec.Size();
+    // Vector
+    if (info.theVector != 0) {
+      const Vector &theVec = *(info.theVector);
+      int nbf = theVec.Size();
 
-    std::vector<double> data(nbf);
-    for (int i=0; i<nbf; i++) {
+      std::vector<double> data(nbf);
+      for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
-    }
+      }
 
-    if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
+      if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    }
+    // Scalar
+    else {
+      int nbf = 1;
+      double data = info.theDouble;
+      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;
@@ -2899,7 +2912,7 @@ int OPS_basicForce()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicForce eleTag? dofNum? - could not read eleTag? \n";
+	opserr << "WARNING basicForce eleTag? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -2932,18 +2945,31 @@ int OPS_basicForce()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    const Vector &theVec = *(info.theVector);
-    int nbf = theVec.Size();
+    // Vector
+    if (info.theVector != 0) {
+      const Vector &theVec = *(info.theVector);
+      int nbf = theVec.Size();
 
-    std::vector<double> data(nbf);
-    for (int i=0; i<nbf; i++) {
+      std::vector<double> data(nbf);
+      for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
-    }
+      }
 
-    if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
+      if (OPS_SetDoubleOutput(&nbf, &data[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    }
+    // Scalar
+    else {
+      int nbf = 1;
+      double data = info.theDouble;
+      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;
@@ -2968,7 +2994,7 @@ int OPS_basicStiffness()
     int tag;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING basicStiffness eleTag? dofNum? - could not read eleTag? \n";
+	opserr << "WARNING basicStiffness eleTag? - could not read eleTag? \n";
 	return -1;
     }
 
@@ -2996,32 +3022,44 @@ int OPS_basicStiffness()
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
 
-    const Matrix &theMatrix = *(info.theMatrix);
-    int nbf = theMatrix.noCols();
+    // Matrix
+    if (info.theMatrix != 0) {
+      const Matrix &theMatrix = *(info.theMatrix);
+      int nbf = theMatrix.noCols();
 
-    std::vector<double> values;
-    int size = nbf*nbf;
-    if (size == 0) {
+      std::vector<double> values;
+      int size = nbf*nbf;
+      if (size == 0) {
         if (OPS_SetDoubleOutput(&size, 0, false) < 0) {
-            opserr << "WARNING failed to set output\n";
-            delete theResponse;
-            return -1;
+	  opserr << "WARNING failed to set output\n";
+	  delete theResponse;
+	  return -1;
         }
         return 0;
-    }
-    values.reserve(size);
-
-
-    for (int i = 0; i < nbf; i++) {
+      }
+      values.reserve(size);
+      
+      for (int i = 0; i < nbf; i++) {
 	for (int j = 0; j < nbf; j++) {
-	    values.push_back(theMatrix(i,j));
+	  values.push_back(theMatrix(i,j));
 	}
-    }
+      }
 
-    if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
+      if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    }
+    // Scalar
+    else {
+      int nbf = 1;
+      double data = info.theDouble;
+      if (OPS_SetDoubleOutput(&nbf, &data, false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;
