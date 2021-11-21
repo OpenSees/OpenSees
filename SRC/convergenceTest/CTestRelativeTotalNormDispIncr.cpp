@@ -147,11 +147,11 @@ int CTestRelativeTotalNormDispIncr::test(void)
     // print the data if required
     if (printFlag == 1)  {
         opserr << "CTestRelativeTotalNormDispIncr::test() - iteration: " << currentIter;
-        opserr << " current ratio (|dR|/|dRtot|): " << norm << " (max: " << tol << ")\n";
+        opserr << " current ratio (|dX|/|dXtot|): " << norm << " (max: " << tol << ")\n";
     } 
     if (printFlag == 4)  {
         opserr << "CTestRelativeTotalNormDispIncr::test() - iteration: " << currentIter;
-        opserr << " current ratio (|dR|/|dRtot|): " << norm << " (max: " << tol << ")\n";
+        opserr << " current ratio (|dX|/|dXtot|): " << norm << " (max: " << tol << ")\n";
         opserr << "\tNorm deltaX: " << norm << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << endln;
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << theSOE->getB();
     } 
@@ -169,7 +169,7 @@ int CTestRelativeTotalNormDispIncr::test(void)
                 opserr << endln;
             else if (printFlag == 2 || printFlag == 6)  {
                 opserr << "CTestRelativeTotalNormDispIncr::test() - iteration: " << currentIter;
-                opserr << " current ratio (|dR|/|dRtot|): " << norm << " (max: " << tol << ")\n";
+                opserr << " current ratio (|dX|/|dXtot|): " << norm << " (max: " << tol << ")\n";
             }
         }
         
@@ -180,7 +180,7 @@ int CTestRelativeTotalNormDispIncr::test(void)
     // algo failed to converged after specified number of iterations - but RETURN OK
     else if ((printFlag == 5 || printFlag == 6) && currentIter >= maxNumIter)  {
         opserr << "WARNING: CTestRelativeTotalNormDispIncr::test() - failed to converge but going on -";
-        opserr << " current ratio (|dR|/|dRtot|): " << norm << " (max: " << tol << ")\n";
+        opserr << " current ratio (|dX|/|dXtot|): " << norm << " (max: " << tol << ")\n";
         opserr << "\tNorm deltaX: " << norm << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << endln;
         return currentIter;
     }
