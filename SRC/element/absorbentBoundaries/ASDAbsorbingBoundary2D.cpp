@@ -861,23 +861,34 @@ int ASDAbsorbingBoundary2D::updateParameter(int parameterID, Information& info)
 Response* ASDAbsorbingBoundary2D::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
     // check and quick return
+    if (argc < 1)
+        return nullptr;
+    // support responses such as "E" or "material 1 E"
+    int iarg = 0;
+    if (argc == 3) {
+        if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "integrPoint") == 0) {
+            int pointNum = atoi(argv[1]);
+            if (pointNum == 1) {
+                iarg = 2;
+            }
+        }
+    }
+    // check argument
     int rtype = 0;
-    if (strcmp(argv[0], "stage") == 0)
+    if (strcmp(argv[iarg], "stage") == 0)
         rtype = 1;
-    else if (strcmp(argv[0], "G") == 0)
+    else if (strcmp(argv[iarg], "G") == 0)
         rtype = 2;
-    else if (strcmp(argv[0], "v") == 0)
+    else if (strcmp(argv[iarg], "v") == 0)
         rtype = 3;
-    else if (strcmp(argv[0], "rho") == 0)
+    else if (strcmp(argv[iarg], "rho") == 0)
         rtype = 4;
-    else if (strcmp(argv[0], "E") == 0)
+    else if (strcmp(argv[iarg], "E") == 0)
         rtype = 5;
     if (rtype == 0)
         return Element::setResponse(argv, argc, output);
 
-    // create response
-    Response* theResponse = 0;
-
+    // prepare response meta-data
     output.tag("ElementOutput");
     output.attr("eleType", this->getClassType());
     output.attr("eleTag", this->getTag());
@@ -908,8 +919,8 @@ Response* ASDAbsorbingBoundary2D::setResponse(const char** argv, int argc, OPS_S
     output.endTag(); // NdMaterialOutput
     output.endTag(); // ElementOutput
 
-    theResponse = new ElementResponse(this, rtype, Vector(1));
-    return theResponse;
+    // done
+    return new ElementResponse(this, rtype, Vector(1));
 }
 
 int ASDAbsorbingBoundary2D::getResponse(int responseID, Information& eleInfo)
