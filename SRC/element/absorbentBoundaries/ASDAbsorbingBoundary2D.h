@@ -104,6 +104,10 @@ public:
     int setParameter(const char** argv, int argc, Parameter& param);
     int updateParameter(int parameterID, Information& info);
 
+    // response
+    Response* setResponse(const char** argv, int argc, OPS_Stream& output);
+    int getResponse(int responseID, Information& eleInfo);
+
 private:
 
     // methods to get displacement/velocity
