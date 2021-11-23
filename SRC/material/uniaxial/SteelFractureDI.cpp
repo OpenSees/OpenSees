@@ -50,7 +50,7 @@ OPS_SteelFractureDI()
 	UniaxialMaterial *theMaterial = 0;
 
 	int    iData[1];
-	double dData[14];
+	double dData[15];
 	int numData = 1;
 
 	if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -60,20 +60,20 @@ OPS_SteelFractureDI()
 
 	numData = OPS_GetNumRemainingInputArgs();
 
-	if (numData != 14) {
+	if (numData != 15) {
 		opserr << "Invalid #args, want: uniaxialMaterial SteelFractureDI " << iData[0] <<
-			" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
+			" Fy? Fyc? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
 		return 0;
 	}
 	else {
 		if (OPS_GetDoubleInput(&numData, dData) != 0) {
 			opserr << "Invalid arggs: uniaxialMaterial SteelFractureDI " << iData[0] <<
-				" fy? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
+				" Fy? FyC? E? b? R0? cR1? cR2? a1? a2? a3? a4? sigcr? m? sigmin? FI_lim?" << endln;
 			return 0;
 		}
 		theMaterial = new SteelFractureDI(iData[0], dData[0], dData[1], dData[2],
 			dData[3], dData[4], dData[5], dData[6],
-			dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13]);
+			dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14]);
 	}
 
 
@@ -89,12 +89,12 @@ OPS_SteelFractureDI()
 
 
 SteelFractureDI::SteelFractureDI(int tag,
-	double _Fy, double _E0, double _b,
+	double _Fy, double _FyC, double _E0, double _b,
 	double _R0, double _cR1, double _cR2,
 	double _a1, double _a2, double _a3, double _a4, double _sigcr, double _m, double _sigmin, double _FI_lim):
 	UniaxialMaterial(tag, MAT_TAG_SteelFractureDI),
 	//UniaxialMaterial(tag, 0),
-	Fy(_Fy), E0(_E0), b(_b), R0(_R0), cR1(_cR1), cR2(_cR2), a1(_a1), a2(_a2), a3(_a3), a4(_a4),
+	Fy(_Fy), FyC(_FyC), E0(_E0), b(_b), R0(_R0), cR1(_cR1), cR2(_cR2), a1(_a1), a2(_a2), a3(_a3), a4(_a4),
 	sigcr(_sigcr), m(_m), sigmin(_sigmin), FI_lim(_FI_lim)
 {
 	konP = 0;
@@ -105,9 +105,9 @@ SteelFractureDI::SteelFractureDI(int tag,
 	sig = 0.0;
 	eps = 0.0;
 	e = E0;
-
+	
 	epsmaxP = Fy / E0;
-	epsminP = -epsmaxP;
+	epsminP = -FyC / E0; ////////////////////////////////////////////
 	epsplP = 0.0;
 	epss0P = 0.0;
 	sigs0P = 0.0;
@@ -161,8 +161,8 @@ SteelFractureDI::~SteelFractureDI(void)
 UniaxialMaterial*
 SteelFractureDI::getCopy(void)
 {
-	//Steel02 *theCopy = new Steel02(this->getTag(), Fy, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigini);
-	SteelFractureDI *theCopy = new SteelFractureDI(this->getTag(), Fy, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigcr, m, sigmin, FI_lim);
+	//Steel02 *theCopy = new Steel02(this->getTag(), Fy, FyC, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigini);
+	SteelFractureDI *theCopy = new SteelFractureDI(this->getTag(), Fy, FyC, E0, b, R0, cR1, cR2, a1, a2, a3, a4, sigcr, m, sigmin, FI_lim);
 
 	return theCopy;
 }
@@ -178,7 +178,8 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 {
 	double Esh = b * E0;
 	double epsy = Fy / E0;
-
+	double epsyc = FyC / E0; ////////////////////////////////////////////
+	
 	eps = trialStrain;
 	double deps = eps - epsP;
 
@@ -223,11 +224,11 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 		else {
 
 			epsmax = epsy;
-			epsmin = -epsy;
+			epsmin = -epsyc; ////////////////////////////////////////////
 			if (deps < 0.0) {
 				kon = 2;
 				epss0 = epsmin;
-				sigs0 = -Fy;
+				sigs0 = -FyC; ////////////////////////////////////////////
 				epspl = epsmin;
 			}
 			else {
@@ -258,7 +259,7 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 			epsmin = epsP;
 		double d1 = (epsmax - epsmin) / (2.0*(a4 * epsy));
 		double shft = 1.0 + a3 * pow(d1, 0.8);
-		epss0 = (Fy * shft - Esh * epsy * shft - sigr + E0 * epsr) / (E0 - Esh);
+		epss0 = (Fy * shft - Esh * epsy * shft - sigr + E0 * epsr) / (E0 - Esh); 
 		sigs0 = Fy * shft + Esh * (epss0 - epsy * shft);
 		epspl = epsmax;
 
@@ -279,17 +280,22 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 		if (epsP > epsmax)
 			epsmax = epsP;
 
-		double d1 = (epsmax - epsmin) / (2.0*(a2 * epsy));
+		double d1 = (epsmax - epsmin) / (2.0*(a2 * epsyc));
 		double shft = 1.0 + a1 * pow(d1, 0.8);
-		epss0 = (-Fy * shft + Esh * epsy * shft - sigr + E0 * epsr) / (E0 - Esh);
-		sigs0 = -Fy * shft + Esh * (epss0 + epsy * shft);
+		epss0 = (-FyC * shft + Esh * epsyc * shft - sigr + E0 * epsr) / (E0 - Esh);
+		sigs0 = -FyC * shft + Esh * (epss0 + epsyc * shft);
 		epspl = epsmin;
 	}
 
 
 	// calculate current stress sig and tangent modulus E 
 	if (kon != 4) { // non-fracture case
+		// tension
 		double xi = fabs((epspl - epss0) / epsy);
+		if (deps < 0.0)
+			// compresion
+			xi = fabs((epspl - epss0) / epsyc);
+
 		double R = R0 * (1.0 - (cR1*xi) / (cR2 + xi));
 		double epsrat = (eps - epsr) / (epss0 - epsr);
 		double dum1 = 1.0 + pow(fabs(epsrat), R);
@@ -310,8 +316,8 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 			konf = 1;
 
 			// Point at compression yield envelope
-			eps_1 = (-Fy + Esh * epsy - sigP + E0 * epsP) / (E0 - Esh);
-			sig_1 = -Fy + Esh * (eps_1 + epsy);
+			eps_1 = (-FyC + Esh * epsyc - sigP + E0 * epsP) / (E0 - Esh);
+			sig_1 = -FyC + Esh * (eps_1 + epsyc);
 
 			// Points at horizontal axis
 			eps_0 = epsP - sigP / E0;
@@ -357,8 +363,8 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 					eps_0 = epsP - sigP / E0; // new interception is at reversal point minus elastic unloading
 					sigs0 = 0; // new interception always at horizontal axis since flange fractured
 
-					eps_1 = (-Fy + Esh * epsy + E0 * eps_0) / (E0 - Esh); // Point at compression yield envelope
-					sig_1 = -Fy + Esh * (eps_1 + epsy);
+					eps_1 = (-FyC + Esh * epsyc + E0 * eps_0) / (E0 - Esh); // Point at compression yield envelope
+					sig_1 = -FyC + Esh * (eps_1 + epsyc);
 
 					eps_r = 2 * eps_0 - eps_1; // Point at zero stress and e
 				}
@@ -667,7 +673,8 @@ SteelFractureDI::Print(OPS_Stream &s, int flag)
 	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
 		//    s << "Steel02:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
 		s << "SteelFracture tag: " << this->getTag() << endln;
-		s << "  fy: " << Fy << ", ";
+		s << "  Fy: " << Fy << ", ";
+		s << "  FyC: " << FyC << ", ";
 		s << "  E0: " << E0 << ", ";
 		s << "   b: " << b << ", ";
 		s << "  R0: " << R0 << ", ";
@@ -688,7 +695,8 @@ SteelFractureDI::Print(OPS_Stream &s, int flag)
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"SteelFracture\", ";
 		s << "\"E\": " << E0 << ", ";
-		s << "\"fy\": " << Fy << ", ";
+		s << "\"Fy\": " << Fy << ", ";
+		s << "\"FyC\": " << FyC << ", ";
 		s << "\"b\": " << b << ", ";
 		s << "\"R0\": " << R0 << ", ";
 		s << "\"cR1\": " << cR1 << ", ";
