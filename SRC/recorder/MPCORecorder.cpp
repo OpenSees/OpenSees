@@ -3124,6 +3124,14 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Material;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
+						if (eo_curr_lev->items.size() > 0) {
+							// multiple materials cannot be children of same gauss/fiber point. this happens when
+							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
+							// which opens again the same tag
+							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items)
+								delete sub_item;
+							eo_curr_lev->items.clear();
+						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3140,6 +3148,14 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Section;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
+						if (eo_curr_lev->items.size() > 0) {
+							// multiple sections cannot be children of same gauss point. this happens when
+							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
+							// which opens again the same tag
+							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items) 
+								delete sub_item;
+							eo_curr_lev->items.clear();
+						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3883,7 +3899,6 @@ namespace mpco {
 										x_max = ieta;
 								}
 								double span = x_max - x_min;
-								//elem->getNodePtrs(); // HERE
 								if (span == 0.0) {
 									rule.x.resize((size_t)data.Size(), 0.0);
 								}
@@ -5118,6 +5133,17 @@ int MPCORecorder::writeSections()
 					argv[0] = request1.c_str();
 					argv[2] = request2.c_str();
 					argv[4] = request3.c_str();
+					// prepare also an alternative request for the case of section aggregators.
+					// 23/11/2021 due to a recent clean up of the setResponse method of the sectionAggregator
+					// the results of the underlying fiber section must be requested with an extra "section" keyword
+					int woagg_agrc = 6;
+					const char** woagg_argv = new const char* [woagg_agrc];
+					woagg_argv[0] = request1.c_str(); // 0: section
+					// 1: section id
+					woagg_argv[2] = request1.c_str(); // 2: section inside aggregator
+					woagg_argv[3] = request2.c_str(); // 3: fiber
+					// 4: fiber id
+					woagg_argv[5] = request3.c_str(); // 5: stress
 					/*
 					fiber section data for each gauss point
 					*/
@@ -5143,12 +5169,14 @@ int MPCORecorder::writeSections()
 						std::stringstream ss_trial_num_sec; ss_trial_num_sec << trial_num_sec;
 						std::string s_trial_num_sec = ss_trial_num_sec.str();
 						argv[1] = s_trial_num_sec.c_str();
+						woagg_argv[1] = s_trial_num_sec.c_str();
 						/*
 						for each fiber
 						*/
 						int trial_num_fib = -1; /* note: in setResponse fiber index is 0-based */
 						bool break_sec_loop = false;
 						bool first_fiber_done = false;
+						bool do_workaround_for_aggregator = false;
 						while (true) {
 							trial_num_fib++;
 							if (trial_num_fib > MPCO_MAX_TRIAL_NFIB) {
@@ -5159,12 +5187,15 @@ int MPCORecorder::writeSections()
 							std::stringstream ss_trial_num_fib; ss_trial_num_fib << trial_num_fib;
 							std::string s_trial_num_fib = ss_trial_num_fib.str();
 							argv[3] = s_trial_num_fib.c_str();
+							woagg_argv[4] = s_trial_num_fib.c_str();
 							/*
 							get the element response for the ith section and the ith fiber
 							*/
 							mpco::element::OutputDescriptor eo_descriptor;
 							mpco::element::OutputDescriptorStream eo_stream(&eo_descriptor);
-							Response *eo_response = elem->setResponse(argv, argc, eo_stream);
+							Response *eo_response = do_workaround_for_aggregator ?
+								elem->setResponse(woagg_argv, woagg_agrc, eo_stream) :
+								elem->setResponse(argv, argc, eo_stream);
 							eo_stream.finalizeSetResponse();
 							if (eo_response)
 								delete eo_response; // we dont need it now
@@ -5267,6 +5298,31 @@ int MPCORecorder::writeSections()
 #ifdef MPCO_WRITE_SECTION_IS_VERBOSE
 								std::cout << "MPCORecorder: exiting fiber loop. iter = " << trial_num_fib << "\n";
 #endif // MPCO_WRITE_SECTION_IS_VERBOSE
+								/*
+								this condition can trigger the workaround for sectionAggregator if we
+								are not doing it already.
+								trial_num_fib should be = 1, due to the 1-based workaround for shell sections
+								*/
+								if (!do_workaround_for_aggregator && (trial_num_fib == 1)) {
+									do_workaround_for_aggregator = true;
+									// remove data set in previous if-block
+									if (first_fiber_done) {
+										elem_gauss_id.pop_back();
+										elem_sec_id.pop_back();
+										elem_dummy_sec_flags.pop_back();
+										elem_sections.pop_back();
+										elem_fiber_base_index.pop_back();
+									}
+									// reset data and continue to simulate a new while loop
+									trial_num_fib = -1;
+									break_sec_loop = false;
+									first_fiber_done = false;
+#ifdef MPCO_WRITE_SECTION_IS_VERBOSE
+									std::cout << "MPCORecorder: begin workaround for sectionAggregator\n";
+#endif // MPCO_WRITE_SECTION_IS_VERBOSE
+									continue;
+								}
+								// break the fiber loop
 								break;
 							}
 							/*
@@ -5310,6 +5366,7 @@ int MPCORecorder::writeSections()
 					free argv
 					*/
 					delete[] argv;
+					delete[] woagg_argv;
 					/*
 					fiber section data for each gauss point has been obtained
 					*/
