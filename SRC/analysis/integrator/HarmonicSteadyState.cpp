@@ -49,7 +49,7 @@
 
 void* OPS_HarmonicSteadyState()
 {
-    if(OPS_GetNumRemainingInputArgs() < 1) {
+    if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient arguments\n";
 	return 0;
     }
@@ -61,9 +61,15 @@ void* OPS_HarmonicSteadyState()
 	return 0;
     }
 
+	double prads = 0;
+	numData = 1;
+	if(OPS_GetDoubleInput(&numData,&prads) < 0) {
+	    opserr<<"WARNING failed to read double prads\n";
+	    return 0;
+	}
+
     int numIter = 1;
     double mLambda[2] = {lambda,lambda};
-	double prads = 0;
     if(OPS_GetNumRemainingInputArgs() > 2) {
 	if(OPS_GetIntInput(&numData,&numIter) < 0) {
 	    opserr<<"WARNING failed to read int numIter\n";
@@ -74,22 +80,16 @@ void* OPS_HarmonicSteadyState()
 	    opserr<<"WARNING failed to read double min and max\n";
 	    return 0;
 	}
-	numData = 1;
-	// numData = 3; // sewi ??
-	if(OPS_GetDoubleInput(&numData,&prads) < 0) {
-	    opserr<<"WARNING failed to read double min and max\n";
-	    return 0;
-	}
     }
 
-    return new HarmonicSteadyState(lambda,numIter,mLambda[0],mLambda[1],prads);
+    return new HarmonicSteadyState(lambda,prads,numIter,mLambda[0],mLambda[1]);
 }
 
-HarmonicSteadyState::HarmonicSteadyState(double dLambda, int numIncr, double min, double max, double prads,  int classtag)
+HarmonicSteadyState::HarmonicSteadyState(double dLambda, double prads, int numIncr, double min, double max,  int classtag)
     : StaticIntegrator(classtag),
- deltaLambda(dLambda),
+ deltaLambda(dLambda), loadCircFreq(prads),
  specNumIncrStep(numIncr), numIncrLastStep(numIncr),
-	  dLambdaMin(min), dLambdaMax(max), loadCircFreq(prads), gradNumber(0), sensitivityFlag(0)
+	  dLambdaMin(min), dLambdaMax(max), gradNumber(0), sensitivityFlag(0)
 {
   // to avoid divide-by-zero error on first update() ensure numIncr != 0
   if (numIncr == 0) {
@@ -173,14 +173,13 @@ int
 HarmonicSteadyState::sendSelf(int cTag,
 		      Channel &theChannel)
 {
-  // Vector data(5);
-  Vector data(6); // sewi
+  Vector data(6);
   data(0) = deltaLambda;
-  data(1) = specNumIncrStep;
-  data(2) = numIncrLastStep;
-  data(3) = dLambdaMin;
-  data(4) = dLambdaMax;
-  data(5) = loadCircFreq;
+  data(1) = loadCircFreq;
+  data(2) = specNumIncrStep;
+  data(3) = numIncrLastStep;
+  data(4) = dLambdaMin;
+  data(5) = dLambdaMax;
   if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
       opserr << "HarmonicSteadyState::sendSelf() - failed to send the Vector\n";
       return -1;
@@ -193,19 +192,18 @@ int
 HarmonicSteadyState::recvSelf(int cTag,
 		      Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  // Vector data(5);
-  Vector data(6); // sewi
+  Vector data(6);
   if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
       opserr << "HarmonicSteadyState::sendSelf() - failed to send the Vector\n";
       deltaLambda = 0;
       return -1;
   }
   deltaLambda = data(0);
-  specNumIncrStep = data(1);
-  numIncrLastStep = data(2);
-  dLambdaMin = data(3);
-  dLambdaMax = data(4);
-  loadCircFreq = data(5);
+  loadCircFreq = data(1);
+  specNumIncrStep = data(2);
+  numIncrLastStep = data(3);
+  dLambdaMin = data(4);
+  dLambdaMax = data(5);
   return 0;
 }
 
@@ -228,10 +226,22 @@ HarmonicSteadyState::Print(OPS_Stream &s, int flag)
 int
 HarmonicSteadyState::formEleTangent(FE_Element *theEle)
 {
+  if (statusFlag == CURRENT_TANGENT) {
     theEle->zeroTangent();
     theEle->addKtToTang();
 	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
-    return 0;
+  } else if (statusFlag == INITIAL_TANGENT) {
+    theEle->zeroTangent();
+    theEle->addKiToTang();
+	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
+  } else if (statusFlag == HALL_TANGENT)  {
+    theEle->zeroTangent();
+    theEle->addKtToTang(cFactor);
+    theEle->addKiToTang(iFactor);
+	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
+  }
+
+  return 0;
 }
 
 
