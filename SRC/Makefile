@@ -870,6 +870,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Trilinwp.o \
 	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
+	$(FE)/material/uniaxial/DowelType.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
