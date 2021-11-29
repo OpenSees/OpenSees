@@ -526,6 +526,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.cpp">
       <Filter>uniaxial\backbone</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DowelType.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -1785,6 +1788,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.h">
       <Filter>uniaxial\backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DowelType.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\AcousticMedium.h">
       <Filter>nD</Filter>
