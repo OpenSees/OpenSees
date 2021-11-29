@@ -61,10 +61,10 @@ void* OPS_HarmonicSteadyState()
 	return 0;
     }
 
-	double prads = 0;
+	double period = 0;
 	numData = 1;
-	if(OPS_GetDoubleInput(&numData,&prads) < 0) {
-	    opserr<<"WARNING failed to read double prads\n";
+	if(OPS_GetDoubleInput(&numData,&period) < 0) {
+	    opserr<<"WARNING failed to read double period\n";
 	    return 0;
 	}
 
@@ -82,12 +82,12 @@ void* OPS_HarmonicSteadyState()
 	}
     }
 
-    return new HarmonicSteadyState(lambda,prads,numIter,mLambda[0],mLambda[1]);
+    return new HarmonicSteadyState(lambda,period,numIter,mLambda[0],mLambda[1]);
 }
 
-HarmonicSteadyState::HarmonicSteadyState(double dLambda, double prads, int numIncr, double min, double max,  int classtag)
+HarmonicSteadyState::HarmonicSteadyState(double dLambda, double period, int numIncr, double min, double max,  int classtag)
     : StaticIntegrator(classtag),
- deltaLambda(dLambda), loadCircFreq(prads),
+ deltaLambda(dLambda), loadPeriod(period),
  specNumIncrStep(numIncr), numIncrLastStep(numIncr),
 	  dLambdaMin(min), dLambdaMax(max), gradNumber(0), sensitivityFlag(0)
 {
@@ -175,7 +175,7 @@ HarmonicSteadyState::sendSelf(int cTag,
 {
   Vector data(6);
   data(0) = deltaLambda;
-  data(1) = loadCircFreq;
+  data(1) = loadPeriod;
   data(2) = specNumIncrStep;
   data(3) = numIncrLastStep;
   data(4) = dLambdaMin;
@@ -199,7 +199,7 @@ HarmonicSteadyState::recvSelf(int cTag,
       return -1;
   }
   deltaLambda = data(0);
-  loadCircFreq = data(1);
+  loadPeriod = data(1);
   specNumIncrStep = data(2);
   numIncrLastStep = data(3);
   dLambdaMin = data(4);
@@ -217,7 +217,7 @@ HarmonicSteadyState::Print(OPS_Stream &s, int flag)
 	double currentLambda = theModel->getCurrentDomainTime();
 	s << "\t HarmonicSteadyState - currentLambda: " << currentLambda;
 	s << "  deltaLambda: " << deltaLambda << endln;
-	s << "  loadCircFreq: " << loadCircFreq << " rad/s" << endln;
+	s << "  Load Period: " << loadPeriod << endln;
     } else
 	s << "\t HarmonicSteadyState - no associated AnalysisModel\n";
 
@@ -226,19 +226,21 @@ HarmonicSteadyState::Print(OPS_Stream &s, int flag)
 int
 HarmonicSteadyState::formEleTangent(FE_Element *theEle)
 {
+  static const double twoPi = 2*3.1415926535897932;
+  static double twoPiSquareOverPeriodSquare = twoPi*twoPi/(loadPeriod*loadPeriod);
   if (statusFlag == CURRENT_TANGENT) {
     theEle->zeroTangent();
     theEle->addKtToTang();
-	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
+	theEle->addMtoTang(-twoPiSquareOverPeriodSquare);
   } else if (statusFlag == INITIAL_TANGENT) {
     theEle->zeroTangent();
     theEle->addKiToTang();
-	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
+	theEle->addMtoTang(-twoPiSquareOverPeriodSquare);
   } else if (statusFlag == HALL_TANGENT)  {
     theEle->zeroTangent();
     theEle->addKtToTang(cFactor);
     theEle->addKiToTang(iFactor);
-	theEle->addMtoTang(-loadCircFreq*loadCircFreq);
+	theEle->addMtoTang(-twoPiSquareOverPeriodSquare);
   }
 
   return 0;
