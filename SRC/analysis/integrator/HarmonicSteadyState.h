@@ -45,7 +45,7 @@ class ReliabilityDomain;
 class HarmonicSteadyState : public StaticIntegrator
 {
   public:
-    HarmonicSteadyState(double deltaLambda, double loadCircFreq, int numIncr,
+    HarmonicSteadyState(double deltaLambda, double loadPeriod, int numIncr,
 			   double minLambda, double maxlambda,
 			   int classtag=INTEGRATOR_TAGS_HarmonicSteadyState);
 
@@ -80,7 +80,7 @@ protected:
 
   private:
     double deltaLambda;  // dlambda at step (i-1)
-    double loadCircFreq; // excitation circular frequency (p) in rad/s
+    double loadPeriod; // load period in seconds (p = 2pi/T)
 
     double specNumIncrStep, numIncrLastStep; // Jd & J(i-1)
     double dLambdaMin, dLambdaMax; // min & max values for dlambda at step (i)
