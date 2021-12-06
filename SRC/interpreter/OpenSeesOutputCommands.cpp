@@ -1686,6 +1686,92 @@ int OPS_constrainedNodes()
     return 0;
 }
 
+int OPS_constrainedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - constrainedDOFs cNode? <rNode?> <rDOF?>\n";
+	return -1;
+    }
+
+    int cNode;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &cNode) < 0) {
+	  opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
+	  return -1;
+    }
+
+    int rNode;
+	bool allNodes = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &rNode) < 0) {
+		opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
+		return -1;
+	  }
+	  allNodes = 0;
+	}
+
+    int rDOF;
+	bool allDOFs = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &rDOF) < 0) {
+		opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
+		return -1;
+	  }
+	  rDOF--;
+	  allDOFs = 0;
+	}
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+    int tag;
+    int i;
+    int n;
+	Vector constrained(6);
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeConstrained();
+        if (tag == cNode) {
+            if (allNodes || rNode == theMP->getNodeRetained()) {
+                const ID &cDOFs = theMP->getConstrainedDOFs();
+                n = cDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        constrained(cDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID &rDOFs = theMP->getRetainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (rDOF == rDOFs(i))
+                            constrained(cDOFs(i)) = 1;
+                    }
+                }
+            }
+        }
+    }
+
+	int size = constrained.Size();
+
+	int* data = new int[size];
+	for (int i=0; i<size; i++) {
+	    data[i] = constrained(i);
+	}
+
+	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
 int OPS_retainedNodes()
 {
     bool all = 1;
@@ -1698,11 +1784,6 @@ int OPS_retainedNodes()
 		return -1;
 	  }
 	all = 0;
-    }
-
-    if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
-	  opserr << "WARNING retainedNodes cNodeTag? \n";
-	  return -1;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -1733,6 +1814,91 @@ int OPS_retainedNodes()
     return 0;
 }
 
+
+int OPS_retainedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
+	return -1;
+    }
+
+    int rNode;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &rNode) < 0) {
+	  opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
+	  return -1;
+    }
+
+    int cNode;
+	bool allNodes = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &cNode) < 0) {
+		opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
+		return -1;
+	  }
+	  allNodes = 0;
+	}
+
+    int cDOF;
+	bool allDOFs = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &cDOF) < 0) {
+		opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
+		return -1;
+	  }
+	  cDOF--;
+	  allDOFs = 0;
+	}
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+    int tag;
+    int i;
+    int n;
+	Vector retained(6);
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeRetained();
+        if (tag == rNode) {
+            if (allNodes || cNode == theMP->getNodeConstrained()) {
+                const ID &rDOFs = theMP->getRetainedDOFs();
+                n = rDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+                        retained(rDOFs(i)) = 1;
+                    }
+                }
+                else {
+                    const ID &cDOFs = theMP->getConstrainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (cDOF == cDOFs(i))
+                            retained(rDOFs(i)) = 1;
+                    }
+                }
+            }
+        }
+    }
+
+	int size = retained.Size();
+
+	int* data = new int[size];
+	for (int i=0; i<size; i++) {
+	    data[i] = retained(i);
+	}
+
+	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
 
 
 int OPS_updateElementDomain()

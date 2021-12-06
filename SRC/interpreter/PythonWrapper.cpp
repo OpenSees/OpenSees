@@ -1139,17 +1139,17 @@ static PyObject *Py_ops_constrainedNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-// static PyObject *Py_ops_constrainedDOFs(PyObject *self, PyObject *args)
-// {
-//     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+static PyObject *Py_ops_constrainedDOFs(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-//     if (OPS_constrainedDOFs() < 0) {
-// 	opserr<<(void*)0;
-// 	return NULL;
-//     }
+    if (OPS_constrainedDOFs() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
-//     return wrapper->getResults();
-// }
+    return wrapper->getResults();
+}
 
 static PyObject *Py_ops_retainedNodes(PyObject *self, PyObject *args)
 {
@@ -1163,17 +1163,17 @@ static PyObject *Py_ops_retainedNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-// static PyObject *Py_ops_retainedDOFs(PyObject *self, PyObject *args)
-// {
-//     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+static PyObject *Py_ops_retainedDOFs(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-//     if (OPS_retainedDOFs() < 0) {
-// 	opserr<<(void*)0;
-// 	return NULL;
-//     }
+    if (OPS_retainedDOFs() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
-//     return wrapper->getResults();
-// }
+    return wrapper->getResults();
+}
 
 static PyObject *Py_ops_updateElementDomain(PyObject *self, PyObject *args)
 {
@@ -2734,9 +2734,9 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("fixedNodes", &Py_ops_fixedNodes);
     addCommand("fixedDOFs", &Py_ops_fixedDOFs);
     addCommand("constrainedNodes", &Py_ops_constrainedNodes);
-    // addCommand("constrainedDOFs", &Py_ops_constrainedDOFs);
+    addCommand("constrainedDOFs", &Py_ops_constrainedDOFs);
     addCommand("retainedNodes", &Py_ops_retainedNodes);
-    // addCommand("retainedDOFs", &Py_ops_retainedDOFs);
+    addCommand("retainedDOFs", &Py_ops_retainedDOFs);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("getNDM", &Py_ops_getNDMM);
     addCommand("getNDF", &Py_ops_getNDFF);
