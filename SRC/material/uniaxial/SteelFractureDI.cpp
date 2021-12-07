@@ -656,15 +656,150 @@ SteelFractureDI::revertToStart(void)
 int
 SteelFractureDI::sendSelf(int commitTag, Channel &theChannel)
 {
-	return -1;
+	static Vector data(39);
+
+	data(0) = this->getTag();
+
+	// Material properties
+	data(1) = Fy;
+	data(2) = FyC;
+	data(3) = E0;
+	data(4) = b;
+	data(5) = R0;
+	data(6) = cR1;
+	data(7) = cR2;
+	data(8) = a1;
+	data(9) = a2;
+	data(10) = a3;
+	data(11) = a4;
+	data(12) = sigcr;
+	data(13) = m;
+	data(14) = sigmin;
+	data(15) = FI_lim;
+
+	// History variables
+	data(16) = konP;
+	data(17) = eP;
+	data(18) = epsP;
+	data(19) = sigP;
+	data(20) = epsmaxP;
+	data(21) = epsminP;
+	data(22) = epsplP;
+	data(23) = epss0P;
+	data(24) = sigs0P;
+	data(25) = epssrP;
+	data(26) = sigsrP;
+	// ************** added for fracture ***************
+	data(27) = epsContP;
+	data(28) = eps_0P;
+	data(29) = eps_1P;
+	data(30) = eps_rP;
+	data(31) = konfP;
+	data(32) = konCP;
+	// ************** added for fracture ***************
+	// ************** added for DI ********************
+	data(33) = DIP;
+	data(34) = isStartP;
+	data(35) = sigPDIP;
+	data(36) = slopePP;
+	data(37) = sumTenPP;
+	data(38) = sumCompPP;
+	// ************** added for DI ********************	
+
+	if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
+		opserr << "SteelFractureDI::sendSelf() - failed to sendSelf\n";
+		return -1;
+	}
+	// opserr << "sendSelf SteelFractureDI completed tag data(0)\n"; 
+	return 0;
 }
 
 int
 SteelFractureDI::recvSelf(int commitTag, Channel &theChannel,
 	FEM_ObjectBroker &theBroker)
 {
+	static Vector data(39);
 
-	return -1;
+	// opserr << "recvSelf SteelFractureDI started\n";
+
+	if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
+		opserr << "SteelFractureDI::recvSelf() - failed to recvSelf\n";
+		return -1;
+	}
+
+	this->setTag(int(data(0)));
+
+	// Material properties
+	Fy = data(1);
+	FyC = data(2);
+	E0 = data(3);
+	b = data(4);
+	R0 = data(5);
+	cR1 = data(6);
+	cR2 = data(7);
+	a1 = data(8);
+	a2 = data(9);
+	a3 = data(10);
+	a4 = data(11);
+	sigcr = data(12);
+	m = data(13);
+	sigmin = data(14);
+	FI_lim = data(15);
+
+	// History variables
+	konP = data(16);
+	eP = data(17);
+	epsP = data(18);
+	sigP = data(19);
+	epsmaxP = data(20);
+	epsminP = data(21);
+	epsplP = data(22);
+	epss0P = data(23);
+	sigs0P = data(24);
+	epssrP = data(25);
+	sigsrP = data(26);
+	// ************** added for fracture ***************
+	epsContP = data(27);
+	eps_0P = data(28);
+	eps_1P = data(29);
+	eps_rP = data(30);
+	konfP = data(31);
+	konCP = data(32);
+	// ************** added for fracture ***************
+	// ************** added for DI ********************
+	DIP = data(33);
+	isStartP = data(34);
+	sigPDIP = data(35);
+	slopePP = data(36);
+	sumTenPP = data(37);
+	sumCompPP = data(38);
+	// ************** added for DI ********************
+
+
+	// Transient variables
+	kon = konP;
+	sig = sigP;
+	eps = epsP;
+	e = E0;
+
+	epsCont = epsContP;
+	eps_0 = eps_0P;
+	eps_1 = eps_1P;
+	eps_r = eps_rP;
+	konf = konfP;
+	konC = konCP;
+
+	DI = DIP;
+	isStart = isStartP;
+	sigPDI = sigPDIP;
+	slopeP = slopePP;
+	sumTenP = sumTenPP;
+	sumCompP = sumCompPP;
+
+	// opserr << "--recvSelf SteelFractureDI completed\n";
+
+	return 0;
+	
 }
 
 void

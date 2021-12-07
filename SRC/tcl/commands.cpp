@@ -211,7 +211,7 @@ extern void *OPS_NewtonHallM(void);
 extern void *OPS_Newmark(void);
 extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
-extern void *OPS_HarmonicSteadyState(void);
+//extern void *OPS_HarmonicSteadyState(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -4472,9 +4472,9 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
         theStaticAnalysis->setIntegrator(*theStaticIntegrator);
       }
 
-  else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSS") == 0) {
-    theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
-   }
+  //else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSS") == 0) {
+  //  theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
+  // }
 
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
