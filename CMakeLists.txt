@@ -507,11 +507,21 @@ target_link_libraries(OpenSeesPy
    ${Python_LIBRARIES}
 )
 
+
+#
+# INSTALL
+#
+
+install (TARGETS OpenSees DESTINATION bin)
+
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
+
+
+
 
 #==============================================================================
 #                            Configure targets
