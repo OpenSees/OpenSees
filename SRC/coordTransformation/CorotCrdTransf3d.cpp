@@ -103,7 +103,7 @@ ulcommit(7), ul(7),  ulpr(7),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 {
     // check vector that defines local xz plane
-    if (&vecInLocXZPlane == 0 || vecInLocXZPlane.Size() != 3 )
+    if (vecInLocXZPlane.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Vector that defines local xz plane is invalid\n";
         opserr << "Size must be 3\n. Using (0,0,1)";      
