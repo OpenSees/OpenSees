@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #if !defined ATTALLA2D_H
-#define ATTALLA_H
+#define ATTALLA2D_H
 
 #include "YieldSurface_BC2D.h"
 
