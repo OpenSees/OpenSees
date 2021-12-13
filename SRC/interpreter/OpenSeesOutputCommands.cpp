@@ -1621,21 +1621,17 @@ int OPS_fixedDOFs()
     SP_ConstraintIter &spIter = theDomain->getDomainAndLoadPatternSPs();
     SP_Constraint *theSP;
 
-	Vector fixed(6);
+	std::vector <int> data;
+
     while ((theSP = spIter()) != 0) {
         if (theSP->getNodeTag() == tag) {
-            fixed(theSP->getDOF_Number()) = 1;
+		  data.push_back(theSP->getDOF_Number() + 1);
         }
     }
 
-	int size = fixed.Size();
+	int size = data.size();
 
-	int* data = new int[size];
-	for (int i=0; i<size; i++) {
-	    data[i] = fixed(i);
-	}
-
-	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
 	  return -1;
 	}
@@ -1733,7 +1729,8 @@ int OPS_constrainedDOFs()
     int tag;
     int i;
     int n;
-	Vector constrained(6);
+	std::vector <int> data;
+
     while ((theMP = mpIter()) != 0) {
         tag = theMP->getNodeConstrained();
         if (tag == cNode) {
@@ -1742,28 +1739,23 @@ int OPS_constrainedDOFs()
                 n = cDOFs.Size();
                 if (allDOFs) {
                     for (i = 0; i < n; i++) {
-                        constrained(cDOFs(i)) = 1;
+					  data.push_back(cDOFs(i) + 1);
                     }
                 }
                 else {
                     const ID &rDOFs = theMP->getRetainedDOFs();
                     for (i = 0; i < n; i++) {
                         if (rDOF == rDOFs(i))
-                            constrained(cDOFs(i)) = 1;
+						    data.push_back(cDOFs(i) + 1);
                     }
                 }
             }
         }
     }
 
-	int size = constrained.Size();
+	int size = data.size();
 
-	int* data = new int[size];
-	for (int i=0; i<size; i++) {
-	    data[i] = constrained(i);
-	}
-
-	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
 	  return -1;
 	}
@@ -1862,7 +1854,7 @@ int OPS_retainedDOFs()
     int tag;
     int i;
     int n;
-	Vector retained(6);
+	std::vector <int> data;	
     while ((theMP = mpIter()) != 0) {
         tag = theMP->getNodeRetained();
         if (tag == rNode) {
@@ -1871,28 +1863,23 @@ int OPS_retainedDOFs()
                 n = rDOFs.Size();
                 if (allDOFs) {
                     for (i = 0; i < n; i++) {
-                        retained(rDOFs(i)) = 1;
+					  data.push_back(rDOFs(i) + 1);
                     }
                 }
                 else {
                     const ID &cDOFs = theMP->getConstrainedDOFs();
                     for (i = 0; i < n; i++) {
                         if (cDOF == cDOFs(i))
-                            retained(rDOFs(i)) = 1;
+						    data.push_back(rDOFs(i) + 1);
                     }
                 }
             }
         }
     }
 
-	int size = retained.Size();
+	int size = data.size();
 
-	int* data = new int[size];
-	for (int i=0; i<size; i++) {
-	    data[i] = retained(i);
-	}
-
-	if (OPS_SetIntOutput(&size, data, false) < 0) {
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
 	  return -1;
 	}
