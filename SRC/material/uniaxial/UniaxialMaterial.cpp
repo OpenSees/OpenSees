@@ -463,7 +463,7 @@ UniaxialMaterial::getStressSensitivity(int gradIndex, bool conditional)
   //this->setTrialStrain(strain, strainRate);
   //this->getStress();
   //
-  opserr << sig-sig0 << ' ' << eps << endln;
+  //opserr << sig-sig0 << ' ' << eps << endln;
 
   return (sig-sig0)/(eps*h0);
 
