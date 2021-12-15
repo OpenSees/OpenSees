@@ -93,9 +93,8 @@ class PythonModule: public DL_Interpreter
   private:
     PythonWrapper wrapper;
     OpenSeesCommands cmds;
-    char* getStringBuffer;
 
-    const char* trimSpaces(const char* s, Py_ssize_t size);
+    const char* trimSpaces(PyObject *o);
 };
 
 
