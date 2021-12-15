@@ -1571,7 +1571,7 @@ int OPS_setNodeCoord()
     return 0;
 }
 
-int OPS_fixedNodes()
+int OPS_getFixedNodes()
 {
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
@@ -1599,7 +1599,7 @@ int OPS_fixedNodes()
     return 0;
 }
 
-int OPS_fixedDOFs()
+int OPS_getFixedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1639,7 +1639,7 @@ int OPS_fixedDOFs()
     return 0;
 }
 
-int OPS_constrainedNodes()
+int OPS_getConstrainedNodes()
 {
 
     bool all = 1;
@@ -1682,7 +1682,7 @@ int OPS_constrainedNodes()
     return 0;
 }
 
-int OPS_constrainedDOFs()
+int OPS_getConstrainedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1764,7 +1764,7 @@ int OPS_constrainedDOFs()
 }
 
 
-int OPS_retainedNodes()
+int OPS_getRetainedNodes()
 {
     bool all = 1;
     int cNodeTag;
@@ -1807,7 +1807,7 @@ int OPS_retainedNodes()
 }
 
 
-int OPS_retainedDOFs()
+int OPS_getRetainedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {

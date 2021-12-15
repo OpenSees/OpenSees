@@ -1103,11 +1103,11 @@ static PyObject *Py_ops_setNodeCoord(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_fixedNodes(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getFixedNodes(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_fixedNodes() < 0) {
+    if (OPS_getFixedNodes() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1115,11 +1115,11 @@ static PyObject *Py_ops_fixedNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_fixedDOFs(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getFixedDOFs(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_fixedDOFs() < 0) {
+    if (OPS_getFixedDOFs() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1127,11 +1127,11 @@ static PyObject *Py_ops_fixedDOFs(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_constrainedNodes(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getConstrainedNodes(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_constrainedNodes() < 0) {
+    if (OPS_getConstrainedNodes() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1139,11 +1139,11 @@ static PyObject *Py_ops_constrainedNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_constrainedDOFs(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getConstrainedDOFs(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_constrainedDOFs() < 0) {
+    if (OPS_getConstrainedDOFs() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1151,11 +1151,11 @@ static PyObject *Py_ops_constrainedDOFs(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_retainedNodes(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getRetainedNodes(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_retainedNodes() < 0) {
+    if (OPS_getRetainedNodes() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -1163,11 +1163,11 @@ static PyObject *Py_ops_retainedNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_retainedDOFs(PyObject *self, PyObject *args)
+static PyObject *Py_ops_getRetainedDOFs(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_retainedDOFs() < 0) {
+    if (OPS_getRetainedDOFs() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2731,12 +2731,12 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeResponse", &Py_ops_nodeResponse);
     addCommand("nodeCoord", &Py_ops_nodeCoord);
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
-    addCommand("fixedNodes", &Py_ops_fixedNodes);
-    addCommand("fixedDOFs", &Py_ops_fixedDOFs);
-    addCommand("constrainedNodes", &Py_ops_constrainedNodes);
-    addCommand("constrainedDOFs", &Py_ops_constrainedDOFs);
-    addCommand("retainedNodes", &Py_ops_retainedNodes);
-    addCommand("retainedDOFs", &Py_ops_retainedDOFs);
+    addCommand("getFixedNodes", &Py_ops_getFixedNodes);
+    addCommand("getFixedDOFs", &Py_ops_getFixedDOFs);
+    addCommand("getConstrainedNodes", &Py_ops_getConstrainedNodes);
+    addCommand("getConstrainedDOFs", &Py_ops_getConstrainedDOFs);
+    addCommand("getRetainedNodes", &Py_ops_getRetainedNodes);
+    addCommand("getRetainedDOFs", &Py_ops_getRetainedDOFs);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("getNDM", &Py_ops_getNDMM);
     addCommand("getNDF", &Py_ops_getNDFF);
