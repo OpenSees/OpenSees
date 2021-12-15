@@ -284,6 +284,7 @@
 #define MAT_TAG_AxialSpHD 6112
 
 #define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+#define MAT_TAG_DowelType  6114
 
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
@@ -996,6 +997,7 @@
 #define INTEGRATOR_TAGS_GimmeMCK       	                57
 #define INTEGRATOR_TAGS_StagedLoadControl               58
 #define INTEGRATOR_TAGS_StagedNewmark                   59
+#define INTEGRATOR_TAGS_HarmonicSteadyState             60
 
 
 #define LinSOE_TAGS_FullGenLinSOE		1

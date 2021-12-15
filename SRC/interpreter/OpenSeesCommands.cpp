@@ -70,6 +70,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
 #include <GimmeMCK.h>
+#include <HarmonicSteadyState.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -1438,6 +1439,9 @@ int OPS_Integrator()
 
     } else if (strcmp(type,"MinUnbalDispNorm") == 0) {
 	si = (StaticIntegrator*)OPS_MinUnbalDispNorm();
+
+    } else if (strcmp(type,"HarmonicSteadyState") == 0 || strcmp(type,"HarmonicSS") == 0) {
+	si = (StaticIntegrator*)OPS_HarmonicSteadyState();
 
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();

@@ -10,11 +10,8 @@
 #------------------------------------------------------------------------------
 # Claudio Perez
 
-#project(ARPACK Fortran)
 
-add_library(ARPACK)
-
-target_sources(ARPACK PUBLIC
+add_library(ARPACK STATIC
 dgetv0.f
 dlaqrb.f
 dmout.f

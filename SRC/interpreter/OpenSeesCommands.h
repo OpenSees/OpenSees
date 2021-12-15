@@ -466,6 +466,7 @@ void* OPS_LoadControlIntegrator();
 void* OPS_DisplacementControlIntegrator();
 void* OPS_Newmark();
 void* OPS_GimmeMCK();
+void* OPS_HarmonicSteadyState();
 void* OPS_ArcLength();
 void* OPS_ArcLength1();
 void* OPS_HSConstraint();
