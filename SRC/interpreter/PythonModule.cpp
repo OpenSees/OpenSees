@@ -45,7 +45,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PythonStream.h"
 #include <OPS_Globals.h>
 #include <cstring>
-#include <iostream>
 #include <cctype>
 
 // define opserr
@@ -54,15 +53,12 @@ OPS_Stream *opserrPtr = &sserr;
 
 
 PythonModule::PythonModule()
-        : wrapper(), cmds(this), getStringBuffer(0) {
+        : wrapper(), cmds(this) {
     // does nothing
 }
 
 PythonModule::~PythonModule() {
     // does nothing
-    if (getStringBuffer != 0) {
-      delete [] getStringBuffer;
-    }
 }
 
 int
@@ -80,16 +76,13 @@ PythonModule::removeCommand(const char *) {
     return -1;
 }
 
-const char* PythonModule::trimSpaces(const char *s, Py_ssize_t size) {
-  // create buffer
-  if (getStringBuffer != 0) {
-    delete[] getStringBuffer;
-  }
-  getStringBuffer = new char[size + 1];
+const char *PythonModule::trimSpaces(PyObject *o) {
+  Py_ssize_t size = 0;
+  const char *s = PyUnicode_AsUTF8AndSize(o, &size);
 
+  // empty string
   if (size == 0) {
-    getStringBuffer[0] = '\0';
-    return getStringBuffer;
+    return s;
   }
 
   // find first char that is not space
@@ -112,18 +105,27 @@ const char* PythonModule::trimSpaces(const char *s, Py_ssize_t size) {
     }
   }
 
+  // new Py Object
+  PyObject *newo = 0;
+
   // all spaces: make an empty string
   if (firstLoc == size || lastLoc < 0) {
-    getStringBuffer[0] = '\0';
+    newo = PyUnicode_FromString("");
   }
 
-  // copy
-  for (Py_ssize_t i = firstLoc; i <= lastLoc; ++i) {
-    getStringBuffer[i - firstLoc] = s[i];
+  // get substring
+  else if (firstLoc > 0 || lastLoc < size - 1) {
+    newo = PyUnicode_Substring(o, firstLoc, lastLoc + 1);
   }
-  getStringBuffer[lastLoc - firstLoc + 1] = '\0';
 
-  return getStringBuffer;
+  // get string
+  if (newo == 0) {
+    return s;
+  }
+
+  const char* news = PyUnicode_AsUTF8(newo);
+  Py_DECREF(newo);
+  return news;
 }
 
 int
@@ -193,9 +195,7 @@ PythonModule::getString() {
     // PyObject* space = PyUnicode_FromString(" ");
     // PyObject* empty = PyUnicode_FromString("");
     // PyObject* newo = PyUnicode_Replace(o, space, empty, -1);
-    Py_ssize_t size = 0;
-    const char* res = PyUnicode_AsUTF8AndSize(o, &size);
-    res = trimSpaces(res, size);
+    const char* res = trimSpaces(o);
     // Py_DECREF(newo);
     // Py_DECREF(space);
     // Py_DECREF(empty);
@@ -248,10 +248,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     // PyObject *space = PyUnicode_FromString(" ");
     // PyObject *empty = PyUnicode_FromString("");
     // PyObject *newo = PyUnicode_Replace(o, space, empty, -1);
-    Py_ssize_t size = 0;
-    const char* res = PyUnicode_AsUTF8AndSize(o, &size);
-    res = trimSpaces(res, size);
-
+    const char* res = trimSpaces(o);
     // Py_DECREF(newo);
     // Py_DECREF(space);
     // Py_DECREF(empty);
