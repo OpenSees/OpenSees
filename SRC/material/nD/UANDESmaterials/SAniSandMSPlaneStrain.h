@@ -33,7 +33,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#include <SAniSandMS.h>
+#include "SAniSandMS.h"
 
 class SAniSandMSPlaneStrain : public SAniSandMS
 {

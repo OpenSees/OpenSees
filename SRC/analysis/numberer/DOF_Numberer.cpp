@@ -108,7 +108,7 @@ DOF_Numberer::numberDOF(int lastDOF_Group)
 	return -1;
     }
     
-    if ((theGraphNumberer == 0)) {
+    if (theGraphNumberer == 0) {
 	opserr << "WARNING DOF_Numberer::numberDOF - ";
 	opserr << "subclasses must provide own implementation\n";
 	return -2;

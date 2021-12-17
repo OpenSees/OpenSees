@@ -5,10 +5,8 @@
 #
 #------------------------------------------------------------------------------
 # Claudio Perez
-project(ITPACK LANGUAGES Fortran)
-add_library(ITPACK)
-target_sources(ITPACK
-  PRIVATE
+
+add_library(ITPACK STATIC
     dsrc2c.f
     jcg.f
     jsi.f

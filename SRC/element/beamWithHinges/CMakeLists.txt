@@ -4,6 +4,7 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
+
 add_library(OPS_Element_beamWithHinges OBJECT)
 
 target_sources(OPS_Element_beamWithHinges

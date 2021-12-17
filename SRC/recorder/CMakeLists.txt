@@ -23,6 +23,7 @@ target_sources(OPS_Recorder
       NormElementRecorder.cpp
       NormEnvelopeElementRecorder.cpp
       PatternRecorder.cpp
+      PVDRecorder.cpp      
       Recorder.cpp
       RemoveRecorder.cpp
       VTK_Recorder.cpp
@@ -43,24 +44,30 @@ target_sources(OPS_Recorder
       NormElementRecorder.h
       NormEnvelopeElementRecorder.h
       PatternRecorder.h
+      PVDRecorder.h      
       Recorder.h
       RemoveRecorder.h
       VTK_Recorder.h
 )
+
+
+if(HDF5_FOUND)
+   if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
+      target_sources(OPS_Recorder
+        PRIVATE
+          MPCORecorder.cpp
+        PUBLIC
+         MPCORecorder.h
+      )
+   endif()
+endif()
+
 target_sources(OPS_Paraview
     PRIVATE
       PVDRecorder.cpp
     PUBLIC
       PVDRecorder.h
 )
-
-target_sources(OPS_ASDEA
-    PRIVATE
-      MPCORecorder.cpp
-    PUBLIC
-      MPCORecorder.h
-)
-
 
 target_sources(OPS_Graphics
     PRIVATE

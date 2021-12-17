@@ -5,9 +5,13 @@
 #
 #==============================================================================
 
-opensees_elements(OPS_Element_CEq
-  SOURCES
+#opensees_elements(OPS_Element_CEq
+#  SOURCES
+
+target_sources(OPS_Element
+   PRIVATE
     ASDEmbeddedNodeElement.cpp
+   PUBLIC    
     ASDEmbeddedNodeElement.h
 )
 

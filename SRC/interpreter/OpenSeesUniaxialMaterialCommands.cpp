@@ -206,6 +206,7 @@ void *OPS_EnergyUnloadingRule();
 void *OPS_KarsanUnloadingRule();
 
 void* OPS_HystereticPoly(); // Salvatore Sessa 14-01-2021 Mail: salvatore.sessa2@unina.it
+void* OPS_DowelType();
 
 namespace {
 
@@ -357,6 +358,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
 	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
 	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+	uniaxialMaterialsMap.insert(std::make_pair("DowelType", &OPS_DowelType));
 
 	return 0;
     }

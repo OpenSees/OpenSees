@@ -5,7 +5,8 @@
 #
 #==============================================================================
 add_library(OPS_Api OBJECT)
-target_sources(OPS_Interp_Tcl
+
+target_sources(OPS_InterpTcl
   PRIVATE
     elementAPI_TCL.cpp
 )
