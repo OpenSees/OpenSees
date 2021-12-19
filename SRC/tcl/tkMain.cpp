@@ -70,7 +70,7 @@ terms specified in this license.
 
 extern "C" {
 #define WIN32_LEAN_AND_MEAN
-#ifdef __WIN32__
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #undef WIN32_LEAN_AND_MEAN
