@@ -115,6 +115,7 @@ extern void *OPS_TubeSection(void);
 extern void *OPS_ParallelSection(void);
 extern void *OPS_Bidirectional(void);
 extern void *OPS_Elliptical2(void);
+extern void *OPS_LayeredShellFiberSection(void);
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -671,69 +672,11 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
     //start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
     else if (strcmp(argv[1],"LayeredShell") == 0) {
-      if (argc < 6) {
-	opserr << "WARNING insufficient arguments" << endln;
-	opserr << "Want: section LayeredShell tag? nLayers? matTag1? h1? ... matTagn? hn? " << endln;
-	return TCL_ERROR;
-	}
-      
-      int tag, nLayers, matTag;
-      double h, *thickness;
-      NDMaterial **theMats;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid section LayeredShell tag" << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetInt (interp, argv[3], &nLayers) != TCL_OK) {
-	opserr << "WARNING invalid nLayers" << endln;
-	opserr << "LayeredShell section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-	
-      if (nLayers < 3) {
-	opserr << "ERROR number of layers must be larger than 2" << endln;
-	opserr << "LayeredShell section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      theMats   = new NDMaterial*[nLayers];
-      thickness = new double[nLayers];
-      
-      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
-	if (Tcl_GetInt (interp, argv[4+2*iLayer], &matTag) != TCL_OK) {
-	  opserr << "WARNING invalid matTag" << endln;
-	  opserr << "LayeredShell section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	theMats[iLayer] = OPS_getNDMaterial(matTag);
-	if (theMats[iLayer] == 0) {
-	  opserr << "WARNING nD material does not exist" << endln;;
-	  opserr << "nD material: " << matTag; 
-	  opserr << "LayeredShell section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble (interp, argv[5+2*iLayer], &h) != TCL_OK) {
-	  opserr << "WARNING invalid h" << endln;
-	  opserr << "LayeredShell section: " << tag << endln;	    	    
-	  return TCL_ERROR;
-	}
-	
-	if (h < 0) {
-	  opserr << "WARNING invalid h" << endln;
-	  opserr << "PlateFiber section: " << tag << endln;	    	    
-	  return TCL_ERROR;
-	}
-	
-	thickness[iLayer] = h;
-      }
-      
-      theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-      if (thickness != 0) delete [] thickness;
-      if (theMats != 0) delete [] theMats;
+      void *theMat = OPS_LayeredShellFiberSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;      
     }
     //end Yuli Huang & Xinzheng Lu LayeredShellFiberSection
 
