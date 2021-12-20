@@ -58,7 +58,7 @@ public:
     const ID &getExternalNodes();
     Node **getNodePtrs();
     int getNumDOF();
-    void setDomain(Domain *theDomain);
+    int setDomain(Domain *theDomain);
     
     // public methods to set the state of the element
     int commitState();
