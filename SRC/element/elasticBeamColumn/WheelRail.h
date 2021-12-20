@@ -52,7 +52,7 @@ class WheelRail : public Element
     Node **getNodePtrs(void);
     int getNumDOF(void);	
     double getResidualOfDeltaU(double pFhz,double uWheel);
-    void setDomain(Domain *theDomain);
+    int setDomain(Domain *theDomain);
     void getDeltaY();
     // public methods to set the state of the element    
     int commitState(void);

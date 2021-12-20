@@ -155,7 +155,7 @@ WheelRail::getNumDOF(void)
     return (this->numRailNodeList+1)*3;
 }
 
-void	
+int
 WheelRail::setDomain(Domain *thePassedDomain)
 {
 	theDomain = thePassedDomain;
@@ -180,6 +180,7 @@ WheelRail::setDomain(Domain *thePassedDomain)
 
 	this->getActiveDof();
 
+	return 0;
 }
 
 int
