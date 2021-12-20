@@ -141,7 +141,7 @@ Pressure_Constraint::setDomain(Domain* theDomain)
     }
 
     // check pval
-    if (pval != 0) return;
+    if (pval != 0) return 0;
 
     if (pTag == nodeId) {
 	opserr << "WARNING: pressure node has the same tag as the PC\n";
