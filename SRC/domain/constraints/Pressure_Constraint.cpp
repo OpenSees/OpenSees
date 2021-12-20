@@ -121,7 +121,7 @@ Pressure_Constraint::~Pressure_Constraint()
     if (pval != 0) delete [] pval;
 }
 
-void
+int
 Pressure_Constraint::setDomain(Domain* theDomain)
 {
     freesurf = false;
@@ -137,7 +137,7 @@ Pressure_Constraint::setDomain(Domain* theDomain)
     if(theNode == 0) {
         opserr<<"WARNING: node "<<nodeId<<" does not exist ";
         opserr<<"-- Pressure_Constraint::setDomain\n";
-        return;
+        return -1;
     }
 
     // check pval
@@ -145,7 +145,7 @@ Pressure_Constraint::setDomain(Domain* theDomain)
 
     if (pTag == nodeId) {
 	opserr << "WARNING: pressure node has the same tag as the PC\n";
-	return;
+	return -1;
     }
 
     // check the pressure node
@@ -153,8 +153,10 @@ Pressure_Constraint::setDomain(Domain* theDomain)
     if(pNode == 0) {
         opserr<<"WARNING: pressure node "<<pTag<<" does not exist ";
         opserr<<"-- Pressure_Constraint::setDomain\n";
-        return;
+        return -1;
     }
+
+    return 0;
 }
 
 Node*
