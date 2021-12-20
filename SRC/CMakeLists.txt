@@ -19,11 +19,12 @@ add_subdirectory(matrix)
 add_subdirectory(recorder)
 add_subdirectory(tagged)
 add_subdirectory(utility)
-
+add_subdirectory(interpreter)
 add_subdirectory(modelbuilder)
 add_subdirectory(tcl)
 add_subdirectory(system_of_eqn)
 add_subdirectory(renderer)
 add_subdirectory(api)
 add_subdirectory(database)
+add_subdirectory(reliability)
 

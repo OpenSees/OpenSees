@@ -419,7 +419,7 @@ SoilFootingSection2d::setTrialSectionDeformation (const Vector &def)
    // give out the previous ks rather than ks_elastic
 
    }
-   else
+   else 
       temp = applyLoading(de);
 
 
@@ -608,11 +608,12 @@ SoilFootingSection2d::applyLoading(Vector de)
       // APPLY dVt in any case
 
 
-   if (dVt == 0.0)
+     if (dVt == 0.0) {
       if (dHt == 0.0)
          switch1 = (dMt == 0) ? 0 : 1; 
       else
-         switch1 = (dMt == 0) ? 2 : 3; 
+         switch1 = (dMt == 0) ? 2 : 3;
+     }
 
    if (isOver == 0)
       switch1 = 7;

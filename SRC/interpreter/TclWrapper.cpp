@@ -901,6 +901,14 @@ static int Tcl_ops_getEleTags(ClientData clientData, Tcl_Interp *interp, int arg
     return TCL_OK;
 }
 
+static int Tcl_ops_getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getCrdTransfTags() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1361,6 +1369,24 @@ static int Tcl_ops_getEleLoadData(ClientData clientData, Tcl_Interp *interp, int
     return TCL_OK;
 }
 
+static int Tcl_ops_getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNodeLoadTags() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNodeLoadData() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_randomVariable(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1655,6 +1681,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"convertBinaryToText", &Tcl_ops_convertBinaryToText);
     addCommand(interp,"convertTextToBinary", &Tcl_ops_convertTextToBinary);
     addCommand(interp,"getEleTags", &Tcl_ops_getEleTags);
+    addCommand(interp,"getCrdTransfTags", &Tcl_ops_getCrdTransfTags);
     addCommand(interp,"getNodeTags", &Tcl_ops_getNodeTags);
     addCommand(interp,"getParamTags", &Tcl_ops_getParamTags);
     addCommand(interp,"getParamValue", &Tcl_ops_getParamValue);
@@ -1711,6 +1738,8 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"getEleLoadClassTags", &Tcl_ops_getEleLoadClassTags);
     addCommand(interp,"getEleLoadTags", &Tcl_ops_getEleLoadTags);
     addCommand(interp,"getEleLoadData", &Tcl_ops_getEleLoadData);
+    addCommand(interp,"getNodeLoadTags", &Tcl_ops_getNodeLoadTags);
+    addCommand(interp,"getNodeLoadData", &Tcl_ops_getNodeLoadData);
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
     addCommand(interp,"getRVTags", &Tcl_ops_getRVTags);
     addCommand(interp,"getMean", &Tcl_ops_getRVMean);

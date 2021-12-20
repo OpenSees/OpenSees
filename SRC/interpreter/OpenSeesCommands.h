@@ -251,6 +251,8 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_getNDMM();
+int OPS_getNDFF();
 int OPS_eleType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
@@ -259,6 +261,7 @@ int OPS_setNodePressure();
 int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
+int OPS_getCrdTransfTags();
 int OPS_getNodeTags();
 int OPS_getParamTags();
 int OPS_getParamValue();
@@ -289,6 +292,8 @@ int OPS_getEleClassTags();
 int OPS_getEleLoadClassTags();
 int OPS_getEleLoadTags();
 int OPS_getEleLoadData();
+int OPS_getNodeLoadTags();
+int OPS_getNodeLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
@@ -451,6 +456,7 @@ void* OPS_LoadControlIntegrator();
 void* OPS_DisplacementControlIntegrator();
 void* OPS_Newmark();
 void* OPS_GimmeMCK();
+void* OPS_HarmonicSteadyState();
 void* OPS_ArcLength();
 void* OPS_ArcLength1();
 void* OPS_HSConstraint();

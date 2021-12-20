@@ -1293,13 +1293,21 @@ int ASDAbsorbingBoundary3D::setParameter(const char** argv, int argc, Parameter&
     if (argc < 1)
         return -1;
 
-    // update G?
-    if (strcmp(argv[0], "G") == 0) {
+    // update stage?
+    if (strcmp(argv[0], "stage") == 0) {
         return param.addObject(1, this);
     }
-    // update stage?
-    else if (strcmp(argv[0], "stage") == 0) {
+    // update G?
+    else if (strcmp(argv[0], "G") == 0) {
         return param.addObject(2, this);
+    }
+    // update v?
+    else if (strcmp(argv[0], "v") == 0) {
+        return param.addObject(3, this);
+    }
+    // update rho?
+    else if (strcmp(argv[0], "rho") == 0) {
+        return param.addObject(4, this);
     }
 
     // no valid parameter
@@ -1311,10 +1319,6 @@ int ASDAbsorbingBoundary3D::updateParameter(int parameterID, Information& info)
     switch (parameterID)
     {
     case 1:
-        // G
-        m_G = info.theDouble;
-        return 0;
-    case 2:
         // stage
         if (m_stage == Stage_StaticConstraint) {
             int istage = static_cast<int>(info.theDouble);
@@ -1338,8 +1342,99 @@ int ASDAbsorbingBoundary3D::updateParameter(int parameterID, Information& info)
                 "You cannot change the stage at this point!\n";
             exit(-1);
         }
+    case 2:
+        // G
+        m_G = info.theDouble;
+        return 0;
+    case 3:
+        // v
+        m_v = info.theDouble;
+        return 0;
+    case 4:
+        // rho
+        m_rho = info.theDouble;
+        return 0;
     default:
         return -1;
+    }
+}
+
+Response* ASDAbsorbingBoundary3D::setResponse(const char** argv, int argc, OPS_Stream& output)
+{
+    // check and quick return
+    if (argc < 1)
+        return nullptr;
+    // support responses such as "E" or "material 1 E"
+    int iarg = 0;
+    if (argc == 3) {
+        if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "integrPoint") == 0) {
+            int pointNum = atoi(argv[1]);
+            if (pointNum == 1) {
+                iarg = 2;
+            }
+        }
+    }
+    // check argument
+    int rtype = 0;
+    if (strcmp(argv[iarg], "stage") == 0)
+        rtype = 1;
+    else if (strcmp(argv[iarg], "G") == 0)
+        rtype = 2;
+    else if (strcmp(argv[iarg], "v") == 0)
+        rtype = 3;
+    else if (strcmp(argv[iarg], "rho") == 0)
+        rtype = 4;
+    else if (strcmp(argv[iarg], "E") == 0)
+        rtype = 5;
+    if (rtype == 0)
+        return Element::setResponse(argv, argc, output);
+
+    // prepare response meta-data
+    output.tag("ElementOutput");
+    output.attr("eleType", this->getClassType());
+    output.attr("eleTag", this->getTag());
+    int numNodes = this->getNumExternalNodes();
+    const ID& nodes = this->getExternalNodes();
+    static char nodeData[32];
+    for (int i = 0; i < numNodes; i++) {
+        sprintf(nodeData, "node%d", i + 1);
+        output.attr(nodeData, nodes(i));
+    }
+    output.tag("GaussPoint");
+    output.attr("number", 1);
+    output.attr("eta", 0.0);
+    output.attr("neta", 0.0);
+    output.attr("zeta", 0.0);
+    output.tag("NdMaterialOutput");
+    switch (rtype)
+    {
+    case 1: output.tag("ResponseType", "stage"); break;
+    case 2: output.tag("ResponseType", "G"); break;
+    case 3: output.tag("ResponseType", "v"); break;
+    case 4: output.tag("ResponseType", "rho"); break;
+    case 5: output.tag("ResponseType", "E"); break;
+    default:
+        break;
+    }
+    output.endTag(); // GaussPoint
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // ElementOutput
+
+    // done
+    return new ElementResponse(this, rtype, Vector(1));
+}
+
+int ASDAbsorbingBoundary3D::getResponse(int responseID, Information& eleInfo)
+{
+    static Vector r1(1);
+    switch (responseID) {
+    case 1: r1(0) = static_cast<double>(m_stage); return eleInfo.setVector(r1);
+    case 2: r1(0) = m_G; return eleInfo.setVector(r1);
+    case 3: r1(0) = m_v; return eleInfo.setVector(r1);
+    case 4: r1(0) = m_rho; return eleInfo.setVector(r1);
+    case 5: r1(0) = 2.0 * m_G * (1.0 + m_v); return eleInfo.setVector(r1);
+    default:
+        return Element::getResponse(responseID, eleInfo);
     }
 }
 
