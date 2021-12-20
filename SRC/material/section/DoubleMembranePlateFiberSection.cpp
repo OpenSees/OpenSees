@@ -38,7 +38,7 @@
 void* OPS_DoubleMembranePlateFiberSection()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 3) {
+    if (numdata < 4) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: section DoublePlateFiber tag? matTag? h? d?" << endln;
 	return 0;
