@@ -44,7 +44,7 @@ class ElementalLoad : public Load
     ElementalLoad(int classTag);    
     ~ElementalLoad();
 
-    virtual void setDomain(Domain *theDomain);
+    virtual int setDomain(Domain *theDomain);
     virtual void applyLoad(double loadfactor);
     virtual void applyLoad(const Vector &loadfactors);
     virtual const Vector &getData(int &type, double loadFactor) = 0;

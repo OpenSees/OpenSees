@@ -155,7 +155,7 @@ WheelRail::getNumDOF(void)
     return (this->numRailNodeList+1)*3;
 }
 
-void	
+int
 WheelRail::setDomain(Domain *thePassedDomain)
 {
 	theDomain = thePassedDomain;
@@ -180,6 +180,7 @@ WheelRail::setDomain(Domain *thePassedDomain)
 
 	this->getActiveDof();
 
+	return 0;
 }
 
 int
@@ -583,7 +584,8 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 		FHzi=Fhz;
 
 	}
-	if (i>maxIterT)	opserr<<maxIterT<<"´Îµü´úºóÊ§°Ü£¡";//previous process*/ 
+	if (i>maxIterT)
+	  opserr<< maxIterT << " maxIter reached";//previous process*/ 
 //===========================
 	/*
 	int maxIterT=30;double tol=1.0e-5;

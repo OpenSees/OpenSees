@@ -60,20 +60,21 @@ ElementalLoad::~ElementalLoad()
 }
 
 
-void
+int
 ElementalLoad::setDomain(Domain *theDomain)
 {
   this->DomainComponent::setDomain(theDomain);
 
   if (theDomain == 0) {
     theElement = 0;
-    return;
+    return 0;
   }
 
   theElement = theDomain->getElement(eleTag);
   if (theElement == 0) {
     opserr << "WARNING - ElementalLoad::setDomain - no ele with tag ";
     opserr << eleTag << " exists in the domain\n";
+    return -1;
   }
 }
 

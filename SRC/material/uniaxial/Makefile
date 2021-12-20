@@ -47,6 +47,7 @@ OBJS       = UniaxialMaterial.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
+        SteelDRC.o \
 	EPPGapMaterial.o \
         ViscousMaterial.o \
 	SeriesMaterial.o \
@@ -142,6 +143,7 @@ OBJS       = UniaxialMaterial.o \
 	Trilinwp.o \
 	Trilinwp2.o \
 	SteelFractureDI.o \
+	DowelType.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

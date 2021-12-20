@@ -67,7 +67,7 @@ public:
     virtual ~Pressure_Constraint();
 
     // method to get information about the constraint
-    virtual void setDomain(Domain* theDomain);
+    virtual int setDomain(Domain* theDomain);
     virtual Node* getPressureNode();
     virtual double getPressure(int last=1);
     virtual double getPdot(int last=1);

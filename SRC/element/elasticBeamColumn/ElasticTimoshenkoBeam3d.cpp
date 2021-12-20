@@ -235,14 +235,14 @@ int ElasticTimoshenkoBeam3d::getNumDOF()
 }
 
 
-void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
+int ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
         theNodes[0] = 0;
         theNodes[1] = 0;
         
-        return;
+        return -1;
     }
     
     // first set the node pointers
@@ -262,7 +262,7 @@ void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
         }
         opserr << " element: " << this->getTag() << ".\n";
         
-        return;
+        return -1;
     }
     
     // now determine the number of dof and the dimension
@@ -274,13 +274,13 @@ void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
         opserr << "ElasticTimoshenkoBeam3d::setDomain() - node 1: "
             << connectedExternalNodes(0)
             << " has incorrect number of DOF (not 6).\n";
-        return;
+        return -1;
     }
     if (dofNd2 != 6)  {
         opserr << "ElasticTimoshenkoBeam3d::setDomain() - node 2: "
             << connectedExternalNodes(1)
             << " has incorrect number of DOF (not 6).\n";
-        return;
+        return -1;
     }
     
     // call the base class method
@@ -290,11 +290,13 @@ void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
     if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0)  {
         opserr << "ElasticTimoshenkoBeam3d::setDomain() - "
             << "error initializing coordinate transformation.\n";
-        return;
+        return -1;
     }
     
     // set up the transformation matrix for orientation
     this->setUp();
+
+    return 0;
 }
 
 

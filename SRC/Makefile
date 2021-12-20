@@ -421,10 +421,10 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
-	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
+	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/VTK_Recorder.o 
 
 
@@ -721,6 +721,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
 	$(FE)/material/uniaxial/ElasticMultiLinear.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
+	$(FE)/material/uniaxial/SteelDRC.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
 	$(FE)/material/uniaxial/ElasticBilin.o \
 	$(FE)/material/uniaxial/ElasticPowerFunc.o \
@@ -868,6 +869,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Trilinwp.o \
 	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
+	$(FE)/material/uniaxial/DowelType.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -1052,6 +1054,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/GenericSection1d.o \
 	$(FE)/material/section/ElasticPlateSection.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \
+	$(FE)/material/section/DoubleMembranePlateFiberSection.o \
 	$(FE)/material/section/MembranePlateFiberSection.o \
 	$(FE)/material/section/Bidirectional.o \
 	$(FE)/material/section/Elliptical2.o \
@@ -1329,6 +1332,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/HarmonicSteadyState.o \
 	$(FE)/analysis/integrator/StagedLoadControl.o \
 	$(FE)/analysis/integrator/StagedNewmark.o \
 	$(FE)/analysis/integrator/EQPath.o \

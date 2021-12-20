@@ -4,9 +4,12 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_absorbentBoundaries OBJECT)
 
-target_sources(OPS_Element_absorbentBoundaries
+#add_library(OPS_Element_absorbentBoundaries OBJECT)
+
+#target_sources(OPS_Element_absorbentBoundaries
+
+target_sources(OPS_Element
   PRIVATE
     ASDAbsorbingBoundary2D.cpp
     ASDAbsorbingBoundary3D.cpp
@@ -16,5 +19,6 @@ target_sources(OPS_Element_absorbentBoundaries
     ASDAbsorbingBoundary3D.h
     LysmerTriangle.h
 )
-target_include_directories(OPS_Element_absorbentBoundaries PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

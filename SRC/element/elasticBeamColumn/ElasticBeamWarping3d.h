@@ -64,7 +64,7 @@ class ElasticBeamWarping3d : public Element
     Node **getNodePtrs(void);
 
     int getNumDOF(void);
-    void setDomain(Domain *theDomain);
+    int setDomain(Domain *theDomain);
     
     int commitState(void);
     int revertToLastCommit(void);        

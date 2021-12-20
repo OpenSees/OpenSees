@@ -247,12 +247,12 @@ ModElasticBeam2d::getNumDOF(void)
     return 6;
 }
 
-void
+int
 ModElasticBeam2d::setDomain(Domain *theDomain)
 {
   if (theDomain == 0) {
     opserr << "ModElasticBeam2d::setDomain -- Domain is null\n";
-    exit(-1);
+    return -1;
   }
     
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
@@ -260,12 +260,12 @@ ModElasticBeam2d::setDomain(Domain *theDomain)
     
     if (theNodes[0] == 0) {
       opserr << "ModElasticBeam2d::setDomain -- Node 1: " << connectedExternalNodes(0) << " does not exist\n";
-      exit(-1);
+      return -1;
     }
 			      
     if (theNodes[1] == 0) {
       opserr << "ModElasticBeam2d::setDomain -- Node 2: " << connectedExternalNodes(1) << " does not exist\n";
-      exit(-1);
+      return -1;
     }
 
     int dofNd1 = theNodes[0]->getNumberDOF();
@@ -274,28 +274,30 @@ ModElasticBeam2d::setDomain(Domain *theDomain)
     if (dofNd1 != 3) {
       opserr << "ModElasticBeam2d::setDomain -- Node 1: " << connectedExternalNodes(0) 
 	     << " has incorrect number of DOF\n";
-      exit(-1);
+      return -1;
     }
     
     if (dofNd2 != 3) {
       opserr << "ModElasticBeam2d::setDomain -- Node 2: " << connectedExternalNodes(1) 
 	     << " has incorrect number of DOF\n";
-      exit(-1);
+      return -1;
     }
 	
     this->DomainComponent::setDomain(theDomain);
     
     if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0) {
 	opserr << "ModElasticBeam2d::setDomain -- Error initializing coordinate transformation\n";
-	exit(-1);
+	return -1;
     }
     
     double L = theCoordTransf->getInitialLength();
 
     if (L == 0.0) {
       opserr << "ModElasticBeam2d::setDomain -- Element has zero length\n";
-      exit(-1);
+      return -1;
     }
+
+    return 0;
 }
 
 int

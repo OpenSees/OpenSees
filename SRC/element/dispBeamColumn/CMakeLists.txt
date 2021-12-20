@@ -13,6 +13,8 @@ target_sources(OPS_Element
     DispBeamColumn2dThermal.cpp
     DispBeamColumn3dThermal.cpp
     DispBeamColumnNL2d.cpp
+    DispBeamColumnNL3d.cpp
+    DispBeamColumnWarping3d.cpp    
     DispBeamColumn2dWithSensitivity.cpp
     DispBeamColumn3dWithSensitivity.cpp
     AxEqDispBeamColumn2d.cpp
@@ -25,6 +27,8 @@ target_sources(OPS_Element
     DispBeamColumn2dThermal.h
     DispBeamColumn3dThermal.h
     DispBeamColumnNL2d.h
+    DispBeamColumnNL3d.h
+    DispBeamColumnWarping3d.h    
     DispBeamColumn2dWithSensitivity.h
     DispBeamColumn3dWithSensitivity.h
     AxEqDispBeamColumn2d.h
