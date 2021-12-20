@@ -8,6 +8,7 @@ target_sources(OPS_Material
     PRIVATE
     BiaxialHysteretic.cpp
     Bidirectional.cpp
+    DoubleMembranePlateFiberSection.cpp
     ElasticBDShearSection2d.cpp
     ElasticMembranePlateSection.cpp
     ElasticPlateSection.cpp
@@ -43,6 +44,7 @@ target_sources(OPS_Material
     PUBLIC
     BiaxialHysteretic.h
     Bidirectional.h
+    DoubleMembranePlateFiberSection.h
     ElasticBDShearSection2d.h
     ElasticMembranePlateSection.h
     ElasticPlateSection.h
