@@ -37,6 +37,7 @@
 #include <Information.h>
 #include <MaterialResponse.h>
 #include <float.h>
+#include <ID.h>
 #include <Vector.h>
 #include <stdlib.h>
 
@@ -93,6 +94,21 @@ void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
     s << "\n\t\t]";
   }
 }
+
+ID OPS_getAllUniaxialMaterialTags() {
+
+    ID tags(0);
+
+    MapOfTaggedObjectsIter theObjects = theUniaxialMaterialObjects.getIter();
+    theObjects.reset();
+    TaggedObject *theObject;
+
+    while ((theObject = theObjects()) != 0) {
+      UniaxialMaterial *theMaterial = (UniaxialMaterial *)theObject;    
+      tags.insert(theMaterial->getTag());
+    }
+}
+
 
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
 :Material(tag,clasTag)
