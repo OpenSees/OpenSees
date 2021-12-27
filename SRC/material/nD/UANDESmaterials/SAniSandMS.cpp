@@ -28,11 +28,13 @@
 
 // Description: This file contains the implementation for the SAniSandMS class.
 
-#include <SAniSandMS.h>
-#include <SAniSandMS3D.h>
-#include <SAniSandMSPlaneStrain.h>
+//#include <SAniSandMS.h>
+#include "SAniSandMS.h"
+//#include <SAniSandMS3D.h>
+#include "SAniSandMS3D.h"
+//#include <SAniSandMSPlaneStrain.h>
+#include "SAniSandMSPlaneStrain.h"
 #include <MaterialResponse.h>
-
 #include <string.h>
 
 // #if defined(_WIN32) || defined(_WIN64)

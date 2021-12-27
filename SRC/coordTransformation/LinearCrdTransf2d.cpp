@@ -99,7 +99,7 @@ cosTheta(0), sinTheta(0), L(0),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 {
     // check rigid joint offset for node I
-    if (&rigJntOffset1 == 0 || rigJntOffset1.Size() != 2 ) {
+    if (rigJntOffset1.Size() != 2 ) {
         opserr << "LinearCrdTransf2d::LinearCrdTransf2d:  Invalid rigid joint offset vector for node I\n";
         opserr << "Size must be 2\n";      
     }
@@ -110,7 +110,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
     }
     
     // check rigid joint offset for node J
-    if (&rigJntOffset2 == 0 || rigJntOffset2.Size() != 2 ) {
+    if (rigJntOffset2.Size() != 2 ) {
         opserr << "LinearCrdTransf2d::LinearCrdTransf2d:  Invalid rigid joint offset vector for node J\n";
         opserr << "Size must be 2\n";      
     }
