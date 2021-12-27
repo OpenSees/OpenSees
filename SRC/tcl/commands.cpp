@@ -202,6 +202,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 
 // transformations
 #include <CrdTransf.h>
+#include <UniaxialMaterial.h>
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ExpressNewton(void);
