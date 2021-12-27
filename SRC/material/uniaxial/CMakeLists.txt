@@ -13,22 +13,19 @@ target_sources(OPS_Material
       BWBN.cpp
       Bilin.cpp
       Bilin02.cpp
-
       ConcreteCM.cpp
       ConcreteD.cpp
       ConcretewBeta.cpp
-
+      DowelType.cpp
       Elastic2Material.cpp
       ElasticBilin.cpp
       ElasticMaterial.cpp
       ElasticMultiLinear.cpp
       ElasticPPMaterial.cpp
       ElasticPowerFunc.cpp
-
       IMKBilin.cpp
       IMKPeakOriented.cpp
       IMKPinching.cpp
-
       MaterialState.cpp
       OriginCentered.cpp
       ParallelMaterial.cpp
@@ -38,7 +35,6 @@ target_sources(OPS_Material
       SteelDRC.cpp      
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
-      #TclDegradingUniaxial.cpp
     PUBLIC
       AxialSp.h
       AxialSp.h
@@ -46,22 +42,19 @@ target_sources(OPS_Material
       BWBN.h
       Bilin.h
       Bilin02.h
-
       ConcreteCM.h
       ConcreteD.h
       ConcretewBeta.h
-
+      DowelType.h
       Elastic2Material.h
       ElasticBilin.h
       ElasticMaterial.h
       ElasticMultiLinear.h
       ElasticPPMaterial.h
       ElasticPowerFunc.h
-
       IMKBilin.h
       IMKPeakOriented.h
       IMKPinching.h
-
       MaterialState.h
       OriginCentered.h
       ParallelMaterial.h
@@ -278,6 +271,23 @@ target_sources(OPS_Material
       pyUCLA.h
 
       TriMatrix.h  # move to SRC/matrix ?
+)
+
+
+
+target_sources(OPS_Material
+  PRIVATE
+   Masonry.cpp
+   Masonryt.cpp
+   Trilinwp.cpp
+   Trilinwp2.cpp
+   Trilinwpd.cpp
+  PUBLIC
+   Masonry.h
+   Masonryt.h
+   Trilinwp.h
+   Trilinwp2.h
+   Trilinwpd.h
 )
 
 

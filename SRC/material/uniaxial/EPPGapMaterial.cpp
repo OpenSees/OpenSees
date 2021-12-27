@@ -110,8 +110,8 @@ EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, doubl
 	    opserr << "EPPGapMaterial::EPPGapMaterial -- Alternate signs on fy and gap encountered, continuing anyway\n";
 	}
         
-    if ( (eta >= 1) || (eta <= -1) ) {
-        opserr << "EPPGapMaterial::EPPGapMaterial -- value of eta must be -1 <= eta <= 1, setting eta to 0\n";
+    if (eta >= 1.0) {
+        opserr << "EPPGapMaterial::EPPGapMaterial -- value of eta must be < 1, setting eta to 0\n";
         eta = 0;
     }
 

@@ -2091,8 +2091,8 @@ int OPS_getNodeTags() {
 int OPS_sectionForce()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 3) {
-	opserr << "WARNING want - sectionForce eleTag? secNum? dof? \n";
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionForce eleTag? secNum? <dof?> \n";
 	return -1;
     }
 
@@ -2101,18 +2101,18 @@ int OPS_sectionForce()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 3;
+    int numdata = 2;
     int data[3];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionForce eleTag? secNum? <dof?> - could not read int input? \n";
 	return -1;
     }
 
     int tag = data[0];
     int secNum = data[1];
-    int dof = data[2];
-
+    int dof = -1;
+    
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
@@ -2141,21 +2141,40 @@ int OPS_sectionForce()
 
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
-
     const Vector &theVec = *(info.theVector);
-    if (dof <= 0 || dof > theVec.Size()) {
-	opserr << "WARNING invalid dof "<<dof<<"\n";
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      numdata = 1;
+      if (OPS_GetIntInput(&numdata, &dof) < 0) {
+	opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read int input? \n";
 	delete theResponse;
 	return -1;
+      }      
     }
 
-    double value = theVec(dof-1);
-    numdata = 1;
-
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    int ndof = theVec.Size();
+    if (dof > 0 && dof <= ndof) {
+    
+      double value = theVec(dof-1);
+      numdata = 1;
+      
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    } else {
+      std::vector<double> values;
+      values.reserve(ndof);
+	for (int i = 0; i < ndof; i++) {
+	  values.push_back(theVec(i));
+	}
+      
+      if (OPS_SetDoubleOutput(&ndof, &values[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;
@@ -2166,8 +2185,8 @@ int OPS_sectionForce()
 int OPS_sectionDeformation()
 {
     // make sure at least one other argument to contain type of system
-    if (OPS_GetNumRemainingInputArgs() < 3) {
-	opserr << "WARNING want - sectionDeformation eleTag? secNum? dof? \n";
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionDeformation eleTag? secNum? <dof?> \n";
 	return -1;
     }
 
@@ -2176,17 +2195,17 @@ int OPS_sectionDeformation()
     //  opserr << argv[i] << ' ' ;
     //opserr << endln;
 
-    int numdata = 3;
+    int numdata = 2;
     int data[3];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionDeformation eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionDeformation eleTag? secNum? <dof?> - could not read int input? \n";
 	return -1;
     }
 
     int tag = data[0];
     int secNum = data[1];
-    int dof = data[2];
+    int dof = -1;
 
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
@@ -2216,21 +2235,40 @@ int OPS_sectionDeformation()
 
     theResponse->getResponse();
     Information &info = theResponse->getInformation();
-
     const Vector &theVec = *(info.theVector);
-    if (dof <= 0 || dof > theVec.Size()) {
-	opserr << "WARNING invalid dof "<<dof<<"\n";
+    
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      numdata = 1;
+      if (OPS_GetIntInput(&numdata, &dof) < 0) {
+	opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read int input? \n";
 	delete theResponse;
 	return -1;
+      }      
     }
 
-    double value = theVec(dof-1);
-    numdata = 1;
-
-    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+    int ndof = theVec.Size();
+    if (dof > 0 && dof <= ndof) {
+    
+      double value = theVec(dof-1);
+      numdata = 1;
+      
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
+      }
+    } else {
+      std::vector<double> values;
+      values.reserve(ndof);
+	for (int i = 0; i < ndof; i++) {
+	  values.push_back(theVec(i));
+	}
+      
+      if (OPS_SetDoubleOutput(&ndof, &values[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
     }
 
     delete theResponse;

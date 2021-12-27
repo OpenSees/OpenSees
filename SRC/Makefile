@@ -869,6 +869,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Trilinwp.o \
 	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
+	$(FE)/material/uniaxial/DowelType.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -1053,6 +1054,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/GenericSection1d.o \
 	$(FE)/material/section/ElasticPlateSection.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \
+	$(FE)/material/section/DoubleMembranePlateFiberSection.o \
 	$(FE)/material/section/MembranePlateFiberSection.o \
 	$(FE)/material/section/Bidirectional.o \
 	$(FE)/material/section/Elliptical2.o \
@@ -1330,6 +1332,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/HarmonicSteadyState.o \
 	$(FE)/analysis/integrator/StagedLoadControl.o \
 	$(FE)/analysis/integrator/StagedNewmark.o \
 	$(FE)/analysis/integrator/EQPath.o \

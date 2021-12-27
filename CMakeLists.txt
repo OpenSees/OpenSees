@@ -31,6 +31,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 #include(OpenSeesFunctions)
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
+# STAMPEDE2
+# module load python3
+# export CC=icc CXX=icpc FC=ifort
+# export MUMPS_DIR=$HOME/MUMPS_5.0.0
+
+
 # for OpenSeesPY
 add_Compile_options(-fPIC)
 
@@ -237,6 +243,7 @@ set (TRIANGLE_LIBRARIES triangle)
 find_package(BLAS)
 find_package(LAPACK)
 find_package (Python COMPONENTS Interpreter Development)
+find_package(MPI)
 
 #set (LAPACK_FOUND FALSE)
 #set (BLAS_FOUND FALSE)
@@ -385,25 +392,35 @@ add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
-    OPS_Renderer
-    OPS_Database
+    OPS_Actor 
+    OPS_Analysis 
+    OPS_Api
     OPS_ConvergenceTest
+    coordTransformation
+    OPS_Damage
+    OPS_Database
+    OPS_Domain
+    graph
     OPS_Element
     OPS_ElementFortran    
+    OPS_Handler
+    OPS_INTERPRETER
     OPS_Material
     OPS_MaterialFortran    
     OPS_Material_YieldSurface
+    OPS_Matrix
+    OPS_ModelBuilder
+    OPS_ObjectBroker
+    OPS_PFEM
+    OPS_Recorder
+    OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface
-    OPS_Damage
     OPS_SysOfEqn
-    OPS_Analysis
-    OPS_Domain
-    OPS_Api
+    OPS_Thermal 
     OPS_OS_Specific_libs
-    G3
-    OPS_PFEM
-    ${MYSQL_LIBRARIES}
+    OPS_Tagged 
+    OPS_Utilities
 )
 
 
@@ -430,7 +447,13 @@ endif()
 
 
 target_link_libraries(OpenSees
-  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${HDF5_LIBRARIES} ${CONAN_LIBS}
+  OPS_InterpTcl 
+  OpenSeesLIB 
+  OPS_Numerics
+  ${CMAKE_DL_LIBS} 
+  ${HDF5_LIBRARIES} 
+  ${MYSQL_LIBRARIES}
+  ${CONAN_LIBS}
 )
 
 
@@ -471,18 +494,34 @@ target_link_libraries(OpenSeesMP OpenSeesLIB)
 
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL)
 
+set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
 target_compile_options(OpenSeesPy PUBLIC -fPIC)
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy
-  OpenSeesLIB OPS_Thermal OPS_Reliability ${HDF5_LIBRARIES} ${CONAN_LIBRARIES} ${Python_LIBRARIES}
+   OpenSeesLIB 
+   OPS_Reliability
+   OPS_Numerics 
+   ${HDF5_LIBRARIES} 
+   ${CONAN_LIBRARIES} 
+   ${Python_LIBRARIES}
 )
+
+
+#
+# INSTALL
+#
+
+install (TARGETS OpenSees DESTINATION bin)
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
+
+
+
 
 #==============================================================================
 #                            Configure targets
