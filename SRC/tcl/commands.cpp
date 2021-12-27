@@ -1015,11 +1015,14 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "getNodeTags", &getNodeTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getCrdTransfTags", &getCrdTransfTags, 
-          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
+          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getUniMatTags", &getUniMatTags, 
+          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "getParamTags", &getParamTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    
               
     Tcl_CreateCommand(interp, "fixedNodes", &fixedNodes,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
@@ -9319,6 +9322,23 @@ getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   for (int i = 0; i < crdTransfTags.Size(); ++i)
   {
     sprintf(buffer, "%d ", crdTransfTags(i));
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+
+  return TCL_OK;
+}
+
+
+int
+getUniMatTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  ID UniMatTags = OPS_getAllUniaxialMaterialTags();  // Function defined in UniaxialMaterial.h
+
+  char buffer[20];
+
+  for (int i = 0; i < UniMatTags.Size(); ++i)
+  {
+    sprintf(buffer, "%d ", UniMatTags(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
 
