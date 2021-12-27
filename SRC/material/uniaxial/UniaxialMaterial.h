@@ -103,5 +103,6 @@ extern UniaxialMaterial *OPS_getUniaxialMaterial(int tag);
 extern bool OPS_removeUniaxialMaterial(int tag);
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_printUniaxialMaterial(OPS_Stream &s, int flag = 0);
+extern ID   OPS_getAllUniaxialMaterialTags();
 
 #endif
