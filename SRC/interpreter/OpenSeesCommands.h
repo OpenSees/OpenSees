@@ -262,6 +262,7 @@ int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
 int OPS_getCrdTransfTags();
+int OPS_getAllUniaxialMaterialTags();
 int OPS_getNodeTags();
 int OPS_getParamTags();
 int OPS_getParamValue();
