@@ -97,7 +97,7 @@ void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
 
 ID OPS_getAllUniaxialMaterialTags() {
 
-    ID tags(0);
+    ID allUniaxialMaterialTags(0);
 
     MapOfTaggedObjectsIter theObjects = theUniaxialMaterialObjects.getIter();
     theObjects.reset();
@@ -105,8 +105,10 @@ ID OPS_getAllUniaxialMaterialTags() {
 
     while ((theObject = theObjects()) != 0) {
       UniaxialMaterial *theMaterial = (UniaxialMaterial *)theObject;    
-      tags.insert(theMaterial->getTag());
+      allUniaxialMaterialTags.insert(theMaterial->getTag());
     }
+	
+	return allUniaxialMaterialTags;
 }
 
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
