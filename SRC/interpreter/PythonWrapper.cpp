@@ -2398,6 +2398,37 @@ static PyObject *Py_ops_domainCommitTag(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
+
+static PyObject *Py_ops_IGA(PyObject *self, PyObject *args)
+{
+    opserr << "Calling Py_ops_IGA" << endln;
+
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    OPS_IGA();
+    // if (OPS_partition() < 0) {
+    // opserr<<(void*)0;
+    // return NULL;
+    // }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_NDTest(PyObject *self, PyObject *args)
+{
+    // opserr << "Calling Py_ops_NDTest" << endln;
+
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    OPS_NDTest();
+    // if (OPS_partition() < 0) {
+    // opserr<<(void*)0;
+    // return NULL;
+    // }
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -2595,6 +2626,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("partition", &Py_ops_partition);
     addCommand("pressureConstraint", &Py_ops_pc);
     addCommand("domainCommitTag", &Py_ops_domainCommitTag);
+    addCommand("IGA", &Py_ops_IGA);
+    addCommand("NDTest", &Py_ops_NDTest);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

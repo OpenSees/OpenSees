@@ -81,4 +81,6 @@ add_subdirectory(masonry)
 #add_subdirectory(dmglib)
 add_subdirectory(CEqElement)
 
+add_subdirectory(IGA)
+
 
