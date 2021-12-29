@@ -1904,10 +1904,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
-#ifdef HDF5
+#ifdef _HDF5
 	case RECORDER_TAGS_MPCORecorder:
 	  return new MPCORecorder();
-#endif // HDF5
+#endif // _HDF5
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
 	     opserr << " - no Recorder type exists for class tag ";
