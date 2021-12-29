@@ -109,4 +109,6 @@ private:
   GradientEvaluator *theGradientEvaluator;  
 };
 
+ReliabilityDomain* OPS_GetReliabilityDomain();
+
 #endif

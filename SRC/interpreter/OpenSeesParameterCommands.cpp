@@ -23,6 +23,7 @@
 // Description: parameter commands
 
 #include <Domain.h>
+#include <Element.h>
 #include <ElementParameter.h>
 #include <ElementStateParameter.h>
 #include <LoadFactorParameter.h>
@@ -39,17 +40,18 @@
 
 #ifdef _RELIABILITY
 
-// #include <ReliabilityDomain.h>
+#include <ReliabilityDomain.h>
 
-// extern ReliabilityDomain *theReliabilityDomain;
+ReliabilityDomain *OPS_GetReliabilityDomain();
 
 #endif
 
 int OPS_Parameter() {
   Domain *theDomain = OPS_GetDomain();
+  ReliabilityDomain *theReliabilityDomain = OPS_GetReliabilityDomain();
   if (theDomain == 0) return -1;
 
-  // check at least two arguments so don't segemnt fault on strcmp
+  // check at least two arguments so don't segment fault on strcmp
   if (OPS_GetNumRemainingInputArgs() < 1) {
     opserr << "WARNING need to specify a parameter tag\n";
     opserr << "Want: parameter tag <specific parameter args> .. see "
@@ -67,8 +69,6 @@ int OPS_Parameter() {
 
   // check existence
   Parameter *theParameter = theDomain->getParameter(paramTag);
-  int eleTag = -1;
-  bool isele = false;
   if (theParameter != 0) {
     opserr << "WARNNG: parameter " << paramTag << " already exists\n";
     return -1;
@@ -116,196 +116,186 @@ int OPS_Parameter() {
     return 0;
   }
 
-  // check special case of node disp
-  if (OPS_GetNumRemainingInputArgs() >= 4) {
-    const char *type1 = OPS_GetString();
-    if (strcmp(type1, "node") == 0) {
-      int nodeTag;
-      if (OPS_GetIntInput(&num, &nodeTag) < 0) {
+  // loop through all other parameters
+  Node *node = 0;
+  Element *element = 0;
+  LoadPattern *pattern = 0;
+  RandomVariable *theRV = 0;
+  DomainComponent *theObject = 0;
+  std::vector<const char *> argv;
+
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *type = OPS_GetString();
+
+    if (strcmp(type, "node") == 0) {
+      // node object
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need node tag\n";
+        return -1;
+      }
+      if (theObject != 0) {
+        opserr << "WARNING: another object is already set\n";
+        return -1;
+      }
+      int tag;
+      if (OPS_GetIntInput(&num, &tag) < 0) {
         opserr << "WARNING: failed to get node tag\n";
         return -1;
       }
-      Node *theNode = theDomain->getNode(nodeTag);
-      if (theNode == 0) {
-        opserr << "WARNING: node " << nodeTag << " not exist\n";
+      node = theDomain->getNode(tag);
+      if (node == 0) {
+        opserr << "WARNING: node " << tag << " not exist\n";
         return -1;
       }
+      theObject = (DomainComponent *)node;
 
-      const char *type2 = OPS_GetString();
-      if (strcmp(type2, "disp") == 0) {
-        int dof;
-        if (OPS_GetIntInput(&num, &dof) < 0) {
-          opserr << "WARNING: failed to get disp dof\n";
-          return -1;
-        }
-
-        Parameter *newParameter =
-            new NodeResponseParameter(paramTag, theNode, Disp, dof);
-
-        if (theDomain->addParameter(newParameter) == false) {
-          opserr << "WARNING: failed to add parameter\n";
-          return -1;
-        }
-
-        if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-          opserr << "WARING: parameter - failed to set parameter tag\n";
-          return -1;
-        }
-
-        return 0;
-      } else {
-        OPS_ResetCurrentInputArg(-3);
+    } else if (strcmp(type, "pattern") == 0 ||
+               strcmp(type, "loadPattern") == 0) {
+      // pattern object
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need load pattern tag\n";
+        return -1;
       }
-    } else {
-      OPS_ResetCurrentInputArg(-1);
-    }
-  }
-
-  // check special case of pattern load factor
-  if (OPS_GetNumRemainingInputArgs() >= 3) {
-    const char *type1 = OPS_GetString();
-    if (strcmp(type1, "pattern") == 0) {
-      int patternTag;
-      if (OPS_GetIntInput(&num, &patternTag) < 0) {
+      if (theObject != 0) {
+        opserr << "WARNING: another object is already set\n";
+        return -1;
+      }
+      int tag;
+      if (OPS_GetIntInput(&num, &tag) < 0) {
         opserr << "WARNING: failed to get pattern tag\n";
         return -1;
       }
-      LoadPattern *thePattern = theDomain->getLoadPattern(patternTag);
-      if (thePattern == 0) {
-        opserr << "WARNING: pattern " << patternTag << " not exists\n";
+      pattern = theDomain->getLoadPattern(tag);
+      if (pattern == 0) {
+        opserr << "WARNING: pattern " << tag << " not exists\n";
+        return -1;
+      }
+      theObject = (DomainComponent *)pattern;
+
+    } else if (strcmp(type, "element") == 0) {
+      // element object
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need element tag\n";
+        return -1;
+      }
+      if (theObject != 0) {
+        opserr << "WARNING: another object is already set\n";
+        return -1;
+      }
+      int tag;
+      if (OPS_GetIntInput(&num, &tag) < 0) {
+        opserr << "WARNING parameter -- invalid element tag\n";
         return -1;
       }
 
-      const char *type2 = OPS_GetString();
-      if (strcmp(type2, "lambda") == 0) {
-        Parameter *newParameter =
-            new LoadFactorParameter(paramTag, thePattern);
-
-        if (theDomain->addParameter(newParameter) == false) {
-          opserr << "WARNING: failed to add parameter\n";
-          return -1;
-        }
-
-        if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-          opserr << "WARING: parameter - failed to set parameter tag\n";
-          return -1;
-        }
-
-        return 0;
-      } else {
-        OPS_ResetCurrentInputArg(-3);
+      element = theDomain->getElement(tag);
+      if (element == 0) {
+        opserr << "WARNING: element " << tag << " not exists\n";
+        return -1;
       }
-    } else {
-      OPS_ResetCurrentInputArg(-1);
-    }
-  }
+      theObject = (DomainComponent *)element;
 
-  // Now handle the parameter
-  RandomVariable *theRV = 0;
-  DomainComponent *theObject;
-
-  const char *type = OPS_GetString();
-
-  if (strcmp(type, "randomVariable") == 0) {
+    } else if (strcmp(type, "randomVariable") == 0) {
 #ifdef _RELIABILITY
-    // int rvTag;
-    // if (Tcl_GetInt(interp, argv[3], &rvTag) != TCL_OK) {
-    // 	return TCL_ERROR;
-    // }
+      // associate with random variable
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need random variable tag\n";
+        return -1;
+      }
+      int rvTag;
+      if (OPS_GetIntInput(&num, &rvTag) < 0) {
+        opserr << "WARNING parameter -- invalid rv tag\n";
+        return -1;
+      }
 
-    // if (theReliabilityDomain == 0) {
-    // 	opserr << "ERROR parameter " << paramTag << " -- reliability domain
-    // has not been created" << endln;
-    // }
-
-    // theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
-    // if (theRV == 0) {
-    // 	opserr << "ERROR parameter " << paramTag << " -- random variable
-    // with tag " << rvTag << " not defined" << endln; 	return TCL_ERROR;
-    // }
+      if (theReliabilityDomain == 0) {
+        opserr << "WARNING: the reliability domain is not defined\n";
+        return -1;
+      }
+      theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
+      if (theRV == 0) {
+        opserr << "ERROR parameter " << paramTag
+               << " -- random variable with tag " << rvTag
+               << " not defined\n";
+        return -1;
+      }
 #endif
-  }
 
-  if (theRV != 0) {
-    type = OPS_GetString();
-  }
+    } else if (node != 0 && strcmp(type, "disp") == 0) {
+      // special node disp object
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need disp dof\n";
+        return -1;
+      }
 
-  if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "WARNING parameter -- insufficient number of arguments for "
-              "parameter with tag "
-           << paramTag << '\n';
-    return -1;
-  }
+      int dof;
+      if (OPS_GetIntInput(&num, &dof) < 0) {
+        opserr << "WARNING: failed to get disp dof\n";
+        return -1;
+      }
 
-  if (strcmp(type, "element") == 0) {
-    if (OPS_GetIntInput(&num, &eleTag) < 0) {
-      opserr << "WARNING parameter -- invalid element tag\n";
+      Parameter *newParameter =
+          new NodeResponseParameter(paramTag, node, Disp, dof);
+
+      if (theDomain->addParameter(newParameter) == false) {
+        opserr << "WARNING: failed to add parameter\n";
+        return -1;
+      }
+
+      if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
+        opserr << "WARING: parameter - failed to set parameter tag\n";
+        return -1;
+      }
+
+      return 0;
+
+    } else if (pattern != 0 && strcmp(type, "lambda") == 0) {
+      // special pattern lambda object
+      Parameter *newParameter = new LoadFactorParameter(paramTag, pattern);
+
+      if (theDomain->addParameter(newParameter) == false) {
+        opserr << "WARNING: failed to add parameter\n";
+        return -1;
+      }
+
+      if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
+        opserr << "WARING: parameter - failed to set parameter tag\n";
+        return -1;
+      }
+
+      return 0;
+
+    } else if (theObject != 0) {
+      // collect parameter object data
+      char *buffer = new char[128];
+      OPS_GetStringFromAll(buffer, 128);
+      argv.push_back(buffer);
+
+    } else {
+      opserr << "WARING: parameter - inputs must be one of node, element, "
+                "pattern, randomVariable\n";
       return -1;
     }
-    isele = true;
-
-    // Retrieve element from domain
-    theObject = (DomainComponent *)theDomain->getElement(eleTag);
-
-  } else if (strcmp(type, "node") == 0) {
-    int nodeTag;
-    if (OPS_GetIntInput(&num, &nodeTag) < 0) {
-      opserr << "WARNING parameter -- invalid node tag\n";
-      return -1;
-    }
-
-    // Retrieve node from domain
-    theObject = (DomainComponent *)theDomain->getNode(nodeTag);
-
-  } else if (strcmp(type, "loadPattern") == 0) {
-    int loadTag;
-    if (OPS_GetIntInput(&num, &loadTag) < 0) {
-      opserr << "WARNING parameter -- invalid load pattern tag\n";
-      return -1;
-    }
-
-    // Retrieve load pattern from domain
-    theObject = (DomainComponent *)theDomain->getLoadPattern(loadTag);
-
-  } else {
-    opserr << "WARNING - unable to assign parameter to object of type "
-           << type << '\n';
-    return -1;
   }
-
-  ///////////////////////////////////
 
   // Create new parameter
   Parameter *newParameter;
-  int numr = OPS_GetNumRemainingInputArgs();
-  if (numr > 0) {
-    char **argv = new char *[numr];
-    char buffer[128];
-
-    for (int i = 0; i < numr; ++i) {
-      argv[i] = new char[128];
-
-      // Turn everything in to a string for setParameter
-      strcpy(argv[i], OPS_GetStringFromAll(buffer, 128));
-    }
-
-    if (isele == false) {
-      newParameter =
-          new Parameter(paramTag, theObject, (const char **)argv, numr);
-    } else {
-      newParameter = new ElementParameter(paramTag, eleTag,
-                                          (const char **)argv, numr);
-    }
-
-    for (int i = 0; i < numr; ++i) {
-      delete[] argv[i];
-    }
-    delete[] argv;
-
+  if (element != 0) {
+    newParameter = new ElementParameter(paramTag, element->getTag(),
+                                        &argv[0], argv.size());
+  } else if (theObject != 0) {
+    newParameter =
+        new Parameter(paramTag, theObject, &argv[0], argv.size());
   } else {
     newParameter = new Parameter(paramTag, 0, 0, 0);
   }
 
+  // clean up argv
+  for (int i = 0; i < argv.size(); ++i) {
+    delete[] argv[i];
+  }
+
+  // add parameter
   if (theRV != 0) {
     RVParameter *newRVParameter =
         new RVParameter(paramTag, theRV, newParameter);
