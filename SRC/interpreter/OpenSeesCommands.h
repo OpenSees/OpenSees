@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DL_Interpreter.h"
 #include <UniaxialMaterial.h>
 #include <Domain.h>
+#include <ReliabilityDomain.h>
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
 #include <LinearSOE.h>
@@ -73,6 +74,7 @@ public:
 
     DL_Interpreter* getInterpreter();
     Domain* getDomain();
+    ReliabilityDomain* getReliabilityDomain();
     AnalysisModel** getAnalysisModel();
 
     int getNDF() const {return ndf;}
@@ -356,6 +358,7 @@ int OPS_rootFinding();
 int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();
+ReliabilityDomain* OPS_GetReliabilityDomain();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();

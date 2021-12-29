@@ -209,6 +209,15 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+ReliabilityDomain*
+OpenSeesCommands::getReliabilityDomain()
+{
+  if (reliability == 0) {
+    return 0;
+  }
+  return reliability->getDomain();
+}
+
 AnalysisModel** OpenSeesCommands::getAnalysisModel()
 {
     return &theAnalysisModel;
@@ -1010,6 +1019,11 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+ReliabilityDomain* OPS_GetReliabilityDomain(void) {
+  if (cmds == 0) return 0;
+  return cmds->getReliabilityDomain();
 }
 
 AnalysisModel**
