@@ -846,29 +846,33 @@ DoubleMembranePlateFiberSection::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && (strcmp(argv[0], "fiber") == 0 || strcmp(argv[0], "Fiber") == 0)) {
     
     int passarg = 2;
     int key = atoi(argv[1]);    
     
     if (key > 0 && key <= 2*numFibers) {
-      double fiber_thickness = 0.5 * h * wg[key - 1];
-      double fiber_location = 0.5 * (d + h) + (0.5 * h) * sg[key - 1];
-      if (key >= numFibers)
+      int quadrature_id = key - 1;
+      if (key > numFibers)
+          quadrature_id -= numFibers;
+      double fiber_thickness = 0.5 * h * wg[quadrature_id];
+      double fiber_location = 0.5 * (d + h) + (0.5 * h) * sg[quadrature_id];
+      if (key > numFibers)
           fiber_location = -fiber_location;
       output.tag("FiberOutput");
       output.attr("number", key);
-      output.attr("zLoc", 0.5 * h * sg[key - 1]);
+      output.attr("zLoc", fiber_location);
       output.attr("thickness", fiber_thickness);
       theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
       output.endTag();
     }
-
-    return theResponse;
   }
 
   // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+      return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
