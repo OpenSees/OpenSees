@@ -467,18 +467,31 @@ PlaneStressUserMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_Object
   Response*
   PlaneStressUserMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
   {
-      Response* theResponse = 0;
-      const Vector& res = this->getCracking();
-      theResponse = new MaterialResponse(this, 1, res);
+      // Massimo Petracca - 28/12/2021:
+      // this should be handled by the PlaneStressUserMaterial... moved here from the NDMaterial
+      if ((argc == 1) && ((strcmp(argv[0], "Damage") == 0) || (strcmp(argv[0], "damage") == 0))) {
+          output.tag("NdMaterialOutput");
+          output.attr("matType", this->getClassType());
+          output.attr("matTag", this->getTag());
+          output.tag("ResponseType", "Crack1");
+          output.tag("ResponseType", "Crack2");
+          output.tag("ResponseType", "CAngle");
+          output.endTag();
+          static Vector vec(3);
+          // use a number not used in the NDMaterial..
+          // 5 is too likely to be used if someone will implement another response there.
+          return new MaterialResponse(this, 5555, vec);
+      }
 
-      return theResponse;
+      // otherwise call base class
+      return NDMaterial::setResponse(argv, argc, output);
   }
 
   int
   PlaneStressUserMaterial::getResponse(int responseID, Information & matInfo)
   {
       switch (responseID) {
-      case 1:
+      case 5555:
           return matInfo.setVector(this->getCracking());
 
       default:
