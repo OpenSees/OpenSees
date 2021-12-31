@@ -1427,6 +1427,18 @@ static PyObject *Py_ops_getCrdTransfTags(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getUniaxialMaterialTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getUniaxialMaterialTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getNodeTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2510,6 +2522,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("convertTextToBinary", &Py_ops_convertTextToBinary);
     addCommand("getEleTags", &Py_ops_getEleTags);
     addCommand("getCrdTransfTags", &Py_ops_getCrdTransfTags);
+    addCommand("getUniaxialMatTags",Py_ops_getUniaxialMaterialTags);
     addCommand("getNodeTags", &Py_ops_getNodeTags);
     addCommand("getParamTags", &Py_ops_getParamTags);
     addCommand("getParamValue", &Py_ops_getParamValue);
