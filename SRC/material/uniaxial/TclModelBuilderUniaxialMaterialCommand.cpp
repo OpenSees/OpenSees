@@ -188,7 +188,7 @@ extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
-//extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
+extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -2448,167 +2448,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
   }
 
-  else if (strcmp(argv[1], "DuctileFracture") == 0) {
-	if (argc < 5) {
-		opserr << "WARNING insufficient arguments\n";
-		printCommand(argc, argv);
-		opserr << "Want: uniaxialMaterial DuctileFracture tag? matTag?";
-		opserr << " -c_mono c_mono? -c_cycl c_cycl? -c_symm c_symm?" << endln;
-		opserr << " <-E_s E_s> <-esu esu> <-k1 k1> <-k2 k2> " << endln;
-		opserr << " <-db db> <-b1 b1> <-b2 b2> <-FImax FImax?> " << endln;
-    opserr << " <-c_dete c_dete> <-minStrain minStraing?> <-maxStrain maxStrain?>" << endln;
-		return TCL_ERROR;
+  	else if (strcmp(argv[1], "DuctileFracture") == 0) {
+		void *theMat = OPS_DuctileFracture();
+		if (theMat != 0) 
+			theMaterial = (UniaxialMaterial *)theMat;
+		else 
+			return TCL_ERROR;
 	}
-
-	int tag, matTag;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-		opserr << "WARNING invalid uniaxialMaterial DuctileFracture tag" << endln;
-		return TCL_ERROR;
-	}
-
-	if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-		opserr << "WARNING invalid component tag\n";
-		opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-		return TCL_ERROR;
-	}
-
-	double FImax = 1.0;
-	double c_mono;
-	double c_cycl;
-	double c_symm;
-	double E_s = 29000;
-	double epsmin = NEG_INF_STRAIN;
-	double epsmax = POS_INF_STRAIN;
-	double esu = POS_INF_STRAIN;
-	double k1 = 1;
-	double k2 = 0;
-	double db = 0;
-	double b1 = 1000;
-	double b2 = -1000;
-	double c_dete = 0.0;
-	
-	for (int j = 4; j < argc; j++) {
-		if (strcmp(argv[j], "-FImax") == 0) {
-			if ((j + 1 >= argc) || (Tcl_GetDouble(interp, argv[j + 1], &FImax) != TCL_OK)) {
-				opserr << "WARNING invalid -FImax";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-c_mono") == 0) {
-			if ((j + 1 >= argc) || (Tcl_GetDouble(interp, argv[j + 1], &c_mono) != TCL_OK)) {
-				opserr << "WARNING invalid -c_mono";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-c_cycl") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &c_cycl) != TCL_OK)) {
-				opserr << "WARNING invalid -c_cycl";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-c_symm") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &c_symm) != TCL_OK)) {
-				opserr << "WARNING invalid -c_symm";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-E_s") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &E_s) != TCL_OK)) {
-				opserr << "WARNING invalid -E_s";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-minStrain") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &epsmin) != TCL_OK)) {
-				opserr << "WARNING invalid -minStrain ";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-maxStrain") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &epsmax) != TCL_OK)) {
-				opserr << "WARNING invalid -maxStrain";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-esu") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &esu) != TCL_OK)) {
-				opserr << "WARNING invalid -esu";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-k1") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &k1) != TCL_OK)) {
-				opserr << "WARNING invalid -k1";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-db") == 0) {
-			if ((j + 1 >= argc) || (Tcl_GetDouble(interp, argv[j + 1], &db) != TCL_OK)) {
-				opserr << "WARNING invalid -db";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-b1") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &b1) != TCL_OK)) {
-				opserr << "WARNING invalid -b1";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-b2") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &b2) != TCL_OK)) {
-				opserr << "WARNING invalid -b2";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		if (strcmp(argv[j], "-c_dete") == 0) {
-			if ((j + 1 >= argc) ||
-				(Tcl_GetDouble(interp, argv[j + 1], &c_dete) != TCL_OK)) {
-				opserr << "WARNING invalid -c_dete";
-				opserr << "uniaxialMaterial DuctileFracture: " << tag << endln;
-				return TCL_ERROR;
-			}
-		}
-		j++;
-	}
-
-
-	UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matTag);
-
-	if (theMat == 0) {
-		opserr << "WARNING component material does not exist\n";
-		opserr << "Component material: " << matTag;
-		opserr << "\nuniaxialMaterial DuctileFracture: " << tag << endln;
-		return TCL_ERROR;
-	}
-
-  // Parsing was successful, allocate the material
-	theMaterial = new DuctileFracture(tag, *theMat, c_mono, c_cycl, c_symm, E_s, esu, k1, k2, db, b1, b2, FImax, c_dete, epsmin, epsmax);
-
-  }
-
-
     
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
