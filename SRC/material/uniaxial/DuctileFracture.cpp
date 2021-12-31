@@ -165,6 +165,7 @@ void* OPS_DuctileFracture()
 				return 0;
 			}
 		}
+  }
 		
 
 		UniaxialMaterial* mat = OPS_getUniaxialMaterial(idata[1]);
@@ -184,14 +185,13 @@ void* OPS_DuctileFracture()
 		}
 
 		return theMat;
-	}
 }
 
 DuctileFracture::DuctileFracture(int tag,UniaxialMaterial &material,
 	double c, double lambda, double beta,
 	double Es, double e_su, double k_1, double k_2,
-	double d_b, double b_1, double b_2, double FImax, 
-  double cdete, double epsmin, double epsmax)
+	double d_b, double b_1, double b_2, double FI_max, 
+  double cdete, double eps_min, double eps_max)
 	:UniaxialMaterial(tag,MAT_TAG_DuctileFracture), theMaterial(0), 
 	fracFailure(false), trialStrain(0)
 {
@@ -209,19 +209,19 @@ DuctileFracture::DuctileFracture(int tag,UniaxialMaterial &material,
   es_min = 0; // The minimum steel strain
   e_memo = 0; // The strain memory factor
 
-  if ( FImax > 10.0 || FImax < 0.0 ) {
+  if ( FI_max > 10.0 || FI_max < 0.0 ) {
     opserr << "DuctileFracture::DuctileFracture " <<
       "-FImax must be between 0 and 10, assuming FImax = 1\n" ;
     FImax    = 1.0;
   } else 
-    FImax    = FImax;
+    FImax    = FI_max;
   
   c_mono	= c;
   c_cycl	= lambda;
   c_symm	= beta;
   E_s		= Es;
-  minStrain = epsmin;
-  maxStrain = epsmax;
+  minStrain = eps_min;
+  maxStrain = eps_max;
   esu = e_su;
   k1 = k_1;
   k2 = k_2;
@@ -672,13 +672,11 @@ DuctileFracture::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
   }
 
   else if (strcmp(argv[0], "vgm") == 0) {
-	  int res;
 	  theResponse = new MaterialResponse(this, 7, FI_VGM);
 	  theOutput.tag("ResponseType", "FI_VGM");
   }
 
   else if (strcmp(argv[0], "mvc") == 0) {
-	  int res;
 	  theResponse = new MaterialResponse(this, 8, FI_MVC);
 	  theOutput.tag("ResponseType", "FI_MVC");
   }
