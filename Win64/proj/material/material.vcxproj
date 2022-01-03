@@ -467,6 +467,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\TclModelBuilderBackboneCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DowelType.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DuctileFracture.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.cpp" />
@@ -873,6 +874,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayBelowWS.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DowelType.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DuctileFracture.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial2d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.h" />

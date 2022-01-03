@@ -99,6 +99,7 @@
 #include "ConfinedConcrete01.h"
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 #include "DowelType.h"
+#include "DuctileFracture.h" // Kuanshi Zhong
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -1357,6 +1358,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_DowelType:
 		return new DowelType();
+
+	case MAT_TAG_DuctileFracture:
+		return new DuctileFracture();
 
 
 	default:
