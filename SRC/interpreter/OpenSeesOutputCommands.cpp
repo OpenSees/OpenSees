@@ -2894,6 +2894,14 @@ int OPS_basicDeformation()
     DummyStream dummy;
 
     Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+
+    // Try "basicDeformations"
+    if (theResponse == 0) {
+      char a[80] = "basicDeformations";
+      argvv[0] = a;
+      theResponse = theElement->setResponse(argvv, argcc, dummy);      
+    }
+    
     if (theResponse == 0) {
 	return 0;
     }
@@ -2971,12 +2979,15 @@ int OPS_basicForce()
     DummyStream dummy;
 
     Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+
+    // Try "basicForces"
     if (theResponse == 0) {
-	double res = 0.0;
-	if (OPS_SetDoubleOutput(&numdata, &res, false) < 0) {
-	    opserr << "WARNING: failed to set output\n";
-	    return -1;
-	}
+      char a[80] = "basicForces";
+      argvv[0] = a;
+      theResponse = theElement->setResponse(argvv, argcc, dummy);      
+    }
+    
+    if (theResponse == 0) {
 	return 0;
     }
 
