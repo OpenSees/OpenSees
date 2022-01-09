@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <limits>
 
 #include <algorithm>
 #include <string>
