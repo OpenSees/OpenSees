@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------
 # Claudio Perez
 
-project(LAPACK)
+#project(LAPACK)
 
 add_library(LAPACK)
 

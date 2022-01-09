@@ -4,7 +4,7 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-# TODO: Create new XMU element target
+
 target_sources(OPS_Element
   PRIVATE
       AC3D8HexWithSensitivity.cpp

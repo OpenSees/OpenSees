@@ -583,7 +583,8 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 		FHzi=Fhz;
 
 	}
-	if (i>maxIterT)	opserr<<maxIterT<<"´Îµü´úºóÊ§°Ü£¡";//previous process*/ 
+	if (i>maxIterT)
+	  opserr<< maxIterT << " maxIter reached";//previous process*/ 
 //===========================
 	/*
 	int maxIterT=30;double tol=1.0e-5;

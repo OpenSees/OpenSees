@@ -17,7 +17,8 @@
 #==============================================================================
 # Claudio Perez
 cmake_minimum_required(VERSION 3.16)
-project(UMFPACK)
+
+
 include_directories(. ../AMD)
 add_compile_options(-fexceptions -fPIC)
 add_compile_definitions(NCHOLMOD)

@@ -843,7 +843,7 @@ int ZeroLengthContactASDimplex::getResponse(int responseID, Information& eleInfo
     }
     else if (responseID == 7) {
         // tangential contanct force norm
-        scalar(0) = std::sqrt(sv.sig(1)*sv.sig(1) + sv.sig(2)*sv.sig(2));
+        scalar(0) = sqrt(sv.sig(1)*sv.sig(1) + sv.sig(2)*sv.sig(2));
         return eleInfo.setVector(scalar);
     }
     else if (responseID == 8) {
@@ -1001,7 +1001,7 @@ void ZeroLengthContactASDimplex::updateInternal(bool do_implex, bool do_tangent)
     double T2 = sv.shear(1) + Kfriction * (sv.eps(2) - sv.eps_commit(2));
 
     // tangential stress norm
-    double SS = std::sqrt(T1 * T1 + T2 * T2);
+    double SS = sqrt(T1 * T1 + T2 * T2);
 
     // compute residual stress in shear
     if (do_implex && use_implex) {

@@ -143,7 +143,9 @@ OBJS       = UniaxialMaterial.o \
 	Trilinwp.o \
 	Trilinwp2.o \
 	SteelFractureDI.o \
-        TclModelBuilderUniaxialMaterialCommand.o
+	DowelType.o \
+	DuctileFracture.o \
+    TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/uniaxial/fedeas; $(MAKE);

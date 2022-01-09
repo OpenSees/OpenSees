@@ -76,6 +76,9 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Trilinwp.h>
 #include <Trilinwp2.h>
 #include <Masonryt.h>
+#include <DowelType.h>
+
+#include <DuctileFracture.h> // Kuanshi Zhong
 
 #include <Vector.h>
 #include <string.h>
@@ -184,6 +187,8 @@ extern void *OPS_Masonry(void);
 extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
+extern void *OPS_DowelType(void);
+extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -2442,6 +2447,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 					    gammaF1, gammaF2, gammaF3, gammaF4, gammaFLimit, gammaE, yStr);		
     }
   }
+
+  	else if (strcmp(argv[1], "DuctileFracture") == 0) {
+		void *theMat = OPS_DuctileFracture();
+		if (theMat != 0) 
+			theMaterial = (UniaxialMaterial *)theMat;
+		else 
+			return TCL_ERROR;
+	}
     
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
@@ -2908,6 +2921,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	else
 		return TCL_ERROR;
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+    if (strcmp(argv[1], "DowelType") == 0) {
+        void* theMat = OPS_DowelType();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)

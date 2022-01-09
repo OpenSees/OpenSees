@@ -209,6 +209,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\GimmeMCK.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.cpp" />
