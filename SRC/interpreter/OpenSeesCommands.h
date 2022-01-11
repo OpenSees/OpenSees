@@ -255,6 +255,7 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_getFixedNodes();
 int OPS_getFixedDOFs();
+// int OPS_getConstraintMatrix();
 int OPS_getConstrainedNodes();
 int OPS_getConstrainedDOFs();
 int OPS_getRetainedNodes();

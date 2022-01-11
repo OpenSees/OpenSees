@@ -1603,7 +1603,7 @@ int OPS_getFixedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - fixedDOFs fNodeTag?\n";
+	opserr << "WARNING want - getFixedDOFs fNodeTag?\n";
 	return -1;
     }
 
@@ -1611,7 +1611,7 @@ int OPS_getFixedDOFs()
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	  opserr << "WARNING fixedDOFs fNodeTag? \n";
+	  opserr << "WARNING getFixedDOFs fNodeTag? \n";
 	  return -1;
     }
 
@@ -1639,6 +1639,54 @@ int OPS_getFixedDOFs()
     return 0;
 }
 
+// int OPS_getConstraintMatrix()
+// {
+
+//     bool all = 1;
+//     int rNodeTag;
+//     int numdata = 1;
+
+//     if (OPS_GetNumRemainingInputArgs() > 2) {
+// 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
+// 		opserr << "WARNING getConstraintMatrix <rNodeTag?> - could not read rNodeTag\n";
+// 		return -1;
+// 	  }
+// 	all = 0;
+//     }
+
+//     Domain* theDomain = OPS_GetDomain();
+//     if (theDomain == 0) return -1;
+
+//     MP_ConstraintIter &mpIter = theDomain->getMPs();
+//     MP_Constraint *theMP;
+
+// 	std::vector <int> data;
+
+// 	int nsdof;
+
+//     while ((theMP = mpIter()) != 0) {
+// 	  const Matrix &theConstraintMatrix = theMP->getConstraint();
+// 	  nsdof = theConstraintMatrix.noCols();
+
+// 	  data.push_back(theMP->getNodeConstrained());
+//     }
+
+// 	int size = nsdof*nsdof;
+
+//     for (int i = 0; i < nsdof; i++) {
+// 	  for (int j = 0; j < nsdof; j++) {
+// 	    data.push_back(theConstraintMatrix(i,j));
+// 	  }
+//     }
+
+// 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+// 	  opserr << "WARNING failed to set output\n";
+// 	  return -1;
+// 	}
+
+//     return 0;
+// }
+
 int OPS_getConstrainedNodes()
 {
 
@@ -1648,7 +1696,7 @@ int OPS_getConstrainedNodes()
 
     if (OPS_GetNumRemainingInputArgs() > 2) {
 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
-		opserr << "WARNING constrainedNodes <rNodeTag?> - could not read rNodeTag\n";
+		opserr << "WARNING getConstrainedNodes <rNodeTag?> - could not read rNodeTag\n";
 		return -1;
 	  }
 	all = 0;
@@ -1686,7 +1734,7 @@ int OPS_getConstrainedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - constrainedDOFs cNode? <rNode?> <rDOF?>\n";
+	opserr << "WARNING want - getConstrainedDOFs cNode? <rNode?> <rDOF?>\n";
 	return -1;
     }
 
@@ -1694,7 +1742,7 @@ int OPS_getConstrainedDOFs()
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &cNode) < 0) {
-	  opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
+	  opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
 	  return -1;
     }
 
@@ -1703,7 +1751,7 @@ int OPS_getConstrainedDOFs()
 
     if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &rNode) < 0) {
-		opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
+		opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
 		return -1;
 	  }
 	  allNodes = 0;
@@ -1713,7 +1761,7 @@ int OPS_getConstrainedDOFs()
 	bool allDOFs = 1;
     if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &rDOF) < 0) {
-		opserr << "WARNING constrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
+		opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
 		return -1;
 	  }
 	  rDOF--;
@@ -1772,7 +1820,7 @@ int OPS_getRetainedNodes()
 
     if (OPS_GetNumRemainingInputArgs() > 2) {
 	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
-		opserr << "WARNING retainedNodes <cNodeTag?> - could not read cNodeTag\n";
+		opserr << "WARNING getRetainedNodes <cNodeTag?> - could not read cNodeTag\n";
 		return -1;
 	  }
 	all = 0;
@@ -1811,7 +1859,7 @@ int OPS_getRetainedDOFs()
 {
 
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
+	opserr << "WARNING want - getRetainedDOFs rNode? <cNode?> <cDOF?>\n";
 	return -1;
     }
 
@@ -1819,7 +1867,7 @@ int OPS_getRetainedDOFs()
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &rNode) < 0) {
-	  opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
+	  opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
 	  return -1;
     }
 
@@ -1828,7 +1876,7 @@ int OPS_getRetainedDOFs()
 
     if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &cNode) < 0) {
-		opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
+		opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
 		return -1;
 	  }
 	  allNodes = 0;
@@ -1838,7 +1886,7 @@ int OPS_getRetainedDOFs()
 	bool allDOFs = 1;
     if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &cDOF) < 0) {
-		opserr << "WARNING retainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
+		opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
 		return -1;
 	  }
 	  cDOF--;
