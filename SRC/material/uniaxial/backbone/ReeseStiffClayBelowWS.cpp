@@ -1,10 +1,84 @@
-
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
 
 #include <ReeseStiffClayBelowWS.h>
 #include <Vector.h>
 #include <Channel.h>
 
 #include <math.h>
+
+#include <elementAPI.h>
+
+void *OPS_ReeseStiffClayBelowWS() {
+  // check inputs
+  if (OPS_GetNumRemainingInputArgs() < 5) {
+    opserr << "WARNING: need hystereticBackbone ReeseStiffClayBelowWS "
+           << "Esi y50 As Pc\n";
+  }
+
+  // get tag
+  int tag;
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, &tag) < 0) {
+    opserr << "WARNING: invalid tag for hystereticBackbone "
+              "ReeseStiffClayBelowWS\n";
+    return 0;
+  }
+
+  // get Esi, y50, As, Pc
+  double data[4];
+  numData = 4;
+  if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+    opserr << "WARNING: invalid data for hystereticBackbone "
+              "ReeseStiffClayBelowWS\n";
+    return 0;
+  }
+
+  // check data
+  if (data[0] < 0.0) {
+    opserr << "WARNING: hystereticBackbone "
+              "ReeseStiffClayBelowWS -- Esi < 0\n";
+    return 0;
+  }
+  if (data[1] < 0.0) {
+    opserr << "WARNING: hystereticBackbone "
+              "ReeseStiffClayBelowWS -- y50 < 0\n";
+    return 0;
+  }
+  if (data[2] < 0.0) {
+    opserr << "WARNING: hystereticBackbone "
+              "ReeseStiffClayBelowWS -- As < 0\n";
+    return 0;
+  }
+  if (data[3] < 0.0) {
+    opserr << "WARNING: hystereticBackbone "
+              "ReeseStiffClayBelowWS -- Pc < 0\n";
+    return 0;
+  }
+
+  // create object
+  ReeseStiffClayBelowWS *theBackbone =
+      new ReeseStiffClayBelowWS(tag, data[0], data[1], data[2], data[3]);
+
+  return theBackbone;
+}
 
 ReeseStiffClayBelowWS::ReeseStiffClayBelowWS(int tag,double esi,double y,double as,double pc):
   HystereticBackbone(tag,BACKBONE_TAG_ReeseStiffClayBelowWS),
