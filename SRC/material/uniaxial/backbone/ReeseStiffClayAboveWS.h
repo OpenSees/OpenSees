@@ -18,7 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-
 #ifndef ReeseStiffClayAboveWS_h
 #define ReeseStiffClayAboveWS_h
 
@@ -26,8 +25,10 @@
 #include <Vector.h>
 
 /**
- * @brief Response of Stiff Clay above the water surface (https://ntrl.ntis.gov/NTRL/dashboard/searchResults/titleDetail/PB94108305.xhtml) page 336
- * 
+ * @brief Response of Stiff Clay above the water surface
+ * (https://ntrl.ntis.gov/NTRL/dashboard/searchResults/titleDetail/PB94108305.xhtml)
+ * page 336
+ *
  */
 class ReeseStiffClayAboveWS : public HystereticBackbone {
  public:
