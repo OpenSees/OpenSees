@@ -30,7 +30,7 @@ void *OPS_ReeseStiffClayBelowWS() {
   // check inputs
   if (OPS_GetNumRemainingInputArgs() < 5) {
     opserr << "WARNING: need hystereticBackbone ReeseStiffClayBelowWS "
-           << "Esi y50 As Pc\n";
+           << "tag Esi y50 As Pc\n";
   }
 
   // get tag
