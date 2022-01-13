@@ -525,6 +525,7 @@
 #define BACKBONE_TAG_ReeseSoftClay      11
 #define BACKBONE_TAG_ReeseSand          12
 #define BACKBONE_TAG_ReeseStiffClayAboveWS 13
+#define BACKBONE_TAG_VuggyLimestone 14
 
 
 #define DEG_TAG_STIFF_Constant		1

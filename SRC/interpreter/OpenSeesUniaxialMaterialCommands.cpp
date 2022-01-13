@@ -190,6 +190,7 @@ void* OPS_MultilinearBackbone();
 void* OPS_TrilinearBackbone();
 void* OPS_ReeseStiffClayBelowWS();
 void* OPS_ReeseStiffClayAboveWS();
+void* OPS_VuggyLimestone();
 
 void* OPS_ConstantStiffnessDegradation();
 void* OPS_DuctilityStiffnessDegradation();
@@ -378,6 +379,7 @@ namespace {
     hystereticBackbonesMap.insert(std::make_pair("Trilinear", &OPS_TrilinearBackbone));
     hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
     hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
+    hystereticBackbonesMap.insert(std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
     
     return 0;
   }
