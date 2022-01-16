@@ -59,12 +59,13 @@
 
 
 // init the global variabled defined in OPS_Globals.h
+// #undef opserr
 StandardStream sserr;
-OPS_Stream &opserr = sserr;
+OPS_Stream *opserrPtr = &sserr;
 
-double        ops_Dt = 0;
-Domain       *ops_TheActiveDomain = 0;
-Element      *ops_TheActiveElement = 0;
+// double       ops_Dt = 0;
+// Domain       *ops_TheActiveDomain = 0;
+// Element      *ops_TheActiveElement = 0;
 
 
 int main(int argc, char **argv)

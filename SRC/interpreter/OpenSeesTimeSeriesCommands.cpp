@@ -37,9 +37,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written: Minjie
 
 // Description: command to create timeseries
+#include <map>
+#include <filesystem> // std::filesystem::exists
 
 #include <TimeSeries.h>
-#include <map>
 #include <string.h>
 #include <elementAPI.h>
 #include <vector>
@@ -152,6 +153,7 @@ namespace {
 		    return 0;
 		}
 		filePath = OPS_GetString();
+ 
 		loc++;
 
 	    } else if (strcmp(arg, "-fileTime") == 0) {
@@ -186,9 +188,13 @@ namespace {
 				  startTime);
 	    
 	} else if (dt > 0 && filePath != 0) {
-	    
-	    return new PathSeries(tag, filePath, dt, factor, useLast, prependZero,
+	    if (std::filesystem::exists(filePath)) {
+	        return new PathSeries(tag, filePath, dt, factor, useLast, prependZero,
 				  startTime);
+        } else {
+		    opserr << "WARNING file does not exist" << endln;
+            return 0;
+        }
 	    
 	} else if (times.empty()==false && values.empty()==false) {
 	    
