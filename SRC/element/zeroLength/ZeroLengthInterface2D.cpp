@@ -27,7 +27,7 @@
 // Date: July 02 2010
 
 /*
- - element zeroLengthInterface2D eleTag? -sNdNum sNdNum? -pNdNum pNdNum? –dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
+ - element zeroLengthInterface2D eleTag? -sNdNum sNdNum? -pNdNum pNdNum? ï¿½dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
  Description: This file contains the implementation for the ZeroLengthInterface2D class.
 */
 
@@ -674,7 +674,7 @@ static int numZeroLengthInterface2D = 0;
 #include <elementAPI.h>
 
 void * 
-OPS_ZeroLengthInterface2D(void) {
+OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthInterface2D) {
 
   if (numZeroLengthInterface2D == 0) {
     numZeroLengthInterface2D++;
