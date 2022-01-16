@@ -293,6 +293,23 @@ target_sources(OPS_Material
 )
 
 
+
+target_sources(OPS_Material
+  PRIVATE
+   Masonry.cpp
+   Masonryt.cpp
+   Trilinwp.cpp
+   Trilinwp2.cpp
+   Trilinwpd.cpp
+  PUBLIC
+   Masonry.h
+   Masonryt.h
+   Trilinwp.h
+   Trilinwp2.h
+   Trilinwpd.h
+)
+
+
 add_library(OPS_Material_f)
 
 target_sources(OPS_Material_f PRIVATE

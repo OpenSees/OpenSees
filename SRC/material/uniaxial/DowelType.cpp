@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.03 $
-// $Date: 2021/12/13 00:00:00 $
+// $Revision: 1.02 $
+// $Date: 2021/11/28 00:00:00 $
 // Written: Hanlin Dong, Xijun Wang, Tongji University, self@hanlindong.com
 //
 // Description: This file contains the class definition for DowelType.
@@ -58,10 +58,11 @@
 
 static int numDowelType = 0;
 
-void * OPS_ADD_RUNTIME_VPV(OPS_DowelType)
+void *
+OPS_DowelType()
 {
     if (numDowelType == 0) {
-        opserr << "DowelType v1.03 - Written by Hanlin Dong (self@hanlindong.com) and Xijun Wang ";
+        opserr << "DowelType v1.02 - Written by Hanlin Dong (self@hanlindong.com) and Xijun Wang ";
         opserr << "from Tongji University, Copyright 2021 - Use at your Own Peril" << endln;
         numDowelType = 1;
     }
@@ -571,7 +572,7 @@ double DowelType::denvelope(double disp)
     return tangent;
 }
 
-// solve the intersection of the envelope and a line. Provide tangent and intercept.
+// solver the intersection of the envelope and a line. Provide tangent and intercept.
 double DowelType::envIntersection(double k, double b)
 {
     double xm = 0.0;
@@ -821,19 +822,20 @@ void DowelType::resetReversePoints(double disp, double force, bool flag)
     // special scenario 1
     bool pinching2env = false;
     // No reloading part: goes from pinching to envelope.
-    if ((flag && cy <= dy && dx >= envIntersection(mk, my)) || (!flag && cy >= dy && dx <= envIntersection(mk, my))) {
+    if ((flag && cy <= dy && cDmin >= dinter_n) || (!flag && cy >= dy && cDmax <= dinter_p)) {
         if (DEBUG) opserr << "pinching scenario 1: no reloading part, goes from pinching to envelope." << endln;
-        double delta_cd = cx - dx;
         dx = envIntersection(mk, my);
         dy = envelope(dx);
         dk = mk;
-        cx = 0.;
-        cy = my;
+        cx = dx;
+        cy = dy;
         if ((flag && disp > dyield) || (!flag && disp < -dyield)) {
-            double x = envIntersection(mk, my) + delta_cd;
+            double slope = alpha_r >= 0 ? dmax1 <= dyield ? k01 : k01 * pow(dyield / dmax1, alpha_r):
+                                          dmax0 < DBL_EPSILON ? k01 : k01 * pow(Fdmaxs / dmaxs / k0, -alpha_r);
+            double x = envWithSlope(slope, flag, dx);
             dx = x;
             dy = envelope(dx);
-            dk = denvelope(dx);
+            dk = envType == 3 ? slope : denvelope(dx);
             cx = 0.;
             cy = my;
             pinching2env = true;
@@ -844,7 +846,7 @@ void DowelType::resetReversePoints(double disp, double force, bool flag)
     }
     // special scenario 2
     // goes from pinching to the point on the descending part.
-    if ((flag && cy <= dy && dx < envIntersection(mk, my)) || (!flag && cy >= dy && dx > envIntersection(mk, my))) {
+    if ((flag && cy <= dy && cDmin < dinter_n) || (!flag && cy >= dy && cDmax > dinter_p)) {
         if (DEBUG) opserr << "pinching scenario 2: goes from pinching to the point on the descending part" << endln;
         // move pinching line go from unloading end point to target d.
         cx = dx;
@@ -863,7 +865,7 @@ void DowelType::resetReversePoints(double disp, double force, bool flag)
     // special scenario 3
     // BC goes in wrong direction, ignore pinching part. 
     // From unloading to reloading directly.
-    if ((flag && bx < cx && bx <= ax) || (!flag && bx > cx && bx >= ax)) {
+    if ((flag && bx < cx) || (!flag && bx > cx)) {
         if (DEBUG) opserr << "pinching scenario 3: from unloading to reloading directly" << endln;
         // move m, n, b to a
         nx = ax;
@@ -877,29 +879,16 @@ void DowelType::resetReversePoints(double disp, double force, bool flag)
         by = ay;
     }
     // special scenario 4
-    // AB goes in wrong direction
-    // go directly towards the reloading point C.
+    // Unloading goes in wrong direction
+    // go directly towards the reloading point c.
     if ((flag && bx > ax) || (!flag && bx < ax)) {
         if (DEBUG) opserr << "pinching scenario 4: go directly towards the reloading point c" << endln;
         bx = ax;
         by = ay;
-        nx = ax;
-        ny = ay;
-        // AC goes in wrong direction
-        // go directly towards the target point D.
-        if ((flag && (cx > ax)) || (!flag && (cx < ax))) {
-            cx = ax;
-            cy = ay;
-        } 
-        // ignore unloading part.
-        if ((flag && (cx < ax) && (cy > ay)) || (!flag && (cx > ax) && (cy < ay))) {
-            cx = ((ay - mk * ax) - (dy - dk * dx)) / (dk - mk);
-            cy = dk * (cx - dx) + dy;
-            if ((flag && (cx < dx)) || (!flag && (cx > dx))) {
-                cx = ax;
-                cy = ay;
-            }
-        }
+        mk = (cy - ay) / (cx - ax);
+        my = -mk * ax + ay;
+        nx = (bx + cx) / 2;
+        ny = (by + cy) / 2;
     }
     // assign the control points
     int dt = flag ? 0 : 10;
@@ -1331,7 +1320,7 @@ int DowelType::recvSelf(int cTag, Channel &theChannel,
                  FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector data(98 + 2 * envSize);
+    static Vector data(31);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "DowelType::recvSelf() - failed to recv data\n";

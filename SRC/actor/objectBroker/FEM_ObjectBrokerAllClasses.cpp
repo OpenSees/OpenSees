@@ -99,7 +99,6 @@
 #include "ConfinedConcrete01.h"
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 #include "DowelType.h"
-#include "DuctileFracture.h" // Kuanshi Zhong
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -1359,9 +1358,6 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_DowelType:
 		return new DowelType();
 
-	case MAT_TAG_DuctileFracture:
-		return new DuctileFracture();
-
 
 	default:
 
@@ -1908,10 +1904,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
-#ifdef _HDF5
+#ifdef HDF5
 	case RECORDER_TAGS_MPCORecorder:
 	  return new MPCORecorder();
-#endif // _HDF5
+#endif // HDF5
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
 	     opserr << " - no Recorder type exists for class tag ";

@@ -78,8 +78,6 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Masonryt.h>
 #include <DowelType.h>
 
-#include <DuctileFracture.h> // Kuanshi Zhong
-
 #include <Vector.h>
 #include <string.h>
 
@@ -188,7 +186,6 @@ extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
-extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
