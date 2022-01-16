@@ -286,6 +286,8 @@
 #define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 #define MAT_TAG_DowelType  6114
 
+#define MAT_TAG_DuctileFracture 6115 // Kuanshi Zhong
+
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
 
