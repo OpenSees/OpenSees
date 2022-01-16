@@ -51,7 +51,8 @@ static int numZeroLengthContactNTS2D = 0;
 #define PI 3.141592653589793238462643383279502884197169399
 
 void * 
-OPS_ZeroLengthContactNTS2D(void) {
+OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthContactNTS2D)
+{
 
   if (numZeroLengthContactNTS2D == 0) {
     numZeroLengthContactNTS2D++;
