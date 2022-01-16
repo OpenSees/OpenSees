@@ -4,9 +4,9 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_mvlem OBJECT)
+#add_library(OPS_Element_mvlem OBJECT)
 
-target_sources(OPS_Element_mvlem
+target_sources(OPS_Element
     PRIVATE
         MVLEM_3D.cpp
         MVLEM.cpp
@@ -18,5 +18,5 @@ target_sources(OPS_Element_mvlem
         SFI_MVLEM_3D.h
         SFI_MVLEM.h
 )
-target_include_directories(OPS_Element_mvlem PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

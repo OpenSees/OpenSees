@@ -6,12 +6,7 @@
 #==============================================================================
 add_library(OPS_Api OBJECT)
 
-target_sources(G3_API
-  PRIVATE
-    elementAPI_Dummy.cpp
-)
-
-target_sources(OPS_Interp_Tcl
+target_sources(OPS_InterpTcl
   PRIVATE
     elementAPI_TCL.cpp
 )
@@ -26,8 +21,4 @@ target_sources(OPS_Api
         packages.h
 )
 target_include_directories(OPS_Api PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
-if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/tclCommandPackage/CMakeLists.txt")
-add_subdirectory(tclCommandPackage)
-endif()
 

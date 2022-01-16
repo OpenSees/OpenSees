@@ -14,6 +14,7 @@ target_sources(OPS_Analysis
        IncrementalIntegrator.cpp
        Integrator.cpp
        LoadControl.cpp
+       HarmonicSteadyState.cpp
        LoadPath.cpp
        MinUnbalDispNorm.cpp
        Newmark.cpp
@@ -30,6 +31,7 @@ target_sources(OPS_Analysis
        IncrementalIntegrator.h
        Integrator.h
        LoadControl.h
+       HarmonicSteadyState.h
        LoadPath.h
        MinUnbalDispNorm.h
        Newmark.h

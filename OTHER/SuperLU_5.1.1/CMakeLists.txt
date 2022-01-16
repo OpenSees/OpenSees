@@ -36,7 +36,7 @@
 #######################################################################
 # Claudio Perez
 
-project(SUPERLU C)
+#project(SUPERLU C)
 set(SUPERLU_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/SRC")
 
 if (WIN32)

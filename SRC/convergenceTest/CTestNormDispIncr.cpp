@@ -143,12 +143,12 @@ int CTestNormDispIncr::test(void)
     if (printFlag == 1) {
         opserr << "CTestNormDispIncr::test() - iteration: " << currentIter;
         opserr << " current Norm: " << norm << " (max: " << tol;
-        opserr << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << ")\n";
+        opserr << ", Norm R: " << theSOE->getB().pNorm(nType) << ")\n";
     } 
     if (printFlag == 4) {
         opserr << "CTestNormDispIncr::test() - iteration: " << currentIter;
         opserr << " current Norm: " << norm << " (max: " << tol << ")\n";
-        opserr << "\tNorm deltaX: " << norm << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << endln;
+        opserr << "\tNorm deltaX: " << norm << ", Norm R: " << theSOE->getB().pNorm(nType) << endln;
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << theSOE->getB();
     } 
     

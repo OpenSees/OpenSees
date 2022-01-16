@@ -250,8 +250,8 @@ PathSeries::PathSeries(int tag,
 
   // ensure we did not run out of memory
   if (thePath == 0 || thePath->Size() == 0) {
-    opserr << "PathSeries::PathSeries() - unable to construct a valid";
-    opserr << " PathSeries object" << endln;
+    opserr << "PathSeries::PathSeries() - ran out of memory constructing";
+    opserr << " a Vector of size: " <<  theLoadPath.Size() << endln;
     if (thePath != 0)
       delete thePath; 
     thePath = 0;
@@ -338,14 +338,11 @@ PathSeries::~PathSeries()
 
 TimeSeries *
 PathSeries::getCopy(void) {
-  if (thePath != 0) {
-    return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
+  if (thePath != 0)
+  return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
                         useLast, false, startTime);
-  } else {
-    return 0;
-    // return new PathSeries(this->getTag(), 0, pathTimeIncr, cFactor,
-    //                     useLast, false, startTime);
-  }
+  else
+  return 0;
 }
 
 double

@@ -183,6 +183,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <DOF_Numberer.h>
 
 // integrators
+// #include <HarmonicSteadyState.h>
 #include <LoadControl.h>
 #include <StagedLoadControl.h>
 #include <ArcLength.h>
@@ -199,6 +200,9 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 //  recorders
 #include <Recorder.h> //SAJalali
 
+// transformations
+#include <CrdTransf.h>
+
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ExpressNewton(void);
 extern void *OPS_ModifiedNewton(void);
@@ -207,6 +211,7 @@ extern void *OPS_NewtonHallM(void);
 extern void *OPS_Newmark(void);
 extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
+//extern void *OPS_HarmonicSteadyState(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -1008,6 +1013,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getNodeTags", &getNodeTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "getCrdTransfTags", &getCrdTransfTags, 
+          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
     Tcl_CreateCommand(interp, "getParamTags", &getParamTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
@@ -4464,7 +4471,11 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       if (theStaticAnalysis != 0)
         theStaticAnalysis->setIntegrator(*theStaticIntegrator);
       }
-  
+
+  //else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSS") == 0) {
+  //  theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
+  // }
+
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
       double alpha;
@@ -9291,6 +9302,22 @@ getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
   while ((theEle = eleIter()) != 0) {
     sprintf(buffer, "%d ", theEle->getTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+
+  return TCL_OK;
+}
+
+int
+getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  ID crdTransfTags = OPS_getAllCrdTransfTags();  // Function defined in CrdTransf.h
+
+  char buffer[20];
+
+  for (int i = 0; i < crdTransfTags.Size(); ++i)
+  {
+    sprintf(buffer, "%d ", crdTransfTags(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
 

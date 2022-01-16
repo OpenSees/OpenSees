@@ -213,6 +213,30 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
       case SECTION_RESPONSE_T:
 	output.tag("ResponseType","theta");
 	break;
+      case SECTION_RESPONSE_FXX:
+          output.tag("ResponseType", "epsXX");
+          break;
+      case SECTION_RESPONSE_FYY:
+          output.tag("ResponseType", "epsYY");
+          break;
+      case SECTION_RESPONSE_FXY:
+          output.tag("ResponseType", "epsXY");
+          break;
+      case SECTION_RESPONSE_MXX:
+          output.tag("ResponseType", "kappaXX");
+          break;
+      case SECTION_RESPONSE_MYY:
+          output.tag("ResponseType", "kappaYY");
+          break;
+      case SECTION_RESPONSE_MXY:
+          output.tag("ResponseType", "kappaXY");
+          break;
+      case SECTION_RESPONSE_VXZ:
+          output.tag("ResponseType", "gammaXZ");
+          break;
+      case SECTION_RESPONSE_VYZ:
+          output.tag("ResponseType", "gammaYZ");
+          break;
       default:
 	output.tag("ResponseType","Unknown");
       }
@@ -242,6 +266,30 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
       case SECTION_RESPONSE_T:
 	output.tag("ResponseType","T");
 	break;
+      case SECTION_RESPONSE_FXX:
+          output.tag("ResponseType", "Fxx");
+          break;
+      case SECTION_RESPONSE_FYY:
+          output.tag("ResponseType", "Fyy");
+          break;
+      case SECTION_RESPONSE_FXY:
+          output.tag("ResponseType", "Fxy");
+          break;
+      case SECTION_RESPONSE_MXX:
+          output.tag("ResponseType", "Mxx");
+          break;
+      case SECTION_RESPONSE_MYY:
+          output.tag("ResponseType", "Myy");
+          break;
+      case SECTION_RESPONSE_MXY:
+          output.tag("ResponseType", "Mxy");
+          break;
+      case SECTION_RESPONSE_VXZ:
+          output.tag("ResponseType", "Vxz");
+          break;
+      case SECTION_RESPONSE_VYZ:
+          output.tag("ResponseType", "Vyz");
+          break;
       default:
 	output.tag("ResponseType","Unknown");
       }
@@ -271,6 +319,30 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
       case SECTION_RESPONSE_T:
 	output.tag("ResponseType","theta");
 	break;
+      case SECTION_RESPONSE_FXX:
+          output.tag("ResponseType", "epsXX");
+          break;
+      case SECTION_RESPONSE_FYY:
+          output.tag("ResponseType", "epsYY");
+          break;
+      case SECTION_RESPONSE_FXY:
+          output.tag("ResponseType", "epsXY");
+          break;
+      case SECTION_RESPONSE_MXX:
+          output.tag("ResponseType", "kappaXX");
+          break;
+      case SECTION_RESPONSE_MYY:
+          output.tag("ResponseType", "kappaYY");
+          break;
+      case SECTION_RESPONSE_MXY:
+          output.tag("ResponseType", "kappaXY");
+          break;
+      case SECTION_RESPONSE_VXZ:
+          output.tag("ResponseType", "gammaXZ");
+          break;
+      case SECTION_RESPONSE_VYZ:
+          output.tag("ResponseType", "gammaYZ");
+          break;
       default:
 	output.tag("ResponseType","Unknown");
       }
@@ -296,6 +368,30 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
       case SECTION_RESPONSE_T:
 	output.tag("ResponseType","T");
 	break;
+      case SECTION_RESPONSE_FXX:
+          output.tag("ResponseType", "Fxx");
+          break;
+      case SECTION_RESPONSE_FYY:
+          output.tag("ResponseType", "Fyy");
+          break;
+      case SECTION_RESPONSE_FXY:
+          output.tag("ResponseType", "Fxy");
+          break;
+      case SECTION_RESPONSE_MXX:
+          output.tag("ResponseType", "Mxx");
+          break;
+      case SECTION_RESPONSE_MYY:
+          output.tag("ResponseType", "Myy");
+          break;
+      case SECTION_RESPONSE_MXY:
+          output.tag("ResponseType", "Mxy");
+          break;
+      case SECTION_RESPONSE_VXZ:
+          output.tag("ResponseType", "Vxz");
+          break;
+      case SECTION_RESPONSE_VYZ:
+          output.tag("ResponseType", "Vyz");
+          break;
       default:
 	output.tag("ResponseType","Unknown");
       }
