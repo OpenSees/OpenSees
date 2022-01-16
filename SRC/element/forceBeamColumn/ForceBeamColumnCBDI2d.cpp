@@ -87,7 +87,7 @@ Vector ForceBeamColumnCBDI2d::vsSubdivide[maxNumSections];
 Matrix ForceBeamColumnCBDI2d::fsSubdivide[maxNumSections];
 Vector ForceBeamColumnCBDI2d::SsrSubdivide[maxNumSections];
 
-void* OPS_ForceBeamColumnCBDI2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ForceBeamColumnCBDI2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
@@ -176,7 +176,7 @@ void* OPS_ForceBeamColumnCBDI2d()
     return theEle;
 }
 
-void* OPS_ForceBeamColumnCSBDI2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ForceBeamColumnCSBDI2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";

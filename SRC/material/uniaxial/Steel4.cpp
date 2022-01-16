@@ -36,8 +36,7 @@
 #include <elementAPI.h>
 #include <math.h>
 
-void*
-OPS_Steel4(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_Steel4)
 {
   //Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

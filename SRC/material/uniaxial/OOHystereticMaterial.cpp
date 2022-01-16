@@ -48,8 +48,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_OOHystereticMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_OOHystereticMaterial)
 {
   UniaxialMaterial *theMaterial = 0;
   

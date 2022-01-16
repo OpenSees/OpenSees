@@ -46,7 +46,7 @@
 Matrix ElastomericBearingUFRP2d::theMatrix(6,6);
 Vector ElastomericBearingUFRP2d::theVector(6);
 
-void* OPS_ElastomericBearingUFRP2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElastomericBearingUFRP2d)
 {
     int ndf = OPS_GetNDF();
     

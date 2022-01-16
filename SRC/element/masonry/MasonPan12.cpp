@@ -43,7 +43,7 @@
 Matrix MasonPan12::PanelK(36,36);
 Vector MasonPan12::PanelR(36);
 
-void* OPS_MasonPan12()
+void * OPS_ADD_RUNTIME_VPV(OPS_MasonPan12)
 
 //#define OPS_Export 
 

@@ -24,8 +24,7 @@
 
 static int numRAFourSteelRCPPlaneStressMaterials = 0;
 
-OPS_Export void *
-OPS_RAFourSteelRCPlaneStressMaterial()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_RAFourSteelRCPlaneStressMaterial)
 {
   if (numRAFourSteelRCPPlaneStressMaterials == 0) {
     numRAFourSteelRCPPlaneStressMaterials++;

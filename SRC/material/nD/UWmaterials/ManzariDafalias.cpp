@@ -69,8 +69,7 @@ ManzariDafalias::initTensors ManzariDafalias::initTensorOps;
 
 static int numManzariDafaliasMaterials = 0;
 
-void *
-OPS_ManzariDafaliasMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ManzariDafaliasMaterial)
 {
   if (numManzariDafaliasMaterials == 0) 
     opserr << "ManzariDafalias nDmaterial - Written: A.Ghofrani, P.Arduino, U.Washington\n";					

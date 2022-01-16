@@ -45,8 +45,7 @@
 
 static int numShellMITC9 = 0;
 
-void *
-OPS_ShellMITC9(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellMITC9)
 {
   if (numShellMITC9 == 0) {
     opserr << "Using ShellMITC9 - Developed by: Leopoldo Tesser and Diego A. Talledo\n";

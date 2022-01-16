@@ -42,8 +42,7 @@
 
 static int num_pyUCLA = 0;
 
-OPS_Export void *
-OPS_pyUCLA(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_pyUCLA)
 {
   if (num_pyUCLA == 0) {
     num_pyUCLA++;

@@ -41,7 +41,7 @@
 Vector BeamFiberMaterial2d::stress(2);
 Matrix BeamFiberMaterial2d::tangent(2,2);
 
-void* OPS_BeamFiberMaterial2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamFiberMaterial2d)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 4) {

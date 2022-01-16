@@ -40,8 +40,7 @@
 
 static int numMaxwellMaterials = 0;
 
-void *
-OPS_Maxwell()
+void * OPS_ADD_RUNTIME_VPV(OPS_Maxwell)
 {
   if (numMaxwellMaterials == 0) {
     numMaxwellMaterials++;

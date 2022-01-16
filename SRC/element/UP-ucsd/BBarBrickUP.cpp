@@ -63,7 +63,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_BBarBrickUP()
+void * OPS_ADD_RUNTIME_VPV(OPS_BBarBrickUP)
 {
     if (OPS_GetNDM() != 3 || OPS_GetNDF() != 4) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with QuadUP element\n";

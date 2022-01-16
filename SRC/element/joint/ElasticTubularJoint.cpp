@@ -58,8 +58,7 @@ static const int NUM_DOF  =6;
 static int numElasticTubularJoint = 0;
 
 
-void *
-OPS_ElasticTubularJoint(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticTubularJoint)
 {
 
   if (numElasticTubularJoint == 0) {

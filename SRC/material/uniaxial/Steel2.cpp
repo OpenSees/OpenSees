@@ -48,8 +48,7 @@
 #include <OPS_Globals.h>
 
 
-void *
-OPS_Steel2(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_Steel2)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

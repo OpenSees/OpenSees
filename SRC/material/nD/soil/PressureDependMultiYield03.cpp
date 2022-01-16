@@ -65,7 +65,7 @@ Vector PressureDependMultiYield03::workV6(6);
 T2Vector PressureDependMultiYield03::workT2V;
 const	double pi = 3.14159265358979;
 
-void* OPS_PressureDependMultiYield03()
+void * OPS_ADD_RUNTIME_VPV(OPS_PressureDependMultiYield03)
 {
     const int numParam = 18;
     const int totParam = 23;

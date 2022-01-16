@@ -37,8 +37,7 @@
 #include <OPS_Globals.h>
 static int numSteel01Th = 0;
 
-void *
-OPS_Steel01Thermal()
+void * OPS_ADD_RUNTIME_VPV(OPS_Steel01Thermal)
 {
     // print out some KUDO's
     if (numSteel01Th == 0) {

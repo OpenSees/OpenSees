@@ -80,7 +80,7 @@ Matrix ElasticForceBeamColumn2d::theMatrix(6,6);
 Vector ElasticForceBeamColumn2d::theVector(6);
 double ElasticForceBeamColumn2d::workArea[200];
 
-void* OPS_ElasticForceBeamColumn2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticForceBeamColumn2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

@@ -49,7 +49,7 @@ int TzLiq1::loadStage = 0;
 Vector TzLiq1::stressV3(3);
 int TzConstructorType = 0;
 
-void* OPS_TzLiq1()
+void * OPS_ADD_RUNTIME_VPV(OPS_TzLiq1)
 {
     UniaxialMaterial* theMat = 0;
     

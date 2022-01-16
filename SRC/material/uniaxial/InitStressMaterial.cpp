@@ -40,8 +40,7 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
-OPS_Export void *
-OPS_InitStressMaterial(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_InitStressMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

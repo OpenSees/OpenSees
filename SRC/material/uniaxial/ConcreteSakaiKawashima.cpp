@@ -2,8 +2,7 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-void *
-OPS_ConcreteSakaiKawashima(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteSakaiKawashima)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

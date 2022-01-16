@@ -53,7 +53,7 @@ Vector Inerter::InerterV4(4);
 Vector Inerter::InerterV6(6);
 Vector Inerter::InerterV12(12);
 
-void* OPS_Inerter()
+void * OPS_ADD_RUNTIME_VPV(OPS_Inerter)
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

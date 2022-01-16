@@ -35,7 +35,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_SteelMP()
+void * OPS_ADD_RUNTIME_VPV(OPS_SteelMP)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
 

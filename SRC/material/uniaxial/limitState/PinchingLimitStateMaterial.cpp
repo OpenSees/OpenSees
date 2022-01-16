@@ -56,8 +56,7 @@ static int numPinchingLimitStateMaterial = 0;
 #ifndef fmin
 #define fmin(a,b) (((a)<(b)) ? (a) : (b))
 #endif
-void *
-OPS_PinchingLimitState(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PinchingLimitState)
 {
   if (numPinchingLimitStateMaterial == 0) {
     numPinchingLimitStateMaterial++;

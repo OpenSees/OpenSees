@@ -18,7 +18,7 @@ static int numUVCmultiaxial = 0;
 
 // NOTE: Do not use the OPS_GetNumRemainingInputArgs() function or the
 // OPS_GetString() function: causes crash with .dll
-void* OPS_UVCmultiaxial(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_UVCmultiaxial) {
   if (numUVCmultiaxial == 0) {
     opserr << "Using the UVCmultiaxial material, see "
       "https://www.epfl.ch/labs/resslab/resslab-tools/" << endln;

@@ -50,7 +50,7 @@
 Matrix Joint2D::K(16, 16);
 Vector Joint2D::V(16);
 
-void* OPS_Joint2D()
+void * OPS_ADD_RUNTIME_VPV(OPS_Joint2D)
 {
   Domain* theDomain = OPS_GetDomain();
   if (theDomain == 0) return 0;

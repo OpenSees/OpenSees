@@ -57,7 +57,7 @@ void PSUMAT(int *nstatev, int *nprops, double *props,
 }
 #endif
 
-void* OPS_PlaneStressUserMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStressUserMaterial)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 6) {

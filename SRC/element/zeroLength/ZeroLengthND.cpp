@@ -64,7 +64,7 @@ Vector ZeroLengthND::v6(6);
 
 static Node *theNodes[2];
 
-void* OPS_ZeroLengthND()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthND)
 {
     int ndm = OPS_GetNDM();
     int numdata = OPS_GetNumRemainingInputArgs();

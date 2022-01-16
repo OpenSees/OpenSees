@@ -67,7 +67,7 @@ Matrix DispBeamColumnAsym3d::K(12,12);
 Vector DispBeamColumnAsym3d::P(12);
 double DispBeamColumnAsym3d::workArea[200];
 
-void* OPS_DispBeamColumnAsym3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumnAsym3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
@@ -147,7 +147,7 @@ void* OPS_DispBeamColumnAsym3d()
     return theEle;
 }
 
-void* OPS_DispBeamColumnAsym3dTcl() {
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumnAsym3dTcl) {
     // Variables to retrieve input
     int iData[10];
     double dData[10];

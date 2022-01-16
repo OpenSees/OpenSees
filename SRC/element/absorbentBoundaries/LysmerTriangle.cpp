@@ -53,8 +53,7 @@ Matrix LysmerTriangle :: tangentDamping(SL_NUM_DOF, SL_NUM_DOF);
 #include <elementAPI.h>
 static int num_LysmerTriangle = 0;
 
-void *
-OPS_LysmerTriangle(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_LysmerTriangle)
 {
   if (num_LysmerTriangle == 0) {
     num_LysmerTriangle++;

@@ -41,8 +41,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_EnergyUnloadingRule(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_EnergyUnloadingRule)
 {
   UnloadingRule *theDegradation = 0;
 

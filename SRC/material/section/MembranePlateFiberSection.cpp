@@ -34,7 +34,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_MembranePlateFiberSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_MembranePlateFiberSection)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {

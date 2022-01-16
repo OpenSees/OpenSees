@@ -40,7 +40,7 @@
 #include <ElementResponse.h>
 #include <elementAPI.h>
 
-void *OPS_LehighJoint2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_LehighJoint2d)
 {
   Domain* theDomain = OPS_GetDomain();
   if (theDomain == 0) return 0;

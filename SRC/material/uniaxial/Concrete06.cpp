@@ -25,7 +25,7 @@
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 
-void* OPS_Concrete06()
+void * OPS_ADD_RUNTIME_VPV(OPS_Concrete06)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 10) {

@@ -38,7 +38,7 @@
 #define OPS_Export 
 
 // Read input parameters and build the material
-OPS_Export void *OPS_SteelMPF(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SteelMPF)
 {
 	// Pointer to a uniaxial material that will be returned                       
 	UniaxialMaterial *theMaterial = 0;

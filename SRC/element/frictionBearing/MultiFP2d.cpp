@@ -51,8 +51,7 @@ static Matrix ZeroLengthM6(6,6);   // class wide matrix for 6*6
 
 #include <elementAPI.h>
 
-void *
-OPS_MultiFP2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_MultiFP2d)
 {
   Element *theEle = 0;
 

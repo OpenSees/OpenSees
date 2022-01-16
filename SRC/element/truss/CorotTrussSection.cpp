@@ -57,8 +57,7 @@ Vector CorotTrussSection::V12(12);
 #include <elementAPI.h>
 #define OPS_Export 
 
-OPS_Export void *
-OPS_CorotTrussSectionElement()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_CorotTrussSectionElement)
 {
   Element *theElement = 0;
 

@@ -41,8 +41,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_EnergyStiffnessDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_EnergyStiffnessDegradation)
 {
   StiffnessDegradation *theDegradation = 0;
 

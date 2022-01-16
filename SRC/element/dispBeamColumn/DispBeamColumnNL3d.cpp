@@ -53,7 +53,7 @@ Matrix DispBeamColumnNL3d::K(12,12);
 Vector DispBeamColumnNL3d::P(12);
 double DispBeamColumnNL3d::workArea[200];
 
-void* OPS_DispBeamColumnNL3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumnNL3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

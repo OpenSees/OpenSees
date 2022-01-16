@@ -13,7 +13,7 @@
 #include <string.h>
 #include <elementAPI.h>
 #include <OPS_Globals.h>
-void * OPS_ResilienceLow(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_ResilienceLow) {
 
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
@@ -99,25 +99,25 @@ double ResilienceLow::getStress(void){
 };
 double ResilienceLow::getTangent(){
 	switch (mode){
-		case 1:{tangent=Ke;}// mode1ÇúÏß1,3
+		case 1:{tangent=Ke;}// mode1ï¿½ï¿½ï¿½ï¿½1,3
 			break; 
-		case 2:{tangent=(Pmax-PY)/(DPmax-DY);}	// ÇúÏß1,2
+		case 2:{tangent=(Pmax-PY)/(DPmax-DY);}	// ï¿½ï¿½ï¿½ï¿½1,2
 			break;
-		case 3:{tangent=(stressRFMode2+PY)/(strainRFMode2+DY);}	// ÇúÏß3,5  mode3
+		case 3:{tangent=(stressRFMode2+PY)/(strainRFMode2+DY);}	// ï¿½ï¿½ï¿½ï¿½3,5  mode3
 			break;
-		case 4:{tangent=(Pmax-PY)/(DPmax-DY);}	// mode4£¬ÇúÏß3,4
+		case 4:{tangent=(Pmax-PY)/(DPmax-DY);}	// mode4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3,4
 			break;
 		case 5:
-			{tangent=(stressRFMode4-PY)/(strainRFMode4-DY);}		// mode5,ÇúÏß4,5
+			{tangent=(stressRFMode4-PY)/(strainRFMode4-DY);}		// mode5,ï¿½ï¿½ï¿½ï¿½4,5
 			break;
 		case 6:
 			{	if(stress>=0.55*Pmax){        
                tangent=-Kd;}
             else
 			{  stress=0;}
-				}// 6 ÇúÏß6,7
+				}// 6 ï¿½ï¿½ï¿½ï¿½6,7
 			break;
-		case 7:{tangent=Kui;}// mode 7 ÇúÏß7,8
+		case 7:{tangent=Kui;}// mode 7 ï¿½ï¿½ï¿½ï¿½7,8
 			break;
 		case 8:{tangent=Kri;}
 			break;
@@ -218,9 +218,9 @@ int ResilienceLow::determineState(){
        return mode;
    }
    switch (mode){
-   // µÚÒ»´Î¼ÆËã
+   // ï¿½ï¿½Ò»ï¿½Î¼ï¿½ï¿½ï¿½
 
-// mode1ÇúÏß1,3
+// mode1ï¿½ï¿½ï¿½ï¿½1,3
 	case 1:
 		if(dd>=0){
 			if(strain>DY){        
@@ -238,7 +238,7 @@ int ResilienceLow::determineState(){
          }
 		break; 
         
-// ÇúÏß1,2
+// ï¿½ï¿½ï¿½ï¿½1,2
 	case 2:
 		if(dd>=0){
 			if(strain>DPmax){
@@ -255,7 +255,7 @@ int ResilienceLow::determineState(){
 		}
 		break;
        
-// ÇúÏß3,5  mode3
+// ï¿½ï¿½ï¿½ï¿½3,5  mode3
 	case 3:
 		if(dd>=0)
 			{
@@ -279,7 +279,7 @@ int ResilienceLow::determineState(){
 		}
         break;
         
-// mode4£¬ÇúÏß3,4
+// mode4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3,4
 	case 4:
 		if(dd>=0)
 		{
@@ -300,7 +300,7 @@ int ResilienceLow::determineState(){
 		}
 		break;
         
-        // mode5,ÇúÏß4,5
+        // mode5,ï¿½ï¿½ï¿½ï¿½4,5
 	case 5:
         if(dd>=0)
 		{
@@ -319,7 +319,7 @@ int ResilienceLow::determineState(){
                 stress=(stressRFMode4-PY)/(strainRFMode4-DY)*(strain-DY)+PY;
 		}
         break;
-        // 6 ÇúÏß6,7
+        // 6 ï¿½ï¿½ï¿½ï¿½6,7
 	case 6:
 		if(dd>=0)
 		{stress=-Kd*(strain-DPmax)+Pmax;
@@ -338,7 +338,7 @@ int ResilienceLow::determineState(){
 		}
         break;
         
-        // mode 7 ÇúÏß7,8
+        // mode 7 ï¿½ï¿½ï¿½ï¿½7,8
 
 	case 7:
 		if(strain>0.45*Pmax/Kd+DPmax)

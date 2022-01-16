@@ -48,7 +48,7 @@
 #include <Information.h>
 #include <Parameter.h>
 
-void* OPS_Pinching4Material()
+void * OPS_ADD_RUNTIME_VPV(OPS_Pinching4Material)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata!=40 && numdata!=29) {

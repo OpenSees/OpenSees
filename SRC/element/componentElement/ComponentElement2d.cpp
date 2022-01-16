@@ -47,8 +47,7 @@
 Vector ComponentElement2d::P(6);
 Matrix ComponentElement2d::K(6,6);
 
-void *
-OPS_ComponentElement2d(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ComponentElement2d)
 {
   Element *theElement = 0;
 

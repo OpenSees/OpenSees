@@ -470,8 +470,7 @@ namespace {
 
 }
 
-void*
-OPS_ASDAbsorbingBoundary3D(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ASDAbsorbingBoundary3D)
 {
     static bool first_done = false;
     if (!first_done) {

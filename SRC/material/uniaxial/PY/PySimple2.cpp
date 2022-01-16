@@ -62,7 +62,7 @@
 const int PYmaxIterations = 20;
 const double PYtolerance = 1.0e-12;
 
-void* OPS_PySimple2()
+void * OPS_ADD_RUNTIME_VPV(OPS_PySimple2)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {

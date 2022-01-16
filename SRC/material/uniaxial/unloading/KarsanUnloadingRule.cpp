@@ -35,8 +35,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_KarsanUnloadingRule(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_KarsanUnloadingRule)
 {
   UnloadingRule *theDegradation = 0;
 

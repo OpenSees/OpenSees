@@ -37,8 +37,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ArctangentBackbone(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ArctangentBackbone)
 {
   HystereticBackbone *theBackbone = 0;
 

@@ -31,7 +31,7 @@
 #include <float.h>
 
 
-void* OPS_Trilinwp2()
+void * OPS_ADD_RUNTIME_VPV(OPS_Trilinwp2)
 {
   // print out some KUDO's
  // if (numTrilinwp == 0) {

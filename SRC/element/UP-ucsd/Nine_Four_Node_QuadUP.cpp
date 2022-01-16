@@ -30,7 +30,7 @@
 #include <math.h>
 #include <elementAPI.h>
 
-void* OPS_NineFourNodeQuadUP()
+void * OPS_ADD_RUNTIME_VPV(OPS_NineFourNodeQuadUP)
 {
     if (OPS_GetNDM() != 2) {
 	opserr << "WARNING -- model dimensions not compatible with 9-4-NodeQuadUP element\n";

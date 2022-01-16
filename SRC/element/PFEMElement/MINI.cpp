@@ -39,7 +39,7 @@
 Matrix MINI::mat;
 Vector MINI::vec;
 
-void* OPS_MINI()
+void * OPS_ADD_RUNTIME_VPV(OPS_MINI)
 {
     int ndm = OPS_GetNDM();
     int num = OPS_GetNumRemainingInputArgs();

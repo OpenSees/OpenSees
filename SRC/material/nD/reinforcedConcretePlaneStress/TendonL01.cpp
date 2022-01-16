@@ -21,8 +21,7 @@
 #define OPS_Export 
 #include <MaterialResponse.h>
 
-OPS_Export void *
-OPS_TendonL01Material(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_TendonL01Material)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

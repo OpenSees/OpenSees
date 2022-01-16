@@ -50,7 +50,7 @@ using std::setiosflags;
 
 #include <elementAPI.h>
 
-void* OPS_AxialCurve()
+void * OPS_ADD_RUNTIME_VPV(OPS_AxialCurve)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 7) {

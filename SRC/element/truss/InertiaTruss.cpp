@@ -70,8 +70,7 @@ static int numMyTruss = 0;
 //  and storing the tags of the inertiatruss end nodes.
 
 
-OPS_Export void *
-OPS_InertiaTrussElement()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_InertiaTrussElement)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyTruss == 0) {

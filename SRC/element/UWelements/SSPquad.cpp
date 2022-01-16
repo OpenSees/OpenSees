@@ -52,8 +52,7 @@
 
 static int num_SSPquad = 0;
 
-OPS_Export void *
-OPS_SSPquad(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SSPquad)
 {
 	if (num_SSPquad == 0) {
     	num_SSPquad++;

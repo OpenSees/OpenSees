@@ -13,8 +13,7 @@
 
 static int numSLModel = 0;
 
-void *
-OPS_SLModel()
+void * OPS_ADD_RUNTIME_VPV(OPS_SLModel)
 {
   // print out some KUDO's
   if (numSLModel == 0) {

@@ -42,7 +42,7 @@
 #include <elementAPI.h>
 
 
-void *OPS_SteelBRB(void) 
+void * OPS_ADD_RUNTIME_VPV(OPS_SteelBRB) 
 { 
   
   int tag;

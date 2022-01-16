@@ -56,8 +56,7 @@ Matrix ModElasticBeam2d::kb(3,3);
 
 static int numModElasticBeam2d = 0;
 
-void *
-OPS_ModElasticBeam2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ModElasticBeam2d)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numModElasticBeam2d == 0) {

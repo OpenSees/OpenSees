@@ -55,7 +55,7 @@ Vector TripleFrictionPendulum::eleR(12);
 static int numTripleFrictionPendulum = 0;
 
 
-void *OPS_TripleFrictionPendulum()
+void * OPS_ADD_RUNTIME_VPV(OPS_TripleFrictionPendulum)
 {
     if (numTripleFrictionPendulum == 0) {
         numTripleFrictionPendulum++;

@@ -46,8 +46,7 @@
 
 static int numSAWSMaterials = 0;
 
-OPS_Export void *
-OPS_SAWSMaterial(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SAWSMaterial)
 {
   if (numSAWSMaterials == 0) {
     numSAWSMaterials++;

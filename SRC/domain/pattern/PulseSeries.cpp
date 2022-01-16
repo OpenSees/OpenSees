@@ -40,7 +40,7 @@
 
 #include <elementAPI.h>
 
-void *OPS_PulseSeries(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PulseSeries)
 {
     // Pointer to a uniaxial material that will be returned
     TimeSeries *theSeries = 0;

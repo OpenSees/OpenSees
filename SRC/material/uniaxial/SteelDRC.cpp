@@ -52,8 +52,7 @@
 
 
 //OPS_Export void *
-void *
-OPS_SteelDRC()
+void * OPS_ADD_RUNTIME_VPV(OPS_SteelDRC)
 {
 	// Pointer to a uniaxial material that will be returned
 	UniaxialMaterial *theMaterial = 0;

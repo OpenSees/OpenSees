@@ -4,7 +4,7 @@
 #include "Inelastic2DYS01.h"
 #include <elementAPI.h>
 
-void* OPS_Inelastic2DYS01()
+void * OPS_ADD_RUNTIME_VPV(OPS_Inelastic2DYS01)
 {
     //cerr << "Press key to continue...\n";
     //cin.get();

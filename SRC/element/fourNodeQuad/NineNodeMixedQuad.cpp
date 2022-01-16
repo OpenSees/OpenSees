@@ -61,7 +61,7 @@ double   NineNodeMixedQuad::root06 = sqrt(0.6) ;
 double   NineNodeMixedQuad::sg[] = { -root06,   0.0,      root06  } ;
 double   NineNodeMixedQuad::wg[] = {  5.0/9.0,  8.0/9.0,  5.0/9.0 } ;
   
-void* OPS_NineNodeMixedQuad()
+void * OPS_ADD_RUNTIME_VPV(OPS_NineNodeMixedQuad)
 {
     if (OPS_GetNDM() != 2 || OPS_GetNDF() != 2) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with quad element\n";

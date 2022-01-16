@@ -139,8 +139,7 @@ namespace {
 
 }
 
-void*
-OPS_ASDAbsorbingBoundary2D(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ASDAbsorbingBoundary2D)
 {
     static bool first_done = false;
     if (!first_done) {

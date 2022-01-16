@@ -42,8 +42,7 @@ Matrix  VS3D4QuadWithSensitivity::mass(12,12) ;
 
 #include <elementAPI.h>
 
-void *
-OPS_VS3D4WuadWithSensitivity(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_VS3D4WuadWithSensitivity) {
 
   double _rho = 1.0;
   double _R = 1.0;

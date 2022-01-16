@@ -50,7 +50,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_BbarBrick()
+void * OPS_ADD_RUNTIME_VPV(OPS_BbarBrick)
 {
     if (OPS_GetNumRemainingInputArgs() < 10) {
 	opserr << "WARNING insufficient arguments\n";

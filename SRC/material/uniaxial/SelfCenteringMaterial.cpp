@@ -40,7 +40,7 @@
 #include <float.h>
 #include <elementAPI.h>
 
-void* OPS_SelfCenteringMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_SelfCenteringMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {

@@ -49,7 +49,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_PML3D()
+void * OPS_ADD_RUNTIME_VPV(OPS_PML3D)
 {
 	if (OPS_GetNumRemainingInputArgs() < (9 + PML3D_NUM_PROPS)) {
 		opserr << "WARNING insufficient arguments\n";

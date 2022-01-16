@@ -53,7 +53,7 @@ Vector DispBeamColumn3dWithSensitivity::P(12);
 double DispBeamColumn3dWithSensitivity::workArea[200];
 //GaussQuadRule1d01 DispBeamColumn3dWithSensitivity::quadRule;
 
-void* OPS_DispBeamColumn3dWithSensitivity()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumn3dWithSensitivity)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

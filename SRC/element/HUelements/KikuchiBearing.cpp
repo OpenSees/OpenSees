@@ -81,7 +81,7 @@ static bool errDetected(bool ifNoError, const char *msg){
 };
 
 
-void* OPS_KikuchiBearing()
+void * OPS_ADD_RUNTIME_VPV(OPS_KikuchiBearing)
 {
 
     //3-dim, 6dof

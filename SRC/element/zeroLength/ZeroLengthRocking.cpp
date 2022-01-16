@@ -52,7 +52,7 @@ Matrix ZeroLengthRocking::ZeroLengthRockingM12(12,12);
 Vector ZeroLengthRocking::ZeroLengthRockingV6(6);
 Vector ZeroLengthRocking::ZeroLengthRockingV12(12);
 
-void* OPS_ZeroLengthRocking()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthRocking)
 {
     
     int ndm = OPS_GetNDM(); // the spatial dimension of the problem

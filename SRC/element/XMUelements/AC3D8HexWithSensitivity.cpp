@@ -45,8 +45,7 @@ Matrix  AC3D8HexWithSensitivity::mass(8,8) ;
 
 #include <elementAPI.h>
 
-void *
-OPS_AC3D8HexWithSensitivity(void){
+void * OPS_ADD_RUNTIME_VPV(OPS_AC3D8HexWithSensitivity){
 
   int matTag;
 

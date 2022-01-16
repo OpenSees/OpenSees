@@ -91,7 +91,7 @@ Vector ForceBeamColumn2dThermal::vsSubdivide[maxNumSections];
 Matrix ForceBeamColumn2dThermal::fsSubdivide[maxNumSections];
 Vector ForceBeamColumn2dThermal::SsrSubdivide[maxNumSections];
 
-void* OPS_ForceBeamColumn2dThermal()
+void * OPS_ADD_RUNTIME_VPV(OPS_ForceBeamColumn2dThermal)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

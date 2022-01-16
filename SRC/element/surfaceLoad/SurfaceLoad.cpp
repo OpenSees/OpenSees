@@ -50,8 +50,7 @@ double SurfaceLoad :: GsPts[4][2];
 #include <elementAPI.h>
 static int num_SurfaceLoad = 0;
 
-void *
-OPS_SurfaceLoad(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_SurfaceLoad)
 {
   if (num_SurfaceLoad == 0) {
     num_SurfaceLoad++;

@@ -48,8 +48,7 @@
 
 static int num_SSPbrick = 0;
 
-OPS_Export void *
-OPS_SSPbrick(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SSPbrick)
 {
   if (num_SSPbrick == 0) {
     num_SSPbrick++;

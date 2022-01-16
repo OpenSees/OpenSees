@@ -61,7 +61,7 @@ Matrix DispBeamColumn2dThermal::K(6,6);
 Vector DispBeamColumn2dThermal::P(6);
 double DispBeamColumn2dThermal::workArea[100];
 
-void* OPS_DispBeamColumn2dThermal()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumn2dThermal)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

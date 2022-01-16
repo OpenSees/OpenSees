@@ -40,7 +40,7 @@
 #include <elementAPI.h>
 
 
-void* OPS_GenericCopy()
+void * OPS_ADD_RUNTIME_VPV(OPS_GenericCopy)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARNING insufficient arguments\n";

@@ -47,7 +47,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_ConstantPressureVolumeQuad()
+void * OPS_ADD_RUNTIME_VPV(OPS_ConstantPressureVolumeQuad)
 {
     if (OPS_GetNDM() != 2 || OPS_GetNDF() != 2) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with quad element\n";

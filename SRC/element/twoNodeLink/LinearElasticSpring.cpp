@@ -54,7 +54,7 @@ Vector LinearElasticSpring::LinearElasticSpringV4(4);
 Vector LinearElasticSpring::LinearElasticSpringV6(6);
 Vector LinearElasticSpring::LinearElasticSpringV12(12);
 
-void* OPS_LinearElasticSpring()
+void * OPS_ADD_RUNTIME_VPV(OPS_LinearElasticSpring)
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

@@ -54,7 +54,7 @@
 double BiaxialHysteretic::sqrtpi = sqrt(3.1415926535897932384626);
 double BiaxialHysteretic::sqrttwo = sqrt(2.0);
 
-void* OPS_BiaxialHysteretic()
+void * OPS_ADD_RUNTIME_VPV(OPS_BiaxialHysteretic)
 {
     if (OPS_GetNumRemainingInputArgs() < 6) {
 	opserr << "WARNING insufficient arguments\n";

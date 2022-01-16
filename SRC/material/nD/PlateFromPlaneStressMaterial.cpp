@@ -42,7 +42,7 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 Vector  PlateFromPlaneStressMaterial::stress(5) ;
 Matrix  PlateFromPlaneStressMaterial::tangent(5,5) ;
 
-void* OPS_PlateFromPlaneStressMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlateFromPlaneStressMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {

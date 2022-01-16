@@ -72,8 +72,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ManderBackbone(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ManderBackbone)
 {
   HystereticBackbone *theBackbone = 0;
 

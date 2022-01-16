@@ -37,8 +37,7 @@
 #define TAG_LOADING 1
 #define TAG_UNLOADING -1
 
-void *
-OPS_FRPConfinedConcrete02()
+void * OPS_ADD_RUNTIME_VPV(OPS_FRPConfinedConcrete02)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

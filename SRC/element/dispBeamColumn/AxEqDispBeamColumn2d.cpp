@@ -71,8 +71,7 @@ double AxEqDispBeamColumn2d::workArea[100];
 
 static int numMyDBEle = 0;
 
-void *
-OPS_AxEqDispBeamColumn2d(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_AxEqDispBeamColumn2d)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyDBEle == 0) {

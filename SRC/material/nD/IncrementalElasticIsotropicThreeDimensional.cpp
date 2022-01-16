@@ -28,7 +28,7 @@ bool IncrementalElasticIsotropicThreeDimensional::printnow = true;
 // Vector IncrementalElasticIsotropicThreeDimensional::sigma(6);
 Matrix IncrementalElasticIsotropicThreeDimensional::D(6,6);
 
-void *OPS_IncrementalElasticIsotropicThreeDimensional(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_IncrementalElasticIsotropicThreeDimensional)
 {
   NDMaterial *theMaterial = 0;
   

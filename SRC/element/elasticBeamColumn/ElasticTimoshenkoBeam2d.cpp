@@ -60,7 +60,7 @@ Matrix ElasticTimoshenkoBeam2d::theMatrix(6,6);
 Vector ElasticTimoshenkoBeam2d::theVector(6);
 
 
-void *OPS_ElasticTimoshenkoBeam2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticTimoshenkoBeam2d)
 {
     Element *theElement = 0;
     

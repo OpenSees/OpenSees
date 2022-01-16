@@ -47,7 +47,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_Twenty_Node_Brick()
+void * OPS_ADD_RUNTIME_VPV(OPS_Twenty_Node_Brick)
 {
     if (OPS_GetNDM() != 3 ) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with 20NodeBrick element\n";

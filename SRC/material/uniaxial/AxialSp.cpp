@@ -47,7 +47,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_AxialSp()
+void * OPS_ADD_RUNTIME_VPV(OPS_AxialSp)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

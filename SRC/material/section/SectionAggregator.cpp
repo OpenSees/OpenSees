@@ -49,7 +49,7 @@
 #include <elementAPI.h>
 #include <vector>
 
-void* OPS_SectionAggregator()
+void * OPS_ADD_RUNTIME_VPV(OPS_SectionAggregator)
 {
     if (OPS_GetNumRemainingInputArgs() < 3) {
 	opserr << "WARNING insufficient arguments\n";
@@ -143,7 +143,7 @@ void* OPS_SectionAggregator()
     return 0;
 }
 
-void* OPS_UniaxialSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_UniaxialSection)
 {
   int numdata = OPS_GetNumRemainingInputArgs();
   if (numdata < 3) {

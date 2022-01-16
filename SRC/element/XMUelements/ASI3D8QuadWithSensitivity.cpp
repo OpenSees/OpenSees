@@ -43,8 +43,7 @@ Matrix  ASI3D8QuadWithSensitivity::mass(16,16) ;
 
 #include <elementAPI.h>
 
-void *
-OPS_ASID8QuadWithSensitivity(void){
+void * OPS_ADD_RUNTIME_VPV(OPS_ASID8QuadWithSensitivity){
 
   static int idData[9];
 

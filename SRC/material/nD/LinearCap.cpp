@@ -30,8 +30,7 @@ Matrix LinearCap::tempMatrix(6,6);
 
 static int numLinearCap = 0;
 
-void *
-OPS_LinearCap(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_LinearCap) {
 
   if (numLinearCap == 0) {
     numLinearCap++;
@@ -443,7 +442,7 @@ const Vector & LinearCap::getStress(void) {
 	//if (theMode!=4) 
 	//opserr<<" this mode = "<<theMode<<endln;
 
-//	theMode = mode;  //  ÎªÁË±£´æmodeµ½³ÉÔ±º¯Êý£¬ÎªÁËgetTangent()µ÷ÊÔÓÃ¡£
+//	theMode = mode;  //  Îªï¿½Ë±ï¿½ï¿½ï¿½modeï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½getTangent()ï¿½ï¿½ï¿½ï¿½ï¿½Ã¡ï¿½
 
 	double deltGammar1 =0.0;
 	double deltGammar2 =0.0;
@@ -545,7 +544,7 @@ const Vector & LinearCap::getStress(void) {
 		       elasticTangent(i,j) = bulkModulus-2.0/3.0*shearModulus;     
 
         for(int  i=0; i<6; i++)
-		       elasticTangent(i,i) += 2.0*shearModulus;       //¶¨Òå³öµ¯ÐÔ¾ØÕó
+		       elasticTangent(i,i) += 2.0*shearModulus;       //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾ï¿½ï¿½ï¿½
 	    theTangent = elasticTangent;
 
 	}

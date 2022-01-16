@@ -42,7 +42,7 @@
 Matrix PFEMElement2D::K;
 Vector PFEMElement2D::P;
 
-void* OPS_PFEMElement2D()
+void * OPS_ADD_RUNTIME_VPV(OPS_PFEMElement2D)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 8) {

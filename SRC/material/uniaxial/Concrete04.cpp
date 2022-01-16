@@ -44,7 +44,7 @@
 #include <float.h>
 #include <elementAPI.h>
 
-void* OPS_Concrete04()
+void * OPS_ADD_RUNTIME_VPV(OPS_Concrete04)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 5) {

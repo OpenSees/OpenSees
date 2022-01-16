@@ -53,7 +53,7 @@ ID NDFiber3d::code(6);
 
 static int numNDFiber3d = 0;
 
-void* OPS_NDFiber3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_NDFiber3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for NDFiber3d\n";

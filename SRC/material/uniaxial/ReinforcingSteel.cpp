@@ -48,7 +48,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_ReinforcingSteel()
+void * OPS_ADD_RUNTIME_VPV(OPS_ReinforcingSteel)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 7) {

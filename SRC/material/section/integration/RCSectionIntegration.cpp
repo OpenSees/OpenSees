@@ -34,7 +34,7 @@
 #include <FiberSection2d.h>
 #include <UniaxialMaterial.h>
 
-void* OPS_RCSection2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_RCSection2d)
 {
   if (OPS_GetNumRemainingInputArgs() < 13) {
     opserr << "WARNING insufficient arguments\n";

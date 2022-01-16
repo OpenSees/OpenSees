@@ -40,7 +40,7 @@
 Matrix PFEMElement2DFIC::K;
 Vector PFEMElement2DFIC::P;
 
-void* OPS_PFEMElement2DFIC()
+void * OPS_ADD_RUNTIME_VPV(OPS_PFEMElement2DFIC)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 8) {

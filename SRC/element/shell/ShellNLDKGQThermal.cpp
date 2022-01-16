@@ -60,8 +60,7 @@
 
 static int numShellNLDKGQThermal = 0;
 
-void *
-OPS_ShellNLDKGQThermal(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellNLDKGQThermal)
 {
   if (numShellNLDKGQThermal == 0) {
 //    opserr << "Using ShellNLDKGQThermal - Developed by: Lisha Wang,Xinzheng Lu and Quan Gu\n";

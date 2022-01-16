@@ -42,8 +42,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void*
-OPS_MultiLinear(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_MultiLinear)
 {
     // Pointer to a uniaxial material that will be returned
     UniaxialMaterial* theMaterial = 0;

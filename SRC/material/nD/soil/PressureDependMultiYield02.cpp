@@ -62,7 +62,7 @@ const	double pi = 3.14159265358979;
 
 //double check;
 
-void* OPS_PressureDependMultiYield02()
+void * OPS_ADD_RUNTIME_VPV(OPS_PressureDependMultiYield02)
 {
     const int numParam = 13;
     const int totParam = 26;

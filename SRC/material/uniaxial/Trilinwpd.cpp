@@ -33,8 +33,7 @@
 
 static int numTrilinwpd = 0;
 
-void *
-OPS_Trilinwpd()
+void * OPS_ADD_RUNTIME_VPV(OPS_Trilinwpd)
 {
   // print out some KUDO's
   if (numTrilinwpd == 0) {

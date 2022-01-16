@@ -93,7 +93,7 @@ Vector ForceBeamColumnWarping2d::vsSubdivide[maxNumSections];
 Matrix ForceBeamColumnWarping2d::fsSubdivide[maxNumSections];
 Vector ForceBeamColumnWarping2d::SsrSubdivide[maxNumSections];
 
-void* OPS_ForceBeamColumnWarping2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ForceBeamColumnWarping2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";

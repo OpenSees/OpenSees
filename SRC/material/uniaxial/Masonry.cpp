@@ -29,7 +29,7 @@
  
 static int numMasonry = 0; 
 
-void* OPS_Masonry() 
+void * OPS_ADD_RUNTIME_VPV(OPS_Masonry) 
 { 
   // print out some KUDO's 
   if (numMasonry == 0) { 

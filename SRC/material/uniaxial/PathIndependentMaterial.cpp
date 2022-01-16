@@ -40,7 +40,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_PathIndependentMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_PathIndependentMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 2) {

@@ -41,7 +41,7 @@
 Matrix TaylorHood2D::mat;
 Vector TaylorHood2D::vec;
 
-void* OPS_TaylorHood2D()
+void * OPS_ADD_RUNTIME_VPV(OPS_TaylorHood2D)
 {
     int num = OPS_GetNumRemainingInputArgs();
     if(num < 4) {

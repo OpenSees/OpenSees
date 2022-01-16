@@ -15,8 +15,8 @@
 
 // Written: Diego Turello(*), Alborz Ghofrani and Pedro Arduino
 //			Sep 2017, University of Washington
-//          (*) Universidad Nacional de Córdoba, FCEFyN. Depto Estructuras.
-//              Universidad Tecnológica Nacional, GIMNI.
+//          (*) Universidad Nacional de Cï¿½rdoba, FCEFyN. Depto Estructuras.
+//              Universidad Tecnolï¿½gica Nacional, GIMNI.
 //              CONICET
 // 
 // Description: This file contains the implementation for the Borja material class.
@@ -40,7 +40,7 @@
 char  unsigned      J2CyclicBoundingSurface::m_ElastFlag = 1;  // --> default visco-elasto -plastic   
 //char  unsigned      J2CyclicBoundingSurface::m_ElastFlag = 2; // default visco-elastic
 
-void* OPS_J2CyclicBoundingSurfaceMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_J2CyclicBoundingSurfaceMaterial)
 {
 	int numdata = OPS_GetNumRemainingInputArgs();
 

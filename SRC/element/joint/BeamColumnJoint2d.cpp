@@ -51,7 +51,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_BeamColumnJoint2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamColumnJoint2d)
 {
     if (OPS_GetNumRemainingInputArgs() < 18) {
 	opserr << "WARNING insufficient arguments\n";

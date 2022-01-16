@@ -35,7 +35,7 @@
 #include <MaterialResponse.h>   //Antonios Vytiniotis used for the recorder
 #include <elementAPI.h>
 
-void* OPS_PlaneStrain()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStrain)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 2) {

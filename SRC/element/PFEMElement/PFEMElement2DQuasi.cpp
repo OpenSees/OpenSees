@@ -42,7 +42,7 @@
 Matrix PFEMElement2DQuasi::K;
 Vector PFEMElement2DQuasi::P;
 
-void* OPS_PFEMElement2DQuasi()
+void * OPS_ADD_RUNTIME_VPV(OPS_PFEMElement2DQuasi)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 8) {

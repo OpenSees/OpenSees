@@ -40,8 +40,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_DuctilityStiffnessDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_DuctilityStiffnessDegradation)
 {
   StiffnessDegradation *theDegradation = 0;
 

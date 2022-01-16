@@ -60,7 +60,7 @@ Vector FPBearingPTV::theVector(12);
 Vector FPBearingPTV::theLoad(12);
 
 static int numMyBearing = 0;
-void *OPS_FPBearingPTV()
+void * OPS_ADD_RUNTIME_VPV(OPS_FPBearingPTV)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyBearing == 0) {

@@ -40,7 +40,7 @@
 #include <MovableObject.h>
 #include <OPS_Globals.h>
 #include <Information.h>
-
+#include <elementAPI.h>
 
 class TimeSeries : public TaggedObject, public MovableObject
 {

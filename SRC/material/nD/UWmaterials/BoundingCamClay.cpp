@@ -47,8 +47,7 @@ double BoundingCamClay::mElastFlag = 1;
 
 static int numBoundingCamClayMaterials = 0;
 
-void *
-OPS_BoundingCamClayMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BoundingCamClayMaterial)
 {
     if (numBoundingCamClayMaterials == 0) {
       numBoundingCamClayMaterials++;

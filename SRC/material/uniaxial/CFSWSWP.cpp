@@ -45,8 +45,7 @@ static int numCFSWSWP = 0;
 #define isnan _isnan
 #endif
 
-void *
-OPS_CFSWSWP(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_CFSWSWP)
 {
   // print out some KUDO's
   if (numCFSWSWP == 0) {

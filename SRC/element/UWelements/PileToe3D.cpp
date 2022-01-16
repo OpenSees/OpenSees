@@ -52,8 +52,7 @@
 
 static int num_PileToe3D = 0;
 
-OPS_Export void *
-OPS_PileToe3D(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_PileToe3D)
 {
   if (num_PileToe3D == 0) {
     num_PileToe3D++;

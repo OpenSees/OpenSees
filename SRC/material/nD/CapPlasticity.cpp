@@ -40,8 +40,7 @@ using std::ios;               // Quan Gu   2013 March   HK
 Vector CapPlasticity::tempVector(6);
 Matrix CapPlasticity::tempMatrix(6,6);  
 
-void *
-OPS_CapPlasticity(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_CapPlasticity) {
   int tag;
   int ndm =3;
   double rho = 0.0;

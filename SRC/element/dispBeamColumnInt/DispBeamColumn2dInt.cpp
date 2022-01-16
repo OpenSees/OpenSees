@@ -54,7 +54,7 @@
 
 #include <vector>
 
-void* OPS_DispBeamColumn2dInt()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumn2dInt)
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

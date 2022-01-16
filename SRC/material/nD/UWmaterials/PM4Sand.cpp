@@ -67,8 +67,7 @@ PM4Sand::initTensors PM4Sand::initTensorOps;
 
 static int numPM4SandMaterials = 0;
 
-void *
-OPS_PM4SandMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PM4SandMaterial)
 {
 	if (numPM4SandMaterials == 0) {
 		numPM4SandMaterials++;

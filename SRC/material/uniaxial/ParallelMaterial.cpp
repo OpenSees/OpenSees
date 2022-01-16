@@ -46,8 +46,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ParallelMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ParallelMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

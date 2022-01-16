@@ -32,7 +32,7 @@ Vector Elliptical2::s(2);
 Matrix Elliptical2::ks(2,2);
 ID Elliptical2::code(2);
 
-void* OPS_Elliptical2()
+void * OPS_ADD_RUNTIME_VPV(OPS_Elliptical2)
 {
     if (OPS_GetNumRemainingInputArgs() < 8) {
 	opserr << "WARNING insufficient arguments\n";

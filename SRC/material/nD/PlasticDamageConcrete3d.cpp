@@ -33,8 +33,7 @@ static Matrix I(6,6);
 static Matrix Id(6,6); 
 
 
-void *
-OPS_NewPlasticDamageConcrete3d(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_NewPlasticDamageConcrete3d)
 {
   NDMaterial *theMaterial = 0;
   

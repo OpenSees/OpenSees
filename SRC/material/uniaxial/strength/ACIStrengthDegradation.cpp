@@ -39,8 +39,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ACIStrengthDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ACIStrengthDegradation)
 {
   StrengthDegradation *theDegradation = 0;
 

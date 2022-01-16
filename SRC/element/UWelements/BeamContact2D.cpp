@@ -48,8 +48,7 @@
 
 static int num_BeamContact2D = 0;
 
-OPS_Export void *
-OPS_BeamContact2D(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_BeamContact2D)
 {
   if (num_BeamContact2D == 0) {
     num_BeamContact2D++;

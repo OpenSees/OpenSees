@@ -47,8 +47,7 @@
 
 
 
-void *
-OPS_HystereticPoly()
+void * OPS_ADD_RUNTIME_VPV(OPS_HystereticPoly)
 {
 	UniaxialMaterial *theMaterial = 0;
 	int numArgs = OPS_GetNumRemainingInputArgs();

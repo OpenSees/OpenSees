@@ -39,7 +39,7 @@
 #include <iostream>
 #include <elementAPI.h>
 
-void* OPS_Concrete07()
+void * OPS_ADD_RUNTIME_VPV(OPS_Concrete07)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 9) {

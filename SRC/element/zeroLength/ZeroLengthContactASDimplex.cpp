@@ -91,7 +91,7 @@ namespace
     }
 }
 
-void* OPS_ZeroLengthContactASDimplex(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthContactASDimplex) {
 
     double SmallNumber = 1.0e-6;
     Element* theElement = nullptr;

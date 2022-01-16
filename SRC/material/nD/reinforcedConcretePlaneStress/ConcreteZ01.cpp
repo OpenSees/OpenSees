@@ -22,8 +22,7 @@
 
 #include <string.h>
 
-OPS_Export void *
-OPS_ConcreteZ01Material(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteZ01Material)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

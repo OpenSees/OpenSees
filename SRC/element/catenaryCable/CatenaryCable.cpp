@@ -90,8 +90,7 @@ Vector CatenaryCable::Forces(6);
 #define OPS_Export 
 static int num_CatenaryCableElement = 0;
 
-OPS_Export void *
-OPS_CatenaryCableElement()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_CatenaryCableElement)
 {
 
   if (num_CatenaryCableElement == 0) {

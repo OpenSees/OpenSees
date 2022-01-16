@@ -26,8 +26,7 @@
 Vector ElasticIsotropicThreeDimensional::sigma(6);
 Matrix ElasticIsotropicThreeDimensional::D(6,6);
 
-void *
-OPS_ElasticIsotropic3D(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticIsotropic3D)
 {
   NDMaterial *theMaterial = 0;
   

@@ -58,7 +58,7 @@
 #include <float.h>
 
 // Method to Read Command Arguments
-void* OPS_GradientInelasticBeamColumn2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_GradientInelasticBeamColumn2d)
 {
 	// Necessary Arguments
 	if (OPS_GetNumRemainingInputArgs() < 8) {

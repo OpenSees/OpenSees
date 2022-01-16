@@ -17,11 +17,11 @@
 // bottom of the element, and is uncoupled from the flexural modeling parameters.
 //
 // References:
-// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). “Analytical Modeling of RC 
-// Structural Walls”, Proceedings, 9th World Conference on Earthquake Engineering, 
+// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). ï¿½Analytical Modeling of RC 
+// Structural Wallsï¿½, Proceedings, 9th World Conference on Earthquake Engineering, 
 // V. 6, Tokyo-Kyoto, Japan, pp. 41-46.
-// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). “Flexural Modeling of 
-// Reinforced Concrete Structural Walls - Model Attributes”, ACI Structural Journal, 
+// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). ï¿½Flexural Modeling of 
+// Reinforced Concrete Structural Walls - Model Attributesï¿½, ACI Structural Journal, 
 // V. 101, No. 5, pp 688-698.
 
 #include "MVLEM.h"
@@ -51,7 +51,7 @@ Vector MVLEM::MVLEMR(6);
 #include <elementAPI.h>
 
 // Read input parameters and build the material
-void *OPS_MVLEM(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_MVLEM)
 {
   // Pointer to a uniaxial material that will be returned                       
   Element *theElement = 0;

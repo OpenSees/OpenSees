@@ -58,8 +58,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void*
-OPS_HyperbolicGapMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_HyperbolicGapMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 6) {

@@ -49,7 +49,7 @@
 
 ID FiberSection3d::code(4);
 
-void* OPS_FiberSection3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_FiberSection3d)
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

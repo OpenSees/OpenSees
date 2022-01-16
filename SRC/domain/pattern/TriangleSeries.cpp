@@ -42,7 +42,7 @@
 #define OPS_Export 
 
 
-OPS_Export void *OPS_TriangleSeries()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_TriangleSeries)
 {
     // Pointer to a uniaxial material that will be returned
     TimeSeries *theSeries = 0;

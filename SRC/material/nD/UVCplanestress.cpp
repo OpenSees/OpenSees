@@ -19,7 +19,7 @@ static int numUVCplanestress = 0;
 
 // NOTE: Do not use the OPS_GetNumRemainingInputArgs() function or the
 // OPS_GetString() function: causes crash with .dll
-void* OPS_UVCplanestress(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_UVCplanestress) {
   if (numUVCplanestress == 0) {
     opserr << "Using the UVCplanestress material, see "
       "https://www.epfl.ch/labs/resslab/resslab-tools/" << endln;

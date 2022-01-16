@@ -56,7 +56,7 @@ using namespace std;
 
 ID FiberSectionWarping3d::code(6);
 
-void* OPS_FiberSectionWarping3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_FiberSectionWarping3d)
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

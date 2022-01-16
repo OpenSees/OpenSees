@@ -36,8 +36,7 @@ using namespace std;
 
 static int numIMKPeakOrientedMaterials = 0;
 
-void *
-OPS_IMKPeakOriented()
+void * OPS_ADD_RUNTIME_VPV(OPS_IMKPeakOriented)
 {
 	if (numIMKPeakOrientedMaterials == 0) {
 		numIMKPeakOrientedMaterials++;

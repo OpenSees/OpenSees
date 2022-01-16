@@ -44,7 +44,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_RJWatsonEQS2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_RJWatsonEQS2d)
 {
     int ndf = OPS_GetNDF();
     if (ndf != 3) {

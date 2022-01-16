@@ -33,7 +33,7 @@
 #include <QuadCell.h>
 #include <elementAPI.h>
 
-void* OPS_QuadPatch()
+void * OPS_ADD_RUNTIME_VPV(OPS_QuadPatch)
 {
     if(OPS_GetNumRemainingInputArgs() < 11) {
 	opserr<<"insufficient arguments for QuadPatch\n";
@@ -59,7 +59,7 @@ void* OPS_QuadPatch()
     return new QuadPatch(idata[0],idata[1],idata[2],vertexCoords);
 }
 
-void* OPS_RectPatch()
+void * OPS_ADD_RUNTIME_VPV(OPS_RectPatch)
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments for RectPatch\n";

@@ -48,8 +48,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-void *
-OPS_ASDShellQ4(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ASDShellQ4)
 {
     static bool first_done = false;
     if (!first_done) {

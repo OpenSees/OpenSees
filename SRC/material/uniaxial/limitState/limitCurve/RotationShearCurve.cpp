@@ -54,8 +54,7 @@ static int shearCurveCount = 0;
 #define min(a,b) (((a)<(b)) ? (a) : (b))
 #endif
 
-void *
-OPS_RotationShearCurve(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_RotationShearCurve)
 {
   if (shearCurveCount == 0) {
     //opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012 -  Use at your Own Peril \n";

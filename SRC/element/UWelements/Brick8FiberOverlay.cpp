@@ -52,8 +52,7 @@ Vector Brick8FiberOverlay::P(24);
 static int num_Brick8FiberOverlay = 0;
 	 
 
-void *
-OPS_Brick8FiberOverlay(void)  
+void * OPS_ADD_RUNTIME_VPV(OPS_Brick8FiberOverlay)  
 {
 if (num_Brick8FiberOverlay == 0) {
 	num_Brick8FiberOverlay++;

@@ -37,8 +37,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_PetrangeliStrengthDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PetrangeliStrengthDegradation)
 {
   StrengthDegradation *theDegradation = 0;
 

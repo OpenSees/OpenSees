@@ -51,7 +51,7 @@ Matrix DispBeamColumn3dID::K(12, 12);
 Vector DispBeamColumn3dID::P(12);
 double DispBeamColumn3dID::workArea[200];
 
-void* OPS_DispBeamColumn3dID()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumn3dID)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

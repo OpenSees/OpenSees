@@ -62,8 +62,7 @@ Vector Truss2::trussV12(12);
 #include <elementAPI.h>
 #define OPS_Export 
 
-void *
-OPS_Truss2(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_Truss2)
 {
 	Element *theElement = 0;
 

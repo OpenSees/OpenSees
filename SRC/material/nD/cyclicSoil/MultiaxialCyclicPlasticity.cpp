@@ -100,7 +100,7 @@ int MultiaxialCyclicPlasticity::MaterialStageID = 2;   // classwide load stage t
                                                        // elasto-plastic by default
 int MultiaxialCyclicPlasticity::IncrFormulationFlag=1;
 
-void* OPS_MultiaxialCyclicPlasticity()
+void * OPS_ADD_RUNTIME_VPV(OPS_MultiaxialCyclicPlasticity)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 10) {

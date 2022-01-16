@@ -55,7 +55,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_LimiStateMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_LimiStateMaterial)
 {
     UniaxialMaterial* mat = 0;
 

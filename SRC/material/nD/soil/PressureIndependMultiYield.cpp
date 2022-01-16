@@ -35,7 +35,7 @@ double* PressureIndependMultiYield::pressDependCoeffx=0;
 int*    PressureIndependMultiYield::numOfSurfacesx=0;
 double* PressureIndependMultiYield::residualPressx=0;
 
-void* OPS_PressureIndependMultiYield()
+void * OPS_ADD_RUNTIME_VPV(OPS_PressureIndependMultiYield)
 {
     const int numParam = 6;
     const int totParam = 10;

@@ -61,8 +61,7 @@ double CycLiqCP::mElastFlag = 0;
 
 static int numCycLiqCPMaterials = 0;
 
-void *
-OPS_CycLiqCPMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_CycLiqCPMaterial)
 {
   if (numCycLiqCPMaterials == 0) {
     numCycLiqCPMaterials=1;

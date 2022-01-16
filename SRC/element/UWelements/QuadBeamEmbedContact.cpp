@@ -43,8 +43,7 @@ Matrix QuadBeamEmbedContact::m_ContactStiffness(QBEC_NUM_DOF,QBEC_NUM_DOF);
 Vector QuadBeamEmbedContact::m_ContactForces(QBEC_NUM_DOF);
 const double QuadBeamEmbedContact::m_Pi = 3.14159265359;
 
-void *
-OPS_QuadBeamEmbedContact(void)  
+void * OPS_ADD_RUNTIME_VPV(OPS_QuadBeamEmbedContact)  
 {
 	if (num_QuadBeamEmbedContact == 0) {
         num_QuadBeamEmbedContact++;

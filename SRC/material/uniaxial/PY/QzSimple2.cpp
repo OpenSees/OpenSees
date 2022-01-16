@@ -61,7 +61,7 @@
 const int QZmaxIterations = 20;
 const double QZtolerance = 1.0e-12;
 
-void* OPS_QzSimple2()
+void * OPS_ADD_RUNTIME_VPV(OPS_QzSimple2)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

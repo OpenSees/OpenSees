@@ -47,8 +47,7 @@
 
 static int num_BeamContact3Dp = 0;
 
-OPS_Export void *
-OPS_BeamContact3Dp(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_BeamContact3Dp)
 {
   if (num_BeamContact3Dp == 0) {
     num_BeamContact3Dp++;

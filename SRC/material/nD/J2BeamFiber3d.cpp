@@ -42,8 +42,7 @@
 Vector J2BeamFiber3d::sigma(3);
 Matrix J2BeamFiber3d::D(3,3);
 
-void *
-OPS_J2BeamFiber3dMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_J2BeamFiber3dMaterial)
 {
   NDMaterial *theMaterial = 0;
   

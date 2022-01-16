@@ -55,7 +55,7 @@
 #define fmax(a,b) ( ((a)>(b))?(a):(b) )
 #endif
 // Read input parameters and build the material
-void *OPS_ConcreteCM(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteCM)
 {
 
   // Pointer to a uniaxial material that will be returned                       

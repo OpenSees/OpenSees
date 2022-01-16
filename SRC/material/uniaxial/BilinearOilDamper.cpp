@@ -56,8 +56,7 @@
 
 static int numBilinearOilDamperMaterials = 0;
 
-void *
-OPS_BilinearOilDamper(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BilinearOilDamper)
 {
   if (numBilinearOilDamperMaterials == 0) {
     numBilinearOilDamperMaterials++;

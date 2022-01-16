@@ -44,7 +44,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_BarSlipMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_BarSlipMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata!=15 && numdata!=13) {

@@ -41,7 +41,7 @@
 #include <string.h>
 #include <math.h>
 
-void* OPS_ENTMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_ENTMaterial)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"WARNING: invalid #args: ENT matTag E\n";

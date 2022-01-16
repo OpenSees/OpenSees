@@ -43,8 +43,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ViscousMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ViscousMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

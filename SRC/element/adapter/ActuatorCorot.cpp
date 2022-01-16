@@ -55,7 +55,7 @@ Vector ActuatorCorot::ActuatorCorotV4(4);
 Vector ActuatorCorot::ActuatorCorotV6(6);
 Vector ActuatorCorot::ActuatorCorotV12(12);
 
-void* OPS_ActuatorCorot()
+void * OPS_ADD_RUNTIME_VPV(OPS_ActuatorCorot)
 {
     // check the number of arguments is correct
     if (OPS_GetNumRemainingInputArgs() < 5) {

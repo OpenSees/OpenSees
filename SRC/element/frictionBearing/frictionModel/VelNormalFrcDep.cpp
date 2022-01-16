@@ -38,8 +38,7 @@
 #include <math.h>
 
 
-void *
-OPS_VelNormalFrcDep(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_VelNormalFrcDep)
 {
     // pointer to a friction model that will be returned
     FrictionModel *theFrnMdl = 0;

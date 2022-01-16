@@ -45,7 +45,7 @@
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 
-void* OPS_FourNodeQuad()
+void * OPS_ADD_RUNTIME_VPV(OPS_FourNodeQuad)
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

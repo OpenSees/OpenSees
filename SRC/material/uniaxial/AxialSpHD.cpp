@@ -47,7 +47,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_AxialSpHD()
+void * OPS_ADD_RUNTIME_VPV(OPS_AxialSpHD)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {
@@ -397,7 +397,7 @@ AxialSpHD::setTrialStrain(double strain, double strainRate)
 	trialStg = 5;
     }
 
-    // tensioniunloadj
+    // tensionï¿½iunloadï¿½j
     else {
       ur2 = commitDeformation; // strain of unload point
       fr2 = commitForce; // stress of unload point

@@ -37,7 +37,7 @@
 #include <NDFiberSection2d.h>
 #include <NDFiberSectionWarping2d.h>
 
-void* OPS_WFSection2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_WFSection2d)
 {
   if (OPS_GetNumRemainingInputArgs() < 8) {
     opserr << "WARNING insufficient arguments\n";

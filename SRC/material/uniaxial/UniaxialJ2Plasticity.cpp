@@ -46,7 +46,7 @@
 #include <math.h>
 #include <float.h>
 
-void* OPS_UniaxialJ2Plasticity()
+void * OPS_ADD_RUNTIME_VPV(OPS_UniaxialJ2Plasticity)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 7) {

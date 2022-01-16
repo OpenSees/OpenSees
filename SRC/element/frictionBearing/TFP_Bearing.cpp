@@ -50,8 +50,7 @@ static Vector vectorSize8(8);
 
 static int numMyBearing = 0;
 
-void *
-OPS_TFP_Bearing()
+void * OPS_ADD_RUNTIME_VPV(OPS_TFP_Bearing)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyBearing == 0) {

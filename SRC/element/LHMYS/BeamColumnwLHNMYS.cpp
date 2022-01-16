@@ -45,7 +45,7 @@ Matrix BeamColumnwLHNMYS::K(6,6);
 Vector BeamColumnwLHNMYS::P(6);
 Matrix BeamColumnwLHNMYS::k(3,3);
 
-void* OPS_BeamColumnwLHNMYS(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamColumnwLHNMYS)
 {
     if(OPS_GetNumRemainingInputArgs() < 11) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,Iz,NpI NpJ,MpI MpJ,transfTag\n";

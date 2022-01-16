@@ -45,8 +45,7 @@ Vector MasonPan3D::PanelR(72);
 
 static int numMyPanel = 0;
 
-void *
-OPS_MasonPan3D()
+void * OPS_ADD_RUNTIME_VPV(OPS_MasonPan3D)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyPanel == 0) {

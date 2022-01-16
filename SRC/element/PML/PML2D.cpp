@@ -50,7 +50,7 @@
 #include <elementAPI.h>
 
 
-void* OPS_PML2D()
+void * OPS_ADD_RUNTIME_VPV(OPS_PML2D)
 {
   if (OPS_GetNumRemainingInputArgs() < (5+PML2D_NUM_PROPS)) {
     opserr << "WARNING insufficient arguments\n";

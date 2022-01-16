@@ -83,7 +83,7 @@
 
 static int numGNGMaterials = 0;
 
-void* OPS_GNGMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_GNGMaterial)
 {
 	
 	if (numGNGMaterials == 0) {

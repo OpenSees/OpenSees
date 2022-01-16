@@ -39,7 +39,7 @@
 #include <elementAPI.h>
 #include <Channel.h>
 
-void* OPS_fElmt02()
+void * OPS_ADD_RUNTIME_VPV(OPS_fElmt02)
 {
 
     int ndm = OPS_GetNDM();

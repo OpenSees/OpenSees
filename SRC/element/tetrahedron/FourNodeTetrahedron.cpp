@@ -50,7 +50,7 @@
 #include <elementAPI.h>
 #include <map>
 
-void* OPS_FourNodeTetrahedron()
+void * OPS_ADD_RUNTIME_VPV(OPS_FourNodeTetrahedron)
 {
     if (OPS_GetNumRemainingInputArgs() < 6) 
     {

@@ -31,7 +31,7 @@
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 
-void* OPS_BBarFourNodeQuadUP()
+void * OPS_ADD_RUNTIME_VPV(OPS_BBarFourNodeQuadUP)
 {
     if (OPS_GetNDM() != 2 || OPS_GetNDF() != 3) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with QuadUP element\n";

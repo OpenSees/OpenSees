@@ -51,7 +51,7 @@ Matrix DispBeamColumn2dWithSensitivity::K(6,6);
 Vector DispBeamColumn2dWithSensitivity::P(6);
 double DispBeamColumn2dWithSensitivity::workArea[100];
 
-void* OPS_DispBeamColumn2dWithSensitivity()
+void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumn2dWithSensitivity)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";

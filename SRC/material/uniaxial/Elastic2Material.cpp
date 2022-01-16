@@ -41,7 +41,7 @@
 
 int Elastic2Material::zeroE = 0;
 
-void* OPS_Elastic2()
+void * OPS_ADD_RUNTIME_VPV(OPS_Elastic2)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     

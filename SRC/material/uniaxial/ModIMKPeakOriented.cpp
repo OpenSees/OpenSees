@@ -46,8 +46,7 @@
 
 static int numModIMKPeakOrientedMaterials = 0;
 
-void *
-OPS_ModIMKPeakOriented()
+void * OPS_ADD_RUNTIME_VPV(OPS_ModIMKPeakOriented)
 {
   if (numModIMKPeakOrientedMaterials == 0) {
     numModIMKPeakOrientedMaterials++;

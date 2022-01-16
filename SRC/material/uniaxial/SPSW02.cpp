@@ -50,8 +50,7 @@
 
 static int numSPSWcall = 0;
 
-void*
-OPS_SPSW02()
+void * OPS_ADD_RUNTIME_VPV(OPS_SPSW02)
 {
 	if (numSPSWcall == 0) {
 		opserr << "------ SPSW02 unaxialMaterial, Written by SAJalali @ Amirkabir University of Technology, Tehran, 2015-------\n";

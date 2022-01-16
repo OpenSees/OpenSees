@@ -35,7 +35,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_DoubleMembranePlateFiberSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_DoubleMembranePlateFiberSection)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

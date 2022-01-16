@@ -39,8 +39,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ConstantStrengthDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ConstantStrengthDegradation)
 {
   StrengthDegradation *theDegradation = 0;
 

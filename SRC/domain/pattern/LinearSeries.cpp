@@ -41,8 +41,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_LinearSeries(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_LinearSeries)
 {
   // Pointer to a uniaxial material that will be returned
   TimeSeries *theSeries = 0;

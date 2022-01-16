@@ -35,7 +35,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-void* OPS_Elastic2DGNL()
+void * OPS_ADD_RUNTIME_VPV(OPS_Elastic2DGNL)
 {
     if (OPS_GetNumRemainingInputArgs() < 6)
     {

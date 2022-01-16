@@ -69,7 +69,7 @@
 #include <string.h>
 #include <fstream>
 
-void* OPS_RockingBC()
+void * OPS_ADD_RUNTIME_VPV(OPS_RockingBC)
 {
     if(OPS_GetNumRemainingInputArgs() < 10) {
 	opserr<<"Insufficient mandatory arguments: eleTag,iNode,jNode,Nw,E,nu,sy,B,w,mu; Optional arguments: convlim,maxtries,af,aflim,convlimmult,usecomstiff,useshear,blevery\n";

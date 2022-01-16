@@ -53,8 +53,7 @@
 //#include <fstream>
 //using namespace std;
 
-void *
-OPS_DoddRestr(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_DoddRestr)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

@@ -22,7 +22,7 @@
 /******************************************************************************* 
 * GETTING STARTED : Create a new Uniaxial Material class named "Masonryt"  
 *******************************************************************************/ 
-void* OPS_Masonryt()
+void * OPS_ADD_RUNTIME_VPV(OPS_Masonryt)
 { 
 
   // Pointer to a uniaxial material that will be returned 

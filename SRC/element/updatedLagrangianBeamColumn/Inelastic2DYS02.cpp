@@ -11,7 +11,7 @@
 #include <LinearCyclic.h>
  */
 
-void* OPS_Inelastic2DYS02()
+void * OPS_ADD_RUNTIME_VPV(OPS_Inelastic2DYS02)
 {
     
     if (OPS_GetNumRemainingInputArgs() < 12)

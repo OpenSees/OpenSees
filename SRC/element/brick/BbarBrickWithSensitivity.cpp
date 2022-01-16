@@ -70,7 +70,7 @@ const double  BbarBrickWithSensitivity::wg[] = { 1.0, 1.0, 1.0, 1.0,
 
 # define ELE_TAG_BbarBrickWithSensitivity 1984587234
 
-void* OPS_BbarBrickWithSensitivity()
+void * OPS_ADD_RUNTIME_VPV(OPS_BbarBrickWithSensitivity)
 {
     if (OPS_GetNumRemainingInputArgs() < 10) {
 	opserr << "WARNING insufficient arguments\n";

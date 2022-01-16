@@ -57,8 +57,7 @@ Vector N4BiaxialTruss::trussV24(24);
 
 #include <elementAPI.h>
 
-void *
-OPS_N4BiaxialTruss(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_N4BiaxialTruss)
 {
 	Element *theElement = 0;
 

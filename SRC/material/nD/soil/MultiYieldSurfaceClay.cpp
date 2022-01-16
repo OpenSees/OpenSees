@@ -66,7 +66,7 @@ double* MultiYieldSurfaceClay::pressDependCoeffx=0;
 int*    MultiYieldSurfaceClay::numOfSurfacesx=0;
 double* MultiYieldSurfaceClay::residualPressx=0;
 
-void* OPS_MultiYieldSurfaceClay()
+void * OPS_ADD_RUNTIME_VPV(OPS_MultiYieldSurfaceClay)
 {
     const int numParam = 6;
     const int totParam = 10;

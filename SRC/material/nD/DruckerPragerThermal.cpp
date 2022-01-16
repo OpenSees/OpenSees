@@ -54,8 +54,7 @@ const double DruckerPragerThermal::root23 = sqrt(2.0 / 3.0);
 
 static int numDruckerPragerMaterials = 0;
 
-void *
-OPS_DruckerPragerMaterialThermal(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_DruckerPragerMaterialThermal)
 {
 	if (numDruckerPragerMaterials == 0) {
 		numDruckerPragerMaterials++;

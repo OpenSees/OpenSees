@@ -53,8 +53,7 @@ double FourNodeQuad3d::shp[3][4];
 double FourNodeQuad3d::pts[4][2];
 double FourNodeQuad3d::wts[4];
 
-void *
-OPS_FourNodeQuad3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_FourNodeQuad3d)
 {
 
   Element *theEle = 0;

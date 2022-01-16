@@ -50,8 +50,7 @@
 #include <stdlib.h>
 
 
-void *
-OPS_ElasticOrthotropicMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticOrthotropicMaterial)
 {
   NDMaterial *theMaterial = 0;
   

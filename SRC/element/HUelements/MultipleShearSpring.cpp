@@ -56,7 +56,7 @@
 #include <elementAPI.h>
 
 
-void* OPS_MultipleShearSpring()
+void * OPS_ADD_RUNTIME_VPV(OPS_MultipleShearSpring)
 {
     // 3-dim, 6-dof
     int ndm = OPS_GetNDM();

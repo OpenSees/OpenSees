@@ -46,8 +46,7 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-void *
-OPS_Concrete01()
+void * OPS_ADD_RUNTIME_VPV(OPS_Concrete01)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

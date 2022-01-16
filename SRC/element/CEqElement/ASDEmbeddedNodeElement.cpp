@@ -189,8 +189,7 @@ namespace
 
 }
 
-void *
-OPS_ASDEmbeddedNodeElement(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ASDEmbeddedNodeElement)
 {
     static bool first_done = false;
     if (!first_done) {

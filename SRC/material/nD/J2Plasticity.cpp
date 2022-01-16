@@ -68,7 +68,7 @@ double J2Plasticity::initialTangent[3][3][3][3] ;   //material tangent
 double J2Plasticity::IIdev[3][3][3][3] ; //rank 4 deviatoric 
 double J2Plasticity::IbunI[3][3][3][3] ; //rank 4 I bun I
 
-void* OPS_J2Plasticity()
+void * OPS_ADD_RUNTIME_VPV(OPS_J2Plasticity)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 7) {

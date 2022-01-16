@@ -45,7 +45,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_ShearPanelMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_ShearPanelMaterial)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc != 42 && argc != 31 ) {

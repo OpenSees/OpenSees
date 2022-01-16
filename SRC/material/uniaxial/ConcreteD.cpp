@@ -11,8 +11,7 @@
 
 static int numConcreteD = 0;
 
-void *
-OPS_ConcreteD(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteD)
 {
   // print out some KUDO's
   if (numConcreteD == 0) {
@@ -225,7 +224,7 @@ if(TStrain>TEpp)					//Tension
 			}
 
 }
-//ÊÜÑ¹
+//ï¿½ï¿½Ñ¹
 else
 	{
 		if(TLoadState==0)		   //On the envelope

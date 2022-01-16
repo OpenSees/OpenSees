@@ -54,8 +54,7 @@
 
 static int numViscousDamperMaterials = 0;
 
-void *
-OPS_ViscousDamper(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ViscousDamper)
 
 {
   if (numViscousDamperMaterials == 0) {

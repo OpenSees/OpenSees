@@ -23,8 +23,7 @@
 
 static int numPrestressedConcretePlaneStressMaterials = 0;
 
-OPS_Export void *
-OPS_PrestressedConcretePlaneStressMaterial()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_PrestressedConcretePlaneStressMaterial)
 {
   if (numPrestressedConcretePlaneStressMaterials == 0) {
     numPrestressedConcretePlaneStressMaterials++;

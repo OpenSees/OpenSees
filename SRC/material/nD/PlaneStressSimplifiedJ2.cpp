@@ -35,8 +35,7 @@ Vector PlaneStressSimplifiedJ2::tmpVector(3);
 #include <SimplifiedJ2.h>
 #include <elementAPI.h>
 
-void *
-OPS_PlaneStressSimplifiedJ2(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStressSimplifiedJ2) {
 
   int tag;
   double K, G, sig0, H_kin, H_iso;

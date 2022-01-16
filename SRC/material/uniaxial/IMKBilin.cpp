@@ -36,8 +36,7 @@ using namespace std;
 
 static int numIMKBilinMaterials = 0;
 
-void *
-OPS_IMKBilin(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_IMKBilin)
 {
 	if (numIMKBilinMaterials == 0) {
 		numIMKBilinMaterials++;

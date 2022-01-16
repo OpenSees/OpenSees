@@ -64,8 +64,7 @@ using namespace std;
 
 static int numShellDKGT = 0;
 
-void *
-OPS_ShellDKGT(void)         
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellDKGT)         
 {
   if (numShellDKGT == 0) {
 //    opserr << "Using ShellDKGT - Developed by: Shuhao Zhang and Xinzheng Lu\n";

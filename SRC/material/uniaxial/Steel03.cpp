@@ -50,7 +50,7 @@
 #include <float.h>
 #include <elementAPI.h>
 
-void* OPS_Steel03()
+void * OPS_ADD_RUNTIME_VPV(OPS_Steel03)
 {
 
     int argc = OPS_GetNumRemainingInputArgs() + 2;

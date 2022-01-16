@@ -90,7 +90,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_TwentyEightNodeBrickUP()
+void * OPS_ADD_RUNTIME_VPV(OPS_TwentyEightNodeBrickUP)
 {
     if (OPS_GetNDM() != 3 ) {
 	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with 20_8_BrickUP element\n";

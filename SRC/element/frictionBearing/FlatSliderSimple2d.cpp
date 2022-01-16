@@ -48,7 +48,7 @@
 Matrix FlatSliderSimple2d::theMatrix(6,6);
 Vector FlatSliderSimple2d::theVector(6);
 
-void* OPS_FlatSliderSimple2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_FlatSliderSimple2d)
 {
     if (OPS_GetNumRemainingInputArgs() < 9) {
 	opserr << "WARNING insufficient arguments\n";

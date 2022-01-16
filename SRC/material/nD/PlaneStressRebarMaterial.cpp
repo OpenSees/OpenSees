@@ -38,7 +38,7 @@ NDMaterial(0, ND_TAG_PlaneStressRebarMaterial ),
 strain(5) 
 { }
 
-void* OPS_PlaneStressRebarMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStressRebarMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {

@@ -55,7 +55,7 @@ Matrix  ZeroLengthContact3D::stiff(3*numberNodes,3*numberNodes) ;
 Vector  ZeroLengthContact3D::resid(3*numberNodes) ;
 Matrix  ZeroLengthContact3D::zeroMatrix(3*numberNodes,3*numberNodes) ;
 
-void* OPS_ZeroLengthContact3D()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthContact3D)
 {
     // a quick check on number of args
     if (OPS_GetNumRemainingInputArgs() < 8) {

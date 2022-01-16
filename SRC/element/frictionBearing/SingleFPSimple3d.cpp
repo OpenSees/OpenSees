@@ -45,7 +45,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_SingleFPSimple3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_SingleFPSimple3d)
 {
     int ndf = OPS_GetNDF();
     if (ndf != 6)  {

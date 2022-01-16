@@ -55,7 +55,7 @@
 
 //int count = 0;
 
-void* OPS_Concrete01WithSITC()
+void * OPS_ADD_RUNTIME_VPV(OPS_Concrete01WithSITC)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {

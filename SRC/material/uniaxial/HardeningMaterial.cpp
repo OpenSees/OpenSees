@@ -41,7 +41,7 @@
 #include <float.h>
 #include <elementAPI.h>
 
-void* OPS_HardeningMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_HardeningMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {

@@ -50,8 +50,7 @@ extern "C"
 
 #include <elementAPI.h>
 
-void *
-OPS_MaterialCMM(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_MaterialCMM)
 {
   NDMaterial *theMaterial = 0;
   

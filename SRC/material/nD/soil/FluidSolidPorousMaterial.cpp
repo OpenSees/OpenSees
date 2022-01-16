@@ -32,7 +32,7 @@ Vector FluidSolidPorousMaterial::workV6(6);
 Matrix FluidSolidPorousMaterial::workM3(3,3);
 Matrix FluidSolidPorousMaterial::workM6(6,6);
 
-void* OPS_FluidSolidPorousMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_FluidSolidPorousMaterial)
 {
     int tag;  double param[4];
     char * arg[] = {"nd", "soilMatTag", "combinedBulkModul", "Atmospheric pressure"};

@@ -50,8 +50,7 @@
 
 static int numCastMaterials = 0;
 
-void *
-OPS_Cast(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_Cast)
 {
 	if (numCastMaterials == 0) {
 		numCastMaterials++;

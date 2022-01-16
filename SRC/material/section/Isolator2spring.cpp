@@ -40,7 +40,7 @@
 #include <Vector.h>
 #include <elementAPI.h>
 
-void* OPS_Isolator2spring()
+void * OPS_ADD_RUNTIME_VPV(OPS_Isolator2spring)
 {
     if (OPS_GetNumRemainingInputArgs() < 8) {
 	opserr << "WARNING insufficient arguments\n";

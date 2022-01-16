@@ -50,7 +50,7 @@ Matrix ZeroLengthSection::K12(12,12);
 Vector ZeroLengthSection::P6(6);
 Vector ZeroLengthSection::P12(12);
 
-void* OPS_ZeroLengthSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthSection)
 {
     int ndm = OPS_GetNDM();
     

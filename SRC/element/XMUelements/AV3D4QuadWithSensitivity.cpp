@@ -42,8 +42,7 @@ Matrix ** AV3D4QuadWithSensitivity::HH =0;
 Matrix AV3D4QuadWithSensitivity::CSensitivity(numDOF,numDOF);
 #include <elementAPI.h>
 
-void *
-OPS_AV3D4QuadWithSensitivity(void){
+void * OPS_ADD_RUNTIME_VPV(OPS_AV3D4QuadWithSensitivity){
 
   int eleID, numNodes, matTag;
   int nodes[8];

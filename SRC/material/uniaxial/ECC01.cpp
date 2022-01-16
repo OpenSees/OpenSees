@@ -44,7 +44,7 @@
 #include <float.h>
 #include <elementAPI.h>
 
-void* OPS_ECC01()
+void * OPS_ADD_RUNTIME_VPV(OPS_ECC01)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 15) {

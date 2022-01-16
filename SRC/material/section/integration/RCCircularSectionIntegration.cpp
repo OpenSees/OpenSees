@@ -36,7 +36,7 @@
 #include <ElasticMaterial.h>
 #include <FiberSection3d.h>
 
-void* OPS_RCCircularSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_RCCircularSection)
 {
   if (OPS_GetNumRemainingInputArgs() < 13) {
     opserr << "WARNING insufficient arguments\n";

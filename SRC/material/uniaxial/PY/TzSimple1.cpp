@@ -62,7 +62,7 @@
 const int TZmaxIterations = 20;
 const double TZtolerance = 1.0e-12;
 
-void* OPS_TzSimple1()
+void * OPS_ADD_RUNTIME_VPV(OPS_TzSimple1)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

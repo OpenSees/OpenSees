@@ -46,8 +46,7 @@
 
 static int num_BeamEndContact3D = 0;
 
-OPS_Export void *
-OPS_BeamEndContact3D(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_BeamEndContact3D)
 {
   	if (num_BeamEndContact3D == 0) {
     	num_BeamEndContact3D++;

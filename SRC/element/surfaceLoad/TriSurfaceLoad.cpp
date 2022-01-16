@@ -51,8 +51,7 @@ Matrix TriSurfaceLoad::damp(SL_NUM_DOF, SL_NUM_DOF);
 #include <elementAPI.h>
 static int num_TriSurfaceLoad = 0;
 
-void *
-OPS_TriSurfaceLoad(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_TriSurfaceLoad)
 {
   if (num_TriSurfaceLoad == 0) {
     num_TriSurfaceLoad++;

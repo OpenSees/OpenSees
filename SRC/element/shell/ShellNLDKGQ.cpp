@@ -56,8 +56,7 @@
 
 static int numShellNLDKGQ = 0;
 
-void *
-OPS_ShellNLDKGQ(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellNLDKGQ)
 {
   if (numShellNLDKGQ == 0) {
 //    opserr << "Using ShellNLDKGQ - Developed by: Lisha Wang,Xinzheng Lu and Quan Gu\n";

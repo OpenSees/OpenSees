@@ -21,8 +21,7 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
-OPS_Export void *
-OPS_ConcreteL01Material(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteL01Material)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

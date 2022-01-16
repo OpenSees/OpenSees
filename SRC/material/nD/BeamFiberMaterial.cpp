@@ -46,7 +46,7 @@ Matrix BeamFiberMaterial::tangent(3,3);
 // BF: 11 12 31 22 33 23
 
 
-void* OPS_BeamFiberMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamFiberMaterial)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 4) {

@@ -53,7 +53,7 @@
 #include <elementAPI.h>
 
 // Read input parameters and build the material
-void *OPS_SFI_MVLEM(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_SFI_MVLEM)
 {
   // Pointer to a uniaxial material that will be returned                       
   Element *theElement = 0;

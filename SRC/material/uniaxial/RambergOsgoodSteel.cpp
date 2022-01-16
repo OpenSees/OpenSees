@@ -47,8 +47,7 @@
 
 static int numRambergOsgoodSteel = 0;
 
-void *
-OPS_RambergOsgoodSteel(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_RambergOsgoodSteel)
 {
   if (numRambergOsgoodSteel == 0) {
     opserr << "RambergOsgoodSteel unaxial material - Written by R.Rahimi & R.Sepasdar & Dr. Mo. R. Banan Shiraz University Copyright 2012; \n";

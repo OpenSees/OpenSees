@@ -43,7 +43,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_ElastomericBearingPlasticity3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElastomericBearingPlasticity3d)
 {
     int ndf = OPS_GetNDF();
     if (ndf != 6)  {

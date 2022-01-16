@@ -50,7 +50,7 @@ Matrix Joint3D::K(45, 45);
 Vector Joint3D::V(45);
 
 
-void* OPS_Joint3D()
+void * OPS_ADD_RUNTIME_VPV(OPS_Joint3D)
 {
     if (OPS_GetNDM() != 3 || OPS_GetNDF() != 6) {
   opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with Joint3D element\n";

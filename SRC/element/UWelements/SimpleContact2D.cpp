@@ -57,8 +57,7 @@
 
 static int num_SimpleContact2D = 0;
 
-OPS_Export void *
-OPS_SimpleContact2D(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SimpleContact2D)
 {
   if (num_SimpleContact2D == 0) {
     num_SimpleContact2D++;

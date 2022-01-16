@@ -47,7 +47,7 @@
 
 ID FiberSection2dThermal::code(2);
 
-void* OPS_FiberSection2dThermal()
+void * OPS_ADD_RUNTIME_VPV(OPS_FiberSection2dThermal)
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

@@ -58,7 +58,7 @@ Vector ZeroLength::ZeroLengthV4(4);
 Vector ZeroLength::ZeroLengthV6(6);
 Vector ZeroLength::ZeroLengthV12(12);
 
-void* OPS_ZeroLength()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLength)
 {
     int ndm = OPS_GetNDM();
 

@@ -52,8 +52,7 @@
 #include <stdlib.h>
 
 
-void *
-OPS_ElasticIsotropicMaterialThermal(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticIsotropicMaterialThermal)
 {
 	NDMaterial *theMaterial = 0;
 	int softindex=0;

@@ -43,7 +43,7 @@
 Matrix BeamGT::BeamK(6,6);
 Vector BeamGT::BeamR(6);
 
-void* OPS_BeamGT()
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamGT)
 
 {
   // print out a message about who wrote this element & any copyright info wanted

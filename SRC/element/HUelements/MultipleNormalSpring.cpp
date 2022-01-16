@@ -74,7 +74,7 @@ static bool errDetected(bool ifNoError, const char *msg){
   return false;
 };
 
-void* OPS_MultipleNormalSpring()
+void * OPS_ADD_RUNTIME_VPV(OPS_MultipleNormalSpring)
 {
     // 3-dim, 6-dof
     int ndm = OPS_GetNDM();

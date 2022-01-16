@@ -44,8 +44,7 @@
 
 static int numModIMKPinchingMaterials = 0;
 
-void *
-OPS_ModIMKPinching()
+void * OPS_ADD_RUNTIME_VPV(OPS_ModIMKPinching)
 {
   if (numModIMKPinchingMaterials == 0) {
     numModIMKPinchingMaterials++;

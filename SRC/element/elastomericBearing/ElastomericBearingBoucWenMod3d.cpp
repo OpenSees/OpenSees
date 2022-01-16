@@ -45,8 +45,7 @@ Vector ElastomericBearingBoucWenMod3d::theVector(12);
 #include <elementAPI.h>
 #define OPS_Export 
 
-void *
-OPS_ElastomericBearingBoucWenMod3d(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElastomericBearingBoucWenMod3d)
 {
   Element *theElement = 0;
   

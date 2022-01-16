@@ -58,8 +58,7 @@ double Tri31::wts[1];
 
 static int num_Tri31 = 0;
 
-OPS_Export void *
-OPS_Tri31()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_Tri31)
 {
   if (num_Tri31 == 0) {
     num_Tri31++;

@@ -44,7 +44,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_Adapter()
+void * OPS_ADD_RUNTIME_VPV(OPS_Adapter)
 {
     int ndf = OPS_GetNDF();
     if (OPS_GetNumRemainingInputArgs() < 8) {

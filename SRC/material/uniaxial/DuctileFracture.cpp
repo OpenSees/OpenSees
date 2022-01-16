@@ -40,7 +40,7 @@
 #include <elementAPI.h>
 #include "DuctileFracture.h"
 
-void* OPS_DuctileFracture()
+void * OPS_ADD_RUNTIME_VPV(OPS_DuctileFracture)
 {
 	int numdata = OPS_GetNumRemainingInputArgs();
 	if (numdata < 5) {

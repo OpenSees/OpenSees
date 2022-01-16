@@ -46,7 +46,7 @@
 #include <elementAPI.h>
 
 
-void* OPS_GenericClient()
+void * OPS_ADD_RUNTIME_VPV(OPS_GenericClient)
 {
     int ndf = OPS_GetNDF();
     if (OPS_GetNumRemainingInputArgs() < 7) {

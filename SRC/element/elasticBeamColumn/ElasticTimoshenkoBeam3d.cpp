@@ -56,7 +56,7 @@ Matrix ElasticTimoshenkoBeam3d::theMatrix(12,12);
 Vector ElasticTimoshenkoBeam3d::theVector(12);
 
 
-void *OPS_ElasticTimoshenkoBeam3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticTimoshenkoBeam3d)
 {
     Element *theElement = 0;
     

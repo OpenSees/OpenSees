@@ -41,8 +41,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ElasticPPMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticPPMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

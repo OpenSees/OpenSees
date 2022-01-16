@@ -33,8 +33,7 @@
 #include <cmath>
 #include <elementAPI.h>
 
-void *
-OPS_SimpleFractureMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_SimpleFractureMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

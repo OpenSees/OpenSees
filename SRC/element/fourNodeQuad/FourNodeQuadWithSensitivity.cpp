@@ -54,7 +54,7 @@ double FourNodeQuadWithSensitivity::wts[4];
 
 #include <elementAPI.h>
 
-void* OPS_FourNodeQuadWithSensitivity()
+void * OPS_ADD_RUNTIME_VPV(OPS_FourNodeQuadWithSensitivity)
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

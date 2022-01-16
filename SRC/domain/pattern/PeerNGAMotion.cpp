@@ -60,8 +60,7 @@ httpGet(char const *URL, char const *page, unsigned int port, char **dataPtr);
 #include <elementAPI.h>
 #define OPS_Export 
 
-OPS_Export void *
-OPS_PeerNGAMotion(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_PeerNGAMotion)
 {
   // Pointer to a uniaxial material that will be returned
   TimeSeries *theSeries = 0;

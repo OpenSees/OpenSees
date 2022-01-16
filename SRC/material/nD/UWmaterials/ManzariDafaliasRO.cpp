@@ -38,8 +38,7 @@
 
 static int numManzariDafaliasMaterials = 0;
 
-void *
-OPS_ManzariDafaliasMaterialRO(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ManzariDafaliasMaterialRO)
 {
   if (numManzariDafaliasMaterials == 0) {
     numManzariDafaliasMaterials++;

@@ -53,8 +53,7 @@
 
 static int numShellDKGQ = 0;
 
-void *
-OPS_ShellDKGQ(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellDKGQ)
 {
   if (numShellDKGQ == 0) {
 //    opserr << "Using ShellDKGQ - Developed by: Lisha Wang and Xinzheng Lu\n";

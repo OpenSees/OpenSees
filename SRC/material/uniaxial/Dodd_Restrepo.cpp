@@ -39,8 +39,7 @@
 
 static int numDoddRestrepo = 0;
 
-void *
-OPS_Dodd_Restrepo(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_Dodd_Restrepo)
 {
   if (numDoddRestrepo == 0) {
     numDoddRestrepo++;

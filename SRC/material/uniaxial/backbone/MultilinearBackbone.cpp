@@ -35,8 +35,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_MultilinearBackbone(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_MultilinearBackbone)
 {
   HystereticBackbone *theBackbone = 0;
 

@@ -31,8 +31,7 @@
 
 static int numFAReinforcedConcretePlaneStressMaterials = 0;
 
-OPS_Export void *
-OPS_FAReinforcedConcretePlaneStressMaterial()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_FAReinforcedConcretePlaneStressMaterial)
 {
   if (numFAReinforcedConcretePlaneStressMaterials == 0) {
     numFAReinforcedConcretePlaneStressMaterials++;

@@ -50,7 +50,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_KikuchiAikenHDR()
+void * OPS_ADD_RUNTIME_VPV(OPS_KikuchiAikenHDR)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

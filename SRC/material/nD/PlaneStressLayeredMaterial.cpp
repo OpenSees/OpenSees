@@ -26,7 +26,7 @@
 #include <Information.h>
 #include <elementAPI.h>
 
-void* OPS_PlaneStressLayeredMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStressLayeredMaterial)
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
 	opserr << "WARNING insufficient arguments" << endln;

@@ -38,8 +38,7 @@ static const signed char b_A[3] = { -1, 1, 0 };
 static const signed char c_a[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
 static const signed char iv1[3] = { 0, 0, 1 };
 
-void *
-OPS_NewPlasticDamageConcretePlaneStress(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_NewPlasticDamageConcretePlaneStress)
 {
   NDMaterial *theMaterial = 0;
 

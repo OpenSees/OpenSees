@@ -54,8 +54,7 @@ Vector ZeroLengthVG_HG::ZeroLengthVG_HGV6(6);
 
 #define ELE_TAG_ZeroLengthVG_HG 101
 
-void *
-OPS_ZeroLengthVG_HG(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthVG_HG)
 {
     int ndm = OPS_GetNDM();
 

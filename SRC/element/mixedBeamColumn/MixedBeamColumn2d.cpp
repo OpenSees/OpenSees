@@ -132,7 +132,7 @@ Matrix *MixedBeamColumn2d::nd2T = 0;
 //      Urbana-Champaign, Urbana, Illinois, March.
 //
 
-void * OPS_MixedBeamColumn2d() {
+void * OPS_ADD_RUNTIME_VPV(OPS_MixedBeamColumn2d) {
   // Variables to retrieve input
   int iData[10];
   double dData[10];

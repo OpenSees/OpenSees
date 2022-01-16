@@ -59,8 +59,7 @@ Vector CorotTruss::V12(12);
 #include <elementAPI.h>
 #define OPS_Export 
 
-OPS_Export void *
-OPS_CorotTrussElement()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_CorotTrussElement)
 {
   Element *theElement = 0;
 

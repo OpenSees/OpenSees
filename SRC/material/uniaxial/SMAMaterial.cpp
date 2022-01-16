@@ -26,7 +26,7 @@
 #include <math.h>
 #include <elementAPI.h>
 
-void* OPS_SMAMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_SMAMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 7) {

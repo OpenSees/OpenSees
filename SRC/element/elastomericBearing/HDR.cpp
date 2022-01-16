@@ -56,7 +56,7 @@ Vector HDR::theVector(12);
 
 static int numMyBearing = 0;
 static int tag = 0;  // Tag to identify if bearing has failed in buckling
-void *OPS_HDR()
+void * OPS_ADD_RUNTIME_VPV(OPS_HDR)
 {
     // print out a message about who wrote this element & any copyright info wanted
     if (numMyBearing == 0) {

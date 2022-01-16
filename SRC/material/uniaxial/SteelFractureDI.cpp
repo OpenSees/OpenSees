@@ -43,8 +43,7 @@
 #include <OPS_Globals.h>
 
 
-void *
-OPS_SteelFractureDI()
+void * OPS_ADD_RUNTIME_VPV(OPS_SteelFractureDI)
 {
 	// Pointer to a uniaxial material that will be returned
 	UniaxialMaterial *theMaterial = 0;

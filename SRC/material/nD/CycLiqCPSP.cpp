@@ -59,8 +59,7 @@ double CycLiqCPSP::mElastFlag = 0;
 
 static int numCycLiqCPSPMaterials = 0;
 
-OPS_Export void *
-OPS_CycLiqCPSPMaterial(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_CycLiqCPSPMaterial)
 {
   if (numCycLiqCPSPMaterials == 0) {
     numCycLiqCPSPMaterials=1;

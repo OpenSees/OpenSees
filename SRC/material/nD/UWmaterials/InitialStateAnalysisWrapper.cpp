@@ -40,8 +40,7 @@
 
 static int numInitialStateAnalysisWrapperMaterials = 0;
 
-void *
-OPS_InitialStateAnalysisWrapperMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_InitialStateAnalysisWrapperMaterial)
 {
 	if (numInitialStateAnalysisWrapperMaterials == 0) {
 		numInitialStateAnalysisWrapperMaterials++;

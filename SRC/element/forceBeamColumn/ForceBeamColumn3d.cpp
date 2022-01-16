@@ -92,7 +92,7 @@ Vector ForceBeamColumn3d::vsSubdivide[maxNumSections];
 Matrix ForceBeamColumn3d::fsSubdivide[maxNumSections];
 Vector ForceBeamColumn3d::SsrSubdivide[maxNumSections];
 
-void* OPS_ForceBeamColumn3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ForceBeamColumn3d)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";

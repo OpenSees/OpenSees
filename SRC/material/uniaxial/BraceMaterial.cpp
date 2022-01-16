@@ -38,8 +38,7 @@ static int numBilinMaterials = 0;
 
 static int numCastMaterials = 0;
 
-void *
-OPS_BraceMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BraceMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

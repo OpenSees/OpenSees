@@ -46,8 +46,7 @@
 
 #include <OPS_Globals.h>
 
-void *
-OPS_SeriesMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_SeriesMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

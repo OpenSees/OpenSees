@@ -37,7 +37,7 @@
 #include <NDFiberSection2d.h>
 #include <ParallelSection.h>
 
-void* OPS_RCTBeamSection2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_RCTBeamSection2d)
 {
   if (OPS_GetNumRemainingInputArgs() < 18) {
     opserr << "WARNING insufficient arguments\n";
@@ -158,7 +158,7 @@ void* OPS_RCTBeamSection2d()
   return theSection;
 }
 
-void* OPS_RCTBeamSectionUniMat2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_RCTBeamSectionUniMat2d)
 {
   if (OPS_GetNumRemainingInputArgs() < 18) {
     opserr << "WARNING insufficient arguments\n";

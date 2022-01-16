@@ -35,7 +35,7 @@
 #include <MaterialResponse.h>
 #include <elementAPI.h>
 
-void* OPS_ConcreteS()
+void * OPS_ADD_RUNTIME_VPV(OPS_ConcreteS)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 8) {

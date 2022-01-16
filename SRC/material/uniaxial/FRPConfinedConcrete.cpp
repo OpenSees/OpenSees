@@ -47,8 +47,7 @@ static int numFRPConfinedConcrete = 0;
 
 // NOTE: units should b in Newton(N) and MegaPascal(MPa)
 
-void *
-OPS_FRPConfinedConcrete(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_FRPConfinedConcrete)
 {
   if (numFRPConfinedConcrete == 0) {
     numFRPConfinedConcrete++;

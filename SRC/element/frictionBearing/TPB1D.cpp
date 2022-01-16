@@ -68,8 +68,7 @@ Vector TPB1D::TPB1DV12(12);
 
 static int numMyTPB1D = 0;
 
-void *
-OPS_TPB1D()
+void * OPS_ADD_RUNTIME_VPV(OPS_TPB1D)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyTPB1D == 0) {

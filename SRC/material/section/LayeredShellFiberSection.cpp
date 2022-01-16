@@ -38,7 +38,7 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 #include <Information.h>
 #include <elementAPI.h>
 
-void* OPS_LayeredShellFiberSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_LayeredShellFiberSection)
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
 	opserr << "WARNING insufficient arguments" << endln;

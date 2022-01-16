@@ -65,7 +65,7 @@ Vector MVLEM_3D::MVLEM_3DRlocal(24);
 #include <elementAPI.h>
 
 // Read input parameters and build the material
-void* OPS_MVLEM_3D(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_MVLEM_3D)
 {
 	// Pointer to a uniaxial material that will be returned                       
 	Element* theElement = 0;

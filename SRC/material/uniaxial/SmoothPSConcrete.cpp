@@ -46,7 +46,7 @@
 #include <MaterialResponse.h>
 # define MAT_TAG_SmoothPSConcrete 35457
 
-void* OPS_SmoothPSConcrete()
+void * OPS_ADD_RUNTIME_VPV(OPS_SmoothPSConcrete)
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 6 || argc > 9) {

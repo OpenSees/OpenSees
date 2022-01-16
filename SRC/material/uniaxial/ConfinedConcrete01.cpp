@@ -1695,8 +1695,7 @@ ConfinedConcrete01::getVariable(const char *varName, Information &theInfo)
 
 static int numConfinedConcrete01Materials = 0;
 
-OPS_Export void *
-OPS_ConfinedConcrete01Material()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_ConfinedConcrete01Material)
 {
   if (numConfinedConcrete01Materials == 0) {
     numConfinedConcrete01Materials++;

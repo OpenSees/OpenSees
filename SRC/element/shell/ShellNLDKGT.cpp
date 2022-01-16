@@ -52,8 +52,7 @@
 
 static int numShellNLDKGT = 0;
 
-void *
-OPS_ShellNLDKGT(void)          
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellNLDKGT)          
 {
   if (numShellNLDKGT == 0) {
 //    opserr << "Using ShellNLDKGT - Developed by:Shuhao Zhang & Xinzheng Lu";

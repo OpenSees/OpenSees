@@ -37,8 +37,7 @@
 #include <math.h>
 
 
-void *
-OPS_VelPressureDep(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_VelPressureDep)
 {
     // pointer to a friction model that will be returned
     FrictionModel *theFrnMdl = 0;

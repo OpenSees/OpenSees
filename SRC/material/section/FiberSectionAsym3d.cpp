@@ -58,7 +58,7 @@
 
 ID FiberSectionAsym3d::code(5);
 
-void* OPS_FiberSectionAsym3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_FiberSectionAsym3d)
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

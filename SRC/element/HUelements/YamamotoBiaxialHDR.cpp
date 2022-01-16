@@ -55,7 +55,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_YamamotoBiaxialHDR()
+void * OPS_ADD_RUNTIME_VPV(OPS_YamamotoBiaxialHDR)
 {
     // 3-dim, 6-dof
     int ndm = OPS_GetNDM();

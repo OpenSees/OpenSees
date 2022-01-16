@@ -37,8 +37,7 @@
 #include <elementAPI.h>
 
 #define OPS_Export 
-OPS_Export void *
-OPS_StressDensityMaterial(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_StressDensityMaterial)
 {
 	static int numStressDensityModel = 0;
 

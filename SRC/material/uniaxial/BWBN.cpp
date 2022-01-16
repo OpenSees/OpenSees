@@ -9,8 +9,7 @@
 #include <Parameter.h>
 
 
-void *
-OPS_BWBN(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BWBN)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

@@ -56,7 +56,7 @@ Matrix  ZeroLengthContact2D::stiff(2*numberNodes,2*numberNodes) ;
 Vector  ZeroLengthContact2D::resid(2*numberNodes) ;
 Matrix  ZeroLengthContact2D::zeroMatrix(2*numberNodes,2*numberNodes) ;
 
-void* OPS_ZeroLengthContact2D()
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthContact2D)
 {
     if (OPS_GetNumRemainingInputArgs() < 9) {
 	opserr << "ZeroLengthContact2D::WARNING too few arguments " <<

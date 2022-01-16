@@ -43,8 +43,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void *
-OPS_HystereticMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_HystereticMaterial)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

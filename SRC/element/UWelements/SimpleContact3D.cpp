@@ -57,8 +57,7 @@
 
 static int num_SimpleContact3D = 0;
 
-OPS_Export void *
-OPS_SimpleContact3D(void)
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_SimpleContact3D)
 {
   if (num_SimpleContact3D == 0) {
     num_SimpleContact3D++;

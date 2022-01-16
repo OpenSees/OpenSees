@@ -54,7 +54,7 @@
 double ParallelSection::workArea[2*maxOrder*(maxOrder+1)];
 int    ParallelSection::codeArea[maxOrder];
 
-void* OPS_ParallelSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_ParallelSection)
 {
     if (OPS_GetNumRemainingInputArgs() < 3) {
 	opserr << "WARNING insufficient arguments\n";

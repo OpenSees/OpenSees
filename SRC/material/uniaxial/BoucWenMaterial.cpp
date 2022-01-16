@@ -41,7 +41,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-void* OPS_BoucWenMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_BoucWenMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 10) {

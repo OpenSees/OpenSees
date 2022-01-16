@@ -40,7 +40,7 @@
 #include <NDFiberSection3d.h>
 #include <NDFiberSectionWarping2d.h>
 
-void* OPS_HSSSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_HSSSection)
 {
   if (OPS_GetNumRemainingInputArgs() < 7) {
     opserr << "WARNING insufficient arguments\n";

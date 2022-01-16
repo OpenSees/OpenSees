@@ -48,8 +48,7 @@
 static int num_EmbeddedEPBeamInterface = 0;
 static const double m_Pi = 3.14159265359;
 
-void *
-OPS_EmbeddedEPBeamInterface(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_EmbeddedEPBeamInterface)
 {
     if (num_EmbeddedEPBeamInterface == 0) {
         num_EmbeddedEPBeamInterface++;

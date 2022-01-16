@@ -58,8 +58,7 @@ static Vector CoupledZeroLengthV12(12);  // class wide Vector for size 12
 
 #include <elementAPI.h>
 
-void *
-OPS_CoupledZeroLength()
+void * OPS_ADD_RUNTIME_VPV(OPS_CoupledZeroLength)
 {
 
   Element *theEle = 0;

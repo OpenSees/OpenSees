@@ -40,8 +40,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_PincheiraStiffnessDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_PincheiraStiffnessDegradation)
 {
   StiffnessDegradation *theDegradation = 0;
 

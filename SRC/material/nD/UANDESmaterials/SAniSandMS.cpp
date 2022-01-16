@@ -76,8 +76,7 @@ SAniSandMS::initTensors SAniSandMS::initTensorOps;
 
 static int numSAniSandMSMaterials = 0;
 
-void *
-OPS_SAniSandMSMaterial(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_SAniSandMSMaterial)
 {
 	// feenableexcept(FE_DIVBYZERO);// | FE_INVALID );//| FE_OVERFLOW);
 

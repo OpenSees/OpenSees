@@ -18,7 +18,7 @@ static int numUVCuniaxial = 0;
 
 // NOTE: Do not use the OPS_GetNumRemainingInputArgs() function or the
 // OPS_GetString() function: causes crash with .dll
-void* OPS_UVCuniaxial(void) {
+void * OPS_ADD_RUNTIME_VPV(OPS_UVCuniaxial) {
   if (numUVCuniaxial == 0) {
     opserr << "Using the UVCuniaxial material, see "
       "https://www.epfl.ch/labs/resslab/resslab-tools/" << endln;

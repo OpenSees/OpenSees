@@ -41,7 +41,7 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-void* OPS_BoucWenOriginal()
+void * OPS_ADD_RUNTIME_VPV(OPS_BoucWenOriginal)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 4) {

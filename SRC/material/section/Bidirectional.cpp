@@ -30,7 +30,7 @@ Vector Bidirectional::s(2);
 Matrix Bidirectional::ks(2,2);
 ID Bidirectional::code(2);
 
-void* OPS_Bidirectional()
+void * OPS_ADD_RUNTIME_VPV(OPS_Bidirectional)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";

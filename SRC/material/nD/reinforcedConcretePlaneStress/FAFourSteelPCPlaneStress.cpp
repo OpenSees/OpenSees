@@ -25,8 +25,7 @@
 
 static int numFAFourSteelPCPlaneStressMaterials = 0;
 
-OPS_Export void *
-OPS_FAFourSteelPCPlaneStressMaterial()
+OPS_Export void * OPS_ADD_RUNTIME_VPV(OPS_FAFourSteelPCPlaneStressMaterial)
 {
   if (numFAFourSteelPCPlaneStressMaterials == 0) {
     numFAFourSteelPCPlaneStressMaterials++;

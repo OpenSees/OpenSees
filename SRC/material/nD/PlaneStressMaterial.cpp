@@ -48,7 +48,7 @@ NDMaterial(0, ND_TAG_PlaneStressMaterial ),
 strain(3) 
 { }
 
-void* OPS_PlaneStress()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlaneStress)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 2) {

@@ -38,7 +38,7 @@
 #include <FiberSection3d.h>
 #include <NDFiberSection3d.h>
 
-void* OPS_TubeSection()
+void * OPS_ADD_RUNTIME_VPV(OPS_TubeSection)
 {
   if (OPS_GetNumRemainingInputArgs() < 6) {
     opserr << "WARNING insufficient arguments\n";

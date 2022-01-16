@@ -5,7 +5,7 @@
 #include "Inelastic2DYS03.h"
 #include <elementAPI.h>
 
-void* OPS_Inelastic2DYS03()
+void * OPS_ADD_RUNTIME_VPV(OPS_Inelastic2DYS03)
 {
     if (OPS_GetNumRemainingInputArgs() < 9)
     {

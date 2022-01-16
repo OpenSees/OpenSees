@@ -41,8 +41,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_EnergyStrengthDegradation(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_EnergyStrengthDegradation)
 {
   StrengthDegradation *theDegradation = 0;
 

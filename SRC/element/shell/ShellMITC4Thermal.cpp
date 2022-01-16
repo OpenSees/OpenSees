@@ -58,8 +58,7 @@
 
 static int numShellMITC4Thermal = 0;
 
-void *
-OPS_ShellMITC4Thermal(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellMITC4Thermal)
 {
   if (numShellMITC4Thermal == 0) {
     opserr << "Using ShellMITC4Thermal - Developed by: Leopoldo Tesser, Diego A. Talledo, Veronique Le Corvec\n";

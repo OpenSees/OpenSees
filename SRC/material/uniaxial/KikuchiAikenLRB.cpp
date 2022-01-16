@@ -42,7 +42,7 @@
 
 #include <elementAPI.h>
 
-void* OPS_KikuchiAikenLRB()
+void * OPS_ADD_RUNTIME_VPV(OPS_KikuchiAikenLRB)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 9) {

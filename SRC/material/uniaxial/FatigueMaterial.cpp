@@ -55,7 +55,7 @@
 #include <OPS_Stream.h>
 #include <elementAPI.h>
 
-void* OPS_FatigueMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_FatigueMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 2) {

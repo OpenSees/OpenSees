@@ -35,7 +35,7 @@
 #include <CircSectionCell.h>
 #include <elementAPI.h>
 
-void* OPS_CircPatch()
+void * OPS_ADD_RUNTIME_VPV(OPS_CircPatch)
 {
     if(OPS_GetNumRemainingInputArgs() < 9) {
 	opserr<<"insufficient arguments for CircPatch\n";

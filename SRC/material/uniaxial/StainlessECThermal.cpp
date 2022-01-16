@@ -40,8 +40,7 @@
 #include<iostream>
 using namespace std;
 
-void *
-OPS_StainlessECThermal(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_StainlessECThermal)
 {
 	// Pointer to a uniaxial material that will be returned
 	UniaxialMaterial *theMaterial = 0;

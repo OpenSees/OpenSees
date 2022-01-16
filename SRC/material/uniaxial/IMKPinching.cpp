@@ -36,8 +36,7 @@ using namespace std;
 
 static int numIMKPinchingMaterials = 0;
 
-void *
-OPS_IMKPinching()
+void * OPS_ADD_RUNTIME_VPV(OPS_IMKPinching)
 {
 	if (numIMKPinchingMaterials == 0) {
 		numIMKPinchingMaterials++;

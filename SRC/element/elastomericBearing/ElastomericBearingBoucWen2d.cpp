@@ -47,7 +47,7 @@
 Matrix ElastomericBearingBoucWen2d::theMatrix(6,6);
 Vector ElastomericBearingBoucWen2d::theVector(6);
 
-void* OPS_ElastomericBearingBoucWen2d()
+void * OPS_ADD_RUNTIME_VPV(OPS_ElastomericBearingBoucWen2d)
 {
     int ndf = OPS_GetNDF();
     if (ndf != 3)  {

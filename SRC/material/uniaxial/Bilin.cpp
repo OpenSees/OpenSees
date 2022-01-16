@@ -46,8 +46,7 @@
 
 static int numBilinMaterials = 0;
 
-void *
-OPS_Bilin()
+void * OPS_ADD_RUNTIME_VPV(OPS_Bilin)
 {
   if (numBilinMaterials == 0) {
     numBilinMaterials++;

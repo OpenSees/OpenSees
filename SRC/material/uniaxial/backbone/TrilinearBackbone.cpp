@@ -35,8 +35,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_TrilinearBackbone(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_TrilinearBackbone)
 {
   HystereticBackbone *theBackbone = 0;
 
@@ -69,8 +68,7 @@ OPS_TrilinearBackbone(void)
   return theBackbone;
 }
 
-void *
-OPS_BilinearBackbone(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_BilinearBackbone)
 {
   HystereticBackbone *theBackbone = 0;
 

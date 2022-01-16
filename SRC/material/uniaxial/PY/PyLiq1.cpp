@@ -79,7 +79,7 @@ int PyLiq1::loadStage = 0;
 int PyConstructorType = 1;
 Vector PyLiq1::stressV3(3);
 
-void* OPS_PyLiq1()
+void * OPS_ADD_RUNTIME_VPV(OPS_PyLiq1)
 {
     UniaxialMaterial* theMat = 0;
     

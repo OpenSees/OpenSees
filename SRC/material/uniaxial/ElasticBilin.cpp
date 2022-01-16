@@ -36,8 +36,7 @@
 
 #include <elementAPI.h>
 
-void *
-OPS_ElasticBilin(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticBilin)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

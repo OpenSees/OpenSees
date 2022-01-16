@@ -48,7 +48,7 @@ NDMaterial(0, ND_TAG_PlateRebarMaterial ),
 strain(5) 
 { }
 
-void* OPS_PlateRebarMaterial()
+void * OPS_ADD_RUNTIME_VPV(OPS_PlateRebarMaterial)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {

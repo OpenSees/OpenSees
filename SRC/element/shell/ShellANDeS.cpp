@@ -110,8 +110,7 @@ Vector calculate_cross_product(const Vector& a, const Vector& b)
 }
 
 
-void *
-OPS_ShellANDeS(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ShellANDeS)
 {
 
      Element *theElement = 0;

@@ -59,7 +59,7 @@ Matrix ElasticBeamWarping3d::kb(9,9);
 using std::string;
 using namespace std;
 
-void* OPS_ElasticBeamWarping3d(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ElasticBeamWarping3d)
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
     if(numArgs < 11 && numArgs != 6) {

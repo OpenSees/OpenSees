@@ -51,7 +51,7 @@ Matrix BeamColumnJoint3d::Transf(12,24);
 Matrix BeamColumnJoint3d::Tran(3,6);
 
 
-void* OPS_BeamColumnJoint3d()
+void * OPS_ADD_RUNTIME_VPV(OPS_BeamColumnJoint3d)
 {
     if (OPS_GetNumRemainingInputArgs() < 18) {
 	opserr << "WARNING insufficient arguments\n";

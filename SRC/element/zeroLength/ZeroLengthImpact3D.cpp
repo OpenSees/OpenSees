@@ -47,8 +47,7 @@
 
 static int numMyZeroLengthImpact3D = 0;
 
-void *
-OPS_ZeroLengthImpact3D(void)
+void * OPS_ADD_RUNTIME_VPV(OPS_ZeroLengthImpact3D)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyZeroLengthImpact3D == 0) {

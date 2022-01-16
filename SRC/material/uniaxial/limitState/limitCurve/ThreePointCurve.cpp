@@ -39,7 +39,7 @@
 #include <DummyStream.h>
 #include <elementAPI.h>
 
-void* OPS_ThreePointCurve()
+void * OPS_ADD_RUNTIME_VPV(OPS_ThreePointCurve)
 {
     if (OPS_GetNumRemainingInputArgs() < 12) {
 	opserr << "WARNING insufficient arguments\n";
