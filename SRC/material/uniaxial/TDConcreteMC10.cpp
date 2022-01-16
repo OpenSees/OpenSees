@@ -45,7 +45,7 @@
  -------------------------------*/
  // Detailed descriptions of the model and its implementation can be found in the following:
  // (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
- //     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+ //     Recycled Concrete Aggregates. ACI Structural J. 115, 175ï¿½190. doi:10.14359/51701153
  // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
  //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
  // A manual describing the use of the model and sample files can be found at:
@@ -53,7 +53,7 @@
  //----------------------------------------------------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------------------------------------------------
- // Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+ // Disclaimer: This software is provided ï¿½as isï¿½, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
  //----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -90,7 +90,7 @@ using namespace std; //Added by AMK for debugging
 
 //	OPS_Export void * //ntosic: eliminated AMK code
 	void * //ntosic: new code over AMK
-	OPS_TDConcreteMC10() {
+	OPS_ADD_RUNTIME_VPV(OPS_TDConcreteMC10) {
 		// Print description of material model:
 		if (numTDConcreteMC10 == 0) {
 			opserr << "Time-Dependent Concrete Material Model - Written by Nikola Tosic, 2019 \n";
