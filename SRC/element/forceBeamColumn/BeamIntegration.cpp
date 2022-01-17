@@ -26,6 +26,7 @@
 #include <Matrix.h>
 
 #include <MapOfTaggedObjects.h>
+#include <api/runtimeAPI.h>
 
 static MapOfTaggedObjects theBeamIntegrationRuleObjects;
 

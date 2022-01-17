@@ -42,6 +42,7 @@
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
 #include <MapOfTaggedObjectsIter.h>
+#include <api/runtimeAPI.h>
 
 static MapOfTaggedObjects theSectionForceDeformationObjects;
 

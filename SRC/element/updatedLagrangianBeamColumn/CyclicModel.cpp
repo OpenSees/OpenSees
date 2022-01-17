@@ -1,6 +1,7 @@
 #include "CyclicModel.h"
 #include <math.h>
 #include <MapOfTaggedObjects.h>
+#include <api/runtimeAPI.h>
 
 const int    CyclicModel::Loading(1);
 const int    CyclicModel::Unloading(2);
