@@ -62,7 +62,8 @@
 Matrix **Node::theMatrices = 0;
 int Node::numMatrices = 0;
 
-int OPS_Node()
+int
+OPS_ADD_RUNTIME_IXV(OPS_Node)
 {
     Domain* theDomain = OPS_GetDomain();
     int ndm = OPS_GetNDM();
