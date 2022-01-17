@@ -50,10 +50,10 @@ OPS_ADD_RUNTIME_VPV(OPS_TimeSeriesIntegrator)
 
     const char* type = OPS_GetString();
     if (strcmp(type,"Trapezoidal") == 0) {
-	seriesIntegrator = (TimeSeriesIntegrator*)OPS_TrapezoidalTimeSeriesIntegrator();
+	seriesIntegrator = (TimeSeriesIntegrator*)OPS_CALL_RUNTIME_VPV(OPS_TrapezoidalTimeSeriesIntegrator);
 		
     } else if (strcmp(type,"Simpson") == 0) {
-	seriesIntegrator = (TimeSeriesIntegrator*)OPS_SimpsonTimeSeriesIntegrator();
+	seriesIntegrator = (TimeSeriesIntegrator*)OPS_CALL_RUNTIME_VPV(OPS_SimpsonTimeSeriesIntegrator);
 		
     } else {
 	// type of load pattern type unknown
