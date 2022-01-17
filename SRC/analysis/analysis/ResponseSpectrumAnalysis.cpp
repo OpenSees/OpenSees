@@ -58,7 +58,7 @@
 #define DMP_DBL_LARGE 1.0e200
 
 void
-OPS_ResponseSpectrumAnalysis(void)
+OPS_ADD_RUNTIME_VXV(OPS_ResponseSpectrumAnalysis)
 {
 	// responseSpectrum $tsTag $dir <-scale $scale>
 

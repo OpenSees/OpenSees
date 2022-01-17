@@ -94,7 +94,9 @@ Mesh *OPS_getMesh(int tag) {
     return theMsh;
 }
 
-void OPS_clearAllMesh(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllMesh)
+{
     theMeshObjects.clearAll();
 }
 

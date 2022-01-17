@@ -51,7 +51,9 @@ HystereticBackbone *OPS_getHystereticBackbone(int tag) {
   return theMat;
 }
 
-void OPS_clearAllHystereticBackbone(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllHystereticBackbone)
+{
   theHystereticBackboneObjects.clearAll();
 }
 

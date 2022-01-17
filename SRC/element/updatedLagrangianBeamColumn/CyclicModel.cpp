@@ -28,7 +28,9 @@ CyclicModel *OPS_getCyclicModel(int tag)
   return theobj;
 }
 
-void OPS_clearAllCyclicModel(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllCyclicModel)
+{
     theCyclicModelObjects.clearAll();
 }
 

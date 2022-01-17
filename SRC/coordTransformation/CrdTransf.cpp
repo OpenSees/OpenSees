@@ -68,8 +68,9 @@ OPS_getCrdTransf(int tag) {
   return theSeries;
 }
 
-void 
-OPS_clearAllCrdTransf(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllCrdTransf)
+{
   theCrdTransfObjects.clearAll();
 }
 

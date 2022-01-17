@@ -50,7 +50,8 @@ SectionRepres *OPS_getSectionRepres(int tag)
     return theRep;
 }
 
-void OPS_clearAllSectionRepres(void)
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllSectionRepres)
 {
     theSectionRepresObjects.clearAll();
 }

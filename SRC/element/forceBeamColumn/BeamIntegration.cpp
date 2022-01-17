@@ -45,7 +45,9 @@ BeamIntegrationRule *OPS_getBeamIntegrationRule(int tag) {
   return theMat;
 }
 
-void OPS_clearAllBeamIntegrationRule(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllBeamIntegrationRule)
+{
   theBeamIntegrationRuleObjects.clearAll();
 }
 

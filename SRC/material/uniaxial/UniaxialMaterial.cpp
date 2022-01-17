@@ -71,7 +71,9 @@ UniaxialMaterial *OPS_getUniaxialMaterial(int tag) {
   return theMat;
 }
 
-void OPS_clearAllUniaxialMaterial(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllUniaxialMaterial)
+{
   theUniaxialMaterialObjects.clearAll();
 }
 

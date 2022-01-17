@@ -54,7 +54,9 @@ DamageModel *OPS_getDamageModel(int tag) {
   return theMat;
 }
 
-void OPS_clearAllDamageModel(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllDamageModel)
+{
   theDamageModelObjects.clearAll();
 }
 

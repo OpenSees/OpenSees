@@ -34,7 +34,9 @@ YieldSurface_BC *OPS_getYieldSurface_BC(int tag)
   return theobj;
 }
 
-void OPS_clearAllYieldSurface_BC(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllYieldSurface_BC)
+{
     theYieldSurface_BCObjects.clearAll();
 }
 

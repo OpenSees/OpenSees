@@ -52,7 +52,8 @@ StiffnessDegradation *OPS_getStiffnessDegradation(int tag)
   return theMat;  
 }
 
-void OPS_clearAllStiffnessDegradation(void)
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllStiffnessDegradation)
 {
   theStiffnessDegradationObjects.clearAll();
 }

@@ -65,7 +65,9 @@ TimeSeries *OPS_getTimeSeries(int tag) {
   return theSeries->getCopy();
 }
 
-void OPS_clearAllTimeSeries(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllTimeSeries)
+{
   theTimeSeriesObjects.clearAll();
 }
     

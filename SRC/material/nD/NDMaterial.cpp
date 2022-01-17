@@ -81,7 +81,8 @@ NDMaterial *OPS_getNDMaterial(int tag)
   return theMat;
 }
 
-void OPS_clearAllNDMaterial(void)
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllNDMaterial)
 {
     theNDMaterialObjects.clearAll();
 }

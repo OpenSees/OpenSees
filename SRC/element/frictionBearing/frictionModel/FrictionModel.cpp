@@ -56,7 +56,8 @@ FrictionModel *OPS_getFrictionModel(int tag)
 }
 
 
-void OPS_clearAllFrictionModel()
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllFrictionModel)
 {
     theFrictionModelObjects.clearAll();
 }

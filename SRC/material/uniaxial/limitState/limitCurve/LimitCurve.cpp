@@ -59,7 +59,9 @@ LimitCurve *OPS_getLimitCurve(int tag) {
   return theMat;
 }
 
-void OPS_clearAllLimitCurve(void) {
+void
+OPS_ADD_RUNTIME_VXV(OPS_clearAllLimitCurve)
+{
   theLimitCurveObjects.clearAll();
 }
 

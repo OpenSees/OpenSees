@@ -368,7 +368,7 @@ namespace
 }
 
 void
-OPS_DomainModalProperties(void)
+OPS_ADD_RUNTIME_VXV(OPS_DomainModalProperties)
 {
     // modalProperties <-print> <-file $fileName> <-unorm>
 
