@@ -73,15 +73,15 @@ OPS_ADD_RUNTIME_VPV(OPS_ElasticSection)
   int ndm = OPS_GetNDM();
   if(ndm == 2) {
     if(numData == 4) {
-      theSec = OPS_ElasticSection2d();
+      theSec = OPS_CALL_RUNTIME_VPV(OPS_ElasticSection2d);
     } else if(numData >=5) {
       theSec = OPS_ElasticShearSection2d();
     }
   } else if(ndm == 3) {
     if(numData == 7) {
-      theSec = OPS_ElasticSection3d();
+      theSec = OPS_CALL_RUNTIME_VPV(OPS_ElasticSection3d);
     } else if(numData >= 8) {
-      theSec = OPS_ElasticShearSection3d();
+      theSec = OPS_CALL_RUNTIME_VPV(OPS_ElasticShearSection3d);
     }
   }
   
