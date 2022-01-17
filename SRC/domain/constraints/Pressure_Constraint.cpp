@@ -48,7 +48,9 @@
 #include <DOF_Group.h>
 #include <elementAPI.h>
 
-int OPS_Pressure_Constraint() {
+int
+OPS_ADD_RUNTIME_IXV(OPS_Pressure_Constraint)
+{
     Domain* theDomain = OPS_GetDomain();
 
     if (theDomain == 0) {

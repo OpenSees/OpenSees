@@ -42,7 +42,8 @@
 static int numSPs = 0;
 static int nextTag = 0;
 
-int OPS_HomogeneousBC()
+int
+OPS_ADD_RUNTIME_IXV(OPS_HomogeneousBC)
 {
     Domain* theDomain = OPS_GetDomain();
     if(theDomain == 0) {
@@ -92,7 +93,8 @@ int OPS_HomogeneousBC()
     return 0;
 }
 
-int OPS_HomogeneousBC_X()
+int
+OPS_ADD_RUNTIME_IXV(OPS_HomogeneousBC_X)
 {
     Domain* theDomain = OPS_GetDomain();
     if(theDomain == 0) {
@@ -142,7 +144,8 @@ int OPS_HomogeneousBC_X()
     return 0;
 }
 
-int OPS_HomogeneousBC_Y()
+int
+OPS_ADD_RUNTIME_IXV(OPS_HomogeneousBC_Y)
 {
     Domain* theDomain = OPS_GetDomain();
     if(theDomain == 0) {
@@ -192,7 +195,8 @@ int OPS_HomogeneousBC_Y()
     return 0;
 }
 
-int OPS_HomogeneousBC_Z()
+int
+OPS_ADD_RUNTIME_IXV(OPS_HomogeneousBC_Z)
 {
     Domain* theDomain = OPS_GetDomain();
     if(theDomain == 0) {

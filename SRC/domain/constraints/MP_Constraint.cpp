@@ -45,7 +45,8 @@
 static int numMPs = 0;
 static int nextTag = 0;
 
-int OPS_EqualDOF()
+int
+OPS_ADD_RUNTIME_IXV(OPS_EqualDOF)
 {
     Domain* theDomain = OPS_GetDomain();
     if(theDomain == 0) {
@@ -93,7 +94,8 @@ int OPS_EqualDOF()
     return 0;
 }
 
-int OPS_EqualDOF_Mixed()
+int
+OPS_ADD_RUNTIME_IXV(OPS_EqualDOF_Mixed)
 {
     // Check number of arguments
     if (OPS_GetNumRemainingInputArgs() < 3) {
