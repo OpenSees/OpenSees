@@ -37,6 +37,7 @@
 
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
+#include <api/runtimeAPI.h>
 
 static MapOfTaggedObjects theCrdTransfObjects;
 

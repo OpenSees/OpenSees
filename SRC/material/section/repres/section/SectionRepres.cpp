@@ -31,6 +31,7 @@
 #include <SectionRepres.h>
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
+#include <api/runtimeAPI.h>
 
 static MapOfTaggedObjects theSectionRepresObjects;
 
