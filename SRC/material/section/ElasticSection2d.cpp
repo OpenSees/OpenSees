@@ -75,7 +75,7 @@ OPS_ADD_RUNTIME_VPV(OPS_ElasticSection)
     if(numData == 4) {
       theSec = OPS_CALL_RUNTIME_VPV(OPS_ElasticSection2d);
     } else if(numData >=5) {
-      theSec = OPS_ElasticShearSection2d();
+      theSec = OPS_CALL_RUNTIME_VPV(OPS_ElasticShearSection2d);
     }
   } else if(ndm == 3) {
     if(numData == 7) {
