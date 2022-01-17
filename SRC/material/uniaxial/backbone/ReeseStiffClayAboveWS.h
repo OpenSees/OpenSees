@@ -57,6 +57,7 @@ class ReeseStiffClayAboveWS : public HystereticBackbone {
  private:
   double pu;
   double y50;
+  double hl;
 };
 
 #endif
