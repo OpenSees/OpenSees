@@ -45,7 +45,8 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_Newmark1()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_Newmark1)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata != 2 && numdata != 6) {

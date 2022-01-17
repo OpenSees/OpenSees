@@ -46,7 +46,8 @@ using std::ios;
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_PathSeries()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PathSeries)
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments: PathSeries\n";

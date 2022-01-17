@@ -33,7 +33,8 @@
 #include <LinearSOE.h>
 #include <elementAPI.h>
 
-void* OPS_CTestRelativeEnergyIncr()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CTestRelativeEnergyIncr)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of arguments\n";

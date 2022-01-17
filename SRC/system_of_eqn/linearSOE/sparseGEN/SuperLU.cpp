@@ -43,7 +43,8 @@
 #include <string>
 using std::nothrow;
 
-void* OPS_SuperLUSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_SuperLUSolver)
 {
   //    int count = 2;
   double thresh = 0.0;

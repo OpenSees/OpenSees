@@ -51,7 +51,8 @@
 #include <string>
 
 
-void* OPS_NewtonRaphsonAlgorithm()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NewtonRaphsonAlgorithm)
 {
     int formTangent = CURRENT_TANGENT;
     double iFactor = 0;

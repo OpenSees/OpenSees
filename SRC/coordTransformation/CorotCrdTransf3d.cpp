@@ -57,7 +57,8 @@ Matrix CorotCrdTransf3d::Lr2(12,3);
 Matrix CorotCrdTransf3d::Lr3(12,3);
 Matrix CorotCrdTransf3d::A(3,3);
 
-void* OPS_CorotCrdTransf3d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CorotCrdTransf3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for CorotCrdTransf3d\n";

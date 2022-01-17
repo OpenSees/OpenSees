@@ -24,7 +24,9 @@ Vector SimplifiedJ2::tmpVector(6);
 
 #include <elementAPI.h>
 
-void *OPS_SimplifiedJ2 (void) {
+void *
+OPS_ADD_RUNTIME_VPV(OPS_SimplifiedJ2)
+{
 
   //opserr<<"OPS_SimplifiedJ2 is called!"<<endln;
 

@@ -68,7 +68,8 @@
 #define SEQUENTIAL_SECTION_END } MPI_Barrier(MPI_COMM_WORLD);}
 
 
-void* OPS_StagedLoadControlIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_StagedLoadControlIntegrator)
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "insufficient arguments\n";

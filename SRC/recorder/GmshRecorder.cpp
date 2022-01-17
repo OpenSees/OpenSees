@@ -65,7 +65,8 @@ extern MachineBroker *theMachineBroker;
 
 std::map<int, GmshRecorder::GmshType> GmshRecorder::gmshtypes;
 
-void* OPS_GmshRecorder()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_GmshRecorder)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 1) {

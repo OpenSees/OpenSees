@@ -53,7 +53,8 @@
 #include <PenaltyMP_FE.h>
 #include <elementAPI.h>
 
-void* OPS_PenaltyConstraintHandler()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PenaltyConstraintHandler)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of args\n";

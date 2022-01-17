@@ -36,8 +36,10 @@
 #include <iostream>
 #include <cmath>
 #include <Timer.h>
+#include <elementAPI.h> // OPS_ADD_RUNTIME_VPV
 
-void* OPS_PFEMDiaSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PFEMDiaSolver)
 {
     PFEMDiaSolver* theSolver = new PFEMDiaSolver();
     return new PFEMDiaLinSOE(*theSolver);

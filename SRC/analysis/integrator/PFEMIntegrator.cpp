@@ -55,7 +55,7 @@
 #include "sparseGEN/PFEMLinSOE.h"
 
 void *
-OPS_PFEMIntegrator(void)
+OPS_ADD_RUNTIME_VPV(OPS_PFEMIntegrator)
 {
     TransientIntegrator *theIntegrator = 0;
 

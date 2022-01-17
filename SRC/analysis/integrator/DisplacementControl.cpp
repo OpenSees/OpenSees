@@ -62,7 +62,8 @@
 #include <TaggedObjectStorage.h>
 #include <elementAPI.h>
 
-void* OPS_DisplacementControlIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_DisplacementControlIntegrator)
 {
     if(OPS_GetNumRemainingInputArgs() < 3) {
        opserr<<"insufficient arguments for DisplacementControl\n";

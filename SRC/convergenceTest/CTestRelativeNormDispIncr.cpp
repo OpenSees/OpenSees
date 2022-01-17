@@ -30,7 +30,8 @@
 #include <LinearSOE.h>
 #include <elementAPI.h>
 
-void* OPS_CTestRelativeNormDispIncr()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CTestRelativeNormDispIncr)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of arguments\n";

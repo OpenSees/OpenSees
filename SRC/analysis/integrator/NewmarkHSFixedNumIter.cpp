@@ -44,7 +44,8 @@
 #define OPS_Export
 
 
-void *   OPS_NewmarkHSFixedNumIter(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NewmarkHSFixedNumIter)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

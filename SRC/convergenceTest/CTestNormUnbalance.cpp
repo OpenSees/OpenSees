@@ -32,7 +32,8 @@
 #include <iostream>
 #include <fstream>
 
-void* OPS_CTestNormUnbalance()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CTestNormUnbalance)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of arguments\n";

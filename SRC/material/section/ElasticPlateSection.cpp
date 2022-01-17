@@ -35,7 +35,8 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_ElasticPlateSection()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticPlateSection)
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
 	opserr << "WARNING insufficient arguments\n";

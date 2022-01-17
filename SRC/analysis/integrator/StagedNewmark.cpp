@@ -53,7 +53,7 @@ static int count = 0;
 
 
 void *
-OPS_StagedNewmark(void)
+OPS_ADD_RUNTIME_VPV(OPS_StagedNewmark)
 {
   // Pointer to a uniaxial material that will be returned
   TransientIntegrator *theIntegrator = 0;

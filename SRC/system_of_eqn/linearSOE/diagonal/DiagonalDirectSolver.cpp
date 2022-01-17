@@ -38,8 +38,10 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <api/runtimeAPI.h>
 
-void* OPS_DiagonalDirectSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_DiagonalDirectSolver)
 {
     DiagonalSolver *theSolver = new DiagonalDirectSolver();   
     return new DiagonalSOE(*theSolver);

@@ -44,7 +44,8 @@ Vector  ElasticMembranePlateSection::stress(8) ;
 Matrix  ElasticMembranePlateSection::tangent(8,8) ;
 ID      ElasticMembranePlateSection::array(8) ;
 
-void* OPS_ElasticMembranePlateSection()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticMembranePlateSection)
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
         opserr << "WARNING insufficient arguments\n";

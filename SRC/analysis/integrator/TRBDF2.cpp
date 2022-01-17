@@ -42,8 +42,10 @@
 #include <DOF_GrpIter.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h> // OPS_ADD_RUNTIME_VPV
 
-void* OPS_TRBDF2()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_TRBDF2)
 {
     return new TRBDF2();
 }

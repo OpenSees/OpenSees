@@ -53,8 +53,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-void*
-OPS_NodeRecorderRMS()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NodeRecorderRMS)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARING: recorder EnvelopeNode ";

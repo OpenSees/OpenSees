@@ -30,7 +30,8 @@
 #include <LinearSOE.h>
 #include <elementAPI.h>
 
-void* OPS_NormDispAndUnbalance()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NormDispAndUnbalance)
 {
     double data[2] = {0,0};
 

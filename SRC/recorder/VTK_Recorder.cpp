@@ -97,7 +97,8 @@ OutputData::operator=(const OutputData &other)
 std::map<int,VTK_Recorder::VtkType> VTK_Recorder::vtktypes;
 
 
-void* OPS_VTK_Recorder()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_VTK_Recorder)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 1) {

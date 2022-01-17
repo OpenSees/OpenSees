@@ -37,8 +37,10 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <api/runtimeAPI.h>
 
-void* OPS_UmfpackGenLinSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_UmfpackGenLinSolver)
 {
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
     return new UmfpackGenLinSOE(*theSolver);  

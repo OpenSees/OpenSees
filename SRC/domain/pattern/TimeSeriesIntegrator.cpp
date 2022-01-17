@@ -38,7 +38,8 @@
 void* OPS_TrapezoidalTimeSeriesIntegrator();
 void* OPS_SimpsonTimeSeriesIntegrator();
 
-void* OPS_TimeSeriesIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_TimeSeriesIntegrator)
 {
     void *seriesIntegrator = 0;
 

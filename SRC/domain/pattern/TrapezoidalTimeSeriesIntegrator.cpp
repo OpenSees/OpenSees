@@ -40,7 +40,8 @@
 #include <Channel.h>
 #include <PathSeries.h>
 
-void* OPS_TrapezoidalTimeSeriesIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_TrapezoidalTimeSeriesIntegrator)
 {
     return new TrapezoidalTimeSeriesIntegrator();
 }

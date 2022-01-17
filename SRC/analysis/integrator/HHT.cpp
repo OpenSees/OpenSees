@@ -44,7 +44,7 @@
 
 
 void *
-OPS_HHT(void)
+OPS_ADD_RUNTIME_VPV(OPS_HHT)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

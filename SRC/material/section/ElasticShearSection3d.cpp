@@ -39,7 +39,8 @@ Vector ElasticShearSection3d::s(6);
 Matrix ElasticShearSection3d::ks(6,6);
 ID ElasticShearSection3d::code(6);
 
-void* OPS_ElasticShearSection3d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticShearSection3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 9) {
 	opserr<<"insufficient arguments for ealstic shear 3d section\n";

@@ -40,7 +40,8 @@ Vector ElasticSection2d::s(2);
 Matrix ElasticSection2d::ks(2,2);
 ID ElasticSection2d::code(2);
 
-void* OPS_ElasticSection2d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticSection2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for ealstic section\n";
@@ -64,7 +65,8 @@ extern void* OPS_ElasticSection3d(void);
 extern void* OPS_ElasticShearSection2d(void);
 extern void* OPS_ElasticShearSection3d(void);
 
-void *OPS_ElasticSection(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticSection)
 {
   int numData = OPS_GetNumRemainingInputArgs();
   void* theSec = 0;

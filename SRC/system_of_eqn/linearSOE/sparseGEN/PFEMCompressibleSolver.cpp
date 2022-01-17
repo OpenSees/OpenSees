@@ -34,8 +34,10 @@
 #include <iostream>
 #include <cmath>
 #include <Timer.h>
+#include <api/elementAPI.h>
 
-void* OPS_PFEMCompressibleSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PFEMCompressibleSolver)
 {
     PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
     return new PFEMCompressibleLinSOE(*theSolver);

@@ -53,8 +53,10 @@
 #include <FEM_ObjectBroker.h>
 #include <TransformationDOF_Group.h>
 #include <TransformationFE.h>
+#include <elementAPI.h> // for  OPS_ADD_RUNTIME_VPV macro
 
-void* OPS_TransformationConstraintHandler()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_TransformationConstraintHandler)
 {
     return new TransformationConstraintHandler;
 }

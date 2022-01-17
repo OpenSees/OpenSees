@@ -43,7 +43,8 @@
 #define OPS_Export 
 
 
-void *    OPS_CentralDifference(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CentralDifference)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

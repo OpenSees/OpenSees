@@ -68,7 +68,9 @@
 #include <iomanip>
 using std::ios;
 
-void *OPS_RemoveRecorder() {
+void *
+OPS_ADD_RUNTIME_VPV(OPS_RemoveRecorder)
+{
     if (OPS_GetNumRemainingInputArgs() < 2) {
         opserr << "WARNING recorder Collapse -ele eleID <eleID2? ...>  "
                   "-node nodeID <-time> <-file fileName?> ? "

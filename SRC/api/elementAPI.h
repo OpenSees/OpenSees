@@ -28,12 +28,8 @@
 
 #ifndef _eleAPI
 #define _eleAPI
-#ifdef OPS_USE_RUNTIME
-#  define OPS_ADD_RUNTIME_VPV(func) (func)([[maybe_unused]] G3_Runtime *rt)
-#  include <g3_api.h>
-#else
-#  define OPS_ADD_RUNTIME_VPV(func) (func)()
-#endif
+
+#include <api/runtimeAPI.h>
 
 #define ISW_INIT 0
 #define ISW_COMMIT 1

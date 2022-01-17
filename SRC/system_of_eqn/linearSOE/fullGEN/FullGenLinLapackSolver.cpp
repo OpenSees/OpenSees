@@ -37,8 +37,10 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <api/runtimeAPI.h>
 
-void* OPS_FullGenLinLapackSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_FullGenLinLapackSolver)
 {
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
     return new FullGenLinSOE(*theSolver);

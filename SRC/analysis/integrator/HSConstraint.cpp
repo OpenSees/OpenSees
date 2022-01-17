@@ -36,7 +36,8 @@
 #include <stdlib.h>
 #include <elementAPI.h>
 
-void* OPS_HSConstraint()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_HSConstraint)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 1) {

@@ -55,7 +55,8 @@
 #include <elementAPI.h>
 #include <iostream>
 
-void* OPS_LoadControlIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_LoadControlIntegrator)
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments\n";

@@ -40,8 +40,10 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h> // OPS_ADD_RUNTIME_VPV
 
-void* OPS_Houbolt()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_Houbolt)
 {
     return new Houbolt();
 }

@@ -51,8 +51,10 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <map>
+#include <elementAPI.h> // OPS_ADD_RUNTIME_VPV
 
-void* OPS_PlainHandler()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PlainHandler)
 {
     return new PlainHandler();
 }

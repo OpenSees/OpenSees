@@ -54,7 +54,8 @@
 #include <elementAPI.h>
 #include <string>
 
-void *OPS_ExpressNewton()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ExpressNewton)
 {
   int nIter = 2, factorOnce = 0, formTangent = CURRENT_TANGENT;
   double kMultiplier = 1.0;

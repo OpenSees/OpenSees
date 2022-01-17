@@ -54,7 +54,8 @@
 #include<TaggedObjectStorage.h>
 #include <elementAPI.h>
 #include <Matrix.h>
-void* OPS_MinUnbalDispNorm()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_MinUnbalDispNorm)
 {
     double lambda11, minlambda, maxlambda;
     int numIter;

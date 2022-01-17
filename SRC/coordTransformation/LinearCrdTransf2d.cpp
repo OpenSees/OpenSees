@@ -49,7 +49,8 @@
 Matrix LinearCrdTransf2d::Tlg(6,6);
 Matrix LinearCrdTransf2d::kg(6,6);
 
-void* OPS_LinearCrdTransf2d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_LinearCrdTransf2d)
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments for LinearCrdTransf2d\n";

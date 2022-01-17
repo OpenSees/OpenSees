@@ -36,7 +36,8 @@
 #include <string>
 #include <math.h>
 
-void* OPS_NewtonHallM()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NewtonHallM)
 {
   int method = 0;
   double iFactor = .1;

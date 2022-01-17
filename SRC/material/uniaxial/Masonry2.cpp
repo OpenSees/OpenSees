@@ -31,8 +31,8 @@
 #endif 
  
 static int numMasonry = 0; 
-OPS_Export void * 
-OPS_Masonry() 
+OPS_Export void *
+OPS_ADD_RUNTIME_VPV(OPS_Masonry)
 { 
   // print out some KUDO's 
   if (numMasonry == 0) { 

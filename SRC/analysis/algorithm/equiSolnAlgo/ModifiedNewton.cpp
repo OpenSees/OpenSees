@@ -49,7 +49,8 @@
 //#include <Timer.h>
 #include <elementAPI.h>
 
-void* OPS_ModifiedNewton()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ModifiedNewton)
 {
     int formTangent = CURRENT_TANGENT;
     double iFactor = 0;

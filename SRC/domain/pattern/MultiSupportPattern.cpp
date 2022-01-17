@@ -40,7 +40,8 @@
 #include <ErrorHandler.h>
 #include <elementAPI.h>
 
-void* OPS_MultiSupportPattern()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_MultiSupportPattern)
 {
     int tag;
 

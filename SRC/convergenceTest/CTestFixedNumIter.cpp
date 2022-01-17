@@ -39,7 +39,8 @@
 
 #include <elementAPI.h>
 
-void* OPS_CTestFixedNumIter()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CTestFixedNumIter)
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "insufficient number of arguments\n";

@@ -38,7 +38,8 @@
 #include <ID.h>
 #include <elementAPI.h>
 
-void* OPS_BFGS()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_BFGS)
 {
     int formTangent = CURRENT_TANGENT;
     int count = -1;

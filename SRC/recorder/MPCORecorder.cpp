@@ -3095,7 +3095,7 @@ namespace mpco {
 				, descr(_d)
 				, current_level(0)
 				, pending_close_tag(false)
-				, is_valid(true)
+				, error_code(ERROR_CODE_OK)
 			{}
 			~OutputDescriptorStream() {}
 
@@ -3179,13 +3179,16 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Section;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
-						if (eo_curr_lev->items.size() > 0) {
-							// multiple sections cannot be children of same gauss point. this happens when
-							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
-							// which opens again the same tag
-							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items) 
-								delete sub_item;
-							eo_curr_lev->items.clear();
+						if (error_code == ERROR_CODE_OK) {
+							if (eo_curr_lev->items.size() > 0) {
+								// multiple sections cannot be children of same gauss point. this happens when
+								// an objects opens the tag, fails in getting response, and falls back to base class implementation,
+								// which opens again the same tag
+								for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items)
+									delete sub_item;
+								eo_curr_lev->items.clear();
+							}
+							// do the above check only if there is no inconsistency with previous items!
 						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
@@ -3367,7 +3370,11 @@ namespace mpco {
 						exit(-1);*/
 						// M.Petracca - due to a recent commit (08/10/2021)
 						// this one can be converted from a fatal error to a silent-skip...
-						is_valid = false;
+						error_code = ERROR_CODE_GENERIC;
+						if ((child->type == mpco::ElementOutputDescriptorType::Section) &&
+							(parent->items.back()->type == mpco::ElementOutputDescriptorType::Fiber)) {
+							error_code = ERROR_CODE_SECTION_AFTER_FIBER;
+						}
 					}
 				}
 			}
@@ -3376,7 +3383,7 @@ namespace mpco {
 			mpco::element::OutputDescriptor *descr;
 			int current_level;
 			bool pending_close_tag;
-			bool is_valid;
+			StreamErrorCode error_code;
 		};
 
 		class OutputResponse
@@ -6026,7 +6033,7 @@ int MPCORecorder::initElementRecorders()
 						if (do_all_fibers) {
 							eo_descriptor.purge();
 						}
-						if (eo_response && eo_stream.is_valid) {
+						if (eo_response && (eo_stream.error_code == mpco::element::OutputDescriptorStream::ERROR_CODE_OK)) {
 							/*
 							get (or create and get) the list of MPCORecorder_ElementResultRecorder mapped to this descriptor
 							and add the new element-response pair

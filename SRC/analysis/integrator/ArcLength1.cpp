@@ -48,7 +48,8 @@
 #include <stdlib.h>
 #include <elementAPI.h>
 
-void* OPS_ArcLength1()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ArcLength1)
 {
     double arcLength;
     double alpha;

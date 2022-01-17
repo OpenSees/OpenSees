@@ -66,7 +66,8 @@ Matrix CorotCrdTransfWarping3d::Lr3(14,3);  // chagne dimension of the matrix to
 Matrix CorotCrdTransfWarping3d::A(3,3);
 
 
-void* OPS_CorotCrdTransfWarping3d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CorotCrdTransfWarping3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for CorotCrdTransfWarping3d\n";

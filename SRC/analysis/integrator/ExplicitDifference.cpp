@@ -13,7 +13,8 @@
 #define OPS_Export 
 
 
-void* OPS_ExplicitDifference(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ExplicitDifference)
 {
 	TransientIntegrator *theIntegrator = 0;
 	theIntegrator = new ExplicitDifference();

@@ -37,7 +37,8 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_GroundMotion()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_GroundMotion)
 {
     TimeSeries* accelSeries = 0;
     TimeSeries* velSeries = 0;

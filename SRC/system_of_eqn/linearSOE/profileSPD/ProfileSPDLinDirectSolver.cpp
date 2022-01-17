@@ -43,8 +43,10 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 //#include <Timer.h>
+#include <api/runtimeAPI.h>
 
-void* OPS_ProfileSPDLinDirectSolver()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ProfileSPDLinDirectSolver)
 {
     ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver();
     ProfileSPDLinSOE* theSOE = new ProfileSPDLinSOE(*theSolver);

@@ -38,8 +38,10 @@
 #include <BandGenLinLapackSolver.h>
 #include <BandGenLinSOE.h>
 #include <math.h>
+#include <api/elementAPI.h>
 
-void* OPS_BandGenLinLapack()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_BandGenLinLapack)
 {
     BandGenLinSolver *theSolver = new BandGenLinLapackSolver();
     BandGenLinSOE *theSOE = new BandGenLinSOE(*theSolver);

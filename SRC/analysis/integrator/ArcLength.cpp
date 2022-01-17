@@ -60,7 +60,8 @@
 #include<DOF_GrpIter.h>
 #include<TaggedObjectStorage.h>
 #include<EquiSolnAlgo.h>
-void* OPS_ArcLength()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ArcLength)
 {
     double arcLength;
     double alpha;

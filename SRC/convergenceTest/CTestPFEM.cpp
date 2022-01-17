@@ -34,7 +34,8 @@
 #include <mpi.h>
 #endif
 
-void* OPS_CTestPFEM()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CTestPFEM)
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient number of arguments\n";

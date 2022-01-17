@@ -74,7 +74,8 @@ inline void convert_h5drmcrd_to_ops_crd(Matrix&xyz );
 
 static int numH5DRMpatterns = 0;
 
-void* OPS_H5DRM()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_H5DRM)
 {
 
     if (OPS_GetNumRemainingInputArgs() < 2) {

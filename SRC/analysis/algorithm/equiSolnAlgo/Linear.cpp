@@ -52,7 +52,8 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_LinearAlgorithm()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_LinearAlgorithm)
 {
     int formTangent = CURRENT_TANGENT;
     int factorOnce = 0;

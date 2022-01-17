@@ -44,7 +44,8 @@
 #define OPS_Export
 
 
-void *    OPS_CollocationHSIncrReduct(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_CollocationHSIncrReduct)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

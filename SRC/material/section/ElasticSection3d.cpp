@@ -39,7 +39,8 @@ Vector ElasticSection3d::s(4);
 Matrix ElasticSection3d::ks(4,4);
 ID ElasticSection3d::code(4);
 
-void* OPS_ElasticSection3d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticSection3d)
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments for ealstic 3d section\n";

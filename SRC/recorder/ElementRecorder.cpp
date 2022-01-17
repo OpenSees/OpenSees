@@ -56,8 +56,8 @@
 
 #include <string.h>
 
-void*
-OPS_ElementRecorder()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElementRecorder)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARING: recorder Element ";

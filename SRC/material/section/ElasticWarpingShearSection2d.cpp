@@ -36,7 +36,8 @@
 #include <classTags.h>
 #include <elementAPI.h>
 
-void* OPS_ElasticWarpingShearSection2d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticWarpingShearSection2d)
 {
     if (OPS_GetNumRemainingInputArgs() < 9) {
 	opserr << "WARNING insufficient arguments\n";

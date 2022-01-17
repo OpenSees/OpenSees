@@ -42,7 +42,8 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 
-void* OPS_BackwardEuler()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_BackwardEuler)
 {
     int optn = 0;
     if (OPS_GetNumRemainingInputArgs() > 0) {

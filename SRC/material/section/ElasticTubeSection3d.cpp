@@ -35,7 +35,8 @@
 #include <classTags.h>
 #include <elementAPI.h>
 
-void* OPS_ElasticTubeSection3d()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_ElasticTubeSection3d)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";

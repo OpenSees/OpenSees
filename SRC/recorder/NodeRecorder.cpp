@@ -55,8 +55,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-void*
-OPS_NodeRecorder()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_NodeRecorder)
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARING: recorder Node ";

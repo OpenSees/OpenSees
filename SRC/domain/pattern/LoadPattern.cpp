@@ -52,7 +52,8 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_LoadPattern()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_LoadPattern)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of args\n";

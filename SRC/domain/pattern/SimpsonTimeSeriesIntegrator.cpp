@@ -36,7 +36,8 @@
 #include <Channel.h>
 #include <PathSeries.h>
 
-void* OPS_SimpsonTimeSeriesIntegrator()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_SimpsonTimeSeriesIntegrator)
 {
     return new SimpsonTimeSeriesIntegrator();
 }

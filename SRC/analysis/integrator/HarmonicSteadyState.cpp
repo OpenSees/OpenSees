@@ -47,7 +47,8 @@
 #include <elementAPI.h>
 #include <iostream>
 
-void* OPS_HarmonicSteadyState()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_HarmonicSteadyState)
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient arguments\n";

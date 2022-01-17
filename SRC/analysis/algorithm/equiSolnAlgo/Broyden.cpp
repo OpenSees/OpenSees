@@ -44,7 +44,8 @@
 #include <math.h>
 #include <elementAPI.h>
 
-void* OPS_Broyden()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_Broyden)
 {
     int formTangent = CURRENT_TANGENT;
     int count = -1;

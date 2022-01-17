@@ -42,7 +42,8 @@
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
-void* OPS_PVDRecorder()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_PVDRecorder)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 1) {

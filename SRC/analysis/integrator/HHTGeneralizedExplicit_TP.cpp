@@ -44,7 +44,8 @@
 #define OPS_Export
 
 
-void *    OPS_HHTGeneralizedExplicit_TP(void)
+void *
+OPS_ADD_RUNTIME_VPV(OPS_HHTGeneralizedExplicit_TP)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

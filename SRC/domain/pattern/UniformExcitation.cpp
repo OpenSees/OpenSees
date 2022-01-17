@@ -46,7 +46,8 @@
 
 void* OPS_TimeSeriesIntegrator();
 
-void* OPS_UniformExcitationPattern()
+void *
+OPS_ADD_RUNTIME_VPV(OPS_UniformExcitationPattern)
 {
     if (OPS_GetNumRemainingInputArgs() < 2) {
 	opserr << "WARNING insufficient args : pattern UniformExcitation tag dir\n";
