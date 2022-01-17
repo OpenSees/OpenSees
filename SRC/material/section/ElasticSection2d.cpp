@@ -61,9 +61,9 @@ OPS_ADD_RUNTIME_VPV(OPS_ElasticSection2d)
     return new ElasticSection2d(tag,data[0],data[1],data[2]);
 }
 
-extern void* OPS_ElasticSection3d(void);
-extern void* OPS_ElasticShearSection2d(void);
-extern void* OPS_ElasticShearSection3d(void);
+extern void* OPS_ADD_RUNTIME_VPV(OPS_ElasticSection3d);
+extern void* OPS_ADD_RUNTIME_VPV(OPS_ElasticShearSection2d);
+extern void* OPS_ADD_RUNTIME_VPV(OPS_ElasticShearSection3d);
 
 void *
 OPS_ADD_RUNTIME_VPV(OPS_ElasticSection)
