@@ -92,7 +92,7 @@ using namespace std; //Added by AMK for debugging
 
 //	OPS_Export void *
 	void *
-	OPS_ADD_RUNTIME(OPS_TDConcrete) {
+	OPS_ADD_RUNTIME_VPV(OPS_TDConcrete) {
 		// Print description of material model:
 		if (numTDConcrete == 0) {
 			opserr << "Time-Dependent Concrete Material Model - Written by Adam Knaack, University of Notre Dame, 2012 \n";
