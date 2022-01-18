@@ -32,11 +32,11 @@ jobs:
         cd build
         conan install .. --build missing
         cmake ..
-        cmake --build . --target OpenSeesTcl -j8
+        cmake --build . -j8
 
-    - name: Verification
-      run: |
-        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+        #- name: Verification
+        #  run: |
+        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
