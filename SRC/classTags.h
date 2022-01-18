@@ -527,6 +527,7 @@
 #define BACKBONE_TAG_ReeseStiffClayAboveWS 13
 #define BACKBONE_TAG_VuggyLimestone 14
 #define BACKBONE_TAG_CementedSoil 15
+#define BACKBONE_TAG_WeakRock 16
 
 
 #define DEG_TAG_STIFF_Constant		1

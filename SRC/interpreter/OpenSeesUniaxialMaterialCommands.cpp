@@ -192,6 +192,7 @@ void* OPS_ReeseStiffClayBelowWS();
 void* OPS_ReeseStiffClayAboveWS();
 void* OPS_VuggyLimestone();
 void* OPS_CementedSoil();
+void* OPS_WeakRock();
 
 void* OPS_ConstantStiffnessDegradation();
 void* OPS_DuctilityStiffnessDegradation();
@@ -382,6 +383,7 @@ namespace {
     hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
     hystereticBackbonesMap.insert(std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
     hystereticBackbonesMap.insert(std::make_pair("CementedSoil", &OPS_CementedSoil));
+    hystereticBackbonesMap.insert(std::make_pair("WeakRock", &OPS_WeakRock));
     
     return 0;
   }
