@@ -110,7 +110,7 @@ double VuggyLimestone::getTangent(double strain) {
   } else if (strain <= 0.0024 * diameter) {
     return 100.0 * shearStrength;
   }
-  return 0.0;
+  return shearStrength;
 }
 
 /**

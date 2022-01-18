@@ -88,7 +88,7 @@ ReeseStiffClayAboveWS::ReeseStiffClayAboveWS(int tag, double pu,
     : HystereticBackbone(tag, BACKBONE_TAG_ReeseStiffClayAboveWS),
       pu(pu),
       y50(y50),
-      hl(0.01) {}
+      hl(0.001) {}
 
 /**
  * @brief Default Construct
@@ -98,7 +98,7 @@ ReeseStiffClayAboveWS::ReeseStiffClayAboveWS()
     : HystereticBackbone(0, BACKBONE_TAG_ReeseStiffClayAboveWS),
       pu(0.0),
       y50(0.0),
-      hl(0.01) {}
+      hl(0.001) {}
 
 ReeseStiffClayAboveWS::~ReeseStiffClayAboveWS() {}
 
@@ -110,12 +110,13 @@ ReeseStiffClayAboveWS::~ReeseStiffClayAboveWS() {}
  */
 double ReeseStiffClayAboveWS::getTangent(double strain) {
   double yhl = hl * y50;
+  double k0 = getStress(yhl) / yhl;
   if (strain < yhl) {
-    return getStress(yhl) / yhl;
+    return k0;
   }
 
   if (strain > 16.0 * y50) {
-    return 0.0;
+    return hl * k0;
   }
 
   return pu * pow(strain / y50, -0.75) / 8.0 / y50;
@@ -133,7 +134,7 @@ double ReeseStiffClayAboveWS::getStress(double strain) {
     return strain * getStress(yhl) / yhl;
   }
 
-  if (strain > 160.0 * y50) {
+  if (strain > 16.0 * y50) {
     return pu;
   }
 
