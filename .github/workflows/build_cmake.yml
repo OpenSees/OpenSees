@@ -19,12 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Conan
+    - name: Install conan
       run: python3 -m pip install conan
-
-      #- name: Install Tcl
-      #  run:
-      #    sudo apt-get install tcl-dev
 
     - name: Build
       run: |
