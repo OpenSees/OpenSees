@@ -528,6 +528,7 @@
 #define BACKBONE_TAG_VuggyLimestone 14
 #define BACKBONE_TAG_CementedSoil 15
 #define BACKBONE_TAG_WeakRock 16
+#define BACKBONE_TAG_LiquefiedSand 17
 
 
 #define DEG_TAG_STIFF_Constant		1

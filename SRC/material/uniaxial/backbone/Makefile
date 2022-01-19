@@ -9,6 +9,7 @@ OBJS       = HystereticBackbone.o \
 	VuggyLimestone.o \
 	CementedSoil.o \
 	WeakRock.o \
+	LiquefiedSand.o \
 	ReeseSandBackbone.o \
 	ManderBackbone.o \
 	RaynorBackbone.o \
