@@ -40,6 +40,7 @@
 
 static MapOfTaggedObjects theTimeSeriesObjects;
 
+#if !defined(OPS_USE_RUNTIME)
 bool OPS_addTimeSeries(TimeSeries *newComponent) {
   return theTimeSeriesObjects.addComponent(newComponent);
 }
@@ -53,7 +54,8 @@ bool OPS_removeTimeSeries(int tag) {
     return false;
 }
 
-TimeSeries *OPS_getTimeSeries(int tag) {
+TimeSeries *OPS_getTimeSeries(int tag)
+{
 
   TaggedObject *theResult = theTimeSeriesObjects.getComponentPtr(tag);
   if (theResult == 0) {
@@ -64,6 +66,7 @@ TimeSeries *OPS_getTimeSeries(int tag) {
 
   return theSeries->getCopy();
 }
+#endif // OPS_USE_RUNTIME
 
 void
 OPS_ADD_RUNTIME_VXV(OPS_clearAllTimeSeries)
