@@ -39,6 +39,7 @@
 #include <MapOfTaggedObjects.h>
 #include <api/runtimeAPI.h>
 
+#if !defined(OPS_USE_RUNTIME)
 static MapOfTaggedObjects theCrdTransfObjects;
 
 bool 
@@ -68,6 +69,7 @@ OPS_getCrdTransf(int tag) {
 
   return theSeries;
 }
+#endif // OPS_USE_RUNTIME
 
 void
 OPS_ADD_RUNTIME_VXV(OPS_clearAllCrdTransf)
