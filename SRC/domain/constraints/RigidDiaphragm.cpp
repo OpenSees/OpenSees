@@ -131,7 +131,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
       // get the constrained node
       int ndC = nC(i);
       Node *nodeC = theDomain.getNode(ndC);
-
+      
       // ensure node exists
       if (nodeC != 0) {
 
@@ -145,7 +145,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	    // Make sure in same plane
 	    double deltaY = crdC(1) - crdR(1);
 	    if (deltaY != 0.0) {
-	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same Y-plane\n";
+	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same Y-plane as node " << nR << "\n";
 	    }
 	  }
 	  if (perpPlaneConstrained == 1) {
@@ -153,8 +153,8 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	    // Make sure in same plane
 	    double deltaX = crdC(0) - crdR(0);
 	    if (deltaX != 0.0) {
-	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same X-plane\n";
-	    }	    
+	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same X-plane as node " << nR << "\n";
+	    }
 	  }
 	}
 	else if ((nodeC->getNumberDOF() == 6) && (crdC.Size() == 3)){
@@ -176,7 +176,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	      // set up transformation matrix
 	      mat(0,2) = - deltaY;
 	      mat(1,2) = deltaX;
-
+	      
 	    } else 
 	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << ", not in xy plane\n";
 
