@@ -36,6 +36,7 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 #include <Parameter.h>
+#include <MaterialResponse.h>
 
 //parameters
 const double ElasticMembranePlateSection::five6 = 5.0/6.0 ; //shear correction
@@ -446,4 +447,62 @@ int ElasticMembranePlateSection::updateParameter(int parameterID, Information& i
         rhoH = rho * h;
     }
     return 0;
+}
+
+Response* ElasticMembranePlateSection::setResponse(const char** argv, int argc, OPS_Stream& output)
+{
+    Response* theResponse = 0;
+
+    // check supported responses
+    if (argc > 0) {
+        // utility to make a scalar response with the proper tags only if supported
+        auto make_resp = [this, &output](int rid, const char* comp) -> Response* {
+            output.tag("SectionOutput");
+            output.attr("secType", this->getClassType());
+            output.attr("secTag", this->getTag());
+            output.tag("ResponseType", comp);
+            output.endTag();
+            return new MaterialResponse(this, rid, 0.0);
+        };
+        if (strcmp(argv[0], "E") == 0) 
+            theResponse = make_resp(1001, "E");
+        else if (strcmp(argv[0], "nu") == 0) 
+            theResponse = make_resp(1002, "nu");
+        else if (strcmp(argv[0], "Ep_mod") == 0) 
+            theResponse = make_resp(1003, "Ep_mod");
+        else if (strcmp(argv[0], "h") == 0) 
+            theResponse = make_resp(1004, "h");
+        else if (strcmp(argv[0], "rho") == 0) 
+            theResponse = make_resp(1005, "rho");
+    }
+
+    if (theResponse == 0)
+        return SectionForceDeformation::setResponse(argv, argc, output);
+
+    return theResponse;
+}
+
+int ElasticMembranePlateSection::getResponse(int responseID, Information& info)
+{
+    switch (responseID)
+    {
+    case 1001:
+        return info.setDouble(Em);
+        break;
+    case 1002:
+        return info.setDouble(nu);
+        break;
+    case 1003:
+        return info.setDouble(Ep / Em);
+        break;
+    case 1004:
+        return info.setDouble(h);
+        break;
+    case 1005:
+        return info.setDouble(rhoH/h);
+        break;
+    default:
+        return SectionForceDeformation::getResponse(responseID, info);
+        break;
+    }
 }

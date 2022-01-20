@@ -112,6 +112,10 @@ class ElasticMembranePlateSection : public SectionForceDeformation{
     int setParameter(const char** argv, int argc, Parameter& param);
     int updateParameter(int parameterID, Information& info);
 
+    // response
+    Response* setResponse(const char** argv, int argc, OPS_Stream& output);
+    int getResponse(int responseID, Information& info);
+
   private :
 
     double Em;  // elastic modulus for membrane (in-plane) action
