@@ -246,7 +246,7 @@ to get element data
     }
 }
 
-int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
+int OPS_DECL_RUNTIME(OPS_ElasticBeam2d, Domain& theDomain, const ID& elenodes, ID& eletags)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments:A,E,Iz,transfTag\n";
