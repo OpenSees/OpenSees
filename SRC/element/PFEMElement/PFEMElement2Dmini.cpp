@@ -44,7 +44,7 @@ Matrix PFEMElement2Dmini::K;
 Vector PFEMElement2Dmini::P;
 bool PFEMElement2Dmini::dispon = true;
 
-void* OPS_PFEMElement2Dmini(const ID &info)
+void *OPS_DECL_RUNTIME_VPID(OPS_PFEMElement2Dmini, const ID &info)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {

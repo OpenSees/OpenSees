@@ -122,7 +122,7 @@ void * OPS_ADD_RUNTIME_VPV(OPS_DispBeamColumnNL2d)
     return theEle;
 }
 
-void* OPS_DispBeamColumnNL2d(const ID &info)
+void *OPS_DECL_RUNTIME_VPID(OPS_DispBeamColumnNL2d, const ID &info)
 {
     // data
     int iData[5];

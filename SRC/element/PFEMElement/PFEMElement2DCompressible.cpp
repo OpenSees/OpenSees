@@ -46,7 +46,7 @@ Matrix PFEMElement2DCompressible::K;
 Vector PFEMElement2DCompressible::P;
 bool PFEMElement2DCompressible::dispon = true;
 
-void* OPS_PFEMElement2DCompressible(const ID &info)
+void *OPS_DECL_RUNTIME_VPID(OPS_PFEMElement2DCompressible, const ID &info)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {

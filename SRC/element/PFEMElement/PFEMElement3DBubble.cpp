@@ -45,7 +45,7 @@ Vector PFEMElement3DBubble::P;
 
 bool PFEMElement3DBubble::dispon = true;
 
-void* OPS_PFEMElement3DBubble(const ID &info)
+void *OPS_DECL_RUNTIME_VPID(OPS_PFEMElement3DBubble, const ID &info)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {

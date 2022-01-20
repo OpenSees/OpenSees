@@ -50,7 +50,7 @@ Matrix PFEMElement2DBubble::C;
 
 bool PFEMElement2DBubble::dispon = true;
 
-void* OPS_PFEMElement2DBubble(const ID &info)
+void *OPS_DECL_RUNTIME_VPID(OPS_PFEMElement2DBubble, const ID &info)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
