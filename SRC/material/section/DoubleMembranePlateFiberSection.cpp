@@ -179,7 +179,19 @@ int DoubleMembranePlateFiberSection::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& DoubleMembranePlateFiberSection::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -834,20 +846,33 @@ DoubleMembranePlateFiberSection::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && (strcmp(argv[0], "fiber") == 0 || strcmp(argv[0], "Fiber") == 0)) {
     
     int passarg = 2;
     int key = atoi(argv[1]);    
     
-    if (key > 0 && key <= numFibers) {
+    if (key > 0 && key <= 2*numFibers) {
+      int quadrature_id = key - 1;
+      if (key > numFibers)
+          quadrature_id -= numFibers;
+      double fiber_thickness = 0.5 * h * wg[quadrature_id];
+      double fiber_location = 0.5 * (d + h) + (0.5 * h) * sg[quadrature_id];
+      if (key > numFibers)
+          fiber_location = -fiber_location;
+      output.tag("FiberOutput");
+      output.attr("number", key);
+      output.attr("zLoc", fiber_location);
+      output.attr("thickness", fiber_thickness);
       theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      output.endTag();
     }
-
-    return theResponse;
   }
 
   // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+      return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 

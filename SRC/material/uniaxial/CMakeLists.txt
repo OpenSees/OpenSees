@@ -170,6 +170,7 @@ target_sources(OPS_Material
       SMAMaterial.cpp
       
       TriMatrix.cpp
+      DuctileFracture.cpp
 
     PUBLIC
       ASD_SMA_3K.h
@@ -271,6 +272,7 @@ target_sources(OPS_Material
       pyUCLA.h
 
       TriMatrix.h  # move to SRC/matrix ?
+      DuctileFracture.h
 )
 
 
