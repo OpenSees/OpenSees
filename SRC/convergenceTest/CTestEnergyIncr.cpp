@@ -162,7 +162,7 @@ int CTestEnergyIncr::test(void)
     if (printFlag == 4) {
         opserr << "CTestEnergyIncr::test() - iteration: " << currentIter;
         opserr << " current EnergyIncr: " << product << " (max: " << tol << ")\n";
-        opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm deltaR: " << b.pNorm(nType) << endln;
+        opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm R: " << b.pNorm(nType) << endln;
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << b;
     }
     
