@@ -134,14 +134,14 @@ int OPS_wipeReliability()
     return 0;
 }
 
-int OPS_performanceFunction()
-{
+int OPS_performanceFunction() {
   LimitStateFunction *theLSF = 0;
   int tag;
 
   // Check enough arguments
-  if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr << "ERROR: invalid number of arguments to performanceFunction command: performanceFunction tag ...\n";
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: invalid number of arguments to performanceFunction "
+              "command: performanceFunction tag ...\n";
     return -1;
   }
 
@@ -152,32 +152,43 @@ int OPS_performanceFunction()
     return -1;
   }
 
-  ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
 
   // Evaluate performance function
+  FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
     if (theEvaluator == 0) {
-      opserr << "Function evaluator must be defined in order to evaluate performance function" << endln;
+      opserr << "Function evaluator must be defined in order to evaluate "
+                "performance function"
+             << endln;
       return -1;
-    }    
+    }
     theReliabilityDomain->setTagOfActiveLimitStateFunction(tag);
     double g = theEvaluator->evaluateExpression();
     if (OPS_SetDoubleOutput(&numdata, &g, true) < 0) {
-      opserr << "ERROR: performanceFunction - failed to set double output\n";
+      opserr
+          << "ERROR: performanceFunction - failed to set double output\n";
       return -1;
     }
     return 0;
   }
+
+  if (theEvaluator != 0) {
+    opserr << "ERROR: A limit-state function should not be created after "
+              "the GFunEvaluator has been instantiated.\n";
+    return -1;
+  }
+
   // Create new performance function
   const char *lsf = OPS_GetString();
   theLSF = new LimitStateFunction(tag, lsf);
-  
+
   // Add the performance function to the domain
   if (theReliabilityDomain->addLimitStateFunction(theLSF) == false) {
-    opserr << "ERROR: failed to add performance function to the reliability domain\n";
+    opserr << "ERROR: failed to add performance function to the "
+              "reliability domain\n";
     opserr << "performanceFunction: " << tag << "\n";
-    delete theLSF; // otherwise memory leak
+    delete theLSF;  // otherwise memory leak
     return -1;
   }
 
