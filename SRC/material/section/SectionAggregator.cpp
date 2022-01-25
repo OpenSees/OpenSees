@@ -42,7 +42,6 @@
 #include <SectionAggregator.h>
 #include <MaterialResponse.h>
 #include <ID.h>
-#include <FiberSection2d.h>			//by SAJalali
 #include <string.h>
 
 #include <classTags.h>

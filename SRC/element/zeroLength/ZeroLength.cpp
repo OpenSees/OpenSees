@@ -1332,6 +1332,16 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
 
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }    
+    
     if ((strcmp(argv[0],"dampingForces") == 0) || (strcmp(argv[0],"rayleighForces") == 0)) {
             theResponse = new ElementResponse(this, 15, Vector(numDOF));
     }
@@ -1350,6 +1360,7 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
     const Vector& disp1 = theNodes[0]->getTrialDisp();
     const Vector& disp2 = theNodes[1]->getTrialDisp();
     const Vector  diff  = disp2-disp1;
+    Vector &theVec = *(eleInformation.theVector);
 
     switch (responseID) {
     case -1:
@@ -1406,6 +1417,22 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
         }
         return 0;      
 
+    case 20:
+      theVec(0) = transformation(0,0);
+      theVec(1) = transformation(0,1);
+      theVec(2) = transformation(0,2);
+      return 0;
+    case 21:
+      theVec(0) = transformation(1,0);
+      theVec(1) = transformation(1,1);
+      theVec(2) = transformation(1,2);
+      return 0;
+    case 22:
+      theVec(0) = transformation(2,0);
+      theVec(1) = transformation(2,1);
+      theVec(2) = transformation(2,2);
+      return 0;      
+     
     default:
         return -1;
     }
