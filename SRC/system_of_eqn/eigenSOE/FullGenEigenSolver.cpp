@@ -205,15 +205,51 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
         sortingID[i] = i;
     }
 
+    //
+    // mass normalize the eigenvalues
+    //
 
-    // sort eigenvalues in ascending order and return sorting ID
+    double *tmpV = new double[n];    
+    for (int i=0; i<n; i++)
+      tmpV[i]=0.0;
+    
+    for (int k=0; k<numEigen; k++) {
+
+      double factor = 0.0;
+      
+      // tmp = M * phi
+      for (int i=0; i<n; i++) { // foreach col
+	double *mijPtr = Mptr + i*n;
+	for (int j=0; j<n; j++) { // foreach row
+	  double mij = *mijPtr++;
+	  tmpV[j] += mij*eigenvector[k*n+j];
+	}
+      }
+
+      // phi^t * tmp
+      for (int i=0; i<n; i++) { // foreach col
+	factor += eigenvector[k*n+i]*tmpV[i];
+      }
+
+      if (factor >= 0) {
+	factor=1.0/sqrt(factor);
+
+	for (int i=0; i<n; i++)
+	  eigenvector[k*n+i] = eigenvector[k*n+i]*factor;
+      }
+
+    }
+
+    delete [] tmpV;
+    
+    // sort eigenvalues based on size
     this->sort(n, eigenvalue, sortingID);
 
     for (int i=0; i<numEigen; i++) {
         if (eigenvalue[i] == DBL_MAX) {
 	    opserr << "FullGenEigenSolver::solve() - the eigenvalue "
 		    << i+1 << " is numerically undetermined or infinite\n";
-        }
+        } 
     }
 
     int lworkOpt = (int) work[0];

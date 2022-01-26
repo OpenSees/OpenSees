@@ -17,24 +17,22 @@ jobs:
     name: Ubuntu bundled build
     runs-on: ubuntu-latest
     steps:
-    #- uses: claudioperez/OpenSees@cmake-build
     - uses: actions/checkout@v2
-      #with: {ref: cmake-build}
 
-    - name: Install Tcl
-      run:
-        sudo apt-get install tcl-dev
+    - name: Install conan
+      run: python3 -m pip install conan
 
     - name: Build
       run: |
         mkdir build
         cd build
+        conan install .. --build missing
         cmake ..
-        cmake --build . --target OpenSeesTcl -j5
+        cmake --build . -j8
 
-    - name: Verification
-      run: |
-        cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+        #- name: Verification
+        #  run: |
+        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
