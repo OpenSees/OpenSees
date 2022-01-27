@@ -929,10 +929,7 @@ OpenSeesCommands::wipe()
     OPS_clearAllCyclicModel();
 
     if (reliability != 0) {
-      ReliabilityDomain* theReliabilityDomain = reliability->getDomain();
-      if (theReliabilityDomain != 0) {
-	theReliabilityDomain->clearAll();
-      }
+      reliability->wipe();
     }
 }
 

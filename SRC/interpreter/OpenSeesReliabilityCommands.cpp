@@ -127,11 +127,55 @@ OpenSeesReliabilityCommands::getStructuralDomain()
     return theStructuralDomain;
 }
 
-int OPS_wipeReliability()
-{
-    ReliabilityDomain* theReliabilityDomain = cmds->getDomain();
-    theReliabilityDomain->clearAll();
-    return 0;
+void OpenSeesReliabilityCommands::wipe() {
+
+  // wipe reliability domain
+  if (theDomain != 0) {
+    theDomain->clearAll();
+  }
+
+  if (theProbabilityTransformation != 0) {
+    delete theProbabilityTransformation;
+    theReliabilityConvergenceCheck = 0;
+  }
+  if (theRandomNumberGenerator != 0) {
+    delete theRandomNumberGenerator;
+  }
+  if (theReliabilityConvergenceCheck != 0) {
+    delete theReliabilityConvergenceCheck;
+    theReliabilityConvergenceCheck = 0;
+  }
+  if (theSearchDirection != 0) {
+    delete theSearchDirection;
+    theSearchDirection = 0;
+  }
+  if (theMeritFunctionCheck != 0) {
+    delete theMeritFunctionCheck;
+    theMeritFunctionCheck = 0;
+  }
+  if (theStepSizeRule != 0) {
+    delete theStepSizeRule;
+    theStepSizeRule = 0;
+  }
+  if (theRootFinding != 0) {
+    delete theRootFinding;
+    theRootFinding = 0;
+  }
+  if (theFunctionEvaluator != 0) {
+    delete theFunctionEvaluator;
+    theFunctionEvaluator = 0;
+  }
+  if (theGradientEvaluator != 0) {
+    delete theGradientEvaluator;
+    theGradientEvaluator = 0;
+  }
+}
+
+int OPS_wipeReliability() {
+  if (cmds != 0) {
+    cmds->wipe();
+  }
+  return 0;
 }
 
 int OPS_performanceFunction() {
@@ -932,6 +976,19 @@ OpenSeesReliabilityCommands::setGradientEvaluator(GradientEvaluator *eval)
   theGradientEvaluator = eval;
   if (eval == 0)
     return;
+}
+
+void OpenSeesReliabilityCommands::setFunctionEvaluator(
+    FunctionEvaluator *eval) {
+  if (theFunctionEvaluator != 0) {
+    delete theFunctionEvaluator;
+    theFunctionEvaluator = 0;
+  }
+
+  theFunctionEvaluator = eval;
+  if (eval == 0) {
+    return;
+  }
 }
 
 int

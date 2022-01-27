@@ -92,6 +92,8 @@ public:
   void setGradientEvaluator(GradientEvaluator *eval);
   GradientEvaluator *getGradientEvaluator() {return theGradientEvaluator;}  
 
+  void wipe();
+
 private:
 
   ReliabilityDomain* theDomain;
