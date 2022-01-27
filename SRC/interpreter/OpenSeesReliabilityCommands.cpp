@@ -66,8 +66,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <UserDefinedRV.h>
 #include <LaplaceRV.h>
 #include <ParetoRV.h>
-#ifdef PY_VERSION
+#ifdef _PYTHON3
 #include <PythonRV.h>
+#include <PythonEvaluator.h>
 #endif
 
 #include <AllIndependentTransformation.h>
@@ -100,7 +101,8 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomai
   :theDomain(0), theStructuralDomain(structuralDomain),
    theProbabilityTransformation(0), theRandomNumberGenerator(0),
    theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0),
-   theStepSizeRule(0), theFunctionEvaluator(0)
+   theStepSizeRule(0), theRootFinding(0), theFunctionEvaluator(0),
+   theGradientEvaluator(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -128,7 +130,6 @@ OpenSeesReliabilityCommands::getStructuralDomain()
 }
 
 void OpenSeesReliabilityCommands::wipe() {
-
   // wipe reliability domain
   if (theDomain != 0) {
     theDomain->clearAll();
@@ -140,6 +141,7 @@ void OpenSeesReliabilityCommands::wipe() {
   }
   if (theRandomNumberGenerator != 0) {
     delete theRandomNumberGenerator;
+    theRandomNumberGenerator = 0;
   }
   if (theReliabilityConvergenceCheck != 0) {
     delete theReliabilityConvergenceCheck;
@@ -1450,43 +1452,66 @@ OPS_rootFinding()
   return 0;
 }
 
-int
-OPS_functionEvaluator()
-{
+int OPS_functionEvaluator() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to functionEvaluator" << endln;
+    opserr << "ERROR: wrong number of arguments to functionEvaluator"
+           << endln;
+    return -1;
+  }
+
+  if (cmds == 0) {
+    opserr << "WARING: Reliability is not initialized\n";
+    return -1;
+  }
+  if (cmds->getStructuralDomain() == 0) {
+    opserr << "WARING: Reliability has no structural domain\n";
+    return -1;
+  }
+  if (cmds->getDomain() == 0) {
+    opserr << "WARING: Reliability has no domain\n";
     return -1;
   }
 
   FunctionEvaluator *theEval = 0;
-  
+
   // Get the type of functionEvaluator
   const char *type = OPS_GetString();
-  if (strcmp(type,"Matlab") == 0) {
+  const char *filename = 0;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    filename = OPS_GetString();
+  }
+  if (strcmp(type, "Matlab") == 0) {
     opserr << "ERROR: Matlab function evaluator not implemented" << endln;
     return -1;
-  }
-  else if (strcmp(type,"Tcl") == 0) {
+  } else if (strcmp(type, "Tcl") == 0) {
     opserr << "ERROR: Tcl function evaluator not implemented" << endln;
     return -1;
-  }
-  else if (strcmp(type,"Python") == 0) {
+  } else if (strcmp(type, "Python") == 0) {
+#ifdef _PYTHON3
+    if (filename == 0) {
+      theEval = new PythonEvaluator(cmds->getDomain(),
+                                    cmds->getStructuralDomain());
+    } else {
+      theEval = new PythonEvaluator(cmds->getDomain(),
+                                    cmds->getStructuralDomain(), filename);
+    }
+#else
     opserr << "ERROR: Python function evaluator not implemented" << endln;
     return -1;
-  }    
-  else {
-    opserr << "ERROR: unrecognized type of function evaluator: " << type << endln;
+#endif
+  } else {
+    opserr << "ERROR: unrecognized type of function evaluator: " << type
+           << endln;
     return -1;
-  }  
+  }
 
   if (theEval == 0) {
     opserr << "ERROR: could not create function evaluator" << endln;
     return -1;
   } else {
-    if (cmds != 0)
-      cmds->setFunctionEvaluator(theEval);
+    cmds->setFunctionEvaluator(theEval);
   }
-  
+
   return 0;
 }
 

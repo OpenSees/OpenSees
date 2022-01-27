@@ -34,12 +34,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <iostream>
+
 PythonEvaluator::PythonEvaluator(
-    Tcl_Interp *passedTclInterp,
     ReliabilityDomain *passedReliabilityDomain,
-    Domain *passedOpenSeesDomain, TCL_Char *passed_fileName)
+    Domain *passedOpenSeesDomain, const char *passed_fileName)
     : FunctionEvaluator(),
-      theTclInterp(passedTclInterp),
       theReliabilityDomain(passedReliabilityDomain),
       theOpenSeesDomain(passedOpenSeesDomain)
 
@@ -51,15 +51,34 @@ PythonEvaluator::PythonEvaluator(
 }
 
 PythonEvaluator::PythonEvaluator(
-    Tcl_Interp *passedTclInterp,
     ReliabilityDomain *passedReliabilityDomain,
     Domain *passedOpenSeesDomain)
     : FunctionEvaluator(),
-      theTclInterp(passedTclInterp),
       theReliabilityDomain(passedReliabilityDomain),
       theOpenSeesDomain(passedOpenSeesDomain) {
   theExpression = 0;
   fileName = 0;
+
+  PyObject *name = PyUnicode_FromString("opensees");
+
+  PyObject *pymodule = PyImport_GetModule(name);
+
+  if (pymodule != NULL) {
+    PyObject *moduleDict = PyModule_GetDict(pymodule);
+
+    if (moduleDict != NULL) {
+      PyObject *params =
+          PyDict_GetItemString(moduleDict, "OpenSeesParameter");
+      if (params != NULL) {
+        std::cout << "size = " << PyDict_Size(params) << "\n";
+      }
+    }
+  }
+
+  Py_DECREF(name);
+  if (pymodule != NULL) {
+    Py_DECREF(pymodule);
+  }
 }
 
 PythonEvaluator::~PythonEvaluator() {
@@ -72,7 +91,7 @@ int PythonEvaluator::setVariables() {
   double xval;
   Parameter *theParam;
 
-  // Set values of parameters in the Tcl interpreter
+  // Set values of parameters in the Python interpreter
   int nparam = theOpenSeesDomain->getNumParameters();
 
   for (int i = 0; i < nparam; i++) {
@@ -82,16 +101,19 @@ int PythonEvaluator::setVariables() {
     // now get parameter values directly
     xval = theParam->getValue();
 
+    PyRun_SimpleString("print(dir())");
+
     // put in par(1) format
-    sprintf(theIndex, "%d", paramTag);
-    if (Tcl_SetVar2Ex(theTclInterp, "par", theIndex,
-                      Tcl_NewDoubleObj(xval), TCL_LEAVE_ERR_MSG) == NULL) {
-      opserr << "ERROR PythonEvaluator -- error in setVariables for "
-                "parameter tag "
-             << paramTag << endln;
-      opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-      return -1;
-    }
+    // sprintf(theIndex, "%d", paramTag);
+    // if (Tcl_SetVar2Ex(theTclInterp, "par", theIndex,
+    //                   Tcl_NewDoubleObj(xval), TCL_LEAVE_ERR_MSG) ==
+    //                   NULL) {
+    //   opserr << "ERROR PythonEvaluator -- error in setVariables for "
+    //             "parameter tag "
+    //          << paramTag << endln;
+    //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) <<
+    //   endln; return -1;
+    // }
   }
 
   return 0;
@@ -117,14 +139,14 @@ double PythonEvaluator::evaluateExpression() {
     return -1;
   }
 
-  if (Tcl_ExprDouble(theTclInterp, theExpression, &current_val) !=
-      TCL_OK) {
-    opserr << "PythonEvaluator::evaluateExpression -- expression \""
-           << theExpression;
-    opserr << "\" caused error:" << endln
-           << Tcl_GetStringResult(theTclInterp) << endln;
-    return -1;
-  }
+  // if (Tcl_ExprDouble(theTclInterp, theExpression, &current_val) !=
+  //     TCL_OK) {
+  //   opserr << "PythonEvaluator::evaluateExpression -- expression \""
+  //          << theExpression;
+  //   opserr << "\" caused error:" << endln
+  //          << Tcl_GetStringResult(theTclInterp) << endln;
+  //   return -1;
+  // }
 
   this->incrementEvaluations();
   return current_val;
@@ -147,11 +169,11 @@ int PythonEvaluator::runAnalysis() {
     // gone by
 
   } else {
-    if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
-      opserr << "ERROR PythonEvaluator -- error in Tcl_Eval: "
-             << Tcl_GetStringResult(theTclInterp) << endln;
-      return -1;
-    }
+    // if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
+    //   opserr << "ERROR PythonEvaluator -- error in Tcl_Eval: "
+    //          << Tcl_GetStringResult(theTclInterp) << endln;
+    //   return -1;
+    // }
 
     // make sure the parameter variables in the namespace update to reflect
     // the results of above analysis
@@ -176,14 +198,16 @@ int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
 
   sprintf(theIndex, "%d,%d", lsfTag, rvTag);
 
-  if (Tcl_SetVar2Ex(theTclInterp, label, theIndex, Tcl_NewDoubleObj(value),
-                    TCL_LEAVE_ERR_MSG) == NULL) {
-    opserr << "ERROR PythonEvaluator -- error in setResponseVariable for "
-              "object with tag "
-           << rvTag << endln;
-    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-    return -1;
-  }
+  // if (Tcl_SetVar2Ex(theTclInterp, label, theIndex,
+  // Tcl_NewDoubleObj(value),
+  //                   TCL_LEAVE_ERR_MSG) == NULL) {
+  //   opserr << "ERROR PythonEvaluator -- error in setResponseVariable for
+  //   "
+  //             "object with tag "
+  //          << rvTag << endln;
+  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
+  //   return -1;
+  // }
 
   return 0;
 }
@@ -194,14 +218,16 @@ int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
 
   sprintf(theIndex, "%d", lsfTag);
 
-  if (Tcl_SetVar2Ex(theTclInterp, label, theIndex, Tcl_NewDoubleObj(value),
-                    TCL_LEAVE_ERR_MSG) == NULL) {
-    opserr << "ERROR PythonEvaluator -- error in setResponseVariable for "
-              "object with tag "
-           << lsfTag << endln;
-    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-    return -1;
-  }
+  // if (Tcl_SetVar2Ex(theTclInterp, label, theIndex,
+  // Tcl_NewDoubleObj(value),
+  //                   TCL_LEAVE_ERR_MSG) == NULL) {
+  //   opserr << "ERROR PythonEvaluator -- error in setResponseVariable for
+  //   "
+  //             "object with tag "
+  //          << lsfTag << endln;
+  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
+  //   return -1;
+  // }
 
   return 0;
 }
@@ -212,18 +238,19 @@ double PythonEvaluator::getResponseVariable(const char *label, int lsfTag,
 
   sprintf(theIndex, "%d,%d", lsfTag, rvTag);
 
-  Tcl_Obj *value =
-      Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
-  if (value == NULL) {
-    opserr << "ERROR PythonEvaluator -- error in getResponseVariable for "
-              "object with tag "
-           << rvTag << endln;
-    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-    return -1;
-  }
+  // Tcl_Obj *value =
+  //     Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
+  // if (value == NULL) {
+  //   opserr << "ERROR PythonEvaluator -- error in getResponseVariable for
+  //   "
+  //             "object with tag "
+  //          << rvTag << endln;
+  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
+  //   return -1;
+  // }
 
   double result;
-  Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+  // Tcl_GetDoubleFromObj(theTclInterp, value, &result);
 
   return result;
 }
@@ -234,18 +261,19 @@ double PythonEvaluator::getResponseVariable(const char *label,
 
   sprintf(theIndex, "%d", lsfTag);
 
-  Tcl_Obj *value =
-      Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
-  if (value == NULL) {
-    opserr << "ERROR PythonEvaluator -- error in getResponseVariable for "
-              "object with tag "
-           << lsfTag << endln;
-    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-    return -1;
-  }
+  // Tcl_Obj *value =
+  //     Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
+  // if (value == NULL) {
+  //   opserr << "ERROR PythonEvaluator -- error in getResponseVariable for
+  //   "
+  //             "object with tag "
+  //          << lsfTag << endln;
+  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
+  //   return -1;
+  // }
 
   double result;
-  Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+  // Tcl_GetDoubleFromObj(theTclInterp, value, &result);
 
   return result;
 }

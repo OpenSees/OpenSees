@@ -32,16 +32,14 @@
 
 #include <Domain.h>
 #include <FunctionEvaluator.h>
-#include <ReliabilityDomain.h>
 #include <Python.h>
+#include <ReliabilityDomain.h>
 
 class PythonEvaluator : public FunctionEvaluator {
  public:
-  PythonEvaluator(Tcl_Interp *passedTclInterp,
-                  ReliabilityDomain *passedReliabilityDomain,
-                  Domain *passedOpenSeesDomain, TCL_Char *fileName);
-  PythonEvaluator(Tcl_Interp *passedTclInterp,
-                  ReliabilityDomain *passedReliabilityDomain,
+  PythonEvaluator(ReliabilityDomain *passedReliabilityDomain,
+                  Domain *passedOpenSeesDomain, const char *fileName);
+  PythonEvaluator(ReliabilityDomain *passedReliabilityDomain,
                   Domain *passedOpenSeesDomain);
   ~PythonEvaluator();
 
@@ -61,7 +59,6 @@ class PythonEvaluator : public FunctionEvaluator {
 
  protected:
  private:
-  Tcl_Interp *theTclInterp;
   ReliabilityDomain *theReliabilityDomain;
   Domain *theOpenSeesDomain;
 
