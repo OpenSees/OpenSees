@@ -41,9 +41,7 @@ PythonEvaluator::PythonEvaluator(
     Domain *passedOpenSeesDomain, const char *passed_fileName)
     : FunctionEvaluator(),
       theReliabilityDomain(passedReliabilityDomain),
-      theOpenSeesDomain(passedOpenSeesDomain)
-
-{
+      theOpenSeesDomain(passedOpenSeesDomain) {
   theExpression = 0;
   int exprLen = strlen(passed_fileName);
   fileName = new char[exprLen + 1];
@@ -58,27 +56,6 @@ PythonEvaluator::PythonEvaluator(
       theOpenSeesDomain(passedOpenSeesDomain) {
   theExpression = 0;
   fileName = 0;
-
-  PyObject *name = PyUnicode_FromString("opensees");
-
-  PyObject *pymodule = PyImport_GetModule(name);
-
-  if (pymodule != NULL) {
-    PyObject *moduleDict = PyModule_GetDict(pymodule);
-
-    if (moduleDict != NULL) {
-      PyObject *params =
-          PyDict_GetItemString(moduleDict, "OpenSeesParameter");
-      if (params != NULL) {
-        std::cout << "size = " << PyDict_Size(params) << "\n";
-      }
-    }
-  }
-
-  Py_DECREF(name);
-  if (pymodule != NULL) {
-    Py_DECREF(pymodule);
-  }
 }
 
 PythonEvaluator::~PythonEvaluator() {
@@ -87,34 +64,68 @@ PythonEvaluator::~PythonEvaluator() {
 }
 
 int PythonEvaluator::setVariables() {
-  char theIndex[80];
-  double xval;
-  Parameter *theParam;
+  // PyRun_SimpleString("print(dir())");
+
+  // get module object
+  PyObject *name = PyUnicode_FromString("opensees");
+  PyObject *pymodule = PyImport_GetModule(name);
+
+  if (pymodule == NULL) {
+    opserr << "WARNING: module opensees is not imported\n";
+    return -1;
+  }
+
+  // get module dict
+  PyObject *moduleDict = PyModule_GetDict(pymodule);
+  if (moduleDict == NULL) {
+    opserr << "WARNING: module opensees dict is not available\n";
+    return -1;
+  }
+
+  // get parameter variable
+  PyObject *params = PyDict_GetItemString(moduleDict, "OpenSeesParameter");
+  if (params == NULL) {
+    opserr << "WARNING: variable OpenSeesParameter is not defined in "
+              "module opensees\n ";
+    return -1;
+  }
+
+  // clear parameter dict
+  PyDict_Clear(params);
 
   // Set values of parameters in the Python interpreter
   int nparam = theOpenSeesDomain->getNumParameters();
-
   for (int i = 0; i < nparam; i++) {
-    theParam = theOpenSeesDomain->getParameterFromIndex(i);
+    Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
     int paramTag = theParam->getTag();
 
     // now get parameter values directly
-    xval = theParam->getValue();
+    double xval = theParam->getValue();
 
-    PyRun_SimpleString("print(dir())");
-
-    // put in par(1) format
-    // sprintf(theIndex, "%d", paramTag);
-    // if (Tcl_SetVar2Ex(theTclInterp, "par", theIndex,
-    //                   Tcl_NewDoubleObj(xval), TCL_LEAVE_ERR_MSG) ==
-    //                   NULL) {
-    //   opserr << "ERROR PythonEvaluator -- error in setVariables for "
-    //             "parameter tag "
-    //          << paramTag << endln;
-    //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) <<
-    //   endln; return -1;
-    // }
+    // put existing parameters
+    PyObject *key = PyLong_FromLong(paramTag);
+    if (key == NULL) {
+      opserr << "WARNING: failed to create parameter key\n";
+      return -1;
+    }
+    PyObject *val = PyFloat_FromDouble(xval);
+    if (val == NULL) {
+      opserr << "WARNING: failed to create parameter value\n";
+      return -1;
+    }
+    if (PyDict_SetItem(params, key, val) < 0) {
+      opserr << "WARNING: failed to set parameter in Python\n";
+      Py_DECREF(key);
+      Py_DECREF(val);
+      return -1;
+    }
+    Py_DECREF(key);
+    Py_DECREF(val);
   }
+
+  // clean up
+  Py_DECREF(name);
+  Py_DECREF(pymodule);
 
   return 0;
 }
