@@ -188,6 +188,12 @@ void* OPS_BilinearBackbone();
 void* OPS_ManderBackbone();
 void* OPS_MultilinearBackbone();
 void* OPS_TrilinearBackbone();
+void* OPS_ReeseStiffClayBelowWS();
+void* OPS_ReeseStiffClayAboveWS();
+void* OPS_VuggyLimestone();
+void* OPS_CementedSoil();
+void* OPS_WeakRock();
+void* OPS_LiquefiedSand();
 
 void* OPS_ConstantStiffnessDegradation();
 void* OPS_DuctilityStiffnessDegradation();
@@ -374,6 +380,12 @@ namespace {
     hystereticBackbonesMap.insert(std::make_pair("Mander", &OPS_ManderBackbone));
     hystereticBackbonesMap.insert(std::make_pair("Multilinear", &OPS_MultilinearBackbone));
     hystereticBackbonesMap.insert(std::make_pair("Trilinear", &OPS_TrilinearBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
+    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
+    hystereticBackbonesMap.insert(std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
+    hystereticBackbonesMap.insert(std::make_pair("CementedSoil", &OPS_CementedSoil));
+    hystereticBackbonesMap.insert(std::make_pair("WeakRock", &OPS_WeakRock));
+    hystereticBackbonesMap.insert(std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
     
     return 0;
   }

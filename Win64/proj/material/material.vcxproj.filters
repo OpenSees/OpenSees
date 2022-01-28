@@ -1406,6 +1406,21 @@
     <ClCompile Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.cpp">
       <Filter>section</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CementedSoil.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LiquefiedSand.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayAboveWS.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\VuggyLimestone.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\WeakRock.cpp">
+      <Filter>uniaxial\backbone</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">

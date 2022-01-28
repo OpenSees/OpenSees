@@ -256,9 +256,14 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CementedSoil.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LiquefiedSand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayAboveWS.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\VuggyLimestone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\WeakRock.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
