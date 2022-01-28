@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
+#include <string>
 
 PythonEvaluator::PythonEvaluator(
     ReliabilityDomain *passedReliabilityDomain,
@@ -64,8 +64,6 @@ PythonEvaluator::~PythonEvaluator() {
 }
 
 int PythonEvaluator::setVariables() {
-  // PyRun_SimpleString("print(dir())");
-
   // get module object
   PyObject *name = PyUnicode_FromString("opensees");
   PyObject *pymodule = PyImport_GetModule(name);
@@ -150,14 +148,25 @@ double PythonEvaluator::evaluateExpression() {
     return -1;
   }
 
-  // if (Tcl_ExprDouble(theTclInterp, theExpression, &current_val) !=
-  //     TCL_OK) {
-  //   opserr << "PythonEvaluator::evaluateExpression -- expression \""
-  //          << theExpression;
-  //   opserr << "\" caused error:" << endln
-  //          << Tcl_GetStringResult(theTclInterp) << endln;
-  //   return -1;
-  // }
+  // parse the expression
+  std::string parsedExpression(theExpression);
+
+  // add imports
+  parsedExpression.insert(0, "par = opensees.OpenSeesParameter\n");
+  parsedExpression.insert(0, "import math\n");
+  parsedExpression.insert(0, "from math import *\n");
+  parsedExpression.insert(0, "import opensees\n");
+
+  if (PyRun_SimpleString(parsedExpression.c_str()) < 0) {
+    opserr
+        << "WARNING: PythonEvaluator::evaluateExpression -- expression \""
+        << theExpression;
+    opserr << "\" had some errors.\n";
+    opserr << "Note: use par[paramTag] to access to parameters\n";
+    opserr << "Note: all math.* functions are directly available with or "
+              "without prefix math.\n";
+    return -1;
+  }
 
   this->incrementEvaluations();
   return current_val;
