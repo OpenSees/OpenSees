@@ -189,11 +189,26 @@ int PythonEvaluator::runAnalysis() {
     // gone by
 
   } else {
-    // if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
-    //   opserr << "ERROR PythonEvaluator -- error in Tcl_Eval: "
-    //          << Tcl_GetStringResult(theTclInterp) << endln;
-    //   return -1;
-    // }
+    // parse the filename
+    std::string parsedFileName(fileName);
+
+    // add imports
+    parsedFileName.insert(0, "par = opensees.OpenSeesParameter\n");
+    parsedFileName.insert(0, "import math\n");
+    parsedFileName.insert(0, "from math import *\n");
+    parsedFileName.insert(0, "import opensees\n");
+
+    if (PyRun_SimpleString(parsedFileName.c_str()) < 0) {
+      opserr << "WARNING: PythonEvaluator::runAnalysis -- "
+                "fileName \""
+             << fileName;
+      opserr << "\" had some errors.\n";
+      opserr << "Note: use par[paramTag] to access to parameters\n";
+      opserr
+          << "Note: all math.* functions are directly available with or "
+             "without prefix math.\n";
+      return -1;
+    }
 
     // make sure the parameter variables in the namespace update to reflect
     // the results of above analysis
