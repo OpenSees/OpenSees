@@ -41,7 +41,8 @@ PythonEvaluator::PythonEvaluator(
     Domain *passedOpenSeesDomain, const char *passed_fileName)
     : FunctionEvaluator(),
       theReliabilityDomain(passedReliabilityDomain),
-      theOpenSeesDomain(passedOpenSeesDomain) {
+      theOpenSeesDomain(passedOpenSeesDomain),
+      current_val(0) {
   theExpression = 0;
   int exprLen = strlen(passed_fileName);
   fileName = new char[exprLen + 1];
@@ -53,7 +54,8 @@ PythonEvaluator::PythonEvaluator(
     Domain *passedOpenSeesDomain)
     : FunctionEvaluator(),
       theReliabilityDomain(passedReliabilityDomain),
-      theOpenSeesDomain(passedOpenSeesDomain) {
+      theOpenSeesDomain(passedOpenSeesDomain),
+      current_val(0) {
   theExpression = 0;
   fileName = 0;
 }
@@ -148,16 +150,28 @@ double PythonEvaluator::evaluateExpression() {
     return -1;
   }
 
-  // parse the expression
-  std::string parsedExpression(theExpression);
-
   // add imports
-  parsedExpression.insert(0, "par = opensees.OpenSeesParameter\n");
-  parsedExpression.insert(0, "import math\n");
-  parsedExpression.insert(0, "from math import *\n");
-  parsedExpression.insert(0, "import opensees\n");
+  PyRun_SimpleString("import opensees");
+  PyRun_SimpleString("from math import *");
+  PyRun_SimpleString("import math");
+  PyRun_SimpleString("par = opensees.OpenSeesParameter");
 
-  if (PyRun_SimpleString(parsedExpression.c_str()) < 0) {
+  // run the string and get results
+  PyObject *py_main, *py_dict;
+  py_main = PyImport_AddModule("__main__");
+  if (py_main == NULL) {
+    opserr << "WARNING: cannot add module __main__\n";
+    return -1;
+  }
+  py_dict = PyModule_GetDict(py_main);
+  if (py_main == NULL) {
+    opserr << "WARNING: cannot get dict of module __main__\n";
+    return -1;
+  }
+  PyObject *PyRes =
+      PyRun_String(theExpression, Py_eval_input, py_dict, py_dict);
+
+  if (PyRes == NULL) {
     opserr
         << "WARNING: PythonEvaluator::evaluateExpression -- expression \""
         << theExpression;
@@ -166,6 +180,15 @@ double PythonEvaluator::evaluateExpression() {
     opserr << "Note: all math.* functions are directly available with or "
               "without prefix math.\n";
     return -1;
+  }
+
+  // get results
+  if (PyLong_Check(PyRes)) {
+    current_val = PyLong_AsLong(PyRes);
+  } else if (PyFloat_Check(PyRes)) {
+    current_val = PyFloat_AsDouble(PyRes);
+  } else {
+    current_val = 0.0;
   }
 
   this->incrementEvaluations();
