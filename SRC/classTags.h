@@ -850,6 +850,8 @@
 
 #define DMP_TAG_UniformDamping 1
 #define DMP_TAG_SecStifDamping 2
+#define DMP_TAG_URDDamping 3
+#define DMP_TAG_URDDampingbeta 4
 
 #define NOD_TAG_Node      	1
 #define NOD_TAG_DummyNode 	2

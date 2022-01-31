@@ -26,11 +26,16 @@
 // Created: 01/2020
 // Revision: A
 
+#include <math.h>
+#include <Vector.h>
+#include <Matrix.h>
 #include <string.h>
 #include <TclModelBuilder.h>
 
 #include <UniformDamping.h>
 #include <SecStifDamping.h>
+#include <URDDamping.h>
+#include <URDDampingbeta.h>
 
 static Domain *theTclModelBuilderDomain = 0;
 static TclModelBuilder *theTclModelBuilder = 0;
@@ -173,6 +178,160 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
       }
       Damping = new SecStifDamping(dampingTag, beta, ta, td, facSeries);
       
+    }
+    else if (strcmp(argv[1], "URD") == 0) {
+        int numfreq;
+        int prttag = 0;
+        int maxiter = 100;
+        double tmpetafeq;
+        double ta = 0.0, td = 1e20;
+        double dptol = 0.05;
+        TimeSeries* facSeries = 0;
+        if (Tcl_GetInt(interp, argv[3], &numfreq) != TCL_OK)
+        {
+            opserr << "WARNING invalid number - want: damping URD tag n freq1 zeta1 ... freqn zetan\n";
+            return  TCL_ERROR;
+        }
+        if (numfreq < 2) {
+            opserr << "WARNING - n needs to be larger than 1\n ";
+            return  TCL_ERROR;
+        }
+        Matrix* etaFreq = new Matrix(numfreq, 2);
+        for (int i = 0; i < numfreq; i++) {
+            for (int j = 0; j < 2; j++) {
+                if (Tcl_GetDouble(interp, argv[4 + i*2 +j], &tmpetafeq) != TCL_OK) {
+                    opserr << "WARNING invalid factor series - want: damping URD tag n freq1 zeta1 ... freqn zetan\n ";
+                    return TCL_ERROR;
+                }
+                if (tmpetafeq <= 0.0) opserr << "URDDamping::URDDamping:  Invalid frequency or damping ratio\n";
+                (*etaFreq)(i, j) = tmpetafeq;
+            }  
+            //(*etaFreq)(i, 1) *= (2.0);
+        }
+
+        int count = 4 + numfreq * 2;
+        while (argc > count)
+        {
+            if ((strcmp(argv[count], "-activateTime") == 0) || (strcmp(argv[count], "-ActivateTime") == 0))
+            {
+                if (Tcl_GetDouble(interp, argv[count + 1], &ta) != TCL_OK)
+                {
+                    opserr << "WARNING invalid activation time - want: damping URD tag n freq1 zeta1 ... freqn zetan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol> <-iter maxiter>\n";
+                    return  TCL_ERROR;
+                }
+                count++;
+            }
+            else if ((strcmp(argv[count], "-deactivateTime") == 0) || (strcmp(argv[count], "-DeactivateTime") == 0))
+            {
+                if (Tcl_GetDouble(interp, argv[count + 1], &td) != TCL_OK)
+                {
+                    opserr << "WARNING invalid deactivation time - want: damping URD tag n freq1 zeta1 ... freqn zetan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol> <-iter maxiter>\n";
+                    return  TCL_ERROR;
+                }
+                count++;
+            }
+            else if ((strcmp(argv[count], "-fact") == 0) || (strcmp(argv[count], "-factor") == 0))
+            {
+                int tsTag;
+                if (Tcl_GetInt(interp, argv[count + 1], &tsTag) != TCL_OK)
+                {
+                    opserr << "WARNING invalid factor series - want: damping URD tag n freq1 zeta1 ... freqn zetan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol> <-iter maxiter>\n";
+                    return  TCL_ERROR;
+                }
+                facSeries = OPS_getTimeSeries(tsTag);
+                count++;
+            }
+            else if ((strcmp(argv[count], "-tol") == 0) || (strcmp(argv[count], "-tolerence") == 0))
+            {
+                if (Tcl_GetDouble(interp, argv[count + 1], &dptol) != TCL_OK)
+                {
+                    opserr << "WARNING invalid tolerance - want: damping URD tag n freq1 zeta1 ... freqn zetan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol> <-iter maxiter>\n";
+                    return  TCL_ERROR;
+                }
+                count++;
+            }
+            else if ((strcmp(argv[count], "-maxiter") == 0) || (strcmp(argv[count], "-iter") == 0))
+            {
+                if (Tcl_GetInt(interp, argv[count + 1], &maxiter) != TCL_OK)
+                {
+                    opserr << "WARNING invalid interation number - want: damping URD tag n freq1 zeta1 ... freqn zetan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol> <-iter maxiter>\n";
+                    return  TCL_ERROR;
+                }
+                count++;
+            }
+            else if ((strcmp(argv[count], "-prttag") == 0) || (strcmp(argv[count], "-print") == 0))
+            {
+                prttag = 1;
+            }
+            count++;
+        }
+        Damping = new URDDamping(dampingTag, numfreq, etaFreq, dptol, ta, td, facSeries, prttag, maxiter);
+    }
+    else if (strcmp(argv[1], "URDbeta") == 0) {
+    int numfreq;
+    double ta = 0.0, td = 1e20;
+    //double tmpdata;
+    TimeSeries* facSeries = 0;
+    if (Tcl_GetInt(interp, argv[3], &numfreq) != TCL_OK)
+    {
+        opserr << "WARNING invalid number - want: damping URDbeta tag n freq1 ... freqn zeta1 ... zetan alpha1 ... alphan \n";
+        return  TCL_ERROR;
+    }
+    if (numfreq < 2) {
+        opserr << "WARNING - n needs to be larger than 1\n ";
+        return  TCL_ERROR;
+    }
+    Vector* tmpbeta = new Vector(numfreq);
+    Vector* tmpomegac = new Vector(numfreq);
+    for (int i = 0; i < numfreq; i++) {
+        if (Tcl_GetDouble(interp, argv[4 + 2 * i], &(*tmpomegac)(i)) != TCL_OK) {
+            opserr << "WARNING invalid factor series - want: damping URDbeta tag n freqc1 beta1 ... freqcn betan\n ";
+            return TCL_ERROR;
+        }
+        if ((*tmpomegac)(i) <= 0.0) opserr << "URDDamping::URDDamping:  Invalid frequency\n";
+        (*tmpomegac)(i) *= (6.28318530718);
+        if (Tcl_GetDouble(interp, argv[5 + 2 * i], &(*tmpbeta)(i)) != TCL_OK) {
+            opserr << "WARNING invalid factor series - want: damping URDbeta tag n freqc1 beta1 ... freqcn betan\n ";
+            return TCL_ERROR;
+        }
+    }
+   
+    int count = 4 + numfreq * 2;
+    while (argc > count)
+    {
+        if ((strcmp(argv[count], "-activateTime") == 0) || (strcmp(argv[count], "-ActivateTime") == 0))
+        {
+            if (Tcl_GetDouble(interp, argv[count + 1], &ta) != TCL_OK)
+            {
+                opserr << "WARNING invalid activation time - want: damping URDbeta tag n freqc1 beta1 ... freqcn betan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol>\n";
+                return  TCL_ERROR;
+            }
+            count++;
+        }
+        else if ((strcmp(argv[count], "-deactivateTime") == 0) || (strcmp(argv[count], "-DeactivateTime") == 0))
+        {
+            if (Tcl_GetDouble(interp, argv[count + 1], &td) != TCL_OK)
+            {
+                opserr << "WARNING invalid deactivation time - want: damping URDbeta tag n freqc1 beta1 ... freqcn betan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol>\n";
+                return  TCL_ERROR;
+            }
+            count++;
+        }
+        else if ((strcmp(argv[count], "-fact") == 0) || (strcmp(argv[count], "-factor") == 0))
+        {
+            int tsTag;
+            if (Tcl_GetInt(interp, argv[count + 1], &tsTag) != TCL_OK)
+            {
+                opserr << "WARNING invalid factor series - want: damping URDbeta tag n freqc1 beta1 ... freqcn betan <-activateTime ta> <-deactivateTime td> <-fact tsTag> <-tol dptol>\n";
+                return  TCL_ERROR;
+            }
+            facSeries = OPS_getTimeSeries(tsTag);
+            count++;
+        }
+        
+        count++;
+    }
+    Damping = new URDDampingbeta(dampingTag, numfreq, tmpomegac, tmpbeta, ta, td, facSeries);
     }
     else {
       opserr << "WARNING TclModelBuilder - damping - invalid Type\n";
