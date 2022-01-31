@@ -55,13 +55,18 @@
  #include <EnvelopeElementRecorder.h>
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
+
  #include <PVDRecorder.h>
-// #include <MPCORecorder.h>
+
  #include <GmshRecorder.h>
  #include <VTK_Recorder.h>
+
 extern void* OPS_PVDRecorder();
+
 extern void* OPS_GmshRecorder();
+#ifdef _HDF5
 extern void* OPS_MPCORecorder();
+#endif // _HDF5
 extern void* OPS_VTK_Recorder();
 extern void* OPS_ElementRecorderRMS();
 extern void* OPS_NodeRecorderRMS();
@@ -1834,12 +1839,13 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 								    argv[2], xLoc, yLoc, width, height, 
 								    displayRecord, fileName);
 	 (*theRecorder) = thePlotter;
- #endif
+ #endif // _NOGRAPHICS
      } 
      else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
+
      else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
@@ -1852,19 +1858,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_NodeRecorderRMS();
      }
-     else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
-       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-       (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
-     }
-     /*
+#ifdef _HDF5
      else if (strcmp(argv[1], "mpco") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*)OPS_MPCORecorder();
-       if (theRecorder == 0) {
-	 return TCL_ERROR;
-       }
      }
-     */
+#endif // _HDF5
      else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_GmshRecorder();

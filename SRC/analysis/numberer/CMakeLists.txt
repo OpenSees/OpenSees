@@ -1,5 +1,11 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
-target_sources(analysis
+target_sources(OPS_Analysis
     PRIVATE
       DOF_Numberer.cpp
       PlainNumberer.cpp
@@ -10,4 +16,4 @@ target_sources(analysis
       ParallelNumberer.h
 )
 
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+#target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})

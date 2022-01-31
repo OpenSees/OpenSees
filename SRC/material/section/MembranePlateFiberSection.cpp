@@ -169,7 +169,19 @@ int MembranePlateFiberSection::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& MembranePlateFiberSection::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -660,7 +672,12 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
     int key = atoi(argv[1]);    
     
     if (key > 0 && key <= numFibers) {
+      output.tag("FiberOutput");
+      output.attr("number", key);
+      output.attr("zLoc", 0.5 * h * sg[key - 1]);
+      output.attr("thickness", 0.5 * h * wg[key - 1]);
       theResponse = theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      output.endTag();
     }
 
   }

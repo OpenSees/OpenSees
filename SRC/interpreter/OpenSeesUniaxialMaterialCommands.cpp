@@ -86,6 +86,7 @@ void* OPS_ReinforcingSteel();
 void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
 void* OPS_SteelMPF();
+void* OPS_SteelDRC();
 void* OPS_Concrete02();
 void* OPS_Concrete02IS();
 void* OPS_Concrete04();
@@ -187,6 +188,12 @@ void* OPS_BilinearBackbone();
 void* OPS_ManderBackbone();
 void* OPS_MultilinearBackbone();
 void* OPS_TrilinearBackbone();
+void* OPS_ReeseStiffClayBelowWS();
+void* OPS_ReeseStiffClayAboveWS();
+void* OPS_VuggyLimestone();
+void* OPS_CementedSoil();
+void* OPS_WeakRock();
+void* OPS_LiquefiedSand();
 
 void* OPS_ConstantStiffnessDegradation();
 void* OPS_DuctilityStiffnessDegradation();
@@ -205,6 +212,8 @@ void *OPS_EnergyUnloadingRule();
 void *OPS_KarsanUnloadingRule();
 
 void* OPS_HystereticPoly(); // Salvatore Sessa 14-01-2021 Mail: salvatore.sessa2@unina.it
+void* OPS_DowelType();
+void* OPS_DuctileFracture(); // Kuanshi Zhong
 
 namespace {
 
@@ -243,6 +252,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgoodSteel", &OPS_RambergOsgoodSteel));
 	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgood", &OPS_RambergOsgoodSteel));
 	uniaxialMaterialsMap.insert(std::make_pair("SteelMPF", &OPS_SteelMPF));
+	uniaxialMaterialsMap.insert(std::make_pair("SteelDRC", &OPS_SteelDRC));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete02", &OPS_Concrete02));
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete02IS", &OPS_Concrete02IS));	
 	uniaxialMaterialsMap.insert(std::make_pair("Concrete04", &OPS_Concrete04));
@@ -355,6 +365,8 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
 	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
 	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+	uniaxialMaterialsMap.insert(std::make_pair("DowelType", &OPS_DowelType));
+  uniaxialMaterialsMap.insert(std::make_pair("DuctileFracture", &OPS_DuctileFracture)); // Kuanshi Zhong
 
 	return 0;
     }
@@ -368,6 +380,12 @@ namespace {
     hystereticBackbonesMap.insert(std::make_pair("Mander", &OPS_ManderBackbone));
     hystereticBackbonesMap.insert(std::make_pair("Multilinear", &OPS_MultilinearBackbone));
     hystereticBackbonesMap.insert(std::make_pair("Trilinear", &OPS_TrilinearBackbone));
+    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
+    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
+    hystereticBackbonesMap.insert(std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
+    hystereticBackbonesMap.insert(std::make_pair("CementedSoil", &OPS_CementedSoil));
+    hystereticBackbonesMap.insert(std::make_pair("WeakRock", &OPS_WeakRock));
+    hystereticBackbonesMap.insert(std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
     
     return 0;
   }

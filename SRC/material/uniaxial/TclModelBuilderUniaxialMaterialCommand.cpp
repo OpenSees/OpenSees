@@ -76,6 +76,9 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Trilinwp.h>
 #include <Trilinwp2.h>
 #include <Masonryt.h>
+#include <DowelType.h>
+
+#include <DuctileFracture.h> // Kuanshi Zhong
 
 #include <Vector.h>
 #include <string.h>
@@ -104,6 +107,7 @@ extern void *OPS_SteelFractureDI(void); // galvisf
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
+extern void *OPS_SteelDRC(void); // R. Carreno
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
 extern void *OPS_Concrete02IS(void);
@@ -183,6 +187,8 @@ extern void *OPS_Masonry(void);
 extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
+extern void *OPS_DowelType(void);
+extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -244,7 +250,9 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
 
 UniaxialMaterial *
 TclModelBuilder_FRPCnfinedConcrete(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
-				  
+
+UniaxialMaterial *
+TclModelBuilder_addDegradingMaterial(ClientData, Tcl_Interp *, int , TCL_Char **);				  
 
 
 int
@@ -551,7 +559,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"Steel2") == 0) {
+    } else if (strcmp(argv[1], "SteelDRC") == 0) {
+		void *theMat = OPS_SteelDRC();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	} else if (strcmp(argv[1],"Steel2") == 0) {
       void *theMat = OPS_Steel2();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -2433,6 +2447,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 					    gammaF1, gammaF2, gammaF3, gammaF4, gammaFLimit, gammaE, yStr);		
     }
   }
+
     
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
@@ -2892,17 +2907,32 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     else if (strcmp(argv[1],"AxialSpHD") == 0) { 
       return TclCommand_AxialSpHD(clientData, interp, argc, argv);
     }
-    else if (strcmp(argv[1], "HystereticPoly") == 0) {		// BEGIN Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+    if (strcmp(argv[1], "HystereticPoly") == 0) {		// BEGIN Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
 	void* theMat = OPS_HystereticPoly();
 	if (theMat != 0)
 		theMaterial = (UniaxialMaterial*)theMat;
 	else
 		return TCL_ERROR;
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
-    else {
+    if (strcmp(argv[1], "DowelType") == 0) {
+        void* theMat = OPS_DowelType();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "DuctileFracture") == 0) {
+        void* theMat = OPS_DuctileFracture();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
       // Fedeas
+ #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
+    if (theMaterial == 0)
       theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
-      
+ #endif
       // Drain
       if (theMaterial == 0)
 	theMaterial = TclModelBuilder_addDrainMaterial(clientData, interp, argc, argv);
@@ -2918,7 +2948,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       // LimitState
       if (theMaterial == 0)
 	theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
-    }
+    
+
+#if defined(OPSDEF_DAMAGE_FEDEAS)
+      if (theMaterial == 0)
+        theMaterial = TclModelBuilder_addDegradingMaterial(clientData, interp, argc, argv);
+#endif
 
     if (theMaterial == 0) {
       

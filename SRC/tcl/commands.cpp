@@ -85,6 +85,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 #include <elementAPI.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
@@ -111,6 +112,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <NodeIter.h>
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
+#include <NodalLoad.h>
+#include <NodalLoadIter.h>
 #include <ElementalLoad.h>
 #include <ElementalLoadIter.h>
 #include <ParameterIter.h>
@@ -138,6 +141,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <CTestFixedNumIter.h>
 #include <NormDispAndUnbalance.h>
 #include <NormDispOrUnbalance.h>
+
 #include <CTestPFEM.h>
 
 // soln algorithms
@@ -179,6 +183,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <DOF_Numberer.h>
 
 // integrators
+// #include <HarmonicSteadyState.h>
 #include <LoadControl.h>
 #include <StagedLoadControl.h>
 #include <ArcLength.h>
@@ -189,10 +194,14 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <EQPath.h>
 
 #include <PFEMIntegrator.h>
+
 #include <Integrator.h>//Abbas
 
 //  recorders
 #include <Recorder.h> //SAJalali
+
+// transformations
+#include <CrdTransf.h>
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ExpressNewton(void);
@@ -202,6 +211,7 @@ extern void *OPS_NewtonHallM(void);
 extern void *OPS_Newmark(void);
 extern void *OPS_StagedNewmark(void);
 extern void *OPS_GimmeMCK(void);
+//extern void *OPS_HarmonicSteadyState(void);
 extern void *OPS_AlphaOS(void);
 extern void *OPS_AlphaOS_TP(void);
 extern void *OPS_AlphaOSGeneralized(void);
@@ -255,6 +265,7 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
+
 #include <PFEMAnalysis.h>
 
 // system of eqn and solvers
@@ -1003,6 +1014,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getNodeTags", &getNodeTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "getCrdTransfTags", &getCrdTransfTags, 
+          (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
     Tcl_CreateCommand(interp, "getParamTags", &getParamTags, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
@@ -1030,6 +1043,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "getEleLoadTags", &getEleLoadTags,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "getEleLoadData", &getEleLoadData,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getNodeLoadTags", &getNodeLoadTags,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "getNodeLoadData", &getNodeLoadData,
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
     Tcl_CreateCommand(interp, "sdfResponse", &sdfResponse, 
@@ -1134,7 +1151,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     // create an error handler
 
-#ifdef _NOGRAPHICS
+#if defined(_NOGRAPHICS)
 
 #else
     theTclVideoPlayer = 0;
@@ -1904,10 +1921,8 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       return TCL_ERROR;	      
 
     result = theStaticAnalysis->analyze(numIncr);
-
   } else if(thePFEMAnalysis != 0) {
       result = thePFEMAnalysis->analyze();
-
   } else if (theTransientAnalysis != 0) {
     if (argc < 3) {
       opserr << "WARNING transient analysis: analysis numIncr? deltaT?\n";
@@ -3061,7 +3076,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
           theSOE = new PFEMLinSOE(*theSolver);
-#endif
+#endif // _PARALLEL_INTERPRETERS
       } else if (strcmp(argv[2],"-quasi-mumps")==0) {
 #ifdef _PARALLEL_INTERPRETERS
 	  int relax = 20;
@@ -3073,7 +3088,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-#endif
+#endif // _PARALLEL_INTERPRETERS
       }
   }
 
@@ -3134,7 +3149,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     theSOE = new SparseGenRowLinSOE(* theSolver);
     
   }
-#endif
+#endif // _CUSP
 
 #if defined(_CULAS4) || defined(_CULAS5)
   // CULA SPARSE
@@ -3332,7 +3347,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     SymSparseLinSolver *theSolver = new SymSparseLinSolver();
     theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
   }    
-  
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
     
     // now must determine the type of solver to create from rest of args
@@ -3357,7 +3371,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
-  }	
+  }
   
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {
@@ -3371,7 +3385,8 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 //    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
 //    theSOE = new ItpackLinSOE(*theSolver);      
 //  }
-#endif	 
+#endif	// _ITPACK
+
   else if (strcmp(argv[1],"FullGeneral") == 0) {
     // now must determine the type of solver to create from rest of args
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
@@ -4220,7 +4235,6 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[7], &maxIncr) != TCL_OK)	
 	return TCL_ERROR;
     }
-
   } else if (strcmp(argv[1],"PFEM") == 0) {
       if(argc > 8) {
           if(Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
@@ -4347,7 +4361,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
     else if (strcmp(argv[1],"RelativeEnergyIncr") == 0) 
       theNewTest = new CTestRelativeEnergyIncr(tol,numIter,printIt,normType);             
     else if (strcmp(argv[1],"RelativeTotalNormDispIncr") == 0) 
-      theNewTest = new CTestRelativeTotalNormDispIncr(tol,numIter,printIt,normType);             
+      theNewTest = new CTestRelativeTotalNormDispIncr(tol,numIter,printIt,normType);
     else if (strcmp(argv[1],"PFEM") == 0) 
         theNewTest = new CTestPFEM(tol,tolp,tol2,tolp2,tolrel,tolprel,numIter,maxIncr,printIt,normType);
     else {
@@ -4458,7 +4472,11 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       if (theStaticAnalysis != 0)
         theStaticAnalysis->setIntegrator(*theStaticIntegrator);
       }
-  
+
+  //else if (strcmp(argv[1],"HarmonicSteadyState") == 0 || strcmp(argv[1],"HarmonicSS") == 0) {
+  //  theStaticIntegrator = (StaticIntegrator*)OPS_HarmonicSteadyState();
+  // }
+
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
       double alpha;
@@ -4769,7 +4787,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
-  
   else if (strcmp(argv[1],"PFEM") == 0) {
     theTransientIntegrator = new PFEMIntegrator();
 
@@ -4777,7 +4794,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   } 
-  
+
   else if (strcmp(argv[1],"NewmarkExplicit") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkExplicit();
     
@@ -6597,7 +6614,7 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
       int size = data->Size();
       char buffer[40];
       for (int i=0; i<size; i++) {
-	sprintf(buffer,"%f ",(*data)(i));
+	sprintf(buffer,"%35.20f",(*data)(i));
 	Tcl_AppendResult(interp, buffer, NULL);
       }
     }
@@ -7064,7 +7081,7 @@ getNDM(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     if (argc > 1) {
         int tag;
         if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-            opserr << "WARNING ndm nodeTag? \n";
+            opserr << "WARNING getNDM nodeTag? \n";
             return TCL_ERROR;
         }
         Node* theNode = theDomain.getNode(tag);
@@ -7098,7 +7115,7 @@ getNDF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
     if (argc > 1) {
         int tag;
         if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-            opserr << "WARNING ndf nodeTag? \n";
+            opserr << "WARNING getNDF nodeTag? \n";
             return TCL_ERROR;
         }
         Node* theNode = theDomain.getNode(tag);
@@ -9150,6 +9167,124 @@ getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 }
 
 int
+getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[20];
+
+	while ((thePattern = thePatterns()) != 0) {
+	  NodalLoadIter theNodLoads = thePattern->getNodalLoads();
+	  NodalLoad *theNodLoad;
+
+	  while ((theNodLoad = theNodLoads()) != 0) {
+		sprintf(buffer, "%d ", theNodLoad->getNodeTag());
+		Tcl_AppendResult(interp, buffer, NULL);
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getNodeLoadTags -- could not read patternTag \n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadTags\n";
+	  return TCL_ERROR;
+	}
+
+	NodalLoadIter theNodLoads = thePattern->getNodalLoads();
+	NodalLoad* theNodLoad;
+
+	char buffer[20];
+
+	while ((theNodLoad = theNodLoads()) != 0) {
+	  sprintf(buffer, "%d ", theNodLoad->getNodeTag());
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+  } else {
+    opserr << "WARNING want - getNodeLoadTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
+getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+  if (argc == 1) {
+	LoadPattern *thePattern;
+	LoadPatternIter &thePatterns = theDomain.getLoadPatterns();
+
+	char buffer[40];
+	int typeEL;
+
+	while ((thePattern = thePatterns()) != 0) {
+	  NodalLoadIter &theNodeLoads = thePattern->getNodalLoads();
+	  NodalLoad *theNodLoad;
+
+	  while ((theNodLoad = theNodeLoads()) != 0) {
+		const Vector &eleLoadData = theNodLoad->getData(typeEL);
+
+		int eleLoadDataSize = eleLoadData.Size();
+		opserr << "eleLoadDataSize: "<< eleLoadDataSize << "\n";
+		for (int i = 0; i < eleLoadDataSize; i++) {
+		  sprintf(buffer, "%35.20f ", eleLoadData(i));
+		  Tcl_AppendResult(interp, buffer, NULL);
+		}
+	  }
+	}
+
+  } else if (argc == 2) {
+	int patternTag;
+
+	if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
+	  opserr << "WARNING getNodeLoadData -- could not read patternTag \n";
+	  return TCL_ERROR;
+	}
+
+	LoadPattern *thePattern = theDomain.getLoadPattern(patternTag);
+    if (thePattern == nullptr) {
+	  opserr << "ERROR load pattern with tag " << patternTag << " not found in domain -- getNodeLoadData\n";
+	  return TCL_ERROR;
+	}
+
+	NodalLoadIter theNodeLoads = thePattern->getNodalLoads();
+	NodalLoad* theNodLoad;
+
+	int typeEL;
+	char buffer[40];
+
+	while ((theNodLoad = theNodeLoads()) != 0) {
+		const Vector &eleLoadData = theNodLoad->getData(typeEL);
+
+		int eleLoadDataSize = eleLoadData.Size();
+		for (int i = 0; i < eleLoadDataSize; i++) {
+		  sprintf(buffer, "%35.20f ", eleLoadData(i));
+		  Tcl_AppendResult(interp, buffer, NULL);
+		}
+
+	}
+
+  } else {
+    opserr << "WARNING want - getNodeLoadTags <patternTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+int
 getEleTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   Element *theEle;
@@ -9175,6 +9310,22 @@ getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
   while ((theEle = eleIter()) != 0) {
     sprintf(buffer, "%d ", theEle->getTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+
+  return TCL_OK;
+}
+
+int
+getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  ID crdTransfTags = OPS_getAllCrdTransfTags();  // Function defined in CrdTransf.h
+
+  char buffer[20];
+
+  for (int i = 0; i < crdTransfTags.Size(); ++i)
+  {
+    sprintf(buffer, "%d ", crdTransfTags(i));
     Tcl_AppendResult(interp, buffer, NULL);
   }
 
@@ -10514,7 +10665,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 2) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10569,7 +10720,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 4) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10624,7 +10775,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 3) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10679,7 +10830,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 9) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}
@@ -10735,7 +10886,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 				if (nNode == 8) {
 					Node **NodePtrs;
 					NodePtrs = theElement->getNodePtrs();		
-					Vector tagNodes(nNode);
+					ID tagNodes(nNode);
 					for (int i = 0; i < nNode; i++) {
 						tagNodes(i)=NodePtrs[i]->getTag();
 					}

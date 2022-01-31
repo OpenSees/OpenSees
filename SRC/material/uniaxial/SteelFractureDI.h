@@ -40,20 +40,20 @@ class SteelFractureDI : public UniaxialMaterial
 {
 public:
 	SteelFractureDI(int tag,
-		double fy, double E0, double b,
+		double Fy, double Fyc, double E0, double b,
 		double R0, double cR1, double cR2,
 		double a1, double a2, double a3, double a4, double sigcr, double m, double sigmin, double FI_lim);
 	/*SteelFracture(int tag,
-	double fy, double E0, double b);*/
+	double Fy, double E0, double b);*/
 
 	// Constructor for no isotropic hardening
 	//SteelFracture(int tag,
-	//	double fy, double E0, double b,
+	//	double Fy, double Fyc, double E0, double b,
 	//	double R0, double cR1, double cR2);
 
 	//// Constructor for no isotropic hardening
 	//// Also provides default values for R0, cR1, and cR2
-	//SteelFracture(int tag, double fy, double E0, double b);
+	//SteelFracture(int tag, double Fy, double Fyc, double E0, double b);
 
 	SteelFractureDI(void);
 	virtual ~SteelFractureDI();
@@ -93,6 +93,7 @@ protected:
 private:
 	// matpar : STEEL FIXED PROPERTIES
 	double Fy;  //  = matpar(1)  : yield stress
+	double FyC;  //  = matpar(1)  : yield stress
 	double E0;  //  = matpar(2)  : initial stiffness
 	double b;   //  = matpar(3)  : hardening ratio (Esh/E0)
 	double R0;  //  = matpar(4)  : exp transition elastic-plastic

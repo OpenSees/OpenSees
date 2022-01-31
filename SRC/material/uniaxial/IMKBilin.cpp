@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
 	if (numIMKBilinMaterials == 0) {
 		numIMKBilinMaterials++;
-		OPS_Error("Mod. IMK Model with Bilinear Hysteretic Response - Code by A. ELKADY\n", 1);
+		OPS_Error("Mod. IMK Bilinear Model - AE-Oct21\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -120,8 +120,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	Di_1 = Di;
 	Ri = U;
 
-	//cout << " Ri_1=" << Ri_1 << " Ri=" << Ri << " Ex_Flag=" << Excursion_Flag << " Rev_Flag=" << Reversal_Flag << " Mr+_Flag=" << Mrpos_Flag << " Mr-_Flag=" << Mrneg_Flag << " En_Flag=" << Energy_Flag << endln;
-
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%  MAIN CODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,7 +131,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	slope_pc_pos0 = Mmax_pos0 / (Theta_pc_pos0);
 	Mpe_pos0 = Mpe_pos0;
 	Mmax_pos0 = MmaxMpe_pos0 * Mpe_pos0;
-	MpeProject_pos0 = Mmax_pos0 - slope_p_pos0  * Theta_max_pos0;
+	MpeProject_pos0 = Mmax_pos0 - slope_p_pos0 * Theta_max_pos0;
 	MmaxProject_pos0 = Mmax_pos0 + slope_pc_pos0 * Theta_max_pos0;
 
 	Theta_y_neg0 = Mpe_neg0 / Ke;
@@ -142,7 +140,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	slope_pc_neg0 = Mmax_neg0 / (Theta_pc_neg0);
 	Mpe_neg0 = Mpe_neg0;
 	Mmax_neg0 = MmaxMpe_neg0 * Mpe_neg0;
-	MpeProject_neg0 = Mmax_neg0 - slope_p_neg0  * Theta_max_neg0;
+	MpeProject_neg0 = Mmax_neg0 - slope_p_neg0 * Theta_max_neg0;
 	MmaxProject_neg0 = Mmax_neg0 + slope_pc_neg0 * Theta_max_neg0;
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -167,14 +165,14 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	double	   Theta_y_neg_j = Theta_y_neg_j_1;
 	double 	 Theta_max_neg_j = Theta_max_neg_j_1;
 
-	double  Mi_boundary_Pos = 0.0;
-	double  Mi_boundary_Neg = 0.0;
+	double  Mi_boundary = 0.0;
 
 	double QuarterFlag, Rintrsct_K, DISP_Rev;
-	double beta_S_j, beta_C_j, beta_K_j, beta_F_j;
+	double beta_S_j, beta_C_j, beta_K_j;
 	double K_j;
-	double Ki, slope_pi, slope_pci, Theta_yi, Theta_maxi, Mmaxi, MpeProjecti, MmaxProjecti, Theta_pci;
-	double BackboneRangeFlag;
+	double Ki, slope_pi, slope_pci, Theta_maxi, MpeProjecti, MmaxProjecti;
+
+	double Mi_temp;
 
 	QuarterFlag = 0;
 	Reversal_Flag = 0;
@@ -194,19 +192,19 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	}
 
 	//  Simple Notation for current step parameters
-	Mi = Mi_1 + K_j_1*(Ri - Ri_1);
+	Mi = Mi_1 + K_j_1 * (Ri - Ri_1);
 
 	//  Check for Fail Flag
 	if ((Ri >= Theta_u_pos0)) {
-		Fail_FlagPos = 1.0;
+		Fail_FlagPos = 1;
 	}
 	if ((Ri <= -Theta_u_neg0)) {
-		Fail_FlagNeg = 1.0;
+		Fail_FlagNeg = 1;
 	}
 
 	//  Get Information before first Yield
-	if ((Mi > Mpe_pos0) && (Yield_Flag == 0.0)) {
-		Yield_Flag = 1.0;
+	if (((Mi >= Mpe_pos0) || (Mi <= -Mpe_neg0)) && (Yield_Flag == 0)) {
+		Yield_Flag = 1;
 	}
 
 	//  Check if previous point was a reversal point
@@ -216,37 +214,24 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		Mreversal = Mi_1;
 	}
 
+	// Update loading / unloading stiffness at load reversals
 	if (Reversal_Flag == 1) {
 		Rintrsct_K = Rreversal - Mreversal / K_j_1;
 		DISP_Rev = Energy_total - Energy_Excrsni_1 + 0.5*Mreversal *(Rintrsct_K - Rreversal);
-		// Update Loading/Unloading Stiffness
 		beta_K_j = pow((DISP_Rev / (2 * Ref_Energy_K - Energy_total + 0.5*Mreversal * (Rintrsct_K - Rreversal))), c_K);
-		K_j = K_j_1*(1 - beta_K_j);
+
+		K_j = K_j_1 * (1 - beta_K_j);
 		if ((Mrpos_Flag == 1) || (Mrneg_Flag == 1)) {
 			K_j = 0.5*Ke;
 		}
-/* 		// Update Paramters for Smooth Transition Option
-		beta_F_j = pow((DISP_Rev / (2 * Ref_Energy_F - Energy_total + 0.5 * Mreversal * (Rintrsct_K - Rreversal))), c_F);
-		if (Di > 0) {
-			beta_Sx = pow(((DISP_Rev + 0.5*Mreversal* (Rintrsct_K - Rreversal)) / (Ref_Energy_S - Energy_total)), c_S);
-			slope_p_x = slope_p_pos_j_1 * (1.0 - beta_Sx * D_pos);
-			Mpe_x = Mpe_pos_j_1 	* (1.0 - beta_Sx * D_pos);
-			Theta_y_x = Mpe_x / K_j;
-			MpeProject_x = Mpe_x - slope_p_x * Theta_y_x;
-		}
-		else {
-			beta_Sx = pow(((DISP_Rev + 0.5*Mreversal * (Rintrsct_K - Rreversal)) / (Ref_Energy_S - Energy_total)), c_S);
-			slope_p_x = slope_p_neg_j_1 * (1.0 - beta_Sx * D_neg);
-			Mpe_x = Mpe_neg_j_1 	* (1.0 - beta_Sx * D_neg);
-			Theta_y_x = Mpe_x / K_j;
-			MpeProject_x = Mpe_x - slope_p_x * Theta_y_x;
-		} */
 	}
 	else {
-		// beta_F_j = beta_F_j_1; 
 		beta_K_j = beta_K_j_1;
 		K_j = K_j_1;
 	}
+
+	//cout << " Ri_1=" << Ri_1 << " Ri=" << Ri << " Di=" << Di << endln;
+	//cout << "                Ex_Flag=" << Excursion_Flag << " Rev_Flag=" << Reversal_Flag << " Yield_Flag=" << Yield_Flag << " Mr+_Flag=" << Mrpos_Flag << " Mr-_Flag=" << Mrneg_Flag << " En_Flag=" << Energy_Flag << endln;
 
 	//  Calculate Backbone parameters at current excursion based on Energy Dissipated in the previous Excursion
 	if (Excursion_Flag == 1.0) {
@@ -255,9 +240,9 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
 		if (Ri - Ri_1 >= 0.0) {
 			//  Update Mpe, Mmax Projection, slope_p, and slope_pc for Current Step
-			Mpe_pos_j = Mpe_pos_j_1 		  * (1.0 - beta_S_j * D_pos);
+			Mpe_pos_j = Mpe_pos_j_1 * (1.0 - beta_S_j * D_pos);
 			MmaxProject_pos_j = MmaxProject_pos_j_1 * (1.0 - beta_C_j * D_pos);
-			slope_p_pos_j = slope_p_pos_j_1 	  * (1.0 - beta_S_j * D_pos);
+			slope_p_pos_j = slope_p_pos_j_1 * (1.0 - beta_S_j * D_pos);
 			if (Mr_pos0 == 0.0) {
 				slope_pc_pos_j = slope_pc_pos0 * (MmaxProject_pos_j - Mr_pos0) / MmaxProject_pos_j;
 			}
@@ -270,12 +255,19 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 			MpeProject_pos_j = Mpe_pos_j - slope_p_pos_j * Theta_y_pos_j;
 			Theta_max_pos_j = fabs((MmaxProject_pos_j - MpeProject_pos_j) / (slope_pc_pos_j + slope_p_pos_j));
 			Mmax_pos_j = MpeProject_pos_j + Theta_max_pos_j * slope_p_pos_j;
+
+			if ((Mmax_pos_j - Mr_pos0) / (Theta_max_pos_j + fabs(Ri)- Mr_pos0/K_j) < slope_p_pos_j) {
+				slope_p_pos_j = (Mmax_pos_j - Mr_pos0) / (Theta_max_pos_j + fabs(Ri) - Mr_pos0 / K_j);
+				MpeProject_pos_j = Mpe_pos_j - slope_p_pos_j * Theta_y_pos_j;
+				Theta_max_pos_j = fabs((MmaxProject_pos_j - MpeProject_pos_j) / (slope_pc_pos_j + slope_p_pos_j));
+				Mmax_pos_j = MpeProject_pos_j + Theta_max_pos_j * slope_p_pos_j;
+			}
 		}
 		else {
 			//  Update Mpe, Mmax Projection, slope_p, and slope_pc for Current Step
-			Mpe_neg_j = Mpe_neg_j_1 		  * (1.0 - beta_S_j * D_neg);
+			Mpe_neg_j = Mpe_neg_j_1 * (1.0 - beta_S_j * D_neg);
 			MmaxProject_neg_j = MmaxProject_neg_j_1 * (1.0 - beta_C_j * D_neg);
-			slope_p_neg_j = slope_p_neg_j_1 	  * (1.0 - beta_S_j * D_neg);
+			slope_p_neg_j = slope_p_neg_j_1 * (1.0 - beta_S_j * D_neg);
 			if (Mr_neg0 == 0.0) {
 				slope_pc_neg_j = slope_pc_neg0 * (MmaxProject_neg_j - Mr_neg0) / MmaxProject_neg_j;
 			}
@@ -288,6 +280,13 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 			MpeProject_neg_j = Mpe_neg_j - slope_p_neg_j * Theta_y_neg_j;
 			Theta_max_neg_j = fabs((MmaxProject_neg_j - MpeProject_neg_j) / (slope_pc_neg_j + slope_p_neg_j));
 			Mmax_neg_j = MpeProject_neg_j + Theta_max_neg_j * slope_p_neg_j;
+
+			if ((Mmax_neg_j - Mr_neg0) / (Theta_max_neg_j + fabs(Ri) - Mr_neg0 / K_j) < slope_p_neg_j) {
+				slope_p_neg_j = (Mmax_neg_j - Mr_neg0) / (Theta_max_neg_j + fabs(Ri) - Mr_neg0 / K_j);
+				MpeProject_neg_j = Mpe_neg_j - slope_p_neg_j * Theta_y_neg_j;
+				Theta_max_neg_j = fabs((MmaxProject_neg_j - MpeProject_neg_j) / (slope_pc_neg_j + slope_p_neg_j));
+				Mmax_neg_j = MpeProject_neg_j + Theta_max_neg_j * slope_p_neg_j;
+			}
 		}
 
 	}
@@ -320,7 +319,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
 	// If the residual moment is reached in a given direction, Ovverride the values of Mmax, Theta_max, slope_p and slope_pc
 	if (Di >= 0.0) {
-		if (Mmax_pos_j < Mr_pos0) {
+		if (Mmax_pos_j <= Mr_pos0) {
 			Mmax_pos_j = Mr_pos0;
 			slope_pc_pos_j = pow(10., -6);
 			slope_p_pos_j = pow(10., -6);
@@ -328,7 +327,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		}
 	}
 	else {
-		if (Mmax_neg_j < Mr_neg0) {
+		if (Mmax_neg_j <= Mr_neg0) {
 			Mmax_neg_j = Mr_neg0;
 			slope_pc_neg_j = pow(10., -6);
 			slope_p_neg_j = pow(10., -6);
@@ -337,27 +336,22 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	}
 
 	//  Simple and unified notation for current bacbone parameters
-	if (Di >= 0.0) {
+	Mi_temp = Mi_1 + K_j * (Ri - Ri_1);
+	if (Mi_temp >= 0.0) {
 		Ki = K_j;
 		slope_pi = slope_p_pos_j;
 		slope_pci = slope_pc_pos_j;
-		Theta_yi = Theta_y_pos_j;
 		Theta_maxi = Theta_max_pos_j;
-		Mmaxi = Mmax_pos_j;
 		MpeProjecti = MpeProject_pos_j;
 		MmaxProjecti = MmaxProject_pos_j;
-		Theta_pci = Mmaxi / slope_pci;
 	}
 	else {
 		Ki = K_j;
 		slope_pi = slope_p_neg_j;
 		slope_pci = slope_pc_neg_j;
-		Theta_yi = Theta_y_neg_j;
 		Theta_maxi = Theta_max_neg_j;
-		Mmaxi = Mmax_neg_j;
 		MpeProjecti = MpeProject_neg_j;
 		MmaxProjecti = MmaxProject_neg_j;
-		Theta_pci = Mmaxi / slope_pci;
 	}
 
 
@@ -365,7 +359,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	Mi = Mi_1 + Ki * (Ri - Ri_1);
 
 	//  Location Flags
-	if ((Ri >= 0.0) && (Mi > 0.0)) {
+	if ((Ri >= 0.0) && (Mi >= 0.0)) {
 		QuarterFlag = 1;
 	}
 	else if ((Ri >= 0.0) && (Mi < 0.0)) {
@@ -378,164 +372,107 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		QuarterFlag = 4;
 	}
 
-	//  Get Boundary Moment at Current Step Based on Current BackBone Curve
-	if ((Ri >= 0.0) && (fabs(Ri) <= Theta_maxi)) {
-		Mi_boundary_Pos = MpeProjecti + slope_pi * Ri;
-		Mi_boundary_Neg = -MpeProjecti + slope_pi * Ri;
+	// Get Boundary Moment at Current Step Based on Current BackBone Curve
+	if (QuarterFlag == 1) {
+		if (fabs(Ri) <= Theta_maxi) {
+			Mi_boundary = MpeProjecti + slope_pi * Ri;
+		}
+		else if (fabs(Ri) > Theta_maxi) {
+			Mi_boundary = max(Mr_pos0, MmaxProjecti - slope_pci * Ri);
+		}
+		if (Mi_boundary <= Mr_pos0) {
+			Mrpos_Flag = 1;
+		}
 	}
-	else if ((Ri >= 0.0) && (fabs(Ri) > Theta_maxi)) {
-		Mi_boundary_Pos = MmaxProjecti - slope_pci * Ri;
-		Mi_boundary_Neg = -MpeProjecti + slope_pi  * Ri;
+	else if (QuarterFlag == 3) {
+		if (fabs(Ri) <= Theta_maxi) {
+			Mi_boundary = -MpeProjecti + slope_pi * Ri;
+			//cout << "        MpeProjecti=" << MpeProjecti << " slope_pi=" << slope_pi << " Mbound=" << Mi_boundary << endln;
+
+		}
+		else if (fabs(Ri) > Theta_maxi) {
+			Mi_boundary = min(-Mr_neg0, -MmaxProjecti - slope_pci * Ri);
+		}
+		if (Mi_boundary >= -Mr_neg0) {
+			Mrneg_Flag = 1;
+		}
 	}
-	else if ((Ri <= 0.0) && (fabs(Ri) <= Theta_maxi)) {
-		Mi_boundary_Pos = MpeProjecti + slope_pi * Ri;
-		Mi_boundary_Neg = -MpeProjecti + slope_pi * Ri;
+	else if (QuarterFlag == 2) {
+		Mi_boundary = min(-Mr_neg0, -MpeProjecti + slope_pi * fabs(Ri));
+		if (Mi_boundary == -Mr_neg0 && TangentK==1.e-6) {
+			Mrneg_Flag = 1;
+		}
 	}
-	else if ((Ri <= 0.0) && (fabs(Ri) > Theta_maxi)) {
-		Mi_boundary_Pos = MpeProjecti + slope_pi  * Ri;
-		Mi_boundary_Neg = -MmaxProjecti - slope_pci * Ri;
+	else if (QuarterFlag == 4) {
+		Mi_boundary = max(Mr_pos0, MpeProjecti - slope_pi * fabs(Ri));
+		if (Mi_boundary == Mr_pos0 && TangentK == 1.e-6) {
+			Mrneg_Flag = 1;
+		}
 	}
 
-	//  Check and Modify Boundary Moment if it Exceeds Mr
-	if ((QuarterFlag == 3) && (Mi_boundary_Neg >= 0.0)) {
-		Mi_boundary_Neg = 0.0;
-	}
-
-	if ((QuarterFlag == 3) && (fabs(Mi_boundary_Neg) <= Mr_neg0))
-	{
-		Mi_boundary_Neg = -Mr_neg0;
-		Mrneg_Flag = 1;
-	}
-
-	if ((QuarterFlag == 1) && (Mi_boundary_Pos <= 0.0)) {
-		Mi_boundary_Pos = 0.0;
-	}
-
-	if ((QuarterFlag == 1) && (fabs(Mi_boundary_Pos) <= Mr_pos0))
-	{
-		Mi_boundary_Pos = Mr_pos0;
-		Mrpos_Flag = 1;
-	}
-
-//	///////////////////////////////////////////////////////////////////////
-//	///////////////////// CODE FOR SMOOTH SPLINE //////////////////////////
-//	///////////////////////////////////////////////////////////////////////
-//	//  Get Boundary Moment in the Transition Region at Current Step Based on Spline Curve
-//
-//	double Dx[4];
-//	double Rxx[1];
-//	double Mxx[1];
-//	double Rintrsct, RintrsctL, MintrsctL, RintrsctR, MintrsctR;
-//	double b1, b2;
-//	double RintrsctXaxis;
-//
-//	if ((Di < 0)) {
-//		b1 = Mreversal - Ki*Rreversal;
-//		b2 = -MpeProject_x;
-//		RintrsctXaxis = -b1 / Ki;
-//		Rintrsct = -(b2 - b1) / (slope_p_x - Ki);
-//
-//		RintrsctL = Rintrsct - Roffset / (1 - beta_F_j);
-//		if ((RintrsctL > Theta_maxi)) {
-//			RintrsctL = Theta_maxi;
-//		}
-//		MintrsctL = b2 + slope_pi*RintrsctL;
-//
-//		RintrsctR = Rintrsct + n*Roffset / (1 - beta_F_j);
-//		if (RintrsctR > Rreversal) {
-//			RintrsctR = Rreversal;
-//		}
-//		MintrsctR = b1 + Ki*RintrsctR;
-//
-//		if ((Ri > RintrsctL) && (Ri < RintrsctR)) {
-//			// R and M vectors for PCHIP interpolation
-//			double Rx[4] = { RintrsctL - 0.01,   RintrsctL,   RintrsctR,          RintrsctR + 0.01 };
-//			double Mx[4] = { b2 + slope_pi*(RintrsctL - 0.01),  MintrsctL,   MintrsctR,   b1 + Ki*(RintrsctR + 0.01) };
-//			spline_pchip_set(4, Rx, Mx, Dx);
-//			Rxx[0] = Ri;
-//			spline_pchip_set(4, Rx, Mx, Dx);
-//			spline_pchip_val(4, Rx, Mx, Dx, 1, Rxx, Mxx);
-//			Mi_boundary_Pos = Mxx[0];
-//			Mi_boundary_Neg = Mxx[0];
-//			//cout <<  " R_rev=" << Rreversal  <<" R_L=" << RintrsctL  <<" R_R=" << RintrsctR << " Mbound-=" << Mi_boundary_Neg << " Mbound+=" << Mi_boundary_Neg<< " Mi="<< Mi << " beta="<<beta_F_j <<endl;
-//		}
-//	}
-//
-//	if ((Di >= 0)) {
-//		b1 = Mreversal - Ki*Rreversal;
-//		b2 = MpeProject_x;
-//		RintrsctXaxis = -b1 / Ki;
-//		Rintrsct = -(b2 - b1) / (slope_p_x - Ki);
-//
-//		RintrsctL = Rintrsct - n*Roffset / (1 - beta_F_j);
-//		if (RintrsctL < Rreversal) {
-//			RintrsctL = Rreversal;
-//		}
-//		MintrsctL = b1 + Ki*RintrsctL;
-//
-//		RintrsctR = Rintrsct + Roffset / (1 - beta_F_j);
-//		if ((RintrsctR > Theta_maxi)) {
-//			RintrsctR = Theta_maxi;
-//		}
-//		MintrsctR = b2 + slope_pi*RintrsctR;
-//
-//		if ((Ri > RintrsctL) && (Ri < RintrsctR)) {
-//			// R and M vectors for PCHIP interpolation
-//			double Rx[4] = { RintrsctL - 0.01,   RintrsctL,   RintrsctR,                RintrsctR + 0.01 };
-//			double Mx[4] = { b1 + Ki*(RintrsctL - 0.01),  MintrsctL,   MintrsctR,   b2 + slope_pi*(RintrsctR + 0.01) };
-//			spline_pchip_set(4, Rx, Mx, Dx);
-//			Rxx[0] = Ri;
-//			spline_pchip_set(4, Rx, Mx, Dx);
-//			spline_pchip_val(4, Rx, Mx, Dx, 1, Rxx, Mxx);
-//			Mi_boundary_Pos = Mxx[0];
-//			Mi_boundary_Neg = Mxx[0];
-//		}
-//	}
-//
-//	///////////////////////////////////////////////////////////////////////
-//	///////////////////////////////////////////////////////////////////////
-
+	//cout << "                Mi_1=" << Mi_1 << " Mi=" << Mi << " TangentK=" << TangentK << " Mbound=" << Mi_boundary << " Q=" << QuarterFlag << endln;
 
 	// If Failure took place in a given direction (Fail_Flag_dir=1), Set the Boundary Moment in the opposite direction to Mr
-	if ((Ri < 0) && (Di > 0) && (Fail_FlagNeg == 1)) {
-		Mi_boundary_Pos = Mr_pos0;
+	if ((Ri <= 0.0) && (Di > 0.0) && (Fail_FlagNeg == 1)) {
+		Mi_boundary = Mr_pos0;
 	}
-	if ((Ri > 0) && (Di < 0) && (Fail_FlagPos == 1)) {
-		Mi_boundary_Neg = -Mr_neg0;
+	else if ((Ri >= 0.0) && (Di < 0.0) && (Fail_FlagPos == 1)) {
+		Mi_boundary = -Mr_neg0;
 	}
 
-	// If the residual moment is reached in a given direction (Mrdir_Flag=1), Set the Boundary Moment in both directions to Mr
-	if ((Mrpos_Flag == 1) || (Mrneg_Flag == 1)) {
-		Mi_boundary_Pos = Mr_pos0;
-		Mi_boundary_Neg = -Mr_neg0;
-	}
 
 	// %%%%%%% Current Step Moment Calculation %%%%%%%
 	// If current moment based on unloading/reloading Ki is larger than the boundary moment, set it equal to the boundary moment
-	if (Mi > Mi_boundary_Pos) {
-		Mi = Mi_boundary_Pos;
+	if (QuarterFlag == 1 && Di >= 0.0 && Mi >= Mi_boundary) {
+		Mi = Mi_boundary;
 	}
-	if (Mi < Mi_boundary_Neg) {
-		Mi = Mi_boundary_Neg;
+	else if (QuarterFlag == 3 && Di <= 0.0 && Mi <= Mi_boundary) {
+		Mi = Mi_boundary;
 	}
-
-	// if fail flag is reached in a given loading direction, set current moment equal to zero
-	if ((Ri > 0.0) && (Fail_FlagPos == 1.0)) {
-		Mi = 0.0;
+	else if (QuarterFlag == 2 && Mi <= Mi_boundary) {
+		Mi = Mi_boundary;
 	}
-	if ((Ri < 0.0) && (Fail_FlagNeg == 1.0)) {
-		Mi = 0.0;
+	else if (QuarterFlag == 4 && Mi >= Mi_boundary) {
+		Mi = Mi_boundary;
 	}
 
-	if (Energy_Flag == 1) {
+	if ((Mrneg_Flag == 1) || (Mrpos_Flag == 1)) {
+		if (QuarterFlag == 1 && Di > 0 && Mi_1 == Mr_pos0)  {
+			Mi = Mr_pos0;
+		}
+		if  (QuarterFlag == 3 && Di < 0 && Mi_1 == -Mr_neg0) {
+			Mi = -Mr_neg0;
+		}
+	}
+
+	// if fail flag is reached in any loading direction, set current moment equal to zero
+	if ((Fail_FlagPos == 1.0) || (Fail_FlagNeg == 1.0) || (Energy_Flag == 1)) {
 		Mi = 0.0;
 	}
+
+	if (Yield_Flag != 1) {
+		if (Ri >= Theta_y_pos0) {
+			Mi = Mpe_pos0 + slope_p_pos0 * (Ri - Theta_y_pos0);
+		}
+		else {
+			Mi = Ke * (Ri);
+		}
+
+		if (Ri <= -Theta_y_neg0) {
+			Mi = -Mpe_neg0 - slope_p_neg0 * fabs(Ri - Theta_y_neg0);
+		}
+		else {
+			Mi = Ke * (Ri);
+		}
+	}
+
+	//cout << "                Mi_1=" << Mi_1 << " Mi=" << Mi << " TangentK=" << TangentK << " Mbound=" << Mi_boundary << " Q=" << QuarterFlag << endln;
 
 	// %%%%%%%%%%%%% Energy Calculation %%%%%%%%%%%%%
 	Energy_total = Energy_total + (Mi + Mi_1) * 0.5 * (Ri - Ri_1); //  total energy dissipated till current incremental step
 
 	// Energy calculation at each new excursion
-	if (Mi / Mi_1 < 0.0) {
+	if (Mi / Mi_1 <= 0.0) {
 		Energy_Excrsn = Energy_total - Energy_Excrsni_1;	// total energy dissipated in current excursion
 		Energy_Excrsni_1 = Energy_total;					// total energy dissipated in previous excursion
 		Excursion_Flag = 1;
@@ -566,36 +503,35 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
 	if (Ri >= Ri_1) {
 		K_j_1 = K_j;
-		Theta_y_pos_j_1 = Theta_y_pos_j;
-		Theta_max_pos_j_1 = Theta_max_pos_j;
-		slope_p_pos_j_1 = slope_p_pos_j;
-		slope_pc_pos_j_1 = slope_pc_pos_j;
-		Mpe_pos_j_1 = Mpe_pos_j;
-		MpeProject_pos_j_1 = MpeProject_pos_j;
-		Mmax_pos_j_1 = Mmax_pos_j;
+		Theta_y_pos_j_1		= Theta_y_pos_j;
+		Theta_max_pos_j_1	= Theta_max_pos_j;
+		slope_p_pos_j_1		= slope_p_pos_j;
+		slope_pc_pos_j_1	= slope_pc_pos_j;
+		Mpe_pos_j_1			= Mpe_pos_j;
+		MpeProject_pos_j_1	= MpeProject_pos_j;
+		Mmax_pos_j_1		= Mmax_pos_j;
 		MmaxProject_pos_j_1 = MmaxProject_pos_j;
-		Theta_u_pos0 = Theta_u_pos0;
+		Theta_u_pos0		= Theta_u_pos0;
 	}
 	else {
 		K_j_1 = K_j;
-		Theta_y_neg_j_1 = Theta_y_neg_j;
-		Theta_max_neg_j_1 = Theta_max_neg_j;
-		slope_p_neg_j_1 = slope_p_neg_j;
-		slope_pc_neg_j_1 = slope_pc_neg_j;
-		Mpe_neg_j_1 = Mpe_neg_j;
-		MpeProject_neg_j_1 = MpeProject_neg_j;
-		Mmax_neg_j_1 = Mmax_neg_j;
+		Theta_y_neg_j_1		= Theta_y_neg_j;
+		Theta_max_neg_j_1	= Theta_max_neg_j;
+		slope_p_neg_j_1		= slope_p_neg_j;
+		slope_pc_neg_j_1	= slope_pc_neg_j;
+		Mpe_neg_j_1			= Mpe_neg_j;
+		MpeProject_neg_j_1	= MpeProject_neg_j;
+		Mmax_neg_j_1		= Mmax_neg_j;
 		MmaxProject_neg_j_1 = MmaxProject_neg_j;
-		Theta_u_neg0 = Theta_u_neg0;
+		Theta_u_neg0		= Theta_u_neg0;
 	}
 
 	beta_S_j_1 = beta_S_j;
 	beta_C_j_1 = beta_C_j;
 	beta_K_j_1 = beta_K_j;
-	//beta_F_j_1 = beta_F_j;
 
 	// Tangent Stiffeness Calculation
-	if (Mi == Mr_pos0) {
+	if (Mi == Mr_pos0 || Mi == -Mr_neg0) {
 		TangentK = pow(10., -6);
 	}
 
@@ -605,8 +541,12 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	}
 	else {
 		TangentK = (Mi - Mi_1) / (Ri - Ri_1);
+		if (TangentK == 0) {
+			TangentK = pow(10., -6);
+		}
 	}
 
+	//cout << "                Mi_1=" << Mi_1 << " Mi=" << Mi << " Ke=" << Ke << " TangentK=" << TangentK << " Mbound=" << Mi_boundary << endln;
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// %%%%%%%%%%%%%%%%%%%%%% END OF MAIN CODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -680,7 +620,6 @@ int IMKBilin::commitState(void)
 	cbeta_S_j_1 = beta_S_j_1;
 	cbeta_C_j_1 = beta_C_j_1;
 	cbeta_K_j_1 = beta_K_j_1;
-	cbeta_F_j_1 = beta_F_j_1;
 
 	cExcursion_Flag = Excursion_Flag;
 	cReversal_Flag = Reversal_Flag;
@@ -739,7 +678,6 @@ int IMKBilin::revertToLastCommit(void)
 	beta_S_j_1 = cbeta_S_j_1;
 	beta_C_j_1 = cbeta_C_j_1;
 	beta_K_j_1 = cbeta_K_j_1;
-	beta_F_j_1 = cbeta_F_j_1;
 
 	Excursion_Flag = cExcursion_Flag;
 	Reversal_Flag = cReversal_Flag;
@@ -788,7 +726,6 @@ int IMKBilin::revertToStart(void)
 	Ref_Energy_S = LAMBDA_S*Mpe_pos0;
 	Ref_Energy_C = LAMBDA_C*Mpe_pos0;
 	Ref_Energy_K = LAMBDA_K*Mpe_pos0;
-	Ref_Energy_F = LAMBDA_F*Mpe_pos0;
 
 	K_j_1 = Ke;
 	Theta_y_pos_j_1 = Mpe_pos0 / Ke;
@@ -831,16 +768,9 @@ int IMKBilin::revertToStart(void)
 	Rreversal = cRreversal = 0;
 	Mreversal = cMreversal = 0;
 
-	beta_Sx = 0.0;
-	slope_p_x = slope_p_pos_j_1;
-	Mpe_x = Mpe_pos_j_1;
-	Theta_y_x = Mpe_x / Ke;
-	MpeProject_x = Mpe_x - slope_p_x * Theta_y_x;
-
 	beta_S_j_1 = cbeta_S_j_1 = 0;
 	beta_C_j_1 = cbeta_C_j_1 = 0;
 	beta_K_j_1 = cbeta_K_j_1 = 0;
-	beta_F_j_1 = cbeta_F_j_1 = 0;
 
 	Excursion_Flag = cExcursion_Flag = 0;
 	Reversal_Flag = cReversal_Flag = 0;
@@ -929,7 +859,6 @@ IMKBilin::getCopy(void)
 	theCopy->beta_S_j_1 = beta_S_j_1;
 	theCopy->beta_C_j_1 = beta_C_j_1;
 	theCopy->beta_K_j_1 = beta_K_j_1;
-	theCopy->beta_F_j_1 = beta_F_j_1;
 
 	theCopy->Excursion_Flag = Excursion_Flag;
 	theCopy->Reversal_Flag = Reversal_Flag;
@@ -982,7 +911,6 @@ IMKBilin::getCopy(void)
 	theCopy->cbeta_S_j_1 = cbeta_S_j_1;
 	theCopy->cbeta_C_j_1 = cbeta_C_j_1;
 	theCopy->cbeta_K_j_1 = cbeta_K_j_1;
-	theCopy->cbeta_F_j_1 = cbeta_F_j_1;
 
 	theCopy->cExcursion_Flag = cExcursion_Flag;
 	theCopy->cReversal_Flag = cReversal_Flag;
@@ -1006,7 +934,7 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 	int res = 0;
 	cout << " sendSelf" << endln;
 
-	static Vector data(120);
+	static Vector data(113);
 	data(0) = this->getTag();
 	data(1) = Ke;
 	data(2) = Theta_p_pos0;
@@ -1024,125 +952,117 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 	data(14) = LAMBDA_S;
 	data(15) = LAMBDA_C;
 	data(16) = LAMBDA_K;
-	data(17) = LAMBDA_F;
-	data(18) = c_S;
-	data(19) = c_C;
-	data(20) = c_K;
-	data(21) = c_F;
-	data(22) = D_pos;
-	data(23) = D_neg;
+	data(17) = c_S;
+	data(18) = c_C;
+	data(19) = c_K;
+	data(20) = D_pos;
+	data(21) = D_neg;
 
-	data(24) = Ri;
-	data(25) = Mi;
-	data(26) = Di;
-	data(27) = Ri_1;
-	data(28) = Mi_1;
-	data(29) = Di_1;
-	data(30) = Rreversal;
-	data(31) = Mreversal;
-	data(32) = TangentK;
+	data(22) = Ri;
+	data(23) = Mi;
+	data(24) = Di;
+	data(25) = Ri_1;
+	data(26) = Mi_1;
+	data(27) = Di_1;
+	data(28) = Rreversal;
+	data(29) = Mreversal;
+	data(30) = TangentK;
 
-	data(33) = K_j_1;
-	data(34) = Theta_y_pos_j_1;
-	data(35) = Theta_max_pos_j_1;
-	data(36) = slope_p_pos_j_1;
-	data(37) = slope_pc_pos_j_1;
-	data(38) = Mpe_pos_j_1;
-	data(39) = MpeProject_pos_j_1;
-	data(40) = Mmax_pos_j_1;
-	data(41) = MmaxProject_pos_j_1;
+	data(31) = K_j_1;
+	data(32) = Theta_y_pos_j_1;
+	data(33) = Theta_max_pos_j_1;
+	data(34) = slope_p_pos_j_1;
+	data(35) = slope_pc_pos_j_1;
+	data(36) = Mpe_pos_j_1;
+	data(37) = MpeProject_pos_j_1;
+	data(38) = Mmax_pos_j_1;
+	data(39) = MmaxProject_pos_j_1;
 
-	data(42) = Theta_y_neg_j_1;
-	data(43) = Theta_max_neg_j_1;
-	data(44) = slope_p_neg_j_1;
-	data(45) = slope_pc_neg_j_1;
-	data(46) = Mpe_neg_j_1;
-	data(47) = MpeProject_neg_j_1;
-	data(48) = Mmax_neg_j_1;
-	data(49) = MmaxProject_neg_j_1;
+	data(40) = Theta_y_neg_j_1;
+	data(41) = Theta_max_neg_j_1;
+	data(42) = slope_p_neg_j_1;
+	data(43) = slope_pc_neg_j_1;
+	data(44) = Mpe_neg_j_1;
+	data(45) = MpeProject_neg_j_1;
+	data(46) = Mmax_neg_j_1;
+	data(47) = MmaxProject_neg_j_1;
 
-	data(50) = beta_S_j_1;
-	data(51) = beta_C_j_1;
-	data(52) = beta_K_j_1;
-	data(53) = beta_F_j_1;
+	data(48) = beta_S_j_1;
+	data(49) = beta_C_j_1;
+	data(50) = beta_K_j_1;
 
-	data(54) = Ref_Energy_S;
-	data(55) = Ref_Energy_C;
-	data(56) = Ref_Energy_K;
-	data(57) = Ref_Energy_F;
+	data(51) = Ref_Energy_S;
+	data(52) = Ref_Energy_C;
+	data(53) = Ref_Energy_K;
 
-	data(58) = Excursion_Flag;
-	data(59) = Reversal_Flag;
-	data(60) = Yield_Flag;
-	data(61) = Fail_FlagPos;
-	data(62) = Fail_FlagNeg;
-	data(63) = Mrpos_Flag;
-	data(64) = Mrneg_Flag;
-	data(65) = Energy_Flag;
+	data(54) = Excursion_Flag;
+	data(55) = Reversal_Flag;
+	data(56) = Yield_Flag;
+	data(57) = Fail_FlagPos;
+	data(58) = Fail_FlagNeg;
+	data(59) = Mrpos_Flag;
+	data(60) = Mrneg_Flag;
+	data(61) = Energy_Flag;
 
-	data(66) = Energy_Excrsni_1;
-	data(67) = Energy_Excrsn;
-	data(68) = Energy_Rev;
-	data(69) = Energy_total;
+	data(62) = Energy_Excrsni_1;
+	data(63) = Energy_Excrsn;
+	data(64) = Energy_Rev;
+	data(65) = Energy_total;
 
-	data(70) = cRi;
-	data(71) = cMi;
-	data(72) = cDi;
-	data(73) = cRi_1;
-	data(74) = cMi_1;
-	data(75) = cDi_1;
-	data(76) = cRreversal;
-	data(77) = cMreversal;
-	data(78) = cTangentK;
+	data(66) = cRi;
+	data(67) = cMi;
+	data(68) = cDi;
+	data(69) = cRi_1;
+	data(70) = cMi_1;
+	data(71) = cDi_1;
+	data(72) = cRreversal;
+	data(73) = cMreversal;
+	data(74) = cTangentK;
 
-	data(79) = cK_j_1;
-	data(80) = cTheta_y_pos_j_1;
-	data(81) = cTheta_max_pos_j_1;
-	data(82) = cslope_p_pos_j_1;
-	data(83) = cslope_pc_pos_j_1;
-	data(84) = cMpe_pos_j_1;
-	data(85) = cMpeProject_pos_j_1;
-	data(86) = cMmax_pos_j_1;
-	data(87) = cMmaxProject_pos_j_1;
+	data(75) = cK_j_1;
+	data(76) = cTheta_y_pos_j_1;
+	data(77) = cTheta_max_pos_j_1;
+	data(78) = cslope_p_pos_j_1;
+	data(79) = cslope_pc_pos_j_1;
+	data(80) = cMpe_pos_j_1;
+	data(81) = cMpeProject_pos_j_1;
+	data(82) = cMmax_pos_j_1;
+	data(83) = cMmaxProject_pos_j_1;
 
-	data(88) = cTheta_y_neg_j_1;
-	data(89) = cTheta_max_neg_j_1;
-	data(90) = cslope_p_neg_j_1;
-	data(91) = cslope_pc_neg_j_1;
-	data(92) = cMpe_neg_j_1;
-	data(93) = cMpeProject_neg_j_1;
-	data(94) = cMmax_neg_j_1;
-	data(95) = cMmaxProject_neg_j_1;
+	data(84) = cTheta_y_neg_j_1;
+	data(85) = cTheta_max_neg_j_1;
+	data(86) = cslope_p_neg_j_1;
+	data(87) = cslope_pc_neg_j_1;
+	data(88) = cMpe_neg_j_1;
+	data(89) = cMpeProject_neg_j_1;
+	data(90) = cMmax_neg_j_1;
+	data(91) = cMmaxProject_neg_j_1;
 
-	data(96) = cbeta_S_j_1;
-	data(97) = cbeta_C_j_1;
-	data(98) = cbeta_K_j_1;
-	data(99) = cbeta_F_j_1;
+	data(92) = cbeta_S_j_1;
+	data(93) = cbeta_C_j_1;
+	data(94) = cbeta_K_j_1;
 
-	data(100) = cExcursion_Flag;
-	data(101) = cReversal_Flag;
-	data(102) = cYield_Flag;
-	data(103) = cFail_FlagPos;
-	data(104) = cFail_FlagNeg;
-	data(105) = cMrpos_Flag;
-	data(106) = cMrneg_Flag;
-	data(107) = cEnergy_Flag;
+	data(95) = cExcursion_Flag;
+	data(96) = cReversal_Flag;
+	data(97) = cYield_Flag;
+	data(98) = cFail_FlagPos;
+	data(99) = cFail_FlagNeg;
+	data(100) = cMrpos_Flag;
+	data(101) = cMrneg_Flag;
+	data(102) = cEnergy_Flag;
 
-	data(108) = cEnergy_Excrsni_1;
-	data(109) = cEnergy_Excrsn;
-	data(110) = cEnergy_Rev;
-	data(111) = cEnergy_total;
+	data(103) = cEnergy_Excrsni_1;
+	data(104) = cEnergy_Excrsn;
+	data(105) = cEnergy_Rev;
+	data(106) = cEnergy_total;
 
-	data(112) = Mr_pos0;
-	data(113) = Mr_neg0;
-	data(114) = cMr_pos0;
-	data(115) = cMr_neg0;
+	data(107) = Mr_pos0;
+	data(108) = Mr_neg0;
+	data(109) = cMr_pos0;
+	data(110) = cMr_neg0;
 
-	data(116) = U;
-	data(117) = cU;
-
-	data(118) = n;
-	data(119) = Roffset;
+	data(111) = U;
+	data(112) = cU;
 
 	res = theChannel.sendVector(this->getDbTag(), cTag, data);
 	if (res < 0)
@@ -1154,7 +1074,7 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(120);
+	static Vector data(113);
 	res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
 	if (res < 0) {
@@ -1164,142 +1084,135 @@ int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroke
 	else {
 		cout << " recvSelf" << endln;
 		this->setTag((int)data(0));
-		Ke = data(1);
-		Theta_p_pos0 = data(2);
-		Theta_pc_pos0 = data(3);
-		Theta_u_pos0 = data(4);
-		Mpe_pos0 = data(5);
-		MmaxMpe_pos0 = data(6);
-		ResM_pos0 = data(7);
-		Theta_p_neg0 = data(8);
-		Theta_pc_neg0 = data(9);
-		Theta_u_neg0 = data(10);
-		Mpe_neg0 = data(11);
-		MmaxMpe_neg0 = data(12);
-		ResM_neg0 = data(13);
-		LAMBDA_S = data(14);
-		LAMBDA_C = data(15);
-		LAMBDA_K = data(16);
-		LAMBDA_F = data(17);
-		c_S = data(18);
-		c_C = data(19);
-		c_K = data(20);
-		c_F = data(21);
-		D_pos = data(22);
-		D_neg = data(23);
+		Ke					= data(1);
+		Theta_p_pos0		= data(2);
+		Theta_pc_pos0		= data(3);
+		Theta_u_pos0		= data(4);
+		Mpe_pos0			= data(5);
+		MmaxMpe_pos0		= data(6);
+		ResM_pos0			= data(7);
+		Theta_p_neg0		= data(8);
+		Theta_pc_neg0		= data(9);
+		Theta_u_neg0		= data(10);
+		Mpe_neg0			= data(11);
+		MmaxMpe_neg0		= data(12);
+		ResM_neg0			= data(13);
+		LAMBDA_S			= data(14);
+		LAMBDA_C			= data(15);
+		LAMBDA_K			= data(16);
+		c_S					= data(17);
+		c_C					= data(18);
+		c_K					= data(19);
+		D_pos				= data(20);
+		D_neg				= data(21);
 
-		Ri = data(24);
-		Mi = data(25);
-		Di = data(26);
-		Ri_1 = data(27);
-		Mi_1 = data(28);
-		Di_1 = data(29);
-		Rreversal = data(30);
-		Mreversal = data(31);
-		TangentK = data(32);
+		Ri					= data(22);
+		Mi					= data(23);
+		Di					= data(24);
+		Ri_1				= data(25);
+		Mi_1				= data(26);
+		Di_1				= data(27);
+		Rreversal			= data(28);
+		Mreversal			= data(29);
+		TangentK			= data(30);
 
-		K_j_1 = data(33);
-		Theta_y_pos_j_1 = data(34);
-		Theta_max_pos_j_1 = data(35);
-		slope_p_pos_j_1 = data(36);
-		slope_pc_pos_j_1 = data(37);
-		Mpe_pos_j_1 = data(38);
-		MpeProject_pos_j_1 = data(39);
-		Mmax_pos_j_1 = data(40);
-		MmaxProject_pos_j_1 = data(41);
+		K_j_1				= data(31);
+		Theta_y_pos_j_1		= data(32);
+		Theta_max_pos_j_1	= data(33);
+		slope_p_pos_j_1		= data(34);
+		slope_pc_pos_j_1	= data(35);
+		Mpe_pos_j_1			= data(36);
+		MpeProject_pos_j_1	= data(37);
+		Mmax_pos_j_1		= data(38);
+		MmaxProject_pos_j_1 = data(39);
 
-		Theta_y_neg_j_1 = data(42);
-		Theta_max_neg_j_1 = data(43);
-		slope_p_neg_j_1 = data(44);
-		slope_pc_neg_j_1 = data(45);
-		Mpe_neg_j_1 = data(46);
-		MpeProject_neg_j_1 = data(47);
-		Mmax_neg_j_1 = data(48);
-		MmaxProject_neg_j_1 = data(49);
+		Theta_y_neg_j_1		= data(40);
+		Theta_max_neg_j_1	= data(41);
+		slope_p_neg_j_1		= data(42);
+		slope_pc_neg_j_1	= data(43);
+		Mpe_neg_j_1			= data(44);
+		MpeProject_neg_j_1	= data(45);
+		Mmax_neg_j_1		= data(46);
+		MmaxProject_neg_j_1 = data(47);
 
-		beta_S_j_1 = data(50);
-		beta_C_j_1 = data(51);
-		beta_K_j_1 = data(52);
-		beta_F_j_1 = data(53);
+		beta_S_j_1			= data(48);
+		beta_C_j_1			= data(49);
+		beta_K_j_1			= data(50);
 
-		Ref_Energy_S = data(54);
-		Ref_Energy_C = data(55);
-		Ref_Energy_K = data(56);
-		Ref_Energy_F = data(57);
+		Ref_Energy_S		= data(51);
+		Ref_Energy_C		= data(52);
+		Ref_Energy_K		= data(53);
 
-		Excursion_Flag = data(58);
-		Reversal_Flag = data(59);
-		Yield_Flag = data(60);
-		Fail_FlagPos = data(61);
-		Fail_FlagNeg = data(62);
-		Mrpos_Flag = data(63);
-		Mrneg_Flag = data(64);
-		Energy_Flag = data(65);
+		Excursion_Flag		= data(54);
+		Reversal_Flag		= data(55);
+		Yield_Flag			= data(56);
+		Fail_FlagPos		= data(57);
+		Fail_FlagNeg		= data(58);
+		Mrpos_Flag			= data(59);
+		Mrneg_Flag			= data(60);
+		Energy_Flag			= data(61);
 
-		Energy_Excrsni_1 = data(66);
-		Energy_Excrsn = data(67);
-		Energy_Rev = data(68);
-		Energy_total = data(69);
+		Energy_Excrsni_1	= data(62);
+		Energy_Excrsn		= data(63);
+		Energy_Rev			= data(64);
+		Energy_total		= data(65);
 
-		cRi = data(70);
-		cMi = data(71);
-		cDi = data(72);
-		cRi_1 = data(73);
-		cMi_1 = data(74);
-		cDi_1 = data(75);
+		cRi					= data(66);
+		cMi					= data(67);
+		cDi					= data(68);
+		cRi_1				= data(69);
+		cMi_1				= data(70);
+		cDi_1				= data(71);
 
-		cRreversal = data(76);
-		cMreversal = data(77);
-		cTangentK = data(78);
+		cRreversal			= data(72);
+		cMreversal			= data(73);
+		cTangentK			= data(74);
 
-		cK_j_1 = data(79);
-		cTheta_y_pos_j_1 = data(80);
-		cTheta_max_pos_j_1 = data(81);
-		cslope_p_pos_j_1 = data(82);
-		cslope_pc_pos_j_1 = data(83);
-		cMpe_pos_j_1 = data(84);
-		cMpeProject_pos_j_1 = data(85);
-		cMmax_pos_j_1 = data(86);
-		cMmaxProject_pos_j_1 = data(87);
+		cK_j_1				= data(75);
+		cTheta_y_pos_j_1	= data(76);
+		cTheta_max_pos_j_1	= data(77);
+		cslope_p_pos_j_1	= data(78);
+		cslope_pc_pos_j_1	= data(79);
+		cMpe_pos_j_1		= data(80);
+		cMpeProject_pos_j_1 = data(81);
+		cMmax_pos_j_1		= data(82);
+		cMmaxProject_pos_j_1= data(83);
 
-		cTheta_y_neg_j_1 = data(88);
-		cTheta_max_neg_j_1 = data(89);
-		cslope_p_neg_j_1 = data(90);
-		cslope_pc_neg_j_1 = data(91);
-		cMpe_neg_j_1 = data(92);
-		cMpeProject_neg_j_1 = data(93);
-		cMmax_neg_j_1 = data(94);
-		cMmaxProject_neg_j_1 = data(95);
+		cTheta_y_neg_j_1	= data(84);
+		cTheta_max_neg_j_1	= data(85);
+		cslope_p_neg_j_1	= data(86);
+		cslope_pc_neg_j_1	= data(87);
+		cMpe_neg_j_1		= data(88);
+		cMpeProject_neg_j_1 = data(89);
+		cMmax_neg_j_1		= data(90);
+		cMmaxProject_neg_j_1= data(91);
 
-		cbeta_S_j_1 = data(96);
-		cbeta_C_j_1 = data(97);
-		cbeta_K_j_1 = data(98);
-		cbeta_F_j_1 = data(99);
+		cbeta_S_j_1			= data(92);
+		cbeta_C_j_1			= data(93);
+		cbeta_K_j_1			= data(94);
 
-		cExcursion_Flag = data(100);
-		cReversal_Flag = data(101);
-		cYield_Flag = data(102);
-		cFail_FlagPos = data(103);
-		cFail_FlagNeg = data(104);
-		cMrpos_Flag = data(105);
-		cMrneg_Flag = data(106);
-		cEnergy_Flag = data(107);
+		cExcursion_Flag		= data(95);
+		cReversal_Flag		= data(96);
+		cYield_Flag			= data(97);
+		cFail_FlagPos		= data(98);
+		cFail_FlagNeg		= data(99);
+		cMrpos_Flag			= data(100);
+		cMrneg_Flag			= data(101);
+		cEnergy_Flag		= data(102);
 
-		cEnergy_Excrsni_1 = data(108);
-		cEnergy_Excrsn = data(109);
-		cEnergy_Rev = data(110);
-		cEnergy_total = data(111);
+		cEnergy_Excrsni_1	= data(103);
+		cEnergy_Excrsn		= data(104);
+		cEnergy_Rev			= data(105);
+		cEnergy_total		= data(106);
 
-		Mr_pos0 = data(112);
-		Mr_neg0 = data(113);
-		cMr_pos0 = data(114);
-		cMr_neg0 = data(115);
+		Mr_pos0				= data(107);
+		Mr_neg0				= data(108);
+		cMr_pos0			= data(109);
+		cMr_neg0			= data(110);
 
-		U = data(116);
-		cU = data(117);
+		U					= data(111);
+		cU					= data(112);
 
-		n = data(118);
-		Roffset = data(119);
 	}
 
 	return res;
