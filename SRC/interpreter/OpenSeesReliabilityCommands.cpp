@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <vector>
 #include <ID.h>
+#include <fstream>
 
 #include <RandomVariable.h>
 #include <RandomVariableIter.h>
@@ -993,11 +994,10 @@ void OpenSeesReliabilityCommands::setFunctionEvaluator(
   }
 }
 
-int
-OPS_startPoint()
-{
+int OPS_startPoint() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to startPoint" << endln;
+    opserr << "ERROR: wrong number of arguments to startPoint"
+           << endln;
     return -1;
   }
 
@@ -1008,27 +1008,75 @@ OPS_startPoint()
   // Get the type of start point
   const char *type = OPS_GetString();
   int meanOrZero = -1;
-  if (strcmp(type,"Mean") == 0)
-    meanOrZero = 1;
-  if (strcmp(type,"Zero") == 0)
-    meanOrZero = 0;  
+  if (strcmp(type, "Mean") == 0) meanOrZero = 1;
+  if (strcmp(type, "Zero") == 0) meanOrZero = 0;
+  if (strcmp(type, "Origin") == 0) meanOrZero = 0;
 
-  RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
+  RandomVariableIter rvIter =
+      theReliabilityDomain->getRandomVariables();
   while ((aRandomVariable = rvIter()) != 0) {
-    if (meanOrZero == 0)
+    if (meanOrZero == 0) {
       aRandomVariable->setStartValue(0.0);
+    }
     if (meanOrZero == 1) {
       double mean = aRandomVariable->getMean();
-      aRandomVariable->setStartValue(mean);      
+      aRandomVariable->setStartValue(mean);
     }
   }
 
-  if (strcmp(type,"-file") == 0) {
-    opserr << "ERROR: startPoint read from file option not implemented" << endln;
-    return -1;
+  if (meanOrZero >= 0) {
+    return 0;
   }
 
-  return 0;
+  // file type
+  if (strcmp(type, "-file") == 0) {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+      opserr << "WARNING: need file name which is space "
+                "delimited and contains a starting point\n";
+      return -1;
+    }
+
+    const char *filename = OPS_GetString();
+    std::ifstream inputFile(filename, std::ios::in);
+    if (inputFile.fail()) {
+      opserr << "File " << filename
+             << " could not be opened for startPoint.\n";
+      return -1;
+    }
+
+    // Loop through file to see how many entries there are
+    double dummy;
+    int numEntries = 0;
+    while (inputFile >> dummy) {
+      numEntries++;
+    }
+
+    if (numEntries == 0) {
+      opserr << "ERROR: No entries in the file read by "
+                "startPoint!\n";
+      return -1;
+    }
+    if (numEntries != nrv) {
+      opserr << "ERROR: Wrong number of entries in the file "
+                "read by startPoint.\n";
+      return -1;
+    }
+
+    // rewind the file and pass values to the RVs
+    inputFile.seekg(0, ios::beg);
+    for (int i = 0; i < nrv; i++) {
+      aRandomVariable =
+          theReliabilityDomain->getRandomVariablePtrFromIndex(i);
+      inputFile >> dummy;
+      aRandomVariable->setStartValue(dummy);
+    }
+
+    inputFile.close();
+    return 0;
+  }
+
+  opserr << "ERROR: Invalid type of start point is given.\n";
+  return -1;
 }
 
 int
@@ -1515,78 +1563,89 @@ int OPS_functionEvaluator() {
   return 0;
 }
 
-int
-OPS_gradientEvaluator()
-{
+int OPS_gradientEvaluator() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to gradientEvaluator" << endln;
+    opserr << "ERROR: wrong number of arguments to "
+              "gradientEvaluator"
+           << endln;
     return -1;
   }
 
   GradientEvaluator *theEval = 0;
-  
+
   // Get the type of gradientEvaluator
   const char *type = OPS_GetString();
-  if (strcmp(type,"FiniteDifference") == 0) {
+  if (strcmp(type, "FiniteDifference") == 0) {
     double perturbationFactor = 1000.0;
     bool doGradientCheck = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *arg = OPS_GetString();
       int numdata = 1;
-      if (strcmp(arg,"-pert") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-	if (OPS_GetDoubleInput(&numdata,&perturbationFactor) < 0) {
-	  opserr << "ERROR: unable to read -pert value for " << type << " gradient evaluator" << endln;
-	  return -1;
-	}
+      if (strcmp(arg, "-pert") == 0 &&
+          OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numdata, &perturbationFactor) <
+            0) {
+          opserr << "ERROR: unable to read -pert value for "
+                 << type << " gradient evaluator" << endln;
+          return -1;
+        }
       }
-      if (strcmp(arg,"-check") == 0) {
-	doGradientCheck = true;
+      if (strcmp(arg, "-check") == 0) {
+        doGradientCheck = true;
       }
     }
 
     ReliabilityDomain *theRelDomain = cmds->getDomain();
     Domain *theStrDomain = cmds->getStructuralDomain();
-    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    FunctionEvaluator *theEvaluator =
+        cmds->getFunctionEvaluator();
     if (theEvaluator == 0) {
-      opserr << "Function evaluator must be defined before gradient evaluator" << endln;
+      opserr << "Function evaluator must be defined before "
+                "gradient evaluator"
+             << endln;
       return -1;
     }
-    
-    theEval = new FiniteDifferenceGradient(theEvaluator, theRelDomain, theStrDomain);
-  }
-  else if (strcmp(type,"OpenSees") == 0 || strcmp(type,"Implicit") == 0) {
+
+    theEval = new FiniteDifferenceGradient(
+        theEvaluator, theRelDomain, theStrDomain);
+  } else if (strcmp(type, "OpenSees") == 0 ||
+             strcmp(type, "Implicit") == 0) {
     bool doGradientCheck = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *arg = OPS_GetString();
-      if (strcmp(arg,"-check") == 0) {
-	doGradientCheck = true;
+      if (strcmp(arg, "-check") == 0) {
+        doGradientCheck = true;
       }
     }
 
     ReliabilityDomain *theRelDomain = cmds->getDomain();
     Domain *theStrDomain = cmds->getStructuralDomain();
-    FunctionEvaluator *theEvaluator = cmds->getFunctionEvaluator();
+    FunctionEvaluator *theEvaluator =
+        cmds->getFunctionEvaluator();
     if (theEvaluator == 0) {
-      opserr << "Function evaluator must be defined before gradient evaluator" << endln;
+      opserr << "Function evaluator must be defined before "
+                "gradient evaluator"
+             << endln;
       return -1;
-    }    
-    theEval = new ImplicitGradient(theEvaluator, theRelDomain, theStrDomain,
-				   0/*theSensitivityAlgorithm*/);
-    
-  }
-  else {
-    opserr << "ERROR: unrecognized type of gradient evaluator: " << type << endln;
+    }
+    theEval = new ImplicitGradient(
+        theEvaluator, theRelDomain, theStrDomain,
+        0 /*theSensitivityAlgorithm*/);
+
+  } else {
+    opserr << "ERROR: unrecognized type of gradient evaluator: "
+           << type << endln;
     return -1;
-  }  
+  }
 
   if (theEval == 0) {
-    opserr << "ERROR: could not create function evaluator" << endln;
+    opserr << "ERROR: could not create function evaluator"
+           << endln;
     return -1;
   } else {
-    if (cmds != 0)
-      cmds->setGradientEvaluator(theEval);
+    if (cmds != 0) cmds->setGradientEvaluator(theEval);
   }
-  
+
   return 0;
 }
 
