@@ -56,6 +56,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
 
+#include <PolakHeSearchDirectionAndMeritFunction.h>
+#include <SQPsearchDirectionMeritFunctionAndHessian.h>
+
 class OpenSeesReliabilityCommands
 {
 public:
@@ -90,7 +93,25 @@ public:
   FunctionEvaluator *getFunctionEvaluator() {return theFunctionEvaluator;}
 
   void setGradientEvaluator(GradientEvaluator *eval);
-  GradientEvaluator *getGradientEvaluator() {return theGradientEvaluator;}  
+  GradientEvaluator *getGradientEvaluator() {return theGradientEvaluator;}
+
+  void setPolakHeDualPurpose(
+      PolakHeSearchDirectionAndMeritFunction *fn) {
+    thePolakHeDualPurpose = fn;
+  }
+  PolakHeSearchDirectionAndMeritFunction *
+  getPolakHeDualPurpose() {
+    return thePolakHeDualPurpose;
+  }
+
+  void setSQPtriplePurpose(
+      SQPsearchDirectionMeritFunctionAndHessian *fn) {
+    theSQPtriplePurpose = fn;
+  }
+  SQPsearchDirectionMeritFunctionAndHessian *
+  getSQPtriplePurpose() {
+    return theSQPtriplePurpose;
+  }
 
   void wipe();
 
@@ -108,7 +129,11 @@ private:
   RootFinding *theRootFinding;
 
   FunctionEvaluator *theFunctionEvaluator;
-  GradientEvaluator *theGradientEvaluator;  
+  GradientEvaluator *theGradientEvaluator;
+
+  // not indepedent pointers
+  PolakHeSearchDirectionAndMeritFunction *thePolakHeDualPurpose;
+  SQPsearchDirectionMeritFunctionAndHessian *theSQPtriplePurpose;
 };
 
 ReliabilityDomain* OPS_GetReliabilityDomain();
