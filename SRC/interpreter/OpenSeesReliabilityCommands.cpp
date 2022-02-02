@@ -1079,38 +1079,42 @@ int OPS_startPoint() {
   return -1;
 }
 
-int
-OPS_randomNumberGenerator()
-{
+int OPS_randomNumberGenerator() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to randomNumberGenerator" << endln;
+    opserr << "ERROR: wrong number of arguments to "
+              "randomNumberGenerator"
+           << endln;
     return -1;
   }
 
   // Get the type of generator
   const char *type = OPS_GetString();
-  if (strcmp(type,"CStdLib") != 0) {
-    opserr << "ERROR: unrecognized type of RandomNumberGenerator " << type << endln;
+  if (strcmp(type, "CStdLib") != 0) {
+    opserr
+        << "ERROR: unrecognized type of RandomNumberGenerator "
+        << type << endln;
     return -1;
   }
 
-  RandomNumberGenerator *theGenerator = new CStdLibRandGenerator();
+  RandomNumberGenerator *theGenerator =
+      new CStdLibRandGenerator();
   if (theGenerator == 0) {
-    opserr << "ERROR: could not create randomNumberGenerator" << endln;
+    opserr << "ERROR: could not create randomNumberGenerator"
+           << endln;
     return -1;
-  } 
+  }
   if (cmds != 0) {
     cmds->setRandomNumberGenerator(theGenerator);
   }
-  
+
   return 0;
 }
 
-int
-OPS_reliabilityConvergenceCheck()
-{
+int OPS_reliabilityConvergenceCheck() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to reliabilityConvergenceCheck" << endln;
+    opserr << "ERROR: wrong number of arguments to "
+              "reliabilityConvergenceCheck"
+           << endln;
     return -1;
   }
 
@@ -1118,68 +1122,86 @@ OPS_reliabilityConvergenceCheck()
   const char *type = OPS_GetString();
 
   double e1 = 1.0e-3;
-  double e2 = 1.0e-3;  
+  double e2 = 1.0e-3;
   double scaleValue = 0.0;
   int print = 1;
 
-  // Standard and Optimality convergence checks have the same optional arguments
+  // Standard and Optimality convergence checks have the same
+  // optional arguments
   while (OPS_GetNumRemainingInputArgs() > 0) {
     const char *arg = OPS_GetString();
     int numdata = 1;
-    if (strcmp(arg,"-e1") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetDoubleInput(&numdata,&e1) < 0) {
-	opserr << "ERROR: unable to read -e1 value for reliability convergence check" << endln;
-	return -1;
+    if (strcmp(arg, "-e1") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata, &e1) < 0) {
+        opserr << "ERROR: unable to read -e1 value for "
+                  "reliability convergence check"
+               << endln;
+        return -1;
       }
     }
-    if (strcmp(arg,"-e2") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetDoubleInput(&numdata,&e2) < 0) {
-	opserr << "ERROR: unable to read -e2 value for reliability convergence check" << endln;
-	return -1;
+    if (strcmp(arg, "-e2") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata, &e2) < 0) {
+        opserr << "ERROR: unable to read -e2 value for "
+                  "reliability convergence check"
+               << endln;
+        return -1;
       }
     }
-    if (strcmp(arg,"-scaleValue") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetDoubleInput(&numdata,&scaleValue) < 0) {
-	opserr << "ERROR: unable to read -scaleValue value for reliability convergence check" << endln;
-	return -1;
+    if (strcmp(arg, "-scaleValue") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numdata, &scaleValue) < 0) {
+        opserr << "ERROR: unable to read -scaleValue value for "
+                  "reliability convergence check"
+               << endln;
+        return -1;
       }
     }
-    if (strcmp(arg,"-print") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-      if (OPS_GetIntInput(&numdata,&print) < 0) {
-	opserr << "ERROR: unable to read -print value for reliability convergence check" << endln;
-	return -1;
+    if (strcmp(arg, "-print") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &print) < 0) {
+        opserr << "ERROR: unable to read -print value for "
+                  "reliability convergence check"
+               << endln;
+        return -1;
       }
-    }            
+    }
   }
 
   ReliabilityConvergenceCheck *theCheck = 0;
-  if (strcmp(type,"Standard") == 0) {
-    theCheck = new StandardReliabilityConvergenceCheck(e1,e2,scaleValue,print);
-  }
-  else if (strcmp(type,"OptimalityCondition") == 0) {
-    theCheck = new OptimalityConditionReliabilityConvergenceCheck(e1,e2,scaleValue,print);
-  }
-  else {
-    opserr << "ERROR: unrecognized type of reliabilityConvergenceCheck " << type << endln;
+  if (strcmp(type, "Standard") == 0) {
+    theCheck = new StandardReliabilityConvergenceCheck(
+        e1, e2, scaleValue, print);
+  } else if (strcmp(type, "OptimalityCondition") == 0) {
+    theCheck =
+        new OptimalityConditionReliabilityConvergenceCheck(
+            e1, e2, scaleValue, print);
+  } else {
+    opserr << "ERROR: unrecognized type of "
+              "reliabilityConvergenceCheck "
+           << type << endln;
     return -1;
   }
 
   if (theCheck == 0) {
-    opserr << "ERROR: could not create reliabilityConvergenceCheck" << endln;
+    opserr
+        << "ERROR: could not create reliabilityConvergenceCheck"
+        << endln;
     return -1;
   } else {
     if (cmds != 0)
       cmds->setReliabilityConvergenceCheck(theCheck);
   }
-  
+
   return 0;
 }
 
-int
-OPS_searchDirection()
-{
+int OPS_searchDirection() {
   if (OPS_GetNumRemainingInputArgs() < 1) {
-    opserr << "ERROR: wrong number of arguments to searchDirection" << endln;
+    opserr
+        << "ERROR: wrong number of arguments to searchDirection"
+        << endln;
     return -1;
   }
 
@@ -1187,51 +1209,131 @@ OPS_searchDirection()
   const char *type = OPS_GetString();
 
   SearchDirection *theSearch = 0;
-  if (strcmp(type,"iHLRF") == 0) {
+  if (strcmp(type, "iHLRF") == 0) {
     theSearch = new HLRFSearchDirection();
-  }
-  else if (strcmp(type,"PolakHe") == 0) {
+
+  } else if (strcmp(type, "PolakHe") == 0) {
     double gamma = 1.0;
     double delta = 1.0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *arg = OPS_GetString();
       int numdata = 1;
-      if (strcmp(arg,"-gamma") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-	if (OPS_GetDoubleInput(&numdata,&gamma) < 0) {
-	  opserr << "ERROR: unable to read -gamma value for PolakHe search direction" << endln;
-	  return -1;
-	}
+      if (strcmp(arg, "-gamma") == 0 &&
+          OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numdata, &gamma) < 0) {
+          opserr << "ERROR: unable to read -gamma value for "
+                    "PolakHe search direction"
+                 << endln;
+          return -1;
+        }
+      } else if (strcmp(arg, "-delta") == 0 &&
+                 OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numdata, &delta) < 0) {
+          opserr << "ERROR: unable to read -delta value for "
+                    "PolakHe search direction"
+                 << endln;
+          return -1;
+        }
+      } else {
+        opserr
+            << "ERROR: Invalid input to Polak-He algorithm.\n";
+        return -1;
       }
-      if (strcmp(arg,"-delta") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
-	if (OPS_GetDoubleInput(&numdata,&delta) < 0) {
-	  opserr << "ERROR: unable to read -delta value for PolakHe search direction" << endln;
-	  return -1;
-	}
-      }      
     }
-    theSearch = new PolakHeSearchDirectionAndMeritFunction(gamma, delta);
-  }
-  else if (strcmp(type,"GradientProjection") == 0) {
-    opserr << "ERROR: GradientProjection search direction not yet implemented" << endln;
+    theSearch =
+        new PolakHeSearchDirectionAndMeritFunction(gamma, delta);
+
+  } else if (strcmp(type, "GradientProjection") == 0) {
+    // Check that a step size rule has been created
+    StepSizeRule *theStepSizeRule = cmds->getStepSizeRule();
+    if (theStepSizeRule == 0) {
+      opserr << "Need theStepSizeRule before a "
+                "GradientProjectionSearchDirection can be "
+                "created\n";
+      return -1;
+    }
+
+    // Check that a transformation has been created
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    ProbabilityTransformation *theProbabilityTransformation =
+        cmds->getProbabilityTransformation();
+    if (theProbabilityTransformation == 0) {
+      opserr << "Assume all RV's are independent" << endln;
+      theProbabilityTransformation =
+          new AllIndependentTransformation(theReliabilityDomain,
+                                           0);
+    }
+
+    // Check that a gfun evaluator has been created
+    FunctionEvaluator *theFunctionEvaluator =
+        cmds->getFunctionEvaluator();
+    if (theFunctionEvaluator == 0) {
+      opserr << "Need theGFunEvaluator before a "
+                "GradientProjectionSearchDirection can be "
+                "created\n";
+      return -1;
+    }
+
+    // Check that a root-finding algorithm has been created
+    RootFinding *theRootFindingAlgorithm =
+        cmds->getRootFinding();
+    if (theRootFindingAlgorithm == 0) {
+      opserr << "Need theRootFindingAlgorithm before a "
+                "GradientProjectionSearchDirection can be "
+                "created\n";
+      return -1;
+    }
+
+    theSearch = new GradientProjectionSearchDirection(
+        theStepSizeRule, theProbabilityTransformation,
+        theFunctionEvaluator, theRootFindingAlgorithm);
+
+  } else if (strcmp(type, "SQP") == 0) {
+    double c_bar = 200.0;
+    double e_bar = 0.5;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *arg = OPS_GetString();
+      int numdata = 1;
+
+      if (strcmp(arg, "-c_bar") == 0 &&
+          OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numdata, &c_bar) < 0) {
+          opserr << "ERROR: invalid input: c_bar for SQP "
+                    "algorithm\n";
+          return -1;
+        }
+
+      } else if (strcmp(arg, "-e_bar") == 0 &&
+                 OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numdata, &e_bar) < 0) {
+          opserr << "ERROR: invalid input: e_bar for SQP "
+                    "algorithm\n";
+          return -1;
+        }
+
+      } else {
+        opserr << "ERROR: Invalid input to SQP algorithm.\n";
+        return -1;
+      }
+    }
+
+    theSearch = new SQPsearchDirectionMeritFunctionAndHessian(
+        c_bar, e_bar);
+
+  } else {
+    opserr << "ERROR: unrecognized type of searchDirection "
+           << type << endln;
     return -1;
   }
-  else if (strcmp(type,"SQP") == 0) {
-    opserr << "ERROR: SQP search direction not yet implemented" << endln;
-    return -1;
-  }
-  else {
-    opserr << "ERROR: unrecognized type of searchDirection " << type << endln;
-    return -1;
-  }  
 
   if (theSearch == 0) {
     opserr << "ERROR: could not create searchDirection" << endln;
     return -1;
   } else {
-    if (cmds != 0)
-      cmds->setSearchDirection(theSearch);
+    if (cmds != 0) cmds->setSearchDirection(theSearch);
   }
-  
+
   return 0;
 }
 
