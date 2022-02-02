@@ -1,26 +1,36 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 2001, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
-** Reliability module developed by:                                   **
-**   Terje Haukaas (haukaas@ce.berkeley.edu)                          **
-**   Armen Der Kiureghian (adk@ce.berkeley.edu)                       **
-**                                                                    **
-** ****************************************************************** */
+/* ******************************************************************
+***
+**    OpenSees - Open System for Earthquake
+*Engineering Simulation **
+**          Pacific Earthquake Engineering
+*Research Center **
+** **
+** **
+** (C) Copyright 2001, The Regents of the
+*University of California **
+** All Rights Reserved. **
+** **
+** Commercial use of this program without express
+*permission of the **
+** University of California, Berkeley, is strictly
+*prohibited.  See **
+** file 'COPYRIGHT'  in main directory for
+*information on usage and **
+** redistribution,  and for a DISCLAIMER OF ALL
+*WARRANTIES. **
+** **
+** Developed by: **
+**   Frank McKenna (fmckenna@ce.berkeley.edu) **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu) **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)
+***
+** **
+** Reliability module developed by: **
+**   Terje Haukaas (haukaas@ce.berkeley.edu) **
+**   Armen Der Kiureghian (adk@ce.berkeley.edu) **
+** **
+** ******************************************************************
+*/
 
 //
 // Written by:
@@ -31,6 +41,7 @@
 #include <PythonEvaluator.h>
 #include <RandomVariablePositionerIter.h>
 #include <Vector.h>
+#include <elementAPI.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,21 +82,25 @@ int PythonEvaluator::setVariables() {
   PyObject *pymodule = PyImport_GetModule(name);
 
   if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not imported\n";
+    opserr << "WARNING: module opensees is not "
+              "imported\n";
     return -1;
   }
 
   // get module dict
   PyObject *moduleDict = PyModule_GetDict(pymodule);
   if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is not available\n";
+    opserr << "WARNING: module opensees dict is "
+              "not available\n";
     return -1;
   }
 
   // get parameter variable
-  PyObject *params = PyDict_GetItemString(moduleDict, "OpenSeesParameter");
+  PyObject *params =
+      PyDict_GetItemString(moduleDict, "OpenSeesParameter");
   if (params == NULL) {
-    opserr << "WARNING: variable OpenSeesParameter is not defined in "
+    opserr << "WARNING: variable OpenSeesParameter "
+              "is not defined in "
               "module opensees\n ";
     return -1;
   }
@@ -93,10 +108,12 @@ int PythonEvaluator::setVariables() {
   // clear parameter dict
   PyDict_Clear(params);
 
-  // Set values of parameters in the Python interpreter
+  // Set values of parameters in the Python
+  // interpreter
   int nparam = theOpenSeesDomain->getNumParameters();
   for (int i = 0; i < nparam; i++) {
-    Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
+    Parameter *theParam =
+        theOpenSeesDomain->getParameterFromIndex(i);
     int paramTag = theParam->getTag();
 
     // now get parameter values directly
@@ -105,16 +122,19 @@ int PythonEvaluator::setVariables() {
     // put existing parameters
     PyObject *key = PyLong_FromLong(paramTag);
     if (key == NULL) {
-      opserr << "WARNING: failed to create parameter key\n";
+      opserr << "WARNING: failed to create "
+                "parameter key\n";
       return -1;
     }
     PyObject *val = PyFloat_FromDouble(xval);
     if (val == NULL) {
-      opserr << "WARNING: failed to create parameter value\n";
+      opserr << "WARNING: failed to create "
+                "parameter value\n";
       return -1;
     }
     if (PyDict_SetItem(params, key, val) < 0) {
-      opserr << "WARNING: failed to set parameter in Python\n";
+      opserr << "WARNING: failed to set "
+                "parameter in Python\n";
       Py_DECREF(key);
       Py_DECREF(val);
       return -1;
@@ -130,7 +150,8 @@ int PythonEvaluator::setVariables() {
   return 0;
 }
 
-int PythonEvaluator::setExpression(const char *passedExpression) {
+int PythonEvaluator::setExpression(
+    const char *passedExpression) {
   if (theExpression != 0) delete[] theExpression;
 
   int exprLen = strlen(passedExpression);
@@ -140,11 +161,14 @@ int PythonEvaluator::setExpression(const char *passedExpression) {
   return 0;
 }
 
-int PythonEvaluator::addToExpression(const char *in) { return 0; }
+int PythonEvaluator::addToExpression(const char *in) {
+  return 0;
+}
 
 double PythonEvaluator::evaluateExpression() {
   if (theExpression == 0) {
-    opserr << "PythonEvaluator::evaluateExpression -- must set the "
+    opserr << "PythonEvaluator::evaluateExpression "
+              "-- must set the "
               "expression before trying ";
     opserr << "to evaluate" << endln;
     return -1;
@@ -160,24 +184,31 @@ double PythonEvaluator::evaluateExpression() {
   PyObject *py_main, *py_dict;
   py_main = PyImport_AddModule("__main__");
   if (py_main == NULL) {
-    opserr << "WARNING: cannot add module __main__\n";
+    opserr << "WARNING: cannot add module "
+              "__main__\n";
     return -1;
   }
   py_dict = PyModule_GetDict(py_main);
   if (py_main == NULL) {
-    opserr << "WARNING: cannot get dict of module __main__\n";
+    opserr << "WARNING: cannot get dict of "
+              "module __main__\n";
     return -1;
   }
-  PyObject *PyRes =
-      PyRun_String(theExpression, Py_eval_input, py_dict, py_dict);
+  PyObject *PyRes = PyRun_String(theExpression, Py_eval_input,
+                                 py_dict, py_dict);
 
   if (PyRes == NULL) {
-    opserr
-        << "WARNING: PythonEvaluator::evaluateExpression -- expression \""
-        << theExpression;
+    opserr << "WARNING: "
+              "PythonEvaluator::"
+              "evaluateExpression -- "
+              "expression \""
+           << theExpression;
     opserr << "\" had some errors.\n";
-    opserr << "Note: use par[paramTag] to access to parameters\n";
-    opserr << "Note: all math.* functions are directly available with or "
+    opserr << "Note: use par[paramTag] to access "
+              "to parameters\n";
+    opserr << "Note: all math.* functions are "
+              "directly available "
+              "with or "
               "without prefix math.\n";
     return -1;
   }
@@ -196,48 +227,58 @@ double PythonEvaluator::evaluateExpression() {
 }
 
 int PythonEvaluator::runAnalysis() {
-  // Let's just make a direct call since we have the pointer to OpenSees
-  // domain This replaces above call to Tcl command; however, in the reset
-  // command revertToStart() is also called on theTransientIntegrator --
-  // MHS needs to check
+  // Let's just make a direct call since we have
+  // the pointer to OpenSees domain This replaces
+  // above call to Tcl command; however, in the
+  // reset command revertToStart() is also called
+  // on theTransientIntegrator -- MHS needs to
+  // check
   if (theOpenSeesDomain->revertToStart() != 0) {
-    opserr << "ERROR PythonEvaluator -- error in resetting Domain"
+    opserr << "ERROR PythonEvaluator -- error in "
+              "resetting Domain"
            << endln;
     return -1;
   }
 
-  // Source the code file that the user has provided
+  // Source the code file that the user has
+  // provided
   if (fileName == 0) {
-    // no source file provided, this is akin to the basic evaluator of days
-    // gone by
+    // no source file provided, this is akin to
+    // the basic evaluator of days gone by
 
   } else {
     // parse the filename
     std::string parsedFileName(fileName);
 
     // add imports
-    parsedFileName.insert(0, "par = opensees.OpenSeesParameter\n");
+    parsedFileName.insert(0,
+                          "par = opensees.OpenSeesParameter\n");
     parsedFileName.insert(0, "import math\n");
     parsedFileName.insert(0, "from math import *\n");
     parsedFileName.insert(0, "import opensees\n");
 
     if (PyRun_SimpleString(parsedFileName.c_str()) < 0) {
-      opserr << "WARNING: PythonEvaluator::runAnalysis -- "
+      opserr << "WARNING: "
+                "PythonEvaluator::runAnalysis -- "
                 "fileName \""
              << fileName;
       opserr << "\" had some errors.\n";
-      opserr << "Note: use par[paramTag] to access to parameters\n";
-      opserr
-          << "Note: all math.* functions are directly available with or "
-             "without prefix math.\n";
+      opserr << "Note: use par[paramTag] to "
+                "access to parameters\n";
+      opserr << "Note: all math.* functions are "
+                "directly available "
+                "with or "
+                "without prefix math.\n";
       return -1;
     }
 
-    // make sure the parameter variables in the namespace update to reflect
-    // the results of above analysis
+    // make sure the parameter variables in the
+    // namespace update to reflect the results of
+    // above analysis
     Parameter *theParam;
 
-    // Set values of parameters in the Tcl interpreter
+    // Set values of parameters in the Tcl
+    // interpreter
     int nparam = theOpenSeesDomain->getNumParameters();
 
     for (int i = 0; i < nparam; i++) {
@@ -250,88 +291,317 @@ int PythonEvaluator::runAnalysis() {
   return 0;
 }
 
-int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
-                                         int rvTag, double value) {
-  char theIndex[80];
-
-  sprintf(theIndex, "%d,%d", lsfTag, rvTag);
-
-  // if (Tcl_SetVar2Ex(theTclInterp, label, theIndex,
-  // Tcl_NewDoubleObj(value),
-  //                   TCL_LEAVE_ERR_MSG) == NULL) {
-  //   opserr << "ERROR PythonEvaluator -- error in setResponseVariable for
-  //   "
-  //             "object with tag "
-  //          << rvTag << endln;
-  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-  //   return -1;
-  // }
-
-  return 0;
-}
-
-int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
+int PythonEvaluator::setResponseVariable(const char *label,
+                                         int lsfTag, int rvTag,
                                          double value) {
-  char theIndex[80];
+  // get module object
+  PyObject *name = PyUnicode_FromString("opensees");
+  PyObject *pymodule = PyImport_GetModule(name);
 
-  sprintf(theIndex, "%d", lsfTag);
+  if (pymodule == NULL) {
+    opserr << "WARNING: module opensees is not "
+              "imported\n";
+    return -1;
+  }
 
-  // if (Tcl_SetVar2Ex(theTclInterp, label, theIndex,
-  // Tcl_NewDoubleObj(value),
-  //                   TCL_LEAVE_ERR_MSG) == NULL) {
-  //   opserr << "ERROR PythonEvaluator -- error in setResponseVariable for
-  //   "
-  //             "object with tag "
-  //          << lsfTag << endln;
-  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-  //   return -1;
-  // }
+  // get module dict
+  PyObject *moduleDict = PyModule_GetDict(pymodule);
+  if (moduleDict == NULL) {
+    opserr << "WARNING: module opensees dict is "
+              "not available\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // get response variable
+  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+  bool newDict = false;
+  if (resVar == NULL) {
+    // create a new dict
+    resVar = PyDict_New();
+    newDict = true;
+    if (resVar == NULL) {
+      opserr << "WARNING: failed to create response variable "
+             << label << "\n";
+      Py_DECREF(name);
+      Py_DECREF(pymodule);
+      return -1;
+    }
+  }
+
+  // create tuple key
+  PyObject *key = PyTuple_New(2);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
+  PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
+
+  // create value
+  PyObject *pyvalue = PyFloat_FromDouble(value);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    return -1;
+  }
+
+  // set the key
+  if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
+    opserr << "WARNING: failed to set response variable\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    Py_DECREF(pyvalue);
+    return -1;
+  }
+
+  // add dictionary to python
+  if (newDict) {
+    if (PyModule_AddObject(pymodule, label, resVar) < 0) {
+      opserr << "WARNING: failed to add response variable\n";
+      Py_DECREF(name);
+      Py_DECREF(pymodule);
+      Py_DECREF(key);
+      Py_DECREF(pyvalue);
+      return -1;
+    }
+  }
+
+  // clean up
+  Py_DECREF(key);
+  Py_DECREF(pyvalue);
+  Py_DECREF(name);
+  Py_DECREF(pymodule);
 
   return 0;
 }
 
-double PythonEvaluator::getResponseVariable(const char *label, int lsfTag,
+int PythonEvaluator::setResponseVariable(const char *label,
+                                         int lsfTag,
+                                         double value) {
+  // get module object
+  PyObject *name = PyUnicode_FromString("opensees");
+  PyObject *pymodule = PyImport_GetModule(name);
+
+  if (pymodule == NULL) {
+    opserr << "WARNING: module opensees is not "
+              "imported\n";
+    return -1;
+  }
+
+  // get module dict
+  PyObject *moduleDict = PyModule_GetDict(pymodule);
+  if (moduleDict == NULL) {
+    opserr << "WARNING: module opensees dict is "
+              "not available\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // get response variable
+  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+  bool newDict = false;
+  if (resVar == NULL) {
+    // create a new dict
+    resVar = PyDict_New();
+    newDict = true;
+    if (resVar == NULL) {
+      opserr << "WARNING: failed to create response variable "
+             << label << "\n";
+      Py_DECREF(name);
+      Py_DECREF(pymodule);
+      return -1;
+    }
+  }
+
+  // create tuple key
+  PyObject *key = PyLong_FromLong(lsfTag);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // create value
+  PyObject *pyvalue = PyFloat_FromDouble(value);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    return -1;
+  }
+
+  // set the key
+  if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
+    opserr << "WARNING: failed to set response variable\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    Py_DECREF(pyvalue);
+    return -1;
+  }
+
+  // add dictionary to python
+  if (newDict) {
+    if (PyModule_AddObject(pymodule, label, resVar) < 0) {
+      opserr << "WARNING: failed to add response variable\n";
+      Py_DECREF(name);
+      Py_DECREF(pymodule);
+      Py_DECREF(key);
+      Py_DECREF(pyvalue);
+      return -1;
+    }
+  }
+
+  // clean up
+  Py_DECREF(key);
+  Py_DECREF(pyvalue);
+  Py_DECREF(name);
+  Py_DECREF(pymodule);
+
+  return 0;
+}
+
+double PythonEvaluator::getResponseVariable(const char *label,
+                                            int lsfTag,
                                             int rvTag) {
-  char theIndex[80];
+  // get module object
+  PyObject *name = PyUnicode_FromString("opensees");
+  PyObject *pymodule = PyImport_GetModule(name);
 
-  sprintf(theIndex, "%d,%d", lsfTag, rvTag);
+  if (pymodule == NULL) {
+    opserr << "WARNING: module opensees is not "
+              "imported\n";
+    return -1;
+  }
 
-  // Tcl_Obj *value =
-  //     Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
-  // if (value == NULL) {
-  //   opserr << "ERROR PythonEvaluator -- error in getResponseVariable for
-  //   "
-  //             "object with tag "
-  //          << rvTag << endln;
-  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-  //   return -1;
-  // }
+  // get module dict
+  PyObject *moduleDict = PyModule_GetDict(pymodule);
+  if (moduleDict == NULL) {
+    opserr << "WARNING: module opensees dict is "
+              "not available\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
 
-  double result;
-  // Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+  // get response variable
+  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+  if (resVar == NULL) {
+    opserr << "WARNING: variable  " << resVar
+           << "is not defined in "
+              "module opensees\n ";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // create tuple key
+  PyObject *key = PyTuple_New(2);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
+  PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
+
+  // get value
+  PyObject *value = PyDict_GetItem(resVar, key);
+  if (value == NULL) {
+    opserr << "WARNING: cannot find key " << lsfTag << ","
+           << rvTag << " in variable " << label << "\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    return -1;
+  }
+
+  double result = PyFloat_AsDouble(value);
+
+  Py_DECREF(name);
+  Py_DECREF(pymodule);
+  Py_DECREF(key);
 
   return result;
 }
 
 double PythonEvaluator::getResponseVariable(const char *label,
                                             int lsfTag) {
-  char theIndex[80];
+  // get module object
+  PyObject *name = PyUnicode_FromString("opensees");
+  PyObject *pymodule = PyImport_GetModule(name);
 
-  sprintf(theIndex, "%d", lsfTag);
+  if (pymodule == NULL) {
+    opserr << "WARNING: module opensees is not "
+              "imported\n";
+    return -1;
+  }
 
-  // Tcl_Obj *value =
-  //     Tcl_GetVar2Ex(theTclInterp, label, theIndex, TCL_LEAVE_ERR_MSG);
-  // if (value == NULL) {
-  //   opserr << "ERROR PythonEvaluator -- error in getResponseVariable for
-  //   "
-  //             "object with tag "
-  //          << lsfTag << endln;
-  //   opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
-  //   return -1;
-  // }
+  // get module dict
+  PyObject *moduleDict = PyModule_GetDict(pymodule);
+  if (moduleDict == NULL) {
+    opserr << "WARNING: module opensees dict is "
+              "not available\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
 
-  double result;
-  // Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+  // get response variable
+  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+  if (resVar == NULL) {
+    opserr << "WARNING: variable  " << resVar
+           << "is not defined in "
+              "module opensees\n ";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // create tuple key
+  PyObject *key = PyLong_FromLong(lsfTag);
+  if (key == NULL) {
+    opserr
+        << "WARNING: failed to create response variable key\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    return -1;
+  }
+
+  // get value
+  PyObject *value = PyDict_GetItem(resVar, key);
+  if (value == NULL) {
+    opserr << "WARNING: cannot find key " << lsfTag
+           << " in variable " << label << "\n";
+    Py_DECREF(name);
+    Py_DECREF(pymodule);
+    Py_DECREF(key);
+    return -1;
+  }
+
+  double result = PyFloat_AsDouble(value);
+
+  Py_DECREF(name);
+  Py_DECREF(pymodule);
+  Py_DECREF(key);
 
   return result;
 }
