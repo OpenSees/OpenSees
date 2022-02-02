@@ -358,6 +358,7 @@ int OPS_rootFinding();
 int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();
+int OPS_runFOSMAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 
 /* OpenSeesCommands.cpp */
