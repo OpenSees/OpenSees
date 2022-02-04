@@ -108,7 +108,8 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomai
    theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0),
    theStepSizeRule(0), theRootFinding(0), theFunctionEvaluator(0),
    theGradientEvaluator(0), thePolakHeDualPurpose(0),
-   theSQPtriplePurpose(0), theFOSMAnalysis(0)
+   theSQPtriplePurpose(0), theFOSMAnalysis(0),
+   theSensAlgo(0)
 {
     if (structuralDomain != 0) {
 	theDomain = new ReliabilityDomain(structuralDomain);	
@@ -1812,7 +1813,7 @@ int OPS_gradientEvaluator() {
   const char *type = OPS_GetString();
   if (strcmp(type, "FiniteDifference") == 0) {
     double perturbationFactor = 1000.0;
-    bool doGradientCheck = false;
+    // bool doGradientCheck = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *arg = OPS_GetString();
       int numdata = 1;
@@ -1826,7 +1827,7 @@ int OPS_gradientEvaluator() {
         }
       }
       if (strcmp(arg, "-check") == 0) {
-        doGradientCheck = true;
+        // doGradientCheck = true;
       }
     }
 
@@ -1845,11 +1846,11 @@ int OPS_gradientEvaluator() {
         theEvaluator, theRelDomain, theStrDomain);
   } else if (strcmp(type, "OpenSees") == 0 ||
              strcmp(type, "Implicit") == 0) {
-    bool doGradientCheck = false;
+    // bool doGradientCheck = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char *arg = OPS_GetString();
       if (strcmp(arg, "-check") == 0) {
-        doGradientCheck = true;
+        // doGradientCheck = true;
       }
     }
 
@@ -1865,7 +1866,7 @@ int OPS_gradientEvaluator() {
     }
     theEval = new ImplicitGradient(
         theEvaluator, theRelDomain, theStrDomain,
-        0 /*theSensitivityAlgorithm*/);
+        cmds->getSensitivityAlgorithm());
 
   } else {
     opserr << "ERROR: unrecognized type of gradient evaluator: "

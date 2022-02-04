@@ -271,7 +271,7 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    theNumberer = new DOF_Numberer(*theRCM);
 	}
 	if (theTransientIntegrator == 0) {
-	    theTransientIntegrator = new Newmark(0.5,0.25);
+        setIntegrator(new Newmark(0.5,0.25), true);
 	}
 	if (theSOE == 0) {
 	    ProfileSPDLinSolver *theSolver;
@@ -461,7 +461,7 @@ OpenSeesCommands::setStaticIntegrator(StaticIntegrator* integrator)
     }
 
     // set new one
-    theStaticIntegrator = integrator;
+    setIntegrator(integrator, false);
     if (integrator == 0) return;
 
     // set in analysis object
@@ -491,13 +491,28 @@ OpenSeesCommands::setTransientIntegrator(TransientIntegrator* integrator)
     }
 
     // set new one
-    theTransientIntegrator = integrator;
+    setIntegrator(integrator, true);
     if (integrator == 0) return;
 
     // set in analysis object
     if (theTransientAnalysis != 0) {
 	theTransientAnalysis->setIntegrator(*integrator);
     }
+}
+
+void OpenSeesCommands::setIntegrator(Integrator* inte,
+                                     bool transient) {
+  if (inte == 0) {
+    return;
+  }
+  if (transient) {
+    theTransientIntegrator = (TransientIntegrator*)inte;
+  } else {
+    theStaticIntegrator = (StaticIntegrator*)inte;
+  }
+  if (this->reliability != 0) {
+    this->reliability->setSensitivityAlgorithm(inte);
+  }
 }
 
 void
@@ -569,7 +584,7 @@ OpenSeesCommands::setStaticAnalysis()
     if (theStaticIntegrator == 0) {
 	opserr << "WARNING analysis Static - no Integrator specified, \n";
 	opserr << " StaticIntegrator default will be used\n";
-	theStaticIntegrator = new LoadControl(1, 1, 1, 1);
+    setIntegrator(new LoadControl(1, 1, 1, 1), false);
     }
     if (theSOE == 0) {
 	opserr << "WARNING analysis Static - no LinearSOE specified, \n";
@@ -657,7 +672,7 @@ OpenSeesCommands::setPFEMAnalysis()
 	theNumberer = new DOF_Numberer(*theRCM);
     }
     if(theTransientIntegrator == 0) {
-	theTransientIntegrator = new PFEMIntegrator();
+        setIntegrator(new PFEMIntegrator(), true);
     }
     if(theSOE == 0) {
 	PFEMSolver* theSolver = new PFEMSolver();
@@ -732,7 +747,7 @@ OpenSeesCommands::setVariableAnalysis()
     if (theTransientIntegrator == 0) {
 	opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
 	opserr << " Newmark(.5,.25) default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+        setIntegrator(new Newmark(0.5, 0.25), true);
     }
 
     if (theSOE == 0) {
@@ -801,7 +816,7 @@ OpenSeesCommands::setTransientAnalysis()
     if (theTransientIntegrator == 0) {
 	opserr << "WARNING analysis Transient - no Integrator specified, \n";
 	opserr << " TransientIntegrator default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+    setIntegrator(new Newmark(0.5,0.25), true);
     }
     if (theSOE == 0) {
 	opserr << "WARNING analysis Transient - no LinearSOE specified, \n";

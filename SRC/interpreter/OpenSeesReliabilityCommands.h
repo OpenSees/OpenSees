@@ -64,6 +64,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SQPsearchDirectionMeritFunctionAndHessian.h>
 #include <SearchDirection.h>
 #include <StepSizeRule.h>
+#include <Integrator.h>
 
 class OpenSeesReliabilityCommands {
  public:
@@ -137,6 +138,13 @@ class OpenSeesReliabilityCommands {
   void setFOSMAnalysis(FOSMAnalysis *analysis);
   FOSMAnalysis *getFOSMAnalysis() { return theFOSMAnalysis; }
 
+  void setSensitivityAlgorithm(Integrator* inte) {
+    theSensAlgo = inte;
+  }
+  Integrator* getSensitivityAlgorithm() {
+    return theSensAlgo;
+  }
+
   void wipe();
 
  private:
@@ -160,6 +168,9 @@ class OpenSeesReliabilityCommands {
 
   // analysis
   FOSMAnalysis *theFOSMAnalysis;
+
+  // sensitivity algorithm
+  Integrator* theSensAlgo;
 };
 
 ReliabilityDomain *OPS_GetReliabilityDomain();
