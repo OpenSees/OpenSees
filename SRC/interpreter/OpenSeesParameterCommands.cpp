@@ -266,9 +266,19 @@ int OPS_Parameter() {
       return 0;
 
     } else if (theObject != 0) {
+      // put the arg back
+      OPS_ResetCurrentInputArg(-1);
+
       // collect parameter object data
       char *buffer = new char[128];
-      OPS_GetStringFromAll(buffer, 128);
+      if (OPS_GetStringFromAll(buffer, 128) == 0) {
+        opserr << "WARNING: failed to read string from all\n";
+        delete[] buffer;
+        for (int i = 0; i < argv.size(); ++i) {
+          delete[] argv[i];
+        }
+        return -1;
+      }
       argv.push_back(buffer);
 
     } else {
