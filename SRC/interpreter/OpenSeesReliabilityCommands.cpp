@@ -1763,6 +1763,10 @@ int OPS_functionEvaluator() {
   const char *filename = 0;
   if (OPS_GetNumRemainingInputArgs() > 0) {
     filename = OPS_GetString();
+    if (strcmp(filename, "-file") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      filename = OPS_GetString();
+    }
   }
   if (strcmp(type, "Matlab") == 0) {
     opserr << "ERROR: Matlab function evaluator not implemented" << endln;
@@ -1864,9 +1868,14 @@ int OPS_gradientEvaluator() {
              << endln;
       return -1;
     }
-    theEval = new ImplicitGradient(
-        theEvaluator, theRelDomain, theStrDomain,
-        cmds->getSensitivityAlgorithm());
+    Integrator *sensAlgo = cmds->getSensitivityAlgorithm();
+    if (sensAlgo == 0) {
+      opserr << "WARNING: integrator must be defined before "
+                "gradient evaluator\n";
+      return -1;
+    }
+    theEval = new ImplicitGradient(theEvaluator, theRelDomain,
+                                   theStrDomain, sensAlgo);
 
   } else {
     opserr << "ERROR: unrecognized type of gradient evaluator: "
