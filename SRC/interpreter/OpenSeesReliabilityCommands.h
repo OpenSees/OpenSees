@@ -52,8 +52,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <Domain.h>
 #include <FOSMAnalysis.h>
+#include <FindDesignPointAlgorithm.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
+#include <Integrator.h>
 #include <MeritFunctionCheck.h>
 #include <PolakHeSearchDirectionAndMeritFunction.h>
 #include <ProbabilityTransformation.h>
@@ -64,7 +66,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SQPsearchDirectionMeritFunctionAndHessian.h>
 #include <SearchDirection.h>
 #include <StepSizeRule.h>
-#include <Integrator.h>
 
 class OpenSeesReliabilityCommands {
  public:
@@ -107,6 +108,12 @@ class OpenSeesReliabilityCommands {
   void setRootFinding(RootFinding *root);
   RootFinding *getRootFinding() { return theRootFinding; }
 
+  void setFindDesignPointAlgorithm(
+      FindDesignPointAlgorithm *algo);
+  FindDesignPointAlgorithm *getFindDesignPointAlgorithm() {
+    return theFindDesignPointAlgorithm;
+  }
+
   void setFunctionEvaluator(FunctionEvaluator *eval);
   FunctionEvaluator *getFunctionEvaluator() {
     return theFunctionEvaluator;
@@ -138,12 +145,10 @@ class OpenSeesReliabilityCommands {
   void setFOSMAnalysis(FOSMAnalysis *analysis);
   FOSMAnalysis *getFOSMAnalysis() { return theFOSMAnalysis; }
 
-  void setSensitivityAlgorithm(Integrator* inte) {
+  void setSensitivityAlgorithm(Integrator *inte) {
     theSensAlgo = inte;
   }
-  Integrator* getSensitivityAlgorithm() {
-    return theSensAlgo;
-  }
+  Integrator *getSensitivityAlgorithm() { return theSensAlgo; }
 
   void wipe();
 
@@ -158,6 +163,7 @@ class OpenSeesReliabilityCommands {
   MeritFunctionCheck *theMeritFunctionCheck;
   StepSizeRule *theStepSizeRule;
   RootFinding *theRootFinding;
+  FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
 
   FunctionEvaluator *theFunctionEvaluator;
   GradientEvaluator *theGradientEvaluator;
@@ -170,7 +176,7 @@ class OpenSeesReliabilityCommands {
   FOSMAnalysis *theFOSMAnalysis;
 
   // sensitivity algorithm
-  Integrator* theSensAlgo;
+  Integrator *theSensAlgo;
 };
 
 ReliabilityDomain *OPS_GetReliabilityDomain();

@@ -357,6 +357,7 @@ int OPS_searchDirection();
 int OPS_meritFunctionCheck();
 int OPS_stepSizeRule();
 int OPS_rootFinding();
+int OPS_findDesignPoint();
 int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();

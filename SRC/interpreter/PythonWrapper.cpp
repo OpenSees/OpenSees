@@ -2529,6 +2529,18 @@ static PyObject *Py_ops_runFOSMAnalysis(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_findDesignPoint(PyObject *self,
+                                        PyObject *args) {
+  wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+  if (OPS_findDesignPoint() < 0) {
+    opserr << (void *)0;
+    return NULL;
+  }
+
+  return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -2737,6 +2749,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("pressureConstraint", &Py_ops_pc);
     addCommand("domainCommitTag", &Py_ops_domainCommitTag);
     addCommand("runFOSMAnalysis", &Py_ops_runFOSMAnalysis);
+    addCommand("findDesignPoint", &Py_ops_findDesignPoint);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

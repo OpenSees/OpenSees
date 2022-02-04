@@ -95,6 +95,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FiniteDifferenceGradient.h>
 #include <ImplicitGradient.h>
 
+#include <SearchWithStepSizeAndStepDirection.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
@@ -106,7 +108,9 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomai
   :theDomain(0), theStructuralDomain(structuralDomain),
    theProbabilityTransformation(0), theRandomNumberGenerator(0),
    theReliabilityConvergenceCheck(0), theSearchDirection(0), theMeritFunctionCheck(0),
-   theStepSizeRule(0), theRootFinding(0), theFunctionEvaluator(0),
+   theStepSizeRule(0), theRootFinding(0), 
+   theFindDesignPointAlgorithm(0),
+   theFunctionEvaluator(0),
    theGradientEvaluator(0), thePolakHeDualPurpose(0),
    theSQPtriplePurpose(0), theFOSMAnalysis(0),
    theSensAlgo(0)
@@ -169,6 +173,10 @@ void OpenSeesReliabilityCommands::wipe() {
   if (theRootFinding != 0) {
     delete theRootFinding;
     theRootFinding = 0;
+  }
+  if (theFindDesignPointAlgorithm != 0) {
+    delete theFindDesignPointAlgorithm;
+    theFindDesignPointAlgorithm = 0;
   }
   if (theFunctionEvaluator != 0) {
     delete theFunctionEvaluator;
@@ -978,6 +986,15 @@ OpenSeesReliabilityCommands::setRootFinding(RootFinding *root)
     return;
 }
 
+void OpenSeesReliabilityCommands::setFindDesignPointAlgorithm(
+    FindDesignPointAlgorithm *algo) {
+  if (theFindDesignPointAlgorithm != 0) {
+    delete theFindDesignPointAlgorithm;
+    theFindDesignPointAlgorithm = 0;
+  }
+  theFindDesignPointAlgorithm = algo;
+}
+
 void
 OpenSeesReliabilityCommands::setGradientEvaluator(GradientEvaluator *eval)
 {
@@ -1732,6 +1749,161 @@ int OPS_rootFinding() {
   } else {
     if (cmds != 0) cmds->setRootFinding(theFinding);
   }
+
+  return 0;
+}
+
+int OPS_findDesignPoint() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to "
+              "findDesignPoint\n";
+    return -1;
+  }
+  if (cmds == 0) {
+    opserr << "WARNING: reliability cmds not defined\n";
+    return -1;
+  }
+
+  // args
+  int printFlag = 0;
+  char fileNamePrint[256];
+  strcpy(fileNamePrint, "initialized");
+  int maxNumIter = 100;
+
+  // type
+  const char *type = OPS_GetString();
+
+  // Check that the necessary ingredients are present
+  FunctionEvaluator *theFunctionEvaluator =
+      cmds->getFunctionEvaluator();
+  if (theFunctionEvaluator == 0) {
+    opserr << "Need theGFunEvaluator before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+  GradientEvaluator *theGradientEvaluator =
+      cmds->getGradientEvaluator();
+  if (theGradientEvaluator == 0) {
+    opserr << "Need theGradientEvaluator before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+  StepSizeRule *theStepSizeRule = cmds->getStepSizeRule();
+  if (theStepSizeRule == 0) {
+    opserr << "Need theStepSizeRule before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+  SearchDirection* theSearchDirection = cmds->getSearchDirection();
+  if (theSearchDirection == 0) {
+    opserr << "Need theSearchDirection before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theReliabilityDomain before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+
+  Domain* theStructuralDomain = cmds->getStructuralDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theStructuralDomain before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+
+  ProbabilityTransformation *theProbabilityTransformation =
+      cmds->getProbabilityTransformation();
+  if (theProbabilityTransformation == 0) {
+    opserr << "Assume all RV's are independent" << endln;
+    theProbabilityTransformation =
+        new AllIndependentTransformation(theReliabilityDomain,
+                                         0);
+  }
+
+  ReliabilityConvergenceCheck *theReliabilityConvergenceCheck =
+      cmds->getReliabilityConvergenceCheck();
+  if (theReliabilityConvergenceCheck == 0) {
+    opserr << "Need theReliabilityConvergenceCheck before a "
+              "FindDesignPointAlgorithm can be created\n";
+    return -1;
+  }
+
+  // GET INPUT PARAMETER (string) AND CREATE THE OBJECT
+  int numdata = 1;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *subtype = OPS_GetString();
+
+    if (strcmp(subtype, "-maxNumIter") == 0 &&
+        OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &maxNumIter) < 0) {
+        opserr << "ERROR: invalid input: maxNumIter \n";
+        return -1;
+      }
+    } else if (strcmp(subtype, "-printAllPointsX") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 1;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else if (strcmp(subtype, "-printAllPointsY") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 2;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else if (strcmp(subtype, "-printDesignPointX") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 3;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else if (strcmp(subtype, "-printDesignPointY") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 4;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else if (strcmp(subtype, "-printCurrentPointX") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 5;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else if (strcmp(subtype, "-printCurrentPointY") == 0 &&
+               OPS_GetNumRemainingInputArgs() > 0) {
+      printFlag = 6;
+      const char *name = OPS_GetString();
+      strcpy(fileNamePrint, name);
+    } else {
+      opserr << "ERROR: Invalid input to "
+                "SearchWithStepSizeAndStepDirection. \n";
+      return -1;
+    }
+  }
+  
+  FindDesignPointAlgorithm *theFindDesignPointAlgorithm = 0;
+  if (strcmp(type, "StepSearch") == 0) {
+    theFindDesignPointAlgorithm =
+        new SearchWithStepSizeAndStepDirection(
+            maxNumIter, theReliabilityDomain,
+            theStructuralDomain, theFunctionEvaluator,
+            theGradientEvaluator, theStepSizeRule,
+            theSearchDirection, theProbabilityTransformation,
+            theReliabilityConvergenceCheck, printFlag,
+            fileNamePrint);
+
+  } else {
+    opserr << "ERROR: unrecognized type of "
+              "FindDesignPointAlgorithm Algorithm \n";
+    return -1;
+  }
+
+  if (theFindDesignPointAlgorithm == 0) {
+    opserr << "ERROR: could not create "
+              "theFindDesignPointAlgorithm \n";
+    return -1;
+  }
+
+  cmds->setFindDesignPointAlgorithm(theFindDesignPointAlgorithm);
 
   return 0;
 }
