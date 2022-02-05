@@ -138,7 +138,7 @@ URDDamping::Initialize(void)
           }
           else if((*etaFreq)(i, 0) == (*etaFreq)(j, 0)) {
               opserr << "WARNING invalid frequency series - freqi cannot equal freqj\n";
-              return  TCL_ERROR;
+              return  1;
           }
       }
   }
@@ -393,7 +393,7 @@ URDDamping::Initialize(void)
                       (*etaFreq)(i, 1) /= (2.0);
                   }
                   opserr << (*etaFreq) << "\n";
-                  return  TCL_ERROR;
+                  return  1;
                   break;
                   //tagFindFilter = 2;
                   //nFilter = 1;
