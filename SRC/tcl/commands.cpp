@@ -5273,7 +5273,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   }  
   
   else if (strcmp(argv[1], "Explicitdifference") == 0) {
-  theTransientIntegrator = new Explicitdifference();
+  theTransientIntegrator = new ExplicitDifference();
 
   if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
