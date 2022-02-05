@@ -136,6 +136,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
+	$(FE)/damping/TclDampingCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
 	$(FE)/element/joint/TclBeamColumnJointCommand.o \
