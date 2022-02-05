@@ -152,6 +152,7 @@ include_directories(
   ${OPS_SRC_DIR}/element/forceBeamColumn
   ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
   ${OPS_SRC_DIR}/coordTransformation
+  ${OPS_SRC_DIR}/damping
   ${OPS_SRC_DIR}/tagged
   ${OPS_SRC_DIR}/tagged/storage
   ${OPS_SRC_DIR}/recorder
@@ -378,6 +379,7 @@ target_link_libraries(G3
     OPS_Utilities
     graph
     coordTransformation
+    damping
     OPS_Actor 
     OPS_ObjectBroker
     OPS_Numerics
@@ -397,6 +399,7 @@ target_link_libraries(OpenSeesLIB
     OPS_Api
     OPS_ConvergenceTest
     coordTransformation
+    damping
     OPS_Damage
     OPS_Database
     OPS_Domain
