@@ -346,6 +346,7 @@ int OPS_getRVStdv();
 int OPS_getRVPDF();
 int OPS_getRVCDF();
 int OPS_getRVInverseCDF();
+int OPS_getLSFTags();
 int OPS_addCorrelate();
 int OPS_performanceFunction(); // limit state function
 int OPS_probabilityTransformation();
@@ -362,6 +363,7 @@ int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 int OPS_runFOSMAnalysis();
+int OPS_runFORMAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 
 /* OpenSeesCommands.cpp */

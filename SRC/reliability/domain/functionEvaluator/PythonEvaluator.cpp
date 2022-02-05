@@ -251,7 +251,7 @@ int PythonEvaluator::runAnalysis() {
     std::string parsedFileName(fileName);
 
     // add imports
-    PyRun_SimpleString("imort opensees");
+    PyRun_SimpleString("import opensees");
     PyRun_SimpleString("from math import *");
     PyRun_SimpleString("import math");
     PyRun_SimpleString("par = opensees.OpenSeesParameter");

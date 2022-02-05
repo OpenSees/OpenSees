@@ -97,6 +97,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SearchWithStepSizeAndStepDirection.h>
 
+#include <LimitStateFunctionIter.h>
+
 // active object
 static OpenSeesReliabilityCommands* cmds = 0;
 
@@ -113,6 +115,7 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomai
    theFunctionEvaluator(0),
    theGradientEvaluator(0), thePolakHeDualPurpose(0),
    theSQPtriplePurpose(0), theFOSMAnalysis(0),
+   theFORMAnalysis(0),
    theSensAlgo(0)
 {
     if (structuralDomain != 0) {
@@ -189,6 +192,10 @@ void OpenSeesReliabilityCommands::wipe() {
   if (theFOSMAnalysis != 0) {
     delete theFOSMAnalysis;
     theFOSMAnalysis = 0;
+  }
+  if (theFORMAnalysis != 0) {
+    delete theFORMAnalysis;
+    theFORMAnalysis = 0;
   }
 }
 
@@ -856,6 +863,36 @@ int OPS_getRVInverseCDF()
   return 0;
 }
 
+int OPS_getLSFTags() {
+  if (cmds == 0) {
+    opserr << "WARNING: reliability cmds not defined\n";
+    return -1;
+  }
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  LimitStateFunction *theLSF;
+  LimitStateFunctionIter &lsfIter =
+      theReliabilityDomain->getLimitStateFunctions();
+
+  std::vector<int> tags;
+  while ((theLSF = lsfIter()) != 0) {
+    tags.push_back(theLSF->getTag());
+  }
+
+  int size = 0;
+  int *data = 0;
+  if (!tags.empty()) {
+    size = (int)tags.size();
+    data = &tags[0];
+  }
+
+  if (OPS_SetIntOutput(&size, data, false) < 0) {
+    opserr << "WARNING failed to set outputs\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 int OPS_addCorrelate()
 {
   if (OPS_GetNumRemainingInputArgs() < 3) {
@@ -1028,6 +1065,15 @@ void OpenSeesReliabilityCommands::setFOSMAnalysis(
     theFOSMAnalysis = 0;
   }
   theFOSMAnalysis = analysis;
+}
+
+void OpenSeesReliabilityCommands::setFORMAnalysis(
+    FORMAnalysis *analysis) {
+  if (theFORMAnalysis != 0) {
+    delete theFORMAnalysis;
+    theFORMAnalysis = 0;
+  }
+  theFORMAnalysis = analysis;
 }
 
 int OPS_startPoint() {
@@ -2358,6 +2404,97 @@ int OPS_runFOSMAnalysis() {
   // Now run the analysis
   if (theFOSMAnalysis->analyze() < 0) {
     opserr << "WARNING: the FOSM analysis failed\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OPS_runFORMAnalysis() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "WARNING: Wrong number of input parameter to FORM "
+              "analysis\n";
+    return -1;
+  }
+
+  // get file name
+  const char *filename = OPS_GetString();
+
+  // Do input check
+  if (inputCheck() < 0) {
+    return -1;
+  }
+
+  // Check for essential ingredients
+  FunctionEvaluator *theFunctionEvaluator =
+      cmds->getFunctionEvaluator();
+  if (theFunctionEvaluator == 0) {
+    opserr << "Need theGFunEvaluator before a FOSMAnalysis can "
+              "be created\n";
+    return -1;
+  }
+
+  FindDesignPointAlgorithm *theFindDesignPointAlgorithm =
+      cmds->getFindDesignPointAlgorithm();
+  if (theFindDesignPointAlgorithm == 0) {
+    opserr << "Need theFindDesignPointAlgorithm before a "
+              "FOSMAnalysis "
+              "can be created\n";
+    return -1;
+  }
+
+  ProbabilityTransformation *theProbabilityTransformation =
+      cmds->getProbabilityTransformation();
+  if (theProbabilityTransformation == 0) {
+    opserr << "Need theProbabilityTransformation before a "
+              "FOSMAnalysis "
+              "can be created\n";
+    return -1;
+  }
+
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "ReliabilityDomain is not defined\n";
+    return -1;
+  }
+
+  Domain *theStructuralDomain = cmds->getStructuralDomain();
+  if (theStructuralDomain == 0) {
+    opserr << "Structural Domain is not defined\n";
+    return -1;
+  }
+
+  // Read input parameter(s)
+  int relSensTag = 0;
+  if (OPS_GetNumRemainingInputArgs() > 1) {
+    const char* type = OPS_GetString();
+    if (strcmp(type, "-relSens") == 0) {
+      int numdata = 1;
+      if (OPS_GetIntInput(&numdata, &relSensTag) < 0) {
+        opserr << "ERROR: invalid input: relSensTag \n";
+        return -1;
+      }
+    } else {
+      opserr << "ERROR: Invalid input to FORMAnalysis.\n";
+      return -1;
+    }
+  }
+
+  // Create the analysis object
+  FORMAnalysis* theFORMAnalysis = new FORMAnalysis(
+      theReliabilityDomain, theFindDesignPointAlgorithm,
+      theFunctionEvaluator, theProbabilityTransformation,
+      filename, relSensTag);
+
+  // Check that it really was created
+  if (theFORMAnalysis == 0) {
+    opserr << "ERROR: could not create theFORMAnalysis \n";
+    return TCL_ERROR;
+  }
+
+  // Now run the analysis
+  if (theFORMAnalysis->analyze() < 0) {
+    opserr << "WARNING: the FORM analysis failed\n";
     return -1;
   }
 

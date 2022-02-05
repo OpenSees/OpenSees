@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <Domain.h>
 #include <FOSMAnalysis.h>
+#include <FORMAnalysis.h>
 #include <FindDesignPointAlgorithm.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
@@ -145,6 +146,9 @@ class OpenSeesReliabilityCommands {
   void setFOSMAnalysis(FOSMAnalysis *analysis);
   FOSMAnalysis *getFOSMAnalysis() { return theFOSMAnalysis; }
 
+  void setFORMAnalysis(FORMAnalysis *analysis);
+  FORMAnalysis *getFORMAnalysis() { return theFORMAnalysis; }
+
   void setSensitivityAlgorithm(Integrator *inte) {
     theSensAlgo = inte;
   }
@@ -174,6 +178,7 @@ class OpenSeesReliabilityCommands {
 
   // analysis
   FOSMAnalysis *theFOSMAnalysis;
+  FORMAnalysis *theFORMAnalysis;
 
   // sensitivity algorithm
   Integrator *theSensAlgo;
