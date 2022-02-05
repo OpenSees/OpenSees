@@ -1451,13 +1451,13 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
                 sprintf(outputData,"P2_%d", j+1);
                 output.tag("ResponseType", outputData);
             }
-            theResponse = new ElementResponse(this, 21, Vector(numDOF));
+            theResponse = new ElementResponse(this, 31, Vector(numDOF));
     }
 
 
    if (theDamping && (strcmp(argv[0],"basicDampingForce") == 0 || strcmp(argv[0],"basicDampingForces") == 0 ||
 	       strcmp(argv[0],"localDampingForce") == 0 || strcmp(argv[0],"localDampingForces") == 0)) {
-            theResponse = new ElementResponse(this, 22, Vector(numMaterials1d));
+            theResponse = new ElementResponse(this, 32, Vector(numMaterials1d));
     }
 
     output.endTag();
@@ -1501,10 +1501,10 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
       }
       return eleInformation.setVector(*theVector);
 
-    case 21:
+    case 31:
         return eleInformation.setVector(this->getDampingForce());
 
-    case 22:
+    case 32:
         return eleInformation.setVector(theDamping->getDampingForce());
 
     case 2:
