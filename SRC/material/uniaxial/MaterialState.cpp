@@ -55,8 +55,7 @@ MaterialState::getVariable(int variableID, double &info)
 }
 
 int
-MaterialState::setParameter(const char **argv, int argc,
-			    Information &eleInformation)
+MaterialState::setParameter(const char **argv, int argc, Parameter &param)
 {
   return -1;
 }
