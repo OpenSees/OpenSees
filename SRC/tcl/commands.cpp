@@ -259,7 +259,7 @@ extern void OPS_ResponseSpectrumAnalysis(void);
 #include <Houbolt.h>
 #include <ParkLMS3.h>
 #include <BackwardEuler.h>
-#include<Explicitdifference.h>
+#include <ExplicitDifference.h>
 
 // analysis
 #include <StaticAnalysis.h>
