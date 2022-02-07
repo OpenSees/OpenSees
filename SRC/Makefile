@@ -459,7 +459,7 @@ GRAPH_LIBS = $(FE)/graph/graph/DOF_Graph.o \
 	$(FE)/graph/numberer/MyRCM.o \
 	$(FE)/graph/numberer/GraphNumberer.o \
 	$(FE)/graph/numberer/SimpleNumberer.o \
-	$(FE)/graph/partitioner/Metis.o
+	$(FE)/graph/partitioner/MetisWrapper.o
 
 ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/WrapperElement.o \
@@ -843,6 +843,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/MultilinearBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseSoftClayBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseStiffClayBelowWS.o \
+	$(FE)/material/uniaxial/backbone/ReeseStiffClayAboveWS.o \
+	$(FE)/material/uniaxial/backbone/VuggyLimestone.o \
+	$(FE)/material/uniaxial/backbone/CementedSoil.o \
+	$(FE)/material/uniaxial/backbone/WeakRock.o \
+	$(FE)/material/uniaxial/backbone/LiquefiedSand.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \

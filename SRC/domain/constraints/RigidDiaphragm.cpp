@@ -92,11 +92,10 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     }
 
     const Vector &crdR = nodeR->getCrds();
-    if ((nodeR->getNumberDOF() != 6) || (crdR.Size() != 3)){
+    if ((nodeR->getNumberDOF() != 6 || crdR.Size() != 3) &&
+	(nodeR->getNumberDOF() != 3 || crdR.Size() != 2)) {
       opserr << "RigidDiaphragm::RigidDiaphragm - " << 
-	"retained Node " << nR << " not in 3d space with 6 dof\n";
-			      
-			      
+	"retained Node " << nR << " not in 3d space with 6 dof or 2d space with 3 dof\n";
       return;
     }	
 
@@ -104,14 +103,22 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     // create some objects which will be passed to the MP_Constraint 
     // constructor, elements of objects are filled in later
     //
-    
+
+    int constrainedDOFs = 3;
+    if (crdR.Size() == 2)
+      constrainedDOFs = 1;
+	
     // create the ID to identify the constrained dof 
-    ID id(3);
+    ID id(constrainedDOFs);
 
     // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag
-    Matrix mat(3,3);
+    Matrix mat(constrainedDOFs,constrainedDOFs);
     mat.Zero();
-    mat(0,0) = 1.0; mat(1,1) = 1.0; mat(2,2) = 1.0;
+    mat(0,0) = 1.0;
+    if (constrainedDOFs > 1) {
+      mat(1,1) = 1.0;
+      mat(2,2) = 1.0;
+    }
 
 
     // now for each of the specified constrained dof we:
@@ -124,7 +131,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
       // get the constrained node
       int ndC = nC(i);
       Node *nodeC = theDomain.getNode(ndC);
-
+      
       // ensure node exists
       if (nodeC != 0) {
 
@@ -132,7 +139,25 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	const Vector &crdC = nodeC->getCrds();
 
 	// check constrained node has correct dim and number of dof
-	if ((nodeR->getNumberDOF() == 6) && (crdR.Size() == 3)){
+	if ((nodeC->getNumberDOF() == 3) && (crdC.Size() == 2)){
+	  if (perpPlaneConstrained == 0) { // Direction, not perpendicular, for 2D
+	    id(0) = 0;
+	    // Make sure in same plane
+	    double deltaY = crdC(1) - crdR(1);
+	    if (deltaY != 0.0) {
+	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same Y-plane as node " << nR << "\n";
+	    }
+	  }
+	  if (perpPlaneConstrained == 1) {
+	    id(0) = 1;
+	    // Make sure in same plane
+	    double deltaX = crdC(0) - crdR(0);
+	    if (deltaX != 0.0) {
+	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same X-plane as node " << nR << "\n";
+	    }
+	  }
+	}
+	else if ((nodeC->getNumberDOF() == 6) && (crdC.Size() == 3)){
 
 	  // determine delta Coordintaes
 	  double deltaX = crdC(0) - crdR(0);
@@ -151,7 +176,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	      // set up transformation matrix
 	      mat(0,2) = - deltaY;
 	      mat(1,2) = deltaX;
-
+	      
 	    } else 
 	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << ", not in xy plane\n";
 
@@ -188,25 +213,25 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
 		", not in xz plane\n";
 	  }
-	      
-	  // create the MP_Constraint
-	  MP_Constraint *newC = new MP_Constraint(nR, ndC, mat, id, id);
-						  
-	  if (newC == 0) {
-	    opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
-	      ", out of memory\n";
-	  } else {
-	    // add the constraint to the domain
-	    if (theDomain.addMP_Constraint(newC) == false) {
-	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
-		", failed to add\n";
-	      delete newC;
-	    }
-	  }
-
-	} else  // node not in 3d space
+	}
+	else  // node not in proper space
 	  opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node  " << ndC << 
-	    ", not 3d node\n";
+	    ", not 3d/6 dof or 2d/3 dof node\n";
+
+	// create the MP_Constraint
+	MP_Constraint *newC = new MP_Constraint(nR, ndC, mat, id, id);
+	
+	if (newC == 0) {
+	  opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
+	    ", out of memory\n";
+	} else {
+	  // add the constraint to the domain
+	  if (theDomain.addMP_Constraint(newC) == false) {
+	    opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
+	      ", failed to add\n";
+	    delete newC;
+	  }
+	}
 	
       } else // node does not exist
       opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
