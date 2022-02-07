@@ -123,6 +123,7 @@ void* OPS_MultiLinear();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
+void* OPS_MultiplierMaterial();
 void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
@@ -300,6 +301,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("InitStressMaterial", &OPS_InitStressMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("InitStress", &OPS_InitStressMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("PathIndependent", &OPS_PathIndependentMaterial));
+	uniaxialMaterialsMap.insert(std::make_pair("Multiplier", &OPS_MultiplierMaterial));	
 	uniaxialMaterialsMap.insert(std::make_pair("Pinching4", &OPS_Pinching4Material));
 	uniaxialMaterialsMap.insert(std::make_pair("ECC01", &OPS_ECC01));
 	uniaxialMaterialsMap.insert(std::make_pair("SelfCentering", &OPS_SelfCenteringMaterial));
