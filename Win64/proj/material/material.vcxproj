@@ -340,6 +340,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPinching.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPinching02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\MultiLinear.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\MultiplierMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Neoprene.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.cpp" />
