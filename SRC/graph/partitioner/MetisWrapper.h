@@ -37,8 +37,8 @@
 //
 // What: "@(#) Metis.h, revA"
 
-#ifndef Metis_h
-#define Metis_h
+#ifndef MetisWrapper_h
+#define MetisWrapper_h
 
 #ifdef _USE_METIS_5p1
 #include <metis.h>
