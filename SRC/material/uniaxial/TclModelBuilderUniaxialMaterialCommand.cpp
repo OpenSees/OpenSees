@@ -364,12 +364,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+	  
     } else if (strcmp(argv[1],"UVCuniaxial") == 0) {
       void *theMat = OPS_UVCuniaxial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+
 
     } else if (strcmp(argv[1],"GNG") == 0) {
       void *theMat = OPS_GNGMaterial();
