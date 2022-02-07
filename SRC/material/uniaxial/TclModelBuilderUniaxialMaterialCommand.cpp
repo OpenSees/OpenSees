@@ -531,13 +531,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 */
-    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
-      void *theMat = OPS_UVCuniaxial();
-      if (theMat != 0)
-        theMaterial = (UniaxialMaterial *)theMat;
-      else
-        return TCL_ERROR;
-    }
     else if (strcmp(argv[1], "SLModel") == 0) {
       void *theMat = OPS_SLModel();
       if (theMat != 0)
@@ -1669,15 +1662,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
-    
-    else if (strcmp(argv[1], "UVCuniaxial") == 0) {
-        void* theMat = OPS_UVCuniaxial();
-    if (theMat != 0)
-        theMaterial = (UniaxialMaterial*)theMat;
-    else
-        return TCL_ERROR;
-    }
-    
+     
     else if (strcmp(argv[1],"Pinching4") == 0) {
 		if (argc != 42 && argc != 31 ) {
 			opserr << "WARNING insufficient arguments\n";
