@@ -231,6 +231,11 @@ void* OPS_HystereticPoly();  // Salvatore Sessa 14-01-2021 Mail:
 void* OPS_DowelType();
 void* OPS_DuctileFracture();  // Kuanshi Zhong
 
+void* OPS_TDConcreteEXP(void);
+void* OPS_TDConcrete(void);
+void* OPS_TDConcreteMC10(void);
+void* OPS_TDConcreteMC10NL(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -518,6 +523,14 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("DuctileFracture",
                      &OPS_DuctileFracture));  // Kuanshi Zhong
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteEXP", &OPS_TDConcreteEXP));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcrete", &OPS_TDConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
 
   return 0;
 }
