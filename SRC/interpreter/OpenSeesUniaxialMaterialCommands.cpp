@@ -1,68 +1,82 @@
 /* *****************************************************************************
-Copyright (c) 2015-2017, The Regents of the University of California (Regents).
-All rights reserved.
+Copyright (c) 2015-2017, The Regents of the University of
+California (Regents). All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or
+without modification, are permitted provided that the following
+conditions are met:
 
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following
+disclaimer in the documentation and/or other materials provided
+with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
-The views and conclusions contained in the software and documentation are those
-of the authors and should not be interpreted as representing official policies,
-either expressed or implied, of the FreeBSD Project.
+The views and conclusions contained in the software and
+documentation are those of the authors and should not be
+interpreted as representing official policies, either expressed
+or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE. THE SOFTWARE AND ACCOMPANYING
+DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS PROVIDED "AS IS".
+REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-*************************************************************************** */
-
+***************************************************************************
+*/
 
 // Description: command to create uniaxial material
 
-#include <UniaxialMaterial.h>
-#include <elementAPI.h>
-#include <map>
-#include <LimitCurve.h>
 #include <HystereticBackbone.h>
+#include <LimitCurve.h>
 #include <StiffnessDegradation.h>
 #include <StrengthDegradation.h>
+#include <UniaxialMaterial.h>
 #include <UnloadingRule.h>
+#include <elementAPI.h>
+
+#include <map>
 
 // missing or incomplete uniaixal materials:
 // Fedeas
-// theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
+// theMaterial = TclModelBuilder_addFedeasMaterial(clientData,
+// interp, argc, argv);
 
 // Drain
-// theMaterial = TclModelBuilder_addDrainMaterial(clientData, interp, argc, argv);
+// theMaterial = TclModelBuilder_addDrainMaterial(clientData,
+// interp, argc, argv);
 
 // SNAP
-// theMaterial = TclModelBuilder_addSnapMaterial(clientData, interp, argc, argv);
+// theMaterial = TclModelBuilder_addSnapMaterial(clientData,
+// interp, argc, argv);
 
 // Py, Tz, Qz models
-// theMaterial = TclModelBuilder_addPyTzQzMaterial(clientData, interp, argc, argv, theDomain);
+// theMaterial = TclModelBuilder_addPyTzQzMaterial(clientData,
+// interp, argc, argv, theDomain);
 
 // LimitState
-// theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
+// theMaterial = Tcl_AddLimitStateMaterial(clientData, interp,
+// argc, argv);
 
-// UniaxialPackageCommand *matCommands = theUniaxialPackageCommands;
+// UniaxialPackageCommand *matCommands =
+// theUniaxialPackageCommands;
 
 // material in a routine
 
@@ -123,6 +137,7 @@ void* OPS_MultiLinear();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
+void* OPS_MultiplierMaterial();
 void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
@@ -150,7 +165,7 @@ void* OPS_SteelBRB();
 void* OPS_SimpleFractureMaterial();
 void* OPS_Maxwell();
 #ifndef _NO_NEW_RESTREPO
-    void* OPS_DoddRestr();
+void* OPS_DoddRestr();
 #endif
 void* OPS_Steel2();
 void* OPS_OriginCentered();
@@ -200,628 +215,802 @@ void* OPS_DuctilityStiffnessDegradation();
 void* OPS_EnergyStiffnessDegradation();
 void* OPS_PincheiraStiffnessDegradation();
 
-void *OPS_ConstantStrengthDegradation();
-void *OPS_DuctilityStrengthDegradation();
-void *OPS_EnergyStrengthDegradation();
-void *OPS_ACIStrengthDegradation();
-void *OPS_PetrangeliStrengthDegradation();
+void* OPS_ConstantStrengthDegradation();
+void* OPS_DuctilityStrengthDegradation();
+void* OPS_EnergyStrengthDegradation();
+void* OPS_ACIStrengthDegradation();
+void* OPS_PetrangeliStrengthDegradation();
 
-void *OPS_ConstantUnloadingRule();
-void *OPS_TakedaUnloadingRule();
-void *OPS_EnergyUnloadingRule();
-void *OPS_KarsanUnloadingRule();
+void* OPS_ConstantUnloadingRule();
+void* OPS_TakedaUnloadingRule();
+void* OPS_EnergyUnloadingRule();
+void* OPS_KarsanUnloadingRule();
 
-void* OPS_HystereticPoly(); // Salvatore Sessa 14-01-2021 Mail: salvatore.sessa2@unina.it
+void* OPS_HystereticPoly();  // Salvatore Sessa 14-01-2021 Mail:
+                             // salvatore.sessa2@unina.it
 void* OPS_DowelType();
-void* OPS_DuctileFracture(); // Kuanshi Zhong
+void* OPS_DuctileFracture();  // Kuanshi Zhong
+
+void* OPS_TDConcreteEXP(void);
+void* OPS_TDConcrete(void);
+void* OPS_TDConcreteMC10(void);
+void* OPS_TDConcreteMC10NL(void);
 
 namespace {
 
-    static UniaxialMaterial *theTestingUniaxialMaterial = 0;
+static UniaxialMaterial* theTestingUniaxialMaterial = 0;
 
-    struct char_cmp {
-	bool operator () (const char *a,const char *b) const
-	    {
-		return strcmp(a,b)<0;
-	    }
-    };
+struct char_cmp {
+  bool operator()(const char* a, const char* b) const {
+    return strcmp(a, b) < 0;
+  }
+};
 
-    typedef std::map<const char *, void *(*)(void), char_cmp> OPS_ParsingFunctionMap;
+typedef std::map<const char*, void* (*)(void), char_cmp>
+    OPS_ParsingFunctionMap;
 
+static OPS_ParsingFunctionMap uniaxialMaterialsMap;
 
-    static OPS_ParsingFunctionMap uniaxialMaterialsMap;
-
-    static int setUpUniaxialMaterials(void) {
-	uniaxialMaterialsMap.insert(std::make_pair("Elastic", &OPS_ElasticMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ElasticPP", &OPS_ElasticPPMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Parallel", &OPS_ParallelMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Series", &OPS_SeriesMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ElasticPPGap", &OPS_EPPGapMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ENT", &OPS_ENTMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel01", &OPS_Steel01));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel02", &OPS_Steel02));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel03", &OPS_Steel03));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete01", &OPS_Concrete01));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel4", &OPS_Steel4));
-	uniaxialMaterialsMap.insert(std::make_pair("Hysteretic", &OPS_HystereticMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ReinforcingSteel", &OPS_ReinforcingSteel));
-	uniaxialMaterialsMap.insert(std::make_pair("Dodd_Restrepo", &OPS_Dodd_Restrepo));
-	uniaxialMaterialsMap.insert(std::make_pair("DoddRestrepo", &OPS_Dodd_Restrepo));
-	uniaxialMaterialsMap.insert(std::make_pair("Restrepo", &OPS_Dodd_Restrepo));
-	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgoodSteel", &OPS_RambergOsgoodSteel));
-	uniaxialMaterialsMap.insert(std::make_pair("RambergOsgood", &OPS_RambergOsgoodSteel));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelMPF", &OPS_SteelMPF));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelDRC", &OPS_SteelDRC));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete02", &OPS_Concrete02));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete02IS", &OPS_Concrete02IS));	
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete04", &OPS_Concrete04));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete06", &OPS_Concrete06));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete07", &OPS_Concrete07));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete01WithSITC", &OPS_Concrete01WithSITC));
-	uniaxialMaterialsMap.insert(std::make_pair("ConfinedConcrete01", &OPS_ConfinedConcrete01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ConfinedConcrete", &OPS_ConfinedConcrete01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteD", &OPS_ConcreteD));
-	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
-	uniaxialMaterialsMap.insert(std::make_pair("FRPConfinedConcrete02", &OPS_FRPConfinedConcrete02));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteCM", &OPS_ConcreteCM));
-	uniaxialMaterialsMap.insert(std::make_pair("Cast", &OPS_Cast));
-	uniaxialMaterialsMap.insert(std::make_pair("CastFuse", &OPS_Cast));
-	uniaxialMaterialsMap.insert(std::make_pair("ViscousDamper", &OPS_ViscousDamper));
-	uniaxialMaterialsMap.insert(std::make_pair("BilinearOilDamper", &OPS_BilinearOilDamper));
-	uniaxialMaterialsMap.insert(std::make_pair("Bilin", &OPS_Bilin));
-	uniaxialMaterialsMap.insert(std::make_pair("BilinMaterial", &OPS_Bilin));
-	uniaxialMaterialsMap.insert(std::make_pair("Bilin02", &OPS_Bilin02));
-	uniaxialMaterialsMap.insert(std::make_pair("ModIMKPeakOriented", &OPS_ModIMKPeakOriented));
-	uniaxialMaterialsMap.insert(std::make_pair("ModIMKPeakOriented02", &OPS_ModIMKPeakOriented02));
-	uniaxialMaterialsMap.insert(std::make_pair("ModIMKPinching", &OPS_ModIMKPinching));
-	uniaxialMaterialsMap.insert(std::make_pair("ModIMKPinching02", &OPS_ModIMKPinching02));
-	uniaxialMaterialsMap.insert(std::make_pair("SAWS", &OPS_SAWSMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("SAWSMaterial", &OPS_SAWSMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("BarSlip", &OPS_BarSlipMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Bond_SP01", &OPS_Bond_SP01));
-	uniaxialMaterialsMap.insert(std::make_pair("Bond", &OPS_Bond_SP01));
-	uniaxialMaterialsMap.insert(std::make_pair("Fatigue", &OPS_FatigueMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Hardening", &OPS_HardeningMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Impact", &OPS_ImpactMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ImpactMaterial", &OPS_ImpactMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("HyperbolicGapMaterial", &OPS_HyperbolicGapMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("LimitState", &OPS_LimiStateMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("MinMax", &OPS_MinMaxMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("MinMaxMaterial", &OPS_MinMaxMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("TensionOnly", &OPS_TensionOnlyMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilin", &OPS_ElasticBilin));
-	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilinear", &OPS_ElasticBilin));
-	uniaxialMaterialsMap.insert(std::make_pair("ElasticMultiLinear", &OPS_ElasticMultiLinear));
-    uniaxialMaterialsMap.insert(std::make_pair("ElasticPowerFunc", &OPS_ElasticPowerFunc));
-    uniaxialMaterialsMap.insert(std::make_pair("MultiLinear", &OPS_MultiLinear));
-	uniaxialMaterialsMap.insert(std::make_pair("InitStrainMaterial", &OPS_InitStrainMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("InitStrain", &OPS_InitStrainMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("InitStressMaterial", &OPS_InitStressMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("InitStress", &OPS_InitStressMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("PathIndependent", &OPS_PathIndependentMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Pinching4", &OPS_Pinching4Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ECC01", &OPS_ECC01));
-	uniaxialMaterialsMap.insert(std::make_pair("SelfCentering", &OPS_SelfCenteringMaterial));
-    uniaxialMaterialsMap.insert(std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
-	uniaxialMaterialsMap.insert(std::make_pair("Viscous", &OPS_ViscousMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("BoucWen", &OPS_BoucWenMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
-	uniaxialMaterialsMap.insert(std::make_pair("PySimple1", &OPS_PySimple1));
-	uniaxialMaterialsMap.insert(std::make_pair("TzSimple1", &OPS_TzSimple1));
-	uniaxialMaterialsMap.insert(std::make_pair("QzSimple1", &OPS_QzSimple1));
-	uniaxialMaterialsMap.insert(std::make_pair("QzSimple2", &OPS_QzSimple2));
-	uniaxialMaterialsMap.insert(std::make_pair("PyLiq1", &OPS_PyLiq1));
-	uniaxialMaterialsMap.insert(std::make_pair("TzLiq1", &OPS_TzLiq1));
-	uniaxialMaterialsMap.insert(std::make_pair("QzLiq1", &OPS_QzLiq1));
-	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenHDR", &OPS_KikuchiAikenHDR));
-	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenLRB", &OPS_KikuchiAikenLRB));
-	uniaxialMaterialsMap.insert(std::make_pair("AxialSp", &OPS_AxialSp));
-	uniaxialMaterialsMap.insert(std::make_pair("AxialSpHD", &OPS_AxialSpHD));
-	uniaxialMaterialsMap.insert(std::make_pair("PinchingLimitStateMaterial", &OPS_PinchingLimitState));
-	uniaxialMaterialsMap.insert(std::make_pair("CFSWSWP", &OPS_CFSWSWP));
-	uniaxialMaterialsMap.insert(std::make_pair("CFSSSWP", &OPS_CFSSSWP));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelBRB", &OPS_SteelBRB));
-	uniaxialMaterialsMap.insert(std::make_pair("SimpleFractureMaterial", &OPS_SimpleFractureMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("SimpleFracture", &OPS_SimpleFractureMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("Maxwell", &OPS_Maxwell));
-	uniaxialMaterialsMap.insert(std::make_pair("MaxwellMaterial", &OPS_Maxwell));
+static int setUpUniaxialMaterials(void) {
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Elastic", &OPS_ElasticMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticPP", &OPS_ElasticPPMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Parallel", &OPS_ParallelMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Series", &OPS_SeriesMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticPPGap", &OPS_EPPGapMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ENT", &OPS_ENTMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel01", &OPS_Steel01));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel02", &OPS_Steel02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel03", &OPS_Steel03));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete01", &OPS_Concrete01));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel4", &OPS_Steel4));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Hysteretic", &OPS_HystereticMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ReinforcingSteel", &OPS_ReinforcingSteel));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Dodd_Restrepo", &OPS_Dodd_Restrepo));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("DoddRestrepo", &OPS_Dodd_Restrepo));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Restrepo", &OPS_Dodd_Restrepo));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "RambergOsgoodSteel", &OPS_RambergOsgoodSteel));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("RambergOsgood", &OPS_RambergOsgoodSteel));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelMPF", &OPS_SteelMPF));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelDRC", &OPS_SteelDRC));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete02", &OPS_Concrete02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete02IS", &OPS_Concrete02IS));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete04", &OPS_Concrete04));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete06", &OPS_Concrete06));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Concrete07", &OPS_Concrete07));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "Concrete01WithSITC", &OPS_Concrete01WithSITC));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConfinedConcrete01", &OPS_ConfinedConcrete01Material));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConfinedConcrete", &OPS_ConfinedConcrete01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteD", &OPS_ConcreteD));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "FRPConfinedConcrete02", &OPS_FRPConfinedConcrete02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteCM", &OPS_ConcreteCM));
+  uniaxialMaterialsMap.insert(std::make_pair("Cast", &OPS_Cast));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CastFuse", &OPS_Cast));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ViscousDamper", &OPS_ViscousDamper));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "BilinearOilDamper", &OPS_BilinearOilDamper));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Bilin", &OPS_Bilin));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("BilinMaterial", &OPS_Bilin));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Bilin02", &OPS_Bilin02));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ModIMKPeakOriented", &OPS_ModIMKPeakOriented));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ModIMKPeakOriented02", &OPS_ModIMKPeakOriented02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ModIMKPinching", &OPS_ModIMKPinching));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ModIMKPinching02", &OPS_ModIMKPinching02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SAWS", &OPS_SAWSMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SAWSMaterial", &OPS_SAWSMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("BarSlip", &OPS_BarSlipMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Bond_SP01", &OPS_Bond_SP01));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Bond", &OPS_Bond_SP01));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Fatigue", &OPS_FatigueMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Hardening", &OPS_HardeningMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Impact", &OPS_ImpactMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ImpactMaterial", &OPS_ImpactMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "HyperbolicGapMaterial", &OPS_HyperbolicGapMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("LimitState", &OPS_LimiStateMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("MinMax", &OPS_MinMaxMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("MinMaxMaterial", &OPS_MinMaxMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TensionOnly", &OPS_TensionOnlyMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticBilin", &OPS_ElasticBilin));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticBilinear", &OPS_ElasticBilin));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ElasticMultiLinear", &OPS_ElasticMultiLinear));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticPowerFunc", &OPS_ElasticPowerFunc));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("MultiLinear", &OPS_MultiLinear));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "InitStrainMaterial", &OPS_InitStrainMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("InitStrain", &OPS_InitStrainMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "InitStressMaterial", &OPS_InitStressMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("InitStress", &OPS_InitStressMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "PathIndependent", &OPS_PathIndependentMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Multiplier", &OPS_MultiplierMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Pinching4", &OPS_Pinching4Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ECC01", &OPS_ECC01));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "SelfCentering", &OPS_SelfCenteringMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Viscous", &OPS_ViscousMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("BoucWen", &OPS_BoucWenMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("PySimple1", &OPS_PySimple1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TzSimple1", &OPS_TzSimple1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("QzSimple1", &OPS_QzSimple1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("QzSimple2", &OPS_QzSimple2));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("PyLiq1", &OPS_PyLiq1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TzLiq1", &OPS_TzLiq1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("QzLiq1", &OPS_QzLiq1));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("KikuchiAikenHDR", &OPS_KikuchiAikenHDR));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("KikuchiAikenLRB", &OPS_KikuchiAikenLRB));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("AxialSp", &OPS_AxialSp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("AxialSpHD", &OPS_AxialSpHD));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "PinchingLimitStateMaterial", &OPS_PinchingLimitState));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CFSWSWP", &OPS_CFSWSWP));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CFSSSWP", &OPS_CFSSSWP));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelBRB", &OPS_SteelBRB));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "SimpleFractureMaterial", &OPS_SimpleFractureMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "SimpleFracture", &OPS_SimpleFractureMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Maxwell", &OPS_Maxwell));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("MaxwellMaterial", &OPS_Maxwell));
 #ifndef _NO_NEW_RESTREPO
-	uniaxialMaterialsMap.insert(std::make_pair("DoddRestr", &OPS_DoddRestr));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("DoddRestr", &OPS_DoddRestr));
 #endif
-	uniaxialMaterialsMap.insert(std::make_pair("Steel2", &OPS_Steel2));
-	uniaxialMaterialsMap.insert(std::make_pair("OriginCentered", &OPS_OriginCentered));
-	uniaxialMaterialsMap.insert(std::make_pair("HookGap", &OPS_HookGap));
-	uniaxialMaterialsMap.insert(std::make_pair("pyUCLA", &OPS_pyUCLA));
-	uniaxialMaterialsMap.insert(std::make_pair("PYUCLA", &OPS_pyUCLA));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel01Thermal", &OPS_Steel01Thermal));
-	uniaxialMaterialsMap.insert(std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcretewBeta", &OPS_ConcretewBeta));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteSakaiKawashima", &OPS_ConcreteSakaiKawashima));
-	uniaxialMaterialsMap.insert(std::make_pair("Concrete02Thermal", &OPS_Concrete02Thermal));
-	uniaxialMaterialsMap.insert(std::make_pair("ResilienceLow", &OPS_ResilienceLow));
-	uniaxialMaterialsMap.insert(std::make_pair("ResilienceMaterialHR", &OPS_ResilienceMaterialHR));
-	uniaxialMaterialsMap.insert(std::make_pair("Elastic2", &OPS_Elastic2));
-	uniaxialMaterialsMap.insert(std::make_pair("Backbone", &OPS_Backbone));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteZ01Material", &OPS_ConcreteZ01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteZ01", &OPS_ConcreteZ01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteL01Material", &OPS_ConcreteL01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("ConcreteL01", &OPS_ConcreteL01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelZ01Material", &OPS_SteelZ01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelZ01", &OPS_SteelZ01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("TendonL01Material", &OPS_TendonL01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("TendonL01", &OPS_TendonL01Material));
-	uniaxialMaterialsMap.insert(std::make_pair("Cable", &OPS_CableMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("ShearPanel", &OPS_ShearPanelMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelMP", &OPS_SteelMP));
-	uniaxialMaterialsMap.insert(std::make_pair("SmoothPSConcrete", &OPS_SmoothPSConcrete));
-	uniaxialMaterialsMap.insert(std::make_pair("UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
-	uniaxialMaterialsMap.insert(std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
-	uniaxialMaterialsMap.insert(std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
-	uniaxialMaterialsMap.insert(std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));	
-	uniaxialMaterialsMap.insert(std::make_pair("IMKBilin", &OPS_IMKBilin));
-	uniaxialMaterialsMap.insert(std::make_pair("IMKPinching", &OPS_IMKPinching));
-	uniaxialMaterialsMap.insert(std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
-	uniaxialMaterialsMap.insert(std::make_pair("SLModel", &OPS_SLModel));
-	uniaxialMaterialsMap.insert(std::make_pair("SMA", &OPS_SMAMaterial));	
-	uniaxialMaterialsMap.insert(std::make_pair("HystereticPoly", &OPS_HystereticPoly)); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
-	uniaxialMaterialsMap.insert(std::make_pair("DowelType", &OPS_DowelType));
-  uniaxialMaterialsMap.insert(std::make_pair("DuctileFracture", &OPS_DuctileFracture)); // Kuanshi Zhong
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel2", &OPS_Steel2));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("OriginCentered", &OPS_OriginCentered));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HookGap", &OPS_HookGap));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("pyUCLA", &OPS_pyUCLA));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("PYUCLA", &OPS_pyUCLA));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel01Thermal", &OPS_Steel01Thermal));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcretewBeta", &OPS_ConcretewBeta));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConcreteSakaiKawashima", &OPS_ConcreteSakaiKawashima));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "Concrete02Thermal", &OPS_Concrete02Thermal));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ResilienceLow", &OPS_ResilienceLow));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ResilienceMaterialHR", &OPS_ResilienceMaterialHR));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Elastic2", &OPS_Elastic2));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Backbone", &OPS_Backbone));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConcreteZ01Material", &OPS_ConcreteZ01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteZ01", &OPS_ConcreteZ01Material));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConcreteL01Material", &OPS_ConcreteL01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteL01", &OPS_ConcreteL01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelZ01Material", &OPS_SteelZ01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelZ01", &OPS_SteelZ01Material));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "TendonL01Material", &OPS_TendonL01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TendonL01", &OPS_TendonL01Material));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Cable", &OPS_CableMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ShearPanel", &OPS_ShearPanelMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelMP", &OPS_SteelMP));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SmoothPSConcrete", &OPS_SmoothPSConcrete));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "UniaxialJ2Plasticity", &OPS_UniaxialJ2Plasticity));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("IMKBilin", &OPS_IMKBilin));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("IMKPinching", &OPS_IMKPinching));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("IMKPeakOriented", &OPS_IMKPeakOriented));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SLModel", &OPS_SLModel));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SMA", &OPS_SMAMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "HystereticPoly",
+      &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021
+                              // Mail: salvatore.sessa2@unina.it
+  uniaxialMaterialsMap.insert(
+      std::make_pair("DowelType", &OPS_DowelType));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("DuctileFracture",
+                     &OPS_DuctileFracture));  // Kuanshi Zhong
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteEXP", &OPS_TDConcreteEXP));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcrete", &OPS_TDConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
 
-	return 0;
-    }
+  return 0;
+}
 
-  static OPS_ParsingFunctionMap hystereticBackbonesMap;
-  
-  static int setUpHystereticBackbones(void)
-  {
-    hystereticBackbonesMap.insert(std::make_pair("Arctangent", &OPS_ArctangentBackbone));
-    hystereticBackbonesMap.insert(std::make_pair("Bilinear", &OPS_BilinearBackbone));
-    hystereticBackbonesMap.insert(std::make_pair("Mander", &OPS_ManderBackbone));
-    hystereticBackbonesMap.insert(std::make_pair("Multilinear", &OPS_MultilinearBackbone));
-    hystereticBackbonesMap.insert(std::make_pair("Trilinear", &OPS_TrilinearBackbone));
-    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
-    hystereticBackbonesMap.insert(std::make_pair("ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
-    hystereticBackbonesMap.insert(std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
-    hystereticBackbonesMap.insert(std::make_pair("CementedSoil", &OPS_CementedSoil));
-    hystereticBackbonesMap.insert(std::make_pair("WeakRock", &OPS_WeakRock));
-    hystereticBackbonesMap.insert(std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
-    
-    return 0;
+static OPS_ParsingFunctionMap hystereticBackbonesMap;
+
+static int setUpHystereticBackbones(void) {
+  hystereticBackbonesMap.insert(
+      std::make_pair("Arctangent", &OPS_ArctangentBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("Bilinear", &OPS_BilinearBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("Mander", &OPS_ManderBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("Multilinear", &OPS_MultilinearBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("Trilinear", &OPS_TrilinearBackbone));
+  hystereticBackbonesMap.insert(std::make_pair(
+      "ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
+  hystereticBackbonesMap.insert(std::make_pair(
+      "ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
+  hystereticBackbonesMap.insert(
+      std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("CementedSoil", &OPS_CementedSoil));
+  hystereticBackbonesMap.insert(
+      std::make_pair("WeakRock", &OPS_WeakRock));
+  hystereticBackbonesMap.insert(
+      std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
+
+  return 0;
+}
+
+static OPS_ParsingFunctionMap stiffnessDegradationsMap;
+
+static int setUpStiffnessDegradations(void) {
+  stiffnessDegradationsMap.insert(std::make_pair(
+      "Constant", &OPS_ConstantStiffnessDegradation));
+  stiffnessDegradationsMap.insert(std::make_pair(
+      "Ductility", &OPS_DuctilityStiffnessDegradation));
+  stiffnessDegradationsMap.insert(
+      std::make_pair("Energy", &OPS_EnergyStiffnessDegradation));
+  stiffnessDegradationsMap.insert(std::make_pair(
+      "Pincheira", &OPS_PincheiraStiffnessDegradation));
+
+  return 0;
+}
+
+static OPS_ParsingFunctionMap strengthDegradationsMap;
+
+static int setUpStrengthDegradations(void) {
+  strengthDegradationsMap.insert(std::make_pair(
+      "Constant", &OPS_ConstantStrengthDegradation));
+  strengthDegradationsMap.insert(std::make_pair(
+      "Ductility", &OPS_DuctilityStrengthDegradation));
+  strengthDegradationsMap.insert(
+      std::make_pair("Energy", &OPS_EnergyStrengthDegradation));
+  strengthDegradationsMap.insert(
+      std::make_pair("ACI", &OPS_ACIStrengthDegradation));
+  strengthDegradationsMap.insert(std::make_pair(
+      "Petrangeli", &OPS_PetrangeliStrengthDegradation));
+
+  return 0;
+}
+
+static OPS_ParsingFunctionMap unloadingRulesMap;
+
+static int setUpUnloadingRules(void) {
+  unloadingRulesMap.insert(
+      std::make_pair("Constant", &OPS_ConstantUnloadingRule));
+  unloadingRulesMap.insert(
+      std::make_pair("Ductility", &OPS_TakedaUnloadingRule));
+  unloadingRulesMap.insert(
+      std::make_pair("Takeda", &OPS_TakedaUnloadingRule));
+  unloadingRulesMap.insert(
+      std::make_pair("Energy", &OPS_EnergyUnloadingRule));
+  unloadingRulesMap.insert(
+      std::make_pair("Karsan", &OPS_KarsanUnloadingRule));
+
+  return 0;
+}
+
+}  // namespace
+
+int OPS_UniaxialMaterial() {
+  static bool initDone = false;
+  if (initDone == false) {
+    setUpUniaxialMaterials();
+    initDone = true;
   }
 
-  static OPS_ParsingFunctionMap stiffnessDegradationsMap;
-  
-  static int setUpStiffnessDegradations(void)
-  {
-    stiffnessDegradationsMap.insert(std::make_pair("Constant", &OPS_ConstantStiffnessDegradation));
-    stiffnessDegradationsMap.insert(std::make_pair("Ductility", &OPS_DuctilityStiffnessDegradation));
-    stiffnessDegradationsMap.insert(std::make_pair("Energy", &OPS_EnergyStiffnessDegradation));
-    stiffnessDegradationsMap.insert(std::make_pair("Pincheira", &OPS_PincheiraStiffnessDegradation));
-    
-    return 0;
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "WARNING too few arguments: uniaxialMaterial "
+              "type? tag? ...\n";
+    return -1;
   }
 
-  static OPS_ParsingFunctionMap strengthDegradationsMap;
-  
-  static int setUpStrengthDegradations(void)
-  {
-    strengthDegradationsMap.insert(std::make_pair("Constant", &OPS_ConstantStrengthDegradation));
-    strengthDegradationsMap.insert(std::make_pair("Ductility", &OPS_DuctilityStrengthDegradation));
-    strengthDegradationsMap.insert(std::make_pair("Energy", &OPS_EnergyStrengthDegradation));
-    strengthDegradationsMap.insert(std::make_pair("ACI", &OPS_ACIStrengthDegradation));
-    strengthDegradationsMap.insert(std::make_pair("Petrangeli", &OPS_PetrangeliStrengthDegradation));
-    
-    return 0;
+  const char* matType = OPS_GetString();
+
+  OPS_ParsingFunctionMap::const_iterator iter =
+      uniaxialMaterialsMap.find(matType);
+  if (iter == uniaxialMaterialsMap.end()) {
+    opserr << "WARNING material type " << matType
+           << " is unknown\n";
+    return -1;
   }
 
-  static OPS_ParsingFunctionMap unloadingRulesMap;
-  
-  static int setUpUnloadingRules(void)
-  {
-    unloadingRulesMap.insert(std::make_pair("Constant", &OPS_ConstantUnloadingRule));
-    unloadingRulesMap.insert(std::make_pair("Ductility", &OPS_TakedaUnloadingRule));
-    unloadingRulesMap.insert(std::make_pair("Takeda", &OPS_TakedaUnloadingRule));
-    unloadingRulesMap.insert(std::make_pair("Energy", &OPS_EnergyUnloadingRule));
-    unloadingRulesMap.insert(std::make_pair("Karsan", &OPS_KarsanUnloadingRule));
-    
-    return 0;
+  UniaxialMaterial* theMaterial =
+      (UniaxialMaterial*)(*iter->second)();
+  if (theMaterial == 0) {
+    return -1;
   }
 
+  // Now add the material to the modelBuilder
+  if (OPS_addUniaxialMaterial(theMaterial) == false) {
+    opserr << "ERROR could not add uniaaialMaterial.\n";
+    delete theMaterial;  // invoke the material objects
+                         // destructor, otherwise mem leak
+    return -1;
+  }
 
+  return 0;
 }
 
-int
-OPS_UniaxialMaterial()
-{
-    static bool initDone = false;
-    if (initDone == false) {
-	setUpUniaxialMaterials();
-	initDone = true;
-    }
+int OPS_testUniaxialMaterial() {
+  if (OPS_GetNumRemainingInputArgs() != 1) {
+    opserr << "testUniaxialMaterial - You must provide a "
+              "material tag.\n";
+    return -1;
+  }
 
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr<<"WARNING too few arguments: uniaxialMaterial type? tag? ...\n";
-	return -1;
-    }
+  int tag;
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, &tag) < 0) {
+    opserr << "invalid int value\n";
+    return -1;
+  }
 
-    const char* matType = OPS_GetString();
+  UniaxialMaterial* mat = OPS_getUniaxialMaterial(tag);
 
-    OPS_ParsingFunctionMap::const_iterator iter = uniaxialMaterialsMap.find(matType);
-    if (iter == uniaxialMaterialsMap.end()) {
-	opserr<<"WARNING material type " << matType << " is unknown\n";
-	return -1;
-    }
+  if (mat == 0) {
+    opserr << "testUniaxialMaterial - Material Not Found.\n";
+    return -1;
+  }
 
-    UniaxialMaterial* theMaterial = (UniaxialMaterial*) (*iter->second)();
-    if (theMaterial == 0) {
-	return -1;
-    }
+  theTestingUniaxialMaterial = mat;
 
-    // Now add the material to the modelBuilder
-    if (OPS_addUniaxialMaterial(theMaterial) == false) {
-	opserr<<"ERROR could not add uniaaialMaterial.\n";
-	delete theMaterial; // invoke the material objects destructor, otherwise mem leak
-	return -1;
-    }
-
-    return 0;
-
+  return 0;
 }
 
-int OPS_testUniaxialMaterial()
-{
-    if (OPS_GetNumRemainingInputArgs() != 1) {
-	opserr<<"testUniaxialMaterial - You must provide a material tag.\n";
-	return -1;
-    }
+int OPS_setStrain() {
+  if (OPS_GetNumRemainingInputArgs() != 1) {
+    opserr << "testUniaxialMaterial - You must provide a strain "
+              "value.\n";
+    return -1;
+  }
 
-    int tag;
-    int numData = 1;
-    if (OPS_GetIntInput(&numData, &tag) < 0) {
-	opserr<<"invalid int value\n";
-	return -1;
-    }
+  UniaxialMaterial* material = theTestingUniaxialMaterial;
 
-    UniaxialMaterial* mat =OPS_getUniaxialMaterial(tag);
+  if (material == 0) {
+    opserr << "setStrain WARNING no active UniaxialMaterial - "
+              "use testUniaxialMaterial command.\n";
+    return -1;
+  }
 
-    if (mat == 0) {
-	opserr<<"testUniaxialMaterial - Material Not Found.\n";
-	return -1;
-    }
+  double strain;
+  int numData = 1;
+  if (OPS_GetDoubleInput(&numData, &strain) < 0) {
+    opserr << "invalid double value\n";
+    return -1;
+  }
 
-    theTestingUniaxialMaterial = mat;
+  material->setTrialStrain(strain);
+  material->commitState();
 
-    return 0;
+  return 0;
 }
 
-int OPS_setStrain()
-{
-    if (OPS_GetNumRemainingInputArgs() != 1) {
-	opserr<<"testUniaxialMaterial - You must provide a strain value.\n";
-	return -1;
-    }
+int OPS_getStrain() {
+  UniaxialMaterial* material = theTestingUniaxialMaterial;
+  if (material == 0) {
+    opserr << "getStrain WARNING no active UniaxialMaterial - "
+              "use testUniaxialMaterial command.\n";
+    return -1;
+  }
 
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
+  double strain = material->getStrain();
 
-    if (material == 0) {
-	opserr<<"setStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
-	return -1;
-    }
+  int numData = 1;
 
-    double strain;
-    int numData = 1;
-    if (OPS_GetDoubleInput(&numData, &strain) < 0) {
-	opserr<<"invalid double value\n";
-	return -1;
-    }
+  if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
+    opserr << "failed to set strain\n";
+    return -1;
+  }
 
-    material->setTrialStrain(strain);
-    material->commitState();
-
-    return 0;
+  return 0;
 }
 
-int OPS_getStrain()
-{
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
-	return -1;
-    }
+int OPS_getStress() {
+  UniaxialMaterial* material = theTestingUniaxialMaterial;
+  if (material == 0) {
+    opserr << "getStrain WARNING no active UniaxialMaterial - "
+              "use testUniaxialMaterial command.\n";
+    return -1;
+  }
 
-    double strain = material->getStrain();
+  double stress = material->getStress();
 
-    int numData = 1;
+  int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &strain, true) < 0) {
-	opserr<<"failed to set strain\n";
-	return -1;
-    }
+  if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
+    opserr << "failed to set stress\n";
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
-int OPS_getStress()
-{
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
-	return -1;
-    }
+int OPS_getTangent() {
+  UniaxialMaterial* material = theTestingUniaxialMaterial;
+  if (material == 0) {
+    opserr << "getStrain WARNING no active UniaxialMaterial - "
+              "use testUniaxialMaterial command.\n";
+    return -1;
+  }
 
-    double stress = material->getStress();
+  double tangent = material->getTangent();
 
-    int numData = 1;
+  int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &stress, true) < 0) {
-	opserr<<"failed to set stress\n";
-	return -1;
-    }
+  if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
+    opserr << "failed to set tangent\n";
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
-int OPS_getTangent()
-{
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
-	return -1;
-    }
+int OPS_getDampTangent() {
+  UniaxialMaterial* material = theTestingUniaxialMaterial;
+  if (material == 0) {
+    opserr << "getStrain WARNING no active UniaxialMaterial - "
+              "use testUniaxialMaterial command.\n";
+    return -1;
+  }
 
-    double tangent = material->getTangent();
+  double tangent = material->getDampTangent();
 
-    int numData = 1;
+  int numData = 1;
 
-    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
-	opserr<<"failed to set tangent\n";
-	return -1;
-    }
+  if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
+    opserr << "failed to set damp tangent\n";
+    return -1;
+  }
 
-    return 0;
-}
-
-int OPS_getDampTangent()
-{
-    UniaxialMaterial* material = theTestingUniaxialMaterial;
-    if (material == 0) {
-	opserr<<"getStrain WARNING no active UniaxialMaterial - use testUniaxialMaterial command.\n";
-	return -1;
-    }
-
-    double tangent = material->getDampTangent();
-
-    int numData = 1;
-
-    if (OPS_SetDoubleOutput(&numData, &tangent, true) < 0) {
-	opserr<<"failed to set damp tangent\n";
-	return -1;
-    }
-
-    return 0;
+  return 0;
 }
 
 void* OPS_RotationShearCurve();
 void* OPS_ThreePointCurve();
 void* OPS_ShearCurve();
 
-int OPS_LimitCurve()
-{
-    // Make sure there is a minimum number of arguments
-    if (OPS_GetNumRemainingInputArgs() < 6)
-    {
-	opserr << "WARNING insufficient number of limit curve arguments\n";
-	opserr << "Want: limitCurve type? tag? <specific curve args>" << endln;
-	return -1;
-    }
+int OPS_LimitCurve() {
+  // Make sure there is a minimum number of arguments
+  if (OPS_GetNumRemainingInputArgs() < 6) {
+    opserr << "WARNING insufficient number of limit curve "
+              "arguments\n";
+    opserr << "Want: limitCurve type? tag? <specific curve args>"
+           << endln;
+    return -1;
+  }
 
-    const char* type = OPS_GetString();
+  const char* type = OPS_GetString();
 
-    // Pointer to a limit curve that will be added to the model builder
-    LimitCurve *theCurve = 0;
+  // Pointer to a limit curve that will be added to the model
+  // builder
+  LimitCurve* theCurve = 0;
 
-    if (strcmp(type, "Axial") == 0) {
+  if (strcmp(type, "Axial") == 0) {
+    opserr << "WARNING to be implemented ...\n";
+    return -1;
 
-	opserr << "WARNING to be implemented ...\n";
-	return -1;
-	
-	
-    } else if (strcmp(type, "RotationShearCurve") == 0) {
-
-	void *theRSC = OPS_RotationShearCurve();
-	if (theRSC != 0) {
-	    theCurve = (LimitCurve *)theRSC;
-	} else {
-	    return -1;
-	}
-	  
-    } else if (strcmp(type,"ThreePoint") == 0) {
-	
-	void* curve = OPS_RotationShearCurve();
-	if (curve != 0) {
-	    theCurve = (LimitCurve *)curve;
-	} else {
-	    return -1;
-	}
-	
-    } else if (strcmp(type,"Shear") == 0) {
-
-	void* curve = OPS_ShearCurve();
-	if (curve != 0) {
-	    theCurve = (LimitCurve *)curve;
-	} else {
-	    return -1;
-	}
-	
+  } else if (strcmp(type, "RotationShearCurve") == 0) {
+    void* theRSC = OPS_RotationShearCurve();
+    if (theRSC != 0) {
+      theCurve = (LimitCurve*)theRSC;
     } else {
-	opserr << "WARNING type of limit curve is unknown\n";
-	return -1;
+      return -1;
     }
 
-    
-
-    // Ensure we have created the Material, out of memory if got here and no material
-    if (theCurve == 0) {
-	opserr << "WARNING ran out of memory creating limitCurve\n";
-	return -1;
+  } else if (strcmp(type, "ThreePoint") == 0) {
+    void* curve = OPS_RotationShearCurve();
+    if (curve != 0) {
+      theCurve = (LimitCurve*)curve;
+    } else {
+      return -1;
     }
 
-    // Now add the material to the modelBuilder
-    if (OPS_addLimitCurve(theCurve) == false) {
-	opserr << "WARNING could not add limitCurve to the domain\n";
-	delete theCurve; // invoke the material objects destructor, otherwise mem leak
-	return -1;
+  } else if (strcmp(type, "Shear") == 0) {
+    void* curve = OPS_ShearCurve();
+    if (curve != 0) {
+      theCurve = (LimitCurve*)curve;
+    } else {
+      return -1;
     }
 
-    return 0;
+  } else {
+    opserr << "WARNING type of limit curve is unknown\n";
+    return -1;
+  }
+
+  // Ensure we have created the Material, out of memory if got
+  // here and no material
+  if (theCurve == 0) {
+    opserr << "WARNING ran out of memory creating limitCurve\n";
+    return -1;
+  }
+
+  // Now add the material to the modelBuilder
+  if (OPS_addLimitCurve(theCurve) == false) {
+    opserr << "WARNING could not add limitCurve to the domain\n";
+    delete theCurve;  // invoke the material objects destructor,
+                      // otherwise mem leak
+    return -1;
+  }
+
+  return 0;
 }
 
-
-int
-OPS_hystereticBackbone()
-{
+int OPS_hystereticBackbone() {
   static bool initDone = false;
   if (initDone == false) {
     setUpHystereticBackbones();
     initDone = true;
   }
-  
+
   if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr<<"WARNING too few arguments: hystereticBackbone type? tag? ...\n";
+    opserr << "WARNING too few arguments: hystereticBackbone "
+              "type? tag? ...\n";
     return -1;
   }
-  
+
   const char* matType = OPS_GetString();
-  
-  OPS_ParsingFunctionMap::const_iterator iter = hystereticBackbonesMap.find(matType);
+
+  OPS_ParsingFunctionMap::const_iterator iter =
+      hystereticBackbonesMap.find(matType);
   if (iter == hystereticBackbonesMap.end()) {
-    opserr<<"WARNING hystereticBackbone type " << matType << " is unknown\n";
+    opserr << "WARNING hystereticBackbone type " << matType
+           << " is unknown\n";
     return -1;
   }
-  
-  HystereticBackbone* theBackbone = (HystereticBackbone*) (*iter->second)();
+
+  HystereticBackbone* theBackbone =
+      (HystereticBackbone*)(*iter->second)();
   if (theBackbone == 0) {
     return -1;
   }
-  
+
   // Now add the material to the modelBuilder
   if (OPS_addHystereticBackbone(theBackbone) == false) {
-    opserr<<"ERROR could not add HystereticBackbone\n";
+    opserr << "ERROR could not add HystereticBackbone\n";
     delete theBackbone;
     return -1;
   }
-  
+
   return 0;
 }
 
-int
-OPS_stiffnessDegradation()
-{
+int OPS_stiffnessDegradation() {
   static bool initDone = false;
   if (initDone == false) {
     setUpStiffnessDegradations();
     initDone = true;
   }
-  
+
   if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr<<"WARNING too few arguments: stiffnessDegradation type? tag? ...\n";
+    opserr << "WARNING too few arguments: stiffnessDegradation "
+              "type? tag? ...\n";
     return -1;
   }
-  
+
   const char* matType = OPS_GetString();
-  
-  OPS_ParsingFunctionMap::const_iterator iter = stiffnessDegradationsMap.find(matType);
+
+  OPS_ParsingFunctionMap::const_iterator iter =
+      stiffnessDegradationsMap.find(matType);
   if (iter == stiffnessDegradationsMap.end()) {
-    opserr<<"WARNING stiffnessDegradation type " << matType << " is unknown\n";
+    opserr << "WARNING stiffnessDegradation type " << matType
+           << " is unknown\n";
     return -1;
   }
-  
-  StiffnessDegradation* theBackbone = (StiffnessDegradation*) (*iter->second)();
+
+  StiffnessDegradation* theBackbone =
+      (StiffnessDegradation*)(*iter->second)();
   if (theBackbone == 0) {
     return -1;
   }
-  
+
   // Now add the material to the modelBuilder
   if (OPS_addStiffnessDegradation(theBackbone) == false) {
-    opserr<<"ERROR could not add StiffnessDegradation\n";
+    opserr << "ERROR could not add StiffnessDegradation\n";
     delete theBackbone;
     return -1;
   }
-  
+
   return 0;
 }
 
-int
-OPS_strengthDegradation()
-{
+int OPS_strengthDegradation() {
   static bool initDone = false;
   if (initDone == false) {
     setUpStrengthDegradations();
     initDone = true;
   }
-  
+
   if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr<<"WARNING too few arguments: strengthDegradation type? tag? ...\n";
+    opserr << "WARNING too few arguments: strengthDegradation "
+              "type? tag? ...\n";
     return -1;
   }
-  
+
   const char* matType = OPS_GetString();
-  
-  OPS_ParsingFunctionMap::const_iterator iter = strengthDegradationsMap.find(matType);
+
+  OPS_ParsingFunctionMap::const_iterator iter =
+      strengthDegradationsMap.find(matType);
   if (iter == strengthDegradationsMap.end()) {
-    opserr<<"WARNING strengthDegradation type " << matType << " is unknown\n";
+    opserr << "WARNING strengthDegradation type " << matType
+           << " is unknown\n";
     return -1;
   }
-  
-  StrengthDegradation* theBackbone = (StrengthDegradation*) (*iter->second)();
+
+  StrengthDegradation* theBackbone =
+      (StrengthDegradation*)(*iter->second)();
   if (theBackbone == 0) {
     return -1;
   }
-  
+
   // Now add the material to the modelBuilder
   if (OPS_addStrengthDegradation(theBackbone) == false) {
-    opserr<<"ERROR could not add StrengthDegradation\n";
+    opserr << "ERROR could not add StrengthDegradation\n";
     delete theBackbone;
     return -1;
   }
-  
+
   return 0;
 }
 
-int
-OPS_unloadingRule()
-{
+int OPS_unloadingRule() {
   static bool initDone = false;
   if (initDone == false) {
     setUpUnloadingRules();
     initDone = true;
   }
-  
+
   if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr<<"WARNING too few arguments: unloadingRule type? tag? ...\n";
+    opserr << "WARNING too few arguments: unloadingRule type? "
+              "tag? ...\n";
     return -1;
   }
-  
+
   const char* matType = OPS_GetString();
-  
-  OPS_ParsingFunctionMap::const_iterator iter = unloadingRulesMap.find(matType);
+
+  OPS_ParsingFunctionMap::const_iterator iter =
+      unloadingRulesMap.find(matType);
   if (iter == unloadingRulesMap.end()) {
-    opserr<<"WARNING unloadingRule type " << matType << " is unknown\n";
+    opserr << "WARNING unloadingRule type " << matType
+           << " is unknown\n";
     return -1;
   }
-  
-  UnloadingRule* theBackbone = (UnloadingRule*) (*iter->second)();
+
+  UnloadingRule* theBackbone = (UnloadingRule*)(*iter->second)();
   if (theBackbone == 0) {
     return -1;
   }
-  
+
   // Now add the material to the modelBuilder
   if (OPS_addUnloadingRule(theBackbone) == false) {
-    opserr<<"ERROR could not add UnloadingRule\n";
+    opserr << "ERROR could not add UnloadingRule\n";
     delete theBackbone;
     return -1;
   }
-  
+
   return 0;
 }
