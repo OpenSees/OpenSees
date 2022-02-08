@@ -176,6 +176,7 @@ double PythonEvaluator::evaluateExpression() {
 
   // add imports
   PyRun_SimpleString("import opensees");
+  PyRun_SimpleString("import opensees as ops");
   PyRun_SimpleString("from math import *");
   PyRun_SimpleString("import math");
   PyRun_SimpleString("par = opensees.OpenSeesParameter");
@@ -252,6 +253,7 @@ int PythonEvaluator::runAnalysis() {
 
     // add imports
     PyRun_SimpleString("import opensees");
+    PyRun_SimpleString("import opensees as ops");
     PyRun_SimpleString("from math import *");
     PyRun_SimpleString("import math");
     PyRun_SimpleString("par = opensees.OpenSeesParameter");
