@@ -138,9 +138,10 @@ MPIDiagonalSOE::setSize(Graph &theGraph)
   while ((theVertex = theVertices()) != 0) {
     int vertexTag = theVertex->getTag();
     myDOFsArray[count++] = vertexTag;
+    count++;
   }
   static ID otherSize(1);
-  delete &theGraph;
+//  delete &theGraph;
   
 
   myDOFs.setData(myDOFsArray, size);
