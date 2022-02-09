@@ -68,6 +68,9 @@ class MultiLinear : public UniaxialMaterial
  protected:
   
  private:
+  Vector e0; // Initial backbone strains
+  Vector s0; // Initial backbone stresses
+  
     Matrix data;
     int numSlope;
     int tSlope;
