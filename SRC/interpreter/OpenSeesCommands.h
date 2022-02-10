@@ -364,6 +364,7 @@ int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 int OPS_runFOSMAnalysis();
 int OPS_runFORMAnalysis();
+int OPS_runImportanceSamplingAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 
 /* OpenSeesCommands.cpp */

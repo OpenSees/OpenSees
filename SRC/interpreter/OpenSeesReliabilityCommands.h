@@ -51,11 +51,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #define OpenSeesReliabilityCommands_h
 
 #include <Domain.h>
-#include <FOSMAnalysis.h>
 #include <FORMAnalysis.h>
+#include <FOSMAnalysis.h>
 #include <FindDesignPointAlgorithm.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
+#include <ImportanceSamplingAnalysis.h>
 #include <Integrator.h>
 #include <MeritFunctionCheck.h>
 #include <PolakHeSearchDirectionAndMeritFunction.h>
@@ -149,6 +150,12 @@ class OpenSeesReliabilityCommands {
   void setFORMAnalysis(FORMAnalysis *analysis);
   FORMAnalysis *getFORMAnalysis() { return theFORMAnalysis; }
 
+  void setImportanceSamplingAnalysis(
+      ImportanceSamplingAnalysis *analysis);
+  ImportanceSamplingAnalysis *getImportanceSamplingAnalysis() {
+    return theImportanceSamplingAnalysis;
+  }
+
   void setSensitivityAlgorithm(Integrator *inte) {
     theSensAlgo = inte;
   }
@@ -179,6 +186,7 @@ class OpenSeesReliabilityCommands {
   // analysis
   FOSMAnalysis *theFOSMAnalysis;
   FORMAnalysis *theFORMAnalysis;
+  ImportanceSamplingAnalysis *theImportanceSamplingAnalysis;
 
   // sensitivity algorithm
   Integrator *theSensAlgo;

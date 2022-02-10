@@ -115,7 +115,7 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(Domain* structuralDomai
    theFunctionEvaluator(0),
    theGradientEvaluator(0), thePolakHeDualPurpose(0),
    theSQPtriplePurpose(0), theFOSMAnalysis(0),
-   theFORMAnalysis(0),
+   theFORMAnalysis(0), theImportanceSamplingAnalysis(0),
    theSensAlgo(0)
 {
     if (structuralDomain != 0) {
@@ -196,6 +196,10 @@ void OpenSeesReliabilityCommands::wipe() {
   if (theFORMAnalysis != 0) {
     delete theFORMAnalysis;
     theFORMAnalysis = 0;
+  }
+  if (theImportanceSamplingAnalysis != 0) {
+    delete theImportanceSamplingAnalysis;
+    theImportanceSamplingAnalysis = 0;
   }
 }
 
@@ -1074,6 +1078,15 @@ void OpenSeesReliabilityCommands::setFORMAnalysis(
     theFORMAnalysis = 0;
   }
   theFORMAnalysis = analysis;
+}
+
+void OpenSeesReliabilityCommands::setImportanceSamplingAnalysis(
+    ImportanceSamplingAnalysis *analysis) {
+  if (theImportanceSamplingAnalysis != 0) {
+    delete theImportanceSamplingAnalysis;
+    theImportanceSamplingAnalysis = 0;
+  }
+  theImportanceSamplingAnalysis = analysis;
 }
 
 int OPS_startPoint() {
@@ -2495,6 +2508,195 @@ int OPS_runFORMAnalysis() {
   // Now run the analysis
   if (theFORMAnalysis->analyze() < 0) {
     opserr << "WARNING: the FORM analysis failed\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OPS_runImportanceSamplingAnalysis() {
+  if (cmds == 0) {
+    return -1;
+  }
+
+  // do input check
+  if (inputCheck() < 0) {
+    return -1;
+  }
+
+  // filename
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "WARNING: need filename\n";
+    return -1;
+  }
+  const char *filename = OPS_GetString();
+
+  // Check for essential tools
+  ProbabilityTransformation *theProbabilityTransformation =
+      cmds->getProbabilityTransformation();
+  if (theProbabilityTransformation == 0) {
+    opserr << "Need theProbabilityTransformation before a "
+              "ImportanceSamplingAnalysis can be created\n";
+    return -1;
+  }
+  FunctionEvaluator *theFunctionEvaluator =
+      cmds->getFunctionEvaluator();
+  if (theFunctionEvaluator == 0) {
+    opserr << "Need theGFunEvaluator before a "
+              "ImportanceSamplingAnalysis "
+              "can be created\n";
+    return -1;
+  }
+  RandomNumberGenerator *theRandomNumberGenerator =
+      cmds->getRandomNumberGenerator();
+  if (theRandomNumberGenerator == 0) {
+    opserr << "Need theRandomNumberGenerator before a "
+              "ImportanceSamplingAnalysis can be created\n";
+    return -1;
+  }
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theReliabilityDomain before a "
+              "ImportanceSamplingAnalysis can be created\n";
+    return -1;
+  }
+  Domain *theStructuralDomain = cmds->getStructuralDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theStructuralDomain before a "
+              "ImportanceSamplingAnalysis can be created\n";
+    return -1;
+  }
+
+  // The following switches are available (default values are
+  // provided) (The sampling is performed around theStartPoint,
+  // except for response statistics sampling; then the mean is
+  // used together with unit sampling variance.)
+  //
+  //     -type  failureProbability (1)......... this is the
+  //     default -type  responseStatistics (2) -type  saveGvalues
+  //     (3)
+  //
+  //     -variance 1.0  ....................... this is the
+  //     default
+  //
+  //     -maxNum 1000  ........................ this is the
+  //     default
+  //
+  //     -targetCOV 0.05  ..................... this is the
+  //     default
+  //
+  //     -print 0   (print nothing) ........... this is the
+  //     default -print 1   (print to screen) -print 2   (print
+  //     to restart file)
+  //
+
+  // Declaration of input parameters
+  long int numberOfSimulations = 1000;
+  double targetCOV = 0.05;
+  double samplingVariance = 1.0;
+  int printFlag = 0;
+  int analysisTypeTag = 1;
+
+  while (OPS_GetNumRemainingInputArgs() > 1) {
+    const char *type = OPS_GetString();
+
+    if (strcmp(type, "-type") == 0) {
+      const char *subtype = OPS_GetString();
+      if (strcmp(subtype, "failureProbability") == 0) {
+        analysisTypeTag = 1;
+
+      } else if (strcmp(subtype,
+                        "outCrossingFailureProbability") == 0) {
+        analysisTypeTag = 4;
+
+      } else if ((strcmp(subtype, "responseStatistics") == 0) ||
+                 (strcmp(subtype, "saveGvalues") == 0)) {
+        if (strcmp(subtype, "responseStatistics") == 0) {
+          analysisTypeTag = 2;
+        } else {
+          analysisTypeTag = 3;
+        }
+        if (samplingVariance != 1.0) {
+          opserr
+              << "ERROR:: sampling variance must be 1.0 for \n"
+              << " response statistics sampling.\n";
+          return -1;
+        }
+
+      } else {
+        opserr << "ERROR: invalid input: type \n";
+        return -1;
+      }
+    } else if (strcmp(type, "-variance") == 0) {
+      // GET INPUT PARAMETER (double)
+      int numdata = 1;
+      if (OPS_GetDoubleInput(&numdata, &samplingVariance) < 0) {
+        opserr << "ERROR: invalid input: samplingVariance \n";
+        return -1;
+      }
+      if (analysisTypeTag == 2 && samplingVariance != 1.0) {
+        opserr << "ERROR:: sampling variance must be 1.0 for \n"
+               << " response statistics sampling.\n";
+        return -1;
+      }
+    } else if (strcmp(type, "-maxNum") == 0) {
+      int numdata = 1;
+      double data = 0.0;
+      if (OPS_GetDoubleInput(&numdata, &data) < 0) {
+        opserr << "ERROR: invalid input: samplingVariance \n";
+        return -1;
+      }
+      numberOfSimulations = long(data);
+
+    } else if (strcmp(type, "-targetCOV") == 0) {
+      int numdata = 1;
+      if (OPS_GetDoubleInput(&numdata, &targetCOV) < 0) {
+        opserr << "ERROR: invalid input: targetCOV \n";
+        return -1;
+      }
+
+    } else if (strcmp(type, "-print") == 0) {
+      int numdata = 1;
+      if (OPS_GetIntInput(&numdata, &printFlag) < 0) {
+        opserr << "ERROR: invalid input: printFlag \n";
+        return -1;
+      }
+
+    } else {
+      opserr << "ERROR: invalid input to sampling analysis. \n";
+      return -1;
+    }
+  }
+
+  // Warn about illegal combinations
+  if (analysisTypeTag == 2 && printFlag == 2) {
+    opserr << "ERROR:: The restart option of the sampling "
+              "analysis cannot be \n"
+           << " used together with the response statistics "
+              "option. \n";
+    return -1;
+  }
+
+  ImportanceSamplingAnalysis *theImportanceSamplingAnalysis =
+      new ImportanceSamplingAnalysis(
+          theReliabilityDomain, theStructuralDomain,
+          theProbabilityTransformation, theFunctionEvaluator,
+          theRandomNumberGenerator, 0, numberOfSimulations,
+          targetCOV, samplingVariance, printFlag, filename,
+          analysisTypeTag);
+
+  if (theImportanceSamplingAnalysis == 0) {
+    opserr << "ERROR: could not create "
+              "theImportanceSamplingAnalysis \n";
+    return -1;
+  }
+
+  cmds->setImportanceSamplingAnalysis(
+      theImportanceSamplingAnalysis);
+
+  if (theImportanceSamplingAnalysis->analyze() < 0) {
+    opserr
+        << "WARNING: failed to run ImportanceSamplingAnalysis\n";
     return -1;
   }
 
