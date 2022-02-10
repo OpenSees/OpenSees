@@ -1858,10 +1858,6 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_NodeRecorderRMS();
      }
-     else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
-       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-       (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
-     }
 #ifdef _HDF5
      else if (strcmp(argv[1], "mpco") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);

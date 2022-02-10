@@ -423,7 +423,7 @@ ModelBuilder *theBuilder =0;
 
 #include <DistributedDisplacementControl.h>
 #include <ShadowSubdomain.h>
-#include <Metis.h>
+#include <MetisWrapper.h>
 #include <ShedHeaviest.h>
 #include <DomainPartitioner.h>
 #include <GraphPartitioner.h>
@@ -6606,7 +6606,7 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
       int size = data->Size();
       char buffer[40];
       for (int i=0; i<size; i++) {
-	sprintf(buffer,"%f ",(*data)(i));
+	sprintf(buffer,"%35.20f",(*data)(i));
 	Tcl_AppendResult(interp, buffer, NULL);
       }
     }

@@ -17,51 +17,46 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision$
-// $Date$
-// $Source$
 
-// Written: MHS
-// Created: August 2000
-//
-// Description: This file contains the interface for MaterialState,
-// which is the base for classes which model states of hysteretic
-// degradation.
+#ifndef WeakRock_h
+#define WeakRock_h
 
-#include <MaterialState.h>
+#include <HystereticBackbone.h>
+#include <Vector.h>
 
-MaterialState::MaterialState(int tag, int classTag)
-  :TaggedObject(tag), MovableObject(classTag)
-{
-  
-}
+/**
+ * @brief WeakRock - on page 56 of this manual
+ * https://www.dropbox.com/s/h3s9qvvz3pb4tlf/Weak%20Rock%20Reference%20Book.pdf?dl=0
+ *
+ */
+class WeakRock : public HystereticBackbone {
+ public:
+  WeakRock(int tag, double kir, double pur, double yrm);
+  WeakRock();
+  ~WeakRock();
 
-MaterialState::~MaterialState()
-{
-  
-}
+  double getStress(double strain);
+  double getTangent(double strain);
+  double getEnergy(double strain);
 
-int
-MaterialState::setVariable(const char *argv)
-{
-  return -1;
-}
+  double getYieldStrain(void);
 
-int
-MaterialState::getVariable(int variableID, double &info)
-{
-  return -1;
-}
+  HystereticBackbone *getCopy(void);
 
-int
-MaterialState::setParameter(const char **argv, int argc, Parameter &param)
-{
-  return -1;
-}
+  void Print(OPS_Stream &s, int flag = 0);
 
-int
-MaterialState::updateParameter(int responseID, Information &eleInformation)
-{
-  return -1;
-}
+  int setVariable(char *argv);
+  int getVariable(int varID, double &theValue);
+
+  int sendSelf(int commitTag, Channel &theChannel);
+  int recvSelf(int commitTag, Channel &theChannel,
+               FEM_ObjectBroker &theBroker);
+
+ protected:
+ private:
+  double Kir;
+  double pur;
+  double yrm;
+};
+
+#endif

@@ -17,51 +17,47 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision$
-// $Date$
-// $Source$
 
-// Written: MHS
-// Created: August 2000
-//
-// Description: This file contains the interface for MaterialState,
-// which is the base for classes which model states of hysteretic
-// degradation.
+#ifndef ReeseStiffClayAboveWS_h
+#define ReeseStiffClayAboveWS_h
 
-#include <MaterialState.h>
+#include <HystereticBackbone.h>
+#include <Vector.h>
 
-MaterialState::MaterialState(int tag, int classTag)
-  :TaggedObject(tag), MovableObject(classTag)
-{
-  
-}
+/**
+ * @brief Response of Stiff Clay above the water surface
+ * (https://ntrl.ntis.gov/NTRL/dashboard/searchResults/titleDetail/PB94108305.xhtml)
+ * page 336
+ *
+ */
+class ReeseStiffClayAboveWS : public HystereticBackbone {
+ public:
+  ReeseStiffClayAboveWS(int tag, double pu, double y50);
+  ReeseStiffClayAboveWS();
+  ~ReeseStiffClayAboveWS();
 
-MaterialState::~MaterialState()
-{
-  
-}
+  double getStress(double strain);
+  double getTangent(double strain);
+  double getEnergy(double strain);
 
-int
-MaterialState::setVariable(const char *argv)
-{
-  return -1;
-}
+  double getYieldStrain(void);
 
-int
-MaterialState::getVariable(int variableID, double &info)
-{
-  return -1;
-}
+  HystereticBackbone *getCopy(void);
 
-int
-MaterialState::setParameter(const char **argv, int argc, Parameter &param)
-{
-  return -1;
-}
+  void Print(OPS_Stream &s, int flag = 0);
 
-int
-MaterialState::updateParameter(int responseID, Information &eleInformation)
-{
-  return -1;
-}
+  int setVariable(char *argv);
+  int getVariable(int varID, double &theValue);
+
+  int sendSelf(int commitTag, Channel &theChannel);
+  int recvSelf(int commitTag, Channel &theChannel,
+               FEM_ObjectBroker &theBroker);
+
+ protected:
+ private:
+  double pu;
+  double y50;
+  double hl;
+};
+
+#endif

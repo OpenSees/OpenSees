@@ -39,7 +39,7 @@
 //
 // What: "@(#) Metis.C, revA"
 
-#include <Metis.h>
+#include <MetisWrapper.h>
 #include <Graph.h>
 #include <Vertex.h>
 
