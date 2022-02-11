@@ -25,6 +25,8 @@
 ** Written: fmk
 */
 
+
+
 #include <stdlib.h>
 #include <string.h>
 #include <OPS_Globals.h>
@@ -42,7 +44,7 @@ int
 httpGET_File(char const* URL, char const* page, unsigned int port, const char* filename);
 
 #ifdef _WIN32
-
+#define byte win_byte_override
 #include <windows.h>
 #include <elementAPI.h>
 extern SimulationInformation* theSimulationInfoPtr;
@@ -50,6 +52,7 @@ extern SimulationInformation* theSimulationInfoPtr;
 #else
 #include <dlfcn.h>
 #endif
+
 
 int
 getLibraryFunction(const char* libName, const char* funcName, void** libHandle, void** funcHandle) {
