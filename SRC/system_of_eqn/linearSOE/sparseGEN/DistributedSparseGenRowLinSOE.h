@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenRowLinSOE.h,v $
                                                                         
 #ifndef DistributedSparseGenRowLinSOE_h
-#define DistributedSparseGenColLinSOE_h
+#define DistributedSparseGenRowLinSOE_h
 
 // Written: fmk 
 // Created: 04/05
