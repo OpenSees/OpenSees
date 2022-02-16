@@ -409,6 +409,10 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("QzSimple1", &OPS_QzSimple1));
   uniaxialMaterialsMap.insert(
+      std::make_pair("PySimple2", &OPS_PySimple2));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TzSimple2", &OPS_TzSimple2));
+  uniaxialMaterialsMap.insert(
       std::make_pair("QzSimple2", &OPS_QzSimple2));
   uniaxialMaterialsMap.insert(
       std::make_pair("PyLiq1", &OPS_PyLiq1));
