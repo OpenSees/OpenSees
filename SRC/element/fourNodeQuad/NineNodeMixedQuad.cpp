@@ -1332,70 +1332,57 @@ NineNodeMixedQuad::shape1d( int code, int node, double xi )
 //***********************************************************************
 
 int
-NineNodeMixedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **moes, int numMode)
+NineNodeMixedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[4]->getCrds();	
-    const Vector &end3Crd = nodePointers[1]->getCrds();	
-    const Vector &end4Crd = nodePointers[5]->getCrds();	
-    const Vector &end5Crd = nodePointers[2]->getCrds();
-    const Vector &end6Crd = nodePointers[6]->getCrds();	
-    const Vector &end7Crd = nodePointers[3]->getCrds();	
-    const Vector &end8Crd = nodePointers[7]->getCrds();	
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    static Vector v5(3);
+    static Vector v6(3);
+    static Vector v7(3);
+    static Vector v8(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+    nodePointers[4]->getDisplayCrds(v5, fact, displayMode);
+    nodePointers[5]->getDisplayCrds(v6, fact, displayMode);
+    nodePointers[6]->getDisplayCrds(v7, fact, displayMode);
+    nodePointers[7]->getDisplayCrds(v8, fact, displayMode);
 
-    const Vector &end1Disp = nodePointers[0]->getDisp();
-    const Vector &end2Disp = nodePointers[4]->getDisp();
-    const Vector &end3Disp = nodePointers[1]->getDisp();
-    const Vector &end4Disp = nodePointers[5]->getDisp();
-    const Vector &end5Disp = nodePointers[2]->getDisp();
-    const Vector &end6Disp = nodePointers[6]->getDisp();
-    const Vector &end7Disp = nodePointers[3]->getDisp();
-    const Vector &end8Disp = nodePointers[7]->getDisp();
-
-
-    static Matrix coords(8,3) ;
-    static Vector values(8) ;
-    static Vector P(8) ;
-
-    coords.Zero( ) ;
-
-    values(0) = 1 ;
-    values(1) = 1 ;
-    values(2) = 1 ;
-    values(3) = 1 ;
-    values(4) = 1 ;
-    values(5) = 1 ;
-    values(6) = 1 ;
-    values(7) = 1 ;
-
-
-    if (displayMode < 3 && displayMode > 0)
-      P = this->getResistingForce();
-
-    for (int i = 0; i < 2; i++) {
-      coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-      coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-      coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
-      coords(3,i) = end4Crd(i) + end4Disp(i)*fact;    
-      coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
-      coords(5,i) = end6Crd(i) + end6Disp(i)*fact;    
-      coords(6,i) = end7Crd(i) + end7Disp(i)*fact;    
-      coords(7,i) = end8Crd(i) + end8Disp(i)*fact;    
-      /*      if (displayMode < 3 && displayMode > 0)
-	values(i) = P(displayMode*2+i);
-      else
-      values(i) = 1;  */
+    // place values in coords matrix
+    static Matrix coords(8, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v5(i);
+        coords(2, i) = v2(i);
+        coords(3, i) = v6(i);
+        coords(4, i) = v3(i);
+        coords(5, i) = v7(i);
+        coords(6, i) = v4(i);
+        coords(7, i) = v8(i);
     }
 
-    //opserr << coords;
-    int error = 0;
+    // set the quantity to be displayed at the nodes;
+    static Vector values(8);
+    static Vector P(8);
+    if (displayMode < 8 && displayMode > 0) {
+        P = this->getResistingForce();
+        for (int i = 0; i < 8; i++) {
+            // values(i) = P(displayMode * 2 + i); // this was commented out in previous version -ambaker1
+            values(i) = 1;
+        }
+    }
+    else {
+        for (int i = 0; i < 8; i++) {
+            values(i) = 1;
+        }
+    }
 
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }
    
 //**************************************************************************

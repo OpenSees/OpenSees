@@ -32,6 +32,8 @@
 
 #include <TclModelBuilder.h>
 
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <SectionStrengthDegradation.h>
 #include <EnergyStrengthDegradation.h>
 #include <ConstantStrengthDegradation.h>

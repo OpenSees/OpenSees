@@ -24,11 +24,18 @@
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam2d.
 // ElasticTimoshenkoBeam2d is a 2d beam element. As such it can only
 // connect to a node with 3-dof.
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam2d.h>
 
@@ -632,41 +639,13 @@ int ElasticTimoshenkoBeam2d::recvSelf(int commitTag, Channel &rChannel,
 int ElasticTimoshenkoBeam2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numModes)
 {
-    // first determine the end points of the element based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    
     static Vector v1(3);
     static Vector v2(3);
-    
-    if (displayMode >= 0)  {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i=0; i<2; i++)  {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-    } else  {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        
-        if (eigen1.noCols() >= mode)  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }
-        } else  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i);
-                v2(i) = end2Crd(i);
-            }
-        }
-    }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 
@@ -830,28 +809,9 @@ void ElasticTimoshenkoBeam2d::setUp()
     
     dx = ndJCoords - ndICoords;
     
-    //if (nodeIInitialDisp != 0) {
-    //    dx(0) -= nodeIInitialDisp[0];
-    //    dx(1) -= nodeIInitialDisp[1];
-    //}
-    
-    //if (nodeJInitialDisp != 0) {
-    //    dx(0) += nodeJInitialDisp[0];
-    //    dx(1) += nodeJInitialDisp[1];
-    //}
-    
-    //if (nodeJOffset != 0) {
-    //    dx(0) += nodeJOffset[0];
-    //    dx(1) += nodeJOffset[1];
-    //}
-    
-    //if (nodeIOffset != 0) {
-    //    dx(0) -= nodeIOffset[0];
-    //    dx(1) -= nodeIOffset[1];
-    //}
-    
     // determine the element length
-    L = dx.Norm();
+    L = theCoordTransf->getInitialLength();
+
     if (L == 0.0)  {
         opserr << "ElasticTimoshenkoBeam2d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";

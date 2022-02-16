@@ -61,9 +61,383 @@
 #include <ElementResponse.h>
 
 #include <OPS_Globals.h>
+#include <elementAPI.h>
+#include <MeshRegion.h>
+#include <DummyStream.h>
 
 #include <iomanip>
 using std::ios;
+
+void *OPS_RemoveRecorder() {
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr << "WARNING recorder Collapse -ele eleID <eleID2? ...>  "
+                  "-node nodeID <-time> <-file fileName?> ? "
+               << "\n or recorder Collapse -ele eleID1 <eleID2? ...>? "
+                  "<-sec secID1? secID2? ...> -crit crit1? value1?"
+               << " <-crit crit2? value2?> <-time> <-file fileName?> "
+                  "<-mass mass1? mass2? ...> <-g gAcc gDir? gPat?>?\n";
+        return 0;
+    }
+
+    // current maximum number of either-or criteria for an element
+    int maxNumCriteria = 2;
+    double dT = 0.0;
+    bool echoTime = false;
+    int endEleIDs = 2;
+    int numEle = endEleIDs - 2;
+    int loc = endEleIDs;
+    int flags = 0;
+    int eleData = 0;
+    int nodeTag = 0;
+    //  new
+    int nTagbotn = 0;
+    int nTagmidn = 0;
+    int nTagtopn = 0;
+    int globgrav = 0;
+    const char *fileNameinf = 0;
+    //  end of new
+    int numSecondaryEle = 0;
+
+    // create an ID to hold ele tags
+    // ID eleIDs(numEle, numEle+1);
+    ID eleIDs;
+    eleIDs = ID(1);
+    ID secondaryEleIDs = ID(1);
+    secondaryEleIDs[0] = 0;
+    bool secondaryFlag = false;
+    ID secIDs;
+    //	secIDs = 0;
+
+    // optional mass and weight definition
+    Vector eleMass(1);
+    eleMass.Zero();
+    double gAcc = 0;
+    int gDir = 0, gPat = 0;
+
+    Vector remCriteria(2 * maxNumCriteria);
+    remCriteria.Zero();
+    int numCrit = 0;
+    const char *fileName = 0;
+
+    OPS_Stream *theOutputStream = 0;
+
+    Domain *domain = OPS_GetDomain();
+    while (flags == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+        const char *opt = OPS_GetString();
+        if (strcmp(opt, "-node") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING need nodeTag\n";
+                return 0;
+            }
+            int num = 1;
+            if (OPS_GetIntInput(&num, &nodeTag) < 0) {
+                opserr << "WARNING recorder Collapse -node - invalid node "
+                          "tag\n";
+                return 0;
+            }
+
+            Node *theNode = domain->getNode(nodeTag);
+            if (theNode == 0) {
+                opserr
+                    << "WARNING recorder Collapse -node - invalid node \n";
+                return 0;
+            }
+
+        } else if (strcmp(opt, "-file_infill") == 0 &&
+                   OPS_GetNumRemainingInputArgs() > 0) {
+            fileNameinf = OPS_GetString();
+
+        } else if (strcmp(opt, "-checknodes") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                opserr << "WARNING need nTagbotn nTagmidn, nTagtopn\n";
+                return 0;
+            }
+            int data[3], num = 3;
+            if (OPS_GetIntInput(&num, &data[0]) < 0) {
+                opserr << "WARNING recorder Collapse -node - invalid "
+                          "nTagbotn "
+                          "nTagmidn, or nTagtopn \n";
+                return 0;
+            }
+            nTagbotn = data[0];
+            nTagmidn = data[1];
+            nTagtopn = data[2];
+
+        } else if (strcmp(opt, "-global_gravaxis") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                opserr << "WARNING need globgrav\n";
+                return 0;
+            }
+            int num = 1;
+            if (OPS_GetIntInput(&num, &globgrav) < 0) {
+                opserr << "WARNING recorder Collapse -global_gravaxis - "
+                          "invalid global axis for gravity \n";
+                return 0;
+            }
+
+        } else if ((strcmp(opt, "-slave") == 0) ||
+                   (strcmp(opt, "-secondary") == 0)) {
+            secondaryFlag = true;
+
+        } else if ((strcmp(opt, "-ele") == 0) ||
+                   (strcmp(opt, "-eles") == 0) ||
+                   (strcmp(opt, "-element") == 0)) {
+            // ensure no segmentation fault if user messes up
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING recorder Collapse .. -ele tag1? .. - "
+                          "no ele tags specified\n";
+                return 0;
+            }
+
+            const char *all = OPS_GetString();
+            if (strcmp(all, "all") == 0) {
+                ElementIter &theEleIter = domain->getElements();
+                Element *theEle;
+                while ((theEle = theEleIter()) != 0) {
+                    eleIDs[numEle++] = theEle->getTag();
+                }
+            } else {
+                OPS_ResetCurrentInputArg(-1);
+                //
+                // read in a list of ele until end of command or other flag
+                //
+                while (OPS_GetNumRemainingInputArgs() > 0) {
+                    int num = 1;
+                    int eleTag;
+                    if (OPS_GetIntInput(&num, &eleTag) < 0) {
+                        OPS_ResetCurrentInputArg(-1);
+                        break;
+                    }
+                    if (!secondaryFlag) {
+                        eleIDs[numEle++] = eleTag;
+                    } else {
+                        secondaryEleIDs[numSecondaryEle++] = eleTag;
+                    }
+                }
+                secondaryFlag = false;
+            }
+
+        } else if (strcmp(opt, "-eleRange") == 0) {
+            // ensure no segmentation fault if user messes up
+            if (OPS_GetNumRemainingInputArgs() < 2) {
+                opserr << "WARNING recorder Element .. -eleRange start? "
+                          "end?  .. - no ele tags specified\n";
+                return 0;
+            }
+
+            //
+            // read in start and end tags of two elements & add set
+            // [start,end]
+            //
+            int startend[2];
+            int num = 2;
+            if (OPS_GetIntInput(&num, &startend[0]) < 0) {
+                opserr << "WARNING recorder Element -eleRange start? end? "
+                          "- invalid start or end\n";
+                return 0;
+            }
+            if (startend[0] > startend[1]) {
+                int swap = startend[1];
+                startend[1] = startend[0];
+                startend[0] = swap;
+            }
+            for (int i = startend[0]; i <= startend[1]; ++i) {
+                if (!secondaryFlag) {
+                    eleIDs[numEle++] = i;
+                } else {
+                    secondaryEleIDs[numSecondaryEle++] = i;
+                }
+            }
+            secondaryFlag = false;
+
+        } else if (strcmp(opt, "-region") == 0) {
+            // allow user to specif elements via a region
+
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING recorder Element .. -region tag?  .. - "
+                          "no region specified\n";
+                return 0;
+            }
+            int tag;
+            int num = 1;
+            if (OPS_GetIntInput(&num, &tag) < 0) {
+                opserr << "WARNING recorder Element -region tag? - "
+                          "invalid tag \n";
+                return 0;
+            }
+            MeshRegion *theRegion = domain->getRegion(tag);
+            if (theRegion == 0) {
+                opserr << "WARNING recorder Element -region " << tag
+                       << " - region does not exist\n";
+                return 0;
+            }
+            const ID &eleRegion = theRegion->getElements();
+            for (int i = 0; i < eleRegion.Size(); i++) {
+                if (secondaryFlag == false) {
+                    eleIDs[numEle++] = eleRegion(i);
+                } else {
+                    secondaryEleIDs[numSecondaryEle++] = eleRegion(i);
+                }
+            }
+            secondaryFlag = false;
+
+        } else if ((strcmp(opt, "-time") == 0) ||
+                   (strcmp(opt, "-load") == 0)) {
+            // allow user to specify const load
+            echoTime = true;
+        }
+
+        else if (strcmp(opt, "-dT") == 0) {
+            // allow user to specify time step size for recording
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: no dT is given\n";
+                return 0;
+            }
+            int num = 1;
+            if (OPS_GetDoubleInput(&num, &dT) < 0) {
+                opserr << "WARNING: failed to get dT\n";
+                return 0;
+            }
+        }
+
+        else if (strcmp(opt, "-file") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: no fileName is given\n";
+                return 0;
+            }
+            fileName = OPS_GetString();
+            //	    simulationInfo.addWriteFile(fileName);
+        }
+
+        else if ((strcmp(opt, "-mass") == 0)) {
+            if (OPS_GetNumRemainingInputArgs() < numEle) {
+                opserr << "WARNING: need numEle mass values\n";
+                return 0;
+            }
+            eleMass.resize(numEle);
+            eleMass.Zero();
+            if (OPS_GetDoubleInput(&numEle, &eleMass(0)) < 0) {
+                opserr << "WARNING: failed to get mass\n";
+                return 0;
+            }
+        }
+
+        else if ((strcmp(opt, "-g") == 0)) {
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                opserr << "WARNING: need gAcc, gDir, gPat\n";
+                return 0;
+            }
+            int num = 3;
+            double data[3];
+            if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
+                opserr << "WARNING: failed to read gAcc, gDir, gPat\n";
+                return 0;
+            }
+
+            gAcc = data[0];
+            gDir = data[1];
+            gPat = data[2];
+        }
+
+        else if ((strcmp(opt, "-section") == 0) ||
+                 (strcmp(opt, "-sec") == 0) ||
+                 (strcmp(opt, "-comp") == 0)) {
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                int secID;
+                if (OPS_GetIntInput(&num, &secID) < 0) {
+                    OPS_ResetCurrentInputArg(-1);
+                    break;
+                }
+                secIDs.insert(secID);
+            }
+        }
+
+        else if (strcmp(opt, "-criteria") == 0 ||
+                 strcmp(opt, "-crit") == 0) {
+            int critTag = 0;
+            double critValue = 0;
+
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need criteria type\n";
+                return 0;
+            }
+
+            const char *opt1 = OPS_GetString();
+            if (strcmp(opt1, "minStrain") == 0) {
+                critTag = 1;
+            } else if (strcmp(opt1, "maxStrain") == 0) {
+                critTag = 2;
+            } else if (strcmp(opt1, "axialDI") == 0) {
+                critTag = 3;
+
+            } else if (strcmp(opt1, "flexureDI") == 0) {
+                critTag = 4;
+
+            } else if (strcmp(opt1, "axialLS") == 0) {
+                critTag = 5;
+            } else if (strcmp(opt1, "shearLS") == 0) {
+                critTag = 6;
+
+            } else if (strcmp(opt1, "INFILLWALL") == 0) {
+                critTag = 7;
+
+            } else {
+                opserr << "Error: RemoveRecorder - Removal Criteria "
+                       << opt1 << " not recognized\n";
+                return 0;
+            }
+
+            if (critTag != 7) {
+                if (OPS_GetNumRemainingInputArgs() < 1) {
+                    opserr << "WARNING: need criteria value\n";
+                    return 0;
+                }
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &critValue) < 0) {
+                    opserr << "WARNING recorder Remove -crit critTag? "
+                              "critValue?... invalid critValue \n";
+                    return 0;
+                }
+            }
+
+            remCriteria[2 * numCrit] = critTag;
+            //      new
+            if (critTag != 7) {
+                remCriteria[2 * numCrit + 1] = critValue;
+            } else {
+                remCriteria[2 * numCrit + 1] = 100.0;
+            }
+            numCrit++;
+            if (critTag != 7) {
+                loc += 3;
+            } else {
+                loc += 2;
+                secIDs = ID(1);
+                secIDs[1] = 1;  // this is not used directly, gets rid of
+                                // the "-sec" for infillwall
+            }
+        } else {
+            flags = 1;
+        }
+
+        // if user has specified no element tags lets assume he wants them
+        // all
+        if (numEle == 0) {
+            ElementIter &theEleIter = domain->getElements();
+            Element *theEle;
+            while ((theEle = theEleIter()) != 0) {
+                eleIDs[numEle++] = theEle->getTag();
+            }
+        }
+    }
+    theOutputStream = new DummyStream();
+
+    return new RemoveRecorder(
+        nodeTag, eleIDs, secIDs, secondaryEleIDs, remCriteria, *domain,
+        *theOutputStream, echoTime, dT, fileName, eleMass, gAcc, gDir,
+        gPat, nTagbotn, nTagmidn, nTagtopn, globgrav, fileNameinf);
+}
 
 //#define MMTDEBUG
 //#define MMTDEBUGIO

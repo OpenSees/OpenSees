@@ -51,6 +51,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+#include <map>
 
 #define min(a,b) ( (a)<(b) ? (a):(b) )
 
@@ -93,6 +94,89 @@ OPS_ShellNLDKGQ(void)
   return theElement;
 }
 
+void *
+OPS_ShellNLDKGQ(const ID& info)
+{
+
+    if (info.Size() == 0) {
+	opserr << "WARNING: info is empty -- ShellNLDKGQ\n";
+	return 0;
+    }
+
+    // save data
+    static std::map<int,Vector> meshdata;
+    if (info(0) == 1) {
+
+	// check input
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+	if (OPS_GetNumRemainingInputArgs() < 1) {
+	    opserr << "WARNING: insuficient arguments -- secTag <-updateBasis>\n";
+	    return 0;
+	}
+
+	// save data
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(2);
+	mdata.Zero();
+
+	// get secTag
+	int numdata = 1;
+	int secTag;
+	if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING: failed to get section tag -- ShellNLDKGQ\n";
+	    return 0;
+	}
+	mdata(0) = (double)secTag;
+
+	// update basis
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	    const char* type = OPS_GetString();
+	    if (strcmp(type, "-updateBasis") == 0) {
+		mdata(1) = 1;
+	    }
+	}
+
+	return &meshdata;
+    }
+
+    // load data
+    if (info(0) == 2) {
+	if (info.Size() < 7) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3, nd4\n";
+	    return 0;
+	}
+	int eleTag = info(2);
+
+	// get data
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 2) {
+	    return 0;
+	}
+
+	// get section
+	int secTag = (int)mdata(0);
+	SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);
+	if (theSection == 0) {
+	    opserr << "ERROR:  element ShellNLDKGQ " << info(2) << "section " << secTag << " not found\n";
+	    return 0;
+	}
+
+	// update basis
+	bool updateBasis = false;
+	if (mdata(1) == 1) {
+	    updateBasis = true;
+	}
+
+	return new ShellNLDKGQ(info(2), info(3), info(4), info(5),
+			       info(6), *theSection);
+    }
+    
+
+    return 0;
+}
 
 //static data
 Matrix  ShellNLDKGQ::stiff(24,24) ;
@@ -2491,78 +2575,40 @@ int  ShellNLDKGQ::recvSelf (int commitTag,
 int
 ShellNLDKGQ::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
+	// get the end point display coords
+	static Vector v1(3);
+	static Vector v2(3);
+	static Vector v3(3);
+	static Vector v4(3);
+	nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+	nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+	nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+	nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
 
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[1]->getCrds();	
-    const Vector &end3Crd = nodePointers[2]->getCrds();	
-    const Vector &end4Crd = nodePointers[3]->getCrds();	
-
-    static Matrix coords(4,3);
-    static Vector values(4);
-    static Vector P(24) ;
-
-    for (int j=0; j<4; j++)
-		values(j) = 0.0;
-
-    if (displayMode >= 0) {
-		// Display mode is positive:
-		// display mode = 0 -> plot no contour
-		// display mode = 1-8 -> plot 1-8 stress resultant
-
-		// Get nodal displacements
-		const Vector &end1Disp = nodePointers[0]->getDisp();
-		const Vector &end2Disp = nodePointers[1]->getDisp();
-		const Vector &end3Disp = nodePointers[2]->getDisp();
-		const Vector &end4Disp = nodePointers[3]->getDisp();
-		
-		// Get stress resultants
-        if (displayMode <= 8 && displayMode > 0) {
-			for (int i=0; i<4; i++) {
-				const Vector &stress = materialPointers[i]->getStressResultant();
-				values(i) = stress(displayMode-1);
-			}
-		}
-
-		// Get nodal absolute position = OriginalPosition + (Displacement*factor)
-		for (int i = 0; i < 3; i++) {
-			coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-			coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-			coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-			coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-		}
-	} else {
-		// Display mode is negative.
-		// Plot eigenvectors
-		int mode = displayMode * -1;
-		const Matrix &eigen1 = nodePointers[0]->getEigenvectors();
-		const Matrix &eigen2 = nodePointers[1]->getEigenvectors();
-		const Matrix &eigen3 = nodePointers[2]->getEigenvectors();
-		const Matrix &eigen4 = nodePointers[3]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 3; i++) {
-				coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-				coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-				coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-				coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-			}    
-		} else {
-			for (int i = 0; i < 3; i++) {
-				coords(0,i) = end1Crd(i);
-				coords(1,i) = end2Crd(i);
-				coords(2,i) = end3Crd(i);
-				coords(3,i) = end4Crd(i);
-			}
-		}
+	// place values in coords matrix
+	static Matrix coords(4, 3);
+	for (int i = 0; i < 3; i++) {
+		coords(0, i) = v1(i);
+		coords(1, i) = v2(i);
+		coords(2, i) = v3(i);
+		coords(3, i) = v4(i);
 	}
 
-    int error = 0;
-	
-	// Draw a poligon with coordinates coords and values (colors) corresponding to values vector
-    error += theViewer.drawPolygon (coords, values);
+	// Display mode is positive:
+	// display mode = 0 -> plot no contour
+	// display mode = 1-8 -> plot 1-8 stress resultant
+	static Vector values(4);
+	if (displayMode < 8 && displayMode > 0) {
+		for (int i = 0; i < 4; i++) {
+			const Vector& stress = materialPointers[i]->getStressResultant();
+			values(i) = stress(displayMode - 1);
+		}
+	}
+	else {
+		for (int i = 0; i < 4; i++)
+			values(i) = 0.0;
+	}
 
-    return error;
-
+	// draw the polygon
+	return theViewer.drawPolygon(coords, values, this->getTag());
 }

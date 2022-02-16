@@ -57,8 +57,12 @@ const VDouble& operator+=(VDouble& v1, double val);
 const VDouble& operator-=(VDouble& v1, double val);
 const VDouble& operator*=(VDouble& v1, double val);
 const VDouble& operator/=(VDouble& v1, double val);
+const VInt& operator+=(VInt& v1, const VInt& v2);
+const VInt& operator-=(VInt& v1, const VInt& v2);
 const VInt& operator+=(VInt& v1, int val);
 const VInt& operator-=(VInt& v1, int val);
+const VInt& operator*=(VInt& v1, int val);
+const VInt& operator/=(VInt& v1, int val);
 std::ostream& operator<<(std::ostream& os, const VDouble& v);
 std::ostream& operator<<(std::ostream& os, const VInt& v);
 void toVDouble(const Vector& vec, VDouble& res);
@@ -66,5 +70,11 @@ void toVector(const VDouble& v, Vector& res);
 double normVDouble(const VDouble& v);
 double dotVDouble(const VDouble& v1, const VDouble& v2);
 void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res);
+
+enum BackgroundType {
+    BACKGROUND_FLUID,
+    BACKGROUND_STRUCTURE,
+    BACKGROUND_FIXED
+};
 
 #endif

@@ -17,21 +17,9 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.6 $
-// $Date: 2007-02-14 20:12:32 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/petsc/PetscSolver.cpp,v $
-                                                                        
-// Written: fmk & om
-// Created: 7/98
-// Revision: A
-//
-// Description: This file contains the class implementation for 
-// FullGenLinLapackSolver. It solves the FullGenLinSOE object by calling
-// Lapack routines.
-//
-// What: "@(#) FullGenLinLapackSolver.h, revA"
 
+
+#include <OPS_Globals.h>
 #include <PetscSolver.h>
 #include <PetscSOE.h>
 #include <f2c.h>
@@ -41,63 +29,95 @@
 #include <Timer.h>
 #include <ID.h>
 #include <Vector.h>
+#include <string.h>
+#include "petscksp.h"
 
-int PetscSolver::numSolver=0;
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <petsctime.h>
+
+using namespace std;
+//-------------------------------------
 
 PetscSolver::PetscSolver()
-  :LinearSOESolver(SOLVER_TAGS_PetscSolver), 
-   rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT)
+    : LinearSOESolver(SOLVER_TAGS_PetscSolver),
+      rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT), matType(MATMPIAIJ),
+      is_KSP_initialized(false)
 {
-  numSolver++;
+
 }
 
 PetscSolver::PetscSolver(KSPType meth, PCType pre)
-  :LinearSOESolver(SOLVER_TAGS_PetscSolver), method(meth), preconditioner(pre),
-   rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT)
+    : LinearSOESolver(SOLVER_TAGS_PetscSolver), method(meth), preconditioner(pre),
+      rTol(PETSC_DEFAULT), aTol(PETSC_DEFAULT), dTol(PETSC_DEFAULT), maxIts(PETSC_DEFAULT), matType(MATMPIAIJ),
+      is_KSP_initialized(false)
 {
-  numSolver++;
+
 }
 
-PetscSolver::PetscSolver(KSPType meth, PCType pre, double relTol, double absTol, double divTol, int maxIterations)
-  :LinearSOESolver(SOLVER_TAGS_PetscSolver), method(meth), preconditioner(pre),
-   rTol(relTol), aTol(absTol), dTol(divTol), maxIts(maxIterations)
+PetscSolver::PetscSolver(KSPType meth, PCType pre, double relTol, double absTol, double divTol, int maxIterations, MatType mat)
+    : LinearSOESolver(SOLVER_TAGS_PetscSolver), method(meth), preconditioner(pre),
+      rTol(relTol), aTol(absTol), dTol(divTol), maxIts(maxIterations), matType(mat),
+      is_KSP_initialized(false)
 {
-  numSolver++;
+
 }
 
 PetscSolver::~PetscSolver()
 {
-
-  KSPDestroy(ksp);
-  numSolver--;
-  /*
-  if (numSolver == 0)
-    PetscFinalize();
-  */
+    // KSPDestroy(&ksp);
+    // CHKERRQ(ierr);
 }
-
 
 
 int
 PetscSolver::solve(void)
 {
-  int size = theSOE->size;
-  int factored = theSOE->isFactored;
-  
-  int numProcesses = theSOE->numProcesses;
-  int processID = theSOE->processID;
-  
-  int ierr;
-  ierr = MatAssemblyBegin(theSOE->A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr); 
-  ierr = MatAssemblyEnd(theSOE->A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr); 
 
-  //
-  // if parallel, we must zero X & form the total B: each processor has own contributions
-  //
-  
-  static Vector recvVector(1);
+    int size = theSOE->size;
+    // int numProcesses = theSOE->numProcesses;
+    int processID = theSOE->processID;
+    int ierr;
 
-  if (numProcesses > 1) {
+    if (processID >= 0)
+    {
+
+        //MatSetType(theSOE->A, matType);
+        PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") MatAssemblyBegin\n";
+        ierr = MatAssemblyBegin(theSOE->A, MAT_FINAL_ASSEMBLY);
+        CHKERRQ(ierr);
+
+        ierr = MatAssemblyEnd(theSOE->A, MAT_FINAL_ASSEMBLY);
+        CHKERRQ(ierr);
+        PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") MatAssemblyEnd\n";
+
+
+        if (not is_KSP_initialized)
+        {
+
+            PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") KSPCreate Begin\n";
+            KSPCreate(PETSC_COMM_WORLD, &ksp);
+            KSPSetFromOptions(ksp);
+            PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") KSPCreate End\n";
+
+
+            is_KSP_initialized = true;
+        }
+        
+        PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") KSPSetOperators Begin\n";
+        KSPSetOperators(ksp, theSOE->A, theSOE->A);
+        PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") KSPSetOperators End\n";
+
+    }
+
+
+
+    // Everyone sends the assembled vector B to the rank 0 processor. Which sends it back...
+    static Vector recvVector(1);
+
+
     Vector *vectX = theSOE->vectX;
     Vector *vectB = theSOE->vectB;
 
@@ -107,218 +127,182 @@ PetscSolver::solve(void)
     //
     // form B on each
     //
-
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") FormBBegin\n";
     int numChannels = theSOE->numChannels;
     Channel **theChannels = theSOE->theChannels;
-    
-    if (processID != 0) {
-      Channel *theChannel = theChannels[0];
-      
-      theChannel->sendVector(0, 0, *vectB);
-      theChannel->recvVector(0, 0, *vectB);
-      
-    } else {
-      
-      if (recvVector.Size() != size) 
-	recvVector.resize(size);
-      for (int j=0; j<numChannels; j++) {
-	Channel *theChannel = theChannels[j];
-	theChannel->recvVector(0, 0, recvVector);
-	*vectB += recvVector;
-      }
-      for (int j=0; j<numChannels; j++) {
-	Channel *theChannel = theChannels[j];
-	theChannel->sendVector(0, 0, *vectB);
-      }
+
+    if (processID != 0)
+    {
+        Channel *theChannel = theChannels[0];
+
+        theChannel->sendVector(0, 0, *vectB);
+        theChannel->recvVector(0, 0, *vectB);
+
+        double vectBNorm  = vectB->Norm();
+        if (std::isnan(vectBNorm))
+        {
+            cout << "norm(vectB) = " << vectBNorm << endl;
+            return -1;
+        }
+
     }
-  }
+    else //Master process assembles b vector. This is a bottleneck and can be improved with
+        //a collective reduction
+    {
 
-  //
-  // solve and mark as having been solved
-  //
-  Vec &x = theSOE->x;
-  Vec &b = theSOE->b;
+        if (recvVector.Size() != size)
+        {
+            recvVector.resize(size);
+        }
 
-  ierr = KSPSolve(ksp, b, x); CHKERRQ(ierr); 
-  theSOE->isFactored = 1;
+        //Better done with ALLREDUCE
+        for (int j = 0; j < numChannels; j++)
+        {
+            Channel *theChannel = theChannels[j];
+            theChannel->recvVector(0, 0, recvVector);
+            *vectB += recvVector;
 
-  //
-  // if parallel, we must form the total X: each processor has startRow through endRow-1
-  //
+            double rvNorm  = recvVector.Norm() ;
+            if (std::isnan(rvNorm))
+            {
+                cout << "norm(recvVector) = " << rvNorm << endl;
+                return -1;
+            }
+        }
 
-  if (numProcesses > 1) {
-    Vector *vectX = theSOE->vectX;
-
-    int numChannels = theSOE->numChannels;
-    Channel **theChannels = theSOE->theChannels;
-    
-    if (processID != 0) {
-      Channel *theChannel = theChannels[0];
-      
-      theChannel->sendVector(0, 0, *vectX);
-      theChannel->recvVector(0, 0, *vectX);
-      
-    } else {
-      
-      if (recvVector.Size() != size) 
-	recvVector.resize(size);
-
-      for (int j=0; j<numChannels; j++) {
-	Channel *theChannel = theChannels[j];
-	theChannel->recvVector(0, 0, recvVector);
-	*vectX += recvVector;
-      }
-      for (int j=0; j<numChannels; j++) {
-	Channel *theChannel = theChannels[j];
-	theChannel->sendVector(0, 0, *vectX);
-      }
+        //Better done with a BCast
+        for (int j = 0; j < numChannels; j++)
+        {
+            Channel *theChannel = theChannels[j];
+            theChannel->sendVector(0, 0, *vectB);
+        }
     }
-  }
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") FormBEnd\n";
 
-  return ierr;
+
+    //
+    // solve and mark as having been solved
+    //
+
+    double t1 = 0;
+    double t2 = 0;
+    PetscTime(&t1);
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") SolveBegin\n";
+    if (processID >= 0)
+    {
+        ierr = KSPSolve(ksp, theSOE->b, theSOE->x);
+        CHKERRQ(ierr);
+        theSOE->isFactored = 1;
+    }
+    PetscTime(&t2);
+    double delta_time = t2 - t1;
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") SolveEnd dt = " << delta_time << "s \n";
+
+
+
+
+
+    //
+    // if parallel, we must form the total X: each processor has startRow through endRow-1
+    //  
+    vectX = theSOE->vectX;
+
+    numChannels = theSOE->numChannels;
+    theChannels = theSOE->theChannels;
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") SendXBegin\n";
+    if (processID != 0)
+    {
+        Channel *theChannel = theChannels[0];
+
+        theChannel->sendVector(0, 0, *vectX);
+        theChannel->recvVector(0, 0, *vectX);
+
+    }
+    else //Again, the master process forms the global X vector which is then sent to all processors
+    {
+
+        if (recvVector.Size() != size)
+        {
+            recvVector.resize(size);
+        }
+
+        //Better done with ALLREDUCE
+        for (int j = 0; j < numChannels; j++)
+        {
+            Channel *theChannel = theChannels[j];
+            theChannel->recvVector(0, 0, recvVector);
+            *vectX += recvVector;
+        }
+
+        //Better done with a BCast
+        for (int j = 0; j < numChannels; j++)
+        {
+            Channel *theChannel = theChannels[j];
+            theChannel->sendVector(0, 0, *vectX);
+        }
+    }
+
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") SendXEnd\n";
+    // Destroy KSP and collect the error at P0
+    KSPDestroy(&ksp);
+    is_KSP_initialized = false;
+
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") Logging Begin\n";
+
+#ifdef _ENABLE_PETSC_LOGGER
+        PetscViewer    viewer;
+        PetscViewerASCIIOpen(PETSC_COMM_WORLD, "petsc_log.txt" , &viewer);
+        PetscLogView(viewer);
+#endif
+        
+    PETSCSOLVER_DEBUGOUT << "PetscSolver::solve (" << processID << ") Logging End - Done solve\n";
+
+    return ierr;
 }
+
+
+
+
 
 
 int
 PetscSolver::setSize()
 {
-  /* 
-   * Create linear solver context
-   */
-  
-   KSPCreate(PETSC_COMM_WORLD, &ksp);
+    /*
+     * Create linear solver context
+     */
+    if (theSOE->processID >= 0)
+    {
+        KSPCreate(PETSC_COMM_WORLD, &ksp);
+    }
 
-   /* 
-    *  Set operators. NOTE: matrix that defines the linear system
-    *  also serves as the preconditioning matrix.
-    */
 
-   KSPSetOperators(ksp, theSOE->A, theSOE->A, DIFFERENT_NONZERO_PATTERN);
-
-   /* 
-    *  Set solution scheme & tolerances
-    */
-   
-   int ierr;
-   ierr = KSPSetType(ksp, method); CHKERRQ(ierr); 
-   ierr = KSPSetTolerances(ksp, rTol, aTol, dTol, maxIts); 
-
-   /* 
-    *  Set preconditioning scheme
-    */
-
-   KSPGetPC(ksp, &pc);
-   ierr = PCSetType(pc,  preconditioner); CHKERRQ(ierr); 
-
-   /* 
-    *  Finally mark so that uses last solution as initial guess in each solution
-    *    NOTE: maybe change this as another user supplied option
-    */
-
-   //   ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); CHKERRQ(ierr); 
-   return ierr;
+    return 0;
 }
 
 
-int 
+int
 PetscSolver::setLinearSOE(PetscSOE &theSys)
 {
-  theSOE = &theSys;
-  return 0;
+    theSOE = &theSys;
+    return 0;
 }
 
 
 int
 PetscSolver::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID idData(3);
-  idData(0) = maxIts;
-  if (strcmp(method, KSPCG) == 0) 
-    idData(1) = 0;
-  else if (strcmp(method, KSPBICG) == 0)
-    idData(1) = 1;
-  else if (strcmp(method, KSPRICHARDSON) == 0)
-    idData(1) = 2;
-  else if (strcmp(method, KSPCHEBYCHEV) == 0)
-    idData(1) = 3;
-  else if (strcmp(method, KSPGMRES) ==0) 
-    idData(1) = 4;
-  else {
-    opserr << "PetscSolver::sendSelf() - unknown method set\n";
-    return -1;
-  }
-
-  if (strcmp(preconditioner, PCJACOBI) == 0)
-    idData(2) = 0;
-  else if (strcmp(preconditioner, PCILU) == 0)
-    idData(2) = 1;
-  else if (strcmp(preconditioner, PCICC) == 0)
-    idData(2) = 2;
-  else if (strcmp(preconditioner, PCBJACOBI) == 0)
-    idData(2) = 3;
-  else if (strcmp(preconditioner, PCNONE) == 0)
-    idData(2) = 4;
-  else {
-    opserr << "PetscSolver::sendSelf() - unknown preconditioner set\n";
-    return -1;
-  }
-
-  theChannel.sendID(0, cTag, idData);
-
-  static Vector data(3);
-  data(0) = rTol;
-  data(1) = aTol;
-  data(2) = dTol;
-
-  theChannel.sendVector(0, cTag, data);
-  return 0;
+   
+    return 0;
 }
 
 int
-PetscSolver::recvSelf(int cTag, Channel &theChannel, 
-		      FEM_ObjectBroker &theBroker)
+PetscSolver::recvSelf(int cTag, Channel &theChannel,
+                         FEM_ObjectBroker &theBroker)
 {
-  static ID idData(3);
-  theChannel.recvID(0, cTag, idData);
-  maxIts = idData(0);
-  if (idData(1) == 0) 
-    method = KSPCG;
-  else if (idData(1) == 1)
-    method = KSPBICG;
-  else if (idData(1) == 2) 
-    method = KSPRICHARDSON;
-  else if (idData(1) == 3)
-    method = KSPCHEBYCHEV;
-  else if (idData(1) == 4)
-    method = KSPGMRES;
-  else {
-    opserr << "PetscSolver::recvSelf() - unknown method recvd\n";
-    return -1;
-  }
+   
 
-  if (idData(2) == 0)
-    preconditioner = PCJACOBI;
-  else if (idData(2) == 1)
-    preconditioner = PCILU;
-  else if (idData(2) == 2)
-    preconditioner = PCICC;
-  else if (idData(2) == 3)
-    preconditioner = PCBJACOBI;
-  else if (idData(2) == 4)
-    preconditioner = PCNONE;
-  else {
-    opserr << "PetscSolver::sendSelf() - unknown preconditioner set\n";
-    return -1;
-  }
-
-
-  static Vector data(3);
-  theChannel.recvVector(0, cTag, data);
-  rTol = data(0);
-  aTol = data(1);
-  dTol = data(2);
-
-  return 0;
+    return 0;
 }
 
 

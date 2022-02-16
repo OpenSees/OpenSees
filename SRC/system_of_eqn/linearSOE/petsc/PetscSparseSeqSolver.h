@@ -17,16 +17,16 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.2 $
-// $Date: 2005-05-18 19:26:59 $
+// $Date: 2005/05/18 19:26:59 $
 // $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/petsc/PetscSparseSeqSolver.h,v $
-                                                                        
-// Written: fmk 
+
+// Written: fmk
 // Created: 04/05
 
 //
-// Description: This file contains the class definition for 
+// Description: This file contains the class definition for
 // PetscSparseSeqSolver. It solves the SparseGenLinSOE object by calling Petsc routines
 //
 // What: "@(#) PetscSparseSeqSolver.h, revA"
@@ -43,36 +43,36 @@ class SparseGenRowLinSOE;
 
 class PetscSparseSeqSolver : public SparseGenRowLinSolver
 {
-  public:
-    PetscSparseSeqSolver(KSPType method, PCType preconditioner);    
-    PetscSparseSeqSolver(KSPType method, PCType preconditioner, double rTol, double aTol, double dTol, int maxIts);    
-    ~PetscSparseSeqSolver();
+    public:
+        PetscSparseSeqSolver(KSPType method, PCType preconditioner);
+        PetscSparseSeqSolver(KSPType method, PCType preconditioner, double rTol, double aTol, double dTol, int maxIts);
+        ~PetscSparseSeqSolver();
 
-    int solve(void);
-    int setSize(void);
-    int getNumIterations(void);
-    virtual int setLinearSOE(SparseGenRowLinSOE &theSOE);
-    
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
+        int solve(void);
+        int setSize(void);
+        int getNumIterations(void);
+        virtual int setLinearSOE(SparseGenRowLinSOE& theSOE);
 
-  protected:
-    SparseGenRowLinSOE *theSOE;
+        int sendSelf(int commitTag, Channel& theChannel);
+        int receiveSelf(int commitTag, Channel& theChannel,
+                     FEM_ObjectBroker& theBroker);
 
-  private:
-    KSP ksp;                      // linear solver context
-    PC  pc;
-    int its;
-    KSPType method;
-    PCType  preconditioner;
-    double rTol;
-    double aTol;
-    double dTol; 
-    int maxIts;
+    protected:
+        SparseGenRowLinSOE* theSOE;
 
-    Mat A;
-    Vec x, b;
+    private:
+        KSP ksp;                      // linear solver context
+        PC  pc;
+        int its;
+        KSPType method;
+        PCType  preconditioner;
+        double rTol;
+        double aTol;
+        double dTol;
+        int maxIts;
+
+        Mat A;
+        Vec x, b;
 };
 
 #endif

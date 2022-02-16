@@ -154,11 +154,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=5; b=4; c=0; d=1;
@@ -167,11 +167,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=6; b=7; c=4; d=5;
@@ -180,11 +180,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=1; b=0; c=3; d=2;
@@ -193,11 +193,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=7; b=3; c=0; d=4;
@@ -206,11 +206,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=2; b=6; c=5; d=1;
@@ -219,11 +219,11 @@ Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode
     polyData(1,i) = points(b,i);
     polyData(2,i) = points(c,i);
     polyData(3,i) = points(d,i);
-    polyValues(0) = values(a);
-    polyValues(1) = values(b);
-    polyValues(2) = values(c);
-    polyValues(3) = values(d);
   }
+  polyValues(0) = values(a);
+  polyValues(1) = values(b);
+  polyValues(2) = values(c);
+  polyValues(3) = values(d);
   return this->drawPolygon(polyData, polyValues, tag, mode);
 }
 

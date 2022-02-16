@@ -22,7 +22,7 @@
 // Computational Geomechanics Group
 // University of Washington
 // Date:      Sep 2018
-// Last Modified: Aug 2019
+// Last Modified: Feb 2021
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
@@ -398,6 +398,16 @@ int
 PM4Silt::commitState(void)
 {
 	Vector n(3), R(3), dFabric(3);
+	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
+
+	// Bounding surface correction for non K0 condition
+	if (mMcur > mMb && me2p && fabs(mSigma(1) - mSigma(0)) < 1e-5) {
+	// if (mMcur > mMb && me2p) {
+		double p = 0.5 * GetTrace(mSigma);
+		Vector r = (mSigma - p * mI1) * (mMb / mMcur / p);
+		mSigma = p * mI1 + r * p;
+		mAlpha = r * (mMb - m_m) / mMb;
+	}
 
 	mAlpha_in_n = mAlpha_in;
 	mAlpha_n = mAlpha;
@@ -417,7 +427,6 @@ PM4Silt::commitState(void)
 	mDGamma_n = mDGamma;
 	mVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
 
-	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
 	mCe = GetStiffness(mK, mG);
 	mCep = GetElastoPlasticTangent(mSigma_n, mCe, R, n, mKp);
 	mCep_Consistent = mCe;
@@ -2464,8 +2473,8 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		K_p = fmax(0.0, K_p);
 		hp = m_hpo * exp(-0.7 + 0.2 * pow(Macauley(3 - ksi / m_lambda), 2.0));
 		Crot2 = 1 - Czpk2;
-		Cdz = fmax((1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
-		// double Cdz = (1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum));
+		// Cdz = fmax((1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
+		Cdz = (1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum));
 		Cwet = fmin(1.0, (1.0 / (1 + pow(0.02 / AlphaAlphaBDotN, 4.0)) + 1.0 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
 		Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / (hp * Cdz * Cwet);
 		Cin = Macauley(DoubleDot2_2_Contr(fabric, n)) * sqrt(2.0) / m_z_max;

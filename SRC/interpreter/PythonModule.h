@@ -74,6 +74,7 @@ class PythonModule: public DL_Interpreter
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
     virtual const char* getString();
+    virtual const char* getStringFromAll(char* buffer, int len);
     virtual int getStringCopy(char **stringPtr);
     virtual void resetInput(int cArg);
 
@@ -92,6 +93,8 @@ class PythonModule: public DL_Interpreter
   private:
     PythonWrapper wrapper;
     OpenSeesCommands cmds;
+
+    const char* trimSpaces(PyObject *o);
 };
 
 

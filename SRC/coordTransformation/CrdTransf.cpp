@@ -29,9 +29,10 @@
 // Description: This file contains the implementation for the CrdTransf class.
 // CrdTransf provides the abstraction of a frame 
 // coordinate transformation. It is an abstract base class and 
-// thus no objects of  it's type can be instatiated. 
+// thus no objects of its type can be instatiated. 
 
 #include <CrdTransf.h>
+#include <ID.h>
 #include <Vector.h>
 
 #include <TaggedObject.h>
@@ -91,6 +92,23 @@ void OPS_printCrdTransf(OPS_Stream &s, int flag) {
     s << "\n\t\t]";
   }
 }
+
+ID OPS_getAllCrdTransfTags() {
+
+    ID allCrdTransfTags(0);
+      
+    MapOfTaggedObjectsIter theObjects = theCrdTransfObjects.getIter();
+    theObjects.reset();
+    TaggedObject *theObject;
+
+    while ((theObject = theObjects()) != 0) {
+      CrdTransf *theTransf = (CrdTransf *)theObject;    
+      allCrdTransfTags.insert(theTransf->getTag());
+    }
+
+    return allCrdTransfTags;
+}
+
 
 
 // constructor:

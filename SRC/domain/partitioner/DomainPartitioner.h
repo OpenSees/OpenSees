@@ -89,6 +89,8 @@ class DomainPartitioner
 			       double factorGreater = 1.0,
 			       bool adjacentVertexNotInOther = true);
 				 
+
+    virtual GraphPartitioner* getGraphPartitioner();
   protected:    
     
   private:

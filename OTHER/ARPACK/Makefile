@@ -19,8 +19,8 @@ include ../../Makefile.def
 DOBJ  = dgetv0.o dlaqrb.o dstqrb.o dsortc.o dsortr.o dstatn.o dstats.o \
 	dnaitr.o dnapps.o dnaup2.o dnaupd.o dnconv.o dneigh.o dngets.o \
 	dsaitr.o dsapps.o dsaup2.o dsaupd.o dsconv.o dseigt.o dsgets.o \
-	dneupd.o dseupd.o dsesrt.o dvout.o  dmout.o \
-	icnteq.o icopy.o iset.o iswap.o ivout.o second.o
+	dneupd.o dseupd.o dsesrt.o dvout.o  dvout1.o dmout.o \
+	icnteq.o icopy.o iset.o iswap.o ivout.o ivout1.o second.o
 
 all: double
 

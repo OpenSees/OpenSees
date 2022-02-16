@@ -411,6 +411,11 @@ int Newmark::domainChanged()
             }
         }
 
+	    // The remaining get**Sensitivity methods cause seg faults with Lagrange constraint
+	    // handler in dynamic (transient) analysis even when there is no sensitivity algorithm.
+	    // However, I don't think these methods need to be called in domainChanged -- MHS
+	    continue;
+	    
 	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
 	for (i=0; i < idSize; i++) {
 	    int loc = id(i);
@@ -981,12 +986,6 @@ Newmark::computeSensitivities(void)
   */
   // Zero out the old right-hand side of the SOE
   theSOE->zeroB();
-  
-  if (this == 0) {
-    opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
-    opserr << "the SensitivityIntegrator is NULL\n";
-    return -1;
-  }
   
   // Form the part of the RHS which are indepent of parameter
   this->formIndependentSensitivityRHS();

@@ -169,3 +169,33 @@ void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res)
 	res[2] = v1[0]*v2[1]-v1[1]*v2[0];
     }
 }
+
+const VInt& operator+=(VInt& v1, const VInt& v2) {
+    if (v1.size() > v2.size()) return v1;
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] += v2[i];
+    }
+    return v1;
+}
+
+const VInt& operator-=(VInt& v1, const VInt& v2) {
+    if (v1.size() > v2.size()) return v1;
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] -= v2[i];
+    }
+    return v1;
+}
+
+const VInt& operator*=(VInt& v1, int val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] *= val;
+    }
+    return v1;
+}
+
+const VInt& operator/=(VInt& v1, int val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] /= val;
+    }
+    return v1;
+}

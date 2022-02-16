@@ -1,6 +1,8 @@
 include ../../../Makefile.def
 
-OBJS       = LysmerTriangle.o
+OBJS       = LysmerTriangle.o \
+	ASDAbsorbingBoundary2D.o \
+	ASDAbsorbingBoundary3D.o
 
 all:         $(OBJS)
 

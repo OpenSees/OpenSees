@@ -1015,22 +1015,13 @@ CorotTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
 	if (Ln == 0.0)
 		return 0;
 
-	// first determine the two end points of the CorotTruss based on
-	// the display factor (a measure of the distorted image)
-	// store this information in 2 3d vectors v1 and v2
-	const Vector &end1Crd = theNodes[0]->getCrds();
-	const Vector &end2Crd = theNodes[1]->getCrds();	
-	const Vector &end1Disp = theNodes[0]->getDisp();
-	const Vector &end2Disp = theNodes[1]->getDisp();    
+    static Vector v1(3);
+    static Vector v2(3);
 
-	static Vector v1(3);
-	static Vector v2(3);
-	for (int i = 0; i < numDIM; i++) {
-		v1(i) = end1Crd(i)+end1Disp(i)*fact;
-		v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-	}
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-	return theViewer.drawLine(v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 void
@@ -1108,9 +1099,34 @@ CorotTruss::setResponse(const char **argv, int argc, OPS_Stream &output)
             theResponse = new ElementResponse(this, 3, 0.0);
 
     // a material quantity
-    } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"-material") == 0) {
-
-        theResponse =  theMaterial->setResponse(&argv[1], argc-1, output);
+    } else if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "-material") == 0) {
+        if (argc > 1) {
+            // we need at least one more argument otherwise 
+            // there is no need to forward this call to the material
+            // by default assume the old call style for backward compatibility "material result"
+            int offset = 1;
+            bool is_valid = true;
+            // in case the user specifies the gauss point id... "material 1 result"
+            if (argc > 2) {
+                int sectionNum = atoi(argv[1]);
+                if (sectionNum == 1) {
+                    // this is the only supported gauss id
+                    offset = 2;
+                }
+                else if (sectionNum > 1) {
+                    // this is a number, but not within the valid range
+                    is_valid = false;
+                }
+                // if it is 0, then it is not a number, forward it as usual...
+            }
+            if (is_valid) {
+                output.tag("GaussPointOutput");
+                output.attr("number", 1);
+                output.attr("eta", 0.0);
+                theResponse = theMaterial->setResponse(&argv[offset], argc - offset, output);
+                output.endTag();
+            }
+        }
     }
 
     output.endTag();

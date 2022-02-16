@@ -191,7 +191,7 @@ OPS_OOHystereticMaterial(void)
     
     UnloadingRule *negUnl = OPS_getUnloadingRule(unlTagNeg);
     
-    if (posUnl == 0) {
+    if (negUnl == 0) {
       opserr << "WARNING unloadingRule does not exist\n";
       opserr << "unloadingRule: " << unlTagNeg; 
       opserr << "\nuniaxialMaterial OOHystereitc: " << tag << endln;
@@ -200,7 +200,7 @@ OPS_OOHystereticMaterial(void)
     
     StiffnessDegradation *negStf = OPS_getStiffnessDegradation(stfTagNeg);
     
-    if (posStf == 0) {
+    if (negStf == 0) {
       opserr << "WARNING stiffnessDegradation does not exist\n";
       opserr << "stiffnessDegradation: " << stfTagNeg; 
       opserr << "\nuniaxialMaterial OOHystereitc: " << tag << endln;

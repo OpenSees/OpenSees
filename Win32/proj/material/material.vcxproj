@@ -111,6 +111,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ExternalNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2PlasticityThermal.cpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionGJThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\FiberSectionWarping3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
@@ -174,6 +176,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKBilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPinching.cpp" />
@@ -190,6 +193,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CFSWSWP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CableMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Cast.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
@@ -248,6 +252,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SeriesMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ShearPanelMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SLModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SPSW02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.cpp" />
@@ -263,6 +268,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMPF.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DuctileFracture.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\ConstantStiffnessDegradation.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\DuctilityStiffnessDegradation.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\stiffness\EnergyStiffnessDegradation.cpp" />
@@ -525,6 +531,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber2d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber3d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2PlasticityThermal.h" />
@@ -553,6 +560,7 @@
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionGJThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\FiberSectionWarping3d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.h" />
@@ -589,6 +597,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\GNGMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticPoly.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKBilin.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPinching.h" />
@@ -605,6 +614,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CFSWSWP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CableMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Cast.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />
@@ -661,6 +671,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SeriesMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ShearPanelMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SPSW02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.h" />
@@ -676,6 +687,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMPF.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DuctileFracture.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\ConstantStiffnessDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\DuctilityStiffnessDegradation.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\stiffness\EnergyStiffnessDegradation.h" />

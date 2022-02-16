@@ -172,9 +172,10 @@ TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 int
 TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
 		  TCL_Char **argv);
-
+#if defined(OPSDEF_Element_PFEM)
 int 
 TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+#endif // _OPS_Element_PFEM
 
 int
 TclCommand_addUniaxialMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -468,10 +469,10 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "remesh", TclCommand_remesh,
 		    (ClientData)NULL, NULL);
-
+#if defined(OPSDEF_Element_PFEM)
   Tcl_CreateCommand(interp, "background", &TclCommand_backgroundMesh, 
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
-
+#endif // _OPS_Element_PFEM
 
   Tcl_CreateCommand(interp, "uniaxialMaterial", TclCommand_addUniaxialMaterial,
 		    (ClientData)NULL, NULL);
@@ -653,6 +654,8 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
   nodeLoadTag = 0;
   eleArgStart = 0;
+  Tcl_SetAssocData(interp, "OPS::theTclModelBuilder", NULL, (ClientData)this);
+  Tcl_SetAssocData(interp, "OPS::theTclDomain", NULL, (ClientData)&theDomain);
 }
 
 TclModelBuilder::~TclModelBuilder()
@@ -1356,6 +1359,7 @@ TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
 }
 
+#if defined(OPSDEF_Element_PFEM)
 extern int OPS_BgMesh();
 
 int 
@@ -1373,6 +1377,7 @@ TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, T
     else return TCL_ERROR;
     return TCL_OK;
 }
+#endif // _OPS_Element_PFEM
 
 extern void* OPS_LobattoBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags);
