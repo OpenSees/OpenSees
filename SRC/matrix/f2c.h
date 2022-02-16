@@ -291,13 +291,15 @@ extern integer ef1cmc_(ftnint *, ftnlen *, ftnint *, ftnlen *);
 
 #ifndef _KAI
 #ifndef _LINUX
-extern double erf(double) throw();
+//extern double erf(double) throw();
 #endif
 #endif
+
 extern double erf_(float *);
+
 #ifndef _KAI
 #ifndef _LINUX
-extern double erfc(double) throw();
+//extern double erfc(double) throw();
 #endif
 #endif
 

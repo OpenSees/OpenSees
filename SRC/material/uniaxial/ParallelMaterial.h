@@ -72,6 +72,14 @@ class ParallelMaterial : public UniaxialMaterial
 			  OPS_Stream &theOutputStream);
     int getResponse(int responseID, Information &matInformation);
 
+  int setParameter(const char **argv, int argc, Parameter &param);
+  double getStressSensitivity(int gradIndex, bool conditional);
+  double getTangentSensitivity(int gradIndex);
+  double getInitialTangentSensitivity(int gradIndex);
+  double getDampTangentSensitivity(int gradIndex);
+  double getRhoSensitivity(int gradIndex);      
+  int commitSensitivity(double dedh, int gradIndex, int numGrads);
+  
   protected:
     
   private:
