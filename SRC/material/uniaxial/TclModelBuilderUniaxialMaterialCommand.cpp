@@ -189,6 +189,7 @@ extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
 extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
+extern void *OPS_MultiplierMaterial(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -2923,6 +2924,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
     if (strcmp(argv[1], "DuctileFracture") == 0) {
         void* theMat = OPS_DuctileFracture();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "Multiplier") == 0) {
+        void* theMat = OPS_MultiplierMaterial();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
         else
