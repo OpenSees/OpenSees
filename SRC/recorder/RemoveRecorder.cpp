@@ -20,7 +20,7 @@
                                                                         
 // $Revision: 1.4 $
 // $Date: 2010-02-09 21:29:33 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/RemoveRecorder.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/recorder/fder.cpp,v $
                                                                         
 // Written: M Talaat
 // Created: 06/07
@@ -435,7 +435,7 @@ void *OPS_RemoveRecorder() {
 
     return new RemoveRecorder(
         nodeTag, eleIDs, secIDs, secondaryEleIDs, remCriteria, *domain,
-        *theOutputStream, echoTime, dT, fileName, eleMass, gAcc, gDir,
+        *theOutputStream, echoTime, dT, 0.00001*dT, fileName, eleMass, gAcc, gDir,
         gPat, nTagbotn, nTagmidn, nTagtopn, globgrav, fileNameinf);
 }
 
