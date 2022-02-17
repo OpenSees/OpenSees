@@ -2448,13 +2448,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
   }
 
-  	else if (strcmp(argv[1], "DuctileFracture") == 0) {
-		void *theMat = OPS_DuctileFracture();
-		if (theMat != 0) 
-			theMaterial = (UniaxialMaterial *)theMat;
-		else 
-			return TCL_ERROR;
-	}
     
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
@@ -2923,6 +2916,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
     if (strcmp(argv[1], "DowelType") == 0) {
         void* theMat = OPS_DowelType();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "DuctileFracture") == 0) {
+        void* theMat = OPS_DuctileFracture();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
         else

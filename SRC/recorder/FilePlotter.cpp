@@ -63,9 +63,9 @@ using std::ios;
 
 FilePlotter::FilePlotter(const char *_fileName1, 
 			 const char *windowTitle, 
-			 int xLoc, int yLoc, int width, int height, double dT)
+			 int xLoc, int yLoc, int width, int height, double dT, double rTolDt)
   :Recorder(RECORDER_TAGS_FilePlotter), 
-   theMap(0), theRenderer(0), cols(0), deltaT(dT), nextTimeStampToRecord(0.0),
+   theMap(0), theRenderer(0), cols(0), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
    data1a(0), data1b(0), data2a(0), data2b(0)
 {
 
@@ -105,9 +105,9 @@ FilePlotter::FilePlotter(const char *_fileName1,
 FilePlotter::FilePlotter(const char *_fileName1, 
 			 const char *_fileName2, 
 			 const char *windowTitle, 
-			 int xLoc, int yLoc, int width, int height, double dT)
+			 int xLoc, int yLoc, int width, int height, double dT, double rTolDt)
   :Recorder(RECORDER_TAGS_FilePlotter), 
-   theMap(0), theRenderer(0), cols(0), deltaT(dT), nextTimeStampToRecord(0.0),
+   theMap(0), theRenderer(0), cols(0), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
    data1a(0), data1b(0), data2a(0), data2b(0)
 {
 
@@ -173,7 +173,9 @@ int
 FilePlotter::record(int cTag, double timeStamp)
 {
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
