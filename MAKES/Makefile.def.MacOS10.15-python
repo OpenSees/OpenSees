@@ -48,6 +48,7 @@ INTERPRETER_LANGUAGE = PYTHON
 
 PROGRAMMING_MODE = SEQUENTIAL
 #PROGRAMMING_MODE = PARALLEL
+
 PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
@@ -337,6 +338,7 @@ MUMPS_LIB = $(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
              $(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
              $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
              $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
+             -ldmumps -lmumps_common -lpord
              -L$(MUMPS_DIR)/lib -ldmumps -lmumps_common -lpord
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
@@ -462,7 +464,6 @@ PYTHON_INCLUDES = -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3
                -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/include/python3.7m/internal
 
 #PYTHON_INCLUDES = -I/usr/local/opt/python/Frameworks/Python.framework/Headers
-
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
 

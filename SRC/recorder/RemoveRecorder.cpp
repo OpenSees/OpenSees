@@ -469,7 +469,8 @@ RemoveRecorder::RemoveRecorder(int nodeID,
 			       Domain &theDomainPtr, 
 			       OPS_Stream &s,
 			       bool echotimeflag, 
-			       double deltat, 
+			       double deltat,
+			       double rTolDt,
 			       const char *theFileName ,
 			       Vector eleMass, 
 			       double gAcc, 
@@ -491,7 +492,8 @@ RemoveRecorder::RemoveRecorder(int nodeID,
    secondaryEleTags(secondaryTags.Size()), 
    secondaryFlag(false),
    echoTimeFlag(echotimeflag), 
-   deltaT(deltat), 
+   deltaT(deltat),
+   relDeltaTTol(rTolDt),
    nextTimeStampToRecord(0.0), 
    gAcc(gAcc), 
    gDir(gDir), 
@@ -704,7 +706,9 @@ RemoveRecorder::record(int commitTag, double timeStamp)
   opserr<<"entering record()"<<endln;
 #endif
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
