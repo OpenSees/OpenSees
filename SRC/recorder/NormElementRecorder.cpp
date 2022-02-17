@@ -51,7 +51,7 @@ NormElementRecorder::NormElementRecorder()
 :Recorder(RECORDER_TAGS_NormElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(0), theOutputHandler(0),
- echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0), data(0), 
+ echoTimeFlag(true), deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -64,11 +64,12 @@ NormElementRecorder::NormElementRecorder(const ID *ele,
 					 Domain &theDom, 
 					 OPS_Stream &theOutputHandler,
 					 double dT,
+					 double rTolDt,
 					 const ID *indices)
 :Recorder(RECORDER_TAGS_NormElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(&theDom), theOutputHandler(&theOutputHandler),
- echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
+ echoTimeFlag(echoTime), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -160,9 +161,11 @@ NormElementRecorder::record(int commitTag, double timeStamp)
   }
   
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
-    if (deltaT != 0.0) 
+    if (deltaT != 0.0)
       nextTimeStampToRecord = timeStamp + deltaT;
 
     int loc = 0;
@@ -174,7 +177,7 @@ NormElementRecorder::record(int commitTag, double timeStamp)
     //
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -272,9 +275,10 @@ NormElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(2);
+  static Vector dData(3);
   dData(0) = deltaT;
   dData(1) = nextTimeStampToRecord;
+  dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "NormElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -390,13 +394,15 @@ NormElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   numEle = eleSize;
   numDOF = idData(6);
 
-  static Vector dData(2);
+  static Vector dData(3);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "NormElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
   }
   deltaT = dData(0);
   nextTimeStampToRecord = dData(1);
+  relDeltaTTol = dData(2);
+
   //
   // resize & recv the eleID
   //

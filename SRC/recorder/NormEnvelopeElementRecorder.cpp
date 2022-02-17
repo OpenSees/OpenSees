@@ -49,7 +49,7 @@
 NormEnvelopeElementRecorder::NormEnvelopeElementRecorder()
 :Recorder(RECORDER_TAGS_NormEnvelopeElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), theDomain(0),
- theHandler(0), deltaT(0), nextTimeStampToRecord(0.0), 
+ theHandler(0), deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0),
  data(0), currentData(0), first(true),
  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(false), addColumnInfo(0)
 {
@@ -62,12 +62,13 @@ NormEnvelopeElementRecorder::NormEnvelopeElementRecorder(const ID *ele,
 						 int argc,
 						 Domain &theDom, 
 						 OPS_Stream &theOutputHandler,
-						 double dT, 
+						 double dT,
+						 double rTolDt,
 						 bool echoTime,
 						 const ID *indexValues)
 :Recorder(RECORDER_TAGS_NormEnvelopeElementRecorder),
  numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
- theHandler(&theOutputHandler), deltaT(dT), nextTimeStampToRecord(0.0), 
+ theHandler(&theOutputHandler), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
  data(0), currentData(0), first(true),
  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0)
 {
@@ -180,16 +181,18 @@ NormEnvelopeElementRecorder::record(int commitTag, double timeStamp)
   }
 
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
-      
-    if (deltaT != 0.0) 
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
+
+    if (deltaT != 0.0)
       nextTimeStampToRecord = timeStamp + deltaT;
-    
+
     int loc = 0;
     // for each element do a getResponse() & put the result in current data
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -325,8 +328,10 @@ NormEnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(1);
-  dData(1) = deltaT;
+  static Vector dData(3);
+  dData(0) = deltaT;
+  dData(1) = nextTimeStampToRecord;
+  dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "NormEnvelopeElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -443,14 +448,14 @@ NormEnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
 
   numEle = eleSize;
 
-
-  static Vector dData(1);
+  static Vector dData(3);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "NormEnvelopeElementRecorder::recvSelf() - failed to recv dData\n";
     return -1;
   }
-  deltaT = dData(1);
-
+  deltaT = dData(0);
+  nextTimeStampToRecord = dData(1);
+  relDeltaTTol = dData(2);
 
   //
   // resize & recv the eleID
