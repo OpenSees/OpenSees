@@ -78,7 +78,7 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  add_compile_definitions(_LINUX _UNIX _TCL85)
+  add_compile_definitions(_RELIABILITY _LINUX _UNIX _TCL85)
   if (NOT_USING_CONAN)
     include(OpenSeesDependenciesUnix)
   endif()
