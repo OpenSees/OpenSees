@@ -48,7 +48,7 @@ ReliabilityDomain *OPS_GetReliabilityDomain();
 
 int OPS_Parameter() {
   Domain *theDomain = OPS_GetDomain();
-  ReliabilityDomain *theReliabilityDomain = OPS_GetReliabilityDomain();
+//  ReliabilityDomain *theReliabilityDomain = OPS_GetReliabilityDomain();
   if (theDomain == 0) return -1;
 
   // check at least two arguments so don't segment fault on strcmp
