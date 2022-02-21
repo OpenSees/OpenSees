@@ -19,6 +19,11 @@ target_sources(OPS_Material
         ReeseSoftClayBackbone.cpp
         ReeseStiffClayBelowWS.cpp
         TrilinearBackbone.cpp
+        CementedSoil.cpp
+        WeakRock.cpp
+        LiquefiedSand.cpp
+        VuggyLimestone.cpp
+        ReeseStiffClayAboveWS.cpp
     PUBLIC
         ArctangentBackbone.h
         CappedBackbone.h
@@ -32,6 +37,11 @@ target_sources(OPS_Material
         ReeseSoftClayBackbone.h
         ReeseStiffClayBelowWS.h
         TrilinearBackbone.h
+        CementedSoil.h
+        WeakRock.h
+        LiquefiedSand.h
+        VuggyLimestone.h
+        ReeseStiffClayAboveWS.h
 )
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
