@@ -128,6 +128,7 @@ target_sources(OPS_Material
       ModIMKPinching.cpp
       ModIMKPinching02.cpp
       MultiLinear.cpp
+      MultiplierMaterial.cpp
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
@@ -214,8 +215,8 @@ target_sources(OPS_Material
       FatigueMaterial.h
       #FedeasMaterial.h
       GNGMaterial.h
-      #HardeningMaterial.h
-      HardeningMaterial2.h
+      HardeningMaterial.h
+      #HardeningMaterial2.h
       HookGap.h
       HyperbolicGapMaterial.h
       HystereticMaterial.h
@@ -232,6 +233,7 @@ target_sources(OPS_Material
       ModIMKPinching.h
       ModIMKPinching02.h
       MultiLinear.h
+      MultiplierMaterial.h
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
