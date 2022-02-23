@@ -35,6 +35,9 @@ jobs:
         #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
     - name: Build OpenSeesPy
       run: |
+        cd ./build
+        cmake ..
+        make -j 4
         make OpenSeesPy
         cp lib/OpenSeesPy.so lib/opensees.so 
         export PYTHONPATH="${PYTHONPATH}:./build/lib/"
