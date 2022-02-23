@@ -33,6 +33,30 @@ jobs:
         #- name: Verification
         #  run: |
         #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+    - name: Build OpenSeesPy
+      run: |
+        cd ./build
+        cmake ..
+        make -j 4
+        make OpenSeesPy
+        mkdir fake_folder
+    - name: Rename OpenSeesPy
+      run: |
+        cd ./build
+        mv lib/OpenSeesPy.so lib/opensees.so
+
+# Simple sanity test
+    - name: Verification OpenSeesPySP
+      run: |
+        cd ./build
+        cd ../examples_py
+        export PYTHONPATH="../build/lib/"
+        python -c "import sys; print(sys.path)"
+        python example_variable_analysis.py
+#        # Simple MP sanity test
+#        - name: Verification OpenSeesPyMP
+#          run: |
+#            mpiexec -np 2 python ../examples_py/example_mpi_paralleltruss_explicit.py
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
