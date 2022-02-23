@@ -39,7 +39,7 @@ jobs:
         cmake ..
         make -j 4
         make OpenSeesPy
-        cp lib/OpenSeesPy.so lib/opensees.so 
+        mv lib/OpenSeesPy.so lib/opensees.so 
         export PYTHONPATH="${PYTHONPATH}:./build/lib/"
 
         # Simple sanity test
