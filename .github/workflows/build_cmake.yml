@@ -39,12 +39,13 @@ jobs:
         cmake ..
         make -j 4
         make OpenSeesPy
-        mv lib/OpenSeesPy.so lib/opensees.so 
-        export PYTHONPATH="${PYTHONPATH}:./build/lib/"
+    - name: Rename OpenSeesPy
+      run:   mv lib/OpenSeesPy.so lib/opensees.so
 
         # Simple sanity test
         - name: Verification OpenSeesPySP
           run: |
+            export PYTHONPATH="${PYTHONPATH}:./build/lib/"
             python ../examples_py/example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
