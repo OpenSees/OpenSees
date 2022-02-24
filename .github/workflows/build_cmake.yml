@@ -50,7 +50,7 @@ jobs:
       run: |
         cd ./build
         export PYTHONPATH="lib/"
-        cd ./examples_py
+        cd ../examples_py
         python example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
