@@ -39,8 +39,18 @@ jobs:
         cmake ..
         make -j 4
         make OpenSeesPy
+        mkdir fake_folder
+        ls
+        cd lib
+        ls
     - name: Rename OpenSeesPy
-      run: mv lib/OpenSeesPy.so lib/opensees.so
+      run: |
+        cd ./build
+        ls
+        cd lib
+        ls
+        cd ..
+        mv lib/OpenSeesPy.so lib/opensees.so
 
 # Simple sanity test
     - name: Verification OpenSeesPySP
