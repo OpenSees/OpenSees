@@ -49,10 +49,9 @@ jobs:
     - name: Verification OpenSeesPySP
       run: |
         cd ./build
-        export PYTHONPATH="lib/:./build/lib/"
-        python -c "import sys; print(sys.path)"
         cd ../examples_py
-        ls ../build/lib/
+        export PYTHONPATH="../build/lib/"
+        python -c "import sys; print(sys.path)"
         python example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
