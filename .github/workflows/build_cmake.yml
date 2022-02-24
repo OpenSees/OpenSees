@@ -52,6 +52,7 @@ jobs:
         export PYTHONPATH="lib/:./build/lib/"
         python -c "import sys; print(sys.path)"
         cd ../examples_py
+        ls ../build/lib/
         python example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
