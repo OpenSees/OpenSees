@@ -48,7 +48,8 @@ jobs:
 # Simple sanity test
     - name: Verification OpenSeesPySP
       run: |
-        export PYTHONPATH="${PYTHONPATH}:./build/lib/"
+        cd ./build
+        export PYTHONPATH="lib/"
         cd ./examples_py
         python example_variable_analysis.py
 #        # Simple MP sanity test
