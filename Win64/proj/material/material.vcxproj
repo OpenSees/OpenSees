@@ -267,6 +267,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenInfill.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BraceMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BWBN.cpp" />
