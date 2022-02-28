@@ -2,9 +2,9 @@
 import opensees as ops
 
 pid = ops.getPID()
-print(pid)
+print('pid: ', pid)
 np = ops.getNP()
-print(np)
+print('np: ', np)
 ops.start()
 a = open('nps.txt', 'w')
 a.write(str(np))
