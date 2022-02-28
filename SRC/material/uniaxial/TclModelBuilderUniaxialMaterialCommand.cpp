@@ -180,6 +180,7 @@ extern void *OPS_OOHystereticMaterial(void);
 extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
+extern void* OPS_BoucWenInfill(void);  // S. Sirotti  18-January-2022  e-mail: stefano.sirotti@unimore.it
 extern void *OPS_SLModel(void);
 extern void *OPS_SMAMaterial(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
@@ -670,6 +671,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             theMaterial = (UniaxialMaterial *)theMat;
         else
             return TCL_ERROR;
+
+    } else if (strcmp(argv[1], "BoucWenInfill") == 0) {
+    void *theMat = OPS_BoucWenInfill();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+    else
+        return TCL_ERROR;
 
     }
     else if (strcmp(argv[1], "IMKBilin") == 0) {
