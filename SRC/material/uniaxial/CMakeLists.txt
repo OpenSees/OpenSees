@@ -76,6 +76,7 @@ target_sources(OPS_Material
       Bond_SP01.cpp
       BoucWenMaterial.cpp
       BoucWenOriginal.cpp
+      BoucWenInfill.cpp      
       CFSSSWP.cpp
       CFSWSWP.cpp
       CableMaterial.cpp
@@ -181,6 +182,7 @@ target_sources(OPS_Material
       Bond_SP01.h
       BoucWenMaterial.h
       BoucWenOriginal.h
+      BoucWenInfill.h      
       CFSSSWP.h
       CFSWSWP.h
       CableMaterial.h

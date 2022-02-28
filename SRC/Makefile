@@ -818,6 +818,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ENTMaterial.o \
 	$(FE)/material/uniaxial/BoucWenMaterial.o \
 	$(FE)/material/uniaxial/BoucWenOriginal.o \
+	$(FE)/material/uniaxial/BoucWenInfill.o \
 	$(FE)/material/uniaxial/Pinching4Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
