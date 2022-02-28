@@ -68,7 +68,8 @@ class RemoveRecorder: public Recorder
 		  Domain &theDomainPtr,
 		  OPS_Stream &s,
 		  bool echotimeflag, 
-		  double deltat , 
+		  double deltat,
+		  double relDeltaTTol,
 		  const char *filename, 
 		  Vector eleMass, 
 		  double gAcc, 
@@ -128,6 +129,7 @@ class RemoveRecorder: public Recorder
    static ofstream theFile;
    
    double deltaT;
+   double relDeltaTTol;
    double nextTimeStampToRecord;
    
    // new

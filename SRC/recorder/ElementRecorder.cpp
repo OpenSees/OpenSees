@@ -83,6 +83,7 @@ OPS_ElementRecorder()
 
     bool echoTimeFlag = false;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     bool doScientific = false;
 
     int precision = 6;
@@ -161,6 +162,15 @@ OPS_ElementRecorder()
                 int num = 1;
                 if (OPS_GetDoubleInput(&num, &dT) < 0) {
                     opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-rTolDt") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+                    opserr << "WARNING: failed to read rTolDt\n";
                     return 0;
                 }
             }
@@ -286,7 +296,7 @@ OPS_ElementRecorder()
         return 0;
     ElementRecorder* recorder = new ElementRecorder(&elements,
         data, nargrem, echoTimeFlag, *domain, *theOutputStream,
-        dT, &dofs);
+        dT, rTolDt, &dofs);
 
     if (data != 0) {
       for (int i=1; i<nargrem; ++i) {
@@ -303,7 +313,7 @@ ElementRecorder::ElementRecorder()
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(0), theOutputHandler(0),
- echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0), data(0), 
+ echoTimeFlag(true), deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -316,11 +326,12 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 Domain &theDom, 
 				 OPS_Stream &theOutput,
 				 double dT,
+				 double rTolDt,
 				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(&theDom), theOutputHandler(&theOutput),
- echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
+ echoTimeFlag(echoTime), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -412,9 +423,11 @@ ElementRecorder::record(int commitTag, double timeStamp)
   }
   
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
-    if (deltaT != 0.0) 
+    if (deltaT != 0.0)
       nextTimeStampToRecord = timeStamp + deltaT;
 
     int loc = 0;
@@ -426,7 +439,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     //
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -524,9 +537,10 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(2);
+  static Vector dData(3);
   dData(0) = deltaT;
   dData(1) = nextTimeStampToRecord;
+  dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -650,6 +664,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   }
   deltaT = dData(0);
   nextTimeStampToRecord = dData(1);
+  relDeltaTTol = dData(2);
 
   //
   // resize & recv the eleID

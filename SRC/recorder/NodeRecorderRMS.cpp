@@ -78,6 +78,7 @@ OPS_NodeRecorderRMS()
     int eMode = STANDARD_STREAM;
 
     double dT = 0.0;
+    double rTolDt = 0.00001;
     bool doScientific = false;
 
     int precision = 6;
@@ -152,6 +153,15 @@ OPS_NodeRecorderRMS()
                 int num = 1;
                 if (OPS_GetDoubleInput(&num, &dT) < 0) {
                     opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-rTolDt") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+                    opserr << "WARNING: failed to read rTolDt\n";
                     return 0;
                 }
             }
@@ -280,7 +290,7 @@ OPS_NodeRecorderRMS()
         return 0;
     NodeRecorderRMS* recorder = new NodeRecorderRMS(dofs, &nodes,
         responseID, *domain, *theOutputStream,
-        dT, theTimeSeries);
+        dT, rTolDt, theTimeSeries);
 
     return recorder;
 }
@@ -291,7 +301,7 @@ NodeRecorderRMS::NodeRecorderRMS()
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), runningTotal(0), count(0),
  theDomain(0), theHandler(0),
- deltaT(0.0), nextTimeStampToRecord(0.0), 
+ deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0),
  initializationDone(false), 
  numValidNodes(0), addColumnInfo(0), theTimeSeries(0), timeSeriesValues(0)
 {
@@ -303,13 +313,14 @@ NodeRecorderRMS::NodeRecorderRMS(const ID &dofs,
 				 const char *dataToStore,
 				 Domain &theDom,
 				 OPS_Stream &theOutputHandler,
-				 double dT, 
+				 double dT,
+				 double rTolDt,
 				 TimeSeries **theSeries)
 :Recorder(RECORDER_TAGS_NodeRecorderRMS),
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), runningTotal(0), count(0),
  theDomain(&theDom), theHandler(&theOutputHandler),
- deltaT(dT), nextTimeStampToRecord(0.0), 
+ deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
  initializationDone(false), numValidNodes(0), 
  addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0)
 {
@@ -500,7 +511,9 @@ NodeRecorderRMS::record(int commitTag, double timeStamp)
 
   int numDOF = theDofs->Size();
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
@@ -768,6 +781,7 @@ NodeRecorderRMS::sendSelf(int commitTag, Channel &theChannel)
   static Vector data(2);
   data(0) = deltaT;
   data(1) = nextTimeStampToRecord;
+  data(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, data) < 0) {
     opserr << "NodeRecorderRMS::sendSelf() - failed to send data\n";
     return -1;
@@ -882,6 +896,7 @@ NodeRecorderRMS::recvSelf(int commitTag, Channel &theChannel,
   }
   deltaT = data(0);
   nextTimeStampToRecord = data(1);
+  relDeltaTTol = data(2);
  
   if (theHandler != 0)
     delete theHandler;

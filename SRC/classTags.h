@@ -291,6 +291,8 @@
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
 
+#define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
+
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001

@@ -392,6 +392,7 @@ initopensees(void)
         INITERROR;
     struct module_state *st = GETSTATE(pymodule);
 
+    // add OpenSeesError
     st->error = PyErr_NewExceptionWithDoc("opensees.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(pymodule);
@@ -399,6 +400,16 @@ initopensees(void)
     }
     Py_INCREF(st->error);
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
+
+    // add OpenSeesParameter dict
+    PyObject *par = PyDict_New();
+    if (par == NULL) {
+      INITERROR;
+    }
+    if (PyModule_AddObject(pymodule, "OpenSeesParameter", par) < 0) {
+        Py_DECREF(par);
+        INITERROR;
+    }
 
     // char version[10];
     // const char *py_version = ".6";

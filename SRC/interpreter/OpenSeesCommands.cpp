@@ -145,6 +145,7 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
+     theVariableTimeStepTransientAnalysis(0),
      thePFEMAnalysis(0),
      theAnalysisModel(0), theTest(0), numEigen(0), theDatabase(0),
      theBroker(), theTimer(), theSimulationInfo(), theMachineBroker(0),
@@ -209,6 +210,15 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+ReliabilityDomain*
+OpenSeesCommands::getReliabilityDomain()
+{
+  if (reliability == 0) {
+    return 0;
+  }
+  return reliability->getDomain();
+}
+
 AnalysisModel** OpenSeesCommands::getAnalysisModel()
 {
     return &theAnalysisModel;
@@ -262,7 +272,7 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    theNumberer = new DOF_Numberer(*theRCM);
 	}
 	if (theTransientIntegrator == 0) {
-	    theTransientIntegrator = new Newmark(0.5,0.25);
+        setIntegrator(new Newmark(0.5,0.25), true);
 	}
 	if (theSOE == 0) {
 	    ProfileSPDLinSolver *theSolver;
@@ -452,7 +462,7 @@ OpenSeesCommands::setStaticIntegrator(StaticIntegrator* integrator)
     }
 
     // set new one
-    theStaticIntegrator = integrator;
+    setIntegrator(integrator, false);
     if (integrator == 0) return;
 
     // set in analysis object
@@ -482,13 +492,28 @@ OpenSeesCommands::setTransientIntegrator(TransientIntegrator* integrator)
     }
 
     // set new one
-    theTransientIntegrator = integrator;
+    setIntegrator(integrator, true);
     if (integrator == 0) return;
 
     // set in analysis object
     if (theTransientAnalysis != 0) {
 	theTransientAnalysis->setIntegrator(*integrator);
     }
+}
+
+void OpenSeesCommands::setIntegrator(Integrator* inte,
+                                     bool transient) {
+  if (inte == 0) {
+    return;
+  }
+  if (transient) {
+    theTransientIntegrator = (TransientIntegrator*)inte;
+  } else {
+    theStaticIntegrator = (StaticIntegrator*)inte;
+  }
+  if (this->reliability != 0) {
+    this->reliability->setSensitivityAlgorithm(inte);
+  }
 }
 
 void
@@ -560,7 +585,7 @@ OpenSeesCommands::setStaticAnalysis()
     if (theStaticIntegrator == 0) {
 	opserr << "WARNING analysis Static - no Integrator specified, \n";
 	opserr << " StaticIntegrator default will be used\n";
-	theStaticIntegrator = new LoadControl(1, 1, 1, 1);
+    setIntegrator(new LoadControl(1, 1, 1, 1), false);
     }
     if (theSOE == 0) {
 	opserr << "WARNING analysis Static - no LinearSOE specified, \n";
@@ -648,7 +673,7 @@ OpenSeesCommands::setPFEMAnalysis()
 	theNumberer = new DOF_Numberer(*theRCM);
     }
     if(theTransientIntegrator == 0) {
-	theTransientIntegrator = new PFEMIntegrator();
+        setIntegrator(new PFEMIntegrator(), true);
     }
     if(theSOE == 0) {
 	PFEMSolver* theSolver = new PFEMSolver();
@@ -702,32 +727,32 @@ OpenSeesCommands::setVariableAnalysis()
     }
 
     if (theAlgorithm == 0) {
-	opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
+	opserr << "WARNING analysis VariableTransient - no Algorithm yet specified, \n";
 	opserr << " NewtonRaphson default will be used\n";
 	theAlgorithm = new NewtonRaphson(*theTest);
     }
 
     if (theHandler == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
+	opserr << "WARNING analysis VariableTransient dt tFinal - no ConstraintHandler\n";
 	opserr << " yet specified, PlainHandler default will be used\n";
 	theHandler = new PlainHandler();
     }
 
     if (theNumberer == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
+	opserr << "WARNING analysis VariableTransient dt tFinal - no Numberer specified, \n";
 	opserr << " RCM default will be used\n";
 	RCM *theRCM = new RCM(false);
 	theNumberer = new DOF_Numberer(*theRCM);
     }
 
     if (theTransientIntegrator == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
+	opserr << "WARNING analysis VariableTransient dt tFinal - no Integrator specified, \n";
 	opserr << " Newmark(.5,.25) default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+        setIntegrator(new Newmark(0.5, 0.25), true);
     }
 
     if (theSOE == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
+	opserr << "WARNING analysis VariableTransient dt tFinal - no LinearSOE specified, \n";
 	opserr << " ProfileSPDLinSOE default will be used\n";
 	ProfileSPDLinSolver *theSolver;
 	theSolver = new ProfileSPDLinDirectSolver();
@@ -744,7 +769,7 @@ OpenSeesCommands::setVariableAnalysis()
 	 *theTransientIntegrator,
 	 theTest);
 
-    // set the pointer for variabble time step analysis
+    // set the pointer for variable time step analysis
     theTransientAnalysis = theVariableTimeStepTransientAnalysis;
 
     if (theEigenSOE != 0) {
@@ -792,7 +817,7 @@ OpenSeesCommands::setTransientAnalysis()
     if (theTransientIntegrator == 0) {
 	opserr << "WARNING analysis Transient - no Integrator specified, \n";
 	opserr << " TransientIntegrator default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+    setIntegrator(new Newmark(0.5,0.25), true);
     }
     if (theSOE == 0) {
 	opserr << "WARNING analysis Transient - no LinearSOE specified, \n";
@@ -853,6 +878,7 @@ OpenSeesCommands::wipeAnalysis()
     theTransientIntegrator = 0;
     theStaticAnalysis = 0;
     theTransientAnalysis = 0;
+    theVariableTimeStepTransientAnalysis = 0;
     thePFEMAnalysis = 0;
     theTest = 0;
 
@@ -920,10 +946,7 @@ OpenSeesCommands::wipe()
     OPS_clearAllCyclicModel();
 
     if (reliability != 0) {
-      ReliabilityDomain* theReliabilityDomain = reliability->getDomain();
-      if (theReliabilityDomain != 0) {
-	//theReliabilityDomain->clearAll();
-      }
+      reliability->wipe();
     }
 }
 
@@ -1010,6 +1033,11 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+ReliabilityDomain* OPS_GetReliabilityDomain(void) {
+  if (cmds == 0) return 0;
+  return cmds->getReliabilityDomain();
 }
 
 AnalysisModel**
@@ -1722,7 +1750,23 @@ int OPS_analyze()
 	if (OPS_GetDoubleInput(&numdata, &dt) < 0) return -1;
 	ops_Dt = dt;
 
-	result = theTransientAnalysis->analyze(numIncr, dt);
+	if (OPS_GetNumRemainingInputArgs() == 0) {
+	    result = theTransientAnalysis->analyze(numIncr, dt);
+	} else if (OPS_GetNumRemainingInputArgs() < 3) {
+	  opserr << "WARNING insufficient args for variable transient need: dtMin dtMax Jd \n";
+	  opserr << "n_args" << OPS_GetNumRemainingInputArgs() << "\n";
+	    return -1;
+	} else {
+	double dtMin;
+	if (OPS_GetDoubleInput(&numdata, &dtMin) < 0) return -1;
+	double dtMax;
+	if (OPS_GetDoubleInput(&numdata, &dtMax) < 0) return -1;
+	int Jd;
+	if (OPS_GetIntInput(&numdata, &Jd) < 0) return -1;
+	  // Included getVariableAnalysis here as dont need it except for here. and analyze() is called a lot.
+	  VariableTimeStepDirectIntegrationAnalysis* theVariableTimeStepTransientAnalysis = cmds->getVariableAnalysis();
+	  result = theVariableTimeStepTransientAnalysis->analyze(numIncr, dt, dtMin, dtMax, Jd);
+	}
     } else {
 	opserr << "WARNING No Analysis type has been specified \n";
 	return -1;
@@ -1843,6 +1887,8 @@ int OPS_initializeAnalysis()
     if (cmds == 0) return 0;
     DirectIntegrationAnalysis* theTransientAnalysis =
 	cmds->getTransientAnalysis();
+	VariableTimeStepDirectIntegrationAnalysis* theVariableTimeStepTransientAnalysis =
+	cmds->getVariableAnalysis();
 
     StaticAnalysis* theStaticAnalysis =
 	cmds->getStaticAnalysis();
