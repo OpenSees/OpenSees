@@ -54,6 +54,7 @@
 #include <NodalLoad.h>
 #include <NodalLoadIter.h>
 //#include <G3string.h>
+#include <Node.h>
 
 #include <SP_Constraint.h> //Joey UC Davis
 #include <SP_ConstraintIter.h> //Joey UC Davis
