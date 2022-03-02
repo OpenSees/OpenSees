@@ -2366,38 +2366,29 @@ Domain::Print(OPS_Stream &s, int flag)
 
 	return;
   }
-      
-  s << "CURRENT DOMAIN INFORMATION:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
-  s << "Current Time: " << currentTime << endln;
-  s << "Committed Time: " << committedTime << endln;    
-
-  s << endln << "NODES:" << endln;  
-  s << "-------------------------------------------------------------------------------" << endln;
+  
+  s << "Current Domain Information\n";
+  s << "\tCurrent Time: " << currentTime << endln;
+  s << "\tCommitted Time: " << committedTime << endln;
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
   theNodes->Print(s, flag);
   
-  s << endln << "ELEMENTS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
   theElements->Print(s, flag);
   
-  s << endln << "SP CONSTRAINTS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "\nSP_Constraints: numConstraints: " << theSPs->getNumComponents() << "\n";
   theSPs->Print(s, flag);
   
-  s << endln << "PRESSURE CONSTRAINTS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "\nPressure_Constraints: numConstraints: " << thePCs->getNumComponents() << "\n";
   thePCs->Print(s, flag);
   
-  s << endln << "MP CONSTRAINTS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "\nMP_Constraints: numConstraints: " << theMPs->getNumComponents() << "\n";
   theMPs->Print(s, flag);
   
-  s << endln << "LOAD PATTERNS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "\nLOAD PATTERNS: numPatterns: " << theLoadPatterns->getNumComponents() << "\n\n";
   theLoadPatterns->Print(s, flag);
   
-  s << endln << "PARAMETERS:" << endln;
-  s << "-------------------------------------------------------------------------------" << endln;
+  s << "\nPARAMETERS: numParameters: " << theParameters->getNumComponents() << "\n\n";
   theParameters->Print(s, flag);
 }
 
