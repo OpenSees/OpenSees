@@ -1240,11 +1240,11 @@ int OPS_System()
 	    if(strcmp(type, "-compressible") == 0) {
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
-
+#ifdef _MUMPS
 	    } else if(strcmp(type, "-mumps") == 0) {
 		
 	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
-
+#endif
 	    } else if (strcmp(type, "-umfpack") == 0) {
 	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
         }
@@ -1272,10 +1272,11 @@ int OPS_System()
 	theSOE = (LinearSOE*)OPS_FullGenLinLapackSolver();
 
     } else if (strcmp(type,"Petsc") == 0) {
-
+	    
+#ifdef _MUMPS
     } else if (strcmp(type,"Mumps") == 0) {
         theSOE = (LinearSOE*)OPS_MumpsSolver();
-
+#endif
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
     	return -1;
