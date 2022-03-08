@@ -358,7 +358,7 @@ ForceBeamColumn3d::setDomain(Domain *theDomain)
   // get element length
   double L = crdTransf->getInitialLength();
   if (L == 0.0) {
-    opserr << "ForceBeamColumn3d::setDomain(): Zero element length:" << this->getTag();  
+    opserr << "ForceBeamColumn3d::setDomain() -- zero length for element with tag: " << this->getTag();  
     exit(0);
   }
 
@@ -487,7 +487,7 @@ ForceBeamColumn3d::getInitialStiff(void)
   // invert3by3Matrix(f, kv);
   static Matrix kvInit(NEBD, NEBD);
   if (f.Solve(I, kvInit) < 0)
-    opserr << "ForceBeamColumn3d::getInitialStiff() -- could not invert flexibility";
+    opserr << "ForceBeamColumn3d::getInitialStiff() -- could not invert flexibility for element with tag: " << this->getTag() << endln;
 
     Ki = new Matrix(crdTransf->getInitialGlobalStiffMatrix(kvInit));
 
@@ -1055,7 +1055,7 @@ void
 	    // FRANK
 	    //	  if (f.SolveSVD(I, kvTrial, 1.0e-12) < 0)
 	    if (f.Solve(I, kvTrial) < 0)
-	      opserr << "ForceBeamColumn3d::update() -- could not invert flexibility\n";
+	      opserr << "ForceBeamColumn3d::update() -- could not invert flexibility for element with tag: " << this->getTag() << endln;;
 	    
 	    // dv = vin + dvTrial  - vr
 	    dv = vin;
