@@ -144,6 +144,7 @@ void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
+void* OPS_BoucWenInfill();
 void* OPS_BWBN();
 void* OPS_PySimple1();
 void* OPS_TzSimple1();
@@ -401,7 +402,10 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
-  uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("BoucWenInfill", &OPS_BoucWenInfill));  
+  uniaxialMaterialsMap.insert(
+      std::make_pair("BWBN", &OPS_BWBN));
   uniaxialMaterialsMap.insert(
       std::make_pair("PySimple1", &OPS_PySimple1));
   uniaxialMaterialsMap.insert(
