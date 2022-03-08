@@ -53,7 +53,7 @@ void* OPS_SuperLUSolver()
     int permSpec = 0;
     int panelSize = 6;
     int relax = 6;
-    char symmetric = 'N';
+    char symmetric = 'Y'; //'N';
     double drop_tol = 0.0;
     
     int numData = 1;
@@ -70,6 +70,8 @@ void* OPS_SuperLUSolver()
 	    if(OPS_GetIntInput(&numData,&npCol)<0) return 0;
 	} else if(type=="s"||type=="symmetric"||type=="-symm") {
 	    symmetric = 'Y';
+	} else if(type=="u"||type=="unsymmetric"||type=="-unsymm") {
+	    symmetric = 'N';
 	}
     }
 
