@@ -53,7 +53,7 @@ void* OPS_SuperLUSolver()
     int permSpec = 0;
     int panelSize = 6;
     int relax = 6;
-    char symmetric = 'Y'; //'N';
+    char symmetric = 'N'; //'Y';
     double drop_tol = 0.0;
     
     int numData = 1;
