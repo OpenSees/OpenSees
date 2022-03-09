@@ -3,9 +3,11 @@ include ../../Makefile.def
 
 OBJS  = DL_Interpreter.o OpenSeesCommands.o OpenSeesUniaxialMaterialCommands.o OpenSeesElementCommands.o OpenSeesTimeSeriesCommands.o OpenSeesPatternCommands.o OpenSeesSectionCommands.o OpenSeesOutputCommands.o OpenSeesCrdTransfCommands.o OpenSeesBeamIntegrationCommands.o OpenSeesNDMaterialCommands.o OpenSeesMiscCommands.o OpenSeesParameterCommands.o OpenSeesFrictionModelCommands.o OpenSeesReliabilityCommands.o
 
+PythonOtherFiles = ../reliability/domain/functionEvaluator/PythonEvaluator.o
+
 TclOBJS =  tclMain.o TclInterpreter.o TclWrapper.o $(OBJS)
 PythonOBJS = pythonMain.o PythonModule.o PythonWrapper.o $(OBJS)
-PythonModuleOBJS = PythonModule.o PythonWrapper.o $(OBJS)
+PythonModuleOBJS = PythonModule.o PythonWrapper.o $(PythonOtherFiles) $(OBJS)
 
 # Compilation control
 

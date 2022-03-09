@@ -53,9 +53,10 @@ GSA_Recorder::GSA_Recorder(Domain &theDom,
 			   const char *length,
 			   const char *force,
 			   const char *temp,
-			   double dT)
+			   double dT,
+			   double rTolDt)
 : Recorder(RECORDER_TAGS_GSA_Recorder),
-  theDomain(&theDom), ndm(3), ndf(6), counter(0), deltaT(dT), nextTimeStampToRecord(0.0)
+  theDomain(&theDom), ndm(3), ndf(6), counter(0), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0)
 {
   // open file 
   if (theFile.setFile(fileName, OVERWRITE) < 0) {
@@ -183,7 +184,9 @@ int
 GSA_Recorder::record(int commitTag, double timeStamp)
 {
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
       
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;

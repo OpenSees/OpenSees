@@ -459,7 +459,7 @@ GRAPH_LIBS = $(FE)/graph/graph/DOF_Graph.o \
 	$(FE)/graph/numberer/MyRCM.o \
 	$(FE)/graph/numberer/GraphNumberer.o \
 	$(FE)/graph/numberer/SimpleNumberer.o \
-	$(FE)/graph/partitioner/Metis.o
+	$(FE)/graph/partitioner/MetisWrapper.o
 
 ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/WrapperElement.o \
@@ -803,6 +803,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
+	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
 	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
@@ -819,6 +820,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ENTMaterial.o \
 	$(FE)/material/uniaxial/BoucWenMaterial.o \
 	$(FE)/material/uniaxial/BoucWenOriginal.o \
+	$(FE)/material/uniaxial/BoucWenInfill.o \
 	$(FE)/material/uniaxial/Pinching4Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \

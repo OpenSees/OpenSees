@@ -93,11 +93,16 @@ MultiLinear::MultiLinear(int tag, const Vector& s, const Vector& e)
 {
     numSlope = e.Size();
     data.resize(numSlope, 6);
+
+    e0.resize(numSlope);
+    e0 = e;
+    s0.resize(numSlope);
+    s0 = s;
     
     for (int i = 1; i < numSlope; i++) {
         if (e(i) < e(i - 1)) {
             opserr << "ERROR: MultiLinear strain_i+1 < strain_i\n";
-            exit(-1);
+            opserr << "Continuing with strain_i+1 = 1.2*strain_1\n";
         }
     }
     
@@ -304,11 +309,33 @@ MultiLinear::revertToStart(void)
         data(i, 0) = -data(i, 1);
         data(i, 2) = -data(i, 3);
     }
+
+    
+
+    data(0, 0) = -e0(0);      // neg yield strain
+    data(0, 1) = e0(0);       // pos yield strain
+    data(0, 2) = -s0(0);      // neg yield stress
+    data(0, 3) = s0(0);       // pos yield stress
+    data(0, 4) = s0(0) / e0(0);  // slope
+    data(0, 5) = e0(0);       // dist - (0-1)/2
+    
+    for (int i = 1; i < numSlope; i++) {
+        data(i, 0) = -e0(i);
+        data(i, 1) = e0(i);
+        data(i, 2) = -s0(i);
+        data(i, 3) = s0(i);
+        data(i, 4) = (s0(i) - s0(i - 1)) / (e0(i) - e0(i - 1));
+        data(i, 5) = e0(i) - e0(i - 1);
+    }
+
     
     tStrain = cStrain = 0.0;
     tStress = cStress = 0.0;
     tTangent = data(0, 4);
     cTangent = tTangent;
+
+    tSlope = 0;
+    
     return 0;
 }
 
@@ -319,6 +346,8 @@ MultiLinear::getCopy(void)
         new MultiLinear();
     theCopy->data = this->data;
     theCopy->numSlope = this->numSlope;
+    theCopy->e0 = this->e0;
+    theCopy->s0 = this->s0;    
     
     theCopy->tSlope = this->tSlope;
     theCopy->tStress = this->tStress;

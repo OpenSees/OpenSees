@@ -117,7 +117,7 @@ TclFeViewer::TclFeViewer()
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(0), 
   theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-  deltaT(0.0), nextTimeStampToRecord(0.0), wipeFlag(0),
+  deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0), wipeFlag(0),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
   theTclFeViewer = 0;
@@ -125,11 +125,11 @@ TclFeViewer::TclFeViewer()
 }
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
-			 Domain &_theDomain, int WipeFlag, Tcl_Interp *interp, double dT)
+			 Domain &_theDomain, int WipeFlag, Tcl_Interp *interp, double dT, double rTolDt)
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(&_theDomain), 
   theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-  deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(WipeFlag),
+  deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), wipeFlag(WipeFlag),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -193,11 +193,11 @@ TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int h
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height, 
 			 const char *fileName, Domain &_theDomain, Tcl_Interp *interp,
-             double dT)
+             double dT, double rTolDt)
    :Recorder(RECORDER_TAGS_TclFeViewer),
    theMap(0),theRenderer(0), theDomain(&_theDomain),
    theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-   deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(1), 
+   deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), wipeFlag(1),
    vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -290,7 +290,9 @@ TclFeViewer::record(int cTag, double timeStamp)
   // using theRenderer and displayTag as arguments.
   // first clear the image
   int res = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
       if (deltaT != 0.0) 
           nextTimeStampToRecord = timeStamp + deltaT;
