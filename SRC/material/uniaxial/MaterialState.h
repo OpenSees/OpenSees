@@ -44,8 +44,7 @@ class MaterialState : public TaggedObject, public MovableObject
   virtual int setVariable(const char *argv);
   virtual int getVariable(int variableID, double &info);
   
-  virtual int setParameter(const char **argv, int argc,
-			   Information &eleInformation);
+  virtual int setParameter(const char **argv, int argc, Parameter &param);
   virtual int updateParameter(int responseID, Information &eleInformation);  
  protected:
   

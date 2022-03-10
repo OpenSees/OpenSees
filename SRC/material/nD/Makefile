@@ -101,6 +101,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE);
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE);
+	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
 
 # Miscellaneous
 

@@ -1,33 +1,43 @@
-
-target_sources(analysis
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Analysis
     PRIVATE
-      DomainUser.cpp 
       Analysis.cpp 
-      StaticAnalysis.cpp 
-      TransientAnalysis.cpp
       DirectIntegrationAnalysis.cpp 
       DomainDecompositionAnalysis.cpp
-      SubstructuringAnalysis.cpp	
+      DomainUser.cpp 
       EigenAnalysis.cpp
-      VariableTimeStepDirectIntegrationAnalysis.cpp
+      ResponseSpectrumAnalysis.cpp
+      StaticAnalysis.cpp 
       StaticDomainDecompositionAnalysis.cpp 
+      SubstructuringAnalysis.cpp    
+      TransientAnalysis.cpp
       TransientDomainDecompositionAnalysis.cpp 
-      PFEMAnalysis.cpp 
+      VariableTimeStepDirectIntegrationAnalysis.cpp
     PUBLIC
-      DomainUser.h 
       Analysis.h 
-      StaticAnalysis.h 
-      TransientAnalysis.h
       DirectIntegrationAnalysis.h 
       DomainDecompositionAnalysis.h
-      SubstructuringAnalysis.h	
+      DomainUser.h 
       EigenAnalysis.h
-      VariableTimeStepDirectIntegrationAnalysis.h
+      ResponseSpectrumAnalysis.h
+      StaticAnalysis.h 
       StaticDomainDecompositionAnalysis.h 
+      SubstructuringAnalysis.h    
+      TransientAnalysis.h
       TransientDomainDecompositionAnalysis.h 
-      PFEMAnalysis.h 
+      VariableTimeStepDirectIntegrationAnalysis.h
 )
-
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(OPS_PFEM
+    PRIVATE
+        PFEMAnalysis.cpp 
+    PUBLIC
+        PFEMAnalysis.h 
+)
+#target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 #add_subdirectory(analysis)

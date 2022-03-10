@@ -1,24 +1,61 @@
-target_sources(analysis
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Analysis
     PRIVATE
-       AlphaOS.cpp
-       AlphaOS_TP.cpp
-       EQPath.cpp
-       AlphaOSGeneralized.cpp
        ExplicitDifference.cpp
-       AlphaOSGeneralized_TP.cpp
        ArcLength.cpp
        ArcLength1.cpp
        BackwardEuler.cpp
        CentralDifference.cpp
-       CentralDifferenceAlternative.cpp
+       IncrementalIntegrator.cpp
+       Integrator.cpp
+       LoadControl.cpp
+       HarmonicSteadyState.cpp
+       LoadPath.cpp
+       MinUnbalDispNorm.cpp
+       Newmark.cpp
+       Newmark1.cpp
+       StaticIntegrator.cpp
+       StagedLoadControl.cpp
+       TransientIntegrator.cpp
+    PUBLIC
+       ExplicitDifference.h
+       ArcLength.h
+       ArcLength1.h
+       BackwardEuler.h
+       CentralDifference.h
+       IncrementalIntegrator.h
+       Integrator.h
+       LoadControl.h
+       HarmonicSteadyState.h
+       LoadPath.h
+       MinUnbalDispNorm.h
+       Newmark.h
+       Newmark1.h
+       StaticIntegrator.h
+       StagedLoadControl.h
+       TransientIntegrator.h
+)
+target_sources(OPS_Analysis
+    PRIVATE
+       AlphaOS.cpp
+       AlphaOS_TP.cpp
+       AlphaOSGeneralized.cpp
+       AlphaOSGeneralized_TP.cpp            # Andreas Schellenberg
+       CentralDifferenceAlternative.cpp     # fmk
        CentralDifferenceNoDamping.cpp
-       Collocation.cpp
+       Collocation.cpp                      # Andreas Schellenberg
        CollocationHSFixedNumIter.cpp
        CollocationHSIncrLimit.cpp
        CollocationHSIncrReduct.cpp
        DisplacementControl.cpp
        DistributedDisplacementControl.cpp
-       EigenIntegrator.cpp
+       EigenIntegrator.cpp                  # Jun Peng
+       EQPath.cpp                           # M. Salehi
        GeneralizedAlpha.cpp
        HHT.cpp
        HHT_TP.cpp
@@ -34,40 +71,25 @@ target_sources(analysis
        HHTHSIncrLimit_TP.cpp
        HHTHSIncrReduct.cpp
        HHTHSIncrReduct_TP.cpp
-       Houbolt.cpp
+       Houbolt.cpp                      # krm
        HSConstraint.cpp
-       IncrementalIntegrator.cpp
-       Integrator.cpp
        KRAlphaExplicit.cpp
        KRAlphaExplicit_TP.cpp
-       LoadControl.cpp
-       LoadPath.cpp
-       MinUnbalDispNorm.cpp
-       Newmark.cpp
-       Newmark1.cpp
-       NewmarkExplicit.cpp
-       NewmarkHSFixedNumIter.cpp
-       NewmarkHSIncrLimit.cpp
-       NewmarkHSIncrReduct.cpp
+       NewmarkExplicit.cpp              # Andreas Schellenberg
+       NewmarkHSFixedNumIter.cpp        # Andreas Schellenberg
+       NewmarkHSIncrLimit.cpp           # Andreas Schellenberg
+       NewmarkHSIncrReduct.cpp          # Andreas Schellenberg
        ParkLMS3.cpp
-       PFEMIntegrator.cpp
-       StaticIntegrator.cpp
-       TransientIntegrator.cpp
        TRBDF2.cpp
        TRBDF3.cpp
        WilsonTheta.cpp
-       GimmeMCK.cpp
+       StagedNewmark.cpp
+       GimmeMCK.cpp                     # MHS
     PUBLIC
        AlphaOS.h
        AlphaOS_TP.h
-       EQPath.h
        AlphaOSGeneralized.h
-       ExplicitDifference.h
        AlphaOSGeneralized_TP.h
-       ArcLength.h
-       ArcLength1.h
-       BackwardEuler.h
-       CentralDifference.h
        CentralDifferenceAlternative.h
        CentralDifferenceNoDamping.h
        Collocation.h
@@ -77,6 +99,7 @@ target_sources(analysis
        DisplacementControl.h
        DistributedDisplacementControl.h
        EigenIntegrator.h
+       EQPath.h
        GeneralizedAlpha.h
        HHT.h
        HHT_TP.h
@@ -94,27 +117,26 @@ target_sources(analysis
        HHTHSIncrReduct_TP.h
        Houbolt.h
        HSConstraint.h
-       IncrementalIntegrator.h
-       Integrator.h
        KRAlphaExplicit.h
        KRAlphaExplicit_TP.h
-       LoadControl.h
-       LoadPath.h
-       MinUnbalDispNorm.h
-       Newmark.h
-       Newmark1.h
        NewmarkExplicit.h
        NewmarkHSFixedNumIter.h
        NewmarkHSIncrLimit.h
        NewmarkHSIncrReduct.h
        ParkLMS3.h
-       PFEMIntegrator.h
-       StaticIntegrator.h
-       TransientIntegrator.h
        TRBDF2.h
        TRBDF3.h
        WilsonTheta.h
+       StagedNewmark.h
        GimmeMCK.h
 )
 
-target_include_directories(analysis PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(OPS_PFEM
+    PRIVATE
+       PFEMIntegrator.cpp
+    PUBLIC
+       PFEMIntegrator.h  # Uses ops_Dt
+)
+
+target_include_directories(OPS_Analysis PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

@@ -1739,6 +1739,9 @@ DispBeamColumnAsym3d::setResponse(const char **argv, int argc, OPS_Stream &outpu
 
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
+
+    else if (strcmp(argv[0],"sectionTags") == 0)
+      theResponse = new ElementResponse(this, 110, ID(numSections));
     
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
@@ -1899,6 +1902,13 @@ DispBeamColumnAsym3d::getResponse(int responseID, Information &eleInfo)
     for (int i = 0; i < numSections; i++)
       weights(i) = wts[i]*L;
     return eleInfo.setVector(weights);
+  }
+
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
   }
   
   else

@@ -88,10 +88,11 @@ InitStrainMaterial::InitStrainMaterial(int tag,
 
   if (theMaterial == 0) {
     opserr <<  "InitStrainMaterial::InitStrainMaterial -- failed to get copy of material\n";
-    exit(-1);
+    //exit(-1);
+  } else {
+    theMaterial->setTrialStrain(epsInit);
+    theMaterial->commitState();
   }
-  theMaterial->setTrialStrain(epsInit);
-  theMaterial->commitState();
 }
 
 InitStrainMaterial::InitStrainMaterial()
@@ -111,67 +112,95 @@ int
 InitStrainMaterial::setTrialStrain(double strain, double strainRate)
 {
   localStrain = strain;
-  
-  return theMaterial->setTrialStrain(strain+epsInit, strainRate);
+
+  if (theMaterial)
+    return theMaterial->setTrialStrain(strain+epsInit, strainRate);
+  else
+    return -1;
 }
 
 double 
 InitStrainMaterial::getStress(void)
 {
-  return theMaterial->getStress();
+  if (theMaterial)
+    return theMaterial->getStress();
+  else
+    return 0.0;
 }
 
 double 
 InitStrainMaterial::getTangent(void)
 {
-  return theMaterial->getTangent();  
+  if (theMaterial)
+    return theMaterial->getTangent();
+  else
+    return 0.0;
 }
 
 double 
 InitStrainMaterial::getDampTangent(void)
 {
-  return theMaterial->getDampTangent();
+  if (theMaterial)
+    return theMaterial->getDampTangent();
+  else
+    return 0.0;
 }
 
 double 
 InitStrainMaterial::getStrain(void)
 {
-  return theMaterial->getStrain();
+  if (theMaterial)
+    return theMaterial->getStrain();
+  else
+    return 0.0;
 }
 
 double 
 InitStrainMaterial::getStrainRate(void)
 {
-  return theMaterial->getStrainRate();
+  if (theMaterial)
+    return theMaterial->getStrainRate();
+  else
+    return 0.0;
 }
 
 int 
 InitStrainMaterial::commitState(void)
-{	
-  return theMaterial->commitState();
+{
+  if (theMaterial)
+    return theMaterial->commitState();
+  else
+    return -1;
 }
 
 int 
 InitStrainMaterial::revertToLastCommit(void)
 {
-  return theMaterial->revertToLastCommit();
+  if (theMaterial)
+    return theMaterial->revertToLastCommit();
+  else
+    return -1;
 }
 
 int 
 InitStrainMaterial::revertToStart(void)
 {
   int res = 0;
-  res = theMaterial->revertToStart();
-  res += theMaterial->setTrialStrain(epsInit);
-  res += theMaterial->commitState();
-  return res;
+  if (theMaterial) {
+    res = theMaterial->revertToStart();
+    res += theMaterial->setTrialStrain(epsInit);
+    res += theMaterial->commitState();
+    return res;
+  } else
+    return -1;
 }
 
 UniaxialMaterial *
 InitStrainMaterial::getCopy(void)
 {
-  InitStrainMaterial *theCopy = 
-    new InitStrainMaterial(this->getTag(), *theMaterial, epsInit);
+  InitStrainMaterial *theCopy = 0;
+  if (theMaterial)
+    theCopy = new InitStrainMaterial(this->getTag(), *theMaterial, epsInit);
         
   return theCopy;
 }
@@ -179,6 +208,11 @@ InitStrainMaterial::getCopy(void)
 int 
 InitStrainMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "InitStrainMaterial::sendSelf() - theMaterial is null, nothing to send\n";
+    return -1;
+  }
+  
   int dbTag = this->getDbTag();
 
   static ID dataID(3);
@@ -256,16 +290,24 @@ InitStrainMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 InitStrainMaterial::Print(OPS_Stream &s, int flag)
 {
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "InitStrainMaterial tag: " << this->getTag() << endln;
+        if (theMaterial)
+            s << "\tMaterial: " << theMaterial->getTag() << endln;
+        else
+            s << "\tMaterial is NULL" << endln;
+        s << "\tInitial strain: " << epsInit << endln;
+    }
+
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"InitStrainMaterial\", ";
-		s << "\"Material\": " << theMaterial->getTag() << ", ";
+		if (theMaterial)
+		  s << "\"Material\": " << theMaterial->getTag() << ", ";
+		else
+		  s << "\"Material\": " << "NULL" << ", ";
 		s << "\"initialStrain\": " << epsInit <<  "}";
-	} else {
-		s << "InitStrainMaterial tag: " << this->getTag() << endln;
-		s << "\tMaterial: " << theMaterial->getTag() << endln;
-		s << "\tinitital strain: " << epsInit << endln;
 	}
 }
 
@@ -278,7 +320,10 @@ InitStrainMaterial::setParameter(const char **argv, int argc, Parameter &param)
   }
 
   // Otherwise, pass it on to the wrapped material
-  return theMaterial->setParameter(argv, argc, param);
+  if (theMaterial)
+    return theMaterial->setParameter(argv, argc, param);
+  else
+    return -1;
 }
 
 int
@@ -286,8 +331,11 @@ InitStrainMaterial::updateParameter(int parameterID, Information &info)
 {
   if (parameterID == 1) {
     this->epsInit = info.theDouble;
-    theMaterial->setTrialStrain(localStrain+epsInit);
-    theMaterial->commitState();
+    if (theMaterial) {
+      theMaterial->setTrialStrain(localStrain+epsInit);
+      theMaterial->commitState();
+    } else
+      return -1;
   }
 
   return 0;
@@ -296,18 +344,27 @@ InitStrainMaterial::updateParameter(int parameterID, Information &info)
 double
 InitStrainMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
-  return theMaterial->getStressSensitivity(gradIndex, conditional);
+  if (theMaterial)
+    return theMaterial->getStressSensitivity(gradIndex, conditional);
+  else
+    return 0.0;
 }
 
 double
 InitStrainMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-  return theMaterial->getInitialTangentSensitivity(gradIndex);
+  if (theMaterial)
+    return theMaterial->getInitialTangentSensitivity(gradIndex);
+  else
+    return 0.0;
 }
 
 int
 InitStrainMaterial::commitSensitivity(double strainGradient, 
 				      int gradIndex, int numGrads)
 {
-  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
+  if (theMaterial)
+    return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
+  else
+    return -1;
 }

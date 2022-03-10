@@ -1,3 +1,9 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(graph
     PRIVATE
       DOF_Graph.cpp 
@@ -14,4 +20,4 @@ target_sources(graph
 )
 
 
-target_include_directories(graph PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(graph PUBLIC ${CMAKE_CURRENT_LIST_DIR})
