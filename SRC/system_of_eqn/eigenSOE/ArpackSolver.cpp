@@ -189,7 +189,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     numModesMax = numModes;
   }
 
-  static char which[3];
+  char which[3];
   if (findSmallest == true) {
     strcpy(which, "LM");
   }  else {
