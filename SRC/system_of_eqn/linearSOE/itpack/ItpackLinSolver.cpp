@@ -47,7 +47,21 @@ void* OPS_ItpackLinSolver()
     return 0;
   }
   
-  ItpackLinSolver *theSolver = new ItpackLinSolver(method);
+  int iter = 100;
+  double omega = 1.0;
+  while (OPS_GetNumRemainingInputArgs() > 1) {
+    const char *arg = OPS_GetString();
+    if (strcmp(arg,"-iter") == 0) {
+      if (OPS_GetIntInput(&numData,&iter) < 0)
+	return 0;
+    }
+    if (strcmp(arg,"-omega") == 0) {
+      if (OPS_GetDoubleInput(&numData,&omega) < 0)
+	return 0;
+    }    
+  }
+  
+  ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega);
   return new ItpackLinSOE(*theSolver);  
 }
 
