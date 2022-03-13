@@ -42,6 +42,10 @@ void* OPS_ItpackLinSolver()
   int numData = 1;
   
   int nArgs = OPS_GetNumRemainingInputArgs();
+  if (nArgs == 0) {
+    opserr << "WARNING Itpack -- no method specified\n";
+    return 0;
+  }
   if (nArgs > 0 && OPS_GetIntInput(&numData,&method) < 0) {
     opserr << "WARNING Itpack -- error reading method\n";
     return 0;
@@ -318,6 +322,9 @@ ItpackLinSolver::solve(void)
   // Overwrite default max number of iterations
   iparm[0] = maxIter;
 
+  // Print flag
+  iparm[1] = 1;
+  
   // Sparse matrix storage scheme (0 = symmetric, 1 = nonsymmetric)
   iparm[4] = 1;
 
@@ -390,8 +397,11 @@ ItpackLinSolver::solve(void)
 
   if (ier > 0) {
     opserr << "ItpackLinSolver::solve() -- returned ier = " << ier << endln;
+    opserr << "Maximum iterations: " << iparm[0] << ", rparm = " << rparm[0] << endln;
     return -ier;
   }
-  else
+  else {
+    opserr << "Converged in " << iparm[0] << " iterations" << endln;
     return 0;
+  }
 }
