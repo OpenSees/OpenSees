@@ -1422,7 +1422,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
     
-    else if (strcmp(argv[0],"section") ==0) { 
+    else if (strstr(argv[0],"section") != 0) { 
       if (argc > 1) {
 	
 	int sectionNum = atoi(argv[1]);
