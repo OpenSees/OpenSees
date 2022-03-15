@@ -5872,7 +5872,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
     }
   }
   
-  else if (strcmp(argv[1],"loadPattern") == 0) {
+  else if (strcmp(argv[1],"loadPattern") == 0 || strcmp(argv[1],"pattern") == 0) {
     if (argc < 3) {
       opserr << "WARNING want - remove loadPattern patternTag?\n";
       return TCL_ERROR;
