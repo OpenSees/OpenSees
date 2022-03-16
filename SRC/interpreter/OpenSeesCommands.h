@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DL_Interpreter.h"
 #include <UniaxialMaterial.h>
 #include <Domain.h>
+#include <ReliabilityDomain.h>
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
 #include <LinearSOE.h>
@@ -73,6 +74,7 @@ public:
 
     DL_Interpreter* getInterpreter();
     Domain* getDomain();
+    ReliabilityDomain* getReliabilityDomain();
     AnalysisModel** getAnalysisModel();
 
     int getNDF() const {return ndf;}
@@ -95,6 +97,8 @@ public:
 
     void setTransientIntegrator(TransientIntegrator* integrator);
     TransientIntegrator* getTransientIntegrator() {return theTransientIntegrator;}
+
+    void setIntegrator(Integrator* inte, bool transient);
 
     void setAlgorithm(EquiSolnAlgo* algo);
     EquiSolnAlgo* getAlgorithm() {return theAlgorithm;}
@@ -251,6 +255,8 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_getNDMM();
+int OPS_getNDFF();
 int OPS_eleType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
@@ -259,6 +265,7 @@ int OPS_setNodePressure();
 int OPS_nodeBounds();
 int OPS_setPrecision();
 int OPS_getEleTags();
+int OPS_getCrdTransfTags();
 int OPS_getNodeTags();
 int OPS_getParamTags();
 int OPS_getParamValue();
@@ -289,6 +296,8 @@ int OPS_getEleClassTags();
 int OPS_getEleLoadClassTags();
 int OPS_getEleLoadTags();
 int OPS_getEleLoadData();
+int OPS_getNodeLoadTags();
+int OPS_getNodeLoadData();
 // Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
@@ -337,10 +346,26 @@ int OPS_getRVStdv();
 int OPS_getRVPDF();
 int OPS_getRVCDF();
 int OPS_getRVInverseCDF();
+int OPS_getLSFTags();
 int OPS_addCorrelate();
+int OPS_performanceFunction(); // limit state function
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
+int OPS_startPoint();
+int OPS_randomNumberGenerator();
+int OPS_reliabilityConvergenceCheck();
+int OPS_searchDirection();
+int OPS_meritFunctionCheck();
+int OPS_stepSizeRule();
+int OPS_rootFinding();
+int OPS_findDesignPoint();
+int OPS_functionEvaluator();
+int OPS_gradientEvaluator();
 int OPS_wipeReliability();
+int OPS_runFOSMAnalysis();
+int OPS_runFORMAnalysis();
+int OPS_runImportanceSamplingAnalysis();
+ReliabilityDomain* OPS_GetReliabilityDomain();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
@@ -451,6 +476,7 @@ void* OPS_LoadControlIntegrator();
 void* OPS_DisplacementControlIntegrator();
 void* OPS_Newmark();
 void* OPS_GimmeMCK();
+void* OPS_HarmonicSteadyState();
 void* OPS_ArcLength();
 void* OPS_ArcLength1();
 void* OPS_HSConstraint();

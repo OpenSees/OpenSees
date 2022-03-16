@@ -55,6 +55,9 @@
     <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\reliability\domain\functionEvaluator\PythonEvaluator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">

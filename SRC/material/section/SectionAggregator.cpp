@@ -38,11 +38,9 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <MatrixUtil.h>
-#include <classTags.h>
 #include <SectionAggregator.h>
 #include <MaterialResponse.h>
 #include <ID.h>
-#include <FiberSection2d.h>			//by SAJalali
 #include <string.h>
 
 #include <classTags.h>
@@ -966,7 +964,7 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
 	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
   }
 
-  if (argc > 1 && strcmp(argv[0],"section") == 0)
+  if ((argc > 1) && (strcmp(argv[0],"section") == 0) && (theSection))
     theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
   if (theResponse == 0)

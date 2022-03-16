@@ -103,7 +103,7 @@ ulcommit(7), ul(7),  ulpr(7),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 {
     // check vector that defines local xz plane
-    if (&vecInLocXZPlane == 0 || vecInLocXZPlane.Size() != 3 )
+    if (vecInLocXZPlane.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Vector that defines local xz plane is invalid\n";
         opserr << "Size must be 3\n. Using (0,0,1)";      
@@ -113,7 +113,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         vAxis = vecInLocXZPlane;
     
     // check rigid joint offset for node I
-    if (&rigJntOffsetI == 0 || rigJntOffsetI.Size() != 3 )
+    if (rigJntOffsetI.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
         opserr << "Size must be 3\n";      
@@ -123,7 +123,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         nodeIOffset = rigJntOffsetI;
     
     // check rigid joint offset for node J
-    if (&rigJntOffsetJ == 0 || rigJntOffsetJ.Size() != 3 )
+    if (rigJntOffsetJ.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Invalid rigid joint offset vector for node J\n";
         opserr << "Size must be 3\n";      

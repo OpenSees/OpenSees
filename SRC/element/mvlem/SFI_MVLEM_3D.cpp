@@ -628,9 +628,10 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	// Calculate distance of corner nodes from center axis
 	d = Lw / 2.0;
 
+	int eletag = this->getTag();
 	// Create a internal node tag
 	for (int i = 0; i < m; i++) { // Large NEGATIVE integer starting with tag of the element
-		externalNodes(i + 4) = -(Nd1 * 1000 + i + 1); // Max fibers is 999 to avoid overlap
+		externalNodes(i + 4) = -(eletag * 1000 + i + 1); // Max fibers is 999 to avoid overlap
 	}
 
 	// Build m internal nodes (NodesX) and add them to the domain
@@ -639,7 +640,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		int nodeId_temp = externalNodes(i + 4); // Store node tag temporarily 
 
 		// Create coordinates wrt top and bottom element node 
-		double xLoc_temp = nd1CrdL(0) + x[i];
+		double xLoc_temp = nd1CrdL(0) + x[i] + d;
 		double yLoc_temp = 0.5 * (nd1CrdL(1) + nd3CrdL(1)); // Mid-height
 		double zLoc_temp = nd1CrdL(2);
 

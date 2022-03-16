@@ -39,7 +39,7 @@
 
 
 fElmt05::fElmt05(int tag, int nd1, int nd2, double E, double A, double rho)
-:fElement(tag, ELE_TAG_fElmt05, 3, 2, 0, 0)
+  :fElement(tag, ELE_TAG_fElmt05, 5, 3, 2, 3, 2, 0, 0)
 {
     (*data)(0) = A;
     (*data)(1) = E;
@@ -76,8 +76,8 @@ fElmt05::invokefRoutine(double *d, double *ul, double *xl, int *ix, double *tl,
     if (nst != 4 || nen != 2 || dm != 2)
 	return 0;
     
-    elmt05_(d, ul, xl, ix, tl, s, r, ndf, ndm, nst, isw, dm,
-            nen, n, nh1, nh2, nh3, h, ctan, ior, iow);
+    elmt05_(d, ul, xl, ix, tl, s, r, &ndf, &ndm, &nst, &isw, &dm,
+            &nen, &n, &nh1, &nh2, &nh3, h, ctan, &ior, &iow);
         
     return nst;
 }

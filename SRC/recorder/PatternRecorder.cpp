@@ -49,10 +49,11 @@ PatternRecorder::PatternRecorder(int pattern,
 				 Domain &theDom,
 				 const char *theFileName,
 				 double dT,
+				 double rTolDt,
 				 int startFlag)
   :Recorder(RECORDER_TAGS_PatternRecorder),
    thePattern(pattern), theDomain(&theDom),
-   flag(startFlag), deltaT(dT), nextTimeStampToRecord(0.0)
+   flag(startFlag), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0)
 {
   // create char array to store file name
   int fileNameLength = strlen(theFileName) + 1;
@@ -87,10 +88,12 @@ PatternRecorder::record(int commitTag, double timeStamp)
 {
   double value = 0.0;
   
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord - deltaT * 0.00001) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
     if (deltaT != 0.0)
-      nextTimeStampToRecord = nextTimeStampToRecord + deltaT;
+      nextTimeStampToRecord = timeStamp + deltaT;
     
     LoadPattern *pattern = theDomain->getLoadPattern(thePattern);
     if (pattern != 0) {

@@ -46,12 +46,12 @@ class FilePlotter : public Recorder
   public:
     FilePlotter(const char *fileName,
 		const char *windowTitle, 
-		int xLoc, int yLoc, int width, int height, double dT);
+		int xLoc, int yLoc, int width, int height, double dT, double relDeltaTTol = 0.00001);
 
     FilePlotter(const char *fileName1,
 		const char *fileName2,
 		const char *windowTitle, 
-		int xLoc, int yLoc, int width, int height, double dT);
+		int xLoc, int yLoc, int width, int height, double dT, double relDeltaTTol = 0.00001);
     
     ~FilePlotter();    
 
@@ -75,6 +75,7 @@ class FilePlotter : public Recorder
     char *fileName2;
     
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;    
 
     Vector *data1a;

@@ -44,6 +44,7 @@ class NodeRecorderRMS: public Recorder
 			 Domain &theDomain,
 			 OPS_Stream &theOutputHandler,
 			 double deltaT = 0.0,
+			 double relDeltaTTol = 0.00001,
 			 TimeSeries **theTimeSeries =0); 
     
     ~NodeRecorderRMS();
@@ -77,6 +78,7 @@ class NodeRecorderRMS: public Recorder
     int dataFlag; // flag indicating what it is to be stored in recorder
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     bool initializationDone;

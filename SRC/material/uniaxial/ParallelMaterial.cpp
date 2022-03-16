@@ -583,3 +583,98 @@ ParallelMaterial::getResponse(int responseID, Information &info)
     return this->UniaxialMaterial::getResponse(responseID, info);
   }
 }
+
+int
+ParallelMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 1)
+    return -1;
+  
+  int result = -1;
+
+  if (strcmp(argv[0],"material") == 0) {
+
+    if (argc < 3)
+      return -1;
+
+    int materialTag = atoi(argv[1]);
+
+    for (int i = 0; i < numMaterials; i++) {
+      if (materialTag == theModels[i]->getTag())
+	theModels[i]->setParameter(&argv[2], argc-2, param);
+    }
+  }
+
+  else { // Send to everything
+    for (int i = 0; i < numMaterials; i++)
+      theModels[i]->setParameter(argv, argc, param);
+  }
+
+  return 0;
+}
+
+double
+ParallelMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  double dsdh = 0.0;
+  for (int i = 0; i < numMaterials; i++)
+    dsdh += theModels[i]->getStressSensitivity(gradIndex, conditional);
+
+  for (int i = 1; i < numMaterials; i++) {
+    double k0 = theModels[i]->getInitialTangent();
+    //dsdh += k0/(29000*144.0);
+  }
+  //dsdh -= 0.125;
+    
+  return dsdh;
+}
+
+double
+ParallelMaterial::getTangentSensitivity(int gradIndex)
+{
+  double dEdh = 0.0;
+  for (int i = 0; i < numMaterials; i++)
+    dEdh += theModels[i]->getTangentSensitivity(gradIndex);
+
+  return dEdh;
+}
+
+double
+ParallelMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  double dEdh = 0.0;
+  for (int i = 0; i < numMaterials; i++)
+    dEdh += theModels[i]->getInitialTangentSensitivity(gradIndex);
+
+  return dEdh;
+}
+
+double
+ParallelMaterial::getDampTangentSensitivity(int gradIndex)
+{
+  double dEdh = 0.0;
+  for (int i = 0; i < numMaterials; i++)
+    dEdh += theModels[i]->getDampTangentSensitivity(gradIndex);
+
+  return dEdh;
+}
+
+double
+ParallelMaterial::getRhoSensitivity(int gradIndex)
+{
+  double dpdh = 0.0;
+  for (int i = 0; i < numMaterials; i++)
+    dpdh += theModels[i]->getRhoSensitivity(gradIndex);
+
+  return dpdh;
+}
+
+int
+ParallelMaterial::commitSensitivity(double dedh, int gradIndex, int numGrads)
+{
+  int ok = 0;
+  for (int i = 0; i < numMaterials; i++)
+    ok += theModels[i]->commitSensitivity(dedh, gradIndex, numGrads);
+
+  return ok;
+}
