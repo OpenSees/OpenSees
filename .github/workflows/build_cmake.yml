@@ -50,7 +50,7 @@ jobs:
       run: |
         cd ./build
         cd ../EXAMPLES/ExamplePython/
-        export PYTHONPATH="../build/lib/"
+        export PYTHONPATH="../../build/lib/"
         python -c "import sys; print(sys.path)"
         python example_variable_analysis.py
 #        # Simple MP sanity test
