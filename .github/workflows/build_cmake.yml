@@ -49,7 +49,7 @@ jobs:
     - name: Verification OpenSeesPySP
       run: |
         cd ./build
-        cd ../examples_py
+        cd ../EXAMPLES/ExamplePython/
         export PYTHONPATH="../build/lib/"
         python -c "import sys; print(sys.path)"
         python example_variable_analysis.py
