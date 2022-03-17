@@ -123,7 +123,7 @@ SectionForceDeformation  *LayeredShellFiberSectionThermal::getCopy( )
 					  nLayers,
 					  thickness,
 					  theFibers ) ; //make the copy
-    delete thickness;
+    delete [] thickness;
   }
   return clone ;
 }
@@ -140,7 +140,19 @@ int LayeredShellFiberSectionThermal::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& LayeredShellFiberSectionThermal::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -203,59 +215,9 @@ Response*
 LayeredShellFiberSectionThermal::setResponse(const char **argv, int argc,
                                       OPS_Stream &output)
 {
-  const ID &type = this->getType();
-  int typeSize = this->getOrder();
-  
   Response *theResponse =0;
 
-  output.tag("SectionOutput");
-  output.attr("secType", this->getClassType());
-  output.attr("secTag", this->getTag());
-
-  // deformations
-  if (strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"deformation") == 0) {
-    output.tag("ResponseType","eps11");
-    output.tag("ResponseType","eps22");
-    output.tag("ResponseType","gamma12");
-    output.tag("ResponseType","theta11");
-    output.tag("ResponseType","theta22");
-    output.tag("ResponseType","theta33");
-    output.tag("ResponseType","gamma13");
-    output.tag("ResponseType","gamma23");
-    theResponse =  new MaterialResponse(this, 1, this->getSectionDeformation());
-  // forces
-  } else if (strcmp(argv[0],"forces") == 0 || strcmp(argv[0],"force") == 0) {
-    output.tag("ResponseType","p11");
-    output.tag("ResponseType","p22");
-    output.tag("ResponseType","p12");
-    output.tag("ResponseType","m11");
-    output.tag("ResponseType","m22");
-    output.tag("ResponseType","m12");
-    output.tag("ResponseType","q1");
-    output.tag("ResponseType","q2");
-    theResponse =  new MaterialResponse(this, 2, this->getStressResultant());
-  
-  // force and deformation
-  } else if (strcmp(argv[0],"forceAndDeformation") == 0) { 
-    output.tag("ResponseType","eps11");
-    output.tag("ResponseType","eps22");
-    output.tag("ResponseType","gamma12");
-    output.tag("ResponseType","theta11");
-    output.tag("ResponseType","theta22");
-    output.tag("ResponseType","theta33");
-    output.tag("ResponseType","gamma13");
-    output.tag("ResponseType","gamma23");
-    output.tag("ResponseType","p11");
-    output.tag("ResponseType","p22");
-    output.tag("ResponseType","p12");
-    output.tag("ResponseType","m11");
-    output.tag("ResponseType","m22");
-    output.tag("ResponseType","m12");
-    output.tag("ResponseType","q1");
-    output.tag("ResponseType","q2");
-    theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
-  }  
-  else if (strcmp(argv[0],"fiber") == 0 || strcmp(argv[0],"Fiber") == 0) {
+  if (strcmp(argv[0],"fiber") == 0 || strcmp(argv[0],"Fiber") == 0) {
     if (argc < 3) {
       opserr << "LayeredShellFiberSectionThermal::setResponse() - need to specify more data\n";
       return 0;
@@ -268,39 +230,22 @@ LayeredShellFiberSectionThermal::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.5*h*sg[pointNum-1]);
       output.attr("thickness",0.5*h*wg[pointNum-1]);
       
-      theResponse =  theFibers[pointNum-1]->setResponse(&argv[2], argc-2, output);
+      theResponse = theFibers[pointNum-1]->setResponse(&argv[2], argc-2, output);
       
       output.endTag();
     }
   }
-  output.endTag(); // SectionOutput
+
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
   return theResponse;
 }
 
 int 
 LayeredShellFiberSectionThermal::getResponse(int responseID, Information &secInfo)
 {
-  switch (responseID) {
-  case 1:
-    return secInfo.setVector(this->getSectionDeformation());
-    
-  case 2:
-    return secInfo.setVector(this->getStressResultant());
-    
-  case 4: {
-    Vector &theVec = *(secInfo.theVector);
-    const Vector &e = this->getSectionDeformation();
-    const Vector &s = this->getStressResultant();
-    for (int i = 0; i < 8; i++) {
-      theVec(i) = e(i);
-      theVec(i+8) = s(i);
-    }
-    
-    return secInfo.setVector(theVec);
-  }
-  default:
-    return -1;
-  }
+  return SectionForceDeformation::getResponse(responseID, secInfo);
 }
 
 

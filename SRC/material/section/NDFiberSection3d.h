@@ -46,10 +46,10 @@ class NDFiberSection3d : public SectionForceDeformation
 {
   public:
     NDFiberSection3d(); 
-    NDFiberSection3d(int tag, int numFibers, Fiber **fibers, double a = 1.0);
-    NDFiberSection3d(int tag, int numFibers, double a = 1.0);
+    NDFiberSection3d(int tag, int numFibers, Fiber **fibers, double a = 1.0, bool compCentroid=true);
+    NDFiberSection3d(int tag, int numFibers, double a = 1.0, bool compCentroid=true);
     NDFiberSection3d(int tag, int numFibers, NDMaterial **mats,
-		     SectionIntegration &si, double a = 1.0);
+		     SectionIntegration &si, double a = 1.0, bool compCentroid=true);
     ~NDFiberSection3d();
 
     const char *getClassType(void) const {return "NDFiberSection3d";};
@@ -104,6 +104,7 @@ class NDFiberSection3d : public SectionForceDeformation
     double Abar,QyBar, QzBar;
     double yBar;       // Section centroid
     double zBar;       // Section centroid
+    bool computeCentroid;
     double alpha;      // Shear shape factor
 
     SectionIntegration *sectionIntegr;

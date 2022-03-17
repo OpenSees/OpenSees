@@ -1146,30 +1146,24 @@ ZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
     if (theNodes[0] == 0 || theNodes[1] == 0 )
        return 0;
 
+    // get the end point display coords    
     static Vector v1(3);
     static Vector v2(3);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
+    // get the color
     float d1 = 1.0;
+    if (displayMode == 1)
+        d1 = theMaterial1d[0]->getStress();
+    else if (displayMode == 2)
+        d1 = theMaterial1d[0]->getStrain();
 
-    if (displayMode == 1 || displayMode == 2) {
-
-      theNodes[0]->getDisplayCrds(v1, fact);
-      theNodes[1]->getDisplayCrds(v2, fact);
-	
-      if (displayMode == 1) 
-	d1 = theMaterial1d[0]->getStress();
-      else 
-	d1 = theMaterial1d[0]->getStrain();
-    } else {
-
-      theNodes[0]->getDisplayCrds(v1, 0.);
-      theNodes[1]->getDisplayCrds(v2, 0.);
-
-    }
+    // draw the line
     if (v1 != v2)
-      return theViewer.drawLine(v1, v2, d1, d1);	
+        return theViewer.drawLine(v1, v2, d1, d1, this->getTag());
     else
-      return theViewer.drawPoint(v1, d1, 10);	
+        return 0; // no need to draw a point, as was done before. There will be points for the nodes.
 }
 
 
@@ -1338,6 +1332,16 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
 
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }    
+    
     if ((strcmp(argv[0],"dampingForces") == 0) || (strcmp(argv[0],"rayleighForces") == 0)) {
             theResponse = new ElementResponse(this, 15, Vector(numDOF));
     }
@@ -1356,6 +1360,7 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
     const Vector& disp1 = theNodes[0]->getTrialDisp();
     const Vector& disp2 = theNodes[1]->getTrialDisp();
     const Vector  diff  = disp2-disp1;
+    Vector &theVec = *(eleInformation.theVector);
 
     switch (responseID) {
     case -1:
@@ -1412,6 +1417,22 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
         }
         return 0;      
 
+    case 20:
+      theVec(0) = transformation(0,0);
+      theVec(1) = transformation(0,1);
+      theVec(2) = transformation(0,2);
+      return 0;
+    case 21:
+      theVec(0) = transformation(1,0);
+      theVec(1) = transformation(1,1);
+      theVec(2) = transformation(1,2);
+      return 0;
+    case 22:
+      theVec(0) = transformation(2,0);
+      theVec(1) = transformation(2,1);
+      theVec(2) = transformation(2,2);
+      return 0;      
+     
     default:
         return -1;
     }

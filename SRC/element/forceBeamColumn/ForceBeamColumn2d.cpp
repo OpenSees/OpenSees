@@ -586,7 +586,7 @@ ForceBeamColumn2d::setDomain(Domain *theDomain)
   // get element length
   double L = crdTransf->getInitialLength();
   if (L == 0.0) {
-    opserr << "ForceBeamColumn2d::setDomain(): Zero element length:" << this->getTag();  
+    opserr << "ForceBeamColumn2d::setDomain() -- zero length for element with tag: " << this->getTag();  
     exit(0);
   }
 
@@ -1196,7 +1196,7 @@ ForceBeamColumn2d::update()
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
-	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility\n";
+	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility for element with tag: " << this->getTag() << endln;
 				    
 	  // dv = vin + dvTrial  - vr
 	  dv = vin;
@@ -2485,34 +2485,13 @@ ForceBeamColumn2d::setSectionPointers(int numSec, SectionForceDeformation **secP
 int
 ForceBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-  static Vector v1(3);
-  static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-  if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    theNodes[0]->getDisplayCrds(v1, fact);
-    theNodes[1]->getDisplayCrds(v2, fact);
-
-  } else {
-
-    theNodes[0]->getDisplayCrds(v1, 0.);
-    theNodes[1]->getDisplayCrds(v2, 0.);
-
-    // add eigenvector values
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) += eigen1(i,mode-1)*fact;
-	v2(i) += eigen2(i,mode-1)*fact;    
-      }    
-    } 
-  }
-
-
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -2627,6 +2606,9 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));  
+  
   else if (strcmp(argv[0],"sectionDisplacements") == 0)
     theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
 
@@ -2908,6 +2890,13 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];

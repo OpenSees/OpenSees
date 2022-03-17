@@ -46,10 +46,10 @@ class NDFiberSection2d : public SectionForceDeformation
 {
   public:
     NDFiberSection2d(); 
-    NDFiberSection2d(int tag, int numFibers, Fiber **fibers, double a = 1.0);
-    NDFiberSection2d(int tag, int numFibers, double a = 1.0);
+    NDFiberSection2d(int tag, int numFibers, Fiber **fibers, double a = 1.0, bool compCentroid=true);
+    NDFiberSection2d(int tag, int numFibers, double a = 1.0, bool compCentroid=true);
     NDFiberSection2d(int tag, int numFibers, NDMaterial **mats,
-		     SectionIntegration &si, double a = 1.0);
+		     SectionIntegration &si, double a = 1.0, bool compCentroid=true);
     ~NDFiberSection2d();
 
     const char *getClassType(void) const {return "NDFiberSection2d";};
@@ -102,6 +102,7 @@ class NDFiberSection2d : public SectionForceDeformation
     double   sData[3];               // data for s vector 
     
     double QzBar, Abar, yBar;       // Section centroid
+    bool computeCentroid;
     double alpha;      // Shear shape factor
 
     SectionIntegration *sectionIntegr;

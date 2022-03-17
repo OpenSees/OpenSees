@@ -65,6 +65,8 @@ void *OPS_FourNodeTetrahedron(const ID &info);
 
 void *OPS_ShellMITC4(const ID &info);
 
+void *OPS_ShellNLDKGQ(const ID &info);
+
 void *OPS_CorotTrussElement(const ID &info);
 
 // msh objects
@@ -318,8 +320,6 @@ Mesh::setEleArgs() {
         }
 
     } else if (strcmp(type, "PFEMElementCompressible") == 0) {
-        opserr << "WARNING: PFEMElementCompressible needs fix in TriMesh\n";
-        return -1;
         if (ndm == 2) {
             eleType = ELE_TAG_PFEMElement2DCompressible;
             if (OPS_PFEMElement2DCompressible(info) == 0) {
@@ -352,6 +352,14 @@ Mesh::setEleArgs() {
             return -1;
         }
         numelenodes = 4;
+
+    } else if (strcmp(type, "ShellNLDKGQ") == 0) {
+        eleType = ELE_TAG_ShellNLDKGQ;
+        if (OPS_ShellNLDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;	
 
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
@@ -454,6 +462,9 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ShellMITC4:
             OPS_Func = OPS_ShellMITC4;
             break;
+        case ELE_TAG_ShellNLDKGQ:
+	  OPS_Func = OPS_ShellNLDKGQ;
+            break;	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
@@ -462,7 +473,8 @@ Mesh::newElements(const ID &elends) {
     }
 
 
-    int eletag = this->nextEleTag();
+    int eletag = nextEleTag();
+    int ndtag = nextNodeTag();
 
     // create elements
     ID neweletags(elends.Size() / numelenodes);
@@ -476,12 +488,18 @@ Mesh::newElements(const ID &elends) {
 
         // info
         ID info(numelenodes + 3);
+        if (eleType == ELE_TAG_PFEMElement2DCompressible) {
+            info.resize(numelenodes + 4);
+        }
         info(0) = 2; // load data
         info(1) = this->getTag(); // mesh tag
         info(2) = neweletags(i); // ele tag
         for (int j = 0; j < numelenodes; ++j) {
             // get elenode
             info(3 + j) = elends(numelenodes * i + j);
+        }
+        if (eleType == ELE_TAG_PFEMElement2DCompressible) {
+            info(3+numelenodes) = ndtag + i;
         }
 
         // create element

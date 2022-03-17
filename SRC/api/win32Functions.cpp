@@ -45,7 +45,7 @@ typedef int(*OPS_ErrorPtrType)(char*, int);
 typedef int(*OPS_GetNumRemainingInputArgsType)();
 typedef int(*OPS_ResetCurrentInputArgType)(int);
 //typedef int (*OPS_ResetInputType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*, TclModelBuilder*);
-typedef int(*OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
+//typedef int(*OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
 typedef int(*OPS_GetIntInputPtrType)(int*, int*);
 typedef int(*OPS_GetDoubleInputPtrType)(int*, double*);
 typedef const char* (*OPS_GetStringType)();
@@ -100,7 +100,7 @@ OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyPtr = 0;
 OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingInputArgsPtr = 0;
 OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgPtr = 0;
 //OPS_ResetInputType OPS_ResetInputPtr = 0;
-OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderPtr = 0;
+//OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderPtr = 0;
 OPS_GetStringType OPS_GetStringPtr = 0;
 OPS_GetStringCopyType OPS_GetStringCopyPtr = 0;
 OPS_GetIntPtrType OPS_GetNDM_Ptr = 0;
@@ -149,7 +149,7 @@ void setGlobalPointers(
     OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingArgsFunct,
     OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgFunct,
     //OPS_ResetInputType OPS_ResetInputFunct,
-    OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderFunct,
+    //OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderFunct,
     OPS_GetStringType OPS_GetStringFunct,
     OPS_GetStringCopyType OPS_GetStringCopyFunct,
     OPS_GetIntPtrType OPS_GetNDM_Funct,
@@ -195,7 +195,7 @@ void setGlobalPointers(
     OPS_GetNumRemainingInputArgsPtr = OPS_GetNumRemainingArgsFunct;
     OPS_ResetCurrentInputArgPtr = OPS_ResetCurrentInputArgFunct;
     //OPS_ResetInputPtr = OPS_ResetInputFunct;
-    OPS_ResetInputNoBuilderPtr = OPS_ResetInputNoBuilderFunct;
+    //OPS_ResetInputNoBuilderPtr = OPS_ResetInputNoBuilderFunct;
     OPS_GetStringPtr = OPS_GetStringFunct;
     OPS_GetStringCopyPtr = OPS_GetStringCopyFunct;
     OPS_GetNDM_Ptr = OPS_GetNDM_Funct;
@@ -353,12 +353,12 @@ int OPS_ResetInput(ClientData clientData, Tcl_Interp* interp,
     return (*OPS_ResetInputPtr)(clientData, interp, cArg, mArg, argv, domain, builder);
 }*/
 
-extern "C"
+/*extern "C"
 int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp,
     int cArg, int mArg, TCL_Char * *argv, Domain * domain)
 {
     return (*OPS_ResetInputNoBuilderPtr)(clientData, interp, cArg, mArg, argv, domain);
-}
+}*/
 
 extern "C"
 int OPS_GetNDM()

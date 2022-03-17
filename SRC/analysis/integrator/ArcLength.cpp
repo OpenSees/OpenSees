@@ -1012,12 +1012,6 @@ ArcLength::computeSensitivities(void)
 //opserr<<"computeSensitivities : start"<<endln;
    // Zero out the old right-hand side of the SOE
    theSOE->zeroB();
-   if (this == 0) {
-      opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
-      opserr << "the SensitivityIntegrator is NULL\n";
-      return -1;
-   }
-
 
    // Form the part of the RHS which are indepent of parameter
    this->formIndependentSensitivityRHS();

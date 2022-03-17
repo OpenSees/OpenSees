@@ -19,7 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // $Revision: 1.2 $
-// $Date: 2003-02-14 23:01:36 $
+// $Date: 2003/02/14 23:01:36 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/Cell.h,v $
                                                                         
                                                                         
@@ -48,6 +48,7 @@ class Cell
     // reinforcing bar inquiring functions
     
     virtual        double getArea              (void) const = 0;
+	virtual        double getdValue              (void) const = 0;
     virtual const  Vector &getCentroidPosition (void) = 0;
  
     virtual void   Print(OPS_Stream &s, int flag =0) const = 0;   

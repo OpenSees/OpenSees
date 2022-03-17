@@ -237,7 +237,7 @@ int OPS_removeObject()
 	}
     }
 
-    else if (strcmp(type,"loadPattern") == 0) {
+    else if (strcmp(type,"loadPattern") == 0 || strcmp(type,"pattern") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr << "WARNING want - remove loadPattern patternTag?\n";
 	    return -1;
@@ -557,7 +557,6 @@ int OPS_setNodeVel()
         vel = theNode->getVel();
         vel(dof) = value;
         theNode->setTrialVel(vel);
-	theNode->commitState();
     }
     if (commit)
         theNode->commitState();

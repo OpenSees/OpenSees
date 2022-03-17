@@ -119,11 +119,6 @@ SteelBRB::SteelBRB(int pTag, double pE,double pSigmaY0, double pSigmaY_T,double 
 	SHVs = 0;
 // AddingSensitivity:END //////////////////////////////////////
 
-#if !_DLL
-	debug1 = new ofstream("stress_sens_debug.out");
-
-	debug1->precision(16);
-#endif
 
 
 
@@ -135,10 +130,6 @@ SteelBRB::~SteelBRB()
 
 //	opserr<<"SteelBRB::~SteelBRB() is called!"<<endln; 
 
-#if !_DLL
-	debug1->close();
-	delete debug1;
-#endif
 }
 
 int 
@@ -491,7 +482,8 @@ double  SteelBRB::Newton_BRB(double CStress, double beta, double CPlastStrain, d
 
 	if (fabs(F)>Tol){
 		opserr<< "Fatal error: SteelBRB::Newton_BRB does not converge ===============\n";
-	    exit(-1); 
+		//exit(-1);
+		return 0.0;
 	}
 
 	return x0; 

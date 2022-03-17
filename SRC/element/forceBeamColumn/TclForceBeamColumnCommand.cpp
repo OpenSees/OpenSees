@@ -1278,7 +1278,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	opserr << argv[1] << " element: " << eleTag << endln;
 	return TCL_ERROR;
       }
-      argi += 3;
+      argi += 2;
     } else if (strcmp(argv[argi],"-mass") == 0) {
       if (argc < argi+2) {
 	opserr << "WARNING not enough -mass args need -mass mass?\n";
@@ -1290,13 +1290,11 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	opserr << argv[1] << " element: " << eleTag << endln;
 	return TCL_ERROR;
       }
-      argi += 2;
+      argi += 1;
     } else if ((strcmp(argv[argi],"-lMass") == 0 || strcmp(argv[argi],"lMass") == 0)) {
       cMass = 0;
-      argi++;
     } else if ((strcmp(argv[argi],"-cMass") == 0 || strcmp(argv[argi],"cMass") == 0)) {
       cMass = 1;
-      argi++;
     }
     argi += 1;
   }

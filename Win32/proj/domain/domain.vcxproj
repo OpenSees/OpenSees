@@ -117,6 +117,7 @@
     <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\node\Node.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\Domain.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\domain\DomainModalProperties.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomAllSP_Iter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomEleIter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomMP_Iter.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\node\Node.h" />
     <ClInclude Include="..\..\..\SRC\domain\domain\Domain.h" />
+    <ClInclude Include="..\..\..\SRC\domain\domain\DomainModalProperties.h" />
     <ClInclude Include="..\..\..\SRC\domain\domain\ElementIter.h" />
     <ClInclude Include="..\..\..\SRC\domain\domain\MP_ConstraintIter.h" />
     <ClInclude Include="..\..\..\SRC\domain\domain\NodeIter.h" />

@@ -17,12 +17,12 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.4 $
-// $Date: 2007-02-14 20:12:32 $
+
+// $Revision: 1.3 $
+// $Date: 2005/05/18 19:24:49 $
 // $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/petsc/PetscSOE.h,v $
-                                                                        
-                                                                        
+
+
 // Written: fmk & om
 // Created: 7/98
 // Revision: A
@@ -40,71 +40,98 @@
 #include <LinearSOE.h>
 #include <Vector.h>
 
-//extern "C" {
+
 #include <petscksp.h>
-//}
+
+// Uncomment or define -D_DEBUG_PETSCSOE to enable debugging
+// #define _DEBUG_PETSCSOE
+
+#ifdef _DEBUG_PETSCSOE
+#define PETSCSOE_DEBUGOUT cout // or any other ostream
+#else
+#define PETSCSOE_DEBUGOUT 0 && cout
+#endif
+
+#define PETSCSOE_MIN_DNNZ 10
+#define PETSCSOE_MIN_ONNZ 30
+#define PETSCSOE_PETSCOPTIONS_FILENAME "petsc_options.txt"
 
 class PetscSolver;
 
 class PetscSOE : public LinearSOE
 {
-  public:
-    PetscSOE(PetscSolver &theSolver, int blockSize=1);    
-    
+public:
+    PetscSOE(PetscSolver &theSolver, MatType matType = MATMPIAIJ, int blockSize = 1);
+
     ~PetscSOE();
 
     int getNumEqn(void) const;
     int setSize(Graph &theGraph);
-    
+    int setSize(int MaxDOFtag);
+    int setEigenSize(Graph &theGraph); 
+
+
     int addA(const Matrix &, const ID &, double fact = 1.0);
-    int addB(const Vector &, const ID &, double fact = 1.0);    
-    int setB(const Vector &, double fact = 1.0);        
+    int addB(const Vector &, const ID &, double fact = 1.0);
+    int addM(const Matrix &, const ID &, double fact = 1.0); 
+    int addK(const Matrix &, const ID &, double fact = 1.0); 
+
+    int setB(const Vector &, double fact = 1.0);
 
     void zeroA(void);
     void zeroB(void);
+    void zeroM(void);
+    void zeroK(void);
 
     const Vector &getX(void);
     const Vector &getB(void);
     double normRHS(void);
 
-    void setX(int loc, double value);    
-    void setX(const Vector &x);    
+    void setX(int loc, double value);
+    void setX(const Vector &x);
 
-    int setSolver(PetscSolver &newSolver);    
+    int setSolver(PetscSolver &newSolver);
 
     int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
-    
+    int recvSelf(int commitTag, Channel &theChannel,
+                    FEM_ObjectBroker &theBroker);
+
+
     friend class PetscSolver;
     friend class ActorPetscSOE;
     friend class ShadowPetscSOE;
-    
-  protected:
+
+protected:
     int setChannels(int nChannels, Channel **theChannels);
-    
-  private:
+
+private:
     int isFactored;
     int size;
     int processID;
     int numProcesses;
+
+    bool init_done;//GZ_added
 
     double *B, *X;
     int *indices;
     Vector *vectX;
     Vector *vectB;
     Mat A;
+    Mat M;
+    Mat K;
     Vec x, b;
     int blockSize;
-    PetscTruth flg;
-
+    
     int numChannels;
     Channel **theChannels;
     ID **localCol;
 
+    MatType mType;//Guanzhou
+
     int startRow, endRow;
+
 };
 
 
 #endif
- 
+

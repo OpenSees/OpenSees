@@ -79,7 +79,7 @@ PathIndependentMaterial::PathIndependentMaterial(int tag, UniaxialMaterial &mate
 
   if (theMaterial == 0) {
     opserr <<  "PathIndependentMaterial::PathIndependentMaterial -- failed to get copy of material\n";
-    exit(-1);
+    //exit(-1);
   }
 }
 
@@ -98,44 +98,65 @@ PathIndependentMaterial::~PathIndependentMaterial()
 int 
 PathIndependentMaterial::setTrialStrain(double strain, double strainRate)
 {
+  if (theMaterial)
     return theMaterial->setTrialStrain(strain, strainRate);
+  else
+    return -1;
 }
 
 double 
 PathIndependentMaterial::getStress(void)
 {
+  if (theMaterial)
     return theMaterial->getStress();
+  else
+    return 0.0;
 }
 
 
 double 
 PathIndependentMaterial::getTangent(void)
 {
+  if (theMaterial)
     return theMaterial->getTangent();
+  else
+    return 0.0;
 }
 
 double 
 PathIndependentMaterial::getDampTangent(void)
 {
+  if (theMaterial)
     return theMaterial->getDampTangent();
+  else
+    return 0.0;
 }
 
 double 
 PathIndependentMaterial::getInitialTangent(void)
 {
+  if (theMaterial)
     return theMaterial->getInitialTangent();
+  else
+    return 0.0;
 }
 
 double 
 PathIndependentMaterial::getStrain(void)
 {
+  if (theMaterial)
     return theMaterial->getStrain();
+  else
+    return 0.0;
 }
 
 double 
 PathIndependentMaterial::getStrainRate(void)
 {
+  if (theMaterial)
     return theMaterial->getStrainRate();
+  else
+    return 0.0;
 }
 
 int 
@@ -153,22 +174,31 @@ PathIndependentMaterial::revertToLastCommit(void)
 int 
 PathIndependentMaterial::revertToStart(void)
 {
+  if (theMaterial)
     return theMaterial->revertToStart();
+  else
+    return -1;
 }
 
 UniaxialMaterial *
 PathIndependentMaterial::getCopy(void)
 {
-    PathIndependentMaterial *theCopy = 
-		new PathIndependentMaterial(this->getTag(), *theMaterial);
+  PathIndependentMaterial *theCopy = 0;
+  if (theMaterial)
+    theCopy = new PathIndependentMaterial(this->getTag(), *theMaterial);
         
-	return theCopy;
+  return theCopy;
 }
 
 
 int 
 PathIndependentMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "PathIndependentMaterial::sendSelf() - theMaterial is null, nothing to send\n";
+    return -1;
+  }
+  
 	int res = 0;
 
 	static ID classTags(3);
@@ -235,7 +265,8 @@ PathIndependentMaterial::recvSelf(int cTag, Channel &theChannel,
     theMaterial = theBroker.getNewUniaxialMaterial(classTags(0));
     if (theMaterial == 0) {
       opserr << "PathIndependentMaterial::recvSelf -- could not get a UniaxialMaterial\n";
-      exit(-1);
+      //exit(-1);
+      return -1;
     }
   }
   
@@ -254,13 +285,19 @@ void
 PathIndependentMaterial::Print(OPS_Stream &s, int flag)
 {
     s << "PathIndependentMaterial tag: " << this->getTag() << endln;
-    s << "\tmaterial: " << theMaterial->getTag() << endln;
+    if (theMaterial)
+      s << "\tMaterial: " << theMaterial->getTag() << endln;
+    else
+      s << "\tMaterial is NULL" << endln;
 }
 
 int
 PathIndependentMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  return theMaterial->setParameter(argv, argc, param);
+  if (theMaterial)
+    return theMaterial->setParameter(argv, argc, param);
+  else
+    return -1;
 }
 
 int
@@ -272,31 +309,46 @@ PathIndependentMaterial::updateParameter(int parameterID, Information &info)
 double
 PathIndependentMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
-  return theMaterial->getStressSensitivity(gradIndex, conditional);
+  if (theMaterial)
+    return theMaterial->getStressSensitivity(gradIndex, conditional);
+  else
+    return 0.0;
 }
 
 double
 PathIndependentMaterial::getStrainSensitivity(int gradIndex)
 {
-  return theMaterial->getStrainSensitivity(gradIndex);
+  if (theMaterial)
+    return theMaterial->getStrainSensitivity(gradIndex);
+  else
+    return 0.0;
 }
 
 double
 PathIndependentMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-  return theMaterial->getInitialTangentSensitivity(gradIndex);
+  if (theMaterial)
+    return theMaterial->getInitialTangentSensitivity(gradIndex);
+  else
+    return 0.0;
 }
 
 double
 PathIndependentMaterial::getDampTangentSensitivity(int gradIndex)
 {
-  return theMaterial->getDampTangentSensitivity(gradIndex);
+  if (theMaterial)
+    return theMaterial->getDampTangentSensitivity(gradIndex);
+  else
+    return 0.0;
 }
 
 double
 PathIndependentMaterial::getRhoSensitivity(int gradIndex)
 {
-  return theMaterial->getRhoSensitivity(gradIndex);
+  if (theMaterial)
+    return theMaterial->getRhoSensitivity(gradIndex);
+  else
+    return 0.0;
 }
 
 int   

@@ -61,7 +61,7 @@ OPS_PinchingLimitState(void)
 {
   if (numPinchingLimitStateMaterial == 0) {
     numPinchingLimitStateMaterial++;
-    opserr << "PinchingLimitStateMaterial unaxial material - Written by MRL UT Austin Copyright 2012 - Use at Your Peril\n";
+    //opserr << "PinchingLimitStateMaterial unaxial material - Written by MRL UT Austin Copyright 2012 - Use at Your Peril\n";
   }
 
   UniaxialMaterial *theMaterial = 0;
