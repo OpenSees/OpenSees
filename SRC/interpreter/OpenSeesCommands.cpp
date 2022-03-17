@@ -1832,16 +1832,25 @@ int OPS_eigenAnalysis()
 		 (strcmp(type,"-symmBandLapackEigen") == 0))
 	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
 
-	else if ((strcmp(type,"fullGenLapack") == 0) ||
-		 (strcmp(type,"-fullGenLapack") == 0) ||
-		 (strcmp(type,"fullGenLapackEigen") == 0) ||
-		 (strcmp(type,"-fullGenLapackEigen") == 0))
-	    typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    else if ((strcmp(type, "fullGenLapack") == 0) ||
+                (strcmp(type, "-fullGenLapack") == 0) ||
+                (strcmp(type, "fullGenLapackEigen") == 0) ||
+                (strcmp(type, "-fullGenLapackEigen") == 0)) {
+        opserr << "eigen - the 'fullGenLack' solver is very slow. Consider using the default eigen solver. If you really want to use it, use '-fullGenLapackVerySlow'";
+        return -1;
+    }
 
-	else {
-	    opserr << "eigen - unknown option specified " << type << endln;
-	}
+    else if ((strcmp(type, "fullGenLapackVerySlow") == 0) ||
+                (strcmp(type, "-fullGenLapackVerySlow") == 0) ||
+                (strcmp(type, "fullGenLapackEigenVerySlow") == 0) ||
+                (strcmp(type, "-fullGenLapackEigenVerySlow") == 0)) {
+        typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    }
 
+    else {
+        opserr << "eigen - unknown option specified " << type
+                << endln;
+    }
     }
 
     // check argv[loc] for number of modes
