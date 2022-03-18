@@ -36,7 +36,7 @@
 #include <Parameter.h>
 #include <TimeSeries.h>
 
-#include <limits.h>
+#include <limits>
 #include <cmath>
 #include <algorithm>
 #include <string>

@@ -77,7 +77,7 @@ void* OPS_PressureDependMultiYield03()
     param[numParam + 3] = 101.;
     param[numParam + 4] = 1.73;
 
-    char* arg[] = {"nd", "rho", "refShearModul", "refBulkModul",
+    const char* arg[] = {"nd", "rho", "refShearModul", "refBulkModul",
                    "frictionAng",
                    "peakShearStra", "refPress", "pressDependCoe", "phaseTransformAngle",
                    "mType", "ca", "cb", "cc", "cd", "ce", "da", "db", "dc",
@@ -1459,7 +1459,7 @@ int PressureDependMultiYield03::recvSelf(int commitTag, Channel &theChannel,
 	     delete [] temp17; delete [] temp18; delete [] temp19; delete [] temp20;
 	     delete [] temp21; delete [] temp22; delete [] temp23; delete [] temp24;
          delete [] temp25; delete [] temp26;
-		 delete[] temp27; delete[] temp28; delete[] temp29; delete[] temp30; delete[] temp31;
+		 delete[] temp27; delete[] temp28; delete[] temp29; // delete[] temp30; delete[] temp31; // 30 and 31 not allocated, so don't delete
      }
 	 matCount = otherMatCount;
   }

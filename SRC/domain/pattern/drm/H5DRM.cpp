@@ -587,7 +587,7 @@ void H5DRM::clean_all_data()
 
     hid_t obj_id_list[H5DRM_MAX_RETURN_OPEN_OBJS];
     hsize_t n_obj_open = 10;
-    while (id_drm_file > 0 and n_obj_open > 0)
+    while (id_drm_file > 0 && n_obj_open > 0)
     {
         int n_objects_closed = 0;
         n_obj_open = H5Fget_obj_count(id_drm_file, H5F_OBJ_DATASET | H5F_OBJ_GROUP | H5F_OBJ_ATTR | H5F_OBJ_LOCAL );
@@ -663,7 +663,7 @@ H5DRM::setDomain(Domain *theDomain)
 void
 H5DRM::applyLoad(double time)
 {
-    if (not is_initialized)
+    if (!is_initialized)
     {
         intitialize();
     }
@@ -1496,7 +1496,7 @@ H5DRM::ComputeDRMLoads(double t)
                 }
             }
 
-            if ( nB != 0 and nE != 0 )
+            if ( nB != 0 && nE != 0 )
             {
                 //Mass and stiffness matrices
                 Matrix Me = theElement->getMass();
@@ -1913,7 +1913,8 @@ bool read_int_dataset_into_id(const hid_t & h5drm_dataset, std::string dataset_n
     hid_t id_memspace  = H5Screate_simple(1, &dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    int d[dim];
+    //int d[dim];
+    int *d = new int[dim];
 
     H5Dread( id_dataset, H5T_NATIVE_INT, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim);
@@ -1925,6 +1926,8 @@ bool read_int_dataset_into_id(const hid_t & h5drm_dataset, std::string dataset_n
     H5Sclose(id_dataspace);
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
+
+    delete [] d;
 
     return true;
 }
@@ -1948,7 +1951,8 @@ bool read_double_dataset_into_vector(const hid_t & h5drm_dataset, std::string da
     hid_t id_memspace  = H5Screate_simple(1, &dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    double d[dim];
+    //double d[dim];
+double *d = new double[dim];
 
     H5Dread( id_dataset, H5T_NATIVE_DOUBLE, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim);
@@ -1960,7 +1964,7 @@ bool read_double_dataset_into_vector(const hid_t & h5drm_dataset, std::string da
     H5Sclose(id_dataspace);
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
-
+delete [] d;
     return true;
 }
 
@@ -2012,7 +2016,11 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
     hid_t id_memspace  = H5Screate_simple(2, dim, 0);       // create dataspace of memory
     hid_t id_xfer_plist = H5Pcreate(H5P_DATASET_XFER);
 
-    double d[dim[0]][dim[1]];
+    //double d[dim[0]][dim[1]];
+double **d = new double *[dim[0]];
+for (int i=0; i<dim[0]; i++) {
+  d[i] = new double [dim[1]];
+}
 
     H5Dread( id_dataset, H5T_NATIVE_DOUBLE, id_memspace, id_dataspace, id_xfer_plist,  d);
     result.resize(dim[0], dim[1]);
@@ -2028,6 +2036,9 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
     H5Sclose(id_memspace);
     H5Dclose(id_dataset);
 
+for (int i=0; i<dim[0]; i++)
+  delete [] d[i];
+delete [] d;
     return true;
 }
 

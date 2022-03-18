@@ -53,23 +53,29 @@ void* OPS_SuperLUSolver()
     int permSpec = 0;
     int panelSize = 6;
     int relax = 6;
-    char symmetric = 'N';
+    char symmetric = 'N'; //'Y';
     double drop_tol = 0.0;
     
     int numData = 1;
 
-    while(OPS_GetNumRemainingInputArgs() > 1) {
+    while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string type = OPS_GetString();
 	if(type=="p"||type=="piv"||type=="-piv") {
 	    thresh = 1.0;
-	} else if(type=="np"||type=="-np") {
-	    if(OPS_GetIntInput(&numData,&np)<0) return 0;
-	} else if(type=="npRow"||type=="-npRow") {
-	    if(OPS_GetIntInput(&numData,&npRow)<0) return 0;
-	} else if(type=="npCol"||type=="-npCol") {
-	    if(OPS_GetIntInput(&numData,&npCol)<0) return 0;
 	} else if(type=="s"||type=="symmetric"||type=="-symm") {
 	    symmetric = 'Y';
+	} else if(type=="u"||type=="unsymmetric"||type=="-unsymm") {
+	    symmetric = 'N';
+	}
+
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if(type=="np"||type=="-np") {
+	    if(OPS_GetIntInput(&numData,&np)<0) return 0;
+	  } else if(type=="npRow"||type=="-npRow") {
+	    if(OPS_GetIntInput(&numData,&npRow)<0) return 0;
+	  } else if(type=="npCol"||type=="-npCol") {
+	    if(OPS_GetIntInput(&numData,&npCol)<0) return 0;
+	  }
 	}
     }
 

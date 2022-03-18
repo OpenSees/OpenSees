@@ -78,6 +78,8 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Masonryt.h>
 #include <DowelType.h>
 
+#include <DuctileFracture.h> // Kuanshi Zhong
+
 #include <Vector.h>
 #include <string.h>
 
@@ -178,6 +180,7 @@ extern void *OPS_OOHystereticMaterial(void);
 extern void *OPS_ElasticPowerFunc(void);
 extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
+extern void* OPS_BoucWenInfill(void);  // S. Sirotti  18-January-2022  e-mail: stefano.sirotti@unimore.it
 extern void *OPS_SLModel(void);
 extern void *OPS_SMAMaterial(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
@@ -186,6 +189,8 @@ extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
+extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
+extern void *OPS_MultiplierMaterial(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -666,6 +671,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             theMaterial = (UniaxialMaterial *)theMat;
         else
             return TCL_ERROR;
+
+    } else if (strcmp(argv[1], "BoucWenInfill") == 0) {
+    void *theMat = OPS_BoucWenInfill();
+    if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+    else
+        return TCL_ERROR;
 
     }
     else if (strcmp(argv[1], "IMKBilin") == 0) {
@@ -2444,6 +2456,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 					    gammaF1, gammaF2, gammaF3, gammaF4, gammaFLimit, gammaE, yStr);		
     }
   }
+
     
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
@@ -2912,6 +2925,20 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
     if (strcmp(argv[1], "DowelType") == 0) {
         void* theMat = OPS_DowelType();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "DuctileFracture") == 0) {
+        void* theMat = OPS_DuctileFracture();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "Multiplier") == 0) {
+        void* theMat = OPS_MultiplierMaterial();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
         else

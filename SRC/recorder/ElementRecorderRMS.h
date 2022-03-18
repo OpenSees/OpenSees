@@ -52,6 +52,7 @@ class ElementRecorderRMS: public Recorder
 		       Domain &theDomain, 
 		       OPS_Stream &theOutputHandler,
 		       double deltaT = 0.0,
+		       double relDeltaTTol = 0.00001,
 		       const ID *dof =0); 
     
     ~ElementRecorderRMS();
@@ -82,6 +83,7 @@ class ElementRecorderRMS: public Recorder
     OPS_Stream *theHandler;
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     Vector *runningTotal;
