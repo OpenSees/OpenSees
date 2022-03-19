@@ -607,7 +607,7 @@ ForceBeamColumn2d::setDomain(Domain *theDomain)
   // get element length
   double L = crdTransf->getInitialLength();
   if (L == 0.0) {
-    opserr << "ForceBeamColumn2d::setDomain(): Zero element length:" << this->getTag();  
+    opserr << "ForceBeamColumn2d::setDomain() -- zero length for element with tag: " << this->getTag();  
     exit(0);
   }
 
@@ -1256,7 +1256,7 @@ ForceBeamColumn2d::update()
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
-	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility\n";
+	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility for element with tag: " << this->getTag() << endln;
 				    
 	  // dv = vin + dvTrial  - vr
 	  dv = vin;
