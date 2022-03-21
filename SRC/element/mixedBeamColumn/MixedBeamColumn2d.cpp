@@ -1444,7 +1444,7 @@ int MixedBeamColumn2d::getResponse(int responseID, Information &eleInfo) {
       if (type(i) == SECTION_RESPONSE_VY) 
 	s(i) = Vy;
     }
-    
+    return eleInfo.setVector(s);
   }
 
   else {
