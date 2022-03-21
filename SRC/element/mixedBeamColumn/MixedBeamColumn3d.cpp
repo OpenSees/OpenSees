@@ -1456,14 +1456,13 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
 	  if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
 	    thisSectionHasShear = true;
 	}
-	if (thisSectionHasShear) {
-	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
-	}
-	else {
-	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
-	}
 
-        output.endTag();
+	if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+	else
+	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+	
+	output.endTag();
       }
     }
   }
