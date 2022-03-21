@@ -1836,14 +1836,7 @@ int OPS_eigenAnalysis()
                 (strcmp(type, "-fullGenLapack") == 0) ||
                 (strcmp(type, "fullGenLapackEigen") == 0) ||
                 (strcmp(type, "-fullGenLapackEigen") == 0)) {
-        opserr << "eigen - the 'fullGenLack' solver is very slow. Consider using the default eigen solver. If you really want to use it, use '-fullGenLapackVerySlow'";
-        return -1;
-    }
-
-    else if ((strcmp(type, "fullGenLapackVerySlow") == 0) ||
-                (strcmp(type, "-fullGenLapackVerySlow") == 0) ||
-                (strcmp(type, "fullGenLapackEigenVerySlow") == 0) ||
-                (strcmp(type, "-fullGenLapackEigenVerySlow") == 0)) {
+        opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
         typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
     }
 
