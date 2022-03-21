@@ -1670,7 +1670,7 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
       if (type(i) == SECTION_RESPONSE_VZ)
 	s(i) = Vz;
     }
-    
+    return eleInfo.setVector(s);
   }
   
   else {
