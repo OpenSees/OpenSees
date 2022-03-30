@@ -1297,8 +1297,21 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
         output.attr("number",sectionNum);
         output.attr("eta",xi[sectionNum-1]*L);
 
-        theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	// A kinda hacky thing to record section shear even though this
+	// element doesn't include shear effects
+	bool thisSectionHasShear = false;
+	int order = sections[sectionNum-1]->getOrder();
+	const ID &type = sections[sectionNum-1]->getType();
+	for (int i = 0; i < order; i++) {
+	  if (type(i) == SECTION_RESPONSE_VZ)
+	    thisSectionHasShear = true;
+	}
 
+	if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+	else
+	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+	
         output.endTag();
       }
     }
@@ -1416,7 +1429,25 @@ int MixedBeamColumn2d::getResponse(int responseID, Information &eleInfo) {
     tempVector(0) = numSections;
     return eleInfo.setVector(tempVector);
 
-  } else {
+  } else if (responseID > 500 && responseID <= 550) {
+    int sectionNum = responseID % 500;
+    double L = crdTransf->getInitialLength();
+    
+    double M1 = internalForce(1);
+    double M2 = internalForce(2);
+    double Vy = (M1+M2)/L;
+
+    int order = sections[sectionNum-1]->getOrder();
+    Vector s(sections[sectionNum-1]->getStressResultant());
+    const ID &type = sections[sectionNum-1]->getType();
+    for (int i = 0; i < order; i++) {
+      if (type(i) == SECTION_RESPONSE_VY) 
+	s(i) = Vy;
+    }
+    return eleInfo.setVector(s);
+  }
+
+  else {
     return -1;
 
   }

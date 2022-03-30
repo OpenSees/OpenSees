@@ -1447,9 +1447,22 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
         output.attr("number",sectionNum);
         output.attr("eta",xi[sectionNum-1]*L);
 
-        theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	// A kinda hacky thing to record section shear even though this
+	// element doesn't include shear effects
+	bool thisSectionHasShear = false;
+	int order = sections[sectionNum-1]->getOrder();
+	const ID &type = sections[sectionNum-1]->getType();
+	for (int i = 0; i < order; i++) {
+	  if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
+	    thisSectionHasShear = true;
+	}
 
-        output.endTag();
+	if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+	else
+	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+	
+	output.endTag();
       }
     }
   }
@@ -1636,6 +1649,30 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
       return eleInfo.setVector(zlocal);    
   }
 
+  else if (responseID > 500 && responseID <= 550) {
+    int sectionNum = responseID % 500;
+    double L = crdTransf->getInitialLength();
+    
+    double M1 = internalForceOpenSees(1);
+    double M2 = internalForceOpenSees(2);
+    double Vy = (M1+M2)/L;
+
+    double M3 = internalForceOpenSees(3);
+    double M4 = internalForceOpenSees(4);
+    double Vz = (M3+M4)/L;
+
+    int order = sections[sectionNum-1]->getOrder();
+    Vector s(sections[sectionNum-1]->getStressResultant());
+    const ID &type = sections[sectionNum-1]->getType();
+    for (int i = 0; i < order; i++) {
+      if (type(i) == SECTION_RESPONSE_VY) 
+	s(i) = Vy;
+      if (type(i) == SECTION_RESPONSE_VZ)
+	s(i) = Vz;
+    }
+    return eleInfo.setVector(s);
+  }
+  
   else {
     return -1;
   }
