@@ -727,7 +727,7 @@ TclFeViewer_setPlaneDist(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << "WARNING args incorrect - dist near far \n";
       return TCL_ERROR;
   }    
-  // get distnces to near view and far planes
+  // get distances to near view and far planes
   double anear, afar;
   if (Tcl_GetDouble(interp, argv[1], &anear) != TCL_OK) {
       opserr << "WARNING invalid near - vup near far\n";
