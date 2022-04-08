@@ -1303,7 +1303,7 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
 	int order = sections[sectionNum-1]->getOrder();
 	const ID &type = sections[sectionNum-1]->getType();
 	for (int i = 0; i < order; i++) {
-	  if (type(i) == SECTION_RESPONSE_VZ)
+	  if (type(i) == SECTION_RESPONSE_VY)
 	    thisSectionHasShear = true;
 	}
 
