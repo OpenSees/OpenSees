@@ -1370,7 +1370,7 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
       sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
@@ -1386,7 +1386,7 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
       sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
