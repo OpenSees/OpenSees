@@ -1228,11 +1228,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvature_%i",i+1);
+      sprintf(q,"curvature_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1242,11 +1242,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvature_%i",i+1);
+      sprintf(q,"plasticCurvature_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
