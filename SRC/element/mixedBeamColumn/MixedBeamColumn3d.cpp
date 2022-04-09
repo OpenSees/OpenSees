@@ -1409,11 +1409,11 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
     theResponse = new ElementResponse(this, 110, ID(numSections));
     
   } else if (strcmp(argv[0],"connectedNodes") == 0) {
-    theResponse =  new ElementResponse(this, 102, Vector(2));
+    theResponse =  new ElementResponse(this, 102, ID(2));
 
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
-    theResponse =  new ElementResponse(this, 103, Vector(1));
+    theResponse =  new ElementResponse(this, 103, ID(1));
 
   }
 
@@ -1575,15 +1575,15 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
     return eleInfo.setID(tags);
       
   } else if (responseID == 102) { // connected nodes
-    Vector tempVector(2);
+    ID tempVector(2);
     tempVector(0) = connectedExternalNodes(0);
     tempVector(1) = connectedExternalNodes(1);
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID == 103) { // number of sections
-    Vector tempVector(1);
+    ID tempVector(1);
     tempVector(0) = numSections;
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   }
 
