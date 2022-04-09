@@ -1256,11 +1256,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionStiffness") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"sectionStiffness_EA_%i",i+1);
+      sprintf(q,"sectionStiffness_EA_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"sectionStiffness_EI_%i",i+1);
+      sprintf(q,"sectionStiffness_EI_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
