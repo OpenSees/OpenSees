@@ -1372,11 +1372,11 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
     int i;
     char *q  = new char[15];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureZ_%i",i+1);
+      sprintf(q,"curvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureY_%i",i+1);
+      sprintf(q,"curvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1388,11 +1388,11 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
     int i;
     char *q  = new char[25];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureZ_%i",i+1);
+      sprintf(q,"plasticCurvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureY_%i",i+1);
+      sprintf(q,"plasticCurvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
