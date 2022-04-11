@@ -313,7 +313,7 @@ Tk_MainOpenSees(int argc, char **argv, Tcl_AppInitProc *appInitProc, Tcl_Interp 
      * Invoke application-specific initialization.
      */
 	if ((*appInitProc)(interp) != TCL_OK) {
-      TkpDisplayWarning(Tcl_GetStringResult(interp), "Application Inititialization Failed");
+      TkpDisplayWarning(Tcl_GetStringResult(interp), "Application Initialization Failed");
 	}
     /*
      * Invoke the script specified on the command line, if any.

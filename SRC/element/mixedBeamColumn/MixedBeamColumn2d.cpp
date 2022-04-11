@@ -1228,11 +1228,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvature_%i",i+1);
+      sprintf(q,"curvature_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1242,11 +1242,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvature_%i",i+1);
+      sprintf(q,"plasticCurvature_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1256,11 +1256,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionStiffness") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"sectionStiffness_EA_%i",i+1);
+      sprintf(q,"sectionStiffness_EA_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"sectionStiffness_EI_%i",i+1);
+      sprintf(q,"sectionStiffness_EI_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1277,11 +1277,11 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
     theResponse = new ElementResponse(this, 110, ID(numSections));
     
   } else if (strcmp(argv[0],"connectedNodes") == 0) {
-    theResponse =  new ElementResponse(this, 102, Vector(2));
+    theResponse =  new ElementResponse(this, 102, ID(2));
 
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
-    theResponse =  new ElementResponse(this, 103, Vector(1));
+    theResponse =  new ElementResponse(this, 103, ID(1));
 
  } else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
@@ -1303,7 +1303,7 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
 	int order = sections[sectionNum-1]->getOrder();
 	const ID &type = sections[sectionNum-1]->getType();
 	for (int i = 0; i < order; i++) {
-	  if (type(i) == SECTION_RESPONSE_VZ)
+	  if (type(i) == SECTION_RESPONSE_VY)
 	    thisSectionHasShear = true;
 	}
 
@@ -1419,15 +1419,15 @@ int MixedBeamColumn2d::getResponse(int responseID, Information &eleInfo) {
     return eleInfo.setID(tags);
       
   } else if (responseID == 102) { // connected nodes
-    Vector tempVector(2);
+    ID tempVector(2);
     tempVector(0) = connectedExternalNodes(0);
     tempVector(1) = connectedExternalNodes(1);
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID == 103) { // number of sections
-    Vector tempVector(1);
+    ID tempVector(1);
     tempVector(0) = numSections;
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID > 500 && responseID <= 550) {
     int sectionNum = responseID % 500;

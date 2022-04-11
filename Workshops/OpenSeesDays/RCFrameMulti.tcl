@@ -59,7 +59,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     
     # if the analysis fails try initial tangent iteration
     if {$ok != 0} {
-	puts "regular newton failed .. lets try an initail stiffness for this step"
+	puts "regular newton failed .. lets try an initial stiffness for this step"
 	test NormDispIncr 1.0e-8  1000 1
 	algorithm ModifiedNewton -initial
 	set ok [analyze 1 $dT]
@@ -71,7 +71,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     set tCurrent [getTime]
 }
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if {$ok == 0} {
    puts "Transient analysis completed SUCCESSFULLY";
 } else {
