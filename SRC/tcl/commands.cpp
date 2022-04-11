@@ -547,6 +547,7 @@ static TclReliabilityBuilder *theReliabilityBuilder = 0;
 
 Integrator *theSensitivityAlgorithm = 0;
 Integrator *theSensitivityIntegrator = 0;
+
 //FMK RELIABILITY ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
 //FMK RELIABILITY ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
@@ -557,11 +558,12 @@ Integrator *theSensitivityIntegrator = 0;
 //static SensitivityIntegrator *theSensitivityIntegrator = 0;
 //static NewmarkSensitivityIntegrator *theNSI = 0;
 
+#endif
+
+#ifdef _OPTIMIZATION
 #include <TclOptimizationBuilder.h>
 static TclOptimizationBuilder *theOptimizationBuilder = 0;   // Quan March 2010 (3)
-
 #endif
-// AddingSensitivity:END ///////////////////////////////////////////////
 
 
 StaticIntegrator *theStaticIntegrator =0;
@@ -1129,13 +1131,17 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     //FMK RELIABILITY theReliabilityTransientAnalysis =0;    
     // AddingSensitivity:END //////////////////////////////////
 
+#endif
+
+#ifdef _OPTIMIZATION    
     theOptimizationBuilder = 0;
     
     // --- Quan March 2010  (4)
     Tcl_CreateCommand(interp, "optimization", &optimization, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
-#endif
 
+#endif
+    
     theAlgorithm =0;
     theHandler =0;
     theNumberer =0;
@@ -1236,7 +1242,7 @@ OPS_SourceCmd(
 #endif
 }
 
-#ifdef _RELIABILITY   
+#ifdef _OPTIMIZATION
 
 // -- optimization Quan March 2010  (5)
 int 
@@ -1254,6 +1260,9 @@ optimization(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     return TCL_ERROR;
 }
 
+#endif
+
+#ifdef _RELIABILITY
 
 int 
 reliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1266,8 +1275,6 @@ reliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
   else
     return TCL_ERROR;
 }
-
-
 
 
 int 
