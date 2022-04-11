@@ -59,8 +59,8 @@ void*
 OPS_NodeRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder Node ";
-        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder Node ";
+        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
         return 0;
     }
     
