@@ -807,7 +807,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CmdInfo putsCommandInfo;
     Tcl_GetCommandInfo(interp, "puts", &putsCommandInfo);
     Tcl_putsCommand = putsCommandInfo.objProc;
-    // if handle, use ouur procedure as opposed to theirs
+    // if handle, use our procedure as opposed to theirs
     if (Tcl_putsCommand != 0) {
       Tcl_CreateObjCommand(interp, "oldputs", Tcl_putsCommand, NULL, NULL);
       Tcl_CreateObjCommand(interp, "puts", OpenSees_putsCommand, NULL, NULL);
@@ -1414,7 +1414,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   */
 
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
-  // as it and theTansientAnalysis are one in the same
+  // as it and theTransientAnalysis are one in the same
   if (theDatabase != 0)
     delete theDatabase;
 
@@ -1496,7 +1496,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   }
 
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
-  // as it and theTansientAnalysis are one in the same
+  // as it and theTransientAnalysis are one in the same
 
   theAlgorithm =0;
   theHandler =0;
@@ -2085,7 +2085,7 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 								   
 
 // printNode():
-// function to print out the nodal information conatined in line
+// function to print out the nodal information contained in line
 //     print <filename> node <flag int> <int int int>
 // input: nodeArg: integer equal to arg count to node plus 1
 //        output: output stream to which the results are sent
@@ -2645,7 +2645,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	  /* This if-statement cannot possibly stay in the code -- MHS
 	  if(theSensitivityAlgorithm->newAlgorithm()){
-	    opserr << "WARNING original sensitivity algorothm needs to be specified \n";
+	    opserr << "WARNING original sensitivity algorithm needs to be specified \n";
 	    opserr << "for static analysis \n";
 	    return TCL_ERROR;
 	  }
@@ -2714,7 +2714,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	   *theTransientIntegrator,
 	   theTest);
 
-	// set the pointer for variabble time step analysis
+	// set the pointer for variable time step analysis
 	theTransientAnalysis = theVariableTimeStepTransientAnalysis;
 
 	#ifdef _RELIABILITY
@@ -2769,7 +2769,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		  //This if-statement cannot stay -- MHS
 		  //if(!theSensitivityAlgorithm->newAlgorithm()){
-		  //  opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		  //  opserr << "WARNING new sensitivity algorithm needs to be specified \n";
 		   // opserr << "for reliability static analysis \n";
 		   // return TCL_ERROR;
 		  //}
@@ -2831,7 +2831,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 		  //This if-statement must go -- MHS
 		  //if(!theSensitivityAlgorithm->newAlgorithm()){
-		   // opserr << "WARNING new sensitivity algorothm needs to be specified \n";
+		   // opserr << "WARNING new sensitivity algorithm needs to be specified \n";
 		   // opserr << "for reliability static analysis \n";
 		   // return TCL_ERROR;
 		  //}
@@ -4177,7 +4177,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
 
-  // get the tolerence first
+  // get the tolerance first
   double tol = 0.0;
   double tol2 = 0.0;
   double tolp = 0.0;
@@ -8681,7 +8681,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   }
 
   if (numEigen == 0 || theEigenSOE == 0) {
-    opserr << "WARNING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+    opserr << "WARNING - modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
   }
 
   int numModes = argc - 1;
@@ -8689,8 +8689,8 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   Vector modalDampingValues(numEigen);
 
   if (numModes != 1 && numModes != numEigen) {
-    opserr << "WARNING modalDmping - same #damping factors as modes must be specified\n";
-    opserr << "                    - same damping ratio will be applied to all\n";
+    opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
+    opserr << "                     - same damping ratio will be applied to all\n";
   }
 
   // 
@@ -8735,7 +8735,7 @@ modalDampingQ(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
   }
 
   if (numEigen == 0 || theEigenSOE == 0) {
-    opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+    opserr << "WARNING - modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
   }
 
 
@@ -8744,8 +8744,8 @@ modalDampingQ(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
   Vector modalDampingValues(numEigen);
 
   if (numModes != 1 && numModes != numEigen) {
-    opserr << "WARNING modalDmping - same #damping factors as modes must be specified\n";
-    opserr << "                    - same damping ratio will be applied to all";
+    opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
+    opserr << "                     - same damping ratio will be applied to all";
   }
 
   // 
@@ -9624,7 +9624,7 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 		if (myPID != otherPID)
 		MPI_Recv((void *)(&msgLength), 1, MPI_INT, otherPID, 0, MPI_COMM_WORLD, &status);
         else {
-	  opserr << "recv -pid pid? data? - " << otherPID << " cant receive from self!\n";
+	  opserr << "recv -pid pid? data? - " << otherPID << " can't receive from self!\n";
 	  return TCL_ERROR;
 	}
       else {
