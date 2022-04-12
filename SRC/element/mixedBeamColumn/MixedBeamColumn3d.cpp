@@ -1424,15 +1424,6 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
       theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
   }
   
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
-
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
-
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));  
-
   else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
 
@@ -1466,6 +1457,9 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
 
   output.endTag();
   return theResponse;
@@ -1634,21 +1628,6 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
     return eleInfo.setMatrix(disps);
   }
   
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
-
   else if (responseID > 500 && responseID <= 550) {
     int sectionNum = responseID % 500;
     double L = crdTransf->getInitialLength();
@@ -2010,6 +1989,34 @@ void MixedBeamColumn3d::setSectionDeformation(int sec,Vector &defSection,
     }
   }
 
+  // ***
+  //
+  // Hack the shears
+  double L = crdTransf->getInitialLength();
+  
+  double M1 = internalForceOpenSees(1);
+  double M2 = internalForceOpenSees(2);
+  double Vy = (M1+M2)/L;
+  
+  double M3 = internalForceOpenSees(3);
+  double M4 = internalForceOpenSees(4);
+  double Vz = (M3+M4)/L;
+  
+  const Matrix &ks = sections[sec]->getInitialTangent();
+  double gamma = 0.0;
+  for (int i = 0; i < order; i++) {
+    if (code(i) == SECTION_RESPONSE_VY) {
+      gamma = Vy/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }
+    if (code(i) == SECTION_RESPONSE_VZ) {
+      gamma = Vz/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }      
+  }  
+  //
+  // ***
+  
   // Set the section deformations
   int res = sections[sec]->setTrialSectionDeformation(sectionDeformation);
 }
