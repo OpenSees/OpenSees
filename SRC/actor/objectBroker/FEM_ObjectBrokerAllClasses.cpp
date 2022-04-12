@@ -76,6 +76,7 @@
 #include "Steel02.h"
 #include "Steel2.h"
 #include "Steel4.h"
+#include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
 #include "HardeningMaterial.h"
@@ -97,6 +98,8 @@
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
+#include "DowelType.h"
+#include "DuctileFracture.h" // Kuanshi Zhong
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -107,6 +110,7 @@
 #include "PY/QzSimple2.h"
 #include "PY/PyLiq1.h"
 #include "PY/TzLiq1.h"
+#include "PY/QzLiq1.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
@@ -216,12 +220,14 @@
 #include "truss/TrussSection.h"
 #include "truss/CorotTruss.h"
 #include "truss/CorotTrussSection.h"
+#include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
 #include "zeroLength/ZeroLengthContact2D.h"
 #include "zeroLength/ZeroLengthContact3D.h"
 #include "zeroLength/ZeroLengthContactNTS2D.h"
 #include "zeroLength/ZeroLengthInterface2D.h"
+#include "zeroLength/ZeroLengthContactASDimplex.h"
 //#include "ZeroLengthND.h"
 
 #include "fourNodeQuad/FourNodeQuad.h"
@@ -303,6 +309,11 @@
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
 
+#include "CEqElement/ASDEmbeddedNodeElement.h"
+
+#include "absorbentBoundaries/ASDAbsorbingBoundary2D.h"
+#include "absorbentBoundaries/ASDAbsorbingBoundary3D.h"
+
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
 #include "PDeltaCrdTransf2d.h"
@@ -347,7 +358,9 @@
 #include "EnvelopeNodeRecorder.h"
 #include "EnvelopeElementRecorder.h"
 #include "DriftRecorder.h"
-//#include "MPCORecorder.h"
+#ifdef _HDF5
+#include "MPCORecorder.h"
+#endif // _HDF5
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
@@ -659,7 +672,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new CorotTruss(); 
       
     case ELE_TAG_CorotTrussSection:  
-      return new CorotTrussSection(); 	     
+      return new CorotTrussSection(); 
+
+	case ELE_TAG_InertiaTruss:
+		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
       return new ZeroLength(); 	     
@@ -678,7 +694,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ZeroLengthContactNTS2D:  
       return new ZeroLengthContactNTS2D(); 	     
-      
+    
+    case ELE_TAG_ZeroLengthContactASDimplex:
+      return new ZeroLengthContactASDimplex();
       
       //case ELE_TAG_ZeroLengthND:  
       //return new ZeroLengthND(); 	     
@@ -757,11 +775,11 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new SSPbrickUP();
 
 	case ELE_TAG_PML2D:
-		return new PML2D();
+	  return new PML2D();
 
 	case ELE_TAG_PML3D:
-		return new PML3D();
-      
+	  return new PML3D();
+
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -893,6 +911,15 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_RockingBC:
       return new RockingBC();
+
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
+
+    case ELE_TAG_ASDAbsorbingBoundary2D:
+      return new ASDAbsorbingBoundary2D();
+
+    case ELE_TAG_ASDAbsorbingBoundary3D:
+      return new ASDAbsorbingBoundary3D();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
@@ -1182,6 +1209,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Steel4:  
 	     return new Steel4();	     
 
+	case MAT_TAG_SteelFractureDI:
+		return new SteelFractureDI();
+
 	case MAT_TAG_OriginCentered:  
 	     return new OriginCentered();
 
@@ -1209,7 +1239,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
-       case MAT_TAG_TzLiq1:
+    case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
@@ -1217,6 +1247,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_QzSimple2:
 		return new QzSimple2();
+
+    case MAT_TAG_QzLiq1:
+		return new QzLiq1();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
@@ -1250,7 +1283,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
-
+#if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
 
@@ -1280,7 +1313,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-
+#endif // OPSDEF_UNIAXIAL_FEDEAS
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 
@@ -1322,6 +1355,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		    
 	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
 	    return new HystereticPoly();
+
+	case MAT_TAG_DowelType:
+		return new DowelType();
+
+	case MAT_TAG_DuctileFracture:
+		return new DuctileFracture();
 
 
 	default:
@@ -1474,8 +1513,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
+#if defined(OPSDEF_ELEMENT_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
+#endif // OPSDEF_ELEMENT_FEAP
 
   case ND_TAG_ContactMaterial2D:
     return new ContactMaterial2D();			
@@ -1533,10 +1574,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-
   case ND_TAG_stressDensity:
       return new stressDensity();
-
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -1869,10 +1908,10 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_GmshRecorder:
            return new GmshRecorder();
-
-	   //        case RECORDER_TAGS_MPCORecorder:
-	   //          return new MPCORecorder();
-	     
+#ifdef _HDF5
+	case RECORDER_TAGS_MPCORecorder:
+	  return new MPCORecorder();
+#endif // _HDF5
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
 	     opserr << " - no Recorder type exists for class tag ";
@@ -2278,8 +2317,7 @@ FEM_ObjectBrokerAllClasses::getNewLinearSOE(int classTagSOE)
 
 #ifdef _PETSC
     case LinSOE_TAGS_PetscSOE:
-        thePetscSolver = new PetscSolver();
-        theSOE = new PetscSOE(*thePetscSolver);
+        theSOE = new PetscSOE(*( new PetscSolver()));
 	  return theSOE;
 #endif
 

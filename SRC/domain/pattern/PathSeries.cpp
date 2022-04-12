@@ -242,7 +242,7 @@ PathSeries::PathSeries(int tag,
   // create a copy of the vector containing path points
   if (prependZero == false) {
     thePath = new Vector(theLoadPath);
-  } else {
+  } else if (theLoadPath != 0) {
     // prepend a zero value
     thePath = new Vector(1 + theLoadPath.Size());
     thePath->Assemble(theLoadPath, 1);
@@ -338,8 +338,11 @@ PathSeries::~PathSeries()
 
 TimeSeries *
 PathSeries::getCopy(void) {
+  if (thePath != 0)
   return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
                         useLast, false, startTime);
+  else
+  return 0;
 }
 
 double
@@ -351,8 +354,8 @@ PathSeries::getFactor(double pseudoTime)
 
   // determine indexes into the data array whose boundary holds the time
   double incr = (pseudoTime-startTime)/pathTimeIncr; 
-  int incr1 = floor(incr);
-  int incr2 = incr1+1;
+  long long incr1 = floor(incr);
+  long long incr2 = incr1+1;
   int size = thePath->Size();
 
   if (incr2 >= size) {

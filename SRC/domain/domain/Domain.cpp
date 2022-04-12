@@ -2366,12 +2366,11 @@ Domain::Print(OPS_Stream &s, int flag)
 
 	return;
   }
-      
   
   s << "Current Domain Information\n";
-  s << "\tCurrent Time: " << currentTime;
-  s << "\ntCommitted Time: " << committedTime << endln;    
-  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";  
+  s << "\tCurrent Time: " << currentTime << endln;
+  s << "\tCommitted Time: " << committedTime << endln;
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
   theNodes->Print(s, flag);
   
   s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";

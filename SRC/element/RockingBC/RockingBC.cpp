@@ -273,8 +273,8 @@ RockingBC::RockingBC(int tag, int Nd1, int Nd2, int nw,
   ey = sy / E;
 
   for (size_t i = 0; i != Nw - 1; i++) {
-	  Vec vvv1{ Yw[i],Yw[i + 1] };
-	  Vec vvv2{ 0.0, 0.0 };
+	  RBCVec vvv1{ Yw[i],Yw[i + 1] };
+	  RBCVec vvv2{ 0.0, 0.0 };
 	  Vecint vvv3{ 0 };
 	  Matrix mmm4{};
 	  Ysi.push_back(vvv1);
@@ -2117,7 +2117,7 @@ void RockingBC::Uel_K_calc()
 		}
 	}
 
-	UBnew_R = Vec(Ydks.Size(), 0.0);
+	UBnew_R = RBCVec(Ydks.Size(), 0.0);
 	UBnew = Matrix(Nw, Ydks.Size());
 	dUBnew_dR = Matrix(Nw, Ydks.Size());
 
@@ -3471,12 +3471,12 @@ void RockingBC::Up_interval_split(const Vector& Yup, const Vector& Up, const Vec
 	Yup_ints.clear();
 	Up_ints.clear();
 	for (size_t i = 0; i != Yind.size() - 1; i++) {
-		Vec X1{};
+		RBCVec X1{};
 		for (size_t j = Yind[i]; j != Yind[i + 1] +1; j++) {
 			X1.push_back(Up[j]);
 		}
 		Up_ints.push_back(X1);
-		Vec X2{};
+		RBCVec X2{};
 		for (size_t j = Yind[i]; j != Yind[i + 1] +1; j++) {
 			X2.push_back(Yup[j]);
 		}
@@ -3486,7 +3486,7 @@ void RockingBC::Up_interval_split(const Vector& Yup, const Vector& Up, const Vec
 }
 
 Vector RockingBC::interval_join(const VecVec& X_ints) {
-	static Vec X{};
+	static RBCVec X{};
 	X.clear();
 
 	for (size_t i = 0; i != X_ints.size(); i++) {
@@ -3532,7 +3532,7 @@ Matrix RockingBC::interval_join(const VecMatOS& X_ints) {
 }
 
 Vector RockingBC::array_join(const VecVec& X_ints) {
-	Vec X{};
+	RBCVec X{};
 	for (size_t i = 0; i != X_ints.size(); i++) {
 		for (size_t j = 0; j != X_ints.at(i).size(); j++) {
 			X.push_back(X_ints[i][j]);
@@ -3563,7 +3563,7 @@ Matrix RockingBC::array_join(const VecMatOS& X_ints) {
 	return res;
 }
 
-void RockingBC::commony(const Vec& ya, const Vec& fa, const Vec& yb, const Vec& fb, Vec& Y, Vec& FA, Vec& FB)
+void RockingBC::commony(const RBCVec& ya, const RBCVec& fa, const RBCVec& yb, const RBCVec& fb, RBCVec& Y, RBCVec& FA, RBCVec& FB)
 {
 	Y.clear();
 	FA.clear();
@@ -3599,10 +3599,10 @@ void RockingBC::commony(const Vec& ya, const Vec& fa, const Vec& yb, const Vec& 
 	return;
 }
 
-void RockingBC::interval_interior(double wl, double wr, double ey, double dy, const Vec& up_com, const Vec& yup_com,
-	const Vec& ys_com, const Vec& s_com, double beta_Dt,
-	Vec& ys_new, Vec& s_new, Vecint& ys_cats, Vec& yup_new, Vec& up_new, 
-	Vec& dys_new_dwl, Vec& dys_new_dwr, Vec& ds_new_dwl, Vec& ds_new_dwr, Vec& ua_pos)
+void RockingBC::interval_interior(double wl, double wr, double ey, double dy, const RBCVec& up_com, const RBCVec& yup_com,
+	const RBCVec& ys_com, const RBCVec& s_com, double beta_Dt,
+	RBCVec& ys_new, RBCVec& s_new, Vecint& ys_cats, RBCVec& yup_new, RBCVec& up_new, 
+	RBCVec& dys_new_dwl, RBCVec& dys_new_dwr, RBCVec& ds_new_dwl, RBCVec& ds_new_dwr, RBCVec& ua_pos)
 {
 	
 	static const double pi{ std::atan(1.) * 4 };
@@ -3613,14 +3613,14 @@ void RockingBC::interval_interior(double wl, double wr, double ey, double dy, co
 	}
 	double eyn = ey*DU_DS;
 
-	static Vec Y{};
-	static Vec Up{};
-	static Vec S{};
+	static RBCVec Y{};
+	static RBCVec Up{};
+	static RBCVec S{};
 
 	commony(yup_com,up_com,ys_com,s_com,Y,Up,S);
 
 	// Plastic displacements differences
-	static Vec Upd; Upd.clear();
+	static RBCVec Upd; Upd.clear();
 	double yline{};
 	double kyline = (Up[Up.size()-1]-Up[0])/(Y[Y.size()-1]-Y[0]);
 	for (size_t iy = 0; iy != Y.size(); iy++)
@@ -3630,8 +3630,8 @@ void RockingBC::interval_interior(double wl, double wr, double ey, double dy, co
 	}
 	
 	// Limits
-	static Vec Slim; Slim.clear();
-	static Vec Slimn; Slimn.clear();
+	static RBCVec Slim; Slim.clear();
+	static RBCVec Slimn; Slimn.clear();
 	for (size_t i = 0; i != Y.size(); i++)
 	{
 		Slim.push_back(S[i]*DAMPC);
@@ -3674,9 +3674,9 @@ void RockingBC::interval_interior(double wl, double wr, double ey, double dy, co
     double dkwnline_dwr=dwrn_dwr/dy;
 
 	// Plastic displacements into stresses insertion
-	static Vec Wn; Wn.clear();
-	static Vec dWn_dwl; dWn_dwl.clear();
-	static Vec dWn_dwr; dWn_dwr.clear();
+	static RBCVec Wn; Wn.clear();
+	static RBCVec dWn_dwl; dWn_dwl.clear();
+	static RBCVec dWn_dwr; dWn_dwr.clear();
 	double wline{};
 	for (size_t iy = 0; iy != Y.size(); iy++)
 	{
@@ -3686,16 +3686,16 @@ void RockingBC::interval_interior(double wl, double wr, double ey, double dy, co
 	}
 
 	// Crossings
-	static Vec Yf{}; Yf.clear();
-	static Vec Wnf{}; Wnf.clear();
-	static Vec Upf{}; Upf.clear();
-	static Vec Slimnf{}; Slimnf.clear();
-	static Vec dYf_dwl{}; dYf_dwl.clear();
-	static Vec dWnf_dwl{}; dWnf_dwl.clear();
-	static Vec dSlimnf_dwl{}; dSlimnf_dwl.clear();
-	static Vec dYf_dwr{}; dYf_dwr.clear();
-	static Vec dWnf_dwr{}; dWnf_dwr.clear();
-	static Vec dSlimnf_dwr{}; dSlimnf_dwr.clear();
+	static RBCVec Yf{}; Yf.clear();
+	static RBCVec Wnf{}; Wnf.clear();
+	static RBCVec Upf{}; Upf.clear();
+	static RBCVec Slimnf{}; Slimnf.clear();
+	static RBCVec dYf_dwl{}; dYf_dwl.clear();
+	static RBCVec dWnf_dwl{}; dWnf_dwl.clear();
+	static RBCVec dSlimnf_dwl{}; dSlimnf_dwl.clear();
+	static RBCVec dYf_dwr{}; dYf_dwr.clear();
+	static RBCVec dWnf_dwr{}; dWnf_dwr.clear();
+	static RBCVec dSlimnf_dwr{}; dSlimnf_dwr.clear();
 	
 	double wnf1{}, wnf2{};
 	bool wnf1found = false;
@@ -3848,11 +3848,11 @@ void RockingBC::interval_interior(double wl, double wr, double ey, double dy, co
 
 	//Separation into stresses, plastic displacements
 	
-	static Vec Sf_new{}; Sf_new.clear();
-	static Vec dSf_new_dwl{}; dSf_new_dwl.clear();
-	static Vec dSf_new_dwr{}; dSf_new_dwr.clear();
-	static Vec Upf_new{}; Upf_new.clear();
-	static Vec Ua_pos{}; Ua_pos.clear();
+	static RBCVec Sf_new{}; Sf_new.clear();
+	static RBCVec dSf_new_dwl{}; dSf_new_dwl.clear();
+	static RBCVec dSf_new_dwr{}; dSf_new_dwr.clear();
+	static RBCVec Upf_new{}; Upf_new.clear();
+	static RBCVec Ua_pos{}; Ua_pos.clear();
 
 	for (size_t i = 0; i != Wnf.size(); i++) {
 		if (Wnf[i] > Slimnf[i]) {
@@ -3959,8 +3959,8 @@ void RockingBC::interval_dists(const Vector& Yw, const Vector& W, const VecVec& 
 	
 	for (size_t i = 0; i != W.Size() - 1; i++) {
 		
-		Vec dwl_dW(W.Size()); dwl_dW[i] = 1.0;
-		Vec dwr_dW(W.Size()); dwr_dW[i+1] = 1.0;
+		RBCVec dwl_dW(W.Size()); dwl_dW[i] = 1.0;
+		RBCVec dwr_dW(W.Size()); dwr_dW[i+1] = 1.0;
 		Matrix dys_dW = Matrix(dys_dwl_list[i].size(), W.Size());
 		Matrix ds_dW = Matrix(ds_dwl_list[i].size(), W.Size());
 		for (size_t l = 0; l != W.Size(); l++) {
@@ -3983,7 +3983,7 @@ void RockingBC::interval_dists(const Vector& Yw, const Vector& W, const VecVec& 
 
 }
 
-void RockingBC::NM_calc_int(const Vec& Ys, const Matrix& dYs_dW, const Vec& S, const Matrix& dS_dW, double& N, double& M, Vector& dN_dW, Vector& dM_dW)
+void RockingBC::NM_calc_int(const RBCVec& Ys, const Matrix& dYs_dW, const RBCVec& S, const Matrix& dS_dW, double& N, double& M, Vector& dN_dW, Vector& dM_dW)
 {
 	N = 0;
 	M = 0;
@@ -4007,7 +4007,7 @@ void RockingBC::NM_calc_int(const Vec& Ys, const Matrix& dYs_dW, const Vec& S, c
 	return;
 }
 
-void RockingBC::critpoints(const Vec& y, const Vec& s, int rinit, int rend, Vecint& cp)
+void RockingBC::critpoints(const RBCVec& y, const RBCVec& s, int rinit, int rend, Vecint& cp)
 {
 	cp.clear();
 
@@ -4030,8 +4030,8 @@ void RockingBC::critpoints(const Vec& y, const Vec& s, int rinit, int rend, Veci
 	return;
 }
 
-void RockingBC::int_bilin(const Vecint& ys_cats, const Vec& ys, const Vec& s, const Vec& yup, const Vec& up, const Vec& ua_pos, double ey,
-	Vec& ys_new, Vec& s_new, Vec& yup_new, Vec& up_new)
+void RockingBC::int_bilin(const Vecint& ys_cats, const RBCVec& ys, const RBCVec& s, const RBCVec& yup, const RBCVec& up, const RBCVec& ua_pos, double ey,
+	RBCVec& ys_new, RBCVec& s_new, RBCVec& yup_new, RBCVec& up_new)
 {
 
 	if ((ys.size() != yup.size()) || (ys_cats.size() != ys.size() - 1) || (ys.size() != ua_pos.size())) {
@@ -4045,8 +4045,8 @@ void RockingBC::int_bilin(const Vecint& ys_cats, const Vec& ys, const Vec& s, co
 	static const double pi{ std::atan(1.) * 4 };
 	double DU_DS = (ys[ys.size()-1] - ys[0]) / pi;
 
-	static Vec w{}; w.clear();
-	static Vec sm{}; sm.clear();
+	static RBCVec w{}; w.clear();
+	static RBCVec sm{}; sm.clear();
 	for (size_t i = 0; i != s.size(); i++) {
 		w.push_back(s[i] * DU_DS + ua_pos[i]);
 		sm.push_back(s[i] * DU_DS);
@@ -4099,20 +4099,20 @@ void RockingBC::int_bilin(const Vecint& ys_cats, const Vec& ys, const Vec& s, co
 	static VecVec up_bl{}; up_bl.clear();
 	static VecVec yup_bl{}; yup_bl.clear();
 
-	static Vec ysp{};
-	static Vec smp{};
-	static Vec sp{};
-	static Vec wp{};
-	static Vec ss{};
-	static Vec ys_try{}, sm_try{}, yw_try{}, w_try{}, s_try{};
+	static RBCVec ysp{};
+	static RBCVec smp{};
+	static RBCVec sp{};
+	static RBCVec wp{};
+	static RBCVec ss{};
+	static RBCVec ys_try{}, sm_try{}, yw_try{}, w_try{}, s_try{};
 	static Vecint v{};
 
 	for (size_t ir = 0; ir != regs2.size(); ir++) {
 		Vecint r = regs2[ir];
 		if (regs2_cats[ir] == 0) {
-			ysp = Vec(ys.begin() + r[0], ys.begin() + r[1] + 1);
-			smp = Vec(sm.begin() + r[0], sm.begin() + r[1] + 1);
-			wp = Vec(w.begin() + r[0], w.begin() + r[1] + 1);
+			ysp = RBCVec(ys.begin() + r[0], ys.begin() + r[1] + 1);
+			smp = RBCVec(sm.begin() + r[0], sm.begin() + r[1] + 1);
+			wp = RBCVec(w.begin() + r[0], w.begin() + r[1] + 1);
 			ys_try.clear(); sm_try.clear(); yw_try.clear(); w_try.clear();
 			bool suc = bilin_two(ysp, smp, ysp, wp, ys_try, sm_try, yw_try, w_try);
 			if (suc) {
@@ -4157,8 +4157,8 @@ void RockingBC::int_bilin(const Vecint& ys_cats, const Vec& ys, const Vec& s, co
 			}
 		}
 		else {
-			ysp = Vec(ys.begin() + r[0], ys.begin() + r[1] + 1);
-			sp = Vec(s.begin() + r[0], s.begin() + r[1] + 1);
+			ysp = RBCVec(ys.begin() + r[0], ys.begin() + r[1] + 1);
+			sp = RBCVec(s.begin() + r[0], s.begin() + r[1] + 1);
 			ys_try.clear(); s_try.clear();
 			bool suc = bilin_one(ysp, sp, ys_try, s_try);
 			if (suc) {
@@ -4299,7 +4299,7 @@ void RockingBC::Up_interval_split_K(const Vector& Yup, const Vector& Up, const V
 	return;
 }
 
-void RockingBC::commony_K(const Vector& ya, const Vector& fa, const Vector& ka, const Vector& yb, const Vector& fb, const Vector& kb, Vec& Y, Vec& FA, Vec& FB, Vec& KA, Vec& KB)
+void RockingBC::commony_K(const Vector& ya, const Vector& fa, const Vector& ka, const Vector& yb, const Vector& fb, const Vector& kb, RBCVec& Y, RBCVec& FA, RBCVec& FB, RBCVec& KA, RBCVec& KB)
 {
 	Y.clear();
 	FA.clear();
@@ -4346,27 +4346,27 @@ void RockingBC::commony_K(const Vector& ya, const Vector& fa, const Vector& ka, 
 
 void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, const Vector& up_com, const Vector& yup_com, const Vector& kup_com,
 	const Vector& ys_com, const Vector& s_com, const Vector& ks_com, double beta_Dt,
-	Vec& ys_new, Vec& s_new, Vec& ks_new, Vecint& ys_cats, Vec& yup_new, Vec& up_new, Vec& kup_new,
-	Vec& dys_new_dwl, Vec& dys_new_dwr, Vec& ds_new_dwl, Vec& ds_new_dwr, Vec& dks_new_dwl, Vec& dks_new_dwr,
-	Vec& ydks, Vec& dks, Vec& dydks_dwl, Vec& dydks_dwr, Vec& ddks_dwl, Vec& ddks_dwr,
-	Vec& ds, Vec& dds_dwl, Vec& dds_dwr)
+	RBCVec& ys_new, RBCVec& s_new, RBCVec& ks_new, Vecint& ys_cats, RBCVec& yup_new, RBCVec& up_new, RBCVec& kup_new,
+	RBCVec& dys_new_dwl, RBCVec& dys_new_dwr, RBCVec& ds_new_dwl, RBCVec& ds_new_dwr, RBCVec& dks_new_dwl, RBCVec& dks_new_dwr,
+	RBCVec& ydks, RBCVec& dks, RBCVec& dydks_dwl, RBCVec& dydks_dwr, RBCVec& ddks_dwl, RBCVec& ddks_dwr,
+	RBCVec& ds, RBCVec& dds_dwl, RBCVec& dds_dwr)
 {
 	static const double pi{ std::atan(1.) * 4 };
 	double DU_DS = dy / pi;
 	double DAMPC = beta_Dt / (1.0 + beta_Dt);
 	double eyn = ey * DU_DS;
 
-	static Vec Y{};
-	static Vec Up{};
-	static Vec S{};
-	static Vec KUp{};
-	static Vec KS{};
+	static RBCVec Y{};
+	static RBCVec Up{};
+	static RBCVec S{};
+	static RBCVec KUp{};
+	static RBCVec KS{};
 
 	commony_K(yup_com, up_com, kup_com, ys_com, s_com, ks_com, Y, Up, S, KUp, KS);
 
 	// Plastic displacements differences
-	static Vec Upd; Upd.clear();
-	static Vec KUpd; KUpd.clear();
+	static RBCVec Upd; Upd.clear();
+	static RBCVec KUpd; KUpd.clear();
 	double yline{};
 	double kyline = (Up[Up.size() - 1] - Up[0]) / (Y[Y.size() - 1] - Y[0]);
 	for (size_t iy = 0; iy != Y.size(); iy++)
@@ -4380,9 +4380,9 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 	}
 
 	// Limits
-	static Vec Slim; Slim.clear();
-	static Vec Slimn; Slimn.clear();
-	static Vec KSlim; KSlim.clear();
+	static RBCVec Slim; Slim.clear();
+	static RBCVec Slimn; Slimn.clear();
+	static RBCVec KSlim; KSlim.clear();
 	for (size_t i = 0; i != Y.size(); i++)
 	{
 		Slim.push_back(S[i] * DAMPC);
@@ -4429,12 +4429,12 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 	double dkwnline_dwr = dwrn_dwr / dy;
 
 	// Plastic displacements into stresses insertion
-	static Vec Wn; Wn.clear();
-	static Vec dWn_dwl; dWn_dwl.clear();
-	static Vec dWn_dwr; dWn_dwr.clear();
-	static Vec KWn; KWn.clear();
-	static Vec dKWn_dwl; dKWn_dwl.clear();
-	static Vec dKWn_dwr; dKWn_dwr.clear();
+	static RBCVec Wn; Wn.clear();
+	static RBCVec dWn_dwl; dWn_dwl.clear();
+	static RBCVec dWn_dwr; dWn_dwr.clear();
+	static RBCVec KWn; KWn.clear();
+	static RBCVec dKWn_dwl; dKWn_dwl.clear();
+	static RBCVec dKWn_dwr; dKWn_dwr.clear();
 	double wline{};
 	for (size_t iy = 0; iy != Y.size(); iy++)
 	{
@@ -4450,21 +4450,21 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 	}
 
 	// Crossings
-	static Vec Yf{}; Yf.clear();
-	static Vec Wnf{}; Wnf.clear();
-	static Vec Upf{}; Upf.clear();
-	static Vec Slimnf{}; Slimnf.clear();
-	static Vec dYf_dwl{}; dYf_dwl.clear();
-	static Vec dWnf_dwl{}; dWnf_dwl.clear();
-	static Vec dSlimnf_dwl{}; dSlimnf_dwl.clear();
-	static Vec dYf_dwr{}; dYf_dwr.clear();
-	static Vec dWnf_dwr{}; dWnf_dwr.clear();
-	static Vec dSlimnf_dwr{}; dSlimnf_dwr.clear();
-	static Vec KWnf{}; KWnf.clear();
-	static Vec KUpf{}; KUpf.clear();
-	static Vec KSlimf{}; KSlimf.clear();
-	static Vec dKWnf_dwl{}; dKWnf_dwl.clear();
-	static Vec dKWnf_dwr{}; dKWnf_dwr.clear();
+	static RBCVec Yf{}; Yf.clear();
+	static RBCVec Wnf{}; Wnf.clear();
+	static RBCVec Upf{}; Upf.clear();
+	static RBCVec Slimnf{}; Slimnf.clear();
+	static RBCVec dYf_dwl{}; dYf_dwl.clear();
+	static RBCVec dWnf_dwl{}; dWnf_dwl.clear();
+	static RBCVec dSlimnf_dwl{}; dSlimnf_dwl.clear();
+	static RBCVec dYf_dwr{}; dYf_dwr.clear();
+	static RBCVec dWnf_dwr{}; dWnf_dwr.clear();
+	static RBCVec dSlimnf_dwr{}; dSlimnf_dwr.clear();
+	static RBCVec KWnf{}; KWnf.clear();
+	static RBCVec KUpf{}; KUpf.clear();
+	static RBCVec KSlimf{}; KSlimf.clear();
+	static RBCVec dKWnf_dwl{}; dKWnf_dwl.clear();
+	static RBCVec dKWnf_dwr{}; dKWnf_dwr.clear();
 
 	double wnf1{}, wnf2{};
 	bool wnf1found = false;
@@ -4642,10 +4642,10 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 
 	//Separation into stresses, plastic displacements
 
-	static Vec Sf_new{}; Sf_new.clear();
-	static Vec dSf_new_dwl{}; dSf_new_dwl.clear();
-	static Vec dSf_new_dwr{}; dSf_new_dwr.clear();
-	static Vec Upf_new{}; Upf_new.clear();
+	static RBCVec Sf_new{}; Sf_new.clear();
+	static RBCVec dSf_new_dwl{}; dSf_new_dwl.clear();
+	static RBCVec dSf_new_dwr{}; dSf_new_dwr.clear();
+	static RBCVec Upf_new{}; Upf_new.clear();
 
 	for (size_t i = 0; i != Wnf.size(); i++) {
 		if (Wnf[i] > Slimnf[i]) {
@@ -4668,9 +4668,9 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 		}
 	}
 
-	static Vec DSf{}; DSf.clear();
-	static Vec dDSf_dwl{}; dDSf_dwl.clear();
-	static Vec dDSf_dwr{}; dDSf_dwr.clear();
+	static RBCVec DSf{}; DSf.clear();
+	static RBCVec dDSf_dwl{}; dDSf_dwl.clear();
+	static RBCVec dDSf_dwr{}; dDSf_dwr.clear();
 
 	for (size_t i = 0; i != Sf_new.size(); i++) {
 		DSf.push_back(Sf_new[i] - Slimnf[i] / DU_DS);
@@ -4680,13 +4680,13 @@ void RockingBC::interval_interior_K(double wl, double wr, double ey, double dy, 
 
 	//Slopes
 
-	static Vec KSf_new{}; KSf_new.clear();
-	static Vec dKSf_new_dwl{}; dKSf_new_dwl.clear();
-	static Vec dKSf_new_dwr{}; dKSf_new_dwr.clear();
-	static Vec KUpf_new{}; KUpf_new.clear();
-	static Vec DKSf{}; DKSf.clear();
-	static Vec dDKSf_dwl{}; dDKSf_dwl.clear();
-	static Vec dDKSf_dwr{}; dDKSf_dwr.clear();
+	static RBCVec KSf_new{}; KSf_new.clear();
+	static RBCVec dKSf_new_dwl{}; dKSf_new_dwl.clear();
+	static RBCVec dKSf_new_dwr{}; dKSf_new_dwr.clear();
+	static RBCVec KUpf_new{}; KUpf_new.clear();
+	static RBCVec DKSf{}; DKSf.clear();
+	static RBCVec dDKSf_dwl{}; dDKSf_dwl.clear();
+	static RBCVec dDKSf_dwr{}; dDKSf_dwr.clear();
 
 	for (size_t i = 0; i != intcats.size(); i++) {
 		if (intcats[i] == 0) {
@@ -4897,8 +4897,8 @@ void RockingBC::interval_dists_K(const Vector& Yw, const Vector& W, const Vector
 
 	for (size_t i = 0; i != W.Size() - 1; i++) {
 
-		Vec dwl_dW(W.Size()); dwl_dW[i] = 1.0;
-		Vec dwr_dW(W.Size()); dwr_dW[i + 1] = 1.0;
+		RBCVec dwl_dW(W.Size()); dwl_dW[i] = 1.0;
+		RBCVec dwr_dW(W.Size()); dwr_dW[i + 1] = 1.0;
 		Matrix dys_dW = Matrix(dys_dwl_list[i].size(), W.Size());
 		Matrix ds_dW = Matrix(ds_dwl_list[i].size(), W.Size());
 		Matrix dks_dW = Matrix(dks_dwl_list[i].size(), W.Size());
@@ -4966,7 +4966,7 @@ void RockingBC::Ys_cats_dist_calc(const VecVecint& Ys_cats, Vecint& Ys_cats_dist
 
 // bilin funcs 
 
-void RockingBC::commony_BL(const Vec& ya, const Vec& fa, const Vec& yb, const Vec& fb, Vec& Y, Vec& FA, Vec& FB)
+void RockingBC::commony_BL(const RBCVec& ya, const RBCVec& fa, const RBCVec& yb, const RBCVec& fb, RBCVec& Y, RBCVec& FA, RBCVec& FB)
 {
 	Y.clear();
 	FA.clear();
@@ -5003,11 +5003,11 @@ void RockingBC::commony_BL(const Vec& ya, const Vec& fa, const Vec& yb, const Ve
 	return;
 }
 
-bool RockingBC::distintersec(const Vec& YP, const Vec& P, const Vec& YQ, const Vec& Q)
+bool RockingBC::distintersec(const RBCVec& YP, const RBCVec& P, const RBCVec& YQ, const RBCVec& Q)
 {
-	static Vec Y{};
-	static Vec PT{};
-	static Vec QT{};
+	static RBCVec Y{};
+	static RBCVec PT{};
+	static RBCVec QT{};
 	commony_BL(YP, P, YQ, Q, Y, PT, QT);
 
 	int sgn = 0;
@@ -5056,7 +5056,7 @@ bool RockingBC::twobilinintersec(double y1, double y2, double p1, double p2, dou
 	}
 }
 
-void RockingBC::NM_BL(const Vec& Y, const Vec& S, double& N, double& M, double& Nd, double& Md)
+void RockingBC::NM_BL(const RBCVec& Y, const RBCVec& S, double& N, double& M, double& Nd, double& Md)
 {
 	N = 0.;
 	M = 0.;
@@ -5085,7 +5085,7 @@ bool RockingBC::bilinable(double Nd, double Md, double y1, double y2, double BIL
 	}
 }
 
-void RockingBC::bilindist(const Vec& Y, const Vec& S, double Nd, double Md, Vec& Ybl, Vec& Sbl, double BILINLIM)
+void RockingBC::bilindist(const RBCVec& Y, const RBCVec& S, double Nd, double Md, RBCVec& Ybl, RBCVec& Sbl, double BILINLIM)
 {
 	Ybl.clear();
 	Sbl.clear();
@@ -5106,7 +5106,7 @@ void RockingBC::bilindist(const Vec& Y, const Vec& S, double Nd, double Md, Vec&
 
 }
 
-bool RockingBC::bilin_two(const Vec& YP, const Vec& P, const Vec& YQ, const Vec& Q, Vec& YPn, Vec& Pn, Vec& YQn, Vec& Qn)
+bool RockingBC::bilin_two(const RBCVec& YP, const RBCVec& P, const RBCVec& YQ, const RBCVec& Q, RBCVec& YPn, RBCVec& Pn, RBCVec& YQn, RBCVec& Qn)
 {
 	double NP{}, MP{}, NPd{}, MPd{}, NQ{}, MQ{}, NQd{}, MQd{};
 	NM_BL(YP, P, NP, MP, NPd, MPd);
@@ -5147,7 +5147,7 @@ bool RockingBC::bilin_two(const Vec& YP, const Vec& P, const Vec& YQ, const Vec&
 
 }
 
-bool RockingBC::bilin_one(const Vec& YP, const Vec& P, Vec& YPn, Vec& Pn) {
+bool RockingBC::bilin_one(const RBCVec& YP, const RBCVec& P, RBCVec& YPn, RBCVec& Pn) {
 	double NP{}, MP{}, NPd{}, MPd{};
 	NM_BL(YP, P, NP, MP, NPd, MPd);
 

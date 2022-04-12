@@ -54,7 +54,7 @@ public:
     
 public:
     PVDRecorder(const char *filename, const NodeData& ndata,
-		const std::vector<EleData>& edata, int ind=2, int pre=10, double dt=0);
+		const std::vector<EleData>& edata, int ind=2, int pre=10, double dt=0, double relDeltaTTol = 0.00001);
     PVDRecorder();
     ~PVDRecorder();
 
@@ -94,6 +94,7 @@ private:
     Domain* theDomain;
     std::map<int,int> partnum;
     double dT, nextTime;
+    double relDeltaTTol;
 
 public:
     enum VtkType {

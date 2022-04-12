@@ -52,6 +52,7 @@ class EnvelopeElementRecorder: public Recorder
 			    Domain &theDomain, 
 			    OPS_Stream &theOutputHandler,
 			    double deltaT = 0.0,
+			    double relDeltaTTol = 0.00001,
 			    bool echoTimeFlag = true,
 			    const ID *dof =0); 
 
@@ -84,6 +85,7 @@ class EnvelopeElementRecorder: public Recorder
     OPS_Stream *theHandler;
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     Matrix *data;

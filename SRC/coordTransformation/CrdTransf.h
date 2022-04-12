@@ -41,6 +41,7 @@
 #include <TaggedObject.h>
 
 class Vector;
+class ID;
 class Matrix;
 class Node;
 class Response;
@@ -113,5 +114,6 @@ extern CrdTransf *OPS_getCrdTransf(int tag);
 extern bool       OPS_removeCrdTransf(int tag);
 extern void       OPS_clearAllCrdTransf(void);
 extern void       OPS_printCrdTransf(OPS_Stream &s, int flag=0);
+extern ID       OPS_getAllCrdTransfTags();
 
 #endif

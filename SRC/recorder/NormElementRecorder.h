@@ -59,6 +59,7 @@ class NormElementRecorder: public Recorder
 			Domain &theDomain, 
 			OPS_Stream &theOutputHandler,
 			double deltaT = 0.0,
+			double relDeltaTTol = 0.00001,
 			const ID *dof =0);
 
     ~NormElementRecorder();
@@ -91,6 +92,7 @@ class NormElementRecorder: public Recorder
     bool echoTimeFlag;             // flag indicating if pseudo time also printed
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     Vector *data;

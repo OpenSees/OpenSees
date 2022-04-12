@@ -203,7 +203,7 @@ MapOfTaggedObjects::clearAll(bool invokeDestructor)
 void
 MapOfTaggedObjects::Print(OPS_Stream &s, int flag)
 {
-    s << "\nnumComponents: " << this->getNumComponents();
+    s << "\nnumComponents: " << this->getNumComponents() << endln;
     // go through the array invoking Print on non-zero entries
     MAP_TAGGED_ITERATOR p = theMap.begin();
     while (p != theMap.end()) {

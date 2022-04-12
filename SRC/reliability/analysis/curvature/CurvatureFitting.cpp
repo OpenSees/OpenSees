@@ -213,10 +213,10 @@ CurvatureFitting::computeCurvatures()
     }
     
     // do not compute left eigenvalues and eigenvectors
-    char *jobvl = "N";
+    char *jobvl = (char *)"N";
 
     // compute right eigenvalues and eigenvectors
-    char *jobvr = "V";
+    char *jobvr = (char *)"V";
 
     // reduced A matrix data
     double *Kptr = Adata;

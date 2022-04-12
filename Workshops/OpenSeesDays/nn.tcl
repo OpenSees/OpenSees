@@ -83,7 +83,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Plain
 
 # System of equations solver
@@ -107,7 +107,7 @@ recorder display "Simply Supported Beam" 10     10      800     200    -wipe
 prp 20 5.0 1.0;                                      # projection reference point (prp); defines the center of projection (viewer eye)
 vup  0  1 0;                                         # view-up vector (vup) 
 vpn  0  0 1;                                         # view-plane normal (vpn)     
-viewWindow -30 30 -10 10;                            # coordiantes of the window relative to prp  
+viewWindow -30 30 -10 10;                            # coordinates of the window relative to prp  
 display 10 0 5;                                      # the 1st arg. is the tag for display mode
                                                      # the 2nd arg. is magnification factor for nodes, the 3rd arg. is magnif. factor of deformed shape
 

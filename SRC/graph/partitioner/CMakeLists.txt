@@ -1,7 +1,13 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 target_sources(graph
     PRIVATE
-      Metis.cpp
+      MetisWrapper.cpp
     PUBLIC
-      Metis.h
+      MetisWrapper.h
       GraphPartitioner.h
 )

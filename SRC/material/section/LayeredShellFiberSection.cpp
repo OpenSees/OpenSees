@@ -42,7 +42,7 @@ void* OPS_LayeredShellFiberSection()
 {
     if (OPS_GetNumRemainingInputArgs() < 4) {
 	opserr << "WARNING insufficient arguments" << endln;
-	opserr << "Want: section LayeredShell tag? nLayers? matTag1? h1? ... matTagn? hn? " << endln;
+	opserr << "Want: section LayeredShell tag? nLayers? <matTag1? h1? ... matTagn? hn?> -or- <matTag? thickness?> " << endln;
 	return 0;
     }
       
@@ -70,39 +70,66 @@ void* OPS_LayeredShellFiberSection()
       
     theMats   = new NDMaterial*[nLayers];
     thickness = new double[nLayers];
+
+    // Read one material tag and shell thickness, then distribute
+    // over the layers
+    if (OPS_GetNumRemainingInputArgs() == 2) {
       
-    for (int iLayer = 0; iLayer < nLayers; iLayer++) {
+      if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	opserr << "WARNING invalid matTag" << endln;
+	opserr << "LayeredShell section: " << tag << endln;
+	return 0;
+      }
+      if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	opserr << "WARNING invalid thickness" << endln;
+	opserr << "LayeredShell section: " << tag << endln;
+	return 0;
+      }
+
+      //Change thickness to h for each layer
+      h = h/nLayers;
+
+      NDMaterial *theNDMat = OPS_getNDMaterial(matTag);
+      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
+	theMats[iLayer] = theNDMat;
+	thickness[iLayer] = h;
+      }
+    }
+
+    else {
+      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
 	if (OPS_GetNumRemainingInputArgs() < 2) {
-	    opserr << "WARNING must provide "<<2*nLayers<<"inputs\n";
-	    return 0;
+	  opserr << "WARNING must provide "<<2*nLayers<<"inputs\n";
+	  return 0;
 	}
 	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-	    opserr << "WARNING invalid matTag" << endln;
-	    opserr << "LayeredShell section: " << tag << endln;
-	    return 0;
+	  opserr << "WARNING invalid matTag" << endln;
+	  opserr << "LayeredShell section: " << tag << endln;
+	  return 0;
 	}
 	
 	theMats[iLayer] = OPS_getNDMaterial(matTag);
 	if (theMats[iLayer] == 0) {
-	    opserr << "WARNING nD material does not exist" << endln;;
-	    opserr << "nD material: " << matTag; 
-	    opserr << "LayeredShell section: " << tag << endln;
-	    return 0;
+	  opserr << "WARNING nD material does not exist" << endln;;
+	  opserr << "nD material: " << matTag; 
+	  opserr << "LayeredShell section: " << tag << endln;
+	  return 0;
 	}
-
+	
 	if (OPS_GetDoubleInput(&numdata, &h) < 0) {
-	    opserr << "WARNING invalid h" << endln;
-	    opserr << "LayeredShell section: " << tag << endln;	    	    
-	    return 0;
+	  opserr << "WARNING invalid h" << endln;
+	  opserr << "LayeredShell section: " << tag << endln;	    	    
+	  return 0;
 	}
 	
 	if (h < 0) {
-	    opserr << "WARNING invalid h" << endln;
-	    opserr << "PlateFiber section: " << tag << endln;	    	    
-	    return 0;
+	  opserr << "WARNING invalid h" << endln;
+	  opserr << "PlateFiber section: " << tag << endln;	    	    
+	  return 0;
 	}
 	
 	thickness[iLayer] = h;
+      }
     }
       
     SectionForceDeformation* theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
@@ -213,7 +240,19 @@ int LayeredShellFiberSection::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& LayeredShellFiberSection::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 

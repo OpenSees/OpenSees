@@ -870,6 +870,17 @@ DispBeamColumnNL3d::getInitialBasicStiff()
 	  ka(k,2) += (xi6-2.0)*tmp;
 	}
 	break;
+      case SECTION_RESPONSE_MY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += (xi6-4.0)*tmp;
+	  ka(k,4) += (xi6-2.0)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_T:
+	for (k = 0; k < order; k++)
+	  ka(k,5) += ks(k,j)*wti;
+	break;	
       default:
 	break;
       }
@@ -877,16 +888,26 @@ DispBeamColumnNL3d::getInitialBasicStiff()
     for (j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
-	for (k = 0; k < 3; k++)
+	for (k = 0; k < 6; k++)
 	  kb(0,k) += ka(j,k);
 	break;
       case SECTION_RESPONSE_MZ:
-	for (k = 0; k < 3; k++) {
+	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
 	  kb(1,k) += (xi6-4.0)*tmp;
 	  kb(2,k) += (xi6-2.0)*tmp;
 	}
 	break;
+      case SECTION_RESPONSE_MY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += (xi6-4.0)*tmp;
+	  kb(4,k) += (xi6-2.0)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_T:
+	for (k = 0; k < 6; k++)
+	  kb(5,k) += ka(j,k);	
       default:
 	break;
       }
@@ -1733,6 +1754,9 @@ DispBeamColumnNL3d::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+  
   output.endTag();
   return theResponse;
 }
@@ -1854,6 +1878,13 @@ DispBeamColumnNL3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111 || responseID == 1111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];

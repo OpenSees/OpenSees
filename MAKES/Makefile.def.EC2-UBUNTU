@@ -185,7 +185,7 @@ C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
 	$(PROGRAMMING_FLAG) -fPIC -ffloat-store 
 CFLAGS          = -Wall -fPIC
-FFLAGS          = -Wall -fPIC
+FFLAGS          = -Wall -fPIC -fallow-argument-mismatch
 
 # Linker
 LINKER          = $(CC++)
@@ -197,7 +197,7 @@ C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
 	$(PROGRAMMING_FLAG) -O3 -ffloat-store 
 CFLAGS          = -Wall -O2
-FFLAGS          = -Wall -O
+FFLAGS          = -Wall -O -fallow-argument-mismatch
 
 # Linker
 LINKER          = $(CC++)

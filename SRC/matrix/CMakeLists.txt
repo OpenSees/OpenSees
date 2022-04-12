@@ -1,6 +1,12 @@
-add_library(matrix "")
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+#add_library(matrix OBJECT)
 
-target_sources(matrix
+target_sources(OPS_Matrix
     PRIVATE
       Matrix.cpp
       Vector.cpp
@@ -12,4 +18,4 @@ target_sources(matrix
 )
 
 
-target_include_directories(matrix PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Matrix PUBLIC ${CMAKE_CURRENT_LIST_DIR})

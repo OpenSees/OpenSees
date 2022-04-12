@@ -31,6 +31,7 @@
 # 3) set path to Python `PYTHON_INCLUDES`
 # 4) set path to a python virtual environment PYTHON_VENV (not sure if this is necessary)
 #	e.g. PYTHON_VENV = /Users/maximmillen/git/packages/OpenSees/venv
+# 4b) set PYTHON_LIBRARY
 # 5) run `make python`
 
 INTERPRETER_LANGUAGE = PYTHON
@@ -47,7 +48,8 @@ INTERPRETER_LANGUAGE = PYTHON
 
 PROGRAMMING_MODE = SEQUENTIAL
 #PROGRAMMING_MODE = PARALLEL
-#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+
+PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
 
@@ -109,7 +111,6 @@ DIRS = $(BLASdir) \
        $(SUPERLU_DISTdir) \
        $(ARPACKdir) \
        $(UMFPACKdir) \
-       $(METISdir) \
        $(AMDdir) \
        $(CSPARSEdir) \
        $(ITPACKdir) \
@@ -156,13 +157,13 @@ CBLAS_LIBRARY   =
 SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
 ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
-METIS_LIBRARY   = $(HOME)/lib/libMetis.a
+METIS_LIBRARY   =
 AMD_LIBRARY	    = $(HOME)/lib/libAMD.a
 ITPACK_LIBRARY  = $(HOME)/lib/libItpack.a
 CSPARSE_LIBRARY = $(HOME)/lib/libcsparse.a
 TCL_LIBRARY     = -framework Tcl -framework Tk
 TCL_DIST_LIBRARY = $(HOME)/lib/libOpenSeesTclCommands.a
-PYTHON_VENV =
+PYTHON_VENV = <path-to-python-venv>
 
 PYTHON_LIBRARY = -L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib/ -lpython3.7
 
@@ -173,6 +174,7 @@ GRAPHIC_LIBRARY     =
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 DISTRIBUTED_SUPERLU_LIBRARY =
+METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 endif
 
 # WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
@@ -205,15 +207,15 @@ WIPE_LIBS = $(FE_LIBRARY) \
 # Compilers
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 CC++	= /usr/bin/clang++ -std=c++14
-CC      = /usr/bin/clang
+CC      = /usr/bin/clang  -std=c18 -Wimplicit-function-declaration
 FC	    = /usr/local/bin/gfortran
 
 LINKER    = $(CC++)
 LINKFLAGS = -Wl
 
 else
-CC++  = /usr/local/bin/mpic++
-CC    = /usr/local/bin/mpicc
+CC++  = /usr/local/bin/mpic++ -std=c++14
+CC    = /usr/local/bin/mpicc  -std=c18 -Wimplicit-function-declaration
 FC	  = /usr/local/bin/mpifort
 
 LINKER    = $(CC++)
@@ -239,7 +241,7 @@ ifeq ($(DEBUG_MODE), DEBUG)
 C++FLAGS = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn $(OS_FLAG)\
 	       $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
 	       $(PROGRAMMING_FLAG) -g -O0
-CFLAGS   = -Wall -O0 -g
+CFLAGS   = -Wall -O0 -g -DUSE_VENDOR_BLAS
 FFLAGS   = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
 LINKFLAGS       = -g -pg
 
@@ -249,7 +251,7 @@ C++FLAGS         = -D_LINUX -D_UNIX  -D_TCL85 -D_AMDn -D_MACOSX \
 	-DPYTHON_EXECUTABLE=$(PYTHON_VENV)/bin/python \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
 	$(PROGRAMMING_FLAG) -g -O0
-CFLAGS          = -Wall -g -O0
+CFLAGS          = -Wall -g -O0 -DUSE_VENDOR_BLAS -D_USE_METIS_5p1
 FFLAGS          = -Wall -g -O0
 
 # Linker
@@ -259,7 +261,7 @@ else
 C++FLAGS = -Wall -D_LINUX -D_UNIX  -D_TCL85  -D_AMDn -D_MACOSX \
 	       $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(MUMPS_FLAG) \
 	       $(PROGRAMMING_FLAG) -O3 -march=native -D_NO_PARALLEL_FILESYSTEM
-CFLAGS   = -Wall -O2
+CFLAGS   = -Wall -O2 -DUSE_VENDOR_BLAS -D_USE_METIS_5p1
 FFLAGS   = -Wall -O -DCUBLAS -x f77-cpp-input --no-second-underscore
 endif
 endif
@@ -329,7 +331,7 @@ SCALAPACK_LIB = -lscalapack -lveclibfort
 
 # Use Mumps from Homebrew
 MUMPS = YES
-MUMPS_DIR =
+MUMPS_DIR = /usr/local/opt/brewsci-mumps
 MUMPS_FLAG = -D_MUMPS -D_OPENMPI
 MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
 MUMPS_LIB = $(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
@@ -337,6 +339,7 @@ MUMPS_LIB = $(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
              $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
              $(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
              -ldmumps -lmumps_common -lpord
+             -L$(MUMPS_DIR)/lib -ldmumps -lmumps_common -lpord
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 SCALAPACK = NO
@@ -381,7 +384,7 @@ endif
 FORTO =
 
 # Link Homebrew gfortran library
-# TODO: may need to add python lib dir
+
 MACHINE_NUMERICAL_LIBS  =  \
 		$(ARPACK_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
@@ -402,18 +405,22 @@ MACHINE_NUMERICAL_LIBS  =  \
 MACHINE_SPECIFIC_LIBS = $(AGL_OBJS) -L/usr/local/opt/openssl/lib -lssl -lcrypto \
 						-framework Accelerate
 
+METIS_PARA_LIB = /usr/local/Cellar/metis/5.1.0/lib/libmetis.dylib
+
 PARALLEL_LIB = 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
-	$(LAPACK_LIB) $(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_LIBRARY) \
+	$(LAPACK_LIB) $(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_PARA_LIB) \
 	-lmpi_cxx -lmpi_mpifh -lmpi -lopen-rte -lopen-pal
 
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
 PARALLEL_LIB = 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
-	$(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_LIBRARY) \
-	-lmpi_cxx -lmpi_mpifh -lmpi -lopen-rte -lopen-pal
+	$(DISTRIBUTED_SUPERLU_LIBRARY) $(MUMPS_LIB) $(SCALAPACK_LIB) $(METIS_PARA_LIB) \
+	-lmpi_mpifh -lmpi -lopen-rte -lopen-pal \
+	/usr/local/Cellar/brewsci-parmetis/4.0.3_1/lib/libparmetis.dylib /usr/local/lib/libmetis.dylib \
+	/usr/local/opt/openblas/lib/libopenblasp-r0.3.12.dylib
 else
 PARALLEL_LIB =
 endif
@@ -436,13 +443,13 @@ MACHINE_INCLUDES        = -I/usr/include \
 			  -I/usr/local/opt/openssl/include
 else
 MACHINE_INCLUDES        = -I/usr/include \
-			  -I/usr/local/include \
 			  -I$(BASE)/include \
 			  -I/usr/include/cxx \
 			  -I/opt/local/include \
               -I$(FE)/../OTHER/SuperLU_DIST_4.3/SRC \
 			  -I$(HOME)/include -I$(HOME)/blitz \
 			  $(MUMPS_INCLUDE) -I$(CUDA_DIR)/include \
+			  -I/usr/local/Cellar/metis/5.1.0/include/ \
               -I/usr/local/opt/openssl/include
 
 endif
@@ -451,9 +458,12 @@ endif
 include $(FE)/Makefile.incl
 
 
-TCL_INCLUDES = -I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tk.framework/Headers
+TCL_INCLUDES = -I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tk.framework/Headers \
+                -I/Library/Frameworks/Tcl.framework/Versions/Current/
 PYTHON_INCLUDES = -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/include/python3.7m \
                -I/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/include/python3.7m/internal
+
+#PYTHON_INCLUDES = -I/usr/local/opt/python/Frameworks/Python.framework/Headers
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
 

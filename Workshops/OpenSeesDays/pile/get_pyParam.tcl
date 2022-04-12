@@ -209,7 +209,7 @@ if {$puSwitch == 1} {
 #  define displacement at 50% lateral capacity, y50
 #----------------------------------------------------------
 
-# values of y50 depend of the coefficent of subgrade reaction, k, which can be defined in several ways.
+# values of y50 depend of the coefficient of subgrade reaction, k, which can be defined in several ways.
 #  for gwtSwitch = 1, k reflects soil above the groundwater table
 #  for gwtSwitch = 2, k reflects soil below the groundwater table
 #  a linear variation of k with depth is defined for kSwitch = 1 after API (1987)

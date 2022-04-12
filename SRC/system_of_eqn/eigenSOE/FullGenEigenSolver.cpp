@@ -122,6 +122,10 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
     // mass matrix data
     double *Mptr = theSOE->M;
 
+    double *mCopy = new double[n*n];
+    for (int i=0; i<n*n; i++)
+      mCopy[i] = Mptr[i];
+    
     // leading dimension of M
     int ldM = n;
 
@@ -205,15 +209,54 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
         sortingID[i] = i;
     }
 
+    //
+    // mass normalize the eigenvalues
+    //
 
-    // sort eigenvalues in ascending order and return sorting ID
+    Mptr = mCopy;    
+    double *tmpV = new double[n];
+
+    // mass normailze all vectors .. NOTE instead of numEigen!
+    for (int k=0; k<n; k++) {
+
+      for (int i=0; i<n; i++)
+	tmpV[i]=0.0;
+      
+      double factor = 0.0;
+      
+      // tmp = M * phi
+      for (int i=0; i<n; i++) { // foreach col
+	double *mijPtr = &Mptr[i*n];
+	for (int j=0; j<n; j++) { // foreach row
+	  double mij = *mijPtr++;
+	  tmpV[j] += mij*eigenvector[k*n+j];
+	}
+      }
+
+      // phi^t * tmp
+      for (int i=0; i<n; i++) { // foreach col
+	factor += eigenvector[k*n+i]*tmpV[i];
+      }
+
+      if (factor >= 0) {
+	factor=1.0/sqrt(factor);
+
+	for (int i=0; i<n; i++)
+	  eigenvector[k*n+i] = eigenvector[k*n+i]*factor;
+      }
+    }
+
+    delete [] mCopy;
+    delete [] tmpV;
+    
+    // sort eigenvalues based on size
     this->sort(n, eigenvalue, sortingID);
 
     for (int i=0; i<numEigen; i++) {
         if (eigenvalue[i] == DBL_MAX) {
 	    opserr << "FullGenEigenSolver::solve() - the eigenvalue "
 		    << i+1 << " is numerically undetermined or infinite\n";
-        }
+        } 
     }
 
     int lworkOpt = (int) work[0];
@@ -273,7 +316,7 @@ const Vector& FullGenEigenSolver::getEigenvector(int mode)
 
     int size = theSOE->size;
     int index = size*sortingID[mode-1];
-
+    
     if (eigenvector != 0) {
         for (int i=0; i<size; i++) {
             (*eigenV)[i] = eigenvector[index++];
@@ -285,7 +328,10 @@ const Vector& FullGenEigenSolver::getEigenvector(int mode)
         eigenV->Zero();
     }      
 
+    opserr << "EIGEN VECTOR: " << *eigenV;
+    
     return *eigenV;
+    
 }
 
 
@@ -325,6 +371,7 @@ void FullGenEigenSolver::sort(int length, double *x, int *id)
 {
     // this is an implementation of shell sort that
     // additionally keeps track of the sorting order
+  
     int flag = 1;
     int d = length;
     int i, idTmp;

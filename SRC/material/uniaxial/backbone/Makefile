@@ -5,6 +5,11 @@ OBJS       = HystereticBackbone.o \
 	TrilinearBackbone.o \
 	ReeseSoftClayBackbone.o \
 	ReeseStiffClayBelowWS.o \
+	ReeseStiffClayAboveWS.o \
+	VuggyLimestone.o \
+	CementedSoil.o \
+	WeakRock.o \
+	LiquefiedSand.o \
 	ReeseSandBackbone.o \
 	ManderBackbone.o \
 	RaynorBackbone.o \
