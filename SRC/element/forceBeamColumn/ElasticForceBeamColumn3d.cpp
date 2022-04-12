@@ -1328,7 +1328,10 @@ ElasticForceBeamColumn3d::Print(OPS_Stream &s, int flag)
       }
     }
   }
-  
+
+    if (theResponse == 0)
+      theResponse = crdTransf->setResponse(argv, argc, output);
+    
   output.endTag();
   return theResponse;
 }
