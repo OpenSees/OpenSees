@@ -37,6 +37,7 @@
 
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
+#include <CrdTransfResponse.h>
 
 static MapOfTaggedObjects theCrdTransfObjects;
 
@@ -119,6 +120,57 @@ CrdTransf::CrdTransf(int tag, int classTag):TaggedObject(tag), MovableObject(cla
 // destructor:
 CrdTransf::~CrdTransf()
 {
+}
+
+int
+CrdTransf::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
+{
+  xAxis.Zero();
+  yAxis.Zero();
+  zAxis.Zero();
+  
+  return 0;
+}
+
+Response*
+CrdTransf::setResponse(const char **argv, int argc, OPS_Stream &theHandler)
+{
+  if (argc < 1)
+    return 0;
+
+  Response *theResponse = 0;
+  
+  if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
+    theResponse = new CrdTransfResponse(this, 201, Vector(3));
+  
+  if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
+    theResponse = new CrdTransfResponse(this, 202, Vector(3));
+  
+  if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
+    theResponse = new CrdTransfResponse(this, 203, Vector(3));
+
+  return theResponse;
+}
+
+int
+CrdTransf::getResponse(int responseID, Information &eleInfo)
+{
+  if (responseID >= 201 && responseID <= 203) {
+    static Vector xlocal(3);
+    static Vector ylocal(3);
+    static Vector zlocal(3);
+    
+    this->getLocalAxes(xlocal,ylocal,zlocal);
+    
+    if (responseID == 201)
+      return eleInfo.setVector(xlocal);
+    if (responseID == 202)
+      return eleInfo.setVector(ylocal);
+    if (responseID == 203)
+      return eleInfo.setVector(zlocal);    
+  }
+  else
+    return -1;
 }
 
 const Vector &
