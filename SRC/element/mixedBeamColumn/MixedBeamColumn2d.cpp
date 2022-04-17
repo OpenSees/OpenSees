@@ -1282,8 +1282,52 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
     theResponse =  new ElementResponse(this, 103, ID(1));
+  }
 
- } else if (strcmp(argv[0],"section") ==0) {
+  else if (strcmp(argv[0],"sectionX") ==0) {
+    if (argc > 2) {
+      
+      float sectionLoc = atof(argv[1]);
+      
+      double xi[MAX_NUM_SECTIONS];
+      double L = crdTransf->getInitialLength();
+      beamIntegr->getSectionLocations(numSections, L, xi);
+      
+      sectionLoc /= L;
+      
+      float minDistance = fabs(xi[0]-sectionLoc);
+      int sectionNum = 1;
+      for (int i = 1; i < numSections; i++) {
+	if (fabs(xi[i]-sectionLoc) < minDistance) {
+	  minDistance = fabs(xi[i]-sectionLoc);
+	  sectionNum = i+1;
+	}
+      }
+      
+      output.tag("GaussPointOutput");
+      output.attr("number",sectionNum);
+      output.attr("eta",xi[sectionNum-1]*L);
+      
+      // A kinda hacky thing to record section shear even though this
+      // element doesn't include shear effects
+      bool thisSectionHasShear = false;
+      int order = sections[sectionNum-1]->getOrder();
+      const ID &type = sections[sectionNum-1]->getType();
+      for (int i = 0; i < order; i++) {
+	if (type(i) == SECTION_RESPONSE_VY)
+	  thisSectionHasShear = true;
+      }
+      
+      if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+      else
+	theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+      
+      output.endTag();
+    }
+  }
+  
+  else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
 
       int sectionNum = atoi(argv[1]);
