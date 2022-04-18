@@ -37,6 +37,97 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <elementAPI.h>
+
+void*
+OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
+{
+  int nArgs = OPS_GetNumRemainingInputArgs();
+  if (nArgs < 9) {
+    opserr << "Insufficient arguments: tag otherTag secTagI lpI zetaI secTagJ lpJ zetaJ secTagE\n";
+    return 0;
+  }
+
+  int iData[2];
+  int numData = 2;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read int data" << endln;
+    return 0;
+  }
+  integrationTag = iData[0];
+  int otherIntTag = iData[1];
+
+  BeamIntegrationRule *theRule = OPS_getBeamIntegrationRule(otherIntTag);
+  if (theRule == 0) {
+    opserr << "Beam integration with tag " << otherIntTag << " not found\n";
+    return 0;
+  }
+  BeamIntegration *bi = theRule->getBeamIntegration();
+  if (bi == 0) {
+    opserr << "Beam integraiton is null\n";
+    return 0;
+  }
+  const ID &otherSections = theRule->getSectionTags();
+  int Nsections = otherSections.Size();
+  secTags.resize(Nsections+2);
+  
+  double dData[2];
+  
+  // Read information for hinge at end I
+  int secTagI;
+  double lpI, zetaI;
+  numData = 1;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read section tag I" << endln;
+    return 0;
+  }
+  secTagI = iData[0];
+  secTags(0) = secTagI;
+  secTags(1) = secTagI;
+  
+  numData = 2;
+  if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read hinge I data" << endln;
+    return 0;
+  }
+  lpI = dData[0];
+  zetaI = dData[1];
+
+
+  // Read information for hinge at end J
+  int secTagJ;
+  double lpJ, zetaJ;
+  numData = 1;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read section tag J" << endln;
+    return 0;
+  }
+  secTagJ = iData[0];
+  secTags(2) = secTagJ;
+  secTags(3) = secTagJ;
+  
+  numData = 2;
+  if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read hinge J data" << endln;
+    return 0;
+  }
+  lpJ = dData[0];
+  zetaJ = dData[1];
+
+
+  // Read section for interior
+  int secTagE;
+  numData = 1;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read section tag for interior" << endln;
+    return 0;
+  }
+  secTagE = iData[0];
+  for (int i = 4; i < Nsections+2; i++)
+    secTags(i) = secTagE;
+
+  return new RegularizedHingeIntegration(*bi, lpI, lpJ, zetaI, zetaJ);
+}
 
 RegularizedHingeIntegration::RegularizedHingeIntegration(BeamIntegration &bi,
 							 double lpi, double lpj,
