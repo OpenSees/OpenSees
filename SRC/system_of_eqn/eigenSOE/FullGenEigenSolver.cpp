@@ -328,7 +328,7 @@ const Vector& FullGenEigenSolver::getEigenvector(int mode)
         eigenV->Zero();
     }      
 
-    opserr << "EIGEN VECTOR: " << *eigenV;
+    //opserr << "EIGEN VECTOR: " << *eigenV;
     
     return *eigenV;
     
