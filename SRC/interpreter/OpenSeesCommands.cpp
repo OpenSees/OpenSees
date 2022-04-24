@@ -1854,8 +1854,8 @@ int OPS_eigenAnalysis()
 	return -1;
     }
 
-    if (numEigen < 0) {
-	opserr << "WARNING eigen numModes?  - illegal numModes\n";
+    if (numEigen < 1) {
+	opserr << "WARNING eigen numModes?  - illegal numModes: " << numEigen << "\n";
 	return -1;
     }
     cmds->setNumEigen(numEigen);
