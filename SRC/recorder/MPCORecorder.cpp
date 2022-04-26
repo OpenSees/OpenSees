@@ -1314,7 +1314,7 @@ namespace mpco {
 
 	struct ElementOutputDescriptorType {
 		/**
-		these paths are intepreted as
+		these paths are interpreted as
 		results on elements (either constant over element (# metadata = 1) or per element node (# metadata = # element nodes)
 		[Element]
 		these paths are interpreted as
@@ -1404,7 +1404,7 @@ namespace mpco {
 	};
 
 	/*
-	holds current informations
+	holds current information
 	*/
 	class ProcessInfo
 	{
@@ -2830,7 +2830,7 @@ namespace mpco {
 
 			void fixSectionAfterFiberDueToFiberOutputFail() {
 				/*
-				due to a recent commmit, the SectionForceDeformation first checks for fibers.
+				due to a recent commit, the SectionForceDeformation first checks for fibers.
 				If it fails when the fiber does not have the requested output, the SectionForceDeformation
 				falls back to its setResponse, thus opening a section tag after a fiber tag without giving any result.
 				This messes up everything!
@@ -3145,7 +3145,7 @@ namespace mpco {
 						when the 'real' tag gets closed, we automatically close the 'manual' gauss tag
 						*/
 						pending_close_tag = true;
-						// recursion: recal this request now inside a gauss point tag
+						// recursion: recall this request now inside a gauss point tag
 						tag(name);
 					}
 				}
@@ -3592,7 +3592,7 @@ namespace mpco {
 					*/
 					int elem_type = current_element->getClassTag();
 					/*
-					skip element classes tht we don't want to record
+					skip element classes that we don't want to record
 					*/
 					if (elem_type == ELE_TAG_Subdomain ||
 						elem_type == ELE_TAG_ASDEmbeddedNodeElement)
@@ -3618,7 +3618,7 @@ namespace mpco {
 					*/
 					if (current_element->getNumExternalNodes() != elem_coll_by_tag.num_nodes) {
 						opserr << "MPCORecorder Error while mapping elements: elements with different number of nodes "
-							"exist withing the same class tag. This is not supported\n";
+							"exist within the same class tag. This is not supported\n";
 						exit(-1);
 					}
 					/*
@@ -3686,7 +3686,7 @@ namespace mpco {
 				2-node line with 1 gp
 				*/
 				if (
-					// ./adpter actuators
+					// ./adapter actuators
 					elem_class_tag == ELE_TAG_Actuator ||
 					elem_class_tag == ELE_TAG_ActuatorCorot ||
 					// ./truss
@@ -3971,7 +3971,7 @@ namespace mpco {
 					Response *eo_response = elem->setResponse(argv, argc, eo_stream);
 					eo_stream.finalizeSetResponse();
 					if (eo_response)
-						delete eo_response; // we dont need it now
+						delete eo_response; // we don't need it now
 					eo_descriptor.getGaussLocations(rule.x);
 					if (rule.x.size() > 0)
 						done = true;
@@ -4008,7 +4008,7 @@ namespace mpco {
 						Response *eo_response = elem->setResponse(argv, argc, eo_stream);
 						eo_stream.finalizeSetResponse();
 						if (eo_response)
-							delete eo_response; // we dont need it now
+							delete eo_response; // we don't need it now
 						std::vector<double> trial_x;
 						eo_descriptor.getGaussLocations(trial_x);
 						if (trial_x.size() > 0) {
@@ -4356,7 +4356,7 @@ int MPCORecorder::record(int commitTag, double timeStamp)
 		return retval;
 	}
 	/*
-	perform initilization on first call
+	perform initialization on first call
 	*/
 	if (!m_data->initialized) {
 		retval = initialize();
@@ -4490,7 +4490,7 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 		<< m_data->elem_set
 		))
 	{
-		opserr << "MPCORecorder::sendSelf() - failed to serialzie data\n";
+		opserr << "MPCORecorder::sendSelf() - failed to serialize data\n";
 		return -1;
 	}
 
@@ -4581,7 +4581,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		>> m_data->elem_set
 		))
 	{
-		opserr << "MPCORecorder::recvSelf() - failed to de-serialzie data\n";
+		opserr << "MPCORecorder::recvSelf() - failed to de-serialize data\n";
 		return -1;
 	}
 
@@ -5236,7 +5236,7 @@ int MPCORecorder::writeSections()
 								elem->setResponse(argv, argc, eo_stream);
 							eo_stream.finalizeSetResponse();
 							if (eo_response)
-								delete eo_response; // we dont need it now
+								delete eo_response; // we don't need it now
 							/*
 							post process the response descriptor
 							*/
@@ -5439,7 +5439,7 @@ int MPCORecorder::writeSections()
 					nfibers_per_gauss_point.resize(elem_gauss_id.size());
 					for (size_t igp = 0; igp < elem_gauss_id.size(); igp++) {
 						mpco::element::FiberSectionData &igp_fibersec_data = elem_sections[igp];
-						nfibers_per_gauss_point[igp].first = elem_fiber_base_index[igp]; // start witn standard 0-based
+						nfibers_per_gauss_point[igp].first = elem_fiber_base_index[igp]; // start with standard 0-based
 						nfibers_per_gauss_point[igp].second = static_cast<int>(igp_fibersec_data.fibers.size());
 					}
 					/*
@@ -5499,7 +5499,7 @@ int MPCORecorder::writeSections()
 	}
 	/*
 	here we call the OPS_GetSectionForceDeformation to get the class name. This is not necessary, just to
-	give the user more informations about the written sections. warning: in this method (writeSections())
+	give the user more information about the written sections. warning: in this method (writeSections())
 	we assume that all sections have been created by the user via the "section" command, so that they all have different tags.
 	However, in some places in opensees, sections are manually created with hardcoded tags
 	(see "beamWithHinges")

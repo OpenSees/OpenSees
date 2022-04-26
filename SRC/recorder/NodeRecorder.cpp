@@ -59,8 +59,8 @@ void*
 OPS_NodeRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder Node ";
-        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder Node ";
+        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
         return 0;
     }
     
@@ -437,7 +437,7 @@ NodeRecorder::NodeRecorder(const ID &dofs,
     if (theParameter != 0)
       grad = theParameter->getGradIndex();
 
-    if (grad > 0)
+    if (grad >= 0)
       dataFlag = 1000 + grad;
     else
       dataFlag = 10;
@@ -448,7 +448,7 @@ NodeRecorder::NodeRecorder(const ID &dofs,
     if (theParameter != 0)
       grad = theParameter->getGradIndex();
 
-    if (grad > 0)
+    if (grad >= 0)
       dataFlag = 2000 + grad;
     else
       dataFlag = 10;
@@ -459,7 +459,7 @@ NodeRecorder::NodeRecorder(const ID &dofs,
     if (theParameter != 0)
       grad = theParameter->getGradIndex();
 
-    if (grad > 0)
+    if (grad >= 0)
       dataFlag = 3000 + grad;
     else
       dataFlag = 10;
