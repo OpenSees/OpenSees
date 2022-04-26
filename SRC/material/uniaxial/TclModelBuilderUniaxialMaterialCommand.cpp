@@ -191,6 +191,8 @@ extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
 extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 extern void *OPS_MultiplierMaterial(void);
+extern void* OPS_HystereticSmooth(void); // Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+extern void* OPS_HystereticAsym(void); // Salvatore Sessa 21-Apr-2022 Mail: salvatore.sessa2@unina.it
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -2922,7 +2924,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		theMaterial = (UniaxialMaterial*)theMat;
 	else
 		return TCL_ERROR;
-    }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+    }		// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+    else if (strcmp(argv[1], "HystereticSmooth") == 0) {		// BEGIN Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+	void* theMat = OPS_HystereticSmooth();
+	if (theMat != 0)
+		theMaterial = (UniaxialMaterial*)theMat;
+	else
+		return TCL_ERROR;
+	}	// END Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+	else if (strcmp(argv[1], "HystereticAsym") == 0) {		// BEGIN Salvatore Sessa 21-Apr-2022 Mail: salvatore.sessa2@unina.it
+	void* theMat = OPS_HystereticAsym();
+	if (theMat != 0)
+		theMaterial = (UniaxialMaterial*)theMat;
+	else
+		return TCL_ERROR;
+	}	// END Salvatore Sessa 21-Apr-2022 Mail: salvatore.sessa2@unina.it
     if (strcmp(argv[1], "DowelType") == 0) {
         void* theMat = OPS_DowelType();
         if (theMat != 0)
