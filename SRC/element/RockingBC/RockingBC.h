@@ -178,7 +178,7 @@ private:
 	double L;                  // undeformed element length
 
 	Vector ue = Vector(6);                 // local displacements
-	Vector uecommit;           // commited local displacements
+	Vector uecommit;           // committed local displacements
 	Vector uepr;               // previous local displacements
 	Vector due = Vector(6);
 	Vector Due = Vector(6);

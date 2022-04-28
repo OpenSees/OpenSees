@@ -1789,7 +1789,7 @@ EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
     // set the quantity to be displayed at the nodes;
     // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
     // until someone projects the stress to the nodes will display the stress 
-    // at the guass points at the nodes .. could also just display the average!
+    // at the gauss points at the nodes .. could also just display the average!
     static Vector values(4);
     if (displayMode < 4 && displayMode > 0) {
         for (int i = 0; i < 4; i++) {

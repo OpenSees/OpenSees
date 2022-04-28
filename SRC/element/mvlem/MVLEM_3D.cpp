@@ -853,7 +853,7 @@ int MVLEM_3D::update() {
 double * MVLEM_3D::computeCurrentStrain(void)
 {
 
-	// get nodal dispalcements in global cs
+	// get nodal displacements in global cs
 	const Vector &disp1 = theNodes[0]->getTrialDisp();
 	const Vector &disp2 = theNodes[1]->getTrialDisp();
 	const Vector &disp3 = theNodes[2]->getTrialDisp();
@@ -871,7 +871,7 @@ double * MVLEM_3D::computeCurrentStrain(void)
 		dispG(i + 18) = disp4(i);
 	}
 
-	// tranform nodal displacements from global to local cs
+	// transform nodal displacements from global to local cs
 	dispL.addMatrixVector(0.0, T, dispG, 1.0);
 
 	// Calculate 2-node 6DOF MVLEM local displacement vector
@@ -2242,7 +2242,7 @@ int MVLEM_3D::addInertiaLoadToUnbalance(const Vector &accel)
 		RaccelG(i + 18) = Raccel4(i);
 	}
 
-	// Tranform accelerations from global to local cs
+	// Transform accelerations from global to local cs
 	RaccelL.addMatrixVector(0.0, T, RaccelG, 1.0);
 
 	// Compute mass matrix
@@ -2382,7 +2382,7 @@ const Vector & MVLEM_3D::getResistingForceIncInertia()
 		accelG(i + 18) = accel4(i);
 	}
 
-	// Tranform accelerations from global to local cs
+	// Transform accelerations from global to local cs
 	accelL.addMatrixVector(0.0, T, accelG, 1.0);
 
 	// Compute the current resisting force
@@ -2745,7 +2745,7 @@ int MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact, cons
 		NodePLotCrds(panel, 9) = GlCoord(2);
 		LocCoord.Zero();
 		GlCoord.Zero();
-		// Local node 4 - top rigth
+		// Local node 4 - top right
 		LocCoord(0) = Lv2_(0) + x[panel] - b[panel] / 2.0; // x
 		LocCoord(1) = Lv2_(1) + (x[panel] - b[panel] / 2.0)*end2Disp(5)*fact; // y
 		LocCoord(2) = Lv2_(2) - (x[panel] - b[panel] / 2.0)*end2Disp(4)*fact; // z

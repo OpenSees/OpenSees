@@ -1250,7 +1250,7 @@ TrussSection::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
   
-  // Mass densitity of the truss
+  // Mass density of the truss
   if (strcmp(argv[0],"rho") == 0)
     return param.addObject(2, this);
   
