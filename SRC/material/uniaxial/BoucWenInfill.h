@@ -33,7 +33,7 @@
 //
 // Reference: Sirotti, S., Pelliciari, M., Di Trapani, F.,
 // Briseghella, B., Carlo Marano, G., Nuti, C., & Tarantino, A. M. (2021).
-// Development and validation of new bouc–wen data-driven hysteresis model 
+// Development and validation of new boucï¿½wen data-driven hysteresis model 
 // for masonry infilled rc frames. 
 // Journal of Engineering Mechanics, 147(11), 04021092.
 // 
@@ -109,7 +109,7 @@ class BoucWenInfill : public UniaxialMaterial
     double Tz, Cz;
     double Te, Ce;
     
-    // Ohter variables
+    // Other variables
     double Tstress, Ttangent;
     
     double tolerance;

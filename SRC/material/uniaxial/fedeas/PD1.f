@@ -41,7 +41,7 @@ c set numerical parameters ------------------------------------------
       tol2 = 10.d-8
 	  maxitr = 10
 
-c temperary setting ++++++++++-----------------------
+c temporary setting ++++++++++-----------------------
 
 
 	  

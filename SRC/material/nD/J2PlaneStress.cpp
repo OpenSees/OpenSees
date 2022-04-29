@@ -102,7 +102,7 @@ NDMaterial* J2PlaneStress :: getCopy( )
 { 
   J2PlaneStress  *clone;
   clone = new J2PlaneStress( ) ;   //new instance of this class
-  *clone = *this ;                 //asignment to make copy
+  *clone = *this ;                 //assignment to make copy
   return clone ;
 }
 

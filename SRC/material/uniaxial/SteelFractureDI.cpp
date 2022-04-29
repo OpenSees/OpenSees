@@ -293,7 +293,7 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 		// tension
 		double xi = fabs((epspl - epss0) / epsy);
 		if (deps < 0.0)
-			// compresion
+			// compression
 			xi = fabs((epspl - epss0) / epsyc);
 
 		double R = R0 * (1.0 - (cR1*xi) / (cR2 + xi));
