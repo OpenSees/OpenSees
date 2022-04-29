@@ -5,18 +5,19 @@
 #
 #==============================================================================
 
-opensees_elements(OPS_Element_feap
-  SOURCES
+#opensees_elements(OPS_Element_feap
+target_sources(OPS_Element
+  PRIVATE
     fElement.cpp
     fElmt02.cpp
     fElmt05.cpp
+  PUBLIC
     fElement.h
     fElmt02.h
     fElmt05.h
 )
 
-add_library(OPS_Element_feap_f)
-target_sources(OPS_Element_feap_f
+target_sources(OPS_ElementFortran
     PRIVATE
         dummyFeap.f
         elmt01.f
@@ -28,12 +29,11 @@ target_sources(OPS_Element_feap_f
         elmt11.f
         fillCommon.f
         getCommon.f
-        #TclFeapElementCommand.cpp
 )
 
-opensees_add_cxx_flag(OPS_Element_feap GNU -fpermissive)
-target_link_libraries(OPS_Element_feap PRIVATE OPS_Element_feap_f)
 
-target_include_directories(OPS_Element_feap PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+#opensees_add_cxx_flag(OPS_Element GNU -fpermissive)
+
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 

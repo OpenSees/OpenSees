@@ -115,6 +115,7 @@ void* OPS_VTK_Recorder()
     OutputData outputData;
     std::vector<VTK_Recorder::EleData> eledata;
     double dT = 0.0;
+    double rTolDt = 0.00001;
 
     while(numdata > 0) {
 	const char* type = OPS_GetString();
@@ -210,26 +211,39 @@ void* OPS_VTK_Recorder()
 		return 0;
 	    }
 	    if (dT < 0) dT = 0;
+	} else if(strcmp(type, "-rTolDt") == 0) {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WARNING: needs rTolDt \n";
+		return 0;
+	    }
+	    numdata = 1;
+	    if(OPS_GetDoubleInput(&numdata,&rTolDt) < 0) {
+		opserr << "WARNING: failed to read rTolDt\n";
+		return 0;
+	    }
+	    if (rTolDt < 0) rTolDt = 0;
 	}
 	numdata = OPS_GetNumRemainingInputArgs();
     }
 
     // create recorder
-    return new VTK_Recorder(name,outputData,eledata,indent,precision,dT);
+    return new VTK_Recorder(name,outputData,eledata,indent,precision,dT, rTolDt);
 }
 
 VTK_Recorder::VTK_Recorder(const char *inputName, 
 			   const OutputData& outData,
 			   const std::vector<EleData>& edata, 
-			   int ind, int pre, double dt)
+			   int ind, int pre, double dt, double rTolDt)
     :Recorder(RECORDER_TAGS_VTK_Recorder), 
      indentsize(ind), 
      precision(pre),
      indentlevel(0), 
      quota('\"'), 
      theDomain(0),
-     nextTimeStampToRecord(0),
-     deltaT(0), 
+     nextTimeStampToRecord(0.0),
+     deltaT(dt),
+     relDeltaTTol(rTolDt),
      counter(0),
      initializationDone(false),
      sendSelfCount(0)
@@ -291,8 +305,9 @@ VTK_Recorder::VTK_Recorder()
    indentlevel(0), 
    quota('\"'), 
    theDomain(0),
-   nextTimeStampToRecord(0),
-   deltaT(0), 
+   nextTimeStampToRecord(0.0),
+   deltaT(0.0),
+   relDeltaTTol(0.00001),
    counter(0),
    initializationDone(false),
    sendSelfCount(0)   
@@ -327,7 +342,9 @@ VTK_Recorder::record(int ctag, double timeStamp)
     initializationDone = true;
   }
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;

@@ -50,7 +50,7 @@ class MultiplierMaterial : public UniaxialMaterial
     double getStress(void);
     double getTangent(void);
     double getDampTangent(void);
-    double getInitialTangent(void) {return theMaterial->getInitialTangent();}
+  double getInitialTangent(void);
 
     int commitState(void);
     int revertToLastCommit(void);    

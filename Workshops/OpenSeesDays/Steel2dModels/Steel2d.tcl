@@ -4,10 +4,10 @@
 
 # Major Contributions: 
 #   WSection: Remo DeSouza, UC Berkeley.
-#   SteelWSectionMR: Dimitrios Lignos, McGill Univeristy.
+#   SteelWSectionMR: Dimitrios Lignos, McGill University.
 #   SteelWSectionMR02: Filipe Ribeiro and Andre Barbosa, Oregon State University.
 #   SteelWSectionMChi02: Filipe Ribeiro and Andre Barbosa, Oregon State University.
-#   HSSbrace: Dimitrios Lignos, McGill Univeristy.
+#   HSSbrace: Dimitrios Lignos, McGill University.
 #   
 
 #
@@ -524,7 +524,7 @@ proc ElasticBeamHSSection2d {eleTag iNode jNode sectType E transfTag args} {
 proc HSSbrace {eleTag iNode jNode sectType matTag numSeg Im transfTag args} {
     
     # This procedure develops a 2D brace element in a 2D/3D system (Z coordinates were set to 0).
-    # Corotational Transformation is used by defualt
+    # Corotational Transformation is used by default
     #
     # Developed by Dimitrios G. Lignos, PhD
     # Contact: dimitrios.lignos@mcgill.ca
@@ -533,10 +533,10 @@ proc HSSbrace {eleTag iNode jNode sectType matTag numSeg Im transfTag args} {
     # Last Modified: 06/08/2014
     
     # args: 
-    #  eleTag - element number (neeeded to provide node and ele tags for each beam segment and nodes
+    #  eleTag - element number (needed to provide node and ele tags for each beam segment and nodes
     #  iNode
     #  jNode
-    #  sectType - HSS section desig
+    #  sectType - HSS section design
     #  numSeg - num ele divisions
     #  Im - offset
     #  numInt - numIntegration points in beams
@@ -568,7 +568,7 @@ proc HSSbrace {eleTag iNode jNode sectType matTag numSeg Im transfTag args} {
 
     set PI [expr 2*asin(1.0)];	# define constant pi
 
-    # To get the coordiantes of these 2 points
+    # To get the coordinates of these 2 points
     set X1 [nodeCoord $iNode 1]
     set Y1 [nodeCoord $iNode 2]
     set X2 [nodeCoord $jNode 1]

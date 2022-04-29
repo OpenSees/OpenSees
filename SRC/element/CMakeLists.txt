@@ -78,7 +78,6 @@ add_subdirectory(UWelements)
 add_subdirectory(HUelements)
 add_subdirectory(XMUelements)
 add_subdirectory(masonry)
-#add_subdirectory(dmglib)
 add_subdirectory(CEqElement)
 
 

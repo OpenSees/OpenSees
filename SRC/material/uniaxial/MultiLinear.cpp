@@ -26,16 +26,20 @@
 //
 // What: "@(#) MultiLinear.C, revA"
 
+#include <math.h>
+#include <float.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include <MultiLinear.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <ID.h>
 #include <Channel.h>
-#include <math.h>
-#include <float.h>
-#include <stdlib.h>
+#include <Information.h>
+#include <Parameter.h>
 
+#include <OPS_Globals.h>
 #include <elementAPI.h>
 
 void*
@@ -89,11 +93,16 @@ MultiLinear::MultiLinear(int tag, const Vector& s, const Vector& e)
 {
     numSlope = e.Size();
     data.resize(numSlope, 6);
+
+    e0.resize(numSlope);
+    e0 = e;
+    s0.resize(numSlope);
+    s0 = s;
     
     for (int i = 1; i < numSlope; i++) {
         if (e(i) < e(i - 1)) {
             opserr << "ERROR: MultiLinear strain_i+1 < strain_i\n";
-            exit(-1);
+            opserr << "Continuing with strain_i+1 = 1.2*strain_1\n";
         }
     }
     
@@ -300,11 +309,33 @@ MultiLinear::revertToStart(void)
         data(i, 0) = -data(i, 1);
         data(i, 2) = -data(i, 3);
     }
+
+    
+
+    data(0, 0) = -e0(0);      // neg yield strain
+    data(0, 1) = e0(0);       // pos yield strain
+    data(0, 2) = -s0(0);      // neg yield stress
+    data(0, 3) = s0(0);       // pos yield stress
+    data(0, 4) = s0(0) / e0(0);  // slope
+    data(0, 5) = e0(0);       // dist - (0-1)/2
+    
+    for (int i = 1; i < numSlope; i++) {
+        data(i, 0) = -e0(i);
+        data(i, 1) = e0(i);
+        data(i, 2) = -s0(i);
+        data(i, 3) = s0(i);
+        data(i, 4) = (s0(i) - s0(i - 1)) / (e0(i) - e0(i - 1));
+        data(i, 5) = e0(i) - e0(i - 1);
+    }
+
     
     tStrain = cStrain = 0.0;
     tStress = cStress = 0.0;
     tTangent = data(0, 4);
     cTangent = tTangent;
+
+    tSlope = 0;
+    
     return 0;
 }
 
@@ -315,6 +346,8 @@ MultiLinear::getCopy(void)
         new MultiLinear();
     theCopy->data = this->data;
     theCopy->numSlope = this->numSlope;
+    theCopy->e0 = this->e0;
+    theCopy->s0 = this->s0;    
     
     theCopy->tSlope = this->tSlope;
     theCopy->tStress = this->tStress;
@@ -379,4 +412,70 @@ MultiLinear::Print(OPS_Stream& s, int flag)
     s << "  stress: " << tStress << " tangent: " << tTangent << endln;
     s << "tSlope: " << tSlope << "numSlope: " << numSlope << endln;
     s << data;
+}
+
+// AddingSensitivity:BEGIN ///////////////////////////////////
+int
+MultiLinear::setParameter(const char **argv, int argc, Parameter &param)
+{
+    // trying to make this a little more general for arbitrary numbers of points
+    // expecting parameters named stress1, strain1, stress3, etc.
+    int dindx = -1;
+
+    if (argc < 2) {
+      return -1;
+    }
+    
+    dindx = atoi(argv[1]);
+    if (dindx < 1 || dindx > numSlope) {
+      return -1;
+    }
+    
+    if (strcmp(argv[0],"stress") == 0) {
+        param.setValue( data(dindx-1,3) );
+        return param.addObject(100+dindx, this);
+    }
+    if (strcmp(argv[0],"strain") == 0) {
+        param.setValue( data(dindx-1,1) );
+        return param.addObject(200+dindx, this);
+    }
+
+    return -1;
+}
+
+
+int
+MultiLinear::updateParameter(int parameterID, Information &info)
+{
+    int dindx = 0;
+    double sprev = 0;
+    double eprev = 0;
+    
+    if (parameterID == -1)
+        return -1;
+    else if (parameterID > 100 && parameterID <= 100+numSlope) {
+        // stress terms
+        dindx = parameterID-100;
+        data(dindx-1,2) = -1.0*info.theDouble;
+        data(dindx-1,3) = info.theDouble;
+    }
+    else if (parameterID > 200 && parameterID <= 200+numSlope) {
+        // strain terms
+        dindx = parameterID-200;
+        data(dindx-1,0) = -1.0*info.theDouble;
+        data(dindx-1,1) = info.theDouble;
+    }
+    else {
+        return -1;
+    }
+    
+    // update slopes
+    if (dindx > 1) {
+        sprev = data(dindx-2,3);
+        eprev = data(dindx-2,1);
+    }
+    data(dindx-1,4) = (data(dindx-1,3) - sprev) / (data(dindx-1,1) - eprev);
+    data(dindx-1,5) = data(dindx-1,1) - eprev;
+    
+    return 0;
 }

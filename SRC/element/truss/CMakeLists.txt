@@ -4,9 +4,12 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-add_library(OPS_Element_truss OBJECT)
+#add_library(OPS_Element_truss OBJECT)
 
-target_sources(OPS_Element_truss
+#target_sources(OPS_Element_truss
+#  PRIVATE
+
+target_sources(OPS_Element
   PRIVATE
     Truss.cpp
     TrussSection.cpp
@@ -25,9 +28,11 @@ target_sources(OPS_Element_truss
     CorotTruss2.h
 )
 
-add_library(OPS_Element_InertiaTruss OBJECT)
 
-target_sources(OPS_Element_InertiaTruss
+#add_library(OPS_Element_InertiaTruss OBJECT)
+
+#target_sources(OPS_Element_InertiaTruss
+target_sources(OPS_Element
   PRIVATE
     InertiaTruss.cpp
   PUBLIC

@@ -418,13 +418,14 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/response/ElementResponse.o \
 	$(FE)/recorder/response/MaterialResponse.o \
 	$(FE)/recorder/response/FiberResponse.o \
+	$(FE)/recorder/response/CrdTransfResponse.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
-	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
+	$(FE)/recorder/MPCORecorder.o \
 	$(FE)/recorder/VTK_Recorder.o 
 
 
@@ -459,7 +460,7 @@ GRAPH_LIBS = $(FE)/graph/graph/DOF_Graph.o \
 	$(FE)/graph/numberer/MyRCM.o \
 	$(FE)/graph/numberer/GraphNumberer.o \
 	$(FE)/graph/numberer/SimpleNumberer.o \
-	$(FE)/graph/partitioner/Metis.o
+	$(FE)/graph/partitioner/MetisWrapper.o
 
 ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/WrapperElement.o \
@@ -721,6 +722,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
 	$(FE)/material/uniaxial/ElasticMultiLinear.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
+	$(FE)/material/uniaxial/SteelDRC.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
 	$(FE)/material/uniaxial/ElasticBilin.o \
 	$(FE)/material/uniaxial/ElasticPowerFunc.o \
@@ -800,6 +802,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
+	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
 	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
@@ -816,6 +819,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ENTMaterial.o \
 	$(FE)/material/uniaxial/BoucWenMaterial.o \
 	$(FE)/material/uniaxial/BoucWenOriginal.o \
+	$(FE)/material/uniaxial/BoucWenInfill.o \
 	$(FE)/material/uniaxial/Pinching4Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
@@ -842,6 +846,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/MultilinearBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseSoftClayBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseStiffClayBelowWS.o \
+	$(FE)/material/uniaxial/backbone/ReeseStiffClayAboveWS.o \
+	$(FE)/material/uniaxial/backbone/VuggyLimestone.o \
+	$(FE)/material/uniaxial/backbone/CementedSoil.o \
+	$(FE)/material/uniaxial/backbone/WeakRock.o \
+	$(FE)/material/uniaxial/backbone/LiquefiedSand.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
@@ -868,6 +877,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Trilinwp.o \
 	$(FE)/material/uniaxial/Trilinwp2.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
+	$(FE)/material/uniaxial/DowelType.o \
+	$(FE)/material/uniaxial/DuctileFracture.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -923,6 +934,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMS.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMS3D.o \
+	$(FE)/material/nD/UANDESmaterials/SAniSandMSPlaneStrain.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \
 	$(FE)/material/nD/FeapMaterial.o \
@@ -1049,6 +1063,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/GenericSection1d.o \
 	$(FE)/material/section/ElasticPlateSection.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \
+	$(FE)/material/section/DoubleMembranePlateFiberSection.o \
 	$(FE)/material/section/MembranePlateFiberSection.o \
 	$(FE)/material/section/Bidirectional.o \
 	$(FE)/material/section/Elliptical2.o \
@@ -1062,6 +1077,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/integration/WideFlangeSectionIntegration.o \
 	$(FE)/material/section/integration/RCTBeamSectionIntegration.o \
 	$(FE)/material/section/integration/TubeSectionIntegration.o \
+	$(FE)/material/section/integration/HSSSectionIntegration.o \
 	$(FE)/material/section/repres/patch/Patch.o \
 	$(FE)/material/section/repres/patch/QuadPatch.o \
 	$(FE)/material/section/repres/patch/CircPatch.o \
@@ -1325,6 +1341,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
 	$(FE)/analysis/integrator/StaticIntegrator.o \
 	$(FE)/analysis/integrator/LoadControl.o \
+	$(FE)/analysis/integrator/HarmonicSteadyState.o \
 	$(FE)/analysis/integrator/StagedLoadControl.o \
 	$(FE)/analysis/integrator/StagedNewmark.o \
 	$(FE)/analysis/integrator/EQPath.o \

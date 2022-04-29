@@ -60,6 +60,7 @@ void* OPS_PVDRecorder()
     PVDRecorder::NodeData nodedata;
     std::vector<PVDRecorder::EleData> eledata;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     while(numdata > 0) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "disp") == 0) {
@@ -127,22 +128,34 @@ void* OPS_PVDRecorder()
 		return 0;
 	    }
 	    if (dT < 0) dT = 0;
+	} else if(strcmp(type, "-rTolDt") == 0) {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WARNING: needs rTolDt \n";
+		return 0;
+	    }
+	    numdata = 1;
+	    if(OPS_GetDoubleInput(&numdata,&rTolDt) < 0) {
+		opserr << "WARNING: failed to read rTolDt\n";
+		return 0;
+	    }
+	    if (rTolDt < 0) rTolDt = 0;
 	}
 	numdata = OPS_GetNumRemainingInputArgs();
     }
 
     // create recorder
-    return new PVDRecorder(name,nodedata,eledata,indent,precision,dT);
+    return new PVDRecorder(name,nodedata,eledata,indent,precision,dT, rTolDt);
 }
 
 PVDRecorder::PVDRecorder(const char *name, const NodeData& ndata,
 			 const std::vector<EleData>& edata, int ind, int pre,
-			 double dt)
+			 double dt, double rTolDt)
     :Recorder(RECORDER_TAGS_PVDRecorder), indentsize(ind), precision(pre),
      indentlevel(0), pathname(), basename(),
      timestep(), timeparts(), theFile(), quota('\"'), parts(),
      nodedata(ndata), eledata(edata), theDomain(0), partnum(),
-     dT(dt), nextTime(0.0)
+     dT(dt), relDeltaTTol(rTolDt), nextTime(0.0)
 {
     PVDRecorder::setVTKType();
     getfilename(name);
@@ -165,26 +178,28 @@ PVDRecorder::~PVDRecorder()
 int
 PVDRecorder::record(int ctag, double timestamp)
 {
-    if (dT>0 && nextTime>timestamp) {
-	return 0;
+    if (dT == 0.0 || timestamp - nextTime >= -dT * relDeltaTTol) {
+      if (dT > 0.0) {
+        nextTime = timestamp + dT;
+      }
+
+
+      if (dT > 0) {
+        nextTime = timestamp+dT;
+      }
+
+      if(precision==0)
+         return 0;
+
+      // get current time
+      timestep.push_back(timestamp);
+
+      // save vtu file
+      if(vtu() < 0) return -1;
+
+      // save pvd file
+      if(pvd() < 0) return -1;
     }
-
-    if (dT > 0) {
-	nextTime = timestamp+dT;
-    }
-
-    if(precision==0)
-        return 0;
-
-    // get current time
-    timestep.push_back(timestamp);
-
-    // save vtu file
-    if(vtu() < 0) return -1;
-
-    // save pvd file
-    if(pvd() < 0) return -1;
-
     return 0;
 }
 
@@ -1305,7 +1320,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     for(int i=0; i<ndtags.Size(); i++) {
 	nodes[i] = theDomain->getNode(ndtags(i));
 	if(nodes[i] == 0) {
-	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
+	    opserr<<"WARNING: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
 	    return -1;
 	}
 	const Vector& crds = nodes[i]->getCrds();

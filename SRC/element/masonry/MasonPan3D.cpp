@@ -1434,8 +1434,9 @@ MasonPan3D::getResponse(int responseID, Information &eleInformation)
     default:
         return -1;
     }
-		 }
-	 }
+    }
+    return 0;
+}
 
 
 double

@@ -189,7 +189,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     numModesMax = numModes;
   }
 
-  static char which[3];
+  char which[3];
   if (findSmallest == true) {
     strcpy(which, "LM");
   }  else {
@@ -304,7 +304,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "NCV must be greater than NEV and less than or equal to N.\n";
       break;
     case -4:
-      opserr << "The maximum number of Arnoldi update iterations allowed";
+      opserr << "The maximum number of Arnoldi update iterations allowed\n";
       break;
     case -5: 
       opserr << "WHICH must be one of 'LM', 'SM', 'LA', 'SA' or 'BE'.\n";
@@ -316,7 +316,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "Length of private work array WORKL is not sufficient.\n";
       break;
     case -8: 
-      opserr << "Error return from trid. eigenvalue calculation";
+      opserr << "Error return from trid. eigenvalue calculation\n";
       opserr << "Informatinal error from LAPACK routine dsteqr.\n";
       break;
     case -9: 
@@ -335,11 +335,9 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "NEV and WHICH = 'BE' are incompatible.\n";
       break;
     case -9999:
-      opserr << "Could not build an Arnoldi factorization.";
-      opserr << "IPARAM(5) the size of the current Arnoldi factorization: is ";
-      opserr << iparam[4];
-      opserr << "factorization. The user is advised to check that";
-      opserr << "enough workspace and array storage has been allocated.\n";
+      opserr << "Could not build an Arnoldi factorization.\n";
+      opserr << "IPARAM(5) - the size of the current Arnoldi factorization is " << iparam[4] << ".\n";
+      opserr << "The user is advised to check that enough workspace and array storage have been allocated.\n";
       break;
     default:
       opserr << "unrecognised return value\n";
