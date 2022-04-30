@@ -57,12 +57,12 @@ Matrix CorotCrdTransfWarping3d::RJ(3,3);
 Matrix CorotCrdTransfWarping3d::Rbar(3,3); 
 Matrix CorotCrdTransfWarping3d::e(3,3); 
 Matrix CorotCrdTransfWarping3d::Tp(6,7); 
-Matrix CorotCrdTransfWarping3d::T(9,14);   // chagne dimension of the matrix to suit for warping degrees
-Matrix CorotCrdTransfWarping3d::Tlg(14,14);   // chagne dimension of the matrix to suit for warping degrees
-Matrix CorotCrdTransfWarping3d::TlgInv(14,14);   // chagne dimension of the matrix to suit for warping degrees
+Matrix CorotCrdTransfWarping3d::T(9,14);   // change dimension of the matrix to suit for warping degrees
+Matrix CorotCrdTransfWarping3d::Tlg(14,14);   // change dimension of the matrix to suit for warping degrees
+Matrix CorotCrdTransfWarping3d::TlgInv(14,14);   // change dimension of the matrix to suit for warping degrees
 Matrix CorotCrdTransfWarping3d::kg(14,14);
-Matrix CorotCrdTransfWarping3d::Lr2(14,3); // chagne dimension of the matrix to suit for warping degrees
-Matrix CorotCrdTransfWarping3d::Lr3(14,3);  // chagne dimension of the matrix to suit for warping degrees
+Matrix CorotCrdTransfWarping3d::Lr2(14,3); // change dimension of the matrix to suit for warping degrees
+Matrix CorotCrdTransfWarping3d::Lr3(14,3);  // change dimension of the matrix to suit for warping degrees
 Matrix CorotCrdTransfWarping3d::A(3,3);
 
 
@@ -680,7 +680,7 @@ CorotCrdTransfWarping3d::compTransfMatrixBasicGlobal(void)
             T(6,i+10) =  Se(i);
         }
         
-        // setup tranformation matrix
+        // setup transformation matrix
         static Vector Lr(14);
         
         // T(:,1) += Lr3*rI2 - Lr2*rI3;
