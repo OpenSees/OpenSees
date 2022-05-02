@@ -184,6 +184,8 @@ extern void* OPS_BoucWenInfill(void);  // S. Sirotti  18-January-2022  e-mail: s
 extern void *OPS_SLModel(void);
 extern void *OPS_SMAMaterial(void);
 extern void* OPS_HystereticPoly(void); // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+extern void* OPS_HystereticSmooth(void); // Salvatore Sessa 02-May-2022 Mail: salvatore.sessa2@unina.it
+extern void* OPS_HystereticAsym(void); // Salvatore Sessa 02-May-2022 Mail: salvatore.sessa2@unina.it
 extern void *OPS_Masonry(void);
 extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
@@ -2909,7 +2911,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	else
 		return TCL_ERROR;
     }								// END Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
-    if (strcmp(argv[1], "DowelType") == 0) {
+    if (strcmp(argv[1], "HystereticSmooth") == 0) {		// BEGIN Salvatore Sessa 02-May-2022 Mail: salvatore.sessa2@unina.it
+	void* theMat = OPS_HystereticSmooth();
+	if (theMat != 0)
+		theMaterial = (UniaxialMaterial*)theMat;
+	else
+		return TCL_ERROR;
+	}
+    if (strcmp(argv[1], "HystereticAsym") == 0) {
+	void* theMat = OPS_HystereticAsym();
+	if (theMat != 0)
+		theMaterial = (UniaxialMaterial*)theMat;
+	else
+		return TCL_ERROR;
+	}														// END Salvatore Sessa 02-May-2022 Mail: salvatore.sessa2@unina.it
+	if (strcmp(argv[1], "DowelType") == 0) {
         void* theMat = OPS_DowelType();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
