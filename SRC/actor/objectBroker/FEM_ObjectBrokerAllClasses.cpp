@@ -97,7 +97,12 @@
 #include "Bond_SP01.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
+
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
+#include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
+#include <HystereticAsym.h>					// Salvatore Sessa Apr-21-2022
+
+
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
 
@@ -1355,6 +1360,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		    
 	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
 	    return new HystereticPoly();
+		    
+	case MAT_TAG_HystereticSmooth:			// Salvatore Sessa
+			return new HystereticSmooth();
+
+	case MAT_TAG_HystereticAsym:			// Salvatore Sessa
+		return new HystereticAsym();	    
 
 	case MAT_TAG_DowelType:
 		return new DowelType();
