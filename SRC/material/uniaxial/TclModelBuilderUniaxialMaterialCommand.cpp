@@ -82,6 +82,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <string.h>
 
 #include <UniaxialJ2Plasticity.h>   // Quan 
+#include <RCShearHinge.h>   //atabkhi
 
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
@@ -186,6 +187,7 @@ extern void *OPS_Trilinwp(void);
 extern void *OPS_Trilinwp2(void);
 extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
+extern void *OPS_RCShearHinge(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -287,6 +289,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		else
 			return TCL_ERROR;
 	}
+
+    else if (strcmp(argv[1], "RCShearHinge") == 0 || strcmp(argv[1], "RCShearhinge") == 0 || strcmp(argv[1], "rcshearhinge") == 0 || strcmp(argv[1], "RCshearhinge") == 0 || strcmp(argv[1], "Rcshearhinge") == 0) {
+        void* theMat = OPS_RCShearHinge();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
 
 	// ntosic
 	else if (strcmp(argv[1], "TDConcreteEXP") == 0) {
