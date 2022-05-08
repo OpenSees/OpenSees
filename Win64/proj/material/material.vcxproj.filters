@@ -1433,6 +1433,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticSmooth.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\RCShearHinge.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2622,6 +2625,9 @@
       <Filter>section</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\RCShearHinge.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>

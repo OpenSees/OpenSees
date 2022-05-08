@@ -357,6 +357,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\RCShearHinge.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ReinforcingSteel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceLow.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp" />
@@ -779,6 +780,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\RCShearHinge.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ReinforcingSteel.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ResilienceLow.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.h" />

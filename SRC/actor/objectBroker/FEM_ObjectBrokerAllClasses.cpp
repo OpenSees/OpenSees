@@ -56,6 +56,7 @@
 
 
 // uniaxial material model header files
+#include "RCShearHinge.h"			//atabkhi
 #include "BoucWenMaterial.h"		//SAJalali
 #include "SPSW02.h"			//SAJalali
 #include "ElasticMaterial.h"
@@ -1159,6 +1160,8 @@ UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
+	case MAT_TAG_RCShearHinge:
+		return new RCShearHinge(); // atabkhi
 	case MAT_TAG_SPSW02:
 		return new SPSW02(); // SAJalali
 	case MAT_TAG_BoucWen:
