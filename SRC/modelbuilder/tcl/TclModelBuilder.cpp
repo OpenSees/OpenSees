@@ -677,6 +677,7 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
   //  OPS_clearAllNDMaterial();
+  OPS_clearAllBeamIntegrationRule();
 
   theSections->clearAll(); 
   theSectionRepresents->clearAll();

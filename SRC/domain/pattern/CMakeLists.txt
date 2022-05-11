@@ -68,6 +68,15 @@ target_sources(OPS_Domain
 
 target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
+target_sources(OPS_Reliability
+    PRIVATE
+    SimulatedRandomProcessSeries.cpp
+    DiscretizedRandomProcessSeries.cpp    
+    PUBLIC
+    SimulatedRandomProcessSeries.h
+    DiscretizedRandomProcessSeries.h    
+)
+
 add_subdirectory(drm)
 
 

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.645
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "actor", "proj\actor\actor.vcxproj", "{D9026BC0-B5BF-3BE9-E9CB-3491638F2C38}"
 EndProject
@@ -55,8 +55,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{72CEB368-613B-3977-7BE6-0155A5F1DDBC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesPy", "proj\openSeesPy\OpenSeesPy.vcxproj", "{F26CA968-C7ED-4246-A732-388C23BF8822}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesPy38", "proj\openSeesPy38\OpenSeesPy38.vcxproj", "{5E3E057B-AE7B-434B-9FC1-C238893D901E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -396,20 +394,6 @@ Global
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.ActiveCfg = Release|x64
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.Build.0 = Release|x64
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x86.ActiveCfg = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug.DLL|x64.ActiveCfg = Debug|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug.DLL|x64.Build.0 = Debug|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug.DLL|x86.ActiveCfg = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug.DLL|x86.Build.0 = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug|x64.ActiveCfg = Debug|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug|x64.Build.0 = Debug|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Debug|x86.ActiveCfg = Debug|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release.DLL|x64.ActiveCfg = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release.DLL|x64.Build.0 = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release.DLL|x86.ActiveCfg = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release.DLL|x86.Build.0 = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release|x64.ActiveCfg = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release|x64.Build.0 = Release|x64
-		{5E3E057B-AE7B-434B-9FC1-C238893D901E}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

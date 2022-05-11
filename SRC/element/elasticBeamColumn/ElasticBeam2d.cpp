@@ -1255,6 +1255,9 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 5, Vector(3));
   }
   output.endTag(); // ElementOutput
+
+  if (theResponse == 0)
+    theResponse = theCoordTransf->setResponse(argv, argc, output);
   
   return theResponse;
 }

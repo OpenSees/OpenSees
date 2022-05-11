@@ -26,7 +26,7 @@
 // Created: 06/07
 // Revision: A
 //
-// Description: This file contains the class implementatation of ElementRecorder.
+// Description: This file contains the class implementation of ElementRecorder.
 //
 
 // What: "@(#) RemoveRecorder.C, revA"
@@ -252,7 +252,7 @@ void *OPS_RemoveRecorder() {
             secondaryFlag = false;
 
         } else if (strcmp(opt, "-region") == 0) {
-            // allow user to specif elements via a region
+            // allow user to specific elements via a region
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING recorder Element .. -region tag?  .. - "
@@ -443,7 +443,7 @@ void *OPS_RemoveRecorder() {
 //#define MMTDEBUG
 //#define MMTDEBUGIO
 
-// initiatie class-wide static members to keep track of removed components
+// initiate class-wide static members to keep track of removed components
 int RemoveRecorder::numRecs = 0;
 ID RemoveRecorder::remEleList(0);
 ID RemoveRecorder::remNodeList(0);
@@ -841,7 +841,7 @@ RemoveRecorder::record(int commitTag, double timeStamp)
     }
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 int 
@@ -1049,7 +1049,7 @@ RemoveRecorder::elimNode(int theNodeTag, double timeStamp)
   
   while ((thePattern = theLoadPatterns()) != 0) {
     
-    // start with nodal laods
+    // start with nodal loads
     NodalLoadIter theLoads = thePattern->getNodalLoads();
     NodalLoad *theLoad;
     

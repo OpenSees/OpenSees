@@ -122,6 +122,10 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
     // mass matrix data
     double *Mptr = theSOE->M;
 
+    double *mCopy = new double[n*n];
+    for (int i=0; i<n*n; i++)
+      mCopy[i] = Mptr[i];
+    
     // leading dimension of M
     int ldM = n;
 
@@ -209,17 +213,20 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
     // mass normalize the eigenvalues
     //
 
-    double *tmpV = new double[n];    
-    for (int i=0; i<n; i++)
-      tmpV[i]=0.0;
-    
-    for (int k=0; k<numEigen; k++) {
+    Mptr = mCopy;    
+    double *tmpV = new double[n];
 
+    // mass normailze all vectors .. NOTE instead of numEigen!
+    for (int k=0; k<n; k++) {
+
+      for (int i=0; i<n; i++)
+	tmpV[i]=0.0;
+      
       double factor = 0.0;
       
       // tmp = M * phi
       for (int i=0; i<n; i++) { // foreach col
-	double *mijPtr = Mptr + i*n;
+	double *mijPtr = &Mptr[i*n];
 	for (int j=0; j<n; j++) { // foreach row
 	  double mij = *mijPtr++;
 	  tmpV[j] += mij*eigenvector[k*n+j];
@@ -237,9 +244,9 @@ int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
 	for (int i=0; i<n; i++)
 	  eigenvector[k*n+i] = eigenvector[k*n+i]*factor;
       }
-
     }
 
+    delete [] mCopy;
     delete [] tmpV;
     
     // sort eigenvalues based on size
@@ -309,7 +316,7 @@ const Vector& FullGenEigenSolver::getEigenvector(int mode)
 
     int size = theSOE->size;
     int index = size*sortingID[mode-1];
-
+    
     if (eigenvector != 0) {
         for (int i=0; i<size; i++) {
             (*eigenV)[i] = eigenvector[index++];
@@ -321,7 +328,10 @@ const Vector& FullGenEigenSolver::getEigenvector(int mode)
         eigenV->Zero();
     }      
 
+    //opserr << "EIGEN VECTOR: " << *eigenV;
+    
     return *eigenV;
+    
 }
 
 
@@ -361,6 +371,7 @@ void FullGenEigenSolver::sort(int length, double *x, int *id)
 {
     // this is an implementation of shell sort that
     // additionally keeps track of the sorting order
+  
     int flag = 1;
     int d = length;
     int i, idTmp;

@@ -1859,6 +1859,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"setStartNodeTag", &Tcl_ops_setStartNodeTag);
     addCommand(interp,"hystereticBackbone", &Tcl_ops_hystereticBackbone);
     addCommand(interp,"strengthDegradation", &Tcl_ops_stiffnessDegradation);
+    addCommand(interp,"strengthControl", &Tcl_ops_stiffnessDegradation);    
     addCommand(interp,"stiffnessDegradation", &Tcl_ops_strengthDegradation);
     addCommand(interp,"unloadingRule", &Tcl_ops_unloadingRule);
     addCommand(interp,"partition", &Tcl_ops_partition);

@@ -1281,17 +1281,11 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     }   
   }
   
-  else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-    theResponse = new ElementResponse(this, 201, Vector(3));
-  
-  else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-    theResponse = new ElementResponse(this, 202, Vector(3));
-  
-  else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-    theResponse = new ElementResponse(this, 203, Vector(3));
-
   output.endTag(); // ElementOutput
 
+  if (theResponse == 0)
+    theResponse = theCoordTransf->setResponse(argv, argc, output);
+  
   return theResponse;
 }
 
@@ -1365,21 +1359,6 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   }
   default:
     break;
-  }
-
-  if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-    
-    theCoordTransf->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
   }
 
   return -1;

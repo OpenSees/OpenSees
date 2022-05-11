@@ -26,7 +26,7 @@
 // Created: 04/04
 // Revision: A
 //
-// Description: This file contains the class implementatation of ElementRecorder.
+// Description: This file contains the class implementation of ElementRecorder.
 //
 // What: "@(#) ElementRecorder.C, revA"
 
@@ -57,7 +57,7 @@ DamageRecorder::DamageRecorder( int elemid, ID &secIDs, int dofid, DamageModel *
 {
   // make copy of the damage model
   if ( dmgPtr == NULL ) {
-    opserr << "DamageRecorder::DamageRecorder - no damage pointer associated with the damge recorder" <<endln;
+    opserr << "DamageRecorder::DamageRecorder - no damage pointer associated with the damage recorder" <<endln;
     exit(-1);
   }
 
@@ -212,7 +212,7 @@ DamageRecorder::record(int commitTag, double timeStamp)
 	  if ( theResponses[i+numSec*j]->getResponse() < 0) {
 	    DamageInformation(j) = 0.0;
 	  } else {
-	    // ask the element for the reponse
+	    // ask the element for the response
 	    Information &eleinfo = theResponses[i+numSec*j]->getInformation();
 	    const Vector &infovector = eleinfo.getData();
 	    DamageInformation(j) = infovector(dofID);
@@ -233,7 +233,7 @@ DamageRecorder::record(int commitTag, double timeStamp)
 
   theOutput->write(*data);
 
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 
