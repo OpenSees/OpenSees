@@ -155,22 +155,24 @@ CrdTransf::setResponse(const char **argv, int argc, OPS_Stream &theHandler)
 int
 CrdTransf::getResponse(int responseID, Information &eleInfo)
 {
-  if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-    
-    this->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
-  else
-    return -1;
+    if (responseID >= 201 && responseID <= 203) {
+        static Vector xlocal(3);
+        static Vector ylocal(3);
+        static Vector zlocal(3);
+        
+        this->getLocalAxes(xlocal, ylocal, zlocal);
+        
+        if (responseID == 201)
+            return eleInfo.setVector(xlocal);
+        else if (responseID == 202)
+            return eleInfo.setVector(ylocal);
+        else if (responseID == 203)
+            return eleInfo.setVector(zlocal);
+        else
+            return -1;
+    }
+    else
+        return -1;
 }
 
 const Vector &
