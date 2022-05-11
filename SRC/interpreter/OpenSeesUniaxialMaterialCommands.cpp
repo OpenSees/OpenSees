@@ -230,6 +230,10 @@ void* OPS_KarsanUnloadingRule();
 
 void* OPS_HystereticPoly();  // Salvatore Sessa 14-01-2021 Mail:
                              // salvatore.sessa2@unina.it
+void* OPS_HystereticSmooth();  // Salvatore Sessa Mail:
+                             // salvatore.sessa2@unina.it
+void* OPS_HystereticAsym();  // Salvatore Sessa
+                             // salvatore.sessa2@unina.it
 void* OPS_DowelType();
 void* OPS_DuctileFracture();  // Kuanshi Zhong
 
@@ -527,8 +531,9 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("SMA", &OPS_SMAMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
       "HystereticPoly",
-      &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021
-                              // Mail: salvatore.sessa2@unina.it
+      &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+  uniaxialMaterialsMap.insert(std::make_pair("HystereticSmooth", &OPS_HystereticSmooth)); // Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+	uniaxialMaterialsMap.insert(std::make_pair("HystereticAsym", &OPS_HystereticAsym));     // Salvatore Sessa 21-Apr-2022 Mail: salvatore.sessa2@unina.it
   uniaxialMaterialsMap.insert(
       std::make_pair("DowelType", &OPS_DowelType));
   uniaxialMaterialsMap.insert(

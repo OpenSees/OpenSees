@@ -2293,7 +2293,7 @@ int OPS_sectionStiffness()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionStiffness eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionStiffness eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2379,7 +2379,7 @@ int OPS_sectionFlexibility()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionFlexibility eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionFlexibility eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 

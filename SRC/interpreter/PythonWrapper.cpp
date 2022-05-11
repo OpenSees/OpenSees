@@ -2777,6 +2777,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("hystereticBackbone", &Py_ops_hystereticBackbone);
     addCommand("stiffnessDegradation", &Py_ops_stiffnessDegradation);
     addCommand("strengthDegradation", &Py_ops_strengthDegradation);
+    addCommand("strengthControl", &Py_ops_strengthDegradation);    
     addCommand("unloadingRule", &Py_ops_unloadingRule);
     addCommand("partition", &Py_ops_partition);
     addCommand("pressureConstraint", &Py_ops_pc);
