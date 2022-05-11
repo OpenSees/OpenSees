@@ -236,7 +236,7 @@ c     | External Subroutines |
 c     %----------------------%
 c
       external   dcopy , dgetv0 , dnaitr , dnconv , dneigh , dngets , dnapps ,
-     &           dvout , ivout, second
+     &           dvout , dvout1, ivout, ivout1, second
 c
 c     %--------------------%
 c     | External Functions |
@@ -388,7 +388,7 @@ c
          iter = iter + 1
 c
          if (msglvl .gt. 0) then
-            call ivout (logfil, 1, iter, ndigit, 
+            call ivout1 (logfil, 1, iter, ndigit, 
      &           '_naup2: **** Start of major iteration number ****')
          end if
 c 
@@ -401,9 +401,9 @@ c
          np  = kplusp - nev
 c
          if (msglvl .gt. 1) then
-            call ivout (logfil, 1, nev, ndigit, 
+            call ivout1 (logfil, 1, nev, ndigit, 
      &     '_naup2: The length of the current Arnoldi factorization')
-            call ivout (logfil, 1, np, ndigit, 
+            call ivout1 (logfil, 1, np, ndigit, 
      &           '_naup2: Extend the Arnoldi factorization by')
          end if
 c
@@ -435,7 +435,7 @@ c
          update = .false.
 c
          if (msglvl .gt. 1) then
-            call dvout  (logfil, 1, rnorm, ndigit, 
+            call dvout1  (logfil, 1, rnorm, ndigit, 
      &           '_naup2: Corresponding B-norm of the residual')
          end if
 c 
@@ -678,7 +678,7 @@ c
          end if              
 c     
          if (msglvl .gt. 0) then
-            call ivout (logfil, 1, nconv, ndigit, 
+            call ivout1 (logfil, 1, nconv, ndigit, 
      &           '_naup2: no. of "converged" Ritz values at this iter.')
             if (msglvl .gt. 1) then
                kp(1) = nev
@@ -730,7 +730,7 @@ c
          end if
 c
          if (msglvl .gt. 2) then 
-            call ivout (logfil, 1, np, ndigit, 
+            call ivout1 (logfil, 1, np, ndigit, 
      &                  '_naup2: The number of shifts to apply ')
             call dvout  (logfil, np, ritzr, ndigit,
      &                  '_naup2: Real part of the shifts')
@@ -796,7 +796,7 @@ c
          cnorm = .false.
 c
          if (msglvl .gt. 2) then
-            call dvout  (logfil, 1, rnorm, ndigit, 
+            call dvout1  (logfil, 1, rnorm, ndigit, 
      &      '_naup2: B-norm of residual for compressed factorization')
             call dmout  (logfil, nev, nev, h, ldh, ndigit,
      &        '_naup2: Compressed upper Hessenberg matrix H')

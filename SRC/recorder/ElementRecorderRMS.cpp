@@ -20,7 +20,7 @@
                                                                         
 // Written: fmk 
 //
-// Description: This file contains the class implementatation of 
+// Description: This file contains the class implementation of 
 // EnvelopeElementRecorderRMS.
 //
 // What: "@(#) EnvelopeElementRecorderRMS.C, revA"
@@ -57,8 +57,8 @@ void*
 OPS_ElementRecorderRMS()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder Element ";
-        opserr << "-ele <list elements> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder Element ";
+        opserr << "-ele <list elements> -file <fileName> -dT <dT> response";
         return 0;
     }
 
@@ -80,6 +80,7 @@ OPS_ElementRecorderRMS()
 
     bool echoTimeFlag = false;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     bool doScientific = false;
 
     int precision = 6;
@@ -156,6 +157,15 @@ OPS_ElementRecorderRMS()
                 int num = 1;
                 if (OPS_GetDoubleInput(&num, &dT) < 0) {
                     opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-rTolDt") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+                    opserr << "WARNING: failed to read rTolDt\n";
                     return 0;
                 }
             }
@@ -272,7 +282,7 @@ OPS_ElementRecorderRMS()
     if (domain == 0)
         return 0;
     ElementRecorderRMS* recorder = new ElementRecorderRMS(&elements,
-        data, nargrem, *domain, *theOutputStream, dT, &dofs);
+        data, nargrem, *domain, *theOutputStream, dT, rTolDt, &dofs);
 
     return recorder;
 }
@@ -281,7 +291,7 @@ OPS_ElementRecorderRMS()
 ElementRecorderRMS::ElementRecorderRMS()
 :Recorder(RECORDER_TAGS_ElementRecorderRMS),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), theDomain(0),
- theHandler(0), deltaT(0), nextTimeStampToRecord(0.0), 
+ theHandler(0), deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0),
  runningTotal(0), currentData(0), count(0), 
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
@@ -294,11 +304,12 @@ ElementRecorderRMS::ElementRecorderRMS(const ID *ele,
 				       int argc,
 				       Domain &theDom, 
 				       OPS_Stream &theOutputHandler,
-				       double dT, 
+				       double dT,
+				       double rTolDt,
 				       const ID *indexValues)
   :Recorder(RECORDER_TAGS_ElementRecorderRMS),
   numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
-  theHandler(&theOutputHandler), deltaT(dT), nextTimeStampToRecord(0.0), 
+  theHandler(&theOutputHandler), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
    runningTotal(0), currentData(0), count(0),
   initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
@@ -417,7 +428,9 @@ ElementRecorderRMS::record(int commitTag, double timeStamp)
   }
 
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
       
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
@@ -426,7 +439,7 @@ ElementRecorderRMS::record(int commitTag, double timeStamp)
     // for each element do a getResponse() & put the result in current data
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -462,7 +475,7 @@ ElementRecorderRMS::record(int commitTag, double timeStamp)
     } 
   }    
 
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 
@@ -525,6 +538,7 @@ ElementRecorderRMS::sendSelf(int commitTag, Channel &theChannel)
 
   static Vector dData(1);
   dData(1) = deltaT;
+  dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorderRMS::sendSelf() - failed to send dData\n";
     return -1;
@@ -642,6 +656,7 @@ ElementRecorderRMS::recvSelf(int commitTag, Channel &theChannel,
     return -1;
   }
   deltaT = dData(1);
+  relDeltaTTol = dData(2);
 
 
   //
@@ -777,13 +792,13 @@ ElementRecorderRMS::initialize(void)
   if (eleID != 0) {
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
     int eleCount = 0;
     int responseCount = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle != 0) {
@@ -795,10 +810,10 @@ ElementRecorderRMS::initialize(void)
     theHandler->setOrder(xmlOrder);
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
-    // allocate memory for Reponses & set to 0
+    // allocate memory for Responses & set to 0
     theResponses = new Response *[numEle];
     if (theResponses == 0) {
       opserr << "ElementRecorder::initialize() - out of memory\n";
@@ -808,7 +823,7 @@ ElementRecorderRMS::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
 
@@ -866,7 +881,7 @@ ElementRecorderRMS::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     ElementIter &theElements = theDomain->getElements();
     Element *theEle;
 

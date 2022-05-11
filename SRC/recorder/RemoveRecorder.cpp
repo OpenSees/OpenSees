@@ -20,13 +20,13 @@
                                                                         
 // $Revision: 1.4 $
 // $Date: 2010-02-09 21:29:33 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/RemoveRecorder.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/recorder/fder.cpp,v $
                                                                         
 // Written: M Talaat
 // Created: 06/07
 // Revision: A
 //
-// Description: This file contains the class implementatation of ElementRecorder.
+// Description: This file contains the class implementation of ElementRecorder.
 //
 
 // What: "@(#) RemoveRecorder.C, revA"
@@ -54,6 +54,7 @@
 #include <NodalLoad.h>
 #include <NodalLoadIter.h>
 //#include <G3string.h>
+#include <Node.h>
 
 #include <SP_Constraint.h> //Joey UC Davis
 #include <SP_ConstraintIter.h> //Joey UC Davis
@@ -251,7 +252,7 @@ void *OPS_RemoveRecorder() {
             secondaryFlag = false;
 
         } else if (strcmp(opt, "-region") == 0) {
-            // allow user to specif elements via a region
+            // allow user to specific elements via a region
 
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING recorder Element .. -region tag?  .. - "
@@ -435,14 +436,14 @@ void *OPS_RemoveRecorder() {
 
     return new RemoveRecorder(
         nodeTag, eleIDs, secIDs, secondaryEleIDs, remCriteria, *domain,
-        *theOutputStream, echoTime, dT, fileName, eleMass, gAcc, gDir,
+        *theOutputStream, echoTime, dT, 0.00001*dT, fileName, eleMass, gAcc, gDir,
         gPat, nTagbotn, nTagmidn, nTagtopn, globgrav, fileNameinf);
 }
 
 //#define MMTDEBUG
 //#define MMTDEBUGIO
 
-// initiatie class-wide static members to keep track of removed components
+// initiate class-wide static members to keep track of removed components
 int RemoveRecorder::numRecs = 0;
 ID RemoveRecorder::remEleList(0);
 ID RemoveRecorder::remNodeList(0);
@@ -469,7 +470,8 @@ RemoveRecorder::RemoveRecorder(int nodeID,
 			       Domain &theDomainPtr, 
 			       OPS_Stream &s,
 			       bool echotimeflag, 
-			       double deltat, 
+			       double deltat,
+			       double rTolDt,
 			       const char *theFileName ,
 			       Vector eleMass, 
 			       double gAcc, 
@@ -491,7 +493,8 @@ RemoveRecorder::RemoveRecorder(int nodeID,
    secondaryEleTags(secondaryTags.Size()), 
    secondaryFlag(false),
    echoTimeFlag(echotimeflag), 
-   deltaT(deltat), 
+   deltaT(deltat),
+   relDeltaTTol(rTolDt),
    nextTimeStampToRecord(0.0), 
    gAcc(gAcc), 
    gDir(gDir), 
@@ -704,7 +707,9 @@ RemoveRecorder::record(int commitTag, double timeStamp)
   opserr<<"entering record()"<<endln;
 #endif
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
@@ -836,7 +841,7 @@ RemoveRecorder::record(int commitTag, double timeStamp)
     }
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 int 
@@ -1044,7 +1049,7 @@ RemoveRecorder::elimNode(int theNodeTag, double timeStamp)
   
   while ((thePattern = theLoadPatterns()) != 0) {
     
-    // start with nodal laods
+    // start with nodal loads
     NodalLoadIter theLoads = thePattern->getNodalLoads();
     NodalLoad *theLoad;
     

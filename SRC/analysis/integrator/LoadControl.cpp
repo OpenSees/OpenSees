@@ -58,14 +58,14 @@
 void* OPS_LoadControlIntegrator()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
-	opserr<<"insufficient arguments\n";
+	opserr<<"LoadControl - insufficient arguments\n";
 	return 0;
     }
 
     double lambda;
     int numData = 1;
     if(OPS_GetDoubleInput(&numData,&lambda) < 0) {
-	opserr<<"WARNING failed to read double lambda\n";
+	opserr<<"WARNING LoadControl - failed to read double lambda\n";
 	return 0;
     }
 
@@ -73,12 +73,12 @@ void* OPS_LoadControlIntegrator()
     double mLambda[2] = {lambda,lambda};
     if(OPS_GetNumRemainingInputArgs() > 2) {
 	if(OPS_GetIntInput(&numData,&numIter) < 0) {
-	    opserr<<"WARNING failed to read int numIter\n";
+	    opserr<<"WARNING LoadControl - failed to read int numIter\n";
 	    return 0;
 	}
 	numData = 2;
 	if(OPS_GetDoubleInput(&numData,&mLambda[0]) < 0) {
-	    opserr<<"WARNING failed to read double min and max\n";
+	    opserr<<"WARNING LoadControl - failed to read double min and max\n";
 	    return 0;
 	}
     }
@@ -388,13 +388,6 @@ LoadControl::computeSensitivities(void)
 	*/
 	// Zero out the old right-hand side of the SOE
 	theSOE->zeroB();
-		
-
-	if (this == 0) {
-	  opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
-	  opserr << "the SensitivityIntegrator is NULL\n";
-	  return -1;
-	}
 
 	// Form the part of the RHS which are indepent of parameter
 	this->formIndependentSensitivityRHS();

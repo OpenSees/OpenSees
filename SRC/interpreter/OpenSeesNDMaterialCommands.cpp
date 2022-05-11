@@ -34,6 +34,7 @@ void* OPS_CycLiqCPMaterial();
 void* OPS_CycLiqCPSPMaterial();
 void* OPS_BoundingCamClayMaterial();
 void* OPS_ManzariDafaliasMaterial();
+void* OPS_SAniSandMSMaterial();
 void* OPS_ContactMaterial2DMaterial();
 void* OPS_ContactMaterial3DMaterial();
 void* OPS_InitialStateAnalysisWrapperMaterial();
@@ -118,6 +119,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("CycLiqCPSP", &OPS_CycLiqCPSPMaterial));
 	nDMaterialsMap.insert(std::make_pair("BoundingCamClay", &OPS_BoundingCamClayMaterial));
 	nDMaterialsMap.insert(std::make_pair("ManzariDafalias", &OPS_ManzariDafaliasMaterial));
+	nDMaterialsMap.insert(std::make_pair("SAniSandMS", &OPS_SAniSandMSMaterial));
 	nDMaterialsMap.insert(std::make_pair("ContactMaterial2D", &OPS_ContactMaterial2DMaterial));
 	nDMaterialsMap.insert(std::make_pair("ContactMaterial3D", &OPS_ContactMaterial3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitialStateAnalysisWrapper", &OPS_InitialStateAnalysisWrapperMaterial));

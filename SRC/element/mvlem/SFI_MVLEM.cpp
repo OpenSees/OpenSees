@@ -578,12 +578,12 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
     opserr << "WARNING: Element is NOT vertical!";
   }
   
-  
+  int eletag = this->getTag();
   // Create a internal node tag
   for (int i = 0; i < m; i++){ // Large NEGATIVE integer starting with tag of the element
-    externalNodes(i+2) = -(Nd1*1000 + i + 1); // Max fibers is 999 to avoid overlap
+    externalNodes(i+2) = -(eletag*1000 + i + 1); // Max fibers is 999 to avoid overlap
   } 
-  
+
   // Build m internal nodes (NodesX) and add them to the domain
   for (int i = 0; i < m; i++) {
     

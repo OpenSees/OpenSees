@@ -103,7 +103,7 @@ nodeIPtr(0), nodeJPtr(0), L(0), Ln(0), ub(3), ubcommit(3), ubpr(3),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 {
     // check rigid joint offset for node I
-    if (&rigJntOffsetI == 0 || rigJntOffsetI.Size() != 2 )
+    if (rigJntOffsetI.Size() != 2 )
     {
         opserr << "CorotCrdTransf2d::CorotCrdTransf2d:  Invalid rigid joint offset vector for node I\n";
         opserr << "Size must be 2\n";      
@@ -113,7 +113,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
       nodeIOffset = rigJntOffsetI;
     
     // check rigid joint offset for node J
-    if (&rigJntOffsetJ == 0 || rigJntOffsetJ.Size() != 2 )
+    if (rigJntOffsetJ.Size() != 2 )
     {
         opserr << "CorotCrdTransf2d::CorotCrdTransf2d:  Invalid rigid joint offset vector for node J\n";
         opserr << "Size must be 2\n";      
@@ -1514,3 +1514,21 @@ CorotCrdTransf2d::getd1overLdh(void)
 }
 
 // AddingSensitivity:END /////////////////////////////////////
+
+int
+CorotCrdTransf2d::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
+{
+  xAxis(0) = cosTheta;
+  xAxis(1) = sinTheta;
+  xAxis(2) = 0;
+
+  yAxis(0) = -sinTheta;
+  yAxis(1) =  cosTheta;
+  yAxis(2) =  0;    
+  
+  zAxis(0) = 0.0;
+  zAxis(1) = 0.0;
+  zAxis(2) = 1.0;
+
+  return 0;
+}

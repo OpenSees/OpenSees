@@ -721,15 +721,15 @@ LysmerTriangle::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-LysmerTriangle::setResponse(const char **argv, int argc, Information &eleInfo)
+LysmerTriangle::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
-    return 0;
+  return Element::setResponse(argv, argc, output);
 }
 
 int 
 LysmerTriangle::getResponse(int responseID, Information &eleInfo)
 {
-	return -1;
+  return Element::getResponse(responseID, eleInfo);
 }
 
 

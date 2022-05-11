@@ -42,12 +42,6 @@ using std::nothrow;
 #define MATRIX_WORK_AREA 400
 #define INT_WORK_AREA 20
 
-#ifdef _WIN32
-#ifdef _USRDLL
-#define _DLL
-#endif
-#endif
-
 #include <math.h>
 
 int Matrix::sizeDoubleWork = MATRIX_WORK_AREA;
@@ -335,7 +329,7 @@ Matrix::Assemble(const Matrix &V, const ID &rows, const ID &cols, double fact)
 }
 
 #ifdef _WIN32
-//#ifndef _DLL
+
 extern "C" int  DGESV(int *N, int *NRHS, double *A, int *LDA, 
 			      int *iPiv, double *B, int *LDB, int *INFO);
 
@@ -445,13 +439,9 @@ Matrix::Solve(const Vector &b, Vector &x) const
     
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 #endif
@@ -542,13 +532,9 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
 	info = -1;
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 
@@ -640,23 +626,14 @@ Matrix::Invert(Matrix &theInverse) const
     
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGETRF(&n,&n,Aptr,&ldA,iPIV,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
     if (info != 0) 
       return -abs(info);
 
-//#ifndef _DLL
     DGETRI(&n,Aptr,&ldA,iPIV,Wptr,&workSize,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgetrf_(&n,&n,Aptr,&ldA,iPIV,&info);
     if (info != 0) 

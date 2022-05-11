@@ -23,6 +23,70 @@
 */
 
 #include <SimpsonBeamIntegration.h>
+#include <elementAPI.h>
+#include <ID.h>
+
+void* OPS_SimpsonBeamIntegration(int& integrationTag, ID& secTags)
+{
+  int nArgs = OPS_GetNumRemainingInputArgs();
+
+  if (nArgs < 3) {
+    opserr<<"insufficient arguments:integrationTag,secTag,N -or- N,*secTagList\n";
+    return 0;
+  }
+  
+  // Read tag
+  int iData[2];
+  int numData = 2;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "SimpsonBeamIntegration - unable to read int data" << endln;
+    return 0;
+  }
+  integrationTag = iData[0];
+  
+  if (nArgs == 3) {
+    // inputs: integrationTag,secTag,N
+    numData = 1;
+    int Nsections;
+    if (OPS_GetIntInput(&numData,&Nsections) < 0) {
+      opserr << "SimpsonBeamIntegration - Unable to read number of sections" << endln;
+      return 0;
+    }
+    if (Nsections < 0)
+      return 0;
+    
+    if (Nsections > 0) {
+      secTags.resize(Nsections);
+    } else {
+      secTags = ID();
+    }
+    for (int i=0; i<secTags.Size(); i++) {
+      secTags(i) = iData[1];
+    }
+  }
+  else {
+    // inputs: integrationTag,N,*secTagList
+    int Nsections = iData[1];
+    if (Nsections < 0)
+      return 0;
+    int *sections = new int[Nsections];
+    if (OPS_GetIntInput(&Nsections,sections) < 0) {
+      opserr << "SimpsonBeamIntegration - Unable to read section tags" << endln;
+      return 0;
+    }
+    if (Nsections > 0) {
+      secTags.resize(Nsections);
+    } else {
+      secTags = ID();
+    }
+    for (int i=0; i<secTags.Size(); i++) {
+      secTags(i) = sections[i];
+    }      
+    delete [] sections;
+  }
+  
+  return new SimpsonBeamIntegration;
+}
 
 SimpsonBeamIntegration::SimpsonBeamIntegration() :
 BeamIntegration(BEAM_INTEGRATION_TAG_Simpson)

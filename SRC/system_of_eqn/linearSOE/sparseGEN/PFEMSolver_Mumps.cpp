@@ -181,7 +181,6 @@ PFEMSolver_Mumps::solve()
     Vector& B = theSOE->B;
     ID& dofType = theSOE->dofType;
     ID& dofID = theSOE->dofID;
-    int stage = theSOE->stage;
 
     int Msize = M->n;
     int Isize = Git->n;
@@ -191,7 +190,7 @@ PFEMSolver_Mumps::solve()
     int size = X.Size();
 
     // numeric LU factorization of M
-    if(Msize > 0 && stage!=2) {
+    if(Msize > 0) {
         sid.job = JOB_FACTORIZATION;
         dmumps_c(&sid);
 
@@ -205,8 +204,6 @@ PFEMSolver_Mumps::solve()
     std::vector<double> deltaV1;
     if(Msize > 0) {
         deltaV1.assign(Msize, 0.0);
-    }
-    if (Msize>0 && stage!=2) {
         // rsi
         for (int i = 0; i < size; i++) {        // row
             int rowtype = dofType(i);      // row type
@@ -231,8 +228,6 @@ PFEMSolver_Mumps::solve()
     std::vector<double> deltaVf1;
     if (Fsize > 0) {
         deltaVf1.assign(Fsize,0.0);
-    }
-    if(Fsize>0 && stage!=2) {
 
         // rf
         for(int i=0; i<size; i++) {        // row
@@ -252,10 +247,10 @@ PFEMSolver_Mumps::solve()
     // Gi, Gf
     cs* Gi = 0;
     cs* Gf = 0;
-    if(Fsize>0 && (stage==0||stage==2)) {
+    if(Fsize>0) {
         Gf = cs_transpose(Gft, 1);
     }
-    if(Isize>0 && (stage==0||stage==2)) {
+    if(Isize>0) {
         Gi = cs_transpose(Git, 1);
     }
 
@@ -265,18 +260,18 @@ PFEMSolver_Mumps::solve()
         deltaP.assign(Psize, 0.0);
         rhsP.assign(Psize, 0.0);
     }
-    if(Psize>0 && (stage==2||stage==0)) {
+    if(Psize>0) {
 
         // S = L + Git*Mi{-1}*Gi + Gft*Mf{-1}*Gf
         cs* S = 0;
 
         // Gft*deltaVf1
-        if(Fsize > 0 && stage==0) {
+        if(Fsize > 0) {
             cs_gaxpy(Gft, &deltaVf1[0], &rhsP[0]);
         }
 
         // Git*deltaVi1
-        if(Isize > 0 && stage==0) {
+        if(Isize > 0) {
             cs_gaxpy(Git, &deltaV1[0]+Ssize, &rhsP[0]);
         }
 
@@ -290,7 +285,7 @@ PFEMSolver_Mumps::solve()
         }
 
         // Git*Mi{-1}*Gi
-        if (Isize > 0 && stage==0) {
+        if (Isize > 0) {
             std::vector<int> irhs_ptr(Msize+1,1);
             std::vector<int> irhs_row(Isize*Isize);
             std::vector<double> rhs_val(Isize*Isize);
@@ -346,40 +341,6 @@ PFEMSolver_Mumps::solve()
             S = cs_multiply(S1, Gi);
             cs_spfree(S1);
             cs_spfree(Bi);
-
-        } else if (Isize > 0 && stage==2) {
-
-            // get Mi
-            Vector Mi;
-            Mi.resize(Isize);
-            Mi.Zero();
-
-            for (int i = 0; i < size; ++i) {
-                int coltype = dofType(i);
-                int colid = dofID(i);
-                if (coltype == 2) {
-                    int cid = colid + Ssize;
-                    for (int k = M->p[cid]; k < M->p[cid+1]; ++k) {
-                        Mi(colid) += M->x[k];
-                    }
-                }
-            }
-
-            // Gi*Mi{-1}*Gi
-            for(int j=0; j<Psize; j++) {
-                for(int k=Gi->p[j]; k<Gi->p[j+1]; k++) {
-                    Gi->x[k] /= Mi(Gi->i[k]);
-                }
-            }
-            cs* S1 = cs_multiply(Git, Gi);
-            if(S == 0) {
-                S = S1;
-            } else {
-                cs* S2 = cs_add(S, S1, 1.0, 1.0);
-                cs_spfree(S);
-                cs_spfree(S1);
-                S = S2;
-            }
         }
 
         // Gft*Mf{-1}*Gf
@@ -473,7 +434,7 @@ PFEMSolver_Mumps::solve()
     if (Msize > 0) {
         deltaV.assign(Msize, 0.0);
     }
-    if(Isize > 0 && stage==0) {
+    if(Isize > 0) {
         // Gi*deltaP
         if(Psize > 0) {
             cs_gaxpy(Gi, &deltaP[0], &deltaV[0]+Ssize);
@@ -497,7 +458,7 @@ PFEMSolver_Mumps::solve()
     if(Fsize > 0) {
         deltaVf.assign(Fsize, 0.0);
     }
-    if(Fsize > 0 && stage==0) {
+    if(Fsize > 0) {
         if(Psize > 0) {
             cs_gaxpy(Gf, &deltaP[0], &deltaVf[0]);
         }
@@ -507,10 +468,10 @@ PFEMSolver_Mumps::solve()
     }
 
     // delete Gi, Gf
-    if(Fsize>0 && (stage==0||stage==2)) {
+    if(Fsize>0) {
         cs_spfree(Gf);
     }
-    if(Isize>0 && (stage==0||stage==2)) {
+    if(Isize>0) {
         cs_spfree(Gi);
     }
 

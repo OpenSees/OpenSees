@@ -143,7 +143,7 @@ using namespace std; //Added by AMK for debugging
 
 
 TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast): 
-  UniaxialMaterial(tag, 0), //Changed by AMK (from MAT_TAG_Concrete02 to 0)
+  UniaxialMaterial(tag, MAT_TAG_TDConcrete),
   fc(_fc), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
   ecminP = 0.0;
@@ -183,7 +183,7 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
 }
 
 TDConcrete::TDConcrete(void):
-  UniaxialMaterial(0, 0) //Changed by AMK (from MAT_TAG_Concrete02 to 0)
+  UniaxialMaterial(0, MAT_TAG_TDConcrete)
 {
  
 }

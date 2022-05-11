@@ -198,9 +198,9 @@ int TclModelBuilder_addAdapter(ClientData clientData, Tcl_Interp *interp,  int a
     
     // now create the adapter and add it to the Domain
     if (mass == 0)
-        theElement = new Adapter(tag, nodes, dofs, kb, ipPort, doRayleigh);
+        theElement = new Adapter(tag, nodes, dofs, kb, ipPort, 0, 0, doRayleigh);
     else
-        theElement = new Adapter(tag, nodes, dofs, kb, ipPort, doRayleigh, mass);
+        theElement = new Adapter(tag, nodes, dofs, kb, ipPort, 0, 0, doRayleigh, mass);
     
     // cleanup dynamic memory
     if (dofs != 0)

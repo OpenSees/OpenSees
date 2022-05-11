@@ -51,6 +51,8 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE);
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/RockingBC; $(MAKE);
+	@$(CD) $(FE)/element/masonry; $(MAKE);
+	@$(CD) $(FE)/element/CEqElement; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -100,6 +102,8 @@ spotless: clean
 	@$(CD) $(FE)/element/absorbentBoundaries; $(MAKE) wipe;
 	@$(CD) $(FE)/element/gradientInelasticBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/RockingBC; $(MAKE) wipe;
+	@$(CD) $(FE)/element/masonry; $(MAKE) wipe;
+	@$(CD) $(FE)/element/CEqElement; $(MAKE) wipe;
 
 wipe: spotless
 

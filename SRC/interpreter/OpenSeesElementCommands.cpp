@@ -150,9 +150,12 @@ void* OPS_ForceBeamColumn2dThermal();
 void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
+void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
+void* OPS_DispBeamColumnAsym3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
+void* OPS_MixedBeamColumnAsym3d();
 void* OPS_ForceBeamColumnCBDI2d();
 void* OPS_ForceBeamColumnCSBDI2d();
 void* OPS_ForceBeamColumnCBDI3d();
@@ -187,6 +190,7 @@ void* OPS_BbarBrickWithSensitivity();
 void* OPS_ZeroLengthRocking();
 void* OPS_ZeroLengthContact2D();
 void* OPS_ZeroLengthContact3D();
+void* OPS_ZeroLengthContactASDimplex();
 void* OPS_Joint2D();
 void* OPS_Joint3D();
 void* OPS_LehighJoint2d();
@@ -221,9 +225,13 @@ void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
 void* OPS_CatenaryCableElement();
+void *OPS_ASDEmbeddedNodeElement(void);
 void* OPS_GradientInelasticBeamColumn2d();
 void* OPS_GradientInelasticBeamColumn3d();
 void* OPS_RockingBC();
+void* OPS_InertiaTrussElement();
+void *OPS_ASDAbsorbingBoundary2D(void);
+void *OPS_ASDAbsorbingBoundary3D(void);
 
 namespace {
 
@@ -332,7 +340,7 @@ namespace {
 	    ID info;
 	    return OPS_DispBeamColumnNL2d(info);
 	} else {
-	    return OPS_DispBeamColumn3d();
+	    return OPS_DispBeamColumnNL3d();
 	}
     }
 
@@ -535,6 +543,7 @@ namespace {
 	functionMap.insert(std::make_pair("LehighJoint2d", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("zeroLengthContact2D", &OPS_ZeroLengthContact2D));
 	functionMap.insert(std::make_pair("zeroLengthContact3D", &OPS_ZeroLengthContact3D));
+	functionMap.insert(std::make_pair("zeroLengthContactASDimplex", &OPS_ZeroLengthContactASDimplex));
 	functionMap.insert(std::make_pair("zeroLengthRocking", &OPS_ZeroLengthRocking));
 	functionMap.insert(std::make_pair("bbarBrickWithSensitivity", &OPS_BbarBrickWithSensitivity));
 	functionMap.insert(std::make_pair("bbarBrick", &OPS_BbarBrick));
@@ -664,7 +673,8 @@ namespace {
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
 	functionMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
 	functionMap.insert(std::make_pair("elasticBeamColumnWarping", &OPS_ElasticBeamWarping3d));
-	functionMap.insert(std::make_pair("dispBeamColumnWarping", &OPS_DispBeamColumnWarping3d));		
+	functionMap.insert(std::make_pair("dispBeamColumnWarping", &OPS_DispBeamColumnWarping3d));	
+	functionMap.insert(std::make_pair("dispBeamColumnAsym", &OPS_DispBeamColumnAsym3d));
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
@@ -673,14 +683,18 @@ namespace {
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));
 	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI));
 	functionMap.insert(std::make_pair("mixedBeamColumn", &OPS_MixedBeamColumn));
+	functionMap.insert(std::make_pair("mixedBeamColumnAsym", &OPS_MixedBeamColumnAsym3d));
 	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
+	functionMap.insert(std::make_pair("ASDEmbeddedNodeElement", &OPS_ASDEmbeddedNodeElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
 	functionMap.insert(std::make_pair("RockingBC", &OPS_RockingBC));
-
+	functionMap.insert(std::make_pair("InertiaTruss", &OPS_InertiaTrussElement));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
 	return 0;
     }
 }

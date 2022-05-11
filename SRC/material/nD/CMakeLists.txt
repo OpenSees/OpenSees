@@ -1,0 +1,157 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Material
+  PRIVATE
+    NDMaterial.cpp
+    BeamFiberMaterial.cpp
+    PlasticDamageConcretePlaneStress.cpp
+    BeamFiberMaterial2d.cpp
+    BeamFiberMaterial2dPS.cpp
+    PlasticDamageConcrete3d.cpp
+    LinearCap.cpp
+    eig3.cpp
+    FSAM.cpp
+    AcousticMedium.cpp
+    ElasticIsotropicAxiSymm.cpp
+    ElasticIsotropicBeamFiber2d.cpp
+    ElasticIsotropicBeamFiber.cpp
+    ElasticIsotropicMaterial.cpp
+    ElasticIsotropicPlaneStrain2D.cpp
+    ElasticIsotropicPlaneStress2D.cpp
+    ElasticIsotropicPlateFiber.cpp
+    ElasticIsotropicThreeDimensional.cpp
+    ElasticOrthotropicMaterial.cpp
+    ElasticOrthotropicThreeDimensional.cpp
+    PressureDependentElastic3D.cpp
+    FeapMaterial.cpp
+    J2AxiSymm.cpp
+    J2PlaneStrain.cpp
+    J2PlaneStress.cpp
+    J2Plasticity.cpp
+    J2PlateFiber.cpp
+    J2PlateFibre.cpp
+    J2BeamFiber2d.cpp
+    J2BeamFiber3d.cpp
+    J2ThreeDimensional.cpp
+    PlaneStrainMaterial.cpp
+    PlaneStressMaterial.cpp
+    PlaneStressUserMaterial.cpp
+    PlateFiberMaterial.cpp
+    PlateFromPlaneStressMaterial.cpp
+    PlaneStressLayeredMaterial.cpp
+    PlateRebarMaterial.cpp
+    PlaneStressRebarMaterial.cpp
+    CycLiqCP.cpp
+    CycLiqCP3D.cpp
+    CycLiqCPPlaneStrain.cpp
+    CycLiqCPSP.cpp
+    CycLiqCPSP3D.cpp
+    CycLiqCPSPPlaneStrain.cpp
+    WrapperNDMaterial.cpp
+    InitStressNDMaterial.cpp
+    IncrementalElasticIsotropicThreeDimensional.cpp
+    ConcreteMcftNonLinear5.cpp
+    ConcreteMcftNonLinear7.cpp
+    CapPlasticity.cpp
+    ConcreteS.cpp
+    SimplifiedJ2.cpp
+    LinearCap.cpp
+    AcousticMedium.cpp
+    PlaneStressSimplifiedJ2.cpp
+    DruckerPrager3DThermal.cpp
+    DruckerPragerThermal.cpp
+    ElasticIsotropic3DThermal.cpp
+    ElasticIsotropicMaterialThermal.cpp
+    J2PlasticityThermal.cpp
+    J2ThreeDimensionalThermal.cpp
+    PlateFiberMaterialThermal.cpp
+    PlateFromPlaneStressMaterialThermal.cpp
+    UVCmultiaxial.cpp
+    UVCplanestress.cpp
+    PlateRebarMaterialThermal.cpp
+  PUBLIC
+    NDMaterial.h
+    BeamFiberMaterial.h
+    PlasticDamageConcretePlaneStress.h
+    BeamFiberMaterial2d.h
+    BeamFiberMaterial2dPS.h
+    PlasticDamageConcrete3d.h
+    LinearCap.h
+    eig3.h
+    FSAM.h
+    AcousticMedium.h
+    ElasticIsotropicAxiSymm.h
+    ElasticIsotropicBeamFiber2d.h
+    ElasticIsotropicBeamFiber.h
+    ElasticIsotropicMaterial.h
+    ElasticIsotropicPlaneStrain2D.h
+    ElasticIsotropicPlaneStress2D.h
+    ElasticIsotropicPlateFiber.h
+    ElasticIsotropicThreeDimensional.h
+    ElasticOrthotropicMaterial.h
+    ElasticOrthotropicThreeDimensional.h
+    PressureDependentElastic3D.h
+    FeapMaterial.h
+    J2AxiSymm.h
+    J2PlaneStrain.h
+    J2PlaneStress.h
+    J2Plasticity.h
+    J2PlateFiber.h
+    J2PlateFibre.h
+    J2BeamFiber2d.h
+    J2BeamFiber3d.h
+    J2ThreeDimensional.h
+    PlaneStrainMaterial.h
+    PlaneStressMaterial.h
+    PlaneStressUserMaterial.h
+    PlateFiberMaterial.h
+    PlateFromPlaneStressMaterial.h
+    PlaneStressLayeredMaterial.h
+    PlateRebarMaterial.h
+    PlaneStressRebarMaterial.h
+    CycLiqCP.h
+    CycLiqCP3D.h
+    CycLiqCPPlaneStrain.h
+    CycLiqCPSP.h
+    CycLiqCPSP3D.h
+    CycLiqCPSPPlaneStrain.h
+    WrapperNDMaterial.h
+    InitStressNDMaterial.h
+    IncrementalElasticIsotropicThreeDimensional.h
+    ConcreteMcftNonLinear5.h
+    ConcreteMcftNonLinear7.h
+    CapPlasticity.h
+    ConcreteS.h
+    SimplifiedJ2.h
+    LinearCap.h
+    AcousticMedium.h
+    PlaneStressSimplifiedJ2.h
+    DruckerPrager3DThermal.h
+    DruckerPragerThermal.h
+    ElasticIsotropic3DThermal.h
+    ElasticIsotropicMaterialThermal.h
+    J2PlasticityThermal.h
+    J2ThreeDimensionalThermal.h
+    PlateFiberMaterialThermal.h
+    PlateFromPlaneStressMaterialThermal.h
+    UVCmultiaxial.h
+    UVCplanestress.h
+    PlateRebarMaterialThermal.h
+)
+
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+
+add_subdirectory(soil)
+add_subdirectory(feap)
+add_subdirectory(cyclicSoil)
+add_subdirectory(reinforcedConcretePlaneStress)
+add_subdirectory(UWmaterials)
+add_subdirectory(matCMM)
+add_subdirectory(stressDensityModel)
+add_subdirectory(UANDESmaterials)
+
+

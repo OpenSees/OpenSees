@@ -586,7 +586,7 @@ ForceBeamColumn2d::setDomain(Domain *theDomain)
   // get element length
   double L = crdTransf->getInitialLength();
   if (L == 0.0) {
-    opserr << "ForceBeamColumn2d::setDomain(): Zero element length:" << this->getTag();  
+    opserr << "ForceBeamColumn2d::setDomain() -- zero length for element with tag: " << this->getTag();  
     exit(0);
   }
 
@@ -1196,7 +1196,7 @@ ForceBeamColumn2d::update()
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
-	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility\n";
+	    opserr << "ForceBeamColumn2d::update() -- could not invert flexibility for element with tag: " << this->getTag() << endln;
 				    
 	  // dv = vin + dvTrial  - vr
 	  dv = vin;
@@ -2606,6 +2606,9 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));  
+  
   else if (strcmp(argv[0],"sectionDisplacements") == 0)
     theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
 
@@ -2719,11 +2722,13 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
   }
   //by SAJalali
-  else if (strcmp(argv[0], "energy") == 0)
-  {
-	  return new ElementResponse(this, 14, 0.0);
+  else if (strcmp(argv[0], "energy") == 0) {
+    theResponse = new ElementResponse(this, 14, 0.0);
   }
 
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
+  
   output.endTag(); // ElementOutput
 
   return theResponse;
@@ -2887,6 +2892,13 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];
