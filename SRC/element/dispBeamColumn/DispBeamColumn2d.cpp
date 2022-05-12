@@ -1606,11 +1606,13 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"sectionTags") == 0)
     theResponse = new ElementResponse(this, 110, ID(numSections));
   
-  else if (strcmp(argv[0], "energy") == 0) //by SAJalali
-  {
-  return new ElementResponse(this, 10, 0.0);
+  else if (strcmp(argv[0], "energy") == 0) {
+    theResponse = new ElementResponse(this, 10, 0.0);
   }
 
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
+  
   output.endTag();
 
   if (theResponse == 0)

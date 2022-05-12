@@ -59,7 +59,6 @@ protected:
 
 private:
     void sort(int length, double *x, int *id);
-
     FullGenEigenSOE *theSOE;
     int numEigen;
 

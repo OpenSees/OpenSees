@@ -102,15 +102,13 @@ target_sources(LAPACK PUBLIC
   dgehd2.f
   dgehrd.f
   dhseqr.f
-  dlahrd.f
-  
+  dlahrd.f  
   dorg2r.f
   dorghr.f
   dorgqr.f
   dpotrf.f
   dpotrs.f
   dtrtrs.f
-  
   dggbak.f
   dggbal.f
   dggev.f
@@ -119,21 +117,18 @@ target_sources(LAPACK PUBLIC
   dlag2.f
   dlasv2.f
   dtgevc.f
-  
   dgesvxx.f
   dla_gerfsx_extended.f
   dlascl2.f
   dlaqge.f
   dgeequb.f
   dgerfsx.f
-  
   chla_transtype.f
   dla_gercond.f
   dla_wwaddw.f
   ilaprec.f
   ilatrans.f
   dgecon.f
-  
   dla_geamv.f
   dlacn2.f
   dla_lin_berr.f

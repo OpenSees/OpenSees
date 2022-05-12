@@ -1190,6 +1190,9 @@ ElasticForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &o
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
   
   output.endTag(); // ElementOutput
 

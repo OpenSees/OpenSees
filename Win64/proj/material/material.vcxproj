@@ -235,6 +235,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
@@ -255,12 +256,18 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CementedSoil.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LinearCappedBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\LiquefiedSand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MaterialBackbone.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\MultilinearBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayAboveWS.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\VuggyLimestone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\WeakRock.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenInfill.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BraceMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BWBN.cpp" />
@@ -314,8 +321,10 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HookGap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HyperbolicGapMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticAsym.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticSmooth.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKBilin.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\IMKPinching.cpp" />
@@ -334,6 +343,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPinching.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ModIMKPinching02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\MultiLinear.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\MultiplierMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Neoprene.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.cpp" />
@@ -397,6 +407,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp2.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwpd.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UniaxialMaterial.cpp" />
@@ -465,6 +476,8 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayBelowWS.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\TclModelBuilderBackboneCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DowelType.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DuctileFracture.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.cpp" />
@@ -662,6 +675,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
@@ -686,6 +700,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Bilin02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenInfill.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BraceMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BWBN.h" />
@@ -740,6 +755,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HookGap.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HyperbolicGapMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticPoly.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKBilin.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPeakOriented.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\IMKPinching.h" />
@@ -756,6 +772,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ModIMKPinching.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ModIMKPinching02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\MultiLinear.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\MultiplierMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Neoprene.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\OOHystereticMaterial.h" />
@@ -777,17 +794,20 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ShearPanelMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SLModel.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SMAMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SPSW02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\StainlessECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02Fatigue.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel03.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel2.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel4.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelBRB.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelDRC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelECThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelFractureDI.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMP.h" />
@@ -809,6 +829,9 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Trilinwp.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Trilinwp2.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Trilinwpd.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TriMatrix.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UniaxialMaterial.h" />
@@ -870,6 +893,8 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\ReeseSoftClayBackbone.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\ReeseStiffClayBelowWS.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\TrilinearBackbone.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DowelType.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DuctileFracture.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial2d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.h" />

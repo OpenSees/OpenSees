@@ -37,7 +37,7 @@
 
 void* OPS_CircPatch()
 {
-    if(OPS_GetNumRemainingInputArgs() < 9) {
+    if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments for CircPatch\n";
 	return 0;
     }
@@ -48,8 +48,8 @@ void* OPS_CircPatch()
     if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
 
     // get data
-    double data[6];
-    numData = 6;
+    double data[6] = {0,0,0,0,0,0};
+    numData = OPS_GetNumRemainingInputArgs();
     static Vector centerPos(2);
     /*centerPos(0) = data[0];
     centerPos(1) = data[1];*/
@@ -57,8 +57,12 @@ void* OPS_CircPatch()
     centerPos(0) = data[0];
     centerPos(1) = data[1];
 
-    return new CircPatch(idata[0],idata[1],idata[2],centerPos,
-			 data[2],data[3],data[4],data[5]);
+    if (numData < 6)
+      return new CircPatch(idata[0],idata[1],idata[2],centerPos,
+			   data[2],data[3]);
+    else
+      return new CircPatch(idata[0],idata[1],idata[2],centerPos,
+			   data[2],data[3],data[4],data[5]);      
 }
 
 

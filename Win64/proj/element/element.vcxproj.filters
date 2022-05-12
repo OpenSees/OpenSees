@@ -1741,5 +1741,14 @@
     <ClInclude Include="..\..\..\SRC\element\truss\InertiaTruss.h">
       <Filter>truss</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\BeamGT.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan3D.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

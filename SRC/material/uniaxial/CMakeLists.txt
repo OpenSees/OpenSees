@@ -13,22 +13,19 @@ target_sources(OPS_Material
       BWBN.cpp
       Bilin.cpp
       Bilin02.cpp
-
       ConcreteCM.cpp
       ConcreteD.cpp
       ConcretewBeta.cpp
-
+      DowelType.cpp
       Elastic2Material.cpp
       ElasticBilin.cpp
       ElasticMaterial.cpp
       ElasticMultiLinear.cpp
       ElasticPPMaterial.cpp
       ElasticPowerFunc.cpp
-
       IMKBilin.cpp
       IMKPeakOriented.cpp
       IMKPinching.cpp
-
       MaterialState.cpp
       OriginCentered.cpp
       ParallelMaterial.cpp
@@ -38,7 +35,6 @@ target_sources(OPS_Material
       SteelDRC.cpp      
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
-      #TclDegradingUniaxial.cpp
     PUBLIC
       AxialSp.h
       AxialSp.h
@@ -46,22 +42,19 @@ target_sources(OPS_Material
       BWBN.h
       Bilin.h
       Bilin02.h
-
       ConcreteCM.h
       ConcreteD.h
       ConcretewBeta.h
-
+      DowelType.h
       Elastic2Material.h
       ElasticBilin.h
       ElasticMaterial.h
       ElasticMultiLinear.h
       ElasticPPMaterial.h
       ElasticPowerFunc.h
-
       IMKBilin.h
       IMKPeakOriented.h
       IMKPinching.h
-
       MaterialState.h
       OriginCentered.h
       ParallelMaterial.h
@@ -83,6 +76,7 @@ target_sources(OPS_Material
       Bond_SP01.cpp
       BoucWenMaterial.cpp
       BoucWenOriginal.cpp
+      BoucWenInfill.cpp      
       CFSSSWP.cpp
       CFSWSWP.cpp
       CableMaterial.cpp
@@ -121,8 +115,10 @@ target_sources(OPS_Material
       #HardeningMaterial2.cpp
       HookGap.cpp
       HyperbolicGapMaterial.cpp
+      HystereticAsym.cpp
       HystereticMaterial.cpp
       HystereticPoly.cpp
+      HystereticSmooth.cpp
       ImpactMaterial.cpp
       InitStrainMaterial.cpp
       InitStressMaterial.cpp
@@ -135,6 +131,7 @@ target_sources(OPS_Material
       ModIMKPinching.cpp
       ModIMKPinching02.cpp
       MultiLinear.cpp
+      MultiplierMaterial.cpp
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
@@ -177,6 +174,7 @@ target_sources(OPS_Material
       SMAMaterial.cpp
       
       TriMatrix.cpp
+      DuctileFracture.cpp
 
     PUBLIC
       ASD_SMA_3K.h
@@ -186,6 +184,7 @@ target_sources(OPS_Material
       Bond_SP01.h
       BoucWenMaterial.h
       BoucWenOriginal.h
+      BoucWenInfill.h      
       CFSSSWP.h
       CFSWSWP.h
       CableMaterial.h
@@ -220,12 +219,14 @@ target_sources(OPS_Material
       FatigueMaterial.h
       #FedeasMaterial.h
       GNGMaterial.h
-      #HardeningMaterial.h
-      HardeningMaterial2.h
+      HardeningMaterial.h
+      #HardeningMaterial2.h
       HookGap.h
       HyperbolicGapMaterial.h
+      HystereticAsym.h
       HystereticMaterial.h
       HystereticPoly.h
+      HystereticSmooth.h
       ImpactMaterial.h
       InitStrainMaterial.h
       InitStressMaterial.h
@@ -238,6 +239,7 @@ target_sources(OPS_Material
       ModIMKPinching.h
       ModIMKPinching02.h
       MultiLinear.h
+      MultiplierMaterial.h
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
@@ -278,6 +280,24 @@ target_sources(OPS_Material
       pyUCLA.h
 
       TriMatrix.h  # move to SRC/matrix ?
+      DuctileFracture.h
+)
+
+
+
+target_sources(OPS_Material
+  PRIVATE
+   Masonry.cpp
+   Masonryt.cpp
+   Trilinwp.cpp
+   Trilinwp2.cpp
+   Trilinwpd.cpp
+  PUBLIC
+   Masonry.h
+   Masonryt.h
+   Trilinwp.h
+   Trilinwp2.h
+   Trilinwpd.h
 )
 
 

@@ -3071,6 +3071,9 @@ ForceBeamColumnCBDI2d::setResponse(const char **argv, int argc, OPS_Stream &outp
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
   
   output.endTag(); // ElementOutput
 

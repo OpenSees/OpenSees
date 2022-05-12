@@ -31,6 +31,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 #include(OpenSeesFunctions)
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
+# STAMPEDE2
+# module load python3
+# export CC=icc CXX=icpc FC=ifort
+# export MUMPS_DIR=$HOME/MUMPS_5.0.0
+
 # for OpenSeesPY
 add_Compile_options(-fPIC)
 
@@ -43,7 +48,6 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
-
 
 # 
 # Conan (manages external dependencies for a typical build)
@@ -90,7 +94,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    include(OpenSeesDependenciesWin)
     target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
     add_compile_definitions(_WIN32 _TCL85)
   if (NOT_USING_CONAN)
@@ -237,6 +240,7 @@ set (TRIANGLE_LIBRARIES triangle)
 find_package(BLAS)
 find_package(LAPACK)
 find_package (Python COMPONENTS Interpreter Development)
+find_package(MPI)
 
 #set (LAPACK_FOUND FALSE)
 #set (BLAS_FOUND FALSE)
@@ -307,6 +311,7 @@ add_library(OPS_Actor              OBJECT)
 add_library(OPS_ObjectBroker       OBJECT)
 add_library(OPS_Handler            OBJECT)
 add_library(OPS_Recorder           OBJECT)
+add_library(OPS_Reliability        OBJECT)
 add_library(OPS_Tagged             OBJECT)
 add_library(OPS_Utilities          OBJECT)
 add_library(OPS_ModelBuilder       OBJECT)
@@ -385,25 +390,35 @@ add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
-    OPS_Renderer
-    OPS_Database
+    OPS_Actor 
+    OPS_Analysis 
+    OPS_Api
     OPS_ConvergenceTest
+    coordTransformation
+    OPS_Damage
+    OPS_Database
+    OPS_Domain
+    graph
     OPS_Element
     OPS_ElementFortran    
+    OPS_Handler
+    OPS_INTERPRETER
     OPS_Material
     OPS_MaterialFortran    
     OPS_Material_YieldSurface
+    OPS_Matrix
+    OPS_ModelBuilder
+    OPS_ObjectBroker
+    OPS_PFEM
+    OPS_Recorder
+    OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface
-    OPS_Damage
     OPS_SysOfEqn
-    OPS_Analysis
-    OPS_Domain
-    OPS_Api
+    OPS_Thermal 
     OPS_OS_Specific_libs
-    G3
-    OPS_PFEM
-    ${MYSQL_LIBRARIES}
+    OPS_Tagged 
+    OPS_Utilities
 )
 
 
@@ -419,6 +434,8 @@ target_link_libraries(OpenSeesLIB
 # OpenSees Tcl Interpreter
 #
 
+
+
 add_executable(OpenSees EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
@@ -426,11 +443,33 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
   target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+
+  FILE(COPY ${CONAN_LIB_DIRS_TCL}/tcl8.6
+       DESTINATION ${PROJECT_BINARY_DIR}/lib/tcl8.6
+       FILES_MATCHING PATTERN .tcl)
+     
+else ()
+     FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
+     add_custom_command(
+     	TARGET OpenSees POST_BUILD
+	COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
+     	COMMAND ${CMAKE_COMMAND} -E copy
+        ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
+	${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
+     )
 endif()
 
 
 target_link_libraries(OpenSees
-  OPS_InterpTcl OPS_Thermal OpenSeesLIB ${CMAKE_DL_LIBS} ${HDF5_LIBRARIES} ${CONAN_LIBS}
+  OPS_InterpTcl 
+  OpenSeesLIB
+  OPS_Reliability
+  OPS_ReliabilityTcl  
+  OPS_Numerics
+  ${CMAKE_DL_LIBS} 
+  ${HDF5_LIBRARIES} 
+  ${MYSQL_LIBRARIES}
+  ${CONAN_LIBS}
 )
 
 
@@ -471,18 +510,34 @@ target_link_libraries(OpenSeesMP OpenSeesLIB)
 
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL)
 
+set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
 target_compile_options(OpenSeesPy PUBLIC -fPIC)
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy
-  OpenSeesLIB OPS_Thermal OPS_Reliability ${HDF5_LIBRARIES} ${CONAN_LIBRARIES} ${Python_LIBRARIES}
+   OpenSeesLIB 
+   OPS_Reliability
+   OPS_Numerics 
+   ${HDF5_LIBRARIES} 
+   ${CONAN_LIBRARIES} 
+   ${Python_LIBRARIES}
 )
+
+
+#
+# INSTALL
+#
+
+install (TARGETS OpenSees DESTINATION bin)
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
+
+
+
 
 #==============================================================================
 #                            Configure targets
@@ -556,11 +611,10 @@ endif()
 
 # Reliability
 #----------------------------
-if ("OPS_Reliability" IN_LIST OPS_Extension_List)
+#if ("OPS_Reliability" IN_LIST OPS_Extension_List)
     add_compile_definitions(_RELIABILITY)
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
-endif()
-
+    #target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
+#endif()
 
 
 #----------------------------

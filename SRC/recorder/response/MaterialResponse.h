@@ -34,6 +34,7 @@
 #include <Information.h>
 
 class Material;
+class MaterialState;
 
 class ID;
 class Vector;
@@ -48,6 +49,14 @@ class MaterialResponse : public Response
   MaterialResponse(Material *mat, int id, const ID &val);
   MaterialResponse(Material *mat, int id, const Vector &val);
   MaterialResponse(Material *mat, int id, const Matrix &val);
+
+  MaterialResponse(MaterialState *mat, int id);
+  MaterialResponse(MaterialState *mat, int id, int val);
+  MaterialResponse(MaterialState *mat, int id, double val);
+  MaterialResponse(MaterialState *mat, int id, const ID &val);
+  MaterialResponse(MaterialState *mat, int id, const Vector &val);
+  MaterialResponse(MaterialState *mat, int id, const Matrix &val);
+  
   ~MaterialResponse();
   
   int getResponse(void);
@@ -55,6 +64,7 @@ class MaterialResponse : public Response
 
 private:
   Material *theMaterial;
+  MaterialState *theMaterialState;  
   int responseID;
 };
 

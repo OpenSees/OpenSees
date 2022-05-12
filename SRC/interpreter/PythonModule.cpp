@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PythonStream.h"
 #include <OPS_Globals.h>
 #include <cstring>
+#include <cctype>
 
 // define opserr
 static PythonStream sserr;
@@ -73,6 +74,58 @@ PythonModule::addCommand(const char *, Command &) {
 int
 PythonModule::removeCommand(const char *) {
     return -1;
+}
+
+const char *PythonModule::trimSpaces(PyObject *o) {
+  Py_ssize_t size = 0;
+  const char *s = PyUnicode_AsUTF8AndSize(o, &size);
+
+  // empty string
+  if (size == 0) {
+    return s;
+  }
+
+  // find first char that is not space
+  Py_ssize_t firstLoc = 0;
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    if (isspace(s[i])) {
+      firstLoc = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  // find last char that is not space
+  Py_ssize_t lastLoc = size - 1;
+  for (Py_ssize_t i = size - 1; i >= 0; --i) {
+    if (isspace(s[i])) {
+      lastLoc = i - 1;
+    } else {
+      break;
+    }
+  }
+
+  // new Py Object
+  PyObject *newo = 0;
+
+  // all spaces: make an empty string
+  if (firstLoc == size || lastLoc < 0) {
+    newo = PyUnicode_FromString("");
+  }
+
+  // get substring
+  else if (firstLoc > 0 || lastLoc < size - 1) {
+    newo = PyUnicode_Substring(o, firstLoc, lastLoc + 1);
+  }
+
+  // get string
+  if (newo == 0) {
+    return s;
+  }
+
+  const char* news = PyUnicode_AsUTF8(newo);
+  Py_DECREF(newo);
+  return news;
 }
 
 int
@@ -139,14 +192,13 @@ PythonModule::getString() {
         return 0;
     }
 
-    PyObject* space = PyUnicode_FromString(" ");
-    PyObject* empty = PyUnicode_FromString("");
-    PyObject* newo = PyUnicode_Replace(o, space, empty, -1);
-    const char* res = PyUnicode_AsUTF8(newo);
-
-    Py_DECREF(newo);
-    Py_DECREF(space);
-    Py_DECREF(empty);
+    // PyObject* space = PyUnicode_FromString(" ");
+    // PyObject* empty = PyUnicode_FromString("");
+    // PyObject* newo = PyUnicode_Replace(o, space, empty, -1);
+    const char* res = trimSpaces(o);
+    // Py_DECREF(newo);
+    // Py_DECREF(space);
+    // Py_DECREF(empty);
 
     return res;
 #else
@@ -193,14 +245,13 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
         return 0;
     }
 
-    PyObject *space = PyUnicode_FromString(" ");
-    PyObject *empty = PyUnicode_FromString("");
-    PyObject *newo = PyUnicode_Replace(o, space, empty, -1);
-    const char* res = PyUnicode_AsUTF8(newo);
-
-    Py_DECREF(newo);
-    Py_DECREF(space);
-    Py_DECREF(empty);
+    // PyObject *space = PyUnicode_FromString(" ");
+    // PyObject *empty = PyUnicode_FromString("");
+    // PyObject *newo = PyUnicode_Replace(o, space, empty, -1);
+    const char* res = trimSpaces(o);
+    // Py_DECREF(newo);
+    // Py_DECREF(space);
+    // Py_DECREF(empty);
 
     int lenres = strlen(res) + 1;
     if (lenres > len) {
@@ -341,6 +392,7 @@ initopensees(void)
         INITERROR;
     struct module_state *st = GETSTATE(pymodule);
 
+    // add OpenSeesError
     st->error = PyErr_NewExceptionWithDoc("opensees.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(pymodule);
@@ -348,6 +400,16 @@ initopensees(void)
     }
     Py_INCREF(st->error);
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
+
+    // add OpenSeesParameter dict
+    PyObject *par = PyDict_New();
+    if (par == NULL) {
+      INITERROR;
+    }
+    if (PyModule_AddObject(pymodule, "OpenSeesParameter", par) < 0) {
+        Py_DECREF(par);
+        INITERROR;
+    }
 
     // char version[10];
     // const char *py_version = ".6";

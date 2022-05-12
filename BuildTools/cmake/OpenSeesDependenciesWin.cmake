@@ -3,21 +3,8 @@
 #        OpenSees -- Open System For Earthquake Engineering Simulation
 #                Pacific Earthquake Engineering Research Center
 #
-#     (c) Copyright 1999-2021 The Regents of the University of California
-#                             All Rights Reserved
-# (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
-#
 #==============================================================================
-# Synopsis
-# - opensees_load(<PACKAGE> [BUILD|FIND|SEARCH|PATHS] [<PATHS>])
-#
-# Options:
-# - BUILD:  Build OpenSees provided library
-# - FIND:   Use CMake to find library, fail if not found
-# - SEARCH: Try finding library with CMake, build OpenSees
-#           Version if not found.
-# - BUNDLED:  Provide specific paths for library.
-#
+#                            External Libraries
 #==============================================================================
 
 

@@ -129,7 +129,7 @@ int (*tclDummyLinkVarPtr)(Tcl_Interp *interp, char *a,
 
 #ifdef _WIN32
 extern "C" int	isatty _ANSI_ARGS_((int fd));
-extern "C" char * strcpy _ANSI_ARGS_((char *dst, CONST char *src)) throw();
+//extern "C" char * strcpy _ANSI_ARGS_((char *dst, CONST char *src)) throw();
 #endif
 static char *tclStartupScriptFileName = NULL;
 
@@ -258,6 +258,7 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
 
     interp = Tcl_CreateInterp();
     Tcl_Eval(interp, "rename load import;");
+	Tcl_Eval(interp, "interp alias {} load {} import;");
 
     numParam = OpenSeesParseArgv(argc, argv);
 

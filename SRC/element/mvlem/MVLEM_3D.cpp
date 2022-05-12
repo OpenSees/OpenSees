@@ -132,14 +132,14 @@ void* OPS_MVLEM_3D(void)
 		else if (strcmp(str, "-rho") == 0) {
 			numData = m;
 			if (OPS_GetDoubleInput(&numData, theRho) != 0) {
-				opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+				opserr << "Invalid rho value for MVLEM  " << iData[0] << endln;
 				return 0;
 			}
 		}
 		else if (strcmp(str, "-matConcrete") == 0) {
 			numData = m;
 			if (OPS_GetIntInput(&numData, matTags) != 0) {
-				opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+				opserr << "Invalid concrete tags for MVLEM  " << iData[0] << endln;
 				return 0;
 			}
 			for (int i = 0; i < m; i++) {
