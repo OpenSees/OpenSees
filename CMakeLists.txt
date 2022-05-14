@@ -53,19 +53,19 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 # Conan (manages external dependencies for a typical build)
 # 
 
+find_package(HDF5)
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
-   set (HDF5_FOUND TRUE)
-   set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
-   set (HDF5_VERSION "1.12.0")
+   #set (HDF5_FOUND TRUE)
+   #set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
+   #set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
 else()
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
 endif()
-
 
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
@@ -466,6 +466,7 @@ target_link_libraries(OpenSees
   OPS_Reliability
   OPS_ReliabilityTcl  
   OPS_Numerics
+  OPS_Recorder
   ${CMAKE_DL_LIBS} 
   ${HDF5_LIBRARIES} 
   ${MYSQL_LIBRARIES}
