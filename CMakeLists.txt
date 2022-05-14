@@ -517,6 +517,7 @@ target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 target_link_libraries(OpenSeesPy
    OpenSeesLIB 
    OPS_Reliability
+   OPS_Recorder
    OPS_Numerics 
    ${HDF5_LIBRARIES} 
    ${CONAN_LIBRARIES} 
