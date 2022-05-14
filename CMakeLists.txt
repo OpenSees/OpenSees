@@ -37,7 +37,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 # export MUMPS_DIR=$HOME/MUMPS_5.0.0
 
 # for OpenSeesPY
-add_Compile_options(-fPIC)
+add_compile_options(-fPIC)
 
 #
 # external packages
@@ -72,7 +72,7 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 
 #
 # OS Configuration:
-#  defines: compile flags & user supplied pahs and includes if not using conan
+#  defines: compile flags & user supplied paths and includes if not using conan
 #
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
