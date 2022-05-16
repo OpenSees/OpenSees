@@ -541,7 +541,7 @@ TclModelBuilder_addGradientInelasticBeamColumn(ClientData clientData, Tcl_Interp
 		return TCL_ERROR;
 	}
 
-	// if get here we have sucessfully created the NonlocalBeamColumn and added it to the domain
+	// if get here we have successfully created the NonlocalBeamColumn and added it to the domain
 	return TCL_OK;
 }
 

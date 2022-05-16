@@ -315,7 +315,7 @@ SFI_MVLEM::SFI_MVLEM(int tag,
   SFI_MVLEMStrainXY = new double[m];
   SFI_MVLEMStrain = new double[3*m]; 
   
-  // Denisty
+  // Density
   Dens = new double[m];
   
   // Assign zero to element arrays
@@ -1327,7 +1327,7 @@ void SFI_MVLEM::computeCurrentStrain(void)
   }
 }
 
-// Get resisting force incremenet from inertial forces
+// Get resisting force increment from inertial forces
 const Vector & SFI_MVLEM::getResistingForceIncInertia()
 {
   // compute the current resisting force

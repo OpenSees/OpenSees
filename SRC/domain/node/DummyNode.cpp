@@ -258,8 +258,8 @@ int
 DummyNode::sendSelf(Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     opserr << "DummyNode::sendSelf - should never be called\n";
-    opserr << "sending acual node\n";    
-    
+    opserr << "sending actual node\n";
+
     return theRealNode->sendSelf(theChannel,theBroker);
 }
 

@@ -311,10 +311,10 @@ const Matrix &
 ZeroLengthSection::getTangentStiff(void)
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section tangent stiffness, the element basic stiffness
 	const Matrix &kb = theSection->getSectionTangent();
@@ -374,10 +374,10 @@ const Vector &
 ZeroLengthSection::getResistingForce()
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section stress resultants, the element basic forces
 	const Vector &q = theSection->getStressResultant();
@@ -908,10 +908,10 @@ const Vector &
 ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
 {
   // Compute section deformation vector
-  // this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+  // this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
   // Set trial section deformation
-  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
   // Get section stress resultants, the element basic forces
   const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);

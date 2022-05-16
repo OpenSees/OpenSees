@@ -53,7 +53,7 @@
 #include <ElementIter.h>
 
 
-#define numNodeDOF 3  // Only nodes with 3-dofs per node canbe used in DRM... :/
+#define numNodeDOF 3  // Only nodes with 3-dofs per node can be used in DRM... :/
 
 using namespace std;
 
@@ -208,7 +208,7 @@ void H5DRM::intitialize()
     }
 
     if (myrank == 0)
-        H5DRMout << "intializing - filename : " << HDF5filename << "\n";
+        H5DRMout << "initializing - filename : " << HDF5filename << "\n";
 
     //===========================================================================
     // Open the specified file for read only

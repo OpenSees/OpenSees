@@ -112,7 +112,7 @@ private:
     double Lxdotdot, Lydotdot; // double time derivatives of components of the deformed member
     
     Vector ub;                 // basic displacements
-    Vector ubcommit;           // commited basic displacements
+    Vector ubcommit;           // committed basic displacements
     Vector ubpr;               // previous basic displacements
     
     static Matrix Tlg;         // matrix that transforms from global to local coordinates

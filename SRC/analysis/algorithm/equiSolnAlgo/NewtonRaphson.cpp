@@ -212,7 +212,7 @@ NewtonRaphson::solveCurrentStep(void)
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
-// note - if postive result we are returning what the convergence test returned
+// note - if positive result we are returning what the convergence test returned
     // which should be the number of iterations
     
         return result;

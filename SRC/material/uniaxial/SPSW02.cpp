@@ -368,8 +368,8 @@ int SPSW02::setTrialStrain(double trialStrain, double strainRate)
 
 	//kon == 0 (value at start): elastic with (fabs(eps) < epsyn || eps < -epsyn)
 	//kon == 11: comp. branch
-		//kon == 12: reversal from comp. when sarts at eps >  plstr - 2.*Fcs/(cmpUnldngEFac*E0) (pinching branch excluded)
-		//kon == 13: reversal from comp. when sarts at eps <  plstr - 2.*Fcs/(cmpUnldngEFac*E0)  (pinching branch included)
+		//kon == 12: reversal from comp. when starts at eps >  plstr - 2.*Fcs/(cmpUnldngEFac*E0) (pinching branch excluded)
+		//kon == 13: reversal from comp. when starts at eps <  plstr - 2.*Fcs/(cmpUnldngEFac*E0)  (pinching branch included)
 	//kon == 21: Menegotto-Pinto tension loading
 
 	if (kon == 0)
@@ -814,7 +814,7 @@ void SPSW02::Calc_sigcr(/*double & _Fts, double &_Fcs*/)
 	Fcs = ks * pi * pi * E0 / (12 * (1.0 - nu * nu) * lToT * lToT); 
 	// plate clamped on four edges
 	//_Fcs = sigcr * sin(2*alpha/180.0 * pi);									//buckling strength of compression strip
-	Fts = pow( fpy * fpy - 0.75 * Fcs * Fcs, 0.5) - 0.5 * Fcs;		//yield strength of tensional strip acording to Von-Mises rule
+	Fts = pow( fpy * fpy - 0.75 * Fcs * Fcs, 0.5) - 0.5 * Fcs;		//yield strength of tensional strip according to Von-Mises rule
 
 	/*Fcs = t;
 	_Fts = Fts;*/

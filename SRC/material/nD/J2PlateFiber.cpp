@@ -106,7 +106,7 @@ NDMaterial* J2PlateFiber :: getCopy( )
 { 
   J2PlateFiber  *clone;
   clone = new J2PlateFiber( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

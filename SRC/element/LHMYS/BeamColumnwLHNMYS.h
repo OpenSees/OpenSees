@@ -90,7 +90,7 @@ class BeamColumnwLHNMYS : public Element
 
   private:
     double A, E, I;             // area, elastic modulus, moment of inertia
-    double NpI, NpJ, MpI, MpJ;  // plastic axial and moment capacities of element at end i ane end j
+    double NpI, NpJ, MpI, MpJ;  // plastic axial and moment capacities of element at end i and end j
     double Wtol;                // incremental work tolerance for state convergence (default: 1e-16)
     double yftol;               // tolerance for yield criterion (default: 1e-8)
     double rho;                 // mass per unit length

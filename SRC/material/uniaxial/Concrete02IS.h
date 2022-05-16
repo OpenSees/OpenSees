@@ -33,7 +33,7 @@
 !       by MOHD YASSIN (1993)
 ! adapted to FEDEAS material library
 ! by D. Sze and Filip C. Filippou in 1994
-! Modified by Nasser A. Marafi (2018) so that the concrete intiial stiffness
+! Modified by Nasser A. Marafi (2018) so that the concrete initial stiffness
 ! can be specified. 
 -----------------------------------------------------------------------*/
 

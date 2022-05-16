@@ -52,7 +52,7 @@ NDMaterial* DruckerPrager3D :: getCopy( )
 { 
   DruckerPrager3D  *clone;
   clone = new DruckerPrager3D( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

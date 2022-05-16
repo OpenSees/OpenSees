@@ -101,7 +101,7 @@ class SteelDRC : public UniaxialMaterial
 	double Dfu;		// Length of unloading branch in terms of fy
 /* ========================================================================================================*/
 	// State parameters in Committed state
-	double Ceps; // Strain at commited state
+	double Ceps; // Strain at committed state
 	double Csig; // Stress at Ceps
 	double Ctan; // Tangent at Ceps
 	int Clmr; // Straining direction after last reversal from non-linear curve
@@ -236,9 +236,9 @@ class SteelDRC : public UniaxialMaterial
 	double trialStrainRate;	 // trial strain rate
     double trialStress;      // current trial stress
     double trialTangent;     // current trial tangent
-    double commitStrain;     // last commited strain
-	double commitStrainRate; // last commited strain rate
-    double commitStress;     // last commited stress
+    double commitStrain;     // last committed strain
+	double commitStrainRate; // last committed strain rate
+    double commitStress;     // last committed stress
     double commitTangent;    // last committed  tangent
 	
 	// Define internal functions used by the model

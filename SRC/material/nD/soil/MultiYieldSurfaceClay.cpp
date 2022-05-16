@@ -253,8 +253,8 @@ MultiYieldSurfaceClay::MultiYieldSurfaceClay (int tag, int nd,
 		 delete [] temp12;
      }
   }
-// changed by guquan temporily !!!!!!! changed back  ----------
-  ndmx[matCount] = nd; // we ignore 2d material       
+// changed by guquan temporarily !!!!!!! changed back  ---------
+  ndmx[matCount] = nd; // we ignore 2d material
 //  ndmx[matCount] = 3;
 // end changed by guquan ---------------------------------------
 

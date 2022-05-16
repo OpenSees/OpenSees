@@ -48,7 +48,7 @@ NDMaterial* BoundingCamClay3D :: getCopy( )
 { 
     BoundingCamClay3D  *clone;
     clone = new BoundingCamClay3D( ) ;   //new instance of this class
-    *clone = *this ;          //asignment to make copy
+    *clone = *this ;          //assignment to make copy
     return clone ;
 }
 
