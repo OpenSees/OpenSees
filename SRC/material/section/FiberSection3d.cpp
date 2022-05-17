@@ -1209,6 +1209,23 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     Vector theResponseData(numData);
     theResponse = new MaterialResponse(this, 5, theResponseData);
 
+  } else if (strcmp(argv[0],"fiberData2") == 0) {
+    int numData = numFibers*4;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[3*j]);
+      output.attr("zLoc", matData[3*j+1]);
+      output.attr("area", matData[3*j+2]);    
+      output.attr("material", theMaterials[j]->getTag());
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","material");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+	  
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || 
 	     (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
@@ -1254,6 +1271,20 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
       count += 5;
     }
     return sectInfo.setVector(data);	
+  } else if (responseID == 55) {
+    int numData = 4*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      double yLoc, zLoc, A;
+      yLoc = matData[3*j];
+      zLoc = matData[3*j+1];
+      A = matData[3*j+2];
+      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
+      data(count+3) = (double)theMaterials[j]->getTag();
+      count += 4;
+    }
+    return sectInfo.setVector(data);		  
   } else  if (responseID == 6) {
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
