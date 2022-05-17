@@ -1436,6 +1436,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticSmooth.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel05.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2656,6 +2659,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel05.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
