@@ -193,6 +193,8 @@ extern void *OPS_Masonryt(void);
 extern void *OPS_DowelType(void);
 extern void *OPS_DuctileFracture(void); // Kuanshi Zhong
 extern void *OPS_MultiplierMaterial(void);
+extern void* OPS_RCShearHinge(void); //atabkhi
+
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -294,6 +296,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		else
 			return TCL_ERROR;
 	}
+
+    // atabkhi
+    if (strcmp(argv[1], "RCShearHinge") == 0 || strcmp(argv[1], "RCShearhinge") == 0 || strcmp(argv[1], "rcshearhinge") == 0 || strcmp(argv[1], "RCshearhinge") == 0 || strcmp(argv[1], "Rcshearhinge") == 0) {
+        void* theMat = OPS_RCShearHinge();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
 
 	// ntosic
 	if (strcmp(argv[1], "TDConcreteEXP") == 0) {

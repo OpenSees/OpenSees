@@ -105,6 +105,7 @@
 
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
+#include "RCShearHinge.h" //atabkhi
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -1288,6 +1289,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
+
+	case MAT_TAG_RCShearHinge:
+		return new RCShearHinge(); // atabkhi
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
