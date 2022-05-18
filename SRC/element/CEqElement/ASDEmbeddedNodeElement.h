@@ -97,7 +97,7 @@ private:
     // the other 3 (triangle in 2D or shell triangle in 3D) or 4 (tetrahedron in 3D)
     // are the retained nodes
     ID m_node_ids;
-    // the ndoes
+    // the nodes
     std::vector<Node*> m_nodes;
     // store the number of dimensions (2 or 3 are allowed)
     int m_ndm = 0;

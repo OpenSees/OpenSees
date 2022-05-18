@@ -139,9 +139,9 @@ private:
     void addKff(Matrix& K, double scale = 1.0);
     // fills the resisting forces of the free-field
     void addRff(Vector& R);
-    // fills the stiffness matrix of the free-field forces tranfered to the soil domain
+    // fills the stiffness matrix of the free-field forces transferred to the soil domain
     void addKffToSoil(Matrix& K);
-    // fills the forces transfered from the free-field to the soil domain
+    // fills the forces transferred from the free-field to the soil domain
     void addRffToSoil(Vector& R);
     // compute damping parameters
     void getDampParam(double& alpha, double& beta);

@@ -711,7 +711,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	// Call the DomainComponent class method 
 	this->DomainComponent::setDomain(theDomain);
 
-	// Ensure conected nodes have correct number of dof's
+	// Ensure connected nodes have correct number of dof's
 	int dofNd1 = theNodes[0]->getNumberDOF();
 	int dofNd2 = theNodes[1]->getNumberDOF();
 	int dofNd3 = theNodes[2]->getNumberDOF();
@@ -838,7 +838,7 @@ int SFI_MVLEM_3D::commitState()
 	return errCode;
 }
 
-// Revert to last commited state (if convergence is not achieved)
+// Revert to last committed state (if convergence is not achieved)
 int SFI_MVLEM_3D::revertToLastCommit()
 {
 	int errCode = 0;
@@ -924,7 +924,7 @@ double *SFI_MVLEM_3D::computeCurrentStrain(void)
 		dispG(i + 24) = Dx[i];
 	}
 
-	// tranform nodal displacements from global to local cs
+	// transform nodal displacements from global to local cs
 	dispL.addMatrixVector(0.0, T, dispG, 1.0);
 
 	dispL_inPlan2N(0) = dispL(0) / 2.0 + dispL(6) / 2.0;
@@ -961,7 +961,7 @@ double *SFI_MVLEM_3D::computeCurrentStrain(void)
 
 }
 
-// Get the element intial element tangent matrix
+// Get the element initial element tangent matrix
 const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 {
 
@@ -2331,7 +2331,7 @@ int SFI_MVLEM_3D::addInertiaLoadToUnbalance(const Vector &accel)
 		RaccelG(i + 18) = Raccel4(i);
 	}
 
-	// Tranform accelerations from global to local cs
+	// Transform accelerations from global to local cs
 	RaccelL.addMatrixVector(0.0, T, RaccelG, 1.0);
 
 	// Compute mass matrix
@@ -2460,7 +2460,7 @@ const Vector & SFI_MVLEM_3D::getResistingForce()
 	return SFI_MVLEM_3DR;
 }
 
-// Get resisting force incremenet from inertial forces
+// Get resisting force increment from inertial forces
 const Vector & SFI_MVLEM_3D::getResistingForceIncInertia()
 {
 	// if no mass terms .. just add damping terms
@@ -2494,7 +2494,7 @@ const Vector & SFI_MVLEM_3D::getResistingForceIncInertia()
 		accelG(i + 18) = accel4(i);
 	}
 
-	// Tranform accelerations from global to local cs
+	// Transform accelerations from global to local cs
 	accelL.addMatrixVector(0.0, T, accelG, 1.0);
 
 	// Compute the current resisting force
@@ -2799,7 +2799,7 @@ int SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact, 
 		NodePLotCrds(panel, 9) = GlCoord(2);
 		LocCoord.Zero();
 		GlCoord.Zero();
-		// Local node 4 - top rigth
+		// Local node 4 - top right
 		LocCoord(0) = Lv2_(0) + x[panel] - b[panel] / 2.0; // x
 		LocCoord(1) = Lv2_(1) + (x[panel] - b[panel] / 2.0)*end2Disp(5)*fact; // y
 		LocCoord(2) = Lv2_(2) - (x[panel] - b[panel] / 2.0)*end2Disp(4)*fact; // z

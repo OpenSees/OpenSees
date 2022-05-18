@@ -2874,8 +2874,8 @@ TclModelBuilderPFEM3DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             ID snodes(numnodes);
             for(int i=0; i<numnodes; i++) {
                 if(Tcl_GetInt(interp, argv[5+i], &snodes(i)) != TCL_OK) {
-                    opserr<<"WARNING: invalid strcutural node "<<argv[4+i]<<" -- PFEM3D save\n";
-                    return TCL_ERROR; 
+                    opserr<<"WARNING: invalid structural node "<<argv[4+i]<<" -- PFEM3D save\n";
+                    return TCL_ERROR;
                 }
             }
             theMesher3D.save(argv[2], snodes, step, theDomain);

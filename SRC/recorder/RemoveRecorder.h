@@ -116,7 +116,7 @@ class RemoveRecorder: public Recorder
    ID eleTags, secTags, secondaryEleTags;	
    
    Vector criteria;
-   bool secondaryFlag; // flag indiacting if secondary elements should be removed if all primary elements collaspe
+   bool secondaryFlag; // flag indiacting if secondary elements should be removed if all primary elements collapse
    Vector eleMasses, eleWeights;
    double gAcc;
    int gDir, gPat;

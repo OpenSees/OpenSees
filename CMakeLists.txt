@@ -312,6 +312,7 @@ add_library(OPS_Actor              OBJECT)
 add_library(OPS_ObjectBroker       OBJECT)
 add_library(OPS_Handler            OBJECT)
 add_library(OPS_Recorder           OBJECT)
+add_library(OPS_Reliability        OBJECT)
 add_library(OPS_Tagged             OBJECT)
 add_library(OPS_Utilities          OBJECT)
 add_library(OPS_ModelBuilder       OBJECT)
@@ -464,7 +465,9 @@ endif()
 
 target_link_libraries(OpenSees
   OPS_InterpTcl 
-  OpenSeesLIB 
+  OpenSeesLIB
+  OPS_Reliability
+  OPS_ReliabilityTcl  
   OPS_Numerics
   ${CMAKE_DL_LIBS} 
   ${HDF5_LIBRARIES} 
@@ -611,10 +614,10 @@ endif()
 
 # Reliability
 #----------------------------
-if ("OPS_Reliability" IN_LIST OPS_Extension_List)
+#if ("OPS_Reliability" IN_LIST OPS_Extension_List)
     add_compile_definitions(_RELIABILITY)
-    target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
-endif()
+    #target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
+#endif()
 
 
 #----------------------------

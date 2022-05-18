@@ -115,8 +115,10 @@ target_sources(OPS_Material
       #HardeningMaterial2.cpp
       HookGap.cpp
       HyperbolicGapMaterial.cpp
+      HystereticAsym.cpp
       HystereticMaterial.cpp
       HystereticPoly.cpp
+      HystereticSmooth.cpp
       ImpactMaterial.cpp
       InitStrainMaterial.cpp
       InitStressMaterial.cpp
@@ -221,8 +223,10 @@ target_sources(OPS_Material
       #HardeningMaterial2.h
       HookGap.h
       HyperbolicGapMaterial.h
+      HystereticAsym.h
       HystereticMaterial.h
       HystereticPoly.h
+      HystereticSmooth.h
       ImpactMaterial.h
       InitStrainMaterial.h
       InitStressMaterial.h

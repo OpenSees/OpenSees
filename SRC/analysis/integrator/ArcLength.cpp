@@ -30,8 +30,8 @@
 // Revision: A
 //
 // Description: This file contains the class definition for ArcLength.
-// ArcLength is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// ArcLength is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: dU^TdU + alpha^2*dLambda^2 = arcLength^2
 // where dU is change in nodal displacements for step, dLambda is
 // change in applied load and arcLength is a control parameter.
@@ -71,7 +71,7 @@ void* OPS_ArcLength()
 
     int numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &arcLength) < 0) {
-	opserr << "WARNING integrator ArcLength failed to read arc lenght\n";
+	opserr << "WARNING integrator ArcLength failed to read arc length\n";
 	return 0;
     }
     if (OPS_GetDoubleInput(&numdata, &alpha) < 0) {
@@ -1013,7 +1013,7 @@ ArcLength::computeSensitivities(void)
    // Zero out the old right-hand side of the SOE
    theSOE->zeroB();
 
-   // Form the part of the RHS which are indepent of parameter
+   // Form the part of the RHS which are independent of parameter
    this->formIndependentSensitivityRHS();
 
    AnalysisModel *theModel = this->getAnalysisModel();   
@@ -1090,7 +1090,7 @@ ArcLength::computeSensitivities(void)
     //  theSOE->zeroB();//reset the SOE to zero ;Abbas
 
    } 
-   // end of if statment to be run only one time during the iteration process.
+   // end of if statement to be run only one time during the iteration process.
 //opserr<<"computeSensitivities : end"<<endln;
    return 0;
 }

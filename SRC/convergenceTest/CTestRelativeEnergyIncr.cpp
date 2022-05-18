@@ -178,13 +178,13 @@ int CTestRelativeEnergyIncr::test(void)
             }
         }
         
-        // return the number of times test has been called - SUCCESSFULL
+        // return the number of times test has been called - SUCCESSFUL
         return currentIter;
     }
     
     // algo failed to converged after specified number of iterations - but RETURN OK
     else if ((printFlag == 5 || printFlag == 6) && currentIter >= maxNumIter) {
-        opserr << "WARNING: CTestRelativeEnergyIncr::test() - failed to converge but goin on -";
+        opserr << "WARNING: CTestRelativeEnergyIncr::test() - failed to converge but going on -";
         opserr << " current Ratio (dX*dR/dX1*dR1): " << product << " (max: " << tol << ")\n";
         opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm deltaR: " << b.pNorm(nType) << endln;
         return currentIter;

@@ -222,7 +222,7 @@ int
 InterpolatedGroundMotion::recvSelf(int commitTag, Channel &theChannel,
 				   FEM_ObjectBroker &theBroker)
 {
-  opserr << "InterpolatedGroundMotion::recvSelf() -- not yet impelemented" << endln;
+  opserr << "InterpolatedGroundMotion::recvSelf() -- not yet implemented" << endln;
   return -1;
 }
 

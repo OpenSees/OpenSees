@@ -478,7 +478,7 @@ int OPS_getLoadFactor()
 }
 
 // printNode():
-// function to print out the nodal information conatined in line
+// function to print out the nodal information contained in line
 //     print <filename> node <flag int> <int int int>
 // input: nodeArg: integer equal to arg count to node plus 1
 //        output: output stream to which the results are sent
@@ -2293,7 +2293,7 @@ int OPS_sectionStiffness()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionStiffness eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionStiffness eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 
@@ -2379,7 +2379,7 @@ int OPS_sectionFlexibility()
     int data[2];
 
     if (OPS_GetIntInput(&numdata, data) < 0) {
-	opserr << "WARNING sectionFlexibility eleTag? secNum? dof? - could not read int input? \n";
+	opserr << "WARNING sectionFlexibility eleTag? secNum? - could not read int input? \n";
 	return -1;
     }
 

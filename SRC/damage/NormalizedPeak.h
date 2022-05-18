@@ -33,7 +33,7 @@
 // Damage model. This is a maximum based, non hysteretic damage model. 
 // It gets the maximum positive and maximum negative values as initial
 // parameters and calculates the damage index based on the maximum and minimum
-// values occured.
+// values occurred.
 
 
 #include <ErrorHandler.h>
@@ -81,7 +81,7 @@ class NormalizedPeak : public DamageModel
   double TrialDmg;
   Vector TrialVector;
   
-  // Commited state
+  // Committed state
   double CommitScalar;
   double CommitDmg;
   Vector CommitVector;

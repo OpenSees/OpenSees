@@ -774,7 +774,7 @@ Domain::addLoadPattern(LoadPattern *load)
       return false;
     }    
 
-    // now we add the load pattern to the container for load pattrens
+    // now we add the load pattern to the container for load patterns
     bool result = theLoadPatterns->addComponent(load);
     if (result == true) {
 	load->setDomain(this);

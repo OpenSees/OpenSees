@@ -46,7 +46,7 @@ class WheelRail : public Element
 
     const char *getClassType(void) const {return "WheelRail";};
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -110,7 +110,7 @@ class WheelRail : public Element
     
     double deltT,vel,initLocation;
     double I,E,A;
-    double currentLocation;  // from left node of the last commited beam element.
+    double currentLocation;  // from left node of the last committed beam element.
     double deltaU,Fhz,uF,theDeltaY;
     double theEleLength,a,b;
     double G, rollingRadiusWheel;

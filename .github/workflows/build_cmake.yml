@@ -56,7 +56,7 @@ jobs:
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
 #          run: |
-#            mpiexec -np 2 python ../examples_py/example_mpi_paralleltruss_explicit.py
+#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
 
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions

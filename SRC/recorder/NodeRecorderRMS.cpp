@@ -57,8 +57,8 @@ void*
 OPS_NodeRecorderRMS()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder EnvelopeNode ";
-        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder EnvelopeNode ";
+        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
         return 0;
     }
 
@@ -343,7 +343,7 @@ NodeRecorderRMS::NodeRecorderRMS(const ID &dofs,
 
 
   // 
-  // create memory to hold nodal ID's (neeed parallel)
+  // create memory to hold nodal ID's (need parallel)
   //
 
   if (nodes != 0) {

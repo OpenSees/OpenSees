@@ -664,7 +664,7 @@ FRPConfinedConcrete::flat (double flcover_n, double arrayLat[6] )
 
   //Spoelstra&Monti iteration
   flcore=flcover_n+fls_n;
-  //Verical Stresses
+  //Vertical Stresses
   fcc_core=fpc1*(2.254*sqrt(1+7.94*(flcore/fpc1))-2*(flcore/fpc1)-1.254); 
   ecc_core=epsc0*(1+5*(fcc_core/fpc1-1));
   x_core = Tstrain /ecc_core;
@@ -1006,7 +1006,7 @@ void FRPConfinedConcrete::Print (OPS_Stream& s, int flag)
    s << "  Yielding Strength of Stirrups: " << fyh << endln;
    s << "  Diameter of Longitudinal Bars: " << dlong << endln;
    s << "  Diameter of Stirrups " << dtrans << endln;
-   s << "  Poisson's Coeffcient for Concrete" << v0 << endln;
+   s << "  Poisson's Coefficient for Concrete" << v0 << endln;
    s << "  Elastic Modulus for Steel " << Es << endln;
    s << "  Reduction Factor for FRP Ultimate Strain (0.5-0.8) " << k << endln;
    s << "  FRP Jacket Failure Criterion due to Buckling of Longitudinal Compressive Steel Bars (0 = not include it, 1= to include it) " << useBuck << endln;

@@ -25,7 +25,7 @@
 // Written: fmk 
 // Created: 09/99
 //
-// Description: This file contains the class implementatation of NormElementRecorder.
+// Description: This file contains the class implementation of NormElementRecorder.
 //
 // What: "@(#) NormElementRecorder.C, revA"
 
@@ -207,7 +207,7 @@ NormElementRecorder::record(int commitTag, double timeStamp)
     theOutputHandler->write(*data);
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 
@@ -534,7 +534,7 @@ NormElementRecorder::initialize(void)
   if (eleID != 0) {
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
     int eleCount = 0;
@@ -547,7 +547,7 @@ NormElementRecorder::initialize(void)
       responseCount =1;
     }
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle != 0) {
@@ -570,10 +570,10 @@ NormElementRecorder::initialize(void)
     }
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
-    // allocate memory for Reponses & set to 0
+    // allocate memory for Responses & set to 0
     theResponses = new Response *[numEle];
     if (theResponses == 0) {
       opserr << "NormElementRecorder::initialize() - out of memory\n";
@@ -583,7 +583,7 @@ NormElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle == 0) {
@@ -634,7 +634,7 @@ NormElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     ElementIter &theElements = theDomain->getElements();
     Element *theEle;
 

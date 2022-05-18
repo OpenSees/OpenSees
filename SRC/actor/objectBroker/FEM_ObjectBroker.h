@@ -134,7 +134,7 @@ class FEM_ObjectBroker
     virtual Vector	  *getPtrNewVector(int classTag, int size);
     virtual ID	          *getPtrNewID(int classTag, int size);
 
-    // methods for ouput objects
+    // methods for output objects
     //    virtual DataOutputHandler *getPtrNewDataOutputHandler(int classTag);
     virtual OPS_Stream *getPtrNewStream(int classTag);
     virtual Recorder *getPtrNewRecorder(int classTag);
