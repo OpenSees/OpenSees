@@ -404,5 +404,5 @@ Response* OrthotropicMaterial::setResponse(const char** argv, int argc, OPS_Stre
 			return theIsotropicMaterial->setResponse(argv, argc, s);
 		}
 	}
-	
+	return NDMaterial::setResponse(argv, argc, s);
 }
