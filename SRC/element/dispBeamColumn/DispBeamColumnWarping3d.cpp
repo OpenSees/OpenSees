@@ -866,7 +866,7 @@ DispBeamColumnWarping3d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (7 != Raccel1.Size() || 7 != Raccel2.Size()) {
-    opserr << "DispBeamColumnWarping3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "DispBeamColumnWarping3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
   

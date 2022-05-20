@@ -70,7 +70,7 @@ class BWBN : public UniaxialMaterial
     double Tz, Cz;
     double Te, Ce;
     
-    // Ohter variables
+    // Other variables
     double Tstress, Ttangent;
     
     double tolerance;

@@ -435,7 +435,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
   
   else
   {
-     cerr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is imcompatible with available frame elements";
+     cerr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is incompatible with available frame elements";
      return TCL_ERROR;
   }      
 
@@ -1284,7 +1284,7 @@ int buildSection(Tcl_Interp *interp, int secTag)
       }
       else
       {
-         cerr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements";
+         cerr << "WARNING NDM = " << NDM << " is incompatible with available frame elements";
          return TCL_ERROR;
       }                 
    }
