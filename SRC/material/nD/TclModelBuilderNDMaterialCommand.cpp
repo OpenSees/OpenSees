@@ -126,6 +126,7 @@ extern void *OPS_AcousticMedium(void);
 extern void* OPS_UVCmultiaxial(void);
 extern void* OPS_UVCplanestress(void);
 extern  void *OPS_SAniSandMSMaterial(void);
+extern void* OPS_OrthotropicMaterial(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -1346,6 +1347,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	theMaterial = new FluidSolidPorousMaterial (tag, param[0], *soil,
 						    param[2],param[3]);
     }
+
+	else if(strcmp(argv[1], "Orthotropic") == 0) {
+		void *theMat = OPS_OrthotropicMaterial();
+		if (theMat != 0)  {
+			theMaterial = (NDMaterial *)theMat;
+		}
+		else 
+			return TCL_ERROR;
+	}
 
     else if (strcmp(argv[1],"PlaneStressMaterial") == 0 ||
  	     strcmp(argv[1],"PlaneStress") == 0) {

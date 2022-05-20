@@ -55,6 +55,7 @@ void* OPS_CapPlasticity();
 void* OPS_SimplifiedJ2();
 void* OPS_PlateRebarMaterial();
 void* OPS_PlateFromPlaneStressMaterial();
+void* OPS_OrthotropicMaterial();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
 void* OPS_BeamFiberMaterial();
@@ -152,6 +153,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlateRebar", &OPS_PlateRebarMaterial));
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStressMaterial", &OPS_PlateFromPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStress", &OPS_PlateFromPlaneStressMaterial));
+	nDMaterialsMap.insert(std::make_pair("Orthotropic", &OPS_OrthotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("ConcreteS", &OPS_ConcreteS));
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
