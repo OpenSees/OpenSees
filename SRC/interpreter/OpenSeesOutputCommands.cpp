@@ -55,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Element.h>
 #include <ElementIter.h>
 #include <CrdTransf.h>
+#include <UniaxialMaterial.h>
 #include <map>
 #include <set>
 #include <Recorder.h>
@@ -2025,6 +2026,25 @@ int OPS_getCrdTransfTags()
     return -1;
   }
   
+  return 0;
+}
+
+int OPS_getUniaxialMaterialTags()
+{
+  // Defined in UniaxialMaterial.cpp
+  ID transfTags = OPS_getAllUniaxialMaterialTags();
+
+  int size = transfTags.Size();
+  int *data = 0;
+  if (size > 0) {
+    data = &transfTags[0];
+  }
+
+  if (OPS_SetIntOutput(&size, data, false) < 0) {
+    opserr << "WARNING failed to set outputs\n";
+    return -1;
+  }
+
   return 0;
 }
 

@@ -215,6 +215,9 @@ int
 getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+getUniMatTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 getEleTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
