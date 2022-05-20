@@ -1210,7 +1210,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new MaterialResponse(this, 5, theResponseData);
 
   } else if (strcmp(argv[0],"fiberData2") == 0) {
-    int numData = numFibers*4;
+    int numData = numFibers*6;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
       output.attr("yLoc", matData[3*j]);
@@ -1221,6 +1221,8 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","zCoord");
       output.tag("ResponseType","area");
       output.tag("ResponseType","material");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
       output.endTag();
     }
     Vector theResponseData(numData);
@@ -1260,29 +1262,26 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      double yLoc, zLoc, A, stress, strain;
-      yLoc = matData[3*j];
-      zLoc = matData[3*j+1];
-      A = matData[3*j+2];
-      stress = theMaterials[j]->getStress();
-      strain = theMaterials[j]->getStrain();
-      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
-      data(count+3) = stress; data(count+4) = strain;
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
+      data(count+3) = theMaterials[j]->getStress();
+      data(count+4) = theMaterials[j]->getStrain();
       count += 5;
     }
     return sectInfo.setVector(data);	
   } else if (responseID == 55) {
-    int numData = 4*numFibers;
+    int numData = 6*numFibers;
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      double yLoc, zLoc, A;
-      yLoc = matData[3*j];
-      zLoc = matData[3*j+1];
-      A = matData[3*j+2];
-      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
       data(count+3) = (double)theMaterials[j]->getTag();
-      count += 4;
+      data(count+4) = theMaterials[j]->getStress();
+      data(count+5) = theMaterials[j]->getStrain();	    
+      count += 6;
     }
     return sectInfo.setVector(data);		  
   } else  if (responseID == 6) {
