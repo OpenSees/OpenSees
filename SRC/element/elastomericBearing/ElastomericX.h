@@ -108,7 +108,7 @@ private:
     double ke;                         // Stiffness of elastic component (due to rubber)
     double cd;                         // Viscous damping parameter
     // Vertical direction
-    double S;                          // Shape facor
+    double S;                          // Shape factor
     double Ec;                         // Compression modulus
     double Kv0;                        // Stiffness at zero horizontal displacement
     double Kv;                         // Elastic stiffness in compression and tension

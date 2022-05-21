@@ -91,7 +91,7 @@ class SparseGenColLinSOE : public LinearSOE
     int size;            // order of A
     int nnz;             // number of non-zeros in A
     double *A, *B, *X;   // 1d arrays containing coefficients of A, B and X
-    int *rowA, *colStartA; // int arrays containing info about coeficientss in A
+    int *rowA, *colStartA; // int arrays containing info about coefficients in A
     Vector *vectX;
     Vector *vectB;    
     int Asize, Bsize;    // size of the 1d array holding A

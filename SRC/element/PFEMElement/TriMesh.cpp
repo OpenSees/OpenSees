@@ -353,7 +353,7 @@ TriMesh::mesh() {
         // create node
         Node *node = newNode(nodecounter++, crds);
         if (node == 0) {
-            opserr << "WARING: failed to create node\n";
+            opserr << "WARNING: failed to create node\n";
             return -1;
         }
         if (domain->addNode(node) == false) {
@@ -434,7 +434,7 @@ TriMesh::mesh() {
     }
     this->setEleNodes(elenodes);
 
-    // create elemnts
+    // create elements
     if (this->newElements(elenodes) < 0) {
         opserr << "WARNING: failed to create elements\n";
         return -1;

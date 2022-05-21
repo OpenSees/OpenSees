@@ -74,7 +74,7 @@ class Block3D {
   //set up xl array
   void setUpXl(const ID &nodeID, const Matrix &coorArray);
   
-  //transform to real coordiantes
+  //transform to real coordinates
   void transformNodalCoordinates();
 
   //shape functions

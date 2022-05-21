@@ -125,7 +125,7 @@ class FiberSection2dThermal : public SectionForceDeformation
     double *Fiber_Tangent;
     double *Fiber_ElongP;
     Vector AverageThermalElong;
-	//Basiclly this data stores the last committed fiber tangent for calculating thermal foreces
+	//Basically this data stores the last committed fiber tangent for calculating thermal forces
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     Vector dedh; // MHS hack

@@ -65,7 +65,7 @@ int OPS_Parameter() {
   int paramTag;
   int num = 1;
   if (OPS_GetIntInput(&num, &paramTag) < 0) {
-    opserr << "WARING: parameter - failed to get parameter tag\n";
+    opserr << "WARNING: parameter - failed to get parameter tag\n";
     return -1;
   }
 
@@ -86,7 +86,7 @@ int OPS_Parameter() {
     }
 
     if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-      opserr << "WARING: parameter - failed to set parameter tag\n";
+      opserr << "WARNING: parameter - failed to set parameter tag\n";
       return -1;
     }
 
@@ -111,7 +111,7 @@ int OPS_Parameter() {
     }
 
     if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-      opserr << "WARING: parameter - failed to set parameter tag\n";
+      opserr << "WARNING: parameter - failed to set parameter tag\n";
       return -1;
     }
 
@@ -245,7 +245,7 @@ int OPS_Parameter() {
       }
 
       if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-        opserr << "WARING: parameter - failed to set parameter tag\n";
+        opserr << "WARNING: parameter - failed to set parameter tag\n";
         return -1;
       }
 
@@ -261,7 +261,7 @@ int OPS_Parameter() {
       }
 
       if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-        opserr << "WARING: parameter - failed to set parameter tag\n";
+        opserr << "WARNING: parameter - failed to set parameter tag\n";
         return -1;
       }
 
@@ -284,7 +284,7 @@ int OPS_Parameter() {
       argv.push_back(buffer);
 
     } else {
-      opserr << "WARING: parameter - inputs must be one of node, element, "
+      opserr << "WARNING: parameter - inputs must be one of node, element, "
                 "pattern, randomVariable\n";
       return -1;
     }
@@ -317,7 +317,7 @@ int OPS_Parameter() {
   }
 
   if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-    opserr << "WARING: parameter - failed to set parameter tag\n";
+    opserr << "WARNING: parameter - failed to set parameter tag\n";
     return -1;
   }
 
@@ -340,7 +340,7 @@ int OPS_addToParameter() {
   int paramTag;
   int num = 1;
   if (OPS_GetIntInput(&num, &paramTag) < 0) {
-    opserr << "WARING: parameter - failed to get parameter tag\n";
+    opserr << "WARNING: parameter - failed to get parameter tag\n";
     return -1;
   }
 
@@ -428,7 +428,7 @@ int OPS_addToParameter() {
   }
 
   if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-    opserr << "WARING: parameter - failed to set parameter tag\n";
+    opserr << "WARNING: parameter - failed to set parameter tag\n";
     return -1;
   }
 
@@ -451,7 +451,7 @@ int OPS_updateParameter() {
   int paramTag;
   int num = 1;
   if (OPS_GetIntInput(&num, &paramTag) < 0) {
-    opserr << "WARING: parameter - failed to get parameter tag\n";
+    opserr << "WARNING: parameter - failed to get parameter tag\n";
     return -1;
   }
 
@@ -479,7 +479,7 @@ int OPS_updateParameter() {
   theDomain->updateParameter(paramTag, newValue);
 
   if (OPS_SetIntOutput(&num, &paramTag, true) < 0) {
-    opserr << "WARING: parameter - failed to set parameter tag\n";
+    opserr << "WARNING: parameter - failed to set parameter tag\n";
     return -1;
   }
 
@@ -627,7 +627,7 @@ int OPS_setParameter() {
   std::vector<const char *> argv;
   while (OPS_GetNumRemainingInputArgs() > 0) {
     opt = OPS_GetString();
-    if (strcmp(opt, "Invalid String Inpu!") == 0) {
+    if (strcmp(opt, "Invalid String Input!") == 0) {
       opserr << opt << "\n";
       return -1;
     }

@@ -67,7 +67,7 @@ class UniformExcitation : public EarthquakePattern
     
  private:
     GroundMotion *theMotion; // the ground motion
-    int theDof;      // the dof corrseponding to the ground motion
+    int theDof;      // the dof corresponding to the ground motion
     double vel0;     // the initial velocity, should be neg of ug dot(0)
     double fact;
 };

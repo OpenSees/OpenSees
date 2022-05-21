@@ -755,12 +755,12 @@ int OPS_doBlock2D()
 
     if (ndm < 2) {
 	opserr << "WARNING block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
-	opserr << " : model dimension (ndm) must be at leat 2 \n";
+	opserr << " : model dimension (ndm) must be at least 2 \n";
 	return -1;
     }
 
     if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING incorrect numer of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -1130,7 +1130,7 @@ int OPS_doBlock3D()
     int ndm = OPS_GetNDM();
     if (ndm < 3) {
 	opserr << "WARNING block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs?";
-	opserr << " : model dimension (ndm) must be at leat 3 \n";
+	opserr << " : model dimension (ndm) must be at least 3 \n";
 	return -1;
     }
 
@@ -1139,7 +1139,7 @@ int OPS_doBlock3D()
     if (theDomain == 0) return -1;
 
     if (OPS_GetNumRemainingInputArgs() < 8) {
-	opserr << "WARNING incorrect numer of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -1297,7 +1297,7 @@ int OPS_doBlock3D()
     return 0;
 }
 
-// For backward compatability
+// For backward compatibility
 void* OPS_NonlinearBeamColumn()
 {
     int ndm = OPS_GetNDM();

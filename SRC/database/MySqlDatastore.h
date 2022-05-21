@@ -60,7 +60,7 @@ class MySqlDatastore: public FE_Datastore
   
   ~MySqlDatastore();
 
-  // methods for sending and recieving matrices, vectors and id's
+  // methods for sending and receiving matrices, vectors and id's
   int sendMsg(int dbTag, int commitTag, 
 	      const Message &, 
 	      ChannelAddress *theAddress =0);    

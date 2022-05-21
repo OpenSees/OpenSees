@@ -316,7 +316,7 @@ BeamGT::setDomain(Domain *theDomain)
       return;  // don't go any further - otherwise divide by 0 error
     }
 
-        // cosenos de las diagonales
+        // cosines of the diagonals
         double coseno=dx/L;
         double seno=dy/L;
 		trans(0,0)=L;

@@ -438,7 +438,7 @@ const Matrix& ZeroLengthContactASDimplex::getInitialStiff()
 
 const Matrix& ZeroLengthContactASDimplex::getDamp()
 {
-    // get global storage for gloabl DOFset
+    // get global storage for global DOFset
     auto& gs = getGlobalStorage(numDOF[0] + numDOF[1]);
     gs.D.Zero();
     return gs.D;
@@ -1045,7 +1045,7 @@ void ZeroLengthContactASDimplex::updateInternal(bool do_implex, bool do_tangent)
 
     // extract compressive normal stress
     if (do_implex && use_implex) {
-        // explicit extrapolation (actually keep the commited one... since it's either 0 or 1)
+        // explicit extrapolation (actually keep the committed one... since it's either 0 or 1)
         sv.PC = sv.PC_commit;
     }
     else {
