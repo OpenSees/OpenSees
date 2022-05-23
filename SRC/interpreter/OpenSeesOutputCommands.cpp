@@ -1639,54 +1639,6 @@ int OPS_getFixedDOFs()
     return 0;
 }
 
-// int OPS_getConstraintMatrix()
-// {
-
-//     bool all = 1;
-//     int rNodeTag;
-//     int numdata = 1;
-
-//     if (OPS_GetNumRemainingInputArgs() > 2) {
-// 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
-// 		opserr << "WARNING getConstraintMatrix <rNodeTag?> - could not read rNodeTag\n";
-// 		return -1;
-// 	  }
-// 	all = 0;
-//     }
-
-//     Domain* theDomain = OPS_GetDomain();
-//     if (theDomain == 0) return -1;
-
-//     MP_ConstraintIter &mpIter = theDomain->getMPs();
-//     MP_Constraint *theMP;
-
-// 	std::vector <int> data;
-
-// 	int nsdof;
-
-//     while ((theMP = mpIter()) != 0) {
-// 	  const Matrix &theConstraintMatrix = theMP->getConstraint();
-// 	  nsdof = theConstraintMatrix.noCols();
-
-// 	  data.push_back(theMP->getNodeConstrained());
-//     }
-
-// 	int size = nsdof*nsdof;
-
-//     for (int i = 0; i < nsdof; i++) {
-// 	  for (int j = 0; j < nsdof; j++) {
-// 	    data.push_back(theConstraintMatrix(i,j));
-// 	  }
-//     }
-
-// 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
-// 	  opserr << "WARNING failed to set output\n";
-// 	  return -1;
-// 	}
-
-//     return 0;
-// }
-
 int OPS_getConstrainedNodes()
 {
 

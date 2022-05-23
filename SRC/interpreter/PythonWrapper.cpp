@@ -1127,18 +1127,6 @@ static PyObject *Py_ops_getFixedDOFs(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-// static PyObject *Py_ops_getConstraintMatrix(PyObject *self, PyObject *args)
-// {
-//     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-//     if (OPS_getConstraintMatrix() < 0) {
-// 	opserr<<(void*)0;
-// 	return NULL;
-//     }
-
-//     return wrapper->getResults();
-// }
-
 static PyObject *Py_ops_getConstrainedNodes(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2745,7 +2733,6 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
     addCommand("getFixedNodes", &Py_ops_getFixedNodes);
     addCommand("getFixedDOFs", &Py_ops_getFixedDOFs);
-    // addCommand("getConstraintMatrix", &Py_ops_getConstraintMatrix);
     addCommand("getConstrainedNodes", &Py_ops_getConstrainedNodes);
     addCommand("getConstrainedDOFs", &Py_ops_getConstrainedDOFs);
     addCommand("getRetainedNodes", &Py_ops_getRetainedNodes);
