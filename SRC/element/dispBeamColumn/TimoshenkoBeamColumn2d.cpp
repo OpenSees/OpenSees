@@ -291,7 +291,7 @@ TimoshenkoBeamColumn2d::update(void)
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
 
-    // compute coeficient phi
+    // compute coefficient phi
     const Matrix &ks = theSections[i]->getSectionTangent();
     double EI = 0.0;
     double GA = 0.0;
@@ -689,7 +689,7 @@ TimoshenkoBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
     if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-      opserr << "TimoshenkoBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+      opserr << "TimoshenkoBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
       return -1;
     }
 
@@ -1315,6 +1315,9 @@ TimoshenkoBeamColumn2d::setResponse(const char **argv, int argc,
   
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
+
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));
   
   output.endTag();
   return theResponse;
@@ -1431,6 +1434,13 @@ TimoshenkoBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else
     return -1;
 }

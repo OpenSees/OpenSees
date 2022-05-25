@@ -88,7 +88,7 @@ returned. If successful the domain is partitioned according to the
 following rules: \begin{itemize}
 \item All nodes which are internal to a partition are added using the
 {\em addNode()} method of the Subdomain. These nodes are removed from
-the PartionedDomain using {\em removeNode()}. 
+the PartitionedDomain using {\em removeNode()}. 
 \item External nodes (these are nodes shared across partitions as a
 result of element connectivity or MP\_Constraints are added to those
 Subdomains whose elements reference them. They are added using the
@@ -105,7 +105,7 @@ removeElement()} and added to the Subdomain using {\em addElement()}.
 a LoadCase with a tag equal to the tags in the LoadCases that have
 been added to the PartitionedDomain; if not new LoadCases are created
 and added to the Subdomain. It then iterates through all the
-NodalLoads in the LoadCases in the PartionedDomain, if the
+NodalLoads in the LoadCases in the PartitionedDomain, if the
 corresponding node is external the NodalLoad is removed and added to
 the corresponding LoadCase in the Subdomain. ELEMENTAL LOADS are not
 yet dealt with. 

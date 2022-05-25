@@ -242,7 +242,7 @@ static char node_docstring[] =
 [,'-dispLoc',(ndf dispLoc)]) -> nodeTag\n\n\
 Create a Node object DOF\n\n\
 nodeTag -- integer tag identifying node\n\
-coords -- nodal coordiantes (ndm arguments)\n\
+coords -- nodal coordinates (ndm arguments)\n\
 mass -- nodal mass (ndf arguments)\n\
 disp -- nodal displacement (ndf arguments)\n\
 vel -- nodal velocity (ndf arguments)\n\
@@ -452,10 +452,10 @@ The following contain information about numbererType? and the args required for 
 available constraint handler types:\n\n\
 * constraints('Plain')\n\n\
 * constraints('Lagrange'[,alphaS,alphaM])\n\n\
-alphaS -- factor on singe points. optional, default = 1.0\n\
+alphaS -- factor on single points. optional, default = 1.0\n\
 alphaM -- factor on multi-points, optional, default = 1.0;\n\n\
 * constraints('Penalty',alphaS,alphaM)\n\n\
-alphaS -- factor on singe points\n\
+alphaS -- factor on single points\n\
 alphaM -- factor on multi-points\n\n\
 * constraints('Transformation')\n\n";
 static char algorithm_docstring[] =
@@ -493,20 +493,20 @@ node -- node whose response controls solution\n\
 dof -- degree of freedom at the node, valid options: 1 through ndf at node.\n\
 incr -- first displacement increment dUdof\n\
 numIter -- the number of iterations the user would like to occur in the solution algorithm. Optional, default = 1.0.\n\
-dUmin -- the min stepsize the user will allow. optional, defualt dU0\n\
+dUmin -- the min stepsize the user will allow. optional, default dU0\n\
 dUmax -- the max stepsize the user will allow. optional, default dU0\n\n\
 Transient Integrators:\n\n\
 * integrator('Newmark',gamma,beta)\n\n";
 static char analysis_docstring[] =
     "* analysis(analysisType)\n\n\
-Contruct the Analysis object, which defines what type of analysis is to be performed\n\
+Construct the Analysis object, which defines what type of analysis is to be performed\n\
 analysisType -- a string identifying type of analysis object. Currently 4 valid options:\n\n\
 * analysis('Static')\n\
 * analysis('Transient')\n\
 * analysis('VariableTransient')\n\
 * analysis('PFEM',dtmin,dtmax[,ratio])\n\n\
-dtmin -- mininum time increment\n\
-dtmin -- maxinum time increment\n\
+dtmin -- minimum time increment\n\
+dtmin -- maximum time increment\n\
 ratio -- the ratio to adjust time step when last time step is failed\n";
 static char test_docstring[] =
     "* test(testType,...)\n\n\
@@ -529,11 +529,11 @@ iter --	the max number of iterations to check before returning failure condition
 flag --	optional print flag, default is 0. valid options:\n\
          0 print nothing\n\
          1 print information on norms each time test() is invoked\n\
-         2 print information on norms and number of iterations at end of successfull test\n\
+         2 print information on norms and number of iterations at end of successful test\n\
          4 at each step it will print the norms and also the dU and R(U) vectors.\n\
          5 if it fails to converge at end of numIter it will print an error message BUT RETURN A SUCEESSFULL test\n\
 nType -- optional type of norm, default is 2. (0 = max-norm, 1 = 1-norm, 2 = 2-norm, ...)\n\
-maxincr -- max number of interation that the norm increases\n\
+maxincr -- max number of iteration that the norm increases\n\
 maxTol -- max tolerance that can reach";
 static char analyze_docstring[] =
     "* analyze(numStep[,dt[,dtmin,dtmax,Jd]]) -> 0 (successful) or < 0 (failed)\n\n\

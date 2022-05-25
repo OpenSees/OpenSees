@@ -213,7 +213,7 @@ int FileChannel::sendMatrix(int dbTag, int commitTag,
 			    const Matrix &theMatrix, 
 			    ChannelAddress *theAddress)
 {
-    // if o.k. get a ponter to the data in the Matrix and 
+    // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int  nleft, rows, cols, i,j;
     rows = theMatrix.noRows();
@@ -240,7 +240,7 @@ int FileChannel::recvMatrix(int dbTag, int commitTag,
 			   Matrix &theMatrix, 
 			   ChannelAddress *theAddress)
 {
-   // if o.k. get a ponter to the data in the Matrix and 
+   // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int  nleft, rows, cols;
     rows = theMatrix.noRows();
@@ -265,7 +265,7 @@ int FileChannel::recvMatrix(int dbTag, int commitTag,
 int FileChannel::sendVector(int dbTag, int commitTag, 
 					 const Vector &theVector, ChannelAddress *theAddress ) 
 {
-    // if o.k. get a ponter to the data in the Vector and 
+    // if o.k. get a pointer to the data in the Vector and 
     // place the incoming data there
     int  nleft, size, i;
     size = theVector.Size();

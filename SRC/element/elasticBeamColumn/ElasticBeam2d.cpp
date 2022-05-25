@@ -66,7 +66,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
      */
     int iData[3];
     bool section = false;
-    int sectionTag;
+    int sectionTag = -1;
     double data[3];
     int transfTag;
     double mass = 0.0, alpha = 0.0, depth = 0.0;
@@ -216,6 +216,10 @@ to get element data
         depth = mdata(8);
         cMass = (int) mdata(9);
         release = (int) mdata(10);
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
     }
 
     // check transf
@@ -305,7 +309,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	theEle = new ElasticBeam2d(--currTag,data[0],data[1],data[2],elenodes(2*i),elenodes(2*i+1),
 				   *theTransf,alpha,depth,mass,cMass,release);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -823,7 +827,7 @@ ElasticBeam2d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 	
   if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-    opserr << "ElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "ElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
     
@@ -1233,7 +1237,8 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     // deformations
   }  else if (strcmp(argv[0],"deformatons") == 0 || 
-	      strcmp(argv[0],"basicDeformations") == 0) {
+	      strcmp(argv[0],"basicDeformations") == 0 ||
+	      strcmp(argv[0],"basicDeformation") == 0) {
     
     output.tag("ResponseType","eps");
     output.tag("ResponseType","theta1");
@@ -1241,8 +1246,7 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 5, Vector(3));
   
   // chord rotation -
-  } else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
-	     || strcmp(argv[0],"basicDeformation") == 0) {
+  } else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0) {
 
     output.tag("ResponseType","eps");
     output.tag("ResponseType","theta1");
@@ -1251,6 +1255,9 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 5, Vector(3));
   }
   output.endTag(); // ElementOutput
+
+  if (theResponse == 0)
+    theResponse = theCoordTransf->setResponse(argv, argc, output);
   
   return theResponse;
 }

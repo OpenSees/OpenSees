@@ -852,7 +852,7 @@ Steel02Fatigue::commitState(void) // Added Fatigue
 		// Flag failure if we have reached that point
 		if (Fatigue_DI >= Fatigue_Dmax) {
 			// Most likely will not fail at this point, more 
-			// likely at the psuedo peak. But this step is
+			// likely at the pseudo peak. But this step is
 			// is important for accumulating damage
 			Fatigue_Cfailed = true;
 			opserr << "FatigueMaterial: material tag " << this->getTag() << " failed at peak\n";
@@ -979,7 +979,7 @@ Steel02Fatigue::commitState(void) // Added Fatigue
 			}
 			else {
 
-				// One full cycle of |C-D| and 1/2 cyle of |A-B|
+				// One full cycle of |C-D| and 1/2 cycle of |A-B|
 
 				if (fabs(Fatigue_C - trialStrain) < 1e-10) {
 					Fatigue_DL = Fatigue_DI;

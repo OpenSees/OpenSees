@@ -1,0 +1,87 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+#add_library(OPS_Element_PFEMElement)
+
+#target_sources(OPS_Element_PFEMElement
+target_sources(OPS_PFEM
+    PRIVATE
+        BackgroundDef.cpp
+        BackgroundFixData.cpp
+        BackgroundGrid.cpp
+        BackgroundMesh.cpp
+        BackgroundStructure.cpp
+        BCell.cpp
+        BNode.cpp
+        HigherOrder.cpp
+        LineMesh.cpp
+        LineMeshGenerator.cpp
+        Mesh.cpp
+        MINI.cpp
+        Particle.cpp
+        ParticleGroup.cpp
+        PFEMContact2D.cpp
+        PFEMElement2DBubble.cpp
+        PFEMElement2DCompressible.cpp
+        PFEMElement2D.cpp
+        PFEMElement2DFIC.cpp
+        PFEMElement2Dmini.cpp
+        PFEMElement2DQuasi.cpp
+        PFEMElement3DBubble.cpp
+        PFEMElement3D.cpp
+        #PFEMElement3Dmini.cpp
+        #PFEMMesher2D.cpp
+        PFEMMesher3D.cpp
+        QuadMesh.cpp
+        QuadMeshGenerator.cpp
+        TaylorHood2D.cpp
+        #TclModelBuilder_addPFEMElement.cpp
+        #TclPFEMCommands.cpp
+        TetMesh.cpp
+        TetMeshGenerator.cpp
+        TriangleMeshGenerator.cpp
+        TriGaussPoints.cpp
+        TriMesh.cpp
+    PUBLIC
+        BackgroundDef.h
+        BackgroundFixData.h
+        BackgroundGrid.h
+        BackgroundMesh.h
+        BackgroundStructure.h
+        BCell.h
+        BNode.h
+        HigherOrder.h
+        LineMeshGenerator.h
+        LineMesh.h
+        Mesh.h
+        MINI.h
+        ParticleGroup.h
+        Particle.h
+        PFEMContact2D.h
+        PFEMElement2DBubble.h
+        PFEMElement2DCompressible.h
+        PFEMElement2DFIC.h
+        PFEMElement2D.h
+        PFEMElement2Dmini.h
+        PFEMElement2DQuasi.h
+        PFEMElement3DBubble.h
+        PFEMElement3D.h
+       #PFEMElement3Dmini.h
+       #PFEMMesher2D.h
+        PFEMMesher3D.h
+        QuadMeshGenerator.h
+        QuadMesh.h
+        TaylorHood2D.h
+        #TclModelBuilder_addPFEMElement.h
+        TetMeshGenerator.h
+        TetMesh.h
+        TriangleMeshGenerator.h
+        TriGaussPoints.h
+        TriMesh.h
+)
+
+target_include_directories(OPS_PFEM PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

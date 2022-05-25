@@ -88,7 +88,7 @@ OPS_LysmerTriangle(void)
 
   int num_args_remaining = OPS_GetNumRemainingInputArgs();
 
-  // Its optional (but desireable) to input the element-length....
+  // Its optional (but desirable) to input the element-length....
   if (num_args_remaining > 0)
   {
     numData = 1;
@@ -721,15 +721,15 @@ LysmerTriangle::Print(OPS_Stream &s, int flag)
 }
 
 Response*
-LysmerTriangle::setResponse(const char **argv, int argc, Information &eleInfo)
+LysmerTriangle::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
-    return 0;
+  return Element::setResponse(argv, argc, output);
 }
 
 int 
 LysmerTriangle::getResponse(int responseID, Information &eleInfo)
 {
-	return -1;
+  return Element::getResponse(responseID, eleInfo);
 }
 
 

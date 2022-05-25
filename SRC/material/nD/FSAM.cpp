@@ -255,7 +255,7 @@ FSAM::FSAM (int tag,
 	alfa_crackA = 10.0;		// Direction of 1st strut
 	alfa_crackB = 10.0;		// Direction of 2nd strut
 
-	// State Vairables
+	// State Variables
 	crackA = 0;				// Crack/Strut 1
 	crackB = 0;				// Crack/Strut 2
 
@@ -1823,7 +1823,7 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 
 }
 
-// STAGE 3 - 2st CRACK PANEL MODEL
+// STAGE 3 - 2nd CRACK PANEL MODEL
 void FSAM::Stage3(double &ex, double &ey, double &gamma)
 {
 

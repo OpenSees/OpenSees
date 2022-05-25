@@ -331,7 +331,7 @@ displacements for the x and y directions of node 4. The file consists of a singl
 The $1.0$ corresponds to the load factor (pseudo time) in the model at which point 
 the recorder was invoked. The $0.530093$ and $-0.177894$ correspond to the response
 at node $4$ for the 1 and 2 degree-of-freedom. Note that if more analysis steps had been 
-peformed, the line would contain a line for every analysis step that completed successfully.
+performed, the line would contain a line for every analysis step that completed successfully.
 
 \pagebreak
 \section{EXAMPLE 2 - Moment-Curvature Analysis of a \\ 
@@ -778,7 +778,7 @@ uniaxialMaterial Steel01  3  $fy $E 0.01
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some paramaters
+# set some parameters
 set colWidth 15
 set colDepth 24 
 
@@ -818,13 +818,13 @@ geomTransf Linear 1
 # Number of integration points along length of element
 set np 5
 
-# Create the coulumns using Beam-column elements
+# Create the columns using Beam-column elements
 #                           tag ndI ndJ nsecs secID transfTag
 element nonlinearBeamColumn  1   1   3   $np    1       1 
 element nonlinearBeamColumn  2   2   4   $np    1       1 
 
-# Define beam elment
-# -----------------------------
+# Define beam elements
+# --------------------
 
 # Geometry of column elements
 #                tag 
@@ -1183,7 +1183,7 @@ analysis and the second after the transient analysis.
 For this analysis the nodal displacenments at Nodes 3 and 4 will be stored in
 the file nodeTransient.out for post-processing. In addition the
 section forces and deformations for the section at the base of column
-1 will also be stored in two seperate files.  The results of the
+1 will also be stored in two separate files.  The results of the
 eigenvalue analysis will be displayed on the screen.
 
 \vspace{0.2in} \noindent{\bf OpenSees Script}
@@ -1316,7 +1316,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     
     # if the analysis fails try initial tangent iteration
     if {$ok != 0} {
-       puts "regular newton failed .. lets try an initail stiffness for this step"
+       puts "regular newton failed .. lets try an initial stiffness for this step"
         test NormDispIncr 1.0e-12  100 0
         algorithm ModifiedNewton -initial
         set ok [analyze 1 .01]
@@ -1328,7 +1328,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     set tCurrent [getTime]
 }
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if {$ok == 0} {
    puts "Transient analysis completed SUCCESSFULLY";
 } else {
@@ -2194,7 +2194,7 @@ i.e. time Dx9 Dy9 Dx14 Dy14 Dx19 Dy19. The horizontal displacement
 time history of the first floor diaphragm node 9 is shown in
 figure~\ref{example4disp}. Notice the increase in period
 after about 10 seconds of earthquake excitation, when the large pulse
-in the ground motion propogates through the structure. The
+in the ground motion propagates through the structure. The
 displacement profile over the three stories shows a soft-story
 mechanism has formed in the first floor columns. The numerical
 solution converges even though the drift is
@@ -2351,7 +2351,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Plain 
 
 # System of equations solver
@@ -2573,7 +2573,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Plain 
 
 # System of equations solver
@@ -2800,7 +2800,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Plain 
 
 # System of equations solver

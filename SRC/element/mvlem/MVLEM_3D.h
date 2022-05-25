@@ -65,7 +65,7 @@ public:
 	// destructor
 	~MVLEM_3D();
 
-	// public methods to obtain inforrmation about dof & comectivity
+	// public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
 	Node **getNodePtrs(void);
@@ -151,7 +151,7 @@ private:
 
 	// Calculated element parameters
 	double h;								// height of MVLEM_3D element (undeformed configuration)
-	double Lw;								// lenght of MVLEM_3D elemtn, i.e. wall length 
+	double Lw;								// length of MVLEM_3D elemtn, i.e. wall length 
 	double A;								// wall cross-section area
 	double NodeMass;						// nodal mass
 	double d;								// distance of corner nodes from center axis

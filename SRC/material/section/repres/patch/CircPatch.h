@@ -43,7 +43,7 @@ class CircPatch: public Patch
     CircPatch();
     CircPatch(int materialID, int numSubdivCircunf, int numSubdivRadial,
               const Vector &centerPosition, double internRadius, 
-              double externRadius, double initialAngle, double finalAngle);
+              double externRadius, double initialAngle=0.0, double finalAngle=360.0);
 
     ~CircPatch();
     

@@ -116,7 +116,7 @@ itself.\\
 
 {\em virtual Node *removeNode(int tag); } \\
 To remove a Node whose tag is given by {\em tag} from the
-Subdomain. Returns $0$ if the Node is not in the Subdoamin, otherwise
+Subdomain. Returns $0$ if the Node is not in the Subdomain, otherwise
 it removes the pointer to the node from the storage object, invokes
 {\em domainChange()} on itself, and returns the pointer to the
 Node. If the Node is external, the destructor is called on the
@@ -124,7 +124,7 @@ DummyNode. Invokes {\em domainChanged()} on itself. \\
 
 {\em virtual Node *getNode(int tag); } \\
 To return a pointer to the Node whose tag is given by {\em tag} from
-the Subdomain. Returns $0$ if the Node is not in the Subdoamin,
+the Subdomain. Returns $0$ if the Node is not in the Subdomain,
 otherwise returns a pointer to the Node, if external a pointer to the
 DummyNode is returned. \\ 
 

@@ -128,7 +128,7 @@ protected:
   bool onP0;          // flag to indicate if the element is on P0
   double D1, D2;		// Inner and outer diameter of the bearing
   double Tr;			// height of rubber in the bearing
-  double S;			// Shape facor
+  double S;			// Shape factor
   double n, ts;		// number of layers and shim thickness
   double h;			// height of rubber + shims
   double Ec;			// Compression modulus

@@ -83,17 +83,19 @@ SimpleFractureMaterial::SimpleFractureMaterial(int tag, UniaxialMaterial &materi
 {
   theMaterial = material.getCopy();
 
-  Cstress = theMaterial->getStress();
-  Ctangent = theMaterial->getTangent();
-  Cstrain = theMaterial->getStrain();
+  if (theMaterial == 0) {
+    opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material\n";
+    Cstress = 0.0;
+    Ctangent = 0.0;
+    Cstrain = 0.0;
+  } else {
+    Cstress = theMaterial->getStress();
+    Ctangent = theMaterial->getTangent();
+    Cstrain = theMaterial->getStrain();
+  }
   Tstress = Cstress;
   Ttangent = Ctangent;
   Tstrain = Cstrain;
-
-  if (theMaterial == 0) {
-    opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material\n";
-    exit(-1);
-  }
 }
 
 SimpleFractureMaterial::SimpleFractureMaterial()
@@ -125,6 +127,9 @@ SimpleFractureMaterial::setTrialStrain(double strain, double strainRate)
 int 
 SimpleFractureMaterial::setTrialStrain(double strain, double temp, double strainRate)
 {
+  if (theMaterial == 0)
+    return -1;
+  
   // determine based on last converged step
   Tfailed = Cfailed;
   TstartCompStrain = CstartCompStrain;
@@ -208,7 +213,10 @@ SimpleFractureMaterial::getTangent(void)
 double 
 SimpleFractureMaterial::getDampTangent(void)
 {
-  return theMaterial->getDampTangent();
+  if (theMaterial)
+    return theMaterial->getDampTangent();
+  else
+    return 0.0;
 }
 
 
@@ -221,12 +229,18 @@ SimpleFractureMaterial::getStrain(void)
 double 
 SimpleFractureMaterial::getStrainRate(void)
 {
-  return theMaterial->getStrainRate();
+  if (theMaterial)
+    return theMaterial->getStrainRate();
+  else
+    return 0.0;
 }
 
 int 
 SimpleFractureMaterial::commitState(void)
-{	
+{
+  if (theMaterial == 0)
+    return -1;
+  
   Cfailed = Tfailed;
   Cstress = Tstress;
   Ctangent = Ttangent;
@@ -239,6 +253,9 @@ SimpleFractureMaterial::commitState(void)
 int 
 SimpleFractureMaterial::revertToLastCommit(void)
 {
+  if (theMaterial == 0)
+    return -1;
+  
   Tfailed = Cfailed;
   Tstress = Cstress;
   Ttangent = Ctangent;
@@ -251,6 +268,9 @@ SimpleFractureMaterial::revertToLastCommit(void)
 int 
 SimpleFractureMaterial::revertToStart(void)
 {
+  if (theMaterial == 0)
+    return -1;
+  
   Tfailed = false;
   Cstrain = 0;
   theMaterial->revertToStart();
@@ -262,8 +282,9 @@ SimpleFractureMaterial::revertToStart(void)
 UniaxialMaterial *
 SimpleFractureMaterial::getCopy(void)
 {
-  SimpleFractureMaterial *theCopy = 
-    new SimpleFractureMaterial(this->getTag(), *theMaterial, maxStrain);
+  SimpleFractureMaterial *theCopy = 0;
+  if (theMaterial)
+    theCopy = new SimpleFractureMaterial(this->getTag(), *theMaterial, maxStrain);
         
   return theCopy;
 }
@@ -271,6 +292,11 @@ SimpleFractureMaterial::getCopy(void)
 int 
 SimpleFractureMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "SimpleFractureMaterial::sendSelf() - theMaterial is null, nothing to send\n";
+    return -1;
+  }
+    
   int dbTag = this->getDbTag();
 
   static ID dataID(3);
@@ -290,11 +316,7 @@ SimpleFractureMaterial::sendSelf(int cTag, Channel &theChannel)
 
   static Vector dataVec(6);
   dataVec(0) = maxStrain;
-  if (Cfailed == true)
-    dataVec(1) = 1.0;
-  else
-    dataVec(1) = 0.0;
-
+  dataVec(1) = Cfailed ? 1.0 : 0.0;
   dataVec(2) = Cstress;
   dataVec(3) = Cstrain;
   dataVec(4) = Ctangent;
@@ -347,13 +369,8 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
   }
 
   maxStrain = dataVec(0);
-  
-  if (dataVec(2) == 1.0)
-    Cfailed = true;
-  else
-    Cfailed = false;
-
-  Cstress =   dataVec(2);
+  Cfailed = dataVec(1) == 1.0 ? true : false;
+  Cstress = dataVec(2);
   Cstrain = dataVec(3);
   Ctangent = dataVec(4);
   CstartCompStrain = dataVec(5);
@@ -371,6 +388,9 @@ void
 SimpleFractureMaterial::Print(OPS_Stream &s, int flag)
 {
   s << "SimpleFractureMaterial tag: " << this->getTag() << endln;
-  s << "\tMaterial: " << theMaterial->getTag() << endln;
+  if (theMaterial)
+    s << "\tMaterial: " << theMaterial->getTag() << endln;
+  else
+    s << "\tMaterial is NULL" << endln;
   s << "\tMax strain: " << maxStrain << endln;
 }

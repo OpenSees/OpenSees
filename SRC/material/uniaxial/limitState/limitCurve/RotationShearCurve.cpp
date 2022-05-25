@@ -58,7 +58,7 @@ void *
 OPS_RotationShearCurve(void)
 {
   if (shearCurveCount == 0) {
-    opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012 -  Use at your Own Peril \n";
+    //opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012 -  Use at your Own Peril \n";
     shearCurveCount++;
   }
 

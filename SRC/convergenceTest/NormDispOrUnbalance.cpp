@@ -185,7 +185,7 @@ int NormDispOrUnbalance::test(void)
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if (currentIter >= maxNumIter || numIncr > maxIncr) { // failes to converge
+    else if (currentIter >= maxNumIter || numIncr > maxIncr) { // fails to converge
         opserr << "WARNING: NormDispOrUnbalance::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
         currentIter++;    

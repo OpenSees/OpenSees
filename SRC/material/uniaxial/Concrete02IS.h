@@ -33,7 +33,7 @@
 !       by MOHD YASSIN (1993)
 ! adapted to FEDEAS material library
 ! by D. Sze and Filip C. Filippou in 1994
-! Modified by Nasser A. Marafi (2018) so that the concrete intiial stiffness
+! Modified by Nasser A. Marafi (2018) so that the concrete initial stiffness
 ! can be specified. 
 -----------------------------------------------------------------------*/
 
@@ -49,6 +49,8 @@ class Concrete02IS : public UniaxialMaterial
   public:
     Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
 	     double _epscu, double _rat, double _ft, double _Ets);
+    Concrete02IS(int tag, double _E0, double _fc, double _epsc0, double _fcu,
+	     double _epscu);  
 
     Concrete02IS(void);
 

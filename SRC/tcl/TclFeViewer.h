@@ -50,11 +50,11 @@ class TclFeViewer : public Recorder
   public:
     TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
 		Domain &theDomain, int wipeFlag, Tcl_Interp *interp,
-        double deltaT = 0.0);
+        double deltaT = 0.0, double relDeltaTTol = 0.00001);
 
     TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
         const char *fileName, Domain &theDomain, Tcl_Interp *interp,
-        double deltaT = 0.0);
+        double deltaT = 0.0, double relDeltaTTol = 0.00001);
 
     TclFeViewer();
     ~TclFeViewer();
@@ -75,8 +75,8 @@ class TclFeViewer : public Recorder
     int setPlaneDist(float, float); // location of
                                // near, view & far clipping planes
 
-    int setProjectionMode(const char *); // 
-    int setFillMode(const char *);    // 1 = wire, otherwise fill
+    int setProjectionMode(const char *); // "parallel" for parallel projection (default), "perspective" for perspective.
+    int setFillMode(const char *);    // "wire" for wire-frame (default), "fill" to fill polygons
     
     int setPRP(float, float, float); // eye location, global coords
 
@@ -85,7 +85,7 @@ class TclFeViewer : public Recorder
 
 
     // methods invoked on the FE_Viewer
-    int displayModel(int eleFlag, int nodeFlag, float displayFact);
+    int displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth = 2); // default line width set here.
     int clearImage(void);
     int saveImage(const char *fileName);
     int saveImage(const char *imageName, const char *fileName);
@@ -104,6 +104,7 @@ class TclFeViewer : public Recorder
     int theNodeMode;    
     double theDisplayFact;
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
     int wipeFlag;
     int vrpSet;

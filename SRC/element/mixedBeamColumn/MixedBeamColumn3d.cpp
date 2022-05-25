@@ -224,6 +224,7 @@ void * OPS_MixedBeamColumn3d() {
     return 0;
   }
 
+  delete [] sections;
   return theElement;
 }
 
@@ -1369,13 +1370,13 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureZ_%i",i+1);
+      sprintf(q,"curvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureY_%i",i+1);
+      sprintf(q,"curvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1385,13 +1386,13 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureZ_%i",i+1);
+      sprintf(q,"plasticCurvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureY_%i",i+1);
+      sprintf(q,"plasticCurvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1404,24 +1405,68 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"integrationWeights") == 0) {
     theResponse =  new ElementResponse(this, 101, Vector(numSections));
 
+  } else if (strcmp(argv[0],"sectionTags") == 0) {
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+    
   } else if (strcmp(argv[0],"connectedNodes") == 0) {
-    theResponse =  new ElementResponse(this, 102, Vector(2));
+    theResponse =  new ElementResponse(this, 102, ID(2));
 
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
-    theResponse =  new ElementResponse(this, 103, Vector(1));
+    theResponse =  new ElementResponse(this, 103, ID(1));
 
   }
 
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
+  else if (strcmp(argv[0],"sectionDisplacements") == 0) {
+    if (argc > 1 && strcmp(argv[1],"local") == 0)
+      theResponse = new ElementResponse(this, 1111, Matrix(numSections,3));
+    else
+      theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
+  }
 
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
+  else if (strcmp(argv[0],"sectionX") ==0) {
+    if (argc > 2) {
+      
+      float sectionLoc = atof(argv[1]);
+	
+      double xi[MAX_NUM_SECTIONS];
+      double L = crdTransf->getInitialLength();
+      beamIntegr->getSectionLocations(numSections, L, xi);
 
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));  
+      sectionLoc /= L;
 
+      float minDistance = fabs(xi[0]-sectionLoc);
+      int sectionNum = 1;
+      for (int i = 1; i < numSections; i++) {
+	if (fabs(xi[i]-sectionLoc) < minDistance) {
+	  minDistance = fabs(xi[i]-sectionLoc);
+	  sectionNum = i+1;
+	}
+      }
+	
+      output.tag("GaussPointOutput");
+      output.attr("number",sectionNum);
+      output.attr("eta",xi[sectionNum-1]*L);
+      
+      // A kinda hacky thing to record section shear even though this
+      // element doesn't include shear effects
+      bool thisSectionHasShear = false;
+      int order = sections[sectionNum-1]->getOrder();
+      const ID &type = sections[sectionNum-1]->getType();
+      for (int i = 0; i < order; i++) {
+	if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
+	  thisSectionHasShear = true;
+      }
+      
+      if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+      else
+	theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+      
+      output.endTag();
+    }
+  }
+    
   else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
 
@@ -1436,12 +1481,28 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
         output.attr("number",sectionNum);
         output.attr("eta",xi[sectionNum-1]*L);
 
-        theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	// A kinda hacky thing to record section shear even though this
+	// element doesn't include shear effects
+	bool thisSectionHasShear = false;
+	int order = sections[sectionNum-1]->getOrder();
+	const ID &type = sections[sectionNum-1]->getType();
+	for (int i = 0; i < order; i++) {
+	  if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
+	    thisSectionHasShear = true;
+	}
 
-        output.endTag();
+	if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+	else
+	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+	
+	output.endTag();
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
 
   output.endTag();
   return theResponse;
@@ -1478,7 +1539,7 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
     M2 = internalForceOpenSees(4);
     theVector(4)  = M1;
     theVector(10) = M2;
-    V = -(M1+M2)/L;
+    V = (M1+M2)/L;
     theVector(2) = -V+p0[3];
     theVector(8) =  V+p0[4];
 
@@ -1544,34 +1605,96 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
         weights(i) = wts[i]*L;
       return eleInfo.setVector(weights);
 
+  } else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+      
   } else if (responseID == 102) { // connected nodes
-    Vector tempVector(2);
+    ID tempVector(2);
     tempVector(0) = connectedExternalNodes(0);
     tempVector(1) = connectedExternalNodes(1);
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID == 103) { // number of sections
-    Vector tempVector(1);
+    ID tempVector(1);
     tempVector(0) = numSections;
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   }
 
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
+  else if (responseID == 111 || responseID == 1111) {
+    double L = crdTransf->getInitialLength();
+    double pts[MAX_NUM_SECTIONS];
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    // CBDI influence matrix
+    Matrix ls(numSections, numSections);
+    getCBDIinfluenceMatrix(numSections, pts, L, ls);
+    // Curvature vector
+    Vector kappaz(numSections); // about section z
+    Vector kappay(numSections); // about section y
+    for (int i = 0; i < numSections; i++) {
+      const ID &code = sections[i]->getType();
+      const Vector &e = sections[i]->getSectionDeformation();
+      int order = sections[i]->getOrder();
+      for (int j = 0; j < order; j++) {
+	if (code(j) == SECTION_RESPONSE_MZ)
+	  kappaz(i) += e(j);
+	if (code(j) == SECTION_RESPONSE_MY)
+	  kappay(i) += e(j);
+      }
+    }
+    // Displacement vector
+    Vector dispsy(numSections); // along local y
+    Vector dispsz(numSections); // along local z    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    static Vector uxb(3);
+    static Vector uxg(3);
+    Matrix disps(numSections,3);
+    static Vector vp(6);
+    vp = crdTransf->getBasicTrialDisp();
+    for (int i = 0; i < numSections; i++) {
+      uxb(0) = pts[i]*vp(0); // linear shape function
+      uxb(1) = dispsy(i);
+      uxb(2) = dispsz(i);
+      if (responseID == 111)
+	uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      else
+	uxg = crdTransf->getPointLocalDisplFromBasic(pts[i],uxb);
+      disps(i,0) = uxg(0);
+      disps(i,1) = uxg(1);
+      disps(i,2) = uxg(2);            
+    }
+    return eleInfo.setMatrix(disps);
+  }
+  
+  else if (responseID > 500 && responseID <= 550) {
+    int sectionNum = responseID % 500;
+    double L = crdTransf->getInitialLength();
     
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
+    double M1 = internalForceOpenSees(1);
+    double M2 = internalForceOpenSees(2);
+    double Vy = (M1+M2)/L;
 
+    double M3 = internalForceOpenSees(3);
+    double M4 = internalForceOpenSees(4);
+    double Vz = (M3+M4)/L;
+
+    int order = sections[sectionNum-1]->getOrder();
+    Vector s(sections[sectionNum-1]->getStressResultant());
+    const ID &type = sections[sectionNum-1]->getType();
+    for (int i = 0; i < order; i++) {
+      if (type(i) == SECTION_RESPONSE_VY) 
+	s(i) = Vy;
+      if (type(i) == SECTION_RESPONSE_VZ)
+	s(i) = Vz;
+    }
+    return eleInfo.setVector(s);
+  }
+  
   else {
     return -1;
   }
@@ -1909,6 +2032,34 @@ void MixedBeamColumn3d::setSectionDeformation(int sec,Vector &defSection,
     }
   }
 
+  // ***
+  //
+  // Hack the shears
+  double L = crdTransf->getInitialLength();
+  
+  double M1 = internalForceOpenSees(1);
+  double M2 = internalForceOpenSees(2);
+  double Vy = (M1+M2)/L;
+  
+  double M3 = internalForceOpenSees(3);
+  double M4 = internalForceOpenSees(4);
+  double Vz = (M3+M4)/L;
+  
+  const Matrix &ks = sections[sec]->getInitialTangent();
+  double gamma = 0.0;
+  for (int i = 0; i < order; i++) {
+    if (code(i) == SECTION_RESPONSE_VY) {
+      gamma = Vy/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }
+    if (code(i) == SECTION_RESPONSE_VZ) {
+      gamma = Vz/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }      
+  }  
+  //
+  // ***
+  
   // Set the section deformations
   int res = sections[sec]->setTrialSectionDeformation(sectionDeformation);
 }

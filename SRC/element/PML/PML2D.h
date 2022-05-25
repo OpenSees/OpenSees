@@ -22,7 +22,7 @@
 // Written by: Long Chen, Pedro Arduino (parduino@uw.edu), Wenyang Zhang and fmk
 //
 // Four node PML2D element .. a c++ wrapper to fortran routine 
-// providewd by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
+// provided by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
 //
 // University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
 
@@ -46,9 +46,10 @@
 
 
 #ifdef _WIN32
-#define pml_	      PML_2D
 
-extern "C" void  pml_(double* kMatrix,
+#define pml2d_	      PML_2D
+
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
 	double* mMatrix,
 	int* NDOFEL,
@@ -60,9 +61,9 @@ extern "C" void  pml_(double* kMatrix,
 
 #else
 
-#define pml_	      pml_2d_
+#define pml2d_	      pml_2d_
 
-extern "C" void  pml_(double* kMatrix,
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
 	double* mMatrix,
 	int* NDOFEL,

@@ -315,7 +315,7 @@ SFI_MVLEM::SFI_MVLEM(int tag,
   SFI_MVLEMStrainXY = new double[m];
   SFI_MVLEMStrain = new double[3*m]; 
   
-  // Denisty
+  // Density
   Dens = new double[m];
   
   // Assign zero to element arrays
@@ -578,12 +578,12 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
     opserr << "WARNING: Element is NOT vertical!";
   }
   
-  
+  int eletag = this->getTag();
   // Create a internal node tag
   for (int i = 0; i < m; i++){ // Large NEGATIVE integer starting with tag of the element
-    externalNodes(i+2) = -(Nd1*1000 + i + 1); // Max fibers is 999 to avoid overlap
+    externalNodes(i+2) = -(eletag*1000 + i + 1); // Max fibers is 999 to avoid overlap
   } 
-  
+
   // Build m internal nodes (NodesX) and add them to the domain
   for (int i = 0; i < m; i++) {
     
@@ -1327,7 +1327,7 @@ void SFI_MVLEM::computeCurrentStrain(void)
   }
 }
 
-// Get resisting force incremenet from inertial forces
+// Get resisting force increment from inertial forces
 const Vector & SFI_MVLEM::getResistingForceIncInertia()
 {
   // compute the current resisting force
