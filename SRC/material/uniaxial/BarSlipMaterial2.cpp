@@ -1,3 +1,15 @@
+/* Written by: Mohammad Salehi (mohammad.salehi@rice.edu)
+** Created: 2020
+** Description: The source code for a bar-slip model with local axial and bond-slip models
+**
+**
+** Reference:
+**
+** Mohammad Salehi, Petros Sideris, and Reginald DesRoches (2022)
+** “Numerical modeling of repaired reinforced concrete bridge columns”
+** Engineering Structures, 253: 113801
+*/
+
 #include <BarSlipMaterial2.h>
 #include <ID.h>
 #include <Channel.h>

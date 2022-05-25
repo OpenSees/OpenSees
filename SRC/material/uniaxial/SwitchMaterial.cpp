@@ -1,3 +1,15 @@
+/* Written by: Mohammad Salehi (mohammad.salehi@rice.edu)
+** Created: 2020
+** Description: The source code for Switch material model used to simulate repaired RC member 
+**
+**
+** Reference:
+**
+** Mohammad Salehi, Petros Sideris, and Reginald DesRoches (2022)
+** “Numerical modeling of repaired reinforced concrete bridge columns”
+** Engineering Structures, 253: 113801
+*/
+
 #include <SwitchMaterial.h>
 #include <ID.h>
 #include <Vector.h>
@@ -21,36 +33,37 @@ OPS_SwitchMaterial(void)
 		return 0;
 	}
 
-	int iData[4];
+	int tags[3];
 	double dData[3];
 
 	int numData = 3;
-	if (OPS_GetIntInput(&numData, iData) != 0) {
+	if (OPS_GetIntInput(&numData, tags) != 0) {
 		opserr << "WARNING! Invalid tags for uniaxialMaterial Switch" << endln;
 		return 0;
 	}
 
 	numData = 2;
 	if (OPS_GetDoubleInput(&numData, dData) != 0) {
-		opserr << "WARNING! Invalid time parameters for uniaxialMaterial Switch " << iData[0] << endln;
+		opserr << "WARNING! Invalid time parameters for uniaxialMaterial Switch " << tags[0] << endln;
 		return 0;
 	}
 
+	int st;
 	const char* type = OPS_GetString();
 	if (strcmp(type, "replace") == 0)
-		iData[3] = 1;
+		st = 1;
 	else if (strcmp(type, "modify") == 0)
-		iData[3] = 2;
+		st = 2;
 
 	// create an array of pointers to reference material models
 	UniaxialMaterial** theMats = new UniaxialMaterial * [2];
 
 	for (int i = 0; i < 2; i++) {
-		UniaxialMaterial* theMat = OPS_getUniaxialMaterial(iData[i + 1]);
+		UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tags[i + 1]);
 
 		if (theMat == 0) {
-			opserr << "WARNING! Material model " << iData[i + 1] << " does not exist" << endln;
-			opserr << "uniaxialMaterial Switch: " << iData[0] << endln;
+			opserr << "WARNING! Material model " << tags[i + 1] << " does not exist" << endln;
+			opserr << "uniaxialMaterial Switch: " << tags[0] << endln;
 
 			delete[] theMats;
 		}
@@ -59,7 +72,7 @@ OPS_SwitchMaterial(void)
 	}
 
 	// allocate material model
-	theMaterial = new SwitchMaterial(iData[0], theMats, dData[0], dData[1], iData[3]);
+	theMaterial = new SwitchMaterial(tags[0], theMats, dData[0], dData[1], st);
 
 	if (theMaterial == 0) {
 		opserr << "WARNING! Could not create uniaxialMaterial of type Switch\n";

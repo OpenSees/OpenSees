@@ -1,3 +1,15 @@
+/* Written by: Mohammad Salehi (mohammad.salehi@rice.edu)
+** Created: 2020
+** Description: The source code for a mechanical bar-buckling model
+**
+**
+** Reference:
+**
+** Mohammad Salehi, Petros Sideris, and Reginald DesRoches (2022)
+** “Numerical modeling of repaired reinforced concrete bridge columns”
+** Engineering Structures, 253: 113801
+*/
+
 #ifndef BarBucklingMaterial_h
 #define BarBucklingMaterial_h
 

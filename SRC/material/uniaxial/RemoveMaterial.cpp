@@ -1,3 +1,15 @@
+/* Written by: Mohammad Salehi (mohammad.salehi@rice.edu)
+** Created: 2020
+** Description: The source code for Remove material model used to simulate repaired RC members
+**
+**
+** Reference:
+**
+** Mohammad Salehi, Petros Sideris, and Reginald DesRoches (2022)
+** “Numerical modeling of repaired reinforced concrete bridge columns”
+** Engineering Structures, 253: 113801
+*/
+
 #include <RemoveMaterial.h>
 #include <ID.h>
 #include <Vector.h>
