@@ -85,6 +85,15 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 
 #include <UniaxialJ2Plasticity.h>   // Quan 
 
+// M. Salehi (MSN) ///////////////
+#include <SwitchMaterial.h>
+#include <DelayMaterial.h>
+#include <RemoveMaterial.h>
+#include <BondSlipMaterial3.h>
+#include <BarSlipMaterial2.h>
+#include <BarBucklingMaterial.h>
+//////////////////////////////////
+
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
 extern void *OPS_TDConcrete(void); // ntosic
@@ -2946,6 +2955,457 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
+	
+	// MSN //////////////////////////////////////
+		// Switch (MSN)
+		if (strcmp(argv[1], "Switch") == 0) {
+			if (argc < 8) {
+				opserr << "WARNING insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "Want: uniaxialMaterial Switch tag? tag1? tag2? ts? dts? type?" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING! Invalid uniaxialMaterial Switch tag" << endln;
+				return TCL_ERROR;
+			}
+
+			// Create an array to hold pointers to component materials
+			UniaxialMaterial** theMats = new UniaxialMaterial * [2];
+
+			// switch times and type
+			double ts;
+			double dts;
+			int sType;
+
+			// For each material get the tag and ensure it exists in model already
+			int tagI;
+
+			for (int i = 0; i < 2; i++) {
+				if (Tcl_GetInt(interp, argv[3 + i], &tagI) != TCL_OK) {
+					opserr << "WARNING! Invalid component tag\n";
+					opserr << "uniaxialMaterial Switch: " << tag << endln;
+					return TCL_ERROR;
+				}
+
+				UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tagI);
+
+				if (theMat == 0) {
+					opserr << "WARNING! Material model does not exist\n";
+					opserr << "material tag: " << tagI;
+					opserr << "\nuniaxialMaterial Switch: " << tag << endln;
+					delete[] theMats;
+					return TCL_ERROR;
+				}
+				else
+					theMats[i] = theMat;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &ts) != TCL_OK) {
+				opserr << "WARNING! Invalid switch time\n";
+				opserr << "uniaxialMaterial Switch: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[6], &dts) != TCL_OK) {
+				opserr << "WARNING! Invalid switch transition time\n";
+				opserr << "uniaxialMaterial Switch: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (strcmp(argv[7], "replace") == 0)
+				sType = 1;
+			else if (strcmp(argv[7], "modify") == 0)
+				sType = 2;
+
+			// Parsing was successful, allocate the material
+			theMaterial = new SwitchMaterial(tag, theMats, ts, dts, sType);
+
+			// Deallocate the temporary pointers
+			delete[] theMats;
+		}
+
+		// Delay (MSN)
+		if (strcmp(argv[1], "Delay") == 0) {
+			if (argc < 6) {
+				opserr << "WARNING! Insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "Want: uniaxialMaterial Delay tag? tag0? ts? dts?" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING! Invalid uniaxialMaterial Delay tag" << endln;
+				return TCL_ERROR;
+			}
+
+			// times
+			double ts;
+			double dts;
+
+			// For original material get the tag and ensure it exists in model already
+			int tagI;
+
+			if (Tcl_GetInt(interp, argv[3], &tagI) != TCL_OK) {
+				opserr << "WARNING! Invalid original material tag\n";
+				opserr << "uniaxialMaterial Delay: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tagI);
+
+			if (theMat == 0) {
+				opserr << "WARNING! Material model does not exist\n";
+				opserr << "material tag: " << tagI;
+				opserr << "\nuniaxialMaterial Delay: " << tag << endln;
+				delete theMat;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[4], &ts) != TCL_OK) {
+				opserr << "WARNING! Invalid addition time\n";
+				opserr << "uniaxialMaterial Delay: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &dts) != TCL_OK) {
+				opserr << "WARNING! Invalid addition transition time\n";
+				opserr << "uniaxialMaterial Delay: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			// Parsing was successful, allocate the material
+			theMaterial = new DelayMaterial(tag, theMat, ts, dts);
+
+			// Deallocate the temporary pointers
+			//delete theMat;
+		}
+
+		// Remove (MSN)
+		if (strcmp(argv[1], "Remove") == 0) {
+			if (argc < 6) {
+				opserr << "WARNING insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "Want: uniaxialMaterial Remove tag? tag0? ts? dts?" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING invalid uniaxialMaterial Remove tag" << endln;
+				return TCL_ERROR;
+			}
+
+			// times
+			double ts;
+			double dts;
+
+			// For original material get the tag and ensure it exists in model already
+			int tagI;
+
+			if (Tcl_GetInt(interp, argv[3], &tagI) != TCL_OK) {
+				opserr << "WARNING invalid original material tag\n";
+				opserr << "uniaxialMaterial Remove: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tagI);
+
+			if (theMat == 0) {
+				opserr << "WARNING material model does not exist\n";
+				opserr << "material tag: " << tagI;
+				opserr << "\nuniaxialMaterial Remove: " << tag << endln;
+				delete theMat;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[4], &ts) != TCL_OK) {
+				opserr << "WARNING invalid removal time\n";
+				opserr << "uniaxialMaterial Remove: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &dts) != TCL_OK) {
+				opserr << "WARNING invalid removal transition time\n";
+				opserr << "uniaxialMaterial Remove: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			// Parsing was successful, allocate the material
+			theMaterial = new RemoveMaterial(tag, theMat, ts, dts);
+
+			// Deallocate the temporary pointers
+			//delete theMat;
+		}
+	
+		// BondSlip (MSN)
+		if (strcmp(argv[1], "BondSlip") == 0) {
+			if (argc < 8) {
+				opserr << "WARNING! Insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "want: uniaxialMaterial BondSlip tag? s_o? s_1? tau_bo? tau_fo? k_o?" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+			double so, s1, tb, tf, ko; // required
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING! Invalid uniaxialMaterial BondSlip tag" << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[3], &so) != TCL_OK) {
+				opserr << "WARNING! Invalid s_o\n";
+				opserr << "uniaxialMaterial BondSlip: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[4], &s1) != TCL_OK) {
+				opserr << "WARNING! Invalid s_1\n";
+				opserr << "uniaxialMaterial BondSlip: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &tb) != TCL_OK) {
+				opserr << "WARNING! Invalid tau_bo\n";
+				opserr << "uniaxialMaterial BondSlip: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[6], &tf) != TCL_OK) {
+				opserr << "WARNING! Invalid tau_fo\n";
+				opserr << "uniaxialMaterial BondSlip: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[7], &ko) != TCL_OK) {
+				opserr << "WARNING! Invalid k_o\n";
+				opserr << "uniaxialMaterial BondSlip: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			// Parsing was successful, allocate the material
+			theMaterial = new BondSlipMaterial3(tag, so, s1, tb, tf, ko);
+		}
+
+		// BarSlip2 (MSN)
+		if (strcmp(argv[1], "BarSlip2") == 0) {
+			if (argc < 8) {
+				opserr << "WARNING! Insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "want: uniaxialMaterial BarSlip2 tag? axialTag? bondTag? Ab? Cb? L? N? <-iter maxIterNo? maxTol?>" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING! Invalid uniaxialMaterial BarSlip2 tag" << endln;
+				return TCL_ERROR;
+			}
+
+			// material model inputs
+			double Ab, Cb, L, lc = 0.0;
+			int N, axialTag, bondTag;
+			int maxIterNo = 50;
+			double maxTol = 1.0e-6;
+
+			if (Tcl_GetInt(interp, argv[3], &axialTag) != TCL_OK) {
+				opserr << "WARNING! Invalid axial material tag\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			UniaxialMaterial* axialMat = OPS_getUniaxialMaterial(axialTag);
+
+			if (axialMat == 0) {
+				opserr << "WARNING! Material model does not exist\n";
+				opserr << "material tag: " << axialTag;
+				opserr << "\nuniaxialMaterial BarSlip2: " << tag << endln;
+				delete axialMat;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetInt(interp, argv[4], &bondTag) != TCL_OK) {
+				opserr << "WARNING! Invalid bond material tag\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			UniaxialMaterial* bondMat = OPS_getUniaxialMaterial(bondTag);
+
+			if (bondMat == 0) {
+				opserr << "WARNING! Material model does not exist\n";
+				opserr << "material tag: " << bondTag;
+				opserr << "\nuniaxialMaterial BarSlip2: " << tag << endln;
+				delete bondMat;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &Ab) != TCL_OK) {
+				opserr << "WARNING! Invalid bar area\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[6], &Cb) != TCL_OK) {
+				opserr << "WARNING! Invalid bar circumference\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[7], &L) != TCL_OK) {
+				opserr << "WARNING! Invalid bar length\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetInt(interp, argv[8], &N) != TCL_OK) {
+				opserr << "WARNING! Invalid number of IPs\n";
+				opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (argc > 9)
+				for (int i = 9; i < argc; i++) {
+					if (argc - i >= 3 && strcmp(argv[i], "-iter") == 0) {
+						if (Tcl_GetInt(interp, argv[i + 1], &maxIterNo) != TCL_OK) {
+							opserr << "WARNING! Invalid max. iteration number\n";
+							opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+							return TCL_ERROR;
+						}
+
+						if (Tcl_GetDouble(interp, argv[i + 2], &maxTol) != TCL_OK) {
+							opserr << "WARNING! Invalid max. tolerance\n";
+							opserr << "uniaxialMaterial BarSlip2: " << tag << endln;
+							return TCL_ERROR;
+						}
+					}
+				}
+
+			// copy material models
+			int aMatsNo, bMatsNo;
+
+			if (!free) {
+				aMatsNo = N;
+				bMatsNo = N - 1;
+			}
+			else {
+				aMatsNo = N - 1;
+				bMatsNo = N;
+			}
+
+			UniaxialMaterial** aMats = new UniaxialMaterial * [aMatsNo];
+			UniaxialMaterial** bMats = new UniaxialMaterial * [bMatsNo];
+
+			for (int i = 0; i < aMatsNo; i++)
+				aMats[i] = axialMat;
+
+			for (int i = 0; i < bMatsNo; i++)
+				bMats[i] = bondMat;
+
+			// Parsing was successful, allocate the material
+			theMaterial = new BarSlipMaterial2(tag, aMats, bMats, Ab, Cb, L, N, 0.0, maxIterNo, maxTol, false);
+
+			// Deallocate the temporary pointers
+			delete[] aMats;
+			delete[] bMats;
+		}
+
+		// BarBuckling (MSN)
+		if (strcmp(argv[1], "BarBuckling") == 0) {
+			if (argc < 6) {
+				opserr << "WARNING! Insufficient arguments\n";
+				printCommand(argc, argv);
+				opserr << "want: uniaxialMaterial BarBuckling tag? refMatTag? D? sl? <-imp r?> <-min minEps?> <-iter maxIterNo? maxTol?>" << endln;
+				return TCL_ERROR;
+			}
+
+			int tag;
+
+			if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+				opserr << "WARNING! Invalid uniaxialMaterial BarBuckling tag" << endln;
+				return TCL_ERROR;
+			}
+
+			// material model inputs
+			double D, sl, imp = 0.001, minEps = 0.0, maxTol = 1.0e-6;
+			int refTag, maxIterNo = 50;
+
+			if (Tcl_GetInt(interp, argv[3], &refTag) != TCL_OK) {
+				opserr << "WARNING! Invalid reference material tag\n";
+				opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			UniaxialMaterial* refMat = OPS_getUniaxialMaterial(refTag);
+
+			if (refMat == 0) {
+				opserr << "WARNING! Material model does not exist\n";
+				opserr << "material tag: " << refTag;
+				opserr << "\nuniaxialMaterial BarBuckling: " << tag << endln;
+				delete refMat;
+				return TCL_ERROR;
+			}
+
+
+			if (Tcl_GetDouble(interp, argv[4], &D) != TCL_OK) {
+				opserr << "WARNING! Invalid bar diameter\n";
+				opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (Tcl_GetDouble(interp, argv[5], &sl) != TCL_OK) {
+				opserr << "WARNING! Invalid slenderness ratio\n";
+				opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+				return TCL_ERROR;
+			}
+
+			if (argc > 6)
+				for (int i = 6; i < argc; i++) {
+					if (argc - i >= 2 && strcmp(argv[i], "-imp") == 0)
+						if (Tcl_GetDouble(interp, argv[i + 1], &imp) != TCL_OK) {
+							opserr << "WARNING! Invalid imperfection\n";
+							opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+							return TCL_ERROR;
+						}
+
+					if (argc - i >= 2 && strcmp(argv[i], "-min") == 0)
+						if (Tcl_GetDouble(interp, argv[i + 1], &minEps) != TCL_OK) {
+							opserr << "WARNING! Invalid minimum buckling strain\n";
+							opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+							return TCL_ERROR;
+						}
+
+					if (argc - i >= 3 && strcmp(argv[i], "-iter") == 0) {
+						if (Tcl_GetInt(interp, argv[i + 1], &maxIterNo) != TCL_OK) {
+							opserr << "WARNING! Invalid max. iteration number\n";
+							opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+							return TCL_ERROR;
+						}
+
+						if (Tcl_GetDouble(interp, argv[i + 2], &maxTol) != TCL_OK) {
+							opserr << "WARNING! Invalid max. tolerance\n";
+							opserr << "uniaxialMaterial BarBuckling: " << tag << endln;
+							return TCL_ERROR;
+						}
+					}
+				}
+
+			// Parsing was successful, allocate the material
+			theMaterial = new BarBucklingMaterial(tag, refMat, D, sl, imp, minEps, maxIterNo, maxTol);
+		}
+	
+	/////////////////////////////////////////////
+	
+	
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
