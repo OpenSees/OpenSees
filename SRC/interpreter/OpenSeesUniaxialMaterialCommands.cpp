@@ -242,6 +242,16 @@ void* OPS_TDConcrete(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 
+// MSN ////////////////////////////////
+void* OPS_DelayMaterial(void);	// MSN: Delay material model
+void* OPS_RemoveMaterial(void);	// MSN: Remove material model
+void* OPS_SwitchMaterial(void);	// MSN: Switch (modify or replace) material model
+
+void* OPS_BondSlipMaterial3(void);	// MSN: BondSlip material model
+void* OPS_BarBucklingMaterial(void);	// MSN: BarBuckling material model
+void* OPS_BarSlipMaterial2(void);	// MSN: BarSlip2 material model
+///////////////////////////////////////
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -547,6 +557,21 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
+	
+	// MSN //////////////////////////////////////////////////
+	uniaxialMaterialsMap.insert(
+		std::make_pair("Delay", &OPS_DelayMaterial));
+	uniaxialMaterialsMap.insert(
+		std::make_pair("Remove", &OPS_RemoveMaterial));
+	uniaxialMaterialsMap.insert(
+		std::make_pair("Switch", &OPS_SwitchMaterial));
+	uniaxialMaterialsMap.insert(
+		std::make_pair("BondSlip", &OPS_BondSlipMaterial3));
+	uniaxialMaterialsMap.insert(
+		std::make_pair("BarBuckling", &OPS_BarBucklingMaterial));
+	uniaxialMaterialsMap.insert(
+		std::make_pair("BarSlip2", &OPS_BarSlipMaterial2));
+	/////////////////////////////////////////////////////////
 
   return 0;
 }
