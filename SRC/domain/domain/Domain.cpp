@@ -88,6 +88,7 @@
 
 Domain       *ops_TheActiveDomain = 0;
 double        ops_Dt = 0.0;
+double        ops_t = 0.0;      // MSN: set initial time equal to zero
 bool          ops_InitialStateAnalysis = false;
 int           ops_Creep = 0;
 
@@ -1902,6 +1903,7 @@ Domain::applyLoad(double timeStep)
     }
 
     ops_Dt = dT;
+    ops_t = currentTime;	// MSN: update current time
 }
 
 
@@ -2085,6 +2087,7 @@ Domain::update(void)
 {
   // set the global constants
   ops_Dt = dT;
+  ops_t = currentTime;	// MSN
   ops_TheActiveDomain = this;
 
   int ok = 0;
