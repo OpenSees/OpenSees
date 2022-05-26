@@ -57,7 +57,7 @@ public:
 
     virtual CrdTransf *getCopy2d(void) {return 0;};
     virtual CrdTransf *getCopy3d(void) {return 0;};
-    virtual int getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis) {return -1;};
+  virtual int getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis);
     
     virtual int    initialize(Node *node1Pointer, Node *node2Pointer) = 0;
     virtual int    update(void) = 0;
@@ -100,8 +100,8 @@ public:
 
     // method for obtaining information specific to a coordinate transformation
     virtual Response *setResponse(const char **argv, int argc, 
-				  OPS_Stream &theHandler) {return 0;}
-    virtual int getResponse(int responseID, Information &eleInformation) {return -1;}
+				  OPS_Stream &theHandler);
+  virtual int getResponse(int responseID, Information &eleInformation);
     
 protected:
     

@@ -1122,7 +1122,7 @@ int OPS_model()
     // ndm
     const char* ndmopt = OPS_GetString();
     if (strcmp(ndmopt,"-ndm") != 0) {
-	opserr<<"WARNING frist option must be -ndm\n";
+	opserr<<"WARNING first option must be -ndm\n";
 	return -1;
     }
     int numdata = 1;
@@ -1832,16 +1832,18 @@ int OPS_eigenAnalysis()
 		 (strcmp(type,"-symmBandLapackEigen") == 0))
 	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
 
-	else if ((strcmp(type,"fullGenLapack") == 0) ||
-		 (strcmp(type,"-fullGenLapack") == 0) ||
-		 (strcmp(type,"fullGenLapackEigen") == 0) ||
-		 (strcmp(type,"-fullGenLapackEigen") == 0))
-	    typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    else if ((strcmp(type, "fullGenLapack") == 0) ||
+                (strcmp(type, "-fullGenLapack") == 0) ||
+                (strcmp(type, "fullGenLapackEigen") == 0) ||
+                (strcmp(type, "-fullGenLapackEigen") == 0)) {
+        opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
+        typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    }
 
-	else {
-	    opserr << "eigen - unknown option specified " << type << endln;
-	}
-
+    else {
+        opserr << "eigen - unknown option specified " << type
+                << endln;
+    }
     }
 
     // check argv[loc] for number of modes
@@ -1852,8 +1854,8 @@ int OPS_eigenAnalysis()
 	return -1;
     }
 
-    if (numEigen < 0) {
-	opserr << "WARNING eigen numModes?  - illegal numModes\n";
+    if (numEigen < 1) {
+	opserr << "WARNING eigen numModes?  - illegal numModes: " << numEigen << "\n";
 	return -1;
     }
     cmds->setNumEigen(numEigen);
@@ -2677,7 +2679,7 @@ int OPS_modalDamping()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
@@ -2731,7 +2733,7 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 

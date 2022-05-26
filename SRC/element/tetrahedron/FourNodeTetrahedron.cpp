@@ -197,7 +197,7 @@ const double  FourNodeTetrahedron::one_over_root3 = 1.0 / root3 ;
 
 const double  FourNodeTetrahedron::sg[] = { 0.25 } ;
 
-const double  FourNodeTetrahedron::wg[] = { 0.16667 } ;
+const double  FourNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
 
   
 static Matrix B(NumStressComponents,NumDOFsPerNode) ;

@@ -2722,11 +2722,13 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
   }
   //by SAJalali
-  else if (strcmp(argv[0], "energy") == 0)
-  {
-	  return new ElementResponse(this, 14, 0.0);
+  else if (strcmp(argv[0], "energy") == 0) {
+    theResponse = new ElementResponse(this, 14, 0.0);
   }
 
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
+  
   output.endTag(); // ElementOutput
 
   return theResponse;

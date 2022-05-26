@@ -509,8 +509,10 @@ IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
   const Vector &eigenvalues = theAnalysisModel->getEigenvalues();
   int numEigen = eigenvalues.Size();
 
-  if (numEigen < numModes) 
+  if (numEigen < numModes) {
     numModes = numEigen;
+    opserr << "WARNING: HAving to reset numModes to : " << numModes << "as not enough eigenvalues. NOTE if 0 you have done something to require new analysis or have not issued eigen command\n";
+  }
 
   int numDOF = theSOE->getNumEqn();
 
@@ -616,7 +618,7 @@ IncrementalIntegrator::addModalDampingMatrix(const Vector *modalDampingValues) {
 
 const Vector &
 IncrementalIntegrator::getVel(void) {
-  opserr << "IncrementalIntegrator::getVel() - not implemeneted for this integrator\n";
+  opserr << "IncrementalIntegrator::getVel() - not implemented for this integrator\n";
   return theSOE->getX();
 }
 

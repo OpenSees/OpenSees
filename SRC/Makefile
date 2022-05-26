@@ -418,6 +418,7 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/response/ElementResponse.o \
 	$(FE)/recorder/response/MaterialResponse.o \
 	$(FE)/recorder/response/FiberResponse.o \
+	$(FE)/recorder/response/CrdTransfResponse.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
@@ -837,6 +838,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
 	$(FE)/material/uniaxial/HystereticPoly.o \
+	$(FE)/material/uniaxial/HystereticSmooth.o \
+	$(FE)/material/uniaxial/HystereticAsym.o \
 	$(FE)/material/uniaxial/SLModel.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \

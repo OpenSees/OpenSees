@@ -1073,7 +1073,7 @@ TCP_SocketSSL::getBytesAvailable()
 char *
 TCP_SocketSSL::addToProgram()
 {
-    char *tcp = " 1 ";
+    const char *tcp = " 1 ";
 
     char  my_InetAddr[MAX_INET_ADDR];
     char  myPortNum[8];
@@ -1112,7 +1112,7 @@ TCP_SocketSSL::addToProgram()
 static int
 GetHostAddr(char *host, char *IntAddr)
 {
-    register struct hostent *hostptr;
+    struct hostent *hostptr;
 
     if ( (hostptr = gethostbyname(host)) == NULL) 
         return (-1);

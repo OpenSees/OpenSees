@@ -256,7 +256,7 @@ SteelDRC::~SteelDRC()
 int
 SteelDRC::setTrialStrain(double strain, double strainRate)
 {
-	// Copy state variables of last commited state into trial state.
+	// Copy state variables of last committed state into trial state.
 	revertToLastCommit();
 
 	// If strain change is very small no update is necessary
@@ -434,7 +434,7 @@ SteelDRC::revertToLastCommit(void)
 	trialTangent = commitTangent;
 	trialStress = commitStress;
 
-	// revert the internal state variables to the previously commited state
+	// revert the internal state variables to the previously committed state
 	Teps = Ceps; 
 	Tsig = Csig;
 	Ttan = Ctan;
@@ -611,7 +611,7 @@ SteelDRC::getCopy(void)
 	theCopy->trialStress = trialStress;
 	theCopy->trialTangent = trialTangent;
 
-	// Copy commited state variables into the new object
+	// Copy committed state variables into the new object
 	theCopy->Ceps = Ceps;
 	theCopy->Csig = Csig;
 	theCopy->Ctan = Ctan;
@@ -1531,7 +1531,7 @@ void SteelDRC::State_Determination(int S, int K, int M, int Klmr, double Eun)
 		return;
 	}
 	// Case 5 : Bauschinger curve from Tea[K] to Terejoin[K].
-	// Last reversal occured in yield plateau and the current 
+	// Last reversal occurred in yield plateau and the current 
 	// state has not rejoined the shifted backbone curve
 	if (!isnan(Terejoin[K])) {
 		ptA[0] = Tea[K];
@@ -1558,7 +1558,7 @@ void SteelDRC::State_Determination(int S, int K, int M, int Klmr, double Eun)
 }
 
 void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
-	// Case 1: Reversal occured in linear-elastic zone of the skeleton curve
+	// Case 1: Reversal occurred in linear-elastic zone of the skeleton curve
 	// No parameter requires updating
 	if ((Te0[0] == 0 && Te0[1] == 0) && (Ceps <= eyN && Ceps >= -eyN)) 
 		return;
@@ -1585,7 +1585,7 @@ void SteelDRC::State_Reversal(int S,int K, int M, int &Klmr, double &Eun) {
 	Tea[K] = Ter + S*Dfu * fyEng / Eun;
 	
 	// Case 3: No strain hardening has occurred yet (but a reversal from yield plateau has 
-	// ocurred already). Reversal occurred in Bauschinger curve
+	// occurred already). Reversal occurred in Bauschinger curve
 	if (TshOnset == 0 && !isnan(Terejoin[M]) && S*Ter > S*Terejoin[M])
 		return;
 	

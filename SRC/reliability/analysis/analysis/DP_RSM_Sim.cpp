@@ -130,13 +130,13 @@ DP_RSM_Sim::DP_RSM_Sim(ReliabilityDomain *passedReliabilityDomain,
 // ----
 	if (strcmp(typeSurfaceDesign, "UnivariateDecomposition")==0){
 		theSurfaceDesign = new UnivariateDecomposition(numOfPrincipalAxes+1, 0, false); // note here numOfPrincipalAxes+1 since dp direction is 1st axis
-		// need to set pointer to pointer arry of principalAxes later
+		// need to set pointer to pointer array of principalAxes later
 	}
 	else if (strcmp(typeSurfaceDesign, "BivariateDecomposition")==0){
 		//opserr<<"typeSurfaceDesign not implemented yet "; 
 		theSurfaceDesign = new BivariateDecomposition(numOfPrincipalAxes+1, 0, 0 , false); // note here numOfPrincipalAxes+1 since dp direction is 1st axis
 
-		// need to set (1) pointer to pointer arry of principalAxes (2) pointer to pointer arry of gridPlanes later
+		// need to set (1) pointer to pointer array of principalAxes (2) pointer to pointer array of gridPlanes later
 	}
 	else {
 		opserr<<"unknown typeSurfaceDesign "; exit(-1);

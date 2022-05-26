@@ -57,7 +57,7 @@ void* OPS_DuctileFracture()
 	int idata[2];
 	numdata = 2;
 	if (OPS_GetIntInput(&numdata, idata) < 0) {
-		opserr << "WARNING invlid int inputs\n";
+		opserr << "WARNING invalid int inputs\n";
 		return 0;
 	}
 
@@ -198,7 +198,7 @@ DuctileFracture::DuctileFracture(int tag,UniaxialMaterial &material,
   // status variable initializations
   FI  = 0; // Fracture index
   FI_VGM	= 0; // Void growth damage component
-  FI_MVC	= 0; // Multi-void coalescence damage compoent
+  FI_MVC	= 0; // Multi-void coalescence damage component
   ep_prev	= 0; // Previous plastic strain
   ep_curr	= 0; // Current plastic strain
   dep		= 0; // Incremental plastic strain
@@ -244,7 +244,7 @@ DuctileFracture::DuctileFracture()
 {
 	FI = 0; // Fracture index
 	FI_VGM = 0; // Void growth damage component
-	FI_MVC = 0; // Multi-void coalescence damage compoent
+	FI_MVC = 0; // Multi-void coalescence damage component
 	ep_prev = 0; // Previous plastic strain
 	ep_curr = 0; // Current plastic strain
 	dep = 0; // Incremental plastic strain

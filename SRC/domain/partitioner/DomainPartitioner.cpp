@@ -194,11 +194,11 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
 
   if (theError < 0) {
     opserr << "DomainPartitioner::partition";
-    opserr << " - the graph partioner failed to partition the ";
+    opserr << " - the graph partitioner failed to partition the ";
     opserr << "element graph\n";
     return -10+theError;
   } else {
-    opserr << "DomainPartitioner::partition - Succesfull partition. Now redistributing data accordingly.\n";
+    opserr << "DomainPartitioner::partition - Successful partition. Now redistributing data accordingly.\n";
   }
 
   /* print graph */
@@ -759,7 +759,7 @@ DomainPartitioner::balance(Graph &theWeightedPGraph)
     }
   else
   {
-    // If there is no balancer.... we cant balance... continue with a static domain decomposition
+    // If there is no balancer.... we can't balance... continue with a static domain decomposition
   }
 
 

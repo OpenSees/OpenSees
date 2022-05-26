@@ -671,6 +671,7 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
   //  OPS_clearAllNDMaterial();
+  OPS_clearAllBeamIntegrationRule();
 
   theSections->clearAll(); 
   theSectionRepresents->clearAll();
@@ -794,7 +795,7 @@ TclModelBuilder::getNDMaterial(int tag)
   if (mc == 0) 
     return 0;
 
-  // otherweise we do a cast and return
+  // otherwise we do a cast and return
   NDMaterial *result = (NDMaterial *)mc;
   return result;
 }
@@ -850,7 +851,7 @@ TclModelBuilder::getYS_EvolutionModel(int tag)
   if (mc == 0)
     return 0;
 
-  // otherweise we do a cast and return
+  // otherwise we do a cast and return
   YS_Evolution *result = (YS_Evolution *)mc;
   return result;
 }
@@ -890,7 +891,7 @@ TclModelBuilder::getYieldSurface_BC(int tag)
   if (mc == 0)
     return 0;
 
-  // otherweise we do a cast and return
+  // otherwise we do a cast and return
   YieldSurface_BC *result = (YieldSurface_BC *)mc;
   return result;
 }
@@ -902,7 +903,7 @@ TclModelBuilder::getCyclicModel(int tag)
   if (mc == 0)
     return 0;
 
-  // otherweise we do a cast and return
+  // otherwise we do a cast and return
   CyclicModel *result = (CyclicModel *)mc;
   return result;
 }
@@ -928,7 +929,7 @@ TclModelBuilder::getPlasticMaterial(int tag)
   if (mc == 0)
     return 0;
 
-  // otherweise we do a cast and return
+  // otherwise we do a cast and return
   PlasticHardeningMaterial *result = (PlasticHardeningMaterial *)mc;
   return result;
 }
@@ -983,7 +984,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
   int ndm = theTclBuilder->getNDM();
   int ndf = theTclBuilder->getNDF();
 
-  // make sure corect number of arguments on command line
+  // make sure correct number of arguments on command line
   if (argc < 2+ndm) {
     opserr << "WARNING insufficient arguments\n";
     printCommand(argc, argv);
@@ -1166,7 +1167,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       currentArg++;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -1185,7 +1186,7 @@ TclCommand_addElementRayleigh(ClientData clientData,
     return TCL_ERROR;
   }
 
-  // make sure corect number of arguments on command line
+  // make sure correct number of arguments on command line
   if (argc < 6) {
     opserr << "WARNING insufficient arguments\n";
     printCommand(argc, argv);
@@ -1243,7 +1244,7 @@ TclCommand_addElementRayleigh(ClientData clientData,
 /////////////////////////////   gnp adding element damping 
 
 
-// the function for creating ne material objects and patterns is in a seperate file.
+// the function for creating ne material objects and patterns is in a separate file.
 // this allows new material and patternobjects to be added without touching this file.
 // does so at the expense of an extra procedure call.
 
@@ -1291,7 +1292,7 @@ TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
     int ndm = theTclBuilder->getNDM();
 
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (argc < 2) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: mesh type? ...>\n";
@@ -1331,7 +1332,7 @@ TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
     int ndf = theTclBuilder->getNDF();
 
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (argc < 2) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: mesh type? ...>\n";
@@ -1693,7 +1694,7 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					opserr << "WARNING NodalLoad - invalid loc4  " << argv[count + 3] << " for NodalThermalAction\n";
 					return TCL_ERROR;
 				}
-				//end of recieving data;
+				//end of receiving data;
 				theLoad = new NodalThermalAction(nodeLoadTag, nodeId, RcvLoc1, RcvLoc2, RcvLoc3, RcvLoc4, theSeries, thecrds);
 			}
 			//end of for 15 data input;
@@ -1718,7 +1719,7 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					locy(5) = (3 * RcvLoc1 + 5 * RcvLoc2) / 8; locy(6) = (2 * RcvLoc1 + 6 * RcvLoc2) / 8;
 					locy(7) = (1 * RcvLoc1 + 7 * RcvLoc2) / 8;  locy(8) = RcvLoc2;
 
-				}//end of if only recieving one loc data;
+				}//end of if only receiving one loc data;
 				else if (argc - count == 9) {
 					double indata[9];
 					double BufferData;
@@ -1733,12 +1734,12 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					}
 					locy = Vector(indata, 9);
 					//temp1,loc1,temp2,loc2...temp9,loc9
-				}//end of if only recieving 9 loc data;
+				}//end of if only receiving 9 loc data;
 
 				theLoad = new NodalThermalAction(nodeLoadTag, nodeId, locy, theSeries, thecrds);
 				delete thecrds;
 			}
-			//end of recieving 9 temp data in external file;
+			//end of receiving 9 temp data in external file;
 			else {
 				opserr << "WARNING NodalThermalAction - invalid dataLen\n";
 			}
@@ -1872,7 +1873,7 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   }
   nodeLoadTag++;
 
-  // if get here we have sucessfully created the load and added it to the domain
+  // if get here we have successfully created the load and added it to the domain
   return TCL_OK;
 }
 
@@ -2495,10 +2496,10 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 		  }
 		  //finish the temperature arguments
 		  else {
-			  opserr << "WARNING eleLoad -shellThermalLoad invalid number of temperature aguments,/n looking for 0, 1, 2 or 4 arguments.\n";
+			  opserr << "WARNING eleLoad -shellThermalLoad invalid number of temperature arguments,/n looking for 0, 1, 2 or 4 arguments.\n";
 		  }
 	  }
-	  //end of if(recieved argument is not "source" or direct temperature input)//Liming,2014
+	  //end of if(received argument is not "source" or direct temperature input)//Liming,2014
   }
   //-----------------Adding tcl command for shell thermal action, 2013..[End]-----------------------
 
@@ -2656,7 +2657,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 
 				  count++;
 				  Vector locs(9);
-				  //---------------for recieving 2 arguments
+				  //---------------for receiving 2 arguments
 				  if (argc - count == 2) {
 					  double RcvLoc1, RcvLoc2;
 					  if (Tcl_GetDouble(interp, argv[count], &RcvLoc1) != TCL_OK) {
@@ -2673,7 +2674,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 						  locs(i) = locs(0) - i*(locs(0) - locs(8)) / 8;
 					  }
 				  }
-				  //----------------for recieving 9 arguments
+				  //----------------for receiving 9 arguments
 				  else if (argc - count == 9) {
 
 					  int ArgStart = count;
@@ -2688,7 +2689,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					  }
 
 				  }
-				  //end of recieving 9 arguments
+				  //end of receiving 9 arguments
 				  else {
 					  opserr << "WARNING eleLoad - invalid input for -beamThermal\n";
 				  }
@@ -2889,7 +2890,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 						  return TCL_ERROR;
 					  }
 
-					  //end for recieving input
+					  //end for receiving input
 					  for (int i = 0; i<theEleTags.Size(); i++) {
 
 						  theLoad = new Beam3dThermalAction(eleLoadTag, RcvLoc1, RcvLoc2, RcvLoc3, RcvLoc4,
@@ -2917,7 +2918,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 				  }
 				  //end of defining 15 data points with external file
 				  else if (argc - count == 2 || argc - count == 9) {
-					  // for receiving data which has the similiar structure as 2D beam section
+					  // for receiving data which has the similar structure as 2D beam section
 					  Vector locs(9);
 					  using2Ddata = true;
 					  TimeSeries* theSeries = new PathTimeSeriesThermal(eleLoadTag, argv[count - 1], 9);
@@ -3086,7 +3087,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 			  }
 			  //end of  if (argc-count == 4){
 			  else {
-				  opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature aguments,/n looking for arguments for Temperatures and cordinates.\n";
+				  opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature arguments,/n looking for arguments for Temperatures and coordinates.\n";
 			  }
 		  } //end for not sourced pattern
 	  }//else if ndm=3  
@@ -3213,7 +3214,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       }
 
       else {
-	opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature aguments,/n looking for 0, 1, 2 or 4 arguments.\n";
+	opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature arguments,/n looking for 0, 1, 2 or 4 arguments.\n";
       }
     } else {
       opserr << "WARNING eleLoad -beamTempLoad type currently only valid only for ndm=2\n";
@@ -3221,7 +3222,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
     }  
   }
 
-  // if get here we have sucessfully created the load and added it to the domain
+  // if get here we have successfully created the load and added it to the domain
   return TCL_OK;
 }
 
@@ -3274,7 +3275,7 @@ TclCommand_addNodalMass(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
     
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3340,7 +3341,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
     }
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3397,7 +3398,7 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
 
   theTclDomain->addSP_Constraint(0, xLoc, fixity, tol);
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3457,7 +3458,7 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
 
   theTclDomain->addSP_Constraint(1, yLoc, fixity, tol);
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3515,7 +3516,7 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
 
   theTclDomain->addSP_Constraint(2, zLoc, fixity, tol);
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3610,7 +3611,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -3704,7 +3705,7 @@ TclCommand_addImposedMotionSP(ClientData clientData,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -4067,12 +4068,12 @@ TclCommand_doBlock2D(ClientData clientData, Tcl_Interp *interp, int argc,
   int ndm = theTclBuilder->getNDM();
   if (ndm < 2) {
     opserr << "WARNING block2D numX? numY? startNode? startEle? eleType? eleArgs?";
-    opserr << " : model dimension (ndm) must be at leat 2 " << endln;
+    opserr << " : model dimension (ndm) must be at least 2 " << endln;
     return TCL_ERROR;
   }
 
   if (argc < 8) {
-    opserr << "WARNING incorrect numer of args :block2D numX? numY? startNode? startEle? eleType? eleArgs?";
+    opserr << "WARNING incorrect number of args :block2D numX? numY? startNode? startEle? eleType? eleArgs?";
     return TCL_ERROR;
   }
   int numX, numY, startNodeNum, startEleNum;
@@ -4271,7 +4272,7 @@ TclCommand_doBlock3D(ClientData clientData, Tcl_Interp *interp, int argc,
   int ndm = theTclBuilder->getNDM();
   if (ndm < 3) {
     opserr << "WARNING block3D numX? numY? startNode? startEle? eleType? eleArgs?";
-    opserr << " : model dimension (ndm) must be at leat 2 " << endln;
+    opserr << " : model dimension (ndm) must be at least 2 " << endln;
     return TCL_ERROR;
   }
 

@@ -173,7 +173,7 @@ Mesh::newNode(int tag, const Vector &crds) {
     // check ndf
     if (ndf <= 0) return 0;
 
-    // craete new node
+    // create new node
     Node *node = 0;
     if (crds.Size() == 1) {
         node = new Node(tag, ndf, crds(0));
@@ -509,7 +509,7 @@ Mesh::newElements(const ID &elends) {
     // add elements to domain
     for (unsigned int i = 0; i < neweles.size(); ++i) {
         if (neweles[i] == 0) {
-            opserr << "WARING: run out of memory for creating element\n";
+            opserr << "WARNING: run out of memory for creating element\n";
             return -1;
         }
         if (domain->addElement(neweles[i]) == false) {

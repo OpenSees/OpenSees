@@ -223,7 +223,7 @@ int ConcretewBeta::setTrialStrain(double strain, double strainRate) {
 
 // extra thing, only call if you know what you're doing.
 int ConcretewBeta::setTrialStrainwBeta(double newStrain, double et, double strainRate) {
-	//rever to last value.
+	//revert to last value.
 	this->revertToLastCommit();
 
 	double newStress, newStressPure, newTangent;

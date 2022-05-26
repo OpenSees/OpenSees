@@ -175,7 +175,7 @@ httpGet(const char *URL, const char *page, unsigned int port, char **dataPtr) {
 
 
   //send the data
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;

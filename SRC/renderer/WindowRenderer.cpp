@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for WindowRenderer.
-// WindowRenderer is an class which diplays using X11 or openGL.
+// WindowRenderer is an class which displays using X11 or openGL.
 //
 // What: "@(#) WindowRenderer.h, revA"
 

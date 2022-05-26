@@ -429,7 +429,7 @@ GmshRecorder::write_node_data()
     }
 
     std::string viewname(" ");
-    if(nodedata.disp) viewname = std::string("\"Displacment\"");
+    if(nodedata.disp) viewname = std::string("\"Displacement\"");
     if(nodedata.vel) viewname = std::string("\"Velocity\"");
     if(nodedata.accel) viewname = std::string("\"Acceleration\"");
     if(nodedata.incrdisp) viewname = std::string("\"Incremental Displacement\"");

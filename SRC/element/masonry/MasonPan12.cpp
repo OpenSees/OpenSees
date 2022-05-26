@@ -393,7 +393,7 @@ MasonPan12::setDomain(Domain *theDomain)
       return;  // don't go any further - otherwise divide by 0 error
     }
 
-        // cosenos de las diagonales
+        // cosines of the diagonals
         double dx1 =end4Crd(0)-end10Crd(0);
         double dy1= end4Crd(1)-end10Crd(1);
 		double L1=sqrt(dx1*dx1+dy1*dy1);

@@ -293,7 +293,7 @@ PFEMElement2DBubble::update()
 
     // this is the trick to check negative jacobian
     if((kappa==-2 && J<0) || (kappa!=-2 && fabs(J)<minJ)) {
-        opserr<<"WARING: element "<<this->getTag()<<" area is "<<J<<"\n";
+        opserr<<"WARNING: element "<<this->getTag()<<" area is "<<J<<"\n";
         for (int i=0; i<3; i++) {
             opserr << "node "<<nodes[2*i]->getTag()<<": \n";
             opserr << "coordinates - "<<nodes[2*i]->getCrds();
@@ -840,7 +840,7 @@ PFEMElement2DBubble::setParameter(const char **argv, int argc,
         parameter.setValue(mu);
         return parameter.addObject(1, this);
     }
-    // Mass densitity of the
+    // Mass density of the
     if (strcmp(argv[0],"rho") == 0) {
         parameter.setValue(rho);
         return parameter.addObject(2, this);

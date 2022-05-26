@@ -25,7 +25,7 @@
 // Written: Gonzalo Torrisi, UNCuyo
 // Created: 10/2014
 //
-// Description: This file contains the class defination for Uniaxial material Masonryt 
+// Description: This file contains the class definition for Uniaxial material Masonryt 
 //			
 
 #ifndef Masonryt_h

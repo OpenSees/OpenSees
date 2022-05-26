@@ -1183,7 +1183,7 @@ FileDatastore::getData(const char *tableName, char *columns[], int commitTag, Ve
 
 
 /*******************************************************************
- *              MISC METHODS & FUNCTONS FOR OPENING THE FILE       *
+ *              MISC METHODS & FUNCTIONS FOR OPENING THE FILE      *
  *******************************************************************/
 
 int

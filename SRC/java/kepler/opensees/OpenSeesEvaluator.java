@@ -77,7 +77,7 @@ import java.io.*;
 /**
  * OpenSeesEvaluator: 
 "This is the implementation of a OpenSeesEvaluator actor using Ptolemy II. This actor has several input ports, has a file parameter and 
-has a single output port. the ouput port outputs the result of running OpenSees and passing in the strings from the i/p port, followed
+has a single output port. the output port outputs the result of running OpenSees and passing in the strings from the i/p port, followed
 by a source of the file provided (if there is one)."
  *  @author Frank McKenna, UC Berkeley, March 2007
 */

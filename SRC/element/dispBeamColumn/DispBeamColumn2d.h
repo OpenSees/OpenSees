@@ -115,7 +115,7 @@ class DispBeamColumn2d : public Element
 	int numSections;
 	SectionForceDeformation** theSections; // pointer to the ND material objects
 	BeamIntegration* beamInt;
-	CrdTransf* crdTransf;        // pointer to coordinate tranformation object
+	CrdTransf* crdTransf;        // pointer to coordinate transformation object
 
     ID connectedExternalNodes; // Tags of quad nodes
 
