@@ -28,7 +28,7 @@
  // Revision: AA
  //
  // Description: This file contains the function that is invoked
- // by the interpreter when the comand 'record' is invoked by the 
+ // by the interpreter when the command 'record' is invoked by the 
  // user.
  //
  // What: "@(#) commands.C, revA"
@@ -256,7 +256,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 } 
 
 	 else if (strcmp(argv[loc],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < loc+2) {
 	     opserr << "WARNING recorder Element .. -region tag?  .. - no region specified\n";
@@ -526,7 +526,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
      }
 
 
-     //////////////////////Begining of ElementDamage recorder//////////////////////
+     //////////////////////Beginning of ElementDamage recorder/////////////////////
      ///////////////////////////////By Arash Altoontash////////////////////////////
 
      else if ( (strcmp(argv[1],"Damage") == 0) || (strcmp(argv[1],"ElementDamage") == 0) ||
@@ -839,7 +839,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 } 
 
 	 else if (strcmp(argv[loc],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < loc+2) {
 	     opserr << "WARNING recorder Element .. -region tag?  .. - no region specified\n";
@@ -1083,7 +1083,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        if (argc < 7) {
 	 opserr << "WARNING recorder Node ";
-	 opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+	 opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
 	     return TCL_ERROR;
        }    
 
@@ -1272,7 +1272,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   
 	   // read in the node tags or 'all' can be used
 	   if (strcmp(argv[pos],"all") == 0) {
-	     opserr << "recoder Node - error -all option has been removed, use -nodeRange instaed\n";
+	     opserr << "recoder Node - error -all option has been removed, use -nodeRange instead\n";
 	     return TCL_ERROR;		  
 	   } else {
 	     theNodes = new ID(0,16);
@@ -1323,7 +1323,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 }
 
 	 else if (strcmp(argv[pos],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < pos+2) {
 	     opserr << "WARNING recorder Node .. -region tag?  .. - no region specified\n";
@@ -2092,7 +2092,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	return TCL_ERROR;
     } 
 
-    // operation successfull
+    // operation successful
     return TCL_OK;
 }
 

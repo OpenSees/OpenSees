@@ -113,7 +113,7 @@ private:
     double TL_trial, TL_commit;        // Change in temperature of lead core from the reference temperature
     double qL, cL, kS, aS;             // Heating parameters for lead core
     // Vertical direction
-    double S;                          // Shape facor
+    double S;                          // Shape factor
     double Ec;                         // Compression modulus
     double Kv0;                        // Stiffness at zero horizontal displacement
     double Kv;                         // Elastic stiffness in compression and tension

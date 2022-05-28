@@ -186,7 +186,7 @@ int CTestRelativeTotalNormDispIncr::test(void)
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if (currentIter >= maxNumIter)  { // failes to converge
+    else if (currentIter >= maxNumIter)  { // fails to converge
         opserr << "WARNING: CTestRelativeTotalNormDispIncr::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
         currentIter++;    

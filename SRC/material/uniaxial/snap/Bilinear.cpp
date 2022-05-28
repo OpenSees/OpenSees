@@ -438,7 +438,7 @@ int Bilinear::setTrialStrain( double d, double strainRate)
 	// Check for a new excursion to degrade the parameters
 	if ( (fP + ekexcurs * deltaD) * fP <= 0.0 )
 	{		
-		// degrade the model paraeters based on the damage
+		// degrade the model parameters based on the damage
 		// degrade the strength ( yield stress )
 		if ( StrDamage != NULL )
 		{

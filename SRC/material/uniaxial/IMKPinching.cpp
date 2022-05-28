@@ -645,7 +645,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 	else {
 		fi = 0;
 		dEi = 0;
-		//cout << "  FAILURE OCCURED" << endln;
+		//cout << "  FAILURE OCCURRED" << endln;
 	}
 
 

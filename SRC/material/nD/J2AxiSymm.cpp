@@ -106,7 +106,7 @@ NDMaterial* J2AxiSymm :: getCopy( )
 { 
   J2AxiSymm  *clone;
   clone = new J2AxiSymm() ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

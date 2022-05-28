@@ -366,8 +366,8 @@ StressDensityModel3D::initialise()
 
 /*-----------------------------------------------------------------------------------
 This method calculates current stress from a given current strain but does not update
-the model. The intial state remains the same during iteration. The intial state is
-stored in class members. 
+the model. The initial state remains the same during iteration. The initial state is
+stored in class members.
 
 The class members are nor directly passed to the FORTRAN subroutine. They are first
 copied in temporary variables (of static construct and hence are the same for all 

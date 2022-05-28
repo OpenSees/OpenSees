@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for X11Renderer.
-// X11Renderer is an class which diplays using X11 or openGL.
+// X11Renderer is an class which displays using X11 or openGL.
 //
 // What: "@(#) X11Renderer.h, revA"
 
@@ -392,7 +392,7 @@ X11Renderer::drawPolygon(const Matrix &pos, const Vector &data, int tag, int mod
     return -1;
   }
   if (pos.noRows() != data.Size()) {
-    opserr <<"X11Renderer::drawPolygon - matrix & vector incompatable\n";
+    opserr <<"X11Renderer::drawPolygon - matrix & vector incompatible\n";
     return -1;
   }
 #endif
@@ -451,7 +451,7 @@ X11Renderer::drawPolygon(const Matrix &pos, const Matrix &data, int tag, int mod
     return -1;
   }
   if (pos.noRows() != data.noRows()) {
-    opserr <<"X11Renderer::drawPolygon - matrix & vector incompatable\n";
+    opserr <<"X11Renderer::drawPolygon - matrix & vector incompatible\n";
     return -1;
   }
 #endif

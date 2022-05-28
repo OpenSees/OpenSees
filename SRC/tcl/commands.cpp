@@ -688,7 +688,7 @@ static Tcl_ObjCmdProc *Tcl_putsCommand = 0;
 
 int OpenSees_putsCommand(ClientData dummy,  Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
-    Tcl_Channel chan;           /* The channel to puts on. */
+    //Tcl_Channel chan;         /* The channel to puts on. */
     Tcl_Obj *string;            /* String to write. */
     Tcl_Obj *chanObjPtr = NULL; /* channel object. */
     int newline;                /* Add a newline at end? */
@@ -3559,7 +3559,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
       void *libHandle;
       void *(*funcPtr)();
-      int solverNameLength = strlen(argv[1]);
+      int solverNameLength = int(strlen(argv[1]));
       char *tclFuncName = new char[solverNameLength+5];
       strcpy(tclFuncName, "OPS_");
       strcpy(&tclFuncName[4], argv[1]);    
@@ -4595,7 +4595,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[1], "EQPath") == 0) {
 		double arcLength;
 		int type;
-		int numIter;
 		if (argc != 4) {
 			opserr << "WARNING integrator EQPath $arc_length $type \n";
 			opserr << "REFS : \n";
@@ -5322,7 +5321,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       void *libHandle;
       void *(*funcPtr)();
-      int integratorNameLength = strlen(argv[2]);
+      int integratorNameLength = int(strlen(argv[2]));
       char *tclFuncName = new char[integratorNameLength+5];
       strcpy(tclFuncName, "OPS_");
       strcpy(&tclFuncName[4], argv[2]);    
@@ -5390,7 +5389,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
       void *libHandle;
       void *(*funcPtr)();
-      int integratorNameLength = strlen(argv[2]);
+      int integratorNameLength = int(strlen(argv[2]));
       char *tclFuncName = new char[integratorNameLength+5];
       strcpy(tclFuncName, "OPS_");
       strcpy(&tclFuncName[4], argv[2]);    
@@ -9456,7 +9455,7 @@ sdfResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
   double amax = 0.0; double tamax = 0.0;
   double up = uresidual; double up0 = up;
   int i = 0;
-  double ft, u, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0, accel;
+  double ft, u, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0;
   while (infile >> ft) {
     i++;
     
@@ -9993,14 +9992,14 @@ int stripOpenSeesXML(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
     if (spitData == true) {
       if (strstr(inputLine,"</Data>") != 0) 
 	spitData = false;
-      else 
-	; //	theOutputDataFile << line << endln;
+    // else 
+	// theOutputDataFile << line << endln;
     } else {
       const char *inputLine = line.c_str();
       if (strstr(inputLine,"<Data>") != 0) 
 	spitData = true;
-      else if (outputDescriptiveFile != 0)
-	; // theOutputDescriptiveFile << line << endln;
+    // else if (outputDescriptiveFile != 0)
+	// theOutputDescriptiveFile << line << endln;
     }
   }      
   

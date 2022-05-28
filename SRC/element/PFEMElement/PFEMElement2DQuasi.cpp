@@ -102,7 +102,7 @@ int OPS_PFEMElement2DQuasi(Domain& theDomain, const ID& elenodes, ID& eletags)
     for (int i=0; i<eletags.Size(); i++) {
 	theEle = new PFEMElement2DQuasi(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),data[0],data[1],data[2],data[3],data[4],data[5]);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -228,7 +228,7 @@ PFEMElement2DQuasi::update()
     // check Jacobi
     if(fabs(J)<1e-15) {
 	//if(J < 0) {
-        opserr<<"WARING: element area is negative";
+        opserr<<"WARNING: element area is negative";
         opserr<<" -- PFEMElement2DQuasi::update\n";
         return -1;
     }
