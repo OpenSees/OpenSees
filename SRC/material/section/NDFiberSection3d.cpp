@@ -69,7 +69,7 @@ void* OPS_NDFiberSection3d()
     }
     
     int num = 30;
-    return new NDFiberSection3d(tag, num, computeCentroid);
+    return new NDFiberSection3d(tag, num, 1.0, computeCentroid);
 }
 
 // constructors:
