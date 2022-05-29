@@ -43,8 +43,8 @@ void*
 OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
 {
   int nArgs = OPS_GetNumRemainingInputArgs();
-  if (nArgs < 9) {
-    opserr << "Insufficient arguments: tag otherTag secTagI lpI zetaI secTagJ lpJ zetaJ secTagE\n";
+  if (nArgs < 6) {
+    opserr << "Insufficient arguments: tag otherTag lpI zetaI lpJ zetaJ\n";
     return 0;
   }
 
@@ -70,21 +70,16 @@ OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
   const ID &otherSections = theRule->getSectionTags();
   int Nsections = otherSections.Size();
   secTags.resize(Nsections+2);
+
+  for (int i = 0; i < Nsections; i++)
+    secTags(i+1) = otherSections(i);
+  secTags(0)           = otherSections(0);
+  secTags(Nsections+1) = otherSections(Nsections-1);  
   
   double dData[2];
   
   // Read information for hinge at end I
-  int secTagI;
   double lpI, zetaI;
-  numData = 1;
-  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
-    opserr << "RegularizedHingeIntegration - unable to read section tag I" << endln;
-    return 0;
-  }
-  secTagI = iData[0];
-  secTags(0) = secTagI;
-  secTags(1) = secTagI;
-  
   numData = 2;
   if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
     opserr << "RegularizedHingeIntegration - unable to read hinge I data" << endln;
@@ -95,17 +90,7 @@ OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
 
 
   // Read information for hinge at end J
-  int secTagJ;
   double lpJ, zetaJ;
-  numData = 1;
-  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
-    opserr << "RegularizedHingeIntegration - unable to read section tag J" << endln;
-    return 0;
-  }
-  secTagJ = iData[0];
-  secTags(2) = secTagJ;
-  secTags(3) = secTagJ;
-  
   numData = 2;
   if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
     opserr << "RegularizedHingeIntegration - unable to read hinge J data" << endln;
@@ -113,18 +98,6 @@ OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
   }
   lpJ = dData[0];
   zetaJ = dData[1];
-
-
-  // Read section for interior
-  int secTagE;
-  numData = 1;
-  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
-    opserr << "RegularizedHingeIntegration - unable to read section tag for interior" << endln;
-    return 0;
-  }
-  secTagE = iData[0];
-  for (int i = 4; i < Nsections+2; i++)
-    secTags(i) = secTagE;
 
   return new RegularizedHingeIntegration(*bi, lpI, lpJ, zetaI, zetaJ);
 }
