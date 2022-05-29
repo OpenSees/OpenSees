@@ -106,17 +106,17 @@ public:
     void setCTest(ConvergenceTest* test);
     ConvergenceTest* getCTest() {return theTest;}
 
-    void setStaticAnalysis();
+    void setStaticAnalysis(bool suppress);
     StaticAnalysis* getStaticAnalysis() {return theStaticAnalysis;}
 
-    int setPFEMAnalysis();
+    int setPFEMAnalysis(bool suppress);
     PFEMAnalysis* getPFEMAnalysis() {return thePFEMAnalysis;}
 
-    void setVariableAnalysis();
+    void setVariableAnalysis(bool suppress);
     VariableTimeStepDirectIntegrationAnalysis*
     getVariableAnalysis() {return theVariableTimeStepTransientAnalysis;}
 
-    void setTransientAnalysis();
+    void setTransientAnalysis(bool suppress);
     DirectIntegrationAnalysis* getTransientAnalysis() {return theTransientAnalysis;}
 
     void setNumEigen(int num) {numEigen = num;}
