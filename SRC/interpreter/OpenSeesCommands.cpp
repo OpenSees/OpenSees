@@ -1788,6 +1788,8 @@ int OPS_analyze()
 
 int OPS_eigenAnalysis()
 {
+    static bool warning_displayed = false;
+
     // make sure at least one other argument to contain type of system
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING want - eigen <type> numModes?\n";
@@ -1836,7 +1838,10 @@ int OPS_eigenAnalysis()
                 (strcmp(type, "-fullGenLapack") == 0) ||
                 (strcmp(type, "fullGenLapackEigen") == 0) ||
                 (strcmp(type, "-fullGenLapackEigen") == 0)) {
-        opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
+	    if (!warning_displayed) {
+            opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
+            warning_displayed = true;
+		}
         typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
     }
 
