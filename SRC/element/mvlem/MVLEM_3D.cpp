@@ -522,31 +522,31 @@ MVLEM_3D::~MVLEM_3D()
 		delete theLoad;
 
 	if (x != 0)
-		delete x;
+		delete []x;
 	if (t != 0)
-		delete t;
+		delete []t;
 	if (b != 0)
-		delete b;
+		delete []b;
 	if (rho != 0)
-		delete rho;
+		delete []rho;
 	if (Ac != 0)
-		delete Ac;
+		delete []Ac;
 	if (As != 0)
-		delete As;
+		delete []As;
 	if (ky != 0)
-		delete ky;
+		delete []ky;
 	if (kh != 0)
-		delete kh;
+		delete []kh;
 	if (Ec != 0)
-		delete Ec;
+		delete []Ec;
 	if (Es != 0)
-		delete Es;
+		delete []Es;
 	if (stressC != 0)
-		delete stressC;
+		delete []stressC;
 	if (stressS != 0)
-		delete stressS;
+		delete []stressS;
 	if (MVLEM_3DStrain != 0)
-		delete MVLEM_3DStrain;
+		delete []MVLEM_3DStrain;
 }
 
 int MVLEM_3D::getNumExternalNodes(void) const
