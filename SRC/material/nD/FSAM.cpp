@@ -403,13 +403,14 @@ FSAM::FSAM (int tag,
 		exit(-1);
 	}
 
-	OPS_Stream *theDummyStream = new DummyStream();
+	//OPS_Stream *theDummyStream = new DummyStream();
+	DummyStream theDummyStream;
 	//const char **argv = new const char *[1];
 	//argv[0] = "getCommittedCyclicCrackingConcreteStrain"; // to get committed concrete cyclic cracking strain from strut A2
 	char aa[80] = "getCommittedCyclicCrackingConcreteStrain";
 	const char *argv[1];
 	argv[0] = aa;
-	theResponses[0] = theMaterial[5]->setResponse(argv, 1, *theDummyStream);
+	theResponses[0] = theMaterial[5]->setResponse(argv, 1, theDummyStream);
 
 	if (theResponses[0] == 0) {
 			opserr << " FSAM::FSAM - failed to get cracking strain for material with tag: " << tag << "\n";
@@ -420,14 +421,14 @@ FSAM::FSAM (int tag,
 	char bb[80] = "getInputParameters";
 	argv[0] = bb;
 	
-	theResponses[1] = theMaterial[4]->setResponse(argv, 1, *theDummyStream);
+	theResponses[1] = theMaterial[4]->setResponse(argv, 1, theDummyStream);
 
 	if (theResponses[1] == 0) {
 			opserr << " FSAM::FSAM - failed to get input parameters for material with tag: " << tag << "\n";
 			exit(-1);
 	}
 
-	delete theDummyStream;
+	//delete theDummyStream;
 
 	// Get ConcreteCM material input variables
 	theResponses[1]->getResponse();

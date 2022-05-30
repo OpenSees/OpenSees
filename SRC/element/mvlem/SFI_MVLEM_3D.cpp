@@ -754,7 +754,8 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	//	exit(-1);
 	//}
 
-	OPS_Stream *theDummyStream = new DummyStream();
+	//OPS_Stream *theDummyStream = new DummyStream();
+	DummyStream theDummyStream;
 	//const char **argv = new const char *[1];
 	//argv[0] = "getInputParameters"; // to get input parameters from concrete material
 	char aa[80] = "getInputParameters";
@@ -764,7 +765,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	for (int i = 0; i < m; i++)
 	{
 	  //theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
-	  Response *theResponse = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
+	  Response *theResponse = theMaterial[i]->setResponse(argv, 1, theDummyStream);
 
 	  //if (theResponses[0] == 0) {
 		if (theResponse == 0) {		  
@@ -791,7 +792,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	}
 
-	delete theDummyStream;
+	//delete theDummyStream;
 	
 	// Internal beam parameters
 	Eib = Eave;
