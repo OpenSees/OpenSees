@@ -458,45 +458,45 @@ SFI_MVLEM_3D::~SFI_MVLEM_3D()
 	if (theLoad != 0)
 		delete theLoad;
 	if (x != 0)
-		delete x;
+		delete []x;
 	if (b != 0)
-		delete b;
+		delete []b;
 	if (AcX != 0)
-		delete AcX;
+		delete []AcX;
 	if (AcY != 0)
-		delete AcY;
+		delete []AcY;
 	if (kx != 0)
-		delete kx;
+		delete []kx;
 	if (ky != 0)
-		delete ky;
+		delete []ky;
 	if (Fx != 0)
-		delete Fx;
+		delete []Fx;
 	if (Fy != 0)
-		delete Fy;
+		delete []Fy;
 	if (Fxy != 0)
-		delete Fxy;
+		delete []Fxy;
 	if (Dx != 0)
-		delete Dx;
+		delete []Dx;
 	if (Dy != 0)
-		delete Dy;
+		delete []Dy;
 	if (Dxy != 0)
-		delete Dxy;
+		delete []Dxy;
 	if (SFI_MVLEM_3DStrainX != 0)
-		delete SFI_MVLEM_3DStrainX;
+		delete []SFI_MVLEM_3DStrainX;
 	if (SFI_MVLEM_3DStrainY != 0)
-		delete SFI_MVLEM_3DStrainY;
+		delete []SFI_MVLEM_3DStrainY;
 	if (SFI_MVLEM_3DStrainXY != 0)
-		delete SFI_MVLEM_3DStrainXY;
+		delete []SFI_MVLEM_3DStrainXY;
 	if (SFI_MVLEM_3DStrain != 0)
-		delete SFI_MVLEM_3DStrain;
+		delete []SFI_MVLEM_3DStrain;
 	if (theNodesX != 0)
-		delete theNodesX;
+		delete []theNodesX;
 	if (theNodesALL != 0)
-		delete theNodesALL;
+		delete []theNodesALL;
 	if (modifiedT != 0)
-		delete modifiedT;
+		delete []modifiedT;
 	if (t != 0)
-		delete t;
+		delete []t;
 
 }
 
