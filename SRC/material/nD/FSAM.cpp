@@ -433,10 +433,7 @@ FSAM::FSAM (int tag,
 	// Get ConcreteCM material input variables
 	theResponses[1]->getResponse();
 	Information &theInfoInput = theResponses[1]->getInformation();
-	const Vector InputConc = theInfoInput.getData();
-
-	for (int i=0; i<InputConc.Size() ; i++)
-	ConcreteInput[i] = InputConc[i];
+	const Vector &ConcreteInput = theInfoInput.getData();
 
 	// Now create monotonic concrete materials for uncracked stage of behavior
 	// Concrete 1.1
@@ -466,13 +463,13 @@ FSAM::FSAM (int tag,
 	Ec = theMaterial[4] -> getInitialTangent();
 
 	// Strain at peak compressive stress for concrete
-	epcc = InputConc[2];
+	epcc = ConcreteInput[2];
 	
 	// Peak compressive stress for concrete
-	fpc = InputConc[1];
+	fpc = ConcreteInput[1];
 
 	// Cracking strain for concrete
-	et = InputConc[7];
+	et = ConcreteInput[7];
 
 	// Young's modulus for steel
 	E0x = theMaterial[0] -> getInitialTangent(); // Horizontal reinforcement

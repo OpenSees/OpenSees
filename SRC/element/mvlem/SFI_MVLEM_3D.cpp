@@ -778,15 +778,10 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		//Information &theInfoInput = theResponses[0]->getInformation();		
 		theResponse->getResponse();		
 		Information &theInfoInput = theResponse->getInformation();
-		const Vector InputNDMat = theInfoInput.getData();
-
-		Vector InputNDMaterial(InputNDMat.Size());
-
-		for (int j = 0; j < InputNDMat.Size(); j++)
-			InputNDMaterial[j] = InputNDMat[j];
+		const Vector &InputNDMat = theInfoInput.getData();
 
 		// Calculate out-of-plane modulus of elasticity (average modulus)
-		Eave += AcY[i] * InputNDMaterial[9] / A;
+		Eave += AcY[i] * InputNDMat[9] / A;
 
 		delete theResponse;
 
