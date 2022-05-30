@@ -790,6 +790,8 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		delete theResponse;
 
 	}
+
+	delete theDummyStream;
 	
 	// Internal beam parameters
 	Eib = Eave;
