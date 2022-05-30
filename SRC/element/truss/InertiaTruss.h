@@ -24,7 +24,7 @@
 
 // Description: This file contains the class definition for InertiaTruss. A InertiaTruss object
 // provides the abstraction of the small deformation bar element. Each truss
-// object is assocaited with a material object. This InertiaTruss element will work
+// object is associated with a material object. This InertiaTruss element will work
 // in 1d, 2d or 3d problems.
 // Not ready for sensitivity analysis yet
 // modified from truss.cpp    author: Frank McKenna
@@ -57,7 +57,7 @@ class InertiaTruss : public Element
 
     const char *getClassType(void) const {return "InertiaTruss";};
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);

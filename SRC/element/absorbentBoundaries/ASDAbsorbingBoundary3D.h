@@ -145,9 +145,9 @@ private:
     void addRff(Vector& R);
     // obtain the N matrix
     const Matrix& computeNmatrix();
-    // fills the stiffness matrix of the free-field forces tranfered to the soil domain
+    // fills the stiffness matrix of the free-field forces transferred to the soil domain
     void addKffToSoil(Matrix& K);
-    // fills the forces transfered from the free-field to the soil domain
+    // fills the forces transferred from the free-field to the soil domain
     void addRffToSoil(Vector& R);
     // compute damping parameters
     void getDampParam(double& alpha, double& beta);

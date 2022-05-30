@@ -187,7 +187,7 @@ c_C 				Rate of post-capping strength deterioration.
 c_K 				Rate of unloading stiffness deterioration.
 D_pos 				Rate of cyclic deterioration in the +ve loading direction
 D_neg 				Rate of cyclic deterioration in the -ve loading direction
-n					Paramter identifying the offset rotation on the unloading side
+n					Parameter identifying the offset rotation on the unloading side
 Roffset				Offset rotation identifying the Smooth Transition region
 LAMBDA_F			Cyclic deterioration parameter for Smooth Transition deterioration 
 c_F					Cyclic deterioration parameter for Smooth Transition deterioration
@@ -225,9 +225,9 @@ Ref_Energy_S    	Refernence energy for strength deterioration
 Ref_Energy_C    	Refernence energy for post-capping strength deterioration
 Ref_Energy_K    	Refernence energy for unloading stiffness deterioration
 Ref_Energy_F    	Refernence energy for Smooth Transition deterioration
-Excursion_Flag 		Flag for Excursion occurance (i.e., crossing the x-axis)
-Reversal_Flag 		Flag for Loading direction reversal occurance
-Yield_Flag 			Flag for Yielding occurance
+Excursion_Flag 		Flag for Excursion occurrence (i.e., crossing the x-axis)
+Reversal_Flag 		Flag for Loading direction reversal occurrence
+Yield_Flag 			Flag for Yielding occurrence
 Fail_FlagPos 		Flag for reaching the ultimate rotation in the +ve loading direction
 Fail_FlagNeg 		Flag for reaching the ultimate rotation in the -ve loading direction
 Mrpos_Flag 			Flag for reaching the residual moment in the +ve loading direction

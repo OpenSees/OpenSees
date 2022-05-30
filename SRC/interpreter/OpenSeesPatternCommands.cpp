@@ -651,7 +651,7 @@ int OPS_ElementalLoad()
 
         //finish the temperature arguments
         else {
-            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature aguments,/n looking for 0, 2, 5 or 9 arguments.\n";
+            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments.\n";
         }
 
         for (int i = 0; i<theEleTags.Size(); i++) {
@@ -789,7 +789,7 @@ int OPS_ElementalLoad()
 	    }
 
 	    else {
-		opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature aguments,/n looking for 0, 1, 2 or 4 arguments.\n";
+		opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature arguments,/n looking for 0, 1, 2 or 4 arguments.\n";
 		return -1;
 	    }
 
@@ -799,7 +799,7 @@ int OPS_ElementalLoad()
 	}
     }
 
-    // if get here we have sucessfully created the load and added it to the domain
+    // if get here we have successfully created the load and added it to the domain
 
     return 0;
 }
@@ -831,7 +831,7 @@ int OPS_SP()
     // get node
     Node* theNode = theDomain->getNode(tags[0]);
     if(theNode == 0) {
-	opserr<<"ERROR node "<<tags[0]<<"does not exsit\n";
+	opserr<<"ERROR node "<<tags[0]<<"does not exist\n";
 	return -1;
     }
     int ndf = theNode->getNumberDOF();
@@ -977,7 +977,7 @@ int OPS_ImposedMotionSP()
 	return -1;
     }
 
-    // if get here we have sucessfully created the node and added it to the domain
+    // if get here we have successfully created the node and added it to the domain
     return 0;
 }
 

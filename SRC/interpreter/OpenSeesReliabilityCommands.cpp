@@ -552,7 +552,7 @@ int OPS_randomVariable()
 	// 	    return TCL_ERROR;
 	// 	}
 	// 	if (i>0 && x<=x_old) {
-	// 	    opserr << "ERROR: x-points to user-defined random variable must be consequtive!" << "\n";
+	// 	    opserr << "ERROR: x-points to user-defined random variable must be consecutive!" << "\n";
 	// 	    return TCL_ERROR;
 	// 	}
 	// 	temp_xPoints(i) = x;
@@ -1975,15 +1975,15 @@ int OPS_functionEvaluator() {
   }
 
   if (cmds == 0) {
-    opserr << "WARING: Reliability is not initialized\n";
+    opserr << "WARNING: Reliability is not initialized\n";
     return -1;
   }
   if (cmds->getStructuralDomain() == 0) {
-    opserr << "WARING: Reliability has no structural domain\n";
+    opserr << "WARNING: Reliability has no structural domain\n";
     return -1;
   }
   if (cmds->getDomain() == 0) {
-    opserr << "WARING: Reliability has no domain\n";
+    opserr << "WARNING: Reliability has no domain\n";
     return -1;
   }
 

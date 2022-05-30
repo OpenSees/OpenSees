@@ -82,7 +82,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     Vector	  *getPtrNewVector(int classTag, int size);
     ID	          *getPtrNewID(int classTag, int size);
 
-    // methods for ouput objects
+    // methods for output objects
     //    DataOutputHandler *getPtrNewDataOutputHandler(int classTag);
     OPS_Stream *getPtrNewStream(int classTag);
     Recorder *getPtrNewRecorder(int classTag);

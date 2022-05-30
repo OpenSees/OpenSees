@@ -90,7 +90,7 @@ MapOfTaggedObjects::addComponent(TaggedObject *newComponent)
     if (theEle == theMap.end()) {
       theMap.insert(MAP_TAGGED_TYPE(tag,newComponent));
       
-      // check if sucessfully added 
+      // check if successfully added 
       theEle = theMap.find(tag);
       if (theEle == theMap.end()) {
 	opserr << "MapOfTaggedObjects::addComponent - map STL failed to add object with tag : " << 

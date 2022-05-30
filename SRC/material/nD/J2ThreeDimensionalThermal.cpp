@@ -107,7 +107,7 @@ NDMaterial* J2ThreeDimensionalThermal :: getCopy( )
 { 
   J2ThreeDimensionalThermal  *clone;
   clone = new J2ThreeDimensionalThermal( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

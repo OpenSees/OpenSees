@@ -2363,7 +2363,7 @@ int TclModelBuilder_addMultipleNormalSpring(ClientData clientData,
   
 
 
-  // input cofirmation
+  // input confirmation
   // necessary arguments
   if (recvMat != 1)  {
     char buf[100];
@@ -2753,7 +2753,7 @@ int TclModelBuilder_addKikuchiBearing(ClientData clientData,
   } //end input
   
 
-  // input cofirmation
+  // input confirmation
   // necessary arguments
   if (recvShape != 1)  {
     char buf[100];

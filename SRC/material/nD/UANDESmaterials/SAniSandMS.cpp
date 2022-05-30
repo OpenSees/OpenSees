@@ -842,7 +842,7 @@ void SAniSandMS::integrate()
 	else {
 		// implicit schemes
 		if (mScheme == INT_BackwardEuler)
-			opserr << "SAniSandMS::integrate() -- Implicit integration not avialable yet" << endln;
+			opserr << "SAniSandMS::integrate() -- Implicit integration not available yet" << endln;
 		// explicit schemes
 		else
 			explicit_integrator(

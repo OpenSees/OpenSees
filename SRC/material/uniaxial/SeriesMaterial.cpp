@@ -557,7 +557,7 @@ SeriesMaterial::Print(OPS_Stream &s, int flag)
 {
     if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
         s << "\nSeriesMaterial, tag: " << this->getTag() << endln;
-        s << "\tUniaxial Componenets" << endln;
+        s << "\tUniaxial Components" << endln;
         for (int i = 0; i < numMaterials; i++)
             s << "\t\tUniaxial Material, tag: " << theModels[i]->getTag() << endln;
     }

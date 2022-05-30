@@ -133,7 +133,7 @@ ParametricReliabilityAnalysis::analyze(void)
 		outputFile << "#                                                                     #" << endln;
 		outputFile << "#                                                                     #" << endln;
 		outputFile << "#                    Failure probability     Estimated probability    #" << endln;
-		outputFile << "#    Parameter       estimate (fragility)     densitity function      #" << endln;
+		outputFile << "#    Parameter       estimate (fragility)     density function        #" << endln;
 		outputFile << "#     value               (CDF)                    (PDF)              #" << endln;
 		outputFile.setf(ios::scientific, ios::floatfield);
 		outputFile.flush();
