@@ -332,7 +332,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 			exit(-1);
 		}
 
-		theMaterial[i] = materials[i]->getCopy();
+		theMaterial[i] = materials[i]->getCopy("PlaneStress2D");
 
 		if (theMaterial[i] == 0) {
 			opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
@@ -748,28 +748,35 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	NodeMass = density * A * h / 4.0;
 
 	// Get Concrete Young's Modulus
-	theResponses = new Response *[1];
-	if (theResponses == 0) {
-		opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array\n";
-		exit(-1);
-	}
+	//theResponses = new Response *[1];
+	//if (theResponses == 0) {
+	//	opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array\n";
+	//	exit(-1);
+	//}
 
 	OPS_Stream *theDummyStream = new DummyStream();
-	const char **argv = new const char *[1];
-
-	argv[0] = "getInputParameters"; // to get input parameters from concrete material
+	//const char **argv = new const char *[1];
+	//argv[0] = "getInputParameters"; // to get input parameters from concrete material
+	char aa[80] = "getInputParameters";
+	const char *argv[1];
+	argv[0] = aa;
+	
 	for (int i = 0; i < m; i++)
 	{
-		theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
+	  //theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
+	  Response *theResponse = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
 
-		if (theResponses[0] == 0) {
+	  //if (theResponses[0] == 0) {
+		if (theResponse == 0) {		  
 			opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << "\n";
 			exit(-1);
 		}
 
 		// Get FSAM material input variables
-		theResponses[0]->getResponse();
-		Information &theInfoInput = theResponses[0]->getInformation();
+		//theResponses[0]->getResponse();
+		//Information &theInfoInput = theResponses[0]->getInformation();		
+		theResponse->getResponse();		
+		Information &theInfoInput = theResponse->getInformation();
 		const Vector InputNDMat = theInfoInput.getData();
 
 		Vector InputNDMaterial(InputNDMat.Size());
@@ -779,6 +786,8 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 		// Calculate out-of-plane modulus of elasticity (average modulus)
 		Eave += AcY[i] * InputNDMaterial[9] / A;
+
+		delete theResponse;
 
 	}
 	
