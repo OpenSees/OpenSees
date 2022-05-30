@@ -280,7 +280,7 @@ SFI_MVLEM::SFI_MVLEM(int tag,
       exit(-1);
     }
     
-    theMaterial[i] = materials[i]->getCopy();
+    theMaterial[i] = materials[i]->getCopy("PlaneStress2D");
     
     if (theMaterial[i] == 0) {
       opserr << "SFI_MVLEM::SFI_MVLEM() - "
