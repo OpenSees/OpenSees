@@ -984,7 +984,9 @@ FiberSection2d::setResponse(const char **argv, int argc,
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
 	  theResponse = new MaterialResponse(this, 8, getEnergy());
   }
-
+  else if (strcmp(argv[0],"centroid") == 0) 
+    theResponse = new MaterialResponse(this, 20, Vector(2));
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -1038,7 +1040,13 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
   else if (responseID == 8) {
 	  return sectInfo.setDouble(getEnergy());
   }
-
+  else if (responseID == 20) {
+    static Vector centroid(2);
+    centroid(0) = yBar;
+    centroid(1) = 0.0;
+    return sectInfo.setVector(centroid);
+  }
+  
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 
