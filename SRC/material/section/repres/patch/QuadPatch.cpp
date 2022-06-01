@@ -76,6 +76,13 @@ void* OPS_RectPatch()
     double data[4];
     numData = 4;
     if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    double dyOverdz = (data[2]-data[0])/(data[3]-data[1]);
+    if (dyOverdz < 0) {
+      // Swap coordinates so we get all positive areas
+      double tmp = data[1];
+      data[1] = data[3];
+      data[3] = tmp;
+    }
     vertexCoords(0,0) = data[0];
     vertexCoords(0,1) = data[1];
     vertexCoords(1,0) = data[2];
