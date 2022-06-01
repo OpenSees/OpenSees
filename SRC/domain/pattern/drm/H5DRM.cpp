@@ -24,6 +24,9 @@
 // ============================================================================
 // Please read detailed description in H5DRM.h.
 // ============================================================================
+
+#ifdef _H5DRM
+
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -2305,3 +2308,4 @@ bool read_int_dataset_into_array(const hid_t & h5drm_dataset, std::string datase
 //     }
 // }
 
+#endif // _H5DRM
