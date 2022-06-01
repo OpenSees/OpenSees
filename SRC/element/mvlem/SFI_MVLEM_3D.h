@@ -97,7 +97,7 @@ public:
 	Response *setResponse(const char **argv, int argc, OPS_Stream &s);
 	int getResponse(int responseID, Information &eleInformation);
 
-	Response **theResponses;			// pointer to material responses needed for Concrete
+  //Response **theResponses;			// pointer to material responses needed for Concrete
 
 protected:
 
