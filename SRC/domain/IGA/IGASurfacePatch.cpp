@@ -776,7 +776,7 @@ bool IGASurfacePatch::buildConnectivity(int p, const Vector & knotVec, int nE, M
             }
         }
 
-        if (previousKnotVals == currentKnotVals and nonzero > 1)
+        if (previousKnotVals == currentKnotVals && nonzero > 1)
         {
             numRepeatedKnots += 1;
         }

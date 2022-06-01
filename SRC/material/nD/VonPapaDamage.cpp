@@ -63,7 +63,7 @@
 using namespace::std;
 #include <stdlib.h>
 // #include <cstdlib>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 
 // Vector VonPapaDamage :: strain_vec(3) ;
 Vector VonPapaDamage :: stress_vec(3) ;
@@ -849,7 +849,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   double tmp = 0;
 
   // dD11/dN in case of positive Sigma11 stress
-  if (deltaSigma1_t > 0.0 and bigSigma1t > 0.0)
+  if (deltaSigma1_t > 0.0 && bigSigma1t > 0.0)
   {
     if (dft < 1.0)
     {
@@ -876,7 +876,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   }
 
   // dD11/dN in case of negative Sigma11 stress
-  if (deltaSigma1_c < 0.0 and bigSigma1c > 0.0)
+  if (deltaSigma1_c < 0.0 && bigSigma1c > 0.0)
   {
     if (dfc < 1.0)
     {
@@ -897,7 +897,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   }
 
   // dD22/dN in case of positive Sigma22 stress
-  if (deltaSigma2_t > 0.0 and bigSigma2t > 0.0)
+  if (deltaSigma2_t > 0.0 && bigSigma2t > 0.0)
   {
     if (dmt < 1.0)
     {
@@ -916,7 +916,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   }
 
   // dD22/dN in case of negative Sigma22 stress
-  if (deltaSigma2_c < 0.0 and bigSigma2c > 0.0)
+  if (deltaSigma2_c < 0.0 && bigSigma2c > 0.0)
   {
     if (dmc < 1.0)
     {
@@ -935,7 +935,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   }
 
   // dD12/dN in case of positive Sigma12 stress
-  if (deltaSigma12_t > 0.0 and bigSigma12t > 0.0)
+  if (deltaSigma12_t > 0.0 && bigSigma12t > 0.0)
   {
     if (dst < 1.0)
     {
@@ -956,7 +956,7 @@ void VonPapaDamage :: calculateDerDamage(double max_incr_dam_var)
   }
 
   // dD12/dN in case of negative Sigma12 stress
-  if (deltaSigma12_c < 0.0 and bigSigma12c > 0.0)
+  if (deltaSigma12_c < 0.0 && bigSigma12c > 0.0)
   {
     if (dsc < 1.0)
     {
@@ -1194,7 +1194,7 @@ double VonPapaDamage::proot_quadraticequ(double a, double b, double c)
 {
   double proot = 0;
 
-  if ( abs(a) > 1e-50 and pow(b, 2) - 4.0 * a * c >= 0)
+  if ( abs(a) > 1e-50 && pow(b, 2) - 4.0 * a * c >= 0)
   {
     proot = (-b + sqrt( pow(b, 2) - 4.0 * a * c)) / (2.0 * a); // Positive root
   } else {
