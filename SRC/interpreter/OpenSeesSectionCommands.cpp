@@ -70,6 +70,7 @@ void* OPS_FiberSectionWarping3d();
 void* OPS_FiberSectionAsym3d();
 void* OPS_NDFiberSection2d();
 void* OPS_NDFiberSection3d();
+void* OPS_NDFiberSectionWarping2d();
 void* OPS_UniaxialFiber2d();
 void* OPS_UniaxialFiber3d();
 void* OPS_NDFiber2d();
@@ -101,6 +102,7 @@ namespace {
 	static FiberSectionAsym3d* theActiveFiberSectionAsym3d = 0;
     static NDFiberSection2d* theActiveNDFiberSection2d = 0;
     static NDFiberSection3d* theActiveNDFiberSection3d = 0;
+    static NDFiberSectionWarping2d* theActiveNDFiberSectionWarping2d = 0;    
 
     static FiberSection2dThermal* theActiveFiberSection2dThermal = 0;
     static FiberSection3dThermal* theActiveFiberSection3dThermal = 0;
@@ -272,6 +274,21 @@ namespace {
 
 	return theSec;
     }
+
+    static void* OPS_NDFiberSectionWarping()
+    {
+	void* theSec = 0;
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	  theSec = OPS_NDFiberSectionWarping2d();
+	  theActiveNDFiberSectionWarping2d = (NDFiberSectionWarping2d*)theSec;
+	} else if(ndm == 3) {
+	  //theSec = OPS_NDFiberSection3d();
+	  //theActiveNDFiberSection3d = (NDFiberSection3d*)theSec;
+	}
+
+	return theSec;
+    }  
 
     static void* OPS_UniaxialSection()
     {
@@ -1080,6 +1097,7 @@ namespace {
 	functionMap.insert(std::make_pair("FiberAsym", &OPS_FiberSectionAsym));
 	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));	
 	functionMap.insert(std::make_pair("NDFiber", &OPS_NDFiberSection));
+	functionMap.insert(std::make_pair("NDFiberWarping", &OPS_NDFiberSectionWarping));	
 	functionMap.insert(std::make_pair("Uniaxial", &OPS_UniaxialSection));
 	functionMap.insert(std::make_pair("Generic1D", &OPS_UniaxialSection));
 	functionMap.insert(std::make_pair("Generic1d", &OPS_UniaxialSection));
@@ -1119,7 +1137,8 @@ int OPS_Section()
 	theActiveFiberSectionAsym3d = 0;
     theActiveNDFiberSection2d = 0;
     theActiveNDFiberSection3d = 0;
-
+    theActiveNDFiberSectionWarping2d = 0;
+    
     theActiveFiberSection2dThermal = 0;
     theActiveFiberSection3dThermal = 0;
     //theActiveFiberSectionGJThermal = 0;
@@ -1157,7 +1176,8 @@ int OPS_Section()
 	theActiveFiberSectionAsym3d = 0;
 	theActiveNDFiberSection2d = 0;
 	theActiveNDFiberSection3d = 0;
-
+	theActiveNDFiberSectionWarping2d = 0;
+	
 	theActiveFiberSection2dThermal = 0;
 	theActiveFiberSection3dThermal = 0;
 	//theActiveFiberSectionGJThermal = 0;
@@ -1182,7 +1202,7 @@ int OPS_Fiber()
 
 	theFiber = (UniaxialFiber3d*) OPS_UniaxialFiber3d();
 
-    } else if (theActiveNDFiberSection2d != 0) {
+    } else if (theActiveNDFiberSection2d != 0 || theActiveNDFiberSectionWarping2d != 0) {
 
 	theFiber = (NDFiber2d*) OPS_NDFiber2d();
 
@@ -1225,6 +1245,10 @@ int OPS_Fiber()
 
 	res = theActiveNDFiberSection3d->addFiber(*theFiber);
 
+    } else if (theActiveNDFiberSectionWarping2d != 0) {
+
+	res = theActiveNDFiberSectionWarping2d->addFiber(*theFiber);
+	
     } else if (theActiveFiberSection2dThermal != 0) {
 
 	res = theActiveFiberSection2dThermal->addFiber(*theFiber);
@@ -1377,6 +1401,17 @@ int OPS_Patch()
 	    }
 	    theFiber = new NDFiber3d(j,*ndmaterial,area,cPos(0),cPos(1));
 	    theActiveNDFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveNDFiberSectionWarping2d != 0) {
+
+	    ndmaterial = OPS_getNDMaterial(matTag);
+	    if (ndmaterial == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete thePatch;
+		return -1;
+	    }
+	    theFiber = new NDFiber2d(j,*ndmaterial,area,cPos(0));
+	    theActiveNDFiberSectionWarping2d->addFiber(*theFiber);
 	}
 
 	delete cells[j];
@@ -1522,7 +1557,19 @@ int OPS_Layer()
 	    }
 	    theFiber = new NDFiber3d(j,*ndmaterial,area,cPos(0),cPos(1));
 	    theActiveNDFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveNDFiberSectionWarping2d != 0) {
+
+	    ndmaterial = OPS_getNDMaterial(matTag);
+	    if (ndmaterial == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete theLayer;
+		return -1;
+	    }
+	    theFiber = new NDFiber2d(j,*ndmaterial,area,cPos(0));
+	    theActiveNDFiberSectionWarping2d->addFiber(*theFiber);
 	}
+    
 
     }
 

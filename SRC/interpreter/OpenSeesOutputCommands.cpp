@@ -55,8 +55,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Element.h>
 #include <ElementIter.h>
 #include <CrdTransf.h>
+#include <SP_Constraint.h>
+#include <SP_ConstraintIter.h>
+#include <MP_Constraint.h>
+#include <MP_ConstraintIter.h>
 #include <map>
 #include <set>
+#include <algorithm>
 #include <Recorder.h>
 #include <Pressure_Constraint.h>
 #include <vector>
@@ -1565,6 +1570,323 @@ int OPS_setNodeCoord()
 
     return 0;
 }
+
+int OPS_getFixedNodes()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    SP_ConstraintIter &spIter = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint *theSP;
+
+	std::vector <int> data;
+
+    while ((theSP = spIter()) != 0) {
+        data.push_back(theSP->getNodeTag());
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getFixedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - getFixedDOFs fNodeTag?\n";
+	return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	  opserr << "WARNING getFixedDOFs fNodeTag? \n";
+	  return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    SP_ConstraintIter &spIter = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint *theSP;
+
+	std::vector <int> data;
+
+    while ((theSP = spIter()) != 0) {
+        if (theSP->getNodeTag() == tag) {
+		  data.push_back(theSP->getDOF_Number() + 1);
+        }
+    }
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getConstrainedNodes()
+{
+
+    bool all = 1;
+    int rNodeTag;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 2) {
+	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
+		opserr << "WARNING getConstrainedNodes <rNodeTag?> - could not read rNodeTag\n";
+		return -1;
+	  }
+	all = 0;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+	std::vector <int> data;
+
+    while ((theMP = mpIter()) != 0) {
+        if (all || rNodeTag == theMP->getNodeRetained()) {
+			data.push_back(theMP->getNodeConstrained());
+        }
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+int OPS_getConstrainedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - getConstrainedDOFs cNode? <rNode?> <rDOF?>\n";
+	return -1;
+    }
+
+    int cNode;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &cNode) < 0) {
+	  opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read cNode? \n";
+	  return -1;
+    }
+
+    int rNode;
+	bool allNodes = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &rNode) < 0) {
+		opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read rNode? \n";
+		return -1;
+	  }
+	  allNodes = 0;
+	}
+
+    int rDOF;
+	bool allDOFs = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &rDOF) < 0) {
+		opserr << "WARNING getConstrainedDOFs cNode? <rNode?> <rDOF?> - could not read rDOF? \n";
+		return -1;
+	  }
+	  rDOF--;
+	  allDOFs = 0;
+	}
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+    int tag;
+    int i;
+    int n;
+	std::vector <int> data;
+
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeConstrained();
+        if (tag == cNode) {
+            if (allNodes || rNode == theMP->getNodeRetained()) {
+                const ID &cDOFs = theMP->getConstrainedDOFs();
+                n = cDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+					  data.push_back(cDOFs(i) + 1);
+                    }
+                }
+                else {
+                    const ID &rDOFs = theMP->getRetainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (rDOF == rDOFs(i))
+						    data.push_back(cDOFs(i) + 1);
+                    }
+                }
+            }
+        }
+    }
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
+int OPS_getRetainedNodes()
+{
+    bool all = 1;
+    int cNodeTag;
+    int numdata = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 2) {
+	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
+		opserr << "WARNING getRetainedNodes <cNodeTag?> - could not read cNodeTag\n";
+		return -1;
+	  }
+	all = 0;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+	std::vector <int> data;
+
+    while ((theMP = mpIter()) != 0) {
+        if (all || cNodeTag == theMP->getNodeConstrained()) {
+			data.push_back(theMP->getNodeRetained());
+        }
+    }
+
+	// sort and make it unique
+	sort( data.begin(), data.end() );
+	data.erase( unique( data.begin(), data.end() ), data.end() );
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
+
+int OPS_getRetainedDOFs()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - getRetainedDOFs rNode? <cNode?> <cDOF?>\n";
+	return -1;
+    }
+
+    int rNode;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &rNode) < 0) {
+	  opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read rNode? \n";
+	  return -1;
+    }
+
+    int cNode;
+	bool allNodes = 1;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &cNode) < 0) {
+		opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read cNode? \n";
+		return -1;
+	  }
+	  allNodes = 0;
+	}
+
+    int cDOF;
+	bool allDOFs = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &cDOF) < 0) {
+		opserr << "WARNING getRetainedDOFs rNode? <cNode?> <cDOF?> - could not read cDOF? \n";
+		return -1;
+	  }
+	  cDOF--;
+	  allDOFs = 0;
+	}
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    MP_ConstraintIter &mpIter = theDomain->getMPs();
+    MP_Constraint *theMP;
+
+    int tag;
+    int i;
+    int n;
+	std::vector <int> data;	
+    while ((theMP = mpIter()) != 0) {
+        tag = theMP->getNodeRetained();
+        if (tag == rNode) {
+            if (allNodes || cNode == theMP->getNodeConstrained()) {
+                const ID &rDOFs = theMP->getRetainedDOFs();
+                n = rDOFs.Size();
+                if (allDOFs) {
+                    for (i = 0; i < n; i++) {
+					  data.push_back(rDOFs(i) + 1);
+                    }
+                }
+                else {
+                    const ID &cDOFs = theMP->getConstrainedDOFs();
+                    for (i = 0; i < n; i++) {
+                        if (cDOF == cDOFs(i))
+						    data.push_back(rDOFs(i) + 1);
+                    }
+                }
+            }
+        }
+    }
+
+	int size = data.size();
+
+	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+	  opserr << "WARNING failed to set output\n";
+	  return -1;
+	}
+
+    return 0;
+}
+
 
 int OPS_updateElementDomain()
 {
