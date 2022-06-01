@@ -68,8 +68,8 @@ bool read_scalar_double_dataset_into_double(const hid_t& h5drm_dataset, std::str
 bool read_double_dataset_into_vector(const hid_t& h5drm_dataset, std::string dataset_name, Vector& result);
 bool read_double_dataset_into_matrix(const hid_t& h5drm_dataset, std::string dataset_name, Matrix& result);
 bool read_int_dataset_into_array(const hid_t& h5drm_dataset, std::string dataset_name, int *& result);
-inline void convert_h5drmcrd_to_ops_crd(Vector&v );
-inline void convert_h5drmcrd_to_ops_crd(Matrix&xyz );
+// inline void convert_h5drmcrd_to_ops_crd(Vector&v );
+// inline void convert_h5drmcrd_to_ops_crd(Matrix&xyz );
 
 
 static int numH5DRMpatterns = 0;
@@ -132,7 +132,10 @@ H5DRM::H5DRM()
       crd_scale(0),
       distance_tolerance(0),
       maxnodetag(0),
-      station_id2data_pos(100)
+      station_id2data_pos(100),
+      do_coordinate_transformation(true),
+      T(3,3),
+      x0(3)
 {
     is_initialized = false;
     t1 =  t2 =  tend = 0;
@@ -141,6 +144,19 @@ H5DRM::H5DRM()
 
     id_velocity = id_displacement = id_acceleration = 0;
     id_velocity_dataspace = id_displacement_dataspace = id_acceleration_dataspace = 0;
+
+    T(0,0) = 1;
+    T(0,1) = 0;
+    T(0,2) = 0;
+    T(1,0) = 0;
+    T(1,1) = 1;
+    T(1,2) = 0;
+    T(2,0) = 0;
+    T(2,1) = 0;
+    T(2,2) = 1;
+    x0(0) = 0;
+    x0(1) = 0;
+    x0(2) = 0;
 
 
     myrank = 0;
@@ -155,7 +171,13 @@ H5DRM::H5DRM(
     std::string HDF5filename_,
     double cFactor_,
     double crd_scale_,
-    double distance_tolerance_)
+    double distance_tolerance_,
+    bool do_coordinate_transformation_,
+    double T00, double T01, double T02,
+    double T10, double T11, double T12,
+    double T20, double T21, double T22,
+    double x00, double x01, double x02
+    )
     : LoadPattern(tag, PATTERN_TAG_H5DRM),
       HDF5filename(HDF5filename_),
       DRMForces(100),
@@ -165,7 +187,10 @@ H5DRM::H5DRM(
       crd_scale(crd_scale_),
       distance_tolerance(distance_tolerance_),
       maxnodetag(0),
-      station_id2data_pos(100)
+      station_id2data_pos(100),
+      do_coordinate_transformation(do_coordinate_transformation_),
+      T(3,3),
+      x0(3)
 {
 
     id_velocity = id_displacement = id_acceleration = 0;
@@ -179,6 +204,21 @@ H5DRM::H5DRM(
 #ifdef _PARALLEL_PROCESSING
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 #endif
+
+
+    T(0,0) = T00;
+    T(0,1) = T01;
+    T(0,2) = T02;
+    T(1,0) = T10;
+    T(1,1) = T11;
+    T(1,2) = T12;
+    T(2,0) = T20;
+    T(2,1) = T21;
+    T(2,2) = T22;
+    x0(0) = x00;
+    x0(1) = x01;
+    x0(2) = x02;
+
 
     if (numH5DRMpatterns == 0)
     {
@@ -271,10 +311,33 @@ void H5DRM::intitialize()
     drmbox_zmax *= crd_scale;
     drmbox_zmin *= crd_scale;
 
-    convert_h5drmcrd_to_ops_crd(drmbox_x0);
-    convert_h5drmcrd_to_ops_crd(xyz);
-
     int NDRM_points = xyz.noRows();
+
+    if(do_coordinate_transformation)
+    {
+        // convert_h5drmcrd_to_ops_crd(drmbox_x0);
+        // convert_h5drmcrd_to_ops_crd(xyz);
+
+        H5DRMout << "Applying coordinate transformation  xyz (new) = T xyz (old) + x0  with" << endl;
+        opserr << "T = " << T << endln;
+        opserr << "x0 = " << x0 << endln;
+
+
+        drmbox_x0 = T*drmbox_x0 + x0;
+
+        for (int i = 0; i < NDRM_points; ++i)
+        {
+            static Vector row(3);
+            row(0) = xyz(i, 0);
+            row(1) = xyz(i, 1);
+            row(2) = xyz(i, 2);
+            row = T*row + x0;
+            xyz(i, 0) = row(0);
+            xyz(i, 1) = row(1);
+            xyz(i, 2) = row(2);
+        }
+    }
+
     double d_tol = distance_tolerance;
     double d_err = 0;
     int n_nodes_found = 0;
@@ -285,16 +348,16 @@ void H5DRM::intitialize()
     if (myrank == 0)
     {
         H5DRMout << "Dataset has " << NDRM_points << " data-points\n";
-        opserr << "drmbox_x0   =  " << drmbox_x0 << " \n";
-        opserr << "drmbox_xmax =  " << drmbox_xmax << " \n";
-        opserr << "drmbox_xmin =  " << drmbox_xmin << " \n";
-        opserr << "drmbox_ymax =  " << drmbox_ymax << " \n";
-        opserr << "drmbox_ymin =  " << drmbox_ymin << " \n";
-        opserr << "drmbox_zmax =  " << drmbox_zmax << " \n";
-        opserr << "drmbox_zmin =  " << drmbox_zmin << " \n";
-        opserr << "dx =  " << drmbox_xmax - drmbox_xmin << " \n";
-        opserr << "dy =  " << drmbox_ymax - drmbox_ymin << " \n";
-        opserr << "dz =  " << drmbox_zmax - drmbox_zmin << " \n";
+        opserr << "drmbox_x0   =  " << drmbox_x0 << " (not transformed)\n";
+        opserr << "drmbox_xmax =  " << drmbox_xmax << " (not transformed)\n";
+        opserr << "drmbox_xmin =  " << drmbox_xmin << " (not transformed)\n";
+        opserr << "drmbox_ymax =  " << drmbox_ymax << " (not transformed)\n";
+        opserr << "drmbox_ymin =  " << drmbox_ymin << " (not transformed)\n";
+        opserr << "drmbox_zmax =  " << drmbox_zmax << " (not transformed)\n";
+        opserr << "drmbox_zmin =  " << drmbox_zmin << " (not transformed)\n";
+        opserr << "dx =  " << drmbox_xmax - drmbox_xmin << " (not transformed)\n";
+        opserr << "dy =  " << drmbox_ymax - drmbox_ymin << " (not transformed)\n";
+        opserr << "dz =  " << drmbox_zmax - drmbox_zmin << " (not transformed)\n";
     }
 
     if (myrank == 0)
@@ -780,16 +843,27 @@ H5DRM::applyLoad(double time)
 bool H5DRM::ComputeDRMMotions(double next_integration_time)
 {
     bool have_displacement = id_displacement > 0;
-    // bool have_velocity = id_velocity > 0;
-    // bool have_acceleration = id_acceleration > 0;
+    bool have_acceleration = id_acceleration > 0;
 
-    if(have_displacement )//&& !have_acceleration)
-        return drm_differentiate_displacements(next_integration_time);
+    if(!have_displacement)
+    {
+        opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have a displacements dataset. " << endln;
+    }
+
+    if(!have_acceleration)
+    {
+        opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have an acceleration dataset. " << endln;
+    }
+
+    // bool have_velocity = id_velocity > 0;
+
+    // if(have_displacement )//&& !have_acceleration)
+    //     return drm_differentiate_displacements(next_integration_time);
 
     //JAA Disable these modes for now
 
-    // if(have_displacement && have_acceleration) // Note: disabled!
-    //     return drm_direct_read(next_integration_time);
+    if(have_displacement && have_acceleration) // Note: disabled!
+        return drm_direct_read(next_integration_time);
 
     // if(!have_displacement && !have_acceleration && have_velocity) 
     //     return drm_integrate_velocity(next_integration_time);
@@ -2086,145 +2160,148 @@ bool read_int_dataset_into_array(const hid_t & h5drm_dataset, std::string datase
 
 
 
-Plane::Plane(const hid_t & id_h5drm_file, int plane_number, double crd_scale) :
-    number(plane_number),
-    internal(false),
-    stations(0),
-    v0(3), v1(3), v2(3)
-{
-    char plane_group_name[H5DRM_MAX_STRINGSIZE];
-    sprintf(plane_group_name, "/DRM_Planes/plane_%02d", plane_number);
-    hid_t id_plane_grp = H5Gopen(id_h5drm_file, plane_group_name, H5P_DEFAULT);
+// Plane::Plane(const hid_t & id_h5drm_file, int plane_number, double crd_scale) :
+//     number(plane_number),
+//     internal(false),
+//     stations(0),
+//     v0(3), v1(3), v2(3)
+// {
+//     char plane_group_name[H5DRM_MAX_STRINGSIZE];
+//     sprintf(plane_group_name, "/DRM_Planes/plane_%02d", plane_number);
+//     hid_t id_plane_grp = H5Gopen(id_h5drm_file, plane_group_name, H5P_DEFAULT);
 
-    if ( !read_double_dataset_into_vector(id_plane_grp, "v0", v0));
-    if ( !read_double_dataset_into_vector(id_plane_grp, "v1", v1));
-    if ( !read_double_dataset_into_vector(id_plane_grp, "v2", v2));
-    if ( !read_double_dataset_into_vector(id_plane_grp, "xi1", xi1));
-    if ( !read_double_dataset_into_vector(id_plane_grp, "xi2", xi2));
-    if ( !read_int_dataset_into_array(id_plane_grp, "stations", stations));
+//     if ( !read_double_dataset_into_vector(id_plane_grp, "v0", v0));
+//     if ( !read_double_dataset_into_vector(id_plane_grp, "v1", v1));
+//     if ( !read_double_dataset_into_vector(id_plane_grp, "v2", v2));
+//     if ( !read_double_dataset_into_vector(id_plane_grp, "xi1", xi1));
+//     if ( !read_double_dataset_into_vector(id_plane_grp, "xi2", xi2));
+//     if ( !read_int_dataset_into_array(id_plane_grp, "stations", stations));
 
-    v0 *= crd_scale;  //Convert scales km -> m
-    v1 *= crd_scale;  //Convert scales km -> m
-    v2 *= crd_scale;  //Convert scales km -> m
+//     v0 *= crd_scale;  //Convert scales km -> m
+//     v1 *= crd_scale;  //Convert scales km -> m
+//     v2 *= crd_scale;  //Convert scales km -> m
 
-    convert_h5drmcrd_to_ops_crd(v0);
-    convert_h5drmcrd_to_ops_crd(v1);
-    convert_h5drmcrd_to_ops_crd(v2);
-}
-
-
-Plane::~Plane()
-{
-    if (stations != 0)
-    {
-        delete stations;
-    }
-}
+//     // if(do_coordinate_transformation)
+//     // {
+//         convert_h5drmcrd_to_ops_crd(v0);
+//         convert_h5drmcrd_to_ops_crd(v1);
+//         convert_h5drmcrd_to_ops_crd(v2);
+//     // }
+// }
 
 
-bool Plane::locate_point(const Vector & x, double & xi1_, double & xi2_, double & distance) const
-{
-    static Matrix A(2, 2);
-    static Vector b(2);
-    static Vector xi(2);
-
-    A(0, 0) = v1 ^ v1;
-    A(0, 1) = v1 ^ v2;
-    A(1, 0) = v2 ^ v1;
-    A(1, 1) = v1 ^ v1;
-
-    Vector xperp = x - v0;
-    b(0) = xperp ^ v1;
-    b(1) = xperp ^ v2;
-
-    A.Solve(b, xi);
-
-    xi1_ = xi(0);
-    xi2_ = xi(1);
-
-    int i, j;
-    get_ij_coordinates_to_point(xi1_, xi2_, i, j);
-
-    xi1_ = xi1(i);
-    xi2_ = xi2(j);
-    distance = (x - (v0 + xi1(i) * v1 + xi2(j) * v2 )).Norm();
-
-    return true;
-}
+// Plane::~Plane()
+// {
+//     if (stations != 0)
+//     {
+//         delete stations;
+//     }
+// }
 
 
-bool Plane::get_ij_coordinates_to_point(double x1, double x2, int& i, int& j) const
-{
-    int N1 = xi1.Size();
-    int N2 = xi2.Size();
-    double xi1start = xi1(0);
-    double xi1end = xi1(N1 - 1);
-    double xi2start = xi2(0);
-    double xi2end = xi2(N2 - 1);
-    i = (int) round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
-    j = (int) round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
+// bool Plane::locate_point(const Vector & x, double & xi1_, double & xi2_, double & distance) const
+// {
+//     static Matrix A(2, 2);
+//     static Vector b(2);
+//     static Vector xi(2);
 
-    i = i < 0     ? 0    : i;
-    i = i > N1 - 1  ? N1 - 1 : i;
-    j = j < 0     ? 0    : j;
-    j = j > N2 - 1  ? N2 - 1 : j;
+//     A(0, 0) = v1 ^ v1;
+//     A(0, 1) = v1 ^ v2;
+//     A(1, 0) = v2 ^ v1;
+//     A(1, 1) = v1 ^ v1;
 
-    return true;
-}
+//     Vector xperp = x - v0;
+//     b(0) = xperp ^ v1;
+//     b(1) = xperp ^ v2;
 
+//     A.Solve(b, xi);
 
-int Plane::getNumber() const
-{
-    return number;
-}
+//     xi1_ = xi(0);
+//     xi2_ = xi(1);
 
+//     int i, j;
+//     get_ij_coordinates_to_point(xi1_, xi2_, i, j);
 
-int Plane::getStationNumber(int i, int j) const
-{
-    int N1 = xi1.Size();
-    int N2 = xi2.Size();
+//     xi1_ = xi1(i);
+//     xi2_ = xi2(j);
+//     distance = (x - (v0 + xi1(i) * v1 + xi2(j) * v2 )).Norm();
 
-    if ( i < 0 || i >= N1 || j < 0 || j >= N2)
-    {
-        return -1;
-    }
-
-    if ( stations == 0)
-    {
-        opserr << "Plane::getStationNumber - stations uninitialized at Plane # "  << number << "\n";
-        return -1;
-    }
-    else
-    {
-        return stations[N2 * i + j];
-    }
-}
-
-void Plane::print(FILE * fptr) const
-{
-    fprintf(fptr, "    Plane # %d v0 = (%5.3f, %5.3f, %5.3f) v1 = (%5.3f, %5.3f, %5.3f) v2 = (%5.3f, %5.3f, %5.3f)\n", number, v0(0), v0(1), v0(2), v1(0), v1(1), v1(2), v2(0), v2(1), v2(2));
-}
+//     return true;
+// }
 
 
+// bool Plane::get_ij_coordinates_to_point(double x1, double x2, int& i, int& j) const
+// {
+//     int N1 = xi1.Size();
+//     int N2 = xi2.Size();
+//     double xi1start = xi1(0);
+//     double xi1end = xi1(N1 - 1);
+//     double xi2start = xi2(0);
+//     double xi2end = xi2(N2 - 1);
+//     i = (int) round( (x1 - xi1start) / (xi1end - xi1start) * (N1 - 1) );
+//     j = (int) round( (x2 - xi2start) / (xi2end - xi2start) * (N2 - 1) );
 
-void convert_h5drmcrd_to_ops_crd(Vector & v )
-{
-    // static Vector v_tmp(3);
-    // v_tmp = v;
-    // v(0) = v_tmp(1);
-    // v(1) = v_tmp(0);
-    // v(2) = -v_tmp(2);
-}
+//     i = i < 0     ? 0    : i;
+//     i = i > N1 - 1  ? N1 - 1 : i;
+//     j = j < 0     ? 0    : j;
+//     j = j > N2 - 1  ? N2 - 1 : j;
 
-void convert_h5drmcrd_to_ops_crd(Matrix & xyz )
-{
-    // int nrows = xyz.noRows();
-    // Matrix tmp_xyz(xyz);
-    // for (int i = 0; i < nrows; ++i)
-    // {
-    //     xyz(i, 0) = tmp_xyz(i, 1);
-    //     xyz(i, 1) = tmp_xyz(i, 0);
-    //     xyz(i, 2) = -tmp_xyz(i, 2);
-    // }
-}
+//     return true;
+// }
+
+
+// int Plane::getNumber() const
+// {
+//     return number;
+// }
+
+
+// int Plane::getStationNumber(int i, int j) const
+// {
+//     int N1 = xi1.Size();
+//     int N2 = xi2.Size();
+
+//     if ( i < 0 || i >= N1 || j < 0 || j >= N2)
+//     {
+//         return -1;
+//     }
+
+//     if ( stations == 0)
+//     {
+//         opserr << "Plane::getStationNumber - stations uninitialized at Plane # "  << number << "\n";
+//         return -1;
+//     }
+//     else
+//     {
+//         return stations[N2 * i + j];
+//     }
+// }
+
+// void Plane::print(FILE * fptr) const
+// {
+//     fprintf(fptr, "    Plane # %d v0 = (%5.3f, %5.3f, %5.3f) v1 = (%5.3f, %5.3f, %5.3f) v2 = (%5.3f, %5.3f, %5.3f)\n", number, v0(0), v0(1), v0(2), v1(0), v1(1), v1(2), v2(0), v2(1), v2(2));
+// }
+
+
+
+// void convert_h5drmcrd_to_ops_crd(Vector & v )
+// {
+//     static Vector v_tmp(3);
+//     v_tmp = v;
+//     v(0) = v_tmp(1);
+//     v(1) = v_tmp(0);
+//     v(2) = -v_tmp(2);
+// }
+
+// void convert_h5drmcrd_to_ops_crd(Matrix & xyz )
+// {
+//     int nrows = xyz.noRows();
+//     Matrix tmp_xyz(xyz);
+//     for (int i = 0; i < nrows; ++i)
+//     {
+//         xyz(i, 0) = tmp_xyz(i, 1);
+//         xyz(i, 1) = tmp_xyz(i, 0);
+//         xyz(i, 2) = -tmp_xyz(i, 2);
+//     }
+// }
 

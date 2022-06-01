@@ -2865,6 +2865,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("runFORMAnalysis", &Py_ops_runFORMAnalysis);
     addCommand("getLSFTags", &Py_ops_getLSFTags);
     addCommand("runImportanceSamplingAnalysis", &Py_ops_runImportanceSamplingAnalysis);
+    addCommand("IGA", &Py_ops_IGA);
+    addCommand("NDTest", &Py_ops_NDTest);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

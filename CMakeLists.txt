@@ -362,6 +362,7 @@ endif()
 add_library(G3) 
 
 target_link_libraries(G3 
+    coordTransformation
     OPS_Matrix
     OPS_Analysis 
     OPS_ModelBuilder
@@ -375,7 +376,6 @@ target_link_libraries(G3
     OPS_Tagged 
     OPS_Utilities
     graph
-    coordTransformation
     OPS_Actor 
     OPS_ObjectBroker
     OPS_Numerics
@@ -390,11 +390,11 @@ add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
+    coordTransformation
     OPS_Actor 
     OPS_Analysis 
     OPS_Api
     OPS_ConvergenceTest
-    coordTransformation
     OPS_Damage
     OPS_Database
     OPS_Domain
@@ -462,6 +462,7 @@ endif()
 
 target_link_libraries(OpenSees
   OPS_InterpTcl 
+  coordTransformation
   OpenSeesLIB
   OPS_Reliability
   OPS_ReliabilityTcl  
