@@ -67,6 +67,8 @@ void *OPS_ShellMITC4(const ID &info);
 
 void *OPS_ShellNLDKGQ(const ID &info);
 
+void *OPS_ShellDKGQ(const ID &info);
+
 void *OPS_CorotTrussElement(const ID &info);
 
 // msh objects
@@ -359,7 +361,15 @@ Mesh::setEleArgs() {
             opserr << "WARNING: failed to read eleArgs\n";
             return -1;
         }
-        numelenodes = 4;	
+        numelenodes = 4;
+
+    } else if (strcmp(type, "ShellDKGQ") == 0) {
+        eleType = ELE_TAG_ShellDKGQ;
+        if (OPS_ShellDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;		
 
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
@@ -464,7 +474,10 @@ Mesh::newElements(const ID &elends) {
             break;
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;
-            break;	    
+            break;
+        case ELE_TAG_ShellDKGQ:
+	  OPS_Func = OPS_ShellDKGQ;
+            break;	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
