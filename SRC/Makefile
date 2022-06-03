@@ -845,6 +845,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \
+	$(FE)/material/uniaxial/backbone/MaterialBackbone.o \
 	$(FE)/material/uniaxial/backbone/MultilinearBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseSoftClayBackbone.o \
 	$(FE)/material/uniaxial/backbone/ReeseStiffClayBelowWS.o \
