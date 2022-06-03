@@ -39,6 +39,39 @@
 
 #include <math.h>
 
+#include <OPS_Globals.h>
+#include <elementAPI.h>
+
+void* OPS_MaterialBackbone()
+{
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    if (argc < 4) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: hystereticBackbone tag? matTag?\n";
+	return 0;
+    }
+      
+    // tag, bbTag;
+    int idata[2];
+    int numdata = 2;
+    if (OPS_GetIntInput(&numdata, idata) < 0) {
+	opserr << "WARNING invalid tag\n";
+	opserr << "Backbone material: " << idata[0] << "\n";
+	return 0;
+    }
+		
+    UniaxialMaterial *material = OPS_getUniaxialMaterial(idata[1]);
+		
+    if (material == 0) {
+	opserr << "WARNING material does not exist\n";
+	opserr << "material: " << idata[1]; 
+	opserr << "\nhystereticBackbone Material: " << idata[0] << "\n";
+	return 0;
+    }
+      
+    return new MaterialBackbone(idata[0], *material);
+}
+
 MaterialBackbone::MaterialBackbone (int tag, UniaxialMaterial &material):
   HystereticBackbone(tag,BACKBONE_TAG_Material), theMaterial(0)
 {
