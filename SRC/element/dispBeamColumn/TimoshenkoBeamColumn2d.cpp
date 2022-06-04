@@ -128,7 +128,7 @@ TimoshenkoBeamColumn2d::TimoshenkoBeamColumn2d(int tag, int nd1, int nd2,
 :Element (tag, ELE_TAG_TimoshenkoBeamColumn2d), 
  numSections(numSec), theSections(0), crdTransf(0), beamInt(0),
   connectedExternalNodes(2),
-  Q(6), q(3), rho(r), parameterID(0)
+ Q(6), q(3), rho(r), parameterID(0)
 {
   // Allocate arrays of pointers to SectionForceDeformations
   theSections = new SectionForceDeformation *[numSections];
@@ -184,7 +184,7 @@ TimoshenkoBeamColumn2d::TimoshenkoBeamColumn2d()
 :Element (0, ELE_TAG_TimoshenkoBeamColumn2d),
  numSections(0), theSections(0), crdTransf(0), beamInt(0),
  connectedExternalNodes(2),
-  Q(6), q(3), rho(0.0), parameterID(0)
+ Q(6), q(3), rho(0.0), parameterID(0)
 {
     q0[0] = 0.0;
     q0[1] = 0.0;
@@ -281,6 +281,23 @@ TimoshenkoBeamColumn2d::setDomain(Domain *theDomain)
 		// Add some error check
 	}
 
+	for (int i = 0; i < numSections; i++) {
+	  const Matrix &ks0 = theSections[i]->getInitialTangent();
+	  int order = theSections[i]->getOrder();
+	  const ID &code = theSections[i]->getType();
+	  double EI = 0.0;
+	  double GA = 0.0;
+	  for (int k = 0; k < order; k++) {
+	    if (code(k) == SECTION_RESPONSE_MZ)
+	      EI += ks0(k,k);
+	    if (code(k) == SECTION_RESPONSE_VY)
+	      GA += ks0(k,k);
+	  }
+	  phis[i] = 0.0;
+	  if (GA != 0.0)
+	    phis[i] = 12*EI/(GA*L*L);
+	}
+	
     this->DomainComponent::setDomain(theDomain);
 
 	this->update();
@@ -361,21 +378,8 @@ TimoshenkoBeamColumn2d::update(void)
     
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-
-    // compute coefficient phi
-    const Matrix &ks = theSections[i]->getSectionTangent();
-    double EI = 0.0;
-    double GA = 0.0;
-    for (int k = 0; k < order; k++) {
-      if (code(k) == SECTION_RESPONSE_MZ)
-	EI += ks(k,k);
-      if (code(k) == SECTION_RESPONSE_VY)
-	GA += ks(k,k);
-    }
-    double phi = 0.0;
-    if (GA != 0.0)
-      phi = 12*EI/(GA*L*L); 
-
+    double phi = phis[i];
+    
     for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
@@ -435,21 +439,11 @@ TimoshenkoBeamColumn2d::getTangentStiff()
 
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-
+    double phi = phis[i];
+    
     // Get the section tangent stiffness and stress resultant
     const Vector &s = theSections[i]->getStressResultant();
-    const Matrix &ks = theSections[i]->getSectionTangent(); 
-    double EI = 0.0;
-    double GA = 0.0;
-    for (int k = 0; k < order; k++) {
-      if (code(k) == SECTION_RESPONSE_MZ)
-	EI += ks(k,k);
-      if (code(k) == SECTION_RESPONSE_VY)
-	GA += ks(k,k);
-    }
-    double phi = 0.0;
-    if (GA != 0.0)
-      phi = 12*EI/(GA*L*L); 
+    const Matrix &ks = theSections[i]->getSectionTangent();     
 
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -567,20 +561,10 @@ TimoshenkoBeamColumn2d::getInitialBasicStiff()
 
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
+    double phi = phis[i];
     
-    // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangent();
-    double EI = 0.0;
-    double GA = 0.0;
-    for (int k = 0; k < order; k++) {
-      if (code(k) == SECTION_RESPONSE_MZ)
-	EI += ks(k,k);
-      if (code(k) == SECTION_RESPONSE_VY)
-	GA += ks(k,k);
-    }
-    double phi = 0.0;
-    if (GA != 0.0)
-      phi = 12*EI/(GA*L*L); 
+    // Get the section tangent stiffness
+    const Matrix &ks = theSections[i]->getSectionTangent();
 
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -797,21 +781,9 @@ TimoshenkoBeamColumn2d::getResistingForce()
     int order = theSections[i]->getOrder();
     const ID &code = theSections[i]->getType();
   
-    const Matrix &ks = theSections[i]->getInitialTangent();
-    double EI = 0.0;
-    double GA = 0.0;
-    for (int k = 0; k < order; k++) {
-      if (code(k) == SECTION_RESPONSE_MZ)
-	EI += ks(k,k);
-      if (code(k) == SECTION_RESPONSE_VY)
-	GA += ks(k,k);
-    }
-    double phi = 0.0;
-    if (GA != 0.0)
-      phi = 12*EI/(GA*L*L); 
-
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
+    double phi = phis[i];
     
     // Get section stress resultant
     const Vector &s = theSections[i]->getStressResultant();
@@ -1665,7 +1637,7 @@ TimoshenkoBeamColumn2d::getResistingForceSensitivity(int gradNumber)
     // Some extra declarations
     double dLdh = crdTransf->getdLdh();
 
-    const Matrix &ks = theSections[i]->getSectionTangent();
+    const Matrix &ks = theSections[i]->getInitialTangent();
     double EI = 0.0;
     double GA = 0.0;
     for (int k = 0; k < order; k++) {
@@ -1677,7 +1649,7 @@ TimoshenkoBeamColumn2d::getResistingForceSensitivity(int gradNumber)
       }
     }
 
-    const Matrix &sens = theSections[i]->getSectionTangentSensitivity(gradNumber);
+    const Matrix &sens = theSections[i]->getInitialTangentSensitivity(gradNumber);
     double dk11dh = 0.0;
     double dk22dh = 0.0;
 
@@ -1690,10 +1662,11 @@ TimoshenkoBeamColumn2d::getResistingForceSensitivity(int gradNumber)
       }
     }    
 
-    double phi = 0.0;
+    //double phi = 0.0;
+    double phi = phis[i];
     double dphidh = 0.0;
     if (GA != 0.0) {
-      phi = 12*EI/(GA*L*L); 
+      //phi = 12*EI/(GA*L*L); 
       dphidh = 12*(dk11dh*GA*L-EI*(dk22dh*L+2*dLdh*GA))/(GA*GA)/(L*L*L);
     } 
 
@@ -1751,21 +1724,11 @@ TimoshenkoBeamColumn2d::getResistingForceSensitivity(int gradNumber)
       double xi6 = 6.0*xi[i];
       //double wti = wts(i);
       double wti = wt[i];
+      double phi = phis[i];
       
       const Vector &s = theSections[i]->getStressResultant();
       const Matrix &ks = theSections[i]->getSectionTangent();
-      double EI = 0.0;
-      double GA = 0.0;
-      for (int k = 0; k < order; k++) {
-	if (code(k) == SECTION_RESPONSE_MZ)
-	  EI += ks(k,k);
-	if (code(k) == SECTION_RESPONSE_VY)
-	  GA += ks(k,k);
-      }
-      double phi = 0.0;
-      if (GA != 0.0)
-	phi = 12*EI/(GA*L*L); 
-
+      
       Matrix ka(workArea, order, 3);
       ka.Zero();
       
@@ -1881,7 +1844,7 @@ TimoshenkoBeamColumn2d::commitSensitivity(int gradNumber, int numGrads)
     //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
     
-    const Matrix &ks = theSections[i]->getSectionTangent();
+    const Matrix &ks = theSections[i]->getInitialTangent();
     double EI = 0.0;
     double GA = 0.0;
     for (int k = 0; k < order; k++) {
@@ -1893,7 +1856,7 @@ TimoshenkoBeamColumn2d::commitSensitivity(int gradNumber, int numGrads)
       }
     }
 
-    const Matrix &sens = theSections[i]->getSectionTangentSensitivity(gradNumber);
+    const Matrix &sens = theSections[i]->getInitialTangentSensitivity(gradNumber);
     double dk11dh = 0.0;
     double dk22dh = 0.0;
     for (int k = 0; k < order; k++) {
@@ -1905,10 +1868,11 @@ TimoshenkoBeamColumn2d::commitSensitivity(int gradNumber, int numGrads)
       }
     }    
 
-    double phi = 0.0;
+    //double phi = 0.0;
+    double phi = phis[i];
     double dphidh = 0.0;
     if (GA != 0.0){
-      phi = 12*EI/(GA*L*L); 
+      //phi = 12*EI/(GA*L*L); 
       dphidh = 12*(dk11dh*GA*L-EI*(dk22dh*L+2*dLdh*GA))/(GA*GA)/(L*L*L);
     } 
     
