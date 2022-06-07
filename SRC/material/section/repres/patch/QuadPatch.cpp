@@ -60,15 +60,15 @@ void* OPS_QuadPatch()
     }
 	
 	
-	bool computePositive = false;
-	while (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* poa = OPS_GetString();
-      if (strcmp(poa,"-positiveArea") == 0) {
+    bool computePositive = false;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* poa = OPS_GetString();
+        if (strcmp(poa,"-positiveArea") == 0) {
 	      computePositive = true;
-      }
+        }
     }
 	
-	// Check if counter clockwise or not
+    // Check if counter clockwise or not
     if (computePositive==true) { 
 		double v1z, v1y, v2z, v2y, theta1, theta2, centroidz, centroidy;
 		double z0, y0, z1, y1, result;
