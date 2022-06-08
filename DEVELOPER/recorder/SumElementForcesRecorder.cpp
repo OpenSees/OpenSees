@@ -25,7 +25,7 @@
 // Written: fmk 
 // Created: 05/10
 //
-// Description: This file contains the class implementatation of SumElementForcesRecorder.
+// Description: This file contains the class implementation of SumElementForcesRecorder.
 //
 // What: "@(#) SumElementForcesRecorder.C, revA"
 

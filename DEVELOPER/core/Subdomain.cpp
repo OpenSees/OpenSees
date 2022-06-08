@@ -204,7 +204,7 @@ bool
 Subdomain::addExternalNode(Node *thePtr)
 {
 #ifdef _G3DEBUG
-  // check to see it has not alredy been added
+  // check to see it has not already been added
 	
   int nodTag = thePtr->getTag();
   TaggedObject *other = externalNodes->getComponentPtr(nodTag);
@@ -767,7 +767,7 @@ Subdomain::getLastExternalSysResponse(void)
     if (theFEele == 0) {
 	opserr << "FATAL ERROR: Subdomain::getLastExternalSysResponse() :";
 	opserr << " - no FE_Element *exists for a subdomain\n";
-	opserr << " This is the responsibilty of the FE_ELement constructor\n";
+	opserr << " This is the responsibility of the FE_ELement constructor\n";
 	exit(0);
     }
 

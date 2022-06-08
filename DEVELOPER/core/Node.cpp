@@ -792,7 +792,7 @@ Node::setTrialDisp(double value, int dof)
 {
     // check vector arg is of correct size
     if (dof < 0 || dof >=  numberDOF) {
-      opserr << "WARNING Node::setTrialDisp() - incompatable sizes\n";
+      opserr << "WARNING Node::setTrialDisp() - incompatible sizes\n";
       opserr << "node: " << this->getTag() << endln;
       return -2;
     }    
@@ -807,7 +807,7 @@ Node::setTrialDisp(double value, int dof)
 	}    
     }
 
-    // perform the assignment .. we dont't go through Vector interface
+    // perform the assignment .. we don't go through Vector interface
     // as we are sure of size and this way is quicker
     double tDisp = value;
     disp[dof+2*numberDOF] = tDisp - disp[dof+numberDOF];
@@ -822,7 +822,7 @@ Node::setTrialDisp(const Vector &newTrialDisp)
 {
     // check vector arg is of correct size
     if (newTrialDisp.Size() != numberDOF) {
-      opserr << "WARNING Node::setTrialDisp() - incompatable sizes\n";
+      opserr << "WARNING Node::setTrialDisp() - incompatible sizes\n";
       opserr << "node: " << this->getTag() << endln;
       return -2;
     }    
@@ -837,7 +837,7 @@ Node::setTrialDisp(const Vector &newTrialDisp)
 	}    
     }
 
-    // perform the assignment .. we dont't go through Vector interface
+    // perform the assignment .. we don't go through Vector interface
     // as we are sure of size and this way is quicker
     for (int i=0; i<numberDOF; i++) {
         double tDisp = newTrialDisp(i);
@@ -854,7 +854,7 @@ Node::setTrialVel(const Vector &newTrialVel)
 {
     // check vector arg is of correct size
     if (newTrialVel.Size() != numberDOF) {
-	    opserr << "WARNING Node::setTrialVel() - incompatable sizes\n";
+	    opserr << "WARNING Node::setTrialVel() - incompatible sizes\n";
 	    return -2;
     }    
 
@@ -880,7 +880,7 @@ Node::setTrialAccel(const Vector &newTrialAccel)
 {
     // check vector arg is of correct size
     if (newTrialAccel.Size() != numberDOF) {
-	    opserr << "WARNING Node::setTrialAccel() - incompatable sizes\n";
+	    opserr << "WARNING Node::setTrialAccel() - incompatible sizes\n";
 	    return -2;
     }    
 
@@ -904,11 +904,11 @@ Node::incrTrialDisp(const Vector &incrDispl)
 {
     // check vector arg is of correct size
     if (incrDispl.Size() != numberDOF) {
-	opserr << "WARNING Node::incrTrialDisp() - incompatable sizes\n";
+	opserr << "WARNING Node::incrTrialDisp() - incompatible sizes\n";
 	return -2;
     }    
 
-    // create a copy if no trial exists andd add committed
+    // create a copy if no trial exists and add committed
     if (trialDisp == 0) {
 	if (this->createDisp() < 0) {
 	    opserr << "FATAL Node::incrTrialDisp() - ran out of memory\n";
@@ -940,7 +940,7 @@ Node::incrTrialVel(const Vector &incrVel)
 {
     // check vector arg is of correct size
     if (incrVel.Size() != numberDOF) {
-	opserr << "WARNING Node::incrTrialVel() - incompatable sizes\n";
+	opserr << "WARNING Node::incrTrialVel() - incompatible sizes\n";
 	return -2;
     }    
 
@@ -969,11 +969,11 @@ Node::incrTrialAccel(const Vector &incrAccel)
 {
     // check vector arg is of correct size
     if (incrAccel.Size() != numberDOF) {
-	opserr << "WARNING Node::incrTrialAccel() - incompatable sizes\n";
+	opserr << "WARNING Node::incrTrialAccel() - incompatible sizes\n";
 	return -2;
     }    
 
-    // create a copy if no trial exists andd add committed    
+    // create a copy if no trial exists and add committed    
     if (trialAccel == 0) {
 	if (this->createAccel() < 0) {
 	    opserr << "FATAL Node::incrTrialAccel() - ran out of memory\n";
@@ -1317,7 +1317,7 @@ Node::setMass(const Matrix &newMass)
 {
     // check right size
     if (newMass.noRows() != numberDOF || newMass.noCols() != numberDOF) {
-	opserr << "Node::setMass - incompatable matrices\n";
+	opserr << "Node::setMass - incompatible matrices\n";
 	return -1;
     }	
 
@@ -1419,9 +1419,9 @@ Node::getRV(const Vector &V)
 	return *unbalLoadWithInertia;
     }
     
-    // check dimesions of R and V
+    // check dimensions of R and V
     if (R->noCols() != V.Size()) {
-	opserr << "WARNING Node::getRV() - R and V of incompatable dimesions\n";
+	opserr << "WARNING Node::getRV() - R and V of incompatible dimensions\n";
 	opserr << "R: " << *R << "V: " << V;
 	unbalLoadWithInertia->Zero();
 	return *unbalLoadWithInertia;
@@ -1499,7 +1499,7 @@ Node::sendSelf(int cTag, Channel &theChannel)
     data(0) = this->getTag(); 
     data(1) = numberDOF; 
     
-    // indicate whether vector quantaties have been formed
+    // indicate whether vector quantities have been formed
     if (disp == 0)       data(2) = 1; else data(2) = 0;
     if (vel == 0)        data(3) = 1; else data(3) = 0;
     if (accel == 0)      data(4) = 1; else data(4) = 0;
@@ -1590,7 +1590,7 @@ Node::sendSelf(int cTag, Channel &theChannel)
 	}
     }
 
-    // if get here succesfull
+    // if get here successful
     return 0;
 }
 
@@ -1648,7 +1648,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
 
       // set the trial quantities equal to committed
       for (int i=0; i<numberDOF; i++)
-	disp[i] = disp[i+numberDOF];  // set trial equal commited
+	disp[i] = disp[i+numberDOF];  // set trial equal committed
 
     } else if (commitDisp != 0) {
       // if going back to initial we will just zero the vectors
@@ -1670,7 +1670,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
 
       // set the trial quantity
       for (int i=0; i<numberDOF; i++)
-	vel[i] = vel[i+numberDOF];  // set trial equal commited
+	vel[i] = vel[i+numberDOF];  // set trial equal committed
     }
 
     if (data(4) == 0) {
@@ -1686,7 +1686,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
       
       // set the trial values
       for (int i=0; i<numberDOF; i++)
-	accel[i] = accel[i+numberDOF];  // set trial equal commited
+	accel[i] = accel[i+numberDOF];  // set trial equal committed
     }
 
     if (data(5) == 0) {
@@ -1853,7 +1853,7 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
 
 // createDisp(), createVel() and createAccel():
 // private methods to create the arrays to hold the disp, vel and acceleration
-// values and the Vector objects for the committed and trial quantaties.
+// values and the Vector objects for the committed and trial quantities.
 
 int
 Node::createDisp(void)

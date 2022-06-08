@@ -76,7 +76,7 @@ proc doModel {K periodN U period tFinish inputT} {
 	puts "vel0 $vel0"
 	set factor [expr -1.0*$U*$omega*$omega]
 	set AccelSeries "Sine 0.0 $tFinish $period -factor $factor";
-	pattern UniformExcitation 1 1 -accel  $AccelSeries -vel0 $vel0  ;		# create Unifform excitation
+	pattern UniformExcitation 1 1 -accel  $AccelSeries -vel0 $vel0  ;	# create Uniform excitation
 	fix 1 1
 	recorder Node    -file DUniform.out -time -node 2 -dof 1 disp;		# displacements of free nodes
 #	recorder plot DUniform.out  "DISP"  10 10 625 450 -dT [expr 10*0.01] -columns 1 2 -columns 1 3

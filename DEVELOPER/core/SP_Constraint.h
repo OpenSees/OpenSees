@@ -34,7 +34,7 @@
 // SP_Constraint is a class which stores the information for a single
 // point constraint. Each single point constraint specifies a particular
 // degree-of-freedom response (displacement, rotation) at a node.
-// The constraint may be time-varying .. time varying constarints however 
+// The constraint may be time-varying .. time varying constraints however
 // must be implemented using subclasses.
 //
 // What: "@(#) SP_Constraint, revA"
@@ -68,9 +68,9 @@ class SP_Constraint : public DomainComponent
 
   protected:
     int nodeTag;     // to identify the node in the model
-    int dofNumber;   // identifies which of the nodes dof is constrrained 
+    int dofNumber;   // identifies which of the nodes dof is constrrained
     double valueR;   // the reference value
-    double valueC;   // if constant = the reference value, if not contant =
+    double valueC;   // if constant = the reference value, if not constant =
 	             // the reference value * load factor
     bool isConstant; // flag indicating if constant
     int  loadPatternTag;    

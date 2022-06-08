@@ -169,7 +169,7 @@ class Node : public DomainComponent
 
   private:
     // priavte methods used to create the Vector objects 
-    // for the committed and trial response quantaties.
+    // for the committed and trial response quantities.
     int createDisp(void);
     int createVel(void);
     int createAccel(void); 
@@ -178,7 +178,7 @@ class Node : public DomainComponent
     int numberDOF;                    // number of dof at Node
     DOF_Group *theDOF_GroupPtr;       // pointer to associated DOF_Group
     Vector *Crd;                      // original nodal coords
-    Vector *commitDisp, *commitVel, *commitAccel; // commited quantities
+    Vector *commitDisp, *commitVel, *commitAccel; // committed quantities
     Vector *trialDisp, *trialVel, *trialAccel;     // trial quantities
     Vector *unbalLoad;                // unbalanced load
     Vector *incrDisp;
