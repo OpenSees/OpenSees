@@ -100,10 +100,10 @@ uniaxialMaterial Elastic 6 1.0e-5;
 uniaxialMaterial Elastic 7 1.0e-5;
 
 #element zeroLength $eleTag $iNode $jNode -mat $matTag1 $matTag2 ... -dir $dir1 $dir2 ... <-orient $x1 $x2 $x3 $yp1 $yp2 $yp3> <-doRayleigh $rFlag>
-element zeroLength 141 11 21 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergance of Newton-Raphson method 
-element zeroLength 142 12 22 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergance of Newton-Raphson method 
-element zeroLength 144 14 24 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergance of Newton-Raphson method 
-element zeroLength 145 15 25 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergance of Newton-Raphson method 
+element zeroLength 141 11 21 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergence of Newton-Raphson method 
+element zeroLength 142 12 22 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergence of Newton-Raphson method 
+element zeroLength 144 14 24 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergence of Newton-Raphson method 
+element zeroLength 145 15 25 -mat 6 7 6 -dir 1 2 3; # springs with very low stiffness for convergence of Newton-Raphson method 
 
 puts "model is built";
 
