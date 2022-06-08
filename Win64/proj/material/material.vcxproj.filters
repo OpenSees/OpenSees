@@ -1364,7 +1364,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\section\CoupledSection3D.cpp">
+    <ClCompile Include="..\..\..\SRC\material\section\ASDCoupledHinge3D.cpp">
       <Filter>section</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2552,7 +2552,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurfacePlaneStrain.h">
       <Filter>nD\UWmaterials</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\section\CoupledSection3D.h">
+    <ClInclude Include="..\..\..\SRC\material\section\ASDCoupledHinge3D.h">
       <Filter>section</Filter>
     </ClInclude>
   </ItemGroup>

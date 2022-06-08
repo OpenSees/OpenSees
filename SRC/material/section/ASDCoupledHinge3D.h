@@ -20,24 +20,24 @@
                                                                         
 // $Revision: 1.17 $
 // $Date: 2009-10-01 23:04:32 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/CoupledSection3D.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/ASDCoupledHinge3D.h,v $
                                                                         
                                                                         
-// File: ~/section/CoupledSection3D.h
+// File: ~/section/ASDCoupledHinge3D.h
 //
-// Written: MHS
-// Created: Jun 2000
+// Written: Diego Talledo
+// Created: Jun 2021
 // Revision: A
 //
 // Description: This file contains the class definition for 
-// CoupledSection3D.  CoupledSection3D decorates an MP
-// section (couple bending and axial) with an uncoupled shear
+// ASDCoupledHinge3D.  ASDCoupledHinge3D decorates a PMM
+// section (couple bending and axial load) with an uncoupled shear
 // relation.
 //
-// What: "@(#) CoupledSection3D.h, revA"
+// What: "@(#) ASDCoupledHinge3D.h, revA"
 
-#ifndef CoupledSection3D_h
-#define CoupledSection3D_h
+#ifndef ASDCoupledHinge3D_h
+#define ASDCoupledHinge3D_h
 
 #include <SectionForceDeformation.h>
 #include <UniaxialMaterial.h>
@@ -84,17 +84,17 @@ private:
 
 };
 
-class CoupledSection3D : public SectionForceDeformation
+class ASDCoupledHinge3D : public SectionForceDeformation
 {
 public:
-    CoupledSection3D(); 
+    ASDCoupledHinge3D(); 
 
-        CoupledSection3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
+        ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
             DomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ,
             std::string theRawThetaPCExpressionY, std::string theRawThetaPCExpressionZ, double a_s_i);
-    ~CoupledSection3D();
+    ~ASDCoupledHinge3D();
 
-    const char *getClassType(void) const {return "CoupledSection3D";};
+    const char *getClassType(void) const {return "ASDCoupledHinge3D";};
 
     int   setTrialSectionDeformation(const Vector &deforms); 
     const Vector &getSectionDeformation(void);
@@ -117,29 +117,18 @@ public:
     int recvSelf(int cTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);
 
-    Response *setResponse(const char **argv, int argc, OPS_Stream &s);
-	//by SAJalali
-	int getResponse(int responseID, Information &info);
-
     void Print(OPS_Stream &s, int flag =0);
 
     int getVariable(const char *, Information &);
 
-    //// AddingSensitivity:BEGIN //////////////////////////////////////////
-    //int setParameter(const char **argv, int argc, Parameter &param);
-    //const Vector & getStressResultantSensitivity(int gradIndex, bool conditional);
-    //const Vector & getSectionDeformationSensitivity(int gradIndex);
-    //const Matrix & getSectionTangentSensitivity(int gradIndex);
-    //const Matrix & getInitialTangentSensitivity(int gradIndex);
-    //int   commitSensitivity(const Vector& sectionDeformationGradient, int gradIndex, int numGrads);
-
-    //const Vector &getdedh(void); // MHS hack
-    //// AddingSensitivity:END ///////////////////////////////////////////
+    virtual Response* setResponse(const char** argv, int argc, OPS_Stream& s);
+    virtual int getResponse(int responseID, Information& info);
 
 protected:
     
 private:
 
+    void updateLaws(void);
     void resetStrengthDomain(double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n);
     void setUncoupledStrengthDomainforAxial(const double N, double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n);
 
@@ -152,6 +141,8 @@ private:
 
     double tolN = 1e-5;
     double tolM = 1e-5;
+    double MmaxAbs = 0.0;
+    double errExplicit = 0.0;
 
     ID *matCodes;
     int numMats;
@@ -219,9 +210,6 @@ private:
     static double workArea[];
     static int codeArea[];
 
-//// AddingSensitivity:BEGIN //////////////////////////////////////////
-//    Vector dedh; // MHS hack
-//// AddingSensitivity:END ///////////////////////////////////////////
 
 };
 

@@ -43,6 +43,7 @@
 #include <OPS_Stream.h>
 
 #include <string.h>
+#include <sstream>
 #include <elementAPI.h>
 
 #include <Information.h>
@@ -571,10 +572,33 @@ int Pinching4Material::recvSelf(int commitTag, Channel &theChannel,
 
 void Pinching4Material::Print(OPS_Stream &s, int flag)
 {
-	s << "Pinching4Material, tag: " << this-> getTag() << endln;
-	s << "strain: " << Tstrain << endln;
-	s << "stress: " << Tstress << endln;
-	s << "state: " << Tstate << endln;
+	// Create a string stream in order to flush at the end everything together (useful for parallel running)
+	std::stringstream ss;
+	ss << "Pinching4Material, tag: " << this->getTag() << endln;
+	ss << "strain: " << Tstrain << endln;
+	ss << "stress: " << Tstress << endln;
+	ss << "state: " << Tstate << endln;
+	if (flag == 2) {
+		ss << "Envelope positive: (" << this->strain1p << ", " << this->stress1p << "), ";
+		ss << "(" << this->strain2p << ", " << this->stress2p << "), ";
+		ss << "(" << this->strain3p << ", " << this->stress3p << "), ";
+		ss << "(" << this->strain4p << ", " << this->stress4p << ")\n";
+		ss << "Envelope negative: (" << this->strain1n << ", " << this->stress1n << "), ";
+		ss << "(" << this->strain2n << ", " << this->stress2n << "), ";
+		ss << "(" << this->strain3n << ", " << this->stress3n << "), ";
+		ss << "(" << this->strain4n << ", " << this->stress4n << ")\n";
+		ss << "Hysteretic parameters: " << endln;
+		ss << "rDispP = " << rDispP << endln;
+		ss << "rForceP = " << rForceP << endln;
+		ss << "uForceP = " << uForceP << endln;
+		ss << "rDispN = " << rDispN << endln;
+		ss << "rForceN = " << rForceN << endln;
+		ss << "uForceN = " << uForceN << endln;
+	}
+
+	std::string str = ss.str();
+	s << str.c_str();
+
 }
 
 void Pinching4Material::SetEnvelope(void)

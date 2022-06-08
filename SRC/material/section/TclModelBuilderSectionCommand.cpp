@@ -57,7 +57,7 @@
 #include <FiberSection3d.h>
 //#include <FiberSectionGJ.h>
 #include <FiberSectionRepr.h>
-#include <CoupledSection3D.h>
+#include <ASDCoupledHinge3D.h>
 
 #include <LayeredShellFiberSection.h> // Yuli Huang & Xinzheng Lu 
 
@@ -114,7 +114,7 @@ extern void *OPS_TubeSection(void);
 extern void *OPS_ParallelSection(void);
 extern void *OPS_Bidirectional(void);
 extern void *OPS_Elliptical2(void);
-extern void *OPS_CoupledSection3D(void);
+extern void *OPS_ASDCoupledHinge3D(void);
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -414,8 +414,8 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;  
     }
 
-	else if (strcmp(argv[1],"CoupledSection3D") == 0 ) {
-		void* theMat = OPS_CoupledSection3D();
+	else if (strcmp(argv[1],"ASDCoupledHinge3D") == 0 ) {
+		void* theMat = OPS_ASDCoupledHinge3D();
 		if (theMat != 0)
 			theSection = (SectionForceDeformation*)theMat;
 		else
