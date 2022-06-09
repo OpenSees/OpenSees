@@ -29,6 +29,7 @@ OBJS       = SectionForceDeformation.o \
 	Isolator2spring.o \
 	BiaxialHysteretic.o \
 	McftSection2dfiber.o \
+	ASDCoupledHinge3D.o \
 	LayeredShellFiberSection.o \
 	LayeredShellFiberSectionThermal.o \
 	FiberSection3dThermal.o \
