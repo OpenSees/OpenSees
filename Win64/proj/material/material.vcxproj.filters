@@ -1361,11 +1361,11 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurfacePlaneStrain.cpp">
       <Filter>nD\UWmaterials</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\ASDCoupledHinge3D.cpp">
       <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp">
+      <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
