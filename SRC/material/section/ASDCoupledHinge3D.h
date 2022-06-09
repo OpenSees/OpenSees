@@ -51,12 +51,12 @@
 #define STRENGTH_DOMAIN_SIMPLIFIED 1
 #define STRENGTH_DOMAIN_BY_POINTS 2
 
+class ASDCoupledHinge3D;
 class ASDCoupledHinge3DDomainData {
-
+    friend class ASDCoupledHinge3D;
 public:
-    ASDCoupledHinge3DDomainData();
+    ASDCoupledHinge3DDomainData() = default;
     ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData);
-    ~ASDCoupledHinge3DDomainData();
 
     double getValue(int i, int j, int k);
 
@@ -64,18 +64,16 @@ public:
 
     void print(void);
 
-    ASDCoupledHinge3DDomainData* getCopy(void);
-
     int getMyMzForNAndDirection(double N, double theta, double& My, double& Mz);
 
     void getRangeN(double& Nmin, double& Nmax);
 
 private:
-    int size;
-    int numberAxial;
-    int numberTheta;
-    int numberData;
-    Vector* theVector;
+    int size = 0;
+    int numberAxial = 0;
+    int numberTheta = 0;
+    int numberData = 0;
+    Vector theVector;
 
 };
 
@@ -84,9 +82,21 @@ class ASDCoupledHinge3D : public SectionForceDeformation
 public:
     ASDCoupledHinge3D(); 
 
-        ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
-            ASDCoupledHinge3DDomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ,
-            std::string theRawThetaPCExpressionY, std::string theRawThetaPCExpressionZ, double a_s_i);
+    ASDCoupledHinge3D(int tag, 
+        UniaxialMaterial* theTorsionMaterial, 
+        UniaxialMaterial* theAxialMaterial,
+        UniaxialMaterial* theShearYMaterial,
+        UniaxialMaterial* theShearZMaterial, 
+        UniaxialMaterial* theMomentYMaterial, 
+        UniaxialMaterial* theMomentZMaterial,
+        const ASDCoupledHinge3DDomainData &theStrengthDomain,
+        const std::string &theRawInitialStiffnessExpressionY, 
+        const std::string &theRawInitialStiffnessExpressionZ, 
+        const std::string &theRawThetaPExpressionY, 
+        const std::string &theRawThetaPExpressionZ,
+        const std::string &theRawThetaPCExpressionY, 
+        const std::string &theRawThetaPCExpressionZ, 
+        double a_s_i);
     ~ASDCoupledHinge3D();
 
     const char *getClassType(void) const {return "ASDCoupledHinge3D";};
@@ -119,14 +129,14 @@ public:
     virtual Response* setResponse(const char** argv, int argc, OPS_Stream& s);
     virtual int getResponse(int responseID, Information& info);
 
-protected:
-    
 private:
 
     void updateLaws(void);
     void resetStrengthDomain(double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n);
     void setUncoupledStrengthDomainforAxial(const double N, double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n);
+    void setupParameters();
 
+    // materials
     UniaxialMaterial* axialMaterial;  // Material pointer to uniaxial spring (elastic for axial load)
     UniaxialMaterial* MyMaterial;   // Material pointer to uniaxial spring (for now Pinching4 for My)
     UniaxialMaterial* MzMaterial;   // Material pointer to uniaxial spring (for now Pinching4 for Mz)
@@ -134,22 +144,15 @@ private:
     UniaxialMaterial* VyMaterial; // Material pointer to uniaxial spring (elastic for shear Vy load)
     UniaxialMaterial* VzMaterial; // Material pointer to uniaxial spring (elastic for shear Vz load)
 
+    // settings
     double tolN = 1e-5;
     double tolM = 1e-5;
     double MmaxAbs = 0.0;
     double errExplicit = 0.0;
 
-    ID *matCodes;
-    int numMats;
-    
-    Vector *e;    // Storage for section deformations
-    Vector *s;    // Storage for stress resultants
-    Matrix *ks;   // Storage for section stiffness
-    Matrix *fs;   // Storage for section flexibility
-    ID     *theCode;     // Storage for section type information
+    ASDCoupledHinge3DDomainData strengthDomain; // strength domain is point My. Mmax = My * a_s
 
-    ASDCoupledHinge3DDomainData* ultimateDomain;
-
+    // strings
     std::string rawInitialStiffnessExpressionY;
     std::string rawInitialStiffnessExpressionZ;
     std::string rawThetaPExpressionY;
@@ -200,11 +203,7 @@ private:
 
     // working memory
    
-    int otherDbTag;
-
-    static double workArea[];
-    static int codeArea[];
-
+    int otherDbTag = 0;
 
 };
 

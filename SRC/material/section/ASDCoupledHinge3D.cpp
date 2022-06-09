@@ -42,8 +42,13 @@
 #include <elementAPI.h>
 #include <Pinching4Material.h>
 #include <ElasticMaterial.h>
+#include <Message.h>
 #include <cmath>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
+#include <vector>
+#include <array>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -51,35 +56,21 @@
 
 //#define _DBG_COUPLEDSEC3D
 
-ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData() :
-    numberAxial(0), numberTheta(0), numberData(0), size(0)
-{
-    theVector = new Vector(size);
-}
-
 ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
-    numberAxial(nN), numberTheta(nTheta), numberData(nData)
+    size(nN * nTheta * nData), numberAxial(nN), numberTheta(nTheta), numberData(nData), theVector(size)
 {
-    size = numberAxial * numberTheta * numberData;
-    theVector = new Vector(size);
-    theVector->Zero();
-}
-
-ASDCoupledHinge3DDomainData::~ASDCoupledHinge3DDomainData()
-{
-    delete theVector;
 }
 
 double ASDCoupledHinge3DDomainData::getValue(int i, int j, int k)
 {
     int idx = i * (numberTheta * numberData) + k * numberTheta + j;
-    return (*theVector)(idx);
+    return theVector(idx);
 }
 
 void ASDCoupledHinge3DDomainData::setValue(int i, int j, int k, double val)
 {
     int idx = i * (numberTheta * numberData) + k * numberTheta + j;
-    (*theVector)(idx) = val;
+    theVector(idx) = val;
 }
 
 void ASDCoupledHinge3DDomainData::getRangeN(double& Nmin, double& Nmax)
@@ -106,32 +97,6 @@ void ASDCoupledHinge3DDomainData::print(void)
         }
         opserr << endln;
     }
-}
-
-ASDCoupledHinge3DDomainData* ASDCoupledHinge3DDomainData::getCopy(void)
-{
-    ASDCoupledHinge3DDomainData* theCopy = new ASDCoupledHinge3DDomainData(numberAxial, numberTheta, numberData);
-    // Deep copy of the data
-    for (int i = 0; i < numberAxial; i++) 
-    {
-        for (int j = 0; j < numberTheta; j++) 
-        {
-            for (int k = 0; k < numberData; k++) 
-            {
-//#ifdef _DBG_COUPLEDSEC3D
-//                opserr << "copying value (i=" << i << ", j=" << j << ", k=" << k << ") val = " << this->getValue(i, j, k) << " into new domain\n";
-//#endif
-                theCopy->setValue(i, j, k, this->getValue(i, j, k));
-            }
-        }
-    }
-//#ifdef _DBG_COUPLEDSEC3D
-//    opserr << "Original domain\n";
-//    this->print();
-//    opserr << "Copied domain\n";
-//    theCopy->print();
-//#endif
-    return theCopy;
 }
 
 int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta, double& My, double& Mz) {
@@ -319,31 +284,132 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     return 0;
 }
 
-int replacePlaceholderWithValue(std::string& theString, const char* placeholder, double value) 
-{
-    static char buffer[100];
-    //static const char* g1 = "%.6g";
-    static const char* g1 = "%.6e";
-    //static const char* g2 = "%.6g.0";
 
-    std::size_t size = strlen(placeholder);
-    std::size_t index = 0;
-    while (true) {
-        /* Locate the substring to replace. */
-        index = theString.find(placeholder, index);
-        if (index == std::string::npos) break;
+// utilities
+namespace {
 
-        /* Make the replacement. */
-        //const char* gg = (value - int(value) == 0) ? g2 : g1;
-        const char* gg = g1;
-        sprintf(buffer, gg, value);
-        theString.replace(index, size, buffer);
+    int replacePlaceholderWithValue(std::string& theString, const char* placeholder, double value)
+    {
+        static char buffer[100];
+        //static const char* g1 = "%.6g";
+        static const char* g1 = "%.6e";
+        //static const char* g2 = "%.6g.0";
 
-        /* Advance index forward so the next iteration doesn't pick it up as well. */
-        index += size;
+        std::size_t size = strlen(placeholder);
+        std::size_t index = 0;
+        while (true) {
+            /* Locate the substring to replace. */
+            index = theString.find(placeholder, index);
+            if (index == std::string::npos) break;
+
+            /* Make the replacement. */
+            //const char* gg = (value - int(value) == 0) ? g2 : g1;
+            const char* gg = g1;
+            sprintf(buffer, gg, value);
+            theString.replace(index, size, buffer);
+
+            /* Advance index forward so the next iteration doesn't pick it up as well. */
+            index += size;
+        }
+        return 0;
     }
-    return 0;
+
+    // Serialization
+#define SerializerFormatDouble std::setprecision(std::numeric_limits<double>::digits10 + 1)
+    class Serializer
+    {
+    private:
+        std::stringstream ss;
+
+    public:
+        Serializer() = default;
+        Serializer(const char* c)
+            : ss(c)
+        {}
+        inline std::string str() const {
+            return ss.str();
+        }
+        explicit operator bool() const {
+            return !ss.fail();
+        }
+        bool operator!() const {
+            return ss.fail();
+        }
+
+    public:
+        inline Serializer& operator << (std::size_t x) {
+            ss << x << '\n';
+            return *this;
+        }
+        inline Serializer& operator << (int x) {
+            ss << x << '\n';
+            return *this;
+        }
+        inline Serializer& operator << (double x) {
+            ss << SerializerFormatDouble << x << '\n';
+            return *this;
+        }
+        inline Serializer& operator << (const std::string& x) {
+            ss << x.length() << ' ' << x << '\n';
+            return *this;
+        }
+        inline Serializer& operator << (const std::vector<int>& x) {
+            ss << x.size() << '\n';
+            for (auto i : x)
+                ss << i << '\n';
+            return *this;
+        }
+        inline Serializer& operator << (const Vector& x) {
+            ss << x.Size() << '\n';
+            for (int i = 0; i < x.Size(); ++i)
+                ss << x(i) << '\n';
+            return *this;
+        }
+
+    public:
+        inline Serializer& operator >> (std::size_t& x) {
+            ss >> x;
+            return *this;
+        }
+        inline Serializer& operator >> (int& x) {
+            ss >> x;
+            return *this;
+        }
+        inline Serializer& operator >> (double& x) {
+            ss >> x;
+            return *this;
+        }
+        inline Serializer& operator >> (std::string& x) {
+            std::size_t n;
+            ss >> n; // needed to make it work even when string is not the first entry
+            char dummy;
+            ss.read(&dummy, 1); // 1 white space
+            x.resize(n);
+            ss.read(&x[0], n);
+            return *this;
+        }
+        inline Serializer& operator >> (std::vector<int>& x) {
+            std::size_t n;
+            if (!(ss >> n))
+                return *this;
+            x.resize(n);
+            for (std::size_t i = 0; i < n; ++i)
+                ss >> x[i];
+            return *this;
+        }
+        inline Serializer& operator >> (Vector& x) {
+            int n;
+            if (!(ss >> n))
+                return *this;
+            x.resize(n);
+            for (int i = 0; i < n; ++i)
+                ss >> x(i);
+            return *this;
+        }
+    };
+
 }
+
 
 void* OPS_ASDCoupledHinge3D()
 {
@@ -417,7 +483,7 @@ void* OPS_ASDCoupledHinge3D()
     Vector dataN(0);
     Vector dataMy(0);
     Vector dataMz(0);
-    ASDCoupledHinge3DDomainData* ultDomain = nullptr;
+    ASDCoupledHinge3DDomainData strengthDomain;
     // Domain Values for My and Mz positive and negative when N = 0
     double My_u_p = 0.0;
     double My_u_n = 0.0;
@@ -663,48 +729,30 @@ void* OPS_ASDCoupledHinge3D()
                 return 0;
             }
 
-            //for (int i = 0; i < nN; i++) {
-            //    int idx;
-            //    for (int j = 0; j < nTheta; j++) {
-            //        idx = i * nTheta + j;
-            //        opserr << "dataN(idx): idx = " << idx << " - dataN(idx) = " << dataN(idx) << "\n";
-            //        opserr << "dataMy(idx): idx = " << idx << " - dataMy(idx) = " << dataMy(idx) << "\n";
-            //        opserr << "dataMz(idx): idx = " << idx << " - dataMz(idx) = " << dataMz(idx) << "\n";
-            //        opserr << "\n";
-            //    }
-            //    opserr << "\n\n";
-            //}
-
             // Create the domain as a DomainData object
-            ultDomain = new ASDCoupledHinge3DDomainData(nN, nTheta, 3);
+            strengthDomain = ASDCoupledHinge3DDomainData(nN, nTheta, 3);
 
             // write all elements of the domain data
             int idx;
             for (int i = 0; i < nN; i++) {
                 for (int j = 0; j < nTheta; j++) {
                     idx = i * nTheta + j;
-                    ultDomain->setValue(i, j, 0, dataN(idx));
-                    ultDomain->setValue(i, j, 1, dataMy(idx));
-                    ultDomain->setValue(i, j, 2, dataMz(idx));
+                    strengthDomain.setValue(i, j, 0, dataN(idx));
+                    strengthDomain.setValue(i, j, 1, dataMy(idx));
+                    strengthDomain.setValue(i, j, 2, dataMz(idx));
                 }
             }
-            //opserr << "ultimateDomain created: " << endln;
-            //ultDomain->print();
+#ifdef _DBG_COUPLEDSEC3D
+            opserr << "strengthDomain created: " << endln;
+            strengthDomain->print();
+#endif
 
             // get Domain Values for My and Mz positive and negative when N = 0
             double tmp;
-            //opserr << "\n\nFinding for theta = 0 (should be positive My)\n";
-            ultDomain->getMyMzForNAndDirection(0.0,0.0,My_u_p,tmp);
-            //opserr << "\n\n\nFinding for theta = pi (should be negative My)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, M_PI, My_u_n, tmp);
-            //opserr << "\n\n\nFinding for theta = pi/2 (should be positive Mz)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, M_PI/2, tmp, Mz_u_p);
-            //opserr << "\n\n\nFinding for theta = 3pi/2 (should be negative Mz)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, M_PI*3/2.0, tmp, Mz_u_n);
-            
-            /*My_u_n = 0.0;
-            Mz_u_p = 0.0;
-            Mz_u_n = 0.0;*/
+            strengthDomain.getMyMzForNAndDirection(0.0,0.0,My_u_p,tmp);
+            strengthDomain.getMyMzForNAndDirection(0.0, M_PI, My_u_n, tmp);
+            strengthDomain.getMyMzForNAndDirection(0.0, M_PI/2, tmp, Mz_u_p);
+            strengthDomain.getMyMzForNAndDirection(0.0, M_PI*3/2.0, tmp, Mz_u_n);
 
 #ifdef _DBG_COUPLEDSEC3D
             opserr << "For N = 0 \nMy+ = " << My_u_p << endln;
@@ -727,25 +775,25 @@ void* OPS_ASDCoupledHinge3D()
     // Create an elastic material for axial
     UniaxialMaterial* matAxial = new ElasticMaterial(0, Kax, 0.0, Kax);
     if (matAxial == 0) {
-        opserr << "Error TO DO" << endln;
+        opserr << "ASDCoupledHinge3D could not create the new axial material" << endln;
         return 0;
     }
     // Create an elastic material for shear_y
     UniaxialMaterial* matShearY = new ElasticMaterial(0, Kv_y, 0.0, Kv_y);
     if (matShearY == 0) {
-        opserr << "Error TO DO" << endln;
+        opserr << "ASDCoupledHinge3D could not create the new shearY material" << endln;
         return 0;
     }
     // Create an elastic material for shear_z
     UniaxialMaterial* matShearZ = new ElasticMaterial(0, Kv_z, 0.0, Kv_z);
     if (matShearZ == 0) {
-        opserr << "Error TO DO" << endln;
+        opserr << "ASDCoupledHinge3D could not create the new shearZ material" << endln;
         return 0;
     }
     // Create an elastic material for shear_z
     UniaxialMaterial* matTorsion = new ElasticMaterial(0, Ktor, 0.0, Ktor);
     if (matTorsion == 0) {
-        opserr << "Error TO DO" << endln;
+        opserr << "ASDCoupledHinge3D could not create the new torsion material" << endln;
         return 0;
     }
     opserr << "Materials for Torsion, Axial and Shear (Y and Z) defined\n";
@@ -755,20 +803,21 @@ void* OPS_ASDCoupledHinge3D()
     if (OPS_EvalDoubleTclStringExpression(theInitialStiffnessExpressionY.c_str(), EI) < 0) {
         opserr << "Error evaluating expression:\n" << theInitialStiffnessExpressionY.c_str() << "\n";
     }
-    opserr << theInitialStiffnessExpressionY.c_str() << " = " << EI << endln;
-    double th_cap_p;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionY.c_str(), th_cap_p) < 0) {
+    double th_cap;
+    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionY.c_str(), th_cap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPExpressionY.c_str() << "\n";
     }
-    opserr << theThetaPExpressionY.c_str() << " = " << th_cap_p << endln;
-    double th_pcap_p;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionY.c_str(), th_pcap_p) < 0) {
+    double th_pcap;
+    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionY.c_str(), th_pcap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPCExpressionY.c_str() << "\n";
     }
-    opserr << theThetaPCExpressionY.c_str() << " = " << th_pcap_p << endln;
+    
 #ifdef _DBG_COUPLEDSEC3D
+    opserr << theInitialStiffnessExpressionY.c_str() << " = " << EI << endln;
+    opserr << theThetaPExpressionY.c_str() << " = " << th_cap << endln;
+    opserr << theThetaPCExpressionY.c_str() << " = " << th_pcap << endln;
 #endif
-    // Yield strength
+    // Yield strength from Domain
     double f2p = My_u_p;
     double d2p = My_u_p / EI;
     // First point in the same line (arbitraly choosen 1/5)
@@ -776,10 +825,10 @@ void* OPS_ASDCoupledHinge3D()
     double d1p = d2p / 5.0;
     // Hardening point - cap
     double f3p = a_s * f2p;
-    double d3p = d2p + th_cap_p;
+    double d3p = th_cap; // alternativelly: d2p + th_cap; (but user need to know that th_cap_p need to be input)
     // Ultimate point
     double f4p = 0.1 * My_u_p; // To be choosen by user later ???
-    double d4p = d2p + th_pcap_p;
+    double d4p = th_pcap; // alternativelly: d3p + th_pcap; (but user need to know that th_pcap_p need to be input)
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "Initial spring My + : (" << f1p << ", " << d1p << "), (" << f2p << ", " << d2p << "), (" << f3p << ", " << d3p << "), (" << f4p << ", " << d4p << ")\n";
 #endif
@@ -791,10 +840,10 @@ void* OPS_ASDCoupledHinge3D()
     double d1n = d2n / 5.0;
     // Hardening point - cap
     double f3n = a_s * f2n;
-    double d3n = d2n - th_cap_p;
+    double d3n = -th_cap; // alternativelly: d2n - th_cap; (but user need to know that th_cap_p need to be input)
     // Ultimate point
-    double f4n = 0.1 * My_u_n; // To be choosen by user later ???
-    double d4n = d2n - th_pcap_p;
+    double f4n = 0.1 * My_u_n; // To be choosen by user in future versions; For now 10% of My
+    double d4n = -th_pcap; // alternatively: d3n - th_pcap; (but user need to know that th_pcap_p need to be input)
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "Initial spring My - : (" << f1n << ", " << d1n << "), (" << f2n << ", " << d2n << "), (" << f3n << ", " << d3n << "), (" << f4n << ", " << d4n << ")\n";
 #endif
@@ -834,15 +883,17 @@ void* OPS_ASDCoupledHinge3D()
     if (OPS_EvalDoubleTclStringExpression(theInitialStiffnessExpressionZ.c_str(), EI) < 0) {
         opserr << "Error evaluating expression:\n" << theInitialStiffnessExpressionZ.c_str() << "\n";
     }
-    opserr << theInitialStiffnessExpressionZ.c_str() << " = " << EI << endln;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionZ.c_str(), th_cap_p) < 0) {
+    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionZ.c_str(), th_cap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPExpressionZ.c_str() << "\n";
     }
-    opserr << theThetaPExpressionZ.c_str() << " = " << th_cap_p << endln;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionZ.c_str(), th_pcap_p) < 0) {
+    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionZ.c_str(), th_pcap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPCExpressionZ.c_str() << "\n";
     }
-    opserr << theThetaPCExpressionZ.c_str() << " = " << th_pcap_p << endln;
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << theInitialStiffnessExpressionZ.c_str() << " = " << EI << endln;
+    opserr << theThetaPExpressionZ.c_str() << " = " << th_cap << endln;
+    opserr << theThetaPCExpressionZ.c_str() << " = " << th_pcap << endln;
+#endif
     // Yield strength
     f2p = Mz_u_p;
     d2p = Mz_u_p / EI;
@@ -851,11 +902,13 @@ void* OPS_ASDCoupledHinge3D()
     d1p = d2p / 5.0;
     // Hardening point - cap
     f3p = a_s * f2p;
-    d3p = d2p + th_cap_p;
+    d3p = th_cap; // alternativelly: d2p + th_cap; (but user need to know that th_cap_p need to be input)
     // Ultimate point
     f4p = 0.1 * Mz_u_p; // To be choosen by user later ???
-    d4p = d2p + th_pcap_p;
+    d4p = th_pcap; // alternativelly: d3p + th_pcap; (but user need to know that th_pcap_p need to be input)
+#ifdef _DBG_COUPLEDSEC3D
     opserr << "Initial spring Mz + : (" << f1p << ", " << d1p << "), (" << f2p << ", " << d2p << "), (" << f3p << ", " << d3p << "), (" << f4p << ", " << d4p << ")\n";
+#endif
     // Yield strength
     f2n = Mz_u_n;
     d2n = Mz_u_n / EI;
@@ -864,13 +917,15 @@ void* OPS_ASDCoupledHinge3D()
     d1n = d2n / 5.0;
     // Hardening point - cap
     f3n = a_s * f2n;
-    d3n = d2n - th_cap_p;
+    d3n = -th_cap; // alternativelly: d2n - th_cap; (but user need to know that th_cap_p need to be input)
     // Ultimate point
     f4n = 0.1 * Mz_u_n; // To be choosen by user later ???
-    d4n = d2n - th_pcap_p;
+    d4n = -th_pcap; // alternativelly d3n - th_pcap; (but user need to know that th_pcap_p need to be input)
+#ifdef _DBG_COUPLEDSEC3D
     opserr << "Initial spring Mz - : (" << f1n << ", " << d1n << "), (" << f2n << ", " << d2n << "), (" << f3n << ", " << d3n << "), (" << f4n << ", " << d4n << ")\n";
+#endif
 
-    // Create a Pinching4 material for Mz
+    // Create a Pinching4 material for Mz - For now without damage, later on with damage parameters input by the user if optionally given
     mdp = 0.5;
     mfp = 0.3;
     msp = 0.0;
@@ -909,7 +964,7 @@ void* OPS_ASDCoupledHinge3D()
     std::string theRawThetaPCExpressionY;
     std::string theRawThetaPCExpressionZ;
     double a_s;*/
-    ASDCoupledHinge3D *theSection = new ASDCoupledHinge3D(tag, matTorsion, matAxial, matShearY, matShearZ, matMy, matMz, ultDomain, theRawInitialStiffnessExpressionY, theRawInitialStiffnessExpressionZ, theRawThetaPExpressionY, theRawThetaPExpressionZ, theRawThetaPCExpressionY, theRawThetaPCExpressionZ, a_s);
+    ASDCoupledHinge3D *theSection = new ASDCoupledHinge3D(tag, matTorsion, matAxial, matShearY, matShearZ, matMy, matMz, strengthDomain, theRawInitialStiffnessExpressionY, theRawInitialStiffnessExpressionZ, theRawThetaPExpressionY, theRawThetaPExpressionZ, theRawThetaPCExpressionY, theRawThetaPCExpressionZ, a_s);
 
     // Now I delete them because I've already copied them inside the secion object.
     delete matAxial;
@@ -918,35 +973,46 @@ void* OPS_ASDCoupledHinge3D()
     delete matShearY;
     delete matShearZ;
     delete matTorsion;
-    delete ultDomain;
 
-    opserr << "Section created\n\n";
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "ASDCoupledHinge3D Section created\n\n";
+#endif
 
     return theSection;
 }
 
-
-#define maxOrder 10
-
-// Assumes section order is less than or equal to maxOrder.
-// Can increase if needed!!!
-double ASDCoupledHinge3D::workArea[2*maxOrder*(maxOrder+1)];
-int    ASDCoupledHinge3D::codeArea[maxOrder];
-
 // constructors:
-// (tag, matAxial, matMy, matMz, ultDomain, theRawInitialStiffnessExpressionY, theRawInitialStiffnessExpressionZ, theRawThetaPExpressionY, theRawThetaPExpressionZ, theRawThetaPCExpressionY, theRawThetaPCExpressionZ, a_s);
-ASDCoupledHinge3D::ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
-    ASDCoupledHinge3DDomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ, 
-    std::string theRawThetaPCExpressionY, std::string theRawThetaPCExpressionZ, double a_s_i):
-    SectionForceDeformation(tag, SEC_TAG_ASDCoupledHinge3D),
-    matCodes(0), numMats(6), theCode(0), e(0), s(0), ks(0), fs(0), otherDbTag(0), axialMaterial(0), MyMaterial(0), MzMaterial(0),ultimateDomain(0)
+ASDCoupledHinge3D::ASDCoupledHinge3D(
+    int tag, 
+    UniaxialMaterial* theTorsionMaterial, 
+    UniaxialMaterial* theAxialMaterial, 
+    UniaxialMaterial* theShearYMaterial, 
+    UniaxialMaterial* theShearZMaterial, 
+    UniaxialMaterial* theMomentYMaterial,
+    UniaxialMaterial* theMomentZMaterial,
+    const ASDCoupledHinge3DDomainData &theStrengthDomain, 
+    const std::string &theRawInitialStiffnessExpressionY,
+    const std::string &theRawInitialStiffnessExpressionZ, 
+    const std::string &theRawThetaPExpressionY, 
+    const std::string &theRawThetaPExpressionZ, 
+    const std::string &theRawThetaPCExpressionY, 
+    const std::string &theRawThetaPCExpressionZ, 
+    double a_s_i)
+    : SectionForceDeformation(tag, SEC_TAG_ASDCoupledHinge3D)
+    , strengthDomain(theStrengthDomain)
+    , rawInitialStiffnessExpressionY(theRawInitialStiffnessExpressionY)
+    , rawInitialStiffnessExpressionZ(theRawInitialStiffnessExpressionZ)
+    , rawThetaPExpressionY(theRawThetaPExpressionY)
+    , rawThetaPExpressionZ(theRawThetaPExpressionZ)
+    , rawThetaPCExpressionY(theRawThetaPCExpressionY)
+    , rawThetaPCExpressionZ(theRawThetaPCExpressionZ)
+    , a_s(a_s_i)
 {
     // Create a copy of the materials passed to the constructor
     if ((!theAxialMaterial) || (!theMomentYMaterial) || (!theMomentZMaterial) || (!theTorsionMaterial) || (!theShearYMaterial) || (!theShearZMaterial)) {
         opserr << "ASDCoupledHinge3D::ASDCoupledHinge3D " << tag << " -- null uniaxial material passed\n";
         exit(-1);
     }
-
     axialMaterial = theAxialMaterial->getCopy();
     MyMaterial = theMomentYMaterial->getCopy();
     MzMaterial = theMomentZMaterial->getCopy();
@@ -954,141 +1020,14 @@ ASDCoupledHinge3D::ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMateri
     VyMaterial = theShearYMaterial->getCopy();
     VzMaterial = theShearZMaterial->getCopy();
 
-    // copy the raw strings and the needed parameters for updating
-    rawInitialStiffnessExpressionY = theRawInitialStiffnessExpressionY;
-    rawInitialStiffnessExpressionZ = theRawInitialStiffnessExpressionZ;
-    rawThetaPExpressionY = theRawThetaPExpressionY;
-    rawThetaPExpressionZ = theRawThetaPExpressionZ;
-    rawThetaPCExpressionY = theRawThetaPCExpressionY;
-    rawThetaPCExpressionZ = theRawThetaPCExpressionZ;
-    // hardening coefficient
-    a_s = a_s_i;
+    // setup parameters
+    setupParameters();
 
-    // create the parameters for My and Mz material: 
-    const char* argv[] = { "par" };
-    // My material
-    // Point 1 positive
-    argv[0] = "f1p";
-    MyMaterial->setParameter(argv, 1, par_f1p_Y);
-    argv[0] = "d1p";
-    MyMaterial->setParameter(argv, 1, par_d1p_Y);
-    // Point 2 postive
-    argv[0] = "f2p";
-    MyMaterial->setParameter(argv, 1, par_f2p_Y);
-    argv[0] = "d2p";
-    MyMaterial->setParameter(argv, 1, par_d2p_Y);
-    // Point 3 positive
-    argv[0] = "f3p";
-    MyMaterial->setParameter(argv, 1, par_f3p_Y);
-    argv[0] = "d3p";
-    MyMaterial->setParameter(argv, 1, par_d3p_Y);
-    // Point 4 postive
-    argv[0] = "f4p";
-    MyMaterial->setParameter(argv, 1, par_f4p_Y);
-    argv[0] = "d4p";
-    MyMaterial->setParameter(argv, 1, par_d4p_Y);
-    // Point 1 negative
-    argv[0] = "f1n";
-    MyMaterial->setParameter(argv, 1, par_f1n_Y);
-    argv[0] = "d1n";
-    MyMaterial->setParameter(argv, 1, par_d1n_Y);
-    // Point 2 negative
-    argv[0] = "f2n";
-    MyMaterial->setParameter(argv, 1, par_f2n_Y);
-    argv[0] = "d2n";
-    MyMaterial->setParameter(argv, 1, par_d2n_Y);
-    // Point 3 negative
-    argv[0] = "f3n";
-    MyMaterial->setParameter(argv, 1, par_f3n_Y);
-    argv[0] = "d3n";
-    MyMaterial->setParameter(argv, 1, par_d3n_Y);
-    // Point 4 negative
-    argv[0] = "f4n";
-    MyMaterial->setParameter(argv, 1, par_f4n_Y);
-    argv[0] = "d4n";
-    MyMaterial->setParameter(argv, 1, par_d4n_Y);
-    // Mz material
-    // Point 1 positive
-    argv[0] = "f1p";
-    MzMaterial->setParameter(argv, 1, par_f1p_Z);
-    argv[0] = "d1p";
-    MzMaterial->setParameter(argv, 1, par_d1p_Z);
-    // Point 2 postive
-    argv[0] = "f2p";
-    MzMaterial->setParameter(argv, 1, par_f2p_Z);
-    argv[0] = "d2p";
-    MzMaterial->setParameter(argv, 1, par_d2p_Z);
-    // Point 3 positive
-    argv[0] = "f3p";
-    MzMaterial->setParameter(argv, 1, par_f3p_Z);
-    argv[0] = "d3p";
-    MzMaterial->setParameter(argv, 1, par_d3p_Z);
-    // Point 4 postive
-    argv[0] = "f4p";
-    MzMaterial->setParameter(argv, 1, par_f4p_Z);
-    argv[0] = "d4p";
-    MzMaterial->setParameter(argv, 1, par_d4p_Z);
-    // Point 1 negative
-    argv[0] = "f1n";
-    MzMaterial->setParameter(argv, 1, par_f1n_Z);
-    argv[0] = "d1n";
-    MzMaterial->setParameter(argv, 1, par_d1n_Z);
-    // Point 2 negative
-    argv[0] = "f2n";
-    MzMaterial->setParameter(argv, 1, par_f2n_Z);
-    argv[0] = "d2n";
-    MzMaterial->setParameter(argv, 1, par_d2n_Z);
-    // Point 3 negative
-    argv[0] = "f3n";
-    MzMaterial->setParameter(argv, 1, par_f3n_Z);
-    argv[0] = "d3n";
-    MzMaterial->setParameter(argv, 1, par_d3n_Z);
-    // Point 4 negative
-    argv[0] = "f4n";
-    MzMaterial->setParameter(argv, 1, par_f4n_Z);
-    argv[0] = "d4n";
-    MzMaterial->setParameter(argv, 1, par_d4n_Z);
-
-    //// MovableObject::setParameter(const char **argv, int argc, Parameter &param)
-    //opserr << "Before updating: \n";
-    //MyMaterial->Print(opserr, 1);
-    //par_d4p_Y.update(10.0);
-    //opserr << "After updating: \n";
-    //MyMaterial->Print(opserr, 1);
-    //// It works! keep this!
-
-    int order = 6;
-    theCode = new ID(order);
-    e = new Vector(workArea, order); // il dato è sharato
-    //opserr << "Size of e " << e->Size();
-    //opserr << e->operator[](0) << "\n"; // nota e[0] è il vettore intero (perché e è un array di vettori)
-    //opserr << e[0][0] << "\n";
-    s = new Vector(&workArea[maxOrder], order);
-    ks = new Matrix(&workArea[2 * maxOrder], order, order);
-    fs = new Matrix(&workArea[maxOrder * (maxOrder + 2)], order, order);
-    matCodes = new ID(order);
-
-    if (theCode == 0 || e == 0 || s == 0 || ks == 0 || fs == 0 || matCodes == 0) {
-        opserr << "ASDCoupledHinge3D::ASDCoupledHinge3D " << tag << " -- out of memory\n";
-        exit(-1);
-    }
-
-    // Create the codes for the section responses
-    (*matCodes)(0) = SECTION_RESPONSE_P;
-    (*matCodes)(1) = SECTION_RESPONSE_MY;
-    (*matCodes)(2) = SECTION_RESPONSE_MZ;
-    (*matCodes)(3) = SECTION_RESPONSE_VY;
-    (*matCodes)(4) = SECTION_RESPONSE_VZ;
-    (*matCodes)(5) = SECTION_RESPONSE_T;
-
-    // Create and copy the new vectors for N, My, Mz of the ultimate domain
-    ultimateDomain = ultDomain->getCopy();
     // Compute the needed tolerances that are relative to the domain:
     // tolN = (Nmax - Nmin)*0.001; 1 per thousand of deltaN
     double Nmin, Nmax;
-    ultimateDomain->getRangeN(Nmin, Nmax);
+    strengthDomain.getRangeN(Nmin, Nmax);
     tolN = (Nmax - Nmin) * 0.001;
-    // tolM0 = Mmax * 0.01
     double MminY, MmaxY, MminZ, MmaxZ;
     setUncoupledStrengthDomainforAxial(0.0, MmaxY, MminY, MmaxZ, MminZ);
     MmaxAbs = std::max(std::max(MmaxY, abs(MminY)), std::max(MmaxZ, abs(MminZ)));
@@ -1103,7 +1042,7 @@ ASDCoupledHinge3D::ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMateri
 // constructor for blank object that recvSelf needs to be invoked upon
 ASDCoupledHinge3D::ASDCoupledHinge3D():
     SectionForceDeformation(0, SEC_TAG_ASDCoupledHinge3D),
-    matCodes(0), numMats(3), theCode(0), e(0), s(0), ks(0), fs(0), otherDbTag(0), axialMaterial(0), MyMaterial(0), MzMaterial(0), VyMaterial(0), VzMaterial(0), torsionMaterial(0), ultimateDomain(0)
+    otherDbTag(0), axialMaterial(0), MyMaterial(0), MzMaterial(0), VyMaterial(0), VzMaterial(0), torsionMaterial(0)
 {
 
 }
@@ -1129,33 +1068,6 @@ ASDCoupledHinge3D::~ASDCoupledHinge3D()
     if (torsionMaterial) {
         delete torsionMaterial;
     }
-    if (ultimateDomain) {
-        delete ultimateDomain;
-    }
-
-    if (e != 0) {
-        delete e;
-    }
-
-    if (s != 0) {
-        delete s;
-    }
-
-    if (ks != 0) {
-        delete ks;
-    }
-
-    if (fs != 0) {
-        delete fs;
-    }
-
-    if (theCode != 0) {
-        delete theCode;
-    }
-
-    if (matCodes != 0) {
-        delete matCodes;
-    }
 }
 
 int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
@@ -1175,177 +1087,169 @@ int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
 const Vector &
 ASDCoupledHinge3D::getSectionDeformation(void)
 {
-    (*e)(0) = axialMaterial->getStrain();
-    (*e)(1) = MyMaterial->getStrain();
-    (*e)(2) = MzMaterial->getStrain();
-    (*e)(3) = VyMaterial->getStrain();
-    (*e)(4) = VzMaterial->getStrain();
-    (*e)(5) = torsionMaterial->getStrain();
-
-    return *e;
+    static Vector e(6);
+    e(0) = axialMaterial->getStrain();
+    e(1) = MyMaterial->getStrain();
+    e(2) = MzMaterial->getStrain();
+    e(3) = VyMaterial->getStrain();
+    e(4) = VzMaterial->getStrain();
+    e(5) = torsionMaterial->getStrain();
+    return e;
 }
 
 const Matrix &
 ASDCoupledHinge3D::getSectionTangent(void)
 {
-    // Zero before assembly
-    ks->Zero();
-
-    (*ks)(0, 0) = axialMaterial->getTangent();
-    (*ks)(1, 1) = MyMaterial->getTangent();
-    (*ks)(2, 2) = MzMaterial->getTangent();
-    (*ks)(3, 3) = VyMaterial->getTangent();
-    (*ks)(4, 4) = VzMaterial->getTangent();
-    (*ks)(5, 5) = torsionMaterial->getTangent();
-
-    return *ks;
+    static Matrix k(6, 6);
+    k(0, 0) = axialMaterial->getTangent();
+    k(1, 1) = MyMaterial->getTangent();
+    k(2, 2) = MzMaterial->getTangent();
+    k(3, 3) = VyMaterial->getTangent();
+    k(4, 4) = VzMaterial->getTangent();
+    k(5, 5) = torsionMaterial->getTangent();
+    return k;
 }
 
 const Matrix &
 ASDCoupledHinge3D::getInitialTangent(void)
 {
-    // Zero before assembly
-    ks->Zero();
-
-    (*ks)(0, 0) = axialMaterial->getInitialTangent();
-    (*ks)(1, 1) = MyMaterial->getInitialTangent();
-    (*ks)(2, 2) = MzMaterial->getInitialTangent();
-    (*ks)(3, 3) = VyMaterial->getInitialTangent();
-    (*ks)(4, 4) = VzMaterial->getInitialTangent();
-    (*ks)(5, 5) = torsionMaterial->getInitialTangent();
-
-    return *ks;
+    static Matrix k(6, 6);
+    k(0, 0) = axialMaterial->getInitialTangent();
+    k(1, 1) = MyMaterial->getInitialTangent();
+    k(2, 2) = MzMaterial->getInitialTangent();
+    k(3, 3) = VyMaterial->getInitialTangent();
+    k(4, 4) = VzMaterial->getInitialTangent();
+    k(5, 5) = torsionMaterial->getInitialTangent();
+    return k;
 }
 
 const Matrix &
 ASDCoupledHinge3D::getSectionFlexibility(void)
 {
-    // Zero before assembly
-    fs->Zero();
+    static Matrix f(6, 6);
     
     double k;
     k = axialMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(0, 0) = 1.e14;
+        f(0, 0) = 1.e14;
     }
     else {
-        (*fs)(0, 0) = 1 / k;
+        f(0, 0) = 1 / k;
     }
     k = MyMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(1, 1) = 1.e14;
+        f(1, 1) = 1.e14;
     }
     else {
-        (*fs)(1, 1) = 1 / k;
+        f(1, 1) = 1 / k;
     }
     k = MzMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(2, 2) = 1.e14;
+        f(2, 2) = 1.e14;
     }
     else {
-        (*fs)(2, 2) = 1 / k;
+        f(2, 2) = 1 / k;
     }
     k = VyMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(3, 3) = 1.e14;
+        f(3, 3) = 1.e14;
     }
     else {
-        (*fs)(3, 3) = 1 / k;
+        f(3, 3) = 1 / k;
     }
     k = VzMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(4, 4) = 1.e14;
+        f(4, 4) = 1.e14;
     }
     else {
-        (*fs)(4, 4) = 1 / k;
+        f(4, 4) = 1 / k;
     }
     k = torsionMaterial->getTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(5, 5) = 1.e14;
+        f(5, 5) = 1.e14;
     }
     else {
-        (*fs)(5, 5) = 1 / k;
+        f(5, 5) = 1 / k;
     }
   
-    return *fs;
+    return f;
 }
 
 const Matrix &
 ASDCoupledHinge3D::getInitialFlexibility(void)
 {
-    // Zero before assembly
-    fs->Zero();
+    static Matrix f(6, 6);
 
     double k;
     k = axialMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(0, 0) = 1.e14;
+        f(0, 0) = 1.e14;
     }
     else {
-        (*fs)(0, 0) = 1 / k;
+        f(0, 0) = 1 / k;
     }
     k = MyMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(1, 1) = 1.e14;
+        f(1, 1) = 1.e14;
     }
     else {
-        (*fs)(1, 1) = 1 / k;
+        f(1, 1) = 1 / k;
     }
     k = MzMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(2, 2) = 1.e14;
+        f(2, 2) = 1.e14;
     }
     else {
-        (*fs)(2, 2) = 1 / k;
+        f(2, 2) = 1 / k;
     }
     k = VyMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(3, 3) = 1.e14;
+        f(3, 3) = 1.e14;
     }
     else {
-        (*fs)(3, 3) = 1 / k;
+        f(3, 3) = 1 / k;
     }
     k = VzMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(4, 4) = 1.e14;
+        f(4, 4) = 1.e14;
     }
     else {
-        (*fs)(4, 4) = 1 / k;
+        f(4, 4) = 1 / k;
     }
     k = torsionMaterial->getInitialTangent();
     if (k == 0.0) {
         opserr << "ASDCoupledHinge3D::getSectionFlexibility -- singular section stiffness\n";
-        (*fs)(5, 5) = 1.e14;
+        f(5, 5) = 1.e14;
     }
     else {
-        (*fs)(5, 5) = 1 / k;
+        f(5, 5) = 1 / k;
     }
 
-    return *fs;
+    return f;
 }
 
 const Vector &
 ASDCoupledHinge3D::getStressResultant(void)
 {
-    (*s)(0) = axialMaterial->getStress();
-    (*s)(1) = MyMaterial->getStress();
-    (*s)(2) = MzMaterial->getStress();
-    (*s)(3) = VyMaterial->getStress();
-    (*s)(4) = VzMaterial->getStress();
-    (*s)(5) = torsionMaterial->getStress();
-
-    return *s;
+    static Vector s(6);
+    s(0) = axialMaterial->getStress();
+    s(1) = MyMaterial->getStress();
+    s(2) = MzMaterial->getStress();
+    s(3) = VyMaterial->getStress();
+    s(4) = VzMaterial->getStress();
+    s(5) = torsionMaterial->getStress();
+    return s;
 }
 
 SectionForceDeformation *
@@ -1353,7 +1257,7 @@ ASDCoupledHinge3D::getCopy(void)
 {
   ASDCoupledHinge3D *theCopy = 0;
 
-  theCopy = new ASDCoupledHinge3D(this->getTag(), torsionMaterial, axialMaterial, VyMaterial, VzMaterial, MyMaterial, MzMaterial, ultimateDomain, rawInitialStiffnessExpressionY, rawInitialStiffnessExpressionZ, rawThetaPExpressionY, rawThetaPExpressionZ, rawThetaPCExpressionY, rawThetaPCExpressionZ, a_s);
+  theCopy = new ASDCoupledHinge3D(this->getTag(), torsionMaterial, axialMaterial, VyMaterial, VzMaterial, MyMaterial, MzMaterial, strengthDomain, rawInitialStiffnessExpressionY, rawInitialStiffnessExpressionZ, rawThetaPExpressionY, rawThetaPExpressionZ, rawThetaPCExpressionY, rawThetaPCExpressionZ, a_s);
   
   if (theCopy == 0) {
     opserr << "ASDCoupledHinge3D::getCopy -- failed to allocate copy\n";
@@ -1366,22 +1270,24 @@ ASDCoupledHinge3D::getCopy(void)
 const ID&
 ASDCoupledHinge3D::getType ()
 {
-    (*theCode)(0) = (*matCodes)(0);
-    (*theCode)(1) = (*matCodes)(1);
-    (*theCode)(2) = (*matCodes)(2);
-    (*theCode)(3) = (*matCodes)(3);
-    (*theCode)(4) = (*matCodes)(4);
-    (*theCode)(5) = (*matCodes)(5);
-
-    return *theCode;
+    auto lam = []() {
+        ID x(6);
+        x(0) = SECTION_RESPONSE_P;
+        x(1) = SECTION_RESPONSE_MY;
+        x(2) = SECTION_RESPONSE_MZ;
+        x(3) = SECTION_RESPONSE_VY;
+        x(4) = SECTION_RESPONSE_VZ;
+        x(5) = SECTION_RESPONSE_T;
+        return x;
+    };
+    static ID theCode = lam();
+    return theCode;
 }
 
 int
 ASDCoupledHinge3D::getOrder () const
 {
-    int order = numMats;
-    
-    return order;
+    return 6;
 }
 
 void
@@ -1442,7 +1348,7 @@ ASDCoupledHinge3D::updateLaws(void)
     if (theta < 0)
         theta += 2 * M_PI;
     // Now compute the points on the domain with the same direction
-    ultimateDomain->getMyMzForNAndDirection(N, theta, My_u_p, Mz_u_p);
+    strengthDomain.getMyMzForNAndDirection(N, theta, My_u_p, Mz_u_p);
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "Both moments above tolerance -> biaxial bending\n";
     opserr << "My = " << My << " - Mz = " << Mz << "\n";
@@ -1452,7 +1358,7 @@ ASDCoupledHinge3D::updateLaws(void)
     theta += M_PI;
     if (theta > 2 * M_PI)
         theta -= 2 * M_PI;
-    ultimateDomain->getMyMzForNAndDirection(N, theta, My_u_n, Mz_u_n);
+    strengthDomain.getMyMzForNAndDirection(N, theta, My_u_n, Mz_u_n);
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "getMyMz for N = " << N << " : My = " << My_u_n << " - Mz = " << Mz_u_n << "\n";
     opserr << "opposite angle theta = " << theta << "\n";
@@ -1707,238 +1613,175 @@ ASDCoupledHinge3D::revertToStart(void)
 int
 ASDCoupledHinge3D::sendSelf(int cTag, Channel &theChannel)
 {
-    // Massimo
-    int res = 0;
+    // my db tag
+    if (otherDbTag == 0)
+        otherDbTag = theChannel.getDbTag();
 
-    // Need otherDbTag since classTags ID and data ID may be the same size
-    if (otherDbTag == 0) 
-    otherDbTag = theChannel.getDbTag();
-  
- //   // Create ID for tag and section order data
- //   static ID data(4);
- // 
- //   int order = this->getOrder();
- // 
- //   data(0) = this->getTag();
- //   data(1) = otherDbTag;
- //   data(2) = order;
- //   data(3) = numMats;
+    // materials' class and db tags
+    std::vector<int> sub_classes(6);
+    std::vector<int> sub_dbtags(6);
+    std::array<UniaxialMaterial*, 6> subs = { axialMaterial, MyMaterial, MzMaterial, torsionMaterial, VyMaterial, VzMaterial };
+    for (int i = 0; i < subs.size(); ++i) {
+        sub_classes[i] = subs[i]->getClassTag();
+        sub_dbtags[i] = subs[i]->getDbTag();
+        if (sub_dbtags[i] == 0) {
+            sub_dbtags[i] = theChannel.getDbTag();
+            if (sub_dbtags[i] != 0)
+                subs[i]->setDbTag(sub_dbtags[i]);
+        }
+    }
 
- //   // Send the tag and section order data
- //   res += theChannel.sendID(this->getDbTag(), cTag, data);
- //   if (res < 0) {
- //       opserr << "ASDCoupledHinge3D::sendSelf -- could not send data ID\n";
-	//		    
- //       return res;
- //   }
- // 
- //   // Determine how many classTags there are and allocate ID vector
- //   // for the tags and section code
- //   int numTags = numMats;
- //   ID classTags(2*numTags + numMats);
- //// 
- //   // Loop over the UniaxialMaterials filling in class and db tags
- //   int i, dbTag;
- //   for (i = 0; i < numMats; i++) {
- //       classTags(i) = theAdditions[i]->getClassTag();
- //   
- //       dbTag = theAdditions[i]->getDbTag();
- //   
- //       if (dbTag == 0) {
- //           dbTag = theChannel.getDbTag();
- //           if (dbTag != 0)
- //       theAdditions[i]->setDbTag(dbTag);
- //       }
- //   
- //       classTags(i+numTags) = dbTag;
- //   }
- // 
- //   // Put the Section class and db tags into the ID vector
- //   if (theSection != 0) {
- //   classTags(numTags-1) = theSection->getClassTag();
- //   
- //   dbTag = theSection->getDbTag();
- //   
- //   if (dbTag == 0) {
- //       dbTag = theChannel.getDbTag();
- //       if (dbTag != 0)
- //   theSection->setDbTag(dbTag);
- //   }
- //   
- //   classTags(2*numTags-1) = dbTag;
- //   }
- // 
- //   // Put the UniaxialMaterial codes into the ID vector
- //   int j = 2*numTags;
- //   for (i = 0; i < numMats; i++, j++)
- //   classTags(j) = (*matCodes)(i);
- // 
- //   // Send the material class and db tags and section code
- //   res += theChannel.sendID(otherDbTag, cTag, classTags);
- //   if (res < 0) {
- //   opserr << "ASDCoupledHinge3D::sendSelf -- could not send classTags ID\n";
- //   return res;
- //   }
+    // serializer
+    Serializer ser;
 
- //   // Ask the UniaxialMaterials to send themselves
- //   for (i = 0; i < numMats; i++) {
- //   res += theAdditions[i]->sendSelf(cTag, theChannel);
- //   if (res < 0) {
- //       opserr << "ASDCoupledHinge3D::sendSelf -- could not send UniaxialMaterial, i = " << i << endln;
- //       return res;
- //   }
- //   }
- // 
- //   // Ask the Section to send itself
- //   if (theSection != 0) {
- //   res += theSection->sendSelf(cTag, theChannel);
- //   if (res < 0) {
- //       opserr << "ASDCoupledHinge3D::sendSelf -- could not send SectionForceDeformation\n";
- //       return res;
- //   }
- //   }
- // 
-    return res;
+    // serialize everything
+    if (!(ser
+        // misc info
+        << getTag()
+        << otherDbTag
+        << sub_classes
+        << sub_dbtags
+        // settings
+        << tolN
+        << tolM
+        << MmaxAbs
+        << errExplicit
+        // strength Domain
+        << strengthDomain.size
+        << strengthDomain.numberAxial
+        << strengthDomain.numberTheta
+        << strengthDomain.numberData
+        << strengthDomain.theVector
+        // strings
+        << rawInitialStiffnessExpressionY
+        << rawInitialStiffnessExpressionZ
+        << rawThetaPExpressionY
+        << rawThetaPExpressionZ
+        << rawThetaPCExpressionY
+        << rawThetaPCExpressionZ
+        << a_s
+        ))
+    {
+        opserr << "ASDCoupledHinge3D::sendSelf() - failed to serialize data\n";
+        return -1;
+    }
+
+    // get message string and size
+    std::string msg_string = ser.str();
+    std::vector<char> msg_data(msg_string.size() + 1);
+    std::copy(msg_string.begin(), msg_string.end(), msg_data.begin());
+    msg_data.back() = '\0';
+    int msg_data_size = static_cast<int>(msg_string.size());
+
+    // send message size
+    ID idata(1);
+    idata(0) = msg_data_size;
+    if (theChannel.sendID(otherDbTag, cTag, idata) < 0) {
+        opserr << "ASDCoupledHinge3D::sendSelf() - failed to send message size\n";
+        return -1;
+    }
+
+    // send message
+    Message msg(msg_data.data(), msg_data_size);
+    if (theChannel.sendMsg(otherDbTag, cTag, msg) < 0) {
+        opserr << "ASDCoupledHinge3D::sendSelf() - failed to send message\n";
+        return -1;
+    }
+
+    // send materials
+    for (int i = 0; i < subs.size(); ++i) {
+        if (subs[i]->sendSelf(cTag, theChannel) < 0) {
+            opserr << "ASDCoupledHinge3D::sendSelf() - failed to send material " << i << "\n";
+            return -1;
+        }
+    }
+
+    // done
+    return 0;
 }
 
 
 int
 ASDCoupledHinge3D::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  int res = 0;
+    // recv message size
+    ID idata(1);
+    if (theChannel.recvID(0, cTag, idata) < 0) {
+        opserr << "ASDCoupledHinge3D::recvSelf() - failed to recv message size\n";
+        return -1;
+    }
+    int msg_data_size = idata(0);
 
- // // Create an ID and receive tag and section order
- // static ID data(5);
- // res += theChannel.recvID(this->getDbTag(), cTag, data);
- // if (res < 0) {
- //   opserr << "ASDCoupledHinge3D::recvSelf -- could not receive data ID\n";
- //   return res;
- // }
- // 
- // this->setTag(data(0));
- // otherDbTag = data(1);
- // int order = data(2);
- // int theSectionOrder = data(3);
- // numMats = data(4);
+    // recv message
+    std::vector<char> msg_data(static_cast<size_t>(msg_data_size) + 1);
+    Message msg(msg_data.data(), msg_data_size);
+    if (theChannel.recvMsg(0, cTag, msg) < 0) {
+        opserr << "ASDCoupledHinge3D::recvSelf() - failed to recv message\n";
+        return -1;
+    }
+    msg_data.back() = '\0';
 
- // if (order > 0) {
- //   if (e == 0 || e->Size() != order) {
- //     if (e != 0) {
-	//delete e;
-	//delete s;
-	//delete ks;
-	//delete fs;
-	//delete theCode;
- //     }
- //     e = new Vector(workArea, order);
- //     s = new Vector(&workArea[maxOrder], order);
- //     ks = new Matrix(&workArea[2*maxOrder], order, order);
- //     fs = new Matrix(&workArea[maxOrder*(maxOrder+2)], order, order);
- //     theCode = new ID(codeArea, order);
- //   }
- // }
+    // serializer
+    Serializer ser(msg_data.data());
 
- // if (numMats > 0) {
- //   if (matCodes == 0 || matCodes->Size() != numMats) {
- //     if (matCodes != 0)
-	//delete matCodes;
+    // aux data for de-serialziation
+    int my_tag;
+    // materials' class and db tags
+    std::vector<int> sub_classes(6);
+    std::vector<int> sub_dbtags(6);
 
- //     matCodes = new ID(numMats);
- //   }
- // }
+    // de-serialize everything
+    if (!(ser
+        // misc info
+        >> my_tag
+        >> otherDbTag
+        >> sub_classes
+        >> sub_dbtags
+        // settings
+        >> tolN
+        >> tolM
+        >> MmaxAbs
+        >> errExplicit
+        // strength Domain
+        >> strengthDomain.size
+        >> strengthDomain.numberAxial
+        >> strengthDomain.numberTheta
+        >> strengthDomain.numberData
+        >> strengthDomain.theVector
+        // strings
+        >> rawInitialStiffnessExpressionY
+        >> rawInitialStiffnessExpressionZ
+        >> rawThetaPExpressionY
+        >> rawThetaPExpressionZ
+        >> rawThetaPCExpressionY
+        >> rawThetaPCExpressionZ
+        >> a_s
+        ))
+    {
+        opserr << "ASDCoupledHinge3D::recvSelf() - failed to de-serialize data\n";
+        return -1;
+    }
 
- // // Determine how many classTags there are and allocate ID vector
- // int numTags = (theSectionOrder == 0) ? numMats : numMats + 1;
- // ID classTags(numTags*2 + numMats);
- // 
- // // Receive the material class and db tags
- // res += theChannel.recvID(otherDbTag, cTag, classTags);
- // if (res < 0) {
- //   opserr << "ASDCoupledHinge3D::recvSelf -- could not receive classTags ID\n";
- //   return res;
- // }
+    // set tag
+    setTag(my_tag);
 
- // // Check if null pointer, allocate if so
- // if (theAdditions == 0) {
- //   theAdditions = new UniaxialMaterial *[numMats];
- //   if (theAdditions == 0) {
- //     opserr << "ASDCoupledHinge3D::recvSelf -- could not allocate UniaxialMaterial array\n";
- //     return -1;
- //   }
- //   // Set pointers to null ... will get allocated by theBroker
- //   for (int j = 0; j < numMats; j++)
- //     theAdditions[j] = 0;
- // }
- // 
- // // Loop over the UniaxialMaterials
- // int i, classTag;
- // for (i = 0; i < numMats; i++) {
- //   classTag = classTags(i);
- //   
- //   // Check if the UniaxialMaterial is null; if so, get a new one
- //   if (theAdditions[i] == 0)
- //     theAdditions[i] = theBroker.getNewUniaxialMaterial(classTag);
- //   
- //   // Check that the UniaxialMaterial is of the right type; if not, delete
- //   // the current one and get a new one of the right type
- //   else if (theAdditions[i]->getClassTag() != classTag) {
- //     delete theAdditions[i];
- //     theAdditions[i] = theBroker.getNewUniaxialMaterial(classTag);
- //   }
- //   
- //   // Check if either allocation failed
- //   if (theAdditions[i] == 0) {
- //     opserr << "ASDCoupledHinge3D::recvSelf -- could not get UniaxialMaterial, i = " << i << endln;
- //     return -1;
- //   }
- //   
- //   // Now, receive the UniaxialMaterial
- //   theAdditions[i]->setDbTag(classTags(i+numTags));
- //   res += theAdditions[i]->recvSelf(cTag, theChannel, theBroker);
- //   if (res < 0) {
- //     opserr << "ASDCoupledHinge3D::recvSelf -- could not receive UniaxialMaterial, i = " << i << endln;
- //     return res;
- //   }
- // }
+    // recv materials
+    std::array<UniaxialMaterial**, 6> subs = { &axialMaterial, &MyMaterial, &MzMaterial, &torsionMaterial, &VyMaterial, &VzMaterial };
+    for (int i = 0; i < subs.size(); ++i) {
+        UniaxialMaterial *m = theBroker.getNewUniaxialMaterial(sub_classes[i]);
+        m->setDbTag(sub_dbtags[i]);
+        if (m->recvSelf(cTag, theChannel, theBroker) < 0) {
+            opserr << "ASDCoupledHinge3D::recvSelf() - failed to recv material " << i << "\n";
+            return -1;
+        }
+        *(subs[i]) = m;
+    }
 
- // // If there is no Section to receive, return
- // if (theSectionOrder != 0) {
-	//
- //
-	//classTag = classTags(numTags-1);
- // 
-	//// Check if the Section is null; if so, get a new one
-	//if (theSection == 0)
-	//	theSection = theBroker.getNewSection(classTag);
- // 
-	//// Check that the Section is of the right type; if not, delete
-	//// the current one and get a new one of the right type
-	//else if (theSection->getClassTag() != classTag) {
-	//	delete theSection;
-	//	theSection = theBroker.getNewSection(classTag);
-	//}
- // 
-	//// Check if either allocation failed
-	//if (theSection == 0) {
-	//	opserr << "ASDCoupledHinge3D::recvSelf -- could not get a SectionForceDeformation\n";
-	//	return -1;
-	//}
+    // setup parameters
+    setupParameters();
 
-	//// Now, receive the Section
-	//theSection->setDbTag(classTags(2*numTags-1));
-	//res += theSection->recvSelf(cTag, theChannel, theBroker);
-	//if (res < 0) {
-	//	opserr << "ASDCoupledHinge3D::recvSelf -- could not receive SectionForceDeformation\n";
-	//	return res;
-	//}
- // }
-
- // // Fill in the section code
- // int j = 2*numTags;
- // for (i = 0; i < numMats; i++, j++)
- //   (*matCodes)(i) = classTags(j);
-
-  return res;
+    // done
+    return 0;
 }
 
 void
@@ -1947,34 +1790,30 @@ ASDCoupledHinge3D::Print(OPS_Stream &s, int flag)
     s << "ASDCoupledHinge3D" << endln;
 }
 
-
 int
 ASDCoupledHinge3D::getVariable(const char *argv, Information &info)
 {
-
-  info.theDouble = 0.0;
-  int i;
-  int order = numMats;
-
-  const Vector &e = this->getSectionDeformation();
-  const ID &code  = this->getType();
-
-  if (strcmp(argv,"axialStrain") == 0) {
-    for (i = 0; i < order; i++)
-      if (code(i) == SECTION_RESPONSE_P)
-	info.theDouble  += e(i);
-  }  else if (strcmp(argv,"curvatureZ") == 0) {
-    for (i = 0; i < order; i++)
-      if (code(i) == SECTION_RESPONSE_MZ)
-	info.theDouble += e(i);
-  } else if (strcmp(argv,"curvatureY") == 0) {
-    for (i = 0; i < order; i++)
-      if (code(i) == SECTION_RESPONSE_MY)
-	info.theDouble += e(i);
-  } else 
-    return -1;
-
-  return 0;
+    info.theDouble = 0.0;
+    const Vector& e = this->getSectionDeformation();
+    const ID& code = this->getType();
+    if (strcmp(argv, "axialStrain") == 0) {
+        for (int i = 0; i < 6; i++)
+            if (code(i) == SECTION_RESPONSE_P)
+                info.theDouble += e(i);
+    }
+    else if (strcmp(argv, "curvatureZ") == 0) {
+        for (int i = 0; i < 6; i++)
+            if (code(i) == SECTION_RESPONSE_MZ)
+                info.theDouble += e(i);
+    }
+    else if (strcmp(argv, "curvatureY") == 0) {
+        for (int i = 0; i < 6; i++)
+            if (code(i) == SECTION_RESPONSE_MY)
+                info.theDouble += e(i);
+    }
+    else
+        return -1;
+    return 0;
 }
 
 void ASDCoupledHinge3D::resetStrengthDomain(double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n)
@@ -1986,46 +1825,119 @@ void ASDCoupledHinge3D::resetStrengthDomain(double& My_u_p, double& My_u_n, doub
 
 void ASDCoupledHinge3D::setUncoupledStrengthDomainforAxial(const double N, double& My_u_p, double& My_u_n, double& Mz_u_p, double& Mz_u_n)
 {
-    // get Domain Values for My and Mz positive and negative (uncoupled) when N = 0
     double tmp;
-    //opserr << "\n\nFinding for theta = 0 (should be positive My)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, 0.0, My_u_p, tmp);
-    //opserr << "\n\n\nFinding for theta = pi (should be negative My)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, M_PI, My_u_n, tmp);
-    //opserr << "\n\n\nFinding for theta = pi/2 (should be positive Mz)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, M_PI / 2, tmp, Mz_u_p);
-    //opserr << "\n\n\nFinding for theta = 3pi/2 (should be negative Mz)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, M_PI * 3 / 2.0, tmp, Mz_u_n);
+    strengthDomain.getMyMzForNAndDirection(N, 0.0, My_u_p, tmp);
+    strengthDomain.getMyMzForNAndDirection(N, M_PI, My_u_n, tmp);
+    strengthDomain.getMyMzForNAndDirection(N, M_PI / 2, tmp, Mz_u_p);
+    strengthDomain.getMyMzForNAndDirection(N, M_PI * 3 / 2.0, tmp, Mz_u_n);
+}
 
-    return;
+void ASDCoupledHinge3D::setupParameters()
+{
+    // create the parameters for My and Mz material: 
+    const char* argv[] = { "par" };
+    // My material
+    // Point 1 positive
+    argv[0] = "f1p";
+    MyMaterial->setParameter(argv, 1, par_f1p_Y);
+    argv[0] = "d1p";
+    MyMaterial->setParameter(argv, 1, par_d1p_Y);
+    // Point 2 postive
+    argv[0] = "f2p";
+    MyMaterial->setParameter(argv, 1, par_f2p_Y);
+    argv[0] = "d2p";
+    MyMaterial->setParameter(argv, 1, par_d2p_Y);
+    // Point 3 positive
+    argv[0] = "f3p";
+    MyMaterial->setParameter(argv, 1, par_f3p_Y);
+    argv[0] = "d3p";
+    MyMaterial->setParameter(argv, 1, par_d3p_Y);
+    // Point 4 postive
+    argv[0] = "f4p";
+    MyMaterial->setParameter(argv, 1, par_f4p_Y);
+    argv[0] = "d4p";
+    MyMaterial->setParameter(argv, 1, par_d4p_Y);
+    // Point 1 negative
+    argv[0] = "f1n";
+    MyMaterial->setParameter(argv, 1, par_f1n_Y);
+    argv[0] = "d1n";
+    MyMaterial->setParameter(argv, 1, par_d1n_Y);
+    // Point 2 negative
+    argv[0] = "f2n";
+    MyMaterial->setParameter(argv, 1, par_f2n_Y);
+    argv[0] = "d2n";
+    MyMaterial->setParameter(argv, 1, par_d2n_Y);
+    // Point 3 negative
+    argv[0] = "f3n";
+    MyMaterial->setParameter(argv, 1, par_f3n_Y);
+    argv[0] = "d3n";
+    MyMaterial->setParameter(argv, 1, par_d3n_Y);
+    // Point 4 negative
+    argv[0] = "f4n";
+    MyMaterial->setParameter(argv, 1, par_f4n_Y);
+    argv[0] = "d4n";
+    MyMaterial->setParameter(argv, 1, par_d4n_Y);
+    // Mz material
+    // Point 1 positive
+    argv[0] = "f1p";
+    MzMaterial->setParameter(argv, 1, par_f1p_Z);
+    argv[0] = "d1p";
+    MzMaterial->setParameter(argv, 1, par_d1p_Z);
+    // Point 2 postive
+    argv[0] = "f2p";
+    MzMaterial->setParameter(argv, 1, par_f2p_Z);
+    argv[0] = "d2p";
+    MzMaterial->setParameter(argv, 1, par_d2p_Z);
+    // Point 3 positive
+    argv[0] = "f3p";
+    MzMaterial->setParameter(argv, 1, par_f3p_Z);
+    argv[0] = "d3p";
+    MzMaterial->setParameter(argv, 1, par_d3p_Z);
+    // Point 4 postive
+    argv[0] = "f4p";
+    MzMaterial->setParameter(argv, 1, par_f4p_Z);
+    argv[0] = "d4p";
+    MzMaterial->setParameter(argv, 1, par_d4p_Z);
+    // Point 1 negative
+    argv[0] = "f1n";
+    MzMaterial->setParameter(argv, 1, par_f1n_Z);
+    argv[0] = "d1n";
+    MzMaterial->setParameter(argv, 1, par_d1n_Z);
+    // Point 2 negative
+    argv[0] = "f2n";
+    MzMaterial->setParameter(argv, 1, par_f2n_Z);
+    argv[0] = "d2n";
+    MzMaterial->setParameter(argv, 1, par_d2n_Z);
+    // Point 3 negative
+    argv[0] = "f3n";
+    MzMaterial->setParameter(argv, 1, par_f3n_Z);
+    argv[0] = "d3n";
+    MzMaterial->setParameter(argv, 1, par_d3n_Z);
+    // Point 4 negative
+    argv[0] = "f4n";
+    MzMaterial->setParameter(argv, 1, par_f4n_Z);
+    argv[0] = "d4n";
+    MzMaterial->setParameter(argv, 1, par_d4n_Z);
 }
 
 Response* ASDCoupledHinge3D::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
-
-    Response* theResponse = 0;
-
+    // check responses for this class
     if (argc > 0) {
-
-
         if (strcmp(argv[0], "explicitError") == 0) {
             output.tag("SectionOutput");
             output.attr("secType", this->getClassType());
             output.attr("secTag", this->getTag());
-
             output.tag("ResponseType", "error");
-            output.endTag();
             double err = 0.0;
-            return theResponse = new MaterialResponse(this, 100, err);
-
+            Response *theResponse = new MaterialResponse(this, 100, err);
+            output.endTag();
+            return theResponse;
         }
-
     }
-
-    // If not a fiber response, call the base class method
+    // otherwise fallbackt to baseclass
     return SectionForceDeformation::setResponse(argv, argc, output);
 }
-
 
 int ASDCoupledHinge3D::getResponse(int responseID, Information& sectInfo)
 {
