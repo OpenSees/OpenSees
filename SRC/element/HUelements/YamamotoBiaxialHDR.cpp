@@ -125,13 +125,15 @@ void* OPS_YamamotoBiaxialHDR()
 	}
 
 	// Tp
-	const char* tparg = OPS_GetString();
-	if (strcmp(tparg,"1") == 0) {
-	    Tp = 1; // Bridgestone X0.6R (EESD version)
-	} else {
+	if (OPS_GetIntInput(&numdata, &Tp) < 0) {
 	    opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
 	    ifNoError = false;
 	}
+  if (Tp != 1) {
+      // Bridgestone X0.6R (EESD version)
+      opserr << "WARNING invalid YamamotoBiaxialHDR Tp != 1" << endln;
+	    ifNoError = false;
+  }
 
 	// DDo
 	if (OPS_GetDoubleInput(&numdata, &DDo) < 0 || DDo <= 0.0) {
