@@ -1257,8 +1257,6 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 FiberSection3d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
   if (responseID == 5) {
     int numData = 5*numFibers;
     Vector data(numData);

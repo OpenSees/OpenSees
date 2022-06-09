@@ -1147,6 +1147,44 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
 
   }
 
+  else if (strcmp(argv[0],"fiberData") == 0) {
+    
+    int numData = numFibers*7;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 5, theResponseData);
+  }
+
+  else if (strcmp(argv[0],"fiberData2") == 0) {
+    
+    int numData = numFibers*8;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+  }  
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -1157,8 +1195,44 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
 int 
 NDFiberSection2d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
+  if (responseID == 5) {
+    int numData = 7*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[2*j]; // y
+      data(count+1) = 0.0; // z
+      data(count+2) = matData[2*j+1]; // A
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+3) = stress(0);
+      data(count+4) = stress(1);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+5) = strain(0);
+      data(count+6) = strain(1);
+      count += 7;      
+    }
+    return sectInfo.setVector(data);
+  }
+  if (responseID == 55) {
+    int numData = 8*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[2*j]; // y
+      data(count+1) = 0.0; // z
+      data(count+2) = matData[2*j+1]; // A
+      data(count+3) = (double)theMaterials[j]->getTag();
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+4) = stress(0);
+      data(count+5) = stress(1);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+6) = strain(0);
+      data(count+7) = strain(1);
+      count += 8;      
+    }
+    return sectInfo.setVector(data);
+  }  
+  
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 

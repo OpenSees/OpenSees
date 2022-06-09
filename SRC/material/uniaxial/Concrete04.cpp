@@ -116,6 +116,10 @@ Concrete04::Concrete04
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(FCT),
    Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
 {
+  fpc = -fabs(fpc);
+  epsc0 = -fabs(epsc0);
+  epscu = -fabs(epscu);
+	   
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
     opserr << "error: negative values required for concrete stress-strain model" << endln;
@@ -141,6 +145,10 @@ Concrete04::Concrete04
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(FCT),
    Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
 {
+  fpc = -fabs(fpc);
+  epsc0 = -fabs(epsc0);
+  epscu = -fabs(epscu);
+	   
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
     opserr << "error: negative values required for concrete stress-strain model" << endln;
@@ -167,6 +175,10 @@ Concrete04::Concrete04
    CminStrain(0.0), CendStrain(0.0), CcompStrain(0.0), CUtenStress(0.0),
    Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0) 
 {
+  fpc = -fabs(fpc);
+  epsc0 = -fabs(epsc0);
+  epscu = -fabs(epscu);
+	   
   // Make all concrete parameters negative
   if (fpc > 0.0 || epsc0 > 0.0 || epscu > 0.0) {
     opserr << "error: negative values required for concrete stress-strain model" << endln;
