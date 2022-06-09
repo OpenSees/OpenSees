@@ -51,15 +51,12 @@
 #define STRENGTH_DOMAIN_SIMPLIFIED 1
 #define STRENGTH_DOMAIN_BY_POINTS 2
 
-
-// Massimo: una cosa del genere dicevi? Dopo casomai lo implementiamo così.
-
-class DomainData {
+class ASDCoupledHinge3DDomainData {
 
 public:
-    DomainData();
-    DomainData(int nN, int nTheta, int nData);
-    ~DomainData();
+    ASDCoupledHinge3DDomainData();
+    ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData);
+    ~ASDCoupledHinge3DDomainData();
 
     double getValue(int i, int j, int k);
 
@@ -67,13 +64,11 @@ public:
 
     void print(void);
 
-    DomainData* getCopy(void);
+    ASDCoupledHinge3DDomainData* getCopy(void);
 
     int getMyMzForNAndDirection(double N, double theta, double& My, double& Mz);
 
     void getRangeN(double& Nmin, double& Nmax);
-
-    static const double pi;
 
 private:
     int size;
@@ -90,7 +85,7 @@ public:
     ASDCoupledHinge3D(); 
 
         ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
-            DomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ,
+            ASDCoupledHinge3DDomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ,
             std::string theRawThetaPCExpressionY, std::string theRawThetaPCExpressionZ, double a_s_i);
     ~ASDCoupledHinge3D();
 
@@ -153,7 +148,7 @@ private:
     Matrix *fs;   // Storage for section flexibility
     ID     *theCode;     // Storage for section type information
 
-    DomainData* ultimateDomain;
+    ASDCoupledHinge3DDomainData* ultimateDomain;
 
     std::string rawInitialStiffnessExpressionY;
     std::string rawInitialStiffnessExpressionZ;

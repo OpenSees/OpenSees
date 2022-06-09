@@ -29,7 +29,7 @@
 //
 // Purpose: This file contains the implementation for the ASDCoupledHinge3D class. 
 
-#include <stdlib.h>
+//#include <stdlib.h>
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -38,24 +38,26 @@
 #include <ASDCoupledHinge3D.h>
 #include <MaterialResponse.h>
 #include <ID.h>
-#include <math.h>
-
 #include <classTags.h>
 #include <elementAPI.h>
 #include <Pinching4Material.h>
 #include <ElasticMaterial.h>
+#include <cmath>
+#include <algorithm>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 //#define _DBG_COUPLEDSEC3D
 
-const double DomainData::pi = acos(-1.0);
-
-DomainData::DomainData() :
+ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData() :
     numberAxial(0), numberTheta(0), numberData(0), size(0)
 {
     theVector = new Vector(size);
 }
 
-DomainData::DomainData(int nN, int nTheta, int nData) :
+ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
     numberAxial(nN), numberTheta(nTheta), numberData(nData)
 {
     size = numberAxial * numberTheta * numberData;
@@ -63,30 +65,30 @@ DomainData::DomainData(int nN, int nTheta, int nData) :
     theVector->Zero();
 }
 
-DomainData::~DomainData()
+ASDCoupledHinge3DDomainData::~ASDCoupledHinge3DDomainData()
 {
     delete theVector;
 }
 
-double DomainData::getValue(int i, int j, int k)
+double ASDCoupledHinge3DDomainData::getValue(int i, int j, int k)
 {
     int idx = i * (numberTheta * numberData) + k * numberTheta + j;
     return (*theVector)(idx);
 }
 
-void DomainData::setValue(int i, int j, int k, double val)
+void ASDCoupledHinge3DDomainData::setValue(int i, int j, int k, double val)
 {
     int idx = i * (numberTheta * numberData) + k * numberTheta + j;
     (*theVector)(idx) = val;
 }
 
-void DomainData::getRangeN(double& Nmin, double& Nmax)
+void ASDCoupledHinge3DDomainData::getRangeN(double& Nmin, double& Nmax)
 {
     Nmin = this->getValue(0, 0, 0);
     Nmax = this->getValue(numberAxial - 1, 0, 0);
 }
 
-void DomainData::print(void)
+void ASDCoupledHinge3DDomainData::print(void)
 {
     opserr << "DomainData object with a total of " << size << " elements" << endln;
     opserr << "  nAxial = " << numberAxial << " - nTheta = " << numberTheta << " - nData = " << numberData << endln;
@@ -106,9 +108,9 @@ void DomainData::print(void)
     }
 }
 
-DomainData* DomainData::getCopy(void)
+ASDCoupledHinge3DDomainData* ASDCoupledHinge3DDomainData::getCopy(void)
 {
-    DomainData* theCopy = new DomainData(numberAxial, numberTheta, numberData);
+    ASDCoupledHinge3DDomainData* theCopy = new ASDCoupledHinge3DDomainData(numberAxial, numberTheta, numberData);
     // Deep copy of the data
     for (int i = 0; i < numberAxial; i++) 
     {
@@ -132,10 +134,10 @@ DomainData* DomainData::getCopy(void)
     return theCopy;
 }
 
-int DomainData::getMyMzForNAndDirection(double N, double theta, double& My, double& Mz) {
+int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta, double& My, double& Mz) {
     // transform theta in the range [0, 2pi[
-    while (theta > 2 * pi)
-        theta -= 2 * pi;
+    while (theta > 2 * M_PI)
+        theta -= 2 * M_PI;
     Vector direction(2);
     direction(0) = cos(theta);
     direction(1) = sin(theta);
@@ -232,13 +234,13 @@ int DomainData::getMyMzForNAndDirection(double N, double theta, double& My, doub
         theta_j = atan2(Mz_j, My_j);
         // transform theta in the range [0, 2pi[
         if (theta_j < 0)
-            theta_j += 2 * pi;
+            theta_j += 2 * M_PI;
         dir_jp1(0) = My_jp1;
         dir_jp1(1) = Mz_jp1;
         dir_jp1.Normalize();
         theta_jp1 = atan2(Mz_jp1, My_jp1);
         if (theta_jp1 < 0)
-            theta_jp1 += 2 * pi;
+            theta_jp1 += 2 * M_PI;
 #ifdef _DBG_COUPLEDSEC3D
         opserr << "j = " << j << " - jp1 = " << jp1 << "\n";
         opserr << "theta_j = " << theta_j <<  " - theta_jp1 = " << theta_jp1 << " - theta = " << theta << "\n";
@@ -415,7 +417,7 @@ void* OPS_ASDCoupledHinge3D()
     Vector dataN(0);
     Vector dataMy(0);
     Vector dataMz(0);
-    DomainData* ultDomain = nullptr;
+    ASDCoupledHinge3DDomainData* ultDomain = nullptr;
     // Domain Values for My and Mz positive and negative when N = 0
     double My_u_p = 0.0;
     double My_u_n = 0.0;
@@ -674,7 +676,7 @@ void* OPS_ASDCoupledHinge3D()
             //}
 
             // Create the domain as a DomainData object
-            ultDomain = new DomainData(nN, nTheta, 3);
+            ultDomain = new ASDCoupledHinge3DDomainData(nN, nTheta, 3);
 
             // write all elements of the domain data
             int idx;
@@ -694,11 +696,11 @@ void* OPS_ASDCoupledHinge3D()
             //opserr << "\n\nFinding for theta = 0 (should be positive My)\n";
             ultDomain->getMyMzForNAndDirection(0.0,0.0,My_u_p,tmp);
             //opserr << "\n\n\nFinding for theta = pi (should be negative My)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, DomainData::pi, My_u_n, tmp);
+            ultDomain->getMyMzForNAndDirection(0.0, M_PI, My_u_n, tmp);
             //opserr << "\n\n\nFinding for theta = pi/2 (should be positive Mz)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, DomainData::pi/2, tmp, Mz_u_p);
+            ultDomain->getMyMzForNAndDirection(0.0, M_PI/2, tmp, Mz_u_p);
             //opserr << "\n\n\nFinding for theta = 3pi/2 (should be negative Mz)\n";
-            ultDomain->getMyMzForNAndDirection(0.0, DomainData::pi*3/2.0, tmp, Mz_u_n);
+            ultDomain->getMyMzForNAndDirection(0.0, M_PI*3/2.0, tmp, Mz_u_n);
             
             /*My_u_n = 0.0;
             Mz_u_p = 0.0;
@@ -934,7 +936,7 @@ int    ASDCoupledHinge3D::codeArea[maxOrder];
 // constructors:
 // (tag, matAxial, matMy, matMz, ultDomain, theRawInitialStiffnessExpressionY, theRawInitialStiffnessExpressionZ, theRawThetaPExpressionY, theRawThetaPExpressionZ, theRawThetaPCExpressionY, theRawThetaPCExpressionZ, a_s);
 ASDCoupledHinge3D::ASDCoupledHinge3D(int tag, UniaxialMaterial* theTorsionMaterial, UniaxialMaterial* theAxialMaterial, UniaxialMaterial* theShearYMaterial, UniaxialMaterial* theShearZMaterial, UniaxialMaterial* theMomentYMaterial, UniaxialMaterial* theMomentZMaterial,
-    DomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ, 
+    ASDCoupledHinge3DDomainData* ultDomain, std::string theRawInitialStiffnessExpressionY, std::string theRawInitialStiffnessExpressionZ, std::string theRawThetaPExpressionY, std::string theRawThetaPExpressionZ, 
     std::string theRawThetaPCExpressionY, std::string theRawThetaPCExpressionZ, double a_s_i):
     SectionForceDeformation(tag, SEC_TAG_ASDCoupledHinge3D),
     matCodes(0), numMats(6), theCode(0), e(0), s(0), ks(0), fs(0), otherDbTag(0), axialMaterial(0), MyMaterial(0), MzMaterial(0),ultimateDomain(0)
@@ -1438,7 +1440,7 @@ ASDCoupledHinge3D::updateLaws(void)
     // compute the direction of moments
     double theta = atan2(Mz, My);
     if (theta < 0)
-        theta += 2 * DomainData::pi;
+        theta += 2 * M_PI;
     // Now compute the points on the domain with the same direction
     ultimateDomain->getMyMzForNAndDirection(N, theta, My_u_p, Mz_u_p);
 #ifdef _DBG_COUPLEDSEC3D
@@ -1447,9 +1449,9 @@ ASDCoupledHinge3D::updateLaws(void)
     opserr << "angle theta = " << theta << "\n";
     opserr << "getMyMz for N = " << N << " : My = " << My_u_p << " - Mz = " << Mz_u_p << "\n";
 #endif
-    theta += DomainData::pi;
-    if (theta > 2 * DomainData::pi)
-        theta -= 2 * DomainData::pi;
+    theta += M_PI;
+    if (theta > 2 * M_PI)
+        theta -= 2 * M_PI;
     ultimateDomain->getMyMzForNAndDirection(N, theta, My_u_n, Mz_u_n);
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "getMyMz for N = " << N << " : My = " << My_u_n << " - Mz = " << Mz_u_n << "\n";
@@ -1938,25 +1940,6 @@ ASDCoupledHinge3D::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
 
   return res;
 }
-//
-//Response*
-//ASDCoupledHinge3D::setResponse(const char **argv, int argc, OPS_Stream &output)
-//{
-//  
-//    return SectionForceDeformation::setResponse(responseID, sectInfo);
-//
-//    return 0;
-//}
-//
-////by SAJalali
-//int
-//ASDCoupledHinge3D::getResponse(int responseID, Information &sectInfo)
-//{
-//
-//	return SectionForceDeformation::getResponse(responseID, sectInfo);
-//
-//}
-
 
 void
 ASDCoupledHinge3D::Print(OPS_Stream &s, int flag)
@@ -2008,11 +1991,11 @@ void ASDCoupledHinge3D::setUncoupledStrengthDomainforAxial(const double N, doubl
     //opserr << "\n\nFinding for theta = 0 (should be positive My)\n";
     ultimateDomain->getMyMzForNAndDirection(N, 0.0, My_u_p, tmp);
     //opserr << "\n\n\nFinding for theta = pi (should be negative My)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, DomainData::pi, My_u_n, tmp);
+    ultimateDomain->getMyMzForNAndDirection(N, M_PI, My_u_n, tmp);
     //opserr << "\n\n\nFinding for theta = pi/2 (should be positive Mz)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, DomainData::pi / 2, tmp, Mz_u_p);
+    ultimateDomain->getMyMzForNAndDirection(N, M_PI / 2, tmp, Mz_u_p);
     //opserr << "\n\n\nFinding for theta = 3pi/2 (should be negative Mz)\n";
-    ultimateDomain->getMyMzForNAndDirection(N, DomainData::pi * 3 / 2.0, tmp, Mz_u_n);
+    ultimateDomain->getMyMzForNAndDirection(N, M_PI * 3 / 2.0, tmp, Mz_u_n);
 
     return;
 }
