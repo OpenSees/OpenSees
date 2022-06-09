@@ -21,12 +21,14 @@
 ** Written: fmk
 */
 
-#include <elementAPI.h>
+#include <tcl.h>
 #include <OPS_Stream.h>
-//#include <Domain.h>
-//#include <TclModelBuilder.h>
-#include <windows.h>
+#include <elementAPI.h>
 #include <SimulationInformation.h>
+
+// override byte to prevent clashes with <cstddef>
+#define byte win_byte_override
+#include <windows.h>
 
 #define DllExport _declspec(dllexport)
 

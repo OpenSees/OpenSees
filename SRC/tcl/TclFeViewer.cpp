@@ -91,7 +91,7 @@ TclFeViewer_setProjectionMode(ClientData clientData, Tcl_Interp *interp, int arg
 			      TCL_Char **argv);		   			 
 int
 TclFeViewer_setFillMode(ClientData clientData, Tcl_Interp *interp, int argc, 
-			TCL_Char **argv);		   			 			      
+			TCL_Char **argv);		
 int
 TclFeViewer_setPRP(ClientData clientData, Tcl_Interp *interp, int argc, 
 		   TCL_Char **argv);		   
@@ -117,7 +117,7 @@ TclFeViewer::TclFeViewer()
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(0), 
   theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-  deltaT(0.0), nextTimeStampToRecord(0.0), wipeFlag(0),
+  deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0), wipeFlag(0),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
   theTclFeViewer = 0;
@@ -125,11 +125,11 @@ TclFeViewer::TclFeViewer()
 }
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
-			 Domain &_theDomain, int WipeFlag, Tcl_Interp *interp, double dT)
+			 Domain &_theDomain, int WipeFlag, Tcl_Interp *interp, double dT, double rTolDt)
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(&_theDomain), 
   theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-  deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(WipeFlag),
+  deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), wipeFlag(WipeFlag),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -193,11 +193,11 @@ TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int h
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height, 
 			 const char *fileName, Domain &_theDomain, Tcl_Interp *interp,
-             double dT)
+             double dT, double rTolDt)
    :Recorder(RECORDER_TAGS_TclFeViewer),
    theMap(0),theRenderer(0), theDomain(&_theDomain),
    theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
-   deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(1), 
+   deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), wipeFlag(1),
    vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -290,7 +290,9 @@ TclFeViewer::record(int cTag, double timeStamp)
   // using theRenderer and displayTag as arguments.
   // first clear the image
   int res = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
       if (deltaT != 0.0) 
           nextTimeStampToRecord = timeStamp + deltaT;
@@ -502,7 +504,7 @@ TclFeViewer::setPortWindow(float left, float right, float bottom, float top)
 }
 
 int
-TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact)
+TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact, int lineWidth)
 {
 #ifdef _NOGRAPHICS
   // if no graphics .. just return 0
@@ -512,6 +514,7 @@ TclFeViewer::displayModel(int eleFlag, int nodeFlag, float displayFact)
   theEleMode = eleFlag;
   theNodeMode = nodeFlag;    
   theDisplayFact = displayFact;    
+  theRenderer->setLineWidth(lineWidth);
   return this->record(0, 0.0);
 #endif
 }
@@ -724,7 +727,7 @@ TclFeViewer_setPlaneDist(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << "WARNING args incorrect - dist near far \n";
       return TCL_ERROR;
   }    
-  // get distnces to near view and far planes
+  // get distances to near view and far planes
   double anear, afar;
   if (Tcl_GetDouble(interp, argv[1], &anear) != TCL_OK) {
       opserr << "WARNING invalid near - vup near far\n";
@@ -885,8 +888,8 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_OK;    
   
   // check number of args  
-  if (argc != 3 && argc != 4) {
-      opserr << "WARNING args incorrect - display eleMode <nodeMode> fact\n";
+  if (argc < 3 || argc > 5) {
+      opserr << "WARNING args incorrect - display eleMode <nodeMode> displayFact <lineWidth>\n";
       return TCL_ERROR;
   }    
 
@@ -905,24 +908,32 @@ TclFeViewer_displayModel(ClientData clientData, Tcl_Interp *interp, int argc,
       theTclFeViewer->displayModel(displayMode, -1, float(displayFact));
       return TCL_OK;    
   } else {
-      
-      int eleFlag, nodeFlag;
+      int eleMode, nodeMode;
       double displayFact;
-      if (Tcl_GetInt(interp, argv[1], &eleFlag) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlag displayFact\n";
+      if (Tcl_GetInt(interp, argv[1], &eleMode) != TCL_OK) {
+	  opserr << "WARNING invalid eleMode - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
 	      }
-      if (Tcl_GetInt(interp, argv[2], &nodeFlag) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlahg displayFact\n";
+      if (Tcl_GetInt(interp, argv[2], &nodeMode) != TCL_OK) {
+	  opserr << "WARNING invalid nodeMode - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
 	      }      
       if (Tcl_GetDouble(interp, argv[3], &displayFact) != TCL_OK) {
-	  opserr << "WARNING invalid displayMode - display eleFlag nodeFlahg displayFact\n";
+	  opserr << "WARNING invalid displayFact - display eleMode nodeMode displayFact\n";
 	  return TCL_ERROR;
       }  
-
-      theTclFeViewer->displayModel(eleFlag, nodeFlag, float(displayFact));
-      return TCL_OK;    
+      // line width
+      if (argc == 5) {
+          int lineWidth;
+          if (Tcl_GetInt(interp, argv[4], &lineWidth) != TCL_OK) {
+              opserr << "WARNING invalid lineWidth - display eleMode nodeMode displayFact lineWidth\n";
+              return TCL_ERROR;
+          }
+          theTclFeViewer->displayModel(eleMode, nodeMode, float(displayFact), lineWidth);
+          return TCL_OK;
+      }
+      theTclFeViewer->displayModel(eleMode, nodeMode, float(displayFact));
+      return TCL_OK;
   }
 #endif
 }

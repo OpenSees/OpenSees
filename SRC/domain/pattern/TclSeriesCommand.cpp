@@ -78,6 +78,8 @@ extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
 
 #include <elementAPI.h>
+extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <TclModelBuilder.h>
 
 TimeSeries *

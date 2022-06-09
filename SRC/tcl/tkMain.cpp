@@ -70,7 +70,9 @@ terms specified in this license.
 
 extern "C" {
 #define WIN32_LEAN_AND_MEAN
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #undef WIN32_LEAN_AND_MEAN
 #include <ctype.h>
 #include <stdio.h>
@@ -311,7 +313,7 @@ Tk_MainOpenSees(int argc, char **argv, Tcl_AppInitProc *appInitProc, Tcl_Interp 
      * Invoke application-specific initialization.
      */
 	if ((*appInitProc)(interp) != TCL_OK) {
-      TkpDisplayWarning(Tcl_GetStringResult(interp), "Application Inititialization Failed");
+      TkpDisplayWarning(Tcl_GetStringResult(interp), "Application Initialization Failed");
 	}
     /*
      * Invoke the script specified on the command line, if any.

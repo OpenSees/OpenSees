@@ -21,7 +21,7 @@
 // $Revision: 1.7 $
 // $Date: 2005-11-07 21:34:25 $
 // $Source: /usr/local/cvs/OpenSees/SRC/database/MySqlDatastore.cpp,v $
-
+#include <stdio.h>
 #include <MySqlDatastore.h>
 #include <Vector.h>
 #include <Matrix.h>
@@ -154,7 +154,7 @@ MySqlDatastore::sendMatrix(int dbTag, int commitTag,
   // check that the data will fit, MySQL has a limit on blob sizes
   int sizeData = theMatrix.dataSize * sizeof(double);
   if (sizeData > MAX_BLOB_SIZE) {
-      opserr << "MySqlDatastore::sendMatrix - vector too big to send to MySQL databse, enlarge BLOBS!";
+      opserr << "MySqlDatastore::sendMatrix - vector too big to send to MySQL database, enlarge BLOBS!";
       return  -2;
   }
 
@@ -298,7 +298,7 @@ MySqlDatastore::sendVector(int dbTag, int commitTag,
   // check that the data will fit, MySQL has a limit on blob sizes
   int sizeData = theVector.sz * sizeof(double);
   if (sizeData > MAX_BLOB_SIZE) {
-      opserr << "MySqlDatastore::sendVector - vector too big to send to MySQL databse, enlarge BLOBS!";
+      opserr << "MySqlDatastore::sendVector - vector too big to send to MySQL database, enlarge BLOBS!";
       return  -2;
   }
 
@@ -441,7 +441,7 @@ MySqlDatastore::sendID(int dbTag, int commitTag,
   // check that the data will fit, MySQL has a limit on blob sizes
   int sizeData = theID.sz * sizeof(int);
   if (sizeData > MAX_BLOB_SIZE) {
-      opserr << "MySqlDatastore::sendID - vector too big to send to MySQL databse, enlarge BLOBS!";
+      opserr << "MySqlDatastore::sendID - vector too big to send to MySQL database, enlarge BLOBS!";
       return  -2;
   }
 

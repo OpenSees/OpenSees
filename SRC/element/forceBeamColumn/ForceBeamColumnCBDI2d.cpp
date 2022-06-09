@@ -2967,6 +2967,9 @@ ForceBeamColumnCBDI2d::setResponse(const char **argv, int argc, OPS_Stream &outp
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));  
+  
   else if (strcmp(argv[0],"sectionDisplacements") == 0)
     theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
 
@@ -3068,6 +3071,9 @@ ForceBeamColumnCBDI2d::setResponse(const char **argv, int argc, OPS_Stream &outp
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
   
   output.endTag(); // ElementOutput
 
@@ -3230,6 +3236,13 @@ ForceBeamColumnCBDI2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];

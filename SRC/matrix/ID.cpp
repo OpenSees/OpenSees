@@ -427,7 +427,7 @@ ID::fill(int fill_value){
 
 // ID &operator=(const ID  &V):
 //	the assignment operator, This is assigned to be a copy of V. if sizes
-//	are not compatable this.data [] is deleted. The data pointers will not
+//	are not compatible this.data [] is deleted. The data pointers will not
 //	point to the same area in mem after the assignment.
 //
 
@@ -437,7 +437,7 @@ ID::operator=(const ID &V)
     // first check we are not trying v = v
     if (this != &V) {
 	
-	// check size compatability, if different delete
+	// check size compatibility, if different delete
 	// old and make room for new.
 	if (sz != V.sz) {
 	    if (arraySize < V.sz) {

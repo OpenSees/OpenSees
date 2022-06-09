@@ -326,7 +326,7 @@ puts "Finished creating dashpot material and element..."
 #  8. CREATE GRAVITY RECORDERS
 #-----------------------------------------------------------------------------------------------------------
 
-# record nodal displacments, velocities, and accelerations at each time step
+# record nodal displacements, velocities, and accelerations at each time step
 recorder Node -file Gdisplacement.out -time  -nodeRange 1 $numTotalNode -dof 1 2  disp
 recorder Node -file Gvelocity.out     -time  -nodeRange 1 $numTotalNode -dof 1 2  vel
 recorder Node -file Gacceleration.out -time  -nodeRange 1 $numTotalNode -dof 1 2  accel
@@ -378,7 +378,7 @@ puts "Finished with plastic gravity analysis..."
 setTime 0.0
 wipeAnalysis
 
-# record nodal displacments, velocities, and accelerations at each time step
+# record nodal displacements, velocities, and accelerations at each time step
 recorder Node -file displacement.out -time -dT $motionDT -nodeRange 1 $numTotalNode -dof 1 2  disp
 recorder Node -file velocity.out     -time -dT $motionDT -nodeRange 1 $numTotalNode -dof 1 2  vel
 recorder Node -file acceleration.out -time -dT $motionDT -nodeRange 1 $numTotalNode -dof 1 2  accel

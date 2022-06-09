@@ -343,6 +343,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMP.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DuctileFracture.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1355,6 +1358,12 @@
     <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp">
       <Filter>nD\elasticIsotropic</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\FiberSectionWarping3d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1580,6 +1589,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SteelMP.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DuctileFracture.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TriMatrix.h">
@@ -2542,6 +2554,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h">
       <Filter>nD\elasticIsotropic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticPoly.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\FiberSectionWarping3d.h">
+      <Filter>section</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -71,7 +71,7 @@ void* OPS_FourNodeTetrahedron()
     if (mat == 0) 
     {
       opserr << "WARNING material not found\n";
-      opserr << "material tag: " << idata[9];
+      opserr << "material tag: " << idata[5];
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
     }
 
@@ -197,7 +197,7 @@ const double  FourNodeTetrahedron::one_over_root3 = 1.0 / root3 ;
 
 const double  FourNodeTetrahedron::sg[] = { 0.25 } ;
 
-const double  FourNodeTetrahedron::wg[] = { 0.16667 } ;
+const double  FourNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
 
   
 static Matrix B(NumStressComponents,NumDOFsPerNode) ;
@@ -1701,7 +1701,7 @@ FourNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output
 
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
   {
-    for (int i=1; i<=3; i++) 
+    for (int i=1; i<=4; i++) 
     {
       sprintf(outputData,"P1_%d",i);
       output.tag("ResponseType",outputData);

@@ -47,6 +47,12 @@ OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * con
 int
 OPS_SourceCmd(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj * const *argv);
 
+int
+getNDM(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
+int
+getNDF(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);
+
 int 
 wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -206,6 +212,9 @@ int
 getNodeTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 getEleTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
@@ -275,6 +284,26 @@ int
 sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 // AddingSensitivity:END ///////////////////////////////////////////////////
 
+int 
+getNumElements(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getEleLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);

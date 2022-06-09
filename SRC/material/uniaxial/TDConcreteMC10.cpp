@@ -45,7 +45,7 @@
  -------------------------------*/
  // Detailed descriptions of the model and its implementation can be found in the following:
  // (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
- //     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+ //     Recycled Concrete Aggregates. ACI Structural J. 115, 175ï¿½190. doi:10.14359/51701153
  // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
  //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
  // A manual describing the use of the model and sample files can be found at:
@@ -53,7 +53,7 @@
  //----------------------------------------------------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------------------------------------------------
- // Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+ // Disclaimer: This software is provided ï¿½as isï¿½, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
  //----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -143,7 +143,7 @@ using namespace std; //Added by AMK for debugging
 
 
 TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, double _Ecm, double _beta, double _age, double _epsba, double _epsbb, double _epsda, double _epsdb, double _phiba, double _phibb, double _phida, double _phidb, double _tcast, double _cem): 
-  UniaxialMaterial(tag, 0), //Changed by ntosic (from TDConcrete by AMK)
+  UniaxialMaterial(tag, MAT_TAG_TDConcreteMC10),
   fc(_fc), ft(_ft), Ec(_Ec), Ecm(_Ecm), beta(_beta), age(_age), epsba(_epsba), epsbb(_epsbb), epsda(_epsda), epsdb(_epsdb), phiba(_phiba), phibb(_phibb), phida(_phida), phidb(_phidb), tcast(_tcast), cem(_cem)
 {
   ecminP = 0.0;
@@ -189,7 +189,7 @@ TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, doub
 }
 
 TDConcreteMC10::TDConcreteMC10(void):
-  UniaxialMaterial(0, 0) //Changed by AMK (from MAT_TAG_Concrete02 to 0)
+  UniaxialMaterial(0, MAT_TAG_TDConcreteMC10)
 {
  
 }
@@ -416,12 +416,12 @@ TDConcreteMC10::setStress(double strain, double &stiff)
     	} else { // either Tens Load, Tens Unload, or Tens reload
     		double et0 = ft/Ec;
     		if (strain >= ecmax) { //Tens Load or reload if strain is larger than before
-    		//Need to check whether cracking has occured or not
+    		//Need to check whether cracking has occurred or not
     		//If cracked, then reloading occurs along Et
     		//If not cracked, then loading occurs according to Tens_Envlp
     			ecmax = strain; // reset ecmax
     			this->Tens_Envlp(strain, stress, stiff);
-    			if (strain >= et0) {//cracking has occured, set cracking flag
+    			if (strain >= et0) {//cracking has occurred, set cracking flag
     				crack_flag = 1;
     			}
     		} else { //Tens Unload or Tens Reload
@@ -524,7 +524,7 @@ TDConcreteMC10::commitState(void)
   DSIG_i[count+1] = sig-sigP;
   
   //Secant Stiffness for determination of creep strain:
-      if (fabs(eps_m/sig)>Ec) { //ntosic: originaly was eps_m/sig
+      if (fabs(eps_m/sig)>Ec) { //ntosic: originally was eps_m/sig
           E_i[count+1] = Ec;
       } else {
           E_i[count+1] = fabs(sig/eps_m); //ADDED 7/22

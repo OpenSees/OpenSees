@@ -62,15 +62,23 @@ void* OPS_NDFiberSection2d()
     int tag;
     if (OPS_GetIntInput(&numData,&tag) < 0) return 0;
 
+    double alpha = 1.0;
     bool computeCentroid = true;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
+    while (OPS_GetNumRemainingInputArgs() > 0) {
       const char* opt = OPS_GetString();
       if (strcmp(opt, "-noCentroid") == 0)
 	computeCentroid = false;
+      if (strcmp(opt, "-alpha") == 0 || strcmp(opt, "-shape") == 0) {
+	if (OPS_GetNumRemainingInputArgs() < 1)
+	  break;
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData,&alpha) < 0)
+	  return 0;
+      }
     }
     
     int num = 30;
-    return new NDFiberSection2d(tag, num, computeCentroid);
+    return new NDFiberSection2d(tag, num, alpha, computeCentroid);
 }
 
 // constructors:
@@ -1042,9 +1050,20 @@ Response*
 NDFiberSection2d::setResponse(const char **argv, int argc,
 			      OPS_Stream &output)
 {
-  Response *theResponse =0;
+  Response *theResponse = 0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
+
+    static double fiberLocs[10000];
+    
+    if (sectionIntegr != 0) {
+      sectionIntegr->getFiberLocations(numFibers, fiberLocs);
+    }  
+    else {
+      for (int i = 0; i < numFibers; i++) {
+	fiberLocs[i] = matData[2*i];
+      }
+    }
     
     int key = numFibers;
     int passarg = 2;
@@ -1065,9 +1084,10 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       // Find first fiber with specified material tag
       for (j = 0; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];
 	  dy = ySearch-yCoord;
-	  closestDist = fabs(dy);
+	  closestDist = dy*dy;
 	  key = j;
 	  break;
 	}
@@ -1075,9 +1095,10 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       // Search the remaining fibers
       for ( ; j < numFibers; j++) {
 	if (matTag == theMaterials[j]->getTag()) {
-	  ySearch = matData[2*j];
+	  //ySearch = matData[2*j];
+	  ySearch = fiberLocs[j];
 	  dy = ySearch-yCoord;
-	  distance = fabs(dy);
+	  distance = dy*dy;
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
@@ -1094,15 +1115,17 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       double ySearch, dy;
       double distance;
       
-      ySearch = matData[0];
+      //ySearch = matData[0];
+      ySearch = fiberLocs[0];      
       dy = ySearch-yCoord;
       closestDist = fabs(dy);
       key = 0;
       for (int j = 1; j < numFibers; j++) {
-	ySearch = matData[2*j];
+	//ySearch = matData[2*j];
+	ySearch = fiberLocs[j];	  		
 	dy = ySearch-yCoord;
 	
-	distance = fabs(dy);
+	distance = dy*dy;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -1117,24 +1140,99 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       output.attr("zLoc",0.0);
       output.attr("area",matData[2*key+1]);
       
-      theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
       output.endTag();
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  else if (strcmp(argv[0],"fiberData") == 0) {
+    
+    int numData = numFibers*7;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 5, theResponseData);
+  }
+
+  else if (strcmp(argv[0],"fiberData2") == 0) {
+    
+    int numData = numFibers*8;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+  }  
+  
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
 int 
 NDFiberSection2d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
+  if (responseID == 5) {
+    int numData = 7*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[2*j]; // y
+      data(count+1) = 0.0; // z
+      data(count+2) = matData[2*j+1]; // A
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+3) = stress(0);
+      data(count+4) = stress(1);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+5) = strain(0);
+      data(count+6) = strain(1);
+      count += 7;      
+    }
+    return sectInfo.setVector(data);
+  }
+  if (responseID == 55) {
+    int numData = 8*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[2*j]; // y
+      data(count+1) = 0.0; // z
+      data(count+2) = matData[2*j+1]; // A
+      data(count+3) = (double)theMaterials[j]->getTag();
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+4) = stress(0);
+      data(count+5) = stress(1);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+6) = strain(0);
+      data(count+7) = strain(1);
+      count += 8;      
+    }
+    return sectInfo.setVector(data);
+  }  
+  
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 

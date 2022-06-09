@@ -1323,9 +1323,9 @@ Node::getRV(const Vector &V)
 	return *unbalLoadWithInertia;
     }
     
-    // check dimesions of R and V
+    // check dimensions of R and V
     if (R->noCols() != V.Size()) {
-	opserr << "WARNING Node::getRV() - R and V of incompatible dimesions\n";
+	opserr << "WARNING Node::getRV() - R and V of incompatible dimensions\n";
 	opserr << "R: " << *R << "V: " << V;
 	unbalLoadWithInertia->Zero();
 	return *unbalLoadWithInertia;
@@ -1403,7 +1403,7 @@ Node::sendSelf(int cTag, Channel &theChannel)
     data(0) = this->getTag(); 
     data(1) = numberDOF; 
     
-    // indicate whether vector quantaties have been formed
+    // indicate whether vector quantities have been formed
     if (disp == 0)       data(2) = 1; else data(2) = 0;
     if (vel == 0)        data(3) = 1; else data(3) = 0;
     if (accel == 0)      data(4) = 1; else data(4) = 0;
@@ -1758,7 +1758,7 @@ Node::displaySelf(Renderer &theRenderer, int theEleMode, int theNodeMode, float 
 
 // createDisp(), createVel() and createAccel():
 // private methods to create the arrays to hold the disp, vel and acceleration
-// values and the Vector objects for the committed and trial quantaties.
+// values and the Vector objects for the committed and trial quantities.
 
 int
 Node::createDisp(void)

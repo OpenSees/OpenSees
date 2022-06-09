@@ -128,10 +128,10 @@ class Quad4FiberOverlay : public Element
 		Vector nFi;
 		Vector nFj;
 
-		int iStartNode;						// Fiber starting interploation node
-		int iEndNode;						// Fiber starting interploation node
-		int jStartNode;						// Fiber ending interploation node
-		int jEndNode;						// Fiber ending interploation node
+		int iStartNode;						// Fiber starting interpolation node
+		int iEndNode;						// Fiber starting interpolation node
+		int jStartNode;						// Fiber ending interpolation node
+		int jEndNode;						// Fiber ending interpolation node
 
 		Matrix dNidxAlphai;					// J^-1 ^ dN/dxi	
 		Vector A;							// Normalized fiber direction vector

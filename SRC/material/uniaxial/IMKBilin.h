@@ -22,8 +22,8 @@
 
 //**********************************************************************                                                                     
 // Code Developed by: Ahmed Elkady
-// Postdoctoral Researcher, EPFL, Switzerland
-// Last Updated: August 29th 2012
+// Lecturer, University of Southampton
+// Last Updated: October 25th 2021
 //**********************************************************************
 
 #ifndef IMKBilin_h
@@ -55,14 +55,6 @@ public:
 	void Print(OPS_Stream &s, int flag = 0);
 
 
-/* 	double r8_max(double x, double y);
-	double r8_min(double x, double y);
-	int i4_max(int i1, int i2);
-	double pchst(double arg1, double arg2);
-	int chfev(double x1, double x2, double f1, double f2, double d1, double d2, int ne, double xe[], double fe[], int next[]);
-	void spline_pchip_set(int n, double x[], double f[], double d[]);
-	void spline_pchip_val(int n, double x[], double f[], double d[], int ne, double xe[], double fe[]);
- */
 protected:
 
 private:
@@ -91,10 +83,6 @@ private:
 	double c_K;
 	double D_pos;
 	double D_neg;
-	double n;
-	double Roffset;
-	double LAMBDA_F;
-	double c_F;
 
 	//State variables 
 	double U, cU;
@@ -121,7 +109,6 @@ private:
 	double     Ref_Energy_S;
 	double     Ref_Energy_C;
 	double     Ref_Energy_K;
-	double     Ref_Energy_F;
 
 	double    			 K_j_1, cK_j_1;
 	double     Theta_y_pos_j_1, cTheta_y_pos_j_1;
@@ -152,7 +139,6 @@ private:
 	double   beta_S_j_1, cbeta_S_j_1;
 	double   beta_C_j_1, cbeta_C_j_1;
 	double   beta_K_j_1, cbeta_K_j_1;
-	double 	 beta_F_j_1, cbeta_F_j_1;
 
 	double Excursion_Flag, cExcursion_Flag;
 	double  Reversal_Flag, cReversal_Flag;
@@ -172,11 +158,6 @@ private:
 	double Mreversal, cMreversal;
 	double TangentK, cTangentK;
 
-	double beta_Sx, cbeta_Sx;
-	double slope_p_x, cslope_p_x;
-	double Mpe_x, cMpe_x;
-	double Theta_y_x, cTheta_y_x;
-	double MpeProject_x, cMpeProject_x;
 
 };
 
@@ -206,7 +187,7 @@ c_C 				Rate of post-capping strength deterioration.
 c_K 				Rate of unloading stiffness deterioration.
 D_pos 				Rate of cyclic deterioration in the +ve loading direction
 D_neg 				Rate of cyclic deterioration in the -ve loading direction
-n					Paramter identifying the offset rotation on the unloading side
+n					Parameter identifying the offset rotation on the unloading side
 Roffset				Offset rotation identifying the Smooth Transition region
 LAMBDA_F			Cyclic deterioration parameter for Smooth Transition deterioration 
 c_F					Cyclic deterioration parameter for Smooth Transition deterioration
@@ -244,9 +225,9 @@ Ref_Energy_S    	Refernence energy for strength deterioration
 Ref_Energy_C    	Refernence energy for post-capping strength deterioration
 Ref_Energy_K    	Refernence energy for unloading stiffness deterioration
 Ref_Energy_F    	Refernence energy for Smooth Transition deterioration
-Excursion_Flag 		Flag for Excursion occurance (i.e., crossing the x-axis)
-Reversal_Flag 		Flag for Loading direction reversal occurance
-Yield_Flag 			Flag for Yielding occurance
+Excursion_Flag 		Flag for Excursion occurrence (i.e., crossing the x-axis)
+Reversal_Flag 		Flag for Loading direction reversal occurrence
+Yield_Flag 			Flag for Yielding occurrence
 Fail_FlagPos 		Flag for reaching the ultimate rotation in the +ve loading direction
 Fail_FlagNeg 		Flag for reaching the ultimate rotation in the -ve loading direction
 Mrpos_Flag 			Flag for reaching the residual moment in the +ve loading direction

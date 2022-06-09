@@ -318,7 +318,7 @@ LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1,
     }
     double Er = Ec/3.0;                                     // Rotation modulus of bearing
     double As = A*h/Tr;                                     // Adjusted shear area of bearing
-    double Is = I*h/Tr;                                     // Adjusted moment of intertia of bearing
+    double Is = I*h/Tr;                                     // Adjusted moment of inertia of bearing
     double Pe = PI*PI*Er*Is/(h*h);                          // Euler buckling load of bearing
     Fcr = -sqrt(Pe*G*As);                                   // Critical buckling load in compression
     Fcrn = Fcr;                                             // Current value of critical buckling load

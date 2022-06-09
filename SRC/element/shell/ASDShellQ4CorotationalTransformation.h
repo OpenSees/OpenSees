@@ -33,7 +33,7 @@
 #include <ASDShellQ4Transformation.h>
 
 // this is experimental: it fits the corotational frame following the polar
-// decomposition rather than the 1-2 side allignement as per Felippa's work
+// decomposition rather than the 1-2 side alignment as per Felippa's work
 #define USE_POLAR_DECOMP_ALLIGN
 
 /** \brief ASDShellQ4CorotationalTransformation
@@ -177,7 +177,7 @@ public:
         // reference coordinate system
         ASDShellQ4LocalCoordinateSystem a = createReferenceCoordinateSystem();
 
-        // compute nodal positions at current configuration removing intial displacements if any
+        // compute nodal positions at current configuration removing initial displacements if any
         std::array<Vector3Type, 4> def = {
             Vector3Type(m_nodes[0]->getCrds()),
             Vector3Type(m_nodes[1]->getCrds()),

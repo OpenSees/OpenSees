@@ -42,10 +42,11 @@ int
 httpGET_File(char const* URL, char const* page, unsigned int port, const char* filename);
 
 #ifdef _WIN32
-
+#define byte win_byte_override
 #include <windows.h>
 #include <elementAPI.h>
 extern SimulationInformation* theSimulationInfoPtr;
+extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 #else
 #include <dlfcn.h>

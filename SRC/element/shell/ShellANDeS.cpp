@@ -479,7 +479,7 @@ int ShellANDeS::addInertiaLoadToUnbalance(const Vector &accel)
      if (6 != Raccel1.Size() || 6 != Raccel2.Size() || 6 != Raccel3.Size()  )
      {
           // Xiaoyan changed 2 to 3 and added Racce15-18  09/27/00
-          opserr << "ShellANDeS::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+          opserr << "ShellANDeS::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
           return -1;
      }
 
@@ -2532,7 +2532,7 @@ void ShellANDeS::initializeGeometry(double n1, double n2, double n3)
      //Centroid
      x0 = (x1 + x2 + x3) / 3;
      
-     // Local x axis points paralell to side 1-2
+     // Local x axis points parallel to side 1-2
      e1 = x2 - x1;
      e1.Normalize();
 

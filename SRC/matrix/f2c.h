@@ -5,7 +5,7 @@
                                                                         
 /*
 // NOTE: this is a modified file of f2c.h to work with most C++ compilers.
-//       f2c.h for example, defines abs() as a macro, casuing parsing
+//       f2c.h for example, defines abs() as a macro, causing parsing
 //		 problems when it encounters abs() in stdlib.h, and so on.
 //		 It is needed in Lapack++ because some of the C/Lapack functions, like
 //		 ilaenv_(), need to know what ftn_len is (system dependent.)
@@ -291,13 +291,15 @@ extern integer ef1cmc_(ftnint *, ftnlen *, ftnint *, ftnlen *);
 
 #ifndef _KAI
 #ifndef _LINUX
-extern double erf(double) throw();
+//extern double erf(double) throw();
 #endif
 #endif
+
 extern double erf_(float *);
+
 #ifndef _KAI
 #ifndef _LINUX
-extern double erfc(double) throw();
+//extern double erfc(double) throw();
 #endif
 #endif
 

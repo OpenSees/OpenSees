@@ -1093,6 +1093,15 @@ ShadowSubdomain::revertToStart(void)
 {
   msgData(0) = ShadowActorSubdomain_revertToStart;
   this->sendID(msgData);
+
+#ifdef _PARALLEL_PROCESSING
+  // CYPE Software: revertToStart() invokes update on ActorSubdomain which asks for barrierCheck.
+  {
+      int res = this->barrierCheckIN();
+      this->barrierCheckOUT(res);
+  }
+#endif
+
   if (this->recvID(msgData) != 0) {
     opserr << "ShadowSubdomain::revertToStart ERROR ERROR\n";
   }
@@ -1240,7 +1249,7 @@ ShadowSubdomain::getNumExternalNodes(void) const
 const ID   &
 ShadowSubdomain::getExternalNodes(void)
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1250,7 +1259,7 @@ ShadowSubdomain::getExternalNodes(void)
 int 	
 ShadowSubdomain::getNumDOF(void)
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1261,7 +1270,7 @@ ShadowSubdomain::getNumDOF(void)
 const Matrix &
 ShadowSubdomain::getTang(void)    
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1284,7 +1293,7 @@ ShadowSubdomain::getTang(void)
 const Vector &
 ShadowSubdomain::getResistingForce(void)    
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 

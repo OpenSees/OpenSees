@@ -71,14 +71,14 @@ PartitionedDomain. It then invokes {\em buildInterface(numSub)} on
 itself. Then for each Subdomain in the PartitionedDomain it invokes
 {\em buildSubdomain(numSub, *this)}. If building the interface or any
 of the subdomains fails, a warning message is printed and a negative
-number is returned. Returns $0$ if sucessfull. \\
+number is returned. Returns $0$ if successful. \\
 
 \indent {\em virtual int buildInterface(int numSubdomains) =0;}\\ 
 This method must be provided by the subclasses. It is used to add any
 boundary nodes, nodal loads and constraints to the PartitionedDomain
 object. The integer {\em numSubdomains} is passed to provide
 information about the number of subdomains in the
-PartitionedDomain. To return $0$ if successfull, a negative number if not. \\
+PartitionedDomain. To return $0$ if successful, a negative number if not. \\
 
 
 \indent {\em virtual int buildSubdomain(int partition, int
@@ -87,7 +87,7 @@ This method must be provided by the subclasses. It is used to add
 nodes, elements, loads and constraints to the subdomain {\em
 theSubdomain}. The integers {\em partition} and {\em numPartitions}
 are used to identify which partition is being built and the total
-number of partitions. To return $0$ if succesfull, a negative number
+number of partitions. To return $0$ if successful, a negative number
 if not. \\
 
 

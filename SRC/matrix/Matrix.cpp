@@ -42,12 +42,6 @@ using std::nothrow;
 #define MATRIX_WORK_AREA 400
 #define INT_WORK_AREA 20
 
-#ifdef _WIN32
-#ifdef _USRDLL
-#define _DLL
-#endif
-#endif
-
 #include <math.h>
 
 int Matrix::sizeDoubleWork = MATRIX_WORK_AREA;
@@ -335,7 +329,7 @@ Matrix::Assemble(const Matrix &V, const ID &rows, const ID &cols, double fact)
 }
 
 #ifdef _WIN32
-//#ifndef _DLL
+
 extern "C" int  DGESV(int *N, int *NRHS, double *A, int *LDA, 
 			      int *iPiv, double *B, int *LDB, int *INFO);
 
@@ -445,13 +439,9 @@ Matrix::Solve(const Vector &b, Vector &x) const
     
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 #endif
@@ -542,13 +532,9 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
 	info = -1;
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGESV(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgesv_(&n,&nrhs,Aptr,&ldA,iPIV,Xptr,&ldB,&info);
 
@@ -640,23 +626,14 @@ Matrix::Invert(Matrix &theInverse) const
     
 
 #ifdef _WIN32
-//#ifndef _DLL
+
     DGETRF(&n,&n,Aptr,&ldA,iPIV,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
     if (info != 0) 
       return -abs(info);
 
-//#ifndef _DLL
     DGETRI(&n,Aptr,&ldA,iPIV,Wptr,&workSize,&info);
-//#endif
-//#ifdef _DLL
-//	opserr << "Matrix::Solve - not implemented in dll\n";
-//	return -1;
-//#endif
+
 #else
     dgetrf_(&n,&n,Aptr,&ldA,iPIV,&info);
     if (info != 0) 
@@ -678,7 +655,7 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
 
 #ifdef _G3DEBUG
     if ((other.numRows != numRows) || (other.numCols != numCols)) {
-      opserr << "Matrix::addMatrix(): incompatable matrices\n";
+      opserr << "Matrix::addMatrix(): incompatible matrices\n";
       return -1;
     }
 #endif
@@ -735,7 +712,7 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
       }
     } 
 
-    // successfull
+    // successful
     return 0;
 }
 
@@ -748,7 +725,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 
 #ifdef _G3DEBUG
     if ((other.numRows != numCols) || (other.numCols != numRows)) {
-      opserr << "Matrix::addMatrixTranspose(): incompatable matrices\n";
+      opserr << "Matrix::addMatrixTranspose(): incompatible matrices\n";
       return -1;
     }
 #endif
@@ -811,7 +788,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
       }
     } 
 
-    // successfull
+    // successful
     return 0;
 }
 
@@ -826,7 +803,7 @@ Matrix::addMatrixProduct(double thisFact,
       return 0;
 #ifdef _G3DEBUG
     if ((B.numRows != numRows) || (C.numCols != numCols) || (B.numCols != C.numRows)) {
-      opserr << "Matrix::addMatrixProduct(): incompatable matrices, this\n";
+      opserr << "Matrix::addMatrixProduct(): incompatible matrices, this\n";
       return -1;
     }
 #endif
@@ -901,7 +878,7 @@ Matrix::addMatrixTransposeProduct(double thisFact,
 
 #ifdef _G3DEBUG
   if ((B.numCols != numRows) || (C.numCols != numCols) || (B.numRows != C.numRows)) {
-    opserr << "Matrix::addMatrixProduct(): incompatable matrices, this\n";
+    opserr << "Matrix::addMatrixProduct(): incompatible matrices, this\n";
     return -1;
   }
 #endif
@@ -967,7 +944,7 @@ Matrix::addMatrixTripleProduct(double thisFact,
 #ifdef _G3DEBUG
     if ((numCols != numRows) || (B.numCols != B.numRows) || (T.numCols != numRows) ||
 	(T.numRows != B.numCols)) {
-      opserr << "Matrix::addMatrixTripleProduct() - incompatable matrices\n";
+      opserr << "Matrix::addMatrixTripleProduct() - incompatible matrices\n";
       return -1;
     }
 #endif
@@ -1066,7 +1043,7 @@ Matrix::addMatrixTripleProduct(double thisFact,
 #ifdef _G3DEBUG
     if ((numRows != A.numRows) || (A.numCols != B.numRows) || (B.numCols != C.numRows) ||
 	(C.numCols != numCols)) {
-      opserr << "Matrix::addMatrixTripleProduct() - incompatable matrices\n";
+      opserr << "Matrix::addMatrixTripleProduct() - incompatible matrices\n";
       return -1;
     }
 #endif
@@ -1172,7 +1149,7 @@ Matrix::operator()(const ID &rows, const ID & cols) const
 		
 // Matrix &operator=(const Matrix  &V):
 //      the assignment operator, This is assigned to be a copy of V. if sizes
-//      are not compatable this.data [] is deleted. The data pointers will not
+//      are not compatible this.data [] is deleted. The data pointers will not
 //      point to the same area in mem after the assignment.
 //
 
@@ -1327,7 +1304,7 @@ Matrix::operator/=(double fact)
 
       return *this;
     } else {
-      // print out the warining message
+      // print out the warning message
       opserr << "WARNING:Matrix::operator/= - 0 factor specified all values in Matrix set to ";
       opserr << MATRIX_VERY_LARGE_VALUE << endln;
 
@@ -1393,7 +1370,7 @@ Matrix::operator*(const Vector &V) const
     Vector result(numRows);
     
     if (V.Size() != numCols) {
-	opserr << "Matrix::operator*(Vector): incompatable sizes\n";
+	opserr << "Matrix::operator*(Vector): incompatible sizes\n";
 	return result;
     } 
     
@@ -1426,7 +1403,7 @@ Matrix::operator^(const Vector &V) const
     Vector result(numCols);
     
     if (V.Size() != numRows) {
-      opserr << "Matrix::operator*(Vector): incompatable sizes\n";
+      opserr << "Matrix::operator*(Vector): incompatible sizes\n";
       return result;
     } 
 
@@ -1467,7 +1444,7 @@ Matrix::operator*(const Matrix &M) const
     Matrix result(numRows,M.numCols);
     
     if (numCols != M.numRows || result.numRows != numRows) {
-	opserr << "Matrix::operator*(Matrix): incompatable sizes\n";
+	opserr << "Matrix::operator*(Matrix): incompatible sizes\n";
 	return result;
     } 
 
@@ -1508,7 +1485,7 @@ Matrix::operator^(const Matrix &M) const
   Matrix result(numCols,M.numCols);
   
   if (numRows != M.numRows || result.numRows != numCols) {
-    opserr << "Matrix::operator*(Matrix): incompatable sizes\n";
+    opserr << "Matrix::operator*(Matrix): incompatible sizes\n";
     return result;
   } 
 
@@ -1540,7 +1517,7 @@ Matrix::operator+=(const Matrix &M)
 {
 #ifdef _G3DEBUG
   if (numRows != M.numRows || numCols != M.numCols) {
-    opserr << "Matrix::operator+=(const Matrix &M) - matrices incompatable\n";
+    opserr << "Matrix::operator+=(const Matrix &M) - matrices incompatible\n";
     return *this;
   }
 #endif
@@ -1558,7 +1535,7 @@ Matrix::operator-=(const Matrix &M)
 {
 #ifdef _G3DEBUG
   if (numRows != M.numRows || numCols != M.numCols) {
-    opserr << "Matrix::operator-=(const Matrix &M) - matrices incompatable [" << numRows << " " ;
+    opserr << "Matrix::operator-=(const Matrix &M) - matrices incompatible [" << numRows << " " ;
     opserr << numCols << "]" << "[" << M.numRows << "]" << M.numCols << "]\n";
 
     return *this;

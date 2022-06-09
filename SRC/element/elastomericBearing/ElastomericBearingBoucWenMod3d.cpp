@@ -264,7 +264,7 @@ ElastomericBearingBoucWenMod3d::ElastomericBearingBoucWenMod3d(int tag,
   double I=(PI/64)*(pow(D2,4)-pow(D1,4));            // Moment of inertia of bearing 
   Kv0=Ac*Ec/Tr;											// Pre-cavitation stiffness at zero lateral displacement 
   double Er=Ec/3; // Rotation modulus of bearing
-  double Is=I*h/Tr;										// Adjusted moment of intertia of bearing
+  double Is=I*h/Tr;										// Adjusted moment of inertia of bearing
   // Rotation
   Kr= Er*Is/h;
   

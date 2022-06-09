@@ -52,8 +52,8 @@ class MVLEM : public Element {
   
   // destructor
   ~MVLEM();
-  
-  // public methods to obtain inforrmation about dof & comectivity
+
+  // public methods to obtain information about dof & connectivity
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
   Node **getNodePtrs(void);

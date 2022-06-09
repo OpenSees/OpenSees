@@ -1,24 +1,23 @@
-add_library(systemOfEqn "")
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
-target_sources(systemOfEqn
+target_sources(OPS_SysOfEqn
     PRIVATE
-	BandGenLinSOE.cpp
-	BandGenLinSolver.cpp
-	BandGenLinLapackSolver.cpp
-	DistributedBandGenLinSOE.cpp
-	BandGenLinSOE_Single.cpp
-	LinearSOE.cpp
-	DomainSolver.cpp
-	LinearSOESolver.cpp
+    BandGenLinSOE.cpp
+    BandGenLinSolver.cpp
+    BandGenLinLapackSolver.cpp
+    DistributedBandGenLinSOE.cpp
     PUBLIC
-	BandGenLinSOE.h
-	BandGenLinSolver.h
-	BandGenLinLapackSolver.h
-	DistributedBandGenLinSOE.h
-	BandGenLinSOE_Single.h
-	LinearSOE.h
-	DomainSolver.h
-	LinearSOESolver.h
+    BandGenLinSOE.h
+    BandGenLinSolver.h
+    BandGenLinLapackSolver.h
+    DistributedBandGenLinSOE.h
 )
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

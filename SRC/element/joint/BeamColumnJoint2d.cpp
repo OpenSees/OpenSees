@@ -753,7 +753,7 @@ void BeamColumnJoint2d::getGlobalDispls(Vector &dg)
 	formK(kSpring);
 
 	dg.Zero();
-	// commmited external and internal displacement update
+	// committed external and internal displacement update
 	for (int ig = 0; ig < 13; ig++ ) {
 		if (ig<12)
 		{

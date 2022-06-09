@@ -888,7 +888,7 @@ LimitStateMaterial::revertToStart(void)
 	Ploss = 0.0;
 	/////////////////
 
-	// Do the same thin inthe limit curve (done by Terje)
+	// Do the same thing in the limit curve (done by Terje)
 	theCurve->revertToStart();
 
 

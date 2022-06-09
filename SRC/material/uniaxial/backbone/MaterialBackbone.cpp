@@ -39,17 +39,60 @@
 
 #include <math.h>
 
-MaterialBackbone::MaterialBackbone (int tag, UniaxialMaterial &material):
-  HystereticBackbone(tag,BACKBONE_TAG_Material), theMaterial(0)
+#include <OPS_Globals.h>
+#include <elementAPI.h>
+
+void* OPS_MaterialBackbone()
+{
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: hystereticBackbone tag? matTag? <-compression>\n";
+	return 0;
+    }
+      
+    // tag, bbTag;
+    int idata[2];
+    int numdata = 2;
+    if (OPS_GetIntInput(&numdata, idata) < 0) {
+	opserr << "WARNING invalid tag\n";
+	opserr << "Backbone material: " << idata[0] << "\n";
+	return 0;
+    }
+		
+    UniaxialMaterial *material = OPS_getUniaxialMaterial(idata[1]);
+		
+    if (material == 0) {
+	opserr << "WARNING material does not exist\n";
+	opserr << "material: " << idata[1]; 
+	opserr << "\nhystereticBackbone Material: " << idata[0] << "\n";
+	return 0;
+    }
+
+    bool compression = false;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *opt = OPS_GetString();
+      if (strcmp(opt,"-compression") == 0 || strcmp(opt,"compression") == 0)
+	compression = true;
+    }
+    
+    return new MaterialBackbone(idata[0], *material, compression);
+}
+
+MaterialBackbone::MaterialBackbone (int tag, UniaxialMaterial &material, bool compression):
+  HystereticBackbone(tag,BACKBONE_TAG_Material), theMaterial(0), sign(1)
 {
   theMaterial = material.getCopy();
   
   if (theMaterial == 0)
     opserr << "MaterialBackbone::MaterialBackbone -- failed to get copy of material" << endln;
+
+  if (compression)
+    sign = -1;
 }
 
 MaterialBackbone::MaterialBackbone ():
-  HystereticBackbone(0,BACKBONE_TAG_Material), theMaterial(0)
+  HystereticBackbone(0,BACKBONE_TAG_Material), theMaterial(0), sign(1)
 {
 
 }
@@ -63,7 +106,7 @@ MaterialBackbone::~MaterialBackbone()
 double
 MaterialBackbone::getTangent (double strain)
 {
-  theMaterial->setTrialStrain(strain);
+  theMaterial->setTrialStrain(sign*strain);
 	
   return theMaterial->getTangent();
 }
@@ -71,9 +114,9 @@ MaterialBackbone::getTangent (double strain)
 double
 MaterialBackbone::getStress (double strain)
 {
-  theMaterial->setTrialStrain(strain);
+  theMaterial->setTrialStrain(sign*strain);
 
-  return theMaterial->getStress();
+  return sign*theMaterial->getStress();
 }
 
 double
@@ -84,8 +127,8 @@ MaterialBackbone::getEnergy (double strain)
   
   // Mid-point integration
   for (double x = incr/2; x < strain; x += incr) {
-    theMaterial->setTrialStrain(x);
-    energy += theMaterial->getStress();
+    theMaterial->setTrialStrain(sign*x);
+    energy += sign*theMaterial->getStress();
   }
   
   return energy*incr;
@@ -102,6 +145,8 @@ MaterialBackbone::getCopy(void)
 {
   MaterialBackbone *theCopy = 
     new MaterialBackbone (this->getTag(), *theMaterial);
+
+  theCopy->sign = sign;
   
   return theCopy;
 }
@@ -111,6 +156,7 @@ MaterialBackbone::Print (OPS_Stream &s, int flag)
 {
   s << "MaterialBackbone, tag: " << this->getTag() << endln;
   s << "\tmaterial: " << theMaterial->getTag() << endln;
+  s << "\tsign: " << sign << endln;
 }
 
 int
@@ -130,7 +176,7 @@ MaterialBackbone::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   
-  static ID classTags(3);
+  static ID classTags(4);
   
   int clTag = theMaterial->getClassTag();
   int dbTag = theMaterial->getDbTag();
@@ -145,6 +191,7 @@ MaterialBackbone::sendSelf(int cTag, Channel &theChannel)
   
   classTags(1) = dbTag;
   classTags(2) = this->getTag();
+  classTags(3) = sign;
   
   res += theChannel.sendID(this->getDbTag(), cTag, classTags);
   if (res < 0) {
@@ -163,7 +210,7 @@ MaterialBackbone::recvSelf(int cTag, Channel &theChannel,
 {
   int res = 0;
   
-  static ID classTags(3);
+  static ID classTags(4);
   
   res += theChannel.recvID(this->getDbTag(), cTag, classTags);
   if (res < 0) {
@@ -172,6 +219,7 @@ MaterialBackbone::recvSelf(int cTag, Channel &theChannel,
   }
   
   this->setTag(classTags(2));
+  sign = classTags(3);
   
   // Check if the material is null; if so, get a new one
   if (theMaterial == 0) {

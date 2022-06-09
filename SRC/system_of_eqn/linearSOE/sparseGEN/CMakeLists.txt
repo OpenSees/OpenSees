@@ -1,60 +1,71 @@
-add_library(systemOfEqn "")
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
-target_sources(systemOfEqn
-    PRIVATE 
-    	SparseGenColLinSOE.cpp
-	SparseGenColLinSolver.cpp
-	SparseGenRowLinSOE.cpp
-	SparseGenRowLinSolver.cpp
-	SuperLU.cpp
-	PFEMSolver.cpp
-	PFEMLinSOE.cpp
-	PFEMCompressibleSolver.cpp
-	PFEMCompressibleLinSOE.cpp
-	PFEMSolver_LumpM.cpp
-	PFEMSolver_Umfpack.cpp
-	PFEMQuasiLinSOE.cpp
-	PFEMQuasiSolver.cpp
-	PFEMDiaLinSOE.cpp
-	PFEMDiaSolver.cpp
-	PFEMSolver_Laplace.cpp
-	PFEMSolver_LumpM.cpp
-    PUBLIC
-    	SparseGenColLinSOE.h
-	SparseGenColLinSolver.h
-	SparseGenRowLinSOE.h
-	SparseGenRowLinSolver.h
-	SuperLU.h
-	PFEMSolver.h
-	PFEMLinSOE.h
-	PFEMCompressibleSolver.h
-	PFEMCompressibleLinSOE.h
-	PFEMSolver_LumpM.h
-	PFEMSolver_Umfpack.h
-	PFEMQuasiLinSOE.h
-	PFEMQuasiSolver.h
-	PFEMDiaLinSOE.h
-	PFEMDiaSolver.h
-	PFEMSolver_Laplace.h
-	PFEMSolver_LumpM.h
+target_sources(OPS_SysOfEqn
+  PRIVATE 
+    SparseGenColLinSOE.cpp
+    SparseGenColLinSolver.cpp
+    SparseGenRowLinSOE.cpp
+    SparseGenRowLinSolver.cpp
+    SuperLU.cpp
+  PUBLIC
+    SparseGenColLinSOE.h
+    SparseGenColLinSolver.h
+    SparseGenRowLinSOE.h
+    SparseGenRowLinSolver.h
+    SuperLU.h
 )
 
-
-ifdef(PARALLEL)
-target_sources(systemOfEqn
-    PRIVATE 
-	DistributedSuperLU.cpp
-	DistributedSparseGenColLinSOE.cpp
-	DistributedSparseGenRowLinSOE.cpp
-	PFEMSolver_Mumps.cpp
-	PFEMSolver_LumpM.cpp
-	PFEMCompressibleSolver_Mumps.cpp
+target_sources(OPS_PFEM
+    PRIVATE
+        PFEMCompressibleLinSOE.cpp
+        PFEMCompressibleSolver.cpp
+        PFEMDiaLinSOE.cpp
+        PFEMDiaSolver.cpp
+        PFEMLinSOE.cpp
+        PFEMQuasiLinSOE.cpp
+        PFEMQuasiSolver.cpp
+        PFEMSolver.cpp
+        PFEMSolver_Laplace.cpp
+        PFEMSolver_LumpM.cpp
+        PFEMSolver_LumpM.cpp
+        PFEMSolver_Umfpack.cpp
+        PFEMSolver_Mumps.cpp	
     PUBLIC
-	DistributedSuperLU.h
-	DistributedSparseGenColLinSOE.h
-	DistributedSparseGenRowLinSOE.h
-	PFEMSolver_Mumps.h
-	PFEMCompressibleSolver_Mumps.h
+        PFEMCompressibleLinSOE.h
+        PFEMCompressibleSolver.h
+        PFEMDiaLinSOE.h
+        PFEMDiaSolver.h
+        PFEMLinSOE.h
+        PFEMQuasiLinSOE.h
+        PFEMQuasiSolver.h
+        PFEMSolver.h
+        PFEMSolver_Laplace.h
+        PFEMSolver_LumpM.h
+        PFEMSolver_LumpM.h
+        PFEMSolver_Umfpack.h
+        PFEMSolver_Mumps.h	
 )
 
-target_include_directories(systemOfEqn PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(OpenSeesMP
+    PRIVATE 
+        DistributedSuperLU.cpp
+        DistributedSparseGenColLinSOE.cpp
+        DistributedSparseGenRowLinSOE.cpp
+        PFEMSolver_Mumps.cpp
+        PFEMSolver_LumpM.cpp
+        PFEMCompressibleSolver_Mumps.cpp
+    PUBLIC
+        DistributedSuperLU.h
+        DistributedSparseGenColLinSOE.h
+        DistributedSparseGenRowLinSOE.h
+        PFEMSolver_Mumps.h
+        PFEMCompressibleSolver_Mumps.h
+)
+
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+

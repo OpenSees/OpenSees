@@ -116,7 +116,7 @@ class MixedBeamColumn2d : public Element
     BeamIntegration *beamIntegr;
     int numSections;
     SectionForceDeformation **sections;          // array of pointers to sections
-    CrdTransf *crdTransf;        // pointer to coordinate tranformation object
+    CrdTransf *crdTransf;        // pointer to coordinate transformation object
 
     int doRayleigh;                         // flag for whether or not rayleigh damping is active for this element
     bool geomLinear;						// flag for whether or not the interation geometric nonlinearity is active

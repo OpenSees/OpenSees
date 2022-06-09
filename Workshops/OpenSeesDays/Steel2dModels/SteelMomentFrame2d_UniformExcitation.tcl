@@ -139,7 +139,7 @@ analyze 10
 loadConst -time 0.0
 
 # add some damping 
-#  NOTE damping mass and initial stiffness as opposed to currnet stiffness
+#  NOTE damping mass and initial stiffness as opposed to current stiffness
 
 set lambda [eigen $mode2]
 set omegaI [expr pow([lindex $lambda [expr $mode1-1]],0.5)];
