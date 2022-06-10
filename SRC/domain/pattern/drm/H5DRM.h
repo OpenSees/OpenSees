@@ -150,10 +150,10 @@ class H5DRM : public LoadPattern
 public:
     H5DRM();
     H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3, bool do_coordinate_transformation = true,
-            double T00 = 1.0, double T01 = 0.0, double T02 = 0.0,
-    double T10 = 0.0, double T11 = 1.0, double T12 = 0.0,
-    double T20 = 0.0, double T21 = 0.0, double T22 = 1.0,
-    double x00 = 0.0, double x01 = 0.0, double x02 = 0.0);
+        double T00 = 1.0, double T01 = 0.0, double T02 = 0.0,
+        double T10 = 0.0, double T11 = 1.0, double T12 = 0.0,
+        double T20 = 0.0, double T21 = 0.0, double T22 = 1.0,
+        double x00 = 0.0, double x01 = 0.0, double x02 = 0.0);
     ~H5DRM();
     void clean_all_data(); // Called by destructor and if domain changes
 
