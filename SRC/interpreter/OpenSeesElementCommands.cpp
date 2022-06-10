@@ -153,6 +153,8 @@ void* OPS_DispBeamColumn3d();
 void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
+void* OPS_TimoshenkoBeamColumn2d();
+//void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -322,6 +324,18 @@ namespace {
 	    return OPS_DispBeamColumn3d();
 	}
     }
+
+    static void* OPS_TimoshenkoBeamColumn()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_TimoshenkoBeamColumn2d();
+	} else {
+	  //return OPS_TimoshenkoBeamColumn3d();
+	  return 0;
+	}
+    }  
 
   static void* OPS_MixedBeamColumn()
     {
@@ -678,6 +692,7 @@ namespace {
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
+	functionMap.insert(std::make_pair("timoshenkoBeamColumn", &OPS_TimoshenkoBeamColumn));	
 	functionMap.insert(std::make_pair("dispBeamColumn3dID", &OPS_DispBeamColumn3dID));
 	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));
