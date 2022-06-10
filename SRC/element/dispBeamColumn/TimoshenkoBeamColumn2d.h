@@ -109,9 +109,11 @@ class TimoshenkoBeamColumn2d : public Element
   private:
     const Matrix &getInitialBasicStiff(void);
 
+    enum {maxNumSections = 20};
+  
     int numSections;
     SectionForceDeformation **theSections; // pointer to the ND material objects
-    CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+    CrdTransf *crdTransf;        // pointer to coordinate transformation object 
 
     BeamIntegration *beamInt;
 
@@ -129,8 +131,8 @@ class TimoshenkoBeamColumn2d : public Element
 
     double rho;			// Mass density per unit length
 
-    enum {maxNumSections = 20};
-
+  double phis[maxNumSections]; // Shear term 12EI/(GA L^2)
+  
     static double workArea[];
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////

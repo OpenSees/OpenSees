@@ -686,7 +686,7 @@ int OPS_MeshRegion()
 	return -1;
     }
 
-    // now contine until end of command
+    // now continue until end of command
     bool only = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
@@ -1296,7 +1296,7 @@ int OPS_RigidDiaphragm()
 
 int OPS_addElementRayleigh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: setElementRayleighFactors elementTag?  alphaM? $betaK? $betaKinit? $betaKcomm? \n";
@@ -1367,7 +1367,7 @@ extern BackgroundMesh& OPS_getBgMesh();
 
 int OPS_mesh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: mesh type? ...>\n";
@@ -1684,7 +1684,7 @@ int OPS_recv()
                      1, MPI_COMM_WORLD, &status);
         }
 
-	    // set oututs
+	    // set outputs
 	    int res = 0;
 	    if (datatype == MPI_INT) {
 
@@ -1818,7 +1818,7 @@ int OPS_Bcast() {
             }
             MPI_Bcast(buffer, msgLength[0], datatype, 0, MPI_COMM_WORLD);
 
-            // set oututs
+            // set outputs
             int res = 0;
             if (datatype == MPI_INT) {
 
@@ -2317,7 +2317,7 @@ int OPS_partition() {
         }
     }
 
-    // go throug load patterns
+    // go through load patterns
     auto& lps = domain->getLoadPatterns();
     LoadPattern* lp = 0;
     while ((lp = lps()) != 0) {

@@ -65,7 +65,7 @@ void* OPS_UVCplanestress(void) {
     return 0;
   }
 
-  // Read in the updated model paramters
+  // Read in the updated model parameters
   nInputsToRead = N_UPDATED_PROPERTIES;
   if (OPS_GetDoubleInput(&nInputsToRead, updProps) != 0) {
     opserr << inputInstructions.c_str() << endln;

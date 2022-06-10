@@ -613,7 +613,7 @@ AxEqDispBeamColumn2d::getAxialStrainIncrement(void) {
 	// 2) definition of the vector for the integration weights
 	double wi[maxNumSections];
 	beamInt->getSectionWeights(numSections, L, wi);  // be careful that wi sums up to 1!!!			
-	for (int i = 0; i < numSections; i++)  // set sum of integration weigths to 2
+	for (int i = 0; i < numSections; i++)  // set sum of integration weights to 2
 		wi[i] *= 2;
 	
 
@@ -771,7 +771,7 @@ AxEqDispBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 		double xi6[maxNumSections];
 		beamInt->getSectionWeights(numSections, L, wi);  // be careful that wi sums up to 1!!!
 		beamInt->getSectionLocations(numSections, L, xi);
-		for (int i = 0; i < numSections; i++) {  // set sum of integration weigths to 2
+		for (int i = 0; i < numSections; i++) {  // set sum of integration weights to 2
 			wi[i] *= 2;
 			xi6[i] = 6.0*xi[i];
 		}

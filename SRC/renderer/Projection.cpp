@@ -106,7 +106,7 @@ Projection::transform(FACE &input)
   MYPOINT *point;
   
   // transform all the points by the transformation matrix
-  // remember that in previos pipeline all points were unmarked
+  // remember that in previous pipeline all points were unmarked
   FOR_EACH(point, input.pointList) {
     point->Transform(&TMat);
     if (projection_mode == PERSPECTIVE_MODE) {
@@ -115,7 +115,7 @@ Projection::transform(FACE &input)
 	opserr << "Some Point in local coord sys at same level as eye\n";
 	return input;
       }
-      else { // we will homo x and y coord, but leave z as was befor we came in
+      else { // we will homo x and y coord, but leave z as was before we came in
 	point->p[0] = point->p[0]/wVal;
 	point->p[1] = point->p[1]/wVal;
 	point->p[2] = point->p[2]/wVal;
@@ -142,7 +142,7 @@ Projection::transformP(MYPOINT *input)
 	    delete input;
 	    opserr << "HELP\n";
 	    return 0;
-	} else { // we will homo x and y coord, but leave z as was befor we came in
+	} else { // we will homo x and y coord, but leave z as was before we came in
 	    input->p[0] = input->p[0]/wVal;
 	    input->p[1] = input->p[1]/wVal;
 	    input->p[2] = input->p[2]/wVal;

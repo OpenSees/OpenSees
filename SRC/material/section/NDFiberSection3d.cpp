@@ -61,15 +61,23 @@ void* OPS_NDFiberSection3d()
     int tag;
     if (OPS_GetIntInput(&numData,&tag) < 0) return 0;
 
+    double alpha = 1.0;
     bool computeCentroid = true;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
+    while (OPS_GetNumRemainingInputArgs() > 0) {
       const char* opt = OPS_GetString();
       if (strcmp(opt, "-noCentroid") == 0)
 	computeCentroid = false;
+      if (strcmp(opt, "-alpha") == 0 || strcmp(opt, "-shape") == 0) {
+	if (OPS_GetNumRemainingInputArgs() < 1)
+	  break;
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData,&alpha) < 0)
+	  return 0;
+      }
     }
     
     int num = 30;
-    return new NDFiberSection3d(tag, num, computeCentroid);
+    return new NDFiberSection3d(tag, num, alpha, computeCentroid);
 }
 
 // constructors:
@@ -1341,6 +1349,44 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
     }
 
   }
+  else if (strcmp(argv[0],"fiberData") == 0) {
+    int numData = numFibers*9;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[3*j]);
+      output.attr("zLoc", matData[3*j+1]);
+      output.attr("area", matData[3*j+2]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 5, theResponseData);
+
+  }
+  else if (strcmp(argv[0],"fiberData2") == 0) {
+    int numData = numFibers*10;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[3*j]);
+      output.attr("zLoc", matData[3*j+1]);
+      output.attr("area", matData[3*j+2]);    
+      output.attr("material", theMaterials[j]->getTag());
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","material");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+
+  }
 
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
@@ -1352,8 +1398,47 @@ NDFiberSection3d::setResponse(const char **argv, int argc,
 int 
 NDFiberSection3d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
+  if (responseID == 5) {
+    int numData = 9*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+3) = stress(0);
+      data(count+4) = stress(1);
+      data(count+5) = stress(2);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+6) = strain(0);
+      data(count+7) = strain(1);
+      data(count+8) = strain(2);      
+      count += 9;
+    }
+    return sectInfo.setVector(data);	
+  } else if (responseID == 55) {
+    int numData = 10*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
+      data(count+3) = (double)theMaterials[j]->getTag();
+      const Vector &stress = theMaterials[j]->getStress();
+      data(count+4) = stress(0);
+      data(count+5) = stress(1);
+      data(count+6) = stress(2);
+      const Vector &strain = theMaterials[j]->getStrain();      
+      data(count+7) = strain(0);
+      data(count+8) = strain(1);
+      data(count+9) = strain(2);      
+      count += 10;
+    }
+    return sectInfo.setVector(data);		  
+  }
+  
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 

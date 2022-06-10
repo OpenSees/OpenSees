@@ -89,7 +89,7 @@ NDMaterial* MultiaxialCyclicPlasticity3D :: getCopy( )
 { 
   MultiaxialCyclicPlasticity3D  *clone;
   clone = new MultiaxialCyclicPlasticity3D( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

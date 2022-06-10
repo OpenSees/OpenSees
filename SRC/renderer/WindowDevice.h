@@ -99,11 +99,11 @@ class WindowDevice: public  Device
 
   Window theWindow; // the window associated with the Window
   GC theGC;         // the graphic context associated with the Window
-  XSizeHints hints; // conatins the infor about where window is and its size
+  XSizeHints hints; // contains the info about where window is and its size
   static unsigned long foreground, background;  
   XStandardColormap theMap;  
   XEvent theEvent;
-  static Display *theDisplay;  // the display all Window objecs display on
+  static Display *theDisplay;  // the display all Window objects display on
   static Colormap cmap;        // the colormap all X11 Window objects share   
   static int theScreen;        // the screen 
   static unsigned long pixels[X11_MAX_COLORS]; // pixels obtained from default

@@ -513,6 +513,9 @@
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\masonry\BeamGT.h" />
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h" />
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan3D.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h" />

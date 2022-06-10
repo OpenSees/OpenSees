@@ -409,7 +409,7 @@ MasonPan3D::setDomain(Domain *theDomain)
 //	 opserr << "dz71 " << dz71 << endln;
 //	 	 opserr << "dx71 " << dx71 << endln;
 //		 	 opserr << "dy71 " << dy71 << endln;
-        // cosenos de las diagonales
+        // cosines of the diagonals
         double dx1 =end4Crd(i1)-end10Crd(i1);
         double dy1= end4Crd(i2)-end10Crd(i2);
 		double L1=sqrt(dx1*dx1+dy1*dy1);

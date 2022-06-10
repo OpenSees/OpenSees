@@ -410,7 +410,7 @@ double OpenSeesGFunEvaluator::getG2(double g, double littleDeltaT)
 			
 			tempDouble = Tcl_GetVar2Ex(theTclInterp, "udot", "getG2", TCL_LEAVE_ERR_MSG);
 			if (tempDouble == NULL) {
-				opserr << "warning:OpenSeesGFunEvaluator::getSecondG() velocity is 0! probabily because you are running static case" << endln;
+				opserr << "warning:OpenSeesGFunEvaluator::getSecondG() velocity is 0! probably because you are running static case" << endln;
 				opserr << theTclInterp->result << endln;
 				return -1;
 			}

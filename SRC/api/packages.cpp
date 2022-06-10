@@ -25,8 +25,6 @@
 ** Written: fmk
 */
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <OPS_Globals.h>
@@ -48,11 +46,11 @@ httpGET_File(char const* URL, char const* page, unsigned int port, const char* f
 #include <windows.h>
 #include <elementAPI.h>
 extern SimulationInformation* theSimulationInfoPtr;
+extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 #else
 #include <dlfcn.h>
 #endif
-
 
 int
 getLibraryFunction(const char* libName, const char* funcName, void** libHandle, void** funcHandle) {
@@ -115,7 +113,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
         typedef int(_cdecl* OPS_GetNumRemainingInputArgsType)();
         typedef int(_cdecl* OPS_ResetCurrentInputArgType)(int);
         //typedef int(_cdecl* OPS_ResetInputType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*, TclModelBuilder*);
-        //typedef int(_cdecl* OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
+        typedef int(_cdecl* OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
         typedef int(_cdecl* OPS_GetIntInputPtrType)(int*, int*);
         typedef int(_cdecl* OPS_GetDoubleInputPtrType)(int*, double*);
         typedef const char* (_cdecl* OPS_GetStringType)();
@@ -174,7 +172,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
             OPS_GetNumRemainingInputArgsType,
             OPS_ResetCurrentInputArgType,
             //OPS_ResetInputType,
-            //OPS_ResetInputNoBuilderType,
+            OPS_ResetInputNoBuilderType,
             OPS_GetStringType,
             OPS_GetStringCopyType,
             OPS_GetIntPtrType,
@@ -230,7 +228,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
             OPS_GetNumRemainingInputArgs,
             OPS_ResetCurrentInputArg,
             //OPS_ResetInput,
-            //OPS_ResetInputNoBuilder,
+            OPS_ResetInputNoBuilder,
             OPS_GetString,
             OPS_GetStringCopy,
             OPS_GetNDM,

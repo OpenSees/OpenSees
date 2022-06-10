@@ -1070,7 +1070,7 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
         double avesize = 0.0;
         for(int i=0; i<out.numberoftriangles; i++) {
 
-            // circumcenter of traingle
+            // circumcenter of triangle
             double& xc = vout.pointlist[2*i];
             double& yc = vout.pointlist[2*i+1];
 

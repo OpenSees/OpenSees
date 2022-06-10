@@ -73,7 +73,7 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 
   loc++;
 
-  // now contine until end of command
+  // now continue until end of command
   while (loc < argc) {
 
     if (strcmp(argv[loc],"-ele") == 0 || strcmp(argv[loc], "-eleOnly") == 0) {

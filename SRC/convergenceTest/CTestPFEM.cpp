@@ -302,7 +302,7 @@ int CTestPFEM::test(void)
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if(currentIter >= maxNumIter || numIncr > maxIncr || badnorm) { // failes to converge
+    else if(currentIter >= maxNumIter || numIncr > maxIncr || badnorm) { // fails to converge
         opserr << "WARNING: CTestPFEM - failed to converge \n";
         opserr << "after: " << currentIter << " iterations:";
         opserr << " dV(" << normv << "," << normvrel;

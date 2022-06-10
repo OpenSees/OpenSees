@@ -919,7 +919,7 @@ else if (type == LOAD_TAG_NodalThermalAction) {
 	 for(int i =0; i<9;i++){
 		 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 			 opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 		 else{
 			 (*Loc)(i)=data0(2*i+1);
@@ -937,7 +937,7 @@ else if (type == LOAD_TAG_NodalThermalAction) {
 	for(int i =0; i<5;i++){
 	 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 		opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			  << "incompatiable loc input for datapoint "<< i << endln;
+			  << "incompatible loc input for datapoint "<< i << endln;
 	 }else{
 		 //for loc
 		(*Loc)(i)=data0(2*i+1);
