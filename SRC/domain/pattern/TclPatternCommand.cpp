@@ -560,6 +560,23 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       double T20=stuff[6]; double T21=stuff[7]; double T22=stuff[8];
       double x00=stuff[9]; double x01=stuff[10]; double x02=stuff[11];
 
+      opserr << "T = " << endln;
+      opserr << T00 << " " << T01 << " " << T02 << endln;
+      opserr << T10 << " " << T11 << " " << T12 << endln;
+      opserr << T20 << " " << T21 << " " << T22 << endln;
+      opserr << "x0 = " << endln;
+      opserr << x00 << " " << x01 << " " << x02 << endln;
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+
       thePattern = new H5DRM(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation, T00, T01, T02, T10, T11, T12, T20, T21, T22, x00, x01, x02);
 
       opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
