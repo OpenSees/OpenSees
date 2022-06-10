@@ -220,7 +220,7 @@ H5DRM::H5DRM(
     x0(2) = x02;
 
 
-    if (numH5DRMpatterns == 0)
+    if (numH5DRMpatterns == 0 && myrank == 0)
     {
         opserr << " \n"
                << "---------------------------------------------------------------------------\n"
