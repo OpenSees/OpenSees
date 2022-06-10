@@ -539,7 +539,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       {
         for (int i = 0; i < 12; ++i)
         {
-          if (Tcl_GetInt(interp, argv[7+i+1], stuff) != TCL_OK) 
+          if (Tcl_GetInt(interp, argv[7+i+1], &stuff[i]) != TCL_OK) 
           {
                 opserr << "WARNING insufficient number of arguments - want: pattern ";
                 opserr << "H5DRM " << patternID << " filename factor crd_scale distance_tolerance do_coordinate_transformation stuff\n";
