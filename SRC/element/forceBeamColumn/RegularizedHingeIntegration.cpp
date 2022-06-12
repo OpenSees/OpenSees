@@ -37,6 +37,70 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <elementAPI.h>
+
+void*
+OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
+{
+  int nArgs = OPS_GetNumRemainingInputArgs();
+  if (nArgs < 6) {
+    opserr << "Insufficient arguments: tag otherTag lpI zetaI lpJ zetaJ\n";
+    return 0;
+  }
+
+  int iData[2];
+  int numData = 2;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read int data" << endln;
+    return 0;
+  }
+  integrationTag = iData[0];
+  int otherIntTag = iData[1];
+
+  BeamIntegrationRule *theRule = OPS_getBeamIntegrationRule(otherIntTag);
+  if (theRule == 0) {
+    opserr << "Beam integration with tag " << otherIntTag << " not found\n";
+    return 0;
+  }
+  BeamIntegration *bi = theRule->getBeamIntegration();
+  if (bi == 0) {
+    opserr << "Beam integraiton is null\n";
+    return 0;
+  }
+  const ID &otherSections = theRule->getSectionTags();
+  int Nsections = otherSections.Size();
+  secTags.resize(Nsections+2);
+
+  for (int i = 0; i < Nsections; i++)
+    secTags(i+1) = otherSections(i);
+  secTags(0)           = otherSections(0);
+  secTags(Nsections+1) = otherSections(Nsections-1);  
+  
+  double dData[2];
+  
+  // Read information for hinge at end I
+  double lpI, zetaI;
+  numData = 2;
+  if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read hinge I data" << endln;
+    return 0;
+  }
+  lpI = dData[0];
+  zetaI = dData[1];
+
+
+  // Read information for hinge at end J
+  double lpJ, zetaJ;
+  numData = 2;
+  if (OPS_GetDoubleInput(&numData,&dData[0]) < 0) {
+    opserr << "RegularizedHingeIntegration - unable to read hinge J data" << endln;
+    return 0;
+  }
+  lpJ = dData[0];
+  zetaJ = dData[1];
+
+  return new RegularizedHingeIntegration(*bi, lpI, lpJ, zetaI, zetaJ);
+}
 
 RegularizedHingeIntegration::RegularizedHingeIntegration(BeamIntegration &bi,
 							 double lpi, double lpj,

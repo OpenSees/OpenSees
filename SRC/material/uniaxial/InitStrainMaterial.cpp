@@ -149,10 +149,7 @@ InitStrainMaterial::getDampTangent(void)
 double 
 InitStrainMaterial::getStrain(void)
 {
-  if (theMaterial)
-    return theMaterial->getStrain();
-  else
-    return 0.0;
+  return localStrain;
 }
 
 double 
