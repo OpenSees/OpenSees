@@ -37,7 +37,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 # export MUMPS_DIR=$HOME/MUMPS_5.0.0
 
 # for OpenSeesPY
-add_Compile_options(-fPIC)
+add_compile_options(-fPIC)
 
 #
 # external packages
@@ -66,14 +66,13 @@ else()
   set (CONAN_LIBS )
 endif()
 
-
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
     G3 OpenSees OpenSeesMP OpenSeesSP OpenSeesPy)
 
 #
 # OS Configuration:
-#  defines: compile flags & user supplied pahs and includes if not using conan
+#  defines: compile flags & user supplied paths and includes if not using conan
 #
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -466,6 +465,7 @@ target_link_libraries(OpenSees
   OPS_Reliability
   OPS_ReliabilityTcl  
   OPS_Numerics
+  OPS_Recorder
   ${CMAKE_DL_LIBS} 
   ${HDF5_LIBRARIES} 
   ${MYSQL_LIBRARIES}
@@ -517,6 +517,7 @@ target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 target_link_libraries(OpenSeesPy
    OpenSeesLIB 
    OPS_Reliability
+   OPS_Recorder
    OPS_Numerics 
    ${HDF5_LIBRARIES} 
    ${CONAN_LIBRARIES} 
