@@ -882,6 +882,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
 	$(FE)/material/uniaxial/DowelType.o \
 	$(FE)/material/uniaxial/DuctileFracture.o \
+	$(FE)/material/uniaxial/Steel05.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
