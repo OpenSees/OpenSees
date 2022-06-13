@@ -1019,7 +1019,7 @@ DisplacementControl::computeSensitivities(void)
   // Zero out the old right-hand side of the SOE
   theSOE->zeroB();
 
-  // Form the part of the RHS which are indepent of parameter
+  // Form the part of the RHS which are independent of parameter
   this->formIndependentSensitivityRHS();
 
   AnalysisModel *theModel = this->getAnalysisModel();   

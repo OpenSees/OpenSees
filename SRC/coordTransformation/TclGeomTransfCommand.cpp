@@ -232,13 +232,13 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     }
   }
   else {
-    opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is imcompatible with available frame elements\n";
+    opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is incompatible with available frame elements\n";
     return TCL_ERROR;
   }
   
   //  Tcl_Free ((char *)argv);
   
-  // if get here we have sucessfully created the element and added it to the domain
+  // if get here we have successfully created the element and added it to the domain
   
   return TCL_OK;
 }

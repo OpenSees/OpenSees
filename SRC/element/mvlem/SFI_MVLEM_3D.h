@@ -64,20 +64,20 @@ public:
 	// Destructor
 	~SFI_MVLEM_3D();
 
-	// Public methods to obtain inforrmation about dof & comectivity
+	// Public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
 	Node **getNodePtrs(void);
 	int getNumDOF(void);
 	void setDomain(Domain *theDomain);
 
-	// Public methods to set the state of the element    
+	// Public methods to set the state of the element
 	int commitState(void);
 	int revertToLastCommit(void);
 	int revertToStart(void);
 	int update(void);
 
-	// Public methods to obtain stiffness, mass, damping and residual information    
+	// Public methods to obtain stiffness, mass, damping and residual information
 	const Matrix &getTangentStiff(void);
 	const Matrix &getInitialStiff(void);
 	const Matrix &getDamp(void);
@@ -97,7 +97,7 @@ public:
 	Response *setResponse(const char **argv, int argc, OPS_Stream &s);
 	int getResponse(int responseID, Information &eleInformation);
 
-	Response **theResponses;			// pointer to material responses needed for Concrete
+  //Response **theResponses;			// pointer to material responses needed for Concrete
 
 protected:
 
@@ -150,7 +150,7 @@ private:
 
 	// Calculated element parameters
 	double h;							// height of SFI_MVLEM_3D element (undeformed configuration)
-	double Lw;							// lenght of SFI_MVLEM_3D elemtn, i.e. wall length 
+	double Lw;							// length of SFI_MVLEM_3D elemtn, i.e. wall length 
 	double TotalMass;					// element mass - you dont need this !!!
 	double NodeMass;					// nodal mass
 	double d;							// distance of corner nodes from center axis

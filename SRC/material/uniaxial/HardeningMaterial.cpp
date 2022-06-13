@@ -60,7 +60,7 @@ void* OPS_HardeningMaterial()
     double data[4];
     numdata = 4;
     if (OPS_GetDoubleInput(&numdata,data)) {
-	opserr << "WARING: failed to read data\n";
+	opserr << "WARNING: failed to read data\n";
 	return 0;
     }
 

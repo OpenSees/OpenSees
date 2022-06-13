@@ -31,7 +31,7 @@
 //
 // Purpose: This file contains the class definition for MillMachineBroker.
 // MillMachineBroker is a machine broker for use with the cluster of
-// millenium machines in Soda Hall.
+// millennium machines in Soda Hall.
 //
 // What: "@(#) MillMachineBroker.h, revA"
 

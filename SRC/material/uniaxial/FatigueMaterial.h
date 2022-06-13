@@ -33,7 +33,7 @@
 //   Uriz, Patxi, "Towards Earthquake Resistant Design of 
 //      Concentrically Braced Steel Frames," Ph.D. Dissertation, 
 //      Structural Engineering, Mechanics, and Materials, Civil 
-//      and Envrironmental Engineering, University of California, 
+//      and Environmental Engineering, University of California, 
 //      Berkeley, December 2005
 //
 

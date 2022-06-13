@@ -53,7 +53,7 @@ NDMaterial* DruckerPrager3DThermal :: getCopy( )
 { 
   DruckerPrager3DThermal  *clone;
   clone = new DruckerPrager3DThermal( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

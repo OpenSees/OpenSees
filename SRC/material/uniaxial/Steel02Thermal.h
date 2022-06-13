@@ -52,7 +52,7 @@ class Steel02Thermal : public UniaxialMaterial
     double getInitialTangent(void);
     UniaxialMaterial *getCopy(void);
 
-    //JZ this function is no use, just for the definiation of pure virtual function.
+    //JZ this function is no use, just for the definition of pure virtual function.
     int setTrialStrain(double strain, double strainRate);
 
     int setTrialStrain(double strain, double FiberTemperature, double strainRate); 

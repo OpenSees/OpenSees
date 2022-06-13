@@ -113,10 +113,10 @@ class PinchingLimitStateMaterial : public UniaxialMaterial
 		double XpinchReloadNP, YpinchReloadNP;		// Factor of load at reversal to set the strain and stress components of the reloading breakpoint in the Neg->Pos direction
 		double dmgStressLimE;		// stress at proportional limit
 		double dmgDeflMax;			// Maximum estimated displacement of limit spring at column collapse should compensate for member deflection if using tip deflection
-		double dmgElastic1, dmgElastic2, dmgElastic3, dmgElastic4, dmgElasticLim;						// Damage parameters for elastic stiffness degredation
-		double dmgUnload1, dmgUnload2, dmgUnload3, dmgUnload4, dmgUnloadLim;							// Damage parameters for unloading stiffness degredation
-		double dmgReload1, dmgReload2, dmgReload3, dmgReload4, dmgReloadLim, dmgReloadCyclic;			// Damage parameters for reloading stiffness degredation, dmgReloadCyclic is a factor of previous load at unloading
-		double dmgStrength1, dmgStrength2, dmgStrength3, dmgStrength4, dmgStrengthLim, dmgStrengthCyclic;// Damage parameters for strength degredation
+		double dmgElastic1, dmgElastic2, dmgElastic3, dmgElastic4, dmgElasticLim;						// Damage parameters for elastic stiffness degradation
+		double dmgUnload1, dmgUnload2, dmgUnload3, dmgUnload4, dmgUnloadLim;							// Damage parameters for unloading stiffness degradation
+		double dmgReload1, dmgReload2, dmgReload3, dmgReload4, dmgReloadLim, dmgReloadCyclic;			// Damage parameters for reloading stiffness degradation, dmgReloadCyclic is a factor of previous load at unloading
+		double dmgStrength1, dmgStrength2, dmgStrength3, dmgStrength4, dmgStrengthLim, dmgStrengthCyclic;// Damage parameters for strength degradation
 
 		Domain *theDomain;		
 		Node *theNodeT;			

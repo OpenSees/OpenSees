@@ -45,7 +45,7 @@
 //    the DRM layer the rest of the domain can be anything.  
 //  + Althounh the H5DRM format can store ground motions based on displacements, 
 //    velocities or accelerations. The present implementation can use 
-//    displacement-onlyH5DRM datasets (will double-differentiate internaly) or 
+//    displacement-onlyH5DRM datasets (will double-differentiate internally) or 
 //    displacement and acceleration datasets (where the data is used directly.
 //    use this if filterning of motions is handled independently for displacements 
 //    and accelerations, although datasets are heavier). There is an untested

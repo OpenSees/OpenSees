@@ -56,7 +56,7 @@ int OPS_RigidDiaphragm(Domain* theDomain)
     ID data(num);
     if(OPS_GetIntInput(&num, &data(0)) < 0) return -1;
 
-    // constrained ndoes
+    // constrained nodes
     ID cNodes(num-2);
     for(int i=0; i<cNodes.Size(); i++) {
 	cNodes(i) = data(i+2);
@@ -159,9 +159,9 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	}
 	else if ((nodeC->getNumberDOF() == 6) && (crdC.Size() == 3)){
 
-	  // determine delta Coordintaes
+	  // determine delta Coordinates
 	  double deltaX = crdC(0) - crdR(0);
-	  double deltaY = crdC(1) - crdR(1);	    
+	  double deltaY = crdC(1) - crdR(1);
 	  double deltaZ = crdC(2) - crdR(2);
 	  
 	  // rigid diaphragm in xy plane

@@ -153,6 +153,8 @@ void* OPS_DispBeamColumn3d();
 void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
+void* OPS_TimoshenkoBeamColumn2d();
+//void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -322,6 +324,18 @@ namespace {
 	    return OPS_DispBeamColumn3d();
 	}
     }
+
+    static void* OPS_TimoshenkoBeamColumn()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_TimoshenkoBeamColumn2d();
+	} else {
+	  //return OPS_TimoshenkoBeamColumn3d();
+	  return 0;
+	}
+    }  
 
   static void* OPS_MixedBeamColumn()
     {
@@ -678,6 +692,7 @@ namespace {
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
+	functionMap.insert(std::make_pair("timoshenkoBeamColumn", &OPS_TimoshenkoBeamColumn));	
 	functionMap.insert(std::make_pair("dispBeamColumn3dID", &OPS_DispBeamColumn3dID));
 	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));
@@ -755,12 +770,12 @@ int OPS_doBlock2D()
 
     if (ndm < 2) {
 	opserr << "WARNING block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
-	opserr << " : model dimension (ndm) must be at leat 2 \n";
+	opserr << " : model dimension (ndm) must be at least 2 \n";
 	return -1;
     }
 
     if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING incorrect numer of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -1130,7 +1145,7 @@ int OPS_doBlock3D()
     int ndm = OPS_GetNDM();
     if (ndm < 3) {
 	opserr << "WARNING block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs?";
-	opserr << " : model dimension (ndm) must be at leat 3 \n";
+	opserr << " : model dimension (ndm) must be at least 3 \n";
 	return -1;
     }
 
@@ -1139,7 +1154,7 @@ int OPS_doBlock3D()
     if (theDomain == 0) return -1;
 
     if (OPS_GetNumRemainingInputArgs() < 8) {
-	opserr << "WARNING incorrect numer of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -1297,7 +1312,7 @@ int OPS_doBlock3D()
     return 0;
 }
 
-// For backward compatability
+// For backward compatibility
 void* OPS_NonlinearBeamColumn()
 {
     int ndm = OPS_GetNDM();

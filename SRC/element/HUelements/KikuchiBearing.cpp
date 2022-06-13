@@ -384,7 +384,7 @@ void* OPS_KikuchiBearing()
     } //end input
   
 
-    // input cofirmation
+    // input confirmation
     // necessary arguments
     if (recvShape != 1)  {
     	char buf[100];
