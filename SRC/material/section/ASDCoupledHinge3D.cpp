@@ -1030,7 +1030,7 @@ ASDCoupledHinge3D::ASDCoupledHinge3D(
     tolN = (Nmax - Nmin) * 0.001;
     double MminY, MmaxY, MminZ, MmaxZ;
     setUncoupledStrengthDomainforAxial(0.0, MmaxY, MminY, MmaxZ, MminZ);
-    MmaxAbs = std::max(std::max(MmaxY, abs(MminY)), std::max(MmaxZ, abs(MminZ)));
+    MmaxAbs = std::max(std::max(MmaxY, std::abs(MminY)), std::max(MmaxZ, std::abs(MminZ)));
     tolM = 0.001 * MmaxAbs;
 
 #ifdef _DBG_COUPLEDSEC3D
@@ -1331,13 +1331,13 @@ ASDCoupledHinge3D::updateLaws(void)
 //#endif
 
     // Check moments are never exactly zero to avoid numerical problems
-    if (abs(My) < tolM) {
+    if (std::abs(My) < tolM) {
         if (My >= 0)
             My = tolM;
         else
             My = -tolM;
     }
-    if (abs(Mz) < tolM) {
+    if (std::abs(Mz) < tolM) {
         if (Mz >= 0)
             Mz = tolM;
         else
@@ -1558,8 +1558,8 @@ ASDCoupledHinge3D::commitState(void)
         MzMaterial->setTrialStrain(MzMaterial->getStrain());
 
         // compare My with MyMaterial->getStress();
-        double errY = abs(MyMaterial->getStress() - My);
-        double errZ = abs(MzMaterial->getStress() - Mz);
+        double errY = std::abs(MyMaterial->getStress() - My);
+        double errZ = std::abs(MzMaterial->getStress() - Mz);
 
         errExplicit = std::max(errY, errZ) / MmaxAbs;
 
