@@ -64,6 +64,7 @@ using namespace::std;
 #include <stdlib.h>
 // #include <cstdlib>
 //#include <bits/stdc++.h>
+#include <limits.h>
 
 // Vector VonPapaDamage :: strain_vec(3) ;
 Vector VonPapaDamage :: stress_vec(3) ;
