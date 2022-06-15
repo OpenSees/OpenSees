@@ -534,18 +534,53 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
               return TCL_ERROR;
         }
       }
+      double stuff[12];
+      if(argc > 7+12)
+      {
+        for (int i = 0; i < 12; ++i)
+        {
+          if (Tcl_GetDouble(interp, argv[7+i+1], &stuff[i]) != TCL_OK) 
+          {
+                opserr << "WARNING insufficient number of arguments - want: pattern ";
+                opserr << "H5DRM " << patternID << " filename factor crd_scale distance_tolerance do_coordinate_transformation stuff\n";
+                return TCL_ERROR;
+          }
+        }
+      }
 
-      opserr << "Creating H5DRM tag = " << tag 
-      << "\n   filename = " << filename.c_str() 
-      << "\n   factor = " << factor 
-      << "\n   crd_scale = " << crd_scale 
-      << "\n   distance_tolerance = " << distance_tolerance 
-      << "\n   do_coordinate_transformation = " << do_coordinate_transformation 
-      << endln;
+      // opserr << "!!Creating H5DRM tag = " << tag 
+      // << "\n   filename = " << filename.c_str() 
+      // << "\n   factor = " << factor 
+      // << "\n   crd_scale = " << crd_scale 
+      // << "\n   distance_tolerance = " << distance_tolerance 
+      // << "\n   do_coordinate_transformation = " << do_coordinate_transformation 
+      // << endln;
+      double T00=stuff[0]; double T01=stuff[1]; double T02=stuff[2];
+      double T10=stuff[3]; double T11=stuff[4]; double T12=stuff[5];
+      double T20=stuff[6]; double T21=stuff[7]; double T22=stuff[8];
+      double x00=stuff[9]; double x01=stuff[10]; double x02=stuff[11];
 
-      thePattern = new H5DRM(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation);
+      // opserr << "T = " << endln;
+      // opserr << T00 << " " << T01 << " " << T02 << endln;
+      // opserr << T10 << " " << T11 << " " << T12 << endln;
+      // opserr << T20 << " " << T21 << " " << T22 << endln;
+      // opserr << "x0 = " << endln;
+      // opserr << x00 << " " << x01 << " " << x02 << endln;
+      
+      
+      
+      
 
-      opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+      
+      
+      
+      
+      
+      
+
+      thePattern = new H5DRM(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation, T00, T01, T02, T10, T11, T12, T20, T21, T22, x00, x01, x02);
+
+      // opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
 
       theDomain->addLoadPattern(thePattern);
       return TCL_OK;
