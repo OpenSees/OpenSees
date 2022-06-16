@@ -47,6 +47,7 @@ class UniformExcitation : public EarthquakePattern
 
     void setDomain(Domain *theDomain);    
     void applyLoad(double time);
+  double getLoadFactor(void);
     void Print(OPS_Stream &s, int flag =0);
     int getDirection(void) {return theDof;}
     int sendSelf(int commitTag, Channel &theChannel);

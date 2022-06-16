@@ -63,6 +63,10 @@
 #include "gaussQuadrature.h"
 #include "R3vectors.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // for debugging
 #include <signal.h>
 
@@ -756,7 +760,7 @@ IGAKLShell::getResponse(int responseID, Information &eleInfo)
 
   // switch (responseID) {
   // case RESPONSETYPE_KLSHELL_FORCES: // global forces
-  if (responseID == RESPONSETYPE_KLSHELL_FORCES or 
+  if (responseID == RESPONSETYPE_KLSHELL_FORCES || 
     responseID == RESPONSETYPE_KLSHELL_FAKESECTION_FORCES)
   {
     return eleInfo.setVector(this->getResistingForce());
@@ -764,7 +768,7 @@ IGAKLShell::getResponse(int responseID, Information &eleInfo)
   // break;
 
   // case RESPONSETYPE_KLSHELL_STRESSES: // stresses
-  if( responseID == RESPONSETYPE_KLSHELL_STRESSES or 
+  if( responseID == RESPONSETYPE_KLSHELL_STRESSES || 
     responseID == RESPONSETYPE_KLSHELL_FAKESECTION_FORCES)
   {
 
@@ -975,7 +979,7 @@ IGAKLShell::getResponse(int responseID, Information &eleInfo)
     // break;
 
   // case RESPONSETYPE_KLSHELL_STRAINS: //strain
-  if(responseID == RESPONSETYPE_KLSHELL_STRAINS or 
+  if(responseID == RESPONSETYPE_KLSHELL_STRAINS || 
     responseID == RESPONSETYPE_KLSHELL_FAKESECTION_DEFORMATIONS)
   {
     for (int gp = 0; gp < ngauss; gp++) { // Changed "i" to "gp"
@@ -3509,28 +3513,28 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
     bG1(1) = G(1, 0);
     bG1(2) = G(2, 0);
 
-    if (bG1(0) > 0 and bG1(1) > 0) {
+    if (bG1(0) > 0 && bG1(1) > 0) {
       theta1 = atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) > 0 and bG1(1) < 0) {
+    } else if (bG1(0) > 0 && bG1(1) < 0) {
       theta1 = 2 * M_PI - atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0)<0 and bG1(1)>0) {
+    } else if (bG1(0)<0 && bG1(1)>0) {
       theta1 = M_PI - atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) < 0 and bG1(1) < 0) {
+    } else if (bG1(0) < 0 && bG1(1) < 0) {
       theta1 = M_PI + atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) > 0 and bG1(1) == 0) {
+    } else if (bG1(0) > 0 && bG1(1) == 0) {
       theta1 = 0;
 
-    } else if (bG1(0) < 0 and bG1(1) == 0) {
+    } else if (bG1(0) < 0 && bG1(1) == 0) {
       theta1 = M_PI;
 
-    } else if (bG1(0) == 0 and bG1(1) > 0) {
+    } else if (bG1(0) == 0 && bG1(1) > 0) {
       theta1 = 90.0 / 180.0 * M_PI;
 
-    } else if (bG1(0) == 0 and bG1(1) < 0) {
+    } else if (bG1(0) == 0 && bG1(1) < 0) {
       theta1 = 270.0 / 180.0 * M_PI;
     }
 
@@ -3839,12 +3843,12 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
           dirt = 6 - dirr - dirs; // Check this
           ddir = dirr - dirs;
 
-          if (ddir == -1 or ddir == 2)
+          if (ddir == -1 || ddir == 2)
           {
             // opserr << "dirt - 3 = " << dirt-3 << endln;
             ddg3(dirt - 3) = dR(kr, 0) * dR(ks, 1) - dR(ks, 0) * dR(kr, 1);
           }
-          else if (ddir == 1 or ddir == -2)
+          else if (ddir == 1 || ddir == -2)
           {
             // opserr << "dirt - 3 = " << dirt-3 << endln;
             ddg3(dirt - 3) = -dR(kr, 0) * dR(ks, 1) + dR(ks, 0) * dR(kr, 1);

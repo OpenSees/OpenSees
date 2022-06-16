@@ -58,6 +58,11 @@
 #include <map>
 
 #define min(a,b) ( (a)<(b) ? (a):(b) )
+#define max(a,b) ( (a)>(b) ? (a):(b) )
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #include "gaussQuadrature.h"
 #include "R3vectors.h"
@@ -2358,28 +2363,28 @@ void IGAKLShell_BendingStrip::formResidAndTangent( int tang_flag )
     bG1(1) = G(1, 0);
     bG1(2) = G(2, 0);
 
-    if (bG1(0) > 0 and bG1(1) > 0) {
+    if (bG1(0) > 0 && bG1(1) > 0) {
       theta1 = atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) > 0 and bG1(1) < 0) {
+    } else if (bG1(0) > 0 && bG1(1) < 0) {
       theta1 = 2 * M_PI - atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0)<0 and bG1(1)>0) {
+    } else if (bG1(0)<0 && bG1(1)>0) {
       theta1 = M_PI - atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) < 0 and bG1(1) < 0) {
+    } else if (bG1(0) < 0 && bG1(1) < 0) {
       theta1 = M_PI + atan(abs(bG1(1) / bG1(0)));
 
-    } else if (bG1(0) > 0 and bG1(1) == 0) {
+    } else if (bG1(0) > 0 && bG1(1) == 0) {
       theta1 = 0;
 
-    } else if (bG1(0) < 0 and bG1(1) == 0) {
+    } else if (bG1(0) < 0 && bG1(1) == 0) {
       theta1 = M_PI;
 
-    } else if (bG1(0) == 0 and bG1(1) > 0) {
+    } else if (bG1(0) == 0 && bG1(1) > 0) {
       theta1 = 90.0 / 180.0 * M_PI;
 
-    } else if (bG1(0) == 0 and bG1(1) < 0) {
+    } else if (bG1(0) == 0 && bG1(1) < 0) {
       theta1 = 270.0 / 180.0 * M_PI;
     }
 
@@ -2667,12 +2672,12 @@ void IGAKLShell_BendingStrip::formResidAndTangent( int tang_flag )
           dirt = 6 - dirr - dirs; // Check this
           ddir = dirr - dirs;
 
-          if (ddir == -1 or ddir == 2)
+          if (ddir == -1 || ddir == 2)
           {
             // opserr << "dirt - 3 = " << dirt-3 << endln;
             ddg3(dirt - 3) = dR(kr, 0) * dR(ks, 1) - dR(ks, 0) * dR(kr, 1);
           }
-          else if (ddir == 1 or ddir == -2)
+          else if (ddir == 1 || ddir == -2)
           {
             // opserr << "dirt - 3 = " << dirt-3 << endln;
             ddg3(dirt - 3) = -dR(kr, 0) * dR(ks, 1) + dR(ks, 0) * dR(kr, 1);

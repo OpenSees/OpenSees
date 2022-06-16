@@ -369,7 +369,7 @@ EPPGapMaterial::Print(OPS_Stream &s, int flag)
 int
 EPPGapMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strcmp(argv[0],"E") == 0) {
+  if (strcmp(argv[0],"E") == 0 || strcmp(argv[0],"k") == 0) {
     param.setValue(E);
     return param.addObject(1, this);
   }

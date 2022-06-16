@@ -24,6 +24,9 @@
 // ============================================================================
 // Please read detailed description in H5DRM.h.
 // ============================================================================
+
+#ifdef _H5DRM
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -396,32 +399,52 @@ void H5DRM::intitialize()
 		H5DRMout << "crd_scale = " << crd_scale << endln;
 		H5DRMout << "NDRM_points = " << NDRM_points << endln;
 
-		xyz *= crd_scale;
-		drmbox_x0 *= crd_scale;
-		drmbox_xmax *= crd_scale;
-		drmbox_xmin *= crd_scale;
-		drmbox_ymax *= crd_scale;
-		drmbox_ymin *= crd_scale;
-		drmbox_zmax *= crd_scale;
-		drmbox_zmin *= crd_scale;
-
 		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (before transformation)" << endln;
-		drmbox_x0 = T * drmbox_x0 + x0;
-		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
 
+		// utility for point transformation
+		auto lam_transform = [this, &drmbox_x0](Vector& point) {
+			static Vector copy(3);
+			copy = point;
+			copy -= drmbox_x0;
+			copy *= crd_scale;
+			point.addMatrixVector(0.0, T, copy, 1.0);
+			point += x0;
+		};
+
+		// transform all points
 		for (int i = 0; i < NDRM_points; ++i)
-	{
-		static Vector row(3);
+		{
+			static Vector row(3);
 			row(0) = xyz(i, 0);
 			row(1) = xyz(i, 1);
 			row(2) = xyz(i, 2);
-			// opserr << "i = " << i <<" x = " << row(0) << " " << row(1) << " " << row(2) << " (before transformation)" <<endln;
-			row = T * row + x0;
-			// opserr << "i = " << i <<" x = " << row(0) << " " << row(1) << " " << row(2) << " (after transformation)" <<endln;
+			lam_transform(row);
 			xyz(i, 0) = row(0);
 			xyz(i, 1) = row(1);
 			xyz(i, 2) = row(2);
 		}
+
+		// transform bounding box
+		static Vector pmax(3);
+		static Vector pmin(3);
+		pmax(0) = drmbox_xmax;
+		pmax(1) = drmbox_ymax;
+		pmax(2) = drmbox_zmax;
+		pmin(0) = drmbox_xmin;
+		pmin(1) = drmbox_ymin;
+		pmin(2) = drmbox_zmin;
+		lam_transform(pmax);
+		lam_transform(pmin);
+		drmbox_xmax = pmax(0);
+		drmbox_ymax = pmax(1);
+		drmbox_zmax = pmax(2);
+		drmbox_xmin = pmin(0);
+		drmbox_ymin = pmin(1);
+		drmbox_zmin = pmin(2);
+
+		// transform drm x0, which is not the user-defined x0
+		drmbox_x0 = x0;
+		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
 	}
 
 	double d_tol = distance_tolerance;
@@ -2422,3 +2445,4 @@ bool read_int_dataset_into_array(const hid_t & h5drm_dataset, std::string datase
 //     }
 // }
 
+#endif // _H5DRM
