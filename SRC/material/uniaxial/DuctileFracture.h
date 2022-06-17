@@ -80,7 +80,7 @@ class DuctileFracture : public UniaxialMaterial
 	  // committed status variables
 	  double FI; // Fracture index
 	  double FI_VGM; // Void growth damage component
-	  double FI_MVC; // Multi-void coalescence damage compoent
+	  double FI_MVC; // Multi-void coalescence damage component
 	  double ep_prev; // Previous plastic strain
 	  double ep_curr; // Current plastic strain
 	  double dep; // Incremental plastic strain

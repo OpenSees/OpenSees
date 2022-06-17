@@ -2705,7 +2705,7 @@ ManzariDafalias::NewtonIter2(const Vector& xo, const Vector& inVar, Vector& sol,
     int MaxLS   = 15;
     int errFlag = 0;
     
-    // residuals and incremenets
+    // residuals and increments
     Vector delSig(6), delAlph(6), delZ(6);
     Vector del(19), res(19), res2(19);
     double normR1 = 1.0, alpha = 1.0;
@@ -3189,7 +3189,7 @@ ManzariDafalias::NewtonIter3(const Vector& xo, const Vector& inVar, Vector& sol,
     int MaxLS   = 15;
     int errFlag = 0;
     
-    // residuals and incremenets
+    // residuals and increments
     Vector delSig(6), delAlph(6), delZ(6);
     Vector del(19), res(19), res2(19), JRes(19), sol2(19);
     double normR1 = 1.0, alpha = 1.0;
@@ -3570,7 +3570,7 @@ ManzariDafalias::NewtonIter2_negP(const Vector& xo, const Vector& inVar, Vector&
     int MaxLS   = 15;
     int errFlag = 0;
     
-    // residuals and incremenets
+    // residuals and increments
     Vector delSig(6), delAlph(6), delZ(6);
     Vector del(20), res(20), res2(20);
     double normR1 = 1.0, alpha = 1.0;

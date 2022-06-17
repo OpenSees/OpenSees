@@ -2165,7 +2165,7 @@ const Matrix& ASDAbsorbingBoundary3D::computeNmatrix()
 
 void ASDAbsorbingBoundary3D::addKffToSoil(Matrix& K)
 {
-    // Add the stiffness matrix of the forces transfered from the
+    // Add the stiffness matrix of the forces transferred from the
     // free-field column to the soil domain.
     // Only on vertical boundaries
 
@@ -2236,7 +2236,7 @@ void ASDAbsorbingBoundary3D::addKffToSoil(Matrix& K)
 
 void ASDAbsorbingBoundary3D::addRffToSoil(Vector& R)
 {
-    // Add the forces transfered from the
+    // Add the forces transferred from the
     // free-field column to the soil domain.
     // Only on vertical boundaries
 

@@ -1073,7 +1073,7 @@ StainlessECThermal::commitSensitivity(double TstrainSensitivity, int gradIndex, 
 
 // AddingSensitivity:END /////////////////////////////////////////////
 
-//this function is no use, just for the definiation of pure virtual function.
+//this function is no use, just for the definition of pure virtual function.
 int StainlessECThermal::setTrialStrain (double strain, double strainRate)
 {
   opserr << "StainlessECThermal::setTrialStrain (double strain, double strainRate) - should never be called\n";

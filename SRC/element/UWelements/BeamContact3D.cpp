@@ -729,7 +729,7 @@ BeamContact3D::project(double xi)
                 double xi_P_cubed;                             
                 Vector a1(BC3D_NUM_NDM);                // tangent at end a
                 Vector b1(BC3D_NUM_NDM);                // tangent at end b
-                Vector x_c_P(BC3D_NUM_NDM);             // current centerline porjection coordinate
+                Vector x_c_P(BC3D_NUM_NDM);             // current centerline projection coordinate
                 Vector d(BC3D_NUM_NDM);                 // distance from secondary node to centerline coord
                 Vector tc(BC3D_NUM_NDM);                // tangent at projection point = 1st deriv of x_c
                 Vector ddx_c(BC3D_NUM_NDM);             // 2nd derivative of x_c

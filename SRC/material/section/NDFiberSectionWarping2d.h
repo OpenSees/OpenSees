@@ -47,8 +47,9 @@ class NDFiberSectionWarping2d : public SectionForceDeformation
   public:
     NDFiberSectionWarping2d(); 
     NDFiberSectionWarping2d(int tag, int numFibers, Fiber **fibers, double a = 1.0);
-    NDFiberSectionWarping2d(int tag, int numFibers, NDMaterial **mats,
-		     SectionIntegration &si, double a = 1.0);
+  NDFiberSectionWarping2d(int tag, int num, double a = 1.0);
+  NDFiberSectionWarping2d(int tag, int numFibers, NDMaterial **mats,
+			  SectionIntegration &si, double a = 1.0);
     ~NDFiberSectionWarping2d();
 
     const char *getClassType(void) const {return "NDFiberSectionWarping2d";};
@@ -96,7 +97,7 @@ class NDFiberSectionWarping2d : public SectionForceDeformation
   protected:
     
     //  private:
-    int numFibers;                   // number of fibers in the section
+  int numFibers,sizeFibers;                   // number of fibers in the section
     NDMaterial **theMaterials; // array of pointers to materials
     double   *matData;               // data for the materials [yloc and area]
     double   kData[25];               // data for ks matrix 

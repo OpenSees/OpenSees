@@ -142,7 +142,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Transformation
 
 # System of equations solver
@@ -199,7 +199,7 @@ while {$ok == 0 && $currentDisp < $maxU} {
     
     # if the analysis fails try initial tangent iteration
     if {$ok != 0} {
-	puts "regular newton failed .. lets try an initail stiffness for this step"
+	puts "regular newton failed .. lets try an initial stiffness for this step"
 	test NormDispIncr 1.0e-12  2000 1
 	algorithm ModifiedNewton -initial
 	set ok [analyze 1]

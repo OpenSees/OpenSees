@@ -44,7 +44,7 @@ int i_greater();
                 perm - the nested dissection ordering
 
         working parameters
-                mask - is used to mask off variables that haave been
+                mask - is used to mask off variables that have been
                         numbered during the ordering process
                 xls, ls - this level strucrre pari is used as temporary storage
                         by fnroot.
@@ -302,14 +302,14 @@ int fnroot(int root, int **padj, int *mask, int *nlvl, int *xls, int *ls)
 /**************************************************************************
 **********************rootls ....... rooted level structure  **************
 ***************************************************************************
-        Purpos - rootls generates the level structer rooted
-                 at the inp8ut node called root.  Only those
-                 nodes for which mask is nonnegative will considered.
+        Purpose - rootls generates the level structure rooted
+                  at the input node called root.  Only those
+                  nodes for which mask is nonnegative will be considered.
         Input parameters
-                root - the node at which the level structetr is to be
+                root - the node at which the level structure is to be
                        rooted
                 padj - adjacency structure
-                mask - is used to specify a section subgraph. 
+                mask - is used to specify a section subgraph.
                        nodes with mask[i] < 0 are ignored.
 
         Output parameters

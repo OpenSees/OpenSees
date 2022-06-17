@@ -296,7 +296,7 @@ namespace
     /** \brief ASDShellQ4Globals
      *
      * This singleton class stores some data for the shell calculations that
-     * can be statically instanciated to avoid useless re-allocations
+     * can be statically instantiated to avoid useless re-allocations
      *
      */
     class ASDShellQ4Globals
@@ -560,7 +560,7 @@ namespace
         }
         
         // transform the strain-displacement matrix from natural
-        // to local coordinate system taking into account the element distorsion
+        // to local coordinate system taking into account the element distortion
         static Matrix TBN(2, 24);
         TBN.addMatrixProduct(0.0, mitc.transformation, BN, 1.0);
         for (int i = 0; i < 2; i++)
@@ -1534,7 +1534,7 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             LHS.addMatrixProduct(1.0, KUQ_KQQ_inv, m_KQU, -1.0);
     }
 
-    // Tranform LHS to global coordinate system
+    // Transform LHS to global coordinate system
     m_transformation->transformToGlobal(local_cs, UG, UL, LHS, RHS, (options & OPT_LHS));
 
     // Subtract external loads if any
@@ -1584,7 +1584,7 @@ void ASDShellQ4::AGQIupdate(const Vector& UL)
 void ASDShellQ4::AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs)
 {
     // set to zero vectors and matrices for the static condensation
-    // of internal DOFs before proceding with gauss integration
+    // of internal DOFs before proceeding with gauss integration
     m_KQU.Zero();
     m_KUQ.Zero();
     m_KQQ_inv.Zero();

@@ -2251,7 +2251,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
       }
       else
       {
-         opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+         opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
          return TCL_ERROR;
       }
 
@@ -2500,7 +2500,7 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
       }
       else
       {
-         opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+         opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
          return TCL_ERROR;
       }
 
@@ -2912,7 +2912,7 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 		}
 		else
 		{
-			opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+			opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
 			return TCL_ERROR;
 		}
 		// Delete fiber array
@@ -3268,7 +3268,7 @@ buildSectionAsym(Tcl_Interp* interp, TclModelBuilder* theTclModelBuilder,
 		}
 		else
 		{
-			opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+			opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
 			return TCL_ERROR;
 		}
 

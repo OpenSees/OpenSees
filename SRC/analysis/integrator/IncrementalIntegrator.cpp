@@ -618,7 +618,7 @@ IncrementalIntegrator::addModalDampingMatrix(const Vector *modalDampingValues) {
 
 const Vector &
 IncrementalIntegrator::getVel(void) {
-  opserr << "IncrementalIntegrator::getVel() - not implemeneted for this integrator\n";
+  opserr << "IncrementalIntegrator::getVel() - not implemented for this integrator\n";
   return theSOE->getX();
 }
 

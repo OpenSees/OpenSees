@@ -186,7 +186,7 @@ void *OPS_HDR()
     }
     
     if (theEle == 0) {
-        opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
+        opserr << "WARNING this element only works for 3D problem with 6 dof per node: " << eleTag << endln;
         return 0;
     }
     
@@ -242,7 +242,7 @@ HDR::HDR(int tag, int Nd1, int Nd2, double Gr, double kbulk, double Di, double D
     }
     double Er = Ec/3.0;                                     // Rotation modulus of bearing
     double As = A*h/Tr;                                     // Adjusted shear area of bearing
-    double Is = I*h/Tr;                                     // Adjusted moment of intertia of bearing
+    double Is = I*h/Tr;                                     // Adjusted moment of inertia of bearing
     double Pe = PI*PI*Er*Is/(h*h);                          // Euler buckling load of bearing
     Fcr = -sqrt(Pe*G*As);                                   // Critical buckling load in compression
     Fcrn = Fcr;                                             // Current value of critical buckling load
