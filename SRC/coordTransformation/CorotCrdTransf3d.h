@@ -86,7 +86,8 @@ public:
     const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps);    
     
     int  getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis);
-    
+  int getRigidOffsets(Vector &offsets);
+  
 private:
     void compTransfMatrixBasicGlobal(void);
     void compTransfMatrixBasicGlobalNew(void);
