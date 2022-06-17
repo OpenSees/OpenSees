@@ -47,7 +47,7 @@ foreach seriesCommand $seriesCommands {
     set A 1.0;
     set m 1.0;
     
-    #derived quantaties                                                             
+    #derived quantities                                                             
     set PI 3.14159
 
     set fStruct [expr 1.0/$periodStruct]

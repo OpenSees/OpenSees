@@ -1,5 +1,5 @@
 
-# Two dimenional Frame: Eigenvalue & Static Loads
+# Two dimensional Frame: Eigenvalue & Static Loads
 
 
 # REFERENCES:
