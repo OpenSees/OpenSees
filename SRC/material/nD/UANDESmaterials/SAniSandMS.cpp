@@ -104,7 +104,7 @@ OPS_SAniSandMSMaterial(void)
 
 	int    tag;
 	double dData[19];
-	int flags[3];
+	int flags[5];
 	double oData[2];
 
 	flags[0] = 3;          // IntScheme

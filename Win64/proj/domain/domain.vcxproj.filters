@@ -40,6 +40,9 @@
     <Filter Include="load\shell">
       <UniqueIdentifier>{171577b3-4b22-46e8-929e-386e834719f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IGA">
+      <UniqueIdentifier>{a96d0202-a515-4f90-abe6-6267b6821aad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp">
@@ -312,6 +315,21 @@
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\gaussQuadrature.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\IGAFollowerLoad.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\IGASurfacePatch.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\NurbsDers.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -577,6 +595,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h">
       <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\gaussQuadrature.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\IGAFollowerLoad.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\IGASurfacePatch.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\NurbsDers.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h">
+      <Filter>pattern\drm</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
