@@ -1631,6 +1631,15 @@ BrickUP::setParameter(const char **argv, int argc, Parameter &param)
   } else if (strcmp(argv[0],"vPerm") == 0) {
     return param.addObject(4, this);
 
+  } else if (strcmp(argv[0],"xPerm") == 0) {
+    return param.addObject(101, this);
+
+  } else if (strcmp(argv[0],"yPerm") == 0) {
+    return param.addObject(102, this);
+
+  } else if (strcmp(argv[0],"zPerm") == 0) {
+    return param.addObject(102, this);
+
   } else {
 
     int matRes = res;
@@ -1651,14 +1660,26 @@ BrickUP::updateParameter(int parameterID, Information &info)
   int matRes = res;
   switch( parameterID ) {
 	case 3:
-		perm[0] = info.theDouble;
+		perm[0] = info.theDouble;   // J.Abell: Bug? This should change perm[2].. the vertical?  
 		this->getDamp();	// update mass matrix
 		return 0;
 	case 4:
-		perm[1] = info.theDouble;
-		perm[2] = info.theDouble;
+		perm[1] = info.theDouble;  // J.Abell: Bug? This should change perm[0].. the horizontal-x?
+		perm[2] = info.theDouble;  // J.Abell: Bug? This should change perm[1].. the horizontal-y?
 		this->getDamp();	// update mass matrix
 		return 0;
+    case 101:
+        perm[0] = info.theDouble;   // Update x-permeability
+        this->getDamp();        // update mass matrix
+        return 0;
+    case 102:
+        perm[1] = info.theDouble;   // Update y-permeability
+        this->getDamp();        // update mass matrix
+        return 0;
+    case 103:
+        perm[2] = info.theDouble;   // Update z-permeability
+        this->getDamp();        // update mass matrix
+        return 0;
 	default:
 		return -1;
   }

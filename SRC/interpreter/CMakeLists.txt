@@ -16,6 +16,8 @@ target_sources(OPS_INTERPRETER
     OpenSeesParameterCommands.cpp
     OpenSeesFrictionModelCommands.cpp
     OpenSeesReliabilityCommands.cpp
+    OpenSeesNDTestCommands.cpp
+    OpenSeesIGACommands.cpp
 )
 
 

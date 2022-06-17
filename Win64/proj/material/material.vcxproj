@@ -198,6 +198,8 @@
     <ClCompile Include="..\..\..\SRC\material\nD\DruckerPragerThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicPlaneStress.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ElasticPlaneStress.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ExternalNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.cpp" />
@@ -234,6 +236,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\VonPapaDamage.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp" />
@@ -641,6 +644,8 @@
     <ClInclude Include="..\..\..\SRC\material\nD\DruckerPragerThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropic3DThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticIsotropicMaterialThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicPlaneStress.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\ElasticPlaneStress.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\IncrementalElasticIsotropicThreeDimensional.h" />
@@ -674,6 +679,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\VonPapaDamage.h" />
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
     <ClInclude Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h" />

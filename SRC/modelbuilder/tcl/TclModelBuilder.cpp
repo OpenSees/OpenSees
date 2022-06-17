@@ -392,6 +392,9 @@ TclCommand_addElementRayleigh(ClientData clientData,
 			      TCL_Char **argv);
 ///////////////////////////////////////////////////////////////
 
+int
+TclCommand_IGA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 
 
 // REMO
@@ -463,6 +466,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "element", TclCommand_addElement,
+		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "IGA", TclCommand_IGA,
 		    (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "mesh", TclCommand_mesh,
@@ -1276,6 +1282,30 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp,
   return TclModelBuilderElementCommand(clientData, interp, 
 				       argc, argv, theTclDomain, theTclBuilder);
 }
+
+
+extern void *OPS_IGASurfacePatch(void);
+int
+TclCommand_IGA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+	opserr << "TclCommand_IGA" << endln;
+
+	if(argc < 3)
+	{
+		opserr << "IGA_Command : IGA <cmd> <args...>" << endln;
+		return -1; 
+	}
+
+
+	if (strcmp(argv[1],"Patch") == 0) {
+		OPS_ResetInput(clientData, interp, 2, argc, argv, theTclDomain, theTclBuilder);
+		OPS_IGASurfacePatch();
+	}
+	
+	return 0; 
+}
+
+
 
 // extern int OPS_LineMesh(Domain& domain, int ndm);
 // extern int OPS_TriMesh(Domain& domain);
