@@ -88,6 +88,8 @@
 #ifndef H5DRM_h
 #define H5DRM_h
 
+#ifdef _H5DRM
+
 #include <LoadPattern.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -116,32 +118,32 @@
 class Vector;
 class Matrix;
 
-class Plane
-{
-public:
-    Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1);
-    ~Plane();
+// class Plane
+// {
+// public:
+//     Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1);
+//     ~Plane();
 
-    bool locate_point(const Vector& x, double& xi1, double& xi2, double& distance) const ;
+//     bool locate_point(const Vector& x, double& xi1, double& xi2, double& distance) const ;
     
-    bool get_ij_coordinates_to_point(double xi1, double xi2, int& i, int& j) const;
+//     bool get_ij_coordinates_to_point(double xi1, double xi2, int& i, int& j) const;
 
-    int getNumber() const;
+//     int getNumber() const;
     
-    int getStationNumber(int i, int j) const;
+//     int getStationNumber(int i, int j) const;
 
-    void print(FILE * fptr) const;
+//     void print(FILE * fptr) const;
     
-private:
-    int number;
-    bool internal;
-    int *stations;
-    Vector v0;
-    Vector v1;
-    Vector v2;
-    Vector xi1;
-    Vector xi2;
-};
+// private:
+//     int number;
+//     bool internal;
+//     int *stations;
+//     Vector v0;
+//     Vector v1;
+//     Vector v2;
+//     Vector xi1;
+//     Vector xi2;
+// };
 
 
 
@@ -149,7 +151,14 @@ class H5DRM : public LoadPattern
 {
 public:
     H5DRM();
-    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3);
+    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, 
+          double crd_scale_ = 1, 
+          double distance_tolerance_ = 1e-3, 
+          bool do_coordinate_transformation = true,
+        double T00 = 1.0, double T01 = 0.0, double T02 = 0.0,
+        double T10 = 0.0, double T11 = 1.0, double T12 = 0.0,
+        double T20 = 0.0, double T21 = 0.0, double T22 = 1.0,
+        double x00 = 0.0, double x01 = 0.0, double x02 = 0.0);
     ~H5DRM();
     void clean_all_data(); // Called by destructor and if domain changes
 
@@ -231,7 +240,15 @@ private:
 
     int myrank;         // MPI Process-id (rank) in the case of parallel processing
 
-    std::vector<Plane*> planes;
+    // std::vector<Plane*> planes;
+
+    bool do_coordinate_transformation;
+
+    //Coordinate transformation... xyz_new = T xyz_old + x0
+    Matrix T;
+    Vector x0;
 };
+
+#endif // _H5DRM
 
 #endif

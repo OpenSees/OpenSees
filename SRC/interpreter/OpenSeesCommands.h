@@ -214,6 +214,12 @@ int OPS_doBlock3D();
 /* OpenSeesTimeSeriesCommands.cpp */
 int OPS_TimeSeries();
 
+/* OpenSeesIGACommands.cpp */
+int OPS_IGA();
+
+/* OpenSeesNDTestCommands.cpp */
+int OPS_NDTest();
+
 /* OpenSeesPatternCommands.cpp */
 int OPS_Pattern();
 int OPS_NodalLoad();
