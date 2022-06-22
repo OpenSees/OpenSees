@@ -2635,7 +2635,6 @@ static PyObject *Py_ops_getLSFTags(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
-
 static PyObject *Py_ops_runImportanceSamplingAnalysis(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
@@ -2646,8 +2645,6 @@ static PyObject *Py_ops_runImportanceSamplingAnalysis(PyObject *self, PyObject *
 
     return wrapper->getResults();
 }
-
-
 
 static PyObject *Py_ops_IGA(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2660,7 +2657,6 @@ static PyObject *Py_ops_IGA(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
-
 static PyObject *Py_ops_NDTest(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
@@ -2671,8 +2667,6 @@ static PyObject *Py_ops_NDTest(PyObject *self, PyObject *args) {
 
     return wrapper->getResults();
 }
-
-
 
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////

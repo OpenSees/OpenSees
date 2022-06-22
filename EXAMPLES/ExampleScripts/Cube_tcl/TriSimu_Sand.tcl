@@ -54,9 +54,9 @@ source IsotropicCompression_Analysis.tcl
 #===========================================================
 # Apply friction(fixing the top and bottom plates with soil)
 #================================================================
-# You can test the differece between full frition or no friction 
-# on the top and bottom platens by comment or de-comment the 
-# following command
+# You can test the difference between full friction or no 
+# friction on the top and bottom plates by commenting or 
+# uncommenting the following command:
 source Apply_FrictionBC.tcl
 
 

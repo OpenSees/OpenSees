@@ -114,7 +114,7 @@ geomTransf Linear 1
 # Number of integration points along length of element
 set np 5
 
-# Create the coulumns using Beam-column elements
+# Create the columns using Beam-column elements
 #                           tag ndI ndJ nsecs secID transfTag
 element nonlinearBeamColumn  1   1   3   $np    1       1
 element nonlinearBeamColumn  2   2   4   $np    1       1
