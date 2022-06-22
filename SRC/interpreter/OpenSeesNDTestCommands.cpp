@@ -271,7 +271,8 @@ OPS_NDTest()
 
     // Identify what specific command of Patch we're calling
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr<<"WARNING too few arguments: IGA cmd? \n";
+	opserr<<"WARNING too few arguments: NDTest cmd? \n";
+	opserr<<" available commands: SetStrain|CommitState|GetStrain|GetStress \n";
 	return -1;
     }
 
