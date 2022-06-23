@@ -1983,7 +1983,9 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 	sprintf(debugfilename, "debugdrmbruteforce.%d.txt", myrank);
 	FILE * fptrdrm;
 	if (DEBUG_NODE_MATCHING)
+	{
 		fptrdrm = fopen(debugfilename, "w");
+	}
 
 	Domain *theDomain = this->getDomain();
 	NodeIter& node_iter = theDomain->getNodes();
@@ -1998,8 +2000,10 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		double dmin = std::numeric_limits<double>::infinity();
 		int ii_station_min = 0;
 
-		// if (DEBUG_NODE_MATCHING)
-		// 	fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] , node_xyz[1] , node_xyz[2] );
+		if (DEBUG_NODE_MATCHING)
+		{
+			fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] , node_xyz[1] , node_xyz[2] );
+		}
 		Vector station_xyz(3);
 		for (int ii = 0; ii < xyz.noRows(); ++ii)
 		{
@@ -2035,12 +2039,14 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 			if (DEBUG_NODE_MATCHING)
 			{
 				fprintf(fptrdrm, "Node # %05d @ (%4.2f, %4.2f, %4.2f) rejected \n", tag, node_xyz(0) , node_xyz(1) , node_xyz(2) );
-				fprintf(fptrdrm, "closest pal @ (%4.2f, %4.2f, %4.2f) ii =  %05d  with dmin = %f \n", ii_station_min, xyz(ii_station_min, 0) , xyz(ii_station_min, 1) , xyz(ii_station_min, 1) , dmin);
+				fprintf(fptrdrm, "closest pal @ (%4.2f, %4.2f, %4.2f) ii =  %05d  with dmin = %f \n", xyz(ii_station_min, 0) , xyz(ii_station_min, 1) , xyz(ii_station_min, 1), ii_station_min , dmin);
 			}
 		}
 	}
 	if (DEBUG_NODE_MATCHING)
+	{
 		fclose(fptrdrm);
+	}
 
 	H5DRMout << "node_matching_BruteForce - End!\n";
 
@@ -2233,9 +2239,9 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
 	result.resize(dim[0], dim[1]);
 	// opserr << " dim[0] = " << (int) dim[0] << endln;
 	// opserr << " dim[1] = " << (int) dim[1] << endln;
-	for (int i = 0; i < dim[0]; ++i)
+	for (int i = 0; i < (int) dim[0]; ++i)
 	{
-		for (int j = 0; j < dim[1]; ++j)
+		for (int j = 0; j < (int) dim[1]; ++j)
 		{
 			// opserr << "i = " << (int) i << " j = " << (int) j << endln;
 			// opserr << "d[i][j] = " << d[i][j] << endln;
