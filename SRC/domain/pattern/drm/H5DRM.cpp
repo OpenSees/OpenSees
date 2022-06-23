@@ -43,7 +43,7 @@
 #include <vector>
 #include <Message.h>
 
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 #include <mpi.h>
 #endif
 
@@ -225,7 +225,7 @@ H5DRM::H5DRM()
 
 
 	myrank = 0;
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 #endif
 	H5DRMout << "H5DRM - empty constructor\n";
@@ -266,7 +266,7 @@ H5DRM::H5DRM(
 	cFactor = cFactor_;
 	step = step1 = step2 = 0;
 	myrank = 0;
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 #endif
 
