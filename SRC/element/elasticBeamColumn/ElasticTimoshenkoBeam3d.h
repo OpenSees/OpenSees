@@ -43,8 +43,8 @@ class ElasticTimoshenkoBeam3d : public Element
 public:
     // constructor
     ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2, double E, double G,
-        double A, double Jx, double Iy, double Iz, double Avy, double Avz,
-        CrdTransf &theTransf, double rho = 0.0, int cMass = 0);
+			    double A, double Jx, double Iy, double Iz, double Avy, double Avz,
+			    CrdTransf &theTransf, double rho = 0.0, int cMass = 0, int geomNonlinear = 0);
     ElasticTimoshenkoBeam3d();
     
     // destructor
