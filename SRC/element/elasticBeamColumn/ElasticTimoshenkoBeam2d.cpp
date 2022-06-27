@@ -77,7 +77,7 @@ void *OPS_ElasticTimoshenkoBeam2d()
     }
     
     int numData;
-    int iData[6];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
     double dData[6];  // E, G, A, Iz, Avy, mass
     
     iData[4] = 0;     // cMass
