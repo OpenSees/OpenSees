@@ -77,11 +77,12 @@ void *OPS_ElasticTimoshenkoBeam2d()
     }
     
     int numData;
-    int iData[5];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass
     double dData[6];  // E, G, A, Iz, Avy, mass
     
     iData[4] = 0;     // cMass
     dData[5] = 0.0;   // mass per unit length
+    iData[5] = 0;     // Geometric linear
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -125,11 +126,14 @@ void *OPS_ElasticTimoshenkoBeam2d()
         if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
             iData[4] = 1;  // consistent mass matrix
         }
+        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
+            iData[5] = 1;  // geometric nonlinearity within the element
+        }	
         numRemainingArgs = OPS_GetNumRemainingInputArgs();      
     }
     
     theElement = new ElasticTimoshenkoBeam2d(iData[0], iData[1], iData[2],
-        dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4]);
+					     dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4], iData[5]);
     
     return theElement;
 }

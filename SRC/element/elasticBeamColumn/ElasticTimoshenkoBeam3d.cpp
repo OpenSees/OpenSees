@@ -73,11 +73,12 @@ void *OPS_ElasticTimoshenkoBeam3d()
     }
     
     int numData;
-    int iData[5];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
     double dData[9];  // E, G, A, Jx, Iy, Iz, Avy, Avz, mass
     
     iData[4] = 0;     // cMass
     dData[8] = 0.0;   // mass per unit length
+    iData[5] = 0;     // Geometric linear
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -121,12 +122,15 @@ void *OPS_ElasticTimoshenkoBeam3d()
         if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
             iData[4] = 1;  // consistent mass matrix
         }
+        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
+            iData[5] = 1;  // geometric nonlinearity within the element
+        }		
         numRemainingArgs = OPS_GetNumRemainingInputArgs();      
     }
     
     theElement = new ElasticTimoshenkoBeam3d(iData[0], iData[1], iData[2],
-        dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
-        dData[7], *theTrans, dData[8], iData[4]);
+					     dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
+					     dData[7], *theTrans, dData[8], iData[4], iData[5]);
     
     return theElement;
 }
