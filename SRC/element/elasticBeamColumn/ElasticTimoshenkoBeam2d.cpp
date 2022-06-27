@@ -136,11 +136,11 @@ void *OPS_ElasticTimoshenkoBeam2d()
 
 
 ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, 
-    double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
-    double r, int cm)
+						 double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
+						 double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam2d),
     connectedExternalNodes(2), theCoordTransf(0), E(e), G(g), A(a), Iz(iz),
-    Avy(avy), rho(r), cMass(cm), nlGeo(0), phi(0.0), L(0.0), ul(6), ql(6),
+    Avy(avy), rho(r), cMass(cm), nlGeo(gnl), phi(0.0), L(0.0), ul(6), ql(6),
     ql0(6), kl(6,6), klgeo(6,6), Tgl(6,6), Ki(6,6), M(6,6), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -164,7 +164,10 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "failed to get copy of coordinate transformation.\n";
         exit(-1);
     }
-    
+
+    // Now reading geometric nonlinear flag from user input
+    //
+    /*
     // get coordinate transformation type and save flag
     if (strncmp(theCoordTransf->getClassType(),"Linear",6) == 0)  {
         nlGeo = 0;
@@ -177,6 +180,7 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "Unsupported Corotational transformation assigned.\n"
             << "Using PDelta transformation instead.\n";
     }
+    */
     
     // zero fixed end forces vector
     ql0.Zero();
