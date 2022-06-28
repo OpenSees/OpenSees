@@ -328,7 +328,9 @@ void H5DRM::intitialize()
 	}
 
 	if (myrank == 0)
+	{
 		H5DRMout << "initializing - filename : " << HDF5filename << "\n";
+	}
 
 	//===========================================================================
 	// Open the specified file for read only
@@ -351,11 +353,11 @@ void H5DRM::intitialize()
 	// MAP DRM data to local domain
 	//===========================================================================
 
-	for (int i = 0; i < 10; ++i)
-	{
-		// Plane * newplane = new Plane(id_drm_file, i);
-		// planes.push_back(newplane);
-	}
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// Plane * newplane = new Plane(id_drm_file, i);
+	// planes.push_back(newplane);
+	// }
 
 
 	H5DRMout << "Initialize" << endln;
@@ -393,16 +395,19 @@ void H5DRM::intitialize()
 		// convert_h5drmcrd_to_ops_crd(drmbox_x0);
 		// convert_h5drmcrd_to_ops_crd(xyz);
 
-		H5DRMout << "Applying coordinate transformation  xyz (new) = T xyz (old) + x0  with" << endl;
-		H5DRMout << "T = " << "(" << T(0, 0) << " " << T(0, 1) << " " << T(0, 2) << ") (" << T(1, 0) << " " << T(1, 1) << " " << T(1, 2) << ") (" << T(2, 0) << " " << T(2, 1) << " " << T(2, 2) << ")" << endln;
-		H5DRMout << "x0 = " << vector_to_string(x0) << endln;
-		H5DRMout << "crd_scale = " << crd_scale << endln;
-		H5DRMout << "NDRM_points = " << NDRM_points << endln;
 
-		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (before transformation)" << endln;
+		if (myrank == 0)
+		{
+			H5DRMout << "Applying coordinate transformation  xyz (new) = T xyz (old) + x0  with" << endl;
+			H5DRMout << "T = " << "(" << T(0, 0) << " " << T(0, 1) << " " << T(0, 2) << ") (" << T(1, 0) << " " << T(1, 1) << " " << T(1, 2) << ") (" << T(2, 0) << " " << T(2, 1) << " " << T(2, 2) << ")" << endln;
+			H5DRMout << "x0 = " << vector_to_string(x0) << endln;
+			H5DRMout << "crd_scale = " << crd_scale << endln;
+			H5DRMout << "NDRM_points = " << NDRM_points << endln;
 
+			H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (before transformation)" << endln;
+		}
 		// utility for point transformation
-		auto lam_transform = [this, &drmbox_x0](Vector& point) {
+		auto lam_transform = [this, &drmbox_x0](Vector & point) {
 			static Vector copy(3);
 			copy = point;
 			copy -= drmbox_x0;
@@ -444,7 +449,11 @@ void H5DRM::intitialize()
 
 		// transform drm x0, which is not the user-defined x0
 		drmbox_x0 = x0;
-		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
+
+		if (myrank == 0)
+		{
+			H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
+		}
 	}
 
 	double d_tol = distance_tolerance;
@@ -826,7 +835,7 @@ void H5DRM::clean_all_data()
 }
 
 void
-H5DRM::setDomain(Domain *theDomain)
+H5DRM::setDomain(Domain * theDomain)
 {
 	this->LoadPattern::setDomain(theDomain);
 }
@@ -1611,7 +1620,9 @@ bool
 H5DRM::ComputeDRMLoads(double t)
 {
 	if (myrank == 0)
+	{
 		H5DRMout << "ComputeDRMLoads.... Begin (t = " <<  t << ").\n";
+	}
 
 
 	int NDOF = 3;
@@ -1763,7 +1774,9 @@ H5DRM::ComputeDRMLoads(double t)
 		}
 	}
 	if (myrank == 0)
+	{
 		H5DRMout << "ComputeDRMLoads.... Done.\n";
+	}
 
 
 
@@ -1974,10 +1987,13 @@ void H5DRM::node_matching_OctTree(double d_tol, const ID & internal, const Matri
 void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Matrix & xyz, const Vector & drmbox_x0, double & d_err, int & n_nodes_found)
 {
 
-	H5DRMout << "node_matching_BruteForce - Begin! d_tol = " << d_tol << "\n";
-	H5DRMout << "                                  drmbox_x0(0) = " << drmbox_x0(0) << "\n";
-	H5DRMout << "                                  drmbox_x0(1) = " << drmbox_x0(1) << "\n";
-	H5DRMout << "                                  drmbox_x0(2) = " << drmbox_x0(2) << "\n";
+	if (myrank == 0)
+	{
+		H5DRMout << "node_matching_BruteForce - Begin! d_tol = " << d_tol << "\n";
+		H5DRMout << "                                  drmbox_x0(0) = " << drmbox_x0(0) << "\n";
+		H5DRMout << "                                  drmbox_x0(1) = " << drmbox_x0(1) << "\n";
+		H5DRMout << "                                  drmbox_x0(2) = " << drmbox_x0(2) << "\n";
+	}
 
 	char debugfilename[100];
 	sprintf(debugfilename, "debugdrmbruteforce.%d.txt", myrank);
@@ -2048,8 +2064,10 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		fclose(fptrdrm);
 	}
 
-	H5DRMout << "node_matching_BruteForce - End!\n";
-
+	if (myrank == 0)
+	{
+		H5DRMout << "node_matching_BruteForce - End!\n";
+	}
 	return;
 }
 
