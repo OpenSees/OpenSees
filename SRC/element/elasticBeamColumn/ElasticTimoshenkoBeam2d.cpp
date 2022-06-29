@@ -77,11 +77,12 @@ void *OPS_ElasticTimoshenkoBeam2d()
     }
     
     int numData;
-    int iData[5];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
     double dData[6];  // E, G, A, Iz, Avy, mass
     
     iData[4] = 0;     // cMass
     dData[5] = 0.0;   // mass per unit length
+    iData[5] = 0;     // Geometric linear
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -125,22 +126,25 @@ void *OPS_ElasticTimoshenkoBeam2d()
         if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
             iData[4] = 1;  // consistent mass matrix
         }
+        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
+            iData[5] = 1;  // geometric nonlinearity within the element
+        }	
         numRemainingArgs = OPS_GetNumRemainingInputArgs();      
     }
     
     theElement = new ElasticTimoshenkoBeam2d(iData[0], iData[1], iData[2],
-        dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4]);
+					     dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4], iData[5]);
     
     return theElement;
 }
 
 
 ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, 
-    double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
-    double r, int cm)
+						 double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
+						 double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam2d),
     connectedExternalNodes(2), theCoordTransf(0), E(e), G(g), A(a), Iz(iz),
-    Avy(avy), rho(r), cMass(cm), nlGeo(0), phi(0.0), L(0.0), ul(6), ql(6),
+    Avy(avy), rho(r), cMass(cm), nlGeo(gnl), phi(0.0), L(0.0), ul(6), ql(6),
     ql0(6), kl(6,6), klgeo(6,6), Tgl(6,6), Ki(6,6), M(6,6), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -164,7 +168,10 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "failed to get copy of coordinate transformation.\n";
         exit(-1);
     }
-    
+
+    // Now reading geometric nonlinear flag from user input
+    //
+    /*
     // get coordinate transformation type and save flag
     if (strncmp(theCoordTransf->getClassType(),"Linear",6) == 0)  {
         nlGeo = 0;
@@ -177,6 +184,7 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "Unsupported Corotational transformation assigned.\n"
             << "Using PDelta transformation instead.\n";
     }
+    */
     
     // zero fixed end forces vector
     ql0.Zero();
