@@ -61,10 +61,10 @@
 
 using namespace std;
 
-#define DEBUG_NODE_MATCHING false
+#define DEBUG_NODE_MATCHING true
 #define DEBUG_DRM_INTEGRATION false
 #define DEBUG_DRM_FORCES false
-#define DEBUG_WITH_GMSH false
+#define DEBUG_WITH_GMSH true
 
 
 Vector H5DRM_calculate_cross_product(const Vector& a, const Vector& b);
@@ -2033,6 +2033,14 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		fptrdrm = fopen(debugfilename, "w");
 	}
 
+	int Nstations = xyz.noRows();
+	bool *accounted_for = new bool[Nstations+1];
+
+	for (int i = 0; i <= Nstations; ++i)
+	{
+		accounted_for[i] = false;
+	}
+
 	Domain *theDomain = this->getDomain();
 	NodeIter& node_iter = theDomain->getNodes();
 	int NDRM_points = theDomain->getNumNodes();
@@ -2050,6 +2058,7 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		{
 			fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] , node_xyz[1] , node_xyz[2] );
 		}
+
 		Vector station_xyz(3);
 		for (int ii = 0; ii < xyz.noRows(); ++ii)
 		{
@@ -2063,22 +2072,29 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 				ii_station_min = ii;
 			}
 		}
+
 		if (fabs(dmin) < d_tol)
 		{
 			int station_id = ii_station_min;
 			static Vector station_xyz(3);
 			for (int dir = 0; dir < 3; ++dir)
+			{
 				station_xyz(dir) = xyz(station_id, dir);
+			}
 			double this_d_err = (station_xyz - node_xyz ).Norm();
 			if (this_d_err > d_err)
+			{
 				d_err = this_d_err;
+			}
 			nodetag2station_id.insert ( std::pair<int, int>(tag, station_id) );
 			nodetag2local_pos.insert (  std::pair<int, int>(tag, local_pos) );
 			Nodes[local_pos] = tag;
 			IsBoundary[local_pos] = internal(station_id);
+
+			accounted_for[station_id] = true;
+
 			++n_nodes_found;
 			++local_pos;
-
 		}
 		else
 		{
@@ -2089,15 +2105,47 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 			}
 		}
 	}
+
 	if (DEBUG_NODE_MATCHING)
 	{
 		fclose(fptrdrm);
 	}
 
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
+	bool * accounted_for0 = new bool[Nstations];
+	MPI_Reduce(
+    accounted_for,
+    accounted_for0,
+    Nstations,
+    MPI_C_BOOL,
+    MPI_LOR,
+    0,
+    MPI_COMM_WORLD);
+
+
+	int n_accounted_for = 0;
+	for (int i = 0; i < Nstations; ++i)
+	{
+		if (accounted_for0[i])
+		{
+			n_accounted_for++;
+		}
+	}
+
+	delete [] accounted_for;
+	delete [] accounted_for0;
+
+
+
+#endif
+
+
 	if (myrank == 0)
 	{
 		H5DRMout << "node_matching_BruteForce - End!\n";
+		H5DRMout << "Accounted for " << n_accounted_for << " out of " << Nstations << " stations\n";
 	}
+
 	return;
 }
 
