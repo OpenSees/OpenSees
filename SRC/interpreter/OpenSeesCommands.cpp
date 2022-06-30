@@ -1707,48 +1707,51 @@ int OPS_Algorithm()
     return 0;
 }
 
-int OPS_Analysis()
-{
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-    	opserr << "WARNING insufficient args: analysis type ...\n";
-    	return -1;
-    }
+int OPS_Analysis() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "WARNING insufficient args: analysis type ...\n";
+    return -1;
+  }
 
-    const char* type = OPS_GetString();
-    bool suppressWarnings = false;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* opt = OPS_GetString();
-      if (strcmp(opt,"-noWarnings") == 0)
-	suppressWarnings = true;
-    }
-    
-    // create analysis
-    if (strcmp(type, "Static") == 0) {
-	if (cmds != 0) {
-	    cmds->setStaticAnalysis(suppressWarnings);
-	}
-    } else if (strcmp(type, "Transient") == 0) {
-	if (cmds != 0) {
-	    cmds->setTransientAnalysis(suppressWarnings);
-	}
-    } else if (strcmp(type, "PFEM") == 0) {
-	if (cmds != 0) {
-	    if (cmds->setPFEMAnalysis(suppressWarnings) < 0) {
-		return -1;
-	    }
-	}
-    } else if (strcmp(type, "VariableTimeStepTransient") == 0 ||
-	       (strcmp(type,"TransientWithVariableTimeStep") == 0) ||
-	       (strcmp(type,"VariableTransient") == 0)) {
-	if (cmds != 0) {
-	    cmds->setVariableAnalysis(suppressWarnings);
-	}
-
+  const char* type = OPS_GetString();
+  bool suppressWarnings = false;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* opt = OPS_GetString();
+    if (strcmp(opt, "-noWarnings") == 0) {
+        suppressWarnings = true;
     } else {
-	opserr<<"WARNING unknown analysis type "<<type<<"\n";
+        OPS_ResetCurrentInputArg(-1);
+    }
+  }
+
+  // create analysis
+  if (strcmp(type, "Static") == 0) {
+    if (cmds != 0) {
+      cmds->setStaticAnalysis(suppressWarnings);
+    }
+  } else if (strcmp(type, "Transient") == 0) {
+    if (cmds != 0) {
+      cmds->setTransientAnalysis(suppressWarnings);
+    }
+  } else if (strcmp(type, "PFEM") == 0) {
+    if (cmds != 0) {
+      if (cmds->setPFEMAnalysis(suppressWarnings) < 0) {
+        return -1;
+      }
+    }
+  } else if (strcmp(type, "VariableTimeStepTransient") == 0 ||
+             (strcmp(type, "TransientWithVariableTimeStep") ==
+              0) ||
+             (strcmp(type, "VariableTransient") == 0)) {
+    if (cmds != 0) {
+      cmds->setVariableAnalysis(suppressWarnings);
     }
 
-    return 0;
+  } else {
+    opserr << "WARNING unknown analysis type " << type << "\n";
+  }
+
+  return 0;
 }
 
 int OPS_analyze()
