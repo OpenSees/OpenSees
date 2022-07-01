@@ -61,9 +61,9 @@
 void* OPS_GradientInelasticBeamColumn3d()
 {
 	// Necessary Arguments
-	if (OPS_GetNumRemainingInputArgs() < 6) {
+	if (OPS_GetNumRemainingInputArgs() < 8) {
 		opserr << "WARNING! gradientInelasticBeamColumn3d - insufficient arguments\n" <<
-			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
+			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lambda1? lambda2? lc?\n" <<
 			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
 		return 0;
 	}
@@ -89,14 +89,15 @@ void* OPS_GradientInelasticBeamColumn3d()
 	int transfTag = iData[3];
 	int integrTag = iData[4];
 
-	double lc;
-	numData = 1;
-	if (OPS_GetDoubleInput(&numData, &lc) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid double input\n";
+	double ddata[3];
+	numData = 3;
+	if (OPS_GetDoubleInput(&numData, ddata) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid lc\n";
 		return 0;
 	}
-	
-	double lam1 = 0.1, lam2 = 0.1;	// would not affect the results
+	double lam1 = ddata[0];
+	double lam2 = ddata[1];
+	double lc = ddata[2];
 	
 	// Optional Arguments
 	int maxIter = 50;
