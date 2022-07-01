@@ -175,7 +175,7 @@ void* OPS_GradientInelasticBeamColumn3d()
 	const ID& secTags = theRule->getSectionTags();
 	int numIntegrPoints = secTags.Size();
 
-	for (int i = 2; i < numIntegrPoints; i++) {
+	for (int i = 2; i < numIntegrPoints-1; i++) {
 		if (secTags(i) != secTags(i - 1)) {
 			opserr << "WARNING! gradientInelasticBeamColumn3d - internal integration points should have identical tags\n"
 				<< "continued using section tag of integration point 2 for all internal integration points\n";
