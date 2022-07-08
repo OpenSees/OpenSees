@@ -2641,16 +2641,15 @@ int BackgroundMesh::record(bool init) {
         auto it = bcells.find(index);
         if (it != bcells.end()) {
             const auto& particles = it->second.getPts();
-            double distance = 0.0;
+            double distance = -1.0;
             for (const auto* p : particles) {
                 if (p != 0) {
                     // find closest particle
                     const auto& pcrds = p->getCrds();
                     double dist = distanceVDouble(crds, pcrds);
-                    if (dist > distance) {
-                        continue;
+                    if (distance < 0 || dist < distance) {
+                        vel = p->getVel();
                     }
-                    vel = p->getVel();
                 }
             }
         }
