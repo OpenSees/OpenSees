@@ -1,27 +1,21 @@
-/* ******************************************************************
-***
-**    OpenSees - Open System for Earthquake Engineering
-*Simulation    **
-**          Pacific Earthquake Engineering Research Center **
-** **
-** **
-** (C) Copyright 1999, The Regents of the University of
-*California    **
-** All Rights Reserved. **
-** **
-** Commercial use of this program without express permission of
-*the   **
-** University of California, Berkeley, is strictly prohibited.
-*See   **
-** file 'COPYRIGHT'  in main directory for information on usage
-*and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES. **
-** **
-** Developed by: **
-**   Frank McKenna (fmckenna@ce.berkeley.edu) **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu) **
-**   Filip C. Filippou (filippou@ce.berkeley.edu) **
-** **
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
 ** ****************************************************************** */
 
 // $Revision$
@@ -155,8 +149,7 @@ int OPS_BgMesh() {
       if (numl > 0) {
         num = numl * ndm;
         if (OPS_GetNumRemainingInputArgs() < num) {
-          opserr
-              << "WARNING: insufficient number of locations\n";
+          opserr << "WARNING: insufficient number of locations\n";
           return -1;
         }
 
@@ -301,8 +294,7 @@ void BackgroundMesh::addRecorder(Recorder* recorder) {
   recorders.push_back(recorder);
 }
 
-void BackgroundMesh::setRange(const VDouble& l,
-                              const VDouble& u) {
+void BackgroundMesh::setRange(const VDouble& l, const VDouble& u) {
   nearIndex(l, lower);
   nearIndex(u, upper);
 }
@@ -345,23 +337,19 @@ void BackgroundMesh::getIndex(const VDouble& crds, double incr,
   }
 }
 
-void BackgroundMesh::lowerIndex(const VDouble& crds,
-                                VInt& index) const {
+void BackgroundMesh::lowerIndex(const VDouble& crds, VInt& index) const {
   getIndex(crds, 0.0, index);
 }
 
-void BackgroundMesh::upperIndex(const VDouble& crds,
-                                VInt& index) const {
+void BackgroundMesh::upperIndex(const VDouble& crds, VInt& index) const {
   getIndex(crds, 1.0, index);
 }
 
-void BackgroundMesh::nearIndex(const VDouble& crds,
-                               VInt& index) const {
+void BackgroundMesh::nearIndex(const VDouble& crds, VInt& index) const {
   getIndex(crds, 0.5, index);
 }
 
-void BackgroundMesh::getCrds(const VInt& index,
-                             VDouble& crds) const {
+void BackgroundMesh::getCrds(const VInt& index, VDouble& crds) const {
   crds.resize(index.size(), 0.0);
   for (int i = 0; i < (int)crds.size(); ++i) {
     crds[i] = index[i] * bsize;
@@ -410,8 +398,7 @@ void BackgroundMesh::getCorners(const VInt& index, int num,
 // gather particles from minind to maxind (not included)
 // if checkfsi = true, skip fluid cells
 void BackgroundMesh::gatherParticles(const VInt& minind,
-                                     const VInt& maxind,
-                                     VParticle& pts,
+                                     const VInt& maxind, VParticle& pts,
                                      bool checkfsi) {
   int ndm = OPS_GetNDM();
   pts.clear();
@@ -439,8 +426,7 @@ void BackgroundMesh::gatherParticles(const VInt& minind,
         index[1] = j;
         for (int k = minind[2]; k < maxind[2]; ++k) {
           index[2] = k;
-          std::map<VInt, BCell>::iterator it =
-              bcells.find(index);
+          std::map<VInt, BCell>::iterator it = bcells.find(index);
           if (it != bcells.end()) {
             BCell& cell = it->second;
             if (checkfsi && cell.getType() == BACKGROUND_FLUID) {
@@ -455,8 +441,7 @@ void BackgroundMesh::gatherParticles(const VInt& minind,
   }
 }
 
-double BackgroundMesh::QuinticKernel(double q, double h,
-                                     int ndm) {
+double BackgroundMesh::QuinticKernel(double q, double h, int ndm) {
   static double pi = 3.141592653589793;
   if (q < 0 || q > 2) return 0.0;
   double aD = 0.0;
@@ -470,9 +455,8 @@ double BackgroundMesh::QuinticKernel(double q, double h,
   return aD * a * a * a * a * (2 * q + 1);
 }
 
-int BackgroundMesh::preNForTri(double x1, double y1, double x2,
-                               double y2, double x3, double y3,
-                               VDouble& coeff) {
+int BackgroundMesh::preNForTri(double x1, double y1, double x2, double y2,
+                               double x3, double y3, VDouble& coeff) {
   coeff.resize(9, 0.0);
 
   coeff[0] = x2 * y3 - x3 * y2;
@@ -501,10 +485,8 @@ int BackgroundMesh::preNForTri(double x1, double y1, double x2,
   return 0;
 }
 
-int BackgroundMesh::preNForTet(const VDouble& crds1,
-                               const VDouble& crds2,
-                               const VDouble& crds3,
-                               const VDouble& crds4,
+int BackgroundMesh::preNForTet(const VDouble& crds1, const VDouble& crds2,
+                               const VDouble& crds3, const VDouble& crds4,
                                VVDouble& coeff) {
   int ndm = OPS_GetNDM();
   if (ndm != 3) {
@@ -560,8 +542,8 @@ int BackgroundMesh::preNForTet(const VDouble& crds1,
   return 0;
 }
 
-void BackgroundMesh::getNForTri(const VDouble& coeff, double x,
-                                double y, VDouble& N) {
+void BackgroundMesh::getNForTri(const VDouble& coeff, double x, double y,
+                                VDouble& N) {
   N.resize(3, 0.0);
 
   for (int i = 0; i < (int)N.size(); ++i) {
@@ -574,8 +556,7 @@ void BackgroundMesh::getNForTri(const VDouble& coeff, double x,
   }
 }
 
-void BackgroundMesh::getNForTet(const VVDouble& coeff,
-                                const VDouble& crds,
+void BackgroundMesh::getNForTet(const VVDouble& coeff, const VDouble& crds,
                                 VDouble& N) {
   if (crds.size() != 3) {
     return;
@@ -622,9 +603,8 @@ void BackgroundMesh::getNForRect(double x0, double y0, double hx,
 }
 
 void BackgroundMesh::getNForRect(double x0, double y0, double z0,
-                                 double hx, double hy, double hz,
-                                 double x, double y, double z,
-                                 VDouble& N) {
+                                 double hx, double hy, double hz, double x,
+                                 double y, double z, VDouble& N) {
   // compute local coordinate of the particle
   double xl = (x - x0) / hx;
   double yl = (y - y0) / hy;
@@ -746,9 +726,8 @@ bool BackgroundMesh::inEle(const VDouble& N) {
   return true;
 }
 
-int BackgroundMesh::solveLine(const VDouble& p1,
-                              const VDouble& dir, int dim,
-                              double crd, double& k) {
+int BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
+                              int dim, double crd, double& k) {
   // check
   if (p1.size() != dir.size()) {
     opserr << "WARNING: sizes are not compatible -- "
@@ -756,8 +735,7 @@ int BackgroundMesh::solveLine(const VDouble& p1,
     return -1;
   }
   if (dim < 0 || dim >= (int)dir.size()) {
-    opserr
-        << "WARNING: dim is out of range -- BgMesh::solveLine\n";
+    opserr << "WARNING: dim is out of range -- BgMesh::solveLine\n";
     return -1;
   }
 
@@ -792,8 +770,7 @@ int BackgroundMesh::remesh(bool init) {
 
 #ifdef _LINUX
   timer.pause();
-  opserr << "time for move particles = " << timer.getReal()
-         << "\n";
+  opserr << "time for move particles = " << timer.getReal() << "\n";
   timer.start();
 #endif
 
@@ -808,8 +785,7 @@ int BackgroundMesh::remesh(bool init) {
 
 #ifdef _LINUX
   timer.pause();
-  opserr << "time for add structure = " << timer.getReal()
-         << "\n";
+  opserr << "time for add structure = " << timer.getReal() << "\n";
   timer.start();
 #endif
   // add particles
@@ -820,8 +796,7 @@ int BackgroundMesh::remesh(bool init) {
 
 #ifdef _LINUX
   timer.pause();
-  opserr << "time for add particles = " << timer.getReal()
-         << "\n";
+  opserr << "time for add particles = " << timer.getReal() << "\n";
   timer.start();
 #endif
 
@@ -833,8 +808,8 @@ int BackgroundMesh::remesh(bool init) {
 
 #ifdef _LINUX
   timer.pause();
-  opserr << "time for moving fixed particles = "
-         << timer.getReal() << "\n";
+  opserr << "time for moving fixed particles = " << timer.getReal()
+         << "\n";
   timer.start();
 #endif
 
@@ -906,8 +881,7 @@ int BackgroundMesh::addStructure() {
   // add all structural nodes to the background
   int ndtag = Mesh::nextNodeTag();
   std::set<int> allnodes;
-  for (std::map<int, VInt>::iterator it =
-           structuralNodes.begin();
+  for (std::map<int, VInt>::iterator it = structuralNodes.begin();
        it != structuralNodes.end(); ++it) {
     int sid = it->first;
     const VInt& snodes = it->second;
@@ -945,8 +919,7 @@ int BackgroundMesh::addStructure() {
         if (ndm == 2) {
           pnode = new Node(ndtag++, 1, crds[0], crds[1]);
         } else if (ndm == 3) {
-          pnode =
-              new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
+          pnode = new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
         }
         if (pnode == 0) {
           opserr << "WARNING: run out of memory -- "
@@ -960,8 +933,7 @@ int BackgroundMesh::addStructure() {
           return -1;
         }
 
-        pc = new Pressure_Constraint(nd->getTag(),
-                                     pnode->getTag());
+        pc = new Pressure_Constraint(nd->getTag(), pnode->getTag());
         if (pc == 0) {
           opserr << "WARNING: no enough memory for "
                     "Pressure_Constraint\n";
@@ -1050,8 +1022,7 @@ int BackgroundMesh::addParticles() {
 
     // check group tag
     if (group->getTag() == contact_tag) {
-      opserr << "WARNING: the particle group tag "
-             << contact_tag;
+      opserr << "WARNING: the particle group tag " << contact_tag;
       opserr << " is reserved for internal use. Please select a "
                 "different one\n";
       return -1;
@@ -1133,8 +1104,7 @@ int BackgroundMesh::gridNodes() {
 
   // vector of new objects
   int ndtag = Mesh::nextNodeTag();
-  std::vector<Node*> newnodes(iters.size(), 0),
-      newpnodes(iters.size(), 0);
+  std::vector<Node*> newnodes(iters.size(), 0), newpnodes(iters.size(), 0);
   std::vector<Pressure_Constraint*> newpcs(iters.size(), 0);
 
   int res = 0;
@@ -1216,8 +1186,7 @@ int BackgroundMesh::gridNodes() {
     if (bnode.getType() == BACKGROUND_STRUCTURE) {
       auto& tags = bnode.getTags();
       for (int i = 0; i < (int)bnode.size(); ++i) {
-        Pressure_Constraint* pc =
-            domain->getPressure_Constraint(tags[i]);
+        Pressure_Constraint* pc = domain->getPressure_Constraint(tags[i]);
         if (pc == 0) {
           opserr << "WARNING: structural node " << tags[i];
           opserr << " has not pc associated\n";
@@ -1235,12 +1204,10 @@ int BackgroundMesh::gridNodes() {
     if (ndm == 2) {
       node = new Node(ndtag + 2 * j, ndm, crds[0], crds[1]);
     } else if (ndm == 3) {
-      node = new Node(ndtag + 2 * j, ndm, crds[0], crds[1],
-                      crds[2]);
+      node = new Node(ndtag + 2 * j, ndm, crds[0], crds[1], crds[2]);
     }
     if (node == 0) {
-      opserr
-          << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+      opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
       res = -1;
       continue;
     }
@@ -1279,8 +1246,7 @@ int BackgroundMesh::gridNodes() {
       if (ndm == 2) {
         pnode = new Node(ndtag + 2 * j + 1, 1, crds[0], crds[1]);
       } else if (ndm == 3) {
-        pnode = new Node(ndtag + 2 * j + 1, 1, crds[0], crds[1],
-                         crds[2]);
+        pnode = new Node(ndtag + 2 * j + 1, 1, crds[0], crds[1], crds[2]);
       }
       if (pnode == 0) {
         opserr << "WARNING: run out of memory -- "
@@ -1290,8 +1256,7 @@ int BackgroundMesh::gridNodes() {
       }
       newpnodes[j] = pnode;
 
-      thePC = new Pressure_Constraint(node->getTag(),
-                                      pnode->getTag());
+      thePC = new Pressure_Constraint(node->getTag(), pnode->getTag());
       if (thePC == 0) {
         opserr << "WARNING: no enough memory for "
                   "Pressure_Constraint\n";
@@ -1384,8 +1349,7 @@ int BackgroundMesh::moveFixedParticles() {
     // give each cell a score
     VInt scores(indices.size());
     for (int i = 0; i < (int)indices.size(); ++i) {
-      std::map<VInt, BCell>::iterator cellit =
-          bcells.find(indices[i]);
+      std::map<VInt, BCell>::iterator cellit = bcells.find(indices[i]);
       if (cellit == bcells.end()) {
         // empty cell
         scores[i] = 2;
@@ -1662,8 +1626,7 @@ int BackgroundMesh::gridFluid() {
     VInt cnodes(bnodes.size());
     for (int i = 0; i < (int)cnodes.size(); ++i) {
       if (bnodes[i]->getTags().empty()) {
-        opserr
-            << "WARNING: failed to be fluid node -- gridFluid\n";
+        opserr << "WARNING: failed to be fluid node -- gridFluid\n";
         continue;
       }
       auto& tags = bnodes[i]->getTags();
@@ -1830,8 +1793,7 @@ int BackgroundMesh::gridFSInoDT() {
         csids[0] = sids[0];
         csids[1] = sids[1];
         csids[2] = sids[3];
-        if (createContact(csnds, csids,
-                          elends[numele * j + 1])) {
+        if (createContact(csnds, csids, elends[numele * j + 1])) {
           gtags[numele * j + 1] = contact_tag;
         }
         continue;
@@ -1948,16 +1910,13 @@ int BackgroundMesh::gridFSInoDT() {
       VVInt tets;
       bool incl1, incl4;
 
-      int face[6][4] = {{1, 2, 5, 6}, {0, 3, 4, 7},
-                        {1, 3, 4, 6}, {0, 2, 5, 7},
-                        {2, 3, 4, 5}, {0, 1, 6, 7}};
+      int face[6][4] = {{1, 2, 5, 6}, {0, 3, 4, 7}, {1, 3, 4, 6},
+                        {0, 2, 5, 7}, {2, 3, 4, 5}, {0, 1, 6, 7}};
       int prisms[12][6] = {
-          {5, 4, 6, 1, 0, 2}, {6, 7, 5, 2, 3, 1},
-          {4, 6, 7, 0, 2, 3}, {7, 5, 4, 3, 1, 0},
-          {4, 5, 1, 6, 7, 3}, {1, 0, 4, 3, 2, 6},
-          {0, 4, 5, 2, 6, 7}, {5, 1, 0, 7, 3, 2},
-          {3, 1, 5, 2, 0, 4}, {5, 7, 3, 4, 6, 2},
-          {1, 5, 7, 0, 4, 6}, {7, 3, 1, 6, 2, 0}};
+          {5, 4, 6, 1, 0, 2}, {6, 7, 5, 2, 3, 1}, {4, 6, 7, 0, 2, 3},
+          {7, 5, 4, 3, 1, 0}, {4, 5, 1, 6, 7, 3}, {1, 0, 4, 3, 2, 6},
+          {0, 4, 5, 2, 6, 7}, {5, 1, 0, 7, 3, 2}, {3, 1, 5, 2, 0, 4},
+          {5, 7, 3, 4, 6, 2}, {1, 5, 7, 0, 4, 6}, {7, 3, 1, 6, 2, 0}};
 
       // if find a splitting
       bool find = false;
@@ -1996,9 +1955,8 @@ int BackgroundMesh::gridFSInoDT() {
 
             // add ele nodes
             for (int m = 0; m < (int)tets.size(); ++m) {
-              if (!check_vol(
-                      ndcrds[tets[m][0]], ndcrds[tets[m][1]],
-                      ndcrds[tets[m][2]], ndcrds[tets[m][3]])) {
+              if (!check_vol(ndcrds[tets[m][0]], ndcrds[tets[m][1]],
+                             ndcrds[tets[m][2]], ndcrds[tets[m][3]])) {
                 for (int p : tets[m]) {
                   elends[numele * j + m].push_back(tags[p]);
                 }
@@ -2044,10 +2002,8 @@ int BackgroundMesh::gridFSInoDT() {
 
               // add ele nodes
               for (int m = 0; m < (int)tets.size(); ++m) {
-                if (!check_vol(ndcrds[tets[m][0]],
-                               ndcrds[tets[m][1]],
-                               ndcrds[tets[m][2]],
-                               ndcrds[tets[m][3]])) {
+                if (!check_vol(ndcrds[tets[m][0]], ndcrds[tets[m][1]],
+                               ndcrds[tets[m][2]], ndcrds[tets[m][3]])) {
                   for (int p : tets[m]) {
                     elends[numele * j + m].push_back(tags[p]);
                   }
@@ -2109,17 +2065,17 @@ int BackgroundMesh::gridFSInoDT() {
         }
         Element* ele = new PFEMContact2D(
             nextEletag, elends[i][0], elends[i][1], elends[i][2],
-            contactData[0], contactData[1], contactData[2],
-            contactData[3], contactData[4], contactData[5],
-            contactData[6], contactData[7]);
+            contactData[0], contactData[1], contactData[2], contactData[3],
+            contactData[4], contactData[5], contactData[6],
+            contactData[7]);
         if (ele == 0) {
           opserr << "WARNING: failed to create contact "
                     "element\n";
           return -1;
         }
         if (domain->addElement(ele) == false) {
-          opserr << "WARNING: failed to add element "
-                 << nextEletag << "\n";
+          opserr << "WARNING: failed to add element " << nextEletag
+                 << "\n";
           delete ele;
           return -1;
         }
@@ -2148,8 +2104,7 @@ int BackgroundMesh::gridFSInoDT() {
   // remove old contact elements
   for (int i = 0; i < (int)oldContactEles.size(); ++i) {
     if (removedEles[i] == 1) {
-      opserr << "old contact element " << oldContactEles[i]
-             << ": ";
+      opserr << "old contact element " << oldContactEles[i] << ": ";
       Element* ele = domain->removeElement(oldContactEles[i]);
       opserr << ele->getExternalNodes() << " is removed\n";
       if (ele != 0) {
@@ -2386,8 +2341,7 @@ int BackgroundMesh::gridFSI() {
           for (int k = minind[1]; k < maxind[1]; ++k) {
             currind[0] = j;
             currind[1] = k;
-            std::map<VInt, BCell>::iterator it =
-                bcells.find(currind);
+            std::map<VInt, BCell>::iterator it = bcells.find(currind);
             if (it == bcells.end()) {
               outside = true;
               break;
@@ -2407,8 +2361,7 @@ int BackgroundMesh::gridFSI() {
               currind[0] = j;
               currind[1] = k;
               currind[2] = l;
-              std::map<VInt, BCell>::iterator it =
-                  bcells.find(currind);
+              std::map<VInt, BCell>::iterator it = bcells.find(currind);
               if (it == bcells.end()) {
                 outside = true;
                 break;
@@ -2434,8 +2387,8 @@ int BackgroundMesh::gridFSI() {
       if (ndm == 2) {
         gen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], mark);
       } else if (ndm == 3) {
-        tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1],
-                        ptcrds[j][2], mark);
+        tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], ptcrds[j][2],
+                        mark);
       }
     }
 
@@ -2447,11 +2400,9 @@ int BackgroundMesh::gridFSI() {
       VVInt indices;
       getCorners(ind, 1, indices);
       for (int k = 0; k < (int)indices.size(); ++k) {
-        std::map<VInt, BCell>::iterator cellit =
-            bcells.find(indices[k]);
+        std::map<VInt, BCell>::iterator cellit = bcells.find(indices[k]);
         if (cellit == bcells.end()) continue;
-        if (cellit->second.getType() == BACKGROUND_STRUCTURE)
-          continue;
+        if (cellit->second.getType() == BACKGROUND_STRUCTURE) continue;
         if (cellit->second.getPts().empty()) continue;
         const VParticle& pts = cellit->second.getPts();
         tripts.insert(tripts.end(), pts.begin(), pts.end());
@@ -2547,17 +2498,17 @@ int BackgroundMesh::gridFSI() {
         }
         Element* ele = new PFEMContact2D(
             nextEletag, elends[i][0], elends[i][1], elends[i][2],
-            contactData[0], contactData[1], contactData[2],
-            contactData[3], contactData[4], contactData[5],
-            contactData[6], contactData[7]);
+            contactData[0], contactData[1], contactData[2], contactData[3],
+            contactData[4], contactData[5], contactData[6],
+            contactData[7]);
         if (ele == 0) {
           opserr << "WARNING: failed to create contact "
                     "element\n";
           return -1;
         }
         if (domain->addElement(ele) == false) {
-          opserr << "WARNING: failed to add element "
-                 << nextEletag << "\n";
+          opserr << "WARNING: failed to add element " << nextEletag
+                 << "\n";
           delete ele;
           return -1;
         }
@@ -2586,8 +2537,7 @@ int BackgroundMesh::gridFSI() {
   // remove old contact elements
   for (int i = 0; i < (int)oldContactEles.size(); ++i) {
     if (removedEles[i] == 1) {
-      opserr << "old contact element " << oldContactEles[i]
-             << ": ";
+      opserr << "old contact element " << oldContactEles[i] << ": ";
       Element* ele = domain->removeElement(oldContactEles[i]);
       opserr << ele->getExternalNodes() << " is removed\n";
       if (ele != 0) {
@@ -2618,7 +2568,7 @@ int BackgroundMesh::gridFSI() {
   return 0;
 }
 
-// time, vx, vy, (vz), top, bottom, left, right, dt, numIter
+// time, vx, vy, <vz>, xmin, xmax, ymin, ymax, <zmin, zmax>, dt
 //
 
 int BackgroundMesh::record(bool init) {
@@ -2632,8 +2582,7 @@ int BackgroundMesh::record(bool init) {
   // record
   for (int i = 0; i < (int)recorders.size(); ++i) {
     if (recorders[i] != 0) {
-      if (recorders[i]->record(domain->getCommitTag(),
-                               currentTime)) {
+      if (recorders[i]->record(domain->getCommitTag(), currentTime)) {
         opserr << "WARNING: failed to record -- "
                   "BgMesh::gridEles\n";
         return -1;
@@ -2661,94 +2610,80 @@ int BackgroundMesh::record(bool init) {
     VInt index;
     this->lowerIndex(crds, index);
 
-    // shape function
-    VDouble N;
-    double hh = bsize;
-    if (ndm == 2) {
-      getNForRect(index[0] * bsize, index[1] * bsize, hh, hh,
-                  crds[0], crds[1], N);
-    } else if (ndm == 3) {
-      getNForRect(index[0] * bsize, index[1] * bsize,
-                  index[2] * bsize, hh, hh, hh, crds[0], crds[1],
-                  crds[2], N);
-    }
-
     // velocity
     VDouble vel(ndm);
 
-    // get corners
-    VVInt indices;
-    getCorners(index, 1, indices);
-    for (int k = 0; k < (int)indices.size(); ++k) {
-      // get crds
-      getCrds(indices[k], crds);
-
-      // check bnode
-      std::map<VInt, BNode>::iterator bit =
-          bnodes.find(indices[k]);
-      if (bit == bnodes.end()) continue;
-
-      // get bnode
-      BNode& bnode = bit->second;
-      auto& vn = bnode.getVel();
-      if (vn.empty()) {
-        continue;
-      }
-
-      // get vel
-      for (int j = 0; j < ndm; ++j) {
-        vel[j] += N[k] * vn[0][j];
+    // get cell
+    auto it = bcells.find(index);
+    if (it != bcells.end()) {
+      const auto& particles = it->second.getPts();
+      double distance = 0.0;
+      for (const auto* p : particles) {
+        if (p != 0) {
+          // find closest particle
+          const auto& pcrds = p->getCrds();
+          double dist = distanceVDouble(crds, pcrds);
+          if (dist > distance) {
+            continue;
+          }
+          vel = p->getVel();
+        }
       }
     }
 
-    // get the lowest cell
-    double bottom = 0.0;
-    for (int iy = lower[1]; iy <= upper[1]; ++iy) {
-      VInt ind = index;
-      ind[1] = iy;
-      auto it = bcells.find(ind);
-      if (it != bcells.end() &&
-          it->second.getPts().empty() == false) {
-        bottom = iy * bsize + 0.5 * bsize;
-        break;
-      }
-    }
+    // wave heights in all directions
+    // xmin, xmax, ymin, ymax, <zmin, zmax>
+    VDouble heights;
 
-    // get the most left cell
-    double left = 0.0;
-    for (int ix = lower[0]; ix <= upper[0]; ++ix) {
-      VInt ind = index;
-      ind[0] = ix;
-      auto it = bcells.find(ind);
-      if (it != bcells.end() &&
-          it->second.getPts().empty() == false) {
-        left = ix * bsize + 0.5 * bsize;
-        break;
+    for (int i = 0; i < ndm; ++i) {
+      // min
+      for (int j = lower[i]; j <= upper[i]; ++j) {
+        VInt ind = index;
+        ind[i] = j;
+        it = bcells.find(ind);
+        if (it != bcells.end()) {
+          const auto& particles = it->second.getPts();
+          for (const auto* p : particles) {
+            if (p != 0) {
+              const auto& pcrds = p->getCrds();
+              if (heights.size() < 2 * i + 1) {
+                heights.push_back(pcrds[i]);
+              } else {
+                if (pcrds[i] < heights[2 * i]) {
+                  heights[2 * i] = pcrds[i];
+                }
+              }
+            }
+          }
+        }
       }
-    }
-    // get the highest cell
-    double top = 0.0;
-    for (int iy = upper[1]; iy >= lower[1]; --iy) {
-      VInt ind = index;
-      ind[1] = iy;
-      auto it = bcells.find(ind);
-      if (it != bcells.end() &&
-          it->second.getPts().empty() == false) {
-        top = (iy + 0.5) * bsize;
-        break;
+      if (heights.size() < 2 * i + 1) {
+        heights.push_back(0.0);
       }
-    }
 
-    // get the most right cell
-    double right = 0.0;
-    for (int ix = upper[0]; ix >= lower[0]; --ix) {
-      VInt ind = index;
-      ind[0] = ix;
-      auto it = bcells.find(ind);
-      if (it != bcells.end() &&
-          it->second.getPts().empty() == false) {
-        right = (ix + 0.5) * bsize;
-        break;
+      // max
+      for (int j = upper[i]; j >= lower[i]; --j) {
+        VInt ind = index;
+        ind[i] = j;
+        auto it = bcells.find(ind);
+        if (it != bcells.end()) {
+          const auto& particles = it->second.getPts();
+          for (const auto* p : particles) {
+            if (p != 0) {
+              const auto& pcrds = p->getCrds();
+              if (heights.size() < 2 * i + 2) {
+                heights.push_back(pcrds[i]);
+              } else {
+                if (pcrds[i] > heights[2 * i + 1]) {
+                  heights[2 * i + 1] = pcrds[i];
+                }
+              }
+            }
+          }
+        }
+      }
+      if (heights.size() < 2 * i + 2) {
+        heights.push_back(0.0);
       }
     }
 
@@ -2756,8 +2691,10 @@ int BackgroundMesh::record(bool init) {
     for (int j = 0; j < ndm; ++j) {
       theFile << vel[j] << " ";
     }
-    theFile << top << " " << bottom << " ";
-    theFile << left << " " << right << " ";
+    for (int j = 0; j < ndm; ++j) {
+      theFile << heights[2 * j] << " ";
+      theFile << heights[2 * j + 1] << " ";
+    }
   }
 
   // time step and iteration
@@ -2782,8 +2719,7 @@ int BackgroundMesh::moveParticles() {
 
     for (int i = 0; i < (int)bnode.size(); ++i) {
       Node* nd = domain->getNode(tags[i]);
-      Pressure_Constraint* pc =
-          domain->getPressure_Constraint(tags[i]);
+      Pressure_Constraint* pc = domain->getPressure_Constraint(tags[i]);
 
       if (pc != 0) {
         auto& pn = bnode.getPressure();
@@ -2843,8 +2779,7 @@ int BackgroundMesh::moveParticles() {
   return 0;
 }
 
-int BackgroundMesh::convectParticle(Particle* pt, VInt index,
-                                    int nums) {
+int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
   Domain* domain = OPS_GetDomain();
   if (domain == 0) return 0;
 
@@ -2936,8 +2871,8 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index,
     }
 
     // get particle velocity and move
-    if (interpolate(pt, indices, vels, dvns, pns, dpns, crds,
-                    types, ndtags, subdt) < 0) {
+    if (interpolate(pt, indices, vels, dvns, pns, dpns, crds, types,
+                    ndtags, subdt) < 0) {
       opserr << "WARNING: failed to interpolate particle "
                 "velocity";
       opserr << "-- BgMesh::convectParticle\n";
@@ -2948,12 +2883,12 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index,
   return 0;
 }
 
-int BackgroundMesh::interpolate(
-    Particle* pt, const VVInt& index, const VVDouble& vels,
-    const VVDouble& dvns, const VDouble& pns,
-    const VDouble& dpns, const VVDouble& crds,
-    const std::vector<BackgroundType>& types,
-    const VVInt& ndtags, double dt) {
+int BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
+                                const VVDouble& vels, const VVDouble& dvns,
+                                const VDouble& pns, const VDouble& dpns,
+                                const VVDouble& crds,
+                                const std::vector<BackgroundType>& types,
+                                const VVInt& ndtags, double dt) {
   int ndm = OPS_GetNDM();
   Domain* domain = OPS_GetDomain();
   if (domain == 0) return 0;
@@ -2987,17 +2922,14 @@ int BackgroundMesh::interpolate(
   if (ndm == 2) {
     double hx = (crds[1][0] + crds[2][0]) / 2.0 - crds[0][0];
     double hy = (crds[2][1] + crds[3][1]) / 2.0 - crds[0][1];
-    getNForRect(crds[0][0], crds[0][1], hx, hy, pcrds[0],
-                pcrds[1], N);
+    getNForRect(crds[0][0], crds[0][1], hx, hy, pcrds[0], pcrds[1], N);
   } else if (ndm == 3) {
     double hx = (crds[1][0] + crds[2][0]) / 2.0 - crds[0][0];
     double hy = (crds[2][1] + crds[3][1]) / 2.0 - crds[0][1];
-    double hz =
-        (crds[4][2] + crds[5][2] + crds[6][2] + crds[7][2]) /
-            4.0 -
-        crds[0][2];
-    getNForRect(crds[0][0], crds[0][1], crds[0][2], hx, hy, hz,
-                pcrds[0], pcrds[1], pcrds[2], N);
+    double hz = (crds[4][2] + crds[5][2] + crds[6][2] + crds[7][2]) / 4.0 -
+                crds[0][2];
+    getNForRect(crds[0][0], crds[0][1], crds[0][2], hx, hy, hz, pcrds[0],
+                pcrds[1], pcrds[2], N);
   }
 
   // particle velocity
@@ -3078,15 +3010,13 @@ int BackgroundMesh::interpolate(
         if (num_svel > 0 && fixk && fabs(svel[k]) < tol) {
           // k is fixed structure
           pvel[k] += N[j] * svel[k];
-        } else if (num_svel > 0 &&
-                   fabs(svel[k]) > fabs(vels[j][k])) {
+        } else if (num_svel > 0 && fabs(svel[k]) > fabs(vels[j][k])) {
           // k is faster structure
           pvel[k] += N[j] * svel[k];
-        } else if (num_svel > 0 &&
-                   fabs(svel[k]) < fabs(vels[j][k])) {
+        } else if (num_svel > 0 && fabs(svel[k]) < fabs(vels[j][k])) {
           // k is slower structure
-          pvel[k] += N[j] * (alphas * svel[k] +
-                             (1.0 - alphas) * vels[j][k]);
+          pvel[k] +=
+              N[j] * (alphas * svel[k] + (1.0 - alphas) * vels[j][k]);
         } else {
           // all others
           pvel[k] += N[j] * vels[j][k];
@@ -3180,13 +3110,11 @@ int BackgroundMesh::interpolate(
   return 0;
 }
 
-int BackgroundMesh::interpolate(const VVDouble& values,
-                                const VDouble& N,
+int BackgroundMesh::interpolate(const VVDouble& values, const VDouble& N,
                                 VDouble& newvalue) {
   if (N.size() != values.size()) {
-    opserr
-        << "WARNING: sizes of shape function and nodal values "
-           "don't match\n";
+    opserr << "WARNING: sizes of shape function and nodal values "
+              "don't match\n";
     return -1;
   }
   if (N.empty()) {
@@ -3214,13 +3142,11 @@ int BackgroundMesh::interpolate(const VVDouble& values,
   return 0;
 }
 
-int BackgroundMesh::interpolate(const VDouble& values,
-                                const VDouble& N,
+int BackgroundMesh::interpolate(const VDouble& values, const VDouble& N,
                                 double& newvalue) {
   if (N.size() != values.size()) {
-    opserr
-        << "WARNING: sizes of shape function and nodal values "
-           "don't match\n";
+    opserr << "WARNING: sizes of shape function and nodal values "
+              "don't match\n";
     return -1;
   }
   if (N.empty()) {
@@ -3235,8 +3161,7 @@ int BackgroundMesh::interpolate(const VDouble& values,
   return 0;
 }
 
-int BackgroundMesh::createContact(const VInt& ndtags,
-                                  const VInt& sids,
+int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
                                   VInt& elends) {
   // check inputs
   int ndm = OPS_GetNDM();
@@ -3270,8 +3195,8 @@ int BackgroundMesh::createContact(const VInt& ndtags,
   int secondary = 0;
   int id = 0;
   bool find = false;
-  for (std::map<int, VInt>::iterator it = grp.begin();
-       it != grp.end(); ++it) {
+  for (std::map<int, VInt>::iterator it = grp.begin(); it != grp.end();
+       ++it) {
     VInt& nds = it->second;
     if (nds.size() == 1) {
       // secondary node with largest sid
@@ -3317,8 +3242,8 @@ void BackgroundMesh::setContactData(const VDouble& data) {
   contactData = data;
 }
 
-void BackgroundMesh::splitPrism(const VInt& prism, VVInt& tets,
-                                bool incl1, bool incl4) {
+void BackgroundMesh::splitPrism(const VInt& prism, VVInt& tets, bool incl1,
+                                bool incl4) {
   if (prism.size() != 6) return;
   tets.clear();
   VInt tet(4);
@@ -3369,8 +3294,7 @@ bool BackgroundMesh::check_vol(const VDouble& ndcrds1,
                                const VDouble& ndcrds4) {
   VVDouble coeff;
   bool zerovol = false;
-  if (preNForTet(ndcrds1, ndcrds2, ndcrds3, ndcrds4, coeff) <
-      0) {
+  if (preNForTet(ndcrds1, ndcrds2, ndcrds3, ndcrds4, coeff) < 0) {
     zerovol = true;
   }
 
