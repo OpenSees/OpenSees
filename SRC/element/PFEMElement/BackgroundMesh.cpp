@@ -2670,7 +2670,7 @@ int BackgroundMesh::record(bool init) {
                     for (const auto* p : particles) {
                         if (p != 0) {
                             const auto& pcrds = p->getCrds();
-                            if (heights.size() < 2 * i + 1) {
+                            if ((int)heights.size() < 2 * i + 1) {
                                 heights.push_back(pcrds[i]);
                             } else {
                                 if (pcrds[i] < heights[2 * i]) {
@@ -2681,7 +2681,7 @@ int BackgroundMesh::record(bool init) {
                     }
                 }
             }
-            if (heights.size() < 2 * i + 1) {
+            if ((int)heights.size() < 2 * i + 1) {
                 heights.push_back(0.0);
             }
 
@@ -2695,7 +2695,7 @@ int BackgroundMesh::record(bool init) {
                     for (const auto* p : particles) {
                         if (p != 0) {
                             const auto& pcrds = p->getCrds();
-                            if (heights.size() < 2 * i + 2) {
+                            if ((int)heights.size() < 2 * i + 2) {
                                 heights.push_back(pcrds[i]);
                             } else {
                                 if (pcrds[i] > heights[2 * i + 1]) {
@@ -2706,7 +2706,7 @@ int BackgroundMesh::record(bool init) {
                     }
                 }
             }
-            if (heights.size() < 2 * i + 2) {
+            if ((int)heights.size() < 2 * i + 2) {
                 heights.push_back(0.0);
             }
         }
