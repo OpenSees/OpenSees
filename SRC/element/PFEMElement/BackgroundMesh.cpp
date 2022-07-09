@@ -2634,79 +2634,107 @@ int BackgroundMesh::record(bool init) {
         VInt index;
         this->lowerIndex(crds, index);
 
+        // shape function
+        VDouble N;
+        double hh = bsize;
+        if (ndm == 2) {
+            getNForRect(index[0] * bsize, index[1] * bsize, hh, hh,
+                        crds[0], crds[1], N);
+        } else if (ndm == 3) {
+            getNForRect(index[0] * bsize, index[1] * bsize,
+                        index[2] * bsize, hh, hh, hh, crds[0], crds[1],
+                        crds[2], N);
+        }
+
         // velocity
         VDouble vel(ndm);
 
-        // get cell
-        auto it = bcells.find(index);
-        if (it != bcells.end()) {
-            const auto& particles = it->second.getPts();
-            double distance = -1.0;
-            for (const auto* p : particles) {
-                if (p != 0) {
-                    // find closest particle
-                    const auto& pcrds = p->getCrds();
-                    double dist = distanceVDouble(crds, pcrds);
-                    if (distance < 0 || dist < distance) {
-                        vel = p->getVel();
-                    }
-                }
+        // get corners
+        VVInt indices;
+        getCorners(index, 1, indices);
+        for (int k = 0; k < (int)indices.size(); ++k) {
+            // get crds
+            getCrds(indices[k], crds);
+
+            // check bnode
+            std::map<VInt, BNode>::iterator bit = bnodes.find(indices[k]);
+            if (bit == bnodes.end()) continue;
+
+            // get bnode
+            BNode& bnode = bit->second;
+            auto& vn = bnode.getVel();
+            if (vn.empty()) {
+                continue;
+            }
+
+            // get vel
+            for (int j = 0; j < ndm; ++j) {
+                vel[j] += N[k] * vn[0][j];
             }
         }
 
         // wave heights in all directions
         // xmin, xmax, ymin, ymax, <zmin, zmax>
-        VDouble heights;
+        VDouble heights(2 * ndm);
 
         for (int i = 0; i < ndm; ++i) {
+            bool find = false;
             // min
+            heights[2 * i] = 0.0;
             for (int j = lower[i]; j <= upper[i]; ++j) {
                 VInt ind = index;
                 ind[i] = j;
-                it = bcells.find(ind);
+                auto it = bcells.find(ind);
                 if (it != bcells.end()) {
                     const auto& particles = it->second.getPts();
-                    for (const auto* p : particles) {
-                        if (p != 0) {
-                            const auto& pcrds = p->getCrds();
-                            if ((int)heights.size() < 2 * i + 1) {
-                                heights.push_back(pcrds[i]);
-                            } else {
-                                if (pcrds[i] < heights[2 * i]) {
-                                    heights[2 * i] = pcrds[i];
+                    if (!particles.empty()) {
+                        for (const auto* p : particles) {
+                            if (p != 0) {
+                                const auto& pcrds = p->getCrds();
+                                if (!find || pcrds[i] < heights[2 * i]) {
+                                    if (pcrds[i] > j * bsize) {
+                                        heights[2 * i] = pcrds[i];
+                                        find = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if ((int)heights.size() < 2 * i + 1) {
-                heights.push_back(0.0);
+                if (find) {
+                    break;
+                }
             }
 
             // max
+            find = false;
             for (int j = upper[i]; j >= lower[i]; --j) {
                 VInt ind = index;
                 ind[i] = j;
                 auto it = bcells.find(ind);
                 if (it != bcells.end()) {
                     const auto& particles = it->second.getPts();
-                    for (const auto* p : particles) {
-                        if (p != 0) {
-                            const auto& pcrds = p->getCrds();
-                            if ((int)heights.size() < 2 * i + 2) {
-                                heights.push_back(pcrds[i]);
-                            } else {
-                                if (pcrds[i] > heights[2 * i + 1]) {
-                                    heights[2 * i + 1] = pcrds[i];
+                    if (!particles.empty()) {
+                        for (const auto* p : particles) {
+                            if (p != 0) {
+                                const auto& pcrds = p->getCrds();
+                                if (!find ||
+                                    pcrds[i] > heights[2 * i + 1]) {
+                                    if (pcrds[i] > j * bsize) {
+                                        heights[2 * i + 1] = pcrds[i];
+                                    } else {
+                                        std::cout << "particle crds not "
+                                                     "in cell\n";
+                                    }
+                                    find = true;
                                 }
                             }
                         }
                     }
                 }
-            }
-            if ((int)heights.size() < 2 * i + 2) {
-                heights.push_back(0.0);
+                if (find) {
+                    break;
+                }
             }
         }
 
