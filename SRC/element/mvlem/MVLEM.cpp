@@ -960,7 +960,7 @@ const Vector & MVLEM::getResistingForceIncInertia()
 int
 MVLEM::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res;
+	int res = 0;
 	int dataTag = this->getDbTag();
 
 	Vector data(4);
@@ -971,142 +971,261 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	data(3) = c;
 
 	// MVLEM then sends the tags of it's two end nodes
-	res = theChannel.sendID(dataTag, commitTag, externalNodes);
+	res = theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
-		return -2;
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;
 	}
 
-	// Send the material class tags
-	ID matClassTags(2*m+1);
+	int matDbTag;
+	// Send the connected nodes (2) and material class/db tags (4m flex, 2 shear)
+	ID idData(2 + 4*m + 2);
 	for (int i = 0; i < m; i++) {
-		matClassTags(i) = theMaterialsConcrete[i]->getClassTag();
-		matClassTags(i+m) = theMaterialsSteel[i]->getClassTag();
-		}
-	matClassTags(2*m) = theMaterialsShear[0]->getClassTag();
-	res = theChannel.sendID(0, commitTag, matClassTags);
+	  idData(i) = theMaterialsConcrete[i]->getClassTag();
+	  matDbTag = theMaterialsConcrete[i]->getDbTag();
+	  if (matDbTag == 0) {
+	    matDbTag = theChannel.getDbTag();
+	    if (matDbTag != 0)
+	      theMaterialsConcrete[i]->setDbTag(matDbTag);
+	  }
+	  idData(i+m) = matDbTag;
+
+	  idData(i+2*m) = theMaterialsSteel[i]->getClassTag();
+	  matDbTag = theMaterialsSteel[i]->getDbTag();
+	  if (matDbTag == 0) {
+	    matDbTag = theChannel.getDbTag();
+	    if (matDbTag != 0)
+	      theMaterialsSteel[i]->setDbTag(matDbTag);
+	  }	  
+	  idData(i+3*m) = matDbTag;	  
+	}
+	idData(4*m) = theMaterialsShear[0]->getClassTag();
+	matDbTag = theMaterialsShear[0]->getDbTag();
+	if (matDbTag == 0) {
+	  matDbTag = theChannel.getDbTag();
+	  if (matDbTag != 0)
+	    theMaterialsShear[0]->setDbTag(matDbTag);
+	}	  
+	idData(4*m+1) = matDbTag;	  	
+	idData(4*m+2) = externalNodes(0);
+	idData(4*m+3) = externalNodes(1);
+
+	res = theChannel.sendID(dataTag, commitTag, idData);
 
 	// Send the material models
 	for (int i = 0; i < m; i++) {
-		theMaterialsConcrete[i]->sendSelf(commitTag, theChannel);
-		theMaterialsSteel[i]->sendSelf(commitTag, theChannel);
+	  res += theMaterialsConcrete[i]->sendSelf(commitTag, theChannel);
+	  if (res < 0) {
+	    opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send concrete material\n";
+	    return res;
+	  }
 	}
-	theMaterialsShear[0]->sendSelf(commitTag, theChannel);
-
-	return 0;
 	
+	for (int i = 0; i < m; i++) {	
+	  theMaterialsSteel[i]->sendSelf(commitTag, theChannel);
+	  if (res < 0) {
+	    opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send steel material\n";
+	    return res;
+	  }	  
+	}
+	
+	res += theMaterialsShear[0]->sendSelf(commitTag, theChannel);
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send shear material\n";
+	  return res;
+	}
+
+	opserr << "sendSelf res=" << res << endln;
+	
+	return res;	
 }
 
 int
 MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	int res;
+	int res = 0;
 	int dataTag = this->getDbTag();
 
-	// MVLEM creates a Vector, receives the Vector and then sets the 
-	// internal data with the data in the Vector
-	// delete dynamic memory
-	if (theMaterialsConcrete != 0)  {
-		for (int i = 0; i < m; i++)
-			if (theMaterialsConcrete[i] != 0)
-				delete theMaterialsConcrete[i];
-		delete[] theMaterialsConcrete;
-	}
-
-	if (theMaterialsSteel != 0)  {
-		for (int i = 0; i < m; i++)
-			if (theMaterialsSteel[i] != 0)
-				delete theMaterialsSteel[i];
-		delete[] theMaterialsSteel;
-	}
-
-	if (theMaterialsShear != 0)  {
-		for (int i = 0; i < 1; i++)
-			if (theMaterialsShear[i] != 0)
-				delete theMaterialsShear[i];
-		delete[] theMaterialsShear;
-	}
-
 	Vector data(4);
-	res = theChannel.recvVector(dataTag, commitTag, data);
+	res += theChannel.recvVector(dataTag, commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
-		return -1;
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
+	  return res;
 	}
-	this->setTag((int)data(0));
 
-	data(0) = this->getTag();
-	data(1) = density;
-	data(2) = m;
-	data(3) = c;
+	opserr << "recvSelf Vector" << endln;	
+	this->setTag((int)data(0));
+	density = data(1);
+	m = (int)data(2);
+	c = data(3);
+
+	ID idData(2 + 4*m + 2);
 	
 	// MVLEM now receives the tags of it's two external nodes
-	res = theChannel.recvID(dataTag, commitTag, externalNodes);
+	res = theChannel.recvID(dataTag, commitTag, idData);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
-		return -2;
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
+	  return -2;
 	}
+	opserr << "recvSelf ID" << endln;
+	externalNodes(0) = idData(4*m+2);
+	externalNodes(1) = idData(4*m+3);	
 
-	// Receive the material class tags
-	ID matClassTags(2*m+1);
-	res = theChannel.recvID(0, commitTag, matClassTags);
+	
+	if (theMaterialsConcrete == 0) {
+	  // Allocate new materials
+	  theMaterialsConcrete = new UniaxialMaterial *[m];
+	  if (theMaterialsConcrete == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for concrete\n";
+	    return -1;
+	  }
 
-	// Allocate memory for the Concrete uniaxial materials
-	theMaterialsConcrete = new UniaxialMaterial*[m];
-	if (theMaterialsConcrete == 0)  {
+	  // Receive the Concrete material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i);
+	    int matDbTag = idData(i+m);
+	    theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsConcrete[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create concrete uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsConcrete[i]->setDbTag(matDbTag);
+	    res = theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - cocnrete material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the Concrete material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i);
+	    int matDbTag = idData(i+m);
+	    if (theMaterialsConcrete[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsConcrete[i];
+	      theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsConcrete[i] == 0) {
 		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Allocate memory for the Steel uniaxial materials
-	theMaterialsSteel = new UniaxialMaterial*[m];
-	if (theMaterialsSteel == 0)  {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Allocate memory for the Shear uniaxial material
-	theMaterialsShear = new UniaxialMaterial*[1];
-	if (theMaterialsShear == 0)  {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Receive the Concrete material models
-	for (int i = 0; i < m; i++)  {
-		theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
-		if (theMaterialsConcrete[i] == 0) {
-			opserr << "MVLEM::recvSelf() - "
-				<< "failed to get blank uniaxial material.\n";
-			return -3;
-		}
-		theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
-	}
-
-	// Receive the Steel material models
-	for (int i = 0; i < m; i++)  {
-		theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTags(i+m));
-		if (theMaterialsSteel[i] == 0) {
-			opserr << "MVLEM::recvSelf() - "
-				<< "failed to get blank uniaxial material.\n";
-			return -3;
-		}
-		theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
-	}
-
-	// Receive the Shear material model
-	theMaterialsShear[0] = theBroker.getNewUniaxialMaterial(matClassTags(2*m));
-	if (theMaterialsShear[0] == 0) {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to get blank uniaxial material.\n";
+		       << "broker could not create concrete uniaxial material.\n";
 		return -3;
+	      }
+	    }
+	    theMaterialsConcrete[i]->setDbTag(matDbTag);
+	    res = theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - cocnrete material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
 	}
-	theMaterialsShear[0]->recvSelf(commitTag, theChannel, theBroker);
+	opserr << "recvSelf concrete" << endln;	
 
-	return 0;
+	if (theMaterialsSteel == 0) {
+	  // Allocate new materials
+	  theMaterialsSteel = new UniaxialMaterial *[m];
+	  if (theMaterialsSteel == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for steel\n";
+	    return -1;
+	  }
+
+	  // Receive the steel material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i+2*m);
+	    int matDbTag = idData(i+3*m);
+	    theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsSteel[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create steel uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsSteel[i]->setDbTag(matDbTag);
+	    res = theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - steel material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the steel material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i+2*m);
+	    int matDbTag = idData(i+3*m);
+	    if (theMaterialsSteel[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsSteel[i];
+	      theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsSteel[i] == 0) {
+		opserr << "MVLEM::recvSelf() - "
+		       << "broker could not create steel uniaxial material.\n";
+		return -3;
+	      }
+	    }
+	    theMaterialsSteel[i]->setDbTag(matDbTag);
+	    res = theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - steel material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+
+	}	
+	opserr << "recvSelf steel" << endln;	
+
+	if (theMaterialsShear == 0) {
+	  // Allocate new materials
+	  theMaterialsShear = new UniaxialMaterial *[1];
+	  if (theMaterialsShear == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for shear\n";
+	    return -1;
+	  }
+
+	  // Receive the shear material model
+	  for (int i = 0; i < 1; i++)  {
+	    int matClassTag = idData(4*m);
+	    int matDbTag = idData(1+4*m);
+	    theMaterialsShear[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsShear[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create shear uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsShear[i]->setDbTag(matDbTag);
+	    res = theMaterialsShear[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - shear material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the shear material models
+	  for (int i = 0; i < 1; i++)  {
+	    int matClassTag = idData(4*m);
+	    int matDbTag = idData(1+4*m);
+	    if (theMaterialsShear[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsShear[i];
+	      theMaterialsShear[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsShear[i] == 0) {
+		opserr << "MVLEM::recvSelf() - "
+		       << "broker could not create shear uniaxial material.\n";
+		return -3;
+	      }
+	    }
+	    theMaterialsShear[i]->setDbTag(matDbTag);
+	    res = theMaterialsShear[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - shear material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+
+	}	
+	
+	opserr << "recvSelf res=" << res << endln;	  
+
+	return res;
 }
 
 // Display model
