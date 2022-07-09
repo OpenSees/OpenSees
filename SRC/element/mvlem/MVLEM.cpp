@@ -963,23 +963,19 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	int res = 0;
 	int dataTag = this->getDbTag();
 
-	Vector data(4);
+	ID idData0(4);
+	idData0(0) = externalNodes(0);
+	idData0(1) = externalNodes(1);	
+	idData0(2) = this->getTag();
+	idData0(3) = m;
 
-	data(0) = this->getTag();
-	data(1) = density;
-	data(2) = m;
-	data(3) = c;
+	res = theChannel.sendID(dataTag, commitTag, idData0);
 
-	// MVLEM then sends the tags of it's two end nodes
-	res = theChannel.sendVector(dataTag, commitTag, data);
-	if (res < 0) {
-	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
-	  return -2;
-	}
 
+	
 	int matDbTag;
 	// Send the connected nodes (2) and material class/db tags (4m flex, 2 shear)
-	ID idData(2 + 4*m + 2);
+	ID idData(2 + 4*m);
 	for (int i = 0; i < m; i++) {
 	  idData(i) = theMaterialsConcrete[i]->getClassTag();
 	  matDbTag = theMaterialsConcrete[i]->getDbTag();
@@ -1007,11 +1003,28 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	    theMaterialsShear[0]->setDbTag(matDbTag);
 	}	  
 	idData(4*m+1) = matDbTag;	  	
-	idData(4*m+2) = externalNodes(0);
-	idData(4*m+3) = externalNodes(1);
-
+	
 	res = theChannel.sendID(dataTag, commitTag, idData);
 
+	
+	Vector data(2 + 3*m);
+
+	data(3*m) = density;
+	data(3*m+1) = c;
+	for (int i = 0; i < m; i++) {
+	  data(i) = b[i];
+	  data(i+m) = t[i];
+	  data(i+2*m) = rho[i];
+	}
+
+	// MVLEM then sends the tags of it's two end nodes
+	res = theChannel.sendVector(dataTag, commitTag, data);
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;
+	}
+
+	
 	// Send the material models
 	for (int i = 0; i < m; i++) {
 	  res += theMaterialsConcrete[i]->sendSelf(commitTag, theChannel);
@@ -1046,20 +1059,20 @@ MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	int res = 0;
 	int dataTag = this->getDbTag();
 
-	Vector data(4);
-	res += theChannel.recvVector(dataTag, commitTag, data);
+	ID idData0(4);
+	
+	res = theChannel.recvID(dataTag, commitTag, idData0);
 	if (res < 0) {
-	  opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
-	  return res;
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
+	  return -2;
 	}
-
-	opserr << "recvSelf Vector" << endln;	
-	this->setTag((int)data(0));
-	density = data(1);
-	m = (int)data(2);
-	c = data(3);
-
-	ID idData(2 + 4*m + 2);
+	externalNodes(0) = idData0(0);
+	externalNodes(1) = idData0(1);	
+	this->setTag(idData0(2));
+	m = idData0(3);
+	
+	
+	ID idData(2 + 4*m);
 	
 	// MVLEM now receives the tags of it's two external nodes
 	res = theChannel.recvID(dataTag, commitTag, idData);
@@ -1068,8 +1081,23 @@ MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	  return -2;
 	}
 	opserr << "recvSelf ID" << endln;
-	externalNodes(0) = idData(4*m+2);
-	externalNodes(1) = idData(4*m+3);	
+
+	
+	Vector data(2 + 3*m);
+	res += theChannel.recvVector(dataTag, commitTag, data);
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
+	  return res;
+	}
+
+	opserr << "recvSelf Vector" << endln;	
+	density = data(3*m);
+	c = data(3*m+1);
+	for (int i = 0; i < m; i++) {
+	  b[i] = data(i);
+	  t[i] = data(i+m);
+	  rho[i] = data(i+2*m);
+	}
 
 	
 	if (theMaterialsConcrete == 0) {
