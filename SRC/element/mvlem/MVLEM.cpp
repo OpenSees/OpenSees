@@ -423,7 +423,7 @@ MVLEM::MVLEM()
    density(0.0),
    externalNodes(2),
    theMaterialsConcrete(0), theMaterialsSteel(0), theMaterialsShear(0),
-   theLoad(0), MVLEMStrain(0),
+   theLoad(0), MVLEMStrain(0), NodeMass(0.0),
    b(0), t(0), rho(0), x(0), As(0), Ac(0),
    h(0.0), c(0.0), m(0)
 {
