@@ -108,9 +108,9 @@ class MVLEM : public Element {
   UniaxialMaterial **theMaterialsConcrete; // pointers to Concrete uniaxial material
   UniaxialMaterial **theMaterialsSteel;	// pointers to Steel uniaxial material
   UniaxialMaterial **theMaterialsShear;	// pointers to Shear uniaxial material
-  const double density;					// material density
-  const double c;							// center of rotation
-  const int m;							// no. of RC panels
+  double density;					// material density
+  double c;							// center of rotation
+  int m;							// no. of RC panels
   Vector *theLoad;						// pointer to element load
 
   // calculated element parameters
