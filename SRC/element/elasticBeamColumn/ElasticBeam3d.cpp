@@ -662,10 +662,10 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
       q0[4] -= My;
     }
     if (releasey == 1) {
-      q[4] -= wz*L*L/8;
+      q0[4] -= wz*L*L/8;
     }
     if (releasey == 2) {
-      q[3] += wz*L*L/8;
+      q0[3] += wz*L*L/8;
     }
     
   }
