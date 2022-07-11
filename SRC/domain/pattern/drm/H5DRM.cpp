@@ -2111,6 +2111,8 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		fclose(fptrdrm);
 	}
 
+	int n_accounted_for = 0;
+
 #if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 	bool * accounted_for0 = new bool[Nstations];
 	MPI_Reduce(
@@ -2123,7 +2125,6 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
     MPI_COMM_WORLD);
 
 
-	int n_accounted_for = 0;
 	for (int i = 0; i < Nstations; ++i)
 	{
 		if (accounted_for0[i])
@@ -2135,7 +2136,17 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 	delete [] accounted_for;
 	delete [] accounted_for0;
 
+#else
 
+	for (int i = 0; i < Nstations; ++i)
+	{
+		if (accounted_for[i])
+		{
+			n_accounted_for++;
+		}
+	}
+
+	delete [] accounted_for;
 
 #endif
 
