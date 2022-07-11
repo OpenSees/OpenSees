@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PathTimeSeries.h"
 #include "PathSeries.h"
 #include "Vector.h"
+#include "Matrix.h"
 #include "NDMaterial.h"
 #include "Information.h"
 
@@ -164,6 +165,37 @@ void* OPS_NDGetStress()
 }
 
 
+void* OPS_NDGetTangentStiffness()
+{
+	int tag = 0;
+	int size = 36;
+
+	int numdata = 1;
+	if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
+
+    NDMaterial* mat = OPS_getNDMaterial(tag);
+
+    const Matrix &stiffness = mat->getTangent();
+
+	std::vector<double> values(size);
+	for (int i=0; i<6; i++) {
+		for (int j = 0; j < 6; j++)
+		{
+			double one_value = stiffness(i,j);
+	    	values[6*i+j] = one_value;
+		}
+	}
+	if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
+	    opserr<<"WARNING OPS_NDGetStress - failed to set double inputs\n";
+	    return 0;
+	}
+    
+
+	return 0;
+}
+
+
+
 void* OPS_NDCommitState()
 {	
 	int tag = 0;
@@ -253,6 +285,7 @@ namespace {
 	functionMap.insert(std::make_pair("PrintStrain", &OPS_NDPrintStrain));
 	functionMap.insert(std::make_pair("GetStrain", &OPS_NDGetStrain));
 	functionMap.insert(std::make_pair("GetStress", &OPS_NDGetStress));
+	functionMap.insert(std::make_pair("GetTangentStiffness", &OPS_NDGetTangentStiffness));
 	functionMap.insert(std::make_pair("UpdateIntegerParameter", &OPS_NDUpdateIntegerParameter));
 	functionMap.insert(std::make_pair("UpdateDoubleParameter", &OPS_NDUpdateDoubleParameter));
       
@@ -271,7 +304,8 @@ OPS_NDTest()
 
     // Identify what specific command of Patch we're calling
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr<<"WARNING too few arguments: IGA cmd? \n";
+	opserr<<"WARNING too few arguments: NDTest cmd? \n";
+	opserr<<" available commands: SetStrain|CommitState|GetStrain|GetStress \n";
 	return -1;
     }
 
