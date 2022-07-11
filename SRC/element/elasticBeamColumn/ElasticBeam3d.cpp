@@ -626,7 +626,7 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double wy = data(0)*loadFactor;  // Transverse
     double wz = data(1)*loadFactor;  // Transverse
     double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
-    opserr << wy << ' ' << wz << ' ' << wx << endln;
+    
     this->wx += wx;
     this->wy += wy;
     this->wz += wz;    
