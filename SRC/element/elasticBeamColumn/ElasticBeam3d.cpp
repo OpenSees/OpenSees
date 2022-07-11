@@ -98,12 +98,6 @@ void* OPS_ElasticBeam3d(void)
 	} 
     }
 
-    opserr << "OPS_ElasticBeamColumn3d remaining args " << numArgs << ' ' << numOptionalArgs << endln;
-    opserr << "mass: " << mass << endln;
-    opserr << "cMass: " << cMass << endln;
-    opserr << "releasez: " << releasez << endln;
-    opserr << "releasey: " << releasey << endln;
-
     OPS_ResetCurrentInputArg(-numArgs);    
     numArgs = numArgs - numOptionalArgs;
       
