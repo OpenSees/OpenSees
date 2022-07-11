@@ -17,11 +17,11 @@
 // bottom of the element, and is uncoupled from the flexural modeling parameters.
 //
 // References:
-// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). ìAnalytical Modeling of RC 
-// Structural Wallsî, Proceedings, 9th World Conference on Earthquake Engineering, 
+// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). ‚ÄúAnalytical Modeling of RC 
+// Structural Walls‚Äù, Proceedings, 9th World Conference on Earthquake Engineering, 
 // V. 6, Tokyo-Kyoto, Japan, pp. 41-46.
-// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). ìFlexural Modeling of 
-// Reinforced Concrete Structural Walls - Model Attributesî, ACI Structural Journal, 
+// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). ‚ÄúFlexural Modeling of 
+// Reinforced Concrete Structural Walls - Model Attributes‚Äù, ACI Structural Journal, 
 // V. 101, No. 5, pp 688-698.
 
 #include "MVLEM.h"
@@ -87,7 +87,7 @@ void *OPS_MVLEM(void)
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
-    opserr << "Invalid data for element MVLEM " << iData[0] << endln;
+    opserr << "Invalid c value for element MVLEM " << iData[0] << endln;
     return 0;
   }
 
@@ -122,20 +122,20 @@ void *OPS_MVLEM(void)
     } else if (strcmp(str, "-rho") == 0) {
       numData = m;
       if (OPS_GetDoubleInput(&numData, theRho) != 0) {
-	opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid rho value for MVLEM  " << iData[0] << endln;
 	return 0;
       }
     } else if (strcmp(str, "-matConcrete") == 0) {
       numData = m;
       if (OPS_GetIntInput(&numData, matTags) != 0) {
-	opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid concrete tags for MVLEM  " << iData[0] << endln;
 	return 0;
       }
       for (int i=0; i<m; i++) {
 	theMaterialsConcrete[i] = 0;
 	theMaterialsConcrete[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsConcrete[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid concrete material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
@@ -149,21 +149,21 @@ void *OPS_MVLEM(void)
 	theMaterialsSteel[i] = 0;
 	theMaterialsSteel[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsSteel[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid steel material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
     } else if (strcmp(str, "-matShear") == 0) {
       numData = 1;
       if (OPS_GetIntInput(&numData, matTags) != 0) {
-	opserr << "Invalid shear tags for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid shear tag for MVLEM  " << iData[0] << endln;
 	return 0;
       }
       for (int i=0; i<1; i++) {
 	theMaterialsShear[i] = 0;
 	theMaterialsShear[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsShear[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid shear material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
