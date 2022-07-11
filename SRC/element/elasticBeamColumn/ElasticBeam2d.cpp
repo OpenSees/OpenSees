@@ -148,7 +148,7 @@ to get element data
                         return 0;
                     }
                 }
-            } else if (type == "-release") {
+            } else if (type == "-release" || type == "-releasez") {
                 if (OPS_GetNumRemainingInputArgs() > 0) {
                     if (OPS_GetIntInput(&numData, &release) < 0) {
                         opserr << "WARNING: failed to get release";
