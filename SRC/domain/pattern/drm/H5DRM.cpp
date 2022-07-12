@@ -43,7 +43,7 @@
 #include <vector>
 #include <Message.h>
 
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 #include <mpi.h>
 #endif
 
@@ -61,9 +61,10 @@
 
 using namespace std;
 
-#define DEBUG_NODE_MATCHING false
+#define DEBUG_NODE_MATCHING true
 #define DEBUG_DRM_INTEGRATION false
 #define DEBUG_DRM_FORCES false
+#define DEBUG_WITH_GMSH true
 
 
 Vector H5DRM_calculate_cross_product(const Vector& a, const Vector& b);
@@ -225,7 +226,7 @@ H5DRM::H5DRM()
 
 
 	myrank = 0;
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 #endif
 	H5DRMout << "H5DRM - empty constructor\n";
@@ -266,7 +267,7 @@ H5DRM::H5DRM(
 	cFactor = cFactor_;
 	step = step1 = step2 = 0;
 	myrank = 0;
-#ifdef _PARALLEL_PROCESSING
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 #endif
 
@@ -285,7 +286,7 @@ H5DRM::H5DRM(
 	x0(2) = x02;
 
 
-	if (numH5DRMpatterns == 0)
+	if (numH5DRMpatterns == 0 && myrank == 0)
 	{
 		opserr << " \n"
 		       << "---------------------------------------------------------------------------\n"
@@ -328,7 +329,9 @@ void H5DRM::intitialize()
 	}
 
 	if (myrank == 0)
+	{
 		H5DRMout << "initializing - filename : " << HDF5filename << "\n";
+	}
 
 	//===========================================================================
 	// Open the specified file for read only
@@ -351,11 +354,11 @@ void H5DRM::intitialize()
 	// MAP DRM data to local domain
 	//===========================================================================
 
-	for (int i = 0; i < 10; ++i)
-	{
-		// Plane * newplane = new Plane(id_drm_file, i);
-		// planes.push_back(newplane);
-	}
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// Plane * newplane = new Plane(id_drm_file, i);
+	// planes.push_back(newplane);
+	// }
 
 
 	H5DRMout << "Initialize" << endln;
@@ -393,16 +396,19 @@ void H5DRM::intitialize()
 		// convert_h5drmcrd_to_ops_crd(drmbox_x0);
 		// convert_h5drmcrd_to_ops_crd(xyz);
 
-		H5DRMout << "Applying coordinate transformation  xyz (new) = T xyz (old) + x0  with" << endl;
-		H5DRMout << "T = " << "(" << T(0, 0) << " " << T(0, 1) << " " << T(0, 2) << ") (" << T(1, 0) << " " << T(1, 1) << " " << T(1, 2) << ") (" << T(2, 0) << " " << T(2, 1) << " " << T(2, 2) << ")" << endln;
-		H5DRMout << "x0 = " << vector_to_string(x0) << endln;
-		H5DRMout << "crd_scale = " << crd_scale << endln;
-		H5DRMout << "NDRM_points = " << NDRM_points << endln;
 
-		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (before transformation)" << endln;
+		if (myrank == 0)
+		{
+			H5DRMout << "Applying coordinate transformation  xyz (new) = T xyz (old) + x0  with" << endl;
+			H5DRMout << "T = " << "(" << T(0, 0) << " " << T(0, 1) << " " << T(0, 2) << ") (" << T(1, 0) << " " << T(1, 1) << " " << T(1, 2) << ") (" << T(2, 0) << " " << T(2, 1) << " " << T(2, 2) << ")" << endln;
+			H5DRMout << "x0 = " << vector_to_string(x0) << endln;
+			H5DRMout << "crd_scale = " << crd_scale << endln;
+			H5DRMout << "NDRM_points = " << NDRM_points << endln;
 
+			H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (before transformation)" << endln;
+		}
 		// utility for point transformation
-		auto lam_transform = [this, &drmbox_x0](Vector& point) {
+		auto lam_transform = [this, &drmbox_x0](Vector & point) {
 			static Vector copy(3);
 			copy = point;
 			copy -= drmbox_x0;
@@ -444,7 +450,11 @@ void H5DRM::intitialize()
 
 		// transform drm x0, which is not the user-defined x0
 		drmbox_x0 = x0;
-		H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
+
+		if (myrank == 0)
+		{
+			H5DRMout << "drmbox_x0 = " << vector_to_string(drmbox_x0) << " (after transformation)" << endln;
+		}
 	}
 
 	double d_tol = distance_tolerance;
@@ -469,65 +479,68 @@ void H5DRM::intitialize()
 		H5DRMout << "DRM BBox Z  =  " << drmbox_zmax - drmbox_zmin << " " << transformation_status.c_str() << "\n";
 	}
 
-	if (myrank == 0)
+	if (DEBUG_WITH_GMSH)
 	{
-		char viewstations[100];
-		sprintf(viewstations, "stations.msh");
-		FILE * fptr = fopen(viewstations, "w");
-		fprintf(fptr, "$MeshFormat\n");
-		fprintf(fptr, "2.2 0 8\n");
-		fprintf(fptr, "$EndMeshFormat\n");
-		fprintf(fptr, "$Nodes\n");
-		fprintf(fptr, "%d\n", NDRM_points);
-		for (int i = 0; i < NDRM_points; ++i)
+		if (myrank == 0 )
 		{
-			fprintf(fptr, "%d %f %f %f\n", i + 1, xyz(i, 0), xyz(i, 1), xyz(i, 2));
+			char viewstations[100];
+			sprintf(viewstations, "stations.msh");
+			FILE * fptr = fopen(viewstations, "w");
+			fprintf(fptr, "$MeshFormat\n");
+			fprintf(fptr, "2.2 0 8\n");
+			fprintf(fptr, "$EndMeshFormat\n");
+			fprintf(fptr, "$Nodes\n");
+			fprintf(fptr, "%d\n", NDRM_points);
+			for (int i = 0; i < NDRM_points; ++i)
+			{
+				fprintf(fptr, "%d %f %f %f\n", i + 1, xyz(i, 0), xyz(i, 1), xyz(i, 2));
+			}
+			fprintf(fptr, "$EndNodes\n");
+			fprintf(fptr, "$Elements\n");
+			fprintf(fptr, "%d\n", NDRM_points);
+			for (int i = 0; i < NDRM_points; ++i)
+			{
+				fprintf(fptr, "%d 15 2 1 1 %d\n", i + 1, i + 1);
+			}
+			fprintf(fptr, "$EndElements\n");
+			fclose(fptr);
 		}
-		fprintf(fptr, "$EndNodes\n");
-		fprintf(fptr, "$Elements\n");
-		fprintf(fptr, "%d\n", NDRM_points);
-		for (int i = 0; i < NDRM_points; ++i)
+
+		char viewdrm[100];
+		sprintf(viewdrm, "drm.%d.msh", myrank);
+		FILE * fptrdrm = fopen(viewdrm, "w");
+
+		fprintf(fptrdrm, "$MeshFormat\n");
+		fprintf(fptrdrm, "2.2 0 8\n");
+		fprintf(fptrdrm, "$EndMeshFormat\n");
+		fprintf(fptrdrm, "$Nodes\n");
+		fprintf(fptrdrm, "%d\n", theDomain->getNumNodes());
+
+		NodeIter& node_iter = theDomain->getNodes();
+		Node* node_ptr = 0;
+		int drmtag = NDRM_points;
+		while ((node_ptr = node_iter()) != 0)
 		{
-			fprintf(fptr, "%d 15 2 1 1 %d\n", i + 1, i + 1);
+			const Vector& xyz_node = node_ptr->getCrds();
+			fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, xyz_node(0), xyz_node(1), xyz_node(2));
 		}
-		fprintf(fptr, "$EndElements\n");
-		fclose(fptr);
+		fprintf(fptrdrm, "$EndNodes\n");
+
+
+		fprintf(fptrdrm, "$Elements\n");
+		fprintf(fptrdrm, "%d\n", theDomain->getNumNodes());
+		int ndrmpoint = drmtag - 1;
+		drmtag = n_nodes_found + 1;
+		for (int i = 0; i < ndrmpoint; ++i)
+		{
+			fprintf(fptrdrm, "%d 15 2 1 %d %d\n", drmtag, 5 + myrank, drmtag);
+			++drmtag;
+		}
+		fprintf(fptrdrm, "$EndElements\n");
+
+
+		fclose(fptrdrm);
 	}
-
-	char viewdrm[100];
-	sprintf(viewdrm, "drm.%d.msh", myrank);
-	FILE * fptrdrm = fopen(viewdrm, "w");
-
-	fprintf(fptrdrm, "$MeshFormat\n");
-	fprintf(fptrdrm, "2.2 0 8\n");
-	fprintf(fptrdrm, "$EndMeshFormat\n");
-	fprintf(fptrdrm, "$Nodes\n");
-	fprintf(fptrdrm, "%d\n", theDomain->getNumNodes());
-
-	NodeIter& node_iter = theDomain->getNodes();
-	Node* node_ptr = 0;
-	int drmtag = NDRM_points;
-	while ((node_ptr = node_iter()) != 0)
-	{
-		const Vector& xyz_node = node_ptr->getCrds();
-		fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, xyz_node(0), xyz_node(1), xyz_node(2));
-	}
-	fprintf(fptrdrm, "$EndNodes\n");
-
-
-	fprintf(fptrdrm, "$Elements\n");
-	fprintf(fptrdrm, "%d\n", theDomain->getNumNodes());
-	int ndrmpoint = drmtag - 1;
-	drmtag = n_nodes_found + 1;
-	for (int i = 0; i < ndrmpoint; ++i)
-	{
-		fprintf(fptrdrm, "%d 15 2 1 %d %d\n", drmtag, 5 + myrank, drmtag);
-		++drmtag;
-	}
-	fprintf(fptrdrm, "$EndElements\n");
-
-
-	fclose(fptrdrm);
 
 	H5DRMout << "Found and connected " << n_nodes_found << " of " << NDRM_points << " nodes (d_err = " << d_err << ")\n";
 	DRMForces.resize(3 * n_nodes_found);
@@ -539,33 +552,33 @@ void H5DRM::intitialize()
 	DRMAccelerations.Zero();
 
 	char mshfilename[100];
-	sprintf(mshfilename, "drmnodes.%d.msh", myrank);
-	FILE * fptr = fopen(mshfilename, "w");
-	fprintf(fptr, "$MeshFormat\n");
-	fprintf(fptr, "2.2 0 8\n");
-	fprintf(fptr, "$EndMeshFormat\n");
-	fprintf(fptr, "$NodeData\n");
-	fprintf(fptr, "    1\n");
-	fprintf(fptr, "\"DRM Nodes\"\n");
-	fprintf(fptr, "1\n");
-	fprintf(fptr, "0.0000000000e+00\n");
-	fprintf(fptr, "3\n");
-	fprintf(fptr, "0\n");
-	fprintf(fptr, "1\n");
-	fprintf(fptr, "%d\n", Nodes.Size());
-	for (int i = 0; i < Nodes.Size(); ++i)
+	FILE * fptr = 0;
+	if (DEBUG_WITH_GMSH)
 	{
-		fprintf(fptr, "%d %d\n", Nodes(i), 1 * IsBoundary(i) + 2 * (1 - IsBoundary(i)));
+		sprintf(mshfilename, "drmnodes.%d.msh", myrank);
+		fptr = fopen(mshfilename, "w");
+		fprintf(fptr, "$MeshFormat\n");
+		fprintf(fptr, "2.2 0 8\n");
+		fprintf(fptr, "$EndMeshFormat\n");
+		fprintf(fptr, "$NodeData\n");
+		fprintf(fptr, "    1\n");
+		fprintf(fptr, "\"DRM Nodes\"\n");
+		fprintf(fptr, "1\n");
+		fprintf(fptr, "0.0000000000e+00\n");
+		fprintf(fptr, "3\n");
+		fprintf(fptr, "0\n");
+		fprintf(fptr, "1\n");
+		fprintf(fptr, "%d\n", Nodes.Size());
+		for (int i = 0; i < Nodes.Size(); ++i)
+		{
+			fprintf(fptr, "%d %d\n", Nodes(i), 1 * IsBoundary(i) + 2 * (1 - IsBoundary(i)));
+		}
+		fprintf(fptr, "$EndNodeData\n");
+		fclose(fptr);
 	}
-	fprintf(fptr, "$EndNodeData\n");
-	fclose(fptr);
 
 
-
-
-
-
-
+	// Identify Elements on DRM boundary
 	Element * element_ptr = 0;
 	ElementIter& element_iter = theDomain->getElements();
 	while ((element_ptr = element_iter()) != 0)
@@ -588,49 +601,51 @@ void H5DRM::intitialize()
 	H5DRMout << "Found  " << Elements.Size() << " elements on DRM boundary. \n";
 
 
-	// char mshfilename[100];
-	sprintf(mshfilename, "drmelements.%d.msh", myrank);
-	fptr = fopen(mshfilename, "w");
-	fprintf(fptr, "$MeshFormat\n");
-	fprintf(fptr, "2.2 0 8\n");
-	fprintf(fptr, "$EndMeshFormat\n");
-	fprintf(fptr, "$ElementData\n");
-	fprintf(fptr, "    1\n");
-	fprintf(fptr, "\"DRM Elements\"\n");
-	fprintf(fptr, "1\n");
-	fprintf(fptr, "0.0000000000e+00\n");
-	fprintf(fptr, "3\n");
-	fprintf(fptr, "0\n");
-	fprintf(fptr, "1\n");
-	fprintf(fptr, "%d\n", Elements.Size());
-	for (int i = 0; i < Elements.Size(); ++i)
+	if (DEBUG_WITH_GMSH)
 	{
-		fprintf(fptr, "%d %d\n", Elements(i), 1);
+		// char mshfilename[100];
+		sprintf(mshfilename, "drmelements.%d.msh", myrank);
+		fptr = fopen(mshfilename, "w");
+		fprintf(fptr, "$MeshFormat\n");
+		fprintf(fptr, "2.2 0 8\n");
+		fprintf(fptr, "$EndMeshFormat\n");
+		fprintf(fptr, "$ElementData\n");
+		fprintf(fptr, "    1\n");
+		fprintf(fptr, "\"DRM Elements\"\n");
+		fprintf(fptr, "1\n");
+		fprintf(fptr, "0.0000000000e+00\n");
+		fprintf(fptr, "3\n");
+		fprintf(fptr, "0\n");
+		fprintf(fptr, "1\n");
+		fprintf(fptr, "%d\n", Elements.Size());
+		for (int i = 0; i < Elements.Size(); ++i)
+		{
+			fprintf(fptr, "%d %d\n", Elements(i), 1);
+		}
+		fprintf(fptr, "$EndElementData\n");
+		fclose(fptr);
+
+		sprintf(mshfilename, "drmforces.%d.msh", myrank);
+		fptr = fopen(mshfilename, "w");
+		fprintf(fptr, "$MeshFormat\n");
+		fprintf(fptr, "2.2 0 8\n");
+		fprintf(fptr, "$EndMeshFormat\n");
+		fclose(fptr);
+
+		sprintf(mshfilename, "drmdisplacements.%d.msh", myrank);
+		fptr = fopen(mshfilename, "w");
+		fprintf(fptr, "$MeshFormat\n");
+		fprintf(fptr, "2.2 0 8\n");
+		fprintf(fptr, "$EndMeshFormat\n");
+		fclose(fptr);
+
+		sprintf(mshfilename, "drmaccelerations.%d.msh", myrank);
+		fptr = fopen(mshfilename, "w");
+		fprintf(fptr, "$MeshFormat\n");
+		fprintf(fptr, "2.2 0 8\n");
+		fprintf(fptr, "$EndMeshFormat\n");
+		fclose(fptr);
 	}
-	fprintf(fptr, "$EndElementData\n");
-	fclose(fptr);
-
-	sprintf(mshfilename, "drmforces.%d.msh", myrank);
-	fptr = fopen(mshfilename, "w");
-	fprintf(fptr, "$MeshFormat\n");
-	fprintf(fptr, "2.2 0 8\n");
-	fprintf(fptr, "$EndMeshFormat\n");
-	fclose(fptr);
-
-	sprintf(mshfilename, "drmdisplacements.%d.msh", myrank);
-	fptr = fopen(mshfilename, "w");
-	fprintf(fptr, "$MeshFormat\n");
-	fprintf(fptr, "2.2 0 8\n");
-	fprintf(fptr, "$EndMeshFormat\n");
-	fclose(fptr);
-
-	sprintf(mshfilename, "drmaccelerations.%d.msh", myrank);
-	fptr = fopen(mshfilename, "w");
-	fprintf(fptr, "$MeshFormat\n");
-	fprintf(fptr, "2.2 0 8\n");
-	fprintf(fptr, "$EndMeshFormat\n");
-	fclose(fptr);
-
 
 
 	//===========================================================================
@@ -826,7 +841,7 @@ void H5DRM::clean_all_data()
 }
 
 void
-H5DRM::setDomain(Domain *theDomain)
+H5DRM::setDomain(Domain * theDomain)
 {
 	this->LoadPattern::setDomain(theDomain);
 }
@@ -865,52 +880,57 @@ H5DRM::applyLoad(double time)
 		FILE* fptr_displ = 0;
 		FILE* fptr_accel = 0;
 
-		static int step = 0;
-		char mshfilename[100];
 
-		// drmforces
-		sprintf(mshfilename, "drmforces.%d.msh", myrank);
-		fptr_forces = fopen(mshfilename, "a");
-		// drmdisplacements
-		sprintf(mshfilename, "drmdisplacements.%d.msh", myrank);
-		fptr_displ = fopen(mshfilename, "a");
-		// drmaccelerations
-		sprintf(mshfilename, "drmaccelerations.%d.msh", myrank);
-		fptr_accel = fopen(mshfilename, "a");
+		if (DEBUG_WITH_GMSH)
+		{
+			static int step = 0;
+			char mshfilename[100];
 
-		fprintf(fptr_forces, "$NodeData\n");
-		fprintf(fptr_forces, "    1\n");
-		fprintf(fptr_forces, "\"DRM Forces\"\n");
-		fprintf(fptr_forces, "1\n");
-		fprintf(fptr_forces, "%f\n", time);
-		fprintf(fptr_forces, "3\n");
-		fprintf(fptr_forces, "%d\n", step);
-		fprintf(fptr_forces, "3\n");
-		fprintf(fptr_forces, "%d\n", Nodes.Size());
+			// drmforces
+			sprintf(mshfilename, "drmforces.%d.msh", myrank);
+			fptr_forces = fopen(mshfilename, "a");
+			// drmdisplacements
+			sprintf(mshfilename, "drmdisplacements.%d.msh", myrank);
+			fptr_displ = fopen(mshfilename, "a");
+			// drmaccelerations
+			sprintf(mshfilename, "drmaccelerations.%d.msh", myrank);
+			fptr_accel = fopen(mshfilename, "a");
 
-		fprintf(fptr_displ, "$NodeData\n");
-		fprintf(fptr_displ, "    1\n");
-		fprintf(fptr_displ, "\"DRM Displacements\"\n");
-		fprintf(fptr_displ, "1\n");
-		fprintf(fptr_displ, "%f\n", time);
-		fprintf(fptr_displ, "3\n");
-		fprintf(fptr_displ, "%d\n", step);
-		fprintf(fptr_displ, "3\n");
-		fprintf(fptr_displ, "%d\n", Nodes.Size());
+			fprintf(fptr_forces, "$NodeData\n");
+			fprintf(fptr_forces, "    1\n");
+			fprintf(fptr_forces, "\"DRM Forces\"\n");
+			fprintf(fptr_forces, "1\n");
+			fprintf(fptr_forces, "%f\n", time);
+			fprintf(fptr_forces, "3\n");
+			fprintf(fptr_forces, "%d\n", step);
+			fprintf(fptr_forces, "3\n");
+			fprintf(fptr_forces, "%d\n", Nodes.Size());
 
-		fprintf(fptr_accel, "$NodeData\n");
-		fprintf(fptr_accel, "    1\n");
-		fprintf(fptr_accel, "\"DRM Acceleration\"\n");
-		fprintf(fptr_accel, "1\n");
-		fprintf(fptr_accel, "%f\n", time);
-		fprintf(fptr_accel, "3\n");
-		fprintf(fptr_accel, "%d\n", step);
-		fprintf(fptr_accel, "3\n");
-		fprintf(fptr_accel, "%d\n", Nodes.Size());
+			fprintf(fptr_displ, "$NodeData\n");
+			fprintf(fptr_displ, "    1\n");
+			fprintf(fptr_displ, "\"DRM Displacements\"\n");
+			fprintf(fptr_displ, "1\n");
+			fprintf(fptr_displ, "%f\n", time);
+			fprintf(fptr_displ, "3\n");
+			fprintf(fptr_displ, "%d\n", step);
+			fprintf(fptr_displ, "3\n");
+			fprintf(fptr_displ, "%d\n", Nodes.Size());
+
+			fprintf(fptr_accel, "$NodeData\n");
+			fprintf(fptr_accel, "    1\n");
+			fprintf(fptr_accel, "\"DRM Acceleration\"\n");
+			fprintf(fptr_accel, "1\n");
+			fprintf(fptr_accel, "%f\n", time);
+			fprintf(fptr_accel, "3\n");
+			fprintf(fptr_accel, "%d\n", step);
+			fprintf(fptr_accel, "3\n");
+			fprintf(fptr_accel, "%d\n", Nodes.Size());
 
 
-		++step;
+			++step;
+		}
 
+		//Apply DRM forces to nodes
 		for (int i = 0; i < Nodes.Size(); i++)
 		{
 			int nodeTag = Nodes[i] ;
@@ -932,19 +952,27 @@ H5DRM::applyLoad(double time)
 				load(2) = DRMForces(3 * local_pos + 2);
 			}
 
-			fprintf(fptr_forces, "%d %f %f %f\n", nodeTag, load(0), load(1), load(2));
-			fprintf(fptr_displ, "%d %f %f %f\n", nodeTag, DRMDisplacements(3 * local_pos + 0), DRMDisplacements(3 * local_pos + 1), DRMDisplacements(3 * local_pos + 2));
-			fprintf(fptr_accel, "%d %f %f %f\n", nodeTag, DRMAccelerations(3 * local_pos + 0), DRMAccelerations(3 * local_pos + 1), DRMAccelerations(3 * local_pos + 2));
 
+			if (DEBUG_WITH_GMSH)
+			{
+				fprintf(fptr_forces, "%d %f %f %f\n", nodeTag, load(0), load(1), load(2));
+				fprintf(fptr_displ, "%d %f %f %f\n", nodeTag, DRMDisplacements(3 * local_pos + 0), DRMDisplacements(3 * local_pos + 1), DRMDisplacements(3 * local_pos + 2));
+				fprintf(fptr_accel, "%d %f %f %f\n", nodeTag, DRMAccelerations(3 * local_pos + 0), DRMAccelerations(3 * local_pos + 1), DRMAccelerations(3 * local_pos + 2));
+			}
 			//Add to current nodal unbalanced load
 			theNode->addUnbalancedLoad(load);
 		}
-		fprintf(fptr_forces, "$EndNodeData\n");
-		fclose(fptr_forces);
-		fprintf(fptr_displ, "$EndNodeData\n");
-		fclose(fptr_displ);
-		fprintf(fptr_accel, "$EndNodeData\n");
-		fclose(fptr_accel);
+
+
+		if (DEBUG_WITH_GMSH)
+		{
+			fprintf(fptr_forces, "$EndNodeData\n");
+			fclose(fptr_forces);
+			fprintf(fptr_displ, "$EndNodeData\n");
+			fclose(fptr_displ);
+			fprintf(fptr_accel, "$EndNodeData\n");
+			fclose(fptr_accel);
+		}
 	}
 }
 
@@ -956,12 +984,14 @@ bool H5DRM::ComputeDRMMotions(double next_integration_time)
 
 	if (!have_displacement)
 	{
-		opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have a displacements dataset. " << endln;
+		opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have a displacements dataset. FAILING" << endln;
+		return false;
 	}
 
 	if (!have_acceleration)
 	{
-		opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have an acceleration dataset. " << endln;
+		opserr << "Error - H5DRM file " << HDF5filename.c_str() << " does not have an acceleration dataset. FAILING" << endln;
+		return false;
 	}
 
 	// bool have_velocity = id_velocity > 0;
@@ -971,8 +1001,10 @@ bool H5DRM::ComputeDRMMotions(double next_integration_time)
 
 	//JAA Disable these modes for now
 
-	if (have_displacement && have_acceleration) // Note: disabled!
+	if (have_displacement && have_acceleration)
+	{
 		return drm_direct_read(next_integration_time);
+	}
 
 	// if(!have_displacement && !have_acceleration && have_velocity)
 	//     return drm_integrate_velocity(next_integration_time);
@@ -984,13 +1016,17 @@ bool H5DRM::drm_direct_read(double t)
 {
 
 	if (Nodes.Size() == 0)
+	{
+		H5DRMout << " This process has no DRM nodes. Nothing to be done by H5DRM" << endln;
 		return false;
+	}
 
 	DRMDisplacements.Zero();
 	DRMAccelerations.Zero();
 
 	if (t < tstart || t > tend)
 	{
+		H5DRMout << "t = " << t << " tstart = " << tstart << " tend = " << tend << " DRM Not computing forces (t < tstart or t > tend)"  << endln;
 		return true;
 	}
 
@@ -998,13 +1034,15 @@ bool H5DRM::drm_direct_read(double t)
 	int i2 = (int) floor( (t - tstart) / dt) + 1;
 	double t1 = i1 * dt + tstart;
 	double t2 = i2 * dt + tstart;
-
 	double dtau = (t - t1) / (t2 - t1);
+
+	if (myrank == 0)
+	{
+		H5DRMout << "t = " << t << " dt = " << dt << " i1 = " << i1 << " i2 = " << i2 << " t1 = " << t1 << " t2 = " << t2 << " dtau = " << dtau << endln;
+	}
 
 	id_acceleration_dataspace = H5Dget_space(id_acceleration);
 	id_displacement_dataspace = H5Dget_space(id_displacement);
-
-	H5DRMout << "t = " << t << " dt = " << dt << " i1 = " << i1 << " i2 = " << i2 << " t1 = " << t1 << " t2 = " << t2 << " dtau = " << dtau << endln;
 
 	double umax = -std::numeric_limits<double>::infinity();
 	double amax = -std::numeric_limits<double>::infinity();
@@ -1135,6 +1173,7 @@ bool H5DRM::drm_direct_read(double t)
 		DRMAccelerations(3 * local_pos + 1) = a1[1] * (1 - dtau) + a2[1] * (dtau);
 		DRMAccelerations(3 * local_pos + 2) = a1[2] * (1 - dtau) + a2[2] * (dtau);
 	}
+
 
 	H5DRMout << "t = " << t << " u = (" << umin << ", " << umax << ") a = (" << amin << ", " << amax << ")" << endln;
 
@@ -1611,7 +1650,9 @@ bool
 H5DRM::ComputeDRMLoads(double t)
 {
 	if (myrank == 0)
+	{
 		H5DRMout << "ComputeDRMLoads.... Begin (t = " <<  t << ").\n";
+	}
 
 
 	int NDOF = 3;
@@ -1763,7 +1804,9 @@ H5DRM::ComputeDRMLoads(double t)
 		}
 	}
 	if (myrank == 0)
+	{
 		H5DRMout << "ComputeDRMLoads.... Done.\n";
+	}
 
 
 
@@ -1974,16 +2017,29 @@ void H5DRM::node_matching_OctTree(double d_tol, const ID & internal, const Matri
 void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Matrix & xyz, const Vector & drmbox_x0, double & d_err, int & n_nodes_found)
 {
 
-	H5DRMout << "node_matching_BruteForce - Begin! d_tol = " << d_tol << "\n";
-	H5DRMout << "                                  drmbox_x0(0) = " << drmbox_x0(0) << "\n";
-	H5DRMout << "                                  drmbox_x0(1) = " << drmbox_x0(1) << "\n";
-	H5DRMout << "                                  drmbox_x0(2) = " << drmbox_x0(2) << "\n";
+	if (myrank == 0)
+	{
+		H5DRMout << "node_matching_BruteForce - Begin! d_tol = " << d_tol << "\n";
+		H5DRMout << "                                  drmbox_x0(0) = " << drmbox_x0(0) << "\n";
+		H5DRMout << "                                  drmbox_x0(1) = " << drmbox_x0(1) << "\n";
+		H5DRMout << "                                  drmbox_x0(2) = " << drmbox_x0(2) << "\n";
+	}
 
 	char debugfilename[100];
 	sprintf(debugfilename, "debugdrmbruteforce.%d.txt", myrank);
 	FILE * fptrdrm;
 	if (DEBUG_NODE_MATCHING)
+	{
 		fptrdrm = fopen(debugfilename, "w");
+	}
+
+	int Nstations = xyz.noRows();
+	bool *accounted_for = new bool[Nstations+1];
+
+	for (int i = 0; i <= Nstations; ++i)
+	{
+		accounted_for[i] = false;
+	}
 
 	Domain *theDomain = this->getDomain();
 	NodeIter& node_iter = theDomain->getNodes();
@@ -1998,8 +2054,11 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 		double dmin = std::numeric_limits<double>::infinity();
 		int ii_station_min = 0;
 
-		// if (DEBUG_NODE_MATCHING)
-		// 	fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] , node_xyz[1] , node_xyz[2] );
+		if (DEBUG_NODE_MATCHING)
+		{
+			fprintf(fptrdrm, "%d %f %f %f\n", ++drmtag, node_xyz[0] , node_xyz[1] , node_xyz[2] );
+		}
+
 		Vector station_xyz(3);
 		for (int ii = 0; ii < xyz.noRows(); ++ii)
 		{
@@ -2013,36 +2072,90 @@ void H5DRM::node_matching_BruteForce(double d_tol, const ID & internal, const Ma
 				ii_station_min = ii;
 			}
 		}
+
 		if (fabs(dmin) < d_tol)
 		{
 			int station_id = ii_station_min;
 			static Vector station_xyz(3);
 			for (int dir = 0; dir < 3; ++dir)
+			{
 				station_xyz(dir) = xyz(station_id, dir);
+			}
 			double this_d_err = (station_xyz - node_xyz ).Norm();
 			if (this_d_err > d_err)
+			{
 				d_err = this_d_err;
+			}
 			nodetag2station_id.insert ( std::pair<int, int>(tag, station_id) );
 			nodetag2local_pos.insert (  std::pair<int, int>(tag, local_pos) );
 			Nodes[local_pos] = tag;
 			IsBoundary[local_pos] = internal(station_id);
+
+			accounted_for[station_id] = true;
+
 			++n_nodes_found;
 			++local_pos;
-
 		}
 		else
 		{
 			if (DEBUG_NODE_MATCHING)
 			{
 				fprintf(fptrdrm, "Node # %05d @ (%4.2f, %4.2f, %4.2f) rejected \n", tag, node_xyz(0) , node_xyz(1) , node_xyz(2) );
-				fprintf(fptrdrm, "closest pal @ (%4.2f, %4.2f, %4.2f) ii =  %05d  with dmin = %f \n", ii_station_min, xyz(ii_station_min, 0) , xyz(ii_station_min, 1) , xyz(ii_station_min, 1) , dmin);
+				fprintf(fptrdrm, "closest pal @ (%4.2f, %4.2f, %4.2f) ii =  %05d  with dmin = %f \n", xyz(ii_station_min, 0) , xyz(ii_station_min, 1) , xyz(ii_station_min, 1), ii_station_min , dmin);
 			}
 		}
 	}
-	if (DEBUG_NODE_MATCHING)
-		fclose(fptrdrm);
 
-	H5DRMout << "node_matching_BruteForce - End!\n";
+	if (DEBUG_NODE_MATCHING)
+	{
+		fclose(fptrdrm);
+	}
+
+	int n_accounted_for = 0;
+
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
+	bool * accounted_for0 = new bool[Nstations];
+	MPI_Reduce(
+    accounted_for,
+    accounted_for0,
+    Nstations,
+    MPI_C_BOOL,
+    MPI_LOR,
+    0,
+    MPI_COMM_WORLD);
+
+
+	for (int i = 0; i < Nstations; ++i)
+	{
+		if (accounted_for0[i])
+		{
+			n_accounted_for++;
+		}
+	}
+
+	delete [] accounted_for;
+	delete [] accounted_for0;
+
+#else
+
+	for (int i = 0; i < Nstations; ++i)
+	{
+		if (accounted_for[i])
+		{
+			n_accounted_for++;
+		}
+	}
+
+	delete [] accounted_for;
+
+#endif
+
+
+	if (myrank == 0)
+	{
+		H5DRMout << "node_matching_BruteForce - End!\n";
+		H5DRMout << "Accounted for " << n_accounted_for << " out of " << Nstations << " stations\n";
+	}
 
 	return;
 }
@@ -2233,9 +2346,9 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
 	result.resize(dim[0], dim[1]);
 	// opserr << " dim[0] = " << (int) dim[0] << endln;
 	// opserr << " dim[1] = " << (int) dim[1] << endln;
-	for (int i = 0; i < dim[0]; ++i)
+	for (int i = 0; i < (int) dim[0]; ++i)
 	{
-		for (int j = 0; j < dim[1]; ++j)
+		for (int j = 0; j < (int) dim[1]; ++j)
 		{
 			// opserr << "i = " << (int) i << " j = " << (int) j << endln;
 			// opserr << "d[i][j] = " << d[i][j] << endln;
