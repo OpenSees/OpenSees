@@ -304,13 +304,13 @@ MVLEM_3D::MVLEM_3D(int tag,
 	// Check thickness and width input
 	if (thickness == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "Null thickness array passed.\n";
+		       << "Null thickness array passed." << endln;
 		exit(-1);
 	}
 
 	if (width == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "Null width array passed.\n";
+		       << "Null width array passed." << endln;
 		exit(-1);
 	}
 
@@ -349,21 +349,21 @@ MVLEM_3D::MVLEM_3D(int tag,
 	// Check Concrete material input
 	if (materialsConcrete == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "null Concrete material array passed.\n";
+		       << "null Concrete material array passed." << endln;
 		exit(-1);
 	}
 
 	// Check Steel material input
 	if (materialsSteel == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "null Steel material array passed.\n";
+		       << "null Steel material array passed." << endln;
 		exit(-1);
 	}
 
 	// Check Shear material input
 	if (materialsShear == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "null Shear material passed.\n";
+		       << "null Shear material passed." << endln;
 		exit(-1);
 	}
 
@@ -371,7 +371,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	theMaterialsConcrete = new UniaxialMaterial*[m];
 	if (theMaterialsConcrete == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "failed to allocate pointers for Concrete uniaxial materials.\n";
+		       << "failed to allocate pointers for Concrete uniaxial materials." << endln;
 		exit(-1);
 	}
 
@@ -379,7 +379,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	for (int i = 0; i < m; i++) {
 		if (materialsConcrete[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				"null uniaxial Concrete material pointer passed.\n";
+			       << "null uniaxial Concrete material pointer passed." << endln;
 			exit(-1);
 		}
 
@@ -387,7 +387,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 
 		if (theMaterialsConcrete[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				<< "failed to copy Concrete uniaxial material.\n";
+			       << "failed to copy Concrete uniaxial material." << endln;
 			exit(-1);
 		}
 	}
@@ -396,7 +396,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	theMaterialsSteel = new UniaxialMaterial*[m];
 	if (theMaterialsSteel == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "failed to allocate pointers for Steel uniaxial materials.\n";
+		       << "failed to allocate pointers for Steel uniaxial materials." << endln;
 		exit(-1);
 	}
 
@@ -404,7 +404,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	for (int i = 0; i < m; i++) {
 		if (materialsSteel[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				"null uniaxial Steel material pointer passed.\n";
+			       << "null uniaxial Steel material pointer passed." << endln;
 			exit(-1);
 		}
 
@@ -412,7 +412,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 
 		if (theMaterialsSteel[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				<< "failed to copy Steel uniaxial material.\n";
+			       << "failed to copy Steel uniaxial material." << endln;
 			exit(-1);
 		}
 	}
@@ -421,7 +421,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	theMaterialsShear = new UniaxialMaterial*[1];
 	if (theMaterialsShear == 0) {
 		opserr << "MVLEM_3D::MVLEM_3D() - "
-			<< "failed to allocate pointers for Shear uniaxial materials.\n";
+		       << "failed to allocate pointers for Shear uniaxial materials." << endln;
 		exit(-1);
 	}
 
@@ -429,7 +429,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 	for (int i = 0; i < 1; i++) {
 		if (materialsShear[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				"null uniaxial Shear material pointer passed.\n";
+			       << "null uniaxial Shear material pointer passed." << endln;
 			exit(-1);
 		}
 
@@ -437,7 +437,7 @@ MVLEM_3D::MVLEM_3D(int tag,
 
 		if (theMaterialsShear[i] == 0) {
 			opserr << "MVLEM_3D::MVLEM_3D() - "
-				<< "failed to copy Shear uniaxial material.\n";
+			       << "failed to copy Shear uniaxial material." << endln;
 			exit(-1);
 		}
 	}
@@ -611,14 +611,14 @@ void MVLEM_3D::setDomain(Domain *theDomain)
 	// Check if element height is zero
 	if ((h1 == 0.0) || (h2 == 0.0)) {
 		opserr << "WARNING: MVLEM_3D element with tag " << this->getTag() <<
-			" has ZERO height. Check geometry.";
+		  " has ZERO height. Check geometry." << endln;
 		exit(-1);
 	}
 
 	// Check if element has constant height
 	if ((h1 / h2 > 1.01) || (h1 / h2 < 0.99)) {
 		opserr << "WARNING: MVLEM_3D element with tag " << this->getTag() << 
-			" does not have constant height. Heights of the element are " << h1 << " and " << h2 << ". Check geometry.";
+		  " does not have constant height. Heights of the element are " << h1 << " and " << h2 << ". Check geometry." << endln;
 		exit(-1);
 	}
 
@@ -637,19 +637,19 @@ void MVLEM_3D::setDomain(Domain *theDomain)
 	// Check the element width
 	if ((L1 / L2 > 1.01) || (L1 / L2 < 0.99)) {
 		opserr << "WARNING: MVLEM_3D element with tag " << this->getTag() <<
-			" does not have constant length. Top and bottom lengths of the element are " << L1 << " and " << L2 << ". Check geometry.";
+		  " does not have constant length. Top and bottom lengths of the element are " << L1 << " and " << L2 << ". Check geometry." << endln;
 		exit(-1);
 	}
 	
 	if ((Lw / L1 > 1.01) || (Lw / L1 < 0.99)) {
 		opserr << "WARNING: Node coordinates do not match sum of fiber widths for MVLEM_3D element with tag " << this->getTag() <<
-			". Element width based on model geometry is " << L1 << " and sum of fiber widths is " << Lw << ". Check input and geometry.";
+		  ". Element width based on model geometry is " << L1 << " and sum of fiber widths is " << Lw << ". Check input and geometry." << endln;
 		exit(-1);
 	}
 
 	if ((Lw / L2 > 1.01) || (Lw / L2 < 0.99)) {
 		opserr << "WARNING: Node coordinates do not match sum of fiber widths for MVLEM_3D element with tag " << this->getTag() <<
-			". Element width based on model geometry is " << L2 << " and sum of fiber widths is " << Lw << ". Check input and geometry.";
+		  ". Element width based on model geometry is " << L2 << " and sum of fiber widths is " << Lw << ". Check input and geometry." << endln;
 		exit(-1);
 	} //*/
 
