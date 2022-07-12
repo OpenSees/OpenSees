@@ -42,6 +42,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/UWelements; $(MAKE);
 	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 	@$(CD) $(FE)/element/HUelements; $(MAKE);
+	@$(CD) $(FE)/element/IGA; $(MAKE);
 	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 	@$(CD) $(FE)/element/mvlem; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
@@ -93,6 +94,7 @@ spotless: clean
 	@$(CD) $(FE)/element/UWelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/HUelements; $(MAKE) wipe;
+	@$(CD) $(FE)/element/IGA; $(MAKE) wipe;
 	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/mvlem; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;

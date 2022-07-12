@@ -200,6 +200,8 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/unittest \
                -I$(FE)/api \
 	       -I$(FE)/interpreter \
+               -I$(FE)/element/IGA \
+               -I$(FE)/domain/IGA \
                -I$(FE) \
                -I$(SUPERLUdir) \
                -I$(FE)/package \
