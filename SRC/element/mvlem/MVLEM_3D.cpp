@@ -332,10 +332,6 @@ MVLEM_3D::MVLEM_3D(int tag,
 	Ac = new double[m];
 	As = new double[m];
 
-	// Stiffness of concrete and steel fibers
-	Ec = new double[m];
-	Es = new double[m];
-
 	// Fiber stiffness (trial)
 	ky = new double[m];
 	kh = new double[1];
@@ -352,13 +348,8 @@ MVLEM_3D::MVLEM_3D(int tag,
 		Ac[i] = 0.0;
 		As[i] = 0.0;
 
-		ky[i] = 0.0;
-
 		stressC[i] = 0.0;
 		stressS[i] = 0.0;
-
-		Ec[i] = 0.0;
-		Es[i] = 0.0;
 
 		MVLEM_3DStrain[i] = 0.0;
 	}
@@ -533,14 +524,8 @@ MVLEM_3D::~MVLEM_3D()
 		delete []Ac;
 	if (As != 0)
 		delete []As;
-	if (ky != 0)
-		delete []ky;
 	if (kh != 0)
 		delete []kh;
-	if (Ec != 0)
-		delete []Ec;
-	if (Es != 0)
-		delete []Es;
 	if (stressC != 0)
 		delete []stressC;
 	if (stressS != 0)
@@ -717,9 +702,10 @@ void MVLEM_3D::setDomain(Domain *theDomain)
 	NodeMass = density * A * h / 4.0;
 
 	// Calculate out-of-plane modulus of elasticity (average modulus)
+	double Ec;
 	for (int i = 0; i < m; ++i) {
-		Ec[i] = theMaterialsConcrete[i]->getInitialTangent();
-		Eave += Ec[i] * b[i] * t[i] / A;
+		Ec = theMaterialsConcrete[i]->getInitialTangent();
+		Eave += Ec * b[i] * t[i] / A;
 	}
 
 	// Internal beam parameters
@@ -897,23 +883,18 @@ double * MVLEM_3D::computeCurrentStrain(void)
 // Get initial stiffness matrix
 const Matrix& MVLEM_3D::getInitialStiff(void)
 {
-
-	// Get vertical fiber materials initial tangent
-	for (int i = 0; i < m; ++i)
-	{
-		Ec[i] = theMaterialsConcrete[i]->getInitialTangent();
-		Es[i] = theMaterialsSteel[i]->getInitialTangent();
-		ky[i] = Ec[i] * Ac[i] / h + Es[i] * As[i] / h;
-	}
-
 	// Build the initial stiffness matrix
 	double Kv = 0.0; double Kh = 0.0; double Km = 0.0; double e = 0.0; double ex = 0.0;
-
+	double Ec, Es, ky;
 	for (int i = 0; i < m; ++i)
 	{
-		Kv += ky[i];
-		Km += ky[i] * x[i] * x[i];
-		e += ky[i] * x[i];
+		Ec = theMaterialsConcrete[i]->getInitialTangent();
+		Es = theMaterialsSteel[i]->getInitialTangent();
+		ky = Ec * Ac[i] / h + Es * As[i] / h;
+	  
+		Kv += ky;
+		Km += ky * x[i] * x[i];
+		e += ky * x[i];
 	}
 
 	// Get shear stiffness from shear material
@@ -1532,22 +1513,17 @@ const Matrix& MVLEM_3D::getInitialStiff(void)
 // Get current stiffness matrix
 const Matrix& MVLEM_3D::getTangentStiff(void)
 {
-
-	for (int i = 0; i < m; ++i)
-	{
-		Ec[i] = theMaterialsConcrete[i]->getTangent();
-		Es[i] = theMaterialsSteel[i]->getTangent();
-		ky[i] = Ec[i] * Ac[i] / h + Es[i] * As[i] / h;
-	}
-
 	// Build the initial stiffness matrix
 	double Kv = 0.0; double Kh = 0.0; double Km = 0.0; double e = 0.0; double ex = 0.0;
-
+	double Ec, Es, ky;
 	for (int i = 0; i < m; ++i)
 	{
-		Kv += ky[i];
-		Km += ky[i] * x[i] * x[i];
-		e += ky[i] * x[i];
+		Ec = theMaterialsConcrete[i]->getTangent();
+		Es = theMaterialsSteel[i]->getTangent();
+		ky = Ec * Ac[i] / h + Es * As[i] / h;
+		Kv += ky;
+		Km += ky * x[i] * x[i];
+		e += ky * x[i];
 
 	}
 
