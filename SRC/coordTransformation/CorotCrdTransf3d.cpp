@@ -1536,6 +1536,18 @@ CorotCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     return 0;
 }
 
+int
+CorotCrdTransf3d::getRigidOffsets(Vector &offsets)
+{
+  offsets(0) = nodeIOffset(0);
+  offsets(1) = nodeIOffset(1);
+  offsets(2) = nodeIOffset(2);
+  offsets(3) = nodeJOffset(0);
+  offsets(4) = nodeJOffset(1);
+  offsets(5) = nodeJOffset(2);
+
+  return 0;
+}
 
 double 
 CorotCrdTransf3d::getInitialLength(void)

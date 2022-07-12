@@ -91,7 +91,10 @@ OBJS       = NDMaterial.o \
 	PlateFromPlaneStressMaterialThermal.o \
 	UVCmultiaxial.o	\
 	UVCplanestress.o \
-	PlateRebarMaterialThermal.o
+	PlateRebarMaterialThermal.o \
+	ElasticPlaneStress.o \
+	ElasticOrthotropicPlaneStress.o \
+	VonPapaDamage.o
 
 
 all: $(OBJS) 

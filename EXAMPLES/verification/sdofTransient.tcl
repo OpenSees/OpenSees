@@ -70,7 +70,7 @@ set tFinal [expr 2.251*$periodForce]
 set periodStruct 0.8
 set K 2.0
 
-# derived quantaties
+# derived quantities
 set w [expr 2.0 * $PI / $periodForce]
 set wn [expr 2.0 * $PI / $periodStruct]
 
@@ -174,7 +174,7 @@ puts "\n\n   - Earthquake Response (Section 6.4)\n"
 set tol 3.0e-2; 
 set results {2.67 5.97 7.47 9.91 7.47 5.37}
 
-# read earthquake record, setting dt and nPts variables with data in te file elCentro.at2
+# read earthquake record, setting dt and nPts variables with data in the file elCentro.at2
 source ReadRecord.tcl
 ReadRecord elCentro.at2 elCentro.dat dt nPts
 
