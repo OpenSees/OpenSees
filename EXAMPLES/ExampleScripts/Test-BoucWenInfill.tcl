@@ -61,7 +61,7 @@ uniaxialMaterial Steel02  3   $fy  $E  0.1     15  0.925  0.15;
 uniaxialMaterial BoucWenInfill       4    7416   0.003  0.295   0.2   1.5  153  1.8627  0.023    0.0011  0.001   0.17  5.8   0.21   1.0e-05     1000000 
 
 # #########################################################################################################
-# set some paramaters for COLUMNS sections
+# set some parameters for COLUMNS sections
 set colWidth 350.0
 set colDepth 350.0
 
@@ -107,7 +107,7 @@ uniaxialMaterial Elastic 51 $GAcol
 section Aggregator     10    51 Vy      51 Vz    50 T      -section 1 
 #______________________
 # ##############################################
-# set some paramaters for BEAM sections
+# set some parameters for BEAM sections
 set beaWidth 350.0
 set beaDepth 350.0
 

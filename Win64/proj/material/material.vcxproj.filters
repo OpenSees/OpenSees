@@ -1436,6 +1436,15 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticSmooth.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicPlaneStress.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ElasticPlaneStress.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\VonPapaDamage.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2656,6 +2665,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\DoubleMembranePlateFiberSection.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicPlaneStress.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\ElasticPlaneStress.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\VonPapaDamage.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
