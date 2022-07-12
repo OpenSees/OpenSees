@@ -336,9 +336,6 @@ MVLEM_3D::MVLEM_3D(int tag,
 	ky = new double[m];
 	kh = new double[1];
 
-	stressC = new double[m];
-	stressS = new double[m];
-
 	// Fiber strains
 	MVLEM_3DStrain = new double[m + 1];
 
@@ -347,9 +344,6 @@ MVLEM_3D::MVLEM_3D(int tag,
 
 		Ac[i] = 0.0;
 		As[i] = 0.0;
-
-		stressC[i] = 0.0;
-		stressS[i] = 0.0;
 
 		MVLEM_3DStrain[i] = 0.0;
 	}
@@ -526,10 +520,6 @@ MVLEM_3D::~MVLEM_3D()
 		delete []As;
 	if (kh != 0)
 		delete []kh;
-	if (stressC != 0)
-		delete []stressC;
-	if (stressS != 0)
-		delete []stressS;
 	if (MVLEM_3DStrain != 0)
 		delete []MVLEM_3DStrain;
 }
@@ -2274,16 +2264,13 @@ const Vector & MVLEM_3D::getResistingForce()
 	// Get force from shear force-deformation relationship
 	R1 = theMaterialsShear[0]->getStress(); 
 
-	// Get stresses from uniaxial material models for each fiber
-	for (int i = 0; i < m; ++i) {
-		stressC[i] = theMaterialsConcrete[i]->getStress();
-		stressS[i] = theMaterialsSteel[i]->getStress();
-	}
-
+	double stressC, stressS;
 	for (int i = 0; i<m; i++) {
-		R2 += -stressC[i] * Ac[i] - stressS[i] * As[i];
-		R3 += -stressC[i] * Ac[i] * x[i] - stressS[i] * As[i] * x[i];
-		R6 += stressC[i] * Ac[i] * x[i] + stressS[i] * As[i] * x[i];
+		stressC = theMaterialsConcrete[i]->getStress();
+		stressS = theMaterialsSteel[i]->getStress();	  
+		R2 += -stressC * Ac[i] - stressS * As[i];
+		R3 += -stressC * Ac[i] * x[i] - stressS * As[i] * x[i];
+		R6 += stressC * Ac[i] * x[i] + stressS * As[i] * x[i];
 	}
 
 	R3 += -R1*c*h;
