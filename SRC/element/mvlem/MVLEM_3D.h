@@ -163,7 +163,6 @@ private:
 	double *rho;							// fiber reinforcing ratio
 	double *Ac;								// concrete area
 	double *As;								// steel area
-	double *kh;								// element shear stiffness		
 	double *MVLEM_3DStrain;					// fiber strains (0 to m-1), shear deformation (m)
 
 	// Class-wide matrices/vectors/doubles

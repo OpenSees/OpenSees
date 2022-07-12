@@ -332,10 +332,6 @@ MVLEM_3D::MVLEM_3D(int tag,
 	Ac = new double[m];
 	As = new double[m];
 
-	// Fiber stiffness (trial)
-	ky = new double[m];
-	kh = new double[1];
-
 	// Fiber strains
 	MVLEM_3DStrain = new double[m + 1];
 
@@ -349,8 +345,6 @@ MVLEM_3D::MVLEM_3D(int tag,
 	}
 
 	MVLEM_3DStrain[m] = 0.0;
-
-	kh[0] = 0.0;
 
 	// Check Concrete material input
 	if (materialsConcrete == 0) {
@@ -518,8 +512,6 @@ MVLEM_3D::~MVLEM_3D()
 		delete []Ac;
 	if (As != 0)
 		delete []As;
-	if (kh != 0)
-		delete []kh;
 	if (MVLEM_3DStrain != 0)
 		delete []MVLEM_3DStrain;
 }
