@@ -2693,7 +2693,8 @@ int BackgroundMesh::record(bool init) {
                                 const auto& pcrds = p->getCrds();
                                 if (!find || pcrds[i] < heights[2 * i]) {
                                     if (pcrds[i] > j * bsize) {
-                                        heights[2 * i] = pcrds[i];
+                                        heights[2 * i] =
+                                            (pcrds[i] + j * bsize) / 2.0;
                                         find = true;
                                     }
                                 }
@@ -2721,7 +2722,9 @@ int BackgroundMesh::record(bool init) {
                                 if (!find ||
                                     pcrds[i] > heights[2 * i + 1]) {
                                     if (pcrds[i] > j * bsize) {
-                                        heights[2 * i + 1] = pcrds[i];
+                                        heights[2 * i + 1] =
+                                            (pcrds[i] + (j + 1) * bsize) /
+                                            2.0;
                                     } else {
                                         std::cout << "particle crds not "
                                                      "in cell\n";
