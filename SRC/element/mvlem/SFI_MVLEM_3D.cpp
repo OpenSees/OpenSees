@@ -231,7 +231,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 	// Check number of fibers - max is 999 to avoid overlapping in internal node tags
 	if (m > 999) {
-		opserr << "WARNING: Number of fibers assigned is " << m << ". Maximum allowed number of fibers is 999!\n";
+	  opserr << "WARNING: Number of fibers assigned is " << m << ". Maximum allowed number of fibers is 999!" << endln;
 		exit(-1);
 	}
 
@@ -273,13 +273,13 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	// Check thickness and width input
 	if (thickness == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null thickness array passed.\n";
+		       << "Null thickness array passed." << endln;
 		exit(-1);
 	}
 
 	if (width == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null width array passed.\n";
+		       << "Null width array passed." << endln;
 		exit(-1);
 	}
 
@@ -311,7 +311,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	// Check material input
 	if (materials == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null material array passed.\n";
+		       << "Null material array passed." << endln;
 		exit(-1);
 	}
 
@@ -320,7 +320,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 	if (theMaterial == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Failed to allocate pointers for uniaxial materials.\n";
+		       << "Failed to allocate pointers for uniaxial materials." << endln;
 		exit(-1);
 	}
 
@@ -328,7 +328,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	for (int i = 0; i < m; i++) {
 		if (materials[i] == 0) {
 			opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-				"Null ND material pointer passed.\n";
+			       << "Null ND material pointer passed." << endln;
 			exit(-1);
 		}
 
@@ -336,7 +336,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 		if (theMaterial[i] == 0) {
 			opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-				<< "Failed to copy ND material.\n";
+			       << "Failed to copy ND material." << endln;
 			exit(-1);
 		}
 	}
@@ -592,13 +592,13 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	// Check if element height is zero
 	if ((h1 == 0.0) || (h2 == 0.0)) {
-		opserr << "WARNING: One of the element sides is ZERO. Check geometry";
+	  opserr << "WARNING: One of the element sides is ZERO. Check geometry" << endln;
 		exit(-1);
 	}
 
 	// Check if element has constant height
 	if ((h1 / h2 > 1.01) || (h1 / h2 < 0.99)) {
-		opserr << "WARNING: Element does not have constant height. Check geometry.";
+	  opserr << "WARNING: Element does not have constant height. Check geometry." << endln;
 		exit(-1);
 	}
 
@@ -616,12 +616,12 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	// Check width of element
 	if ((Lw / b1 > 1.01) || (Lw / b1 < 0.99)) {
-		opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry.";
+	  opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry." << endln;
 		exit(-1);
 	}
 
 	if ((Lw / b2 > 1.01) || (Lw / b2 < 0.99)) {
-		opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry.";
+	  opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry." << endln;
 		exit(-1);
 	}
 
@@ -659,7 +659,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 		if (theNode == 0) {
 			opserr << "WARNING ran out of memory creating node\n";
-			opserr << "node: " << nodeId_temp << " in SFI_MVLEM_3D." << endln; endln;
+			opserr << "node: " << nodeId_temp << " in SFI_MVLEM_3D." << endln;
 			exit(-1);
 		}
 
@@ -750,7 +750,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	// Get Concrete Young's Modulus
 	//theResponses = new Response *[1];
 	//if (theResponses == 0) {
-	//	opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array\n";
+	//	opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array" << endln;
 	//	exit(-1);
 	//}
 
@@ -769,7 +769,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	  //if (theResponses[0] == 0) {
 		if (theResponse == 0) {		  
-			opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << "\n";
+			opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << endln;
 			exit(-1);
 		}
 
