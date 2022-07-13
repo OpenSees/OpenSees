@@ -929,7 +929,10 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	idData0(3) = m;
 
 	res = theChannel.sendID(dataTag, commitTag, idData0);
-
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;	
+	}
 
 	
 	int matDbTag;
@@ -964,7 +967,11 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	idData(4*m+1) = matDbTag;	  	
 	
 	res = theChannel.sendID(dataTag, commitTag, idData);
-
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;	
+	}
+	
 	
 	Vector data(3 + 3*m);
 
