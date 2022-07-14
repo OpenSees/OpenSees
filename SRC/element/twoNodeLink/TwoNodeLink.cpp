@@ -119,6 +119,8 @@ void* OPS_TwoNodeLink()
     
     // options
     Vector x, y, Mratio, sDistI;
+    x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+    y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
     int doRayleigh = 0;
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
