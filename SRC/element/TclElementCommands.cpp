@@ -770,7 +770,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if (strcmp(argv[1],"MVLEM") == 0) {    // Kristijan Kolozvari
     
-    void *theEle = OPS_MVLEM();
+    void *theEle = 0;
+    int NDM = OPS_GetNDM();
+    if (NDM == 2)
+      theEle = OPS_MVLEM();
+    if (NDM == 3)
+      theEle = OPS_MVLEM_3D();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -780,7 +785,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if (strcmp(argv[1],"SFI_MVLEM") == 0) {    // Kristijan Kolozvari
     
-    void *theEle = OPS_SFI_MVLEM();
+    void *theEle = 0;
+    int NDM = OPS_GetNDM();
+    if (NDM == 2)
+      theEle = OPS_SFI_MVLEM();
+    if (NDM == 3)
+      theEle = OPS_SFI_MVLEM_3D();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {

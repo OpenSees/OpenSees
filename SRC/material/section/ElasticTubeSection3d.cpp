@@ -389,6 +389,52 @@ ElasticTubeSection3d::getStressResultantSensitivity(int gradIndex,
   static Vector dsdh(4);
   dsdh.Zero();
 
+  double r1 = 0.5*d;
+  double r2 = r1-tw;
+  double A = 3.14159*(r1*r1 - r2*r2);
+  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double J = 2*I;
+
+  if (parameterID == 1) { // E
+    dsdh(0) = A*e(0);
+    dsdh(1) = I*e(1);
+    dsdh(2) = I*e(2);    
+  }
+
+  if (parameterID == 2) { // tw
+    double dr1dh =  0.0;
+    double dr2dh = -1.0;
+    
+    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    dsdh(0) = E*dAdh*e(0);
+
+    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    dsdh(1) = E*dIdh*e(1);
+    dsdh(2) = E*dIdh*e(2);
+
+    double dJdh = 2*dIdh;
+    dsdh(3) = G*dJdh*e(3);
+  }
+  
+  if (parameterID == 3) { // D
+    double dr1dh = 0.5;
+    double dr2dh = 0.5;
+    
+    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    dsdh(0) = E*dAdh*e(0);
+
+    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    dsdh(1) = E*dIdh*e(1);
+    dsdh(2) = E*dIdh*e(2);
+
+    double dJdh = 2*dIdh;
+    dsdh(3) = G*dJdh*e(3);
+  }
+
+  if (parameterID == 4) { // G
+    dsdh(3) = J*e(3);
+  }
+
   return dsdh;
 }
 
