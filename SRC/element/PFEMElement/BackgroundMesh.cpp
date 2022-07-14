@@ -2136,15 +2136,16 @@ int BackgroundMesh::gridFSInoDT() {
         ParticleGroup* group =
             dynamic_cast<ParticleGroup*>(OPS_getMesh(item.first));
         if (group == 0) {
-            opserr << "WARNING: failed to get particle group -- "
-                      "BgMesh::gridFluid\n";
+            opserr << "WARNING: failed to get particle group ";
+            opserr << "(gtag = " << item.first << ") -- ";
+            opserr << "BgMesh::gridFFSInoDT\n";
             return -1;
         }
         group->setEleNodes(item.second);
 
         if (group->newElements(item.second) < 0) {
             opserr << "WARNING: failed to create elements for mesh ";
-            opserr << group->getTag() << " -- BgMesh::gridFluid\n";
+            opserr << group->getTag() << " -- BgMesh::gridFFSInoDT\n";
             return -1;
         }
     }
