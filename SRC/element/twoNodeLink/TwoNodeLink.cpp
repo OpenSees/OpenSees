@@ -118,11 +118,7 @@ void* OPS_TwoNodeLink()
       dirs(i)--;
     
     // options
-    Vector x(3);
-    Vector y(3);
-    x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
-    y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-    Vector Mratio, sDistI;
+    Vector x, y, Mratio, sDistI;
     int doRayleigh = 0;
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1238,7 +1234,10 @@ void TwoNodeLink::setUp()
         if (y.Size() == 0)  {
             y.resize(3);
             y.Zero();
-            y(0) = -xp(1);
+	    if (xp.Size() == 1) // Make a 1D model work
+	      y(1) = 1.0;
+	    else
+	      y(0) = -xp(1);
             if (xp.Size() > 1)
                 y(1) = xp(0);
             if (xp.Size() > 2)
@@ -1276,7 +1275,7 @@ void TwoNodeLink::setUp()
     y(0) = z(1)*x(2) - z(2)*x(1);
     y(1) = z(2)*x(0) - z(0)*x(2);
     y(2) = z(0)*x(1) - z(1)*x(0);
-    
+
     // compute length(norm) of vectors
     double xn = x.Norm();
     double yn = y.Norm();
