@@ -30,12 +30,13 @@
 #ifndef BackgroundDef_h
 #define BackgroundDef_h
 
-#include <vector>
-#include <set>
-#include <map>
 #include <Vector.h>
 #include <math.h>
+
 #include <iostream>
+#include <map>
+#include <set>
+#include <vector>
 
 class Particle;
 class ParticleGroup;
@@ -70,6 +71,7 @@ void toVector(const VDouble& v, Vector& res);
 double normVDouble(const VDouble& v);
 double dotVDouble(const VDouble& v1, const VDouble& v2);
 void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res);
+double distanceVDouble(const VDouble& v1, const VDouble& v2);
 
 enum BackgroundType {
     BACKGROUND_FLUID,
