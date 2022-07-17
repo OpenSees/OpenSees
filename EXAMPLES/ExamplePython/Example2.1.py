@@ -17,7 +17,7 @@
 # Date: June 2017
 
 # import the OpenSees Python module
-from opensees import *
+from openseespy.opensees import *
 import MomentCurvature
 
 # ------------------------------
