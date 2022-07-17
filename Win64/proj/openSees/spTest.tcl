@@ -24,7 +24,7 @@ timeSeries Constant 1
 # }
 
 pattern Plain 1 1  {
-    sp 2 0 1 0
+    sp 2 0 1 0 -constant 0
 }
 constraints Transformation
 system UmfPack
