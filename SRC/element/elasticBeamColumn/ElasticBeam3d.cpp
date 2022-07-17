@@ -265,8 +265,8 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
   }    
   
   if (Jx == 0.0) {
-    opserr << "ElasticBeam3d::ElasticBeam3d -- no torsion in section -- setting GJ = 1.0e10\n";
-    Jx = 1.0e10;
+    opserr << "ElasticBeam3d::ElasticBeam3d -- no torsion in section -- continuing with GJ = 0\n";
+    //Jx = 1.0e10;
   }
 
   connectedExternalNodes(0) = Nd1;
