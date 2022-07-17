@@ -814,8 +814,8 @@ int OPS_SP()
     }
 
     if(OPS_GetNumRemainingInputArgs() < 3) {
-	opserr<<"insufficient number of args\n";
-	return -1;
+		opserr<<"insufficient number of args\n";
+		return -1;
     }
 	
 	// As
@@ -972,7 +972,7 @@ int OPS_SPNode()
 	dofIterator = 0;
 
 	while (dofIterator < ndf) {
-		if (value.at(dofIterator) > 0) {
+		if (value.at(dofIterator) != 0) {
 			SP_Constraint* theSP = new SP_Constraint(nodeID, dofIterator, value.at(dofIterator), isSpConst);
 			if (theSP == 0) return -1;
 

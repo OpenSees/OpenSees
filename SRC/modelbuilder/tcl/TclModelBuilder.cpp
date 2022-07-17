@@ -3764,7 +3764,7 @@ TclCommand_addSPNode(ClientData clientData, Tcl_Interp* interp, int argc,
 	// create a homogeneous constraint
 
 	for (int SP_Iterator = 0; SP_Iterator < (ndf); SP_Iterator++) {
-		if (value(SP_Iterator) > 0.0) {
+		if (value(SP_Iterator) != 0.0) {
 			SP_Constraint* theSP = new SP_Constraint(nodeId, SP_Iterator, value(SP_Iterator), isSpConst);
 
 			if (theSP == 0) {
