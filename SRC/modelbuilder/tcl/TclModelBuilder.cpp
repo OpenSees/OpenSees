@@ -3569,7 +3569,45 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     opserr << "WARNING bad command - want: sp nodeId dofID value";
     printCommand(argc, argv);
     return TCL_ERROR;
-  }    
+  }
+  
+  // Notes on the if:
+  // Check if the Arguments could be reasonably assumed as an spNode constraint command. At first, check if the amount of argument is at least satisfty the ndf amount.
+  // Then check if the extra inputs is caused by the -const and -pattern
+  // eg we have Basic Builder -ndm 2 -ndf3
+  // spNode would have 5 args, that is command itself, the Node and three load. 
+  // However we can reasonably presume that it could be
+  // sp 2 2 1.0 -const 1
+  // so check if the extra is caused by -const or -pattern
+  // This would mean that there is a chance that a user with valid command
+  // sp 2 1 1 1 -const 1 would not work, but there is additional check below
+  // if (pos - 1) is already larger than 2 + ndf (e.g. 5), that probably mean its 
+  // sp 2 1 1 1 -const 1 
+  // The if could be simplified but this shoudl work.
+  if (argc >= (2 + (ndf))) {
+	  int pos = (2 + (ndf));
+	  if ((strcmp(argv[pos - 1], "-const") == 0) || (strcmp(argv[pos - 1], "-pattern") == 0)) {
+		  if ((strcmp(argv[pos - 3], "-const") == 0) || (strcmp(argv[pos - 3], "-pattern") == 0)) {
+			  if ((pos - 3) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
+		  else {
+			  if ((pos - 1) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
+	  }
+	  else {
+		  TclCommand_addSPNode(clientData, interp, argc,
+			  argv);
+		  return TCL_OK;
+	  }
+  }
 
   // get the nodeID, dofId and value of the constraint
   int nodeId, dofId;
