@@ -1160,6 +1160,16 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
                 theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
+
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }
     
     output.endTag(); // ElementOutput
     
@@ -1170,7 +1180,8 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
 int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
 {
     Vector defoAndForce(numDIR*2);
-    
+    Vector &theVec = *(eleInfo.theVector);
+	
     switch (responseID)  {
     case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
@@ -1200,9 +1211,25 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
         defoAndForce.Assemble(qb,numDIR);
         
         return eleInfo.setVector(defoAndForce);
-        
+
+    case 20:
+      theVec(0) = trans(0,0);
+      theVec(1) = trans(0,1);
+      theVec(2) = trans(0,2);
+      return 0;
+    case 21:
+      theVec(0) = trans(1,0);
+      theVec(1) = trans(1,1);
+      theVec(2) = trans(1,2);
+      return 0;
+    case 22:
+      theVec(0) = trans(2,0);
+      theVec(1) = trans(2,1);
+      theVec(2) = trans(2,2);
+      return 0;
+      
     default:
-        return 0;
+        return -1;
     }
 }
 
