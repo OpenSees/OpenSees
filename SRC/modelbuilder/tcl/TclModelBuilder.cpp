@@ -3595,11 +3595,20 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   if (argc >= (2 + (ndf))) {
 	  int pos = (2 + (ndf));
 	  if ((strcmp(argv[pos - 1], "-const") == 0) || (strcmp(argv[pos - 1], "-pattern") == 0)) {
-		  if ((pos - 1) > (2 + ndf)) {
-			  TclCommand_addSPNode(clientData, interp, argc,
-				  argv);
-			  return TCL_OK;
-			}
+		  if ((strcmp(argv[pos - 3], "-const") == 0) || (strcmp(argv[pos - 3], "-pattern") == 0)) {
+			  if ((pos - 3) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
+		  else {
+			  if ((pos - 1) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
 	  }
 	  else {
 		  TclCommand_addSPNode(clientData, interp, argc,
