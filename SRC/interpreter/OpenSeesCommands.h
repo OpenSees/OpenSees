@@ -225,6 +225,7 @@ int OPS_Pattern();
 int OPS_NodalLoad();
 int OPS_ElementalLoad();
 int OPS_SP();
+int OPS_SPNode();
 int OPS_ImposedMotionSP();
 int OPS_groundMotion();
 
