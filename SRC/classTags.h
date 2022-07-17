@@ -902,7 +902,6 @@
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
 #define CNSTRNT_TAG_Pressure_Constraint 8
-#define CNSTRNT_TAG_NODE_SP_Constraint 	9 // @Siwalan - Same Idea with SP_Constraint
 
 
 #define MATRIX_TAG_Matrix 	1
