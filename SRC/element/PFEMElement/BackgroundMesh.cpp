@@ -752,6 +752,32 @@ int BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
     return 0;
 }
 
+// 1. transport particles from last time step
+// 2. remove all elements, cells, and grids
+// 3. add structural nodes
+//     a. closest grid is set to BACKGROUND_STRUCTURE
+//     b. surrounding grids are set to BACKGROUND_FIXED
+//     c. surrounding cells are set to BACKGROUND_STRUCTURE
+// 4. add particles to cells
+//     a. skip BACKGROUND_STRUCTURE cells
+//     b. set grids of fluid cells to BACKGROUND_FLUID
+//     c. set fluid cells to BACKGROUND_FLUID
+//     d. may change some grids from BACKGROUND_FIXED to BACKGROUND_FLUID
+// 5. move particles out of BACKGROUND_STRUCTURE cells
+//     a. set particle velocity with structural velocity
+//     b. move to one of empty neighbor cells
+// 6. loop through all grids
+//     a. skip BACKGROUND_FIXED grids
+//     b. create nodes for BACKGROUND_FLUID grids
+//     c. update pressure for BACKGROUND_STRUCTURE grids
+// 7. loop through all cells
+//     a. skip BACKGROUND_STRUCTURE cells
+//     b. create PFEM elements in BACKGROUND_FLUID cells
+// 8. loop through all cells
+//     a. get BACKGROUND_STRUCTURE cells
+//     b. get tags, sids, types, crds, for cell nodes
+//     c. if all nodes are BACKGROUND_STRUCTURE, create contact elements
+//     d. if, gather particles from surrounding cells e.
 int BackgroundMesh::remesh(bool init) {
     // clear and check
     if (bsize <= 0.0) {
@@ -2113,6 +2139,13 @@ int BackgroundMesh::gridFSInoDT() {
         }
 
         // if all nodes are fluid nodes
+        if (gtags[i] == 0) {
+            opserr << "WARNING: gtags[i] == 0 for elends, elends[i]=\n";
+            for (const auto& val : elends[i]) {
+                opserr << val << "\n";
+            }
+            opserr << "]\n";
+        }
         ID& nds = elenodes[gtags[i]];
         for (int j = 0; j < (int)elends[i].size(); ++j) {
             nds[nds.Size()] = elends[i][j];
@@ -2137,15 +2170,19 @@ int BackgroundMesh::gridFSInoDT() {
             dynamic_cast<ParticleGroup*>(OPS_getMesh(item.first));
         if (group == 0) {
             opserr << "WARNING: failed to get particle group ";
-            opserr << "(gtag = " << item.first << ") -- ";
-            opserr << "BgMesh::gridFFSInoDT\n";
+            opserr << "(gtag = " << item.first << ")\n";
+            opserr << "elenodes = [\n";
+            for (int k = 0; k < item.second.Size(); ++k) {
+                opserr << item.second(k) << "\n";
+            }
+            opserr << "] -- BgMesh::gridFSInoDT\n";
             return -1;
         }
         group->setEleNodes(item.second);
 
         if (group->newElements(item.second) < 0) {
             opserr << "WARNING: failed to create elements for mesh ";
-            opserr << group->getTag() << " -- BgMesh::gridFFSInoDT\n";
+            opserr << group->getTag() << " -- BgMesh::gridFSInoDT\n";
             return -1;
         }
     }
