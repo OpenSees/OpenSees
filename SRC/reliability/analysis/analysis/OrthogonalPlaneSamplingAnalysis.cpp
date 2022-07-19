@@ -1383,7 +1383,7 @@ double OrthogonalPlaneSamplingAnalysis::getG2FromG1(double gFunctionValue, doubl
 
 				if (fabs(ud) <1.e-14) {
 					opserr<<" ----------------------------------------------------------------------------------" <<endln;
-					opserr<<"warning:ImportanceSamplingAnalysis::analyze velocity is 0! \n probabily because you are running static case!"<<endln;
+					opserr<<"warning:ImportanceSamplingAnalysis::analyze velocity is 0! \n probably because you are running static case!"<<endln;
 					opserr<<"-----------------------------------------------------------------------------------"<<endln;
 				}
 				

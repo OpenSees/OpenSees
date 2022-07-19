@@ -292,7 +292,7 @@ GNGMaterial::getInitialTangent(void)
 //invoke commitState() on the material. Any state variables that the material uses 
 //needs to be updated at this time. Should the algorithm fail to find a solution it 
 //may return to the last converged step or indeed the start. You the developer must 
-//provide code so that your mateial can indeed go back to these states and report 
+//provide code so that your material can indeed go back to these states and report 
 //correct getTangent() and getStress() values for subsequent analysis atte,pts.
 
 int 

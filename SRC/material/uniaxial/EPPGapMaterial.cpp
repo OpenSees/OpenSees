@@ -110,8 +110,8 @@ EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, doubl
 	    opserr << "EPPGapMaterial::EPPGapMaterial -- Alternate signs on fy and gap encountered, continuing anyway\n";
 	}
         
-    if ( (eta >= 1) || (eta <= -1) ) {
-        opserr << "EPPGapMaterial::EPPGapMaterial -- value of eta must be -1 <= eta <= 1, setting eta to 0\n";
+    if (eta >= 1.0) {
+        opserr << "EPPGapMaterial::EPPGapMaterial -- value of eta must be < 1, setting eta to 0\n";
         eta = 0;
     }
 
@@ -369,7 +369,7 @@ EPPGapMaterial::Print(OPS_Stream &s, int flag)
 int
 EPPGapMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strcmp(argv[0],"E") == 0) {
+  if (strcmp(argv[0],"E") == 0 || strcmp(argv[0],"k") == 0) {
     param.setValue(E);
     return param.addObject(1, this);
   }

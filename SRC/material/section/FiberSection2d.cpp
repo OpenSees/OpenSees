@@ -953,6 +953,7 @@ FiberSection2d::setResponse(const char **argv, int argc,
     }
 
   } else if (strcmp(argv[0],"fiberData") == 0) {
+    
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
@@ -969,7 +970,28 @@ FiberSection2d::setResponse(const char **argv, int argc,
     Vector theResponseData(numData);
     theResponse = new MaterialResponse(this, 5, theResponseData);
   
-  } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
+  }
+
+  else if (strcmp(argv[0],"fiberData2") == 0) {
+    
+    int numData = numFibers*6;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+  }
+  
+  else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
     theResponse = new MaterialResponse(this, 6, count);
 
@@ -983,7 +1005,9 @@ FiberSection2d::setResponse(const char **argv, int argc,
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
 	  theResponse = new MaterialResponse(this, 8, getEnergy());
   }
-
+  else if (strcmp(argv[0],"centroid") == 0) 
+    theResponse = new MaterialResponse(this, 20, Vector(2));
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -999,18 +1023,32 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      double yLoc, zLoc, A, stress, strain;
-      yLoc = matData[2*j];
-      zLoc = 0.0;
-      A = matData[2*j+1];
-      stress = theMaterials[j]->getStress();
-      strain = theMaterials[j]->getStrain();
-      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
-      data(count+3) = stress; data(count+4) = strain;
+      data(count)   = matData[2*j];
+      data(count+1) = 0.0;
+      data(count+2) = matData[2*j+1];
+      data(count+3) = theMaterials[j]->getStress();
+      data(count+4) = theMaterials[j]->getStrain();
       count += 5;
     }
     return sectInfo.setVector(data);	
-  } else  if (responseID == 6) {
+  }
+  if (responseID == 55) {
+    int numData = 6*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[2*j]; // y
+      data(count+1) = 0.0; // z
+      data(count+2) = matData[2*j+1]; // A
+      data(count+3) = (double)theMaterials[j]->getTag();
+      data(count+4) = theMaterials[j]->getStress();
+      data(count+5) = theMaterials[j]->getStrain();
+      count += 6;      
+    }
+    return sectInfo.setVector(data);
+  }
+  else if (responseID == 6) {
+    
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
       if (theMaterials[j]->hasFailed() == true)
@@ -1036,7 +1074,13 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
   else if (responseID == 8) {
 	  return sectInfo.setDouble(getEnergy());
   }
-
+  else if (responseID == 20) {
+    static Vector centroid(2);
+    centroid(0) = yBar;
+    centroid(1) = 0.0;
+    return sectInfo.setVector(centroid);
+  }
+  
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 

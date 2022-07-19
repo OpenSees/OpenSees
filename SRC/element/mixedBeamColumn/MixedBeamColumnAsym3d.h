@@ -129,7 +129,7 @@ class MixedBeamColumnAsym3d : public Element
     bool geomLinear;						            // flag for whether or not the internal geometric nonlinearity is active
     double rho;                             // mass density per unit length
 
-    int itr;  // Counts the number of iterations from last comitted state (not very sure)
+    int itr;  // Counts the number of iterations from last committed state (not very sure)
     int initialFlag;
 
     // Attributes that do NOT change during the analysis

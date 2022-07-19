@@ -65,6 +65,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <ElasticPlateSection.h>
 #include <ElasticMembranePlateSection.h>
 #include <MembranePlateFiberSection.h>
+#include <DoubleMembranePlateFiberSection.h>
 
 #include <QuadPatch.h>
 #include <CircPatch.h>
@@ -115,6 +116,9 @@ extern void *OPS_TubeSection(void);
 extern void *OPS_ParallelSection(void);
 extern void *OPS_Bidirectional(void);
 extern void *OPS_Elliptical2(void);
+extern void *OPS_LayeredShellFiberSection(void);
+extern void *OPS_MembranePlateFiberSection(void);
+extern void *OPS_DoubleMembranePlateFiberSection(void);
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -631,109 +635,29 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     }
 
     else if (strcmp(argv[1],"PlateFiber") == 0) {
-	if (argc < 5) {
-	    opserr << "WARNING insufficient arguments\n";
-	    opserr << "Want: section PlateFiber tag? matTag? h? " << endln;
-	    return TCL_ERROR;
-	}
-	
-	int tag, matTag;
-	double  h;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid section PlateFiber tag" << endln;
-	    return TCL_ERROR;		
-	}
+      void *theMat = OPS_MembranePlateFiberSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;   
+    }
 
-	if (Tcl_GetInt (interp, argv[3], &matTag) != TCL_OK) {
-	    opserr << "WARNING invalid matTag" << endln;
-	    opserr << "PlateFiber section: " << matTag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	if (Tcl_GetDouble (interp, argv[4], &h) != TCL_OK) {
-	    opserr << "WARNING invalid h" << endln;
-	    opserr << "PlateFiber section: " << tag << endln;	    	    
-	    return TCL_ERROR;
-	}	
-
-	NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
-	if (theMaterial == 0) {
-	    opserr << "WARNING nD material does not exist\n";
-	    opserr << "nD material: " << matTag; 
-	    opserr << "\nPlateFiber section: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	theSection = new MembranePlateFiberSection( tag, h, *theMaterial );
-    }	
+    else if (strcmp(argv[1],"DoublePlateFiber") == 0) {
+      void *theMat = OPS_DoubleMembranePlateFiberSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;            
+    }	    
 
 
     //start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
     else if (strcmp(argv[1],"LayeredShell") == 0) {
-      if (argc < 6) {
-	opserr << "WARNING insufficient arguments" << endln;
-	opserr << "Want: section LayeredShell tag? nLayers? matTag1? h1? ... matTagn? hn? " << endln;
-	return TCL_ERROR;
-	}
-      
-      int tag, nLayers, matTag;
-      double h, *thickness;
-      NDMaterial **theMats;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid section LayeredShell tag" << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetInt (interp, argv[3], &nLayers) != TCL_OK) {
-	opserr << "WARNING invalid nLayers" << endln;
-	opserr << "LayeredShell section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-	
-      if (nLayers < 3) {
-	opserr << "ERROR number of layers must be larger than 2" << endln;
-	opserr << "LayeredShell section: " << tag << endln;	    	    
-	return TCL_ERROR;
-      }
-      
-      theMats   = new NDMaterial*[nLayers];
-      thickness = new double[nLayers];
-      
-      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
-	if (Tcl_GetInt (interp, argv[4+2*iLayer], &matTag) != TCL_OK) {
-	  opserr << "WARNING invalid matTag" << endln;
-	  opserr << "LayeredShell section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	theMats[iLayer] = OPS_getNDMaterial(matTag);
-	if (theMats[iLayer] == 0) {
-	  opserr << "WARNING nD material does not exist" << endln;;
-	  opserr << "nD material: " << matTag; 
-	  opserr << "LayeredShell section: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble (interp, argv[5+2*iLayer], &h) != TCL_OK) {
-	  opserr << "WARNING invalid h" << endln;
-	  opserr << "LayeredShell section: " << tag << endln;	    	    
-	  return TCL_ERROR;
-	}
-	
-	if (h < 0) {
-	  opserr << "WARNING invalid h" << endln;
-	  opserr << "PlateFiber section: " << tag << endln;	    	    
-	  return TCL_ERROR;
-	}
-	
-	thickness[iLayer] = h;
-      }
-      
-      theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-      if (thickness != 0) delete [] thickness;
-      if (theMats != 0) delete [] theMats;
+      void *theMat = OPS_LayeredShellFiberSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;      
     }
     //end Yuli Huang & Xinzheng Lu LayeredShellFiberSection
 
@@ -2327,7 +2251,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
       }
       else
       {
-         opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+         opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
          return TCL_ERROR;
       }
 
@@ -2576,7 +2500,7 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
       }
       else
       {
-         opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+         opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
          return TCL_ERROR;
       }
 
@@ -2988,7 +2912,7 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 		}
 		else
 		{
-			opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+			opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
 			return TCL_ERROR;
 		}
 		// Delete fiber array
@@ -3344,7 +3268,7 @@ buildSectionAsym(Tcl_Interp* interp, TclModelBuilder* theTclModelBuilder,
 		}
 		else
 		{
-			opserr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements\n";
+			opserr << "WARNING NDM = " << NDM << " is incompatible with available frame elements\n";
 			return TCL_ERROR;
 		}
 

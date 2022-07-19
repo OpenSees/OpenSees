@@ -125,7 +125,7 @@ private:
     double q0[5];  // Fixed end forces in basic system (no torsion)
     double p0[5];  // Reactions in basic system (no torsion)
 
-    double init_disp[5];  // Initial displacements (from nodes at initialization)
+    double init_disp[6];  // Initial displacements (from nodes at initialization)
     
     double rho;    // Mass density per unit length
     int cMass;     // consistent mass flag

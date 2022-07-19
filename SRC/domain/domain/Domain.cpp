@@ -774,7 +774,7 @@ Domain::addLoadPattern(LoadPattern *load)
       return false;
     }    
 
-    // now we add the load pattern to the container for load pattrens
+    // now we add the load pattern to the container for load patterns
     bool result = theLoadPatterns->addComponent(load);
     if (result == true) {
 	load->setDomain(this);
@@ -2366,12 +2366,11 @@ Domain::Print(OPS_Stream &s, int flag)
 
 	return;
   }
-      
   
   s << "Current Domain Information\n";
-  s << "\tCurrent Time: " << currentTime;
-  s << "\ntCommitted Time: " << committedTime << endln;    
-  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";  
+  s << "\tCurrent Time: " << currentTime << endln;
+  s << "\tCommitted Time: " << committedTime << endln;
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
   theNodes->Print(s, flag);
   
   s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";

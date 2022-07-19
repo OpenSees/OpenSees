@@ -102,7 +102,7 @@ class Renderer
 
     virtual int setProjectionMode(const char *mode) =0; //parallel or perspective
     virtual int setFillMode(const char *mode) =0;    // wire or fill
-    virtual int setLineWidth(int width) = 0;    // line width
+    virtual int setLineWidth(int width) =0;    // line width
     
     virtual int setPRP(float u, float v, float n) =0; // eye location if 
 	                       // perspective, dirn to +ViewPlane if parallel

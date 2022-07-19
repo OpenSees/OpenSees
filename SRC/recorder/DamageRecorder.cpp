@@ -26,7 +26,7 @@
 // Created: 04/04
 // Revision: A
 //
-// Description: This file contains the class implementatation of ElementRecorder.
+// Description: This file contains the class implementation of ElementRecorder.
 //
 // What: "@(#) ElementRecorder.C, revA"
 
@@ -48,16 +48,16 @@
 using std::ios;
 
 DamageRecorder::DamageRecorder( int elemid, ID &secIDs, int dofid, DamageModel *dmgPtr,
-				Domain &theDomainPtr, bool echotimeflag, double deltat , OPS_Stream &output)
+				Domain &theDomainPtr, bool echotimeflag, double deltat, double rTolDt, OPS_Stream &output)
   :Recorder(RECORDER_TAGS_DamageRecorder),
    eleID(elemid) , numSec(secIDs.Size()), dofID(dofid),
    responseID(secIDs.Size()), sectionTags(secIDs.Size()),theDomain(&theDomainPtr),
-   echoTimeFlag(echotimeflag), deltaT(deltat), nextTimeStampToRecord(0.0),
+   echoTimeFlag(echotimeflag), deltaT(deltat), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
    theOutput(&output), data(0)
 {
   // make copy of the damage model
   if ( dmgPtr == NULL ) {
-    opserr << "DamageRecorder::DamageRecorder - no damage pointer associated with the damge recorder" <<endln;
+    opserr << "DamageRecorder::DamageRecorder - no damage pointer associated with the damage recorder" <<endln;
     exit(-1);
   }
 
@@ -187,7 +187,9 @@ int
 DamageRecorder::record(int commitTag, double timeStamp)
 {
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where 1.0e-5 is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
     
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
@@ -210,7 +212,7 @@ DamageRecorder::record(int commitTag, double timeStamp)
 	  if ( theResponses[i+numSec*j]->getResponse() < 0) {
 	    DamageInformation(j) = 0.0;
 	  } else {
-	    // ask the element for the reponse
+	    // ask the element for the response
 	    Information &eleinfo = theResponses[i+numSec*j]->getInformation();
 	    const Vector &infovector = eleinfo.getData();
 	    DamageInformation(j) = infovector(dofID);
@@ -231,7 +233,7 @@ DamageRecorder::record(int commitTag, double timeStamp)
 
   theOutput->write(*data);
 
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 

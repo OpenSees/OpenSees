@@ -1071,12 +1071,12 @@ SLModel::sendSelf(int cTag, Channel &theChannel)
 	static Vector data(182);
 	data(0) = this->getTag();
 	
-	// constaint variables
+	// constraint variables
 	data(1) = Dt;
 	data(2) = sgm_ini;
 	data(3) = OP_Material;
 	
-	// constaint variables
+	// constraint variables
 	data(4) = E;
 	data(5) = Dteq;
 	data(6) = q;
@@ -1168,7 +1168,7 @@ SLModel::sendSelf(int cTag, Channel &theChannel)
 	data(90) = DeltaE;
 	data(91) = Tangent;
 	
-	// constaint variables
+	// constraint variables
 	data(92) = C_E;
 	data(93) = C_Dteq;
 	data(94) = C_q;
@@ -1282,12 +1282,12 @@ SLModel::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   	
   	this->setTag(data(0));
 	
-	// constaint variables
+	// constraint variables
 	 Dt= data(1);;
 	 sgm_ini = data(2);;
 	 OP_Material = data(3);
 	
-	// constaint variables
+	// constraint variables
 	 E = data(4);
 	 Dteq = data(5);
 	 q = data(6);
@@ -1379,7 +1379,7 @@ SLModel::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	 DeltaE = data(90);
 	 Tangent = data(91);
 	
-	// constaint variables
+	// constraint variables
 	 C_E = data(92);
 	 C_Dteq = data(93);
 	 C_q = data(94);

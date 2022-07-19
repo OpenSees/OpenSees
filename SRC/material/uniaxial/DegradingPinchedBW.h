@@ -75,14 +75,14 @@ class DegradingPinchedBW : public UniaxialMaterial
 	double epsp;
 	double rhop;
     
-    // History variables (trial and commited)
+    // History variables (trial and committed)
 	double xmaxp;
     double xmax;
 	double Tstrain, Cstrain;
     double Tz, Cz;
     double Te, Ce;
     
-    // Ohter variables
+    // Other variables
     double Tstress, Ttangent;
     
     double tolerance;

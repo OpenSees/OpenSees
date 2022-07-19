@@ -78,7 +78,7 @@ public:
     int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
     void Print(OPS_Stream &s, int flag = 0);
-    
+
     // method used to rotate consistent mass matrix
     const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
     
@@ -88,6 +88,7 @@ public:
     const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps);    
     
     int getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis);
+  int getRigidOffsets(Vector &offsets);
 
    ////////////////// sensitivity /////////////////////////////////
 	const Vector & getBasicDisplSensitivity (int gradNumber);

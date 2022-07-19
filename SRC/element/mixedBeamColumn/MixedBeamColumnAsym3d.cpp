@@ -242,9 +242,6 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   double dData2[2]; //input of ys and zs
   dData2[0] = 0.0;
   dData2[1] = 0.0;
-  int sDataLength = 40;
-  //char *sData  = new char[sDataLength];
-  //char *sData2 = new char[sDataLength];
   int numData;
 
   // Check the number of dimensions
@@ -306,10 +303,6 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
   // Loop through remaining arguments to get optional input
   while ( OPS_GetNumRemainingInputArgs() > 0 ) {
     const char *sData = OPS_GetString();
-    //if ( OPS_GetStringCopy(&sData) != 0 ) {
-    //  opserr << "WARNING invalid input";
-    //  return 0;
-    //}
 
     if ( strcmp(sData,"-mass") == 0 ) {
       numData = 1;
@@ -321,10 +314,6 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
 
     } else if ( strcmp(sData,"-integration") == 0 ) {
       const char *sData2 = OPS_GetString();
-      //if ( OPS_GetStringCopy(&sData2) != 0 ) {
-      //  opserr << "WARNING invalid input, want: -integration $intType";
-      //  return 0;
-      //}
 
       if (strcmp(sData2,"Lobatto") == 0) {
         beamIntegr = new LobattoBeamIntegration();
@@ -352,8 +341,6 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
         opserr << "WARNING invalid integration type, element: " << eleTag;
         return 0;
       }
-      delete [] sData2;
-
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
         if (OPS_GetInt(&numData, &doRayleigh) != 0) {
@@ -374,9 +361,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
 	} else {
       opserr << "WARNING unknown option " << sData << "\n";
     }
-    delete [] sData;
   }
-
 
   // Set the beam integration object if not in options
   if (beamIntegr == 0) {
@@ -1565,13 +1550,13 @@ Response* MixedBeamColumnAsym3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureZ_%i",i+1);
+      sprintf(q,"curvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureY_%i",i+1);
+      sprintf(q,"curvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1581,13 +1566,13 @@ Response* MixedBeamColumnAsym3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureZ_%i",i+1);
+      sprintf(q,"plasticCurvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureY_%i",i+1);
+      sprintf(q,"plasticCurvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1600,12 +1585,15 @@ Response* MixedBeamColumnAsym3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"integrationWeights") == 0) {
     theResponse =  new ElementResponse(this, 101, Vector(numSections));
 
+  } else if (strcmp(argv[0],"sectionTags") == 0) {
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+    
   } else if (strcmp(argv[0],"connectedNodes") == 0) {
-    theResponse =  new ElementResponse(this, 102, Vector(2));
+    theResponse =  new ElementResponse(this, 102, ID(2));
 
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
-    theResponse =  new ElementResponse(this, 103, Vector(1));
+    theResponse =  new ElementResponse(this, 103, ID(1));
 
   } else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
@@ -1728,16 +1716,22 @@ int MixedBeamColumnAsym3d::getResponse(int responseID, Information &eleInfo) {
         weights(i) = wts[i]*L;
       return eleInfo.setVector(weights);
 
+  } else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+
   } else if (responseID == 102) { // connected nodes
-    Vector tempVector(2);
+    ID tempVector(2);
     tempVector(0) = connectedExternalNodes(0);
     tempVector(1) = connectedExternalNodes(1);
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID == 103) { // number of sections
-    Vector tempVector(1);
+    ID tempVector(1);
     tempVector(0) = numSections;
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else {
     return -1;

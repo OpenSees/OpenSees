@@ -29,7 +29,7 @@
 // Written: Gonzalo Torrisi, UNCuyo
 // Created: 10/2014
 //
-// Description: This file contains the class defination for Uniaxial material Masonry 
+// Description: This file contains the class definition for Uniaxial material Masonry 
 //			
 
 #ifndef Masonry_h

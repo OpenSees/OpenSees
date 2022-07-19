@@ -57,8 +57,8 @@ void*
 OPS_EnvelopeNodeRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder EnvelopeNode ";
-        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder EnvelopeNode ";
+        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
         return 0;
     }
 
@@ -79,6 +79,7 @@ OPS_EnvelopeNodeRecorder()
 
     bool echoTimeFlag = false;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     bool doScientific = false;
 
     int precision = 6;
@@ -159,6 +160,15 @@ OPS_EnvelopeNodeRecorder()
                 int num = 1;
                 if (OPS_GetDoubleInput(&num, &dT) < 0) {
                     opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-rTolDt") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+                    opserr << "WARNING: failed to read rTolDt\n";
                     return 0;
                 }
             }
@@ -287,7 +297,7 @@ OPS_EnvelopeNodeRecorder()
         return 0;
     EnvelopeNodeRecorder* recorder = new EnvelopeNodeRecorder(dofs, &nodes,
         responseID, *domain, *theOutputStream,
-        dT, echoTimeFlag, theTimeSeries);
+        dT, rTolDt, echoTimeFlag, theTimeSeries);
 
     return recorder;
 }
@@ -298,7 +308,7 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder()
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), data(0), 
  theDomain(0), theHandler(0),
- deltaT(0.0), nextTimeStampToRecord(0.0), 
+ deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0),
  first(true), initializationDone(false), 
  numValidNodes(0), addColumnInfo(0), theTimeSeries(0), timeSeriesValues(0)
 {
@@ -310,14 +320,15 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
 					   const char *dataToStore,
 					   Domain &theDom,
 					   OPS_Stream &theOutputHandler,
-					   double dT, 
+					   double dT,
+					   double rTolDt,
 					   bool echoTime,
 					   TimeSeries **theSeries)
 :Recorder(RECORDER_TAGS_EnvelopeNodeRecorder),
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), data(0), 
  theDomain(&theDom), theHandler(&theOutputHandler),
- deltaT(dT), nextTimeStampToRecord(0.0), 
+ deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
  first(true), initializationDone(false), numValidNodes(0), echoTimeFlag(echoTime), 
  addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0)
 {
@@ -340,7 +351,7 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
 
 
   // 
-  // create memory to hold nodal ID's (neeed parallel)
+  // create memory to hold nodal ID's (need parallel)
   //
 
   if (nodes != 0) {
@@ -507,8 +518,10 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
 
   int numDOF = theDofs->Size();
 
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
-    
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
+
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
 
@@ -841,9 +854,10 @@ EnvelopeNodeRecorder::sendSelf(int commitTag, Channel &theChannel)
       return -1;
     }
 
-  static Vector data(2);
+  static Vector data(3);
   data(0) = deltaT;
   data(1) = nextTimeStampToRecord;
+  data(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, data) < 0) {
     opserr << "EnvelopeNodeRecorder::sendSelf() - failed to send data\n";
     return -1;
@@ -962,6 +976,7 @@ EnvelopeNodeRecorder::recvSelf(int commitTag, Channel &theChannel,
   }
   deltaT = data(0);
   nextTimeStampToRecord = data(1);
+  relDeltaTTol = data(2);
  
   if (theHandler != 0)
     delete theHandler;

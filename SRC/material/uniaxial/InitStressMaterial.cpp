@@ -285,9 +285,21 @@ InitStressMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 InitStressMaterial::Print(OPS_Stream &s, int flag)
 {
-  s << "InitStressMaterial tag: " << this->getTag() << endln;
-  s << "\tMaterial: " << theMaterial->getTag() << endln;
-  s << "\tinitital strain: " << epsInit << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "InitStressMaterial tag: " << this->getTag() << endln;
+        s << "\tMaterial: " << theMaterial->getTag() << endln;
+        s << "\tInitial stress: " << sigInit << endln;
+        s << "\tInitial strain: " << epsInit << endln;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"InitStressMaterial\", ";
+        s << "\"Material\": " << theMaterial->getTag() << ", ";
+        s << "\"initialStress\": " << sigInit << ", "; 
+        s << "\"initialStrain\": " << epsInit << "}";
+    }
 }
 
 int 

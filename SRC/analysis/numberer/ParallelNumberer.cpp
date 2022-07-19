@@ -109,7 +109,7 @@ ParallelNumberer::setChannels(int nChannels, Channel **theC)
 
 
 // int numberDOF(void)
-// The ParalellNumberer sitting on P0, collects each partition graph from P1 through Pn-1, 
+// The ParallelNumberer sitting on P0, collects each partition graph from P1 through Pn-1, 
 // merges them into 1 large graph, & then numbers this graph. The ParallelNumberers sitting 
 // on P1 through Pn-1 then receive the mapping info for the dof tag and dof numbering from P0.
 
@@ -446,7 +446,7 @@ ParallelNumberer::sendSelf(int cTag, Channel &theChannel)
       int nextNumChannels = numChannels + 1;
       Channel **nextChannels = new Channel *[nextNumChannels];
       if (nextNumChannels == 0) {
-	opserr << "ParalellNumberer::sendSelf() - failed to allocate channel array of size: " << 
+	opserr << "ParallelNumberer::sendSelf() - failed to allocate channel array of size: " << 
 	  nextNumChannels << endln;
 	return -1;
       }

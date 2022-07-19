@@ -65,6 +65,8 @@ class SSPquadUP : public Element
 					   double Pup = 0.0, double Plow = 0.0, double Pleft = 0.0, double Pright = 0.0);
     SSPquadUP();
     ~SSPquadUP();
+
+    const char* getClassType()  const { return "SSPquadUP"; };
     // LM change
 
     // public methods to obtain information about dof and connectivity
@@ -108,6 +110,7 @@ class SSPquadUP : public Element
     // allow PyLiq1 and TzLiq1 classes to get stresses from SSPquadUP class
     friend class PyLiq1;
     friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
   protected:
 

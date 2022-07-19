@@ -29,39 +29,76 @@
 
 #include <MaterialResponse.h>
 #include <Material.h>
+#include <MaterialState.h>
 
 MaterialResponse::MaterialResponse(Material *mat, int id):
-Response(), theMaterial(mat), responseID(id)
+  Response(), theMaterial(mat), theMaterialState(0), responseID(id)
 {
 
 }
 
 MaterialResponse::MaterialResponse(Material *mat, int id, int val):
-Response(val), theMaterial(mat), responseID(id)
+  Response(val), theMaterial(mat), theMaterialState(0), responseID(id)
 {
 
 }
 
 MaterialResponse::MaterialResponse(Material *mat, int id, double val):
-Response(val), theMaterial(mat), responseID(id)
+  Response(val), theMaterial(mat), theMaterialState(0), responseID(id)
 {
 
 }
 
 MaterialResponse::MaterialResponse(Material *mat, int id, const ID &val):
-Response(val), theMaterial(mat), responseID(id)
+  Response(val), theMaterial(mat), theMaterialState(0), responseID(id)
 {
 
 }
 
 MaterialResponse::MaterialResponse(Material *mat, int id, const Vector &val):
-Response(val), theMaterial(mat), responseID(id)
+  Response(val), theMaterial(mat), theMaterialState(0), responseID(id)
 {
 
 }
 
 MaterialResponse::MaterialResponse(Material *mat, int id, const Matrix &val):
-Response(val), theMaterial(mat), responseID(id)
+  Response(val), theMaterial(mat), theMaterialState(0), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id):
+  Response(), theMaterial(0), theMaterialState(mat), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id, int val):
+  Response(val), theMaterial(0), theMaterialState(mat), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id, double val):
+  Response(val), theMaterial(0), theMaterialState(mat), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id, const ID &val):
+  Response(val), theMaterial(0), theMaterialState(mat), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id, const Vector &val):
+  Response(val), theMaterial(0), theMaterialState(mat), responseID(id)
+{
+
+}
+
+MaterialResponse::MaterialResponse(MaterialState *mat, int id, const Matrix &val):
+  Response(val), theMaterial(0), theMaterialState(mat), responseID(id)
 {
 
 }
@@ -74,7 +111,12 @@ MaterialResponse::~MaterialResponse()
 int
 MaterialResponse::getResponse(void)
 {
-	return theMaterial->getResponse(responseID, myInfo);
+  if (theMaterial != 0)
+    return theMaterial->getResponse(responseID, myInfo);
+  else if (theMaterialState != 0)
+    return theMaterialState->getResponse(responseID, myInfo);
+  else
+    return 0;
 }
 
 int

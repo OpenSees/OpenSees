@@ -51,7 +51,8 @@ Journal of Structural Engineering, 133(2):155-165.
 #include <Matrix.h>
 #include <Node.h>
 #include <Channel.h>
-
+#include <elementAPI.h>
+#include <string>
 #include <CorotCrdTransfWarping2d.h>
 
 // initialize static variables
@@ -63,6 +64,32 @@ Vector CorotCrdTransfWarping2d::dub(5);
 Vector CorotCrdTransfWarping2d::Dub(5); 
 Matrix CorotCrdTransfWarping2d::kg(8,8);
 
+void* OPS_CorotCrdTransfWarping2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 1) {
+	opserr<<"insufficient arguments for CorotCrdTransfWarping2d\n";
+	return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get option
+    Vector jntOffsetI(2), jntOffsetJ(2);
+    double *iptr=&jntOffsetI(0), *jptr=&jntOffsetJ(0);
+    while(OPS_GetNumRemainingInputArgs() > 4) {
+	std::string type = OPS_GetString();
+	if(type == "-jntOffset") {
+	    numData = 2;
+	    if(OPS_GetDoubleInput(&numData,iptr) < 0) return 0;
+	    if(OPS_GetDoubleInput(&numData,jptr) < 0) return 0;
+	}
+    }
+
+    return new CorotCrdTransfWarping2d(tag,jntOffsetI,jntOffsetJ);
+}
 
 // constructor:
 CorotCrdTransfWarping2d::CorotCrdTransfWarping2d(int tag, 
@@ -75,7 +102,7 @@ nodeIPtr(0), nodeJPtr(0), L(0), Ln(0), ub(5), ubcommit(5), ubpr(5),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 { 
     // check rigid joint offset for node I
-    if (&rigJntOffsetI == 0 || rigJntOffsetI.Size() != 2 )
+    if (rigJntOffsetI.Size() != 2 )
     {
         opserr << "CorotCrdTransfWarping2d::CorotCrdTransfWarping2d:  Invalid rigid joint offset vector for node I\n";
         opserr << "Size must be 2\n";      
@@ -85,7 +112,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
       nodeIOffset = rigJntOffsetI;
     
     // check rigid joint offset for node J
-    if (&rigJntOffsetJ == 0 || rigJntOffsetJ.Size() != 2 )
+    if (rigJntOffsetJ.Size() != 2 )
     {
         opserr << "CorotCrdTransfWarping2d::CorotCrdTransfWarping2d:  Invalid rigid joint offset vector for node J\n";
         opserr << "Size must be 2\n";      

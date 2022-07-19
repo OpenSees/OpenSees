@@ -1,28 +1,36 @@
-target_sources(element
-    PRIVATE
-	ZeroLength.cpp
-	ZeroLengthSection.cpp
-	ZeroLengthContact2D.cpp
-	ZeroLengthContact3D.cpp
-	ZeroLengthND.cpp
-	ZeroLengthContactNTS2D.cpp
-	ZeroLengthInterface2D.cpp
-	ZeroLengthRocking.cpp
-	CoupledZeroLength.cpp
-	ZeroLengthImpact3D.cpp
-	ZeroLengthVG_HG.cpp
-    PUBLIC
-	ZeroLength.h
-	ZeroLengthSection.h
-	ZeroLengthContact2D.h
-	ZeroLengthContact3D.h
-	ZeroLengthND.h
-	ZeroLengthContactNTS2D.h
-	ZeroLengthInterface2D.h
-	ZeroLengthRocking.h
-	CoupledZeroLength.h
-	ZeroLengthImpact3D.h
-	ZeroLengthVG_HG.h
-)
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
 
-target_include_directories(element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_sources(OPS_Element
+    PRIVATE
+    ZeroLength.cpp
+    CoupledZeroLength.cpp
+    ZeroLengthContact2D.cpp
+    ZeroLengthContact3D.cpp
+    ZeroLengthContactASDimplex.cpp
+    ZeroLengthContactNTS2D.cpp
+    ZeroLengthImpact3D.cpp
+    ZeroLengthInterface2D.cpp
+    ZeroLengthND.cpp
+    ZeroLengthRocking.cpp
+    ZeroLengthSection.cpp
+    ZeroLengthVG_HG.cpp
+    PUBLIC
+    ZeroLength.h
+    CoupledZeroLength.h
+    ZeroLengthContact2D.h
+    ZeroLengthContact3D.h
+    ZeroLengthContactASDimplex.h
+    ZeroLengthContactNTS2D.h
+    ZeroLengthImpact3D.h
+    ZeroLengthInterface2D.h
+    ZeroLengthND.h
+    ZeroLengthRocking.h
+    ZeroLengthSection.h
+    ZeroLengthVG_HG.h
+)
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})

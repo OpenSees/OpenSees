@@ -250,7 +250,7 @@ PFEMDiaLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize,
         int colid = newDofID(col);         // column id
         if(coltype==4 || coltype<0) continue;      // don't need this column
 
-        // off diagnol terms
+        // off diagonal terms
         const ID &theAdjacency = theVertex->getAdjacency();
         int idSize = theAdjacency.Size();
         for (int i=0; i<idSize; i++) {       // rows

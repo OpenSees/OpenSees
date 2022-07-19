@@ -422,7 +422,7 @@ int TclModelBuilder_addBeamColumnJoint(ClientData clientData, Tcl_Interp *interp
 
 	}
 	else {
-		opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is imcompatible with available frame elements";
+		opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is incompatible with available frame elements";
 		return TCL_ERROR;
 	}      
 

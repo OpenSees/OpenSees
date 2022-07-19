@@ -311,10 +311,10 @@ const Matrix &
 ZeroLengthSection::getTangentStiff(void)
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section tangent stiffness, the element basic stiffness
 	const Matrix &kb = theSection->getSectionTangent();
@@ -374,10 +374,10 @@ const Vector &
 ZeroLengthSection::getResistingForce()
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section stress resultants, the element basic forces
 	const Vector &q = theSection->getStressResultant();
@@ -653,6 +653,16 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
         theResponse = theSection->setResponse(&argv[1], argc-1, output);
     }
 
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }
+    
     output.endTag();
     return theResponse;
 
@@ -663,7 +673,8 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
 {
     Vector q(order);
     Matrix kb(order,order);
-
+    Vector &theVec = *(eleInfo.theVector);
+    
     switch (responseID) {
     case 1:
         return eleInfo.setVector(this->getResistingForce());
@@ -681,7 +692,22 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
       kb = theSection->getSectionTangent();
       return eleInfo.setMatrix(kb);
 
-
+    case 20:
+      theVec(0) = transformation(0,0);
+      theVec(1) = transformation(0,1);
+      theVec(2) = transformation(0,2);
+      return 0;
+    case 21:
+      theVec(0) = transformation(1,0);
+      theVec(1) = transformation(1,1);
+      theVec(2) = transformation(1,2);
+      return 0;
+    case 22:
+      theVec(0) = transformation(2,0);
+      theVec(1) = transformation(2,1);
+      theVec(2) = transformation(2,2);
+      return 0;
+      
     default:
         return -1;
     }
@@ -882,10 +908,10 @@ const Vector &
 ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
 {
   // Compute section deformation vector
-  // this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+  // this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
   // Set trial section deformation
-  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
   // Get section stress resultants, the element basic forces
   const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);

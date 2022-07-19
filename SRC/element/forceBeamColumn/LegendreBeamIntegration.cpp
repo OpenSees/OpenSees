@@ -28,30 +28,64 @@
 
 void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags)
 {
-    if(OPS_GetNumRemainingInputArgs() < 3) {
-	opserr<<"insufficient arguments:integrationTag,secTag,N\n";
-	return 0;
-    }
+  int nArgs = OPS_GetNumRemainingInputArgs();
 
+  if (nArgs < 3) {
+    opserr<<"insufficient arguments:integrationTag,secTag,N -or- N,*secTagList\n";
+    return 0;
+  }
+  
+  // Read tag
+  int iData[2];
+  int numData = 2;
+  if (OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "LegendreBeamIntegration - unable to read int data" << endln;
+    return 0;
+  }
+  integrationTag = iData[0];
+  
+  if (nArgs == 3) {
     // inputs: integrationTag,secTag,N
-    int iData[3];
-    int numData = 3;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
-	opserr << "WARNING: failed to read inputs\n";
-	return 0;
+    numData = 1;
+    int Nsections;
+    if (OPS_GetIntInput(&numData,&Nsections) < 0) {
+      opserr << "LegendreBeamIntegration - Unable to read number of sections" << endln;
+      return 0;
     }
-
-    integrationTag = iData[0];
-    if(iData[2] > 0) {
-	secTags.resize(iData[2]);
+    if (Nsections < 0)
+      return 0;
+    
+    if (Nsections > 0) {
+      secTags.resize(Nsections);
     } else {
-	secTags = ID();
+      secTags = ID();
     }
-    for(int i=0; i<secTags.Size(); i++) {
-	secTags(i) = iData[1];
+    for (int i=0; i<secTags.Size(); i++) {
+      secTags(i) = iData[1];
     }
-
-    return new LegendreBeamIntegration;
+  }
+  else {
+    // inputs: integrationTag,N,*secTagList
+    int Nsections = iData[1];
+    if (Nsections < 0)
+      return 0;
+    int *sections = new int[Nsections];
+    if (OPS_GetIntInput(&Nsections,sections) < 0) {
+      opserr << "LegendreBeamIntegration - Unable to read section tags" << endln;
+      return 0;
+    }
+    if (Nsections > 0) {
+      secTags.resize(Nsections);
+    } else {
+      secTags = ID();
+    }
+    for (int i=0; i<secTags.Size(); i++) {
+      secTags(i) = sections[i];
+    }      
+    delete [] sections;
+  }
+  
+  return new LegendreBeamIntegration;
 }
 
 LegendreBeamIntegration::LegendreBeamIntegration():

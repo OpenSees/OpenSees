@@ -21,7 +21,7 @@
 // Written by: Long Chen, Pedro Arduino (parduino@uw.edu), Wenyang Zhang and fmk
 //
 // Eight node PML3D element .. a c++ wrapper to fortran routine 
-// providewd by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
+// provided by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
 //
 // University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
 
@@ -391,7 +391,7 @@ PML3D::update(void)
 	int MCRD = 3;
 	int NNODE = 8;
 
-	pml_(M,
+	pml3d_(M,
 		C,
 		K,
 		&NDOFEL,
