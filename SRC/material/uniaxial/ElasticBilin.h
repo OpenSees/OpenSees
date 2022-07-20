@@ -45,14 +45,14 @@ class ElasticBilin : public UniaxialMaterial
 
     ~ElasticBilin();
 
-    const char *getClassType(void) const {return "ElasticBilin";};
+    const char *getClassType(void) const {return "ElasticBilin";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void);          
     double getStress(void);
     double getTangent(void);
 
-    double getInitialTangent(void) {return E1P;};
+    double getInitialTangent(void) {return E1P;}
 
     int commitState(void);
     int revertToLastCommit(void);    
@@ -76,7 +76,7 @@ class ElasticBilin : public UniaxialMaterial
     double eps2P;	       // strain at which E2P takes place	
     double eps2N;	       // strain at which E2P takes place	
 
-    double trialStrain, trialStress, trialTangent; 
+  double trialStrain;
 };
 
 
