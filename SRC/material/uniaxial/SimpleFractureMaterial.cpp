@@ -284,7 +284,7 @@ SimpleFractureMaterial::revertToStart(void)
   Tfailed = false;
   Cstrain = 0;
   theMaterial->revertToStart();
-  theMaterial->setTrialStrain(Cstrain, 0, 0);
+  theMaterial->setTrialStrain(Cstrain);
   Ctangent = theMaterial->getTangent();
   Cstress = theMaterial->getStress();
   return 0;
