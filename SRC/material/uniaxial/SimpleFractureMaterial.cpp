@@ -355,7 +355,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
     theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "SimpleFractureMaterial::recvSelf() - failed to create Material with classTag " 
-	   << dataID(0) << endln;
+	   << matClassTag << endln;
       return -2;
     }
   }
