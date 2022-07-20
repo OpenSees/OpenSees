@@ -400,12 +400,13 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
   Ctangent = dataVec(4);
   CstartCompStrain = dataVec(5);
 
-  this->revertToLastCommit();
-
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "SimpleFractureMaterial::recvSelf() - failed to get the Material" << endln;
     return -4;
   }
+	
+  this->revertToLastCommit();
+	
   return 0;
 }
 
