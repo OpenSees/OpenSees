@@ -27,6 +27,8 @@
 #include <SimpleFractureMaterial.h>
 #include <ID.h>
 #include <Channel.h>
+#include <Information.h>
+#include <Parameter.h>
 #include <FEM_ObjectBroker.h>
 
 #include <OPS_Globals.h>
@@ -169,7 +171,7 @@ SimpleFractureMaterial::setTrialStrain(double strain, double temp, double strain
   } else if (Tfailed == true && strain < TstartCompStrain) {
 
     //    opserr << "(Tfailed == true && strain < TstartCompStrain): " << TstartCompStrain << endln;
-    // set strain in material, if tensile, revert to last & increment ro where crosses, set TsratCompStrain
+    // set strain in material, if tensile, revert to last & increment to where crosses, set TsratCompStrain
     theMaterial->setTrialStrain(strain, temp, strainRate);
     Tstress = theMaterial->getStress();
     Ttangent = theMaterial->getTangent();
@@ -187,7 +189,6 @@ SimpleFractureMaterial::setTrialStrain(double strain, double temp, double strain
     } 
 
   } else {
-    //    opserr << "ELSE\n";
     theMaterial->setTrialStrain(strain, temp, strainRate);
     Ttangent = theMaterial->getTangent();
     Tstress = theMaterial->getStress();
@@ -416,4 +417,35 @@ SimpleFractureMaterial::Print(OPS_Stream &s, int flag)
   else
     s << "\tMaterial is NULL" << endln;
   s << "\tMax strain: " << maxStrain << endln;
+}
+
+int
+SimpleFractureMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"maxStrain") == 0) {
+    param.setValue(maxStrain);
+    return param.addObject(1, this);
+  }
+
+  if (argc > 1 && strcmp(argv[0],"material") == 0) {
+    if (theMaterial)
+      return theMaterial->setParameter(&argv[1], argc-1, param);
+    else
+      return -1;
+  }
+  
+  if (theMaterial)
+    return theMaterial->setParameter(argv, argc, param);
+  else
+    return -1;
+}
+  
+int
+SimpleFractureMaterial::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    maxStrain = info.theDouble;
+    return 0;
+  }
+  return -1;
 }
