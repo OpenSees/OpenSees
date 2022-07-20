@@ -65,6 +65,9 @@ class ElasticBilin : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
     
   protected:
     
@@ -73,7 +76,7 @@ class ElasticBilin : public UniaxialMaterial
     double eps2P;	       // strain at which E2P takes place	
     double eps2N;	       // strain at which E2P takes place	
 
-    double trialStrain, trialStress, trialTangent, commitStrain; 
+    double trialStrain, trialStress, trialTangent; 
 };
 
 
