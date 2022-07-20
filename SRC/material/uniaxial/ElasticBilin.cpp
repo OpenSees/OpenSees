@@ -85,7 +85,7 @@ OPS_ElasticBilin(void)
 ElasticBilin::ElasticBilin()
 :UniaxialMaterial(0 ,MAT_TAG_ElasticBilin),
  E1P(0.0), E1N(0.0), E2P(0.0), E2N(0.0), eps2P(0.0), eps2N(0.0),
- trialStrain(0.0), trialStress(0.0), trialTangent(E1P)
+ trialStrain(0.0)
 {
  
 }
@@ -94,7 +94,7 @@ ElasticBilin::ElasticBilin()
 ElasticBilin::ElasticBilin(int tag, double e, double e2, double eps2)
 :UniaxialMaterial(tag, MAT_TAG_ElasticBilin),
  E1P(e), E1N(e), E2P(e2), E2N(e2), eps2P(eps2), eps2N(-eps2),
- trialStrain(0.0), trialStress(0.0), trialTangent(E1P)
+ trialStrain(0.0)
 {
   if (eps2 < 0.0) {
     eps2P = -eps2;
@@ -105,7 +105,7 @@ ElasticBilin::ElasticBilin(int tag, double e, double e2, double eps2)
 ElasticBilin::ElasticBilin(int tag, double ep, double e2p, double eps2p, double en, double e2n, double eps2n)
 :UniaxialMaterial(tag, MAT_TAG_ElasticBilin),
  E1P(ep), E1N(en), E2P(e2p), E2N(e2n), eps2P(eps2p), eps2N(eps2n),
- trialStrain(0.0), trialStress(0.0), trialTangent(E1P)
+ trialStrain(0.0)
 {
   if (eps2p < 0.0) {
     eps2P = -eps2p;
@@ -123,24 +123,6 @@ int
 ElasticBilin::setTrialStrain(double strain, double strainRate)
 {
     trialStrain = strain;
-    
-    if (trialStrain >= 0.0) {
-      if (trialStrain < eps2P) {
-	trialTangent = E1P;
-	trialStress = E1P*trialStrain;
-      } else { 
-	trialTangent = E2P;
-	trialStress = E1P*eps2P + (trialStrain-eps2P)*E2P;
-      }  
-    } else {
-      if (trialStrain > eps2N) {
-	trialTangent = E1N;
-	trialStress = E1N*trialStrain;
-      } else {
-	trialTangent = E2N;
-	trialStress = E1N*eps2N + (trialStrain-eps2N)*E2N;
-      }
-    }
 
     return 0;
 }
@@ -154,6 +136,22 @@ ElasticBilin::getStrain(void)
 double 
 ElasticBilin::getStress(void)
 {
+  double trialStress;
+  
+  if (trialStrain >= 0.0) {
+    if (trialStrain < eps2P) {
+      trialStress = E1P*trialStrain;
+    } else { 
+      trialStress = E1P*eps2P + (trialStrain-eps2P)*E2P;
+    }  
+  } else {
+    if (trialStrain > eps2N) {
+      trialStress = E1N*trialStrain;
+    } else {
+      trialStress = E1N*eps2N + (trialStrain-eps2N)*E2N;
+    }
+  }
+  
   return trialStress;
 }
 
@@ -161,6 +159,22 @@ ElasticBilin::getStress(void)
 double 
 ElasticBilin::getTangent(void)
 {
+  double trialTangent;
+  
+  if (trialStrain >= 0.0) {
+    if (trialStrain < eps2P) {
+      trialTangent = E1P;
+    } else { 
+      trialTangent = E2P;
+    }  
+  } else {
+    if (trialStrain > eps2N) {
+      trialTangent = E1N;
+    } else {
+      trialTangent = E2N;
+    }
+  }
+  
   return trialTangent;
 }
 
@@ -182,8 +196,6 @@ int
 ElasticBilin::revertToStart(void)
 {
   trialStrain = 0;
-  trialStress = 0;
-  trialTangent = 0;
 
   return 0;
 }
@@ -196,8 +208,6 @@ ElasticBilin::getCopy(void)
     new ElasticBilin(this->getTag(), E1P, E2P, eps2P, E1N, E2N, eps2N);
 
   theCopy->trialStrain = trialStrain;
-  theCopy->trialStress = trialStress;
-  theCopy->trialTangent = trialTangent;  
   
   return theCopy;
 }
@@ -251,7 +261,7 @@ ElasticBilin::Print(OPS_Stream &s, int flag)
     s << "ElasticBilin tag: " << this->getTag() << endln;
     s << "Input Parameters: E1P: " << E1P << " E2P: " << E2P << " eps2P: " << eps2P;
     s << "  E1N: " << E1N << " E2N: " << E2N << " eps2N: " << eps2N << endln;
-    s << "Current State: strain: "<< trialStrain << " stress: " << trialStress << " tangent: " << trialTangent << endln;
+    s << "Current State: strain: "<< trialStrain << endln;
 }
 
 int
