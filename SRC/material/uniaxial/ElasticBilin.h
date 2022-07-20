@@ -52,7 +52,7 @@ class ElasticBilin : public UniaxialMaterial
     double getStress(void);
     double getTangent(void);
 
-    double getInitialTangent(void) {return E1P;};
+    double getInitialTangent(void) {return E1P;}
 
     int commitState(void);
     int revertToLastCommit(void);    
