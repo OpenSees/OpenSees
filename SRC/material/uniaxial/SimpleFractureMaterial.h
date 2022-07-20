@@ -41,7 +41,7 @@ class SimpleFractureMaterial : public UniaxialMaterial
     SimpleFractureMaterial();
     ~SimpleFractureMaterial();
     
-    const char *getClassType(void) const {return "SimpleFractureMaterial";};
+    const char *getClassType(void) const {return "SimpleFractureMaterial";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     int setTrialStrain(double strain, double FiberTemperature, double strainRate); 
@@ -50,7 +50,7 @@ class SimpleFractureMaterial : public UniaxialMaterial
     double getStress(void);
     double getTangent(void);
     double getDampTangent(void);
-    double getInitialTangent(void) {return theMaterial->getInitialTangent();}
+  double getInitialTangent(void);
 
     int commitState(void);
     int revertToLastCommit(void);    

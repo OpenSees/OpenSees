@@ -44,7 +44,7 @@ OPS_SimpleFractureMaterial(void)
 
   int argc = OPS_GetNumRemainingInputArgs();
   if (argc < 3) {
-    opserr << "WARNING invalid uniaxialMaterial SimpleFracture $tag $otherTag $maxStrain>" << endln;
+    opserr << "WARNING invalid uniaxialMaterial SimpleFracture $tag $otherTag $maxStrain" << endln;
     return 0;
   }
 
@@ -56,13 +56,13 @@ OPS_SimpleFractureMaterial(void)
 
   theOtherMaterial = OPS_GetUniaxialMaterial(iData[1]);
   if (theOtherMaterial == 0) {
-    opserr << "WARNING invalid otherTag:  uniaxialMaterial SimpleFracture $tag $otherTag $max: " << iData[0] << endln;
+    opserr << "WARNING uniaxialMaterial SimpleFracture - material not found with tag " << iData[1] << endln;
     return 0;	
   }
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &maxStrain) != 0) {
-    opserr << "WARNING invalid maxStrain: uniaxialMaterial  SimpleFracture $tag $otherTag $maxStrain" << endln;
+    opserr << "WARNING invalid maxStrain: uniaxialMaterial SimpleFracture $tag $otherTag $maxStrain" << endln;
     return 0;
   }
 
@@ -84,7 +84,7 @@ SimpleFractureMaterial::SimpleFractureMaterial(int tag, UniaxialMaterial &materi
   theMaterial = material.getCopy();
 
   if (theMaterial == 0) {
-    opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material\n";
+    opserr <<  "SimpleFractureMaterial::SimpleFractureMaterial -- failed to get copy of material, continuing with no fracture" << endln;
     Cstress = 0.0;
     Ctangent = 0.0;
     Cstrain = 0.0;
@@ -102,9 +102,9 @@ SimpleFractureMaterial::SimpleFractureMaterial()
   :UniaxialMaterial(0,MAT_TAG_SimpleFractureMaterial), theMaterial(0),
    maxStrain(0), TstartCompStrain(0), CstartCompStrain(0), Tfailed(false), Cfailed(false)
 {
-  Cstress = 0;
-  Ctangent = 0;
-  Cstrain = 0;
+  Cstress = 0.0;
+  Ctangent = 0.0;
+  Cstrain = 0.0;
   Tstress = Cstress;
   Ttangent = Ctangent;
   Tstrain = Cstrain;
@@ -210,6 +210,15 @@ SimpleFractureMaterial::getTangent(void)
   return Ttangent;
 }
 
+double
+SimpleFractureMaterial::getInitialTangent(void)
+{
+  if (theMaterial)
+    return theMaterial->getInitialTangent();
+  else
+    return 0.0;
+}
+
 double 
 SimpleFractureMaterial::getDampTangent(void)
 {
@@ -307,7 +316,7 @@ int
 SimpleFractureMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   if (theMaterial == 0) {
-    opserr << "SimpleFractureMaterial::sendSelf() - theMaterial is null, nothing to send\n";
+    opserr << "SimpleFractureMaterial::sendSelf() - theMaterial is null, nothing to send" << endln;
     return -1;
   }
     
@@ -324,7 +333,7 @@ SimpleFractureMaterial::sendSelf(int cTag, Channel &theChannel)
   }
   dataID(2) = matDbTag;
   if (theChannel.sendID(dbTag, cTag, dataID) < 0) {
-    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the ID\n";
+    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the ID" << endln;
     return -1;
   }
 
@@ -338,12 +347,12 @@ SimpleFractureMaterial::sendSelf(int cTag, Channel &theChannel)
 
 
   if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the Vector\n";
+    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the Vector" << endln;
     return -2;
   }
 
   if (theMaterial->sendSelf(cTag, theChannel) < 0) {
-    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the Material\n";
+    opserr << "SimpleFractureMaterial::sendSelf() - failed to send the Material" << endln;
     return -3;
   }
 
@@ -358,7 +367,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
 
   static ID dataID(3);
   if (theChannel.recvID(dbTag, cTag, dataID) < 0) {
-    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the ID\n";
+    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the ID" << endln;
     return -1;
   }
   this->setTag(int(dataID(0)));
@@ -378,7 +387,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
 
   static Vector dataVec(6);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the Vector\n";
+    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the Vector" << endln;
     return -3;
   }
 
@@ -392,7 +401,7 @@ SimpleFractureMaterial::recvSelf(int cTag, Channel &theChannel,
   this->revertToLastCommit();
 
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
-    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the Material\n";
+    opserr << "SimpleFractureMaterial::recvSelf() - failed to get the Material" << endln;
     return -4;
   }
   return 0;
