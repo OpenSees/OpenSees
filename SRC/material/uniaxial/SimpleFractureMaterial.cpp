@@ -285,7 +285,21 @@ SimpleFractureMaterial::getCopy(void)
   SimpleFractureMaterial *theCopy = 0;
   if (theMaterial)
     theCopy = new SimpleFractureMaterial(this->getTag(), *theMaterial, maxStrain);
-        
+
+  theCopy->TstartCompStrain = TstartCompStrain;
+  theCopy->CstartCompStrain = CstartCompStrain;  
+
+  theCopy->Tfailed = Tfailed;
+  theCopy->Cfailed = Cfailed;  
+
+  theCopy->Tstrain = Tstrain;
+  theCopy->Tstress = Tstress;
+  theCopy->Ttangent = Ttangent;
+
+  theCopy->Cstrain = Cstrain;
+  theCopy->Cstress = Cstress;
+  theCopy->Ctangent = Ctangent;    
+  
   return theCopy;
 }
 
