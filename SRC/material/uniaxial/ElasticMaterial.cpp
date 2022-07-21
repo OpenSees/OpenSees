@@ -225,6 +225,7 @@ ElasticMaterial::getCopy(void)
     theCopy->trialStrainRate = trialStrainRate;
     theCopy->committedStrain     = committedStrain;
     theCopy->committedStrainRate = committedStrainRate;
+    theCopy->parameterID = parameterID;
     return theCopy;
 }
 
