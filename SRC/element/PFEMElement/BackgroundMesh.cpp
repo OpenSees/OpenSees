@@ -3256,10 +3256,12 @@ int BackgroundMesh::interpolate(const VDouble& values, const VDouble& N,
 
 int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
                                   VInt& elends) {
+    elends.clear();
+
     // check inputs
     int ndm = OPS_GetNDM();
     if (ndtags.size() != sids.size()) {
-        return 1;
+        return 0;
     }
     if (ndm == 2) {
         if (ndtags.size() != 3) {
@@ -3281,29 +3283,33 @@ int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
 
     if (grp.size() == 1) {
         // from same structure
-        return 1;
+        return 0;
     }
 
     // get secondary node
     int secondary = 0;
     int id = 0;
     bool find = false;
-    for (std::map<int, VInt>::iterator it = grp.begin(); it != grp.end();
-         ++it) {
-        VInt& nds = it->second;
+    for (const auto& item : grp) {
+        const VInt& nds = item.second;
         if (nds.size() == 1) {
             // secondary node with largest sid
-            if (!find || (id < it->first)) {
-                id = it->first;
+            if (!find || (id < item.first)) {
+                id = item.first;
                 secondary = nds[0];
                 find = true;
             }
-        } else if (find && id < it->first) {
-            // if primary nodes have larger sid
+        }
+    }
+
+    // if primary nodes have larger sid
+    for (const auto& item : grp) {
+        const VInt& nds = item.second;
+        if (nds.size() > 1 && id < item.first) {
             find = false;
         }
     }
-    if (!find) return 1;
+    if (!find) return 0;
 
     // index for secondary node
     int index = 0;
@@ -3318,7 +3324,6 @@ int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
     }
 
     // get primary nodes
-    elends.clear();
     for (int i = 0; i < (int)ndtags.size() - 1; ++i) {
         elends.push_back(ndtags[index]);
         index += 1;
