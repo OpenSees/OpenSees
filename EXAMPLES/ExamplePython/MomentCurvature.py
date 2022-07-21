@@ -14,7 +14,7 @@
 # Sets up a recorder which writes moment-curvature results to file
 # section$secTag.out ... the moment is in column 1, and curvature in column 2
 
-from opensees import *
+from openseespy.opensees import *
 
 def execute(secTag, axialLoad, maxK, numIncr):
 	
