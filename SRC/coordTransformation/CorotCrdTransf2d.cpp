@@ -1514,3 +1514,34 @@ CorotCrdTransf2d::getd1overLdh(void)
 }
 
 // AddingSensitivity:END /////////////////////////////////////
+
+int
+CorotCrdTransf2d::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
+{
+  xAxis(0) = cosTheta;
+  xAxis(1) = sinTheta;
+  xAxis(2) = 0;
+
+  yAxis(0) = -sinTheta;
+  yAxis(1) =  cosTheta;
+  yAxis(2) =  0;    
+  
+  zAxis(0) = 0.0;
+  zAxis(1) = 0.0;
+  zAxis(2) = 1.0;
+
+  return 0;
+}
+
+int
+CorotCrdTransf2d::getRigidOffsets(Vector &offsets)
+{
+  offsets(0) = nodeIOffset(0);
+  offsets(1) = nodeIOffset(1);
+  offsets(2) = 0.0;
+  offsets(3) = nodeJOffset(0);
+  offsets(4) = nodeJOffset(1);
+  offsets(5) = 0.0;
+
+  return 0;
+}

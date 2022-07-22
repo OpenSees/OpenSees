@@ -47,7 +47,7 @@
  +      Istituto Universitario di Studi Superiori di Pavia          (IUSS)        +
  |      Advanced Structural Design & Analysis Software Technology   (ASDEA)       |
  |		Universita degli Studi 'G. d'Annunzio' Chieti - Pescara	    (UNICH)       |
- |      Università degli Studi di Pavia                             (UNIPV)       |
+ |      Universitï¿½ degli Studi di Pavia                             (UNIPV)       |
  +			                                                                      +
  |                                                                                |
  |                    Email: onur.akan@iusspavia.it (O.D.A.)                      |
@@ -91,14 +91,14 @@
   (6) Currently, only small deformations are considered, however an update on large deformations
       may be implemented in the near future.
   (7) In IMPL-EX scheme, the material tangent and residual at the current step (n+1) are computed
-      by lineary extrapolating the material parameters commited at steps (n) and (n-1). Then, after
+      by lineary extrapolating the material parameters committed at steps (n) and (n-1). Then, after
       the convergence criteria is achieved, extrapolated material parameters are corrected with a
-      step of traditional implicit computation from the last commited step (n). Finally, corrected
-      parameters are saved as the current step (n+1) commited variables.
+      step of traditional implicit computation from the last committed step (n). Finally, corrected
+      parameters are saved as the current step (n+1) committed variables.
   (8) In a Newton-Raphson scheme, IMPL-EX integration translates to a step-wise linear solution of the material
       non-linearity, and a symmetric, semi-positive definite tangent tensor regardless of what the analytical
       tangent might be, hence improving the robustness of the solution. The order of accuracy is the same with
-      the implicit (backward) euler integration scheme, however the commited error at a time step is larger.
+      the implicit (backward) euler integration scheme, however the committed error at a time step is larger.
       An automatic time-stepping algorithm should be employed in order to control (a-priori) this error. (Oliver et al, 2008)
 
    References:
@@ -122,21 +122,21 @@ public:
     public:
         // material strain and stress [(0 = normal) (1 = tangent_1) (2 = tangent_2)]
         Vector eps = Vector(3);             // material strain 
-        Vector eps_commit = Vector(3);      // commited material strain
+        Vector eps_commit = Vector(3);      // committed material strain
         Vector shear = Vector(2);           // effective shear stress
-        Vector shear_commit = Vector(2);    // commited effective shear stress
+        Vector shear_commit = Vector(2);    // committed effective shear stress
         double xs = 0.0;                    // equivalent plastic strain
-        double xs_commit = 0.0;             // commited equivalent plastic strain
+        double xs_commit = 0.0;             // committed equivalent plastic strain
         double rs = 0.0;                    // equivalent shear stress
-        double rs_commit = 0.0;             // commited equivalent shear stress
-        double rs_commit_old = 0.0;         // commited equivalent shear stress (n-1)
+        double rs_commit = 0.0;             // committed equivalent shear stress
+        double rs_commit_old = 0.0;         // committed equivalent shear stress (n-1)
         double cres = 0.0;                  // residual shear stress
-        double cres_commit = 0.0;           // commited residual shear stress
-        double cres_commit_old = 0.0;       // commited residual shear stress (n-1)
+        double cres_commit = 0.0;           // committed residual shear stress
+        double cres_commit_old = 0.0;       // committed residual shear stress (n-1)
         double PC = 1.0;                    // normal stress compressive projector
-        double PC_commit = 1.0;             // commited normal stress compressive projector
+        double PC_commit = 1.0;             // committed normal stress compressive projector
         double dtime_n = 0.0;               // time factor
-        double dtime_n_commit = 0.0;        // commited time factor
+        double dtime_n_commit = 0.0;        // committed time factor
         bool dtime_is_user_defined = false;
         bool dtime_first_set = false;
         // modulus

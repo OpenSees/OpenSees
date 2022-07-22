@@ -175,14 +175,14 @@ private:
     // vectors for applying load (allocated only if necessary)
     Vector* m_load = nullptr;
 
-    // drilling strain for the indipendent rotation field (Hughes-Brezzi)
+    // drilling strain for the independent rotation field (Hughes-Brezzi)
     double m_drill_strain[4] = { 0.0, 0.0, 0.0, 0.0 };
     double m_drill_stiffness = 0.0;
 
     // section orientation with respect to the local coordinate system
     double m_angle = 0.0;
 
-    // members for non-linear treatement of AGQI internal DOFs:
+    // members for non-linear treatment of AGQI internal DOFs:
     // it has 24 displacement DOFs
     // and 4 internal DOFs for membrane enhancement
     Vector m_Q = Vector(4);

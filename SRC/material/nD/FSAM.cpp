@@ -255,7 +255,7 @@ FSAM::FSAM (int tag,
 	alfa_crackA = 10.0;		// Direction of 1st strut
 	alfa_crackB = 10.0;		// Direction of 2nd strut
 
-	// State Vairables
+	// State Variables
 	crackA = 0;				// Crack/Strut 1
 	crackB = 0;				// Crack/Strut 2
 
@@ -403,33 +403,37 @@ FSAM::FSAM (int tag,
 		exit(-1);
 	}
 
-	OPS_Stream *theDummyStream = new DummyStream();
-	const char **argv = new const char *[1];
-	argv[0] = "getCommittedCyclicCrackingConcreteStrain"; // to get committed concrete cyclic cracking strain from strut A2
-	theResponses[0] = theMaterial[5]->setResponse(argv, 1, *theDummyStream);
+	//OPS_Stream *theDummyStream = new DummyStream();
+	DummyStream theDummyStream;
+	//const char **argv = new const char *[1];
+	//argv[0] = "getCommittedCyclicCrackingConcreteStrain"; // to get committed concrete cyclic cracking strain from strut A2
+	char aa[80] = "getCommittedCyclicCrackingConcreteStrain";
+	const char *argv[1];
+	argv[0] = aa;
+	theResponses[0] = theMaterial[5]->setResponse(argv, 1, theDummyStream);
 
 	if (theResponses[0] == 0) {
 			opserr << " FSAM::FSAM - failed to get cracking strain for material with tag: " << tag << "\n";
 			exit(-1);
 	}
 
-	argv[0] = "getInputParameters"; // to get input parameters from ConcreteCM
-	theResponses[1] = theMaterial[4]->setResponse(argv, 1, *theDummyStream);
+	//argv[0] = "getInputParameters"; // to get input parameters from ConcreteCM
+	char bb[80] = "getInputParameters";
+	argv[0] = bb;
+	
+	theResponses[1] = theMaterial[4]->setResponse(argv, 1, theDummyStream);
 
 	if (theResponses[1] == 0) {
 			opserr << " FSAM::FSAM - failed to get input parameters for material with tag: " << tag << "\n";
 			exit(-1);
 	}
 
-	delete theDummyStream;
+	//delete theDummyStream;
 
 	// Get ConcreteCM material input variables
 	theResponses[1]->getResponse();
 	Information &theInfoInput = theResponses[1]->getInformation();
-	const Vector InputConc = theInfoInput.getData();
-
-	for (int i=0; i<InputConc.Size() ; i++)
-	ConcreteInput[i] = InputConc[i];
+	const Vector &ConcreteInput = theInfoInput.getData();
 
 	// Now create monotonic concrete materials for uncracked stage of behavior
 	// Concrete 1.1
@@ -459,13 +463,13 @@ FSAM::FSAM (int tag,
 	Ec = theMaterial[4] -> getInitialTangent();
 
 	// Strain at peak compressive stress for concrete
-	epcc = InputConc[2];
+	epcc = ConcreteInput[2];
 	
 	// Peak compressive stress for concrete
-	fpc = InputConc[1];
+	fpc = ConcreteInput[1];
 
 	// Cracking strain for concrete
-	et = InputConc[7];
+	et = ConcreteInput[7];
 
 	// Young's modulus for steel
 	E0x = theMaterial[0] -> getInitialTangent(); // Horizontal reinforcement
@@ -1823,7 +1827,7 @@ void FSAM::Stage2(double &ex, double &ey, double &gamma)
 
 }
 
-// STAGE 3 - 2st CRACK PANEL MODEL
+// STAGE 3 - 2nd CRACK PANEL MODEL
 void FSAM::Stage3(double &ex, double &ey, double &gamma)
 {
 

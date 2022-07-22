@@ -107,7 +107,7 @@ NDMaterial* J2ThreeDimensional :: getCopy( )
 { 
   J2ThreeDimensional  *clone;
   clone = new J2ThreeDimensional( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

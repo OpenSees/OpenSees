@@ -56,7 +56,7 @@ DruckerPragerPlaneStrain::getCopy()
 { 
     DruckerPragerPlaneStrain  *clone;
     clone = new DruckerPragerPlaneStrain();   //new instance of this class
-    *clone = *this ;          //asignment to make copy
+    *clone = *this ;          //assignment to make copy
     return clone ;
 }
 

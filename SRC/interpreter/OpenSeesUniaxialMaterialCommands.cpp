@@ -93,6 +93,7 @@ void* OPS_Steel02();
 void* OPS_SteelFractureDI();
 void* OPS_Steel02Fatigue();
 void* OPS_Steel03();
+void* OPS_SPSW02();
 void* OPS_Concrete01();
 void* OPS_Steel4();
 void* OPS_HystereticMaterial();
@@ -204,6 +205,7 @@ void* OPS_BilinearBackbone();
 void* OPS_ManderBackbone();
 void* OPS_MultilinearBackbone();
 void* OPS_TrilinearBackbone();
+void* OPS_MaterialBackbone();
 void* OPS_ReeseStiffClayBelowWS();
 void* OPS_ReeseStiffClayAboveWS();
 void* OPS_VuggyLimestone();
@@ -228,6 +230,10 @@ void* OPS_EnergyUnloadingRule();
 void* OPS_KarsanUnloadingRule();
 
 void* OPS_HystereticPoly();  // Salvatore Sessa 14-01-2021 Mail:
+                             // salvatore.sessa2@unina.it
+void* OPS_HystereticSmooth();  // Salvatore Sessa Mail:
+                             // salvatore.sessa2@unina.it
+void* OPS_HystereticAsym();  // Salvatore Sessa
                              // salvatore.sessa2@unina.it
 void* OPS_DowelType();
 void* OPS_DuctileFracture();  // Kuanshi Zhong
@@ -273,6 +279,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel03", &OPS_Steel03));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SPSW02", &OPS_SPSW02));
   uniaxialMaterialsMap.insert(
       std::make_pair("Concrete01", &OPS_Concrete01));
   uniaxialMaterialsMap.insert(
@@ -524,8 +532,9 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("SMA", &OPS_SMAMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
       "HystereticPoly",
-      &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021
-                              // Mail: salvatore.sessa2@unina.it
+      &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+  uniaxialMaterialsMap.insert(std::make_pair("HystereticSmooth", &OPS_HystereticSmooth)); // Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+	uniaxialMaterialsMap.insert(std::make_pair("HystereticAsym", &OPS_HystereticAsym));     // Salvatore Sessa 21-Apr-2022 Mail: salvatore.sessa2@unina.it
   uniaxialMaterialsMap.insert(
       std::make_pair("DowelType", &OPS_DowelType));
   uniaxialMaterialsMap.insert(
@@ -556,6 +565,8 @@ static int setUpHystereticBackbones(void) {
       std::make_pair("Multilinear", &OPS_MultilinearBackbone));
   hystereticBackbonesMap.insert(
       std::make_pair("Trilinear", &OPS_TrilinearBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("Material", &OPS_MaterialBackbone));  
   hystereticBackbonesMap.insert(std::make_pair(
       "ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
   hystereticBackbonesMap.insert(std::make_pair(

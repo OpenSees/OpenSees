@@ -2985,7 +2985,7 @@ TwentyEightNodeBrickUP::Jacobian3d(int gaussPoint, double& xsj, int mode)
 
 
 
-	//Compute derivatives with repect to global coords.
+	//Compute derivatives with respect to global coords.
 
 
 

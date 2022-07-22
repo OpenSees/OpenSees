@@ -422,7 +422,7 @@ HarmonicSteadyState::computeSensitivities(void)
 	  return -1;
 	}
 
-	// Form the part of the RHS which are indepent of parameter
+	// Form the part of the RHS which are independent of parameter
 	this->formIndependentSensitivityRHS();
 	AnalysisModel *theModel = this->getAnalysisModel();
 	Domain *theDomain=theModel->getDomainPtr();

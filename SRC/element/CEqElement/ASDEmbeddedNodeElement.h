@@ -44,8 +44,8 @@ public:
 
     // life cycle
     ASDEmbeddedNodeElement();
-    ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, bool rot_flag, double K);
-    ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, int rNode4, bool rot_flag, double K);
+    ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, bool rot_flag, bool p_flag, double K, double KP);
+    ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, int rNode4, bool rot_flag, bool p_flag, double K, double KP);
     virtual ~ASDEmbeddedNodeElement();
 
     // domain
@@ -70,6 +70,7 @@ public:
     const Matrix& getTangentStiff();
     const Matrix& getInitialStiff();
     const Matrix& getMass();
+    const Matrix& getDamp();
 
     // methods for applying loads
     int addInertiaLoadToUnbalance(const Vector& accel);
@@ -85,11 +86,14 @@ public:
 private:
     const Vector& getGlobalDisplacements() const;
     const Matrix& TRI_2D_U();
+    const Matrix& TRI_2D_UP();
     const Matrix& TRI_2D_UR();
     const Matrix& TRI_3D_U();
     const Matrix& TRI_3D_UR();
+    const Matrix& TRI_3D_UP();
     const Matrix& TET_3D_U();
     const Matrix& TET_3D_UR();
+    const Matrix& TET_3D_UP();
 
 private:
 
@@ -97,22 +101,28 @@ private:
     // the other 3 (triangle in 2D or shell triangle in 3D) or 4 (tetrahedron in 3D)
     // are the retained nodes
     ID m_node_ids;
-    // the ndoes
+    // the nodes
     std::vector<Node*> m_nodes;
     // store the number of dimensions (2 or 3 are allowed)
     int m_ndm = 0;
     // total number of dofs
     int m_num_dofs = 0;
-    // user input to constrained, if necessary, the rotation of the constrained node
+    // user input to constrain, if necessary, the rotation of the constrained node
     // if the constrained node has rotational DOFs
     bool m_rot_c_flag = false;
+    // user input to constrain, if necessary, the pressure of the constrained node
+    // if all nodes are U-P
+    bool m_p_flag = false;
     // true if the constrained node has rotational DOFs and the user flag is true
     bool m_rot_c = false;
+    // true if both constrained and retained nodes are U-P nodes
+    bool m_up = false;
     // a vector containing the local id mapping for assembling
     // into the element matrix and vectors
     ID m_mapping;
     // stiffness penalty value to impose the constraint
     double m_K = 1.0e18;
+    double m_KP = 1.0e18;
     // initial displacements
     Vector m_U0;
     bool m_U0_computed = false;

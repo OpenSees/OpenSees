@@ -641,7 +641,7 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
         int colid = dofID(col);         // column id
         if(coltype==4 || coltype<0) continue;      // don't need this column
 
-        // diagnol terms
+        // diagonal terms
         if(coltype == 0) {                      // structure momentum
             cs_entry(M1, colid, colid, 0.0);   
         } else if(coltype == 2) {               // interface momentum
@@ -650,7 +650,7 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
             cs_entry(L1, colid, colid, 0.0);    
         }
 
-        // off diagnol terms
+        // off diagonal terms
         const ID &theAdjacency = theVertex->getAdjacency();
         int idSize = theAdjacency.Size();
         for (int i=0; i<idSize; i++) {       // rows

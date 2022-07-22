@@ -67,6 +67,8 @@ void *OPS_ShellMITC4(const ID &info);
 
 void *OPS_ShellNLDKGQ(const ID &info);
 
+void *OPS_ShellDKGQ(const ID &info);
+
 void *OPS_CorotTrussElement(const ID &info);
 
 // msh objects
@@ -173,7 +175,7 @@ Mesh::newNode(int tag, const Vector &crds) {
     // check ndf
     if (ndf <= 0) return 0;
 
-    // craete new node
+    // create new node
     Node *node = 0;
     if (crds.Size() == 1) {
         node = new Node(tag, ndf, crds(0));
@@ -359,7 +361,15 @@ Mesh::setEleArgs() {
             opserr << "WARNING: failed to read eleArgs\n";
             return -1;
         }
-        numelenodes = 4;	
+        numelenodes = 4;
+
+    } else if (strcmp(type, "ShellDKGQ") == 0) {
+        eleType = ELE_TAG_ShellDKGQ;
+        if (OPS_ShellDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;		
 
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
@@ -464,7 +474,10 @@ Mesh::newElements(const ID &elends) {
             break;
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;
-            break;	    
+            break;
+        case ELE_TAG_ShellDKGQ:
+	  OPS_Func = OPS_ShellDKGQ;
+            break;	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
@@ -509,7 +522,7 @@ Mesh::newElements(const ID &elends) {
     // add elements to domain
     for (unsigned int i = 0; i < neweles.size(); ++i) {
         if (neweles[i] == 0) {
-            opserr << "WARING: run out of memory for creating element\n";
+            opserr << "WARNING: run out of memory for creating element\n";
             return -1;
         }
         if (domain->addElement(neweles[i]) == false) {

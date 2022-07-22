@@ -47,6 +47,7 @@ class UniformExcitation : public EarthquakePattern
 
     void setDomain(Domain *theDomain);    
     void applyLoad(double time);
+  double getLoadFactor(void);
     void Print(OPS_Stream &s, int flag =0);
     int getDirection(void) {return theDof;}
     int sendSelf(int commitTag, Channel &theChannel);
@@ -67,7 +68,7 @@ class UniformExcitation : public EarthquakePattern
     
  private:
     GroundMotion *theMotion; // the ground motion
-    int theDof;      // the dof corrseponding to the ground motion
+    int theDof;      // the dof corresponding to the ground motion
     double vel0;     // the initial velocity, should be neg of ug dot(0)
     double fact;
 };

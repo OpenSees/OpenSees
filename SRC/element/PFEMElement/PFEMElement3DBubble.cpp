@@ -397,7 +397,7 @@ PFEMElement3DBubble::getResistingForceIncInertia()
 	return P;
     }
 
-    // get velocity, accleration
+    // get velocity, acceleration
     Vector v(ndf), vdot(ndf);
     for(int i=0; i<(int)thePCs.size(); i++) {
         const Vector& accel = nodes[2*i]->getTrialAccel();
@@ -687,7 +687,7 @@ PFEMElement3DBubble::setParameter(const char **argv, int argc,
         parameter.setValue(mu);
         return parameter.addObject(1, this);
     }
-    // Mass densitity of the
+    // Mass density of the
     if (strcmp(argv[0],"rho") == 0) {
         parameter.setValue(rho);
         return parameter.addObject(2, this);

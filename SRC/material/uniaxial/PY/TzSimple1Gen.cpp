@@ -638,7 +638,7 @@ void TzSimple1Gen::GetSoilProperties(const char *file)
 	load_val_t = new double[NumLoad];
 	load_val_b = new double[NumLoad];
 
-	// Dynamically allocate memory for arryas containing information for displacement pattern
+	// Dynamically allocate memory for arrays containing information for displacement pattern
 	zSp_t = new double[NumSp];
 	zSp_b = new double[NumSp];
 	sp_val_t = new double[NumSp];

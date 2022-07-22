@@ -190,7 +190,7 @@ int GimmeMCK::formEleTangent(FE_Element *theEle)
     if (k != 0.0)
       theEle->addKtToTang(k);
     if (ki != 0.0)
-      theEle->addKtToTang(k);
+      theEle->addKiToTang(ki);
     if (c != 0.0)
       theEle->addCtoTang(c);
     if (m != 0.0)

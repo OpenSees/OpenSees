@@ -13,7 +13,7 @@ puts "\n PLEASE SEND QUESTIONS TO zhyang@ucsd.edu (Zhaohui Yang) \n"
 #some user defined variables
 # 
 set matOpt   2      ;# 1 = drained, pressure depend;  2 = undrained, pressure depend; 
-                    ;# 3 = undrained, pressure independ; 4 = elastic 
+                    ;# 3 = undrained, pressure independent; 4 = elastic 
 set massDen  0      ;# mass density
 set press   -80.    ;# isotropic consolidation pressure on quad element(s)
 set loadInc  0.45    ;# load increment per step for monotonic loading option

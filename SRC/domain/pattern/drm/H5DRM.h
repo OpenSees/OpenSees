@@ -37,21 +37,16 @@
 //    created using base SI units and the coordinate system convention).
 //    Nodal matching is sufficiently fast for problems with less than
 //    1M nodes, it only occurs once during analysis.
-//  + Coordinate system for H5DRM datasets:   Z is up, X is east and Y is
+//  + Coordinate system for H5DRM datasets coming from ShakerMaker: Z is up, 
+//    X is east and Y is
 //    north. Units should be SI base units always. The coordinate system
 //    of the FEM model should match that of the DRM except, maybe, in
-//    in the units of the point coordinates. 
-//  + This H5DRM pattern currently only works for 3-DOF 8 node bricks in
-//    the DRM layer the rest of the domain can be anything.  
-//  + Althounh the H5DRM format can store ground motions based on displacements, 
-//    velocities or accelerations. The present implementation can use 
-//    displacement-onlyH5DRM datasets (will double-differentiate internaly) or 
-//    displacement and acceleration datasets (where the data is used directly.
-//    use this if filterning of motions is handled independently for displacements 
-//    and accelerations, although datasets are heavier). There is an untested
-//    implementation that is based on velocities and will integrate and 
-//    differentiate motions based on that to derive displacements and 
-//    accelerations needed in classic DRM. 
+//    in the units of the point coordinates. If the systems dont match, there
+//    are option to transform these dataset coordinates into a different 
+//    coordinate. 
+//  + This H5DRM pattern currently only works for 3-DOF elements of maxumim 8 nodes.  
+//  + H5DRM dataset should have at least the acceleration and displacement
+//    datasets available for this to work. 
 //  + Linear interpolation is done on displacements and accelerations if
 //    current analysis timestep does not "fall" in any of the motion time 
 //    samples. This can be improved since a linear interpolation in 
@@ -75,18 +70,21 @@
 //       Method for Three--Dimensional Earthquake Modeling in Localized 
 //       Regions. Part {II}: Verif\/ication and Examples. Bulletin of the 
 //       Seismological Society of America, 93(2), 825–840.
-//   [3] Abell J.A., Crempien J.G.F and Recabarren M. (2019) ShakerMaker|H5DRM: 
-//       a library for the simulation ofseismic wave-field data enabling 
-//       high-fidelity earthquake safety modeling, and a format to store them. 
-//       (To be submitted 2019 to SoftwareX)
+//   [3] José A. Abell, Jorge G.F. Crempien, Matías Recabarren, ShakerMaker: A 
+//       framework that simplifies the simulation of seismic ground-motions, 
+//       SoftwareX, Volume 17, 2022
 //   [4] Abell, J. A. (2016). Earthquake-Soil-Structure Interaction Modeling 
 //       of Nuclear Power Plants for Near-Field Events. 
 //       PhD Thesis. University of California, Davis.
+//
+// Citation: please cite [3] if you find H5DRM useful. 
 // 
 // ============================================================================
 
 #ifndef H5DRM_h
 #define H5DRM_h
+
+#ifdef _H5DRM
 
 #include <LoadPattern.h>
 #include <Matrix.h>
@@ -116,32 +114,32 @@
 class Vector;
 class Matrix;
 
-class Plane
-{
-public:
-    Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1);
-    ~Plane();
+// class Plane
+// {
+// public:
+//     Plane(const hid_t& id_h5drm_file, int plane_number, double crd_scale = 1);
+//     ~Plane();
 
-    bool locate_point(const Vector& x, double& xi1, double& xi2, double& distance) const ;
+//     bool locate_point(const Vector& x, double& xi1, double& xi2, double& distance) const ;
     
-    bool get_ij_coordinates_to_point(double xi1, double xi2, int& i, int& j) const;
+//     bool get_ij_coordinates_to_point(double xi1, double xi2, int& i, int& j) const;
 
-    int getNumber() const;
+//     int getNumber() const;
     
-    int getStationNumber(int i, int j) const;
+//     int getStationNumber(int i, int j) const;
 
-    void print(FILE * fptr) const;
+//     void print(FILE * fptr) const;
     
-private:
-    int number;
-    bool internal;
-    int *stations;
-    Vector v0;
-    Vector v1;
-    Vector v2;
-    Vector xi1;
-    Vector xi2;
-};
+// private:
+//     int number;
+//     bool internal;
+//     int *stations;
+//     Vector v0;
+//     Vector v1;
+//     Vector v2;
+//     Vector xi1;
+//     Vector xi2;
+// };
 
 
 
@@ -149,7 +147,14 @@ class H5DRM : public LoadPattern
 {
 public:
     H5DRM();
-    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, double crd_scale_ = 1, double distance_tolerance_ = 1e-3);
+    H5DRM(int tag, std::string HDF5filename_, double cFactor_ = 1.0, 
+          double crd_scale_ = 1, 
+          double distance_tolerance_ = 1e-3, 
+          bool do_coordinate_transformation = true,
+        double T00 = 1.0, double T01 = 0.0, double T02 = 0.0,
+        double T10 = 0.0, double T11 = 1.0, double T12 = 0.0,
+        double T20 = 0.0, double T21 = 0.0, double T22 = 1.0,
+        double x00 = 0.0, double x01 = 0.0, double x02 = 0.0);
     ~H5DRM();
     void clean_all_data(); // Called by destructor and if domain changes
 
@@ -231,7 +236,15 @@ private:
 
     int myrank;         // MPI Process-id (rank) in the case of parallel processing
 
-    std::vector<Plane*> planes;
+    // std::vector<Plane*> planes;
+
+    bool do_coordinate_transformation;
+
+    //Coordinate transformation... xyz_new = T xyz_old + x0
+    Matrix T;
+    Vector x0;
 };
+
+#endif // _H5DRM
 
 #endif

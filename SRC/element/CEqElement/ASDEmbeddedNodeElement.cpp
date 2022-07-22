@@ -198,7 +198,7 @@ OPS_ASDEmbeddedNodeElement(void)
         first_done = true;
     }
 
-    const char* descr = "Want: element ASDEmbeddedNodeElement $tag $Cnode $Rnode1 $Rnode2 $Rnode3 <$Rnode4> <-rot> <-K $K>\n";
+    const char* descr = "Want: element ASDEmbeddedNodeElement $tag $Cnode $Rnode1 $Rnode2 $Rnode3 <$Rnode4> <-rot> <-p> <-K $K> <-KP $KP>\n";
 
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs < 5) {
@@ -216,13 +216,19 @@ OPS_ASDEmbeddedNodeElement(void)
 
     // parse optional parameters
     bool rot = false;
+    bool pressure = false;
     int N4 = 0;
     bool has_N4 = false;
     double K = 1.0e18;
+    double KP = 1.0e18;
+    bool KP_set = false;
     for (int i = 5; i < numArgs; i++) {
         const char* what = OPS_GetString();
         if (strcmp(what, "-rot") == 0) {
             rot = true;
+        }
+        else if (strcmp(what, "-p") == 0) {
+            pressure = true;
         }
         else if (strcmp(what, "-K") == 0) {
             if (i == numArgs - 1) {
@@ -235,6 +241,19 @@ OPS_ASDEmbeddedNodeElement(void)
                 opserr << "ASDEmbeddedNodeElement ERROR invalid floating point number for -K keyword.\n";
                 return 0;
             }
+        }
+        else if (strcmp(what, "-KP") == 0) {
+            if (i == numArgs - 1) {
+                opserr << "ASDEmbeddedNodeElement ERROR: The -KP keyword should be followed by a floating point number.\n" << descr;
+                return 0;
+            }
+            ++i;
+            numData = 1;
+            if (OPS_GetDouble(&numData, &KP) != 0) {
+                opserr << "ASDEmbeddedNodeElement ERROR invalid floating point number for -K keyword.\n";
+                return 0;
+            }
+            KP_set = true;
         }
         else {
             // should be an integer for the only if i == 6
@@ -250,12 +269,20 @@ OPS_ASDEmbeddedNodeElement(void)
             }
         }
     }
+    if (!KP_set)
+        KP = K;
+
+    // check
+    if (pressure && rot) {
+        opserr << "ASDEmbeddedNodeElement ERROR: Cannot use both -rot and -p flags.\n" << descr;
+        return 0;
+    }
 
     // done
     if (has_N4)
-        return new ASDEmbeddedNodeElement(iData[0], iData[1], iData[2], iData[3], iData[4], N4, rot, K);
+        return new ASDEmbeddedNodeElement(iData[0], iData[1], iData[2], iData[3], iData[4], N4, rot, pressure, K, KP);
     else
-        return new ASDEmbeddedNodeElement(iData[0], iData[1], iData[2], iData[3], iData[4], rot, K);
+        return new ASDEmbeddedNodeElement(iData[0], iData[1], iData[2], iData[3], iData[4], rot, pressure, K, KP);
 }
 
 ASDEmbeddedNodeElement::ASDEmbeddedNodeElement() 
@@ -263,10 +290,12 @@ ASDEmbeddedNodeElement::ASDEmbeddedNodeElement()
 {
 }
 
-ASDEmbeddedNodeElement::ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, bool rot_flag, double K)
+ASDEmbeddedNodeElement::ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, bool rot_flag, bool p_flag, double K, double KP)
     : Element(tag, ELE_TAG_ASDEmbeddedNodeElement)
     , m_rot_c_flag(rot_flag)
+    , m_p_flag(p_flag)
     , m_K(K)
+    , m_KP(KP)
 {
     m_node_ids.resize(4);
     m_node_ids(0) = cNode;
@@ -276,10 +305,12 @@ ASDEmbeddedNodeElement::ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, i
     m_nodes.resize(4, nullptr);
 }
 
-ASDEmbeddedNodeElement::ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, int rNode4, bool rot_flag, double K)
+ASDEmbeddedNodeElement::ASDEmbeddedNodeElement(int tag, int cNode, int rNode1, int rNode2, int rNode3, int rNode4, bool rot_flag, bool p_flag, double K, double KP)
     : Element(tag, ELE_TAG_ASDEmbeddedNodeElement)
     , m_rot_c_flag(rot_flag)
+    , m_p_flag(p_flag)
     , m_K(K)
+    , m_KP(KP)
 {
     m_node_ids.resize(5);
     m_node_ids(0) = cNode;
@@ -345,6 +376,18 @@ void ASDEmbeddedNodeElement::setDomain(Domain* theDomain)
             }
             if (i == 0) {
                 m_rot_c = (m_rot_c_flag && ndf == 3);
+                if (m_p_flag && ndf == 3) {
+                    // all others should have same ndf (u-p)
+                    m_up = true;
+                    for (std::size_t other_i = 1; other_i < m_nodes.size(); ++other_i) {
+                        int other_node_id = m_node_ids(static_cast<int>(other_i));
+                        Node* other_node = theDomain->getNode(other_node_id);
+                        if (other_node && (other_node->getNumberDOF() != ndf)) {
+                            m_up = false;
+                            break;
+                        }
+                    }
+                }
             }
         }
         else {
@@ -354,12 +397,36 @@ void ASDEmbeddedNodeElement::setDomain(Domain* theDomain)
             }
             if (i == 0) {
                 m_rot_c = (m_rot_c_flag && ndf == 6);
+                if (m_p_flag && ndf == 4) {
+                    // all others should have same ndf (u-p)
+                    m_up = true;
+                    for (std::size_t other_i = 1; other_i < m_nodes.size(); ++other_i) {
+                        int other_node_id = m_node_ids(static_cast<int>(other_i));
+                        Node* other_node = theDomain->getNode(other_node_id);
+                        if (other_node && (other_node->getNumberDOF() != ndf)) {
+                            m_up = false;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
         // set up mapping
         ID& imap = aux_mapping[i];
-        imap.resize(m_ndm + ((i == 0 && m_rot_c) ? (m_ndm == 2 ? 1 : 3) : 0));
+        int imap_size = m_ndm;
+        if (m_rot_c) {
+            if (i == 0) {
+                if (m_ndm == 2)
+                    imap_size += 1;
+                else
+                    imap_size += 3;
+            }
+        }
+        else if (m_up) {
+            imap_size += 1;
+        }
+        imap.resize(imap_size);
         imap(0) = local_pos; // Ux
         imap(1) = local_pos + 1; // Uy
         if (m_ndm == 3) {
@@ -369,10 +436,16 @@ void ASDEmbeddedNodeElement::setDomain(Domain* theDomain)
                 imap(4) = local_pos + 4; // Rx
                 imap(5) = local_pos + 5; // Rx
             }
+            else if (m_up) {
+                imap(3) = local_pos + 3; // P
+            }
         }
         else {
             if (i == 0 && m_rot_c) {
                 imap(2) = local_pos + 2; // Rz
+            }
+            else if (m_up) {
+                imap(2) = local_pos + 2; // P
             }
         }
         local_pos += ndf;
@@ -470,6 +543,10 @@ const Matrix& ASDEmbeddedNodeElement::getTangentStiff()
                     // ... with rotational dofs
                     return TRI_2D_UR();
                 }
+                else if (m_up) {
+                    // ... with pressure dofs
+                    return TRI_2D_UP();
+                }
                 else {
                     // ... without rotational dofs
                     return TRI_2D_U();
@@ -480,6 +557,10 @@ const Matrix& ASDEmbeddedNodeElement::getTangentStiff()
                 if (m_rot_c) {
                     // ... with rotational dofs
                     return TRI_3D_UR();
+                }
+                else if(m_up) {
+                    // ... with pressure dofs
+                    return TRI_3D_UP();
                 }
                 else {
                     // ... without rotational dofs
@@ -492,6 +573,10 @@ const Matrix& ASDEmbeddedNodeElement::getTangentStiff()
             if (m_rot_c) {
                 // ... with rotational dofs
                 return TET_3D_UR();
+            }
+            else if (m_up) {
+                // ... with pressure dofs
+                return TET_3D_UP();
             }
             else {
                 // ... without rotational dofs
@@ -532,6 +617,14 @@ const Matrix& ASDEmbeddedNodeElement::getMass()
     return M;
 }
 
+const Matrix& ASDEmbeddedNodeElement::getDamp()
+{
+    static Matrix C;
+    C.resize(m_num_dofs, m_num_dofs);
+    C.Zero();
+    return C;
+}
+
 int
 ASDEmbeddedNodeElement::addInertiaLoadToUnbalance(const Vector& accel)
 {
@@ -570,10 +663,12 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
     // num_dofs
     // rot_c_flag
     // rot_c
+    // p_flag
+    // up
     // U0_computed
-    // number of local dofs (at most 18)
-    // mapping of local dofs (if less then 18, the last ones will be set to 0)
-    static ID idData(31);
+    // number of local dofs (at most 20)
+    // mapping of local dofs (if less then 20, the last ones will be set to 0)
+    static ID idData(35);
     idData.Zero();
     idData(0) = getTag();
     idData(1) = m_node_ids.Size();
@@ -587,10 +682,12 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
     idData(8) = m_num_dofs;
     idData(9) = m_rot_c_flag ? 1 : 0;
     idData(10) = m_rot_c ? 1 : 0;
-    idData(11) = m_U0_computed ? 1 : 0;
-    idData(12) = m_mapping.Size();
+    idData(11) = m_p_flag ? 1 : 0;
+    idData(12) = m_up ? 1 : 0;
+    idData(13) = m_U0_computed ? 1 : 0;
+    idData(14) = m_mapping.Size();
     for (int i = 0; i < m_mapping.Size(); ++i)
-        idData(12 + i) = m_mapping(i);
+        idData(14 + i) = m_mapping(i);
     res += theChannel.sendID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -599,12 +696,14 @@ int ASDEmbeddedNodeElement::sendSelf(int commitTag, Channel& theChannel)
 
     // DOUBLE data
     // K
+    // KP
     // initial displacement (at most we can have 30 dofs)
-    static Vector vectData(31);
+    static Vector vectData(32);
     vectData.Zero();
     vectData(0) = m_K;
+    vectData(1) = m_KP;
     for (int i = 0; i < m_num_dofs; ++i)
-        vectData(1 + i) = m_U0(i);
+        vectData(2 + i) = m_U0(i);
     res += theChannel.sendVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to send Vector\n";
@@ -629,9 +728,12 @@ int ASDEmbeddedNodeElement::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
     // num_dofs
     // rot_c_flag
     // rot_c
-    // number of local dofs (at most 18)
-    // mapping of local dofs (if less then 18, the last ones will be set to 0)
-    static ID idData(31);
+    // p_flag
+    // up
+    // U0_computed
+    // number of local dofs (at most 20)
+    // mapping of local dofs (if less then 20, the last ones will be set to 0)
+    static ID idData(35);
     res += theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -652,24 +754,28 @@ int ASDEmbeddedNodeElement::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
     m_num_dofs = idData(8);
     m_rot_c_flag = idData(9) == 1;
     m_rot_c = idData(10) == 1;
-    m_U0_computed = idData(11) == 1;
-    int num_local_dofs = idData(12);
+    m_p_flag = idData(11) == 1;
+    m_up = idData(12) == 1;
+    m_U0_computed = idData(13) == 1;
+    int num_local_dofs = idData(14);
     m_mapping.resize(num_local_dofs);
     for (int i = 0; i < m_mapping.Size(); ++i)
-        m_mapping(i) = idData(12 + i);
+        m_mapping(i) = idData(14 + i);
 
     // DOUBLE data
     // K
-    static Vector vectData(31);
+    // KP
+    static Vector vectData(32);
     res += theChannel.recvVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDEmbeddedNodeElement::sendSelf() - " << this->getTag() << " failed to receive Vector\n";
         return res;
     }
     m_K = vectData(0);
+    m_KP = vectData(1);
     m_U0.resize(m_num_dofs);
     for (int i = 0; i < m_num_dofs; ++i)
-        m_U0(i) = vectData(1 + i);
+        m_U0(i) = vectData(2 + i);
 
     // done
     return res;
@@ -677,7 +783,8 @@ int ASDEmbeddedNodeElement::recvSelf(int commitTag, Channel& theChannel, FEM_Obj
 
 const Vector& ASDEmbeddedNodeElement::getGlobalDisplacements() const
 {
-    static Vector U(m_num_dofs);
+    static Vector U;
+    U.resize(m_num_dofs);
     int counter = 0;
     for (Node* node : m_nodes) {
         const Vector& iu = node->getTrialDisp();
@@ -739,7 +846,7 @@ const Matrix& ASDEmbeddedNodeElement::TRI_2D_U()
     }
 
     // Penalty stiffness
-    double iK = m_K * V;
+    double iK = m_K * std::sqrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
@@ -802,10 +909,74 @@ const Matrix& ASDEmbeddedNodeElement::TRI_2D_UR()
     }
 
     // Penalty stiffness
-    double iK = m_K* V;
+    double iK = m_K * std::sqrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
+
+    // done
+    return K;
+}
+
+const Matrix& ASDEmbeddedNodeElement::TRI_2D_UP()
+{
+    // output
+    static Matrix K(12, 12);
+
+    // collect triangle coordinates
+    static Matrix X(2, 3);
+    for (int i = 1; i < 4; i++) {
+        const Node* node = m_nodes[static_cast<std::size_t>(i)];
+        X(0, i - 1) = node->getCrds()(0);
+        X(1, i - 1) = node->getCrds()(1);
+    }
+
+    // shape functions natural derivatives
+    static Matrix dN(3, 2);
+    tri::shapeFunDer(dN);
+
+    // jacobian
+    static Matrix J(2, 2);
+    J.addMatrixProduct(0.0, X, dN, 1.0);
+    double detJ = det2(J);
+    double V = detJ / 2.0;
+    static Matrix invJ(2, 2);
+    J.Invert(invJ);
+
+    // find local coordinates of constrained node
+    double lx, ly;
+    tri::localCoord(X, invJ, m_nodes[0]->getCrds()(0), m_nodes[0]->getCrds()(1), lx, ly);
+
+    // compute shape functions at constrained node
+    static Vector N(3);
+    for (int i = 0; i < 3; ++i)
+        N(i) = tri::shapeFun(lx, ly, i);
+
+    // compute B matrix
+    // UCx = sum(N*URx) -> sum(N*URx) - UCx = 0
+    // UCy = sum(N*URy) -> sum(N*URy) - UCy = 0
+    // UCp = sum(N*URp) -> sum(N*URp) - UCp = 0
+    static Matrix B(3, 12);
+    B.Zero();
+    for (int i = 0; i < 3; i++)
+        B(i, i) = -1.0;
+    for (int i = 0; i < 3; i++) {
+        int j = 3 + i * 3;
+        B(0, j) = N(i);
+        B(1, j + 1) = N(i);
+        B(2, j + 2) = N(i);
+    }
+
+    // Penalty stiffness
+    double iK = m_K * std::sqrt(V);
+    double iKP = m_KP * std::sqrt(V);
+    static Matrix C(3, 3);
+    C.Zero();
+    C(0, 0) = C(1, 1) = iK;
+    C(2, 2) = iKP;
+
+    // compute stiffness
+    K.addMatrixTripleProduct(0.0, B, C, 1.0);
 
     // done
     return K;
@@ -865,7 +1036,7 @@ const Matrix& ASDEmbeddedNodeElement::TRI_3D_U()
     }
 
     // Penalty stiffness
-    double iK = m_K * V;
+    double iK = m_K * std::sqrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
@@ -992,10 +1163,80 @@ const Matrix& ASDEmbeddedNodeElement::TRI_3D_UR()
     }
 
     // Penalty stiffness
-    double iK = m_K * V;
+    double iK = m_K * std::sqrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
+
+    // done
+    return K;
+}
+
+const Matrix& ASDEmbeddedNodeElement::TRI_3D_UP()
+{
+    // output
+    static Matrix K(16, 16);
+
+    // collect triangle coordinates
+    static Matrix X(3, 3);
+    for (int i = 1; i < 4; i++) {
+        const Node* node = m_nodes[static_cast<std::size_t>(i)];
+        X(0, i - 1) = node->getCrds()(0);
+        X(1, i - 1) = node->getCrds()(1);
+        X(2, i - 1) = node->getCrds()(2);
+    }
+
+    // shape functions natural derivatives
+    static Matrix dN(3, 3);
+    dN.Zero(); // note: the tri::shapeFunDer fills the first 2 columns, the 3rd should be zero!
+    tri::shapeFunDer(dN);
+
+    // jacobian
+    static Matrix J(3, 3);
+    J.addMatrixProduct(0.0, X, dN, 1.0);
+    tri::fillVzInJacobian(J); // note: the 3rd column will be zero, so fill it with the unit normal vector
+    double detJ = det3(J);
+    double V = detJ / 2.0;
+    static Matrix invJ(3, 3);
+    J.Invert(invJ);
+    for (int i = 0; i < 3; ++i) invJ(i, 2) = 0.0; // note: the 3rd column in the inverse should be zero
+
+    // find local coordinates of constrained node
+    double lx, ly;
+    tri::localCoord(X, invJ, m_nodes[0]->getCrds()(0), m_nodes[0]->getCrds()(1), m_nodes[0]->getCrds()(2), lx, ly);
+
+    // compute shape functions at constrained node
+    static Vector N(3);
+    for (int i = 0; i < 3; ++i)
+        N(i) = tri::shapeFun(lx, ly, i);
+
+    // compute B matrix
+    // UCx = sum(N*URx) -> sum(N*URx) - UCx = 0
+    // UCy = sum(N*URy) -> sum(N*URy) - UCy = 0
+    // UCz = sum(N*URz) -> sum(N*URz) - UCz = 0
+    // UCp = sum(N*URp) -> sum(N*URp) - UCp = 0
+    static Matrix B(4, 16);
+    B.Zero();
+    for (int i = 0; i < 4; i++)
+        B(i, i) = -1.0;
+    for (int i = 0; i < 3; i++) {
+        int j = 4 + i * 4;
+        B(0, j) = N(i);
+        B(1, j + 1) = N(i);
+        B(2, j + 2) = N(i);
+        B(3, j + 3) = N(i);
+    }
+
+    // Penalty stiffness
+    double iK = m_K * std::sqrt(V);
+    double iKP = m_KP * std::sqrt(V);
+    static Matrix C(4, 4);
+    C.Zero();
+    C(0, 0) = C(1, 1) = C(2, 2) = iK;
+    C(3, 3) = iKP;
+
+    // compute stiffness
+    K.addMatrixTripleProduct(0.0, B, C, 1.0);
 
     // done
     return K;
@@ -1052,7 +1293,7 @@ const Matrix& ASDEmbeddedNodeElement::TET_3D_U()
     }
 
     // Penalty stiffness
-    double iK = m_K * V;
+    double iK = m_K * std::cbrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
@@ -1122,10 +1363,77 @@ const Matrix& ASDEmbeddedNodeElement::TET_3D_UR()
     }
 
     // Penalty stiffness
-    double iK = m_K * V;
+    double iK = m_K * std::cbrt(V);
 
     // compute stiffness
     K.addMatrixTransposeProduct(0.0, B, B, iK);
+
+    // done
+    return K;
+}
+
+const Matrix& ASDEmbeddedNodeElement::TET_3D_UP()
+{
+    // output
+    static Matrix K(20, 20);
+
+    // collect tetrahedron coordinates
+    static Matrix X(3, 4);
+    for (int i = 1; i < 5; i++) {
+        const Node* node = m_nodes[static_cast<std::size_t>(i)];
+        X(0, i - 1) = node->getCrds()(0);
+        X(1, i - 1) = node->getCrds()(1);
+        X(2, i - 1) = node->getCrds()(2);
+    }
+
+    // shape functions natural derivatives
+    static Matrix dN(4, 3);
+    tet::shapeFunDer(dN);
+
+    // jacobian
+    static Matrix J(3, 3);
+    J.addMatrixProduct(0.0, X, dN, 1.0);
+    double detJ = det3(J);
+    double V = detJ / 6.0;
+    static Matrix invJ(3, 3);
+    J.Invert(invJ);
+
+    // find local coordinates of constrained node
+    double lx, ly, lz;
+    tet::localCoord(X, invJ, m_nodes[0]->getCrds()(0), m_nodes[0]->getCrds()(1), m_nodes[0]->getCrds()(2), lx, ly, lz);
+
+    // compute shape functions at constrained node
+    static Vector N(4);
+    for (int i = 0; i < 4; ++i)
+        N(i) = tet::shapeFun(lx, ly, lz, i);
+
+    // compute B matrix
+    // UCx = sum(N*URx) -> sum(N*URx) - UCx = 0
+    // UCy = sum(N*URy) -> sum(N*URy) - UCy = 0
+    // UCz = sum(N*URz) -> sum(N*URz) - UCz = 0
+    // UCp = sum(N*URp) -> sum(N*URp) - UCp = 0
+    static Matrix B(4, 20);
+    B.Zero();
+    for (int i = 0; i < 4; i++)
+        B(i, i) = -1.0;
+    for (int i = 0; i < 4; i++) {
+        int j = 4 + i * 4;
+        B(0, j) = N(i);
+        B(1, j + 1) = N(i);
+        B(2, j + 2) = N(i);
+        B(3, j + 3) = N(i);
+    }
+
+    // Penalty stiffness
+    double iK = m_K * std::cbrt(V);
+    double iKP = m_KP * std::cbrt(V);
+    static Matrix C(4, 4);
+    C.Zero();
+    C(0, 0) = C(1, 1) = C(2, 2) = iK;
+    C(3, 3) = iKP;
+
+    // compute stiffness
+    K.addMatrixTripleProduct(0.0, B, C, 1.0);
 
     // done
     return K;

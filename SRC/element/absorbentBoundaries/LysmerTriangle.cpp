@@ -88,7 +88,7 @@ OPS_LysmerTriangle(void)
 
   int num_args_remaining = OPS_GetNumRemainingInputArgs();
 
-  // Its optional (but desireable) to input the element-length....
+  // Its optional (but desirable) to input the element-length....
   if (num_args_remaining > 0)
   {
     numData = 1;
