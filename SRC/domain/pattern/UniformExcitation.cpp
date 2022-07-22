@@ -218,6 +218,19 @@ UniformExcitation::getGroundMotion(void)
   return theMotion;
 }
 
+double
+UniformExcitation::getLoadFactor(void)
+{
+  if (theMotion != 0) {
+    // This is probably not the best way to do this, but it works -- MHS
+    Domain *theDomain = this->getDomain();
+    double t = theDomain->getCurrentTime();
+    return fact*theMotion->getAccel(t);
+  }
+  else
+    return 0.0;
+}
+
 int
 UniformExcitation::setParameter(const char **argv, int argc, Parameter &param)
 {

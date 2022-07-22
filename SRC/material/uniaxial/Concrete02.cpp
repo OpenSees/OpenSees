@@ -159,7 +159,7 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
 {
   double  ec0 = fc * 2. / epsc0;
 
-  // retrieve concrete hitory variables
+  // retrieve concrete history variables
 
   ecmin = ecminP;
   dept = deptP;

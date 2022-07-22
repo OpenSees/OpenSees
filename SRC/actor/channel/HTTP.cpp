@@ -165,7 +165,7 @@ httpGet(char const *URL, char const *page, unsigned int port, char **dataPtr) {
   nleft = strlen(outBuf);
 
   //send the data
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;
@@ -304,7 +304,7 @@ httpGET_File(char const *URL, char const *page, unsigned int port, const char *f
   nleft = strlen(outBuf);
 
   //send the data
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;
@@ -424,7 +424,7 @@ httpGET_File(char const *URL, char const *page, unsigned int port, const char *f
   nleft = strlen(outBuf);
 
   //send the data
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;
@@ -711,7 +711,7 @@ httpsSEND(const char *URL,
   nleft = strlen(outBuf);
 
   //send the data
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;
@@ -1009,7 +1009,7 @@ httpsSEND_File(const char *URL,
   nleft = strlen(outBuf);
 
   //send the heading
-  // if o.k. get a ponter to the data in the message and 
+  // if o.k. get a pointer to the data in the message and 
   // place the incoming data there
   nwrite = 0;    
   gMsg = outBuf;

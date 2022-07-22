@@ -64,7 +64,7 @@ SMAMaterial::SMAMaterial(int tag, double e, double el, double s_as_s, double s_a
    E(e), eps_L(el), sig_AS_s(s_as_s), sig_AS_f(s_as_f), sig_SA_s(s_sa_s), sig_SA_f(s_sa_f), 
    Tcsi(0.0), Tstrain(0.0), Tstress(0.0), Ttangent(0.0)
 {
-  // Initialize varibles
+  // Initialize variables
   this->revertToStart();
 }
 

@@ -73,6 +73,9 @@ target_sources(OPS_Material
     UVCmultiaxial.cpp
     UVCplanestress.cpp
     PlateRebarMaterialThermal.cpp
+    ElasticPlaneStress.cpp
+    ElasticOrthotropicPlaneStress.cpp
+    VonPapaDamage.cpp
   PUBLIC
     NDMaterial.h
     BeamFiberMaterial.h
@@ -141,6 +144,9 @@ target_sources(OPS_Material
     UVCmultiaxial.h
     UVCplanestress.h
     PlateRebarMaterialThermal.h
+    ElasticPlaneStress.h
+    ElasticOrthotropicPlaneStress.h
+    VonPapaDamage.h
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

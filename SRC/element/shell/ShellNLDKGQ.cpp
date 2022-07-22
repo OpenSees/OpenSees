@@ -1847,7 +1847,7 @@ ShellNLDKGQ::updateBasis( )
   //cross product for v3  
   v3 = LovelyCrossProduct( v1, v2 ) ;*/
 
-  // this procesure is simplified by Lisha Wang
+  // this procedure is simplified by Lisha Wang
   v3 = LovelyCrossProduct(v1,v2);
   v2 = LovelyCrossProduct(v3,v1);
   temp(0) = v1.Norm( );

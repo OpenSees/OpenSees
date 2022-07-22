@@ -27,7 +27,7 @@
 // Written: fmk 
 // Created: 03/01
 //
-// Description: This file contains the implementaion of the TclUniaxialMaterialTester class.
+// Description: This file contains the implementation of the TclUniaxialMaterialTester class.
 //
 // What: "@(#) TclUniaxialMaterialTester.C, revA"
 

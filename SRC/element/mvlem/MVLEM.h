@@ -52,8 +52,8 @@ class MVLEM : public Element {
   
   // destructor
   ~MVLEM();
-  
-  // public methods to obtain inforrmation about dof & comectivity
+
+  // public methods to obtain information about dof & connectivity
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
   Node **getNodePtrs(void);
@@ -98,6 +98,7 @@ class MVLEM : public Element {
   Vector getStressConcrete(void);
   Vector getStressSteel(void);
   Vector getShearFD(void);
+  int setupMacroFibers();
   
   // private attributes - a copy for each object of the class
   ID  externalNodes;          			// contains the id's of end nodes
@@ -108,9 +109,9 @@ class MVLEM : public Element {
   UniaxialMaterial **theMaterialsConcrete; // pointers to Concrete uniaxial material
   UniaxialMaterial **theMaterialsSteel;	// pointers to Steel uniaxial material
   UniaxialMaterial **theMaterialsShear;	// pointers to Shear uniaxial material
-  const double density;					// material density
-  const double c;							// center of rotation
-  const int m;							// no. of RC panels
+  double density;					// material density
+  double c;							// center of rotation
+  int m;							// no. of RC panels
   Vector *theLoad;						// pointer to element load
 
   // calculated element parameters
@@ -126,12 +127,7 @@ class MVLEM : public Element {
   double *rho;							// fiber reinforcing ratio
   double *Ac;								// concrete area
   double *As;								// steel area
-  double *Ec;								// concrete tangent modulus
-  double *Es;								// steel tangent modulus	
-  double *stressC;						// concrete stress
-  double *stressS;						// steel stress
-  double *ky;								// fiber axial stiffness in Y direction
-  double *kh;								// element shear stiffness		
+
   double *MVLEMStrain;					// fiber strains (0 to m-1), shear deformation (m)
   
   // class wide matrices

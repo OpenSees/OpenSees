@@ -154,8 +154,8 @@ class LehighJoint2d: public Element
   double elemWidth;
   double elemHeight;
   
-  Vector vs;             // vector of external commited displacements
-  Vector vt;          // vector of internal commited displacements   
+  Vector vs;             // vector of external committed displacements
+  Vector vt;          // vector of internal committed displacements   
   Matrix avp;       // matrix describing relation between the component deformations and the external and internal deformations
   Matrix apq;         // matrix of derivative of internal equilibrium 
   

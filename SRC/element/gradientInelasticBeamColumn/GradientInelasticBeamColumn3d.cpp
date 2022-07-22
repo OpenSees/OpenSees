@@ -61,9 +61,9 @@
 void* OPS_GradientInelasticBeamColumn3d()
 {
 	// Necessary Arguments
-	if (OPS_GetNumRemainingInputArgs() < 8) {
+	if (OPS_GetNumRemainingInputArgs() < 6) {
 		opserr << "WARNING! gradientInelasticBeamColumn3d - insufficient arguments\n" <<
-			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lambda1? lambda2? lc?\n" <<
+			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
 			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
 		return 0;
 	}
@@ -89,15 +89,14 @@ void* OPS_GradientInelasticBeamColumn3d()
 	int transfTag = iData[3];
 	int integrTag = iData[4];
 
-	double ddata[3];
-	numData = 3;
-	if (OPS_GetDoubleInput(&numData, ddata) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid lc\n";
+	double lc;
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData, &lc) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid double input\n";
 		return 0;
 	}
-	double lam1 = ddata[0];
-	double lam2 = ddata[1];
-	double lc = ddata[2];
+	
+	double lam1 = 0.1, lam2 = 0.1;	// would not affect the results
 	
 	// Optional Arguments
 	int maxIter = 50;
@@ -175,7 +174,7 @@ void* OPS_GradientInelasticBeamColumn3d()
 	const ID& secTags = theRule->getSectionTags();
 	int numIntegrPoints = secTags.Size();
 
-	for (int i = 2; i < numIntegrPoints; i++) {
+	for (int i = 2; i < numIntegrPoints - 1; i++) {
 		if (secTags(i) != secTags(i - 1)) {
 			opserr << "WARNING! gradientInelasticBeamColumn3d - internal integration points should have identical tags\n"
 				<< "continued using section tag of integration point 2 for all internal integration points\n";

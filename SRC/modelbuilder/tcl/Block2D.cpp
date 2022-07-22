@@ -209,7 +209,7 @@ Block2D::getElementNodes( int i, int j )
 
 
 
-//transform to real coordiantes
+//transform to real coordinates
 void  Block2D::transformNodalCoordinates( )
 {
 

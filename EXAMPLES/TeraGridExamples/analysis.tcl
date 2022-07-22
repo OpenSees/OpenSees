@@ -36,7 +36,7 @@ proc doDynamic {dT nPts} {
 	
 	# if the analysis fails try initial tangent iteration
 	if {$ok != 0} {
-	    puts "regular newton failed .. lets try an initail stiffness for this step"
+	    puts "regular newton failed .. lets try an initial stiffness for this step"
 	    test NormDispIncr 1.0e-12  100 0
 	    algorithm ModifiedNewton -initial
 	    set ok [analyze 1 $dT]

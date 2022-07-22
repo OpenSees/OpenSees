@@ -179,7 +179,7 @@ class OpenSeesReliabilityCommands {
   FunctionEvaluator *theFunctionEvaluator;
   GradientEvaluator *theGradientEvaluator;
 
-  // not indepedent pointers
+  // not independent pointers
   PolakHeSearchDirectionAndMeritFunction *thePolakHeDualPurpose;
   SQPsearchDirectionMeritFunctionAndHessian *theSQPtriplePurpose;
 

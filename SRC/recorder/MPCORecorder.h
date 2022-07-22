@@ -45,7 +45,7 @@ This specific version can be downloaded from this link:
 https://portal.hdfgroup.org/display/support/HDF5+1.12.0
 
 if the _HDF5 macro is not defined,
-the HDF5 shared libary will be loaded at run-time and should be available on your machine if you use this
+the HDF5 shared library will be loaded at run-time and should be available on your machine if you use this
 recorder.
 
 For more information about HDF5 library, licensing terms and download:

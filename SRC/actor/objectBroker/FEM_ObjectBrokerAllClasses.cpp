@@ -56,6 +56,7 @@
 
 
 // uniaxial material model header files
+#include "ElasticBilin.h"
 #include "BoucWenMaterial.h"		//SAJalali
 #include "SPSW02.h"			//SAJalali
 #include "ElasticMaterial.h"
@@ -97,7 +98,12 @@
 #include "Bond_SP01.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
+
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
+#include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
+#include <HystereticAsym.h>					// Salvatore Sessa Apr-21-2022
+
+
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
 
@@ -339,6 +345,13 @@
 #include "LowOrderBeamIntegration.h"
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
+
+#include "RCCircularSectionIntegration.h"
+#include "RCSectionIntegration.h"
+#include "RCTBeamSectionIntegration.h"
+#include "RCTunnelSectionIntegration.h"
+#include "TubeSectionIntegration.h"
+#include "WideFlangeSectionIntegration.h"
 
 // node header files
 #include "Node.h"
@@ -1149,11 +1162,44 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   }
 }
 
+SectionIntegration *
+FEM_ObjectBrokerAllClasses::getNewSectionIntegration(int classTag)
+{
+  switch(classTag) {
+  case SECTION_INTEGRATION_TAG_WideFlange:        
+    return new WideFlangeSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RC:        
+    return new RCSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCT:        
+    return new RCTBeamSectionIntegration();        
+
+  case SECTION_INTEGRATION_TAG_RCCIRCULAR:        
+    return new RCCircularSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCTUNNEL:        
+    return new RCTunnelSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_Tube:        
+    return new TubeSectionIntegration();    
+    
+  default:
+    opserr << "FEM_ObjectBrokerAllClasses::getSectionIntegration - ";
+    opserr << " - no SectionIntegration type exists for class tag ";
+    opserr << classTag << endln;
+    return 0;
+  }
+}
+
 
 UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
+    case MAT_TAG_ElasticBilin:
+      return new ElasticBilin();
+      
 	case MAT_TAG_SPSW02:
 		return new SPSW02(); // SAJalali
 	case MAT_TAG_BoucWen:
@@ -1355,6 +1401,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		    
 	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
 	    return new HystereticPoly();
+		    
+	case MAT_TAG_HystereticSmooth:			// Salvatore Sessa
+			return new HystereticSmooth();
+
+	case MAT_TAG_HystereticAsym:			// Salvatore Sessa
+		return new HystereticAsym();	    
 
 	case MAT_TAG_DowelType:
 		return new DowelType();

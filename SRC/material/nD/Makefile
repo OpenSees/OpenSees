@@ -90,7 +90,10 @@ OBJS       = NDMaterial.o \
 	PlateFromPlaneStressMaterialThermal.o \
 	UVCmultiaxial.o	\
 	UVCplanestress.o \
-	PlateRebarMaterialThermal.o
+	PlateRebarMaterialThermal.o \
+	ElasticPlaneStress.o \
+	ElasticOrthotropicPlaneStress.o \
+	VonPapaDamage.o
 
 
 all: $(OBJS) 
@@ -121,6 +124,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE) wipe;
 
 wipe: spotless
 

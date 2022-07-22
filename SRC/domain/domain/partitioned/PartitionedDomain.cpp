@@ -1663,7 +1663,7 @@ PartitionedDomain::buildEleGraph(Graph *theEleGraph)
     if (theEleToVertexMapEle == theEleToVertexMap.end()) {
       theEleToVertexMap.insert(MAP_INT_TYPE(eleTag, count));
 
-      // check if sucessfully added
+      // check if successfully added
       theEleToVertexMapEle = theEleToVertexMap.find(eleTag);
       if (theEleToVertexMapEle == theEleToVertexMap.end()) {
         opserr << "Domain::buildEleGraph - map STL failed to add object with tag : " << eleTag << endln;
@@ -1675,11 +1675,11 @@ PartitionedDomain::buildEleGraph(Graph *theEleGraph)
   }
 
   //
-  // We now need to determine which elements are asssociated with each node.
+  // We now need to determine which elements are associated with each node.
   // As this info is not in the Node interface we must build it;
   //
   // again we will use an stl map, index will be nodeTag, object will be Vertex
-  // do using vertices for each node, when we addVertex at thes nodes we
+  // do using vertices for each node, when we addVertex at these nodes we
   // will not be adding vertices but element tags.
   //
 
@@ -1706,7 +1706,7 @@ PartitionedDomain::buildEleGraph(Graph *theEleGraph)
     if (theNodeEle == theNodeToVertexMap.end()) {
       theNodeToVertexMap.insert(MAP_ID_TYPE(nodeTag, eleTags));
 
-      // check if sucessfully added
+      // check if successfully added
       theNodeEle = theNodeToVertexMap.find(nodeTag);
       if (theNodeEle == theNodeToVertexMap.end()) {
         opserr << "Domain::buildEleGraph - map STL failed to add object with tag : " << nodeTag << endln;
@@ -1848,9 +1848,9 @@ PartitionedDomain::getSubdomainGraph(void)
     subDTagToVtxTag.insert(MAP_INT_TYPE(subDTag, subDTag));
   }
 
-  // We now need to determine which theSubdomains are asssociated with each node.
+  // We now need to determine which theSubdomains are associated with each node.
   // As this info is not in the Node interface we must build it; which we
-  // do using vertices for each node, when we addVertex at thes nodes we
+  // do using vertices for each node, when we addVertex at these nodes we
   // will not be adding vertices but element tags.
 
   MAP_VERTEX   nodeTagToVtx;

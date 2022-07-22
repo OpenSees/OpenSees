@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '../SRC/interpreter/')
+sys.path.insert(0, '../../SRC/interpreter/')
 # sys.path.insert(0, '../build/lib/')
 import opensees as ops
 

@@ -170,7 +170,7 @@ class Node : public DomainComponent
 
   private:
     // priavte methods used to create the Vector objects 
-    // for the committed and trial response quantaties.
+    // for the committed and trial response quantities.
     int createDisp(void);
     int createVel(void);
     int createAccel(void); 

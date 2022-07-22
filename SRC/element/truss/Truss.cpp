@@ -1283,7 +1283,7 @@ Truss::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(A);
     return param.addObject(1, this);
   }
-  // Mass densitity of the truss
+  // Mass density of the truss
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
     return param.addObject(2, this);

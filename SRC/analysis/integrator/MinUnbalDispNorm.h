@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for MinUnbalDispNorm.
-// MinUnbalDispNorm is an algorithmic class for perfroming a static analysis
+// MinUnbalDispNorm is an algorithmic class for performing a static analysis
 // using the minimum unbalanced displacement norm (Chan IJNME 26(2657:2669)1988
 //
 // What: "@(#) MinUnbalDispNorm.h, revA"
@@ -112,7 +112,7 @@ class MinUnbalDispNorm : public StaticIntegrator
       // Pointers used for sensitivity analysis
       Vector  *dUhatdh,*dUIJdh, *Residual,*Residual2, *sensU,*d_deltaU_dh, *dphatdh, *dLAMBDAdh ;
       // the created pointers shown above are
-      // *dUhatdh     : The derivative of the tangent displacement w/r to prameter h
+      // *dUhatdh     : The derivative of the tangent displacement w/r to parameter h
       // *sensU       : Displacement sensitivity using displacement control scheme
       // *d_deltaU_dh : The derivative of the residual displacement
       // *dUIJdh      : The sensitivity of the residual displacement

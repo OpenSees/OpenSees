@@ -1320,7 +1320,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     for(int i=0; i<ndtags.Size(); i++) {
 	nodes[i] = theDomain->getNode(ndtags(i));
 	if(nodes[i] == 0) {
-	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
+	    opserr<<"WARNING: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
 	    return -1;
 	}
 	const Vector& crds = nodes[i]->getCrds();

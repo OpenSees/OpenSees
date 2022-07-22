@@ -991,7 +991,7 @@ int DowelType::setTrialStrain(double strain, double strainRate)
     } 
     else if (cPath == 1)
     {
-        // Current commited point on envelope.
+        // Current committed point on envelope.
         if ((tStrain >= cStrain && tStrain >= pxs[19]) || (tStrain <= cStrain && tStrain <= pxs[9]))
         {
             // scenario 11: loading on backbone curve

@@ -138,7 +138,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Transformation
 
 # System of equations solver

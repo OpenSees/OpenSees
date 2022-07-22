@@ -28,7 +28,7 @@
 // Description: This file contains the class definition for ParallelNumberer.
 // ParallelNumberer is a subclass of DOF_Numberer. The ParallelNumberer numbers
 // the dof of a partitioned domain, where the partitions are on different processors
-// and each processor has a ParallelNumberer. The ParalellNumberer sitting on P0, 
+// and each processor has a ParallelNumberer. The ParallelNumberer sitting on P0, 
 // collects each partition graph from P1 through Pn-1, merges them into 1 large graph, 
 // & then numbers this graph. The ParallelNumberers sitting on P1 through Pn-1 then 
 // receive the mapping info for the dof tag and dof numbering from P0.

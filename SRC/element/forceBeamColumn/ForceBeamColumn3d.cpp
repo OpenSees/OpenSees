@@ -2740,15 +2740,34 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"cbdiDisplacements") == 0)
       theResponse = new ElementResponse(this, 112, Matrix(20,3));
 
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
+    // section response -
+    else if (strstr(argv[0],"sectionX") != 0) {
+      if (argc > 2) {
+	float sectionLoc = atof(argv[1]);
+	
+	double xi[maxNumSections];
+	double L = crdTransf->getInitialLength();
+	beamIntegr->getSectionLocations(numSections, L, xi);
+	
+	sectionLoc /= L;
+	
+	float minDistance = fabs(xi[0]-sectionLoc);
+	int sectionNum = 0;
+	for (int i = 1; i < numSections; i++) {
+	  if (fabs(xi[i]-sectionLoc) < minDistance) {
+	    minDistance = fabs(xi[i]-sectionLoc);
+	    sectionNum = i;
+	  }
+	}
+	
+	output.tag("GaussPointOutput");
+	output.attr("number",sectionNum+1);
+	output.attr("eta",xi[sectionNum]*L);
+	
+	theResponse = sections[sectionNum]->setResponse(&argv[2], argc-2, output);
+      }
+    }
 
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
-
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));
-    
     else if (strstr(argv[0],"section") != 0) { 
 
       if (argc > 1) {
@@ -2806,9 +2825,13 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	//by SAJalali
 	else if (strcmp(argv[0], "energy") == 0)
 	{
-		return new ElementResponse(this, 10, 0.0);
+		theResponse = new ElementResponse(this, 10, 0.0);
 	}
 
+    if (theResponse == 0) {
+      theResponse = crdTransf->setResponse(argv, argc, output);
+    }
+    
     output.endTag();
 
     return theResponse;
@@ -3001,21 +3024,6 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setMatrix(disps);
   }
 
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
-  
   else if (responseID == 12)
     return eleInfo.setVector(this->getRayleighDampingForces());
 

@@ -17,11 +17,11 @@
 // bottom of the element, and is uncoupled from the flexural modeling parameters.
 //
 // References:
-// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). ìAnalytical Modeling of RC 
-// Structural Wallsî, Proceedings, 9th World Conference on Earthquake Engineering, 
+// 1) Vulcano A., Bertero V.V., and Colotti V. (1988). ‚ÄúAnalytical Modeling of RC 
+// Structural Walls‚Äù, Proceedings, 9th World Conference on Earthquake Engineering, 
 // V. 6, Tokyo-Kyoto, Japan, pp. 41-46.
-// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). ìFlexural Modeling of 
-// Reinforced Concrete Structural Walls - Model Attributesî, ACI Structural Journal, 
+// 2) Orakcal K., Conte J.P., and Wallace J.W. (2004). ‚ÄúFlexural Modeling of 
+// Reinforced Concrete Structural Walls - Model Attributes‚Äù, ACI Structural Journal, 
 // V. 101, No. 5, pp 688-698.
 
 #include "MVLEM.h"
@@ -87,7 +87,7 @@ void *OPS_MVLEM(void)
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
-    opserr << "Invalid data for element MVLEM " << iData[0] << endln;
+    opserr << "Invalid c value for element MVLEM " << iData[0] << endln;
     return 0;
   }
 
@@ -122,20 +122,20 @@ void *OPS_MVLEM(void)
     } else if (strcmp(str, "-rho") == 0) {
       numData = m;
       if (OPS_GetDoubleInput(&numData, theRho) != 0) {
-	opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid rho value for MVLEM  " << iData[0] << endln;
 	return 0;
       }
     } else if (strcmp(str, "-matConcrete") == 0) {
       numData = m;
       if (OPS_GetIntInput(&numData, matTags) != 0) {
-	opserr << "Invalid width value for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid concrete tags for MVLEM  " << iData[0] << endln;
 	return 0;
       }
       for (int i=0; i<m; i++) {
 	theMaterialsConcrete[i] = 0;
 	theMaterialsConcrete[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsConcrete[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid concrete material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
@@ -149,21 +149,21 @@ void *OPS_MVLEM(void)
 	theMaterialsSteel[i] = 0;
 	theMaterialsSteel[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsSteel[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid steel material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
     } else if (strcmp(str, "-matShear") == 0) {
       numData = 1;
       if (OPS_GetIntInput(&numData, matTags) != 0) {
-	opserr << "Invalid shear tags for MVLEM  " << iData[0] << endln;
+	opserr << "Invalid shear tag for MVLEM  " << iData[0] << endln;
 	return 0;
       }
       for (int i=0; i<1; i++) {
 	theMaterialsShear[i] = 0;
 	theMaterialsShear[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsShear[i] == 0) {
-	  opserr << "Invalid material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
+	  opserr << "Invalid shear material tag " << matTags[i] << "  for MVLEM  " << iData[0] << endln;
 	  return 0;
 	}
       }
@@ -267,17 +267,6 @@ MVLEM::MVLEM(int tag,
   Ac = new double[m];
   As = new double[m];
   
-  // Stiffness of concrete and steel fibers
-  Ec = new double[m];
-  Es = new double[m];
-  
-  // Fiber stiffness (trial)
-  ky = new double[m];
-  kh = new double[1];
-  
-  stressC = new double[m];
-  stressS = new double[m];
-  
   // Fiber strains
   MVLEMStrain = new double[m + 1];
   
@@ -287,20 +276,10 @@ MVLEM::MVLEM(int tag,
     Ac[i] = 0.0;
     As[i] = 0.0;
     
-    ky[i] = 0.0;
-    
-    stressC[i] = 0.0;
-    stressS[i] = 0.0;
-    
-    Ec[i] = 0.0;
-    Es[i] = 0.0;
-    
     MVLEMStrain[i] = 0.0;
   }
   
   MVLEMStrain[m] = 0.0;
-  
-  kh[0] = 0.0;
   
   // Calculate concrete and steel areas in Y directions
   for (int i = 0; i < m; i++) {
@@ -443,7 +422,9 @@ MVLEM::MVLEM()
   :Element(0, ELE_TAG_MVLEM),
    density(0.0),
    externalNodes(2),
-   theMaterialsConcrete(0), theMaterialsSteel(0), theMaterialsShear(0), theLoad(0), MVLEMStrain(0),
+   theMaterialsConcrete(0), theMaterialsSteel(0), theMaterialsShear(0),
+   theLoad(0), MVLEMStrain(0),
+   b(0), t(0), rho(0), x(0), As(0), Ac(0),
    h(0.0), c(0.0), m(0)
 {
   if (externalNodes.Size() != 2)
@@ -484,31 +465,19 @@ MVLEM::~MVLEM()
     delete theLoad;
   
   if (x != 0)
-    delete x;
+    delete []x;
   if (t != 0)
-    delete t;
+    delete []t;
   if (b != 0)
-    delete b;
+    delete []b;
   if (rho != 0)
-    delete rho;
+    delete []rho;
   if (Ac != 0)
-    delete Ac;
+    delete []Ac;
   if (As != 0)
-    delete As;
-  if (ky != 0)
-    delete ky;
-  if (kh != 0)
-    delete kh;
-  if (Ec != 0)
-    delete Ec;
-  if (Es != 0)
-    delete Es;
-  if (stressC != 0)
-    delete stressC;
-  if (stressS != 0)
-    delete stressS;
+    delete []As;
   if (MVLEMStrain != 0)
-    delete MVLEMStrain;
+    delete []MVLEMStrain;
 }
 
 int
@@ -705,22 +674,19 @@ const Matrix &
 MVLEM::getInitialStiff(void)
 {
 
-	// Get material initial tangent
-	for (int i = 0; i < m; ++i)
-	{
-		Ec[i] = theMaterialsConcrete[i]->getInitialTangent(); 
-		Es[i] = theMaterialsSteel[i]->getInitialTangent();    
-		ky[i] = Ec[i] * Ac[i] / h + Es[i] * As[i] / h;
-	}
-
+  double Ec, Es, ky;
+  
 	// Build the initial stiffness matrix
 	double Kv = 0.0; double Kh = 0.0; double Km = 0.0; double e = 0.0; double ex = 0.0;
 
 	for (int i = 0; i < m; ++i)
 	{
-		Kv += ky[i];
-		Km += ky[i] * x[i] * x[i];
-		e += ky[i] * x[i];
+	  Ec = theMaterialsConcrete[i]->getInitialTangent(); 
+	  Es = theMaterialsSteel[i]->getInitialTangent();    
+	  ky = Ec * Ac[i] / h + Es * As[i] / h;	  
+	  Kv += ky;
+	  Km += ky * x[i] * x[i];
+	  e += ky * x[i];
 	}
 
 	// Get shear stiffness from shear material
@@ -777,22 +743,19 @@ MVLEM::getInitialStiff(void)
 const Matrix &
 MVLEM::getTangentStiff(void)
 {
-	// Get material initial tangent
-	for (int i = 0; i < m; ++i)
-	{
-		Ec[i] = theMaterialsConcrete[i]->getTangent();
-		Es[i] = theMaterialsSteel[i]->getTangent();
-		ky[i] = Ec[i] * Ac[i] / h + Es[i] * As[i] / h;
-	}
+  double Ec, Es, ky;
 
 	// Build the initial stiffness matrix
 	double Kv = 0.0; double Kh = 0.0; double Km = 0.0; double e = 0.0; double ex = 0.0;
 
 	for (int i = 0; i < m; ++i)
 	{
-		Kv += ky[i];
-		Km += ky[i] * x[i] * x[i];
-		e += ky[i] * x[i];
+		Ec = theMaterialsConcrete[i]->getTangent();
+		Es = theMaterialsSteel[i]->getTangent();
+		ky = Ec * Ac[i] / h + Es * As[i] / h;	  
+		Kv += ky;
+		Km += ky * x[i] * x[i];
+		e += ky * x[i];
 
 	}
 
@@ -902,18 +865,14 @@ const Vector & MVLEM::getResistingForce()
 
 	MVLEMR(0) = theMaterialsShear[0]->getStress(); // get force from shear force-deformation relationship
 
-	// Get stresses from uniaxial fibers
-	for (int i = 0; i < m; ++i)
-	{
-		stressC[i] = theMaterialsConcrete[i]->getStress();
-		stressS[i] = theMaterialsSteel[i]->getStress();
-	}
-
+	double stressC, stressS;
 	for (int i = 0; i<m; i++)
 	{
-		MVLEMR(1) += -stressC[i] * Ac[i] - stressS[i] * As[i];
-		MVLEMR(2) += -stressC[i] * Ac[i] * x[i] - stressS[i] * As[i] * x[i];
-		MVLEMR(5) += stressC[i] * Ac[i] * x[i] + stressS[i] * As[i] * x[i];
+		stressC = theMaterialsConcrete[i]->getStress();
+		stressS = theMaterialsSteel[i]->getStress();
+		MVLEMR(1) += -stressC * Ac[i] - stressS * As[i];
+		MVLEMR(2) += -stressC * Ac[i] * x[i] - stressS * As[i] * x[i];
+		MVLEMR(5) += stressC * Ac[i] * x[i] + stressS * As[i] * x[i];
 	}
 
 	MVLEMR(2) += -MVLEMR(0)*c*h;
@@ -960,153 +919,325 @@ const Vector & MVLEM::getResistingForceIncInertia()
 int
 MVLEM::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res;
+	int res = 0;
 	int dataTag = this->getDbTag();
 
-	Vector data(4);
+	ID idData0(4);
+	idData0(0) = externalNodes(0);
+	idData0(1) = externalNodes(1);	
+	idData0(2) = this->getTag();
+	idData0(3) = m;
 
-	data(0) = this->getTag();
-	data(1) = density;
-	data(2) = m;
-	data(3) = c;
+	res = theChannel.sendID(dataTag, commitTag, idData0);
+
+
+	
+	int matDbTag;
+	// Send the connected nodes (2) and material class/db tags (4m flex, 2 shear)
+	ID idData(2 + 4*m);
+	for (int i = 0; i < m; i++) {
+	  idData(i) = theMaterialsConcrete[i]->getClassTag();
+	  matDbTag = theMaterialsConcrete[i]->getDbTag();
+	  if (matDbTag == 0) {
+	    matDbTag = theChannel.getDbTag();
+	    if (matDbTag != 0)
+	      theMaterialsConcrete[i]->setDbTag(matDbTag);
+	  }
+	  idData(i+m) = matDbTag;
+
+	  idData(i+2*m) = theMaterialsSteel[i]->getClassTag();
+	  matDbTag = theMaterialsSteel[i]->getDbTag();
+	  if (matDbTag == 0) {
+	    matDbTag = theChannel.getDbTag();
+	    if (matDbTag != 0)
+	      theMaterialsSteel[i]->setDbTag(matDbTag);
+	  }	  
+	  idData(i+3*m) = matDbTag;	  
+	}
+	idData(4*m) = theMaterialsShear[0]->getClassTag();
+	matDbTag = theMaterialsShear[0]->getDbTag();
+	if (matDbTag == 0) {
+	  matDbTag = theChannel.getDbTag();
+	  if (matDbTag != 0)
+	    theMaterialsShear[0]->setDbTag(matDbTag);
+	}	  
+	idData(4*m+1) = matDbTag;	  	
+	
+	res = theChannel.sendID(dataTag, commitTag, idData);
+
+	
+	Vector data(3 + 3*m);
+
+	data(3*m) = density;
+	data(3*m+1) = c;
+	data(3*m+2) = h;	
+	for (int i = 0; i < m; i++) {
+	  data(i) = b[i];
+	  data(i+m) = t[i];
+	  data(i+2*m) = rho[i];
+	}
 
 	// MVLEM then sends the tags of it's two end nodes
-	res = theChannel.sendID(dataTag, commitTag, externalNodes);
+	res = theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
-		return -2;
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;
 	}
 
-	// Send the material class tags
-	ID matClassTags(2*m+1);
-	for (int i = 0; i < m; i++) {
-		matClassTags(i) = theMaterialsConcrete[i]->getClassTag();
-		matClassTags(i+m) = theMaterialsSteel[i]->getClassTag();
-		}
-	matClassTags(2*m) = theMaterialsShear[0]->getClassTag();
-	res = theChannel.sendID(0, commitTag, matClassTags);
-
+	
 	// Send the material models
 	for (int i = 0; i < m; i++) {
-		theMaterialsConcrete[i]->sendSelf(commitTag, theChannel);
-		theMaterialsSteel[i]->sendSelf(commitTag, theChannel);
+	  res += theMaterialsConcrete[i]->sendSelf(commitTag, theChannel);
+	  if (res < 0) {
+	    opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send concrete material\n";
+	    return res;
+	  }
 	}
-	theMaterialsShear[0]->sendSelf(commitTag, theChannel);
-
-	return 0;
 	
+	for (int i = 0; i < m; i++) {	
+	  theMaterialsSteel[i]->sendSelf(commitTag, theChannel);
+	  if (res < 0) {
+	    opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send steel material\n";
+	    return res;
+	  }	  
+	}
+	
+	res += theMaterialsShear[0]->sendSelf(commitTag, theChannel);
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf - " << this->getTag() << " failed to send shear material\n";
+	  return res;
+	}
+
+	return res;	
 }
 
 int
 MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	int res;
+	int res = 0;
 	int dataTag = this->getDbTag();
 
-	// MVLEM creates a Vector, receives the Vector and then sets the 
-	// internal data with the data in the Vector
-	// delete dynamic memory
-	if (theMaterialsConcrete != 0)  {
-		for (int i = 0; i < m; i++)
-			if (theMaterialsConcrete[i] != 0)
-				delete theMaterialsConcrete[i];
-		delete[] theMaterialsConcrete;
-	}
-
-	if (theMaterialsSteel != 0)  {
-		for (int i = 0; i < m; i++)
-			if (theMaterialsSteel[i] != 0)
-				delete theMaterialsSteel[i];
-		delete[] theMaterialsSteel;
-	}
-
-	if (theMaterialsShear != 0)  {
-		for (int i = 0; i < 1; i++)
-			if (theMaterialsShear[i] != 0)
-				delete theMaterialsShear[i];
-		delete[] theMaterialsShear;
-	}
-
-	Vector data(4);
-	res = theChannel.recvVector(dataTag, commitTag, data);
+	ID idData0(4);
+	
+	res = theChannel.recvID(dataTag, commitTag, idData0);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
-		return -1;
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
+	  return -2;
 	}
-	this->setTag((int)data(0));
-
-	data(0) = this->getTag();
-	data(1) = density;
-	data(2) = m;
-	data(3) = c;
+	externalNodes(0) = idData0(0);
+	externalNodes(1) = idData0(1);	
+	this->setTag(idData0(2));
+	m = idData0(3);
+	
+	
+	ID idData(2 + 4*m);
 	
 	// MVLEM now receives the tags of it's two external nodes
-	res = theChannel.recvID(dataTag, commitTag, externalNodes);
+	res = theChannel.recvID(dataTag, commitTag, idData);
 	if (res < 0) {
-		opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
-		return -2;
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
+	  return -2;
 	}
 
-	// Receive the material class tags
-	ID matClassTags(2*m+1);
-	res = theChannel.recvID(0, commitTag, matClassTags);
+	
+	Vector data(3 + 3*m);
+	res += theChannel.recvVector(dataTag, commitTag, data);
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::recvSelf() - failed to receive Vector\n";
+	  return res;
+	}
 
-	// Allocate memory for the Concrete uniaxial materials
-	theMaterialsConcrete = new UniaxialMaterial*[m];
-	if (theMaterialsConcrete == 0)  {
+	density = data(3*m);
+	c = data(3*m+1);
+	h = data(3*m+2);
+	
+	if (theMaterialsConcrete == 0) {
+	  // Allocate new materials
+	  theMaterialsConcrete = new UniaxialMaterial *[m];
+	  if (theMaterialsConcrete == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for concrete\n";
+	    return -1;
+	  }
+
+	  // Receive the Concrete material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i);
+	    int matDbTag = idData(i+m);
+	    theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsConcrete[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create concrete uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsConcrete[i]->setDbTag(matDbTag);
+	    res = theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - cocnrete material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the Concrete material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i);
+	    int matDbTag = idData(i+m);
+	    if (theMaterialsConcrete[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsConcrete[i];
+	      theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsConcrete[i] == 0) {
 		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Allocate memory for the Steel uniaxial materials
-	theMaterialsSteel = new UniaxialMaterial*[m];
-	if (theMaterialsSteel == 0)  {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Allocate memory for the Shear uniaxial material
-	theMaterialsShear = new UniaxialMaterial*[1];
-	if (theMaterialsShear == 0)  {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to allocate pointers for uniaxial materials.\n";
-		return -2;
-	}
-
-	// Receive the Concrete material models
-	for (int i = 0; i < m; i++)  {
-		theMaterialsConcrete[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
-		if (theMaterialsConcrete[i] == 0) {
-			opserr << "MVLEM::recvSelf() - "
-				<< "failed to get blank uniaxial material.\n";
-			return -3;
-		}
-		theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
-	}
-
-	// Receive the Steel material models
-	for (int i = 0; i < m; i++)  {
-		theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTags(i+m));
-		if (theMaterialsSteel[i] == 0) {
-			opserr << "MVLEM::recvSelf() - "
-				<< "failed to get blank uniaxial material.\n";
-			return -3;
-		}
-		theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
-	}
-
-	// Receive the Shear material model
-	theMaterialsShear[0] = theBroker.getNewUniaxialMaterial(matClassTags(2*m));
-	if (theMaterialsShear[0] == 0) {
-		opserr << "MVLEM::recvSelf() - "
-			<< "failed to get blank uniaxial material.\n";
+		       << "broker could not create concrete uniaxial material.\n";
 		return -3;
+	      }
+	    }
+	    theMaterialsConcrete[i]->setDbTag(matDbTag);
+	    res = theMaterialsConcrete[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - cocnrete material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
 	}
-	theMaterialsShear[0]->recvSelf(commitTag, theChannel, theBroker);
 
-	return 0;
+	if (theMaterialsSteel == 0) {
+	  // Allocate new materials
+	  theMaterialsSteel = new UniaxialMaterial *[m];
+	  if (theMaterialsSteel == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for steel\n";
+	    return -1;
+	  }
+	  // Receive the steel material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i+2*m);
+	    int matDbTag = idData(i+3*m);
+	    theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsSteel[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create steel uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsSteel[i]->setDbTag(matDbTag);
+	    res = theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - steel material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the steel material models
+	  for (int i = 0; i < m; i++)  {
+	    int matClassTag = idData(i+2*m);
+	    int matDbTag = idData(i+3*m);
+	    if (theMaterialsSteel[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsSteel[i];
+	      theMaterialsSteel[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsSteel[i] == 0) {
+		opserr << "MVLEM::recvSelf() - "
+		       << "broker could not create steel uniaxial material.\n";
+		return -3;
+	      }
+	    }
+	    theMaterialsSteel[i]->setDbTag(matDbTag);
+	    res = theMaterialsSteel[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - steel material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}	
+
+	
+	if (theMaterialsShear == 0) {
+	  // Allocate new materials
+	  theMaterialsShear = new UniaxialMaterial *[1];
+	  if (theMaterialsShear == 0) {
+	    opserr << "MVLEM::recvSelf - could not allocated UniaxialMaterial array for shear\n";
+	    return -1;
+	  }
+
+	  // Receive the shear material model
+	  for (int i = 0; i < 1; i++)  {
+	    int matClassTag = idData(4*m);
+	    int matDbTag = idData(1+4*m);
+	    theMaterialsShear[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	    if (theMaterialsShear[i] == 0) {
+	      opserr << "MVLEM::recvSelf() - "
+		     << "broker could not create shear uniaxial material.\n";
+	      return -3;
+	    }
+	    theMaterialsShear[i]->setDbTag(matDbTag);
+	    res = theMaterialsShear[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - shear material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+	}
+	else {
+	  // Receive the shear material models
+	  for (int i = 0; i < 1; i++)  {
+	    int matClassTag = idData(4*m);
+	    int matDbTag = idData(1+4*m);
+	    if (theMaterialsShear[i]->getClassTag() != matClassTag) {
+	      delete theMaterialsShear[i];
+	      theMaterialsShear[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+	      if (theMaterialsShear[i] == 0) {
+		opserr << "MVLEM::recvSelf() - "
+		       << "broker could not create shear uniaxial material.\n";
+		return -3;
+	      }
+	    }
+	    theMaterialsShear[i]->setDbTag(matDbTag);
+	    res = theMaterialsShear[i]->recvSelf(commitTag, theChannel, theBroker);
+	    if (res < 0) {
+	      opserr << "MVLEM::recvSelf() - shear material " << i << " failed to recvSelf\n";
+	      return res;
+	    }
+	  }
+
+	}	
+
+	if (b != 0)
+	  delete [] b;
+	b = new double[m];
+	
+	if (t != 0)
+	  delete [] t;
+	t = new double[m];
+	
+	if (rho != 0)
+	  delete [] rho;
+	rho = new double[m];	
+
+	Lw = 0.0;
+	for (int i = 0; i < m; i++) {
+	  b[i] = data(i);
+	  t[i] = data(i+m);
+	  rho[i] = data(i+2*m);
+	  Lw += b[i];
+	}
+  
+	if (x != 0)
+	  delete [] x;
+	x = new double[m];
+	
+	if (Ac != 0)
+	  delete [] Ac;
+	Ac = new double[m];
+	
+	if (As != 0)
+	  delete [] As;
+	As = new double[m];
+	
+	if (MVLEMStrain != 0)
+	  delete [] MVLEMStrain;
+	MVLEMStrain = new double[m+1];		
+	
+	this->setupMacroFibers();
+	
+	return res;
 }
 
 // Display model
@@ -1395,4 +1526,32 @@ Vector MVLEM::getShearFD(void)
 	shearStrainStress(1) = theMaterialsShear[0]->getStress();
 
 	return shearStrainStress;
+}
+
+int
+MVLEM::setupMacroFibers()
+{
+  // Calculate concrete and steel areas in Y directions
+  for (int i = 0; i < m; i++) {
+    As[i] = (b[i] * t[i])*rho[i]; 
+    Ac[i] = (b[i] * t[i]) - As[i]; 
+  }
+  
+  for (int i = 0; i < m; i++) {
+    double sumb_i = 0.0;
+    for (int j = 0; j<i + 1; j++)
+      sumb_i += b[j];
+    
+    x[i] = (sumb_i - b[i] / 2.0) - Lw / 2.0;
+  }	
+  
+  // Determine the nodal mass for lumped mass approach
+  A = 0;
+  for (int i = 0; i < m; i++){
+    A += Ac[i] + As[i];
+  }
+
+  NodeMass = density * A * h / 2;
+
+  return 0;
 }

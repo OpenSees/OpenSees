@@ -62,6 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <GroundMotion.h>
 #include <vector>
 #include <InterpolatedGroundMotion.h>
+#include <IGAFollowerLoad.h>
 
 void* OPS_LoadPattern();
 void* OPS_UniformExcitationPattern();
@@ -545,6 +546,46 @@ int OPS_ElementalLoad()
 	}
 	return 0;
     }
+    // Added: Felipe Elgueta and José A. Abell (UANDES, Chile) www.joseabell.com
+    else if ((strcmp(type,"-IGAFollowerLoad") == 0)) {
+
+    	opserr << "Creating FollowerLoad" << endln;
+
+	// xf, yf, zf
+	double data[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+	int numdata = OPS_GetNumRemainingInputArgs();
+	if (numdata < 5) {
+	    opserr<<"WARNING eleLoad - IGAFollowerLoad want xi?, eta?, f1?, f2?, f3?\n";
+	    return -1;
+	}
+    	opserr << "Read numdata =  " << numdata << "" << endln;
+	if (numdata > 5) numdata = 5;
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	    opserr<<"WARNING eleLoad - invalid value for IGAFollowerLoad\n";
+	    return -1;
+	}
+	for (int i=0; i<theEleTags.Size(); i++) {
+	    theLoad = new IGAFollowerLoad(eleLoadTag, data[0], data[1], data[2], data[3], data[4], theEleTags(i));
+
+	    if (theLoad == 0) {
+		opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+		return -1;
+	    }
+
+	    // get the current pattern tag if no tag given in i/p
+	    int loadPatternTag = theActiveLoadPattern->getTag();
+
+	    // add the load to the domain
+	    if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+		opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+		opserr << theLoad;
+		delete theLoad;
+		return -1;
+	    }
+	    eleLoadTag++;
+	}
+	return 0;
+    }
 
     //--Adding identifier for Beam2dThermalAction:[BEGIN] by UoE OpenSees Group--//
     else if (strcmp(type,"-beamThermal") == 0) {
@@ -610,7 +651,7 @@ int OPS_ElementalLoad()
 
         //finish the temperature arguments
         else {
-            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature aguments,/n looking for 0, 2, 5 or 9 arguments.\n";
+            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments.\n";
         }
 
         for (int i = 0; i<theEleTags.Size(); i++) {
@@ -748,7 +789,7 @@ int OPS_ElementalLoad()
 	    }
 
 	    else {
-		opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature aguments,/n looking for 0, 1, 2 or 4 arguments.\n";
+		opserr << "WARNING eleLoad -beamTempLoad invalid number of temperature arguments,/n looking for 0, 1, 2 or 4 arguments.\n";
 		return -1;
 	    }
 
@@ -758,7 +799,7 @@ int OPS_ElementalLoad()
 	}
     }
 
-    // if get here we have sucessfully created the load and added it to the domain
+    // if get here we have successfully created the load and added it to the domain
 
     return 0;
 }
@@ -790,7 +831,7 @@ int OPS_SP()
     // get node
     Node* theNode = theDomain->getNode(tags[0]);
     if(theNode == 0) {
-	opserr<<"ERROR node "<<tags[0]<<"does not exsit\n";
+	opserr<<"ERROR node "<<tags[0]<<"does not exist\n";
 	return -1;
     }
     int ndf = theNode->getNumberDOF();
@@ -936,7 +977,7 @@ int OPS_ImposedMotionSP()
 	return -1;
     }
 
-    // if get here we have sucessfully created the node and added it to the domain
+    // if get here we have successfully created the node and added it to the domain
     return 0;
 }
 
