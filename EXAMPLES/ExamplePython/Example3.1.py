@@ -18,7 +18,7 @@
 # Date: June 2017
 
 # import the OpenSees Python module
-from opensees import *
+from openseespy.opensees import *
 
 # ------------------------------
 # Start of model generation
@@ -98,7 +98,7 @@ beamIntegration("Lobatto", 1, 1, np)
 #                       tag 
 geomTransf("PDelta", 1)
 
-# Create the coulumns using Beam-column elements
+# Create the columns using Beam-column elements
 #                   tag ndI ndJ transfTag integrationTag
 eleType = "forceBeamColumn"
 element(eleType, 1, 1, 3, 1, 1)

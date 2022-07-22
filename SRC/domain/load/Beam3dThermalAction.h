@@ -96,7 +96,7 @@ class Beam3dThermalAction : public ElementalLoad
   static Vector data; // data for temperature and locations
   int ThermalActionType;
 
-  //--The BeamThermalAction are modified by Liming and having a new strucuture for applying the fire action
+  //--The BeamThermalAction are modified by Liming and having a new structure for applying the fire action
  int indicator; //indicator if fireloadpattern was called
   Vector Factors;
   TimeSeries* theSeries;

@@ -35,6 +35,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+#include <Parameter.h>
 
 //parameters
 const double ElasticMembranePlateSection::five6 = 5.0/6.0 ; //shear correction
@@ -139,7 +140,19 @@ int ElasticMembranePlateSection::getOrder( ) const
 //send back order of strain in vector form
 const ID& ElasticMembranePlateSection::getType( )
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -380,4 +393,57 @@ int ElasticMembranePlateSection::recvSelf(int cTag, Channel &theChannel,
   }
 
   return res;
+}
+
+int ElasticMembranePlateSection::setParameter(const char** argv, int argc, Parameter& param)
+{
+    if (argc < 1)
+        return -1;
+    if (strcmp(argv[0], "E") == 0) {
+        param.setValue(Em);
+        return param.addObject(1, this);
+    }
+    if (strcmp(argv[0], "nu") == 0) {
+        param.setValue(nu);
+        return param.addObject(2, this);
+    }
+    if (strcmp(argv[0], "Ep_mod") == 0) {
+        param.setValue(Ep / Em);
+        return param.addObject(3, this);
+    }
+    if (strcmp(argv[0], "h") == 0) {
+        param.setValue(h);
+        return param.addObject(4, this);
+    }
+    if (strcmp(argv[0], "rho") == 0) {
+        param.setValue(rhoH / h);
+        return param.addObject(5, this);
+    }
+    return -1;
+}
+
+int ElasticMembranePlateSection::updateParameter(int parameterID, Information& info)
+{
+    if (parameterID == 1) {
+        double Ep_mod = Ep / Em;
+        Em = info.theDouble;
+        Ep = Em * Ep_mod;
+    }
+    else if (parameterID == 2) {
+        nu = info.theDouble;
+    }
+    else if (parameterID == 3) {
+        double Ep_mod = info.theDouble;
+        Ep = Em * Ep_mod;
+    }
+    else if (parameterID == 4) {
+        double rho = rhoH / h;
+        h = info.theDouble;
+        rhoH = rho * h;
+    }
+    else if (parameterID == 5) {
+        double rho = info.theDouble;
+        rhoH = rho * h;
+    }
+    return 0;
 }

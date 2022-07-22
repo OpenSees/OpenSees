@@ -118,7 +118,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         R[2][2] = vecInLocXZPlane(2);
         
         // check rigid joint offset for node I
-        if (&rigJntOffset1 == 0 || rigJntOffset1.Size() != 3 ) {
+        if (rigJntOffset1.Size() != 3 ) {
             opserr << "PDeltaCrdTransf3d::PDeltaCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
             opserr << "Size must be 3\n";      
         }
@@ -130,7 +130,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         }
         
         // check rigid joint offset for node J
-        if (&rigJntOffset2 == 0 || rigJntOffset2.Size() != 3 ) {
+        if (rigJntOffset2.Size() != 3 ) {
             opserr << "PDeltaCrdTransf3d::PDeltaCrdTransf3d:  Invalid rigid joint offset vector for node J\n";
             opserr << "Size must be 3\n";      
         }
@@ -427,6 +427,22 @@ PDeltaCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     return 0;
 }
 
+int
+PDeltaCrdTransf3d::getRigidOffsets(Vector &offsets)
+{
+  if (nodeIOffset != 0) {
+    offsets(0) = nodeIOffset[0];
+    offsets(1) = nodeIOffset[1];
+    offsets(2) = nodeIOffset[2];
+  }
+  if (nodeJOffset != 0) {
+    offsets(3) = nodeJOffset[0];
+    offsets(4) = nodeJOffset[1];
+    offsets(5) = nodeJOffset[2];
+  }
+  
+  return 0;
+}
 
 double 
 PDeltaCrdTransf3d::getInitialLength(void)

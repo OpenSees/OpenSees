@@ -23,7 +23,7 @@ class Concrete02Thermal : public UniaxialMaterial
     UniaxialMaterial *getCopy(void);
 
 
-    int setTrialStrain(double strain, double rate);     //JZ this function is no use, just for the definiation of pure virtual function.
+    int setTrialStrain(double strain, double rate);     //JZ this function is no use, just for the definition of pure virtual function.
     int setTrialStrain(double strain, double FiberTemperature, double strainRate); //***JZ
 
     double getStrain(void);      

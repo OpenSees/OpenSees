@@ -1265,7 +1265,7 @@ int
 	if (strcmp(argv[0],"A") == 0)
 		return param.addObject(1, this);
 
-	// Mass densitity of the truss
+	// Mass density of the truss
 	if (strcmp(argv[0],"rho") == 0)
 		return param.addObject(2, this);
 

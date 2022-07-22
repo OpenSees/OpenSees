@@ -91,9 +91,8 @@ class TclModelBuilder : public ModelBuilder
     PlasticHardeningMaterial *getPlasticMaterial(int tag);
     int addCyclicModel(CyclicModel &theModel); //!!
     CyclicModel *getCyclicModel(int tag); //!!
-    int addDamageModel(DamageModel &theModel); //!!
-    DamageModel *getDamageModel(int tag); //!!
-
+    //int addDamageModel(DamageModel &theModel); //!!
+    //DamageModel *getDamageModel(int tag); //!!
 
     // methods needed for the friction models
     // int addFrictionModel(FrictionModel &theFrnMdl);
@@ -120,10 +119,3 @@ class TclModelBuilder : public ModelBuilder
 };
 
 #endif
-
-
-
-
-
-
-

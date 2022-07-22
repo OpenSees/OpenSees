@@ -47,6 +47,7 @@ OBJS       = UniaxialMaterial.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
+        SteelDRC.o \
 	EPPGapMaterial.o \
         ViscousMaterial.o \
 	SeriesMaterial.o \
@@ -141,7 +142,13 @@ OBJS       = UniaxialMaterial.o \
 	Trilinwpd.o \
 	Trilinwp.o \
 	Trilinwp2.o \
-        TclModelBuilderUniaxialMaterialCommand.o
+	SteelFractureDI.o \
+	DowelType.o \
+	DuctileFracture.o \
+	BoucWenInfill.o \
+	HystereticSmooth.o \
+	HystereticAsym.o \
+    TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/uniaxial/fedeas; $(MAKE);

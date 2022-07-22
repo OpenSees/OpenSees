@@ -13,6 +13,7 @@
  * File name:		sp_ienv.c
  * History:             Modified from lapack routine ILAENV
  */
+#include <stdio.h>
 #include "slu_Cnames.h"
 
 /*! \brief
@@ -71,8 +72,9 @@ sp_ienv(int ispec)
     }
 
     /* Invalid value for ISPEC */
-    i = 1;
-    input_error("sp_ienv", &i);
+//    i = 1;
+//    input_error("sp_ienv", &i);
+    printf("** On entry to sp_ienv, parameter number 1 had an illegal value\n");
     return 0;
 
 } /* sp_ienv_ */

@@ -49,6 +49,7 @@ class PatternRecorder: public Recorder
 		 Domain &theDomain,
 		 const char *fileName,
 		 double deltaT = 0.0,
+		 double relDeltaTTol = 0.00001,
 		 int startFlag = 0); 
 
     ~PatternRecorder();
@@ -68,6 +69,7 @@ class PatternRecorder: public Recorder
     ofstream theFile;     
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 };
 

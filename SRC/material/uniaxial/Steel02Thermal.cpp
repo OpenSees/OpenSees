@@ -691,7 +691,7 @@ Steel02Thermal::Print(OPS_Stream &s, int flag)
 }
 
 
-//this function is no use, just for the definiation of pure virtual function.
+//this function is no use, just for the definition of pure virtual function.
 int
 Steel02Thermal::setTrialStrain(double strain, double strainRate)
 {

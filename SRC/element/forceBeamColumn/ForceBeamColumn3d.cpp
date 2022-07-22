@@ -358,7 +358,7 @@ ForceBeamColumn3d::setDomain(Domain *theDomain)
   // get element length
   double L = crdTransf->getInitialLength();
   if (L == 0.0) {
-    opserr << "ForceBeamColumn3d::setDomain(): Zero element length:" << this->getTag();  
+    opserr << "ForceBeamColumn3d::setDomain() -- zero length for element with tag: " << this->getTag();  
     exit(0);
   }
 
@@ -487,7 +487,7 @@ ForceBeamColumn3d::getInitialStiff(void)
   // invert3by3Matrix(f, kv);
   static Matrix kvInit(NEBD, NEBD);
   if (f.Solve(I, kvInit) < 0)
-    opserr << "ForceBeamColumn3d::getInitialStiff() -- could not invert flexibility";
+    opserr << "ForceBeamColumn3d::getInitialStiff() -- could not invert flexibility for element with tag: " << this->getTag() << endln;
 
     Ki = new Matrix(crdTransf->getInitialGlobalStiffMatrix(kvInit));
 
@@ -1055,7 +1055,7 @@ void
 	    // FRANK
 	    //	  if (f.SolveSVD(I, kvTrial, 1.0e-12) < 0)
 	    if (f.Solve(I, kvTrial) < 0)
-	      opserr << "ForceBeamColumn3d::update() -- could not invert flexibility\n";
+	      opserr << "ForceBeamColumn3d::update() -- could not invert flexibility for element with tag: " << this->getTag() << endln;;
 	    
 	    // dv = vin + dvTrial  - vr
 	    dv = vin;
@@ -2727,6 +2727,9 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+    else if (strcmp(argv[0],"sectionTags") == 0)
+      theResponse = new ElementResponse(this, 110, ID(numSections));  
+    
     else if (strcmp(argv[0],"sectionDisplacements") == 0) {
       if (argc > 1 && strcmp(argv[1],"local") == 0)
 	theResponse = new ElementResponse(this, 1111, Matrix(numSections,3));
@@ -2737,15 +2740,34 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     else if (strcmp(argv[0],"cbdiDisplacements") == 0)
       theResponse = new ElementResponse(this, 112, Matrix(20,3));
 
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
+    // section response -
+    else if (strstr(argv[0],"sectionX") != 0) {
+      if (argc > 2) {
+	float sectionLoc = atof(argv[1]);
+	
+	double xi[maxNumSections];
+	double L = crdTransf->getInitialLength();
+	beamIntegr->getSectionLocations(numSections, L, xi);
+	
+	sectionLoc /= L;
+	
+	float minDistance = fabs(xi[0]-sectionLoc);
+	int sectionNum = 0;
+	for (int i = 1; i < numSections; i++) {
+	  if (fabs(xi[i]-sectionLoc) < minDistance) {
+	    minDistance = fabs(xi[i]-sectionLoc);
+	    sectionNum = i;
+	  }
+	}
+	
+	output.tag("GaussPointOutput");
+	output.attr("number",sectionNum+1);
+	output.attr("eta",xi[sectionNum]*L);
+	
+	theResponse = sections[sectionNum]->setResponse(&argv[2], argc-2, output);
+      }
+    }
 
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
-
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));
-    
     else if (strstr(argv[0],"section") != 0) { 
 
       if (argc > 1) {
@@ -2803,9 +2825,13 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	//by SAJalali
 	else if (strcmp(argv[0], "energy") == 0)
 	{
-		return new ElementResponse(this, 10, 0.0);
+		theResponse = new ElementResponse(this, 10, 0.0);
 	}
 
+    if (theResponse == 0) {
+      theResponse = crdTransf->setResponse(argv, argc, output);
+    }
+    
     output.endTag();
 
     return theResponse;
@@ -2900,6 +2926,13 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else if (responseID == 111 || responseID == 1111) {
     double L = crdTransf->getInitialLength();
     double pts[maxNumSections];
@@ -2991,21 +3024,6 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setMatrix(disps);
   }
 
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
-  
   else if (responseID == 12)
     return eleInfo.setVector(this->getRayleighDampingForces());
 

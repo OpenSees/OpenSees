@@ -65,6 +65,10 @@ void *OPS_FourNodeTetrahedron(const ID &info);
 
 void *OPS_ShellMITC4(const ID &info);
 
+void *OPS_ShellNLDKGQ(const ID &info);
+
+void *OPS_ShellDKGQ(const ID &info);
+
 void *OPS_CorotTrussElement(const ID &info);
 
 // msh objects
@@ -171,7 +175,7 @@ Mesh::newNode(int tag, const Vector &crds) {
     // check ndf
     if (ndf <= 0) return 0;
 
-    // craete new node
+    // create new node
     Node *node = 0;
     if (crds.Size() == 1) {
         node = new Node(tag, ndf, crds(0));
@@ -351,6 +355,22 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;
 
+    } else if (strcmp(type, "ShellNLDKGQ") == 0) {
+        eleType = ELE_TAG_ShellNLDKGQ;
+        if (OPS_ShellNLDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "ShellDKGQ") == 0) {
+        eleType = ELE_TAG_ShellDKGQ;
+        if (OPS_ShellDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;		
+
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
         if (OPS_CorotTrussElement(info) == 0) {
@@ -452,6 +472,12 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ShellMITC4:
             OPS_Func = OPS_ShellMITC4;
             break;
+        case ELE_TAG_ShellNLDKGQ:
+	  OPS_Func = OPS_ShellNLDKGQ;
+            break;
+        case ELE_TAG_ShellDKGQ:
+	  OPS_Func = OPS_ShellDKGQ;
+            break;	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
@@ -496,7 +522,7 @@ Mesh::newElements(const ID &elends) {
     // add elements to domain
     for (unsigned int i = 0; i < neweles.size(); ++i) {
         if (neweles[i] == 0) {
-            opserr << "WARING: run out of memory for creating element\n";
+            opserr << "WARNING: run out of memory for creating element\n";
             return -1;
         }
         if (domain->addElement(neweles[i]) == false) {

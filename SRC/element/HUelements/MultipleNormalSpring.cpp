@@ -59,14 +59,8 @@
 #include <elementAPI.h>
 
 //extern void printCommand(int argc, TCL_Char **argv);
-#ifdef _WIN32
 extern "C" double dbesi0(double);
 extern "C" double dbesi1(double);
-#else
-extern double dbesi0(double);
-extern double dbesi1(double);
-#endif
-
 
 
 static bool errDetected(bool ifNoError, const char *msg){
@@ -257,7 +251,7 @@ void* OPS_MultipleNormalSpring()
   
 
 
-    // input cofirmation
+    // input confirmation
     // necessary arguments
     if (recvMat != 1)  {
 	char buf[100];

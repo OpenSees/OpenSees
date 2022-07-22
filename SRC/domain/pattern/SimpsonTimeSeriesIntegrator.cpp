@@ -112,6 +112,7 @@ TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double
     
     // set the method return value
     PathSeries *returnSeries = new PathSeries(0, *theInt, delta, true);
+    delete theInt;
     
     if (returnSeries == 0)  {
         opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory creating PathSeries.\n";

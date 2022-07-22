@@ -34,6 +34,7 @@ void* OPS_CycLiqCPMaterial();
 void* OPS_CycLiqCPSPMaterial();
 void* OPS_BoundingCamClayMaterial();
 void* OPS_ManzariDafaliasMaterial();
+void* OPS_SAniSandMSMaterial();
 void* OPS_ContactMaterial2DMaterial();
 void* OPS_ContactMaterial3DMaterial();
 void* OPS_InitialStateAnalysisWrapperMaterial();
@@ -65,6 +66,9 @@ void* OPS_UVCplanestress();
 void* OPS_UVCmultiaxial();
 void* OPS_PressureDependMultiYield03();
 void* OPS_NewPlasticDamageConcretePlaneStress();
+void* OPS_ElasticPlaneStress();
+void* OPS_ElasticOrthotropicPlaneStress();
+void* OPS_VonPapaDamage();
 
 namespace {
 
@@ -118,6 +122,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("CycLiqCPSP", &OPS_CycLiqCPSPMaterial));
 	nDMaterialsMap.insert(std::make_pair("BoundingCamClay", &OPS_BoundingCamClayMaterial));
 	nDMaterialsMap.insert(std::make_pair("ManzariDafalias", &OPS_ManzariDafaliasMaterial));
+	nDMaterialsMap.insert(std::make_pair("SAniSandMS", &OPS_SAniSandMSMaterial));
 	nDMaterialsMap.insert(std::make_pair("ContactMaterial2D", &OPS_ContactMaterial2DMaterial));
 	nDMaterialsMap.insert(std::make_pair("ContactMaterial3D", &OPS_ContactMaterial3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitialStateAnalysisWrapper", &OPS_InitialStateAnalysisWrapperMaterial));
@@ -162,6 +167,9 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("UVCmultiaxial", &OPS_UVCmultiaxial));
 	nDMaterialsMap.insert(std::make_pair("PressureDependMultiYield03", &OPS_PressureDependMultiYield03));
 	nDMaterialsMap.insert(std::make_pair("PlasticDamageConcretePlaneStress", &OPS_NewPlasticDamageConcretePlaneStress));
+	nDMaterialsMap.insert(std::make_pair("ElasticPlaneStress", &OPS_ElasticPlaneStress));
+	nDMaterialsMap.insert(std::make_pair("ElasticOrthotropicPlaneStress", &OPS_ElasticOrthotropicPlaneStress));
+	nDMaterialsMap.insert(std::make_pair("VonPapaDamage", &OPS_VonPapaDamage));
 
 	return 0;
     }

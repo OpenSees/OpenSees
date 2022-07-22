@@ -296,7 +296,7 @@ namespace
     /** \brief ASDShellQ4Globals
      *
      * This singleton class stores some data for the shell calculations that
-     * can be statically instanciated to avoid useless re-allocations
+     * can be statically instantiated to avoid useless re-allocations
      *
      */
     class ASDShellQ4Globals
@@ -560,7 +560,7 @@ namespace
         }
         
         // transform the strain-displacement matrix from natural
-        // to local coordinate system taking into account the element distorsion
+        // to local coordinate system taking into account the element distortion
         static Matrix TBN(2, 24);
         TBN.addMatrixProduct(0.0, mitc.transformation, BN, 1.0);
         for (int i = 0; i < 2; i++)
@@ -1268,14 +1268,15 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
 
             // Get material stress response
             const Vector& sigma = m_sections[i]->getStressResultant();
-            stresses(0) = sigma(0);
-            stresses(1) = sigma(1);
-            stresses(2) = sigma(2);
-            stresses(3) = sigma(3);
-            stresses(4) = sigma(4);
-            stresses(5) = sigma(5);
-            stresses(6) = sigma(6);
-            stresses(7) = sigma(7);
+            int offset = i * 8;
+            stresses(0 + offset) = sigma(0);
+            stresses(1 + offset) = sigma(1);
+            stresses(2 + offset) = sigma(2);
+            stresses(3 + offset) = sigma(3);
+            stresses(4 + offset) = sigma(4);
+            stresses(5 + offset) = sigma(5);
+            stresses(6 + offset) = sigma(6);
+            stresses(7 + offset) = sigma(7);
         }
         return eleInfo.setVector(stresses);
         break;
@@ -1284,14 +1285,15 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
 
             // Get section deformation
             const Vector& deformation = m_sections[i]->getSectionDeformation();
-            strains(0) = deformation(0);
-            strains(1) = deformation(1);
-            strains(2) = deformation(2);
-            strains(3) = deformation(3);
-            strains(4) = deformation(4);
-            strains(5) = deformation(5);
-            strains(6) = deformation(6);
-            strains(7) = deformation(7);
+            int offset = i * 8;
+            strains(0 + offset) = deformation(0);
+            strains(1 + offset) = deformation(1);
+            strains(2 + offset) = deformation(2);
+            strains(3 + offset) = deformation(3);
+            strains(4 + offset) = deformation(4);
+            strains(5 + offset) = deformation(5);
+            strains(6 + offset) = deformation(6);
+            strains(7 + offset) = deformation(7);
         }
         return eleInfo.setVector(strains);
         break;
@@ -1534,7 +1536,7 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             LHS.addMatrixProduct(1.0, KUQ_KQQ_inv, m_KQU, -1.0);
     }
 
-    // Tranform LHS to global coordinate system
+    // Transform LHS to global coordinate system
     m_transformation->transformToGlobal(local_cs, UG, UL, LHS, RHS, (options & OPT_LHS));
 
     // Subtract external loads if any
@@ -1584,7 +1586,7 @@ void ASDShellQ4::AGQIupdate(const Vector& UL)
 void ASDShellQ4::AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs)
 {
     // set to zero vectors and matrices for the static condensation
-    // of internal DOFs before proceding with gauss integration
+    // of internal DOFs before proceeding with gauss integration
     m_KQU.Zero();
     m_KUQ.Zero();
     m_KQQ_inv.Zero();

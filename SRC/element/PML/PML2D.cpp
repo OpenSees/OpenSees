@@ -21,7 +21,7 @@
 // Written by: Long Chen, Pedro Arduino (parduino@uw.edu), Wenyang Zhang and fmk
 //
 // Four node PML2D element .. a c++ wrapper to fortran routine 
-// providewd by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
+// provided by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
 //
 // University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
 
@@ -145,7 +145,7 @@ void  PML2D::setDomain( Domain *theDomain )
   int MCRD = 2; 
   int NNODE = PML2D_NUM_NODES;
 
-  pml_(K, 
+  pml2d_(K, 
        C, 
        M,   
        &NDOFEL, 

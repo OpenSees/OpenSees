@@ -1,0 +1,81 @@
+
+name: CMake Build
+
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Debug
+
+on:
+  push:
+    branches: [cmake-build]
+
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install conan
+      run: python3 -m pip install conan
+
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        conan install .. --build missing
+        cmake ..
+        cmake --build . -j8
+
+        #- name: Verification
+        #  run: |
+        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+    - name: Build OpenSeesPy
+      run: |
+        cd ./build
+        cmake ..
+        make -j 4
+        make OpenSeesPy
+        mkdir fake_folder
+    - name: Rename OpenSeesPy
+      run: |
+        cd ./build
+        mv lib/OpenSeesPy.so lib/opensees.so
+
+# Simple sanity test
+    - name: Verification OpenSeesPySP
+      run: |
+        cd ./build
+        cd ../EXAMPLES/ExamplePython/
+        export PYTHONPATH="../../build/lib/"
+        python -c "import sys; print(sys.path)"
+        python example_variable_analysis.py
+#        # Simple MP sanity test
+#        - name: Verification OpenSeesPyMP
+#          run: |
+#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
+
+# Not building on Windows until we can figure out how to use Fortran
+# with Github Actions
+    #  build-win32:
+    #    name: Build on Windows
+    #    runs-on: [windows-latest]
+    #    steps:
+    #    - name: Checkout sources
+    #      uses: actions/checkout@v2
+    #      with: {ref: cmake-build}
+    #    
+    #    - name: Install Conan
+    #      uses: turtlebrowser/get-conan@main
+    #
+    #    - name: Build
+    #      run: |
+    #        mkdir build
+    #        cd build
+    #        cmake ..
+    #        cmake --build . --target OpenSeesTcl -j5
+
+

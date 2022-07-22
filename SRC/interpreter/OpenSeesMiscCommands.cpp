@@ -237,7 +237,7 @@ int OPS_removeObject()
 	}
     }
 
-    else if (strcmp(type,"loadPattern") == 0) {
+    else if (strcmp(type,"loadPattern") == 0 || strcmp(type,"pattern") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr << "WARNING want - remove loadPattern patternTag?\n";
 	    return -1;
@@ -686,7 +686,7 @@ int OPS_MeshRegion()
 	return -1;
     }
 
-    // now contine until end of command
+    // now continue until end of command
     bool only = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
@@ -1296,7 +1296,7 @@ int OPS_RigidDiaphragm()
 
 int OPS_addElementRayleigh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: setElementRayleighFactors elementTag?  alphaM? $betaK? $betaKinit? $betaKcomm? \n";
@@ -1367,7 +1367,7 @@ extern BackgroundMesh& OPS_getBgMesh();
 
 int OPS_mesh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: mesh type? ...>\n";
@@ -1684,7 +1684,7 @@ int OPS_recv()
                      1, MPI_COMM_WORLD, &status);
         }
 
-	    // set oututs
+	    // set outputs
 	    int res = 0;
 	    if (datatype == MPI_INT) {
 
@@ -1818,7 +1818,7 @@ int OPS_Bcast() {
             }
             MPI_Bcast(buffer, msgLength[0], datatype, 0, MPI_COMM_WORLD);
 
-            // set oututs
+            // set outputs
             int res = 0;
             if (datatype == MPI_INT) {
 
@@ -2149,6 +2149,12 @@ int OPS_partition() {
     while ((ele = eles()) != 0) {
         const auto &elenodes = ele->getExternalNodes();
         for (int i = 0; i < elenodes.Size(); ++i) {
+            if (nind.find(elenodes(i)) == nind.end()) {
+                opserr << "Process " << pid << ": element " << ele->getTag()
+                << " has a node " << elenodes(i) 
+                << " that does not exist in domain \n";
+                return -1;
+            }
             eind.push_back(nind[elenodes(i)]);
         }
         eptr.push_back((idx_t)eind.size());
@@ -2207,13 +2213,10 @@ int OPS_partition() {
         idx_t objval;
 
         // call metis
-        auto res =
-            METIS_PartMeshNodal(&ne, &nn,
-                                &eptr[0], &eind[0], 
-                                NULL, NULL, &nparts, 
-                                NULL, options,
-                                &objval, 
-                                &epart[0], &npart[0]);
+        auto res = METIS_PartMeshNodal(
+            &ne, &nn, &eptr[0], &eind[0], NULL, NULL, &nparts,
+            NULL, options, &objval, &epart[0], &npart[0]);
+
 
         // check errors 
         if (res == METIS_ERROR_INPUT) {
@@ -2314,7 +2317,7 @@ int OPS_partition() {
         }
     }
 
-    // go throug load patterns
+    // go through load patterns
     auto& lps = domain->getLoadPatterns();
     LoadPattern* lp = 0;
     while ((lp = lps()) != 0) {

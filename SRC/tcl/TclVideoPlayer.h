@@ -63,7 +63,7 @@ class TclVideoPlayer
     ColorMap *theMap;
     Renderer *theRenderer;
 
-    char *theFileName;   // file name conatining image commands
+    char *theFileName;   // file name containing image commands
     ifstream theFile; 	 // input stream for this file
 
     char *theOffsetFileName;   // file name containing nodal offsets

@@ -160,7 +160,7 @@ MPI_Channel::recvMsg(int dbTag, int commitTag, Message &msg, ChannelAddress *the
       }		    
     }
 
-    // if o.k. get a ponter to the data in the message and 
+    // if o.k. get a pointer to the data in the message and 
     // place the incoming data there
     int nleft,nread;
     char *gMsg;
@@ -212,7 +212,7 @@ MPI_Channel::sendMsg(int dbTag, int commitTag, const Message &msg, ChannelAddres
       }		    
     }
 
-    // if o.k. get a ponter to the data in the message and 
+    // if o.k. get a pointer to the data in the message and 
     // place the incoming data there
     int nwrite, nleft;    
     char *gMsg;
@@ -242,7 +242,7 @@ MPI_Channel::recvMatrix(int dbTag, int commitTag, Matrix &theMatrix, ChannelAddr
       }		    
     }
 
-    // if o.k. get a ponter to the data in the Matrix and 
+    // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int nleft,nread;
     double *data = theMatrix.data;
@@ -285,7 +285,7 @@ MPI_Channel::sendMatrix(int dbTag, int commitTag, const Matrix &theMatrix, Chann
       }		    
     }
 
-    // if o.k. get a ponter to the data in the Matrix and 
+    // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int nwrite, nleft;    
     double *data = theMatrix.data;
@@ -325,7 +325,7 @@ MPI_Channel::recvVector(int dbTag, int commitTag, Vector &theVector, ChannelAddr
 
     //    opserr << "MPI:recvVector " << otherTag << " " << theVector.Size() << endln;
 
-    // if o.k. get a ponter to the data in the Vector and 
+    // if o.k. get a pointer to the data in the Vector and 
     // place the incoming data there
     int nleft,nread;
     double *data = theVector.theData;
@@ -369,7 +369,7 @@ MPI_Channel::sendVector(int dbTag, int commitTag, const Vector &theVector, Chann
       }		    
     }
 
-    // if o.k. get a ponter to the data in the Vector and 
+    // if o.k. get a pointer to the data in the Vector and 
     // place the incoming data there
     int nwrite, nleft;    
     double *data = theVector.theData;
@@ -404,7 +404,7 @@ MPI_Channel::recvID(int dbTag, int commitTag, ID &theID, ChannelAddress *theAddr
       }		    
     }
 
-    // if o.k. get a ponter to the data in the ID and 
+    // if o.k. get a pointer to the data in the ID and 
     // place the incoming data there
     int nleft,nread;
     int *data = theID.data;
@@ -424,7 +424,7 @@ MPI_Channel::recvID(int dbTag, int commitTag, ID &theID, ChannelAddress *theAddr
 
     if (count != nleft) {
       opserr << "MPI_Channel::recvID() -";
-      opserr << " incorrect number of entries for ID received: " << count << " exptected: " << theID.sz << endln;
+      opserr << " incorrect number of entries for ID received: " << count << " expected: " << theID.sz << endln;
       return -1;
     }
     else
@@ -453,7 +453,7 @@ MPI_Channel::sendID(int dbTag, int commitTag, const ID &theID, ChannelAddress *t
       }		    
     }
 
-    // if o.k. get a ponter to the data in the ID and 
+    // if o.k. get a pointer to the data in the ID and 
     // place the incoming data there
     int nwrite, nleft;    
     int *data = theID.data;

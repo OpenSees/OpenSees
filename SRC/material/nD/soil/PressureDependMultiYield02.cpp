@@ -83,7 +83,7 @@ void* OPS_PressureDependMultiYield02()
     param[numParam+12] = 1.;
 
     int argc = OPS_GetNumRemainingInputArgs() + 2;
-    char * arg[] = {"nd", "rho", "refShearModul",
+    const char * arg[] = {"nd", "rho", "refShearModul",
 		    "refBulkModul", "frictionAng",
 		    "peakShearStra", "refPress", "pressDependCoe",
 		    "phaseTransformAngle", "contractionParam1",

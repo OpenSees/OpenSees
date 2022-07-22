@@ -1099,7 +1099,7 @@ ShellNLDKGQThermal::addLoad(ElementalLoad *theLoad, double loadFactor)
 	 for(int i =0; i<9;i++){
 		 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 			 opserr<<"Warning:The NodalThermalAction in ShellNLDKGQThermal "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 		 else{
 			 Loc(i)=data0(2*i+1);
@@ -2049,7 +2049,7 @@ ShellNLDKGQThermal::updateBasis( )
   //cross product for v3  
   v3 = LovelyCrossProduct( v1, v2 ) ;*/
 
-  // this procesure is simplified by Lisha Wang
+  // this procedure is simplified by Lisha Wang
   v3 = LovelyCrossProduct(v1,v2);
   v2 = LovelyCrossProduct(v3,v1);
   temp(0) = v1.Norm( );

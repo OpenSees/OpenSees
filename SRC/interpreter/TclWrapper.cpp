@@ -741,6 +741,14 @@ static int Tcl_ops_eleNodes(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+static int Tcl_ops_eleType(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_eleType() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -889,6 +897,14 @@ static int Tcl_ops_getEleTags(ClientData clientData, Tcl_Interp *interp, int arg
     wrapper->resetCommandLine(argc, 1, argv);
 
     if (OPS_getEleTags() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getCrdTransfTags() < 0) return TCL_ERROR;
 
     return TCL_OK;
 }
@@ -1353,6 +1369,24 @@ static int Tcl_ops_getEleLoadData(ClientData clientData, Tcl_Interp *interp, int
     return TCL_OK;
 }
 
+static int Tcl_ops_getNodeLoadTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNodeLoadTags() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_getNodeLoadData(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNodeLoadData() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_randomVariable(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1442,6 +1476,97 @@ static int Tcl_ops_transformUtoX(ClientData clientData, Tcl_Interp *interp, int 
 
     return TCL_OK;
 }
+
+static int Tcl_ops_performanceFunction(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_performanceFunction() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_startPoint(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_startPoint() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_randomNumberGenerator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_randomNumberGenerator() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_reliabilityConvergenceCheck(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_reliabilityConvergenceCheck() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_searchDirection(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_searchDirection() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_meritFunctionCheck(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_meritFunctionCheck() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_stepSizeRule(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_stepSizeRule() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_rootFinding(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_rootFinding() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_functionEvaluator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_functionEvaluator() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_gradientEvaluator(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_gradientEvaluator() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 
 static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
@@ -1647,6 +1772,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"convertBinaryToText", &Tcl_ops_convertBinaryToText);
     addCommand(interp,"convertTextToBinary", &Tcl_ops_convertTextToBinary);
     addCommand(interp,"getEleTags", &Tcl_ops_getEleTags);
+    addCommand(interp,"getCrdTransfTags", &Tcl_ops_getCrdTransfTags);
     addCommand(interp,"getNodeTags", &Tcl_ops_getNodeTags);
     addCommand(interp,"getParamTags", &Tcl_ops_getParamTags);
     addCommand(interp,"getParamValue", &Tcl_ops_getParamValue);
@@ -1703,6 +1829,8 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"getEleLoadClassTags", &Tcl_ops_getEleLoadClassTags);
     addCommand(interp,"getEleLoadTags", &Tcl_ops_getEleLoadTags);
     addCommand(interp,"getEleLoadData", &Tcl_ops_getEleLoadData);
+    addCommand(interp,"getNodeLoadTags", &Tcl_ops_getNodeLoadTags);
+    addCommand(interp,"getNodeLoadData", &Tcl_ops_getNodeLoadData);
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
     addCommand(interp,"getRVTags", &Tcl_ops_getRVTags);
     addCommand(interp,"getMean", &Tcl_ops_getRVMean);
@@ -1712,15 +1840,26 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"getInverseCDF", &Tcl_ops_getRVInverseCDF);
     addCommand(interp,"correlate", &Tcl_ops_addCorrelate);
     addCommand(interp,"transformUtoX", &Tcl_ops_transformUtoX);
+    addCommand(interp,"performanceFunction", &Tcl_ops_performanceFunction);    
     addCommand(interp,"updateMaterialStage", &Tcl_ops_updateMaterialStage);
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
     addCommand(interp,"probabilityTransformation", &Tcl_ops_probabilityTransformation);
+    addCommand(interp,"startPoint", &Tcl_ops_startPoint);
+    addCommand(interp,"randomNumberGenerator", &Tcl_ops_randomNumberGenerator);
+    addCommand(interp,"reliabilityConvergenceCheck", &Tcl_ops_reliabilityConvergenceCheck);
+    addCommand(interp,"searchDirection", &Tcl_ops_searchDirection);
+    addCommand(interp,"meritFunctionCheck", &Tcl_ops_meritFunctionCheck);
+    addCommand(interp,"stepSizeRule", &Tcl_ops_stepSizeRule);
+    addCommand(interp,"rootFinding", &Tcl_ops_rootFinding);            
+    addCommand(interp,"functionEvaluator", &Tcl_ops_functionEvaluator);
+    addCommand(interp,"gradientEvaluator", &Tcl_ops_gradientEvaluator);
     addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
     addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
     addCommand(interp,"logFile", &Tcl_ops_logFile);
     addCommand(interp,"setStartNodeTag", &Tcl_ops_setStartNodeTag);
     addCommand(interp,"hystereticBackbone", &Tcl_ops_hystereticBackbone);
     addCommand(interp,"strengthDegradation", &Tcl_ops_stiffnessDegradation);
+    addCommand(interp,"strengthControl", &Tcl_ops_stiffnessDegradation);    
     addCommand(interp,"stiffnessDegradation", &Tcl_ops_strengthDegradation);
     addCommand(interp,"unloadingRule", &Tcl_ops_unloadingRule);
     addCommand(interp,"partition", &Tcl_ops_partition);

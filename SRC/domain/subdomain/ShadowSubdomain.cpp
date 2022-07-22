@@ -1249,7 +1249,7 @@ ShadowSubdomain::getNumExternalNodes(void) const
 const ID   &
 ShadowSubdomain::getExternalNodes(void)
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1259,7 +1259,7 @@ ShadowSubdomain::getExternalNodes(void)
 int 	
 ShadowSubdomain::getNumDOF(void)
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1270,7 +1270,7 @@ ShadowSubdomain::getNumDOF(void)
 const Matrix &
 ShadowSubdomain::getTang(void)    
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 
@@ -1293,7 +1293,7 @@ ShadowSubdomain::getTang(void)
 const Vector &
 ShadowSubdomain::getResistingForce(void)    
 {
-  // if the subdoamin was built remotly need to get it's data
+  // if the subdomain was built remotly need to get it's data
   if (gotRemoteData == false && buildRemote == true)
     this->getRemoteData();
 

@@ -363,7 +363,7 @@ GeometricBrickDecorator::isFaceinVertPlane(int which, double xy, double zmin, do
 }
 
 /* 
-   Private methods used for the publc methods to identify the 
+   Private methods used for the public methods to identify the
    DRM boundary layer elements
 */
 

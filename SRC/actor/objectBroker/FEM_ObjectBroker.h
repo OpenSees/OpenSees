@@ -72,6 +72,7 @@ class CrdTransf;
 class GraphNumberer;
 
 class BeamIntegration;
+class SectionIntegration;
 
 class UniaxialMaterial;
 class SectionForceDeformation;
@@ -80,7 +81,6 @@ class Fiber;
 class FrictionModel;
 
 class ConvergenceTest;
-class SectionForceDeformation;
 class GroundMotion;
 class OPS_Stream;
 class Recorder;
@@ -116,6 +116,7 @@ class FEM_ObjectBroker
     virtual CrdTransf *getNewCrdTransf(int classTag);
 
     virtual BeamIntegration *getNewBeamIntegration(int classTag);
+    virtual SectionIntegration *getNewSectionIntegration(int classTag);
 
     virtual UniaxialMaterial  *getNewUniaxialMaterial(int classTag);
     virtual SectionForceDeformation  *getNewSection(int classTag);    
@@ -134,7 +135,7 @@ class FEM_ObjectBroker
     virtual Vector	  *getPtrNewVector(int classTag, int size);
     virtual ID	          *getPtrNewID(int classTag, int size);
 
-    // methods for ouput objects
+    // methods for output objects
     //    virtual DataOutputHandler *getPtrNewDataOutputHandler(int classTag);
     virtual OPS_Stream *getPtrNewStream(int classTag);
     virtual Recorder *getPtrNewRecorder(int classTag);

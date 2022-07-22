@@ -310,7 +310,7 @@ ZeroLengthContact2D::commitState()
 
 	////////////////////////////////////
 
-	// initialize lagrange mulitplier zero for next iterations.
+	// initialize lagrange multiplier zero for next iterations.
 
 	// lambda = pressure;          // using for augmented lagrange
 

@@ -138,7 +138,10 @@ transformation(3,3), A(0), v(0), e(0.0), K(0), P(0),
 end1Ptr(0), end2Ptr(0), theNDMaterial(0), the1DMaterial(0), order(0)
 {
 	// Obtain copy of Nd material model
-	theNDMaterial = theNDmat.getCopy();
+  if (dimension == 2)
+    theNDMaterial = theNDmat.getCopy("PlaneStrain2D");
+  else if (dimension == 3)
+    theNDMaterial = theNDmat.getCopy("ThreeDimensional");
 
 	if (theNDMaterial == 0) {
 		opserr << "ZeroLengthND::zeroLengthND-- failed to get copy of NDMaterial\n";
@@ -168,7 +171,10 @@ transformation(3,3), A(0), v(0), e(0.0), K(0), P(0),
 end1Ptr(0), end2Ptr(0), theNDMaterial(0), the1DMaterial(0), order(0)
 {
 	// Obtain copy of Nd material model
-	theNDMaterial = theNDmat.getCopy();
+  if (dimension == 2)
+    theNDMaterial = theNDmat.getCopy("PlaneStrain2D");
+  else if (dimension == 3)
+    theNDMaterial = theNDmat.getCopy("ThreeDimensional");
 	
 	if (theNDMaterial == 0) {
 		opserr << "ZeroLengthND::  -- failed to get copy of NDMaterial\n";

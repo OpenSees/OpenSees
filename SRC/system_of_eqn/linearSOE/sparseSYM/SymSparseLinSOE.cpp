@@ -42,7 +42,7 @@ SymSparseLinSOE::SymSparseLinSOE(SymSparseLinSolver &the_Solver, int lSparse)
 }
 
 
-/* A destructor for cleanning memory.
+/* A destructor for cleaning memory.
  * For diag and penv, it is rather straightforward to clean.
  * For row segments, since the memory of nz is allocated for each
  * row, the deallocated needs some special care.

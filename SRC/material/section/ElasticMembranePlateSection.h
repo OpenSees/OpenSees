@@ -108,6 +108,9 @@ class ElasticMembranePlateSection : public SectionForceDeformation{
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
+    // parameters
+    int setParameter(const char** argv, int argc, Parameter& param);
+    int updateParameter(int parameterID, Information& info);
 
   private :
 
