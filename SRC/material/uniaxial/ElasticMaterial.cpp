@@ -90,7 +90,7 @@ OPS_ElasticMaterial(void)
   // Parsing was successful, allocate the material
   theMaterial = new ElasticMaterial(iData[0], dData[0], dData[1], dData[2]);
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type ElasticMaterial\n";
+    opserr << "WARNING could not create uniaxialMaterial of type ElasticMaterial" << endln;
     return 0;
   }
 
@@ -225,6 +225,7 @@ ElasticMaterial::getCopy(void)
     theCopy->trialStrainRate = trialStrainRate;
     theCopy->committedStrain     = committedStrain;
     theCopy->committedStrainRate = committedStrainRate;
+    theCopy->parameterID = parameterID;
     return theCopy;
 }
 
@@ -242,7 +243,7 @@ ElasticMaterial::sendSelf(int cTag, Channel &theChannel)
   data(5) = committedStrainRate;
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ElasticMaterial::sendSelf() - failed to send data\n";
+    opserr << "ElasticMaterial::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -257,9 +258,9 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
-      opserr << "ElasticMaterial::recvSelf() - failed to receive data\n";
-      Epos = Eneg = 0; 
-      this->setTag(0);      
+    opserr << "ElasticMaterial::recvSelf() - failed to receive data" << endln;
+    Epos = Eneg = 0; 
+    this->setTag(0);      
   }
   else {
     this->setTag(int(data(0)));
