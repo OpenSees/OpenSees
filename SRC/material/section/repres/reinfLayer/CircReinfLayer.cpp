@@ -85,6 +85,9 @@ CircReinfLayer::CircReinfLayer(int materialID, int numReinfBars,
                                arcRad(arcRadius),initAng(initialAngle), 
                                finalAng(finalAngle)
 {
+   double angle = finalAng-initAng;
+   if (angle >= 360.0 && nReinfBars > 0)
+      finalAng = initAng + 360.0 - 360.0/nReinfBars;
 }
 
 CircReinfLayer::CircReinfLayer(int materialID, int numReinfBars, double  reinfBarArea,

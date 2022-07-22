@@ -186,7 +186,7 @@ void *OPS_HDR()
     }
     
     if (theEle == 0) {
-        opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
+        opserr << "WARNING this element only works for 3D problem with 6 dof per node: " << eleTag << endln;
         return 0;
     }
     

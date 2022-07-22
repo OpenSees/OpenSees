@@ -51,7 +51,8 @@ Journal of Structural Engineering, 133(2):155-165.
 #include <Matrix.h>
 #include <Node.h>
 #include <Channel.h>
-
+#include <elementAPI.h>
+#include <string>
 #include <CorotCrdTransfWarping2d.h>
 
 // initialize static variables
@@ -63,6 +64,32 @@ Vector CorotCrdTransfWarping2d::dub(5);
 Vector CorotCrdTransfWarping2d::Dub(5); 
 Matrix CorotCrdTransfWarping2d::kg(8,8);
 
+void* OPS_CorotCrdTransfWarping2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 1) {
+	opserr<<"insufficient arguments for CorotCrdTransfWarping2d\n";
+	return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get option
+    Vector jntOffsetI(2), jntOffsetJ(2);
+    double *iptr=&jntOffsetI(0), *jptr=&jntOffsetJ(0);
+    while(OPS_GetNumRemainingInputArgs() > 4) {
+	std::string type = OPS_GetString();
+	if(type == "-jntOffset") {
+	    numData = 2;
+	    if(OPS_GetDoubleInput(&numData,iptr) < 0) return 0;
+	    if(OPS_GetDoubleInput(&numData,jptr) < 0) return 0;
+	}
+    }
+
+    return new CorotCrdTransfWarping2d(tag,jntOffsetI,jntOffsetJ);
+}
 
 // constructor:
 CorotCrdTransfWarping2d::CorotCrdTransfWarping2d(int tag, 

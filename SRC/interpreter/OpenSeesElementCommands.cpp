@@ -153,6 +153,8 @@ void* OPS_DispBeamColumn3d();
 void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
+void* OPS_TimoshenkoBeamColumn2d();
+//void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -312,6 +314,24 @@ namespace {
 	}
     }
 
+    static void* OPS_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_MVLEM();
+	if(ndm == 3)
+	    return OPS_MVLEM_3D();	
+    }
+
+    static void* OPS_SFI_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_SFI_MVLEM();
+	if(ndm == 3)
+	    return OPS_SFI_MVLEM_3D();	
+    }    
+
     static void* OPS_DispBeamColumn()
     {
 	int ndm = OPS_GetNDM();
@@ -322,6 +342,18 @@ namespace {
 	    return OPS_DispBeamColumn3d();
 	}
     }
+
+    static void* OPS_TimoshenkoBeamColumn()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_TimoshenkoBeamColumn2d();
+	} else {
+	  //return OPS_TimoshenkoBeamColumn3d();
+	  return 0;
+	}
+    }  
 
   static void* OPS_MixedBeamColumn()
     {
@@ -628,10 +660,10 @@ namespace {
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
-	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM));
-	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM));
-	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM_3D));
-	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM_3D));
+	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
@@ -678,6 +710,7 @@ namespace {
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
+	functionMap.insert(std::make_pair("timoshenkoBeamColumn", &OPS_TimoshenkoBeamColumn));	
 	functionMap.insert(std::make_pair("dispBeamColumn3dID", &OPS_DispBeamColumn3dID));
 	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));

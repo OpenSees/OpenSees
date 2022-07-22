@@ -1532,3 +1532,16 @@ CorotCrdTransf2d::getLocalAxes(Vector &xAxis, Vector &yAxis, Vector &zAxis)
 
   return 0;
 }
+
+int
+CorotCrdTransf2d::getRigidOffsets(Vector &offsets)
+{
+  offsets(0) = nodeIOffset(0);
+  offsets(1) = nodeIOffset(1);
+  offsets(2) = 0.0;
+  offsets(3) = nodeJOffset(0);
+  offsets(4) = nodeJOffset(1);
+  offsets(5) = 0.0;
+
+  return 0;
+}

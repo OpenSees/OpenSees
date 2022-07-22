@@ -108,6 +108,10 @@ class DoubleMembranePlateFiberSection : public SectionForceDeformation{
 			  OPS_Stream &s);
     int getResponse(int responseID, Information &info);
 
+    // parameters
+    int setParameter(const char** argv, int argc, Parameter& param);
+    int updateParameter(int parameterID, Information& info);
+
   private :
 
     enum {numFibers = 5};
