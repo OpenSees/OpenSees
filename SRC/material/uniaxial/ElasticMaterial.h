@@ -46,15 +46,15 @@ class ElasticMaterial : public UniaxialMaterial
     ElasticMaterial();
     ~ElasticMaterial();
 
-    const char *getClassType(void) const {return "ElasticMaterial";};
+    const char *getClassType(void) const {return "ElasticMaterial";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     int setTrial(double strain, double &stress, double &tangent, double strainRate = 0.0); 
-    double getStrain(void) {return trialStrain;};
-    double getStrainRate(void) {return trialStrainRate;};
+    double getStrain(void) {return trialStrain;}
+    double getStrainRate(void) {return trialStrainRate;}
     double getStress(void);
     double getTangent(void);
-    double getDampTangent(void) {return eta;};
+    double getDampTangent(void) {return eta;}
     double getInitialTangent(void);
 
     int commitState(void);
