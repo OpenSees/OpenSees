@@ -223,11 +223,12 @@ int
 ElasticMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(4);
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = Epos;
   data(2) = Eneg;
   data(3) = eta;
+  data(4) = parameterID;
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ElasticMaterial::sendSelf() - failed to send data" << endln;
@@ -241,7 +242,7 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
 			  FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(4);
+  static Vector data(5);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -254,6 +255,7 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
     Epos = data(1);
     Eneg = data(2);
     eta  = data(3);
+    parameterID = (int)data(4);
   }
     
   return res;
