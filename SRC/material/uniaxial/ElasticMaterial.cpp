@@ -342,7 +342,7 @@ ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
   if (parameterID == 1)
     return trialStrain;
-  if (parameterID == 2 && trialStrain > 0.0)
+  if (parameterID == 2 && trialStrain >= 0.0)
     return trialStrain;
   if (parameterID == 3 && trialStrain < 0.0)
     return trialStrain;
@@ -360,7 +360,7 @@ ElasticMaterial::getTangentSensitivity(int gradIndex)
     return 1.0;
   if (parameterID == 2 && trialStrain >= 0.0)
     return 1.0;
-  if (parameterID == 3 && trialStrain <= 0.0)
+  if (parameterID == 3 && trialStrain < 0.0)
     return 1.0;
 
   return 0.0;
@@ -373,8 +373,6 @@ ElasticMaterial::getInitialTangentSensitivity(int gradIndex)
   if (parameterID == 1)
     return 1.0;
   if (parameterID == 2)
-    return 1.0;
-  if (parameterID == 3)
     return 1.0;
 
   return 0.0;
