@@ -218,6 +218,14 @@ ENTMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(E);
     return param.addObject(1, this);
   }
+  if (strcmp(argv[0],"a") == 0) {
+    param.setValue(a);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"b") == 0) {
+    param.setValue(b);
+    return param.addObject(3, this);
+  }  
   return -1;
 }
 
@@ -228,6 +236,12 @@ ENTMaterial::updateParameter(int parameterID, Information &info)
   case 1:
     E = info.theDouble;
     return 0;
+  case 2:
+    a = info.theDouble;
+    return 0;
+  case 3:
+    b = info.theDouble;
+    return 0;    
   default:
     return -1;
   }
