@@ -343,7 +343,7 @@ BoucWenMaterial::getCopy(void)
 int 
 BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-	static Vector data(21);
+	static Vector data(22);
 	data(0) = alpha;
 	data(1) = ko;
 	data(2) = n;
@@ -365,19 +365,29 @@ BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 	data(18) = maxNumIter;
 	data(19) = this->getTag();
 	data(20) = parameterID;
-
+	data(21) = -1;
+	if (SHVs != 0)
+	  data(21) = SHVs->noCols();
+	
 	if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
 	  opserr << "BoucWenMaterial::sendSelf() - failed to send Vector" << endln;
 		return -1;
 	}
 
+	if (SHVs != 0) {
+	  if (theChannel.sendMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	    opserr << "BoucWenMaterial::sendSelf() - failed to send SHVs Matrix" << endln;
+	    return -2;
+	  }
+	}
+	
 	return 0;
 }
 
 int 
 BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	static Vector data(21);
+	static Vector data(22);
 
 	if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
 	  opserr << "BoucWenMaterial::recvSelf() - failed to recvSelf" << endln;
@@ -405,6 +415,23 @@ BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 	maxNumIter = data(18);
 	this->setTag((int)data(19));
 	parameterID = data(20);
+
+	// Receive sensitivity history variables (SHVs)
+	int noCols = (int)data(21);
+	if (noCols > 0) {
+	  if (SHVs != 0)
+	    delete SHVs;
+	  SHVs = new Matrix(3, noCols);
+	  if (SHVs == 0) {
+	    opserr << "BoucWenMaterial::recvSelf() - failed to allocate SHVs matrix" << endln;
+	    return -2;
+	  }
+
+	  if (theChannel.recvMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	    opserr << "BoucWenMaterial::recvSelf() - failed to receives SHVs matrix" << endln;
+	    return -3;
+	  }
+	}
 	
 	return 0;
 }
