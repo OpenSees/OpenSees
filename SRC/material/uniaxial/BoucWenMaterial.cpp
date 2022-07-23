@@ -428,7 +428,7 @@ BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 	  }
 
 	  if (theChannel.recvMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
-	    opserr << "BoucWenMaterial::recvSelf() - failed to receives SHVs matrix" << endln;
+	    opserr << "BoucWenMaterial::recvSelf() - failed to receive SHVs matrix" << endln;
 	    return -3;
 	  }
 	}
