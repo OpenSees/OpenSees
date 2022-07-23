@@ -92,6 +92,7 @@ extern void *OPS_TDConcreteMC10(void); //ntosic
 extern void *OPS_TDConcreteMC10NL(void); //ntosic
 extern void *OPS_ElasticMaterial(void);
 extern void *OPS_ElasticPPMaterial(void);
+extern void *OPS_ENTMaterial(void);
 extern void *OPS_EPPGapMaterial(void);
 extern void *OPS_ParallelMaterial(void);
 extern void *OPS_SeriesMaterial(void);
@@ -957,29 +958,11 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       
     }
     if (strcmp(argv[1],"ENT") == 0) {
-      if (argc < 4) {
-	opserr << "WARNING invalid number of arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial ENT tag? E?" << endln;
+      void *theMat = OPS_ENTMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
 	return TCL_ERROR;
-      }    
-      
-      int tag;
-      double E;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial ENT tag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-	opserr << "WARNING invalid E\n";
-	opserr << "uniaxiaMaterial ENT: " << tag << endln;
-	return TCL_ERROR;	
-      }
-      
-      // Parsing was successful, allocate the material
-      theMaterial = new ENTMaterial(tag, E);       
     }
     if (strcmp(argv[1],"ElasticPP") == 0) {
       void *theMat = OPS_ElasticPPMaterial();
