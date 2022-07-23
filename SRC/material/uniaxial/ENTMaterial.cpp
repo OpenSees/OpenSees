@@ -50,14 +50,27 @@ void* OPS_ENTMaterial()
 
     int tag;
     int num = 1;
-    if(OPS_GetIntInput(&num, &tag) < 0) return 0;
+    if(OPS_GetIntInput(&num, &tag) < 0) {
+      opserr << "WARNING invalid tag for uniaxialMaterial ENT" << endln;
+      return 0;
+    }
+    
+    double data[3] = {0.0, 0.0, 1.0};
+    num = OPS_GetNumRemainingInputArgs();
+    if (num > 3)
+      num = 3;
+    
+    if(OPS_GetDoubleInput(&num, data) < 0) {
+      opserr << "Invalid data for uniaxialMaterial ENT " << tag << endln;
+      return 0;
+    }
 
-    double E;
-    if(OPS_GetDoubleInput(&num, &E) < 0) return 0;
-
-    UniaxialMaterial* mat = new ENTMaterial(tag,E);
-    if(mat == 0) return 0;
-
+    UniaxialMaterial* mat = new ENTMaterial(tag,data[0],data[1],data[2]);
+    if(mat == 0) {
+      opserr << "WARNING could not create uniaxialMaterial of type ENT" << endln;
+      return 0;
+    }
+    
     return mat;
 }
 
