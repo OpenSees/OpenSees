@@ -267,7 +267,10 @@ ENTMaterial::getStressSensitivity(int gradIndex, bool conditional)
 double
 ENTMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-  return 0.0;
+  if (parameterID == 1)
+    return 1.0;
+  else
+    return 0.0;
 }
 
 int
