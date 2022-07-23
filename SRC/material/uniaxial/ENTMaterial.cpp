@@ -162,11 +162,12 @@ ENTMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(4);
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = E;
   data(2) = a;
   data(3) = b;
+  data(4) = parameterID;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -180,7 +181,7 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(4);
+  static Vector data(5);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -189,12 +190,14 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
       a = 0;
       b = 0;
       this->setTag(0);
+      parameterID = 0;
   }
   else {
     this->setTag((int)data(0));
     E = data(1);
     a = data(2);
     b = data(3);
+    parameterID = (int)data(4);
   }
     
   return res;
