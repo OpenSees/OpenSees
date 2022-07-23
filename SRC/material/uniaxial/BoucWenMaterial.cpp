@@ -99,21 +99,23 @@ BoucWenMaterial::BoucWenMaterial(int tag,
 					double p_deltaEta,
 					double ptolerance,
 					int pMaxNumIter)
-:UniaxialMaterial(tag,MAT_TAG_BoucWen),
-alpha(p_alpha), ko(p_ko), n(p_n), gamma(p_gamma), beta(p_beta), Ao(p_Ao), 
-deltaA(p_deltaA), deltaNu(p_deltaNu), deltaEta(p_deltaEta), tolerance(ptolerance),
-maxNumIter(pMaxNumIter)
+  :UniaxialMaterial(tag,MAT_TAG_BoucWen),
+   alpha(p_alpha), ko(p_ko), n(p_n), gamma(p_gamma), beta(p_beta), Ao(p_Ao), 
+   deltaA(p_deltaA), deltaNu(p_deltaNu), deltaEta(p_deltaEta),
+   tolerance(ptolerance), maxNumIter(pMaxNumIter), parameterID(0), SHVs(0)
 {
-	parameterID = 0;
-	SHVs = 0;
-
-	// Initialize variables
-    this->revertToStart();
+  // Initialize variables
+  this->revertToStart();
 }
 
 BoucWenMaterial::BoucWenMaterial()
-	:UniaxialMaterial(0, MAT_TAG_BoucWen)
+  :UniaxialMaterial(0, MAT_TAG_BoucWen),
+   alpha(0.0), ko(0.0), n(0.0), gamma(0.0), beta(0.0), Ao(0.0), 
+   deltaA(0.0), deltaNu(0.0), deltaEta(0.0),
+   tolerance(0.0),  maxNumIter(0), parameterID(0), SHVs(0)
 {
+  // Initialize variables
+  this->revertToStart();  
 }
 
 BoucWenMaterial::~BoucWenMaterial()
