@@ -44,7 +44,7 @@
 void* OPS_ENTMaterial()
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
-	opserr<<"WARNING: invalid #args: ENT matTag E\n";
+      opserr<<"WARNING: invalid #args: ENT matTag E" << endln;
 	return 0;
     }
 
@@ -58,11 +58,6 @@ void* OPS_ENTMaterial()
     UniaxialMaterial* mat = new ENTMaterial(tag,E);
     if(mat == 0) return 0;
 
-    // if(OPS_addUniaxialMaterial(mat) == false) {
-    // 	opserr<<"WARNING: failed to add ENT material\n";
-    // 	delete mat;
-    // 	return 0;
-    // }
     return mat;
 }
 
@@ -167,7 +162,7 @@ ENTMaterial::sendSelf(int cTag, Channel &theChannel)
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ENTMaterial::sendSelf() - failed to send data\n";
+    opserr << "ENTMaterial::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -181,7 +176,7 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
-      opserr << "ENTMaterial::recvSelf() - failed to receive data\n";
+    opserr << "ENTMaterial::recvSelf() - failed to receive data" << endln;
       E = 0;
       a = 0;
       b = 0;
