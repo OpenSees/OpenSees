@@ -142,7 +142,7 @@ ENTMaterial::revertToStart(void)
 UniaxialMaterial *
 ENTMaterial::getCopy(void)
 {
-  ENTMaterial *theCopy = new ENTMaterial(this->getTag(),E);
+  ENTMaterial *theCopy = new ENTMaterial(this->getTag(),E,a,b);
   theCopy->trialStrain = trialStrain;
   theCopy->parameterID = parameterID;
   return theCopy;
