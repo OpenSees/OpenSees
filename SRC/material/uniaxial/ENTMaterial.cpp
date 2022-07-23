@@ -209,13 +209,17 @@ ENTMaterial::Print(OPS_Stream &s, int flag)
 	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
 		s << "ENTMaterial, tag: " << this->getTag() << endln;
 		s << "  E: " << E << endln;
+		s << "  a: " << a << endln;
+		s << "  b: " << b << endln;		
 	}
     
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"ENTMaterial\", ";
-		s << "\"E\": " << E << "}";
+		s << "\"E\": " << E << ",";
+		s << "\"a\": " << a << ",";
+		s << "\"b\": " << b << "}";		
 	}
 }
 
