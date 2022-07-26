@@ -734,6 +734,8 @@ Response* ElasticTimoshenkoBeam2d::setResponse(const char **argv, int argc,
 
 int ElasticTimoshenkoBeam2d::getResponse (int responseID, Information &eleInfo)
 {
+    this->getResistingForce();
+
     switch (responseID) {
     case 1: // global forces
         return eleInfo.setVector(this->getResistingForce());
