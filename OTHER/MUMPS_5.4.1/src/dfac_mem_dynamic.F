@@ -1,0 +1,554 @@
+C
+C  This file is part of MUMPS 5.4.1, released
+C  on Tue Aug  3 09:49:43 UTC 2021
+C
+C
+C  Copyright 1991-2021 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
+C
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
+C
+      MODULE DMUMPS_DYNAMIC_MEMORY_M
+      CONTAINS
+      SUBROUTINE DMUMPS_DM_SET_DYNPTR( CB_STATE, A, LA,
+     &                                PAMASTER_OR_PTRAST, IXXD,
+     &                                IXXR, SON_A, IACHK, RECSIZE )
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: CB_STATE
+      INTEGER, INTENT(IN) :: IXXR(2), IXXD(2)
+      INTEGER(8), INTENT(IN) :: LA, PAMASTER_OR_PTRAST
+      DOUBLE PRECISION, INTENT(IN), TARGET :: A( LA )
+#if defined(MUMPS_F2003)
+      DOUBLE PRECISION, POINTER, DIMENSION(:), INTENT(OUT) :: SON_A
+#else
+      DOUBLE PRECISION, POINTER, DIMENSION(:) :: SON_A
+#endif
+      INTEGER(8), INTENT(OUT) :: IACHK, RECSIZE
+      IF ( DMUMPS_DM_IS_DYNAMIC( IXXD ) ) THEN
+        CALL MUMPS_GETI8(RECSIZE, IXXD)
+        CALL DMUMPS_DM_SET_PTR( PAMASTER_OR_PTRAST, RECSIZE, SON_A )
+        IACHK = 1_8
+      ELSE
+        CALL MUMPS_GETI8(RECSIZE, IXXR)
+        IACHK = PAMASTER_OR_PTRAST
+        SON_A => A
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_DM_SET_DYNPTR
+      SUBROUTINE DMUMPS_DM_PAMASTERORPTRAST( N, SLAVEF, MYID, KEEP28,
+     &                              KEEP199, INODE, CB_STATE, IXXD,
+     &                              STEP, DAD, PROCNODE_STEPS,
+     &                              RCURRENT, PAMASTER, PTRAST,
+     &                              IS_PAMASTER, IS_PTRAST )
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: KEEP28, N, SLAVEF, MYID, INODE, CB_STATE
+      INTEGER, INTENT(in) :: KEEP199
+      INTEGER, INTENT(in) :: IXXD(2)
+      INTEGER, INTENT(in) :: DAD(KEEP28)
+      INTEGER, INTENT(in) :: STEP(N)
+      INTEGER, INTENT(in) :: PROCNODE_STEPS(KEEP28)
+      LOGICAL, INTENT(out) :: IS_PAMASTER, IS_PTRAST
+      INTEGER(8), INTENT(in) :: PAMASTER(KEEP28), PTRAST(KEEP28)
+      INTEGER(8), INTENT(in) :: RCURRENT
+      LOGICAL :: DAD_TYPE2_NOT_ON_MYID
+      INTEGER :: NODETYPE, DADTYPE
+      INCLUDE 'mumps_headers.h'
+      INTEGER, EXTERNAL :: MUMPS_TYPENODE
+      INTEGER, EXTERNAL :: MUMPS_PROCNODE
+      IS_PAMASTER = .FALSE.
+      IS_PTRAST   = .FALSE.
+      IF (CB_STATE .EQ. S_FREE) THEN
+        RETURN
+      ENDIF
+      NODETYPE = MUMPS_TYPENODE(PROCNODE_STEPS(STEP(INODE)), KEEP199)
+      DADTYPE=-99999 
+      DAD_TYPE2_NOT_ON_MYID = .FALSE.
+      IF (DAD(STEP(INODE)) .NE. 0) THEN
+        DADTYPE= MUMPS_TYPENODE(
+     &           PROCNODE_STEPS(STEP(DAD(STEP(INODE)))),
+     &           KEEP199)
+        IF (DADTYPE .EQ. 2 .AND.
+     &      MUMPS_PROCNODE(
+     &           PROCNODE_STEPS(STEP(DAD(STEP(INODE)))),
+     &           KEEP199).NE.MYID
+     &    ) THEN
+          DAD_TYPE2_NOT_ON_MYID = .TRUE.
+        ENDIF
+      ENDIF
+      IF (DMUMPS_DM_ISBAND(CB_STATE)) THEN
+        IS_PTRAST=.TRUE.
+      ELSE IF (NODETYPE.EQ.1
+     &  .AND. MUMPS_PROCNODE(PROCNODE_STEPS(STEP(INODE)),
+     &           KEEP199).EQ.MYID
+     &  .AND. DAD_TYPE2_NOT_ON_MYID)
+     &  THEN
+        IS_PTRAST=.TRUE.
+      ELSE
+        IS_PAMASTER=.TRUE.
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_DM_PAMASTERORPTRAST
+      LOGICAL FUNCTION DMUMPS_DM_ISBAND(XXSTATE)
+      INTEGER, INTENT(IN) :: XXSTATE
+      INCLUDE 'mumps_headers.h'
+      SELECT CASE (XXSTATE)
+        CASE(S_NOTFREE, S_CB1COMP);
+          DMUMPS_DM_ISBAND = .FALSE.
+        CASE(S_ACTIVE, S_ALL,
+     &    S_NOLCBCONTIG, S_NOLCBNOCONTIG, S_NOLCLEANED,
+     &    S_NOLCBNOCONTIG38, S_NOLCBCONTIG38, S_NOLCLEANED38,
+     &    S_NOLNOCB, S_NOLNOCBCLEANED);
+          DMUMPS_DM_ISBAND = .TRUE.
+        CASE(S_FREE);
+          DMUMPS_DM_ISBAND = .FALSE.
+        CASE DEFAULT;
+          WRITE(*,*) "Wrong state during DMUMPS_DM_ISBAND", XXSTATE
+          CALL MUMPS_ABORT()
+        END SELECT
+      RETURN
+      END FUNCTION DMUMPS_DM_ISBAND
+      LOGICAL FUNCTION DMUMPS_DM_IS_DYNAMIC(IXXD)
+      INTEGER :: IXXD(2)
+      INTEGER(8) :: DYN_SIZE
+      CALL MUMPS_GETI8( DYN_SIZE, IXXD )
+      DMUMPS_DM_IS_DYNAMIC = DYN_SIZE > 0_8
+      RETURN
+      END FUNCTION DMUMPS_DM_IS_DYNAMIC
+      SUBROUTINE  DMUMPS_DM_FAC_UPD_DYN_MEMCNTS
+     &                    ( MEM_COUNT_ALLOCATED, ATOMIC_UPDATES, KEEP8,
+     &                      IFLAG, IERROR, K69UPD_ARG )
+      IMPLICIT NONE
+      INTEGER(8), INTENT(IN)        :: MEM_COUNT_ALLOCATED
+      INTEGER(8), INTENT(INOUT)     :: KEEP8(150)
+      LOGICAL, INTENT(IN)           :: ATOMIC_UPDATES
+      INTEGER, INTENT(INOUT)        :: IFLAG, IERROR
+      LOGICAL, INTENT(IN), OPTIONAL :: K69UPD_ARG
+      LOGICAL K69UPD
+      INTEGER(8) :: KEEP8TMPCOPY
+      K69UPD = .TRUE.
+      IF (present(K69UPD_ARG)) THEN
+        IF ( .NOT. K69UPD_ARG ) THEN
+          K69UPD = .FALSE.
+        ENDIF
+      ENDIF
+      IF (MEM_COUNT_ALLOCATED.GT.0) THEN
+           IF (ATOMIC_UPDATES ) THEN
+!$OMP        ATOMIC CAPTURE
+             KEEP8(73) = KEEP8(73) + MEM_COUNT_ALLOCATED
+             KEEP8TMPCOPY = KEEP8(73)
+!$OMP        END ATOMIC
+!$OMP        ATOMIC UPDATE
+             KEEP8(74) = max(KEEP8(74), KEEP8TMPCOPY)
+!$OMP        END ATOMIC
+           ELSE
+             KEEP8(73) = KEEP8(73) + MEM_COUNT_ALLOCATED
+             KEEP8TMPCOPY = KEEP8(73)
+             KEEP8(74) = max(KEEP8(74), KEEP8(73))
+           ENDIF
+           IF ( KEEP8TMPCOPY .GT. KEEP8(75) ) THEN
+             IFLAG = -19
+             CALL MUMPS_SET_IERROR(
+     &            (KEEP8TMPCOPY-KEEP8(75)), IERROR)
+           ENDIF
+           IF ( K69UPD ) THEN
+             IF ( ATOMIC_UPDATES ) THEN
+!$OMP          ATOMIC CAPTURE
+               KEEP8(69) = KEEP8(69) + MEM_COUNT_ALLOCATED
+               KEEP8TMPCOPY = KEEP8(69)
+!$OMP          END ATOMIC
+!$OMP          ATOMIC UPDATE
+               KEEP8(68) = max(KEEP8(68), KEEP8TMPCOPY)
+!$OMP          END ATOMIC
+             ELSE
+               KEEP8(69) = KEEP8(69) + MEM_COUNT_ALLOCATED
+               KEEP8(68) = max(KEEP8(69), KEEP8(68))
+             ENDIF
+           ENDIF
+      ELSE
+           IF (ATOMIC_UPDATES) THEN
+!$OMP ATOMIC UPDATE
+             KEEP8(73) = KEEP8(73) + MEM_COUNT_ALLOCATED
+!$OMP END ATOMIC
+             IF ( K69UPD ) THEN
+!$OMP ATOMIC UPDATE
+               KEEP8(69) = KEEP8(69) + MEM_COUNT_ALLOCATED
+!$OMP END ATOMIC
+             ENDIF
+           ELSE
+             KEEP8(73) = KEEP8(73) + MEM_COUNT_ALLOCATED
+             IF ( K69UPD ) THEN
+               KEEP8(69) = KEEP8(69) + MEM_COUNT_ALLOCATED
+             ENDIF
+           ENDIF
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_DM_FAC_UPD_DYN_MEMCNTS
+      SUBROUTINE DMUMPS_DM_FAC_ALLOC_ALLOWED
+     &                     (MEM_COUNT_TO_ALLOCATE, KEEP8, 
+     &                      IFLAG, IERROR)
+      IMPLICIT NONE
+      INTEGER(8), INTENT(IN)    :: MEM_COUNT_TO_ALLOCATE
+      INTEGER(8), INTENT(INOUT) :: KEEP8(150)
+      INTEGER, INTENT(INOUT)    :: IFLAG, IERROR
+      IF ( KEEP8(73) + MEM_COUNT_TO_ALLOCATE
+     &     .GT. KEEP8(75) ) THEN
+           IFLAG = -19
+           CALL MUMPS_SET_IERROR(
+     &        KEEP8(73) + MEM_COUNT_TO_ALLOCATE -KEEP8(75),
+     &        IERROR )
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_DM_FAC_ALLOC_ALLOWED
+      SUBROUTINE DMUMPS_DM_CBSTATIC2DYNAMIC( STRATEGY,
+     &           SIZER_NEEDED, SKIP_TOP_STACK,
+     &           MYID, N, SLAVEF,
+     &           KEEP, KEEP8,
+     &           IW, LIW, IWPOSCB, IWPOS,
+     &           A, LA, LRLU, IPTRLU, LRLUS, 
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, IFLAG, IERROR)
+!$    USE OMP_LIB
+      USE DMUMPS_LOAD, ONLY : DMUMPS_LOAD_MEM_UPDATE
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: STRATEGY
+      INTEGER(8), INTENT(in) :: SIZER_NEEDED
+      LOGICAL, INTENT(in)    :: SKIP_TOP_STACK
+      INTEGER, INTENT(in)  :: N, SLAVEF, KEEP(500)
+      INTEGER, INTENT(in)  :: MYID
+      INTEGER(8), INTENT(inout) :: KEEP8(150)
+      INTEGER :: IWPOS, IWPOSCB, LIW
+      INTEGER, INTENT(inout) :: IW( LIW )
+      INTEGER(8) :: LA, LRLU, IPTRLU, LRLUS
+      DOUBLE PRECISION, INTENT(in) :: A( LA )
+      INTEGER, INTENT(in)    :: STEP(N)
+      INTEGER(8), INTENT(inout) :: PTRAST(KEEP(28)), PAMASTER(KEEP(28))
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP(28)), DAD(KEEP(28))
+      INTEGER, INTENT(inout) :: IFLAG, IERROR
+      INCLUDE 'mumps_headers.h'
+      INTEGER    :: ICURRENT, INODE, TYPEINODE, CB_STATE
+      INTEGER(8) :: RCURRENT, RCURRENT_SIZE, SIZEHOLE
+      INTEGER(8) :: KEEP8TMPCOPY
+      LOGICAL    :: MOVE2DYNAMIC
+      LOGICAL    :: SSARBRDAD 
+      INTEGER(8) :: TMP_ADDRESS, ITMP8
+      INTEGER(8) :: I8
+      DOUBLE PRECISION, DIMENSION(:), POINTER :: DYNAMIC_CB
+      LOGICAL :: IS_PAMASTER, IS_PTRAST
+      INTEGER :: allocok
+!$    INTEGER(8) :: CHUNK8 
+!$    LOGICAL    :: OMP_FLAG
+!$    INTEGER    :: NOMP
+      LOGICAL      :: IFLAG_M13_OCCURED, IFLAG_M19_OCCURED
+      INTEGER(8)   :: MIN_SIZE_M13, MIN_SIZE_M19
+      INTEGER, EXTERNAL :: MUMPS_TYPENODE
+      IF ( STRATEGY .EQ. 0 ) THEN
+        IF (LRLUS.LT.SIZER_NEEDED) THEN
+          IFLAG = -9
+          CALL MUMPS_SET_IERROR(SIZER_NEEDED-LRLUS, IERROR)
+        ENDIF
+        RETURN
+      ENDIF
+      IFLAG_M13_OCCURED  = .FALSE.
+      MIN_SIZE_M13       = huge(MIN_SIZE_M13)
+      IFLAG_M19_OCCURED  = .FALSE.
+      MIN_SIZE_M19       = huge(MIN_SIZE_M19)
+!$    NOMP = OMP_GET_MAX_THREADS()
+      ICURRENT  = IWPOSCB + 1 
+      RCURRENT  = IPTRLU  + 1
+      IF (STRATEGY.EQ.1 .AND. SIZER_NEEDED.LE.LRLUS) GOTO 500
+      IF (( KEEP8(73) + SIZER_NEEDED-LRLUS).GT.
+     &               KEEP8(75)) THEN
+           IFLAG = -19
+           CALL MUMPS_SET_IERROR
+     &       (KEEP8(73) + SIZER_NEEDED-LRLUS-KEEP8(75), IERROR)
+            GOTO 500
+      ENDIF
+      DO WHILE (ICURRENT .NE. LIW-KEEP(IXSZ)+1)
+        INODE        = IW(ICURRENT+XXN)
+        CB_STATE     = IW(ICURRENT+XXS)
+        CALL MUMPS_GETI8( RCURRENT_SIZE, IW(ICURRENT+XXR))
+        CALL DMUMPS_DM_PAMASTERORPTRAST( N, SLAVEF, MYID, KEEP(28),
+     &                                  KEEP(199), INODE, CB_STATE,
+     &                                  IW(ICURRENT+XXD:ICURRENT+XXD+1),
+     &                                  STEP, DAD, PROCNODE_STEPS,
+     &                                  RCURRENT, PAMASTER, PTRAST,
+     &                                  IS_PAMASTER, IS_PTRAST )
+        IF ( CB_STATE .NE. S_FREE .AND.
+     &       .NOT. DMUMPS_DM_IS_DYNAMIC(IW(ICURRENT+XXD)) ) THEN
+          TYPEINODE = MUMPS_TYPENODE(PROCNODE_STEPS(STEP(INODE)),
+     &                               KEEP(199))
+          IF (STRATEGY .EQ. -1) THEN
+            MOVE2DYNAMIC = .FALSE.  
+            MOVE2DYNAMIC = MOVE2DYNAMIC .OR.
+     &                     CB_STATE .EQ. S_NOLCBCONTIG .OR.
+     &                     CB_STATE .EQ. S_NOLCBNOCONTIG .OR.
+     &                     CB_STATE .EQ. S_NOLCLEANED .OR.
+     &                     CB_STATE .EQ. S_ALL .OR.
+     &                     CB_STATE .EQ. S_ACTIVE
+          ELSE IF (STRATEGY .EQ. 2 .OR. STRATEGY .EQ. 3) THEN
+            MOVE2DYNAMIC = .TRUE. 
+            MOVE2DYNAMIC = MOVE2DYNAMIC .AND. (TYPEINODE.NE.3)
+          ELSE IF (STRATEGY .EQ. 1) THEN
+            MOVE2DYNAMIC = .FALSE. 
+            IF (LRLUS.GT.SIZER_NEEDED) GOTO 500
+            IF (TYPEINODE.EQ.3) GOTO 100
+            MOVE2DYNAMIC = MOVE2DYNAMIC.OR..TRUE.
+          ELSE
+            WRITE(*,*) "Internal error in DMUMPS_DM_CBSTATIC2DYNAMIC",
+     &      MOVE2DYNAMIC
+            CALL MUMPS_ABORT()
+          ENDIF
+          MOVE2DYNAMIC = MOVE2DYNAMIC .AND. (RCURRENT_SIZE .NE. 0_8)
+          MOVE2DYNAMIC = MOVE2DYNAMIC .AND. 
+     &         .NOT. ((ICURRENT.EQ.IWPOSCB + 1).AND.(SKIP_TOP_STACK))
+          IF (STRATEGY .NE. 3) THEN
+            IF ( KEEP(405) .EQ. 1 ) THEN
+!$OMP         ATOMIC READ
+              KEEP8TMPCOPY = KEEP8(73)
+!$OMP         END ATOMIC
+            ELSE
+              KEEP8TMPCOPY = KEEP8(73)
+            ENDIF
+            IF ( RCURRENT_SIZE + KEEP8TMPCOPY .GT. KEEP8(75) ) THEN
+               IFLAG_M19_OCCURED= .TRUE.
+               MIN_SIZE_M19     = min( MIN_SIZE_M19,  
+     &           RCURRENT_SIZE+KEEP8(73)-KEEP8(75) )
+               MOVE2DYNAMIC = .FALSE.
+            ENDIF
+          ENDIF
+          IF ( MOVE2DYNAMIC ) THEN
+            ALLOCATE(DYNAMIC_CB(RCURRENT_SIZE), stat=allocok)
+            IF (allocok .GT. 0) THEN
+              IF ( (STRATEGY .NE. 1).OR. 
+     &           (SIZER_NEEDED-LRLUS).GE.RCURRENT_SIZE) THEN
+                IFLAG = -13
+                CALL MUMPS_SET_IERROR(SIZER_NEEDED-LRLUS, IERROR)
+                GOTO 500
+              ENDIF
+              IFLAG_M13_OCCURED = .TRUE.
+              MIN_SIZE_M13  = min(MIN_SIZE_M13, RCURRENT_SIZE)
+              GOTO 100
+            ENDIF
+            SIZEHOLE=0_8
+            IF (KEEP(216).NE.3) THEN
+              CALL DMUMPS_SIZEFREEINREC( IW(ICURRENT),
+     &        LIW-ICURRENT+1, SIZEHOLE, KEEP(IXSZ))
+            ENDIF
+            CALL MUMPS_STOREI8(RCURRENT_SIZE,IW(ICURRENT+XXD))
+            CALL MUMPS_ADDR_C(DYNAMIC_CB(1), TMP_ADDRESS)
+            IF (IS_PTRAST) THEN
+              PTRAST(STEP(INODE)) = TMP_ADDRESS
+            ELSE IF (IS_PAMASTER) THEN
+              PAMASTER(STEP(INODE)) = TMP_ADDRESS
+            ELSE
+              WRITE(*,*) 
+     &          "Internal error 3 in DMUMPS_DM_CBSTATIC2DYNAMIC",
+     &        RCURRENT, PTRAST(STEP(INODE)), PAMASTER(STEP(INODE))
+              CALL MUMPS_ABORT()
+            ENDIF
+            ITMP8 = (RCURRENT_SIZE-SIZEHOLE)
+            LRLUS = LRLUS + ITMP8
+            IF (KEEP(405).EQ.1) THEN
+              IF (SIZEHOLE .NE. 0_8) THEN
+!$OMP           ATOMIC CAPTURE
+                KEEP8(69) = KEEP8(69) + SIZEHOLE
+                KEEP8TMPCOPY = KEEP8(69)
+!$OMP           END ATOMIC
+!$OMP           ATOMIC UPDATE
+                KEEP8(68) = max( KEEP8(68), KEEP8TMPCOPY )
+!$OMP           END ATOMIC
+              ENDIF
+            ELSE
+              KEEP8(69) = KEEP8(69) + SIZEHOLE
+              KEEP8(68) = max( KEEP8(68), KEEP8(69) )
+            ENDIF
+            CALL MUMPS_SET_SSARBR_DAD(SSARBRDAD, INODE,
+     &           DAD, N, KEEP(28),
+     &           STEP, PROCNODE_STEPS, KEEP(199))
+            CALL DMUMPS_LOAD_MEM_UPDATE( SSARBRDAD, .FALSE.,
+     &      LA - LRLUS, 0_8, -(RCURRENT_SIZE-SIZEHOLE),
+     &      KEEP, KEEP8, LRLUS)
+            IF (ICURRENT .EQ. IWPOSCB+1) THEN
+              IPTRLU = IPTRLU + RCURRENT_SIZE
+              LRLU = LRLU + RCURRENT_SIZE
+              CALL MUMPS_STOREI8(0_8, IW(ICURRENT+XXR))
+            ENDIF
+            IF (STRATEGY .NE. 3) THEN
+              CALL DMUMPS_DM_FAC_UPD_DYN_MEMCNTS (
+     &                      RCURRENT_SIZE, KEEP(405).EQ.1, KEEP8, 
+     &                      IFLAG, IERROR, .FALSE.)
+              IF (IFLAG.LT.0) GOTO 500
+            ENDIF
+!$          CHUNK8 = max( int(KEEP(361),8),
+!$   &              (RCURRENT_SIZE+NOMP-1) / NOMP)
+!$          OMP_FLAG = ( (RCURRENT_SIZE > int(KEEP(361),8))
+!$   &                   .AND.(NOMP.GT.1)
+!$   &                  )
+!$OMP       PARALLEL DO PRIVATE(I8) SCHEDULE(STATIC, CHUNK8)
+!$OMP&      IF (OMP_FLAG) 
+             DO I8=1_8, RCURRENT_SIZE
+               DYNAMIC_CB(I8) = A(RCURRENT+I8-1_8)
+             ENDDO
+!$OMP       END PARALLEL DO 
+          ENDIF
+        ENDIF
+ 100    CONTINUE
+        RCURRENT = RCURRENT + RCURRENT_SIZE
+        ICURRENT = ICURRENT + IW(ICURRENT+XXI)
+      END DO
+      IF (LRLUS.LT.SIZER_NEEDED) THEN
+        IF (IFLAG_M19_OCCURED) THEN
+            IFLAG = -19
+            CALL MUMPS_SET_IERROR(MIN_SIZE_M19, IERROR)
+        ELSE IF (IFLAG_M13_OCCURED) THEN
+            IFLAG = -13
+            CALL MUMPS_SET_IERROR(MIN_SIZE_M13, IERROR)
+        ELSE
+            IFLAG = -9
+            CALL MUMPS_SET_IERROR(SIZER_NEEDED-LRLUS, IERROR)
+        ENDIF
+      ENDIF
+ 500  CONTINUE
+      RETURN
+      END SUBROUTINE DMUMPS_DM_CBSTATIC2DYNAMIC
+      SUBROUTINE DMUMPS_DM_FREEALLDYNAMICCB( MYID, N, SLAVEF,
+     &           KEEP, KEEP8, IW, LIW, IWPOSCB, IWPOS,
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, ATOMIC_UPDATES )
+      INTEGER, INTENT(in)  :: N, SLAVEF, KEEP(500)
+      INTEGER, INTENT(in)  :: MYID
+      INTEGER(8), INTENT(inout) :: KEEP8(150)  
+      INTEGER :: IWPOS, IWPOSCB, LIW
+      INTEGER, INTENT(inout) :: IW( LIW ) 
+      INTEGER, INTENT(in)    :: STEP(N)
+      INTEGER(8), INTENT(in) :: PTRAST(KEEP(28)), PAMASTER(KEEP(28))
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP(28)), DAD(KEEP(28))
+      LOGICAL, INTENT(in)    :: ATOMIC_UPDATES
+      INCLUDE 'mumps_headers.h'
+      INTEGER :: ICURRENT, INODE
+      INTEGER :: CB_STATE
+      INTEGER(8) :: DYN_SIZE, TMP_ADDRESS
+      INTEGER(8), PARAMETER :: RDUMMY = -987654
+      LOGICAL :: IS_PAMASTER, IS_PTRAST
+      DOUBLE PRECISION, DIMENSION(:), POINTER :: TMP_PTR
+      ICURRENT  = IWPOSCB + 1 
+      IF (KEEP8(73) .NE. 0_8) THEN
+       DO WHILE (ICURRENT .LT. LIW-KEEP(IXSZ)+1)
+        INODE = IW(ICURRENT+XXN)
+        CB_STATE = IW(ICURRENT+XXS)
+        IF (CB_STATE.NE.S_FREE) THEN
+         CALL MUMPS_GETI8( DYN_SIZE, IW(ICURRENT+XXD) )
+         IF (DYN_SIZE .GT. 0_8) THEN
+          CALL DMUMPS_DM_PAMASTERORPTRAST( N, SLAVEF, MYID, KEEP(28),
+     &    KEEP(199), INODE, CB_STATE, IW(ICURRENT+XXD),
+     &    STEP, DAD, PROCNODE_STEPS,
+     &    RDUMMY, PAMASTER, PTRAST,  
+     &    IS_PAMASTER, IS_PTRAST )
+          IF (IS_PAMASTER) THEN
+            TMP_ADDRESS = PAMASTER(STEP(INODE))
+          ELSE IF (IS_PTRAST) THEN
+            TMP_ADDRESS = PTRAST(STEP(INODE))
+          ELSE
+            WRITE(*,*) "Internal error 1 in DMUMPS_DM_FREEALLDYNAMICCB"
+     &      , IS_PTRAST, IS_PAMASTER
+          ENDIF
+          CALL DMUMPS_DM_SET_PTR(TMP_ADDRESS, DYN_SIZE, TMP_PTR)
+          CALL DMUMPS_DM_FREE_BLOCK( TMP_PTR, DYN_SIZE,
+     &                               ATOMIC_UPDATES, KEEP8)
+          CALL MUMPS_STOREI8(0_8, IW(ICURRENT+XXD))
+         ENDIF
+        ENDIF
+        ICURRENT = ICURRENT + IW(ICURRENT+XXI)
+       ENDDO
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_DM_FREEALLDYNAMICCB
+      SUBROUTINE DMUMPS_DM_SET_PTR(ADDRESS, SIZFR8, CBPTR)
+      USE DMUMPS_STATIC_PTR_M, ONLY : DMUMPS_GET_TMP_PTR
+      IMPLICIT NONE
+      INTEGER(8), INTENT(IN) :: ADDRESS, SIZFR8
+#if defined(MUMPS_F2003)
+      DOUBLE PRECISION, DIMENSION(:), POINTER, INTENT(out) :: CBPTR
+#else
+      DOUBLE PRECISION, DIMENSION(:), POINTER :: CBPTR
+#endif
+!$OMP CRITICAL(STATIC_PTR_ACCESS)
+      CALL DMUMPS_SET_TMP_PTR_C( ADDRESS, SIZFR8 )
+      CALL DMUMPS_GET_TMP_PTR( CBPTR )
+!$OMP END CRITICAL(STATIC_PTR_ACCESS)
+      RETURN
+      END SUBROUTINE DMUMPS_DM_SET_PTR
+      SUBROUTINE DMUMPS_DM_FREE_BLOCK( DYNPTR, SIZFR8,
+     &                                 ATOMIC_UPDATES, KEEP8 )
+      IMPLICIT NONE
+      DOUBLE PRECISION, POINTER, DIMENSION(:) :: DYNPTR
+      INTEGER(8) :: SIZFR8
+      LOGICAL, INTENT(IN) :: ATOMIC_UPDATES
+      INTEGER(8) :: KEEP8(150)
+      INTEGER IDUMMY
+      DEALLOCATE(DYNPTR)
+      NULLIFY(DYNPTR)
+      CALL DMUMPS_DM_FAC_UPD_DYN_MEMCNTS (
+     &           -SIZFR8, ATOMIC_UPDATES, KEEP8, IDUMMY, IDUMMY)
+      RETURN
+      END SUBROUTINE DMUMPS_DM_FREE_BLOCK
+      END MODULE DMUMPS_DYNAMIC_MEMORY_M
+      SUBROUTINE DMUMPS_DM_FREEALLDYNAMICCB_I( MYID, N, SLAVEF,
+     &           KEEP, KEEP8, IW, LIW, IWPOSCB, IWPOS,
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, ATOMIC_UPDATES )
+      USE DMUMPS_DYNAMIC_MEMORY_M, ONLY : DMUMPS_DM_FREEALLDYNAMICCB
+      IMPLICIT NONE
+      INTEGER, INTENT(in)  :: N, SLAVEF, KEEP(500)
+      INTEGER, INTENT(in)  :: MYID
+      INTEGER(8), INTENT(inout) :: KEEP8(150)  
+      INTEGER :: IWPOS, IWPOSCB, LIW
+      INTEGER, INTENT(inout) :: IW( LIW ) 
+      INTEGER, INTENT(in)    :: STEP(N)
+      INTEGER(8), INTENT(in) :: PTRAST(KEEP(28)), PAMASTER(KEEP(28))
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP(28)), DAD(KEEP(28))
+      LOGICAL, INTENT(in)    :: ATOMIC_UPDATES
+      CALL       DMUMPS_DM_FREEALLDYNAMICCB( MYID, N, SLAVEF,
+     &           KEEP, KEEP8, IW, LIW, IWPOSCB, IWPOS,
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, ATOMIC_UPDATES )
+      RETURN
+      END SUBROUTINE DMUMPS_DM_FREEALLDYNAMICCB_I
+      SUBROUTINE DMUMPS_DM_CBSTATIC2DYNAMIC_I(
+     &           STRATEGY,
+     &           SIZER_NEEDED, SKIP_TOP_STACK,
+     &           MYID, N, SLAVEF,
+     &           KEEP, KEEP8,
+     &           IW, LIW, IWPOSCB, IWPOS,
+     &           A, LA, LRLU, IPTRLU, LRLUS, 
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, IFLAG, IERROR)
+      USE DMUMPS_DYNAMIC_MEMORY_M, ONLY : DMUMPS_DM_CBSTATIC2DYNAMIC
+      IMPLICIT NONE
+      INTEGER, INTENT(in)  :: STRATEGY
+      INTEGER(8), INTENT(in) :: SIZER_NEEDED
+      LOGICAL, INTENT(in)    :: SKIP_TOP_STACK
+      INTEGER, INTENT(in)  :: N, SLAVEF, KEEP(500)
+      INTEGER, INTENT(in)  :: MYID
+      INTEGER(8), INTENT(inout) :: KEEP8(150)
+      INTEGER :: IWPOS, IWPOSCB, LIW
+      INTEGER, INTENT(inout) :: IW( LIW )
+      INTEGER(8) :: LA, LRLU, IPTRLU, LRLUS
+      DOUBLE PRECISION, INTENT(in) :: A( LA )
+      INTEGER, INTENT(in)    :: STEP(N)
+      INTEGER(8), INTENT(inout) :: PTRAST(KEEP(28)), PAMASTER(KEEP(28))
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP(28)), DAD(KEEP(28))
+      INTEGER, INTENT(inout) :: IFLAG, IERROR
+      CALL DMUMPS_DM_CBSTATIC2DYNAMIC( STRATEGY,
+     &           SIZER_NEEDED, SKIP_TOP_STACK,
+     &           MYID, N, SLAVEF,
+     &           KEEP, KEEP8,
+     &           IW, LIW, IWPOSCB, IWPOS,
+     &           A, LA, LRLU, IPTRLU, LRLUS, 
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, IFLAG, IERROR)
+      RETURN
+      END SUBROUTINE DMUMPS_DM_CBSTATIC2DYNAMIC_I
