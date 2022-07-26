@@ -188,7 +188,7 @@ namespace
         return ndm;
     }
 
-    // a simple structure to collect nodes in a contiguos array
+    // a simple structure to collect nodes in a contiguous array
     // and with a map that maps the node tag to its position in the array
     struct node_map_t
     {
@@ -197,11 +197,11 @@ namespace
         // the contiguous list of nodes
         std::vector<Node*> nodes;
         // for each node, save a re-mapped ID to the contiguous list of dofs
-        // (-1 means "exluded", -2 means "fixed")
+        // (-1 means "excluded", -2 means "fixed")
         std::vector<ID> node_ids;
         // for each node, save a list of local DOF id (0 to ndf)
         std::vector<std::vector<int> > node_u_flags;
-        // for each node, save the first position in the contiguos list of dofs, ndf for each node (3 in 2D and 6 in 3D)
+        // for each node, save the first position in the contiguous list of dofs, ndf for each node (3 in 2D and 6 in 3D)
         std::map<int, size_t> pos;
 
         node_map_t(Domain* domain, int ndm, int ndf) {
@@ -289,7 +289,7 @@ namespace
         std::vector<Element*> elements;
         // for each element, save a re-mapped ID to the contiguous list of dofs
         std::vector<ID> element_ids;
-        // for each element, save a list of nodal position pointing to the contiguos position of the node
+        // for each element, save a list of nodal position pointing to the contiguous position of the node
         // in the node map
         std::vector<std::vector<size_t> > element_node_pos;
         // for each element, save a list of flags. true if the dof is translational, false otherwise
@@ -640,8 +640,8 @@ bool DomainModalProperties::compute(Domain* domain)
 
     // compute the center of mass.
     // note that if the total mass in one of the global directions is 0
-    // we sould take the geometric center, as otherwise it will be 0.
-    // TODO: check wether we need the total or free mass.
+    // we should take the geometric center, as otherwise it will be 0.
+    // TODO: check whether we need the total or free mass.
     // accordingly, for the geometric center... should we use free nodes only?
     // let's start with free nodes only... by the way they are the only ones
     // accounted for by the eigenvalue analysis...
@@ -678,7 +678,7 @@ bool DomainModalProperties::compute(Domain* domain)
         }
     }
 
-    // Now the sparse matrix M contains the orignal mass (consistent or lumped).
+    // Now the sparse matrix M contains the original mass (consistent or lumped).
     // ML is a lumped version of M. for rotational DOFs it contains only the 
     // rotary masses directly input by the user.
     // However we also need to compute, for the modal properties, the rotational

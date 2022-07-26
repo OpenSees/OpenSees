@@ -335,7 +335,7 @@ FiberSectionAsym3d::addFiber(Fiber &newFiber)
 	  newMatData[3*i+2] = matData[3*i+2];
       }
 
-      // initialize new memomry
+      // initialize new memory
       for (int i = numFibers; i < newSize; i++) {
 	  newArray[i] = 0;
 	  newMatData[3*i] = 0.0;
@@ -1271,7 +1271,9 @@ FiberSectionAsym3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     int count = 0;
     theResponse = new MaterialResponse(this, 7, count);
   }
-
+  else if (strcmp(argv[0],"centroid") == 0) 
+    theResponse = new MaterialResponse(this, 20, Vector(2));
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -1321,6 +1323,12 @@ FiberSectionAsym3d::getResponse(int responseID, Information &sectInfo)
 
     return sectInfo.setInt(count);
   } 
+  else if (responseID == 20) {
+    static Vector centroid(2);
+    centroid(0) = yBar;
+    centroid(1) = zBar;
+    return sectInfo.setVector(centroid);
+  }
   
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }

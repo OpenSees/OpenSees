@@ -106,11 +106,11 @@ PFEMGeneralLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize,
 	}
 	int colid = newDofID(col);
 
-	// diagnol term
+	// diagonal term
 	rowInd.push_back(colid);
 	end++;
 
-	// off diagnol terms
+	// off diagonal terms
 	const ID& theAdjacency = theVertex->getAdjacency();
 	for(int i=0; i<theAdjacency.Size(); i++) {
 	    int row = theAdjacency(i);

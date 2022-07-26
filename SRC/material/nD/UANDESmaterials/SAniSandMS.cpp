@@ -104,7 +104,7 @@ OPS_SAniSandMSMaterial(void)
 
 	int    tag;
 	double dData[19];
-	int flags[3];
+	int flags[5];
 	double oData[2];
 
 	flags[0] = 3;          // IntScheme
@@ -842,7 +842,7 @@ void SAniSandMS::integrate()
 	else {
 		// implicit schemes
 		if (mScheme == INT_BackwardEuler)
-			opserr << "SAniSandMS::integrate() -- Implicit integration not avialable yet" << endln;
+			opserr << "SAniSandMS::integrate() -- Implicit integration not available yet" << endln;
 		// explicit schemes
 		else
 			explicit_integrator(

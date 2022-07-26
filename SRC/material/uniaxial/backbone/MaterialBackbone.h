@@ -39,7 +39,7 @@
 class MaterialBackbone : public HystereticBackbone
 {
  public:
-  MaterialBackbone(int tag, UniaxialMaterial &material);
+  MaterialBackbone(int tag, UniaxialMaterial &material, bool compression=false);
   MaterialBackbone();
   ~MaterialBackbone();
   
@@ -64,6 +64,7 @@ class MaterialBackbone : public HystereticBackbone
   
  private:
   UniaxialMaterial *theMaterial;
+  int sign;
 };
 
 #endif

@@ -57,6 +57,50 @@ Matrix ElasticBeam3d::kb(6,6);
 void* OPS_ElasticBeam3d(void)
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
+
+    // Read the optional arguments first
+    double mass = 0.0;
+    int cMass = 0;
+    int releasez = 0;
+    int releasey = 0;
+    int numData = 1;
+    int numOptionalArgs = 0;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string theType = OPS_GetString();
+	if (theType == "-mass") {
+	  numOptionalArgs++;
+	  if(OPS_GetNumRemainingInputArgs() > 0) {
+	    if(OPS_GetDoubleInput(&numData,&mass) < 0)
+	      return 0;
+	    numOptionalArgs++;	    
+	  }
+	} else if (theType == "-cMass") {
+	  numOptionalArgs++;
+	  cMass = 1;
+	} else if (theType == "-releasez") {
+	  numOptionalArgs++;	  
+	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
+	      opserr << "WARNING: failed to get releasez";
+	      return 0;
+	    }
+	    numOptionalArgs++;	    
+	  }
+	} else if (theType == "-releasey") {
+	  numOptionalArgs++;	  
+	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
+	      opserr << "WARNING: failed to get releasey";
+	      return 0;
+	    }
+	    numOptionalArgs++;
+	  }
+	} 
+    }
+
+    OPS_ResetCurrentInputArg(-numArgs);    
+    numArgs = numArgs - numOptionalArgs;
+      
     if(numArgs < 10 && numArgs != 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,<A,E,G,J,Iy,Iz>or<sectionTag>,transfTag\n";
 	return 0;
@@ -71,15 +115,13 @@ void* OPS_ElasticBeam3d(void)
 
     // inputs: 
     int iData[3];
-    int numData = 3;
+    numData = 3;
     if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
 
     SectionForceDeformation* theSection = 0;
     CrdTransf* theTrans = 0;
     double data[6];
     int transfTag, secTag;
-    int releasez = 0;
-    int releasey = 0;
     
     if(numArgs == 5) {
 	numData = 1;
@@ -108,34 +150,6 @@ void* OPS_ElasticBeam3d(void)
 	}
     }
     
-    // options
-    double mass = 0.0;
-    int cMass = 0;
-    while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string theType = OPS_GetString();
-	if (theType == "-mass") {
-	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
-	    }
-	} else if (theType == "-cMass") {
-	    cMass = 1;
-	} else if (theType == "-releasez") {
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
-	      opserr << "WARNING: failed to get releasez";
-	      return 0;
-	    }
-	  }
-	} else if (theType == "-releasey") {
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
-	      opserr << "WARNING: failed to get releasey";
-	      return 0;
-	    }
-	  }
-	} 
-    }
-
     if (theSection != 0) {
       return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,releasez, releasey); 
     } else {
@@ -251,8 +265,8 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
   }    
   
   if (Jx == 0.0) {
-    opserr << "ElasticBeam3d::ElasticBeam3d -- no torsion in section -- setting GJ = 1.0e10\n";
-    Jx = 1.0e10;
+    opserr << "ElasticBeam3d::ElasticBeam3d -- no torsion in section -- continuing with GJ = 0\n";
+    //Jx = 1.0e10;
   }
 
   connectedExternalNodes(0) = Nd1;
@@ -606,7 +620,7 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double wy = data(0)*loadFactor;  // Transverse
     double wz = data(1)*loadFactor;  // Transverse
     double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
-
+    
     this->wx += wx;
     this->wy += wy;
     this->wz += wz;    
@@ -642,10 +656,10 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
       q0[4] -= My;
     }
     if (releasey == 1) {
-      q[4] -= wz*L*L/8;
+      q0[4] -= wz*L*L/8;
     }
     if (releasey == 2) {
-      q[3] += wz*L*L/8;
+      q0[3] += wz*L*L/8;
     }
     
   }
@@ -834,8 +848,6 @@ ElasticBeam3d::getResistingForce()
   double oneOverL = 1.0/L;
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
-  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
   double GJoverL = G*Jx*oneOverL;         // GJ/L
   
   q(0) = EAoverL*v(0);

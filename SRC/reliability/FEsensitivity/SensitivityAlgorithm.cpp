@@ -99,7 +99,7 @@ SensitivityAlgorithm::computeSensitivities(void)
 		
 	Integrator* theSensitivityIntegrator = theIncInt;
 
-	// Form the part of the RHS which are indepent of parameter
+	// Form the part of the RHS which are independent of parameter
 	theSensitivityIntegrator->formIndependentSensitivityRHS();
 
 	ParameterIter &paramIter = theDomain->getParameters();

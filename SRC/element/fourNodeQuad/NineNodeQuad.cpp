@@ -1565,7 +1565,7 @@ NineNodeQuad::setPressureLoadAtNodes(void)
 	const Vector &node6 = theNodes[5]->getCrds();
 	const Vector &node7 = theNodes[6]->getCrds();
 	const Vector &node8 = theNodes[7]->getCrds();
-	// center node has no pressure commponents
+	// center node has no pressure components
 	// const Vector &node9 = theNodes[8]->getCrds();
 
 	double x1 = node1(0);

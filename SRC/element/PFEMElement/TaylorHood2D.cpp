@@ -209,7 +209,7 @@ TaylorHood2D::getMass()
     // current coordinates
     Matrix X;
     if (getX(X) < 0) {
-	opserr << "WARING: failed to get current coordinate ";
+	opserr << "WARNING: failed to get current coordinate ";
 	opserr << "-- TaylorHood2D::getMass\n";
 	return mat;
     }
@@ -275,7 +275,7 @@ TaylorHood2D::getDamp()
     // current coordinates
     Matrix X;
     if (getX(X) < 0) {
-	opserr << "WARING: failed to get current coordinate ";
+	opserr << "WARNING: failed to get current coordinate ";
 	opserr << "-- TaylorHood2D::getDamp\n";
 	return mat;
     }
@@ -383,7 +383,7 @@ TaylorHood2D::getResistingForceIncInertia()
     // current coordinates
     Matrix X;
     if (getX(X) < 0) {
-	opserr << "WARING: failed to get current coordinate ";
+	opserr << "WARNING: failed to get current coordinate ";
 	opserr << "-- TaylorHood2D::getResistingForceIncInertia\n";
 	return vec;
     }

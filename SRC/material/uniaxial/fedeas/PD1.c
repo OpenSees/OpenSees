@@ -99,7 +99,7 @@ int pd_(double *d__, double *hstvp, double *hstv,
   tol = 1e-11;
   tol2 = 1e-7;
   maxitr = 10;
-  /* temperary setting ++++++++++----------------------- */
+  /* temporary setting ++++++++++----------------------- */
   eps = *epsp + *deps;
   xl[0] = 0.f;
   xl[2] = 1.f;

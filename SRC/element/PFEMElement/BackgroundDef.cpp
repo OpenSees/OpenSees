@@ -28,145 +28,143 @@
 //
 
 #include "BackgroundDef.h"
-#include <cmath>
+
 #include <elementAPI.h>
 
+#include <cmath>
+
 ////// Overload functions ////////////////
-const VDouble& operator+=(VDouble& v1, const VDouble& v2)
-{
+const VDouble& operator+=(VDouble& v1, const VDouble& v2) {
     if (v1.size() > v2.size()) return v1;
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] += v2[i];
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] += v2[i];
     }
     return v1;
 }
 
-const VDouble& operator-=(VDouble& v1, const VDouble& v2)
-{
+const VDouble& operator-=(VDouble& v1, const VDouble& v2) {
     if (v1.size() > v2.size()) return v1;
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] -= v2[i];
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] -= v2[i];
     }
     return v1;
 }
 
-const VDouble& operator+=(VDouble& v1, double val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] += val;
+const VDouble& operator+=(VDouble& v1, double val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] += val;
     }
     return v1;
 }
 
-const VDouble& operator-=(VDouble& v1, double val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] -= val;
+const VDouble& operator-=(VDouble& v1, double val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] -= val;
     }
     return v1;
 }
 
-const VDouble& operator*=(VDouble& v1, double val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] *= val;
+const VDouble& operator*=(VDouble& v1, double val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] *= val;
     }
     return v1;
 }
 
-const VDouble& operator/=(VDouble& v1, double val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] /= val;
+const VDouble& operator/=(VDouble& v1, double val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] /= val;
     }
     return v1;
 }
 
-const VInt& operator+=(VInt& v1, int val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] += val;
+const VInt& operator+=(VInt& v1, int val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] += val;
     }
     return v1;
 }
 
-const VInt& operator-=(VInt& v1, int val)
-{
-    for (unsigned int i=0; i<v1.size(); i++) {
-	v1[i] -= val;
+const VInt& operator-=(VInt& v1, int val) {
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        v1[i] -= val;
     }
     return v1;
 }
 
-void toVDouble(const Vector& vec, VDouble& res)
-{
+void toVDouble(const Vector& vec, VDouble& res) {
     res.resize(vec.Size());
 
-    for (int i=0; i<vec.Size(); i++) {
-	res[i] = vec(i);
+    for (int i = 0; i < vec.Size(); i++) {
+        res[i] = vec(i);
     }
 }
 
-void toVector(const VDouble& v, Vector& res)
-{
+void toVector(const VDouble& v, Vector& res) {
     res.resize(v.size());
 
-    for (unsigned int i=0; i<v.size(); i++) {
-	res(i) = v[i];
+    for (unsigned int i = 0; i < v.size(); i++) {
+        res(i) = v[i];
     }
-
 }
 
-double normVDouble(const VDouble& v)
-{
+double normVDouble(const VDouble& v) {
     double res = 0.0;
-    for (unsigned int i=0; i<v.size(); i++) {
-	res += v[i]*v[i];
+    for (unsigned int i = 0; i < v.size(); i++) {
+        res += v[i] * v[i];
     }
     return sqrt(res);
 }
 
-std::ostream& operator<<(std::ostream& os, const VDouble& v)
-{
-    for (unsigned int i=0; i<v.size(); i++) {
-	os << v[i] << " ";
+double distanceVDouble(const VDouble& v1, const VDouble& v2) {
+    double res = 0.0;
+    auto size = v1.size();
+    if (size > v2.size()) {
+        size = v2.size();
+    }
+    for (std::size_t i = 0; i < size; ++i) {
+        res += (v1[i] - v2[i]) * (v1[i] - v2[i]);
+    }
+    return sqrt(res);
+}
+
+std::ostream& operator<<(std::ostream& os, const VDouble& v) {
+    for (unsigned int i = 0; i < v.size(); i++) {
+        os << v[i] << " ";
     }
     os << "\n";
 
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const VInt& v)
-{
-    for (VInt::size_type i=0; i<v.size(); i++) {
-	os << v[i] << " ";
+std::ostream& operator<<(std::ostream& os, const VInt& v) {
+    for (VInt::size_type i = 0; i < v.size(); i++) {
+        os << v[i] << " ";
     }
     os << "\n";
 
     return os;
 }
 
-double dotVDouble(const VDouble& v1, const VDouble& v2)
-{
+double dotVDouble(const VDouble& v1, const VDouble& v2) {
     if (v1.size() != v2.size()) {
-	return 0.0;
+        return 0.0;
     }
     double res = 0.0;
-    for (unsigned int i=0; i<v1.size(); ++i) {
-	res += v1[i]*v2[i];
+    for (unsigned int i = 0; i < v1.size(); ++i) {
+        res += v1[i] * v2[i];
     }
     return res;
 }
 
-void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res)
-{
+void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res) {
     res.resize(3, 0.0);
-    if (v1.size()==2 && v2.size()==2) {
-	res[2] = v1[0]*v2[1]-v1[1]*v2[0];
-    } else if (v1.size()==3 && v2.size()==3) {
-	res[0] = v1[1]*v2[2]-v1[2]*v2[1];
-	res[1] = v1[2]*v2[0]-v1[0]*v2[2];
-	res[2] = v1[0]*v2[1]-v1[1]*v2[0];
+    if (v1.size() == 2 && v2.size() == 2) {
+        res[2] = v1[0] * v2[1] - v1[1] * v2[0];
+    } else if (v1.size() == 3 && v2.size() == 3) {
+        res[0] = v1[1] * v2[2] - v1[2] * v2[1];
+        res[1] = v1[2] * v2[0] - v1[0] * v2[2];
+        res[2] = v1[0] * v2[1] - v1[1] * v2[0];
     }
 }
 

@@ -154,7 +154,7 @@ void  shp3d( const double ss[3],
       } //end for j
 
 
-      //Compute derivatives with repect to global coords.
+      //Compute derivatives with respect to global coords.
 
       for ( k=0; k<8; k++) {
 

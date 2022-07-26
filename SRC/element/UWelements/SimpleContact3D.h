@@ -169,11 +169,11 @@ class SimpleContact3D : public Element
     Vector Bn;		// gap-displacement matrix
     Matrix Bs;		// slip-displacement matrix
 
-    Vector dcrd1;       // current coordinates of nore 1
-    Vector dcrd2;       // current coordinates of nore 2
-    Vector dcrd3;       // current coordinates of nore 3
-    Vector dcrd4;       // current coordinates of nore 4
-    Vector dcrdS;       // current coordinates of nore S
+    Vector dcrd1;       // current coordinates of node 1
+    Vector dcrd2;       // current coordinates of node 2
+    Vector dcrd3;       // current coordinates of node 3
+    Vector dcrd4;       // current coordinates of node 4
+    Vector dcrdS;       // current coordinates of node S
     Vector dispL;       // current value of the Lagrangean multiplier
 
 	int MyTag;          // what is my name?

@@ -130,6 +130,15 @@ private:
 
 private:
 
+    // kdoverAd = E / Ld, Ld - length of debris
+    // thk - thickness of debris
+    // mu - damping ratio
+    // beta -frictional coefficient
+    // Dc - initial distance between node 3 and edge 1-2
+    // alpha - stiffness parameter
+    // E - elastic modulus of debris
+    // rho - density of debris
+
     ID ntags;
     std::vector<Node *> nodes;
     double kdoverAd, thk, mu, beta, Dc, alpha, E, rho;

@@ -165,10 +165,10 @@ class Steel02Fatigue : public UniaxialMaterial
 	// For recording strain ranges (SRXX) and Number of Cycles (NCXX)
 	double Fatigue_SR1;  // Committed strain range at peak
 	double Fatigue_NC1;  // Committed number of cycles at SR1 (i.e. 1.0 or 0.5)
-	double Fatigue_SR2;  // Committed strain range 2 at PSUEDO peak - there are potentially two ranges
-	double Fatigue_NC2;  // Committed number of cycles at SR2 2 (at PSUEDO peak) - there are potentially two ranges
-	double Fatigue_SR3;  // Committed strain range 3 at PSUEDO peak - there are potentially two ranges
-	double Fatigue_NC3;  // Committed number of cycles at SR2 3 (at PSUEDO peak) - there are potentially two ranges
+	double Fatigue_SR2;  // Committed strain range 2 at PSEUDO peak - there are potentially two ranges
+	double Fatigue_NC2;  // Committed number of cycles at SR2 2 (at PSEUDO peak) - there are potentially two ranges
+	double Fatigue_SR3;  // Committed strain range 3 at PSEUDO peak - there are potentially two ranges
+	double Fatigue_NC3;  // Committed number of cycles at SR2 3 (at PSEUDO peak) - there are potentially two ranges
 
 	double Fatigue_epsmin;
 	double Fatigue_epsmax;
@@ -206,10 +206,10 @@ class Steel02Fatigue : public UniaxialMaterial
 	// For recording strain ranges (SRXX) and Number of Cycles (NCXX)
 	double Fatigue_SR1P;  // Committed strain range at peak
 	double Fatigue_NC1P;  // Committed number of cycles at SR1 (i.e. 1.0 or 0.5)
-	double Fatigue_SR2P;  // Committed strain range 2 at PSUEDO peak - there are potentially two ranges
-	double Fatigue_NC2P;  // Committed number of cycles at SR2 2 (at PSUEDO peak) - there are potentially two ranges
-	double Fatigue_SR3P;  // Committed strain range 3 at PSUEDO peak - there are potentially two ranges
-	double Fatigue_NC3P;  // Committed number of cycles at SR2 3 (at PSUEDO peak) - there are potentially two ranges
+	double Fatigue_SR2P;  // Committed strain range 2 at PSEUDO peak - there are potentially two ranges
+	double Fatigue_NC2P;  // Committed number of cycles at SR2 2 (at PSEUDO peak) - there are potentially two ranges
+	double Fatigue_SR3P;  // Committed strain range 3 at PSEUDO peak - there are potentially two ranges
+	double Fatigue_NC3P;  // Committed number of cycles at SR2 3 (at PSEUDO peak) - there are potentially two ranges
 
 	double Cf;
 	double Cd;

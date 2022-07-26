@@ -15,7 +15,6 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>  
 
-#define ND_TAG_LinearCap  12345654342
 #include <T2Vector.h>
 #include <MaterialResponse.h>
 #include <elementAPI.h>
@@ -443,7 +442,7 @@ const Vector & LinearCap::getStress(void) {
 	//if (theMode!=4) 
 	//opserr<<" this mode = "<<theMode<<endln;
 
-//	theMode = mode;  //  ÎªÁË±£´æmodeµ½³ÉÔ±º¯Êý£¬ÎªÁËgetTangent()µ÷ÊÔÓÃ¡£
+//	theMode = mode;  //  ä¸ºäº†ä¿å­˜modeåˆ°æˆå‘˜å‡½æ•°ï¼Œä¸ºäº†getTangent()è°ƒè¯•ç”¨ã€‚
 
 	double deltGammar1 =0.0;
 	double deltGammar2 =0.0;
@@ -545,7 +544,7 @@ const Vector & LinearCap::getStress(void) {
 		       elasticTangent(i,j) = bulkModulus-2.0/3.0*shearModulus;     
 
         for(int  i=0; i<6; i++)
-		       elasticTangent(i,i) += 2.0*shearModulus;       //¶¨Òå³öµ¯ÐÔ¾ØÕó
+		       elasticTangent(i,i) += 2.0*shearModulus;       //å®šä¹‰å‡ºå¼¹æ€§çŸ©é˜µ
 	    theTangent = elasticTangent;
 
 	}

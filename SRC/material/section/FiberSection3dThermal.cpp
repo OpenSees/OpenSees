@@ -266,7 +266,7 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
 	  newMatData[3*i+2] = matData[3*i+2];
       }
 
-      // initialize new memomry
+      // initialize new memory
       for (int i = numFibers; i < newSize; i++) {
 	  newArray[i] = 0;
 	  newMatData[3*i] = 0.0;

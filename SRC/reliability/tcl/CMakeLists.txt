@@ -1,4 +1,4 @@
-target_sources(OPS_Reliability
+target_sources(OPS_ReliabilityTcl
     PRIVATE
         TclReliabilityBuilder.cpp
     PUBLIC

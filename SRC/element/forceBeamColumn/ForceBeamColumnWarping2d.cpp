@@ -102,8 +102,8 @@ void* OPS_ForceBeamColumnWarping2d()
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
-    if(ndm != 2 || ndf != 3) {
-	opserr<<"ndm must be 2 and ndf must be 3\n";
+    if(ndm != 2 || ndf != 4) {
+	opserr<<"ndm must be 2 and ndf must be 4\n";
 	return 0;
     }
 
