@@ -65,6 +65,7 @@ class Element;
 #define MAX_FILENAMELENGTH 50
 
 extern double   ops_Dt;                // current delta T for current domain doing an update
+extern double   ops_t;				         // MSN: current time for current domain doing an update
 // extern double  *ops_Gravity;        // gravity factors for current domain undergoing an update
 extern int ops_Creep;
 extern Domain  *ops_TheActiveDomain;   // current domain undergoing an update

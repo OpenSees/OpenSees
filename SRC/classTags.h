@@ -296,6 +296,15 @@
 
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
+// M. Salehi (MSN) //////////////////
+#define MAT_TAG_Switch 4004
+#define MAT_TAG_Delay 4005
+#define MAT_TAG_BondSlip 4006
+#define MAT_TAG_BarSlip2 4007
+#define MAT_TAG_BarBuckling 4013
+#define MAT_TAG_Remove 4018
+/////////////////////////////////////
+
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
