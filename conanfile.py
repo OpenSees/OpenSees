@@ -14,7 +14,7 @@ class OpenSeesDependencies(ConanFile):
     build_policy = "missing"
     requires = "libmysqlclient/8.0.25", \
         "hdf5/1.12.0", \
-        "tcl/8.6.11"
+        "tcl/8.6.10"
     # Custom attributes for Bincrafters recipe conventions
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
