@@ -1820,7 +1820,9 @@ int BackgroundMesh::gridFSInoDT() {
                 csids[0] = sids[0];
                 csids[1] = sids[3];
                 csids[2] = sids[2];
-                if (createContact(csnds, csids, elends[numele * j])) {
+
+                createContact(csnds, csids, elends[numele * j]);
+                if (!elends[numele * j].empty()) {
                     gtags[numele * j] = contact_tag;
                 }
 
@@ -1830,7 +1832,9 @@ int BackgroundMesh::gridFSInoDT() {
                 csids[0] = sids[0];
                 csids[1] = sids[1];
                 csids[2] = sids[3];
-                if (createContact(csnds, csids, elends[numele * j + 1])) {
+
+                createContact(csnds, csids, elends[numele * j + 1]);
+                if (!elends[numele * j + 1].empty()) {
                     gtags[numele * j + 1] = contact_tag;
                 }
                 continue;
