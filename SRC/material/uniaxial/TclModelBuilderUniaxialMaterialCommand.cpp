@@ -105,6 +105,7 @@ extern void *OPS_Bilin02(void);
 extern void *OPS_Steel01(void);
 extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_Steel02(void);
+extern void *OPS_Steel03(void);
 extern void *OPS_SteelFractureDI(void); // galvisf
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
@@ -984,106 +985,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     if (strcmp(argv[1],"Steel03") == 0) {
-      // Check that there is the minimum number of arguments
-      if (argc < 9) {
-        opserr << "WARNING insufficient arguments\n";
-        printCommand(argc,argv);
-        opserr << "Want: uniaxialMaterial Steel03 tag? fy? E0? b? r? cR1 cR2?";
-        opserr << " <a1? a2? a3? a4?>" << endln;    
-        return TCL_ERROR;
-      }
       
-      int tag;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << "WARNING invalid uniaxialMaterial Steel03 tag" << endln;
-        return TCL_ERROR;
-      }
-      
-      
-      // Read required Steel01 material parameters
-      double fy, E, b, r, cR1, cR2;
-      
-      if (Tcl_GetDouble(interp, argv[3], &fy) != TCL_OK) {
-        opserr << "WARNING invalid fy\n";
-        opserr << "uniaxialMaterial Steel03: " << tag << endln;
-        return TCL_ERROR;
-      }
-      
-      
-      if (Tcl_GetDouble(interp, argv[4], &E) != TCL_OK) {
-        opserr << "WARNING invalid E0\n";
-        opserr << "uniaxialMaterial Steel03: " << tag << endln;
-        return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[5], &b) != TCL_OK) {
-        opserr << "WARNING invalid b\n";
-        opserr << "uniaxialMaterial Steel03: " << tag << endln;
-        return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[6], &r) != TCL_OK) {
-	opserr << "WARNING invalid r\n";
-	opserr << "uniaxialMaterial Steel03: " << tag << endln;
+      void *theMat = OPS_Steel03();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
 	return TCL_ERROR;
-      }
-       
-
-      if (Tcl_GetDouble(interp, argv[7], &cR1) != TCL_OK) {
-	opserr << "WARNING invalid cR1\n";
-	opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      
-      if (Tcl_GetDouble(interp, argv[8], &cR2) != TCL_OK) {
-	opserr << "WARNING invalid cR2\n";
-	opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      // Read optional Steel01 material parameters
-      double a1, a2, a3, a4;
-      if (argc > 9) {
-	if (argc < 13) {
-	  opserr << "WARNING insufficient number of hardening parameters\n";
-	  opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[9], &a1) != TCL_OK) {
-	  opserr << "WARNING invalid a1\n";
-	  opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[10], &a2) != TCL_OK) {
-	  opserr << "WARNING invalid a2\n";
-	  opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[11], &a3) != TCL_OK) {
-	  opserr << "WARNING invalid a3\n";
-	  opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	
-	if (Tcl_GetDouble(interp, argv[12], &a4) != TCL_OK) {
-	  opserr << "WARNING invalid a4\n";
-	  opserr << "uniaxialMaterial Steel03: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	
-        // Parsing was successful, allocate the material
-	theMaterial = new Steel03 (tag, fy, E, b, r, cR1, cR2, a1, a2, a3, a4);
-      }
-      else
-	// Parsing was successful, allocate the material
-	theMaterial = new Steel03 (tag, fy, E, b, r, cR1, cR2);
     }
     if (strcmp(argv[1],"Hysteretic") == 0) {
 
