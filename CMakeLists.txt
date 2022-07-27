@@ -550,7 +550,9 @@ endif()
 # OpenSeesPy Module
 #
 
-add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL)
+add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
+    ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
+)
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
 target_compile_options(OpenSeesPy PUBLIC -fPIC)
@@ -562,7 +564,7 @@ target_link_libraries(OpenSeesPy
    OPS_Recorder
    OPS_Numerics 
    ${HDF5_LIBRARIES} 
-   ${CONAN_LIBRARIES} 
+   ${CONAN_LIBS} 
    ${Python_LIBRARIES}
 )
 
