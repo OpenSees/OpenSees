@@ -53,11 +53,11 @@ Kazuki Ichinohe 2022/07/27
 
     python: Python3.9
 
-    Since /usr/bin/python3 is Python3.8, install Python3.9 via HomeBrew. It requires reflesh the shell to reflect a new path setting. python@3.10 may be OK, but it sometimes fails to set the path automatically and need to set following a suggestion by HomeBrew.
+    >Since /usr/bin/python3 is Python3.8, install Python3.9 via HomeBrew. It requires reflesh the shell to reflect a new path setting. python@3.10 may be OK, but it sometimes fails to set the path automatically and need to set following a suggestion by HomeBrew.
 
     conan: A package manager for C and C++.
 
-    I think installing libraries via HomeBrew will work, but they enable a management with conan, so it might be preferable.
+    >I think installing libraries via HomeBrew will work, but they enable a management with conan, so it might be preferable.
 
 8. `git clone https://github.com/OpenSees/OpenSees.git`
 
