@@ -69,7 +69,7 @@ void *OPS_ConcreteMcftNonlinear7()
 						       dData[0], dData[1], dData[2], dData[3],
 						       dData[4], dData[5], dData[6], dData[7]);
   if (theMaterial == 0) {
-    opserr << "ERROR - could not create nDMaterial ConcreteMcftNonlinear5 with tag " << tag << endln;
+    opserr << "ERROR - could not create nDMaterial ConcreteMcftNonlinear7 with tag " << tag << endln;
     return 0;
   }
   
