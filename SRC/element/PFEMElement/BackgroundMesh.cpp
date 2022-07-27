@@ -76,7 +76,8 @@ int OPS_BgMesh() {
                   "-dispon? "
                   "-structure sid? ?numnodes? structuralNodes? "
                   "-alphaS sid? alphaS?"
-                  "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? rho?>";
+                  "-contact kdoverAd? thk? mu? beta? Dc? alpha? E? "
+                  "rho?>";
         return -1;
     }
 
@@ -732,8 +733,8 @@ int BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
                               int dim, double crd, double& k) {
     // check
     if (p1.size() != dir.size()) {
-        opserr
-            << "WARNING: sizes are not compatible -- BgMesh::solveLine\n";
+        opserr << "WARNING: sizes are not compatible -- "
+                  "BgMesh::solveLine\n";
         return -1;
     }
     if (dim < 0 || dim >= (int)dir.size()) {
@@ -872,8 +873,8 @@ int BackgroundMesh::remesh(bool init) {
 // add structure node to bnodes
 // get min and max of FSI area
 // set cells close to the structures as STRUCTURE
-// set grids close to the structures as EMPTY unless it's STRUCTURE
-// set FSI area bnodes and cells
+// set grids close to the structures as EMPTY unless it's
+// STRUCTURE set FSI area bnodes and cells
 int BackgroundMesh::addStructure() {
     // get domain
     int ndm = OPS_GetNDM();
@@ -1256,8 +1257,8 @@ int BackgroundMesh::gridNodes() {
                                  crds[2]);
             }
             if (pnode == 0) {
-                opserr
-                    << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+                opserr << "WARNING: run out of memory -- "
+                          "BgMesh::gridNodes\n";
                 res = -1;
                 continue;
             }
@@ -2590,7 +2591,7 @@ int BackgroundMesh::gridFSI() {
     return 0;
 }
 
-// time, vx, vy, (vz), top, bottom, left, right, dt, numIter
+// time, vx, vy, <vz>, xmin, xmax, ymin, ymax, <zmin, zmax>, dt
 //
 
 int BackgroundMesh::record(bool init) {
@@ -2672,54 +2673,68 @@ int BackgroundMesh::record(bool init) {
             }
         }
 
-        // get the lowest cell
-        double bottom = 0.0;
-        for (int iy = lower[1]; iy <= upper[1]; ++iy) {
-            VInt ind = index;
-            ind[1] = iy;
-            auto it = bcells.find(ind);
-            if (it != bcells.end() &&
-                it->second.getPts().empty() == false) {
-                bottom = iy * bsize + 0.5 * bsize;
-                break;
-            }
-        }
+        // wave heights in all directions
+        // xmin, xmax, ymin, ymax, <zmin, zmax>
+        VDouble heights(2 * ndm);
 
-        // get the most left cell
-        double left = 0.0;
-        for (int ix = lower[0]; ix <= upper[0]; ++ix) {
-            VInt ind = index;
-            ind[0] = ix;
-            auto it = bcells.find(ind);
-            if (it != bcells.end() &&
-                it->second.getPts().empty() == false) {
-                left = ix * bsize + 0.5 * bsize;
-                break;
+        for (int i = 0; i < ndm; ++i) {
+            bool find = false;
+            // min
+            heights[2 * i] = 0.0;
+            for (int j = lower[i]; j <= upper[i]; ++j) {
+                VInt ind = index;
+                ind[i] = j;
+                auto it = bcells.find(ind);
+                if (it != bcells.end()) {
+                    const auto& particles = it->second.getPts();
+                    if (!particles.empty()) {
+                        for (const auto* p : particles) {
+                            if (p != 0) {
+                                const auto& pcrds = p->getCrds();
+                                if (!find || pcrds[i] < heights[2 * i]) {
+                                    if (pcrds[i] > j * bsize) {
+                                        heights[2 * i] = pcrds[i];
+                                        find = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (find) {
+                    break;
+                }
             }
-        }
-        // get the highest cell
-        double top = 0.0;
-        for (int iy = upper[1]; iy >= lower[1]; --iy) {
-            VInt ind = index;
-            ind[1] = iy;
-            auto it = bcells.find(ind);
-            if (it != bcells.end() &&
-                it->second.getPts().empty() == false) {
-                top = (iy + 0.5) * bsize;
-                break;
-            }
-        }
 
-        // get the most right cell
-        double right = 0.0;
-        for (int ix = upper[0]; ix >= lower[0]; --ix) {
-            VInt ind = index;
-            ind[0] = ix;
-            auto it = bcells.find(ind);
-            if (it != bcells.end() &&
-                it->second.getPts().empty() == false) {
-                right = (ix + 0.5) * bsize;
-                break;
+            // max
+            find = false;
+            for (int j = upper[i]; j >= lower[i]; --j) {
+                VInt ind = index;
+                ind[i] = j;
+                auto it = bcells.find(ind);
+                if (it != bcells.end()) {
+                    const auto& particles = it->second.getPts();
+                    if (!particles.empty()) {
+                        for (const auto* p : particles) {
+                            if (p != 0) {
+                                const auto& pcrds = p->getCrds();
+                                if (!find ||
+                                    pcrds[i] > heights[2 * i + 1]) {
+                                    if (pcrds[i] > j * bsize) {
+                                        heights[2 * i + 1] = pcrds[i];
+                                    } else {
+                                        std::cout << "particle crds not "
+                                                     "in cell\n";
+                                    }
+                                    find = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (find) {
+                    break;
+                }
             }
         }
 
@@ -2727,8 +2742,10 @@ int BackgroundMesh::record(bool init) {
         for (int j = 0; j < ndm; ++j) {
             theFile << vel[j] << " ";
         }
-        theFile << top << " " << bottom << " ";
-        theFile << left << " " << right << " ";
+        for (int j = 0; j < ndm; ++j) {
+            theFile << heights[2 * j] << " ";
+            theFile << heights[2 * j + 1] << " ";
+        }
     }
 
     // time step and iteration

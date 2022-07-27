@@ -2364,16 +2364,16 @@ void IGAKLShell_BendingStrip::formResidAndTangent( int tang_flag )
     bG1(2) = G(2, 0);
 
     if (bG1(0) > 0 && bG1(1) > 0) {
-      theta1 = atan(abs(bG1(1) / bG1(0)));
+      theta1 = atan(fabs(bG1(1) / bG1(0)));
 
     } else if (bG1(0) > 0 && bG1(1) < 0) {
-      theta1 = 2 * M_PI - atan(abs(bG1(1) / bG1(0)));
+      theta1 = 2 * M_PI - atan(fabs(bG1(1) / bG1(0)));
 
     } else if (bG1(0)<0 && bG1(1)>0) {
-      theta1 = M_PI - atan(abs(bG1(1) / bG1(0)));
+      theta1 = M_PI - atan(fabs(bG1(1) / bG1(0)));
 
     } else if (bG1(0) < 0 && bG1(1) < 0) {
-      theta1 = M_PI + atan(abs(bG1(1) / bG1(0)));
+      theta1 = M_PI + atan(fabs(bG1(1) / bG1(0)));
 
     } else if (bG1(0) > 0 && bG1(1) == 0) {
       theta1 = 0;
