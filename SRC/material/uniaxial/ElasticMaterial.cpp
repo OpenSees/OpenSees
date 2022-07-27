@@ -90,7 +90,7 @@ OPS_ElasticMaterial(void)
   // Parsing was successful, allocate the material
   theMaterial = new ElasticMaterial(iData[0], dData[0], dData[1], dData[2]);
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type ElasticMaterial\n";
+    opserr << "WARNING could not create uniaxialMaterial of type ElasticMaterial" << endln;
     return 0;
   }
 
@@ -101,7 +101,6 @@ OPS_ElasticMaterial(void)
 ElasticMaterial::ElasticMaterial(int tag, double e, double et)
 :UniaxialMaterial(tag,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
- committedStrain(0.0),  committedStrainRate(0.0),
  Epos(e), Eneg(e), eta(et), parameterID(0)
 {
 
@@ -111,7 +110,6 @@ ElasticMaterial::ElasticMaterial(int tag, double e, double et)
 ElasticMaterial::ElasticMaterial(int tag, double ep, double et, double en)
 :UniaxialMaterial(tag,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
- committedStrain(0.0),  committedStrainRate(0.0),
  Epos(ep), Eneg(en), eta(et), parameterID(0)
 {
 
@@ -121,7 +119,6 @@ ElasticMaterial::ElasticMaterial(int tag, double ep, double et, double en)
 ElasticMaterial::ElasticMaterial()
 :UniaxialMaterial(0,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
- committedStrain(0.0),  committedStrainRate(0.0),
  Epos(0.0), Eneg(0.0), eta(0.0), parameterID(0)
 {
 
@@ -174,27 +171,23 @@ ElasticMaterial::getStress(void)
 double 
 ElasticMaterial::getTangent(void)
 {
-    if (trialStrain > 0.0)
+    if (trialStrain >= 0.0)
         return Epos;
-    else if (trialStrain < 0.0)
+    else 
         return Eneg;
-    else
-        return (Epos > Eneg) ? Epos : Eneg;
 }
 
 
 double 
 ElasticMaterial::getInitialTangent(void)
 {
-    return (Epos > Eneg) ? Epos : Eneg;
+  return Epos;
 }
 
 
 int 
 ElasticMaterial::commitState(void)
 {
-  committedStrain = trialStrain;
-  committedStrainRate = trialStrainRate;
   return 0;
 }
 
@@ -202,8 +195,6 @@ ElasticMaterial::commitState(void)
 int 
 ElasticMaterial::revertToLastCommit(void)
 {
-  trialStrain = committedStrain;
-  trialStrainRate = committedStrainRate;
   return 0;
 }
 
@@ -223,8 +214,7 @@ ElasticMaterial::getCopy(void)
     ElasticMaterial *theCopy = new ElasticMaterial(this->getTag(),Epos,eta,Eneg);
     theCopy->trialStrain     = trialStrain;
     theCopy->trialStrainRate = trialStrainRate;
-    theCopy->committedStrain     = committedStrain;
-    theCopy->committedStrainRate = committedStrainRate;
+    theCopy->parameterID = parameterID;
     return theCopy;
 }
 
@@ -233,16 +223,15 @@ int
 ElasticMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(6);
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = Epos;
   data(2) = Eneg;
   data(3) = eta;
-  data(4) = committedStrain;
-  data(5) = committedStrainRate;
+  data(4) = parameterID;
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ElasticMaterial::sendSelf() - failed to send data\n";
+    opserr << "ElasticMaterial::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -253,22 +242,20 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
 			  FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(6);
+  static Vector data(5);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
-      opserr << "ElasticMaterial::recvSelf() - failed to receive data\n";
-      Epos = Eneg = 0; 
-      this->setTag(0);      
+    opserr << "ElasticMaterial::recvSelf() - failed to receive data" << endln;
+    Epos = Eneg = 0; 
+    this->setTag(0);      
   }
   else {
     this->setTag(int(data(0)));
     Epos = data(1);
     Eneg = data(2);
     eta  = data(3);
-    committedStrain = data(4);
-    committedStrainRate = data(5);
-    this->revertToLastCommit();
+    parameterID = (int)data(4);
   }
     
   return res;
@@ -355,7 +342,7 @@ ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
   if (parameterID == 1)
     return trialStrain;
-  if (parameterID == 2 && trialStrain > 0.0)
+  if (parameterID == 2 && trialStrain >= 0.0)
     return trialStrain;
   if (parameterID == 3 && trialStrain < 0.0)
     return trialStrain;
@@ -373,7 +360,7 @@ ElasticMaterial::getTangentSensitivity(int gradIndex)
     return 1.0;
   if (parameterID == 2 && trialStrain >= 0.0)
     return 1.0;
-  if (parameterID == 3 && trialStrain <= 0.0)
+  if (parameterID == 3 && trialStrain < 0.0)
     return 1.0;
 
   return 0.0;
@@ -386,8 +373,6 @@ ElasticMaterial::getInitialTangentSensitivity(int gradIndex)
   if (parameterID == 1)
     return 1.0;
   if (parameterID == 2)
-    return 1.0;
-  if (parameterID == 3)
     return 1.0;
 
   return 0.0;

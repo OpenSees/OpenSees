@@ -1268,14 +1268,15 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
 
             // Get material stress response
             const Vector& sigma = m_sections[i]->getStressResultant();
-            stresses(0) = sigma(0);
-            stresses(1) = sigma(1);
-            stresses(2) = sigma(2);
-            stresses(3) = sigma(3);
-            stresses(4) = sigma(4);
-            stresses(5) = sigma(5);
-            stresses(6) = sigma(6);
-            stresses(7) = sigma(7);
+            int offset = i * 8;
+            stresses(0 + offset) = sigma(0);
+            stresses(1 + offset) = sigma(1);
+            stresses(2 + offset) = sigma(2);
+            stresses(3 + offset) = sigma(3);
+            stresses(4 + offset) = sigma(4);
+            stresses(5 + offset) = sigma(5);
+            stresses(6 + offset) = sigma(6);
+            stresses(7 + offset) = sigma(7);
         }
         return eleInfo.setVector(stresses);
         break;
@@ -1284,14 +1285,15 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
 
             // Get section deformation
             const Vector& deformation = m_sections[i]->getSectionDeformation();
-            strains(0) = deformation(0);
-            strains(1) = deformation(1);
-            strains(2) = deformation(2);
-            strains(3) = deformation(3);
-            strains(4) = deformation(4);
-            strains(5) = deformation(5);
-            strains(6) = deformation(6);
-            strains(7) = deformation(7);
+            int offset = i * 8;
+            strains(0 + offset) = deformation(0);
+            strains(1 + offset) = deformation(1);
+            strains(2 + offset) = deformation(2);
+            strains(3 + offset) = deformation(3);
+            strains(4 + offset) = deformation(4);
+            strains(5 + offset) = deformation(5);
+            strains(6 + offset) = deformation(6);
+            strains(7 + offset) = deformation(7);
         }
         return eleInfo.setVector(strains);
         break;

@@ -483,31 +483,107 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
   else if ((strcmp(argv[1],"H5DRM") == 0) ||
        (strcmp(argv[1],"h5drm") == 0) ) 
   {
-        int tag = 0;
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << "WARNING insufficient number of arguments - want: pattern ";
-        opserr << "H5DRM tag filename factor\n";
-        return TCL_ERROR;
-    }
-
-    std::string filename = argv[3];
-
-    double factor=1.0;
-    if (Tcl_GetDouble(interp, argv[4], &factor) != TCL_OK) 
-    {
+      int tag = 0;
+      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
           opserr << "WARNING insufficient number of arguments - want: pattern ";
-          opserr << "H5DRM " << patternID << " filename factor\n";
+          opserr << "H5DRM tag filename\n";
           return TCL_ERROR;
-    }
+      }
 
-        opserr << "Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+      std::string filename = argv[3];
 
-        thePattern = new H5DRM(tag, filename, factor);
+      double factor=1.0;
+      if(argc > 4)
+      {
+        if (Tcl_GetDouble(interp, argv[4], &factor) != TCL_OK) 
+        {
+              opserr << "WARNING insufficient number of arguments - want: pattern ";
+              opserr << "H5DRM " << patternID << " filename factor\n";
+              return TCL_ERROR;
+        }
+      }
 
-        opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+      double crd_scale=1.0;
+      if(argc > 5)
+      {
+        if (Tcl_GetDouble(interp, argv[5], &crd_scale) != TCL_OK) 
+        {
+              opserr << "WARNING insufficient number of arguments - want: pattern ";
+              opserr << "H5DRM " << patternID << " filename factor crd_scale\n";
+              return TCL_ERROR;
+        }
+      }
+      double distance_tolerance=1e-3;
+      if(argc > 6)
+      {
+        if (Tcl_GetDouble(interp, argv[6], &distance_tolerance) != TCL_OK) 
+        {
+              opserr << "WARNING insufficient number of arguments - want: pattern ";
+              opserr << "H5DRM " << patternID << " filename factor crd_scale distance_tolerance\n";
+              return TCL_ERROR;
+        }
+      }
 
-        theDomain->addLoadPattern(thePattern);
-        return TCL_OK;
+      int do_coordinate_transformation=true;
+      if(argc > 7)
+      {
+        if (Tcl_GetInt(interp, argv[7], &do_coordinate_transformation) != TCL_OK) 
+        {
+              opserr << "WARNING insufficient number of arguments - want: pattern ";
+              opserr << "H5DRM " << patternID << " filename factor crd_scale distance_tolerance do_coordinate_transformation\n";
+              return TCL_ERROR;
+        }
+      }
+      double stuff[12];
+      if(argc > 7+12)
+      {
+        for (int i = 0; i < 12; ++i)
+        {
+          if (Tcl_GetDouble(interp, argv[7+i+1], &stuff[i]) != TCL_OK) 
+          {
+                opserr << "WARNING insufficient number of arguments - want: pattern ";
+                opserr << "H5DRM " << patternID << " filename factor crd_scale distance_tolerance do_coordinate_transformation stuff\n";
+                return TCL_ERROR;
+          }
+        }
+      }
+
+      // opserr << "!!Creating H5DRM tag = " << tag 
+      // << "\n   filename = " << filename.c_str() 
+      // << "\n   factor = " << factor 
+      // << "\n   crd_scale = " << crd_scale 
+      // << "\n   distance_tolerance = " << distance_tolerance 
+      // << "\n   do_coordinate_transformation = " << do_coordinate_transformation 
+      // << endln;
+      double T00=stuff[0]; double T01=stuff[1]; double T02=stuff[2];
+      double T10=stuff[3]; double T11=stuff[4]; double T12=stuff[5];
+      double T20=stuff[6]; double T21=stuff[7]; double T22=stuff[8];
+      double x00=stuff[9]; double x01=stuff[10]; double x02=stuff[11];
+
+      // opserr << "T = " << endln;
+      // opserr << T00 << " " << T01 << " " << T02 << endln;
+      // opserr << T10 << " " << T11 << " " << T12 << endln;
+      // opserr << T20 << " " << T21 << " " << T22 << endln;
+      // opserr << "x0 = " << endln;
+      // opserr << x00 << " " << x01 << " " << x02 << endln;
+      
+      
+      
+      
+
+      
+      
+      
+      
+      
+      
+
+      thePattern = new H5DRM(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation, T00, T01, T02, T10, T11, T12, T20, T21, T22, x00, x01, x02);
+
+      // opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
+
+      theDomain->addLoadPattern(thePattern);
+      return TCL_OK;
     }
 #endif
 
@@ -828,38 +904,6 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     
   }// end else if DRMLoadPattern
 
-  ///////// ///////// ///////// //////// //////  // DRMLoadPattern add END
-#ifdef _H5DRM
- else if ((strcmp(argv[1],"H5DRM") == 0) ||
-     (strcmp(argv[1],"h5drm") == 0) ) {
-
-
-    int tag = 0;
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING insufficient number of arguments - want: pattern ";
-      opserr << "H5DRM tag filename factor\n";
-      return TCL_ERROR;
-    }
-
-    std::string filename = argv[3];
-
-    double factor=1.0;
-    if (Tcl_GetDouble(interp, argv[4], &factor) != TCL_OK) {
-      opserr << "WARNING insufficient number of arguments - want: pattern ";
-      opserr << "H5DRM " << patternID << " filename factor\n";
-      return TCL_ERROR;
-    }
-    
-    opserr << "Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
-
-    thePattern = new H5DRM(tag, filename, factor);
-
-    opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
-
-    theDomain->addLoadPattern(thePattern);
-    return TCL_OK;
- }
-#endif
 
   else {
       opserr << "WARNING unknown pattern type " << argv[1];

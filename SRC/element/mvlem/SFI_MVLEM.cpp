@@ -280,7 +280,7 @@ SFI_MVLEM::SFI_MVLEM(int tag,
       exit(-1);
     }
     
-    theMaterial[i] = materials[i]->getCopy();
+    theMaterial[i] = materials[i]->getCopy("PlaneStress2D");
     
     if (theMaterial[i] == 0) {
       opserr << "SFI_MVLEM::SFI_MVLEM() - "
@@ -424,45 +424,47 @@ SFI_MVLEM::~SFI_MVLEM()
 	if (theLoad != 0)
 		delete theLoad;
 	if(x!=0)
-		delete x;
+		delete []x;
 	if(b!=0)
-		delete b;
+		delete []b;
+	if(t!=0)
+		delete []t;	
 	if(AcX!=0)
-		delete AcX;
+		delete []AcX;
 	if(AcY!=0)
-		delete AcY;
+		delete []AcY;
 	if(kx!=0)
-		delete kx;
+		delete []kx;
 	if(ky!=0)
-		delete ky;
+		delete []ky;
 	if(kh!=0)
-		delete kh;
+		delete []kh;
 	if(Fx!=0)
-		delete Fx;
+		delete []Fx;
 	if(Fy!=0)
-		delete Fy;
+		delete []Fy;
 	if(Fxy!=0)
-		delete Fxy;
+		delete []Fxy;
 	if(Dens!=0)
-		delete Dens;
+		delete []Dens;
 	if(Dx!=0)
-		delete Dx;
+		delete []Dx;
 	if(Dy!=0)
-		delete Dy;
+		delete []Dy;
 	if(Dxy!=0)
-		delete Dxy;
+		delete []Dxy;
 	if(SFI_MVLEMStrainX!=0)
-		delete SFI_MVLEMStrainX;
+		delete []SFI_MVLEMStrainX;
 	if(SFI_MVLEMStrainY!=0)
-		delete SFI_MVLEMStrainY;
+		delete []SFI_MVLEMStrainY;
 	if(SFI_MVLEMStrainXY!=0)
-		delete SFI_MVLEMStrainXY;
+		delete []SFI_MVLEMStrainXY;
 	if(SFI_MVLEMStrain!=0)
-		delete SFI_MVLEMStrain;
+		delete []SFI_MVLEMStrain;
 	if(theNodesX!=0)
-		delete theNodesX;
+		delete [] theNodesX;
 	if(theNodesALL!=0)
-		delete theNodesALL;
+		delete [] theNodesALL;
 }
 
 // Get number of nodes (external + internal)

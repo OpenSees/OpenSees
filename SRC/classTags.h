@@ -401,6 +401,7 @@
 #define ND_TAG_StressDensityModel3D 57
 #define ND_TAG_UVCmultiaxial  58
 #define ND_TAG_UVCplanestress 59
+#define ND_TAG_LinearCap 60
 
 #define ND_TAG_LowTension 65
 #define ND_TAG_LowTensionPlaneStress 66
@@ -508,9 +509,12 @@
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
 #define ND_TAG_SAniSandMS 7011 //UANDES - Chile
-#define ND_TAG_SAniSandMSPlaneStrain 7011 //UANDES - Chile
-#define ND_TAG_SAniSandMS3D 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMSPlaneStrain 7012 //UANDES - Chile
+#define ND_TAG_SAniSandMS3D 7013 //UANDES - Chile
 
+#define ND_TAG_ElasticPlaneStress 7014
+#define ND_TAG_ElasticOrthotropicPlaneStress 7015
+#define ND_TAG_VonPapaDamage 7016
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -577,6 +581,7 @@
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]
 #define LOAD_TAG_ThermalActionWrapper     16 //L.Jiang [ SIF ]
 #define LOAD_TAG_LysmerVelocityLoader      17  //Jose Abell (UANDES)
+#define LOAD_TAG_IGAFollowerLoad      18  //Jose Abell (UANDES)
 
 
 #define MAT_TAG_IsotropicLinElastic         1001
@@ -816,6 +821,12 @@
 #define ELE_TAG_ASDAbsorbingBoundary2D    219  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ASDAbsorbingBoundary3D    220  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ZeroLengthContactASDimplex  221  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+#define ELE_TAG_IGALinePatch       	  250 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGASurfacePatch       	  251 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAVolumePatch       	  252 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAKLShell       	  253 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
+
 #define ELE_TAG_ExternalElement           99990
 
 

@@ -23,3 +23,11 @@ add_subdirectory(ARPACK/)
 add_subdirectory(SuperLU_5.1.1/)
 add_subdirectory(CSPARSE/)
 
+if(MPI_FOUND)
+message("adding MUMPS and SUPERLU_DIST")
+add_subdirectory(MUMPS_5.4.1/)
+add_subdirectory(SUPERLU_DIST_4.3/SRC)
+else()
+message("NOT adding MUMPS and SUPERLU_DIST")
+endif()
+

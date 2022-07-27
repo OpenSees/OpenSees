@@ -51,7 +51,7 @@ OPS_InitStressMaterial(void)
   double dData[1];
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial InitStressMaterial $tag $otherTag" << endln;
+    opserr << "WARNING invalid uniaxialMaterial InitStressMaterial $tag $otherTag $sig0" << endln;
     return 0;
   }
 
