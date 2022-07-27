@@ -61,8 +61,6 @@
 #include <PlaneStressSimplifiedJ2.h>// Quan Gu & ZhiJian Qiu 2013-6-26 
 
 #include <BeamFiberMaterial.h>
-#include <ConcreteMcftNonLinear5.h>
-#include <ConcreteMcftNonLinear7.h>
 
 #include <PressureIndependMultiYield.h>
 #include <PressureDependMultiYield.h>
@@ -126,6 +124,8 @@ extern void *OPS_AcousticMedium(void);
 extern void* OPS_UVCmultiaxial(void);
 extern void* OPS_UVCplanestress(void);
 extern  void *OPS_SAniSandMSMaterial(void);
+extern  void *OPS_ConcreteMcftNonlinear5(void);
+extern  void *OPS_ConcreteMcftNonlinear7(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -1828,81 +1828,21 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	 return TCL_ERROR;
      }    
 
-     else if (strcmp(argv[1],"ConcreteMcftNonLinear7") == 0 || strcmp(argv[1],"ConcreteMcftNonLinear5") == 0) {
-       if (argc < 11) {
-	 opserr << "WARNING insufficient arguments\n";
-	 printCommand(argc,argv);
-	 opserr << "Want: nDMaterial ConcreteMcftNonlinear7 tag? fcu? ecu? Ec? fcr? Esv? fyv? alphaV? RoV?" << endln;
-	 return TCL_ERROR;
-       }
-       
-       int tag = 0;
-       double fcu = 0.0;
-       double ecu = 0.0;
-       double Ec = 0.0;
-       double fcr = 0.0;
-       double Esv = 0.0;
-       double fyv = 0.0;
-       double alphaV = 0.0;
-       double RoV = 0.0;
-       
-       if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	 opserr << "WARNING invalid ConcreteMcftNonlinear7: tag" << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[3], &fcu) != TCL_OK) {
-	 opserr << "WARNING invalid fcu\n";
-	 opserr << "nDMaterial ConcreteMcftNonLinearNonLinear5: fcu" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[4], &ecu) != TCL_OK) {
-	 opserr << "WARNING invalid ecu\n";
-	 opserr << "nDMaterial ConcreteMcftNonLinearNonLinear5: ecu" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[5], &Ec) != TCL_OK) {
-	 opserr << "WARNING invalid Ec\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: Ec" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[6], &fcr) != TCL_OK) {
-	 opserr << "WARNING invalid fcr\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: fcr" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[7], &Esv) != TCL_OK) {
-	 opserr << "WARNING invalid Esv\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: Esv" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[8], &fyv) != TCL_OK) {
-	 opserr << "WARNING invalid fyv\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: fyv" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[9], &alphaV) != TCL_OK) {
-	 opserr << "WARNING invalid alphaV\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: alphaV" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (Tcl_GetDouble(interp, argv[10], &RoV) != TCL_OK) {
-	 opserr << "WARNING invalid RoV\n";
-	 opserr << "nDMaterial ConcreteMcftNonlinear7: RoV" << tag << endln;
-	 return TCL_ERROR;
-       }
-       
-       if (strcmp(argv[1],"ConcreteMcftNonLinear7") == 0) 
-	 theMaterial = new ConcreteMcftNonLinear7 (tag, fcu, ecu, Ec, fcr, Esv, fyv, alphaV, RoV);
+     else if (strcmp(argv[1],"ConcreteMcftNonLinear5") == 0 ||
+	      strcmp(argv[1],"ConcreteMcftNonlinear5") == 0) {
+       void *theMat = OPS_ConcreteMcftNonlinear5();
+       if (theMat != 0) 
+	 theMaterial = (NDMaterial *)theMat;
        else 
-	 theMaterial = new ConcreteMcftNonLinear5 (tag, fcu, ecu, Ec, fcr, Esv, fyv, alphaV, RoV);
+	 return TCL_ERROR;
+     }
+     else if (strcmp(argv[1],"ConcreteMcftNonLinear7") == 0 ||
+	      strcmp(argv[1],"ConcreteMcftNonlinear7") == 0) {
+       void *theMat = OPS_ConcreteMcftNonlinear7();
+       if (theMat != 0) 
+	 theMaterial = (NDMaterial *)theMat;
+       else 
+	 return TCL_ERROR;
      }
 
     else if (strcmp(argv[1],"Bidirectional") == 0) {
