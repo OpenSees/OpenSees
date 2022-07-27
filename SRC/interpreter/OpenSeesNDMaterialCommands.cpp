@@ -69,6 +69,8 @@ void* OPS_NewPlasticDamageConcretePlaneStress();
 void* OPS_ElasticPlaneStress();
 void* OPS_ElasticOrthotropicPlaneStress();
 void* OPS_VonPapaDamage();
+void* OPS_ConcreteMcftNonlinear5();
+void* OPS_ConcreteMcftNonlinear7();
 
 namespace {
 
@@ -170,6 +172,8 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ElasticPlaneStress", &OPS_ElasticPlaneStress));
 	nDMaterialsMap.insert(std::make_pair("ElasticOrthotropicPlaneStress", &OPS_ElasticOrthotropicPlaneStress));
 	nDMaterialsMap.insert(std::make_pair("VonPapaDamage", &OPS_VonPapaDamage));
+	nDMaterialsMap.insert(std::make_pair("ConcreteMcftNonlinear5", &OPS_ConcreteMcftNonlinear5));
+	nDMaterialsMap.insert(std::make_pair("ConcreteMcftNonlinear7", &OPS_ConcreteMcftNonlinear7));
 
 	return 0;
     }
