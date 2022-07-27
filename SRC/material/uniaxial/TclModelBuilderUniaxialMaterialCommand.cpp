@@ -38,23 +38,15 @@
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 
-#include <Elastic2Material.h>	// ZHY
-#include <HardeningMaterial.h>	// MHS
-#include <HardeningMaterial2.h>	// MHS
-#include <Steel03.h>			// KM
 #include <Concrete01WithSITC.h>		// Won Lee
 #include <ECC01.h>                      // Won Lee
-#include <Concrete04.h>
 #include <Concrete05.h>
 #include <Concrete06.h>			// LMS
 #include <Concrete07.h>			// JDW
 #include <HystereticBackbone.h>	// MHS
-#include <EPPGapMaterial.h>		// Mackie
 #include <PathIndependentMaterial.h>	// MHS
 #include <BackboneMaterial.h>	// MHS
 #include <FatigueMaterial.h>	// Patxi
-#include <ENTMaterial.h>		// MHS
-#include <BoucWenMaterial.h>	// Terje
 #include <Pinching4Material.h>   // NM
 #include <ShearPanelMaterial.h>  // NM
 #include <BarSlipMaterial.h>     // NM
@@ -64,7 +56,6 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <SteelBRB.h>             //Quan & Michele
 #include <SmoothPSConcrete.h>      //Quan & Michele
 #include <SelfCenteringMaterial.h> //JAE
-#include <ASD_SMA_3K.h> //LA
 
 #include <KikuchiAikenHDR.h>
 #include <KikuchiAikenLRB.h>
@@ -114,6 +105,7 @@ extern void *OPS_SteelDRC(void); // R. Carreno
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
 extern void *OPS_Concrete02IS(void);
+extern void *OPS_Concrete04(void);
 extern void *OPS_PinchingLimitStateMaterial(void);
 extern void *OPS_SAWSMaterial(void);
 extern void *OPS_ConcreteZ01Material(void);
@@ -1009,81 +1001,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     if (strcmp(argv[1],"Concrete04") == 0) {
-      //        opserr << argc << endln;
-      if (argc != 10 && argc != 9 && argc != 7) {
-	opserr << "WARNING insufficient arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Concrete04 tag? fpc? epsc0? epscu? Ec0? <ft? etu? <beta?> >" << endln;
-	return TCL_ERROR;
-      }
-      
-      int tag;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial Concrete04 tag"  
-	       << endln;
-	return TCL_ERROR;
-      }
-      
-      // Read required Concrete04 material parameters
-      double fpc, epsc0, ft, epscu, Ec0, etu, beta;
-      
-      if (Tcl_GetDouble(interp, argv[3], &fpc) != TCL_OK) {
-	opserr << "WARNING invalid fpc\n";
-	opserr << "Concrete04 material: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[4], &epsc0) != TCL_OK) {
-	opserr << "WARNING invalid epsc0\n";
-	opserr << "Concrete04 material: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[5], &epscu) != TCL_OK) {
-	opserr << "WARNING invalid epscu\n";
-	opserr << "Concrete04 material: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[6], &Ec0) != TCL_OK) {
-	opserr << "WARNING invalid Ec0\n";
-	opserr << "Concrete04 material: " << tag << endln;
-	return TCL_ERROR;
-      }
-      if (argc == 9 || argc == 10) {
-	if (Tcl_GetDouble(interp, argv[7], &ft) != TCL_OK) {
-	  opserr << "WARNING invalid ft\n";
-	  opserr << "Concrete04 material: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	if (Tcl_GetDouble(interp, argv[8], &etu) != TCL_OK) {
-	  opserr << "WARNING invalid etu\n";
-	  opserr << "Concrete04 material: " << tag << endln;
-	  return TCL_ERROR;
-	}
-      }
-      if (argc == 10) {
-	if (Tcl_GetDouble(interp, argv[9], &beta) != TCL_OK) {
-	  opserr << "WARNING invalid beta\n";
-	  opserr << "Concrete04 material: " << tag << endln;
-	  return TCL_ERROR;
-	}
-      }
-      
-      
-      // Parsing was successful, allocate the material
-      if (argc == 10) {
-	theMaterial = new Concrete04(tag, fpc, epsc0, epscu, Ec0,  
-				     ft, etu, beta);
-      }
-      else if (argc == 9) {
-	theMaterial = new Concrete04(tag, fpc, epsc0, epscu, Ec0,  
-				     ft, etu);
-      }
-      else if (argc == 7) {
-	theMaterial = new Concrete04(tag, fpc, epsc0, epscu, Ec0);
-      }
+
+      void *theMat = OPS_Concrete04();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
     }
     if (strcmp(argv[1],"Concrete06") == 0) {
 	if (argc < 12) {
