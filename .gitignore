@@ -88,6 +88,5 @@ CPlaneStress2d.h
 CThreeDimensional.h
 Concrete.h
 forumat.for
-build
 bin
 __pycache__
