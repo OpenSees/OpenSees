@@ -3,7 +3,7 @@ env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Release
 
-on: [push, pull_request, workflow_dispatch]
+on: workflow_dispatch
 
 jobs:
   build-mac:
