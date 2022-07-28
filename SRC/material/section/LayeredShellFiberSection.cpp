@@ -125,7 +125,7 @@ void* OPS_LayeredShellFiberSection()
 	
 	if (h < 0) {
 	  opserr << "WARNING invalid h" << endln;
-	  opserr << "PlateFiber section: " << tag << endln;	    	    
+	  opserr << "LayeredFiber section: " << tag << endln;	    	    
 	  return 0;
 	}
 	

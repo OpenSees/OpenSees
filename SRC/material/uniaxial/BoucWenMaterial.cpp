@@ -54,7 +54,7 @@ void* OPS_BoucWenMaterial()
     int tag;
     numdata = 1;
     if (OPS_GetIntInput(&numdata,&tag) < 0) {
-	opserr << "WARNING invalid tag\n";
+      opserr << "WARNING BoucWen - invalid tag" << endln;
 	return 0;
     }
 
@@ -64,7 +64,7 @@ void* OPS_BoucWenMaterial()
 	numdata = 10;
     }
     if (OPS_GetDoubleInput(&numdata,data)) {
-	opserr << "WARNING invalid double inputs\n";
+      opserr << "WARNING BoucWen - invalid double inputs" << endln;
 	return 0;
     }
 
@@ -73,14 +73,14 @@ void* OPS_BoucWenMaterial()
     if (numdata > 0) {
 	numdata = 1;
 	if (OPS_GetIntInput(&numdata,&maxNumIter) < 0) {
-	    opserr << "WARNING invalid int inputs\n";
+	  opserr << "WARNING BoucWen - invalid int inputs" << endln;
 	    return 0;
 	}
     }
 
     UniaxialMaterial* mat = new BoucWenMaterial(tag,data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],maxNumIter);
     if (mat == 0) {
-	opserr << "WARNING: failed to create Boucwenmaterial material\n";
+      opserr << "WARNING: failed to create BoucWen material" << endln;
 	return 0;
     }
 
@@ -99,22 +99,23 @@ BoucWenMaterial::BoucWenMaterial(int tag,
 					double p_deltaEta,
 					double ptolerance,
 					int pMaxNumIter)
-:UniaxialMaterial(tag,MAT_TAG_BoucWen),
-alpha(p_alpha), ko(p_ko), n(p_n), gamma(p_gamma), beta(p_beta), Ao(p_Ao), 
-deltaA(p_deltaA), deltaNu(p_deltaNu), deltaEta(p_deltaEta), tolerance(ptolerance),
-maxNumIter(pMaxNumIter)
+  :UniaxialMaterial(tag,MAT_TAG_BoucWen),
+   alpha(p_alpha), ko(p_ko), n(p_n), gamma(p_gamma), beta(p_beta), Ao(p_Ao), 
+   deltaA(p_deltaA), deltaNu(p_deltaNu), deltaEta(p_deltaEta),
+   tolerance(ptolerance), maxNumIter(pMaxNumIter), parameterID(0), SHVs(0)
 {
-	parameterID = 0;
-	SHVs = 0;
-
-	// Initialize variables
-    this->revertToStart();
+  // Initialize variables
+  this->revertToStart();
 }
 
-//SAJalali
 BoucWenMaterial::BoucWenMaterial()
-	:UniaxialMaterial(0, MAT_TAG_BoucWen)
+  :UniaxialMaterial(0, MAT_TAG_BoucWen),
+   alpha(0.0), ko(0.0), n(0.0), gamma(0.0), beta(0.0), Ao(0.0), 
+   deltaA(0.0), deltaNu(0.0), deltaEta(0.0),
+   tolerance(0.0),  maxNumIter(0), parameterID(0), SHVs(0)
 {
+  // Initialize variables
+  this->revertToStart();  
 }
 
 BoucWenMaterial::~BoucWenMaterial()
@@ -307,7 +308,7 @@ BoucWenMaterial::revertToStart(void)
 	Te = 0.0;
 	Ce = 0.0;
 	Tstress = 0.0;
-	Ttangent = alpha*ko + (1-alpha)*ko*Ao;
+	Ttangent = this->getInitialTangent();
 
 	if (SHVs != 0) 
 		SHVs->Zero();
@@ -331,14 +332,18 @@ BoucWenMaterial::getCopy(void)
     theCopy->Tstress = Tstress;
     theCopy->Ttangent = Ttangent;
 
+    theCopy->parameterID = parameterID;
+    if (SHVs != 0) {
+      theCopy->SHVs = new Matrix(*SHVs);
+    }
+    
     return theCopy;
 }
 
 int 
 BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-	// SAJalali
-	static Vector data(21);
+	static Vector data(22);
 	data(0) = alpha;
 	data(1) = ko;
 	data(2) = n;
@@ -360,23 +365,32 @@ BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 	data(18) = maxNumIter;
 	data(19) = this->getTag();
 	data(20) = parameterID;
-
+	data(21) = -1;
+	if (SHVs != 0)
+	  data(21) = SHVs->noCols();
+	
 	if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
-		opserr << "BoucWenMaterial::sendSelf() - failed to send Vector\n";
+	  opserr << "BoucWenMaterial::sendSelf() - failed to send Vector" << endln;
 		return -1;
 	}
 
+	if (SHVs != 0) {
+	  if (theChannel.sendMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	    opserr << "BoucWenMaterial::sendSelf() - failed to send SHVs Matrix" << endln;
+	    return -2;
+	  }
+	}
+	
 	return 0;
 }
 
 int 
 BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	// SAJalali
-	static Vector data(21);
+	static Vector data(22);
 
 	if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
-		opserr << "BoucWenMaterial::recvSelf() - failed to recvSelf\n";
+	  opserr << "BoucWenMaterial::recvSelf() - failed to recvSelf" << endln;
 		return -1;
 	}
 
@@ -401,6 +415,23 @@ BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 	maxNumIter = data(18);
 	this->setTag((int)data(19));
 	parameterID = data(20);
+
+	// Receive sensitivity history variables (SHVs)
+	int noCols = (int)data(21);
+	if (noCols > 0) {
+	  if (SHVs != 0)
+	    delete SHVs;
+	  SHVs = new Matrix(3, noCols);
+	  if (SHVs == 0) {
+	    opserr << "BoucWenMaterial::recvSelf() - failed to allocate SHVs matrix" << endln;
+	    return -2;
+	  }
+
+	  if (theChannel.recvMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	    opserr << "BoucWenMaterial::recvSelf() - failed to receive SHVs matrix" << endln;
+	    return -3;
+	  }
+	}
 	
 	return 0;
 }
@@ -424,33 +455,43 @@ BoucWenMaterial::Print(OPS_Stream &s, int flag)
 int
 BoucWenMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strcmp(argv[0],"alpha") == 0)
+  if (strcmp(argv[0],"alpha") == 0) {
+    param.setValue(alpha);
     return param.addObject(1, this);
-  
-  if (strcmp(argv[0],"ko") == 0)
+  }
+  if (strcmp(argv[0],"ko") == 0) {
+    param.setValue(ko);
     return param.addObject(2, this);
-  
-  if (strcmp(argv[0],"n") == 0)
+  }
+  if (strcmp(argv[0],"n") == 0) {
+    param.setValue(n);
     return param.addObject(3, this);
-  
-  if (strcmp(argv[0],"gamma") == 0)
+  }
+  if (strcmp(argv[0],"gamma") == 0) {
+    param.setValue(gamma);
     return param.addObject(4, this);
-    
-  if (strcmp(argv[0],"beta") == 0)
+  }
+  if (strcmp(argv[0],"beta") == 0) {
+    param.setValue(beta);
     return param.addObject(5, this);
-  
-  if (strcmp(argv[0],"Ao") == 0)
+  }
+  if (strcmp(argv[0],"Ao") == 0) {
+    param.setValue(Ao);
     return param.addObject(6, this);
-  
-  if (strcmp(argv[0],"deltaA") == 0)
+  }
+  if (strcmp(argv[0],"deltaA") == 0) {
+    param.setValue(deltaA);
     return param.addObject(7, this);
-    
-  if (strcmp(argv[0],"deltaNu") == 0)
+  }
+  if (strcmp(argv[0],"deltaNu") == 0) {
+    param.setValue(deltaNu);
     return param.addObject(8, this);
-  
-  if (strcmp(argv[0],"deltaEta") == 0)
+  }
+  if (strcmp(argv[0],"deltaEta") == 0) {
+    param.setValue(deltaEta);
     return param.addObject(9, this);
-
+  }
+  
   return -1;
 }
 

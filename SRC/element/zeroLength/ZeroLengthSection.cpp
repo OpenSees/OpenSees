@@ -63,7 +63,9 @@ void* OPS_ZeroLengthSection()
     int iData[4];
     int numData = 4;
     if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
-	opserr<<"WARNING: invalid integer inputs\n";
+      opserr << "WARNING too few arguments " <<
+	"want - element ZeroLengthSection eleTag? iNode? jNode? secTag? " <<
+	"<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;      
 	return 0;
     }
 
@@ -75,30 +77,43 @@ void* OPS_ZeroLengthSection()
     while(OPS_GetNumRemainingInputArgs() > 1) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "-orient") == 0) {
-	    if(OPS_GetNumRemainingInputArgs() > 5) {
-		numData = 3;
-		if(OPS_GetDoubleInput(&numData,x_ptr) < 0) {
-		    opserr<<"WARNING: invalid double inputs\n";
-		    return 0;
-		}
-		if(OPS_GetDoubleInput(&numData,y_ptr) < 0) {
-		    opserr<<"WARNING: invalid double inputs\n";
-		    return 0;
-		}
-	    }
+	  if (ndm == 2 && OPS_GetNumRemainingInputArgs() < 3) {
+	    opserr<<"WARNING zeroLengthSection - insufficient orient values for 2D model" << endln;
+	    return 0;
+	  }
+	  if (ndm == 3 && OPS_GetNumRemainingInputArgs() < 6) {
+	    opserr<<"WARNING zeroLengthSection - insufficient orient values for 3D model" << endln;
+	    return 0;
+	  }	    	      
+	  numData = 3;
+	  if(OPS_GetDoubleInput(&numData,x_ptr) < 0) {
+	    opserr<<"WARNING zeroLengthSection invalid double inputs for x axis" << endln;
+	    return 0;
+	  }
+	  if(ndm == 3 && OPS_GetDoubleInput(&numData,y_ptr) < 0) {
+	    opserr<<"WARNING zeroLengthSection invalid double inputs for y axis" << endln;
+	    return 0;
+	  }
 	} else if(strcmp(type, "-doRayleigh") == 0) {
 	    numData = 1;
 	    if(OPS_GetIntInput(&numData,&doRayleighDamping) < 0) {
-		opserr<<"WARNING: invalid integer inputs\n";
+	      opserr<<"WARNING zeroLengthSection - invalid integer input for doRayleigh" << endln;
 		return 0;
 	    }
 	}
     }
 
+    // Calculate y = z cross x
+    if (ndm == 2) {
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) = 0.0;
+    }
+    
     // get section
     SectionForceDeformation* theSection = OPS_getSectionForceDeformation(iData[3]);
     if(theSection == 0) {
-	opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain\n";
+      opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain" << endln;
 	return 0;
     }
 
@@ -614,7 +629,7 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
 
-    char outputData[5];
+    char outputData[20];
     // element forces
     if ((strcmp(argv[0],"force") == 0) || (strcmp(argv[0],"forces") == 0)
         || (strcmp(argv[0],"globalForces") == 0) || (strcmp(argv[0],"globalforces") == 0)) {

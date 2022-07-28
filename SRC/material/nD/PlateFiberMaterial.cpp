@@ -69,7 +69,7 @@ void* OPS_PlateFiberMaterial()
     NDMaterial* mat = new PlateFiberMaterial( tag[0], *threeDMaterial );
 
     if (mat == 0) {
-	opserr << "WARNING: failed to create PlaneStrain material\n";
+	opserr << "WARNING: failed to create PlateFiber material\n";
 	return 0;
     }
 

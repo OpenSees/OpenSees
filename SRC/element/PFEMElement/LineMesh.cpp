@@ -203,11 +203,6 @@ LineMesh::mesh() {
         gen.getLine(i, pts);
         elenodes(2 * i) = allndtags(pts(0));
         elenodes(2 * i + 1) = allndtags(pts(1));
-        if (elenodes(2 * i) > elenodes(2 * i + 1)) {
-            elenodes(2 * i) = allndtags(pts(1));
-            elenodes(2 * i + 1) = allndtags(pts(0));
-        }
-
     }
     this->setEleNodes(elenodes);
 

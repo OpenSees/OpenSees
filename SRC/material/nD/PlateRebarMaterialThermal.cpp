@@ -34,12 +34,54 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 #include <PlateRebarMaterialThermal.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
-#include <MaterialResponse.h>   //Antonios Vytiniotis used for the recorder
+#include <MaterialResponse.h>   
 #include <math.h>
+#include <elementAPI.h>
 
 //static vector and matrices
 Vector  PlateRebarMaterialThermal::stress(5) ;
 Matrix  PlateRebarMaterialThermal::tangent(5,5) ;
+
+void* OPS_PlateRebarMaterialThermal()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlateRebarThermal tag? matTag? angle?" << endln;
+	return 0;
+    }
+
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid nDMaterial PlateRebarThermal tag or matTag" << endln;
+	return 0;
+    }
+
+    UniaxialMaterial *theMaterial = OPS_getUniaxialMaterial(tag[1]);
+    if (theMaterial == 0) {
+	opserr << "WARNING uniaxialmaterial does not exist\n";
+	opserr << "UniaxialMaterial: " << tag[1];
+	opserr << "\nPlateRebarThermal nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+
+    double angle;
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata,&angle)<0) {
+	opserr << "WARNING invalid angle" << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlateRebarMaterialThermal( tag[0], *theMaterial, angle);
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlateRebarThermal material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //null constructor
 PlateRebarMaterialThermal::PlateRebarMaterialThermal( ) : 
