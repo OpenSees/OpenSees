@@ -10,12 +10,11 @@ jobs:
     name: build on mac
     runs-on: macos-12
     steps:
+      - uses: actions/checkout@v2
       - name: Current Directory
         run: |
-          cd ..
           pwd
           ls -all
-#     - uses: actions/checkout@v2
 
 #     - name: Install Command Line Tools
 #       run: xcode-select --install
