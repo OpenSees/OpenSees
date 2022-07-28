@@ -112,7 +112,7 @@ FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers, bool compCentro
       }
     }    
 
-    if (computeCentroid && Abar != 0.0)
+    if (computeCentroid && ABar != 0.0)
       yBar = QzBar/ABar;
   }
 
@@ -222,7 +222,7 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
     }
   }    
 
-  if (computeCentroid && Abar != 0.0)
+  if (computeCentroid && ABar != 0.0)
     yBar = QzBar/ABar;
   
   s = new Vector(sData, 2);
@@ -323,9 +323,8 @@ FiberSection2d::addFiber(Fiber &newFiber)
   QzBar += yLoc*Area;
   
   // Recompute centroid
-  if (computeCentroid && Abar != 0.0)
+  if (computeCentroid && ABar != 0.0)
     yBar = QzBar/ABar;
-  }
   
   return 0;
 }
@@ -878,7 +877,7 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
     }
   }
   
-  if (computeCentroid && Abar != 0.0)
+  if (computeCentroid && ABar != 0.0)
     yBar = QzBar/ABar;
   else
     yBar = 0.0;
