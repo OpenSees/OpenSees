@@ -67,6 +67,8 @@ else()
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
+
+
 endif()
 
 # define user-selectable options for end target
@@ -281,7 +283,8 @@ if(MPI_FOUND)
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SUPERLU_DIST_4.3/SRC")  
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
 else()
   message(STATUS "MPI was NOT found.")
 endif()
@@ -534,7 +537,9 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
-       MUMPS
+       MUMPS_F
+       MUMPS_C       
+       METIS
        SUPERLU_DIST
        OPS_Numerics
        ${CMAKE_DL_LIBS} 
