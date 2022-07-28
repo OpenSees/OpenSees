@@ -3,8 +3,11 @@ env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Release
 
-on: [push,workflow_dispatch]
-
+on:
+  push:
+    paths:
+      - 'ubuntu_cmake.yml'
+  workflow_dispatch:
 jobs:
   build:
     name: build on Ubuntu
