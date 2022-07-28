@@ -1,0 +1,52 @@
+name: CMake Build on Mac
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Release
+
+on: |
+  push
+  pull_request
+  workflow_dispatch
+
+jobs:
+  build-mac:
+    name: build on mac
+    runs-on: macos-12
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Command Line Tools
+      run: xcode-select install
+    - name: Install HomeBrew
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    - name: Install cmake
+      run: brew install cmake
+    - name: Install GFortran
+      run: brew install gfortran
+    - name: Install Open MPI
+      run: brew install open-mpi
+    - name: Install Python3.9
+      run: brew install python
+    - name: Install Conan
+      run: pip3 install conan
+
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        conan install ..
+        cmake -S .. -B ./
+        cmake --build ./ --target OpenSees
+    - name: Build OpenSeesPy
+      run: cmake --build ./ --target OpenSeesPy
+    - name: Rename OpenSeesPy
+      run: mv lib/OpenSeesPy.dylib lib/opensees.so
+
+# Simple sanity test
+    - name: Verification OpenSeesPySP
+      run: |
+        cd ./build
+        cd ../EXAMPLES/ExamplePython/
+        export PYTHONPATH="../../build/lib/"
+        python -c "import sys; print(sys.path)"
+        python example_variable_analysis.py
