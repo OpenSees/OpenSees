@@ -11,6 +11,13 @@ jobs:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache
+            !~/cache/exclude
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+# Install and Check Library
       - name: Install Library
         run: |
          ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
@@ -24,6 +31,7 @@ jobs:
           ompi_info | head
           python3 --version
           conan --version
+# Build
       - name: Build
         run: |
           mkdir artifact
@@ -43,6 +51,17 @@ jobs:
           export PYTHONPATH="../../build/lib/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
+# Push Diff
+      - name: Push Diff
+        run: |
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          if (git diff --shortstat | grep '[0-9]'); then \
+            git add .; \
+            git commit -m "Push from CMake Build on Mac"; \
+            git push origin HEAD:${GITHUB_REF}; \
+          fi
 # Save
       - uses: actions/upload-artifact@v1
         with:
