@@ -14,13 +14,13 @@ jobs:
       - name: Install Library
         run: |
          ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+         brew install open-mpi
+         pip3 install conan
 #         brew install gfortran
 #         brew install cmake
 #         brew install tcl8.6
 #         brew install tk8.6
 #         brew install python
-         brew install open-mpi
-         pip3 install conan
       - name: Check Library
         run: |
           cmake --version
