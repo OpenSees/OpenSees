@@ -112,7 +112,7 @@ void* OPS_RCSection2d()
   RCSectionIntegration rcsect(d, b, Atop, Abottom, Aside, cover, nfcore, nfcover, nfs);
   
   int numFibers = rcsect.getNumFibers();
-  opserr << "OPS RCsection numFibers = " << numFibers << endln;
+
   UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
   
   rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
