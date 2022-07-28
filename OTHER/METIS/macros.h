@@ -12,6 +12,8 @@
  *
  */
 
+#include "struct.h"
+
 #ifdef _WIN32 
 //#define drand48() (((float) rand())/((float) RAND_MAX)) 
 //# define srand48(x) (srand((x))) 
@@ -56,10 +58,17 @@
 /*************************************************************************
 * Timer macros
 **************************************************************************/
-#define cleartimer(tmr) (tmr = 0.0)
-#define starttimer(tmr) (tmr -= seconds())
-#define stoptimer(tmr) (tmr += seconds())
-#define gettimer(tmr) (tmr)
+//#define cleartimer(tmr) (tmr = 0.0)
+//#define starttimer(tmr) (tmr -= seconds())
+//#define stoptimer(tmr) (tmr += seconds())
+//#define gettimer(tmr) (tmr)
+
+// typedef double timer;
+
+void cleartimer(timer);
+void starttimer(timer);
+void stoptimer(timer);
+double gettimer(timer);
 
 
 /*************************************************************************

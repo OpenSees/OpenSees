@@ -21,6 +21,15 @@ https://github.com/OpenSees/OpenSeesDocumentation
 The documentation (in its present form) can be viewed in the browser using the following url:
 https://OpenSees.github.io/OpenSeesDocumentation
 
+
+Linux: (from a terminal)
+
+cmake -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifort ..
+
+Windows: (From an Intel Compiler console:)
+
+cmake -G "NMake Makefiles" -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -
+
 ## How to Build OpenSeesPy for Mac
 
 Kazuki Ichinohe 2022/07/27
@@ -88,3 +97,4 @@ Kazuki Ichinohe 2022/07/27
 16. `mv -f ./lib/OpenSeesPy.dylib /usr/local/lib/python3.9/site-packages/openseespymac/opensees.so`
 
     Replace the OpenSeesPy's library with OpenSeesPy.dylib generated at the ./lib. Its extension is also altered from .dylib to .so but it has no affect. The directory where OpenSeesPy's library is can be different.
+
