@@ -394,8 +394,8 @@ NineFourNodeQuadUP::setDomain(Domain *theDomain)
     dof = theNodes[i]->getNumberDOF();
 
     if ((i<nenp && dof != 3) || (i>=nenp && dof != 2)) {
-      opserr << "FATAL ERROR NineFourNodeQuadUP, has wrong number of DOFs at its nodes "
-	     << this->getTag() << endln;
+      opserr << "FATAL ERROR NineFourNodeQuadUP tag=" << this->getTag()
+	     << " has wrong number of DOFs at node " << theNodes[i]->getTag() << endln;
 
       return;
     }
