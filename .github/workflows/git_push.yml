@@ -1,0 +1,23 @@
+name: Git Push Test
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Release
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: git push test
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v2
+# Push Diff
+      - name: Git Push
+        run: |
+          mkdir build
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add
+          git commit -m "Push from Git Push Test"
+          git push origin HEAD:${GITHUB_REF}
