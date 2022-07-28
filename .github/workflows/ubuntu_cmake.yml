@@ -3,7 +3,7 @@ env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Release
 
-on: workflow_dispatch
+on: [push,workflow_dispatch]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
         run: |
          sudo apt-get update
          sudo apt-get install tcl8.6
-         sudo apt-get install tcl8.5
+         sudo apt-get install tk8.6
          sudo apt-get install gfortran
          sudo apt-get install openmpi-bin
          pip install conan
