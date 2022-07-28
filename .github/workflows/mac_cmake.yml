@@ -4,9 +4,9 @@ env:
   BUILD_TYPE: Release
 
 on: 
-  push:
-    paths:
-      - ".github/workflows/mac_cmake.yml"
+#   push:
+#     paths:
+#       - ".github/workflows/mac_cmake.yml"
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,6 @@ jobs:
         run: |
          ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
          brew install open-mpi
-         brew install gh
          pip3 install conan
       - name: Check Library
         run: |
