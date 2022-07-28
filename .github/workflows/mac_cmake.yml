@@ -26,13 +26,16 @@ jobs:
           conan --version
       - name: Build
         run: |
+          mkdir artifact
           mkdir build
           cd build
           conan install ..
           cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
-          mv lib/OpenSeesPy.dylib lib/opensees.so
+          mv ./lib/OpenSeesPy.dylib ./lib/opensees.so
+          cp ./lib/opensees.so ./../artifact
+          cp ./bin/OpenSees ./../artifact
 # Verification
       - name: Verification OpenSeesPySP
         run: |
@@ -40,3 +43,8 @@ jobs:
           export PYTHONPATH="../../build/lib/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
+# Save
+      - uses: actions/upload-artifact@v1
+        with:
+          name: mac-artifact
+          path: ./artifact
