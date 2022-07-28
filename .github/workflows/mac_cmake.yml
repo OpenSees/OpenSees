@@ -18,8 +18,10 @@ jobs:
          pip3 install conan
       - name: Check Library
         run: |
+          echo "puts [info tclversion]" | tclsh          
           cmake --version
           gfortran --version
+          ompi_info | head
           python3 --version
           conan --version
       - name: Build
