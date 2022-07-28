@@ -7,20 +7,26 @@ on: workflow_dispatch
 
 jobs:
   build:
-    name: build on ubuntu
+    name: build on Ubuntu
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Install Library
         run: |
-          sudo apt-get update
-          sudo apt-get install cmake
-          sudo apt-get install gfortran
-          sudo apt-get install openmpi-bin
-          sudo apt-get install tcl8.6
-          sudo apt-get install tk8.6
-          sudo apt-get install python
-          pip3 install conan
+         sudo apt-get update
+         sudo apt-get install tcl8.6
+         sudo apt-get install tcl8.5
+         sudo apt-get install gfortran
+         sudo apt-get install openmpi-bin
+         pip install conan
+      - name: Check Library
+        run: |
+          echo "puts [info tclversion]" | tclsh          
+          cmake --version
+          gfortran --version
+          ompi_info | head
+          python --version
+          conan --version
       - name: Build
         run: |
           mkdir build
@@ -30,12 +36,10 @@ jobs:
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           mv lib/OpenSeesPy.dylib lib/opensees.so
-
-# # Simple sanity test
-#     - name: Verification OpenSeesPySP
-#       run: |
-#         cd ./build
-#         cd ../EXAMPLES/ExamplePython/
-#         export PYTHONPATH="../../build/lib/"
-#         python -c "import sys; print(sys.path)"
-#         python example_variable_analysis.py
+# Verification
+      - name: Verification OpenSeesPySP
+        run: |
+          cd ./EXAMPLES/ExamplePython/
+          export PYTHONPATH="../../build/lib/"
+          python -c "import sys; print(sys.path)"
+          python example_variable_analysis.py
