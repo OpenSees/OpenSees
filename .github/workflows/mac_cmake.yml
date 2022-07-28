@@ -26,14 +26,17 @@ jobs:
       run: brew install python
     - name: Install Conan
       run: pip3 install conan
-
-    - name: Build
+    - name: Make Build Directory
       run: |
         mkdir build
         cd build
-        conan install ..
-        cmake -S .. -B ./
-        cmake --build ./ --target OpenSees
+        ls ..
+    - name: Conan Install
+      run: conan install ..
+    - name: cmake Preperation
+      run: cmake -S .. -B ./
+    - name: Build OpenSees
+      run: cmake --build ./ --target OpenSees
     - name: Build OpenSeesPy
       run: cmake --build ./ --target OpenSeesPy
     - name: Rename OpenSeesPy
