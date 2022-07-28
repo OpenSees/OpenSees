@@ -21,16 +21,16 @@ jobs:
 #       run: xcode-select --install
 #     - name: Install HomeBrew
 #       run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-      - name: Install cmake
-        run: brew install cmake
-      - name: Install GFortran
-        run: brew install gfortran
-      - name: Install Open MPI
-        run: brew install open-mpi
-      - name: Install Python3.9
-        run: brew install python
-      - name: Install Conan
-        run: pip3 install conan
+#       - name: Install cmake
+#         run: brew install cmake
+#       - name: Install GFortran
+#         run: brew install gfortran
+#       - name: Install Open MPI
+#         run: brew install open-mpi
+#       - name: Install Python3.9
+#         run: brew install python
+#       - name: Install Conan
+#         run: pip3 install conan
 #     - name: Make Build Directory
 #       run: |
 #         mkdir build
