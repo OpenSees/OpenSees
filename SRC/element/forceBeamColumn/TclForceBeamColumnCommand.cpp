@@ -209,6 +209,13 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 
     if (strcmp(argv[argi],"-sections") != 0)  {
 
+      if (argc - argi < 2) {
+	opserr << "WARNING insufficent number of arguments for element "
+	       << argv[1] << " with tag " << eleTag;
+	opserr << "\nThis is probably because beamIntegration is not yet functional with Tcl" << endln;
+	return TCL_ERROR;
+      }
+      
       if (Tcl_GetInt(interp, argv[argi], &secTag) != TCL_OK) {
 	opserr << "WARNING invalid secTag\n";
 	opserr << argv[1] << " element: " << eleTag << endln;

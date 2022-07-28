@@ -42,7 +42,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_Backbone()
+void* OPS_BackboneMaterial()
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 4) {

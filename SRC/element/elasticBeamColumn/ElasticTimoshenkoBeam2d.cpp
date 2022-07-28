@@ -739,6 +739,7 @@ int ElasticTimoshenkoBeam2d::getResponse (int responseID, Information &eleInfo)
         return eleInfo.setVector(this->getResistingForce());
     
     case 2: // local forces
+	    this->getResistingForce();
         theVector.Zero();
         // determine resisting forces in local system
         theVector = ql;

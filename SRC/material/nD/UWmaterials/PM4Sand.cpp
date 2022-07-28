@@ -745,9 +745,11 @@ PM4Sand::setParameter(const char **argv, int argc, Parameter &param)
 		}
 		else if ((strcmp(argv[0], "refShearModulus") == 0) ||
 			(strcmp(argv[0], "ShearModulus") == 0)) {         // change G0
+		  param.setValue(m_G0);
 			return param.addObject(6, this);
 		}
 		else if (strcmp(argv[0], "poissonRatio") == 0) {      // change nu
+		  param.setValue(m_nu);
 			return param.addObject(7, this);
 		}
 		else if (strcmp(argv[0], "FirstCall") == 0) {       // update first call, remove fabric
