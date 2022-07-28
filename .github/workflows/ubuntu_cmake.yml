@@ -1,0 +1,38 @@
+name: CMake Build on Ubuntu
+env:
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Release
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: build on ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Library
+        run: |
+          sudo apt install cmake
+          sudo apt install gfortran
+          sudo apt install open-mpi
+          sudo apt install python
+          pip3 install conan
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          conan install ..
+          cmake -S .. -B ./
+          cmake --build ./ --target OpenSees
+          cmake --build ./ --target OpenSeesPy
+          mv lib/OpenSeesPy.dylib lib/opensees.so
+
+# # Simple sanity test
+#     - name: Verification OpenSeesPySP
+#       run: |
+#         cd ./build
+#         cd ../EXAMPLES/ExamplePython/
+#         export PYTHONPATH="../../build/lib/"
+#         python -c "import sys; print(sys.path)"
+#         python example_variable_analysis.py
