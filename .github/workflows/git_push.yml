@@ -3,7 +3,11 @@ env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Release
 
-on: workflow_dispatch
+on:
+  push:
+    paths:
+      - "git_push.yml"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,6 +22,6 @@ jobs:
           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git add
+          git add .
           git commit -m "Push from Git Push Test"
           git push origin HEAD:${GITHUB_REF}
