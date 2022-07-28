@@ -13,20 +13,29 @@ jobs:
 #       - uses: actions/checkout@v2
       - name: Install Library
         run: |
-          ls -all /usr/local/bin
-#          gfortran -v
-#          brew install gfortran
-#          brew install open-mpi
-#          pip3 install conan
-#      - name: Build
-#        run: |
-#          mkdir build
-#          cd build
-#          conan install ..
-#          cmake -S .. -B ./
-#          cmake --build ./ --target OpenSees
-#          cmake --build ./ --target OpenSeesPy
-#          mv lib/OpenSeesPy.dylib lib/opensees.so
+         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+#         brew install gfortran
+#         brew install cmake
+#         brew install tcl8.6
+#         brew install tk8.6
+#         brew install python
+         brew install open-mpi
+         pip3 install conan
+      - name: Check Library
+        run: |
+          cmake --version
+          gfortran --version
+          python3 --version
+          conan --version
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          conan install ..
+          cmake -S .. -B ./
+          cmake --build ./ --target OpenSees
+          cmake --build ./ --target OpenSeesPy
+          mv lib/OpenSeesPy.dylib lib/opensees.so
 
 # # Simple sanity test
 #     - name: Verification OpenSeesPySP
