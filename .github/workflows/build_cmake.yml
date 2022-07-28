@@ -1,6 +1,5 @@
 
 name: CMake Build
-
 env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Debug
@@ -11,6 +10,13 @@ on:
 
   pull_request:
     branches: [master]
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: branch|tag|SHA to checkout
+        default: 'main'
+        required: true
 
 jobs:
   build-ubuntu:
