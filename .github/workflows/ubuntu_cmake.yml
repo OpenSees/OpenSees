@@ -28,15 +28,17 @@ jobs:
           ompi_info | head
           python --version
           conan --version
-      - name: Build
+      - name: mkdir and conan
         run: |
           mkdir build
           cd build
           conan install ..
-          cmake -S .. -B ./
-          cmake --build ./ --target OpenSees
-          cmake --build ./ --target OpenSeesPy
-          mv lib/OpenSeesPy.dylib lib/opensees.so
+      - name: Build
+        run: |
+          cmake -S ./ -B ./build
+          cmake --build ./build --target OpenSees
+          cmake --build ./build --target OpenSeesPy
+          mv ./build/lib/OpenSeesPy.dylib ./build/lib/opensees.so
 # Verification
       - name: Verification OpenSeesPySP
         run: |
