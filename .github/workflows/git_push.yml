@@ -28,6 +28,4 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git add ./build
           git commit -m "Push from Git Push Test"
-          git request-pull origin/master https://github.com/${GITHUB_REPOSITORY}
           git push origin HEAD:${GITHUB_REF}
-          git request-pull origin/master https://github.com/${GITHUB_REPOSITORY}
