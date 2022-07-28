@@ -4,10 +4,10 @@ env:
   BUILD_TYPE: Release
 
 on: 
-  workflow_dispatch:
   push:
     paths:
       - ".github/workflow/mac_cmake.yml"
+  workflow_dispatch:
 
 jobs:
   build:
