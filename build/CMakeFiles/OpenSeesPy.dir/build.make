@@ -443,7 +443,6 @@ lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTrans
 lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OpenSeesPy.dir/build.make
 lib/OpenSeesPy.dylib: lib/libOpenSeesLIB.a
-lib/OpenSeesPy.dylib: /Users/runner/.conan/data/hdf5/1.12.0/_/_/package/ab133a8e58aee82aa31d6decfbfe42ab699ad2e7/lib/libhdf5.a
 lib/OpenSeesPy.dylib: /usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/lib/libpython3.9.dylib
 lib/OpenSeesPy.dylib: lib/libcoordTransformation.a
 lib/OpenSeesPy.dylib: lib/libOPS_Material_f.a
@@ -457,6 +456,7 @@ lib/OpenSeesPy.dylib: lib/libUMFPACK.a
 lib/OpenSeesPy.dylib: lib/libtet.a
 lib/OpenSeesPy.dylib: lib/libtriangle.a
 lib/OpenSeesPy.dylib: lib/libAMD.a
+lib/OpenSeesPy.dylib: /usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/lib/libpython3.9.dylib
 lib/OpenSeesPy.dylib: CMakeFiles/OpenSeesPy.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX shared library lib/OpenSeesPy.dylib"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/OpenSeesPy.dir/link.txt --verbose=$(VERBOSE)
