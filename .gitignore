@@ -1,39 +1,39 @@
 # Prerequisites
-*.d
+# *.d
 
 # old text editor files
 *~
 
 # Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# *.slo
+# *.lo
+# *.o
+# *.obj
 
 # Precompiled Headers
-*.gch
-*.pch
+# *.gch
+# *.pch
 
 # Compiled Dynamic libraries
-*.so*
-*.dylib
-*.dll
-*.pyd
+# *.so*
+# *.dylib
+# *.dll
+# *.pyd
 
 # Fortran module files
-*.mod
-*.smod
+# *.mod
+# *.smod
 
 # Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# *.lai
+# *.la
+# *.a
+# *.lib
 
 # Executables
-*.exe
-*.out
-*.app
+# *.exe
+# *.out
+# *.app
 
 # Visual Studio
 *.vcxproj.user
