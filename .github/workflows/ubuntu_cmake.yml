@@ -13,12 +13,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install Library
         run: |
-         sudo apt-get update
-         sudo apt-get install tcl8.6
-         sudo apt-get install tk8.6
-         sudo apt-get install gfortran
-         sudo apt-get install openmpi-bin
-         pip install conan
+          sudo apt-get update
+          sudo apt-get install tcl8.6-dev
+          sudo apt-get install tk8.6-dev
+          sudo apt-get install openmpi-bin
+          apt-file update
+          pip install conan
       - name: Check Library
         run: |
           echo "puts [info tclversion]" | tclsh          
