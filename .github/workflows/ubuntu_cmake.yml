@@ -6,7 +6,7 @@ env:
 on:
   push:
     paths:
-      - 'ubuntu_cmake.yml'
+      - '.github/workflows/ubuntu_cmake.yml'
   workflow_dispatch:
 jobs:
   build:
