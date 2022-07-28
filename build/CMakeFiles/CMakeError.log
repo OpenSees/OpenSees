@@ -1,0 +1,58 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: /Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library not found for -lSystem
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library not found for -lc++
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Performing C++ SOURCE FILE Test HAVE_MYSQL_OPT_EMBEDDED_CONNECTION failed with the following output:
+Change Dir: /Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_59823/fast && /Applications/Xcode_13.4.1.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_59823.dir/build.make CMakeFiles/cmTC_59823.dir/build
+Building CXX object CMakeFiles/cmTC_59823.dir/src.cxx.o
+/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DHAVE_MYSQL_OPT_EMBEDDED_CONNECTION -I/Users/runner/.conan/data/libmysqlclient/8.0.25/_/_/package/98e07127027e502b26433a41fd5260c0e912e745/include -isysroot /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk -MD -MT CMakeFiles/cmTC_59823.dir/src.cxx.o -MF CMakeFiles/cmTC_59823.dir/src.cxx.o.d -o CMakeFiles/cmTC_59823.dir/src.cxx.o -c /Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/CMakeTmp/src.cxx
+/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/CMakeTmp/src.cxx:2:22: error: use of undeclared identifier 'MYSQL_OPT_USE_EMBEDDED_CONNECTION'
+int main() { int i = MYSQL_OPT_USE_EMBEDDED_CONNECTION; }
+                     ^
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_59823.dir/src.cxx.o] Error 1
+make: *** [cmTC_59823/fast] Error 2
+
+
+Source file was:
+#include <mysql.h>
+int main() { int i = MYSQL_OPT_USE_EMBEDDED_CONNECTION; }
+Determining if the Fortran sgemm exists failed with the following output:
+Change Dir: /Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_370f9/fast && /Applications/Xcode_13.4.1.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_370f9.dir/build.make CMakeFiles/cmTC_370f9.dir/build
+Building Fortran object CMakeFiles/cmTC_370f9.dir/testFortranCompiler.f.o
+/usr/local/bin/gfortran   -isysroot /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk -c /Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/CMakeTmp/testFortranCompiler.f -o CMakeFiles/cmTC_370f9.dir/testFortranCompiler.f.o
+Linking Fortran executable cmTC_370f9
+/usr/local/Cellar/cmake/3.23.2/bin/cmake -E cmake_link_script CMakeFiles/cmTC_370f9.dir/link.txt --verbose=1
+/usr/local/bin/gfortran  -isysroot /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk CMakeFiles/cmTC_370f9.dir/testFortranCompiler.f.o -o cmTC_370f9 
+Undefined symbols for architecture x86_64:
+  "_sgemm_", referenced from:
+      _MAIN__ in testFortranCompiler.f.o
+ld: symbol(s) not found for architecture x86_64
+collect2: error: ld returned 1 exit status
+make[1]: *** [cmTC_370f9] Error 1
+make: *** [cmTC_370f9/fast] Error 2
+
+
+

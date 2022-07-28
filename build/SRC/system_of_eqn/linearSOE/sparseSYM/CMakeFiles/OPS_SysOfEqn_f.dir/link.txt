@@ -1,0 +1,2 @@
+/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../../../lib/libOPS_SysOfEqn_f.a CMakeFiles/OPS_SysOfEqn_f.dir/genmmd.f.o
+/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../../lib/libOPS_SysOfEqn_f.a

@@ -1,0 +1,2 @@
+/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../../../lib/libOPS_Material_Uniaxial_Drain_f.a CMakeFiles/OPS_Material_Uniaxial_Drain_f.dir/anal00.f.o CMakeFiles/OPS_Material_Uniaxial_Drain_f.dir/common00.f.o
+/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../../lib/libOPS_Material_Uniaxial_Drain_f.a

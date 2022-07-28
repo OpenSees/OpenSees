@@ -1,0 +1,4 @@
+# The fortran modules provided by this target.
+provides
+ all_interfaces_2d.mod
+ all_interfaces_3d.mod

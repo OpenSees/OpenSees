@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/ALLAUX.dir/SRC/colamd.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/colamd.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/get_perm_c.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/get_perm_c.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/heap_relax_snode.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/heap_relax_snode.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/ilu_heap_relax_snode.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/ilu_heap_relax_snode.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/ilu_relax_snode.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/ilu_relax_snode.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/input_error.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/input_error.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/mark_relax.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/mark_relax.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/mc64ad.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/mc64ad.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/memory.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/memory.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/mmd.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/mmd.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/qselect.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/qselect.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/relax_snode.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/relax_snode.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/smach.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/smach.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_coletree.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_coletree.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_ienv.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_ienv.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_preorder.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/sp_preorder.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/superlu_timer.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/superlu_timer.c.o.d"
+  "CMakeFiles/ALLAUX.dir/SRC/util.c.o"
+  "CMakeFiles/ALLAUX.dir/SRC/util.c.o.d"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/ALLAUX.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
