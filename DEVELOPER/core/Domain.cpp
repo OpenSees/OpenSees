@@ -2752,7 +2752,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for elements as we did for nodes above .. see comments
-    // for nodes if you can't figure whats going on!
+    // for nodes if you can't figure what's going on!
 
     if (numEle != 0) {
       ID elementData(numEle*2);
@@ -2782,7 +2782,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for SP_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure whats going on!    
+    // for nodes if you can't figure what's going on!    
     
     if (numSPs != 0) {
       ID spData(numSPs*2);
@@ -2811,7 +2811,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for Pressure_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure whats going on!    
+    // for nodes if you can't figure what's going on!    
     
     if (numPCs != 0) {
         ID pData(numPCs*2);
@@ -2840,7 +2840,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for MP_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure whats going on!    
+    // for nodes if you can't figure what's going on!    
     
     if (numMPs != 0) {
       ID mpData(numMPs*2);
@@ -2869,7 +2869,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for LoadPatterns as we did for Nodes above .. see comments
-    // for nodes if you can't figure whats going on!    
+    // for nodes if you can't figure what's going on!    
 
 
     if (numLPs != 0) {
@@ -3039,7 +3039,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   committedTime = currentTime;
 
   // 
-  // now if the currentGeoTag does not agree with whats in the domain
+  // now if the currentGeoTag does not agree with what's in the domain
   // we must wipe everything in the domain and recreate the domain based on the info from the channel
   //
 
