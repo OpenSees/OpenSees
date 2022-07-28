@@ -28,4 +28,5 @@ jobs:
           git add .
           git commit -m "Push from Git Push Test"
           git pull
+          ls -all
           git push origin HEAD:${GITHUB_REF}
