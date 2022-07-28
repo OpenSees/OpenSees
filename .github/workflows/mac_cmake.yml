@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Current Directory
         run: |
+          cd ..
           pwd
           ls -all
 #     - uses: actions/checkout@v2
