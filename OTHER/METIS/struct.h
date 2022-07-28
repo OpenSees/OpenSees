@@ -11,6 +11,9 @@
  * $Id: struct.h,v 1.2 2008-03-31 21:07:06 fmk Exp $
  */
 
+#ifndef _STRUCT_H
+#define _STRUCT_H
+
 /* Undefine the following #define in order to use short int as the idxtype */
 #define IDXTYPE_INT
 
@@ -247,5 +250,5 @@ struct vpwgtdef {
 typedef struct vpwgtdef VPInfoType;
 
 
-
+#endif
 
