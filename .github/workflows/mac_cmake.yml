@@ -38,7 +38,6 @@ jobs:
 # Build
       - name: Build
         run: |
-          mkdir artifact
           cd build
           conan install ..
           cmake -S .. -B ./
