@@ -3,7 +3,11 @@ env:
   CMAKE_VERSION: 3.20.1
   BUILD_TYPE: Release
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflow/mac_cmake.yml"
 
 jobs:
   build:
