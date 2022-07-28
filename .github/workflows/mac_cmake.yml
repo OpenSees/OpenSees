@@ -1,39 +1,40 @@
 name: CMake Build on Mac
 env:
-	CMAKE_VERSION: 3.20.1
-	BUILD_TYPE: Release
+  CMAKE_VERSION: 3.20.1
+  BUILD_TYPE: Release
 
 on: workflow_dispatch
 
 jobs:
-	build:
-		name: build on mac
-		runs-on: macos-12
-		steps:
-			- uses: actions/checkout@v2
-			- name: Install Library
-				run: |
-				 ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-				 brew install open-mpi
-				 pip3 install conan
-			- name: Check Library
-				run: |
-					cmake --version
-					gfortran --version
-					python3 --version
-					conan --version
-			- name: Build
-				run: |
-					mkdir build
-					cd build
-					conan install ..
-					cmake -S .. -B ./
-					cmake --build ./ --target OpenSees
-					cmake --build ./ --target OpenSeesPy
-					mv lib/OpenSeesPy.dylib lib/opensees.so
-			- name: Verification OpenSeesPySP
-				run: |
-					cd ./EXAMPLES/ExamplePython/
-					export PYTHONPATH="../../build/lib/"
-					python3 -c "import sys; print(sys.path)"
-					python3 example_variable_analysis.py
+  build:
+    name: build on mac
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Library
+        run: |
+         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+         brew install open-mpi
+         pip3 install conan
+      - name: Check Library
+        run: |
+          cmake --version
+          gfortran --version
+          python3 --version
+          conan --version
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          conan install ..
+          cmake -S .. -B ./
+          cmake --build ./ --target OpenSees
+          cmake --build ./ --target OpenSeesPy
+          mv lib/OpenSeesPy.dylib lib/opensees.so
+# Verification
+      - name: Verification OpenSeesPySP
+        run: |
+          cd ./EXAMPLES/ExamplePython/
+          export PYTHONPATH="../../build/lib/"
+          python3 -c "import sys; print(sys.path)"
+          python3 example_variable_analysis.py
