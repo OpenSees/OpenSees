@@ -36,9 +36,23 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 # export CC=icc CXX=icpc FC=ifort
 # export MUMPS_DIR=$HOME/MUMPS_5.0.0
 
-# for OpenSeesPY
-add_compile_options(-fPIC)
+#
+# Compiler SPECIFIC
+#
 
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+ MESSAGE("Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ add_compile_options(-fPIC)
+ MESSAGE("Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
+ MESSAGE("Intel")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+ MESSAGE("MSVC")
+else()
+ MESSAFE("UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+endif()
+ 
 #
 # external packages
 #
@@ -59,16 +73,14 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
-   find_package(HDF5 REQUIRED)
-   find_package(TCL REQUIRED)
-   find_package(MYSQL REQUIRED)   
    set(USING_CONAN TRUE)
 else()
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
-
-
+  find_package(HDF5 REQUIRED)
+  find_package(TCL REQUIRED)
+  find_package(MYSQL REQUIRED)   
 endif()
 
 # define user-selectable options for end target
@@ -121,6 +133,7 @@ enable_language(Fortran)
 #--------------------------------------
 #add_link_options(-rdynamic)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_FORTRAN_STANDARD 08)
 
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 #add_compile_options(-g)
@@ -245,6 +258,7 @@ find_package(BLAS)
 find_package(LAPACK)
 find_package (Python COMPONENTS Interpreter Development)
 find_package(MPI)
+find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
 #set (BLAS_FOUND FALSE)
@@ -280,7 +294,7 @@ endif()
 if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+  # set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
@@ -289,19 +303,22 @@ else()
   message(STATUS "MPI was NOT found.")
 endif()
 
-message("OPS >>> BLAS:    ${BLAS_LIBRARIES}")
-message("OPS >>> CBLAS:   ${CBLAS_LIBRARY}\n")
-message("OPS >>> LAPACK:  ${LAPACK_LIBRARIES}")
-message("OPS >>> SUPERLU: ${SUPERLU_LIBRARIES}")
-message("OPS >>> ARPACK:  ${ARPACK_LIBRARIES}")
-message("OPS >>> UMFPACK: ${UMFPACK_LIBRARIES}")
-message("OPS >>> CSPARSE: ${CSPARSE_LIBRARIES}")
-message("OPS >>> TCL:     ${TCL_LIBRARY}")
-message("OPS >>> AMD:     ${AMD_LIBRARIES}")
-message("OPS >>> TETGEN:     ${TETGEN_LIBRARIES}")
+
+if(MKL_FOUND)
+  message(STATUS "MKL was found.")
+  set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+else()
+  message(STATUS "MKL NOT found.")
+  set(SCALAPACK_LIBRARIES "/usr/lib/x86_64-linux-gnu/libmkl_blacs_openmpi_lp64.so;/usr/lib/x86_64-linux-gnu/libscalapack-openmpi.so.2.1")
+endif()
+  
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+  message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()	 
 
 add_library(OPS_Numerics INTERFACE)
-
 
 target_link_libraries(OPS_Numerics INTERFACE
        ${ARPACK_LIBRARIES}
@@ -407,7 +424,6 @@ add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
-    coordTransformation
     OPS_Actor 
     OPS_Analysis 
     OPS_Api
@@ -428,6 +444,7 @@ target_link_libraries(OpenSeesLIB
     OPS_ObjectBroker
     OPS_PFEM
     OPS_Recorder
+    coordTransformation
     OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface
@@ -526,8 +543,7 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
-    target_link_libraries(OpenSeesMP ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
-    
+
     target_compile_definitions(OpenSeesMP 
       PUBLIC _PARALLEL_INTERPRETERS
     )
@@ -537,6 +553,7 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
+       OPS_Recorder
        MUMPS_F
        MUMPS_C       
        METIS
@@ -546,6 +563,10 @@ if(MPI_FOUND)
        ${HDF5_LIBRARIES} 
        ${MYSQL_LIBRARIES}
        ${CONAN_LIBS}
+       ${MPI_CXX_LIBRARIES}
+       ${SCALAPACK_LIBRARIES}
+       ${MPI_Fortran_LIBRARIES}       
+       ${MPI_CXX_LINK_FLAGS}
     )
     
 endif()
