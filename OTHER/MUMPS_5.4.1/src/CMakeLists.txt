@@ -36,6 +36,7 @@ target_sources(MUMPS_F PUBLIC
 		       bcast_errors.F
 		       dana_LDLT_preprocess.F
 		       dana_aux.F
+		       dana_driver.F
 		       dana_aux_ELT.F
 		       dana_aux_par.F
 		       dana_dist_m.F
