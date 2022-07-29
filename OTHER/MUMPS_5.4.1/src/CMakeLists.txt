@@ -1,6 +1,7 @@
 
+add_library(MUMPS_C)
 
-add_library(MUMPS_C OBJECT
+target_sources(MUMPS_C PUBLIC
 		       build_mumps_int_def.c
 		       mumps_io_basic.c
 		       mumps_numa.c
@@ -25,7 +26,9 @@ add_library(MUMPS_C OBJECT
 		       mumps_scotch64.c
 )
 
-add_library(MUMPS_F OBJECT
+add_library(MUMPS_F)
+
+target_sources(MUMPS_F PUBLIC
 		       ana_AMDMF.F
 		       ana_blk.F		
 		       ana_blk_m.F	       
@@ -159,5 +162,4 @@ target_include_directories(MUMPS_F PRIVATE ${MPI_CXX_INCLUDE_PATH})
 
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
-target_link_libraries(MUMPS PUBLIC MUMPS_C MUMPS_F)
 
