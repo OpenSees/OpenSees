@@ -36,8 +36,26 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/c
 # export CC=icc CXX=icpc FC=ifort
 # export MUMPS_DIR=$HOME/MUMPS_5.0.0
 
+#
+# Compiler SPECIFIC
+#
+
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+ MESSAGE("Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ add_compile_options(-fPIC)
+ MESSAGE("Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
+ MESSAGE("Intel")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+ MESSAGE("MSVC")
+else()
+ MESSAFE("UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+endif()
+ 
 # for OpenSeesPY
-add_compile_options(-fPIC)
+
 
 #
 # external packages
@@ -119,6 +137,7 @@ enable_language(Fortran)
 #--------------------------------------
 #add_link_options(-rdynamic)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_FORTRAN_STANDARD 08)
 
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 #add_compile_options(-g)
@@ -298,6 +317,14 @@ message("OPS >>> TCL:     ${TCL_LIBRARY}")
 message("OPS >>> AMD:     ${AMD_LIBRARIES}")
 message("OPS >>> TETGEN:     ${TETGEN_LIBRARIES}")
 
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+  message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()	 
+
+
 add_library(OPS_Numerics INTERFACE)
 
 
@@ -405,7 +432,6 @@ add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
-    coordTransformation
     OPS_Actor 
     OPS_Analysis 
     OPS_Api
@@ -426,6 +452,7 @@ target_link_libraries(OpenSeesLIB
     OPS_ObjectBroker
     OPS_PFEM
     OPS_Recorder
+    coordTransformation
     OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface
@@ -524,8 +551,7 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
-    target_link_libraries(OpenSeesMP ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS})
-    
+
     target_compile_definitions(OpenSeesMP 
       PUBLIC _PARALLEL_INTERPRETERS
     )
@@ -535,6 +561,7 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
+       OPS_Recorder
        MUMPS_F
        MUMPS_C       
        METIS
@@ -544,6 +571,9 @@ if(MPI_FOUND)
        ${HDF5_LIBRARIES} 
        ${MYSQL_LIBRARIES}
        ${CONAN_LIBS}
+       ${MPI_CXX_LIBRARIES}
+       ${MPI_Fortran_LIBRARIES}       
+       ${MPI_CXX_LINK_FLAGS}
     )
     
 endif()

@@ -1,8 +1,5 @@
 
-add_library(MUMPS_C)
-
 target_sources(MUMPS_C PUBLIC
-		       build_mumps_int_def.c
 		       mumps_io_basic.c
 		       mumps_numa.c
 		       mumps_scotch_int.c
@@ -42,7 +39,6 @@ target_sources(MUMPS_F PUBLIC
 		       dana_aux_ELT.F
 		       dana_aux_par.F
 		       dana_dist_m.F
-		       dana_driver.F
 		       dana_lr.F
 		       dana_mtrans.F
 		       dana_reordertree.F
@@ -160,6 +156,21 @@ target_sources(MUMPS_F PUBLIC
 
 target_include_directories(MUMPS_F PRIVATE ${MPI_CXX_INCLUDE_PATH})  
 
+set_target_properties(MUMPS_F PROPERTIES LINKER_LANGUAGE CXX)
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+ MESSAGE("Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ target_compile_options(MUMPS_C PUBLIC -DAdd_ -Dpord)
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
+ MESSAGE("Intel")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+ MESSAGE("MSVC")
+else()
+ MESSAFE("UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
+
 
