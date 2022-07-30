@@ -43,7 +43,7 @@ jobs:
 # Build
       - name: Build
         run: |
-          mkdir build
+          mkdir -p build
           cd build
           conan install ..
           cmake -S .. -B ./
