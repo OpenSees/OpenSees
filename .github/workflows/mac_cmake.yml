@@ -22,7 +22,9 @@ jobs:
           path: |
             ~/.conan
             build
+            /usr/local/bin/gfortran
             /usr/local/Cellar/open-mpi/4.1.4
+            /usr/local/lib/python3.9/site-packages
           key: ${{ runner.os }}
       - name: Restore mtime
         run: python3 git-restore-mtime.py
@@ -49,9 +51,9 @@ jobs:
           cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
-          mv ./lib/OpenSeesPy.dylib ./lib/opensees.so
-          cp ./lib/opensees.so ./../artifact
-          cp ./bin/OpenSees ./../artifact
+          cp ./lib/OpenSeesPy.dylib ./lib/opensees.so
+          cp ./lib/opensees.so ./../artifact/
+          cp ./bin/OpenSees ./../artifact/
 #          cmake -S .. -B ./
 # Verification
       - name: Verification OpenSeesPySP
