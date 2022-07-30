@@ -86,6 +86,7 @@
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
 #include "PathIndependentMaterial.h"
+#include "BackboneMaterial.h"
 #include "SeriesMaterial.h"
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
@@ -218,6 +219,8 @@
 #include "frictionBearing/frictionModel/VelPressureDep.h"
 #include "frictionBearing/frictionModel/VelDepMultiLinear.h"
 #include "frictionBearing/frictionModel/VelNormalFrcDep.h"
+
+#include "ArctangentBackbone.h"
 
 // element header files
 #include "Element.h"
@@ -1193,6 +1196,21 @@ FEM_ObjectBrokerAllClasses::getNewSectionIntegration(int classTag)
 }
 
 
+HystereticBackbone *
+FEM_ObjectBrokerAllClasses::getNewHystereticBackbone(int classTag)
+{
+  switch (classTag) {
+  case BACKBONE_TAG_Arctangent:
+    return new ArctangentBackbone();
+    
+  default:
+    opserr << "FEM_ObjectBrokerAllClasses::getHystereticBackbone - ";
+    opserr << " - no HystereticBackbone type exists for class tag ";
+    opserr << classTag << endln;
+    return 0;
+  }
+}
+
 UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
@@ -1320,6 +1338,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_PathIndependent:
 		return new PathIndependentMaterial();
+
+	case MAT_TAG_Backbone:
+		return new BackboneMaterial();		
 
 	case MAT_TAG_SeriesMaterial:
 		return new SeriesMaterial();
