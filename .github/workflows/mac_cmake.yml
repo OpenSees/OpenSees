@@ -31,21 +31,20 @@ jobs:
          ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
          brew install open-mpi
          pip3 install conan
-#       - name: Check Library
-#         run: |
-#           echo "puts [info tclversion]" | tclsh          
-#           cmake --version
-#           gfortran --version
-#           ompi_info | head
-#           python3 --version
-#           conan --version
+      - name: Check Library
+        run: |
+          echo "puts [info tclversion]" | tclsh          
+          cmake --version
+          gfortran --version
+          ompi_info | head
+          python3 --version
+          conan --version
 # Build
       - name: Build
         run: |
           mkdir -p build
           cd build
           conan install ..
-          rm CMakeCache.txt
           cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
