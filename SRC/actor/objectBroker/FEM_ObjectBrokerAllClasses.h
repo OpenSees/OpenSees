@@ -72,6 +72,8 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     Fiber *getNewFiber(int classTag);
     FrictionModel *getNewFrictionModel(int classTag);
 
+  HystereticBackbone *getNewHystereticBackbone(int classTag);
+  
     ConvergenceTest       *getNewConvergenceTest(int classTag);
     LoadPattern           *getNewLoadPattern(int classTag);
     GroundMotion          *getNewGroundMotion(int classTag);
