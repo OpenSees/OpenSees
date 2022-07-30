@@ -1,2 +1,0 @@
-/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../../lib/libOPS_Material_f.a CMakeFiles/OPS_Material_f.dir/DoddRestrepo.f.o CMakeFiles/OPS_Material_f.dir/STEELDR.f.o "CMakeFiles/OPS_Material_f.dir/c14-SK-M.f.o"
-/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../lib/libOPS_Material_f.a

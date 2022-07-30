@@ -1,2 +1,0 @@
-/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../../../lib/libOPS_Material_nD_Feap_f.a CMakeFiles/OPS_Material_nD_Feap_f.dir/feapCommon.f.o CMakeFiles/OPS_Material_nD_Feap_f.dir/matl01.f.o CMakeFiles/OPS_Material_nD_Feap_f.dir/matl02.f.o CMakeFiles/OPS_Material_nD_Feap_f.dir/matl03.f.o
-/Applications/Xcode_13.4.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../../lib/libOPS_Material_nD_Feap_f.a
