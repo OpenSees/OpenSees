@@ -13,6 +13,8 @@ jobs:
   build:
     name: git push test
     runs-on: macos-12
+    env:
+      GH_TOKEN: "${secrets.GH_TOKEN}"
     steps:
       - uses: actions/checkout@v2
       - name: File Make
@@ -22,5 +24,3 @@ jobs:
           ls -all
       - name: Git PR Create
         run: gh pr create -B "master" -t "CMake Build on Mac" -b ""
-        env:
-          GH_TOKEN: "${secrets.GH_TOKEN}"
