@@ -23,4 +23,4 @@ jobs:
       - name: Git PR Create
         run: gh pr create -B "master" -t "CMake Build on Mac" -b ""
         env:
-          GH_TOKEN: "${GITHUB_TOKEN}"
+          GH_TOKEN: "${secrets.GH_TOKEN}"
