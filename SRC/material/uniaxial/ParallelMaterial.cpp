@@ -96,7 +96,7 @@ OPS_ParallelMaterial(void)
     UniaxialMaterial *theMat = OPS_getUniaxialMaterial(iData[i]);
     if (theMat == 0) {
       opserr << "WARNING no existing material with tag " << iData[i] 
-	     << " for uniaxialMaterial Parallel" << iData[0] << endln;
+	     << " for uniaxialMaterial Parallel " << iData[0] << endln;
       delete [] iData;
       delete [] theMats;
       return 0;
