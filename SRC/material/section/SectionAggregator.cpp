@@ -964,9 +964,15 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
 	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
   }
 
-  if ((argc > 1) && (strcmp(argv[0],"section") == 0) && (theSection))
+  // For backward compatibility
+  if (argc > 1 && strcmp(argv[0],"section") == 0 && theSection != 0)
     theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
+  // If that didn't work, pass along to section
+  if (theResponse == 0 && theSection != 0)
+    theResponse = theSection->setResponse(argv, argc, output);
+
+  // Call default method
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
   
