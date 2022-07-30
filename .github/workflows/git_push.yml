@@ -20,4 +20,6 @@ jobs:
       - name: File Make
         run: echo hello >> memo.txt
       - name: Git PR Create
-        run: gh pr create -B origin --head HEAD:${GITHUB_REF} -t "from Git Push Test" -b ""
+        run: |
+          git commit . -m "Add hello"
+          gh pr create -B origin --head HEAD:${GITHUB_REF} -t "from Git Push Test" -b ""
