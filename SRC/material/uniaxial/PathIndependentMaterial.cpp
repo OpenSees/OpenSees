@@ -201,20 +201,22 @@ PathIndependentMaterial::sendSelf(int cTag, Channel &theChannel)
   
 	int res = 0;
 
+	int dbTag = this->getDbTag();
+	
 	static ID classTags(3);
 
 	int clTag = theMaterial->getClassTag();
-	int dbTag = theMaterial->getDbTag();
+	int matDbTag = theMaterial->getDbTag();
 	
 	classTags(0) = clTag;
 
-	if (dbTag == 0) {
-		dbTag = theChannel.getDbTag();
-		if (dbTag != 0)
-			theMaterial->setDbTag(dbTag);
+	if (matDbTag == 0) {
+		matDbTag = theChannel.getDbTag();
+		if (matDbTag != 0)
+			theMaterial->setDbTag(matDbTag);
 	}
 
-	classTags(1) = dbTag;
+	classTags(1) = matDbTag;
 	classTags(2) = this->getTag();
 
 	res = theChannel.sendID(dbTag, cTag, classTags);
