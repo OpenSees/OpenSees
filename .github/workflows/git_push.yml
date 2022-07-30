@@ -19,7 +19,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: File Make
         run: |
-          cd build
           touch memo.txt
           ls -all
       - name: Git PR Create
