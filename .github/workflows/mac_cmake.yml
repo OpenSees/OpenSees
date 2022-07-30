@@ -45,6 +45,7 @@ jobs:
           mkdir build
           cd build
           conan install ..
+          cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           mv ./lib/OpenSeesPy.dylib ./lib/opensees.so
