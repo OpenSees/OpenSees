@@ -40,15 +40,15 @@
 *.bsc
 *.pdb
 .vs
-obj
+# obj
 *.exp
 
 # CLion
 .gitignore
 .idea
-cmake-build-debug
-cmake-build-release
-#CMakeLists.txt
+# cmake-build-debug
+# cmake-build-release
+# CMakeLists.txt
 .dropbox.attr
 
 # VSCode
@@ -56,7 +56,7 @@ cmake-build-release
 .clang-format
 
 # OTHER
-Makefile.def
+# Makefile.def
 PlainConcrete.f
 forumat.f
 Damage2p.cpp
