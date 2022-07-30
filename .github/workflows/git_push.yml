@@ -23,4 +23,6 @@ jobs:
           touch memo.txt
           ls -all
       - name: Git PR Create
-        run: gh pr create -B "origin/master" --head HEAD:${GITHUB_REF}
+        run: gh pr create -B origin --head HEAD:${GITHUB_REF}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
