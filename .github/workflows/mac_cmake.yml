@@ -15,12 +15,17 @@ jobs:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0       
       - uses: actions/cache@v2
         with:
           path: |
             ~/cache
             !~/cache/exclude
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+            build
+          key: ${{ runner.os }}
+      - name: Restore mtime
+        run: python3 git-restore-mtime.py
 # Install and Check Library
       - name: Install Library
         run: |
