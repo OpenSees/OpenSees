@@ -4,9 +4,9 @@ env:
   BUILD_TYPE: Release
 
 on: 
-#   push:
-#     paths:
-#       - ".github/workflows/mac_cmake.yml"
+  push:
+    paths:
+      - ".github/workflows/mac_cmake.yml"
   workflow_dispatch:
 
 jobs:
@@ -55,16 +55,16 @@ jobs:
           python3 example_variable_analysis.py
 # Push build
       - name: Push build Directory
-        run: gh pr create -B "master" -t " CMake Build on Mac" -b ""
-        env:
-          GH_TOKEN: "${GITHUB_TOKEN}"
-#         run: |
-#           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-#           git config --global user.name "${GITHUB_ACTOR}"
-#           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-#           git add .
-#           git commit -m "Push from CMake Build on Mac"
-#           git push origin HEAD:${GITHUB_REF}
+#         run: gh pr create -B "master" -t " CMake Build on Mac" -b ""
+#         env:
+#           GH_TOKEN: "${GITHUB_TOKEN}"
+        run: |
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add .
+          git commit -m "Push from CMake Build on Mac"
+          git push origin HEAD:${GITHUB_REF}
 # Save
       - uses: actions/upload-artifact@v1
         with:
