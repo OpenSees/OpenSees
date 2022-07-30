@@ -23,7 +23,6 @@ jobs:
           path: |
             ~/.conan
             build
-            /usr/local/bin/gfortran
             /usr/local/Cellar/open-mpi/4.1.4
             /usr/local/lib/python3.9/site-packages
           key: ${{ runner.os }}
