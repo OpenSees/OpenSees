@@ -14,7 +14,7 @@ jobs:
     name: git push test
     runs-on: macos-12
     env:
-      GH_TOKEN: "${secrets.GH_TOKEN}"
+      GH_TOKEN: ${{secrets.GH_TOKEN}}
     steps:
       - uses: actions/checkout@v2
       - name: File Make
