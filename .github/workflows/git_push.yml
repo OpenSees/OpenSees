@@ -17,10 +17,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: File Make
         run: |
-          mkdir build
           cd build
           touch memo.txt
-          cd ..
           ls -all
       - name: Git PR Create
         run: gh pr create -B "master" -t "CMake Build on Mac" -b ""
