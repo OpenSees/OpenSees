@@ -18,7 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: File Make
-        run: |
-          echo hello >> memo.txt
+        run: echo hello >> memo.txt
       - name: Git PR Create
-        run: gh pr create -B origin --head HEAD:${GITHUB_REF}
+        run: gh pr create -B origin --head HEAD:${GITHUB_REF} -t "from Git Push Test" -b ""
