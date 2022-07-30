@@ -23,4 +23,4 @@ jobs:
           touch memo.txt
           ls -all
       - name: Git PR Create
-        run: gh pr create -B "origin/master" -t "CMake Build on Mac" -b ""
+        run: gh pr create -B "origin/master" --head HEAD:${GITHUB_REF}
