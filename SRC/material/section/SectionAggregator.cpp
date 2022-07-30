@@ -952,7 +952,7 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
   
   Response *theResponse =0;
 
-  if (argc > 2 && (strcmp(argv[0],"addition") == 0) || (strcmp(argv[0],"material") == 0)) {
+  if (argc > 2 && (strcmp(argv[0],"addition") == 0 || strcmp(argv[0],"material") == 0)) {
 
     // Get the tag of the material
     int materialTag = atoi(argv[1]);
@@ -961,7 +961,7 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
     int ok = 0;
     for (int i = 0; i < numMats; i++)
       if (materialTag == theAdditions[i]->getTag())
-	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
+	return theAdditions[i]->setResponse(&argv[2], argc-2, output);
   }
 
   // For backward compatibility
