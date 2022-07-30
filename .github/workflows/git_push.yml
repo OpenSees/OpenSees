@@ -15,17 +15,14 @@ jobs:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v2
-# Push Diff
-      - name: Git Push
+      - name: File Make
         run: |
           mkdir build
           cd build
           touch memo.txt
           cd ..
           ls -all
-          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git add ./build
-          git commit -m "Push from Git Push Test"
-          git push origin HEAD:${GITHUB_REF}
+      - name: Git PR Create
+        run: gh pr create -B "master" -t "CMake Build on Mac" -b ""
+        env:
+          GH_TOKEN: "${GITHUB_TOKEN}"
