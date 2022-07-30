@@ -22,6 +22,7 @@ jobs:
           path: |
             ~/.conan
             build
+            /usr/local/Cellar/open-mpi/4.1.4
           key: ${{ runner.os }}
       - name: Restore mtime
         run: python3 git-restore-mtime.py
@@ -60,17 +61,17 @@ jobs:
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
 # Push build
-      - name: Push build Directory
-#         run: gh pr create -B "master" -t " CMake Build on Mac" -b ""
-#         env:
-#           GH_TOKEN: "${GITHUB_TOKEN}"
-        run: |
-          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git add .
-          git commit -m "Push from CMake Build on Mac"
-          git push origin HEAD:${GITHUB_REF}
+#       - name: Push build Directory
+# #         run: gh pr create -B "master" -t " CMake Build on Mac" -b ""
+# #         env:
+# #           GH_TOKEN: "${GITHUB_TOKEN}"
+#         run: |
+#           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+#           git config --global user.name "${GITHUB_ACTOR}"
+#           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+#           git add .
+#           git commit -m "Push from CMake Build on Mac"
+#           git push origin HEAD:${GITHUB_REF}
 # Save
       - uses: actions/upload-artifact@v1
         with:
