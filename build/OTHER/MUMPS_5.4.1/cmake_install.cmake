@@ -39,11 +39,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/runner/work/OpenSees/OpenSees/build/OTHER/MUMPS_5.4.1/PORD/lib/cmake_install.cmake")
+  include("/Users/runner/work/OpenSees/OpenSees/build/OTHER/MUMPS_5.4.1/src/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/runner/work/OpenSees/OpenSees/build/OTHER/MUMPS_5.4.1/src/cmake_install.cmake")
+  include("/Users/runner/work/OpenSees/OpenSees/build/OTHER/MUMPS_5.4.1/PORD/lib/cmake_install.cmake")
 endif()
 

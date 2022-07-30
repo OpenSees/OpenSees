@@ -918,8 +918,8 @@ G3_EXTERNAL_OBJECTS = \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/MaterialResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/ElementResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/FiberResponse.cpp.o" \
-"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o" \
+"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Handler.dir/SRC/handler/OPS_Stream.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Handler.dir/SRC/handler/StandardStream.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Handler.dir/SRC/handler/FileStream.cpp.o" \
@@ -1887,8 +1887,8 @@ lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/Response.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/MaterialResponse.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/ElementResponse.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/FiberResponse.cpp.o
-lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o
+lib/libG3.a: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Handler.dir/SRC/handler/OPS_Stream.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Handler.dir/SRC/handler/StandardStream.cpp.o
 lib/libG3.a: CMakeFiles/OPS_Handler.dir/SRC/handler/FileStream.cpp.o

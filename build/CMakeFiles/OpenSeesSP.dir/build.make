@@ -173,10 +173,10 @@ bin/OpenSeesSP: CMakeFiles/OpenSeesSP.dir/SRC/actor/machineBroker/MPI_MachineBro
 bin/OpenSeesSP: CMakeFiles/OpenSeesSP.dir/SRC/api/packages.cpp.o
 bin/OpenSeesSP: CMakeFiles/OpenSeesSP.dir/build.make
 bin/OpenSeesSP: lib/libOpenSeesLIB.a
-bin/OpenSeesSP: lib/libcoordTransformation.a
 bin/OpenSeesSP: lib/libOPS_Material_f.a
 bin/OpenSeesSP: lib/libOPS_Material_Uniaxial_Drain_f.a
 bin/OpenSeesSP: lib/libOPS_Material_nD_Feap_f.a
+bin/OpenSeesSP: lib/libcoordTransformation.a
 bin/OpenSeesSP: lib/libOPS_SysOfEqn_f.a
 bin/OpenSeesSP: CMakeFiles/OpenSeesSP.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable bin/OpenSeesSP"

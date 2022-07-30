@@ -421,6 +421,7 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/ViscousMaterial.h
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/ViscousDamper.h
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/PathIndependentMaterial.h
+ /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/BackboneMaterial.h
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/SeriesMaterial.h
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/CableMaterial.h
  /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/ENTMaterial.h
@@ -626,6 +627,8 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
  /Users/runner/work/OpenSees/OpenSees/SRC/element/frictionBearing/frictionModel/VelPressureDep.h
  /Users/runner/work/OpenSees/OpenSees/SRC/element/frictionBearing/frictionModel/VelDepMultiLinear.h
  /Users/runner/work/OpenSees/OpenSees/SRC/element/frictionBearing/frictionModel/VelNormalFrcDep.h
+ /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/backbone/ArctangentBackbone.h
+ /Users/runner/work/OpenSees/OpenSees/SRC/material/uniaxial/backbone/HystereticBackbone.h
  /Users/runner/work/OpenSees/OpenSees/SRC/element/truss/Truss.h
  /Users/runner/work/OpenSees/OpenSees/SRC/element/truss/Truss2.h
  /Users/runner/work/OpenSees/OpenSees/SRC/element/truss/TrussSection.h

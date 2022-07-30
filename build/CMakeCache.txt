@@ -338,6 +338,9 @@ HDF5_hdf5_LIBRARY_DEBUG:FILEPATH=HDF5_hdf5_LIBRARY_DEBUG-NOTFOUND
 //Path to a library.
 HDF5_hdf5_LIBRARY_RELEASE:FILEPATH=/Users/runner/.conan/data/hdf5/1.12.0/_/_/package/ab133a8e58aee82aa31d6decfbfe42ab699ad2e7/lib/libhdf5.a
 
+//The directory containing a CMake configuration file for MKL.
+MKL_DIR:PATH=MKL_DIR-NOTFOUND
+
 //Executable for running MPI programs.
 MPIEXEC_EXECUTABLE:FILEPATH=/usr/local/bin/mpiexec
 

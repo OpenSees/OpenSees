@@ -163,20 +163,6 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/rule:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/rule
-.PHONY : OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/rule
-
-# Convenience name for target.
-MUMPS_C: OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/rule
-.PHONY : MUMPS_C
-
-# fast build rule for target.
-MUMPS_C/fast:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build
-.PHONY : MUMPS_C/fast
-
-# Convenience name for target.
 OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/rule:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/rule
 .PHONY : OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/rule
@@ -381,30 +367,6 @@ bcast_errors.s: bcast_errors.F.s
 bcast_errors.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/bcast_errors.F.s
 .PHONY : bcast_errors.F.s
-
-build_mumps_int_def.o: build_mumps_int_def.c.o
-.PHONY : build_mumps_int_def.o
-
-# target to build an object file
-build_mumps_int_def.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build_mumps_int_def.c.o
-.PHONY : build_mumps_int_def.c.o
-
-build_mumps_int_def.i: build_mumps_int_def.c.i
-.PHONY : build_mumps_int_def.i
-
-# target to preprocess a source file
-build_mumps_int_def.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build_mumps_int_def.c.i
-.PHONY : build_mumps_int_def.c.i
-
-build_mumps_int_def.s: build_mumps_int_def.c.s
-.PHONY : build_mumps_int_def.s
-
-# target to generate assembly for a file
-build_mumps_int_def.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build_mumps_int_def.c.s
-.PHONY : build_mumps_int_def.c.s
 
 dana_LDLT_preprocess.o: dana_LDLT_preprocess.F.o
 .PHONY : dana_LDLT_preprocess.o
@@ -2062,30 +2024,6 @@ dmumps_f77.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/dmumps_f77.F.s
 .PHONY : dmumps_f77.F.s
 
-dmumps_gpu.o: dmumps_gpu.c.o
-.PHONY : dmumps_gpu.o
-
-# target to build an object file
-dmumps_gpu.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/dmumps_gpu.c.o
-.PHONY : dmumps_gpu.c.o
-
-dmumps_gpu.i: dmumps_gpu.c.i
-.PHONY : dmumps_gpu.i
-
-# target to preprocess a source file
-dmumps_gpu.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/dmumps_gpu.c.i
-.PHONY : dmumps_gpu.c.i
-
-dmumps_gpu.s: dmumps_gpu.c.s
-.PHONY : dmumps_gpu.s
-
-# target to generate assembly for a file
-dmumps_gpu.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/dmumps_gpu.c.s
-.PHONY : dmumps_gpu.c.s
-
 dmumps_iXamax.o: dmumps_iXamax.F.o
 .PHONY : dmumps_iXamax.o
 
@@ -2974,30 +2912,6 @@ lr_common.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/lr_common.F.s
 .PHONY : lr_common.F.s
 
-mumps_c.o: mumps_c.c.o
-.PHONY : mumps_c.o
-
-# target to build an object file
-mumps_c.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_c.c.o
-.PHONY : mumps_c.c.o
-
-mumps_c.i: mumps_c.c.i
-.PHONY : mumps_c.i
-
-# target to preprocess a source file
-mumps_c.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_c.c.i
-.PHONY : mumps_c.c.i
-
-mumps_c.s: mumps_c.c.s
-.PHONY : mumps_c.s
-
-# target to generate assembly for a file
-mumps_c.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_c.c.s
-.PHONY : mumps_c.c.s
-
 mumps_comm_ibcast.o: mumps_comm_ibcast.F.o
 .PHONY : mumps_comm_ibcast.o
 
@@ -3021,150 +2935,6 @@ mumps_comm_ibcast.s: mumps_comm_ibcast.F.s
 mumps_comm_ibcast.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_comm_ibcast.F.s
 .PHONY : mumps_comm_ibcast.F.s
-
-mumps_common.o: mumps_common.c.o
-.PHONY : mumps_common.o
-
-# target to build an object file
-mumps_common.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_common.c.o
-.PHONY : mumps_common.c.o
-
-mumps_common.i: mumps_common.c.i
-.PHONY : mumps_common.i
-
-# target to preprocess a source file
-mumps_common.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_common.c.i
-.PHONY : mumps_common.c.i
-
-mumps_common.s: mumps_common.c.s
-.PHONY : mumps_common.s
-
-# target to generate assembly for a file
-mumps_common.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_common.c.s
-.PHONY : mumps_common.c.s
-
-mumps_config_file_C.o: mumps_config_file_C.c.o
-.PHONY : mumps_config_file_C.o
-
-# target to build an object file
-mumps_config_file_C.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_config_file_C.c.o
-.PHONY : mumps_config_file_C.c.o
-
-mumps_config_file_C.i: mumps_config_file_C.c.i
-.PHONY : mumps_config_file_C.i
-
-# target to preprocess a source file
-mumps_config_file_C.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_config_file_C.c.i
-.PHONY : mumps_config_file_C.c.i
-
-mumps_config_file_C.s: mumps_config_file_C.c.s
-.PHONY : mumps_config_file_C.s
-
-# target to generate assembly for a file
-mumps_config_file_C.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_config_file_C.c.s
-.PHONY : mumps_config_file_C.c.s
-
-mumps_io.o: mumps_io.c.o
-.PHONY : mumps_io.o
-
-# target to build an object file
-mumps_io.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io.c.o
-.PHONY : mumps_io.c.o
-
-mumps_io.i: mumps_io.c.i
-.PHONY : mumps_io.i
-
-# target to preprocess a source file
-mumps_io.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io.c.i
-.PHONY : mumps_io.c.i
-
-mumps_io.s: mumps_io.c.s
-.PHONY : mumps_io.s
-
-# target to generate assembly for a file
-mumps_io.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io.c.s
-.PHONY : mumps_io.c.s
-
-mumps_io_basic.o: mumps_io_basic.c.o
-.PHONY : mumps_io_basic.o
-
-# target to build an object file
-mumps_io_basic.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_basic.c.o
-.PHONY : mumps_io_basic.c.o
-
-mumps_io_basic.i: mumps_io_basic.c.i
-.PHONY : mumps_io_basic.i
-
-# target to preprocess a source file
-mumps_io_basic.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_basic.c.i
-.PHONY : mumps_io_basic.c.i
-
-mumps_io_basic.s: mumps_io_basic.c.s
-.PHONY : mumps_io_basic.s
-
-# target to generate assembly for a file
-mumps_io_basic.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_basic.c.s
-.PHONY : mumps_io_basic.c.s
-
-mumps_io_err.o: mumps_io_err.c.o
-.PHONY : mumps_io_err.o
-
-# target to build an object file
-mumps_io_err.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_err.c.o
-.PHONY : mumps_io_err.c.o
-
-mumps_io_err.i: mumps_io_err.c.i
-.PHONY : mumps_io_err.i
-
-# target to preprocess a source file
-mumps_io_err.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_err.c.i
-.PHONY : mumps_io_err.c.i
-
-mumps_io_err.s: mumps_io_err.c.s
-.PHONY : mumps_io_err.s
-
-# target to generate assembly for a file
-mumps_io_err.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_err.c.s
-.PHONY : mumps_io_err.c.s
-
-mumps_io_thread.o: mumps_io_thread.c.o
-.PHONY : mumps_io_thread.o
-
-# target to build an object file
-mumps_io_thread.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_thread.c.o
-.PHONY : mumps_io_thread.c.o
-
-mumps_io_thread.i: mumps_io_thread.c.i
-.PHONY : mumps_io_thread.i
-
-# target to preprocess a source file
-mumps_io_thread.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_thread.c.i
-.PHONY : mumps_io_thread.c.i
-
-mumps_io_thread.s: mumps_io_thread.c.s
-.PHONY : mumps_io_thread.s
-
-# target to generate assembly for a file
-mumps_io_thread.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_io_thread.c.s
-.PHONY : mumps_io_thread.c.s
 
 mumps_l0_omp_m.o: mumps_l0_omp_m.F.o
 .PHONY : mumps_l0_omp_m.o
@@ -3214,78 +2984,6 @@ mumps_memory_mod.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_memory_mod.F.s
 .PHONY : mumps_memory_mod.F.s
 
-mumps_metis.o: mumps_metis.c.o
-.PHONY : mumps_metis.o
-
-# target to build an object file
-mumps_metis.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis.c.o
-.PHONY : mumps_metis.c.o
-
-mumps_metis.i: mumps_metis.c.i
-.PHONY : mumps_metis.i
-
-# target to preprocess a source file
-mumps_metis.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis.c.i
-.PHONY : mumps_metis.c.i
-
-mumps_metis.s: mumps_metis.c.s
-.PHONY : mumps_metis.s
-
-# target to generate assembly for a file
-mumps_metis.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis.c.s
-.PHONY : mumps_metis.c.s
-
-mumps_metis64.o: mumps_metis64.c.o
-.PHONY : mumps_metis64.o
-
-# target to build an object file
-mumps_metis64.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis64.c.o
-.PHONY : mumps_metis64.c.o
-
-mumps_metis64.i: mumps_metis64.c.i
-.PHONY : mumps_metis64.i
-
-# target to preprocess a source file
-mumps_metis64.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis64.c.i
-.PHONY : mumps_metis64.c.i
-
-mumps_metis64.s: mumps_metis64.c.s
-.PHONY : mumps_metis64.s
-
-# target to generate assembly for a file
-mumps_metis64.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis64.c.s
-.PHONY : mumps_metis64.c.s
-
-mumps_metis_int.o: mumps_metis_int.c.o
-.PHONY : mumps_metis_int.o
-
-# target to build an object file
-mumps_metis_int.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis_int.c.o
-.PHONY : mumps_metis_int.c.o
-
-mumps_metis_int.i: mumps_metis_int.c.i
-.PHONY : mumps_metis_int.i
-
-# target to preprocess a source file
-mumps_metis_int.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis_int.c.i
-.PHONY : mumps_metis_int.c.i
-
-mumps_metis_int.s: mumps_metis_int.c.s
-.PHONY : mumps_metis_int.s
-
-# target to generate assembly for a file
-mumps_metis_int.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_metis_int.c.s
-.PHONY : mumps_metis_int.c.s
-
 mumps_mpitoomp_m.o: mumps_mpitoomp_m.F.o
 .PHONY : mumps_mpitoomp_m.o
 
@@ -3309,30 +3007,6 @@ mumps_mpitoomp_m.s: mumps_mpitoomp_m.F.s
 mumps_mpitoomp_m.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_mpitoomp_m.F.s
 .PHONY : mumps_mpitoomp_m.F.s
-
-mumps_numa.o: mumps_numa.c.o
-.PHONY : mumps_numa.o
-
-# target to build an object file
-mumps_numa.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_numa.c.o
-.PHONY : mumps_numa.c.o
-
-mumps_numa.i: mumps_numa.c.i
-.PHONY : mumps_numa.i
-
-# target to preprocess a source file
-mumps_numa.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_numa.c.i
-.PHONY : mumps_numa.c.i
-
-mumps_numa.s: mumps_numa.c.s
-.PHONY : mumps_numa.s
-
-# target to generate assembly for a file
-mumps_numa.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_numa.c.s
-.PHONY : mumps_numa.c.s
 
 mumps_ooc_common.o: mumps_ooc_common.F.o
 .PHONY : mumps_ooc_common.o
@@ -3358,30 +3032,6 @@ mumps_ooc_common.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_ooc_common.F.s
 .PHONY : mumps_ooc_common.F.s
 
-mumps_pord.o: mumps_pord.c.o
-.PHONY : mumps_pord.o
-
-# target to build an object file
-mumps_pord.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_pord.c.o
-.PHONY : mumps_pord.c.o
-
-mumps_pord.i: mumps_pord.c.i
-.PHONY : mumps_pord.i
-
-# target to preprocess a source file
-mumps_pord.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_pord.c.i
-.PHONY : mumps_pord.c.i
-
-mumps_pord.s: mumps_pord.c.s
-.PHONY : mumps_pord.s
-
-# target to generate assembly for a file
-mumps_pord.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_pord.c.s
-.PHONY : mumps_pord.c.s
-
 mumps_print_defined.o: mumps_print_defined.F.o
 .PHONY : mumps_print_defined.o
 
@@ -3406,150 +3056,6 @@ mumps_print_defined.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_print_defined.F.s
 .PHONY : mumps_print_defined.F.s
 
-mumps_register_thread.o: mumps_register_thread.c.o
-.PHONY : mumps_register_thread.o
-
-# target to build an object file
-mumps_register_thread.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_register_thread.c.o
-.PHONY : mumps_register_thread.c.o
-
-mumps_register_thread.i: mumps_register_thread.c.i
-.PHONY : mumps_register_thread.i
-
-# target to preprocess a source file
-mumps_register_thread.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_register_thread.c.i
-.PHONY : mumps_register_thread.c.i
-
-mumps_register_thread.s: mumps_register_thread.c.s
-.PHONY : mumps_register_thread.s
-
-# target to generate assembly for a file
-mumps_register_thread.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_register_thread.c.s
-.PHONY : mumps_register_thread.c.s
-
-mumps_save_restore_C.o: mumps_save_restore_C.c.o
-.PHONY : mumps_save_restore_C.o
-
-# target to build an object file
-mumps_save_restore_C.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_save_restore_C.c.o
-.PHONY : mumps_save_restore_C.c.o
-
-mumps_save_restore_C.i: mumps_save_restore_C.c.i
-.PHONY : mumps_save_restore_C.i
-
-# target to preprocess a source file
-mumps_save_restore_C.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_save_restore_C.c.i
-.PHONY : mumps_save_restore_C.c.i
-
-mumps_save_restore_C.s: mumps_save_restore_C.c.s
-.PHONY : mumps_save_restore_C.s
-
-# target to generate assembly for a file
-mumps_save_restore_C.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_save_restore_C.c.s
-.PHONY : mumps_save_restore_C.c.s
-
-mumps_scotch.o: mumps_scotch.c.o
-.PHONY : mumps_scotch.o
-
-# target to build an object file
-mumps_scotch.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch.c.o
-.PHONY : mumps_scotch.c.o
-
-mumps_scotch.i: mumps_scotch.c.i
-.PHONY : mumps_scotch.i
-
-# target to preprocess a source file
-mumps_scotch.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch.c.i
-.PHONY : mumps_scotch.c.i
-
-mumps_scotch.s: mumps_scotch.c.s
-.PHONY : mumps_scotch.s
-
-# target to generate assembly for a file
-mumps_scotch.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch.c.s
-.PHONY : mumps_scotch.c.s
-
-mumps_scotch64.o: mumps_scotch64.c.o
-.PHONY : mumps_scotch64.o
-
-# target to build an object file
-mumps_scotch64.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch64.c.o
-.PHONY : mumps_scotch64.c.o
-
-mumps_scotch64.i: mumps_scotch64.c.i
-.PHONY : mumps_scotch64.i
-
-# target to preprocess a source file
-mumps_scotch64.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch64.c.i
-.PHONY : mumps_scotch64.c.i
-
-mumps_scotch64.s: mumps_scotch64.c.s
-.PHONY : mumps_scotch64.s
-
-# target to generate assembly for a file
-mumps_scotch64.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch64.c.s
-.PHONY : mumps_scotch64.c.s
-
-mumps_scotch_int.o: mumps_scotch_int.c.o
-.PHONY : mumps_scotch_int.o
-
-# target to build an object file
-mumps_scotch_int.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch_int.c.o
-.PHONY : mumps_scotch_int.c.o
-
-mumps_scotch_int.i: mumps_scotch_int.c.i
-.PHONY : mumps_scotch_int.i
-
-# target to preprocess a source file
-mumps_scotch_int.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch_int.c.i
-.PHONY : mumps_scotch_int.c.i
-
-mumps_scotch_int.s: mumps_scotch_int.c.s
-.PHONY : mumps_scotch_int.s
-
-# target to generate assembly for a file
-mumps_scotch_int.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_scotch_int.c.s
-.PHONY : mumps_scotch_int.c.s
-
-mumps_size.o: mumps_size.c.o
-.PHONY : mumps_size.o
-
-# target to build an object file
-mumps_size.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_size.c.o
-.PHONY : mumps_size.c.o
-
-mumps_size.i: mumps_size.c.i
-.PHONY : mumps_size.i
-
-# target to preprocess a source file
-mumps_size.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_size.c.i
-.PHONY : mumps_size.c.i
-
-mumps_size.s: mumps_size.c.s
-.PHONY : mumps_size.s
-
-# target to generate assembly for a file
-mumps_size.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_size.c.s
-.PHONY : mumps_size.c.s
-
 mumps_static_mapping.o: mumps_static_mapping.F.o
 .PHONY : mumps_static_mapping.o
 
@@ -3573,54 +3079,6 @@ mumps_static_mapping.s: mumps_static_mapping.F.s
 mumps_static_mapping.F.s:
 	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_F.dir/mumps_static_mapping.F.s
 .PHONY : mumps_static_mapping.F.s
-
-mumps_thread.o: mumps_thread.c.o
-.PHONY : mumps_thread.o
-
-# target to build an object file
-mumps_thread.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread.c.o
-.PHONY : mumps_thread.c.o
-
-mumps_thread.i: mumps_thread.c.i
-.PHONY : mumps_thread.i
-
-# target to preprocess a source file
-mumps_thread.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread.c.i
-.PHONY : mumps_thread.c.i
-
-mumps_thread.s: mumps_thread.c.s
-.PHONY : mumps_thread.s
-
-# target to generate assembly for a file
-mumps_thread.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread.c.s
-.PHONY : mumps_thread.c.s
-
-mumps_thread_affinity.o: mumps_thread_affinity.c.o
-.PHONY : mumps_thread_affinity.o
-
-# target to build an object file
-mumps_thread_affinity.c.o:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread_affinity.c.o
-.PHONY : mumps_thread_affinity.c.o
-
-mumps_thread_affinity.i: mumps_thread_affinity.c.i
-.PHONY : mumps_thread_affinity.i
-
-# target to preprocess a source file
-mumps_thread_affinity.c.i:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread_affinity.c.i
-.PHONY : mumps_thread_affinity.c.i
-
-mumps_thread_affinity.s: mumps_thread_affinity.c.s
-.PHONY : mumps_thread_affinity.s
-
-# target to generate assembly for a file
-mumps_thread_affinity.c.s:
-	cd /Users/runner/work/OpenSees/OpenSees/build && $(MAKE) $(MAKESILENT) -f OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/build.make OTHER/MUMPS_5.4.1/src/CMakeFiles/MUMPS_C.dir/mumps_thread_affinity.c.s
-.PHONY : mumps_thread_affinity.c.s
 
 mumps_type2_blocking.o: mumps_type2_blocking.F.o
 .PHONY : mumps_type2_blocking.o
@@ -3778,7 +3236,6 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... MUMPS_C"
 	@echo "... MUMPS_F"
 	@echo "... ana_AMDMF.o"
 	@echo "... ana_AMDMF.i"
@@ -3804,9 +3261,6 @@ help:
 	@echo "... bcast_errors.o"
 	@echo "... bcast_errors.i"
 	@echo "... bcast_errors.s"
-	@echo "... build_mumps_int_def.o"
-	@echo "... build_mumps_int_def.i"
-	@echo "... build_mumps_int_def.s"
 	@echo "... dana_LDLT_preprocess.o"
 	@echo "... dana_LDLT_preprocess.i"
 	@echo "... dana_LDLT_preprocess.s"
@@ -4014,9 +3468,6 @@ help:
 	@echo "... dmumps_f77.o"
 	@echo "... dmumps_f77.i"
 	@echo "... dmumps_f77.s"
-	@echo "... dmumps_gpu.o"
-	@echo "... dmumps_gpu.i"
-	@echo "... dmumps_gpu.s"
 	@echo "... dmumps_iXamax.o"
 	@echo "... dmumps_iXamax.i"
 	@echo "... dmumps_iXamax.s"
@@ -4128,87 +3579,27 @@ help:
 	@echo "... lr_common.o"
 	@echo "... lr_common.i"
 	@echo "... lr_common.s"
-	@echo "... mumps_c.o"
-	@echo "... mumps_c.i"
-	@echo "... mumps_c.s"
 	@echo "... mumps_comm_ibcast.o"
 	@echo "... mumps_comm_ibcast.i"
 	@echo "... mumps_comm_ibcast.s"
-	@echo "... mumps_common.o"
-	@echo "... mumps_common.i"
-	@echo "... mumps_common.s"
-	@echo "... mumps_config_file_C.o"
-	@echo "... mumps_config_file_C.i"
-	@echo "... mumps_config_file_C.s"
-	@echo "... mumps_io.o"
-	@echo "... mumps_io.i"
-	@echo "... mumps_io.s"
-	@echo "... mumps_io_basic.o"
-	@echo "... mumps_io_basic.i"
-	@echo "... mumps_io_basic.s"
-	@echo "... mumps_io_err.o"
-	@echo "... mumps_io_err.i"
-	@echo "... mumps_io_err.s"
-	@echo "... mumps_io_thread.o"
-	@echo "... mumps_io_thread.i"
-	@echo "... mumps_io_thread.s"
 	@echo "... mumps_l0_omp_m.o"
 	@echo "... mumps_l0_omp_m.i"
 	@echo "... mumps_l0_omp_m.s"
 	@echo "... mumps_memory_mod.o"
 	@echo "... mumps_memory_mod.i"
 	@echo "... mumps_memory_mod.s"
-	@echo "... mumps_metis.o"
-	@echo "... mumps_metis.i"
-	@echo "... mumps_metis.s"
-	@echo "... mumps_metis64.o"
-	@echo "... mumps_metis64.i"
-	@echo "... mumps_metis64.s"
-	@echo "... mumps_metis_int.o"
-	@echo "... mumps_metis_int.i"
-	@echo "... mumps_metis_int.s"
 	@echo "... mumps_mpitoomp_m.o"
 	@echo "... mumps_mpitoomp_m.i"
 	@echo "... mumps_mpitoomp_m.s"
-	@echo "... mumps_numa.o"
-	@echo "... mumps_numa.i"
-	@echo "... mumps_numa.s"
 	@echo "... mumps_ooc_common.o"
 	@echo "... mumps_ooc_common.i"
 	@echo "... mumps_ooc_common.s"
-	@echo "... mumps_pord.o"
-	@echo "... mumps_pord.i"
-	@echo "... mumps_pord.s"
 	@echo "... mumps_print_defined.o"
 	@echo "... mumps_print_defined.i"
 	@echo "... mumps_print_defined.s"
-	@echo "... mumps_register_thread.o"
-	@echo "... mumps_register_thread.i"
-	@echo "... mumps_register_thread.s"
-	@echo "... mumps_save_restore_C.o"
-	@echo "... mumps_save_restore_C.i"
-	@echo "... mumps_save_restore_C.s"
-	@echo "... mumps_scotch.o"
-	@echo "... mumps_scotch.i"
-	@echo "... mumps_scotch.s"
-	@echo "... mumps_scotch64.o"
-	@echo "... mumps_scotch64.i"
-	@echo "... mumps_scotch64.s"
-	@echo "... mumps_scotch_int.o"
-	@echo "... mumps_scotch_int.i"
-	@echo "... mumps_scotch_int.s"
-	@echo "... mumps_size.o"
-	@echo "... mumps_size.i"
-	@echo "... mumps_size.s"
 	@echo "... mumps_static_mapping.o"
 	@echo "... mumps_static_mapping.i"
 	@echo "... mumps_static_mapping.s"
-	@echo "... mumps_thread.o"
-	@echo "... mumps_thread.i"
-	@echo "... mumps_thread.s"
-	@echo "... mumps_thread_affinity.o"
-	@echo "... mumps_thread_affinity.i"
-	@echo "... mumps_thread_affinity.s"
 	@echo "... mumps_type2_blocking.o"
 	@echo "... mumps_type2_blocking.i"
 	@echo "... mumps_type2_blocking.s"

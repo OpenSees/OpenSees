@@ -419,6 +419,7 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
   ../SRC/material/uniaxial/ViscousMaterial.h \
   ../SRC/material/uniaxial/ViscousDamper.h \
   ../SRC/material/uniaxial/PathIndependentMaterial.h \
+  ../SRC/material/uniaxial/BackboneMaterial.h \
   ../SRC/material/uniaxial/SeriesMaterial.h \
   ../SRC/material/uniaxial/CableMaterial.h \
   ../SRC/material/uniaxial/ENTMaterial.h \
@@ -624,6 +625,8 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
   ../SRC/element/frictionBearing/frictionModel/VelPressureDep.h \
   ../SRC/element/frictionBearing/frictionModel/VelDepMultiLinear.h \
   ../SRC/element/frictionBearing/frictionModel/VelNormalFrcDep.h \
+  ../SRC/material/uniaxial/backbone/ArctangentBackbone.h \
+  ../SRC/material/uniaxial/backbone/HystereticBackbone.h \
   ../SRC/element/truss/Truss.h \
   ../SRC/element/truss/Truss2.h \
   ../SRC/element/truss/TrussSection.h \
@@ -1130,9 +1133,7 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 
 ../SRC/analysis/algorithm/equiSolnAlgo/AcceleratedNewton.h:
 
-/Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/half_positive.h:
-
-../SRC/analysis/algorithm/equiSolnAlgo/KrylovNewton.h:
+../SRC/analysis/algorithm/equiSolnAlgo/LineSearch.h:
 
 ../SRC/system_of_eqn/linearSOE/LinearSOE.h:
 
@@ -1231,6 +1232,8 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 ../SRC/material/section/integration/RCSectionIntegration.h:
 
 ../SRC/element/forceBeamColumn/LowOrderBeamIntegration.h:
+
+../SRC/material/uniaxial/backbone/HystereticBackbone.h:
 
 ../SRC/element/forceBeamColumn/FixedLocationBeamIntegration.h:
 
@@ -1798,6 +1801,8 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 
 ../SRC/material/uniaxial/HardeningMaterial.h:
 
+../SRC/material/uniaxial/backbone/ArctangentBackbone.h:
+
 ../SRC/material/uniaxial/ReinforcingSteel.h:
 
 ../SRC/material/uniaxial/FatigueMaterial.h:
@@ -1857,10 +1862,6 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 ../SRC/element/forceBeamColumn/BeamIntegration.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/max_element.h:
-
-/Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/unwrap_iter.h:
-
-../SRC/analysis/algorithm/equiSolnAlgo/NewtonLineSearch.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/is_sorted.h:
 
@@ -1934,11 +1935,19 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/count.h:
 
+../SRC/analysis/algorithm/equiSolnAlgo/NewtonLineSearch.h:
+
+/Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/unwrap_iter.h:
+
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__bit_reference:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/copy.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__functional_base:
+
+../SRC/analysis/algorithm/equiSolnAlgo/KrylovNewton.h:
+
+/Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/half_positive.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/lower_bound.h:
 
@@ -2638,8 +2647,6 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/stdint.h:
 
-../SRC/analysis/algorithm/equiSolnAlgo/LineSearch.h:
-
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/exception:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/set_difference.h:
@@ -2761,6 +2768,8 @@ CMakeFiles/OPS_ObjectBroker.dir/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasse
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/AvailabilityInternal.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/string.h:
+
+../SRC/material/uniaxial/BackboneMaterial.h:
 
 /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__algorithm/next_permutation.h:
 

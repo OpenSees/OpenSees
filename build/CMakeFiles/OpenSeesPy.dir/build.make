@@ -283,8 +283,8 @@ OpenSeesPy_EXTERNAL_OBJECTS = \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/MaterialResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/ElementResponse.cpp.o" \
 "/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/FiberResponse.cpp.o" \
-"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o" \
-"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o"
+"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o" \
+"/Users/runner/work/OpenSees/OpenSees/build/CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o"
 
 lib/OpenSeesPy.dylib: CMakeFiles/OpenSeesPy.dir/SRC/interpreter/PythonModule.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OpenSeesPy.dir/SRC/interpreter/PythonWrapper.cpp.o
@@ -439,15 +439,15 @@ lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/Response
 lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/MaterialResponse.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/ElementResponse.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/FiberResponse.cpp.o
-lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CompositeResponse.cpp.o
+lib/OpenSeesPy.dylib: CMakeFiles/OPS_Recorder.dir/SRC/recorder/response/CrdTransfResponse.cpp.o
 lib/OpenSeesPy.dylib: CMakeFiles/OpenSeesPy.dir/build.make
 lib/OpenSeesPy.dylib: lib/libOpenSeesLIB.a
 lib/OpenSeesPy.dylib: /usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/lib/libpython3.9.dylib
-lib/OpenSeesPy.dylib: lib/libcoordTransformation.a
 lib/OpenSeesPy.dylib: lib/libOPS_Material_f.a
 lib/OpenSeesPy.dylib: lib/libOPS_Material_Uniaxial_Drain_f.a
 lib/OpenSeesPy.dylib: lib/libOPS_Material_nD_Feap_f.a
+lib/OpenSeesPy.dylib: lib/libcoordTransformation.a
 lib/OpenSeesPy.dylib: lib/libOPS_SysOfEqn_f.a
 lib/OpenSeesPy.dylib: lib/libARPACK.a
 lib/OpenSeesPy.dylib: lib/libCSPARSE.a
