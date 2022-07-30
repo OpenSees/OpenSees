@@ -19,9 +19,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: File Make
         run: |
-          touch memo.txt
-          ls -all
+          echo hello >> memo.txt
       - name: Git PR Create
         run: gh pr create -B origin --head HEAD:${GITHUB_REF}
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
