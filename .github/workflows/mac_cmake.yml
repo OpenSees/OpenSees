@@ -17,17 +17,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0       
-      - uses: chetan/git-restore-mtime-action@v1.0      
       - uses: actions/cache@v2
         with:
           path: |
             ~/.conan
             build
             /usr/local/Cellar/open-mpi/4.1.4
-            /usr/local/lib/python3.9/site-packages
           key: ${{ runner.os }}
-#       - name: Restore mtime
-#         run: python3 git-restore-mtime.py
+      - uses: chetan/git-restore-mtime-action@v1.0      
 # Install and Check Library
       - name: Install Library
         run: |
