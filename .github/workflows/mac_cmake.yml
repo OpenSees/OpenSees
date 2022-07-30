@@ -45,7 +45,6 @@ jobs:
           mkdir -p build
           cd build
           conan install ..
-          cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           cp ./lib/OpenSeesPy.dylib ./lib/opensees.so
@@ -60,10 +59,10 @@ jobs:
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
 # Push build
-#       - name: Push build Directory
-# #         run: gh pr create -B "master" -t " CMake Build on Mac" -b ""
-# #         env:
-# #           GH_TOKEN: "${GITHUB_TOKEN}"
+      - name: Push build Directory
+        run: gh pr create -B "origin" -t "CMake Build on Mac" -b ""
+        env:
+          GH_TOKEN: "${GITHUB_TOKEN}"
 #         run: |
 #           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
 #           git config --global user.name "${GITHUB_ACTOR}"
