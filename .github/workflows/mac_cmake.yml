@@ -45,6 +45,7 @@ jobs:
           mkdir -p build
           cd build
           conan install ..
+          rm CMakeCache.txt
           cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
