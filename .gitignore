@@ -1,54 +1,54 @@
 # Prerequisites
-# *.d
+*.d
 
 # old text editor files
 *~
 
 # Compiled Object files
-# *.slo
-# *.lo
-# *.o
-# *.obj
+*.slo
+*.lo
+*.o
+*.obj
 
 # Precompiled Headers
-# *.gch
-# *.pch
+*.gch
+*.pch
 
 # Compiled Dynamic libraries
 # *.so*
-# *.dylib
-# *.dll
-# *.pyd
+*.dylib
+*.dll
+*.pyd
 
 # Fortran module files
-# *.mod
-# *.smod
+*.mod
+*.smod
 
 # Compiled Static libraries
-# *.lai
-# *.la
-# *.a
-# *.lib
+*.lai
+*.la
+*.a
+*.lib
 
 # Executables
 # *.exe
-# *.out
-# *.app
+*.out
+*.app
 
 # Visual Studio
 *.vcxproj.user
 *.bsc
 *.pdb
 .vs
-# obj
+obj
 *.exp
 
 # CLion
 .gitignore
 .idea
-# cmake-build-debug
-# cmake-build-release
-# CMakeLists.txt
+cmake-build-debug
+cmake-build-release
+CMakeLists.txt
 .dropbox.attr
 
 # VSCode
@@ -56,7 +56,7 @@
 .clang-format
 
 # OTHER
-# Makefile.def
+Makefile.def
 PlainConcrete.f
 forumat.f
 Damage2p.cpp
@@ -88,6 +88,6 @@ CPlaneStress2d.h
 CThreeDimensional.h
 Concrete.h
 forumat.for
-# bin
-# build
+bin
+build
 __pycache__
