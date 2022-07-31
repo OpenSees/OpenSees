@@ -94,6 +94,7 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  target_compile_options(OpenSeesPy PUBLIC -fPIC)
   add_compile_definitions(_LINUX _UNIX _TCL85)
   if (NOT_USING_CONAN)
     include(OpenSeesDependenciesUnix)
@@ -103,6 +104,7 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(OPS_Use_Graphics_Option None)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  target_compile_options(OpenSeesPy PUBLIC -fPIC)
   add_compile_definitions(_LINUX _UNIX _TCL85)
   if (NOT_USING_CONAN)
     include(OpenSeesDependenciesUnix)
@@ -580,7 +582,7 @@ add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
 )
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
-target_compile_options(OpenSeesPy PUBLIC -fPIC)
+
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy
