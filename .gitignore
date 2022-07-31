@@ -48,7 +48,7 @@ obj
 .idea
 cmake-build-debug
 cmake-build-release
-CMakeLists.txt
+#CMakeLists.txt
 .dropbox.attr
 
 # VSCode
@@ -88,7 +88,6 @@ CPlaneStress2d.h
 CThreeDimensional.h
 Concrete.h
 forumat.for
-bin
 build
+bin
 __pycache__
-s3hark
