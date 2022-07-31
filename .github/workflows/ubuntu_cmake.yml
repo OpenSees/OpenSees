@@ -43,10 +43,10 @@ jobs:
           mkdir -p build
           cd build
           conan install ..
-          cmake -S ./ -B ./build
-          cmake --build ./build --target OpenSees
-          cmake --build ./build --target OpenSeesPy
-          mv ./build/lib/OpenSeesPy.dylib ./build/lib/opensees.so
+          cmake -S .. -B ./
+          cmake --build ./ --target OpenSees
+          cmake --build ./ --target OpenSeesPy
+          mv ./lib/OpenSeesPy.dylib ./lib/opensees.so
           cp ./lib/opensees.so ./../artifact/
           cp ./bin/OpenSees ./../artifact/# Verification
       - name: Verification OpenSeesPySP
