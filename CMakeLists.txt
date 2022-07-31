@@ -426,7 +426,6 @@ target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
     OPS_Actor 
     OPS_Analysis 
-    OPS_Api
     OPS_ConvergenceTest
     OPS_Damage
     OPS_Database
