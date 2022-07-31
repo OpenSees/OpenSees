@@ -21,5 +21,5 @@ jobs:
         run: echo hello >> memo.txt
       - name: Git PR Create
         run: |
-          git commit ./memo.txt -m "Add hello"
-          gh pr create -t "from Git Push Test" -b ""
+          gh pr create -B origin/workflows -t "from Git Push Test" -b ""
+#          git commit ./memo.txt -m "Add hello"
