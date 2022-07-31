@@ -14,6 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.conan
+            build
+          key: ${{ runner.os }}
+      - uses: chetan/git-restore-mtime-action@v1.0
       - name: Install Library
         run: |
           sudo apt-get update
@@ -33,19 +40,35 @@ jobs:
           conan --version
       - name: mkdir and conan
         run: |
-          mkdir build
+          mkdir -p build
           cd build
           conan install ..
-      - name: Build
-        run: |
           cmake -S ./ -B ./build
           cmake --build ./build --target OpenSees
           cmake --build ./build --target OpenSeesPy
           mv ./build/lib/OpenSeesPy.dylib ./build/lib/opensees.so
-# Verification
+          cp ./lib/opensees.so ./../artifact/
+          cp ./bin/OpenSees ./../artifact/# Verification
       - name: Verification OpenSeesPySP
         run: |
           cd ./EXAMPLES/ExamplePython/
           export PYTHONPATH="../../build/lib/"
           python -c "import sys; print(sys.path)"
           python example_variable_analysis.py
+# Push build
+      - name: Push build Directory
+        run: |
+          if ! git diff --exit-code --quiet
+          then
+            git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+            git config --global user.name "${GITHUB_ACTOR}"
+            git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+            git add .
+            git commit --allow-empty -m "Push from CMake Build on Mac"
+            git push origin HEAD:${GITHUB_REF}
+          fi
+# Save
+      - uses: actions/upload-artifact@v1
+        with:
+          name: ubuntu-artifact
+          path: ./artifact
