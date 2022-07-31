@@ -77,3 +77,5 @@ jobs:
           fi
       - name: Create Pull Request
         run: gh pr create --base master --head build --title "from CMake Build on Mac" --body ""
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
