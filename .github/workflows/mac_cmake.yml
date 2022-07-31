@@ -42,13 +42,14 @@ jobs:
       - name: Build
         run: |
           mkdir -p build
+          mkdir -p mac
           cd build
           conan install ..
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           cp ./lib/OpenSeesPy.dylib ./lib/opensees.so
-          cp ./lib/opensees.so ./../artifact/
-          cp ./bin/OpenSees ./../artifact/
+          cp ./lib/opensees.so ./../mac/
+          cp ./bin/OpenSees ./../mac/
 #          cmake -S .. -B ./
 # Verification
       - name: Verification OpenSeesPySP
@@ -57,6 +58,11 @@ jobs:
           export PYTHONPATH="../../build/lib/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
+# Save
+      - uses: actions/upload-artifact@v1
+        with:
+          name: mac-artifact
+          path: ./mac
 # Push build
       - name: Push build Directory
         run: |
@@ -69,8 +75,3 @@ jobs:
             git commit --allow-empty -m "Push from CMake Build on Mac"
             git push origin HEAD:${GITHUB_REF}
           fi
-# Save
-      - uses: actions/upload-artifact@v1
-        with:
-          name: mac-artifact
-          path: ./artifact
