@@ -22,4 +22,4 @@ jobs:
       - name: Git PR Create
         run: |
           git commit . -m "Add hello"
-          gh pr create -B origin --head HEAD:${GITHUB_REF} -t "from Git Push Test" -b ""
+          gh pr create -t "from Git Push Test" -b ""
