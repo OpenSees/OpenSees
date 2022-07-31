@@ -22,7 +22,6 @@ jobs:
           path: |
             ~/.conan
             build
-            /usr/local/Cellar/open-mpi/4.1.4
           key: ${{ runner.os }}
       - uses: chetan/git-restore-mtime-action@v1.0      
 # Install and Check Library
