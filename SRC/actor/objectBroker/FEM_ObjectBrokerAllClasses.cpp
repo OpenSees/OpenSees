@@ -2528,7 +2528,7 @@ FEM_ObjectBrokerAllClasses::getSubdomainPtr(int classTag)
     return 0;
 }
 
-
+/*
 int 
 FEM_ObjectBrokerAllClasses::addUniaxialMaterial(int classTag, 
 				      const char *lib, 
@@ -2581,7 +2581,7 @@ FEM_ObjectBrokerAllClasses::addUniaxialMaterial(int classTag,
   return 0;
 
 }
-
+*/
 
 Parameter *
 FEM_ObjectBrokerAllClasses::getParameter(int classTag)
