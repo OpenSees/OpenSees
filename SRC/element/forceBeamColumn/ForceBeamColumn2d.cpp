@@ -406,6 +406,178 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     return 0;
 }
 
+
+#include <ElasticSection2d.h>
+#include <ElasticSection3d.h>
+#include <ForceBeamColumn3d.h>
+#include <HingeRadauBeamIntegration.h>
+void *
+OPS_BeamWithHinges(void)
+{
+  int ndm = OPS_GetNDM();
+  int ndf = OPS_GetNDF();
+  if((ndm != 2 || ndf != 3) && (ndm != 3 || ndf != 6)) {
+    opserr << "ERROR beamWithHinges - ndm/ndf must be 2/3 or 3/6" << endln;
+    return 0;
+  }
+
+  int numArgs = OPS_GetNumRemainingInputArgs();
+    
+  // Read optional arguments first
+  double mass = 0.0;
+  int maxIter = 10; double tol = 1e-12; bool defaultIter = true;
+  int numOptionalArgs = 0;
+  int numData = 1;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *type = OPS_GetString();
+    if (strcmp(type,"-iter") == 0) {
+      numOptionalArgs++;
+      if(OPS_GetNumRemainingInputArgs() > 1) {
+	if(OPS_GetIntInput(&numData,&maxIter) < 0) {
+	  opserr << "ERROR beamWithHinges - invalid maxIter input" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;		
+	if(OPS_GetDoubleInput(&numData,&tol) < 0) {
+	  opserr << "ERROR beamWithHinges - invalid tolerance input" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;
+	defaultIter = false;
+      }
+    }
+    if (strcmp(type,"-mass") == 0) {
+      numOptionalArgs++;
+      if(OPS_GetNumRemainingInputArgs() > 0) {
+	if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+	  opserr << "ERROR beamWithHinges - invalid mass input" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;	    
+      }    
+    }
+  }
+
+  OPS_ResetCurrentInputArg(-numArgs);
+  numArgs = numArgs - numOptionalArgs;
+
+  if (ndm == 2 && numArgs < 11) {
+    opserr<< "ERROR beamWithHinges - insufficient arguments: eleTag ndI ndJ secI lpI secJ lpJ E A I transfTag" << endln;
+    return 0;
+  }
+  if (ndm == 3 && numArgs < 14) {
+    opserr<< "ERROR beamWithHinges - insufficient arguments: eleTag ndI ndJ secI lpI secJ lpJ E A Iz Iy G J transfTag" << endln;
+    return 0;
+  }  
+  
+  // inputs: 
+  int iData[6];
+  numData = 3;
+  if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+    opserr << "ERROR beamWithHinges - invalid int inputs" << endln;
+    return 0;
+  }
+
+  numData = 1;
+  double lpI,lpJ;
+  if(OPS_GetIntInput(&numData,&iData[3]) < 0) {
+    opserr << "ERROR beamWithHinges - invalid secTagI input" << endln;
+    return 0;
+  }
+  if(OPS_GetDoubleInput(&numData,&lpI) < 0) {
+    opserr << "ERROR beamWithHinges - invalid lpI input" << endln;
+    return 0;
+  }
+  if(OPS_GetIntInput(&numData,&iData[4]) < 0) {
+    opserr << "ERROR beamWithHinges - invalid secTagJ input" << endln;
+    return 0;
+  }
+  if(OPS_GetDoubleInput(&numData,&lpJ) < 0) {
+    opserr << "ERROR beamWithHinges - invalid lpJ input" << endln;
+    return 0;
+  }
+
+  double dData[6];
+  if (ndm == 2)
+    numData = 3;
+  if (ndm == 3)
+    numData = 6;  
+  if (OPS_GetDoubleInput(&numData, dData) < 0) {
+    opserr << "ERROR beamWithHinges - invalid E,A,I,etc. input" << endln;
+    return 0;
+  }
+  
+  SectionForceDeformation *sections[10];
+  BeamIntegration *theBeamIntegr = 0;
+  ElasticSection2d section2d(0, dData[0], dData[1], dData[2]);
+  ElasticSection3d section3d(0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5]);
+
+  // Hinge Radau
+  HingeRadauBeamIntegration hingeRadau(lpI, lpJ);
+  theBeamIntegr = &hingeRadau;
+  int numSections = 6;
+
+  // Everything below should work for midpoint, endpoint, radauTwo  
+  sections[0] = OPS_getSectionForceDeformation(iData[3]);
+  if (sections[0] == 0) {
+    opserr << "ERROR beamWithHinges - sectionI not found" << endln;
+    return 0;
+  }
+  sections[numSections-1] = OPS_getSectionForceDeformation(iData[3]);
+  if (sections[numSections-1] == 0) {
+    opserr << "ERROR beamWithHinges - sectionJ not found" << endln;
+    return 0;
+  }
+  for (int i = 1; i < numSections-1; i++) {
+    if (ndm == 2)
+      sections[i] = &section2d;
+    if (ndm == 3)
+      sections[i] = &section3d;    
+  }
+
+  
+  numData = 1;
+  if(OPS_GetIntInput(&numData,&iData[5]) < 0) {
+    opserr << "ERROR beamWithHinges - invalid transfTag input" << endln;
+    return 0;
+  }
+    
+  CrdTransf *theTransf = OPS_getCrdTransf(iData[5]);
+  if (theTransf == 0) {
+    opserr << "ERROR beamWithHinges - crdTransf not found" << endln;
+    return 0;
+  }
+
+  Element *theEle = 0;
+  if (ndm == 2) {
+    if (defaultIter) 
+      theEle = new ForceBeamColumn2d(iData[0], iData[1], iData[2],
+				     numSections, sections,
+				     *theBeamIntegr, *theTransf,
+				     mass);
+    else
+      theEle = new ForceBeamColumn2d(iData[0], iData[1], iData[2],
+				     numSections, sections,
+				     *theBeamIntegr, *theTransf,
+				     mass, maxIter, tol);
+  }
+  if (ndm == 3)  {
+    if (defaultIter)
+      theEle = new ForceBeamColumn3d(iData[0], iData[1], iData[2],
+				     numSections, sections,
+				     *theBeamIntegr, *theTransf,
+				     mass);
+    else
+      theEle = new ForceBeamColumn3d(iData[0], iData[1], iData[2],
+				     numSections, sections,
+				     *theBeamIntegr, *theTransf,
+				     mass, maxIter, tol);
+  }
+  
+  return theEle;
+}
+
+
 // constructor:
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.
 ForceBeamColumn2d::ForceBeamColumn2d(): 
