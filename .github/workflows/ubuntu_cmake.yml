@@ -48,7 +48,8 @@ jobs:
           cmake --build ./ --target OpenSeesPy
           mv ./lib/OpenSeesPy.so ./lib/opensees.so
           cp ./lib/opensees.so ./../artifact/
-          cp ./bin/OpenSees ./../artifact/# Verification
+          cp ./bin/OpenSees ./../artifact/
+# Verification
       - name: Verification OpenSeesPySP
         run: |
           cd ./EXAMPLES/ExamplePython/
