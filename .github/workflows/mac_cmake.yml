@@ -45,12 +45,12 @@ jobs:
           mkdir -p build
           cd build
           conan install ..
+          cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           cp ./lib/OpenSeesPy.dylib ./lib/opensees.so
           cp ./lib/opensees.so ./../artifact/
           cp ./bin/OpenSees ./../artifact/
-#          cmake -S .. -B ./
 # Verification
       - name: Verification OpenSeesPySP
         run: |
@@ -60,9 +60,6 @@ jobs:
           python3 example_variable_analysis.py
 # Push build
       - name: Push build Directory
-#         run: gh pr create -B "origin" -t "CMake Build on Mac" -b ""
-#         env:
-#           GH_TOKEN: "${GITHUB_TOKEN}"
         run: |
           if ! git diff --exit-code --quiet
           then
