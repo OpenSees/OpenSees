@@ -20,5 +20,14 @@ target_sources(OPS_Api
         elementAPI.h
         packages.h
 )
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+target_sources(OPS_Api PUBLIC
+        win32Functions.cpp
+)
+
+endif()
+
 target_include_directories(OPS_Api PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
