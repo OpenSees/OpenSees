@@ -45,12 +45,12 @@ jobs:
           mkdir -p mac
           cd build
           conan install ..
+          cmake -S .. -B ./
           cmake --build ./ --target OpenSees
           cmake --build ./ --target OpenSeesPy
           cp ./lib/OpenSeesPy.dylib ./lib/opensees.so
           cp ./lib/opensees.so ./../mac/
           cp ./bin/OpenSees ./../mac/
-#          cmake -S .. -B ./
 # Verification
       - name: Verification OpenSeesPySP
         run: |
