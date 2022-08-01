@@ -426,7 +426,6 @@ target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
     OPS_Actor 
     OPS_Analysis 
-    OPS_Api
     OPS_ConvergenceTest
     OPS_Damage
     OPS_Database
@@ -581,7 +580,7 @@ add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
 )
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
-target_compile_options(OpenSeesPy PUBLIC -fPIC)
+
 target_include_directories(OpenSeesPy PUBLIC ${Python_INCLUDE_DIRS})
 
 target_link_libraries(OpenSeesPy

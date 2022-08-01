@@ -356,6 +356,7 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesTimeSeriesCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesUniaxialMaterialCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\PythonModule.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\PythonStream.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\PythonWrapper.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\PythonRV.cpp" />
     <ClCompile Include="..\..\..\SRC\reliability\domain\functionEvaluator\PythonEvaluator.cpp" />
