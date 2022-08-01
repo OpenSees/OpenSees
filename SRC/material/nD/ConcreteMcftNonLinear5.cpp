@@ -38,6 +38,42 @@
 #include <Parameter.h>
 #include <Information.h>
 
+#include <elementAPI.h>
+
+void *OPS_ConcreteMcftNonlinear5()
+{
+  int numArgs = OPS_GetNumRemainingInputArgs();
+
+  if (numArgs < 9) {
+    opserr << "ERROR not enough input args: nDMaterial ConcreteMcftNonlinear5 tag? fcu? ecu? Ec? fcr? Esv? fyv? alphaV? RoV?" << endln;
+    return 0;
+  }
+
+  int tag;
+  double dData[8];
+
+  int numData = 1;
+  if (OPS_GetInt(&numData, &tag) != 0) {
+    opserr << "ERROR nDMaterial ConcreteMcftNonlinear5 - unable to read matTag" << endln;
+    return 0;
+  }
+
+  numData = 8;
+  if (OPS_GetDouble(&numData, dData) != 0) {
+    opserr << "ERROR nDMaterial ConcreteMcftNonlinear5 - unable to read inputs" << endln;    
+    return 0;
+  }
+  
+  NDMaterial *theMaterial = new ConcreteMcftNonLinear5(tag,
+						       dData[0], dData[1], dData[2], dData[3],
+						       dData[4], dData[5], dData[6], dData[7]);
+  if (theMaterial == 0) {
+    opserr << "ERROR - could not create nDMaterial ConcreteMcftNonlinear5 with tag " << tag << endln;
+    return 0;
+  }
+  
+  return theMaterial;
+}
 	
 // constructor: 
 ConcreteMcftNonLinear5::ConcreteMcftNonLinear5 

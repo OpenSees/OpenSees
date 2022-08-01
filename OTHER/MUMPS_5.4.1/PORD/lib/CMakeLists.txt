@@ -1,4 +1,4 @@
-add_library(MUMPS_POORD OBJECT
+target_sources(MUMPS_C PUBLIC
    bucket.c
    ddbisect.c
    ddcreate.c
@@ -15,5 +15,4 @@ add_library(MUMPS_POORD OBJECT
    tree.c
 )
 
-target_link_libraries(MUMPS PUBLIC MUMPS_POORD)
    

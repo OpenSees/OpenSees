@@ -182,7 +182,7 @@ void* OPS_Concrete02Thermal();
 void* OPS_ResilienceLow();
 void* OPS_ResilienceMaterialHR();
 void* OPS_Elastic2Material();
-void* OPS_Backbone();
+void* OPS_BackboneMaterial();
 void* OPS_ConcreteZ01Material();
 void* OPS_ConcreteL01Material();
 void* OPS_SteelZ01Material();
@@ -487,7 +487,7 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("Elastic2", &OPS_Elastic2Material));
   uniaxialMaterialsMap.insert(
-      std::make_pair("Backbone", &OPS_Backbone));
+      std::make_pair("Backbone", &OPS_BackboneMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
       "ConcreteZ01Material", &OPS_ConcreteZ01Material));
   uniaxialMaterialsMap.insert(
