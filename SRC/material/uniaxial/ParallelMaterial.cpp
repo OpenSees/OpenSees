@@ -89,6 +89,12 @@ OPS_ParallelMaterial(void)
   
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid data for uniaxialMaterial Parallel" << endln;
+    delete [] iData;
+    delete [] theMats;
+    if (dData != 0)
+      delete [] dData;
+    if (theFactors != 0)
+      delete theFactors;    
     return 0;
   }
 
@@ -99,6 +105,10 @@ OPS_ParallelMaterial(void)
 	     << " for uniaxialMaterial Parallel " << iData[0] << endln;
       delete [] iData;
       delete [] theMats;
+      if (dData != 0)
+	delete [] dData;
+      if (theFactors != 0)
+	delete theFactors;
       return 0;
     }
     theMats[i-1] = theMat;
@@ -108,8 +118,14 @@ OPS_ParallelMaterial(void)
     const char *argvLoc = OPS_GetString();
     if (OPS_GetDoubleInput(&numMats, dData) != 0) {
       opserr << "WARNING invalid factors for uniaxialMaterial Parallel" << endln;
+      delete [] iData;
+      delete [] theMats;
+      if (dData != 0)
+	delete [] dData;
+      if (theFactors != 0)
+	delete theFactors;      
       return 0;
-    }
+    }    
   }
 
   // Parsing was successful, allocate the material
@@ -121,8 +137,9 @@ OPS_ParallelMaterial(void)
   
   delete [] iData;
   delete [] theMats;
-
-  if (theFactors != 0) 
+  if (dData != 0)
+    delete [] dData;
+  if (theFactors != 0)
     delete theFactors;
   
   return theMaterial;
