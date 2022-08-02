@@ -27,7 +27,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NewElement.h"
 #include <elementAPI.h>
 
-void *OPS_NewElement(const ID &info) {
+void *OPS_NewElement(void) {
 
   //
   // create 2 arrays; one each for integer and double command line arguments
