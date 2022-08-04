@@ -1,5 +1,5 @@
-#ifndef NewElement_h
-#define NewElement_h
+#ifndef PlanarTruss_h
+#define PlanarTruss_h
 
 /********************************************************************************
 (C) Copyright 2001-2022, The Regents of the University of California    
@@ -39,16 +39,17 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 class Channel;
 class UniaxialMaterial;
 
-#define ELE_TAG_NewElement 100001
+#define ELE_TAG_PlanarTruss 100001
+#include <UniaxialMaterial.h>
 
-class NewElement : public Element
+class PlanarTruss : public Element
 {
   public:
-    NewElement(int tag);
-    NewElement();    
-    ~NewElement();
+  PlanarTruss(int tag, int iNode, int jNode, UniaxialMaterial *theMat, double a);
+    PlanarTruss();    
+    ~PlanarTruss();
 
-    const char *getClassType(void) const {return "NewElement";};
+    const char *getClassType(void) const {return "PlanarTruss";};
 
     // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
@@ -74,7 +75,6 @@ class NewElement : public Element
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
     void Print(OPS_Stream &s, int flag =0);    
 
     Response *setResponse(const char **argv, int argc, OPS_Stream &);
@@ -83,9 +83,14 @@ class NewElement : public Element
   protected:
     
   private:
-    ID  theNodeTags;   // contains the tags of the end nodes
-    Matrix theMatrix;             // matrix to return stiff, damp & mass
-    Vector theVector;             // vector to return the residual
+  ID  connectedExternalNodes;   // contains the tags of the end nodes
+  Matrix theMatrix;             // matrix to return stiff, damp & mass
+  Vector theVector;             // vector to return the residual
+  UniaxialMaterial *theMaterial;
+  
+  double A, L;
+  Matrix trans;
+  Node *theNodes[2];
 };
 
 #endif
