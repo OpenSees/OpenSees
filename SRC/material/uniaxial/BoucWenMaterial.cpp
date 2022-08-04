@@ -368,14 +368,16 @@ BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 	data(21) = -1;
 	if (SHVs != 0)
 	  data(21) = SHVs->noCols();
+
+	int dbTag = this->getDbTag();
 	
-	if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+	if (theChannel.sendVector(dbTag, cTag, data) < 0) {
 	  opserr << "BoucWenMaterial::sendSelf() - failed to send Vector" << endln;
 		return -1;
 	}
 
 	if (SHVs != 0) {
-	  if (theChannel.sendMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	  if (theChannel.sendMatrix(dbTag, cTag, *SHVs) < 0) {
 	    opserr << "BoucWenMaterial::sendSelf() - failed to send SHVs Matrix" << endln;
 	    return -2;
 	  }
@@ -387,9 +389,11 @@ BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 int 
 BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
+  int dbTag = this->getDbTag();
+  
 	static Vector data(22);
 
-	if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+	if (theChannel.recvVector(dbTag, cTag, data) < 0) {
 	  opserr << "BoucWenMaterial::recvSelf() - failed to recvSelf" << endln;
 		return -1;
 	}
@@ -412,9 +416,9 @@ BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 	Tstress = data(15);
 	Ttangent = data(16);
 	tolerance = data(17);
-	maxNumIter = data(18);
+	maxNumIter = (int)data(18);
 	this->setTag((int)data(19));
-	parameterID = data(20);
+	parameterID = (int)data(20);
 
 	// Receive sensitivity history variables (SHVs)
 	int noCols = (int)data(21);
@@ -427,7 +431,7 @@ BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 	    return -2;
 	  }
 
-	  if (theChannel.recvMatrix(this->getDbTag(), cTag, *SHVs) < 0) {
+	  if (theChannel.recvMatrix(dbTag, cTag, *SHVs) < 0) {
 	    opserr << "BoucWenMaterial::recvSelf() - failed to receive SHVs matrix" << endln;
 	    return -3;
 	  }
