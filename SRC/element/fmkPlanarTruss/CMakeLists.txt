@@ -9,8 +9,6 @@ target_sources(OPS_Element
   PRIVATE
     PlanarTruss.cpp
     OPS_PlanarTruss.cpp
-    NewElement.cpp
-    OPS_NewElement.cpp
   PUBLIC
     PlanarTruss.h
 )
