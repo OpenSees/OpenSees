@@ -50,13 +50,13 @@ void *OPS_NewElement(void) {
   
   int numData = 1; // num integer args
   if ((numData > 0) && (OPS_GetIntInput(&numData, &iData[0]) < 0)) {
-    opserr << "WARNING failed to read integers, command element NewElement\n";
+    opserr << "WARNING failed to read integers, command element NewElement" << endln;
     return 0;
   }
   
   numData = 0; // reset to num double args
   if ((numData > 0) && (OPS_GetDoubleInput(&numData, &dData[0]) < 0)) {
-    opserr << "WARNING failed to read doubles, command element NewElement\n";
+    opserr << "WARNING failed to read doubles, command element NewElement" << endln;
     return 0;
   }
 
