@@ -32,9 +32,6 @@
 #include <QuadPatch.h>
 #include <QuadCell.h>
 #include <elementAPI.h>
-#include <math.h>       
-#include <iostream>
-using namespace std;
 
 void* OPS_QuadPatch()
 {
@@ -58,6 +55,7 @@ void* OPS_QuadPatch()
 	    vertexCoords(i,j) = data[i*2+j];
 	}
     }
+<<<<<<< HEAD
 	
 	
 	bool computePositive = false;
@@ -128,6 +126,9 @@ void* OPS_QuadPatch()
 	}
 	
 	
+=======
+
+>>>>>>> parent of 9d6aaf17 (Update QuadPatch.cpp)
     return new QuadPatch(idata[0],idata[1],idata[2],vertexCoords);
 }
 
