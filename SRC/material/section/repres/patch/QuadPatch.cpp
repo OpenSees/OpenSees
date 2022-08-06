@@ -55,7 +55,80 @@ void* OPS_QuadPatch()
 	    vertexCoords(i,j) = data[i*2+j];
 	}
     }
+<<<<<<< HEAD
+	
+	
+	bool computePositive = false;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* poa = OPS_GetString();
+      if (strcmp(poa,"-positiveArea") == 0) {
+	      computePositive = true;
+      }
+    }
+	
+	// Check if counter clockwise or not
+    if (computePositive==true) { 
+		double v1z, v1y, v2z, v2y, theta1, theta2, centroidz, centroidy;
+		double z0, y0, z1, y1, result;
+		  
+		y0 = vertexCoords(0,0) ;
+		z0 = vertexCoords(0,1) ;
 
+		y1 = vertexCoords(1,0) ;
+		z1 = vertexCoords(1,1) ;  
+
+		  
+		centroidx=0;
+		centroidy=0;
+		for(int j=0; j<4; j++) {
+				centroidy=centroidy+vertexCoords(j,0);
+				centroidz=centroidz+vertexCoords(j,1);
+			}
+
+		centroidy=centroidy/4;
+		centroidz=centroidz/4;  
+		  
+		  
+		v1y=y0-centroidy;
+		v1z=z0-centroidz;
+		  
+		v2y=y1-centroidy;
+		v2z=z1-centroidz;
+		  
+		theta1 = atan2 (v1y,v1z) * 180 / PI;
+		theta2 = atan2 (v2y,v2z) * 180 / PI;
+
+		// error of points definition 
+		if (theta2==theta1 or theta2==180+theta1 or theta2==-180+theta1)  {
+			return -1;
+		}
+		
+		
+		// clock-wise definition by user and needs to modify
+		// Rotate coordinates so we get all positive areas
+
+		if (theta2<theta1)  {
+		  int vertexCoordtmp [4][2];
+		
+		  for(int i=0; i<4; i++) {
+			for(int j=0; j<2; j++) {
+			  vertexCoordtmp[i][j]=vertexCoords(i,j);
+			}
+		  }
+		
+		  for(int i=0; i<4; i++) {
+			for(int j=0; j<2; j++) {
+			  vertexCoords(3-i,j)=vertexCoordtmp[i][j];
+			}
+		  }
+		
+		}
+	}
+	
+	
+=======
+
+>>>>>>> parent of 9d6aaf17 (Update QuadPatch.cpp)
     return new QuadPatch(idata[0],idata[1],idata[2],vertexCoords);
 }
 
