@@ -548,7 +548,7 @@ namespace {
 	functionMap.insert(std::make_pair("MSS", &OPS_MultipleShearSpring));
 	functionMap.insert(std::make_pair("multipleShearSpring", &OPS_MultipleShearSpring));
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
-    functionMap.insert(std::make_pair("linearElasicSpring", &OPS_LinearElasticSpring));
+    functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
