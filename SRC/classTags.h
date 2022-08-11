@@ -258,7 +258,7 @@
 
 #define MAT_TAG_LimitState	   1972
 #define MAT_TAG_Elastic2Material   1973
-
+#define MAT_TAG_FRCC		   1980		   		
 #define MAT_TAG_DrainMaterial		2000
 #define MAT_TAG_DrainHardening		2001
 #define MAT_TAG_DrainBilinear		2002

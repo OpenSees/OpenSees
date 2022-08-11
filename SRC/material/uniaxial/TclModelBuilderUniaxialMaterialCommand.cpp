@@ -42,6 +42,8 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <ShearPanelMaterial.h>  // NM
 #include <BarSlipMaterial.h>     // NM
 
+#include <FRCC.h> // FLK + ARB
+
 #include <Vector.h>
 #include <string.h>
 
@@ -147,6 +149,7 @@ extern void *OPS_ViscousMaterial(void);
 extern void *OPS_SteelMPF(void); // K Kolozvari                                
 extern void *OPS_ConcreteCM(void); // K Kolozvari
 extern void *OPS_Bond_SP01(void); // K Kolozvari
+extern void *OPS_FRCC(void); // Feras Khlef + Andre Barbosa
 extern void *OPS_Steel4(void);
 extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenMaterial(void);
@@ -472,8 +475,158 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;      
 
-    }
-    if ((strcmp(argv[1],"Cast") == 0) || (strcmp(argv[1],"CastFuse") == 0)) {
+    } 	else if (strcmp(argv[1], "FRCC") == 0) {
+	if (argc < 26) {
+		opserr << "WARNING insufficient arguments\n";
+		printCommand(argc, argv);
+		opserr << "Want: uniaxialMaterial FRCC tag? EC? ET1? FT1? ET2? FT2? ETU? FTU? STU? PARAT1? PARAT2? PARAT3? PARAT4? PARAT5? PARAT6";
+		opserr << "ECP? FCP? ECU? PARAC1? PARAC2? PARAC3? PARAC4? PARAC5? PARAC6? RC?\n";
+		return TCL_ERROR;
+	}
+
+	int tag;
+	double EC, ET1, FT1, ET2, FT2, ETU, FTU, STU, PARAT1, PARAT2, PARAT3, PARAT4, PARAT5, PARAT6, ECP, FCP, ECU, PARAC1, PARAC2, PARAC3, PARAC4, PARAC5, PARAC6, RC;
+
+
+	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+		opserr << "WARNING invalid uniaxialMaterial FRCC tag" << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[3], &EC) != TCL_OK) {
+		opserr << "WARNING invalid EC\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[4], &ET1) != TCL_OK) {
+		opserr << "WARNING invalid ET1\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[5], &FT1) != TCL_OK) {
+		opserr << "WARNING invalid FT1\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[6], &ET2) != TCL_OK) {
+		opserr << "WARNING invalid ET2\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[7], &FT2) != TCL_OK) {
+		opserr << "WARNING invalid FT2\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[8], &ETU) != TCL_OK) {
+		opserr << "WARNING invalid ETU\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[9], &FTU) != TCL_OK) {
+		opserr << "WARNING invalid FTU\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[10], &STU) != TCL_OK) {
+			opserr << "WARNING invalid STU\n";
+			opserr << "FRCC material: " << tag << endln;
+			return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[11], &PARAT1) != TCL_OK) {
+		opserr << "WARNING invalid PARAT1\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[12], &PARAT2) != TCL_OK) {
+		opserr << "WARNING invalid PARAT2\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	
+	if (Tcl_GetDouble(interp, argv[13], &PARAT3) != TCL_OK) {
+		opserr << "WARNING invalid PARAT3\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[14], &PARAT4) != TCL_OK) {
+		opserr << "WARNING invalid PARAT3\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[15], &PARAT5) != TCL_OK) {
+		opserr << "WARNING invalid PARAT5\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[16], &PARAT6) != TCL_OK) {
+		opserr << "WARNING invalid PARAT6\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[17], &ECP) != TCL_OK) {
+		opserr << "WARNING invalid ECP\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[18], &FCP) != TCL_OK) {
+		opserr << "WARNING invalid FCP\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[19], &ECU) != TCL_OK) {
+		opserr << "WARNING invalid ECU\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[20], &PARAC1) != TCL_OK) {
+		opserr << "WARNING invalid PARAC1\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[21], &PARAC2) != TCL_OK) {
+		opserr << "WARNING invalid PARAC2\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[22], &PARAC3) != TCL_OK) {
+		opserr << "WARNING invalid PARAC3\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[23], &PARAC4) != TCL_OK) {
+		opserr << "WARNING invalid PARAC4\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[24], &PARAC5) != TCL_OK) {
+		opserr << "WARNING invalid PARAC5\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[25], &PARAC6) != TCL_OK) {
+		opserr << "WARNING invalid PARAC6\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[26], &RC) != TCL_OK) {
+		opserr << "WARNING invalid RC\n";
+		opserr << "FRCC material: " << tag << endln;
+		return TCL_ERROR;
+	}
+
+	theMaterial = new FRCC(tag, EC, ET1, FT1, ET2, FT2, ETU, FTU, STU, PARAT1, PARAT2, PARAT3, PARAT4, PARAT5, PARAT6,
+		ECP, FCP, ECU, PARAC1, PARAC2, PARAC3, PARAC4, PARAC5, PARAC6, RC);
+	}
+    else if ((strcmp(argv[1],"Cast") == 0) || (strcmp(argv[1],"CastFuse") == 0)) {
       void *theMat = OPS_Cast();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
