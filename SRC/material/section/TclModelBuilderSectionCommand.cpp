@@ -98,6 +98,7 @@ extern void *OPS_RCTunnelSection(void);
 extern void *OPS_SectionAggregator(void);
 extern void *OPS_UniaxialSection(void);
 extern void *OPS_TubeSection(void);
+extern void *OPS_HSSSection(void);
 extern void *OPS_ParallelSection(void);
 extern void *OPS_Bidirectional(void);
 extern void *OPS_Elliptical2(void);
@@ -275,7 +276,15 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	theSection = (SectionForceDeformation *)theMat;
       else 
 	return TCL_ERROR;
-    }    
+    }
+
+    else if (strcmp(argv[1],"HSS") == 0) {
+      void *theMat = OPS_HSSSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
+    }        
 
     else if (strcmp(argv[1],"RCSection2d") == 0) {
       void *theMat = OPS_RCSection2d();
