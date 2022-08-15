@@ -299,7 +299,12 @@ TubeSectionIntegration::getFiberWeights(int nFibers, double *wt)
 SectionIntegration*
 TubeSectionIntegration::getCopy(void)
 {
-  return new TubeSectionIntegration(D, t, Nfwedge, Nfring);
+  TubeSectionIntegration *theCopy =
+    new TubeSectionIntegration(D, t, Nfwedge, Nfring);
+
+  theCopy->parameterID = parameterID;
+
+  return theCopy;
 }
 
 int
