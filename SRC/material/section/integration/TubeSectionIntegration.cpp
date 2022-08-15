@@ -353,6 +353,55 @@ TubeSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dz
     dyidh[i] = 0.0;
     dzidh[i] = 0.0;
   }
+  if (parameterID != 1 && parameterID != 2)
+    return;
+
+  double dDdh = 0.0;
+  double dtdh = 0.0;
+  if (parameterID == 1)
+    dDdh = 1.0;
+  if (parameterID == 2)
+    dtdh = 1.0;
+
+  static const double pi = 3.141592653589793;
+  
+  double theta = pi/Nfwedge;
+  double twoTheta = 2.0*theta;
+  double dt = t/Nfring;
+
+  int loc = 0;
+  double rinner = 0.5*D - t;
+  double drinnerdh = 0.5*dDdh - dtdh;
+  double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
+  double xinner = 2.0/3.0*rinner*sin(theta)/theta;
+  double dxinnerdh = 2.0/3.0*drinnerdh*sin(theta)/theta;
+  for (int i = 0; i < Nfring; i++) {
+    double router = rinner + (i+1)*dt;
+    double drouterdh = drinnerdh + (i+1)*dtdh/Nfring;    
+    double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;
+    double xouter = 2.0/3.0*router*sin(theta)/theta;
+    double dxouterdh = 2.0/3.0*drouterdh*sin(theta)/theta;    
+    double area = Aouter-Ainner;
+    double dareadh = dAouterdh-dAinnerdh;
+    double xbar = (xouter*Aouter-xinner*Ainner)/area;
+    double dxbardh = (area*(xouter*dAouterdh+dxouterdh*Aouter-xinner*dAinnerdh-dxinnerdh*Ainner)
+		      - (xouter*Aouter-xinner*Ainner)*dareadh) / (area*area);
+    double angle = theta;
+    for (int j = 0; j < Nfwedge; j++) {
+      //yi[loc] = xbar*cos(angle);
+      //zi[loc] = xbar*sin(angle);
+      dyidh[loc] = dxbardh*cos(angle);
+      dzidh[loc] = dxbardh*sin(angle);      
+      angle += twoTheta;
+      loc++;
+    }
+    Ainner = Aouter;
+    xinner = xouter;
+    dAinnerdh = dAouterdh;
+    dxinnerdh = dxouterdh;        
+  }
   
   return;
 }
@@ -363,6 +412,37 @@ TubeSectionIntegration::getWeightsDeriv(int nFibers, double *dwtdh)
   // Setting to zero for now
   for (int i = 0; i < nFibers; i++) {
     dwtdh[i] = 0.0;
+  }
+  if (parameterID != 1 && parameterID != 2)
+    return;
+  
+  double dDdh = 0.0;
+  double dtdh = 0.0;
+  if (parameterID == 1)
+    dDdh = 1.0;
+  if (parameterID == 2)
+    dtdh = 1.0;
+  
+  static const double pi = 3.141592653589793;
+  
+  double theta = pi/Nfwedge;
+  double dt = t/Nfring;
+
+  int loc = 0;
+  double rinner = 0.5*D - t;
+  double drinnerdh = 0.5*dDdh - dtdh;
+  //double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
+  for (int i = 0; i < Nfring; i++) {
+    double router = 0.5*D - t + (i+1)*dt;
+    double drouterdh = 0.5*dDdh - dtdh + (i+1)*dtdh/Nfring;
+    //double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;    
+    double dareadh = dAouterdh - dAinnerdh;
+    for (int j = 0; j < Nfwedge; j++)
+      dwtdh[loc++] = dareadh;
+    //Ainner = Aouter;
+    dAinnerdh = dAouterdh;    
   }
   
   return;
