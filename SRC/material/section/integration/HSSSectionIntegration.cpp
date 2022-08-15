@@ -330,7 +330,12 @@ HSSSectionIntegration::getFiberWeights(int nFibers, double *wt)
 SectionIntegration*
 HSSSectionIntegration::getCopy(void)
 {
-  return new HSSSectionIntegration(h, b, t, Nfh, Nfb, Nft);
+  HSSSectionIntegration* theCopy = 
+    new HSSSectionIntegration(h, b, t, Nfh, Nfb, Nft);
+
+  theCopy->parameterID = parameterID;
+
+  return theCopy;
 }
 
 int
@@ -404,15 +409,15 @@ HSSSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzi
   if (parameterID == 3)
     dtdh = 1.0;
   
-  double hw = h - 2*t;
-  double bw = b - 2*t;  
+  //double hw = h - 2*t;
+  //double bw = b - 2*t;  
   double dhwdh = dhdh - 2*dtdh;
   double dbwdh = dbdh - 2*dtdh;
   
   int i, loc;
   
-  double yIncr  = hw/Nfh;
-  double yStart = 0.5 * (hw-yIncr);
+  //double yIncr  = hw/Nfh;
+  //double yStart = 0.5 * (hw-yIncr);
   double dyIncrdh = dhwdh/Nfh;
   double dyStartdh = 0.5*(dhwdh-dyIncrdh);
   
@@ -438,8 +443,8 @@ HSSSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzi
     dyidh[loc+Nfb] = -dyidh[loc];    
   }
   if (dzidh != 0) {
-    double zIncr  = bw/Nfb;
-    double zStart = 0.5 * (bw-zIncr);
+    //double zIncr  = bw/Nfb;
+    //double zStart = 0.5 * (bw-zIncr);
     double dzIncrdh  = dbwdh/Nfb;
     double dzStartdh = 0.5 * (dbwdh-dzIncrdh);    
     for (loc = 2*Nfh, i = 0; i < Nfb; loc++, i++) {
@@ -452,7 +457,7 @@ HSSSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzi
 
   // Four corners
   loc = 2*Nfh + 2*Nfb;
-  double yy = 0.5*(hw+t);
+  //double yy = 0.5*(hw+t);
   double dyydh = 0.5*(dhwdh+dtdh);  
   //yi[loc++] =  yy;
   //yi[loc++] = -yy;
@@ -504,8 +509,8 @@ HSSSectionIntegration::getWeightsDeriv(int nFibers, double *dwtdh)
   double dbwdh = dbdh - 2*dtdh;
   
   // Assuming Nft = 1
-  double a_h = hw*t/(Nfh);
-  double a_b = bw*t/(Nfb);
+  //double a_h = hw*t/(Nfh);
+  //double a_b = bw*t/(Nfb);
   double da_hdh = (hw*dtdh + dhwdh*t)/Nfh;
   double da_bdh = (bw*dtdh + dbwdh*t)/Nfb;
   
@@ -526,7 +531,7 @@ HSSSectionIntegration::getWeightsDeriv(int nFibers, double *dwtdh)
   }
 
   // Four corners
-  double a_t = t*t;
+  //double a_t = t*t;
   double da_tdh = 2*t*dtdh;
   loc = 2*Nfh + 2*Nfb;
   for (i = 0; i < 4; i++, loc++) {
