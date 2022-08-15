@@ -173,10 +173,12 @@ ElasticTubeSection3d::getSectionDeformation (void)
 const Vector &
 ElasticTubeSection3d::getStressResultant (void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
   double G = 0.5*E/(1+nu);
@@ -194,10 +196,12 @@ ElasticTubeSection3d::getStressResultant (void)
 const Matrix &
 ElasticTubeSection3d::getSectionTangent(void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
   double G = 0.5*E/(1+nu);
@@ -221,10 +225,12 @@ ElasticTubeSection3d::getInitialTangent(void)
 const Matrix &
 ElasticTubeSection3d::getSectionFlexibility (void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
   double G = 0.5*E/(1+nu);
@@ -411,10 +417,12 @@ ElasticTubeSection3d::getStressResultantSensitivity(int gradIndex,
   static Vector dsdh(6);
   dsdh.Zero();
 
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
   double G = 0.5*E/(1+nu);
@@ -433,10 +441,10 @@ ElasticTubeSection3d::getStressResultantSensitivity(int gradIndex,
     double dr1dh =  0.0;
     double dr2dh = -1.0;
     
-    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    double dAdh = pi*(2*r1*dr1dh - 2*r2*dr2dh);
     dsdh(0) = E*dAdh*e(0);
 
-    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    double dIdh = 0.25*pi*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
     dsdh(1) = E*dIdh*e(1);
     dsdh(2) = E*dIdh*e(2);
 
@@ -451,10 +459,10 @@ ElasticTubeSection3d::getStressResultantSensitivity(int gradIndex,
     double dr1dh = 0.5;
     double dr2dh = 0.5;
     
-    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    double dAdh = pi*(2*r1*dr1dh - 2*r2*dr2dh);
     dsdh(0) = E*dAdh*e(0);
 
-    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    double dIdh = 0.25*pi*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
     dsdh(1) = E*dIdh*e(1);
     dsdh(2) = E*dIdh*e(2);
 
