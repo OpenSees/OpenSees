@@ -39,7 +39,7 @@ void* OPS_ElasticTubeSection3d()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section ElasticTube tag? E? d? tw? G? <shape?>" << endln;
+	opserr << "Want: section ElasticTube tag? E? nu? d? tw? <shape?>" << endln;
 	return 0;
     }
 	
