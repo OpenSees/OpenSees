@@ -33,8 +33,6 @@ class Channel;
 class FEM_ObjectBroker;
 class Information;
 
-#define SEC_TAG_ElasticTube3d 1976
-
 class ElasticTubeSection3d: public SectionForceDeformation
 {
  public:
