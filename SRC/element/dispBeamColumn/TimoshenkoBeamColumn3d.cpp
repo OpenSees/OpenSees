@@ -414,10 +414,10 @@ TimoshenkoBeamColumn3d::update(void)
 	e(j) = oneOverL*v(0);
 	break;
       case SECTION_RESPONSE_MZ:
-	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*v(1) +(xi6-2.0+phiz)*v(2)); 	
+	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*v(1) + (xi6-2.0+phiz)*v(2)); 	
 	break;
       case SECTION_RESPONSE_MY:
-	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*v(3) +(xi6-2.0+phiy)*v(4)); 		
+	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*v(3) + (xi6-2.0+phiy)*v(4)); 		
 	break;
       case SECTION_RESPONSE_VY:
 	e(j) = 0.5*phiz/(1+phiz)*v(1)+0.5*phiz/(1+phiz)*v(2);
@@ -1799,9 +1799,9 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
     int order = theSections[i]->getOrder();
     const ID &code = theSections[i]->getType();
     
-    //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-    //double wti = wts(i);
+    double phiz = phizs[i];
+    double phiy = phiys[i];      
     double wti = wt[i];
     
     // Get section stress resultant gradient
@@ -1816,13 +1816,21 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	dqdh(0) += sensi; 
 	break;
       case SECTION_RESPONSE_MZ:
-	dqdh(1) += (xi6-4.0)*sensi; 
-	dqdh(2) += (xi6-2.0)*sensi; 
+	dqdh(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*sensi; 
+	dqdh(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*sensi; 	
 	break;
       case SECTION_RESPONSE_MY:
-	dqdh(3) += (xi6-4.0)*sensi; 
-	dqdh(4) += (xi6-2.0)*sensi; 
+	dqdh(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*sensi; 
+	dqdh(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*sensi; 	
 	break;
+      case SECTION_RESPONSE_VY:
+	dqdh(1) += 0.5*phiz*L/(1+phiz)*sensi; 
+	dqdh(2) += 0.5*phiz*L/(1+phiz)*sensi; 
+	break;
+      case SECTION_RESPONSE_VZ:
+	dqdh(3) += 0.5*phiy*L/(1+phiy)*sensi; 
+	dqdh(4) += 0.5*phiy*L/(1+phiy)*sensi; 
+	break; 			
       case SECTION_RESPONSE_T:
 	dqdh(5) += sensi; 
 	break;
@@ -1856,9 +1864,9 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
       int order = theSections[i]->getOrder();
       const ID &code = theSections[i]->getType();
       
-      //double xi6 = 6.0*pts(i,0);
       double xi6 = 6.0*xi[i];
-      //double wti = wts(i);
+      double phiz = phizs[i];
+      double phiy = phiys[i];      
       double wti = wt[i];
       
       const Vector &s = theSections[i]->getStressResultant();
@@ -1878,23 +1886,41 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	  }
 	  break;
 	case SECTION_RESPONSE_MZ:
-	  q(1) += (xi6-4.0)*si; 
-	  q(2) += (xi6-2.0)*si;
+	  q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si; 
+	  q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 	  
 	  for (k = 0; k < order; k++) {
 	    tmp = ks(k,j)*wti;
-	    ka(k,1) += (xi6-4.0)*tmp;
-	    ka(k,2) += (xi6-2.0)*tmp;
+	    ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	    ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  	    
 	  }
 	  break;
 	case SECTION_RESPONSE_MY:
-	  q(3) += (xi6-4.0)*si; 
-	  q(4) += (xi6-2.0)*si;
+	  q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si; 
+	  q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si;
 	  for (k = 0; k < order; k++) {
 	    tmp = ks(k,j)*wti;
-	    ka(k,3) += (xi6-4.0)*tmp;
-	    ka(k,4) += (xi6-2.0)*tmp;
+	    ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	    ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  	    
 	  }
 	  break;
+	case SECTION_RESPONSE_VY:
+	  q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	  q(2) += 0.5*phiz*L/(1+phiz)*si;
+	  for (k = 0; k < order; k++) {
+	    tmp = ks(k,j)*wti;
+	    ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	    ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	  }	  
+	  break;
+	case SECTION_RESPONSE_VZ:
+	  q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	  q(4) += 0.5*phiy*L/(1+phiy)*si;
+	  for (k = 0; k < order; k++) {
+	    tmp = ks(k,j)*wti;
+	    ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	    ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	  }	  
+	  break; 		  
 	case SECTION_RESPONSE_T:
 	  q(5) += si;
 	  for (k = 0; k < order; k++) {
@@ -1915,17 +1941,31 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	case SECTION_RESPONSE_MZ:
 	  for (k = 0; k < 6; k++) {
 	    tmp = ka(j,k);
-	    kbmine(1,k) += (xi6-4.0)*tmp;
-	    kbmine(2,k) += (xi6-2.0)*tmp;
+	    kbmine(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	    kbmine(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  	    
 	  }
 	  break;
 	case SECTION_RESPONSE_MY:
 	  for (k = 0; k < 6; k++) {
 	    tmp = ka(j,k);
-	    kbmine(3,k) += (xi6-4.0)*tmp;
-	    kbmine(4,k) += (xi6-2.0)*tmp;
+	    kbmine(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	    kbmine(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  	    
 	  }
 	  break;
+	case SECTION_RESPONSE_VY:
+	  for (k = 0; k < 6; k++) {
+	    tmp = ka(j,k);
+	    kbmine(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	    kbmine(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  }
+	  break;
+	case SECTION_RESPONSE_VZ:
+	  for (k = 0; k < 6; k++) {
+	    tmp = ka(j,k);
+	    kbmine(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	    kbmine(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  }
+	  break;		  
 	case SECTION_RESPONSE_T:
 	  for (k = 0; k < 6; k++) {
 	    kbmine(5,k) += ka(j,k);
@@ -1986,9 +2026,11 @@ TimoshenkoBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
     
     Vector e(workArea, order);
     
-    //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-    
+    // Assume the phi values are constant
+    double phiz = phizs[i];
+    double phiy = phiys[i];
+      
     for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
@@ -1996,13 +2038,23 @@ TimoshenkoBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
 	  + d1oLdh*v(0); 
 	break;
       case SECTION_RESPONSE_MZ:
-	e(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2))
-	  + d1oLdh*((xi6-4.0)*v(1) + (xi6-2.0)*v(2)); 
+	//e(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2))
+	//  + d1oLdh*((xi6-4.0)*v(1) + (xi6-2.0)*v(2));
+	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*dvdh(1) + (xi6-2.0+phiz)*dvdh(2))
+	  + d1oLdh/(1+phiz)*((xi6-4.0-phiz)*v(1) + (xi6-2.0+phiz)*v(2)); 		
 	break;
       case SECTION_RESPONSE_MY:
-	e(j) = oneOverL*((xi6-4.0)*dvdh(3) + (xi6-2.0)*dvdh(4))
-	  + d1oLdh*((xi6-4.0)*v(3) + (xi6-2.0)*v(4)); 
+	//e(j) = oneOverL*((xi6-4.0)*dvdh(3) + (xi6-2.0)*dvdh(4))
+	//  + d1oLdh*((xi6-4.0)*v(3) + (xi6-2.0)*v(4));
+	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*dvdh(3) + (xi6-2.0+phiy)*dvdh(4))
+	  + d1oLdh/(1+phiy)*((xi6-4.0-phiy)*v(3) + (xi6-2.0+phiy)*v(4));
 	break;
+      case SECTION_RESPONSE_VY:
+	e(j) = 0.5*phiz/(1+phiz)*dvdh(1)+0.5*phiz/(1+phiz)*dvdh(2);
+	break;
+      case SECTION_RESPONSE_VZ:
+	e(j) = 0.5*phiy/(1+phiy)*dvdh(3)+0.5*phiy/(1+phiy)*dvdh(4);
+	break;		
       case SECTION_RESPONSE_T:
 	e(j) = oneOverL*dvdh(5)
 	  + d1oLdh*v(5); 
