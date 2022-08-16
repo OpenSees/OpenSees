@@ -296,6 +296,36 @@ TimoshenkoBeamColumn3d::setDomain(Domain *theDomain)
 		// Add some error check
 	}
 
+	for (int i = 0; i < numSections; i++) {
+	  const Matrix &ks0 = theSections[i]->getInitialTangent();
+	  int order = theSections[i]->getOrder();
+	  const ID &code = theSections[i]->getType();
+	  
+	  double EI = 0.0;
+	  double GA = 0.0;
+	  for (int k = 0; k < order; k++) {
+	    if (code(k) == SECTION_RESPONSE_MZ)
+	      EI += ks0(k,k);
+	    if (code(k) == SECTION_RESPONSE_VY)
+	      GA += ks0(k,k);
+	  }
+	  phizs[i] = 0.0;
+	  if (GA != 0.0)
+	    phizs[i] = 12*EI/(GA*L*L);
+	  
+	  EI = 0.0;
+	  GA = 0.0;
+	  for (int k = 0; k < order; k++) {
+	    if (code(k) == SECTION_RESPONSE_MY)
+	      EI += ks0(k,k);
+	    if (code(k) == SECTION_RESPONSE_VZ)
+	      GA += ks0(k,k);
+	  }
+	  phiys[i] = 0.0;
+	  if (GA != 0.0)
+	    phiys[i] = 12*EI/(GA*L*L);	  
+	}
+	
     this->DomainComponent::setDomain(theDomain);
 
 	this->update();
@@ -375,19 +405,26 @@ TimoshenkoBeamColumn3d::update(void)
     Vector e(workArea, order);
       
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
-    int j;
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	e(j) = oneOverL*v(0);
 	break;
       case SECTION_RESPONSE_MZ:
-	e(j) = oneOverL*((xi6-4.0)*v(1) + (xi6-2.0)*v(2));
+	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*v(1) +(xi6-2.0+phiz)*v(2)); 	
 	break;
       case SECTION_RESPONSE_MY:
-	e(j) = oneOverL*((xi6-4.0)*v(3) + (xi6-2.0)*v(4));
+	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*v(3) +(xi6-2.0+phiy)*v(4)); 		
 	break;
+      case SECTION_RESPONSE_VY:
+	e(j) = 0.5*phiz/(1+phiz)*v(1)+0.5*phiz/(1+phiz)*v(2);
+	break;
+      case SECTION_RESPONSE_VZ:
+	e(j) = 0.5*phiy/(1+phiy)*v(3)+0.5*phiy/(1+phiy)*v(4);
+	break;	
       case SECTION_RESPONSE_T:
 	e(j) = oneOverL*v(5);
 	break;
@@ -437,7 +474,9 @@ TimoshenkoBeamColumn3d::getTangentStiff()
     ka.Zero();
 
     double xi6 = 6.0*xi[i];
-
+    double phiz = phizs[i];
+    double phiy = phiys[i];
+    
     // Get the section tangent stiffness and stress resultant
     const Matrix &ks = theSections[i]->getSectionTangent();
     const Vector &s = theSections[i]->getStressResultant();
@@ -446,8 +485,8 @@ TimoshenkoBeamColumn3d::getTangentStiff()
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
     double wti = wt[i]*oneOverL;
     double tmp;
-    int j, k;
-    for (j = 0; j < order; j++) {
+    int k;
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < order; k++)
@@ -456,17 +495,31 @@ TimoshenkoBeamColumn3d::getTangentStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,1) += (xi6-4.0)*tmp;
-	  ka(k,2) += (xi6-2.0)*tmp;
+	  ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,3) += (xi6-4.0)*tmp;
-	  ka(k,4) += (xi6-2.0)*tmp;
+	  ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	  ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	  ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;		
       case SECTION_RESPONSE_T:
 	for (k = 0; k < order; k++)
 	  ka(k,5) += ks(k,j)*wti;
@@ -475,7 +528,7 @@ TimoshenkoBeamColumn3d::getTangentStiff()
 	break;
       }
     }
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < 6; k++)
@@ -484,17 +537,31 @@ TimoshenkoBeamColumn3d::getTangentStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(1,k) += (xi6-4.0)*tmp;
-	  kb(2,k) += (xi6-2.0)*tmp;
+	  kb(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  kb(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(3,k) += (xi6-4.0)*tmp;
-	  kb(4,k) += (xi6-2.0)*tmp;
+	  kb(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  kb(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  kb(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  kb(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;		
       case SECTION_RESPONSE_T:
 	for (k = 0; k < 6; k++)
 	  kb(5,k) += ka(j,k);
@@ -506,18 +573,28 @@ TimoshenkoBeamColumn3d::getTangentStiff()
     
     //q.addMatrixTransposeVector(1.0, *B, s, wts(i));
     double si;
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       si = s(j)*wt[i];
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	q(0) += si;
 	break;
       case SECTION_RESPONSE_MZ:
-	q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
+	q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si;
+	q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 	
 	break;
       case SECTION_RESPONSE_MY:
-	q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
+	q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si;
+	q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si; 		
 	break;
+      case SECTION_RESPONSE_VY:
+	q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	q(2) += 0.5*phiz*L/(1+phiz)*si; 
+	break;
+      case SECTION_RESPONSE_VZ:
+	q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	q(4) += 0.5*phiy*L/(1+phiy)*si; 
+	break;		
       case SECTION_RESPONSE_T:
 	q(5) += si;
 	break;
@@ -568,6 +645,8 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
     ka.Zero();
     
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
     // Get the section tangent stiffness and stress resultant
     const Matrix &ks = theSections[i]->getInitialTangent();
@@ -576,8 +655,8 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
     double wti = wt[i]*oneOverL;
     double tmp;
-    int j, k;
-    for (j = 0; j < order; j++) {
+    int k;
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < order; k++)
@@ -586,17 +665,31 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,1) += (xi6-4.0)*tmp;
-	  ka(k,2) += (xi6-2.0)*tmp;
+	  ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,3) += (xi6-4.0)*tmp;
-	  ka(k,4) += (xi6-2.0)*tmp;
+	  ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	  ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	  ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;			
       case SECTION_RESPONSE_T:
 	for (k = 0; k < order; k++)
 	  ka(k,5) += ks(k,j)*wti;
@@ -605,7 +698,7 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
 	break;
       }
     }
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < 6; k++)
@@ -614,15 +707,29 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(1,k) += (xi6-4.0)*tmp;
-	  kb(2,k) += (xi6-2.0)*tmp;
+	  kb(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  kb(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(3,k) += (xi6-4.0)*tmp;
-	  kb(4,k) += (xi6-2.0)*tmp;
+	  kb(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  kb(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
+	}
+	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  kb(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  kb(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
 	}
 	break;
       case SECTION_RESPONSE_T:
@@ -821,6 +928,8 @@ TimoshenkoBeamColumn3d::getResistingForce()
     const ID &code = theSections[i]->getType();
 
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
     // Get section stress resultant
     const Vector &s = theSections[i]->getStressResultant();
@@ -836,11 +945,21 @@ TimoshenkoBeamColumn3d::getResistingForce()
 	q(0) += si;
 	break;
       case SECTION_RESPONSE_MZ:
-	q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
-	break;
+	q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si; 
+	q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 
+	break; 	
       case SECTION_RESPONSE_MY:
-	q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
+	q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si; 
+	q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si; 
+	break; 		
+      case SECTION_RESPONSE_VY:
+	q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	q(2) += 0.5*phiz*L/(1+phiz)*si; 
 	break;
+      case SECTION_RESPONSE_VZ:
+	q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	q(4) += 0.5*phiy*L/(1+phiy)*si; 
+	break; 		
       case SECTION_RESPONSE_T:
 	q(5) += si;
 	break;
@@ -1730,7 +1849,7 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
     
     double tmp;
     
-    int j, k;
+    int k;
     
     for (int i = 0; i < numSections; i++) {
       
@@ -1749,7 +1868,7 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
       ka.Zero();
       
       double si;
-      for (j = 0; j < order; j++) {
+      for (int j = 0; j < order; j++) {
 	si = s(j)*wti;
 	switch(code(j)) {
 	case SECTION_RESPONSE_P:
@@ -1786,7 +1905,7 @@ TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	  break;
 	}
       }
-      for (j = 0; j < order; j++) {
+      for (int j = 0; j < order; j++) {
 	switch (code(j)) {
 	case SECTION_RESPONSE_P:
 	  for (k = 0; k < 6; k++) {
