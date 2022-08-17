@@ -891,20 +891,26 @@ int
 J2PlateFibre::setParameter(const char **argv, int argc,
 			    Parameter &param)
 {
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-  
-  else if (strcmp(argv[0],"nu") == 0)
+  }
+  else if (strcmp(argv[0],"nu") == 0) {
+    param.setValue(nu);
     return param.addObject(2, this);  
-  
-  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0)
+  }
+  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
+    param.setValue(sigmaY);
     return param.addObject(5, this);
-
-  else if (strcmp(argv[0],"Hkin") == 0)
+  }
+  else if (strcmp(argv[0],"Hkin") == 0) {
+    param.setValue(Hkin);
     return param.addObject(6, this);
-
-  else if (strcmp(argv[0],"Hiso") == 0)
+  }
+  else if (strcmp(argv[0],"Hiso") == 0) {
+    param.setValue(Hiso);
     return param.addObject(7, this);
+  }
 
   return -1;
 }
