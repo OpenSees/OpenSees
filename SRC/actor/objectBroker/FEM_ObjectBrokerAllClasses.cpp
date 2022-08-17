@@ -149,6 +149,8 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
+#include "NDFiberSection2d.h"
+#include "NDFiberSection3d.h"
 #include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
@@ -165,6 +167,8 @@
 #include "J2PlaneStrain.h"
 #include "J2PlaneStress.h"
 #include "J2PlateFiber.h"
+#include "J2BeamFiber2d.h"
+#include "J2BeamFiber3d.h"
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
 #include "PlaneStressMaterial.h"
@@ -252,6 +256,8 @@
 #include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
 #include "forceBeamColumn/ForceBeamColumn2d.h"
 #include "forceBeamColumn/ForceBeamColumn3d.h"
+#include "dispBeamColumn/TimoshenkoBeamColumn2d.h"
+#include "dispBeamColumn/TimoshenkoBeamColumn3d.h"
 #include "triangle/Tri31.h"
 
 #include "UWelements/SSPquad.h"
@@ -741,6 +747,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ElasticTimoshenkoBeam3d:
       return new ElasticTimoshenkoBeam3d();
+
+    case ELE_TAG_TimoshenkoBeamColumn2d:
+      return new TimoshenkoBeamColumn2d();
+      
+    case ELE_TAG_TimoshenkoBeamColumn3d:
+      return new TimoshenkoBeamColumn3d();
       
     case ELE_TAG_ForceBeamColumn2d:  
       return new ForceBeamColumn2d();					     
@@ -1491,6 +1503,12 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
 
+	case SEC_TAG_NDFiberSection2d:
+		return new NDFiberSection2d();
+      
+	case SEC_TAG_NDFiberSection3d:
+		return new NDFiberSection3d();		
+
 	case SEC_TAG_FiberSectionAsym3d:
 		return new FiberSectionAsym3d(); //Xinlong Du
 
@@ -1550,6 +1568,12 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_J2PlateFiber:
     return new J2PlateFiber();
+
+  case ND_TAG_J2BeamFiber2d:
+    return new J2BeamFiber2d();
+
+  case ND_TAG_J2BeamFiber3d:
+    return new J2BeamFiber3d();
     
   case ND_TAG_J2ThreeDimensional:
     return new J2ThreeDimensional();
