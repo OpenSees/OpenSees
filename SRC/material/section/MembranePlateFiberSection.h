@@ -54,7 +54,8 @@ class MembranePlateFiberSection : public SectionForceDeformation{
     //full constructor
     MembranePlateFiberSection(   int    tag, 
                                  double thickness, 
-                                 NDMaterial &Afiber ) ;
+                                 NDMaterial &Afiber,
+				 int integrType = 0) ;
 
 
     const char *getClassType(void) const {return "MembranePlateFiberSection";};
@@ -117,10 +118,14 @@ class MembranePlateFiberSection : public SectionForceDeformation{
     enum {numFibers = 5};
 
     //quadrature data
-    static const double sg[numFibers] ;
-    static const double wg[numFibers] ;
+    static const double sgLobatto[numFibers] ;
+    static const double wgLobatto[numFibers] ;
+    static const double sgGauss[numFibers] ;
+    static const double wgGauss[numFibers] ;  
 
-    double h ; //plate thickness
+    double h ; //plate thicknes
+
+  int integrationType; // 0 = Lobatto, 1 = Gauss
 
     NDMaterial *theFibers[numFibers] ;  //pointers to five materials (fibers)
 

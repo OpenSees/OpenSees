@@ -41,7 +41,7 @@ OPS_IMKPeakOriented()
 {
 	if (numIMKPeakOrientedMaterials == 0) {
 		numIMKPeakOrientedMaterials++;
-		OPS_Error("IMK Model with Peak-Oriented Response - Code by A. ELKADY & H. ELJISR (July 2020)\n", 1);
+		OPS_Error("IMK with Peak-Oriented Response - Code by ELKADY & ELJISR (June22)\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -138,7 +138,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
 
 	if (Failure_Flag != 1) {
-		
+
 		///////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////
@@ -149,12 +149,12 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
 
 		// CHECK FOR UNLOADING
-		if ((fi_1 > 0) && (du <= 0) && (du*du_i_1 <= 0)) {
+		if ((fi_1 >= 0) && (du < 0) && (du*du_i_1 <= 0)) {
 			Unloading_Flag = 1;
 			Reversal_Flag = 1;
 			Reloading_Flag = 0;
-			K_check=(FLastPeak_pos_j_1-fi_1)/(ULastPeak_pos_j_1-ui_1);
-			if ((K_check >=1.05*Kul_j_1) || (K_check <=0.95*Kul_j_1)) { // a tailored criteria to avoid registering last peak points during small unload/reload excursions on the unloading branch 
+			K_check = (FLastPeak_pos_j_1 - fi_1) / (ULastPeak_pos_j_1 - ui_1);
+			if ((K_check >= 1.05*Kul_j_1) || (K_check <= 0.95*Kul_j_1)) { // a tailored criteria to avoid registering last peak points during small unload/reload excursions on the unloading branch 
 				FLastPeak_pos_j_1 = fi_1;
 				ULastPeak_pos_j_1 = ui_1;
 			}
@@ -163,8 +163,8 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 			Unloading_Flag = 1;
 			Reversal_Flag = 1;
 			Reloading_Flag = 0;
-			K_check=(FLastPeak_neg_j_1-fi_1)/(ULastPeak_neg_j_1-ui_1);
-			if ((K_check >=1.01*Kul_j_1) || (K_check <=0.99*Kul_j_1)) {
+			K_check = (FLastPeak_neg_j_1 - fi_1) / (ULastPeak_neg_j_1 - ui_1);
+			if ((K_check >= 1.01*Kul_j_1) || (K_check <= 0.99*Kul_j_1)) {
 				FLastPeak_neg_j_1 = fi_1;
 				ULastPeak_neg_j_1 = ui_1;
 			}
@@ -174,18 +174,18 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 		}
 
 		// CHECK FOR RELOADING
-		if      ((fi_1 > 0) && (du > 0) && (du_i_1 < 0)) {
+		if ((fi_1 > 0) && (du >= 0) && (du_i_1 < 0)) {
 			Reloading_Flag = 1;
 			Unloading_Flag = 0;
 		}
-		else if ((fi_1 < 0) && (du < 0) && (du_i_1 > 0)) {
+		else if ((fi_1 < 0) && (du <= 0) && (du_i_1 > 0)) {
 			Reloading_Flag = 1;
 			Unloading_Flag = 0;
 		}
 
 
 		// CHECK FOR NEW EXCURSION
-		if		((fi_1 < 0) && (fi_1 + du * Kul_j_1 >= 0)) {
+		if ((fi_1 < 0) && (fi_1 + du * Kul_j_1 >= 0)) {
 			Excursion_Flag = 1;
 			Reloading_Flag = 0;
 			Unloading_Flag = 0;
@@ -205,13 +205,14 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 		if ((fi_1 >= 0) && (ui_1 >= Upeak_pos_j_1)) {
 			Upeak_pos_j_1 = ui_1;
 			Fpeak_pos_j_1 = fi_1;
-		} else if ((fi_1 < 0) && (ui_1 <= Upeak_neg_j_1)) {
+		}
+		else if ((fi_1 < 0) && (ui_1 <= Upeak_neg_j_1)) {
 			Upeak_neg_j_1 = ui_1;
 			Fpeak_neg_j_1 = fi_1;
 		}
-		
+
 		// CHECK FOR YIELDING
-		if     ((Upeak_pos_j_1 > Uy_pos_j_1) || (Upeak_neg_j_1 < Uy_neg_j_1)) {
+		if ((Upeak_pos_j_1 > Uy_pos_j_1) || (Upeak_neg_j_1 < Uy_neg_j_1)) {
 			Yield_Flag = 1;
 		}
 
@@ -243,7 +244,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
 		if (Reversal_Flag == 1) {
 			EpjK = Energy_Acc - 0.5*(fi_1 / Kul_j_1)*fi_1;
-			EiK = Energy_Acc - Energy_Diss + 0.5*(fi_1 / Kul_j_1)*fi_1;
+			EiK = Energy_Acc - Energy_Diss - 0.5*(fi_1 / Kul_j_1)*fi_1;
 			betaK = pow((EiK / (EtK - EpjK)), c_K);
 			Kul_j_1 = Kul_j_1 * (1 - betaK);
 		}
@@ -254,65 +255,68 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 		// Update Positive Backbone and Target Peak Point
 		if (Excursion_Flag == 1) {
 			// Positive loading backbone
-			if ((fi_1 < 0) && (Yield_Flag==1)) {
+			if ((fi_1 < 0) && (Yield_Flag == 1)) {
 				// Basic strength deterioration: Yield point
-				Uy_pos_j_1 = std::max(Uy_pos_j_1 - Fy_pos_j_1 *betaS* D_pos / Ke, Fres_pos_j_1 / Ke);
-				Fy_pos_j_1 = std::max(Fy_pos_j_1 *(1 - betaS* D_pos), Fres_pos_j_1);
+				Uy_pos_j_1 = std::max(Uy_pos_j_1 - Fy_pos_j_1 * betaS* D_pos / Ke, Fres_pos_j_1 / Ke);
+				Fy_pos_j_1 = std::max(Fy_pos_j_1 *(1 - betaS * D_pos), Fres_pos_j_1);
 				// Basic strength deterioration: Post-yield Stiffness
 				if (Fy_pos_j_1 != Fres_pos_j_1) {
-					Kp_pos_j_1 = Kp_pos_j_1 *(1 - betaS* D_pos);
+					Kp_pos_j_1 = Kp_pos_j_1 * (1 - betaS * D_pos);
 				}
 				else {
 					Kp_pos_j_1 = 0;
 				}
 				// Basic strength deterioration: Capping Point
-				sPCsp = (Fy_pos_j_1 - Uy_pos_j_1 *Kp_pos_j_1 - Fmax_pos_j_1 + Kpc_pos_j_1*Umax_pos_j_1) / (Kpc_pos_j_1 - Kp_pos_j_1);
+				sPCsp = (Fy_pos_j_1 - Uy_pos_j_1 * Kp_pos_j_1 - Fmax_pos_j_1 + Kpc_pos_j_1 * Umax_pos_j_1) / (Kpc_pos_j_1 - Kp_pos_j_1);
 				Fmax_pos_j_1 = Fmax_pos_j_1 + (sPCsp - Umax_pos_j_1)*Kpc_pos_j_1;
 				Umax_pos_j_1 = sPCsp;
 				// Post-capping strength deterioration: Capping point
-				sPCpcp = max(Umax_pos_j_1 + betaC* D_pos*(Fmax_pos_j_1 - Kpc_pos_j_1*Umax_pos_j_1) / (Kpc_pos_j_1 - Kp_pos_j_1), Uy_pos_j_1);
+				sPCpcp = max(Umax_pos_j_1 + betaC * D_pos*(Fmax_pos_j_1 - Kpc_pos_j_1 * Umax_pos_j_1) / (Kpc_pos_j_1 - Kp_pos_j_1), Uy_pos_j_1);
 				Fmax_pos_j_1 = Fmax_pos_j_1 + (sPCpcp - Umax_pos_j_1)*Kp_pos_j_1;
 				Umax_pos_j_1 = sPCpcp;
 				// Accelerated reloading stiffness deterioration: Target peak deformation point
-				Upeak_pos_j_1 = (1 + betaA* D_pos)*Upeak_pos_j_1;
-				if (Upeak_pos_j_1 <= Uy_pos_j_1) {	
-					Fpeak_pos_j_1 = Ke*Upeak_pos_j_1;
+				Upeak_pos_j_1 = (1 + betaA * D_pos)*Upeak_pos_j_1;
+				if (Upeak_pos_j_1 <= Uy_pos_j_1) {
+					Fpeak_pos_j_1 = Ke * Upeak_pos_j_1;
 					// Target peak deformation in post-yield branch of the updated backbone
-				} else if (Upeak_pos_j_1 <= Umax_pos_j_1) {
-					Fpeak_pos_j_1 = Kp_pos_j_1 *(Upeak_pos_j_1 - Uy_pos_j_1) + Fy_pos_j_1;
+				}
+				else if (Upeak_pos_j_1 <= Umax_pos_j_1) {
+					Fpeak_pos_j_1 = Kp_pos_j_1 * (Upeak_pos_j_1 - Uy_pos_j_1) + Fy_pos_j_1;
 					// Target peak deformation in post-capping branch of the updated backbone
-				} else {
+				}
+				else {
 					Fpeak_pos_j_1 = max(Kpc_pos_j_1*(Upeak_pos_j_1 - Umax_pos_j_1) + Fmax_pos_j_1, Fres_pos_j_1);
 				}
-			} 
-			else if ((fi_1 >= 0) && (Yield_Flag==1)) {
+			}
+			else if ((fi_1 >= 0) && (Yield_Flag == 1)) {
 				// Update Negative Backbone and Target Peak Point
 				// Basic strength deterioration: Yield point
-				Uy_neg_j_1 = min(Uy_neg_j_1 - Fy_neg_j_1 *betaS* D_neg / Ke, Fres_neg_j_1 / Ke);
-				Fy_neg_j_1 = min(Fy_neg_j_1 *(1 - betaS* D_neg), Fres_neg_j_1);
+				Uy_neg_j_1 = min(Uy_neg_j_1 - Fy_neg_j_1 * betaS* D_neg / Ke, Fres_neg_j_1 / Ke);
+				Fy_neg_j_1 = min(Fy_neg_j_1 *(1 - betaS * D_neg), Fres_neg_j_1);
 				// Basic strength deterioration: Post-yield stiffness
 				if (Fy_neg_j_1 != Fres_neg_j_1) {
-					Kp_neg_j_1 = Kp_neg_j_1 *(1 - betaS* D_neg);
-				} else {
+					Kp_neg_j_1 = Kp_neg_j_1 * (1 - betaS * D_neg);
+				}
+				else {
 					Kp_neg_j_1 = 0;
 				}
 				// Basic strength deterioration: Capping point
-				sPCsn = (Fy_neg_j_1 - Uy_neg_j_1 *Kp_neg_j_1 - Fmax_neg_j_1 + Kpc_neg_j_1*Umax_neg_j_1) / (Kpc_neg_j_1 - Kp_neg_j_1);
+				sPCsn = (Fy_neg_j_1 - Uy_neg_j_1 * Kp_neg_j_1 - Fmax_neg_j_1 + Kpc_neg_j_1 * Umax_neg_j_1) / (Kpc_neg_j_1 - Kp_neg_j_1);
 				Fmax_neg_j_1 = Fmax_neg_j_1 + (sPCsn - Umax_neg_j_1)*Kpc_neg_j_1;
 				Umax_neg_j_1 = sPCsn;
 				// Post-capping strength deterioration: Capping point
-				sPCpcn = min(Umax_neg_j_1 + betaC* D_neg*(Fmax_neg_j_1 - Kpc_neg_j_1*Umax_neg_j_1) / (Kpc_neg_j_1 - Kp_neg_j_1), Uy_neg_j_1);
+				sPCpcn = min(Umax_neg_j_1 + betaC * D_neg*(Fmax_neg_j_1 - Kpc_neg_j_1 * Umax_neg_j_1) / (Kpc_neg_j_1 - Kp_neg_j_1), Uy_neg_j_1);
 				Fmax_neg_j_1 = Fmax_neg_j_1 + (sPCpcn - Umax_neg_j_1)*Kp_neg_j_1;
 				Umax_neg_j_1 = sPCpcn;
 				// Accelerated reloading stiffness deterioration: Target peak deformation point
-				Upeak_neg_j_1 = (1 + betaA* D_neg)*Upeak_neg_j_1;
+				Upeak_neg_j_1 = (1 + betaA * D_neg)*Upeak_neg_j_1;
 				// Target peak deformation in reloading branch of the updated backbone
 				if (Upeak_neg_j_1 >= Uy_neg_j_1) {
-					Fpeak_neg_j_1 = Ke*Upeak_neg_j_1;
+					Fpeak_neg_j_1 = Ke * Upeak_neg_j_1;
 					// Target peak deformation in post-yield branch of the updated backbone
 				}
 				else if (Upeak_neg_j_1 >= Umax_neg_j_1) {
-					Fpeak_neg_j_1 = Kp_neg_j_1 *(Upeak_neg_j_1 - Uy_neg_j_1) + Fy_neg_j_1;
+					Fpeak_neg_j_1 = Kp_neg_j_1 * (Upeak_neg_j_1 - Uy_neg_j_1) + Fy_neg_j_1;
 					// Target peak deformation in post-capping branch of the updated backbone
 				}
 				else {
@@ -324,23 +328,25 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 		// Update Deformation at Residual Points
 		Ures_pos_j_1 = (Fres_pos_j_1 - Fmax_pos_j_1 + Kpc_pos_j_1 * Umax_pos_j_1) / Kpc_pos_j_1;
 		Ures_neg_j_1 = (Fres_neg_j_1 - Fmax_neg_j_1 + Kpc_neg_j_1 * Umax_neg_j_1) / Kpc_neg_j_1;
-		
+
 		// CHECK TARGET POINT: LAST CYCLE PEAK or GLOBAL PEAK
 		if (Excursion_Flag == 1) {
 			if (du >= 0) {
-				Krel_LastPeak   = FLastPeak_pos_j_1 / (ULastPeak_pos_j_1 - u0);
-				Krel_GlobalPeak = Fpeak_pos_j_1 	/ (Upeak_pos_j_1 	 - u0);
+				Krel_LastPeak = FLastPeak_pos_j_1 / (ULastPeak_pos_j_1 - u0);
+				Krel_GlobalPeak = Fpeak_pos_j_1 / (Upeak_pos_j_1 - u0);
 			}
 			else {
-				Krel_LastPeak   = FLastPeak_neg_j_1 / (ULastPeak_neg_j_1 - u0);
-				Krel_GlobalPeak = Fpeak_neg_j_1 	/ (Upeak_neg_j_1 	 - u0);
+				Krel_LastPeak = FLastPeak_neg_j_1 / (ULastPeak_neg_j_1 - u0);
+				Krel_GlobalPeak = Fpeak_neg_j_1 / (Upeak_neg_j_1 - u0);
 			}
-			
-			if ((du>=0) && (FLastPeak_pos_j_1 >= Fpeak_pos_j_1)) {
-				TargetPeak_Flag=0;
-			} else if ((du<=0) && (FLastPeak_neg_j_1 <= Fpeak_neg_j_1)) {
-				TargetPeak_Flag=0;            
-			} else if (abs(Krel_LastPeak) <= abs(Krel_GlobalPeak)) {
+
+			if ((du >= 0) && (FLastPeak_pos_j_1 >= Fpeak_pos_j_1)) {
+				TargetPeak_Flag = 0;
+			}
+			else if ((du <= 0) && (FLastPeak_neg_j_1 <= Fpeak_neg_j_1)) {
+				TargetPeak_Flag = 0;
+			}
+			else if (abs(Krel_LastPeak) <= abs(Krel_GlobalPeak)) {
 				TargetPeak_Flag = 0;
 			}
 			else {
@@ -358,173 +364,206 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
 		// Positive Force
 		if (fi_1 + du * Kul_j_1 >= 0) {
-		   
+
 			// CASE 0: At THE ELASTIC SLOPE
-			if ((ui>=0) && (Upeak_pos_j_1 <= Uy_pos_j_1) && (Yield_Flag==0)) {
+			if ((ui >= 0) && (Upeak_pos_j_1 <= Uy_pos_j_1) && (Yield_Flag == 0)) {
 				if (ui >= Uy_pos_j_1) {
-					df = Ke*(Uy_pos_j_1 - ui_1) + Kp_pos_j_1*(ui - Uy_pos_j_1);
-				} else {
+					df = Ke * (Uy_pos_j_1 - ui_1) + Kp_pos_j_1 * (ui - Uy_pos_j_1);
+				}
+				else {
 					df = du * Ke;
 				}
 				//cout << "  Case = 0+" << endln;
 
 			// CASE 1: EACH NEW EXCURSION
-			} else if (Excursion_Flag==1) {
-				if (TargetPeak_Flag==0) {
-					Krel_j_1  = Fpeak_pos_j_1 	  / (Upeak_pos_j_1 	   - u0);
-				} else {
-					Krel_j_1  = FLastPeak_pos_j_1 / (ULastPeak_pos_j_1 - u0);
+			}
+			else if (Excursion_Flag == 1) {
+				if (TargetPeak_Flag == 0) {
+					Krel_j_1 = Fpeak_pos_j_1 / (Upeak_pos_j_1 - u0);
 				}
-				df = Kul_j_1*(u0 - ui_1) + Krel_j_1*(ui - u0);
+				else {
+					Krel_j_1 = FLastPeak_pos_j_1 / (ULastPeak_pos_j_1 - u0);
+				}
+				df = Kul_j_1 * (u0 - ui_1) + Krel_j_1 * (ui - u0);
 				//cout << "  Case = 1+" << endln;
 
 			// CASE 2: WHEN RELOADING
-			} else if ((Reloading_Flag==1) && (ui <= ULastPeak_pos_j_1)) {
+			}
+			else if ((Reloading_Flag == 1) && (ui <= ULastPeak_pos_j_1)) {
 				df = du * Kul_j_1;
 				//cout << "  Case = 2+" << endln;
 
-			// CASE 2: WHEN UNLOADING
-			} else if (Unloading_Flag==1) {
+			// CASE 3: WHEN UNLOADING
+			}
+			else if (Unloading_Flag == 1) {
 				df = du * Kul_j_1;
-				//cout << "  Case = 2+" << endln;
-
-			// CASE 3: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
-			} else if ((Reloading_Flag==1) && (ui >= ULastPeak_pos_j_1) && (ui <= Upeak_pos_j_1)) {
-				Krel_j_1  = (Fpeak_pos_j_1 - FLastPeak_pos_j_1) / (Upeak_pos_j_1 - ULastPeak_pos_j_1);
-				if (ui_1 <= ULastPeak_pos_j_1) {
-					df = Kul_j_1*(ULastPeak_pos_j_1 - ui_1) + Krel_j_1*(ui - ULastPeak_pos_j_1);
-				} else {
-					df = du * Krel_j_1;
-				}
 				//cout << "  Case = 3+" << endln;
 
-			// CASE 4: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
-			} else if ((du >= 0) && (((TargetPeak_Flag==0) && (ui <= Upeak_pos_j_1)) || ((TargetPeak_Flag==1) && (ui <= ULastPeak_pos_j_1)))) {
-				if (TargetPeak_Flag==0) {
-					Krel_j_1 = (Fpeak_pos_j_1 	  - fi_1) / (Upeak_pos_j_1 	   - ui_1);
-				} else {
-					Krel_j_1 = (FLastPeak_pos_j_1 - fi_1) / (ULastPeak_pos_j_1 - ui_1);                
+			// CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
+			}
+			else if ((Reloading_Flag == 1) && (ui >= ULastPeak_pos_j_1) && (ui <= Upeak_pos_j_1)) {
+				Krel_j_1 = (Fpeak_pos_j_1 - FLastPeak_pos_j_1) / (Upeak_pos_j_1 - ULastPeak_pos_j_1);
+				if (ui_1 <= ULastPeak_pos_j_1) {
+					df = Kul_j_1 * (ULastPeak_pos_j_1 - ui_1) + Krel_j_1 * (ui - ULastPeak_pos_j_1);
 				}
-				df = du * Krel_j_1;
+				else {
+					df = du * Krel_j_1;
+				}
 				//cout << "  Case = 4+" << endln;
 
-			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
-			} else if ((du >= 0) && (TargetPeak_Flag==1) && (ui >= ULastPeak_pos_j_1) && (ui <= Upeak_pos_j_1)) {
+			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
+			}
+			else if ((du >= 0) && (((TargetPeak_Flag == 0) && (ui <= Upeak_pos_j_1)) || ((TargetPeak_Flag == 1) && (ui <= ULastPeak_pos_j_1)))) {
+				if (TargetPeak_Flag == 0) {
+					Krel_j_1 = (Fpeak_pos_j_1 - fi_1) / (Upeak_pos_j_1 - ui_1);
+				}
+				else {
+					Krel_j_1 = (FLastPeak_pos_j_1 - fi_1) / (ULastPeak_pos_j_1 - ui_1);
+				}
+				df = du * Krel_j_1;
+				//cout << "  Case = 5+" << endln;
+
+			// CASE 6: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
+			}
+			else if ((du >= 0) && (TargetPeak_Flag == 1) && (ui >= ULastPeak_pos_j_1) && (ui <= Upeak_pos_j_1)) {
 				Krel_j_1 = (Fpeak_pos_j_1 - FLastPeak_pos_j_1) / (Upeak_pos_j_1 - ULastPeak_pos_j_1);
 				if (ui_1 <= ULastPeak_pos_j_1) {
 					df = (FLastPeak_pos_j_1 - fi_1) + Krel_j_1 * (ui - ULastPeak_pos_j_1);
-				} else {
+				}
+				else {
 					df = du * Krel_j_1;
 				}
-				//cout << "  Case = 5+" << endln;
-
-			// CASE 6: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
-			} else if ((du >= 0) && (ui <= Umax_pos_j_1))  {
-				df = du * Kp_pos_j_1;
 				//cout << "  Case = 6+" << endln;
 
-			// CASE 7: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
-			} else if ((du > 0) && (ui >= Umax_pos_j_1) && (ui <= Ures_pos_j_1)) {
-				if ((ui_1<= Umax_pos_j_1) && (ui >= Umax_pos_j_1)) {
-					df = Kp_pos_j_1 * (Umax_pos_j_1 - ui_1) + Kpc_pos_j_1 * (ui - Umax_pos_j_1);
-				} else {
-					df = du * Kpc_pos_j_1;
-				}
+			// CASE 7: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
+			}
+			else if ((du >= 0) && (ui <= Umax_pos_j_1)) {
+				df = du * Kp_pos_j_1;
 				//cout << "  Case = 7+" << endln;
 
-			// CASE 8: WHEN LOADING AND BEYOND THE RESIDUAL POINT
-			} else if ((du > 0) && (ui >= Ures_pos_j_1)) {
+			// CASE 8: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
+			}
+			else if ((du > 0) && (ui >= Umax_pos_j_1) && (ui <= Ures_pos_j_1)) {
+				if ((ui_1 <= Umax_pos_j_1) && (ui >= Umax_pos_j_1)) {
+					df = Kp_pos_j_1 * (Umax_pos_j_1 - ui_1) + Kpc_pos_j_1 * (ui - Umax_pos_j_1);
+				}
+				else {
+					df = du * Kpc_pos_j_1;
+				}
+				//cout << "  Case = 8+" << endln;
+
+			// CASE 9: WHEN LOADING AND BEYOND THE RESIDUAL POINT
+			}
+			else if ((du > 0) && (ui >= Ures_pos_j_1)) {
 				df = 0.0;
 				if (Fres_pos_j_1 == 0) {
 					Failure_Flag = 1;
 				}
-				//cout << "  Case = 8+" << endln;
+				//cout << "  Case = 9+" << endln;
 			}
 		}
-		
+
 		// Negative Force
 		if (fi_1 + du * Kul_j_1 <= 0) {
-			
+
 			// CASE 0: At THE ELASTIC SLOPE
-			if ((ui<=0) && (Upeak_neg_j_1 >= Uy_neg_j_1) && (Yield_Flag==0)) {
+			if ((ui <= 0) && (Upeak_neg_j_1 >= Uy_neg_j_1) && (Yield_Flag == 0)) {
 				if (ui <= Uy_neg_j_1) {
-					df = Ke*(Uy_neg_j_1 - ui_1) + Kp_neg_j_1 * (ui - Uy_neg_j_1);
-			} else {
+					df = Ke * (Uy_neg_j_1 - ui_1) + Kp_neg_j_1 * (ui - Uy_neg_j_1);
+				}
+				else {
 					df = du * Ke;
-			}
+				}
 				//cout << "  Case = 0-" << endln;
 
 			// CASE 1: EACH NEW EXCURSION
-			} else if (Excursion_Flag==1) {
-				if (TargetPeak_Flag==0) {
-					Krel_j_1 = Fpeak_neg_j_1 	 / (Upeak_neg_j_1 	  - u0);
-				} else {
+			}
+			else if (Excursion_Flag == 1) {
+				if (TargetPeak_Flag == 0) {
+					Krel_j_1 = Fpeak_neg_j_1 / (Upeak_neg_j_1 - u0);
+				}
+				else {
 					Krel_j_1 = FLastPeak_neg_j_1 / (ULastPeak_neg_j_1 - u0);
 				}
 				df = Kul_j_1 * (u0 - ui_1) + Krel_j_1 * (ui - u0);
 				//cout << "  Case = 1-" << endln;
 
 			// CASE 2: WHEN RELOADING
-			} else if ((Reloading_Flag==1)  && (ui >= ULastPeak_neg_j_1)) {
+			}
+			else if ((Reloading_Flag == 1) && (ui >= ULastPeak_neg_j_1)) {
 				df = du * Kul_j_1;
 				//cout << "  Case = 2-" << endln;
 
-			// CASE 2: WHEN UNLOADING
-			} else if (Unloading_Flag==1) {
+			// CASE 3: WHEN UNLOADING
+			}
+			else if (Unloading_Flag == 1) {
 				df = du * Kul_j_1;
 				//cout << "  Case = 3-" << endln;
 
-			// CASE 3: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
-			} else if ((Reloading_Flag==1) && (ui <= ULastPeak_neg_j_1) && (ui >= Upeak_neg_j_1)) {
+			// CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
+			}
+			else if ((Reloading_Flag == 1) && (ui <= ULastPeak_neg_j_1) && (ui >= Upeak_neg_j_1)) {
 				Krel_j_1 = (Fpeak_neg_j_1 - FLastPeak_neg_j_1) / (Upeak_neg_j_1 - ULastPeak_neg_j_1);
 				if (ui_1 >= ULastPeak_neg_j_1) {
 					df = Kul_j_1 * (ULastPeak_neg_j_1 - ui_1) + Krel_j_1 * (ui - ULastPeak_neg_j_1);
-				} else {
+				}
+				else {
 					df = du * Krel_j_1;
 				}
 				//cout << "  Case = 4-" << endln;
 
-			// CASE 4: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
-			} else if ((du <= 0) && (((TargetPeak_Flag==0) && (ui >= Upeak_neg_j_1)) || ((TargetPeak_Flag==1) && (ui >= ULastPeak_neg_j_1)))) {
+			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
+			}
+			else if ((du <= 0) && (((TargetPeak_Flag == 0) && (ui >= Upeak_neg_j_1)) || ((TargetPeak_Flag == 1) && (ui >= ULastPeak_neg_j_1)))) {
 				df = du * Krel_j_1;
-				//cout << "  Case = 4-" << endln;
+				//cout << "  Case = 5-" << endln;
 
-			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
-			} else if ((du <= 0) && (TargetPeak_Flag==1) && (ui <= ULastPeak_neg_j_1) && (ui >= Upeak_neg_j_1)) {
+			// CASE 6: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
+			}
+			else if ((du <= 0) && (TargetPeak_Flag == 1) && (ui <= ULastPeak_neg_j_1) && (ui >= Upeak_neg_j_1)) {
 				Krel_j_1 = (Fpeak_neg_j_1 - FLastPeak_neg_j_1) / (Upeak_neg_j_1 - ULastPeak_neg_j_1);
 				if (ui_1 >= ULastPeak_neg_j_1) {
 					df = (FLastPeak_neg_j_1 - fi_1) + Krel_j_1 * (ui - ULastPeak_neg_j_1);
-				} else {
+				}
+				else {
 					df = du * Krel_j_1;
 				}
-				//cout << "  Case = 5-" << endln;
-
-			// CASE 6: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
-			} else if ((du <= 0) && (ui >= Umax_neg_j_1)) {
-				df = du * Kp_neg_j_1;
 				//cout << "  Case = 6-" << endln;
 
-			// CASE 7: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
-			} else if ((du < 0) && (ui <= Umax_neg_j_1) && (ui >= Ures_neg_j_1)) {
-				if ((ui_1>=Umax_neg_j_1) && (ui<=Umax_neg_j_1)) {
-					df = Kp_neg_j_1 * (Umax_neg_j_1 - ui_1) + Kpc_neg_j_1 * (ui - Umax_neg_j_1);
-				} else {
-					df = du * Kpc_neg_j_1;
-				}
+			// CASE 7: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
+			}
+			else if ((du <= 0) && (ui >= Umax_neg_j_1)) {
+				df = du * Kp_neg_j_1;
 				//cout << "  Case = 7-" << endln;
 
-			// CASE 8: WHEN LOADING AND BEYOND THE RESIDUAL POINT
-			} else if ((du < 0) &&  (ui <= Ures_neg_j_1)) {
+			// CASE 8: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
+			}
+			else if ((du < 0) && (ui <= Umax_neg_j_1) && (ui >= Ures_neg_j_1)) {
+				if ((ui_1 >= Umax_neg_j_1) && (ui <= Umax_neg_j_1)) {
+					df = Kp_neg_j_1 * (Umax_neg_j_1 - ui_1) + Kpc_neg_j_1 * (ui - Umax_neg_j_1);
+				}
+				else {
+					df = du * Kpc_neg_j_1;
+				}
+				//cout << "  Case = 8-" << endln;
+
+			// CASE 9: WHEN LOADING AND BEYOND THE RESIDUAL POINT
+			}
+			else if ((du < 0) && (ui <= Ures_neg_j_1)) {
 				df = 0.0;
 				if (Fres_neg_j_1 == 0) {
 					Failure_Flag = 1;
 				}
-				//cout << "  Case = 8-" << endln;
+				//cout << "  Case = 9-" << endln;
 
 			}
 		}
-	
-	
+
+
+		if (du == 0) {
+			df = 0;
+		}
+
 		// Force
 		fi = fi_1 + df;
 		//cout << "  Excurion=" << Excursion_Flag << " Failure=" << Failure_Flag << "  Reload=" << Reloading_Flag << " Unload=" << Unloading_Flag << " Yield=" << Yield_Flag << endln;

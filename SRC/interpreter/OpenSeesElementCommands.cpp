@@ -154,7 +154,7 @@ void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
 void* OPS_TimoshenkoBeamColumn2d();
-//void* OPS_TimoshenkoBeamColumn3d();
+void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -351,8 +351,7 @@ namespace {
 	    ID info;
 	    return OPS_TimoshenkoBeamColumn2d();
 	} else {
-	  //return OPS_TimoshenkoBeamColumn3d();
-	  return 0;
+	  return OPS_TimoshenkoBeamColumn3d();
 	}
     }  
 
@@ -548,7 +547,7 @@ namespace {
 	functionMap.insert(std::make_pair("MSS", &OPS_MultipleShearSpring));
 	functionMap.insert(std::make_pair("multipleShearSpring", &OPS_MultipleShearSpring));
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
-    functionMap.insert(std::make_pair("linearElasicSpring", &OPS_LinearElasticSpring));
+    functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
