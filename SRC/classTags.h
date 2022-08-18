@@ -434,7 +434,8 @@
 #define ND_TAG_J2ThreeDimensional             3009
 #define ND_TAG_J2PlateFiber		      3010
 #define ND_TAG_J2BeamFiber		      3011
-
+#define ND_TAG_J2BeamFiber2d 91625
+#define ND_TAG_J2BeamFiber3d 92516
 
 #define ND_TAG_FeapMaterial                 1000
 #define ND_TAG_FeapMaterial01                 1001
@@ -657,6 +658,7 @@
 #define ELE_TAG_DispBeamColumn2d        62
 #define ELE_TAG_DispBeamColumnNL2d        621
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
+#define ELE_TAG_TimoshenkoBeamColumn3d  631
 #define ELE_TAG_DispBeamColumn3d        64
 #define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641
