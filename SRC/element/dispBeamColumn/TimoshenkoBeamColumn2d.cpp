@@ -532,19 +532,15 @@ TimoshenkoBeamColumn2d::getTangentStiff()
   return K;
 }
 
-const Matrix&
-TimoshenkoBeamColumn2d::getInitialBasicStiff()
+void
+TimoshenkoBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 {
-  static Matrix kb(3,3);
-
   // Zero for integral
   kb.Zero();
   
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
   
-  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
-  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
   double xi[maxNumSections];
   beamInt->getSectionLocations(numSections, L, xi);
   double wt[maxNumSections];
@@ -564,11 +560,10 @@ TimoshenkoBeamColumn2d::getInitialBasicStiff()
     double phi = phis[i];
     
     // Get the section tangent stiffness
-    const Matrix &ks = theSections[i]->getSectionTangent();
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent(): theSections[i]->getSectionTangent();
 
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
-    //double wti = wts(i)*oneOverL;
     double wti = wt[i]*oneOverL;
     double tmp;
     for (int j = 0; j < order; j++) {
@@ -621,14 +616,14 @@ TimoshenkoBeamColumn2d::getInitialBasicStiff()
     }
     
   }
-
-  return kb;
 }
 
 const Matrix&
 TimoshenkoBeamColumn2d::getInitialStiff()
 {
-  const Matrix &kb = this->getInitialBasicStiff();
+  static Matrix kb(3,3);
+  
+  this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
   K = crdTransf->getInitialGlobalStiffMatrix(kb);
@@ -1244,6 +1239,12 @@ TimoshenkoBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 9, Vector(3));
 
+  } else if (strcmp(argv[0],"basicStiffness") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
+
+      theResponse = new ElementResponse(this, 19, Matrix(3,3));    
   // chord rotation -
   } else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
 	     || strcmp(argv[0],"basicDeformation") == 0) {
@@ -1400,6 +1401,12 @@ TimoshenkoBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(q);
   }
 
+  else if (responseID == 19) {
+    static Matrix kb(3,3);
+    this->getBasicStiff(kb);
+    return eleInfo.setMatrix(kb);
+  }
+  
   // Chord rotation
   else if (responseID == 3)
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
@@ -1408,7 +1415,8 @@ TimoshenkoBeamColumn2d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 4) {
     static Vector vp(3);
     static Vector ve(3);
-    const Matrix &kb = this->getInitialBasicStiff();
+    static Matrix kb(3,3);
+    this->getBasicStiff(kb, 1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;
