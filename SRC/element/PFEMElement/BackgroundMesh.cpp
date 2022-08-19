@@ -915,6 +915,11 @@ int BackgroundMesh::addStructure() {
         int sid = it->first;
         const VInt& snodes = it->second;
 
+        // sid = 0 is reserved for internal use for fluid
+        if (sid == 0) {
+            continue;
+        }
+
         for (int k = 0; k < (int)snodes.size(); ++k) {
             // check if already there
             std::pair<std::set<int>::iterator, bool> res =
@@ -996,35 +1001,46 @@ int BackgroundMesh::addStructure() {
 
             // add structural node to the bnode
             BNode& bnode = bnodes[index];
-            bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
-                          BACKGROUND_STRUCTURE, sid);
+            if (sid > 0) {
+                // FSI and SSI
+                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
+                              BACKGROUND_STRUCTURE, sid);
+            } else {
+                // SSI only
+                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
+                              BACKGROUND_FLUID_STRUCTURE, sid);
+            }
 
-            // set fixed  bnodes
+            // set fixed bnodes if sid > 0
             VInt ind = index;
             ind -= 1;
             VVInt indices;
-            getCorners(ind, 2, indices);
-            for (int i = 0; i < (int)indices.size(); ++i) {
-                BNode& bnd = bnodes[indices[i]];
-                if (bnd.size() == 0) {
-                    bnd.setType(BACKGROUND_FIXED);
+            if (sid > 0) {
+                getCorners(ind, 2, indices);
+                for (int i = 0; i < (int)indices.size(); ++i) {
+                    BNode& bnd = bnodes[indices[i]];
+                    if (bnd.size() == 0) {
+                        bnd.setType(BACKGROUND_FIXED);
+                    }
                 }
             }
 
-            // set STRUCTURE cells
-            getCorners(ind, 1, indices);
-            for (int i = 0; i < (int)indices.size(); ++i) {
-                BCell& bcell = bcells[indices[i]];
-                bcell.setType(BACKGROUND_STRUCTURE);
+            // set STRUCTURE cells if sid > 0
+            if (sid > 0) {
+                getCorners(ind, 1, indices);
+                for (int i = 0; i < (int)indices.size(); ++i) {
+                    BCell& bcell = bcells[indices[i]];
+                    bcell.setType(BACKGROUND_STRUCTURE);
 
-                // set corners
-                if (bcell.getNodes().empty()) {
-                    VVInt corners;
-                    getCorners(indices[i], 1, corners);
+                    // set corners
+                    if (bcell.getNodes().empty()) {
+                        VVInt corners;
+                        getCorners(indices[i], 1, corners);
 
-                    for (int j = 0; j < (int)corners.size(); ++j) {
-                        BNode& bnd = bnodes[corners[j]];
-                        bcell.addNode(&bnd, corners[j]);
+                        for (int j = 0; j < (int)corners.size(); ++j) {
+                            BNode& bnd = bnodes[corners[j]];
+                            bcell.addNode(&bnd, corners[j]);
+                        }
                     }
                 }
             }
@@ -1258,8 +1274,14 @@ int BackgroundMesh::gridNodes() {
         newnodes[j] = node;
 
         // set the bnode
-        bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
-                      BACKGROUND_FLUID);
+        if (bnode.getType() == BACKGROUND_FLUID_STRUCTURE) {
+            // tags[0] = s, tags[1] = f
+            bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
+                          BACKGROUND_FLUID_STRUCTURE);
+        } else {
+            bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
+                          BACKGROUND_FLUID);
+        }
 
         // set pressure
         Pressure_Constraint* thePC =
@@ -1388,13 +1410,14 @@ int BackgroundMesh::moveFixedParticles() {
                 bcells.find(indices[i]);
             if (cellit == bcells.end()) {
                 // empty cell
-                scores[i] = 2;
+                scores[i] = 1;
                 continue;
             }
             if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
                 scores[i] = -1;
             } else {
-                scores[i] = 1;
+                // easier to get into cell already having particles
+                scores[i] = 2;
             }
         }
         VVInt cellmap;
@@ -1667,7 +1690,13 @@ int BackgroundMesh::gridFluid() {
                 continue;
             }
             auto& tags = bnodes[i]->getTags();
-            cnodes[i] = tags[0];
+            if (bnodes[i]->getType() == BACKGROUND_FLUID_STRUCTURE) {
+                // tags[1] = f;
+                cnodes[i] = tags[1];
+            } else {
+                // tags[0] = f;
+                cnodes[i] = tags[0];
+            }
         }
         for (int i = 0; i < numele; ++i) {
             elends[numele * j + i].resize(numelenodes);
@@ -1749,6 +1778,7 @@ int BackgroundMesh::gridFluid() {
     return 0;
 }
 
+// FSI without Delauney Triangulation
 int BackgroundMesh::gridFSInoDT() {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -1780,28 +1810,20 @@ int BackgroundMesh::gridFSInoDT() {
         // get bnodes
         auto& cbnodes = cells[j]->getNodes();
 
-        // node tags and sids
-        VInt tags(cbnodes.size(), -1), sids(cbnodes.size()),
-            types(cbnodes.size());
-        VVDouble ndcrds(cbnodes.size());
-        for (int i = 0; i < (int)tags.size(); ++i) {
+        // get types
+        VInt types(cbnodes.size());
+        for (int i = 0; i < (int)cbnodes.size(); ++i) {
             types[i] = cbnodes[i]->getType();
-            if (types[i] != BACKGROUND_FIXED) {
-                auto& ctags = cbnodes[i]->getTags();
-                tags[i] = ctags[0];
-                auto& ids = cbnodes[i]->getSid();
-                sids[i] = ids[0];
-                auto& crdsn = cbnodes[i]->getCrds();
-                ndcrds[i] = crdsn[0];
-            }
         }
 
         // get fluid and structural local indices
-        VInt flocal, slocal, fixlocal;
+        VInt flocal, slocal, fixlocal, fslocal;
         for (int i = 0; i < (int)types.size(); ++i) {
             int type = types[i];
             if (type == BACKGROUND_STRUCTURE) {
                 slocal.push_back(i);
+            } else if (type == BACKGROUND_FLUID_STRUCTURE) {
+                fslocal.push_back(i);
             } else if (type == BACKGROUND_FLUID) {
                 flocal.push_back(i);
             } else {
@@ -1809,39 +1831,85 @@ int BackgroundMesh::gridFSInoDT() {
             }
         }
 
-        // contact cell: must fully engaged
-        if (ndm == 2 && slocal.size() == 4) {
-            VInt csnds(3), csids(3);
-            if (slocal.size() == 4) {
-                // two contact elements
-                csnds[0] = tags[0];
-                csnds[1] = tags[3];
-                csnds[2] = tags[2];
-                csids[0] = sids[0];
-                csids[1] = sids[3];
-                csids[2] = sids[2];
+        // FSI or SSI contact
+        if ((ndm == 2 && slocal.size() + fslocal.size() == 4) ||
+            (ndm == 3 && slocal.size() + fslocal.size() == 8)) {
+            // SSI get structural node
 
-                createContact(csnds, csids, elends[numele * j]);
-                if (!elends[numele * j].empty()) {
-                    gtags[numele * j] = contact_tag;
+            // node tags and sids
+            VInt tags(cbnodes.size(), -1), sids(cbnodes.size());
+            VVDouble ndcrds(cbnodes.size());
+            for (int i = 0; i < (int)tags.size(); ++i) {
+                if (types[i] != BACKGROUND_FIXED) {
+                    auto& ctags = cbnodes[i]->getTags();
+                    auto& ids = cbnodes[i]->getSid();
+                    auto& crdsn = cbnodes[i]->getCrds();
+                    tags[i] = ctags[0];
+                    sids[i] = ids[0];
+                    ndcrds[i] = crdsn[0];
                 }
-
-                csnds[0] = tags[0];
-                csnds[1] = tags[1];
-                csnds[2] = tags[3];
-                csids[0] = sids[0];
-                csids[1] = sids[1];
-                csids[2] = sids[3];
-
-                createContact(csnds, csids, elends[numele * j + 1]);
-                if (!elends[numele * j + 1].empty()) {
-                    gtags[numele * j + 1] = contact_tag;
-                }
-                continue;
             }
-        } else if (ndm == 3 && slocal.size() == 8) {
-            // 3D contact element: TODO
+
+            // contact cell: must fully engaged
+            if (ndm == 2) {
+                VInt csnds(3), csids(3);
+                if (slocal.size() == 4) {
+                    // two contact elements
+                    csnds[0] = tags[0];
+                    csnds[1] = tags[3];
+                    csnds[2] = tags[2];
+                    csids[0] = sids[0];
+                    csids[1] = sids[3];
+                    csids[2] = sids[2];
+
+                    createContact(csnds, csids, elends[numele * j]);
+                    if (!elends[numele * j].empty()) {
+                        gtags[numele * j] = contact_tag;
+                    }
+
+                    csnds[0] = tags[0];
+                    csnds[1] = tags[1];
+                    csnds[2] = tags[3];
+                    csids[0] = sids[0];
+                    csids[1] = sids[1];
+                    csids[2] = sids[3];
+
+                    createContact(csnds, csids, elends[numele * j + 1]);
+                    if (!elends[numele * j + 1].empty()) {
+                        gtags[numele * j + 1] = contact_tag;
+                    }
+                }
+            } else if (ndm == 3) {
+                // 3D contact element: TODO
+            }
+
             continue;
+        }
+
+        // for FSI
+
+        // node tags and sids
+        VInt tags(cbnodes.size(), -1), sids(cbnodes.size());
+        VVDouble ndcrds(cbnodes.size());
+        for (int i = 0; i < (int)tags.size(); ++i) {
+            if (types[i] != BACKGROUND_FIXED) {
+                auto& ctags = cbnodes[i]->getTags();
+                auto& ids = cbnodes[i]->getSid();
+                auto& crdsn = cbnodes[i]->getCrds();
+
+                // for FSI
+                if (types[i] == BACKGROUND_FLUID_STRUCTURE) {
+                    // tags[1] = f: get fluid node
+                    tags[i] = ctags[1];
+                    sids[i] = ids[1];
+                    ndcrds[i] = crdsn[1];
+                } else {
+                    // tags[0] = f
+                    tags[i] = ctags[0];
+                    sids[i] = ids[0];
+                    ndcrds[i] = crdsn[0];
+                }
+            }
         }
 
         // get surrounding cells
@@ -2957,10 +3025,17 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
                 auto& dvn = bnode.getAccel();
                 auto& pn = bnode.getPressure();
                 auto& dpn = bnode.getPdot();
-                vels[i] = vn[0];
-                dvns[i] = dvn[0];
-                pns[i] = pn[0];
-                dpns[i] = dpn[0];
+                if (types[i] == BACKGROUND_FLUID_STRUCTURE) {
+                    vels[i] = vn[1];
+                    dvns[i] = dvn[1];
+                    pns[i] = pn[1];
+                    dpns[i] = dpn[1];
+                } else {
+                    vels[i] = vn[0];
+                    dvns[i] = dvn[0];
+                    pns[i] = pn[0];
+                    dpns[i] = dpn[0];
+                }
             }
         }
 
