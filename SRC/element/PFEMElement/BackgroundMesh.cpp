@@ -711,17 +711,10 @@ void BackgroundMesh::clearGrid() {
                 }
             }
         } else if (type == BACKGROUND_FLUID_STRUCTURE) {
-            // remove fluid node
-            Node* nd = domain->removeNode(tags[1]);
+            // reset the node
+            Node* nd = domain->getNode(tags[1]);
             if (nd != 0) {
-                delete nd;
-            }
-
-            // remove pc
-            Pressure_Constraint* pc =
-                domain->removePressure_Constraint(tags[1]);
-            if (pc != 0) {
-                delete pc;
+                nd->revertToLastCommit();
             }
         }
     }
@@ -1019,9 +1012,14 @@ int BackgroundMesh::addStructure() {
                 bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
                               BACKGROUND_STRUCTURE, sid);
             } else {
-                // SSI only
-                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
-                              BACKGROUND_FLUID_STRUCTURE, sid);
+                if (bnode.getType() == BACKGROUND_STRUCTURE) {
+                    // already a structure, ignore
+                    continue;
+                } else {
+                    // SSI only
+                    bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure,
+                                  pdot, BACKGROUND_FLUID_STRUCTURE, sid);
+                }
             }
 
             // set fixed bnodes if sid > 0
