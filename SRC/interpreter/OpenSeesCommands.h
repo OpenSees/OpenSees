@@ -361,6 +361,7 @@ int OPS_getRVInverseCDF();
 int OPS_getLSFTags();
 int OPS_addCorrelate();
 int OPS_performanceFunction(); // limit state function
+int OPS_gradPerformanceFunction(); // limit state function
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
 int OPS_startPoint();

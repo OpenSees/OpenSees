@@ -271,6 +271,61 @@ int OPS_performanceFunction() {
   return 0;
 }
 
+int OPS_gradPerformanceFunction() {
+    LimitStateFunction *theLimitStateFunction = 0;
+
+    // Check enough arguments
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+        opserr << "ERROR: invalid number of arguments -- "
+                  "command: gradPerformanceFunction lsfTag rvTag expr\n";
+        return -1;
+    }
+
+    // Get tags
+    int numdata = 2;
+    int tags[2];
+    if (OPS_GetIntInput(&numdata, &tags[0]) < 0) {
+        opserr << "ERROR: invalid tag for gradPerformanceFunction: lsfTag "
+                  "rvTag \n";
+        return -1;
+    }
+
+    // get domain
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "ERROR: reliability domain is invalid\n";
+        return -1;
+    }
+
+    // Evaluate performance function
+    // FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+    // if (theFunctionEvaluator != 0) {
+        // opserr << "ERROR: A limit-state function should not be created
+        // after the FunctionEvaluator has been instantiated." << endln;
+        // return TCL_ERROR;
+    // }
+
+    // GET LSF pointer
+    theLimitStateFunction =
+        theReliabilityDomain->getLimitStateFunctionPtr(tags[0]);
+    if (theLimitStateFunction == 0) {
+        opserr << "ERROR: limit state function with tag " << tags[0]
+               << " does not exist\n";
+        return -1;
+    }
+
+    // ADD THE OBJECT TO THE LSF
+    const char *expr = OPS_GetString();
+    int ok = theLimitStateFunction->addGradientExpression(expr, tags[1]);
+    if (ok < 0) {
+        opserr << "ERROR: could not add gradient of LSF " << tags[0]
+               << " for random variable " << tags[1] << endln;
+        return -1;
+    }
+
+    return 0;
+}
+
 int OPS_randomVariable()
 {
     RandomVariable *theRandomVariable = 0;
