@@ -695,8 +695,8 @@ void BackgroundMesh::clearGrid() {
         const VInt& tags = bnode.getTags();
         int type = bnode.getType();
 
-        for (int i = 0; i < (int)tags.size(); ++i) {
-            if (type == BACKGROUND_FLUID) {
+        if (type == BACKGROUND_FLUID) {
+            for (int i = 0; i < (int)tags.size(); ++i) {
                 // remove node
                 Node* nd = domain->removeNode(tags[i]);
                 if (nd != 0) {
@@ -709,6 +709,19 @@ void BackgroundMesh::clearGrid() {
                 if (pc != 0) {
                     delete pc;
                 }
+            }
+        } else if (type == BACKGROUND_FLUID_STRUCTURE) {
+            // remove fluid node
+            Node* nd = domain->removeNode(tags[1]);
+            if (nd != 0) {
+                delete nd;
+            }
+
+            // remove pc
+            Pressure_Constraint* pc =
+                domain->removePressure_Constraint(tags[1]);
+            if (pc != 0) {
+                delete pc;
             }
         }
     }
