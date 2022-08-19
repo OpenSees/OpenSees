@@ -1397,7 +1397,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       theResponse = new ElementResponse(this, 110, ID(numSections));
 
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
       if (argc > 2) {
 	float sectionLoc = atof(argv[1]);
 	
@@ -1424,7 +1424,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
     
-    else if (strstr(argv[0],"section") != 0) { 
+    else if (strcmp(argv[0],"section") == 0) { 
       if (argc > 1) {
 	
 	int sectionNum = atoi(argv[1]);
