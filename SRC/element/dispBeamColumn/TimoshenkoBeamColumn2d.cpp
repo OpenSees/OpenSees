@@ -1512,9 +1512,10 @@ TimoshenkoBeamColumn2d::setParameter(const char **argv, int argc, Parameter &par
     return -1;
   
   // If the parameter belongs to the element itself
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
-  
+  }
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
 		return -1;
