@@ -289,6 +289,8 @@
 #include "dispBeamColumn/DispBeamColumnNL3d.h"
 #include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
 #include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
+#include "dispBeamColumn/DispBeamColumn2dThermal.h"
+#include "dispBeamColumn/DispBeamColumn3dThermal.h"
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -780,6 +782,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_MixedBeamColumnAsym3d:
 		return new MixedBeamColumnAsym3d();   //Xinlong Du
+
+    case ELE_TAG_DispBeamColumn2dThermal:  
+      return new DispBeamColumn2dThermal();					     
+      
+    case ELE_TAG_DispBeamColumn3dThermal:  
+      return new DispBeamColumn3dThermal();
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
