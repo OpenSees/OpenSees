@@ -711,10 +711,17 @@ void BackgroundMesh::clearGrid() {
                 }
             }
         } else if (type == BACKGROUND_FLUID_STRUCTURE) {
-            // reset the node
-            Node* nd = domain->getNode(tags[1]);
+            // remove node
+            Node* nd = domain->removeNode(tags[1]);
             if (nd != 0) {
-                nd->revertToLastCommit();
+                delete nd;
+            }
+
+            // remove pc
+            Pressure_Constraint* pc =
+                domain->removePressure_Constraint(tags[1]);
+            if (pc != 0) {
+                delete pc;
             }
         }
     }
@@ -916,8 +923,10 @@ int BackgroundMesh::addStructure() {
     // add all structural nodes to the background
     int ndtag = Mesh::nextNodeTag();
     std::set<int> allnodes;
-    for (std::map<int, VInt>::iterator it = structuralNodes.begin();
-         it != structuralNodes.end(); ++it) {
+
+    // sid from large to small
+    for (auto it = structuralNodes.rbegin(); it != structuralNodes.rend();
+         ++it) {
         int sid = it->first;
         const VInt& snodes = it->second;
 
@@ -1007,19 +1016,20 @@ int BackgroundMesh::addStructure() {
 
             // add structural node to the bnode
             BNode& bnode = bnodes[index];
+            if (bnode.getType() == BACKGROUND_STRUCTURE ||
+                bnode.getType() == BACKGROUND_FLUID_STRUCTURE) {
+                // already a structure, ignore
+                continue;
+            }
+
             if (sid > 0) {
                 // FSI and SSI
                 bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
                               BACKGROUND_STRUCTURE, sid);
             } else {
-                if (bnode.getType() == BACKGROUND_STRUCTURE) {
-                    // already a structure, ignore
-                    continue;
-                } else {
-                    // SSI only
-                    bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure,
-                                  pdot, BACKGROUND_FLUID_STRUCTURE, sid);
-                }
+                // SSI only
+                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
+                              BACKGROUND_FLUID_STRUCTURE, sid);
             }
 
             // set fixed bnodes if sid > 0
@@ -1119,6 +1129,7 @@ int BackgroundMesh::addParticles() {
 
             // if initial check structure cell
             if (bcell.getType() == BACKGROUND_STRUCTURE) {
+                rm[j] = 1;
                 continue;
             }
 
@@ -1421,14 +1432,12 @@ int BackgroundMesh::moveFixedParticles() {
                 bcells.find(indices[i]);
             if (cellit == bcells.end()) {
                 // empty cell
-                scores[i] = 1;
-                continue;
-            }
-            if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
+                scores[i] = -1;
+            } else if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
                 scores[i] = -1;
             } else {
                 // easier to get into cell already having particles
-                scores[i] = 2;
+                scores[i] = 1;
             }
         }
         VVInt cellmap;
