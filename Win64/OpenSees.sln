@@ -56,6 +56,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\uti
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesPy", "proj\openSeesPy\OpenSeesPy.vcxproj", "{F26CA968-C7ED-4246-A732-388C23BF8822}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quickMain", "proj\quickMain\quickMain.vcxproj", "{79627CFD-A1B2-437B-BA21-2D2D67378B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug.DLL|x64 = Debug.DLL|x64
@@ -394,6 +396,22 @@ Global
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.ActiveCfg = Release|x64
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.Build.0 = Release|x64
 		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x86.ActiveCfg = Release|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug.DLL|x64.ActiveCfg = Debug|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug.DLL|x64.Build.0 = Debug|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug.DLL|x86.ActiveCfg = Debug|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug.DLL|x86.Build.0 = Debug|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|x64.ActiveCfg = Debug|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|x64.Build.0 = Debug|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|x86.ActiveCfg = Debug|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|x86.Build.0 = Debug|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release.DLL|x64.ActiveCfg = Release|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release.DLL|x64.Build.0 = Release|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release.DLL|x86.ActiveCfg = Release|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release.DLL|x86.Build.0 = Release|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|x64.ActiveCfg = Release|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|x64.Build.0 = Release|x64
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|x86.ActiveCfg = Release|Win32
+		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

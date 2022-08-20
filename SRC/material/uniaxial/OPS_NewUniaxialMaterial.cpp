@@ -24,52 +24,44 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************* */
 
-// written: MHS, 2001
+#include "NewUniaxialMaterial.h"
+#include <elementAPI.h>
 
-#ifndef NewUniaxialMaterial_h
-#define NewUniaxialMaterial_h
+void *OPS_NewUniaxialMaterial(void) {
 
-#include <UniaxialMaterial.h>
-
-#define MAT_TAG_NewUniaxialMaterial 1976
-
-class NewUniaxialMaterial : public UniaxialMaterial
-{
- public:
-  NewUniaxialMaterial(int tag);
-  NewUniaxialMaterial();    
-  ~NewUniaxialMaterial();
-
-  const char *getClassType(void) const {return "NewUniaxialMaterial";};
-
-  int setTrialStrain(double strain, double strainRate = 0.0); 
-  double getStrain(void);
-  double getStress(void);
-  double getTangent(void);
-  double getInitialTangent(void);
+  //
+  // create 2 arrays; one each for integer and double command line arguments
+  //
   
-  int commitState(void);
-  int revertToLastCommit(void);    
-  int revertToStart(void);        
-  
-  UniaxialMaterial *getCopy(void);
-  
-  int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel, 
-	       FEM_ObjectBroker &theBroker);    
-  
-  void Print(OPS_Stream &s, int flag =0);
-  
- protected:
-  
- private:
-  double trialStrain;   // trial strain
-  double trialStress;   // trial stress
-  double trialTangent;  // trial tangent
-  double commitStrain;   // commit strain
-  double commitStress;   // commit stress
-  double commitTangent;  // commit tangent
-};
+  int iData[1];    // integer args on command line of size 1, change to suit
+  double dData[1]; // double args on command line of size 1, change to suit
 
-#endif
+  //
+  // read values from command line of script
+  //
+  
+  int numArgs = OPS_GetNumRemainingInputArgs();
+  if (numArgs != 1) {
+    opserr << "WARNING incorrect # args, want: element NewUniaxialMaterial $id" << endln;
+    return 0;
+  }
+  
+  int numData = 1; // num integer args
+  if ((numData > 0) && (OPS_GetIntInput(&numData, &iData[0]) < 0)) {
+    opserr << "WARNING failed to read integers, command element NewUniaxialMaterial\n";
+    return 0;
+  }
+  
+  numData = 0; // reset to num double args
+  if ((numData > 0) && (OPS_GetDoubleInput(&numData, &dData[0]) < 0)) {
+    opserr << "WARNING failed to read doubles, command element NewUniaxialMaterial\n";
+    return 0;
+  }
 
+  
+  //
+  // return pointer to new element
+  //
+
+  return new NewUniaxialMaterial(iData[0]);
+}

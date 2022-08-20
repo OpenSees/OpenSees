@@ -33,12 +33,10 @@ class Channel;
 class FEM_ObjectBroker;
 class Information;
 
-#define SEC_TAG_ElasticTube3d 1976
-
 class ElasticTubeSection3d: public SectionForceDeformation
 {
  public:
-  ElasticTubeSection3d(int tag, double E, double d, double tw, double G);
+  ElasticTubeSection3d(int tag, double E, double nu, double d, double tw, double shape = 1.0);
   ElasticTubeSection3d(void);    
   ~ElasticTubeSection3d(void);
   
@@ -78,7 +76,8 @@ class ElasticTubeSection3d: public SectionForceDeformation
   
  private:
   
-  double E, d, tw, G;
+  double E, nu, d, tw;
+  double shape;
   
   Vector e;			// section trial deformations
   

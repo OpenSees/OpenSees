@@ -84,7 +84,6 @@ class ElasticPPMaterial : public UniaxialMaterial
     double trialTangent;     // current trial tangent
     double commitStrain;     // last committed strain
     double commitStress;     // last committed stress
-    double commitTangent;    // last committed  tangent
 
 	double EnergyP; //by SAJalali
 };

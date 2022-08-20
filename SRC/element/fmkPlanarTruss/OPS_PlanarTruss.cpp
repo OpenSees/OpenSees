@@ -24,52 +24,48 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************* */
 
-// written: MHS, 2001
-
-#ifndef NewUniaxialMaterial_h
-#define NewUniaxialMaterial_h
+#include "PlanarTruss.h"
+#include <elementAPI.h>
 
 #include <UniaxialMaterial.h>
 
-#define MAT_TAG_NewUniaxialMaterial 1976
+void *OPS_PlanarTruss(void) {
 
-class NewUniaxialMaterial : public UniaxialMaterial
-{
- public:
-  NewUniaxialMaterial(int tag);
-  NewUniaxialMaterial();    
-  ~NewUniaxialMaterial();
+  //
+  // create 2 arrays; one each for integer and double command line arguments
+  //
+  
+  int iData[4];    // integer args on command line of size 1, change to suit
+  double dData[1]; // double args on command line of size 1, change to suit
 
-  const char *getClassType(void) const {return "NewUniaxialMaterial";};
+  //
+  // read values from command line of script
+  //
+  
+  int numArgs = OPS_GetNumRemainingInputArgs();
+  if (numArgs != 5) {
+    opserr << "WARNING incorrect # args, want: element PlanarTruss $id $iNode $jNode $matTag $A\n";
+    return 0;
+  }
+  
+  int numData = 4; // num integer args
+  if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+    opserr << "WARNING failed to read integers, command element PlanarTruss\n";
+    return 0;
+  }
+  
+  numData = 1; // reset to num double args
+  if (OPS_GetDoubleInput(&numData, &dData[0]) < 0) {
+    opserr << "WARNING failed to read doubles, command element PlanarTruss\n";
+    return 0;
+  }
 
-  int setTrialStrain(double strain, double strainRate = 0.0); 
-  double getStrain(void);
-  double getStress(void);
-  double getTangent(void);
-  double getInitialTangent(void);
-  
-  int commitState(void);
-  int revertToLastCommit(void);    
-  int revertToStart(void);        
-  
-  UniaxialMaterial *getCopy(void);
-  
-  int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel, 
-	       FEM_ObjectBroker &theBroker);    
-  
-  void Print(OPS_Stream &s, int flag =0);
-  
- protected:
-  
- private:
-  double trialStrain;   // trial strain
-  double trialStress;   // trial stress
-  double trialTangent;  // trial tangent
-  double commitStrain;   // commit strain
-  double commitStress;   // commit stress
-  double commitTangent;  // commit tangent
-};
+  //
+  // return pointer to new element
+  //
 
-#endif
-
+  int matTag = iData[3];
+  UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matTag);
+  
+  return new PlanarTruss(iData[0], iData[1], iData[2], theMat, dData[0]);
+}

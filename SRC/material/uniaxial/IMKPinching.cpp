@@ -41,7 +41,7 @@ OPS_IMKPinching()
 {
 	if (numIMKPinchingMaterials == 0) {
 		numIMKPinchingMaterials++;
-		OPS_Error("IMK Model with Pinched Response - Code by A. ELKADY & H. ELJISR (July 2020)\n", 1);
+		OPS_Error("IMK with Pinched Response - Code by ELKADY & ELJISR (June22)\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -149,7 +149,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 
 
 		// CHECK FOR UNLOADING
-		if ((fi_1 > 0) && (du <= 0) && (du*du_i_1 <= 0)) {
+		if ((fi_1 >= 0) && (du < 0) && (du*du_i_1 <= 0)) {
 			Unloading_Flag = 1;
 			Reversal_Flag = 1;
 			Reloading_Flag = 0;
@@ -174,11 +174,11 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 		}
 
 		// CHECK FOR RELOADING
-		if      ((fi_1 > 0) && (du > 0) && (du_i_1 < 0)) {
+		if      ((fi_1 > 0) && (du >= 0) && (du_i_1 < 0)) {
 			Reloading_Flag = 1;
 			Unloading_Flag = 0;
 		}
-		else if ((fi_1 < 0) && (du < 0) && (du_i_1 > 0)) {
+		else if ((fi_1 < 0) && (du <= 0) && (du_i_1 > 0)) {
 			Reloading_Flag = 1;
 			Unloading_Flag = 0;
 		}
@@ -241,7 +241,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 
 		if (Reversal_Flag == 1) {
 			EpjK = Energy_Acc - 0.5*(fi_1 / Kul_j_1)*fi_1;
-			EiK = Energy_Acc - Energy_Diss + 0.5*(fi_1 / Kul_j_1)*fi_1;
+			EiK = Energy_Acc - Energy_Diss - 0.5*(fi_1 / Kul_j_1)*fi_1;
 			betaK = pow((EiK / (EtK - EpjK)), c_K);
 			Kul_j_1 = Kul_j_1 * (1 - betaK);
 		}
@@ -408,12 +408,12 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 				df = du * Kul_j_1;
 				//cout << "  Case = 2+" << endln;
 
-			// CASE 2: WHEN UNLOADING
+			// CASE 3: WHEN UNLOADING
 			} else if (Unloading_Flag==1) {
 				df = du * Kul_j_1;
-				//cout << "  Case = 2+" << endln;
+				//cout << "  Case = 3+" << endln;
 
-			// CASE 3: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
+			// CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
 			} else if ((Reloading_Flag==1) && (ui >= ULastPeak_pos_j_1) && (ui <= Upeak_pos_j_1) && (FLastPeak_pos_j_1 <= Fpeak_pos_j_1)) {
 				if (TargetPeak_Flag==1) {
 					if ((FLastPeak_pos_j_1 <= Fbp) && (ui <= Ubp)) {
@@ -436,9 +436,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 						df = du * Krel_j_1;
 					}
 				}
-				//cout << "  Case = 3+" << endln;
+				//cout << "  Case = 4+" << endln;
 
-			// CASE 4: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
+			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
 			} else if ((du >= 0) && (ui <= Upeak_pos_j_1)) {
 				if ((TargetPeak_Flag==0) && (ui>=Ubp)) {
 					Krel_j_1 =  (Fpeak_pos_j_1 - fi_1) / (Upeak_pos_j_1 - ui_1);
@@ -459,7 +459,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 					}
 				}
 				df = du * Krel_j_1;
-				//cout << "  Case = 4+" << endln;
+				//cout << "  Case = 5+" << endln;
 
 			// CASE 6: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
 			} else if ((du >= 0) && (ui <= Umax_pos_j_1))  {
@@ -516,12 +516,12 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 				df = du * Kul_j_1;
 				//cout << "  Case = 2-" << endln;
 
-			// CASE 2: WHEN UNLOADING
+			// CASE 3: WHEN UNLOADING
 			} else if (Unloading_Flag==1) {
 				df = du * Kul_j_1;
-				//cout << "  Case = 2-" << endln;
+				//cout << "  Case = 3-" << endln;
 
-			// CASE 3: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
+			// CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
 			} else if ((Reloading_Flag==1) && (ui <= ULastPeak_neg_j_1) && (ui >= Upeak_neg_j_1)  && (FLastPeak_neg_j_1 >= Fpeak_neg_j_1)) {
 				if (TargetPeak_Flag==1)  {
 					if ((FLastPeak_neg_j_1 >= Fbp) && (ui <= Ubp)) {
@@ -544,9 +544,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 						df = du * Krel_j_1;
 					}
 				}
-				//cout << "  Case = 3-" << endln;
+				//cout << "  Case = 4-" << endln;
 
-			// CASE 4: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
+			// CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
 			} else if ((du <= 0) && (ui >= Upeak_neg_j_1)) {
 				if ((TargetPeak_Flag==0) && (ui<=Ubp)) {
 					Krel_j_1 =  (Fpeak_neg_j_1 - fi_1) / (Upeak_neg_j_1 - ui_1);
@@ -567,7 +567,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 					}
 				}
 				df = du * Krel_j_1;
-				//cout << "  Case = 4-" << endln;
+				//cout << "  Case = 5-" << endln;
 
 			// CASE 6: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
 			} else if ((du <= 0) && (ui >= Umax_neg_j_1)) {
@@ -594,7 +594,10 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
 			}
 		}
 	
-	
+		if (du == 0) {
+			df = 0;
+		}
+
 		// Force
 		fi = fi_1 + df;
 		//cout << "  Excurion=" << Excursion_Flag << " Failure=" << Failure_Flag << "  Reload=" << Reloading_Flag << " Unload=" << Unloading_Flag << " Yield=" << Yield_Flag << endln;

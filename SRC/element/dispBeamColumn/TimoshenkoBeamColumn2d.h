@@ -107,7 +107,7 @@ class TimoshenkoBeamColumn2d : public Element
   protected:
     
   private:
-    const Matrix &getInitialBasicStiff(void);
+  void getBasicStiff(Matrix &kb, int initial = 0);
 
     enum {maxNumSections = 20};
   
