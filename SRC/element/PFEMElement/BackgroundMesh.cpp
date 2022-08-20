@@ -1129,7 +1129,6 @@ int BackgroundMesh::addParticles() {
 
             // if initial check structure cell
             if (bcell.getType() == BACKGROUND_STRUCTURE) {
-                rm[j] = 1;
                 continue;
             }
 
@@ -1403,8 +1402,7 @@ int BackgroundMesh::moveFixedParticles() {
     int ndm = OPS_GetNDM();
 
     // check each cell
-    for (std::map<VInt, BCell>::iterator it = bcells.begin();
-         it != bcells.end(); ++it) {
+    for (auto it = bcells.begin(); it != bcells.end(); ++it) {
         // get cell
         const VInt& index = it->first;
         BCell& cell = it->second;
@@ -1428,8 +1426,7 @@ int BackgroundMesh::moveFixedParticles() {
         // give each cell a score
         VInt scores(indices.size());
         for (int i = 0; i < (int)indices.size(); ++i) {
-            std::map<VInt, BCell>::iterator cellit =
-                bcells.find(indices[i]);
+            auto cellit = bcells.find(indices[i]);
             if (cellit == bcells.end()) {
                 // empty cell
                 scores[i] = -1;
@@ -1561,10 +1558,10 @@ int BackgroundMesh::moveFixedParticles() {
 
             // not move to a structural cell
             if (scores[j] < 0) {
-                // self is structure, score always < 0
+                // self is structure or empty, score always < 0
                 finalscores[j] = -1;
             } else {
-                // self is not a structure, but score always >= 0
+                // self is not a structure, score always >= 0
                 if (finalscores[j] < 0) {
                     finalscores[j] = 0;
                 }
@@ -1575,12 +1572,33 @@ int BackgroundMesh::moveFixedParticles() {
         int high = -100;
         ind = index;
         for (int i = 0; i < (int)finalscores.size(); ++i) {
-            if (high < finalscores[i]) {
+            if (high < finalscores[i] && finalscores[i] >= 0) {
                 high = finalscores[i];
                 ind = indices[i];
             }
         }
-        if (ind == index) continue;
+
+        // find any cell with particles
+        if (ind == index) {
+            for (auto it2 = bcells.begin(); it2 != bcells.end(); ++it2) {
+                // get cell
+                ind = it->first;
+                BCell& cell2 = it->second;
+
+                // empty cell
+                if (cell2.getPts().empty()) {
+                    continue;
+                }
+
+                // check if BACKGROUND_STRUCTURE cell
+                if (cell2.getType() != BACKGROUND_STRUCTURE) {
+                    continue;
+                }
+
+                // find the cell
+                break;
+            }
+        }
 
         // get new  cell
         auto& new_cell = bcells[ind];
@@ -1589,20 +1607,20 @@ int BackgroundMesh::moveFixedParticles() {
         }
 
         // if an new empty cell
-        if (new_cell.getNodes().empty()) {
-            // get corners
-            indices.clear();
-            getCorners(ind, 1, indices);
+        // if (new_cell.getNodes().empty()) {
+        //     // get corners
+        //     indices.clear();
+        //     getCorners(ind, 1, indices);
 
-            // set corners
-            for (int k = 0; k < (int)indices.size(); ++k) {
-                BNode& bnode = bnodes[indices[k]];
-                if (bnode.size() == 0) {
-                    bnode.setType(BACKGROUND_FLUID);
-                }
-                new_cell.addNode(&bnode, indices[k]);
-            }
-        }
+        //     // set corners
+        //     for (int k = 0; k < (int)indices.size(); ++k) {
+        //         BNode& bnode = bnodes[indices[k]];
+        //         if (bnode.size() == 0) {
+        //             bnode.setType(BACKGROUND_FLUID);
+        //         }
+        //         new_cell.addNode(&bnode, indices[k]);
+        //     }
+        // }
 
         // get averate structural velocity
         VDouble svel(ndm);
