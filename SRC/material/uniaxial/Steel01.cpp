@@ -90,7 +90,7 @@ OPS_Steel01()
 
   
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type Steel01 Material\n";
+    opserr << "WARNING could not create uniaxialMaterial of type Steel01 Material" << endln;
     return 0;
   }
 
@@ -103,13 +103,12 @@ Steel01::Steel01
 (int tag, double FY, double E, double B,
  double A1, double A2, double A3, double A4):
    UniaxialMaterial(tag,MAT_TAG_Steel01),
-   fy(FY), E0(E), b(B), a1(A1), a2(A2), a3(A3), a4(A4)
+   fy(FY), E0(E), b(B), a1(A1), a2(A2), a3(A3), a4(A4),
+   Energy(0.0), parameterID(0), SHVs(0)
 {
    // Sets all history and state variables to initial values
    // History variables
-	Energy = 0;	//by SAJalali
-	
-	CminStrain = 0.0;
+  CminStrain = 0.0;
    CmaxStrain = 0.0;
    CshiftP = 1.0;
    CshiftN = 1.0;
@@ -129,22 +128,12 @@ Steel01::Steel01
    Tstrain = 0.0;
    Tstress = 0.0;
    Ttangent = E0;
-
-// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-// AddingSensitivity:END //////////////////////////////////////
 }
 
 Steel01::Steel01():UniaxialMaterial(0,MAT_TAG_Steel01),
- fy(0.0), E0(0.0), b(0.0), a1(0.0), a2(0.0), a3(0.0), a4(0.0)
+		   fy(0.0), E0(0.0), b(0.0), a1(0.0), a2(0.0), a3(0.0), a4(0.0),
+		   Energy(0.0), parameterID(0), SHVs(0)
 {
-	Energy = 0;	//by SAJalali
-
-// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-// AddingSensitivity:END //////////////////////////////////////
 
 }
 
@@ -437,13 +426,16 @@ UniaxialMaterial* Steel01::getCopy ()
    theCopy->Tstress = Tstress;
    theCopy->Ttangent = Ttangent;
 
+   theCopy->parameterID = parameterID;
+   if (SHVs != 0)
+     theCopy->SHVs = new Matrix(*SHVs);
+   
    return theCopy;
 }
 
 int Steel01::sendSelf (int commitTag, Channel& theChannel)
 {
-   int res = 0;
-   static Vector data(16);
+   static Vector data(18);
    data(0) = this->getTag();
 
    // Material properties
@@ -466,67 +458,100 @@ int Steel01::sendSelf (int commitTag, Channel& theChannel)
    data(13) = Cstrain;
    data(14) = Cstress;
    data(15) = Ctangent;
-
+   data(16) = parameterID;
+   data(17) = -1;
+   if (SHVs != 0)
+     data(17) = SHVs->noCols();
+   
    // Data is only sent after convergence, so no trial variables
    // need to be sent through data vector
 
-   res = theChannel.sendVector(this->getDbTag(), commitTag, data);
-   if (res < 0) 
-      opserr << "Steel01::sendSelf() - failed to send data\n";
+   int dbTag = this->getDbTag();
+   
+   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+     opserr << "Steel01::sendSelf() - failed to send data" << endln;
+     return -1;
+   }
 
-   return res;
+   if (SHVs != 0) {
+     if (theChannel.sendMatrix(dbTag, commitTag, *SHVs) < 0) {
+       opserr << "Steel01::sendSelf() - failed to send SHVs matrix" << endln;
+       return -2;
+     }
+   }
+   
+   return 0;
 }
 
 int Steel01::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
-   int res = 0;
-   static Vector data(16);
-   res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+  int dbTag = this->getDbTag();
   
-   if (res < 0) {
-      opserr << "Steel01::recvSelf() - failed to receive data\n";
-      this->setTag(0);      
+   static Vector data(18);
+  
+   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
+     opserr << "Steel01::recvSelf() - failed to receive data" << endln;
+      this->setTag(0);
+      return -1;
    }
-   else {
-      this->setTag(int(data(0)));
 
-      // Material properties
-      fy = data(1);
-      E0 = data(2);
-      b = data(3);
-      a1 = data(4);
-      a2 = data(5);
-      a3 = data(6);
-      a4 = data(7);
+   this->setTag(int(data(0)));
 
-      // History variables from last converged state
-      CminStrain = data(8);
-      CmaxStrain = data(9);
-      CshiftP = data(10);
-      CshiftN = data(11);
-      Cloading = int(data(12));
+   // Material properties
+   fy = data(1);
+   E0 = data(2);
+   b = data(3);
+   a1 = data(4);
+   a2 = data(5);
+   a3 = data(6);
+   a4 = data(7);
+   
+   // History variables from last converged state
+   CminStrain = data(8);
+   CmaxStrain = data(9);
+   CshiftP = data(10);
+   CshiftN = data(11);
+   Cloading = int(data(12));
+   
+   // Copy converged history values into trial values since data is only
+   // sent (received) after convergence
+   TminStrain = CminStrain;
+   TmaxStrain = CmaxStrain;
+   TshiftP = CshiftP;
+   TshiftN = CshiftN;
+   Tloading = Cloading;
+   
+   // State variables from last converged state
+   Cstrain = data(13);
+   Cstress = data(14);
+   Ctangent = data(15);      
+   
+   // Copy converged state values into trial values
+   Tstrain = Cstrain;
+   Tstress = Cstress;
+   Ttangent = Ctangent;
+   
+   parameterID = (int)data(16);
 
-      // Copy converged history values into trial values since data is only
-      // sent (received) after convergence
-      TminStrain = CminStrain;
-      TmaxStrain = CmaxStrain;
-      TshiftP = CshiftP;
-      TshiftN = CshiftN;
-      Tloading = Cloading;
-
-      // State variables from last converged state
-      Cstrain = data(13);
-      Cstress = data(14);
-      Ctangent = data(15);      
-
-      // Copy converged state values into trial values
-      Tstrain = Cstrain;
-      Tstress = Cstress;
-      Ttangent = Ctangent;
-   }
-    
-   return res;
+   // Receive sensitivity history variables (SHVs)
+   int noCols = (int)data(17);   
+   if (noCols > 0) {
+     if (SHVs != 0)
+       delete SHVs;
+     SHVs = new Matrix(2, noCols);
+     if (SHVs == 0) {
+       opserr << "Steel01::recvSelf() - failed to allocate SHVs matrix" << endln;
+       return -2;
+     }
+     
+     if (theChannel.recvMatrix(dbTag, commitTag, *SHVs) < 0) {
+       opserr << "Steel01::recvSelf() - failed to receive SHVs matrix" << endln;
+       return -3;
+     }
+   }      
+   
+   return 0;
 }
 
 void Steel01::Print (OPS_Stream& s, int flag)
