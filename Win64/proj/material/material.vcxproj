@@ -315,6 +315,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMultiLinear.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FRCC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp" />

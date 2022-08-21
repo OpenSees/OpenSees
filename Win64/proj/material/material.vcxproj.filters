@@ -1445,6 +1445,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\VonPapaDamage.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FRCC.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
