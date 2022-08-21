@@ -25,9 +25,9 @@
 // Written: MHS
 // Created: Feb 2001
 //
-// Description: This file contains the class definition for DispBeamColumn3d.
+// Description: This file contains the class definition for TimoshenkoBeamColumn3d.
 
-#include <DispBeamColumn3d.h>
+#include <TimoshenkoBeamColumn3d.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
@@ -49,11 +49,11 @@
 #include <elementAPI.h>
 #include <string>
 
-Matrix DispBeamColumn3d::K(12,12);
-Vector DispBeamColumn3d::P(12);
-double DispBeamColumn3d::workArea[200];
+Matrix TimoshenkoBeamColumn3d::K(12,12);
+Vector TimoshenkoBeamColumn3d::P(12);
+double TimoshenkoBeamColumn3d::workArea[200];
 
-void* OPS_DispBeamColumn3d()
+void* OPS_TimoshenkoBeamColumn3d()
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
@@ -117,27 +117,27 @@ void* OPS_DispBeamColumn3d()
 	}
     }
     
-    Element *theEle =  new DispBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass,cmass);
+    Element *theEle =  new TimoshenkoBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+					    *bi,*theTransf,mass);
     delete [] sections;
     return theEle;
 }
 
 
-DispBeamColumn3d::DispBeamColumn3d(int tag, int nd1, int nd2,
+TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d(int tag, int nd1, int nd2,
 				   int numSec, SectionForceDeformation **s,
 				   BeamIntegration &bi,
-				   CrdTransf &coordTransf, double r, int cm)
-:Element (tag, ELE_TAG_DispBeamColumn3d),
+				   CrdTransf &coordTransf, double r)
+:Element (tag, ELE_TAG_TimoshenkoBeamColumn3d),
 numSections(numSec), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
-Q(12), q(6), rho(r), cMass(cm), parameterID(0)
+Q(12), q(6), rho(r), parameterID(0)
 {
   // Allocate arrays of pointers to SectionForceDeformations
   theSections = new SectionForceDeformation *[numSections];
   
   if (theSections == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to allocate section model pointer\n";
+    opserr << "TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d - failed to allocate section model pointer\n";
     exit(-1);
   }
   
@@ -148,7 +148,7 @@ Q(12), q(6), rho(r), cMass(cm), parameterID(0)
     
     // Check allocation
     if (theSections[i] == 0) {
-      opserr << "DispBeamColumn3d::DispBeamColumn3d -- failed to get a copy of section model\n";
+      opserr << "TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d -- failed to get a copy of section model\n";
       exit(-1);
     }
   }
@@ -156,14 +156,14 @@ Q(12), q(6), rho(r), cMass(cm), parameterID(0)
   beamInt = bi.getCopy();
   
   if (beamInt == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to copy beam integration\n";
+    opserr << "TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d - failed to copy beam integration\n";
     exit(-1);
   }
 
   crdTransf = coordTransf.getCopy3d();
   
   if (crdTransf == 0) {
-    opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to copy coordinate transformation\n";
+    opserr << "TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d - failed to copy coordinate transformation\n";
     exit(-1);
   }
   
@@ -188,11 +188,11 @@ Q(12), q(6), rho(r), cMass(cm), parameterID(0)
   p0[4] = 0.0;
 }
 
-DispBeamColumn3d::DispBeamColumn3d()
-:Element (0, ELE_TAG_DispBeamColumn3d),
+TimoshenkoBeamColumn3d::TimoshenkoBeamColumn3d()
+:Element (0, ELE_TAG_TimoshenkoBeamColumn3d),
 numSections(0), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
-Q(12), q(6), rho(0.0), cMass(0), parameterID(0)
+Q(12), q(6), rho(0.0), parameterID(0)
 {
   q0[0] = 0.0;
   q0[1] = 0.0;
@@ -210,7 +210,7 @@ Q(12), q(6), rho(0.0), cMass(0), parameterID(0)
   theNodes[1] = 0;
 }
 
-DispBeamColumn3d::~DispBeamColumn3d()
+TimoshenkoBeamColumn3d::~TimoshenkoBeamColumn3d()
 {    
   for (int i = 0; i < numSections; i++) {
     if (theSections[i])
@@ -229,32 +229,32 @@ DispBeamColumn3d::~DispBeamColumn3d()
 }
 
 int
-DispBeamColumn3d::getNumExternalNodes() const
+TimoshenkoBeamColumn3d::getNumExternalNodes() const
 {
     return 2;
 }
 
 const ID&
-DispBeamColumn3d::getExternalNodes()
+TimoshenkoBeamColumn3d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 Node **
-DispBeamColumn3d::getNodePtrs()
+TimoshenkoBeamColumn3d::getNodePtrs()
 {
 
     return theNodes;
 }
 
 int
-DispBeamColumn3d::getNumDOF()
+TimoshenkoBeamColumn3d::getNumDOF()
 {
     return 12;
 }
 
 void
-DispBeamColumn3d::setDomain(Domain *theDomain)
+TimoshenkoBeamColumn3d::setDomain(Domain *theDomain)
 {
 	// Check Domain is not null - invoked when object removed from a domain
     if (theDomain == 0) {
@@ -270,7 +270,7 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
     theNodes[1] = theDomain->getNode(Nd2);
 
     if (theNodes[0] == 0 || theNodes[1] == 0) {
-	//opserr << "FATAL ERROR DispBeamColumn3d (tag: %d), node not found in domain",
+	//opserr << "FATAL ERROR TimoshenkoBeamColumn3d (tag: %d), node not found in domain",
 	//	this->getTag());
 	
 	return;
@@ -280,7 +280,7 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
     int dofNd2 = theNodes[1]->getNumberDOF();
     
     if (dofNd1 != 6 || dofNd2 != 6) {
-	//opserr << "FATAL ERROR DispBeamColumn3d (tag: %d), has differing number of DOFs at its nodes",
+	//opserr << "FATAL ERROR TimoshenkoBeamColumn3d (tag: %d), has differing number of DOFs at its nodes",
 	//	this->getTag());
 	
 	return;
@@ -296,19 +296,49 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
 		// Add some error check
 	}
 
+	for (int i = 0; i < numSections; i++) {
+	  const Matrix &ks0 = theSections[i]->getInitialTangent();
+	  int order = theSections[i]->getOrder();
+	  const ID &code = theSections[i]->getType();
+	  
+	  double EI = 0.0;
+	  double GA = 0.0;
+	  for (int k = 0; k < order; k++) {
+	    if (code(k) == SECTION_RESPONSE_MZ)
+	      EI += ks0(k,k);
+	    if (code(k) == SECTION_RESPONSE_VY)
+	      GA += ks0(k,k);
+	  }
+	  phizs[i] = 0.0;
+	  if (GA != 0.0)
+	    phizs[i] = 12*EI/(GA*L*L);
+	  
+	  EI = 0.0;
+	  GA = 0.0;
+	  for (int k = 0; k < order; k++) {
+	    if (code(k) == SECTION_RESPONSE_MY)
+	      EI += ks0(k,k);
+	    if (code(k) == SECTION_RESPONSE_VZ)
+	      GA += ks0(k,k);
+	  }
+	  phiys[i] = 0.0;
+	  if (GA != 0.0)
+	    phiys[i] = 12*EI/(GA*L*L);	  
+	}
+	
     this->DomainComponent::setDomain(theDomain);
 
 	this->update();
 }
 
 int
-DispBeamColumn3d::commitState()
+TimoshenkoBeamColumn3d::commitState()
 {
     int retVal = 0;
 
     // call element commitState to do any base class stuff
     if ((retVal = this->Element::commitState()) != 0) {
-      opserr << "DispBeamColumn3d::commitState () - failed in base class";
+      opserr << "TimoshenkoBeamColumn3d::commitState () - failed in base class";
     }    
 
     // Loop over the integration points and commit the material states
@@ -321,7 +351,7 @@ DispBeamColumn3d::commitState()
 }
 
 int
-DispBeamColumn3d::revertToLastCommit()
+TimoshenkoBeamColumn3d::revertToLastCommit()
 {
     int retVal = 0;
 
@@ -335,7 +365,7 @@ DispBeamColumn3d::revertToLastCommit()
 }
 
 int
-DispBeamColumn3d::revertToStart()
+TimoshenkoBeamColumn3d::revertToStart()
 {
     int retVal = 0;
 
@@ -349,7 +379,7 @@ DispBeamColumn3d::revertToStart()
 }
 
 int
-DispBeamColumn3d::update(void)
+TimoshenkoBeamColumn3d::update(void)
 {
   int err = 0;
 
@@ -375,19 +405,26 @@ DispBeamColumn3d::update(void)
     Vector e(workArea, order);
       
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
-    int j;
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	e(j) = oneOverL*v(0);
 	break;
       case SECTION_RESPONSE_MZ:
-	e(j) = oneOverL*((xi6-4.0)*v(1) + (xi6-2.0)*v(2));
+	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*v(1) + (xi6-2.0+phiz)*v(2)); 	
 	break;
       case SECTION_RESPONSE_MY:
-	e(j) = oneOverL*((xi6-4.0)*v(3) + (xi6-2.0)*v(4));
+	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*v(3) + (xi6-2.0+phiy)*v(4)); 		
 	break;
+      case SECTION_RESPONSE_VY:
+	e(j) = 0.5*phiz/(1+phiz)*v(1)+0.5*phiz/(1+phiz)*v(2);
+	break;
+      case SECTION_RESPONSE_VZ:
+	e(j) = 0.5*phiy/(1+phiy)*v(3)+0.5*phiy/(1+phiy)*v(4);
+	break;	
       case SECTION_RESPONSE_T:
 	e(j) = oneOverL*v(5);
 	break;
@@ -402,14 +439,14 @@ DispBeamColumn3d::update(void)
   }
 
   if (err != 0) {
-    opserr << "DispBeamColumn3d::update() - failed setTrialSectionDeformations()\n";
+    opserr << "TimoshenkoBeamColumn3d::update() - failed setTrialSectionDeformations()\n";
     return err;
   }
   return 0;
 }
 
 const Matrix&
-DispBeamColumn3d::getTangentStiff()
+TimoshenkoBeamColumn3d::getTangentStiff()
 {
   static Matrix kb(6,6);
   
@@ -437,7 +474,9 @@ DispBeamColumn3d::getTangentStiff()
     ka.Zero();
 
     double xi6 = 6.0*xi[i];
-
+    double phiz = phizs[i];
+    double phiy = phiys[i];
+    
     // Get the section tangent stiffness and stress resultant
     const Matrix &ks = theSections[i]->getSectionTangent();
     const Vector &s = theSections[i]->getStressResultant();
@@ -446,8 +485,8 @@ DispBeamColumn3d::getTangentStiff()
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
     double wti = wt[i]*oneOverL;
     double tmp;
-    int j, k;
-    for (j = 0; j < order; j++) {
+    int k;
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < order; k++)
@@ -456,17 +495,31 @@ DispBeamColumn3d::getTangentStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,1) += (xi6-4.0)*tmp;
-	  ka(k,2) += (xi6-2.0)*tmp;
+	  ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,3) += (xi6-4.0)*tmp;
-	  ka(k,4) += (xi6-2.0)*tmp;
+	  ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	  ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	  ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;		
       case SECTION_RESPONSE_T:
 	for (k = 0; k < order; k++)
 	  ka(k,5) += ks(k,j)*wti;
@@ -475,7 +528,7 @@ DispBeamColumn3d::getTangentStiff()
 	break;
       }
     }
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < 6; k++)
@@ -484,17 +537,31 @@ DispBeamColumn3d::getTangentStiff()
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(1,k) += (xi6-4.0)*tmp;
-	  kb(2,k) += (xi6-2.0)*tmp;
+	  kb(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  kb(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(3,k) += (xi6-4.0)*tmp;
-	  kb(4,k) += (xi6-2.0)*tmp;
+	  kb(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  kb(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  kb(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  kb(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;		
       case SECTION_RESPONSE_T:
 	for (k = 0; k < 6; k++)
 	  kb(5,k) += ka(j,k);
@@ -506,18 +573,28 @@ DispBeamColumn3d::getTangentStiff()
     
     //q.addMatrixTransposeVector(1.0, *B, s, wts(i));
     double si;
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       si = s(j)*wt[i];
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	q(0) += si;
 	break;
       case SECTION_RESPONSE_MZ:
-	q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
+	q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si;
+	q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 	
 	break;
       case SECTION_RESPONSE_MY:
-	q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
+	q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si;
+	q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si; 		
 	break;
+      case SECTION_RESPONSE_VY:
+	q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	q(2) += 0.5*phiz*L/(1+phiz)*si; 
+	break;
+      case SECTION_RESPONSE_VZ:
+	q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	q(4) += 0.5*phiy*L/(1+phiy)*si; 
+	break;		
       case SECTION_RESPONSE_T:
 	q(5) += si;
 	break;
@@ -541,7 +618,7 @@ DispBeamColumn3d::getTangentStiff()
 }
 
 void
-DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
+TimoshenkoBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 {
   // Zero for integral
   kb.Zero();
@@ -549,8 +626,6 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
 
-  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
-  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
   double xi[maxNumSections];
   beamInt->getSectionLocations(numSections, L, xi);
   double wt[maxNumSections];
@@ -566,16 +641,18 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
     ka.Zero();
     
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
-    // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent() : theSections[i]->getSectionTangent();
+    // Get the section tangent stiffness
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent(): theSections[i]->getSectionTangent();
     
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
     double wti = wt[i]*oneOverL;
     double tmp;
-    int j, k;
-    for (j = 0; j < order; j++) {
+    int k;
+    for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < order; k++)
@@ -584,17 +661,31 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,1) += (xi6-4.0)*tmp;
-	  ka(k,2) += (xi6-2.0)*tmp;
+	  ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < order; k++) {
 	  tmp = ks(k,j)*wti;
-	  ka(k,3) += (xi6-4.0)*tmp;
-	  ka(k,4) += (xi6-2.0)*tmp;
+	  ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
 	}
 	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	  ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	  ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	}
+	break;			
       case SECTION_RESPONSE_T:
 	for (k = 0; k < order; k++)
 	  ka(k,5) += ks(k,j)*wti;
@@ -603,7 +694,7 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 	break;
       }
     }
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       switch (code(j)) {
       case SECTION_RESPONSE_P:
 	for (k = 0; k < 6; k++)
@@ -612,15 +703,29 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
       case SECTION_RESPONSE_MZ:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(1,k) += (xi6-4.0)*tmp;
-	  kb(2,k) += (xi6-2.0)*tmp;
+	  kb(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	  kb(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  
 	}
 	break;
       case SECTION_RESPONSE_MY:
 	for (k = 0; k < 6; k++) {
 	  tmp = ka(j,k);
-	  kb(3,k) += (xi6-4.0)*tmp;
-	  kb(4,k) += (xi6-2.0)*tmp;
+	  kb(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	  kb(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  
+	}
+	break;
+      case SECTION_RESPONSE_VY:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  kb(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	}
+	break;
+      case SECTION_RESPONSE_VZ:
+	for (k = 0; k < 6; k++) {
+	  tmp = ka(j,k);
+	  kb(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  kb(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
 	}
 	break;
       case SECTION_RESPONSE_T:
@@ -636,10 +741,10 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 }
 
 const Matrix&
-DispBeamColumn3d::getInitialStiff()
+TimoshenkoBeamColumn3d::getInitialStiff()
 {
   static Matrix kb(6,6);
-
+  
   this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
@@ -649,7 +754,7 @@ DispBeamColumn3d::getInitialStiff()
 }
 
 const Matrix&
-DispBeamColumn3d::getMass()
+TimoshenkoBeamColumn3d::getMass()
 {
   K.Zero();
   
@@ -657,46 +762,16 @@ DispBeamColumn3d::getMass()
     return K;
   
   double L = crdTransf->getInitialLength();
-  if (cMass == 0)  {
-    // lumped mass matrix
-    double m = 0.5*rho*L;
-    K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
-  } else  {
-    // consistent mass matrix
-    static Matrix ml(12,12);
-    double m = rho*L/420.0;
-    ml(0,0) = ml(6,6) = m*140.0;
-    ml(0,6) = ml(6,0) = m*70.0;
-    //ml(3,3) = ml(9,9) = m*(Jx/A)*140.0;  // CURRENTLY NO TORSIONAL MASS 
-    //ml(3,9) = ml(9,3) = m*(Jx/A)*70.0;   // CURRENTLY NO TORSIONAL MASS
-    
-    ml(2,2) = ml(8,8) = m*156.0;
-    ml(2,8) = ml(8,2) = m*54.0;
-    ml(4,4) = ml(10,10) = m*4.0*L*L;
-    ml(4,10) = ml(10,4) = -m*3.0*L*L;
-    ml(2,4) = ml(4,2) = -m*22.0*L;
-    ml(8,10) = ml(10,8) = -ml(2,4);
-    ml(2,10) = ml(10,2) = m*13.0*L;
-    ml(4,8) = ml(8,4) = -ml(2,10);
-    
-    ml(1,1) = ml(7,7) = m*156.0;
-    ml(1,7) = ml(7,1) = m*54.0;
-    ml(5,5) = ml(11,11) = m*4.0*L*L;
-    ml(5,11) = ml(11,5) = -m*3.0*L*L;
-    ml(1,5) = ml(5,1) = m*22.0*L;
-    ml(7,11) = ml(11,7) = -ml(1,5);
-    ml(1,11) = ml(11,1) = -m*13.0*L;
-    ml(5,7) = ml(7,5) = -ml(1,11);
-    
-    // transform local mass matrix to global system
-    K = crdTransf->getGlobalMatrixFromLocal(ml);
-  }
+
+  // lumped mass matrix
+  double m = 0.5*rho*L;
+  K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
   
   return K;
 }
 
 void
-DispBeamColumn3d::zeroLoad(void)
+TimoshenkoBeamColumn3d::zeroLoad(void)
 {
   Q.Zero();
 
@@ -716,7 +791,7 @@ DispBeamColumn3d::zeroLoad(void)
 }
 
 int 
-DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
+TimoshenkoBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
@@ -788,7 +863,7 @@ DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[4] -= M2;
   }
   else {
-    opserr << "DispBeamColumn3d::addLoad() -- load type unknown for element with tag: " << 
+    opserr << "TimoshenkoBeamColumn3d::addLoad() -- load type unknown for element with tag: " << 
       this->getTag() << endln;
     return -1;
   }
@@ -797,7 +872,7 @@ DispBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 }
 
 int 
-DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
+TimoshenkoBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
 {
   // Check for a quick return
   if (rho == 0.0) 
@@ -808,12 +883,11 @@ DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
-    opserr << "DispBeamColumn3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
+    opserr << "TimoshenkoBeamColumn3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
   
   // want to add ( - fact * M R * accel ) to unbalance
-  if (cMass == 0)  {
     // take advantage of lumped mass matrix
     double L = crdTransf->getInitialLength();
     double m = 0.5*rho*L;
@@ -825,21 +899,11 @@ DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
     Q(7) -= m*Raccel2(1);
     Q(8) -= m*Raccel2(2);
 
-  } else  {
-    // use matrix vector multip. for consistent mass matrix
-    static Vector Raccel(12);
-    for (int i=0; i<6; i++)  {
-      Raccel(i)   = Raccel1(i);
-      Raccel(i+6) = Raccel2(i);
-    }
-    Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
-  }
-  
   return 0;
 }
 
 const Vector&
-DispBeamColumn3d::getResistingForce()
+TimoshenkoBeamColumn3d::getResistingForce()
 {
   double L = crdTransf->getInitialLength();
 
@@ -860,6 +924,8 @@ DispBeamColumn3d::getResistingForce()
     const ID &code = theSections[i]->getType();
 
     double xi6 = 6.0*xi[i];
+    double phiz = phizs[i];
+    double phiy = phiys[i];
     
     // Get section stress resultant
     const Vector &s = theSections[i]->getStressResultant();
@@ -875,11 +941,21 @@ DispBeamColumn3d::getResistingForce()
 	q(0) += si;
 	break;
       case SECTION_RESPONSE_MZ:
-	q(1) += (xi6-4.0)*si; q(2) += (xi6-2.0)*si;
-	break;
+	q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si; 
+	q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 
+	break; 	
       case SECTION_RESPONSE_MY:
-	q(3) += (xi6-4.0)*si; q(4) += (xi6-2.0)*si;
+	q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si; 
+	q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si; 
+	break; 		
+      case SECTION_RESPONSE_VY:
+	q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	q(2) += 0.5*phiz*L/(1+phiz)*si; 
 	break;
+      case SECTION_RESPONSE_VZ:
+	q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	q(4) += 0.5*phiy*L/(1+phiy)*si; 
+	break; 		
       case SECTION_RESPONSE_T:
 	q(5) += si;
 	break;
@@ -908,7 +984,7 @@ DispBeamColumn3d::getResistingForce()
 }
 
 const Vector&
-DispBeamColumn3d::getResistingForceIncInertia()
+TimoshenkoBeamColumn3d::getResistingForceIncInertia()
 {
   P = this->getResistingForce();
   
@@ -916,7 +992,9 @@ DispBeamColumn3d::getResistingForceIncInertia()
     const Vector &accel1 = theNodes[0]->getTrialAccel();
     const Vector &accel2 = theNodes[1]->getTrialAccel();
     
-  if (cMass == 0)  {
+    // Compute the current resisting force
+    this->getResistingForce();
+    
     // take advantage of lumped mass matrix
     double L = crdTransf->getInitialLength();
     double m = 0.5*rho*L;
@@ -927,15 +1005,6 @@ DispBeamColumn3d::getResistingForceIncInertia()
     P(6) += m*accel2(0);
     P(7) += m*accel2(1);
     P(8) += m*accel2(2);
-  } else  {
-    // use matrix vector multip. for consistent mass matrix
-    static Vector accel(12);
-    for (int i=0; i<6; i++)  {
-      accel(i)   = accel1(i);
-      accel(i+6) = accel2(i);
-    }
-    P.addMatrixVector(1.0, this->getMass(), accel, 1.0);
-  }
     
     // add the damping forces if rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
@@ -952,7 +1021,7 @@ DispBeamColumn3d::getResistingForceIncInertia()
 }
 
 int
-DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
+TimoshenkoBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
 {
   // place the integer data into an ID
 
@@ -982,26 +1051,26 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   }
   data(7) = beamIntDbTag;
   data(8) = rho;
-  data(9) = cMass;
+  //data(9) = cMass;
   data(10) = alphaM;
   data(11) = betaK;
   data(12) = betaK0;
   data(13) = betaKc;
   
   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send data Vector\n";
+    opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to send data Vector\n";
      return -1;
   }    
   
   // send the coordinate transformation
   if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
-     opserr << "DispBeamColumn3d::sendSelf() - failed to send crdTranf\n";
+     opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to send crdTranf\n";
      return -1;
   }      
 
   // send the beam integration
   if (beamInt->sendSelf(commitTag, theChannel) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send beamInt\n";
+    opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to send beamInt\n";
     return -1;
   }      
   
@@ -1026,7 +1095,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   }
 
   if (theChannel.sendID(dbTag, commitTag, idSections) < 0)  {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to send ID data\n";
+    opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to send ID data\n";
     return -1;
   }    
 
@@ -1036,7 +1105,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   
   for (j = 0; j<numSections; j++) {
     if (theSections[j]->sendSelf(commitTag, theChannel) < 0) {
-      opserr << "DispBeamColumn3d::sendSelf() - section " << j << "failed to send itself\n";
+      opserr << "TimoshenkoBeamColumn3d::sendSelf() - section " << j << "failed to send itself\n";
       return -1;
     }
   }
@@ -1045,7 +1114,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int
-DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
+TimoshenkoBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 						FEM_ObjectBroker &theBroker)
 {
   //
@@ -1057,7 +1126,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   static Vector data(14);
 
   if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
-    opserr << "DispBeamColumn3d::recvSelf() - failed to recv data Vector\n";
+    opserr << "TimoshenkoBeamColumn3d::recvSelf() - failed to recv data Vector\n";
     return -1;
   }
   
@@ -1072,7 +1141,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   int beamIntDbTag = (int)data(7);
   
   rho = data(8);
-  cMass = (int)data(9);
+  //cMass = (int)data(9);
   
   alphaM = data(10);
   betaK = data(11);
@@ -1087,7 +1156,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       crdTransf = theBroker.getNewCrdTransf(crdTransfClassTag);
 
       if (crdTransf == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - " <<
+	opserr << "TimoshenkoBeamColumn3d::recvSelf() - " <<
 	  "failed to obtain a CrdTrans object with classTag" <<
 	  crdTransfClassTag << endln;
 	return -2;	  
@@ -1098,7 +1167,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 
   // invoke recvSelf on the crdTransf object
   if (crdTransf->recvSelf(commitTag, theChannel, theBroker) < 0) {
-    opserr << "DispBeamColumn3d::sendSelf() - failed to recv crdTranf\n";
+    opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to recv crdTranf\n";
     return -3;
   }      
 
@@ -1110,7 +1179,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       beamInt = theBroker.getNewBeamIntegration(beamIntClassTag);
 
       if (beamInt == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - failed to obtain the beam integration object with classTag" <<
+	opserr << "TimoshenkoBeamColumn3d::recvSelf() - failed to obtain the beam integration object with classTag" <<
 	  beamIntClassTag << endln;
 	exit(-1);
       }
@@ -1121,7 +1190,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   // invoke recvSelf on the beamInt object
   if (beamInt->recvSelf(commitTag, theChannel, theBroker) < 0)  
   {
-     opserr << "DispBeamColumn3d::sendSelf() - failed to recv beam integration\n";
+     opserr << "TimoshenkoBeamColumn3d::sendSelf() - failed to recv beam integration\n";
      return -3;
   }      
   
@@ -1133,7 +1202,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   int loc = 0;
 
   if (theChannel.recvID(dbTag, commitTag, idSections) < 0)  {
-    opserr << "DispBeamColumn3d::recvSelf() - failed to recv ID data\n";
+    opserr << "TimoshenkoBeamColumn3d::recvSelf() - failed to recv ID data\n";
     return -1;
   }    
 
@@ -1158,7 +1227,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
     // create a new array to hold pointers
     theSections = new SectionForceDeformation *[nSect];
     if (theSections == 0) {
-      opserr << "DispBeamColumn3d::recvSelf() - out of memory creating sections array of size" <<
+      opserr << "TimoshenkoBeamColumn3d::recvSelf() - out of memory creating sections array of size" <<
 	nSect << endln;
       exit(-1);
     }    
@@ -1173,13 +1242,13 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       loc += 2;
       theSections[i] = theBroker.getNewSection(sectClassTag);
       if (theSections[i] == 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
+	opserr << "TimoshenkoBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
 	  sectClassTag << endln;
 	exit(-1);
       }
       theSections[i]->setDbTag(sectDbTag);
       if (theSections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - section " <<
+	opserr << "TimoshenkoBeamColumn3d::recvSelf() - section " <<
 	  i << "failed to recv itself\n";
 	return -1;
       }     
@@ -1204,7 +1273,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 	delete theSections[i];
 	theSections[i] = theBroker.getNewSection(sectClassTag);
 	if (theSections[i] == 0) {
-	  opserr << "DispBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
+	  opserr << "TimoshenkoBeamColumn3d::recvSelf() - Broker could not create Section of class type" <<
 	    sectClassTag << endln;
 	  exit(-1);
 	}
@@ -1213,7 +1282,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
       // recvSelf on it
       theSections[i]->setDbTag(sectDbTag);
       if (theSections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	opserr << "DispBeamColumn3d::recvSelf() - section " << 
+	opserr << "TimoshenkoBeamColumn3d::recvSelf() - section " << 
 	  i << "failed to recv itself\n";
 	return -1;
       }     
@@ -1224,13 +1293,13 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 }
 
 void
-DispBeamColumn3d::Print(OPS_Stream &s, int flag)
+TimoshenkoBeamColumn3d::Print(OPS_Stream &s, int flag)
 {
 	if (flag == OPS_PRINT_CURRENTSTATE) {
-		s << "\nDispBeamColumn3d, element id:  " << this->getTag() << endln;
+		s << "\nTimoshenkoBeamColumn3d, element id:  " << this->getTag() << endln;
 		s << "\tConnected external nodes:  " << connectedExternalNodes;
 		s << "\tCoordTransf: " << crdTransf->getTag() << endln;
-		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+		s << "\tmass density:  " << rho << endln;
 
 		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
 		double L = crdTransf->getInitialLength();
@@ -1263,7 +1332,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
 		s << "\"name\": " << this->getTag() << ", ";
-		s << "\"type\": \"DispBeamColumn3d\", ";
+		s << "\"type\": \"TimoshenkoBeamColumn3d\", ";
 		s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
 		s << "\"sections\": [";
 		for (int i = 0; i < numSections - 1; i++)
@@ -1278,7 +1347,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 
 
 int
-DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
+TimoshenkoBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
     static Vector v1(3);
     static Vector v2(3);
@@ -1290,13 +1359,13 @@ DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, 
 }
 
 Response*
-DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
+TimoshenkoBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 
     Response *theResponse = 0;
 
     output.tag("ElementOutput");
-    output.attr("eleType","DispBeamColumn3d");
+    output.attr("eleType","TimoshenkoBeamColumn3d");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
@@ -1342,7 +1411,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","Mz_2");
 
       theResponse = new ElementResponse(this, 2, P);
-    }
+ }
     else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
       output.tag("ResponseType","N");
       output.tag("ResponseType","M1");
@@ -1485,7 +1554,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 }
 
 int 
-DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
+TimoshenkoBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 {
   double N, V, M1, M2, T;
   double L = crdTransf->getInitialLength();
@@ -1537,7 +1606,8 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     static Matrix kb(6,6);
     this->getBasicStiff(kb);
     return eleInfo.setMatrix(kb);
-  }  
+  }
+  
   // Chord rotation
   else if (responseID == 3)
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
@@ -1547,7 +1617,7 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     static Vector vp(6);
     static Vector ve(6);
     static Matrix kb(6,6);
-    this->getBasicStiff(kb,1);
+    this->getBasicStiff(kb, 1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;
@@ -1599,7 +1669,7 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
 // AddingSensitivity:BEGIN ///////////////////////////////////
 int
-DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
+TimoshenkoBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 {
   if (argc < 1)
     return -1;
@@ -1678,7 +1748,7 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 }
 
 int
-DispBeamColumn3d::updateParameter (int parameterID, Information &info)
+TimoshenkoBeamColumn3d::updateParameter (int parameterID, Information &info)
 {
   if (parameterID == 1) {
     rho = info.theDouble;
@@ -1692,7 +1762,7 @@ DispBeamColumn3d::updateParameter (int parameterID, Information &info)
 
 
 int
-DispBeamColumn3d::activateParameter(int passedParameterID)
+TimoshenkoBeamColumn3d::activateParameter(int passedParameterID)
 {
   parameterID = passedParameterID;
   
@@ -1700,14 +1770,14 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
+TimoshenkoBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;
 }
 
 const Matrix &
-DispBeamColumn3d::getMassSensitivity(int gradNumber)
+TimoshenkoBeamColumn3d::getMassSensitivity(int gradNumber)
 {
   K.Zero();
   
@@ -1715,42 +1785,11 @@ DispBeamColumn3d::getMassSensitivity(int gradNumber)
     return K;
   
   double L = crdTransf->getInitialLength();
-  if (cMass == 0)  {
-    // lumped mass matrix
-    //double m = 0.5*rho*L;
-    double m = 0.5*L;
-    K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
-  } else  {
-    // consistent mass matrix
-    static Matrix ml(12,12);
-    //double m = rho*L/420.0;
-    double m = L/420.0;
-    ml(0,0) = ml(6,6) = m*140.0;
-    ml(0,6) = ml(6,0) = m*70.0;
-    //ml(3,3) = ml(9,9) = m*(Jx/A)*140.0;  // CURRENTLY NO TORSIONAL MASS 
-    //ml(3,9) = ml(9,3) = m*(Jx/A)*70.0;   // CURRENTLY NO TORSIONAL MASS
-    
-    ml(2,2) = ml(8,8) = m*156.0;
-    ml(2,8) = ml(8,2) = m*54.0;
-    ml(4,4) = ml(10,10) = m*4.0*L*L;
-    ml(4,10) = ml(10,4) = -m*3.0*L*L;
-    ml(2,4) = ml(4,2) = -m*22.0*L;
-    ml(8,10) = ml(10,8) = -ml(2,4);
-    ml(2,10) = ml(10,2) = m*13.0*L;
-    ml(4,8) = ml(8,4) = -ml(2,10);
-    
-    ml(1,1) = ml(7,7) = m*156.0;
-    ml(1,7) = ml(7,1) = m*54.0;
-    ml(5,5) = ml(11,11) = m*4.0*L*L;
-    ml(5,11) = ml(11,5) = -m*3.0*L*L;
-    ml(1,5) = ml(5,1) = m*22.0*L;
-    ml(7,11) = ml(11,7) = -ml(1,5);
-    ml(1,11) = ml(11,1) = -m*13.0*L;
-    ml(5,7) = ml(7,5) = -ml(1,11);
-    
-    // transform local mass matrix to global system
-    K = crdTransf->getGlobalMatrixFromLocal(ml);
-  }
+
+  // lumped mass matrix
+  //double m = 0.5*rho*L;
+  double m = 0.5*L;
+  K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
   
   return K;
 }
@@ -1758,7 +1797,7 @@ DispBeamColumn3d::getMassSensitivity(int gradNumber)
 
 
 const Vector &
-DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
+TimoshenkoBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 {
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
@@ -1780,9 +1819,9 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
     int order = theSections[i]->getOrder();
     const ID &code = theSections[i]->getType();
     
-    //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-    //double wti = wts(i);
+    double phiz = phizs[i];
+    double phiy = phiys[i];      
     double wti = wt[i];
     
     // Get section stress resultant gradient
@@ -1797,13 +1836,21 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	dqdh(0) += sensi; 
 	break;
       case SECTION_RESPONSE_MZ:
-	dqdh(1) += (xi6-4.0)*sensi; 
-	dqdh(2) += (xi6-2.0)*sensi; 
+	dqdh(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*sensi; 
+	dqdh(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*sensi; 	
 	break;
       case SECTION_RESPONSE_MY:
-	dqdh(3) += (xi6-4.0)*sensi; 
-	dqdh(4) += (xi6-2.0)*sensi; 
+	dqdh(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*sensi; 
+	dqdh(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*sensi; 	
 	break;
+      case SECTION_RESPONSE_VY:
+	dqdh(1) += 0.5*phiz*L/(1+phiz)*sensi; 
+	dqdh(2) += 0.5*phiz*L/(1+phiz)*sensi; 
+	break;
+      case SECTION_RESPONSE_VZ:
+	dqdh(3) += 0.5*phiy*L/(1+phiy)*sensi; 
+	dqdh(4) += 0.5*phiy*L/(1+phiy)*sensi; 
+	break; 			
       case SECTION_RESPONSE_T:
 	dqdh(5) += sensi; 
 	break;
@@ -1830,16 +1877,16 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
     
     double tmp;
     
-    int j, k;
+    int k;
     
     for (int i = 0; i < numSections; i++) {
       
       int order = theSections[i]->getOrder();
       const ID &code = theSections[i]->getType();
       
-      //double xi6 = 6.0*pts(i,0);
       double xi6 = 6.0*xi[i];
-      //double wti = wts(i);
+      double phiz = phizs[i];
+      double phiy = phiys[i];      
       double wti = wt[i];
       
       const Vector &s = theSections[i]->getStressResultant();
@@ -1849,7 +1896,7 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
       ka.Zero();
       
       double si;
-      for (j = 0; j < order; j++) {
+      for (int j = 0; j < order; j++) {
 	si = s(j)*wti;
 	switch(code(j)) {
 	case SECTION_RESPONSE_P:
@@ -1859,23 +1906,41 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	  }
 	  break;
 	case SECTION_RESPONSE_MZ:
-	  q(1) += (xi6-4.0)*si; 
-	  q(2) += (xi6-2.0)*si;
+	  q(1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*si; 
+	  q(2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*si; 	  
 	  for (k = 0; k < order; k++) {
 	    tmp = ks(k,j)*wti;
-	    ka(k,1) += (xi6-4.0)*tmp;
-	    ka(k,2) += (xi6-2.0)*tmp;
+	    ka(k,1) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	    ka(k,2) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  	    
 	  }
 	  break;
 	case SECTION_RESPONSE_MY:
-	  q(3) += (xi6-4.0)*si; 
-	  q(4) += (xi6-2.0)*si;
+	  q(3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*si; 
+	  q(4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*si;
 	  for (k = 0; k < order; k++) {
 	    tmp = ks(k,j)*wti;
-	    ka(k,3) += (xi6-4.0)*tmp;
-	    ka(k,4) += (xi6-2.0)*tmp;
+	    ka(k,3) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	    ka(k,4) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  	    
 	  }
 	  break;
+	case SECTION_RESPONSE_VY:
+	  q(1) += 0.5*phiz*L/(1+phiz)*si; 
+	  q(2) += 0.5*phiz*L/(1+phiz)*si;
+	  for (k = 0; k < order; k++) {
+	    tmp = ks(k,j)*wti;
+	    ka(k,1) += 0.5*phiz*L/(1+phiz)*tmp;
+	    ka(k,2) += 0.5*phiz*L/(1+phiz)*tmp;
+	  }	  
+	  break;
+	case SECTION_RESPONSE_VZ:
+	  q(3) += 0.5*phiy*L/(1+phiy)*si; 
+	  q(4) += 0.5*phiy*L/(1+phiy)*si;
+	  for (k = 0; k < order; k++) {
+	    tmp = ks(k,j)*wti;
+	    ka(k,3) += 0.5*phiy*L/(1+phiy)*tmp;
+	    ka(k,4) += 0.5*phiy*L/(1+phiy)*tmp;
+	  }	  
+	  break; 		  
 	case SECTION_RESPONSE_T:
 	  q(5) += si;
 	  for (k = 0; k < order; k++) {
@@ -1886,7 +1951,7 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	  break;
 	}
       }
-      for (j = 0; j < order; j++) {
+      for (int j = 0; j < order; j++) {
 	switch (code(j)) {
 	case SECTION_RESPONSE_P:
 	  for (k = 0; k < 6; k++) {
@@ -1896,17 +1961,31 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 	case SECTION_RESPONSE_MZ:
 	  for (k = 0; k < 6; k++) {
 	    tmp = ka(j,k);
-	    kbmine(1,k) += (xi6-4.0)*tmp;
-	    kbmine(2,k) += (xi6-2.0)*tmp;
+	    kbmine(1,k) += 1.0/(1+phiz)*(xi6-4.0-phiz)*tmp;
+	    kbmine(2,k) += 1.0/(1+phiz)*(xi6-2.0+phiz)*tmp;	  	    
 	  }
 	  break;
 	case SECTION_RESPONSE_MY:
 	  for (k = 0; k < 6; k++) {
 	    tmp = ka(j,k);
-	    kbmine(3,k) += (xi6-4.0)*tmp;
-	    kbmine(4,k) += (xi6-2.0)*tmp;
+	    kbmine(3,k) += 1.0/(1+phiy)*(xi6-4.0-phiy)*tmp;
+	    kbmine(4,k) += 1.0/(1+phiy)*(xi6-2.0+phiy)*tmp;	  	  	    
 	  }
 	  break;
+	case SECTION_RESPONSE_VY:
+	  for (k = 0; k < 6; k++) {
+	    tmp = ka(j,k);
+	    kbmine(1,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	    kbmine(2,k) += 0.5*phiz*L/(1+phiz)*tmp;
+	  }
+	  break;
+	case SECTION_RESPONSE_VZ:
+	  for (k = 0; k < 6; k++) {
+	    tmp = ka(j,k);
+	    kbmine(3,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	    kbmine(4,k) += 0.5*phiy*L/(1+phiy)*tmp;
+	  }
+	  break;		  
 	case SECTION_RESPONSE_T:
 	  for (k = 0; k < 6; k++) {
 	    kbmine(5,k) += ka(j,k);
@@ -1942,7 +2021,7 @@ DispBeamColumn3d::getResistingForceSensitivity(int gradNumber)
 
 // NEW METHOD
 int
-DispBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
+TimoshenkoBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
 {
   // Get basic deformation and sensitivities
   const Vector &v = crdTransf->getBasicTrialDisp();
@@ -1967,9 +2046,11 @@ DispBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
     
     Vector e(workArea, order);
     
-    //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
-    
+    // Assume the phi values are constant
+    double phiz = phizs[i];
+    double phiy = phiys[i];
+      
     for (int j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
@@ -1977,13 +2058,23 @@ DispBeamColumn3d::commitSensitivity(int gradNumber, int numGrads)
 	  + d1oLdh*v(0); 
 	break;
       case SECTION_RESPONSE_MZ:
-	e(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2))
-	  + d1oLdh*((xi6-4.0)*v(1) + (xi6-2.0)*v(2)); 
+	//e(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2))
+	//  + d1oLdh*((xi6-4.0)*v(1) + (xi6-2.0)*v(2));
+	e(j) = oneOverL/(1+phiz)*((xi6-4.0-phiz)*dvdh(1) + (xi6-2.0+phiz)*dvdh(2))
+	  + d1oLdh/(1+phiz)*((xi6-4.0-phiz)*v(1) + (xi6-2.0+phiz)*v(2)); 		
 	break;
       case SECTION_RESPONSE_MY:
-	e(j) = oneOverL*((xi6-4.0)*dvdh(3) + (xi6-2.0)*dvdh(4))
-	  + d1oLdh*((xi6-4.0)*v(3) + (xi6-2.0)*v(4)); 
+	//e(j) = oneOverL*((xi6-4.0)*dvdh(3) + (xi6-2.0)*dvdh(4))
+	//  + d1oLdh*((xi6-4.0)*v(3) + (xi6-2.0)*v(4));
+	e(j) = oneOverL/(1+phiy)*((xi6-4.0-phiy)*dvdh(3) + (xi6-2.0+phiy)*dvdh(4))
+	  + d1oLdh/(1+phiy)*((xi6-4.0-phiy)*v(3) + (xi6-2.0+phiy)*v(4));
 	break;
+      case SECTION_RESPONSE_VY:
+	e(j) = 0.5*phiz/(1+phiz)*dvdh(1)+0.5*phiz/(1+phiz)*dvdh(2);
+	break;
+      case SECTION_RESPONSE_VZ:
+	e(j) = 0.5*phiy/(1+phiy)*dvdh(3)+0.5*phiy/(1+phiy)*dvdh(4);
+	break;		
       case SECTION_RESPONSE_T:
 	e(j) = oneOverL*dvdh(5)
 	  + d1oLdh*v(5); 

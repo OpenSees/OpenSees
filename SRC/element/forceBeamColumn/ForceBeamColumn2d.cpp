@@ -2799,7 +2799,7 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 13, theVector);
   
     // section response -
-  } else if (strstr(argv[0],"sectionX") != 0) {
+  } else if (strcmp(argv[0],"sectionX") == 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
 
@@ -2834,7 +2834,7 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   }
 
   // section response -
-  else if (strstr(argv[0],"section") != 0) {
+  else if (strcmp(argv[0],"section") == 0) {
 
     if (argc > 1) {
 

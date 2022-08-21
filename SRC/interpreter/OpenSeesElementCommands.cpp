@@ -154,7 +154,7 @@ void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
 void* OPS_TimoshenkoBeamColumn2d();
-//void* OPS_TimoshenkoBeamColumn3d();
+void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -351,8 +351,7 @@ namespace {
 	    ID info;
 	    return OPS_TimoshenkoBeamColumn2d();
 	} else {
-	  //return OPS_TimoshenkoBeamColumn3d();
-	  return 0;
+	  return OPS_TimoshenkoBeamColumn3d();
 	}
     }  
 

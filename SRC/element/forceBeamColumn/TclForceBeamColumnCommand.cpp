@@ -39,6 +39,7 @@
 #include <ForceBeamColumnWarping2d.h>
 #include <ElasticForceBeamColumnWarping2d.h>
 #include <TimoshenkoBeamColumn2d.h>
+#include <TimoshenkoBeamColumn3d.h>
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
 #include <DispBeamColumnNL2d.h>
@@ -403,6 +404,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new ElasticForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
 	theElement = new DispBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, cMass);
+      else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
+	theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);      
       else if (strcmp(argv[1], "dispBeamColumnThermal") == 0)
 	theElement = new DispBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);//added by L.Jiang[SIF]
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
@@ -1331,6 +1334,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       theElement = new ElasticForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass);
     else if (strcmp(argv[1],"dispBeamColumn") == 0)
       theElement = new DispBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass, cMass);
+    else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
+      theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass);    
     else
       theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass, numIter, tol);
   }

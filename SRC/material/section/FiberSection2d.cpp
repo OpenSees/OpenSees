@@ -112,7 +112,7 @@ FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers, bool compCentro
       }
     }    
 
-    if (computeCentroid)
+    if (computeCentroid && ABar != 0.0)
       yBar = QzBar/ABar;
   }
 
@@ -222,7 +222,7 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
     }
   }    
 
-  if (computeCentroid)
+  if (computeCentroid && ABar != 0.0)
     yBar = QzBar/ABar;
   
   s = new Vector(sData, 2);
@@ -319,12 +319,12 @@ FiberSection2d::addFiber(Fiber &newFiber)
 
   numFibers++;
 
+  ABar += Area;
+  QzBar += yLoc*Area;
+  
   // Recompute centroid
-  if (computeCentroid) {
-    ABar += Area;
-    QzBar += yLoc*Area;
+  if (computeCentroid && ABar != 0.0)
     yBar = QzBar/ABar;
-  }
   
   return 0;
 }
@@ -652,18 +652,38 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
   int res = 0;
 
   // create an id to send objects tag and numFibers, 
-  //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(3);
+  //     size 7 so no conflict with matData below if 3 fibers
+  static ID data(7);
   data(0) = this->getTag();
   data(1) = numFibers;
-  data(2) = computeCentroid ? 1 : 0; // Now the ID data is really 3
+  data(2) = computeCentroid ? 1 : 0;
+  data(3) = sectionIntegr != 0 ? 1 : 0;
+  if (sectionIntegr != 0) {
+    data(4) = sectionIntegr->getClassTag();
+    int sectionIntegrDbTag = sectionIntegr->getDbTag();
+    if (sectionIntegrDbTag == 0) {
+      sectionIntegrDbTag = theChannel.getDbTag();
+      if (sectionIntegrDbTag != 0)
+	sectionIntegr->setDbTag(sectionIntegrDbTag);
+    }
+    data(5) = sectionIntegrDbTag;
+  }
+
   int dbTag = this->getDbTag();
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
     opserr <<  "FiberSection2d::sendSelf - failed to send ID data\n";
     return res;
   }    
-
+  
+  if (sectionIntegr != 0) {
+    res = sectionIntegr->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "FiberSection2d::sendSelf - failed to send section integration" << endln;
+      return res;
+    }
+  }
+  
   if (numFibers != 0) {
     
     // create an id containingg classTag and dbTag for each material & send it
@@ -680,7 +700,7 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
       materialData(2*i+1) = matDbTag;
     }    
     
-    res += theChannel.sendID(dbTag, commitTag, materialData);
+    res = theChannel.sendID(dbTag, commitTag, materialData);
     if (res < 0) {
       opserr <<  "FiberSection2d::sendSelf - failed to send material data\n";
       return res;
@@ -688,16 +708,21 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
 
     // send the fiber data, i.e. area and loc
     Vector fiberData(matData, 2*numFibers);
-    res += theChannel.sendVector(dbTag, commitTag, fiberData);
+    res = theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
       opserr <<  "FiberSection2d::sendSelf - failed to send material data\n";
       return res;
     }    
 
     // now invoke send(0 on all the materials
-    for (int j=0; j<numFibers; j++)
-      theMaterials[j]->sendSelf(commitTag, theChannel);
-
+    for (int j=0; j<numFibers; j++) {
+      res = theMaterials[j]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+	opserr << "FiberSectin2d::sendSelf - failed to send material with tag "
+	       << theMaterials[j]->getTag() << endln;
+	return res;
+      }
+    }
   }
 
   return res;
@@ -709,7 +734,7 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
+  static ID data(7);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
@@ -719,6 +744,34 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
   }    
   this->setTag(data(0));
 
+  if (data(3) == 1) {
+    int sectionIntegrClassTag = data(4);
+    int sectionIntegrDbTag = data(5);
+
+    // create a new section integration object if one needed
+    if (sectionIntegr == 0 || sectionIntegr->getClassTag() != sectionIntegrClassTag) {
+      if (sectionIntegr != 0)
+	delete sectionIntegr;
+      
+      sectionIntegr = theBroker.getNewSectionIntegration(sectionIntegrClassTag);
+      
+      if (sectionIntegr == 0) {
+	opserr << "FiberSection2d::recvSelf() - failed to obtain a SectionIntegration object with classTag "
+	       << sectionIntegrClassTag << endln;
+	exit(-1);
+      }
+    }
+    
+    sectionIntegr->setDbTag(sectionIntegrDbTag);
+    
+    // invoke recvSelf on the section integration object
+    if (sectionIntegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+      opserr << "FiberSection2d::sendSelf() - failed to recv SectionIntegration\n";
+      return -3;
+    }      
+  } else
+    sectionIntegr = 0;
+  
   // recv data about materials objects, classTag and dbTag
   if (data(1) != 0) {
     ID materialData(2*data(1));
@@ -793,26 +846,41 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
       theMaterials[i]->setDbTag(dbTag);
       res += theMaterials[i]->recvSelf(commitTag, theChannel, theBroker);
     }
+  }
 
-    QzBar = 0.0;
-    ABar  = 0.0;
+  // Recompute centroid
+  QzBar = 0.0;
+  ABar  = 0.0;
+  
+  computeCentroid = data(2) ? true : false;
+
+  if (sectionIntegr != 0) {
+    static double fiberLocs[10000];
+    sectionIntegr->getFiberLocations(numFibers, fiberLocs);
+    
+    static double fiberArea[10000];
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);
+    
+    for (int i = 0; i < numFibers; i++) {
+      ABar  += fiberArea[i];
+      QzBar += fiberLocs[i]*fiberArea[i];
+    }
+  }
+  else {
     double yLoc, Area;
 
-    computeCentroid = data(2) ? true : false;
-    
-    // Recompute centroid
-    for (i = 0; computeCentroid && i < numFibers; i++) {
+    for (int i = 0; i < numFibers; i++) {
       yLoc = matData[2*i];
       Area = matData[2*i+1];
       ABar  += Area;
       QzBar += yLoc*Area;
     }
-
-    if (computeCentroid)
-      yBar = QzBar/ABar;
-    else
-      yBar = 0.0;
-  }    
+  }
+  
+  if (computeCentroid && ABar != 0.0)
+    yBar = QzBar/ABar;
+  else
+    yBar = 0.0;
 
   return res;
 }
