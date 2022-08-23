@@ -1141,7 +1141,8 @@ int BackgroundMesh::addParticles() {
                 // set corners
                 for (int i = 0; i < (int)indices.size(); ++i) {
                     BNode& bnode = bnodes[indices[i]];
-                    if (bnode.size() == 0) {
+                    if (bnode.size() == 0 &&
+                        bnode.getType() != BACKGROUND_FLUID_STRUCTURE) {
                         bnode.setType(BACKGROUND_FLUID);
                     }
                     bcell.addNode(&bnode, indices[i]);
@@ -1582,8 +1583,8 @@ int BackgroundMesh::moveFixedParticles() {
         if (ind == index) {
             for (auto it2 = bcells.begin(); it2 != bcells.end(); ++it2) {
                 // get cell
-                ind = it->first;
-                BCell& cell2 = it->second;
+                ind = it2->first;
+                BCell& cell2 = it2->second;
 
                 // empty cell
                 if (cell2.getPts().empty()) {
@@ -1891,31 +1892,29 @@ int BackgroundMesh::gridFSInoDT() {
             // contact cell: must fully engaged
             if (ndm == 2) {
                 VInt csnds(3), csids(3);
-                if (slocal.size() == 4) {
-                    // two contact elements
-                    csnds[0] = tags[0];
-                    csnds[1] = tags[3];
-                    csnds[2] = tags[2];
-                    csids[0] = sids[0];
-                    csids[1] = sids[3];
-                    csids[2] = sids[2];
+                // two contact elements
+                csnds[0] = tags[0];
+                csnds[1] = tags[3];
+                csnds[2] = tags[2];
+                csids[0] = sids[0];
+                csids[1] = sids[3];
+                csids[2] = sids[2];
 
-                    createContact(csnds, csids, elends[numele * j]);
-                    if (!elends[numele * j].empty()) {
-                        gtags[numele * j] = contact_tag;
-                    }
+                createContact(csnds, csids, elends[numele * j]);
+                if (!elends[numele * j].empty()) {
+                    gtags[numele * j] = contact_tag;
+                }
 
-                    csnds[0] = tags[0];
-                    csnds[1] = tags[1];
-                    csnds[2] = tags[3];
-                    csids[0] = sids[0];
-                    csids[1] = sids[1];
-                    csids[2] = sids[3];
+                csnds[0] = tags[0];
+                csnds[1] = tags[1];
+                csnds[2] = tags[3];
+                csids[0] = sids[0];
+                csids[1] = sids[1];
+                csids[2] = sids[3];
 
-                    createContact(csnds, csids, elends[numele * j + 1]);
-                    if (!elends[numele * j + 1].empty()) {
-                        gtags[numele * j + 1] = contact_tag;
-                    }
+                createContact(csnds, csids, elends[numele * j + 1]);
+                if (!elends[numele * j + 1].empty()) {
+                    gtags[numele * j + 1] = contact_tag;
                 }
             } else if (ndm == 3) {
                 // 3D contact element: TODO
