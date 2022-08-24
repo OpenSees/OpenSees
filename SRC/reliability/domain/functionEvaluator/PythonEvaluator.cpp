@@ -164,8 +164,13 @@ double PythonEvaluator::evaluateExpression() {
     }
 
     // add imports
-    PyRun_SimpleString("import opensees");
-    PyRun_SimpleString("import opensees as ops");
+    if (moduleName == "opensees") {
+        PyRun_SimpleString("import opensees");
+        PyRun_SimpleString("import opensees as ops");
+    } else {
+        PyRun_SimpleString("import openseespy.opensees as ops");
+        PyRun_SimpleString("import openseespy.opensees as opensees");
+    }
     PyRun_SimpleString("from math import *");
     PyRun_SimpleString("import math");
     PyRun_SimpleString("par = opensees.OpenSeesParameter");
@@ -241,8 +246,13 @@ int PythonEvaluator::runAnalysis() {
         std::string parsedFileName(fileName);
 
         // add imports
-        PyRun_SimpleString("import opensees");
-        PyRun_SimpleString("import opensees as ops");
+        if (moduleName == "opensees") {
+            PyRun_SimpleString("import opensees");
+            PyRun_SimpleString("import opensees as ops");
+        } else {
+            PyRun_SimpleString("import openseespy.opensees as ops");
+            PyRun_SimpleString("import openseespy.opensees as opensees");
+        }
         PyRun_SimpleString("from math import *");
         PyRun_SimpleString("import math");
         PyRun_SimpleString("par = opensees.OpenSeesParameter");
