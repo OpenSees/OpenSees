@@ -1433,6 +1433,8 @@ int BackgroundMesh::moveFixedParticles() {
                 scores[i] = -1;
             } else if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
                 scores[i] = -1;
+            } else if (cellit->second.getPts().empty()) {
+                scores[i] = -1;
             } else {
                 // easier to get into cell already having particles
                 scores[i] = 1;
@@ -1580,7 +1582,7 @@ int BackgroundMesh::moveFixedParticles() {
         }
 
         // find any cell with particles
-        if (ind == index) {
+        if (high < 0 || ind == index) {
             for (auto it2 = bcells.begin(); it2 != bcells.end(); ++it2) {
                 // get cell
                 ind = it2->first;
@@ -1592,7 +1594,7 @@ int BackgroundMesh::moveFixedParticles() {
                 }
 
                 // check if BACKGROUND_STRUCTURE cell
-                if (cell2.getType() != BACKGROUND_STRUCTURE) {
+                if (cell2.getType() == BACKGROUND_STRUCTURE) {
                     continue;
                 }
 
