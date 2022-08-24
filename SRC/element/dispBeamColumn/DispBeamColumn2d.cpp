@@ -640,12 +640,11 @@ DispBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 
     double xi6 = 6.0*xi[i];
 
-    // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getSectionTangent();
+    // Get the section tangent stiffness
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent() : theSections[i]->getSectionTangent();
         
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
-    //double wti = wts(i)*oneOverL;
     double wti = wt[i]*oneOverL;
     double tmp;
     int j, k;
@@ -748,88 +747,11 @@ DispBeamColumn2d::getTangentStiff()
 }
 
 const Matrix&
-DispBeamColumn2d::getInitialBasicStiff()
-{
-  static Matrix kb(3,3);
-
-  // Zero for integral
-  kb.Zero();
-  
-  double L = crdTransf->getInitialLength();
-  double oneOverL = 1.0/L;
-  
-  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
-  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
-  double xi[maxNumSections];
-  beamInt->getSectionLocations(numSections, L, xi);
-  double wt[maxNumSections];
-  beamInt->getSectionWeights(numSections, L, wt);
-
-  // Loop over the integration points
-  for (int i = 0; i < numSections; i++) {
-    
-    int order = theSections[i]->getOrder();
-    const ID &code = theSections[i]->getType();
-  
-    Matrix ka(workArea, order, 3);
-    ka.Zero();
-
-    //double xi6 = 6.0*pts(i,0);
-    double xi6 = 6.0*xi[i];
-    
-    // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangent();
-    
-    // Perform numerical integration
-    //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
-    //double wti = wts(i)*oneOverL;
-    double wti = wt[i]*oneOverL;
-    double tmp;
-    int j, k;
-    for (j = 0; j < order; j++) {
-      switch(code(j)) {
-      case SECTION_RESPONSE_P:
-	for (k = 0; k < order; k++)
-	  ka(k,0) += ks(k,j)*wti;
-	break;
-      case SECTION_RESPONSE_MZ:
-	for (k = 0; k < order; k++) {
-	  tmp = ks(k,j)*wti;
-	  ka(k,1) += (xi6-4.0)*tmp;
-	  ka(k,2) += (xi6-2.0)*tmp;
-	}
-	break;
-      default:
-	break;
-      }
-    }
-    for (j = 0; j < order; j++) {
-      switch (code(j)) {
-      case SECTION_RESPONSE_P:
-	for (k = 0; k < 3; k++)
-	  kb(0,k) += ka(j,k);
-	break;
-      case SECTION_RESPONSE_MZ:
-	for (k = 0; k < 3; k++) {
-	  tmp = ka(j,k);
-	  kb(1,k) += (xi6-4.0)*tmp;
-	  kb(2,k) += (xi6-2.0)*tmp;
-	}
-	break;
-      default:
-	break;
-      }
-    }
-    
-  }
-
-  return kb;
-}
-
-const Matrix&
 DispBeamColumn2d::getInitialStiff()
 {
-  const Matrix &kb = this->getInitialBasicStiff();
+  static Matrix kb(3,3);
+  
+  this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
   K = crdTransf->getInitialGlobalStiffMatrix(kb);
@@ -1506,7 +1428,7 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
   }
 
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
 
@@ -1532,7 +1454,7 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
       theResponse = theSections[sectionNum]->setResponse(&argv[2], argc-2, output);
     }
   }
-  else if (strstr(argv[0],"section") != 0) {
+  else if (strcmp(argv[0],"section") == 0) {
 
     if (argc > 1) {
       
@@ -1665,7 +1587,8 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 4) {
     static Vector vp(3);
     static Vector ve(3);
-    const Matrix &kb = this->getInitialBasicStiff();
+    static Matrix kb(3,3);
+    this->getBasicStiff(kb, 1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;

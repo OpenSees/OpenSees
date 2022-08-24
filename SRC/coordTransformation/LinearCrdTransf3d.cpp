@@ -293,8 +293,9 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
     L = dx.Norm();
     
     if (L == 0.0) {
-        opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
-        return -2;  
+      opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien transfTag = "
+	     << this->getTag() << "\nelement has zero length" << endln;
+      return -2;  
     }
     
     // calculate the element local x axis components (direction cosines)
@@ -345,9 +346,9 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     double ynorm = yAxis.Norm();
     
     if (ynorm == 0) {
-        opserr << "\nLinearCrdTransf3d::getLocalAxes";
-        opserr << "\nvector v that defines plane xz is parallel to x axis\n";
-        return -3;
+      opserr << "\nLinearCrdTransf3d::getLocalAxes transfTag = " << this->getTag();
+      opserr << "\nvector v that defines plane xz is parallel to x axis" << endln;
+      return -3;
     }
     
     yAxis /= ynorm;

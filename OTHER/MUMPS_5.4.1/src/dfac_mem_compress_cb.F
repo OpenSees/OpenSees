@@ -1,0 +1,551 @@
+C
+C  This file is part of MUMPS 5.4.1, released
+C  on Tue Aug  3 09:49:43 UTC 2021
+C
+C
+C  Copyright 1991-2021 CERFACS, CNRS, ENS Lyon, INP Toulouse, Inria,
+C  Mumps Technologies, University of Bordeaux.
+C
+C  This version of MUMPS is provided to you free of charge. It is
+C  released under the CeCILL-C license 
+C  (see doc/CeCILL-C_V1-en.txt, doc/CeCILL-C_V1-fr.txt, and
+C  https://cecill.info/licences/Licence_CeCILL-C_V1-en.html)
+C
+      SUBROUTINE DMUMPS_SIZEFREEINREC(IW,LREC,SIZE_FREE,XSIZE)
+      IMPLICIT NONE
+      INTEGER, intent(in) :: LREC, XSIZE
+      INTEGER, intent(in) :: IW(LREC)
+      INTEGER(8), intent(out):: SIZE_FREE
+      INTEGER(8) :: SIZE_STA, SIZE_DYN 
+      INCLUDE 'mumps_headers.h'
+      CALL MUMPS_GETI8( SIZE_STA,IW(1+XXR) )
+      CALL MUMPS_GETI8( SIZE_DYN,IW(1+XXD) )
+      IF ( SIZE_DYN .GT. 0) THEN
+        SIZE_FREE = SIZE_STA
+      ELSE IF (IW(1+XXS).EQ.S_NOLCBCONTIG .OR.
+     &    IW(1+XXS).EQ.S_NOLCBNOCONTIG) THEN
+        SIZE_FREE=int(IW(1+XSIZE+2),8)*int(IW(1+XSIZE+3),8)
+      ELSE IF (IW(1+XXS).EQ.S_NOLCBCONTIG38 .OR.
+     &         IW(1+XXS).EQ.S_NOLCBNOCONTIG38) THEN
+        SIZE_FREE=int(IW(1+XSIZE+2),8)*int(IW(1+XSIZE)+
+     &            IW(1+XSIZE + 3) -
+     &          ( IW(1+XSIZE + 4)
+     &          - IW(1+XSIZE + 3) ), 8)
+      ELSE IF (IW(1+XXS).EQ.S_NOLNOCB) THEN
+        SIZE_FREE = SIZE_STA
+      ELSE
+        SIZE_FREE=0_8
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_SIZEFREEINREC
+      SUBROUTINE DMUMPS_CAN_RECORD_BE_COMPRESSED(
+     &           RECORD_CAN_BE_COMPRESSED, IW, XSIZE, KEEP216)
+      IMPLICIT NONE
+      LOGICAL, INTENT(out) :: RECORD_CAN_BE_COMPRESSED
+      INTEGER, INTENT(in) :: XSIZE, KEEP216
+      INTEGER, INTENT(in) :: IW(XSIZE)
+      INCLUDE 'mumps_headers.h'
+      INTEGER(8) :: SIZE_DYN, SIZE_STA
+      CALL MUMPS_GETI8( SIZE_STA, IW(1+XXR))
+      CALL MUMPS_GETI8( SIZE_DYN, IW(1+XXD))
+      IF (IW(1+XXS) .EQ. S_FREE) THEN
+           RECORD_CAN_BE_COMPRESSED = .TRUE.
+      ELSE IF ( SIZE_DYN .GT. 0_8 .AND. SIZE_STA .GT. 0_8) THEN
+           RECORD_CAN_BE_COMPRESSED = .TRUE.
+      ELSE IF ( IW(1+XXS) .EQ. S_NOLNOCB) THEN
+           RECORD_CAN_BE_COMPRESSED = .TRUE.
+      ELSE
+           RECORD_CAN_BE_COMPRESSED =
+     &         ( IW(1+XXS) .EQ. S_NOLCBNOCONTIG .OR.
+     &           IW(1+XXS) .EQ. S_NOLCBCONTIG .OR.
+     &           IW(1+XXS) .EQ. S_NOLCBNOCONTIG38 .OR.
+     &           IW(1+XXS) .EQ. S_NOLCBCONTIG38 )
+     &           .AND. KEEP216.NE.3
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_CAN_RECORD_BE_COMPRESSED
+      SUBROUTINE DMUMPS_MOVETONEXTRECORD
+     &(IW,LIW,IXXP,ICURRENT,NEXT, RCURRENT,ISIZE2SHIFT)
+      IMPLICIT NONE
+      INCLUDE 'mumps_headers.h'
+      INTEGER(8) :: RCURRENT
+      INTEGER LIW,IXXP,ICURRENT,NEXT,ISIZE2SHIFT
+      INTEGER IW(LIW)
+      INTEGER(8) :: RSIZE
+      ICURRENT=NEXT
+      CALL MUMPS_GETI8( RSIZE, IW(ICURRENT + XXR) )
+      RCURRENT = RCURRENT - RSIZE
+      NEXT=IW(ICURRENT+XXP)
+      IW(IXXP)=ICURRENT+ISIZE2SHIFT
+      IXXP=ICURRENT+XXP
+      RETURN
+      END SUBROUTINE DMUMPS_MOVETONEXTRECORD
+      SUBROUTINE DMUMPS_ISHIFT(IW,LIW,BEG2SHIFT,END2SHIFT,ISIZE2SHIFT)
+      IMPLICIT NONE
+      INTEGER LIW, BEG2SHIFT, END2SHIFT, ISIZE2SHIFT
+      INTEGER IW(LIW)
+      INTEGER I
+      IF (ISIZE2SHIFT.GT.0) THEN
+        DO I=END2SHIFT,BEG2SHIFT,-1
+          IW(I+ISIZE2SHIFT)=IW(I)
+        ENDDO
+      ELSE IF (ISIZE2SHIFT.LT.0) THEN
+        DO I=BEG2SHIFT,END2SHIFT
+          IW(I+ISIZE2SHIFT)=IW(I)
+        ENDDO
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_ISHIFT
+      SUBROUTINE DMUMPS_RSHIFT(A, LA, BEG2SHIFT, END2SHIFT, RSIZE2SHIFT)
+      IMPLICIT NONE
+      INTEGER(8) :: LA, BEG2SHIFT, END2SHIFT, RSIZE2SHIFT
+      DOUBLE PRECISION A(LA)
+      INTEGER(8) :: I
+      IF (RSIZE2SHIFT.GT.0_8) THEN
+        DO I=END2SHIFT,BEG2SHIFT,-1_8
+          A(I+RSIZE2SHIFT)=A(I)
+        ENDDO
+      ELSE IF (RSIZE2SHIFT.LT.0_8) THEN
+        DO I=BEG2SHIFT,END2SHIFT
+          A(I+RSIZE2SHIFT)=A(I)
+        ENDDO
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_RSHIFT
+      SUBROUTINE DMUMPS_COMPRE_NEW(N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, KEEP199, PROCNODE_STEPS, DAD)
+      USE DMUMPS_DYNAMIC_MEMORY_M, ONLY: DMUMPS_DM_PAMASTERORPTRAST
+      IMPLICIT NONE
+      INTEGER, INTENT(in)   :: N, LIW, KEEP28, KEEP216, XSIZE
+      INTEGER(8), INTENT(in)   :: LA
+      INTEGER(8), INTENT(inout):: LRLU, IPTRLU, LRLUS
+      INTEGER, INTENT(inout)   :: IWPOSCB
+      INTEGER :: IWPOS
+      INTEGER(8), INTENT(inout) :: PTRAST(KEEP28), PAMASTER(KEEP28)
+      INTEGER, INTENT(inout) :: IW(LIW),PTRIST(KEEP28),
+     &                          PIMASTER(KEEP28)
+      INTEGER, INTENT(in)    :: STEP(N), SLAVEF, KEEP199
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP28), DAD(KEEP28)
+      DOUBLE PRECISION, INTENT(inout) :: A(LA)
+      INTEGER, INTENT(inout) :: COMP
+      DOUBLE PRECISION, INTENT(inout)    :: ACC_TIME
+      INTEGER, INTENT(in)    :: MYID
+      INCLUDE 'mumps_headers.h' 
+      INTEGER ICURRENT, NEXT, STATE_NEXT
+      INTEGER(8) :: RCURRENT
+      INTEGER ISIZE2SHIFT
+      INTEGER(8) :: RSIZE2SHIFT
+      INTEGER IBEGCONTIG
+      INTEGER(8) :: RBEGCONTIG
+      INTEGER(8) :: RBEG2SHIFT, REND2SHIFT
+      INTEGER INODE
+      LOGICAL :: IS_PAMASTER, IS_PTRAST
+      INTEGER(8) :: FREE_IN_REC
+      INTEGER(8) :: RCURRENT_SIZE, DYN_SIZE
+      LOGICAL :: RECORD_CAN_BE_COMPRESSED
+      INTEGER IXXP
+      INTEGER, EXTERNAL :: MUMPS_TYPENODE
+      INTEGER, EXTERNAL :: MUMPS_PROCNODE
+      LOGICAL, EXTERNAL :: DMUMPS_ISBAND
+      EXTERNAL MPI_WTIME
+      DOUBLE PRECISION MPI_WTIME
+      DOUBLE PRECISION TIME_REF, TIME_COMP
+      TIME_REF = MPI_WTIME()
+      ISIZE2SHIFT=0
+      RSIZE2SHIFT=0_8
+      ICURRENT  = LIW-XSIZE+1
+      RCURRENT = LA+1_8
+      IBEGCONTIG = -999999 
+      RBEGCONTIG = -999999_8 
+      NEXT = IW(ICURRENT+XXP)
+      IF (NEXT.EQ.TOP_OF_STACK) GOTO 120
+      COMP=COMP+1
+      STATE_NEXT = IW(NEXT+XXS)
+      IXXP = ICURRENT+XXP
+  10     CONTINUE
+         CALL DMUMPS_CAN_RECORD_BE_COMPRESSED(
+     &        RECORD_CAN_BE_COMPRESSED,
+     &        IW(NEXT), XSIZE, KEEP216)
+         IF ( .NOT. RECORD_CAN_BE_COMPRESSED ) THEN
+            CALL DMUMPS_MOVETONEXTRECORD(IW,LIW,
+     &           IXXP, ICURRENT, NEXT, RCURRENT, ISIZE2SHIFT)
+            CALL MUMPS_GETI8(DYN_SIZE, IW(ICURRENT+XXD))
+            CALL MUMPS_GETI8(RCURRENT_SIZE, IW(ICURRENT+XXR))
+            IF (IBEGCONTIG < 0) THEN
+              IBEGCONTIG=ICURRENT+IW(ICURRENT+XXI)-1
+            ENDIF
+            IF (RBEGCONTIG < 0_8) THEN
+              RBEGCONTIG=RCURRENT+RCURRENT_SIZE-1_8
+            ENDIF
+            INODE=IW(ICURRENT+XXN)
+            IF ( DYN_SIZE .EQ. 0_8 ) THEN
+              IF (RSIZE2SHIFT .NE. 0_8) THEN
+                CALL DMUMPS_DM_PAMASTERORPTRAST( N, SLAVEF, MYID,
+     &          KEEP28, KEEP199,
+     &          INODE, IW(ICURRENT+XXS),
+     &          IW(ICURRENT+XXD:ICURRENT+XXD+1), STEP,
+     &          DAD, PROCNODE_STEPS, RCURRENT, PAMASTER, PTRAST,
+     &          IS_PAMASTER, IS_PTRAST )
+                IF (IS_PTRAST) THEN
+                  PTRAST(STEP(INODE))=
+     &            PTRAST(STEP(INODE))+RSIZE2SHIFT
+                ELSE IF (IS_PAMASTER) THEN
+                  PAMASTER(STEP(INODE))=
+     &            PAMASTER(STEP(INODE))+RSIZE2SHIFT
+                ENDIF
+              ENDIF
+            ENDIF
+            IF (ISIZE2SHIFT .NE. 0) THEN
+                IF (PTRIST(STEP(INODE)).EQ.ICURRENT)
+     &            PTRIST(STEP(INODE))=
+     &            PTRIST(STEP(INODE))+ISIZE2SHIFT
+                IF (PIMASTER(STEP(INODE)).EQ.ICURRENT)
+     &            PIMASTER(STEP(INODE))=
+     &            PIMASTER(STEP(INODE))+ISIZE2SHIFT
+            ENDIF
+            IF (NEXT .NE. TOP_OF_STACK) THEN
+              STATE_NEXT=IW(NEXT+XXS)
+              GOTO 10
+            ENDIF
+         ENDIF
+  20     CONTINUE
+         IF (IBEGCONTIG.NE.0 .AND. ISIZE2SHIFT .NE. 0) THEN
+           CALL DMUMPS_ISHIFT(IW,LIW,ICURRENT,IBEGCONTIG,ISIZE2SHIFT)
+           IF (IXXP .LE.IBEGCONTIG) THEN
+           IXXP=IXXP+ISIZE2SHIFT
+           ENDIF
+         ENDIF
+         IBEGCONTIG=-9999
+  25     CONTINUE
+         IF (RBEGCONTIG .GT.0_8 .AND. RSIZE2SHIFT .NE. 0_8) THEN
+           CALL DMUMPS_RSHIFT(A,LA,RCURRENT,RBEGCONTIG,RSIZE2SHIFT)
+         ENDIF
+         RBEGCONTIG=-99999_8
+  30     CONTINUE
+         IF (NEXT.EQ. TOP_OF_STACK) GOTO 100
+         CALL DMUMPS_CAN_RECORD_BE_COMPRESSED(
+     &        RECORD_CAN_BE_COMPRESSED, IW(NEXT), XSIZE, KEEP216)
+         IF ( STATE_NEXT .NE. S_FREE .AND.
+     &        RECORD_CAN_BE_COMPRESSED ) THEN
+           IF (RBEGCONTIG > 0_8) GOTO 25
+           CALL DMUMPS_MOVETONEXTRECORD
+     &       (IW,LIW,IXXP,ICURRENT,NEXT, RCURRENT,ISIZE2SHIFT)
+           IF (IBEGCONTIG < 0 ) THEN
+             IBEGCONTIG=ICURRENT+IW(ICURRENT+XXI)-1
+           ENDIF
+           CALL DMUMPS_SIZEFREEINREC(IW(ICURRENT),
+     &                              LIW-ICURRENT+1,
+     &                              FREE_IN_REC,
+     &                              XSIZE)
+           CALL MUMPS_GETI8(DYN_SIZE, IW(ICURRENT+XXD))
+           IF (DYN_SIZE .GT. 0_8) THEN
+           ELSE IF (STATE_NEXT .EQ. S_NOLCBNOCONTIG) THEN
+             CALL DMUMPS_MAKECBCONTIG(A,LA,RCURRENT,
+     &            IW(ICURRENT+XSIZE+2),
+     &            IW(ICURRENT+XSIZE),
+     &            IW(ICURRENT+XSIZE)+IW(ICURRENT+XSIZE+3), 0,
+     &            IW(ICURRENT+XXS),RSIZE2SHIFT) 
+             IW(ICURRENT+XXS) = S_NOLCLEANED   
+           ELSE IF (STATE_NEXT .EQ. S_NOLCBNOCONTIG38) THEN
+             CALL DMUMPS_MAKECBCONTIG(A,LA,RCURRENT,
+     &            IW(ICURRENT+XSIZE+2),
+     &            IW(ICURRENT+XSIZE),
+     &            IW(ICURRENT+XSIZE)+IW(ICURRENT+XSIZE+3),
+     &            IW(ICURRENT+XSIZE+4)-IW(ICURRENT+XSIZE+3), 
+     &            IW(ICURRENT+XXS),RSIZE2SHIFT) 
+             IW(ICURRENT+XXS) = S_NOLCLEANED38 
+           ELSE IF (STATE_NEXT.EQ.S_NOLNOCB) THEN
+             IW(ICURRENT+XXS) = S_NOLNOCBCLEANED
+           ELSE IF (STATE_NEXT .EQ. S_NOLCBCONTIG .OR.
+     &              STATE_NEXT .EQ. S_NOLCBCONTIG38) THEN
+             IF (STATE_NEXT .EQ. S_NOLCBCONTIG) THEN
+               IW(ICURRENT+XXS) = S_NOLCLEANED
+             ELSE IF (STATE_NEXT .EQ. S_NOLCBCONTIG38) THEN
+               IW(ICURRENT+XXS) = S_NOLCLEANED38
+             ENDIF
+             IF (RSIZE2SHIFT .GT.0_8) THEN
+               RBEG2SHIFT = RCURRENT + FREE_IN_REC
+               CALL MUMPS_GETI8(RCURRENT_SIZE, IW(ICURRENT+XXR))
+               REND2SHIFT = RCURRENT + RCURRENT_SIZE - 1_8
+               CALL DMUMPS_RSHIFT(A, LA,
+     &                            RBEG2SHIFT, REND2SHIFT,
+     &                            RSIZE2SHIFT)
+             ENDIF
+           ELSE
+             WRITE(*,*) "Internal error 3 in DMUMPS_COMPRE_NEW",
+     &       STATE_NEXT, DYN_SIZE, FREE_IN_REC
+             CALL MUMPS_ABORT()
+           ENDIF
+           INODE = IW(ICURRENT+XXN)
+           IF ( DYN_SIZE .GT. 0_8 ) THEN
+             IF (PTRIST(STEP(INODE)).EQ.ICURRENT)
+     &            PTRIST(STEP(INODE))=
+     &            PTRIST(STEP(INODE))+ISIZE2SHIFT
+             IF (PIMASTER(STEP(INODE)).EQ.ICURRENT)
+     &            PIMASTER(STEP(INODE))=
+     &            PIMASTER(STEP(INODE))+ISIZE2SHIFT
+           ELSE IF (STATE_NEXT .EQ. S_NOLCBCONTIG .OR.
+     &         STATE_NEXT .EQ. S_NOLCBNOCONTIG .OR.
+     &         STATE_NEXT .EQ. S_NOLCBCONTIG38 .OR.
+     &         STATE_NEXT .EQ. S_NOLCBNOCONTIG38 .OR.
+     &         STATE_NEXT .EQ. S_NOLNOCB ) THEN
+             IF (ISIZE2SHIFT.NE.0) THEN
+               PTRIST(STEP(INODE))=PTRIST(STEP(INODE))+ISIZE2SHIFT
+             ENDIF
+             PTRAST(STEP(INODE))=PTRAST(STEP(INODE))+RSIZE2SHIFT+
+     &                           FREE_IN_REC
+           ELSE
+               WRITE(*,*) "Internal error 4 in DMUMPS_COMPRE_NEW",
+     &         STATE_NEXT
+               CALL MUMPS_ABORT()
+           ENDIF
+           CALL MUMPS_SUBTRI8TOARRAY(IW(ICURRENT+XXR),FREE_IN_REC)
+           RSIZE2SHIFT=RSIZE2SHIFT+FREE_IN_REC
+           RBEGCONTIG=-9999_8
+           IF (NEXT.EQ.TOP_OF_STACK) THEN
+             GOTO 20
+           ELSE
+             STATE_NEXT=IW(NEXT+XXS)
+           ENDIF
+           GOTO 30
+         ENDIF
+         IF (IBEGCONTIG.GT.0) THEN
+           GOTO 20
+         ENDIF
+  40     CONTINUE
+         IF (STATE_NEXT == S_FREE) THEN
+            ICURRENT = NEXT
+            CALL MUMPS_GETI8( RCURRENT_SIZE, IW(ICURRENT + XXR) )
+            ISIZE2SHIFT = ISIZE2SHIFT + IW(ICURRENT+XXI)
+            RSIZE2SHIFT = RSIZE2SHIFT + RCURRENT_SIZE
+            RCURRENT    = RCURRENT    - RCURRENT_SIZE
+            NEXT=IW(ICURRENT+XXP)
+            IF (NEXT.EQ.TOP_OF_STACK) THEN
+              WRITE(*,*) "Internal error 1 in DMUMPS_COMPRE_NEW"
+              CALL MUMPS_ABORT()
+            ENDIF
+            STATE_NEXT  = IW(NEXT+XXS)
+            GOTO 40
+         ENDIF
+      GOTO 10
+ 100  CONTINUE
+      IWPOSCB = IWPOSCB + ISIZE2SHIFT
+      LRLU    = LRLU    + RSIZE2SHIFT
+      IPTRLU  = IPTRLU  + RSIZE2SHIFT
+ 120  CONTINUE
+      TIME_COMP = MPI_WTIME() - TIME_REF
+      ACC_TIME = ACC_TIME + TIME_COMP
+      RETURN
+      END SUBROUTINE DMUMPS_COMPRE_NEW
+      SUBROUTINE DMUMPS_GET_SIZEHOLE(IREC, IW, LIW,
+     &            ISIZEHOLE, RSIZEHOLE)
+      IMPLICIT NONE
+      INTEGER, intent(in) :: IREC, LIW
+      INTEGER, intent(in) :: IW(LIW)
+      INTEGER, intent(out):: ISIZEHOLE
+      INTEGER(8), intent(out) :: RSIZEHOLE
+      INTEGER IRECLOC
+      INTEGER(8) :: RECLOC_SIZE
+      INCLUDE 'mumps_headers.h'
+      ISIZEHOLE=0
+      RSIZEHOLE=0_8
+      IRECLOC = IREC + IW( IREC+XXI )
+ 10   CONTINUE
+      CALL MUMPS_GETI8(RECLOC_SIZE, IW(IRECLOC+XXR))
+      IF (IW(IRECLOC+XXS).EQ.S_FREE) THEN
+        ISIZEHOLE=ISIZEHOLE+IW(IRECLOC+XXI)
+        RSIZEHOLE=RSIZEHOLE+RECLOC_SIZE
+        IRECLOC=IRECLOC+IW(IRECLOC+XXI)
+        GOTO 10
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_GET_SIZEHOLE
+      SUBROUTINE DMUMPS_MAKECBCONTIG(A, LA, RCURRENT,
+     &           NROW, NCB, LD, NELIM, NODESTATE, ISHIFT)
+      IMPLICIT NONE
+      INCLUDE 'mumps_headers.h'
+      INTEGER LD, NROW, NCB, NELIM, NODESTATE
+      INTEGER(8) :: ISHIFT
+      INTEGER(8) :: LA, RCURRENT
+      DOUBLE PRECISION A(LA)
+      INTEGER I,J
+      INTEGER(8) :: IOLD,INEW
+      LOGICAL NELIM_ROOT
+      NELIM_ROOT=.TRUE.
+      IF (NODESTATE.EQ. S_NOLCBNOCONTIG) THEN
+         NELIM_ROOT=.FALSE.
+         IF (NELIM.NE.0)  THEN
+           WRITE(*,*) "Internal error 1 IN DMUMPS_MAKECBCONTIG"
+           CALL MUMPS_ABORT()
+         ENDIF
+      ELSE IF (NODESTATE .NE. S_NOLCBNOCONTIG38) THEN
+           WRITE(*,*) "Internal error 2 in DMUMPS_MAKECBCONTIG"
+     &                ,NODESTATE
+           CALL MUMPS_ABORT()
+      ENDIF
+      IF (ISHIFT .LT.0_8) THEN
+        WRITE(*,*) "Internal error 3 in DMUMPS_MAKECBCONTIG",ISHIFT
+        CALL MUMPS_ABORT()
+      ENDIF
+      IF (NELIM_ROOT) THEN
+        IOLD=RCURRENT+int(LD,8)*int(NROW,8)+int(NELIM-1-NCB,8)
+      ELSE
+        IOLD = RCURRENT+int(LD,8)*int(NROW,8)-1_8
+      ENDIF
+      INEW = RCURRENT+int(LD,8)*int(NROW,8)+ISHIFT-1_8
+      DO I = NROW, 1, -1
+        IF (I.EQ.NROW .AND. ISHIFT.EQ.0_8.AND.
+     &    .NOT. NELIM_ROOT) THEN
+          IOLD=IOLD-int(LD,8)
+          INEW=INEW-int(NCB,8)
+          CYCLE
+        ENDIF
+        IF (NELIM_ROOT) THEN
+          DO J=1,NELIM
+            A( INEW ) = A( IOLD + int(- J + 1,8))
+            INEW = INEW - 1_8
+          ENDDO
+        ELSE
+          DO J=1, NCB
+            A( INEW ) = A( IOLD + int(- J + 1, 8))
+            INEW = INEW - 1_8
+          ENDDO
+        ENDIF
+        IOLD = IOLD - int(LD,8)
+      ENDDO
+      IF (NELIM_ROOT) THEN
+        NODESTATE=S_NOLCBCONTIG38
+      ELSE
+        NODESTATE=S_NOLCBCONTIG
+      ENDIF
+      RETURN
+      END SUBROUTINE DMUMPS_MAKECBCONTIG
+      SUBROUTINE DMUMPS_GET_SIZE_NEEDED(
+     &       SIZEI_NEEDED, SIZER_NEEDED, SKIP_TOP_STACK, 
+     &       KEEP, KEEP8,  
+     &       N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, PROCNODE_STEPS, DAD, 
+     &       IFLAG, IERROR  
+     &       )
+#if ! defined(NODYNAMICCB)
+      USE DMUMPS_DYNAMIC_MEMORY_M, ONLY: DMUMPS_DM_CBSTATIC2DYNAMIC
+#endif
+      IMPLICIT NONE
+      INTEGER,  INTENT(in)     :: SIZEI_NEEDED
+      INTEGER(8),  INTENT(in)  :: SIZER_NEEDED
+      LOGICAL, INTENT(in)      :: SKIP_TOP_STACK
+      INTEGER,   INTENT(in)    :: KEEP(500)
+      INTEGER(8), INTENT(inout):: KEEP8(150)
+      INTEGER, INTENT(in)      :: N, LIW, KEEP28, KEEP216, XSIZE
+      INTEGER(8), INTENT(in)   :: LA
+      INTEGER(8), INTENT(inout):: LRLU, IPTRLU, LRLUS
+      INTEGER, INTENT(inout)   :: IWPOSCB
+      INTEGER, INTENT(inout)   :: IWPOS
+      INTEGER(8), INTENT(inout) :: PTRAST(KEEP28), PAMASTER(KEEP28)
+      INTEGER, INTENT(inout) :: IW(LIW),PTRIST(KEEP28),
+     &                          PIMASTER(KEEP28)
+      INTEGER, INTENT(in)    :: STEP(N), SLAVEF 
+      INTEGER, INTENT(in)    :: PROCNODE_STEPS(KEEP28), DAD(KEEP28)
+      DOUBLE PRECISION, INTENT(inout) :: A(LA)
+      INTEGER, INTENT(inout) :: COMP
+      DOUBLE PRECISION, INTENT(inout)    :: ACC_TIME
+      INTEGER, INTENT(iN)    :: MYID
+      INTEGER, INTENT(inout)   :: IFLAG, IERROR
+      LOGICAL DMUMPS_COMPRE_NEW_CALLED
+      DMUMPS_COMPRE_NEW_CALLED = .FALSE.
+      IF (IWPOSCB-IWPOS+1 .LT. SIZEI_NEEDED) THEN
+          CALL DMUMPS_COMPRE_NEW(N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, KEEP(199), PROCNODE_STEPS, DAD)
+         IF ( LRLU .NE. LRLUS ) THEN
+            WRITE(*,*) 'Internal error 1 in DMUMPS_GET_SIZE_NEEDED ',
+     &      'PB compress... DMUMPS_ALLOC_CB ',
+     &      'LRLU,LRLUS=',LRLU,LRLUS
+            IFLAG = -9
+            GOTO 500
+          END IF
+          DMUMPS_COMPRE_NEW_CALLED = .TRUE.
+          IF (IWPOSCB-IWPOS+1 .LT. SIZEI_NEEDED) THEN
+             IFLAG  = -8
+             IERROR = SIZEI_NEEDED
+             GOTO 500 
+          ENDIF
+      ENDIF
+      IF ( .NOT.DMUMPS_COMPRE_NEW_CALLED.AND.
+     &     (LRLU.LT.SIZER_NEEDED).AND.
+     &     (LRLUS.GE.SIZER_NEEDED).AND.
+     &     (LRLU.NE.LRLUS)
+     &    ) THEN
+            CALL DMUMPS_COMPRE_NEW(N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, KEEP(199), PROCNODE_STEPS, DAD)
+             DMUMPS_COMPRE_NEW_CALLED = .TRUE.
+            IF ( LRLU .NE. LRLUS ) THEN
+              WRITE(*,*) 'Internal error 2 ',
+     &        'in DMUMPS_GET_SIZE_NEEDED ',
+     &        'PB compress... DMUMPS_ALLOC_CB ',
+     &        'LRLU,LRLUS=',LRLU,LRLUS
+              IFLAG = -9
+              GOTO 500
+            END IF
+      ENDIF
+      IF (LRLUS.LT.SIZER_NEEDED) THEN
+#if ! defined(NODYNAMICCB)
+          IF (.NOT. DMUMPS_COMPRE_NEW_CALLED) THEN
+            CALL DMUMPS_COMPRE_NEW(N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, KEEP(199), PROCNODE_STEPS, DAD)
+            IF ( LRLU .NE. LRLUS ) THEN
+              WRITE(*,*) 'Internal error 2 ',
+     &        'in DMUMPS_GET_SIZE_NEEDED ',
+     &        'PB compress... DMUMPS_ALLOC_CB ',
+     &        'LRLU,LRLUS=',LRLU,LRLUS
+              IFLAG = -9
+              GOTO 500
+            END IF
+          ENDIF
+          CALL DMUMPS_DM_CBSTATIC2DYNAMIC(KEEP(141),
+     &           SIZER_NEEDED, SKIP_TOP_STACK, 
+     &           MYID, N, SLAVEF,
+     &           KEEP, KEEP8,
+     &           IW, LIW, IWPOSCB, IWPOS,
+     &           A, LA, LRLU, IPTRLU, LRLUS, 
+     &           STEP, PTRAST, PAMASTER,
+     &           PROCNODE_STEPS, DAD, IFLAG, IERROR)
+          IF (IFLAG.LT.0) GOTO 500
+          IF (LRLU.LT.SIZER_NEEDED) THEN 
+            CALL DMUMPS_COMPRE_NEW(N,KEEP28,IW,LIW,A,LA,
+     &       LRLU,IPTRLU,IWPOS,
+     &       IWPOSCB,PTRIST,PTRAST,STEP,PIMASTER,PAMASTER,
+     &       KEEP216,LRLUS,XSIZE, COMP, ACC_TIME, MYID,
+     &       SLAVEF, KEEP(199), PROCNODE_STEPS, DAD)
+            IF ( LRLU .NE. LRLUS ) THEN
+              WRITE(*,*) 'Internal error 4 ',
+     &        'in DMUMPS_GET_SIZE_NEEDED ',
+     &        'PB compress... DMUMPS_ALLOC_CB ',
+     &        'LRLU,LRLUS=',LRLU,LRLUS
+              IFLAG = -9
+              GOTO 500
+            END IF
+          ENDIF
+#else 
+          IFLAG = -9
+          CALL MUMPS_SET_IERROR(SIZER_NEEDED-LRLUS, IERROR)
+          GOTO 500
+#endif
+      ENDIF
+500   CONTINUE
+      RETURN
+      END SUBROUTINE DMUMPS_GET_SIZE_NEEDED

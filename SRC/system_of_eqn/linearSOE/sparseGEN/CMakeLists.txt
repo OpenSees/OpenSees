@@ -51,6 +51,8 @@ target_sources(OPS_PFEM
         PFEMSolver_Mumps.h	
 )
 
+if(MPI_FOUND)
+
 target_sources(OpenSeesMP
     PRIVATE 
         DistributedSuperLU.cpp
@@ -66,6 +68,9 @@ target_sources(OpenSeesMP
         PFEMSolver_Mumps.h
         PFEMCompressibleSolver_Mumps.h
 )
+
+endif()
+
 
 target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
