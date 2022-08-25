@@ -62,6 +62,7 @@ void* OPS_ElasticSection2d();
 void* OPS_ElasticSection3d();
 void* OPS_ElasticShearSection2d();
 void* OPS_ElasticShearSection3d();
+void* OPS_ElasticBDShearSection2d();
 void* OPS_FiberSection2d();
 void* OPS_FiberSection3d();
 void* OPS_FiberSectionWarping3d();
@@ -299,6 +300,7 @@ namespace {
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
+	functionMap.insert(std::make_pair("ElasticBD", &OPS_ElasticBDShearSection2d));
 	functionMap.insert(std::make_pair("Fiber", &OPS_FiberSection));
 	functionMap.insert(std::make_pair("fiberSec", &OPS_FiberSection));
 	functionMap.insert(std::make_pair("FiberWarping", &OPS_FiberSectionWarping));
