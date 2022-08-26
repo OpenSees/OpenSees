@@ -515,6 +515,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/feap/fElmt02.o \
 	$(FE)/element/dispBeamColumn/AxEqDispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/TimoshenkoBeamColumn2d.o \
+	$(FE)/element/dispBeamColumn/TimoshenkoBeamColumn3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
@@ -534,8 +535,6 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeamWarping3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
-	$(FE)/element/elasticBeamColumn/WheelRail.o \
-	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.o \
@@ -826,6 +825,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
 	$(FE)/material/uniaxial/Bond_SP01.o \
+        $(FE)/material/uniaxial/FRCC.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
@@ -1053,6 +1053,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/ElasticSection3d.o \
 	$(FE)/material/section/ElasticShearSection2d.o \
 	$(FE)/material/section/ElasticShearSection3d.o \
+	$(FE)/material/section/ElasticBDShearSection2d.o \
 	$(FE)/material/section/ElasticWarpingShearSection2d.o \
 	$(FE)/material/section/ElasticTubeSection3d.o \
 	$(FE)/material/section/FiberSection2d.o \

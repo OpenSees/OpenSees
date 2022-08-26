@@ -952,7 +952,7 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
   
   Response *theResponse =0;
 
-  if (argc > 2 && (strcmp(argv[0],"addition") == 0) || (strcmp(argv[0],"material") == 0)) {
+  if (argc > 2 && (strcmp(argv[0],"addition") == 0 || strcmp(argv[0],"material") == 0)) {
 
     // Get the tag of the material
     int materialTag = atoi(argv[1]);
@@ -961,15 +961,21 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
     int ok = 0;
     for (int i = 0; i < numMats; i++)
       if (materialTag == theAdditions[i]->getTag())
-	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
+	return theAdditions[i]->setResponse(&argv[2], argc-2, output);
   }
 
-  if ((argc > 1) && (strcmp(argv[0],"section") == 0) && (theSection))
+  // For backward compatibility
+  if (argc > 1 && strcmp(argv[0],"section") == 0 && theSection != 0)
     theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
+  // Call default method
   if (theResponse == 0)
-    return SectionForceDeformation::setResponse(argv, argc, output);
-  
+    theResponse = SectionForceDeformation::setResponse(argv, argc, output);
+    
+  // If that didn't work, pass along to section
+  if (theResponse == 0 && theSection != 0)
+    theResponse = theSection->setResponse(argv, argc, output);
+
   return theResponse;
 }
 
