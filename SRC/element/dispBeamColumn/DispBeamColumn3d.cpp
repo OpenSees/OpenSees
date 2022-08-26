@@ -589,8 +589,6 @@ DispBeamColumn3d::getTangentStiff()
 void
 DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 {
-  static Matrix kb(6,6);
-  
   // Zero for integral
   kb.Zero();
   
@@ -683,8 +681,6 @@ DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
   }
   
   if(theDamping) kb *= theDamping->getStiffnessMultiplier();
-  
-  return kb;
 }
 
 const Matrix&
