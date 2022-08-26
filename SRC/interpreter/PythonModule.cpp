@@ -47,6 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <cstring>
 #include <cctype>
 
+#define OPSPY_VERSION "3.4.0.3"
+
 // define opserr
 static PythonStream sserr;
 OPS_Stream *opserrPtr = &sserr;
@@ -402,7 +404,7 @@ initopensees(void)
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
 
     // add OpenSeesParameter dict
-    PyObject *par = PyDict_New();
+    auto *par = PyDict_New();
     if (par == NULL) {
       INITERROR;
     }
@@ -411,15 +413,30 @@ initopensees(void)
         INITERROR;
     }
 
-    // char version[10];
-    // const char *py_version = ".6";
-    // for (int i = 0; i < 5; ++i) {
-    //     version[i] = OPS_VERSION[i];
-    // }
-    // for (int i = 0; i < 3; ++i) {
-    //     version[5 + i] = py_version[i];
-    // }
-    // PyModule_AddStringConstant(pymodule, "__version__", version);
+    // add OpenSeesInfo dict
+    auto *info = PyDict_New();
+    if (info == NULL) {
+      INITERROR;
+    }
+    if (PyModule_AddObject(pymodule, "OpenSeesInfo", info) < 0) {
+        Py_DECREF(info);
+        INITERROR;
+    }
+
+    auto* opsver = PyUnicode_FromString(OPS_VERSION);
+    if (PyDict_SetItemString(info, "OpenSeesVersion", opsver) < 0) {
+        Py_DECREF(info);
+        Py_DECREF(opsver);
+        INITERROR;
+    }
+
+    PyObject* opspyver = PyUnicode_FromString(OPSPY_VERSION);
+    if (PyDict_SetItemString(info, "OpenSeesPyVersion", opspyver) < 0) {
+        Py_DECREF(info);
+        Py_DECREF(opsver);
+        Py_DECREF(opspyver);
+        INITERROR;
+    }
 
     sserr.setError(st->error);
 

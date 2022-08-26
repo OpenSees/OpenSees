@@ -28,7 +28,7 @@ void errexit(char *f_str,...)
 
   sprintf(out2, "Error! %s", out1);
 
-  fprintf(stdout, out2);
+  fprintf(stdout, "ERROR! %s", out2);
   fflush(stdout);
 
   abort();
@@ -502,6 +502,7 @@ float sdot(int n, float *x, float *y)
 /*************************************************************************
 * This function computes a 2-norm
 **************************************************************************/
+/* FMK - a lapack routine
 void saxpy(int n, float alpha, float *x, int incx, float *y, int incy)
 {
   int i;
@@ -509,7 +510,7 @@ void saxpy(int n, float alpha, float *x, int incx, float *y, int incy)
   for (i=0; i<n; i++, x+=incx, y+=incy) 
     *y += alpha*(*x);
 }
-
+*/
 
 
 

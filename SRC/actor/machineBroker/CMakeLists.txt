@@ -11,7 +11,7 @@ target_sources(OPS_Actor
       MachineBroker.h
 )
 
-
+if(MPI_FOUND)
 
 target_sources(OpenSeesMP
     PRIVATE
@@ -27,6 +27,7 @@ target_sources(OpenSeesSP
        MPI_MachineBroker.h
 )
 
+endif()
 
 target_include_directories(OPS_Actor PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

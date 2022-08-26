@@ -39,6 +39,7 @@
 #include <ForceBeamColumnWarping2d.h>
 #include <ElasticForceBeamColumnWarping2d.h>
 #include <TimoshenkoBeamColumn2d.h>
+#include <TimoshenkoBeamColumn3d.h>
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
 #include <DispBeamColumnNL2d.h>
@@ -209,6 +210,13 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 
     if (strcmp(argv[argi],"-sections") != 0)  {
 
+      if (argc - argi < 2) {
+	opserr << "WARNING insufficent number of arguments for element "
+	       << argv[1] << " with tag " << eleTag;
+	opserr << "\nThis is probably because beamIntegration is not yet functional with Tcl" << endln;
+	return TCL_ERROR;
+      }
+      
       if (Tcl_GetInt(interp, argv[argi], &secTag) != TCL_OK) {
 	opserr << "WARNING invalid secTag\n";
 	opserr << argv[1] << " element: " << eleTag << endln;
@@ -396,6 +404,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new ElasticForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
 	theElement = new DispBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, cMass);
+      else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
+	theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);      
       else if (strcmp(argv[1], "dispBeamColumnThermal") == 0)
 	theElement = new DispBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);//added by L.Jiang[SIF]
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
@@ -1324,6 +1334,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       theElement = new ElasticForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass);
     else if (strcmp(argv[1],"dispBeamColumn") == 0)
       theElement = new DispBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass, cMass);
+    else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
+      theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass);    
     else
       theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass, numIter, tol);
   }

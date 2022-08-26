@@ -995,6 +995,9 @@
     <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.cpp">
       <Filter>IGA</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1764,6 +1767,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.h">
       <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn3d.h">
+      <Filter>dispBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
