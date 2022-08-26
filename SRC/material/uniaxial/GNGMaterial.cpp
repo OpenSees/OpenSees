@@ -504,12 +504,12 @@ GNGMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
 	
   	if (strcmp(argv[0],"demand") == 0) {
 		 
-		return new MaterialResponse(this, 11, this->getStrain());
+		return new MaterialResponse(this, 11, 0.0);
 
 	  }
 	else if (strcmp(argv[0],"ratchetCount") == 0) {
 	 
-		return new MaterialResponse(this, 12, this->getStrain());
+		return new MaterialResponse(this, 12, 0.0);
 
 	  } 	
 	  
