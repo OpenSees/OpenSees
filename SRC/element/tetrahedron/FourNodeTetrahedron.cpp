@@ -18,14 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.31 $
-// $Date: 2010-04-23 22:56:02 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/brick/FourNodeTetrahedron.cpp,v $
-
-// Ed "C++" Love
-//
-// Eight node FourNodeTetrahedron element
-//
+// ============================================================================
+// 2018 By Jose Abell @ Universidad de los Andes, Chile
+// www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
+// ============================================================================
+// Please read detailed description in FourNodeTetrahedron.h.
+// ============================================================================
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -1936,19 +1934,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
 }
 
-/*
-      Inputs:
-         ss[4]     - Natural coordinates of point
-         xl[3][4]  - Nodal coordinates for element
 
-      Outputs:
-         xsj        - Jacobian determinant at point
-         shp[4][4]  - Shape functions and derivatives at point
-                     shp[0][i] = dN_i/dx
-                     shp[1][i] = dN_i/dy
-                     shp[2][i] = dN_i/dzc
-                     shp[3][i] =  N_i
-*/
 void  
 FourNodeTetrahedron::shp3d( const double ss[4], double &xsj, double shp[4][4], const double xl[3][4]   )
 {
