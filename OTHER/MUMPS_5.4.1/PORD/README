@@ -1,0 +1,21 @@
+ACKNOWLEDGEMENT:
+
+This directory contains an implementation of the PORD algorithm,
+as described in:
+     "Towards a tighter coupling of bottom-up and top-down sparse
+      matrix ordering methods, J. Schulze, BIT, 41:4, pp 800, 2001."
+
+It is extracted from the SPACE-1.0 package developed at the
+University of Paderborn by Juergen Schulze (js@juergenschulze.de).
+A lot of the code in SPACE-1.0 was itself based on the SPOOLES
+package by Cleve Ashcraft.
+
+We are grateful to Juergen Schulze for letting us distribute PORD.
+
+SPACE-1.0 (which includes PORD) is in the public domain, see
+http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/SCHLUNZ/vrp.html
+
+"The fill-reducing ordering algorithm has been integrated in a software package called SPACE (SPArse Cholesky Elimination). The package not only provides an easy to use interface to the ordering algorithm, it also offers functions for the symbolical/numerical factorization steps and for the solution of the triangular systems. The factorizations and solves may be computed in serial or in parallel using MPI. In all cases, the important computational kernels are based on BLAS-3 like operations. Although all functions are completely written in C code, the design of the library follows object-oriented principles; there are objects and methods that can be applied to the objects (i.e. object creation, object manipulation).
+
+The SPACE library is totally within the public domain; there are absolutely no licensing restrictions. The web page http://www.pc2.de/software/space contains the latest release of the package (full source code). "
+

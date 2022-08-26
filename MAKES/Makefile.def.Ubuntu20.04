@@ -260,7 +260,7 @@ MACHINE_INCLUDES        = -I/usr/include \
 include $(FE)/Makefile.incl
 
 TCL_INCLUDES = -I/usr/include/tcl8.6
-PYTHON_INCLUDES = -I/usr/include/python3.5
+PYTHON_INCLUDES = -I/usr/include/python3.8
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
 

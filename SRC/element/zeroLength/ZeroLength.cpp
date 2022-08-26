@@ -72,8 +72,8 @@ void* OPS_ZeroLength()
     if (numdata < 7) {
         opserr << "WARNING too few arguments " <<
             "want - element ZeroLength eleTag? iNode? jNode? " <<
-            "-mat matID1? ... -dir dirMat1? .. " <<
-            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+            "-mat matID1? ... -dir dirMat1? ... " <<
+	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
 
         return 0;
     }
@@ -82,7 +82,7 @@ void* OPS_ZeroLength()
     int idata [3];
     numdata = 3;
     if (OPS_GetIntInput(&numdata,idata) < 0) {
-        opserr << "WARNING: failed to get integer data\n";
+      opserr << "WARNING: failed to get integer data" << endln;
         return 0;
     }
 
@@ -93,8 +93,8 @@ void* OPS_ZeroLength()
     if (strcmp(type,"-mat") != 0) {
         opserr << "WARNING expecting " <<
             "- element ZeroLength eleTag? iNode? jNode? " <<
-            "-mat matID1? ... -dir dirMat1? .. " <<
-            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+            "-mat matID1? ... -dir dirMat1? ... " <<
+	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
 
         return 0;
     }
@@ -129,8 +129,8 @@ void* OPS_ZeroLength()
       if (theMats[i] == 0) {
 	opserr << "WARNING no material " << matTags(i) <<
 	  "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
-	  "-mat matID1? ... -dir dirMat1? .. " <<
-	  "<-orient x1? x2? x3? y1? y2? y3?>\n";
+	  "-mat matID1? ... -dir dirMat1? ... " <<
+	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
 	return 0;
       }
     }
@@ -141,21 +141,21 @@ void* OPS_ZeroLength()
     if (strcmp(type,"-dir") != 0 && strcmp(type, "-dof") != 0) {
         opserr << "WARNING expecting -dir flag " <<
             "- element ZeroLength eleTag? iNode? jNode? " <<
-            "-mat matID1? ... -dir dirMat1? .. " <<
-            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+            "-mat matID1? ... -dir dirMat1? ... " <<
+	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
         return 0;
     }
     if (OPS_GetNumRemainingInputArgs() < numMats) {
 	opserr << "WARNING not enough directions provided for ele " << idata[0] <<
 	    "- element ZeroLength eleTag? iNode? jNode? " <<
-	    "-mat matID1? ... -dir dirMat1? .. " <<
-	    "<-orient x1? x2? x3? y1? y2? y3?>\n";
+	    "-mat matID1? ... -dir dirMat1? ... " <<
+	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
 	return 0;
     }
     
     ID dirs(numMats);
     if (OPS_GetIntInput(&numMats,&dirs(0)) < 0) {
-	opserr << "WARNING invalid dir\n";
+      opserr << "WARNING zeroLength - invalid dir" << endln;
 	return 0;
     }
     for (int i=0; i<dirs.Size(); i++) {
@@ -175,7 +175,7 @@ void* OPS_ZeroLength()
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
 		numdata = 1;
 		if (OPS_GetIntInput(&numdata,&doRayleighDamping) < 0) {
-		    opserr<<"WARNING: invalid integer\n";
+		  opserr<<"WARNING zeroLength - invalid integer for doRayleigh" << endln;
 		    return 0;
 		}
 	    }
@@ -197,22 +197,33 @@ void* OPS_ZeroLength()
 	  }
 
 	} else if (strcmp(type,"-orient") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 6) {
-		opserr<<"WARNING: insufficient orient values\n";
+	    if (ndm == 2 && OPS_GetNumRemainingInputArgs() < 3) {
+	      opserr<<"WARNING zeroLength - insufficient orient values for 2D model" << endln;
 		return 0;
 	    }
+	    if (ndm == 3 && OPS_GetNumRemainingInputArgs() < 6) {
+	      opserr<<"WARNING zeroLength - insufficient orient values for 3D model" << endln;
+		return 0;
+	    }	    
 	    numdata = 3;
 	    if (OPS_GetDoubleInput(&numdata,&x(0)) < 0) {
-		opserr<<"WARNING: invalid double input\n";
+	      opserr<<"WARNING zeroLength - invalid double input for x axis" << endln;
 		return 0;
 	    }
-	    if (OPS_GetDoubleInput(&numdata,&y(0)) < 0) {
-		opserr<<"WARNING: invalid double input\n";
+	    if (ndm == 3 && OPS_GetDoubleInput(&numdata,&y(0)) < 0) {
+	      opserr<<"WARNING zeroLength - invalid double input for y axis" << endln;
 		return 0;
 	    }
 	}
     }
 
+    // Calculate y = z cross x
+    if (ndm == 2) {
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) = 0.0;
+    }
+    
     Element *theEle = 0;
     if (doRayleighDamping != 2) 
       theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, dirs, doRayleighDamping);
@@ -1261,12 +1272,11 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
 
-    char outputData[10];
+    char outputData[20];
 
     if ((strcmp(argv[0],"force") == 0) || (strcmp(argv[0],"forces") == 0) 
         || (strcmp(argv[0],"globalForces") == 0) || (strcmp(argv[0],"globalforces") == 0)) {
 
-            char outputData[20];
             int numDOFperNode = numDOF/2;
             for (int i=0; i<numDOFperNode; i++) {
                 sprintf(outputData,"P1_%d", i+1);

@@ -79,6 +79,7 @@ OBJS       = UniaxialMaterial.o \
 	MultiLinear.o \
 	HookGap.o \
 	Bond_SP01.o \
+	FRCC.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
 	ImpactMaterial.o \

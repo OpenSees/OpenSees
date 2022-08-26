@@ -39,7 +39,7 @@ void* OPS_ElasticTubeSection3d()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section ElasticTube tag? E? d? tw? G?" << endln;
+	opserr << "Want: section ElasticTube tag? E? nu? d? tw? <shape?>" << endln;
 	return 0;
     }
 	
@@ -59,50 +59,68 @@ void* OPS_ElasticTubeSection3d()
     }
 
     double E = data[0];
-    double d = data[1];
-    double tw = data[2];
-    double G = data[3];
+    double nu = data[1];
+    double d = data[2];
+    double tw = data[3];
 
-    return new ElasticTubeSection3d(tag, E, d, tw, G);	
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      double shape;
+      numdata = 1;
+      if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid shape factor input" << endln;
+	opserr << "ElasticTube section: " << tag << endln;	    
+	return 0;
+      }
+      return new ElasticTubeSection3d(tag, E, nu, d, tw, shape);
+    }
+    else
+      return new ElasticTubeSection3d(tag, E, nu, d, tw);
 }
 
-Vector ElasticTubeSection3d::s(4);
-Matrix ElasticTubeSection3d::ks(4,4);
-ID ElasticTubeSection3d::code(4);
+Vector ElasticTubeSection3d::s(6);
+Matrix ElasticTubeSection3d::ks(6,6);
+ID ElasticTubeSection3d::code(6);
 
 ElasticTubeSection3d::ElasticTubeSection3d(void)
 :SectionForceDeformation(0, SEC_TAG_ElasticTube3d),
- E(0.0), d(0.0), tw(0.0), G(0.0),
- e(4), parameterID(0)
+ E(0.0), nu(0.0), d(0.0), tw(0.0), shape(0.0),
+ e(6), parameterID(0)
 {
   if (code(0) != SECTION_RESPONSE_P) {
     code(0) = SECTION_RESPONSE_P;	// P is the first quantity
     code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
     code(2) = SECTION_RESPONSE_MY;	// My is the third
     code(3) = SECTION_RESPONSE_T;   // T is the fourth
+    code(4) = SECTION_RESPONSE_VY;
+    code(5) = SECTION_RESPONSE_VZ;    
   }    
 }
 
 ElasticTubeSection3d::ElasticTubeSection3d
-(int tag, double E_in, double d_in, double tw_in, double G_in)
+(int tag, double E_in, double nu_in, double d_in, double tw_in, double shape_in)
 :SectionForceDeformation(tag, SEC_TAG_ElasticTube3d),
- E(E_in), d(d_in), tw(tw_in), G(G_in),
- e(4), parameterID(0)
+ E(E_in), nu(nu_in), d(d_in), tw(tw_in), shape(shape_in),
+ e(6), parameterID(0)
 {
   if (E <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input E <= 0.0\n";
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input E <= 0.0" << endln;
   }
 	
-  if (G <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input G <= 0.0\n";
+  if (nu <= 0.0)  {
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input nu <= 0.0" << endln;
   }
+
+  if (nu > 0.5)  {
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input nu > 0.5 "
+	   << "You may have entered G instead of nu" << endln;
+  }  
 	
   if (d <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input d <= 0.0\n";
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input d <= 0.0" << endln;
   }
     
   if (tw <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input tw <= 0.0\n";
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input tw <= 0.0" << endln;
   }    
   
   if (code(0) != SECTION_RESPONSE_P) {
@@ -110,6 +128,8 @@ ElasticTubeSection3d::ElasticTubeSection3d
     code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
     code(2) = SECTION_RESPONSE_MY;	// My is the third
     code(3) = SECTION_RESPONSE_T;	// My is the fourth
+    code(4) = SECTION_RESPONSE_VY;
+    code(5) = SECTION_RESPONSE_VZ;        
   }
 }
 
@@ -153,16 +173,22 @@ ElasticTubeSection3d::getSectionDeformation (void)
 const Vector &
 ElasticTubeSection3d::getStressResultant (void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
+  double G = 0.5*E/(1+nu);
+  
   s(0) = E*A*e(0);
   s(1) = E*I*e(1);    
   s(2) = E*I*e(2);
   s(3) = G*J*e(3);
+  s(4) = shape*G*A*e(4);
+  s(5) = shape*G*A*e(5);  
 
   return s;
 }
@@ -170,50 +196,51 @@ ElasticTubeSection3d::getStressResultant (void)
 const Matrix &
 ElasticTubeSection3d::getSectionTangent(void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
+  double G = 0.5*E/(1+nu);
+  
   ks(0,0) = E*A;
   ks(1,1) = E*I;
-  ks(2,2) = E*I;
+  ks(2,2) = ks(1,1);
   ks(3,3) = G*J;
-  
+  ks(4,4) = shape*G*A;
+  ks(5,5) = ks(4,4);
+    
   return ks;
 }
 
 const Matrix &
 ElasticTubeSection3d::getInitialTangent(void)
 {
-  double r1 = 0.5*d;
-  double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
-  double J = 2*I;
-  
-  ks(0,0) = E*A;
-  ks(1,1) = E*I;
-  ks(2,2) = E*I;
-  ks(3,3) = G*J;
-  
-  return ks;
+  return this->getSectionTangent();
 }
 
 const Matrix &
 ElasticTubeSection3d::getSectionFlexibility (void)
 {
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
+  double G = 0.5*E/(1+nu);
+  
   ks(0,0) = 1.0/(E*A);
   ks(1,1) = 1.0/(E*I);
-  ks(2,2) = 1.0/(E*I);
+  ks(2,2) = ks(1,1);
   ks(3,3) = 1.0/(G*J);
+  ks(4,4) = 1.0/(shape*G*A);
+  ks(5,5) = ks(4,4);
   
   return ks;
 }
@@ -221,27 +248,17 @@ ElasticTubeSection3d::getSectionFlexibility (void)
 const Matrix &
 ElasticTubeSection3d::getInitialFlexibility(void)
 {
-  double r1 = 0.5*d;
-  double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
-  double J = 2*I;
-
-  ks(0,0) = 1.0/(E*A);
-  ks(1,1) = 1.0/(E*I);
-  ks(2,2) = 1.0/(E*I);
-  ks(3,3) = 1.0/(G*J);
-  
-  return ks;
+  return this->getSectionFlexibility();
 }
 
 SectionForceDeformation*
 ElasticTubeSection3d::getCopy(void)
 {
   ElasticTubeSection3d *theCopy =
-    new ElasticTubeSection3d (this->getTag(), E, d, tw, G);
+    new ElasticTubeSection3d (this->getTag(), E, nu, d, tw, shape);
   
   theCopy->parameterID = parameterID;
+  theCopy->e = e;
   
   return theCopy;
 }
@@ -255,7 +272,7 @@ ElasticTubeSection3d::getType(void)
 int
 ElasticTubeSection3d::getOrder(void) const
 {
-  return 4;
+  return 6;
 }
 
 int
@@ -263,7 +280,7 @@ ElasticTubeSection3d::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(5);
+  static Vector data(6);
   
   int dataTag = this->getDbTag();
   
@@ -271,7 +288,8 @@ ElasticTubeSection3d::sendSelf(int commitTag, Channel &theChannel)
   data(1) = E;
   data(2) = d;
   data(3) = tw;    
-  data(4) = G;    
+  data(4) = nu;
+  data(5) = shape;    
 
   res += theChannel.sendVector(dataTag, commitTag, data);
   if (res<0) {
@@ -288,7 +306,7 @@ ElasticTubeSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static Vector data(5);
+  static Vector data(6);
   
   int dataTag = this->getDbTag();
   
@@ -302,7 +320,8 @@ ElasticTubeSection3d::recvSelf(int commitTag, Channel &theChannel,
   E =  data(1);
   d =  data(2);
   tw = data(3);
-  G =  data(4);
+  nu =  data(4);
+  shape =  data(5);  
   
   return res;
 }
@@ -313,9 +332,10 @@ ElasticTubeSection3d::Print(OPS_Stream &s, int flag)
     if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_CURRENTSTATE) {
         s << "ElasticTubeSection3d, tag: " << this->getTag() << endln;
         s << "\tE: " << E << endln;
+        s << "\tnu: " << nu << endln;
         s << "\td: " << d << endln;
         s << "\ttw: " << tw << endln;
-        s << "\tG: " << G << endln;
+        s << "\tshape: " << shape << endln;	
     }
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
@@ -323,9 +343,10 @@ ElasticTubeSection3d::Print(OPS_Stream &s, int flag)
         s << "\"name\": \"" << this->getTag() << "\", ";
         s << "\"type\": \"ElasticTubeSection3d\", ";
         s << "\"E\": " << E << ", ";
-        s << "\"G\": " << G << ", ";
+        s << "\"nu\": " << nu << ", ";
         s << "\"diameter\": " << d << ", ";
-        s << "\"thickness\": " << tw << "}";
+        s << "\"thickness\": " << tw << ", ";
+	s << "\"shape\": " << shape << "}";
     }
 }
 
@@ -351,10 +372,15 @@ ElasticTubeSection3d::setParameter(const char **argv, int argc,
     return param.addObject(3, this);
   }
   
-  if (strcmp(argv[0],"G") == 0) {
-    param.setValue(G);    
+  if (strcmp(argv[0],"nu") == 0) {
+    param.setValue(nu);    
     return param.addObject(4, this);
   }
+
+  if (strcmp(argv[0],"shape") == 0) {
+    param.setValue(shape);    
+    return param.addObject(5, this);
+  }  
     
   return -1;
 }
@@ -369,7 +395,9 @@ ElasticTubeSection3d::updateParameter(int paramID, Information &info)
   if (paramID == 3)
     d = info.theDouble;
   if (paramID == 4)
-    G = info.theDouble;
+    nu = info.theDouble;
+  if (paramID == 5)
+    shape = info.theDouble;  
 
   return 0;
 }
@@ -386,53 +414,75 @@ const Vector&
 ElasticTubeSection3d::getStressResultantSensitivity(int gradIndex,
 						       bool conditional)
 {
-  static Vector dsdh(4);
+  static Vector dsdh(6);
   dsdh.Zero();
 
+  static const double pi = 3.1415926535897932;
+  
   double r1 = 0.5*d;
   double r2 = r1-tw;
-  double A = 3.14159*(r1*r1 - r2*r2);
-  double I = 0.25*3.14159*(r1*r1*r1*r1 - r2*r2*r2*r2);
+  double A = pi*(r1*r1 - r2*r2);
+  double I = 0.25*pi*(r1*r1*r1*r1 - r2*r2*r2*r2);
   double J = 2*I;
 
+  double G = 0.5*E/(1+nu);
+  
   if (parameterID == 1) { // E
     dsdh(0) = A*e(0);
     dsdh(1) = I*e(1);
-    dsdh(2) = I*e(2);    
+    dsdh(2) = I*e(2);
+    double dGdh = 0.5/(1+nu);
+    dsdh(3) = dGdh*J*e(3);
+    dsdh(4) = dGdh*shape*A*e(4);
+    dsdh(5) = dGdh*shape*A*e(5);    
   }
 
   if (parameterID == 2) { // tw
     double dr1dh =  0.0;
     double dr2dh = -1.0;
     
-    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    double dAdh = pi*(2*r1*dr1dh - 2*r2*dr2dh);
     dsdh(0) = E*dAdh*e(0);
 
-    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    double dIdh = 0.25*pi*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
     dsdh(1) = E*dIdh*e(1);
     dsdh(2) = E*dIdh*e(2);
 
     double dJdh = 2*dIdh;
     dsdh(3) = G*dJdh*e(3);
+
+    dsdh(4) = G*shape*dAdh*e(4);
+    dsdh(5) = G*shape*dAdh*e(5);    
   }
   
   if (parameterID == 3) { // D
     double dr1dh = 0.5;
     double dr2dh = 0.5;
     
-    double dAdh = 3.14159*(2*r1*dr1dh - 2*r2*dr2dh);
+    double dAdh = pi*(2*r1*dr1dh - 2*r2*dr2dh);
     dsdh(0) = E*dAdh*e(0);
 
-    double dIdh = 0.25*3.14159*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
+    double dIdh = 0.25*pi*(4*r1*r1*r1*dr1dh - 4*r2*r2*r2*dr2dh);
     dsdh(1) = E*dIdh*e(1);
     dsdh(2) = E*dIdh*e(2);
 
     double dJdh = 2*dIdh;
     dsdh(3) = G*dJdh*e(3);
+
+    dsdh(4) = G*shape*dAdh*e(4);
+    dsdh(5) = G*shape*dAdh*e(5);        
   }
 
-  if (parameterID == 4) { // G
-    dsdh(3) = J*e(3);
+  if (parameterID == 4) { // nu
+    double dGdh = -0.5*E/(1 + 2*nu + nu*nu);    
+    dsdh(3) = dGdh*J*e(3);
+    dsdh(4) = dGdh*shape*A*e(4);
+    dsdh(5) = dGdh*shape*A*e(5);    
+  }
+
+  if (parameterID == 5) { // shape
+    dsdh(4) = G*A*e(4);
+    dsdh(5) = G*A*e(5);    
   }
 
   return dsdh;
