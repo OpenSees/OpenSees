@@ -353,7 +353,7 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
   case 6: // an approx to plastic strain
       strain = this->getStrain();
       stress = this->getStress();
-      kInit = this->getTangent();
+      kInit = this->getInitialTangent();
       strain = strain-stress/kInit;
       matInfo.setDouble(strain);
       return 0;      
