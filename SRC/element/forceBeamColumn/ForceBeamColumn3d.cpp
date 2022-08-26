@@ -2858,7 +2858,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       theResponse = new ElementResponse(this, 112, Matrix(20,3));
 
     // section response -
-    else if (strstr(argv[0],"sectionX") != 0) {
+    else if (strcmp(argv[0],"sectionX") == 0) {
       if (argc > 2) {
 	float sectionLoc = atof(argv[1]);
 	
@@ -2885,7 +2885,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
       }
     }
 
-    else if (strstr(argv[0],"section") != 0) { 
+    else if (strcmp(argv[0],"section") == 0) { 
 
       if (argc > 1) {
 

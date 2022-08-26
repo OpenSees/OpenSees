@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
 	if (numIMKBilinMaterials == 0) {
 		numIMKBilinMaterials++;
-		OPS_Error("Mod. IMK Bilinear Model - AE-June22\n", 1);
+		OPS_Error("Mod. IMK Bilinear Model - AE-Aug22\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -701,6 +701,13 @@ int IMKBilin::revertToStart(void)
 	/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\\
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ONE TIME CALCULATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\\
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+	if (ResM_pos0 == 0.0) {
+		ResM_pos0 = 0.01;
+	}
+	if (ResM_neg0 == 0.0) {
+		ResM_neg0 = 0.01;
+	}
 
 	Theta_y_pos0 = Mpe_pos0 / Ke;
 	Theta_max_pos0 = Theta_y_pos0 + Theta_p_pos0;
