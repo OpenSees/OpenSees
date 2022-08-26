@@ -586,8 +586,8 @@ DispBeamColumn3d::getTangentStiff()
   return K;
 }
 
-const Matrix&
-DispBeamColumn3d::getInitialBasicStiff()
+void
+DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 {
   static Matrix kb(6,6);
   
@@ -616,7 +616,7 @@ DispBeamColumn3d::getInitialBasicStiff()
     double xi6 = 6.0*xi[i];
     
     // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangent();
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent() : theSections[i]->getSectionTangent();
     
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -690,7 +690,9 @@ DispBeamColumn3d::getInitialBasicStiff()
 const Matrix&
 DispBeamColumn3d::getInitialStiff()
 {
-  const Matrix &kb = this->getInitialBasicStiff();
+  static Matrix kb(6,6);
+
+  this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
   K = crdTransf->getInitialGlobalStiffMatrix(kb);
@@ -1404,7 +1406,20 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","Mz_2");
 
       theResponse = new ElementResponse(this, 2, P);
+    }
+    else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
 
+      theResponse = new ElementResponse(this, 9, Vector(6));
+    }
+    else if (strcmp(argv[0],"basicStiffness") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
+
+      theResponse = new ElementResponse(this, 19, Matrix(6,6));
     // global damping force - 
     } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
 
@@ -1494,7 +1509,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       theResponse = new ElementResponse(this, 110, ID(numSections));
 
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
       if (argc > 2) {
 	float sectionLoc = atof(argv[1]);
 	
@@ -1521,7 +1536,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
     
-    else if (strstr(argv[0],"section") != 0) { 
+    else if (strcmp(argv[0],"section") == 0) { 
       if (argc > 1) {
 	
 	int sectionNum = atoi(argv[1]);
@@ -1665,6 +1680,15 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 23)
     return eleInfo.setVector(theDamping->getDampingForce());
 
+  else if (responseID == 9) {
+    return eleInfo.setVector(q);
+  }
+
+  else if (responseID == 19) {
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb);
+    return eleInfo.setMatrix(kb);
+  }  
   // Chord rotation
   else if (responseID == 3)
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
@@ -1673,7 +1697,8 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 4) {
     static Vector vp(6);
     static Vector ve(6);
-    const Matrix &kb = this->getInitialBasicStiff();
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb,1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;
