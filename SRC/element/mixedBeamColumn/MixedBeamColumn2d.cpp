@@ -386,7 +386,7 @@ MixedBeamColumn2d::setSectionPointers(void)
     delete [] sectionForceFibers;
   sectionForceFibers = new Vector [numSections];
 
-  if (committedectionForceFibers != 0)
+  if (committedSectionForceFibers != 0)
     delete [] committedSectionForceFibers;
   committedSectionForceFibers = new Vector [numSections];
 
