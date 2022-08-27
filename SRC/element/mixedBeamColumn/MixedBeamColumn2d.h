@@ -110,6 +110,8 @@ class MixedBeamColumn2d : public Element
     void getSectionStress(int sec,Vector &fSection);
     void setSectionDeformation(int sec,Vector &defSection);
 
+  void setSectionPointers(void);
+  
     // private attributes - a copy for each object of the class
     ID connectedExternalNodes; // tags of the end nodes
     Node *theNodes[2];   // pointers to the nodes
@@ -147,15 +149,15 @@ class MixedBeamColumn2d : public Element
 
     // Committed versions
     Vector committedV;
-    Vector commitedInternalForce;
-    Vector commitedNaturalForce;
-    Vector commitedLastNaturalDisp;
-    Matrix commitedHinv;
-    Matrix commitedGMH;
+    Vector committedInternalForce;
+    Vector committedNaturalForce;
+    Vector committedLastNaturalDisp;
+    Matrix committedHinv;
+    Matrix committedGMH;
     Matrix kvcommit;               // Committed stiffness matrix in the basic system
-    Vector *commitedSectionForceFibers;
-    Vector *commitedSectionDefFibers;
-    Matrix *commitedSectionFlexibility;
+    Vector *committedSectionForceFibers;
+    Vector *committedSectionDefFibers;
+    Matrix *committedSectionFlexibility;
 
     // static data - single copy for all objects of the class
     static Matrix theMatrix;
