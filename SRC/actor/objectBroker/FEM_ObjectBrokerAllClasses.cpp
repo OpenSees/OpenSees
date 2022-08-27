@@ -90,6 +90,7 @@
 #include "SeriesMaterial.h"
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
+#include "GNGMaterial.h"
 #include "MinMaxMaterial.h"
 #include "ModIMKPeakOriented.h"
 #include "snap/Clough.h"
@@ -1380,6 +1381,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
+
+	case MAT_TAG_GNG:
+		return new GNGMaterial();		
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
