@@ -287,6 +287,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "mixedBeamColumn/MixedBeamColumn2d.h"
+#include "mixedBeamColumn/MixedBeamColumn3d.h"
 #include "dispBeamColumn/DispBeamColumnNL2d.h"
 #include "dispBeamColumn/DispBeamColumnNL3d.h"
 #include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
@@ -772,6 +774,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d();
+
+    case ELE_TAG_MixedBeamColumn2d:  
+      return new MixedBeamColumn2d();					     
+      
+    case ELE_TAG_MixedBeamColumn3d:  
+      return new MixedBeamColumn3d();      
 
     case ELE_TAG_DispBeamColumnNL2d:  
       return new DispBeamColumnNL2d();					     
