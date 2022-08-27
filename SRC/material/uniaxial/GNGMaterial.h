@@ -23,9 +23,9 @@
 // Jarrod Cook, University of Canterbury, Christchurch, New Zealand
 
 //	^
-//  |
+//      |
 //	|                ________(3)________
-//  |               /                  /
+//      |               /                  /
 //	F              /                  /
 //	O             /                  /
 //	R            /                  /
