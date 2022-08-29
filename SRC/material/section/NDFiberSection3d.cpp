@@ -1149,7 +1149,7 @@ NDFiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 	for (int j=0; j<numFibers; j++)
 	  theMaterials[j] = 0;
 
-	matData = new double [numFibers*2];
+	matData = new double [numFibers*3];
 
 	if (matData == 0) {
 	  opserr <<"NDFiberSection3d::recvSelf  -- failed to allocate double array for material data\n";

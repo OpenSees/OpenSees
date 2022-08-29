@@ -194,11 +194,13 @@ void* OPS_SmoothPSConcrete();
 void* OPS_UniaxialJ2Plasticity();
 void* OPS_OOHystereticMaterial();
 void* OPS_UVCuniaxial();
+void* OPS_GNGMaterial();
 void* OPS_IMKBilin();
 void* OPS_IMKPinching();
 void* OPS_IMKPeakOriented();
 void* OPS_SLModel();
 void* OPS_SMAMaterial();
+void* OPS_FRCC();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -519,6 +521,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
   uniaxialMaterialsMap.insert(
+      std::make_pair("GNG", &OPS_GNGMaterial));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("SteelFractureDI", &OPS_SteelFractureDI));
   uniaxialMaterialsMap.insert(
       std::make_pair("IMKBilin", &OPS_IMKBilin));
@@ -530,6 +534,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("SLModel", &OPS_SLModel));
   uniaxialMaterialsMap.insert(
       std::make_pair("SMA", &OPS_SMAMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("FRCC", &OPS_FRCC));  
   uniaxialMaterialsMap.insert(std::make_pair(
       "HystereticPoly",
       &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it

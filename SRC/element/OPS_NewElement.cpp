@@ -27,6 +27,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NewElement.h"
 #include <elementAPI.h>
 
+#include <UniaxialMaterial.h>
+
 void *OPS_NewElement(void) {
 
   //
@@ -42,25 +44,33 @@ void *OPS_NewElement(void) {
   
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs != 1) {
-    opserr << "WARNING incorrect # args, want: element NewElement $id\n";
+    opserr << "WARNING incorrect # args, want: element NewElement $id" << endln;
     return 0;
   }
   
   int numData = 1; // num integer args
   if ((numData > 0) && (OPS_GetIntInput(&numData, &iData[0]) < 0)) {
-    opserr << "WARNING failed to read integers, command element NewElement\n";
+    opserr << "WARNING failed to read integers, command element NewElement" << endln;
     return 0;
   }
   
   numData = 0; // reset to num double args
-  if ((numData != 0) && (OPS_GetDoubleInput(&numData, &dData[0]) < 0)) {
-    opserr << "WARNING failed to read doubles, command element NewElement\n";
+  if ((numData > 0) && (OPS_GetDoubleInput(&numData, &dData[0]) < 0)) {
+    opserr << "WARNING failed to read doubles, command element NewElement" << endln;
     return 0;
   }
 
   //
+  // get a pointer to a uniaxial material already defined
+  //
+
+  // int matTag = iData[??]
+  // UniaxialMaterial *theMat = OPS_getUnixialMaterial(matTag);
+  
+  //
   // return pointer to new element
   //
+
   
   return new NewElement(iData[0]);
 }

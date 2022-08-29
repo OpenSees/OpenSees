@@ -46,14 +46,14 @@ static int NUM_DOF  =4;
 // constructors:
 NewElement::NewElement(int tag)
  :Element(tag,ELE_TAG_NewElement),     
-  connectedExternalNodes(2), theMatrix(NUM_DOF, NUM_DOF), theVector(NUM_DOF)
+  theNodeTags(2), theMatrix(NUM_DOF, NUM_DOF), theVector(NUM_DOF)
 {
 
 }
 
 NewElement::NewElement()
  :Element(0,ELE_TAG_NewElement),     
-  connectedExternalNodes(2), theMatrix(NUM_DOF, NUM_DOF), theVector(NUM_DOF)
+  theNodeTags(2), theMatrix(NUM_DOF, NUM_DOF), theVector(NUM_DOF)
 {
 
 }
@@ -74,7 +74,7 @@ NewElement::getNumExternalNodes(void) const
 const ID &
 NewElement::getExternalNodes(void) 
 {
-    return connectedExternalNodes;
+    return theNodeTags;
 }
 
 Node **
@@ -95,7 +95,6 @@ NewElement::setDomain(Domain *theDomain)
 {
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
-
 }   	 
 
 
@@ -145,33 +144,9 @@ NewElement::getInitialStiff(void)
   return theMatrix;
 }
     
-void 
-NewElement::zeroLoad(void)
-{
-  return;
-}
-
-int 
-NewElement::addLoad(const Vector &addP)
-{
-  return 0;
-}
-
-int 
-NewElement::addInertiaLoadToUnbalance(const Vector &accel)
-{
-  return 0;
-}
 
 const Vector &
 NewElement::getResistingForce()
-{	
-  return theVector;
-}
-
-
-const Vector &
-NewElement::getResistingForceIncInertia()
 {	
   return theVector;
 }
@@ -190,13 +165,6 @@ NewElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
 }
 
 
-int
-NewElement::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
-{
-  return 0;
-}
-
-
 void
 NewElement::Print(OPS_Stream &s, int flag)
 {
@@ -207,26 +175,14 @@ NewElement::Print(OPS_Stream &s, int flag)
 Response*
 NewElement::setResponse(const char **argv, int argc, OPS_Stream &S)
 {
-	return this->Element::setResponse(argv, argc, S);
+  return this->Element::setResponse(argv, argc, S);
 }
 
 
 int 
 NewElement::getResponse(int responseID, Information &eleInfo)
 {
-	return this->Element::getResponse(responseID, eleInfo);
+  return this->Element::getResponse(responseID, eleInfo);
 }
 
 
-int
-NewElement::setParameter(const char **argv, int argc, Parameter &param)
-{
-  return 0;
-}
-    
-
-int
-NewElement::updateParameter(int parameterID, Information &info)
-{
-  return -1;
-}

@@ -68,11 +68,7 @@ class NewElement : public Element
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
 
-    void zeroLoad(void);	
-    int addLoad(const Vector &addP);
-    int addInertiaLoadToUnbalance(const Vector &accel);
     const Vector &getResistingForce(void);
-    const Vector &getResistingForceIncInertia(void);            
 
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
@@ -84,13 +80,10 @@ class NewElement : public Element
     Response *setResponse(const char **argv, int argc, OPS_Stream &);
     int getResponse(int responseID, Information &eleInformation);
 
-    int setParameter (const char **argv, int argc, Parameter &param);
-    int updateParameter (int parameterID, Information &info);
-
   protected:
     
   private:
-    ID  connectedExternalNodes;   // contains the tags of the end nodes
+    ID  theNodeTags;   // contains the tags of the end nodes
     Matrix theMatrix;             // matrix to return stiff, damp & mass
     Vector theVector;             // vector to return the residual
 };

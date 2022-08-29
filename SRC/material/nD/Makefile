@@ -55,6 +55,7 @@ OBJS       = NDMaterial.o \
 	J2BeamFiber2d.o \
 	J2BeamFiber3d.o \
 	J2ThreeDimensional.o \
+	OrthotropicMaterial.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
 	PlaneStressUserMaterial.o \

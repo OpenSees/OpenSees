@@ -88,6 +88,7 @@ using std::ios;
 #include <packages.h>
 
 extern void *OPS_ElasticSection(void);
+extern void *OPS_ElasticBDShearSection2d(void);
 extern void *OPS_ElasticWarpingShearSection2d();
 extern void *OPS_ElasticTubeSection3d(void);
 extern void *OPS_WFSection2d(void);
@@ -98,6 +99,7 @@ extern void *OPS_RCTunnelSection(void);
 extern void *OPS_SectionAggregator(void);
 extern void *OPS_UniaxialSection(void);
 extern void *OPS_TubeSection(void);
+extern void *OPS_HSSSection(void);
 extern void *OPS_ParallelSection(void);
 extern void *OPS_Bidirectional(void);
 extern void *OPS_Elliptical2(void);
@@ -168,7 +170,15 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	theSection = (SectionForceDeformation *)theMat;
       else 
 	return TCL_ERROR;
-    }	
+    }
+
+    else if (strcmp(argv[1],"ElasticBD") == 0) {
+      void *theMat = OPS_ElasticBDShearSection2d();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
+    }	    
 
     else if (strcmp(argv[1],"ElasticWarpingShear") == 0) {
       void *theMat = OPS_ElasticWarpingShearSection2d();
@@ -275,7 +285,15 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	theSection = (SectionForceDeformation *)theMat;
       else 
 	return TCL_ERROR;
-    }    
+    }
+
+    else if (strcmp(argv[1],"HSS") == 0) {
+      void *theMat = OPS_HSSSection();
+      if (theMat != 0) 
+	theSection = (SectionForceDeformation *)theMat;
+      else 
+	return TCL_ERROR;
+    }        
 
     else if (strcmp(argv[1],"RCSection2d") == 0) {
       void *theMat = OPS_RCSection2d();
