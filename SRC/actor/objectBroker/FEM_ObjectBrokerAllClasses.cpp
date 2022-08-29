@@ -366,6 +366,7 @@
 #include "LowOrderBeamIntegration.h"
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
+#include "SimpsonBeamIntegration.h"
 
 #include "RCCircularSectionIntegration.h"
 #include "RCSectionIntegration.h"
@@ -1183,6 +1184,9 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
 
   case BEAM_INTEGRATION_TAG_CompositeSimpson:        
     return new CompositeSimpsonBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_Simpson:        
+    return new SimpsonBeamIntegration();    
 
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
