@@ -90,6 +90,7 @@
 #include "SeriesMaterial.h"
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
+#include "GNGMaterial.h"
 #include "MinMaxMaterial.h"
 #include "ModIMKPeakOriented.h"
 #include "snap/Clough.h"
@@ -286,6 +287,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "mixedBeamColumn/MixedBeamColumn2d.h"
+#include "mixedBeamColumn/MixedBeamColumn3d.h"
 #include "dispBeamColumn/DispBeamColumnNL2d.h"
 #include "dispBeamColumn/DispBeamColumnNL3d.h"
 #include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
@@ -771,6 +774,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d();
+
+    case ELE_TAG_MixedBeamColumn2d:  
+      return new MixedBeamColumn2d();					     
+      
+    case ELE_TAG_MixedBeamColumn3d:  
+      return new MixedBeamColumn3d();      
 
     case ELE_TAG_DispBeamColumnNL2d:  
       return new DispBeamColumnNL2d();					     
@@ -1380,6 +1389,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
+
+	case MAT_TAG_GNG:
+		return new GNGMaterial();		
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
