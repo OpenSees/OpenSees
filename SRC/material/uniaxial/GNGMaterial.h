@@ -23,9 +23,9 @@
 // Jarrod Cook, University of Canterbury, Christchurch, New Zealand
 
 //	^
-//  |
+//      |
 //	|                ________(3)________
-//  |               /                  /
+//      |               /                  /
 //	F              /                  /
 //	O             /                  /
 //	R            /                  /
@@ -63,7 +63,7 @@ class GNGMaterial : public UniaxialMaterial
 	//destructor
     ~GNGMaterial();
 
-    const char *getClassType(void) const {return "GNGMaterial";};
+    const char *getClassType(void) const {return "GNGMaterial";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void);          
@@ -85,7 +85,10 @@ class GNGMaterial : public UniaxialMaterial
     
 	Response* setResponse (const char **argv, int argc, OPS_Stream &theOutput);
 	int getResponse (int responseID, Information &matInfo);
-	
+
+    int setParameter (const char **argv, int argc, Parameter &param);
+    int    updateParameter          (int parameterID, Information &info);
+  
   protected:
     
   private:

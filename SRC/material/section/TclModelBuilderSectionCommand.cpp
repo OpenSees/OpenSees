@@ -172,7 +172,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
     }
 
-    if (strcmp(argv[1],"ElasticBD") == 0) {
+    else if (strcmp(argv[1],"ElasticBD") == 0) {
       void *theMat = OPS_ElasticBDShearSection2d();
       if (theMat != 0) 
 	theSection = (SectionForceDeformation *)theMat;
