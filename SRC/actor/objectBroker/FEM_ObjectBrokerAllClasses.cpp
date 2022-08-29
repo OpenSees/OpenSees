@@ -176,6 +176,7 @@
 #include "J2ThreeDimensional.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
+#include "OrthotropicMaterial.h"
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
@@ -287,6 +288,8 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "mixedBeamColumn/MixedBeamColumn2d.h"
+#include "mixedBeamColumn/MixedBeamColumn3d.h"
 #include "dispBeamColumn/DispBeamColumnNL2d.h"
 #include "dispBeamColumn/DispBeamColumnNL3d.h"
 #include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
@@ -772,6 +775,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_DispBeamColumn3d:  
       return new DispBeamColumn3d();
+
+    case ELE_TAG_MixedBeamColumn2d:  
+      return new MixedBeamColumn2d();					     
+      
+    case ELE_TAG_MixedBeamColumn3d:  
+      return new MixedBeamColumn3d();      
 
     case ELE_TAG_DispBeamColumnNL2d:  
       return new DispBeamColumnNL2d();					     
@@ -1608,6 +1617,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
+
+  case ND_TAG_OrthotropicMaterial:
+    return new OrthotropicMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:
