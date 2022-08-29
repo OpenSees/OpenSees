@@ -360,7 +360,7 @@ int OrthotropicMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_Objec
 			return -1;
 		}
 	}
-	theIsotropicMaterial->setDbTag(static_cast<int>(counter++));
+	theIsotropicMaterial->setDbTag(static_cast<int>(data(counter++)));
 	// store internal variables
 	for (int i = 0; i < 6; ++i)
 		epsilon(i) = data(counter++);
