@@ -262,6 +262,8 @@
 #include "forceBeamColumn/ForceBeamColumn3d.h"
 #include "dispBeamColumn/TimoshenkoBeamColumn2d.h"
 #include "dispBeamColumn/TimoshenkoBeamColumn3d.h"
+#include "gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.h"
+#include "gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.h"
 #include "triangle/Tri31.h"
 
 #include "UWelements/SSPquad.h"
@@ -763,6 +765,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_TimoshenkoBeamColumn3d:
       return new TimoshenkoBeamColumn3d();
+
+    case ELE_TAG_GradientInelasticBeamColumn2d:
+      return new GradientInelasticBeamColumn2d();
+      
+    case ELE_TAG_GradientInelasticBeamColumn3d:
+      return new GradientInelasticBeamColumn3d();
       
     case ELE_TAG_ForceBeamColumn2d:  
       return new ForceBeamColumn2d();					     
