@@ -47,7 +47,8 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- add_compile_options(-fPIC)
+ # add_compile_options(-fPIC)
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
  MESSAGE("COMPILER: Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
@@ -292,7 +293,6 @@ endif()
 if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
-  # set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
@@ -588,9 +588,13 @@ if(MPI_FOUND)
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    target_compile_definitions(OpenSeesMP 
-      PUBLIC _PARALLEL_INTERPRETERS _MUMPS
-    )
+    if (DEFINED OPENMPI)
+        target_compile_definitions(OpenSeesMP 
+    	  PUBLIC _PARALLEL_INTERPRETERS _MUMPS _OPENMPI)
+    else()
+        target_compile_definitions(OpenSeesMP 
+    	  PUBLIC _PARALLEL_INTERPRETERS _MUMPS)
+    endif()
     
     target_link_libraries(OpenSeesMP 
        OPS_InterpTcl 
@@ -621,6 +625,7 @@ endif()
 
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
+    ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
 )
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
