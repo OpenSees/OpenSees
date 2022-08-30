@@ -174,6 +174,8 @@ private:
 	// complete the state variables
 
 	// Private Methods
+  void setSectionPointers(void);
+  
 	void assembleMatrix(Matrix &A, const Matrix &B, int rowStart, int rowEnd, int colStart, int colEnd, double fact);
 	void assembleMatrix(Matrix &A, const Vector &B, int col, double fact);
 	void assembleVector(Vector &A, const Vector &B, int rowStart, int rowEnd, double fact);
