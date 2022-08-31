@@ -12,6 +12,7 @@ OBJS       = DispBeamColumn2d.o \
 	DispBeamColumnAsym3d.o \
 	AxEqDispBeamColumn2d.o \
 	TimoshenkoBeamColumn2d.o \
+	TimoshenkoBeamColumn3d.o \
 	DispBeamColumn3dID.o 
 
 

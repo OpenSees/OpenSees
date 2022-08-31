@@ -18,6 +18,7 @@ target_sources(OPS_Actor
       UDP_Socket.h      
 )
 
+if(MPI_FOUND)
 
 target_sources(OpenSeesMP
     PRIVATE
@@ -32,6 +33,8 @@ target_sources(OpenSeesSP
     PUBLIC
       MPI_Channel.h
 )
+
+endif()
 
 
 

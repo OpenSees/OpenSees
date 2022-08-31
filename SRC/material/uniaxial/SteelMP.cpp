@@ -43,7 +43,7 @@ void* OPS_SteelMP()
     if (argc < 4) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: uniaxialMaterial SteelMP tag? fy? E0? b? ";
-        opserr << " <coeffR1?  coeffR2? a1? a2?>\n";
+        opserr << " <R? coeffR1? coeffR2? a1? a2?>\n";
         return 0;
     }
 
@@ -60,7 +60,7 @@ void* OPS_SteelMP()
     numdata = 3;
     if (argc < 6) {
 	opserr << "WARNING insufficient number of hardening parameters\n";
-	opserr << "uniaxialMaterial Steel03: " << tag << "\n";
+	opserr << "uniaxialMaterial SteelMP: " << tag << "\n";
 	return 0;
     }
     
@@ -73,7 +73,7 @@ void* OPS_SteelMP()
     // double r, coeffR1, coeffR2, a1, a2;
     double opt[5] = {20.0, 18.5, 0.15, 0, 0};
     numdata = 5;
-    if (argc >6) {
+    if (argc > 8) {
 	if (OPS_GetDoubleInput(&numdata, opt) < 0) {
 	    opserr << "WARNING invalid uniaxialMaterial SteelMP double inputs\n";
 	    return 0;

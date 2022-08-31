@@ -258,7 +258,7 @@
 
 #define MAT_TAG_LimitState	   1972
 #define MAT_TAG_Elastic2Material   1973
-
+#define MAT_TAG_FRCC		   1980		   		
 #define MAT_TAG_DrainMaterial		2000
 #define MAT_TAG_DrainHardening		2001
 #define MAT_TAG_DrainBilinear		2002
@@ -339,6 +339,8 @@
 #define SEC_TAG_MembranePlateFiberSectionThermal 34  // L.Jiang[SIF]
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
 #define SEC_TAG_BiaxialHysteretic 36
+#define SEC_TAG_ElasticTube3d 37
+
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
@@ -432,7 +434,8 @@
 #define ND_TAG_J2ThreeDimensional             3009
 #define ND_TAG_J2PlateFiber		      3010
 #define ND_TAG_J2BeamFiber		      3011
-
+#define ND_TAG_J2BeamFiber2d 91625
+#define ND_TAG_J2BeamFiber3d 92516
 
 #define ND_TAG_FeapMaterial                 1000
 #define ND_TAG_FeapMaterial01                 1001
@@ -444,6 +447,7 @@
 #define ND_TAG_BeamFiberMaterial		2002
 #define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_BeamFiberMaterial2dPS		2005
+#define ND_TAG_OrthotropicMaterial		2006
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -655,6 +659,7 @@
 #define ELE_TAG_DispBeamColumn2d        62
 #define ELE_TAG_DispBeamColumnNL2d        621
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
+#define ELE_TAG_TimoshenkoBeamColumn3d  631
 #define ELE_TAG_DispBeamColumn3d        64
 #define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641

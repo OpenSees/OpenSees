@@ -19,6 +19,7 @@ target_sources(OPS_Element
     DispBeamColumn3dWithSensitivity.cpp
     AxEqDispBeamColumn2d.cpp
     TimoshenkoBeamColumn2d.cpp
+    TimoshenkoBeamColumn3d.cpp
     DispBeamColumn3dID.cpp
   PUBLIC
     DispBeamColumn2d.h
@@ -33,6 +34,7 @@ target_sources(OPS_Element
     DispBeamColumn3dWithSensitivity.h
     AxEqDispBeamColumn2d.h
     TimoshenkoBeamColumn2d.h
+    TimoshenkoBeamColumn3d.h    
     DispBeamColumn3dID.h
 )
 

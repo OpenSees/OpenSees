@@ -42,7 +42,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_Backbone()
+void* OPS_BackboneMaterial()
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     if (argc < 4) {
@@ -173,93 +173,73 @@ BackboneMaterial::getCopy(void)
 int 
 BackboneMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int dbTag = this->getDbTag();
 
-  /*
-  int res = 0;
-
-  static ID classTags(3);
-
-  int clTag = theBackbone->getClassTag();
-  int dbTag = theBackbone->getDbTag();
-	
-  classTags(0) = clTag;
-
-  if (dbTag == 0) {
-    dbTag = theChannel.getDbTag();
-    if (dbTag != 0)
-      theBackbone->setDbTag(dbTag);
+  static ID data(3);
+  data(0) = this->getTag();
+  data(1) = theBackbone->getClassTag();
+  int bbDbTag = theBackbone->getDbTag();
+  if (bbDbTag == 0) {
+    bbDbTag = theChannel.getDbTag();
+    if (bbDbTag != 0)
+      theBackbone->setDbTag(bbDbTag);
+  }
+  data(2) = bbDbTag;
+  if (theChannel.sendID(dbTag, cTag, data) < 0) {
+    opserr << "BackboneMaterial::sendSelf -- could not send ID" << endln;
+    return -1;
   }
   
-  classTags(1) = dbTag;
-  classTags(2) = this->getTag();
-  
-  res = theChannel.sendID(dbTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "BackboneMaterial::sendSelf -- could not send ID\n";
-    return res;
+  if (theBackbone->sendSelf(cTag, theChannel) < 0) {
+    opserr << "BackboneMaterial::sendSelf -- could not send HystereticBackbone" << endln;
+    return -2;
   }
   
-  res = theBackbone->sendSelf(cTag, theChannel);
-  if (res < 0) {
-    opserr << "BackboneMaterial::sendSelf -- could not send UniaxialMaterial\n";
-    return res;
-  }
-  
-  return res;
-  */
+  return 0;
 }
 
 int 
 BackboneMaterial::recvSelf(int cTag, Channel &theChannel, 
 			       FEM_ObjectBroker &theBroker)
 {
-  return -1;
-
-  /*
-  int res = 0;
-  
-  static ID classTags(3);
-
   int dbTag = this->getDbTag();
 
-  res = theChannel.recvID(dbTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "BackboneMaterial::recvSelf -- could not receive ID\n";
-    return res;
+  static ID data(3);
+  if (theChannel.recvID(dbTag, cTag, data) < 0) {
+    opserr << "BackboneMaterial::recvSelf -- could not receive ID" << endln;
+    return -1;
   }
+  this->setTag(data(0));
 
-  this->setTag(int(classTags(2)));
 
+  int bbClassTag = data(1);
   // Check if the material is null; if so, get a new one
   if (theBackbone == 0) {
-    theBackbone = theBroker.getNewUniaxialMaterial(classTags(0));
+    theBackbone = theBroker.getNewHystereticBackbone(bbClassTag);
     if (theBackbone == 0) {
-      opserr << " BackboneMaterial::recvSelf -- could not get a UniaxialMaterial\n";
+      opserr << " BackboneMaterial::recvSelf -- could not get a HystereticBackbone" << endln;
       return -1;
     }
   }
   // Check that the material is of the right type; if not, delete
   // the current one and get a new one of the right type
-  if (theBackbone->getClassTag() != classTags(0)) {
+  if (theBackbone->getClassTag() != bbClassTag) {
     delete theBackbone;
-    theBackbone = theBroker.getNewUniaxialMaterial(classTags(0));
+    theBackbone = theBroker.getNewHystereticBackbone(bbClassTag);
     if (theBackbone == 0) {
-      opserr << "BackboneMaterial::recvSelf -- could not get a UniaxialMaterial\n";
-      exit(-1);
+      opserr << "BackboneMaterial::recvSelf -- could not get a HystereticBackbone" << endln;
+      return -1;
     }
   }
   
   // Now, receive the material
-  theBackbone->setDbTag(classTags(1));
-  res += theBackbone->recvSelf(cTag, theChannel, theBroker);
-  if (res < 0) {
-    opserr << "BackboneMaterial::recvSelf -- could not receive UniaxialMaterial\n";
-    return res;
+  theBackbone->setDbTag(data(2));
+  if (theBackbone->recvSelf(cTag, theChannel, theBroker) < 0) {
+    opserr << "BackboneMaterial::recvSelf -- could not receive HystereticBackbone" << endln;;
+    return -2;
   }
   
-  return res;
-  */
+  return 0;
 }
 
 void 

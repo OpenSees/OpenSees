@@ -20,3 +20,7 @@ https://github.com/OpenSees/OpenSeesDocumentation
 
 The documentation (in its present form) can be viewed in the browser using the following url:
 https://OpenSees.github.io/OpenSeesDocumentation
+
+## Build Instructions
+Steps to build OpenSees on Windows, Linux, and Mac:
+https://opensees.github.io/OpenSeesDocumentation/developer/build.html

@@ -495,7 +495,7 @@ PlaneStressUserMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_Object
           return matInfo.setVector(this->getCracking());
 
       default:
-          return -1;
+          return NDMaterial::getResponse(responseID, matInfo);
       }
   }
   //set/getResponse - added by V.K. Papanikolaou [AUTh] - end

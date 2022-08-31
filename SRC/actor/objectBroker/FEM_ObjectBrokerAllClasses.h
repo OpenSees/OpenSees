@@ -64,6 +64,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     CrdTransf *getNewCrdTransf(int classTag);
 
     BeamIntegration *getNewBeamIntegration(int classTag);
+    SectionIntegration *getNewSectionIntegration(int classTag);    
 
     UniaxialMaterial  *getNewUniaxialMaterial(int classTag);
     SectionForceDeformation  *getNewSection(int classTag);    
@@ -71,6 +72,8 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     Fiber *getNewFiber(int classTag);
     FrictionModel *getNewFrictionModel(int classTag);
 
+  HystereticBackbone *getNewHystereticBackbone(int classTag);
+  
     ConvergenceTest       *getNewConvergenceTest(int classTag);
     LoadPattern           *getNewLoadPattern(int classTag);
     GroundMotion          *getNewGroundMotion(int classTag);
@@ -115,7 +118,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
 
     Parameter *getParameter(int classTag);
 
-    int addUniaxialMaterial(int classTag, const char *lib, const char *funcName, UniaxialMaterial *(*)(void));
+  // int addUniaxialMaterial(int classTag, const char *lib, const char *funcName, UniaxialMaterial *(*)(void));
     
   protected:
     

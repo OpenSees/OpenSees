@@ -1286,7 +1286,8 @@ namespace mpco {
 			Tetrahedron_10N,
 			Hexahedron_8N = 400,
 			Hexahedron_20N,
-			Hexahedron_27N
+			Hexahedron_27N,
+			Quadrilateral_CohesiveBand_4N = 500
 		};
 	};
 
@@ -2679,6 +2680,7 @@ namespace mpco {
 				, dummy_section_flag(false)
 				, gp_number(0)
 				, gp_eta(0.0)
+				, gp_weight(0.0)
 				, fib_y(0.0)
 				, fib_z(0.0)
 				, fib_a(0.0)
@@ -2692,6 +2694,7 @@ namespace mpco {
 				, dummy_section_flag(other.dummy_section_flag)
 				, gp_number(other.gp_number)
 				, gp_eta(other.gp_eta)
+				, gp_weight(other.gp_weight)
 				, fib_y(other.fib_y)
 				, fib_z(other.fib_z)
 				, fib_a(other.fib_a)
@@ -2717,6 +2720,7 @@ namespace mpco {
 					dummy_section_flag = other.dummy_section_flag;
 					gp_number = other.gp_number;
 					gp_eta = other.gp_eta;
+					gp_weight = other.gp_weight;
 					fib_y = other.fib_y;
 					fib_z = other.fib_z;
 					fib_a = other.fib_a;
@@ -2737,8 +2741,9 @@ namespace mpco {
 			bool dummy_section_flag;
 			// for gauss point
 			int gp_number;
-			double gp_eta; // use only eta (for beams)
-						   // for fibers
+			double gp_eta; // use only eta (for 1D custom integration)
+			double gp_weight;
+			// for fibers
 			double fib_y;
 			double fib_z;
 			double fib_a;
@@ -2788,6 +2793,20 @@ namespace mpco {
 							x[i] = 2.0*(x[i] - xmin) / span - 1.0;
 					}
 				}
+			}
+
+			void appendGaussLocation(std::vector<double>& x) const {
+				if (type == mpco::ElementOutputDescriptorType::Gauss)
+					x.push_back(gp_eta);
+				for (size_t i = 0; i < items.size(); i++)
+					items[i]->appendGaussLocation(x);
+			}
+
+			void appendGaussWeight(std::vector<double>& x) const {
+				if (type == mpco::ElementOutputDescriptorType::Gauss)
+					x.push_back(gp_weight);
+				for (size_t i = 0; i < items.size(); i++)
+					items[i]->appendGaussWeight(x);
 			}
 
 			void getFiberData(std::vector<mpco::element::FiberData> &data,
@@ -2856,7 +2875,7 @@ namespace mpco {
 				std::string indent = ss_indent.str();
 				ss << indent << "<" << mpco::ElementOutputDescriptorType::toString(this->type);
 				if (this->type == mpco::ElementOutputDescriptorType::Gauss) {
-					ss << " number=\"" << this->gp_number << "\" eta=\"" << this->gp_eta << "\"";
+					ss << " number=\"" << this->gp_number << "\" eta=\"" << this->gp_eta << "\" weight=\"" << this->gp_weight << "\"";
 				}
 				else if (this->type == mpco::ElementOutputDescriptorType::Section) {
 					ss << " tag=\"" << this->tag << "\"";
@@ -2917,13 +2936,6 @@ namespace mpco {
 				for (size_t i = 0; i < items.size(); i++)
 					items[i]->makeHeaderInternal(header, temp_path, temp_gp_id);
 				temp_path.pop_back();
-			}
-
-			void appendGaussLocation(std::vector<double> &x) const {
-				if (type == mpco::ElementOutputDescriptorType::Gauss)
-					x.push_back(gp_eta);
-				for (size_t i = 0; i < items.size(); i++)
-					items[i]->appendGaussLocation(x);
 			}
 
 			void appendFiberData(std::vector<mpco::element::FiberData> &data, std::vector<int> &data_mat_id,
@@ -3050,6 +3062,7 @@ namespace mpco {
 					}
 				}
 			}
+
 			void mergeSecInternal() {
 				if (items.size() > 0) {
 					if (items[0]->type == mpco::ElementOutputDescriptorType::Section) {
@@ -3302,6 +3315,8 @@ namespace mpco {
 					if (eo_curr_lev->type == mpco::ElementOutputDescriptorType::Gauss) {
 						if (strcmp(name, "eta") == 0)
 							eo_curr_lev->gp_eta = value;
+						if (strcmp(name, "weight") == 0)
+							eo_curr_lev->gp_weight = value;
 					}
 					else if (eo_curr_lev->type == mpco::ElementOutputDescriptorType::Fiber) {
 						if (strcmp(name, "yLoc") == 0)
@@ -3463,15 +3478,17 @@ namespace mpco {
 		struct ElementIntegrationRule
 		{
 			ElementIntegrationRule()
-				: int_rule_type(ElementIntegrationRuleType::CustomIntegrationRule), x()
+				: int_rule_type(ElementIntegrationRuleType::CustomIntegrationRule)
 			{}
 			ElementIntegrationRule(ElementIntegrationRuleType::Enum _int_rule_type)
-				: int_rule_type(_int_rule_type), x()
+				: int_rule_type(_int_rule_type)
 			{}
 			inline bool operator < (const ElementIntegrationRule &other) const {
 				const double rel_tol = 1.0e-5;
 				if (int_rule_type < other.int_rule_type) return true;
 				if (int_rule_type > other.int_rule_type) return false;
+				if (custom_rule_dimension < other.custom_rule_dimension) return true;
+				if (custom_rule_dimension > other.custom_rule_dimension) return false;
 				if (x.size() < other.x.size()) return true;
 				if (x.size() > other.x.size()) return false;
 				for (size_t i = 0; i < x.size(); i++) {
@@ -3486,6 +3503,8 @@ namespace mpco {
 				const double rel_tol = 1.0e-5;
 				if (int_rule_type > other.int_rule_type) return true;
 				if (int_rule_type < other.int_rule_type) return false;
+				if (custom_rule_dimension > other.custom_rule_dimension) return true;
+				if (custom_rule_dimension < other.custom_rule_dimension) return false;
 				if (x.size() > other.x.size()) return true;
 				if (x.size() < other.x.size()) return false;
 				for (size_t i = 0; i < x.size(); i++) {
@@ -3498,6 +3517,7 @@ namespace mpco {
 			}
 			ElementIntegrationRuleType::Enum int_rule_type;
 			std::vector<double> x;
+			int custom_rule_dimension = 1;
 		};
 
 		struct ElementWithSameCustomIntRuleCollection
@@ -3552,6 +3572,15 @@ namespace mpco {
 
 			void mapElements(Domain *d, bool has_region, const std::vector<int> &subset) {
 				/*
+				utilties
+				*/
+				auto lam_get_num_ext_nodes = [](Element* elem) {
+					switch (elem->getClassTag()) {
+					case ELE_TAG_SFI_MVLEM_3D: return 4;
+					default: return elem->getNumExternalNodes();
+					}
+				};
+				/*
 				clear previous mappings
 				*/
 				registered_custom_rules.clear();
@@ -3601,7 +3630,8 @@ namespace mpco {
 					}
 					ElementGeometryType::Enum geom_type;
 					ElementIntegrationRuleType::Enum int_rule_type;
-					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type);
+					int custom_rule_dimension;
+					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type, custom_rule_dimension);
 					/*
 					map by class tag
 					*/
@@ -3609,14 +3639,14 @@ namespace mpco {
 					if (elem_coll_by_tag.is_new) {
 						elem_coll_by_tag.class_tag = elem_type;
 						elem_coll_by_tag.class_name = current_element->getClassType();
-						elem_coll_by_tag.num_nodes = current_element->getNumExternalNodes();
+						elem_coll_by_tag.num_nodes = lam_get_num_ext_nodes(current_element);
 						elem_coll_by_tag.geom_type = geom_type;
 						elem_coll_by_tag.is_new = false;
 					}
 					/*
 					make sure that every element with the same tag have the same number of nodes
 					*/
-					if (current_element->getNumExternalNodes() != elem_coll_by_tag.num_nodes) {
+					if (lam_get_num_ext_nodes(current_element) != elem_coll_by_tag.num_nodes) {
 						opserr << "MPCORecorder Error while mapping elements: elements with different number of nodes "
 							"exist within the same class tag. This is not supported\n";
 						exit(-1);
@@ -3625,8 +3655,10 @@ namespace mpco {
 					create the integration rule
 					*/
 					ElementIntegrationRule int_rule(int_rule_type);
-					if (int_rule_type == ElementIntegrationRuleType::CustomIntegrationRule)
+					if (int_rule_type == ElementIntegrationRuleType::CustomIntegrationRule) {
 						getCustomGaussPointLocations(current_element, int_rule);
+						int_rule.custom_rule_dimension = custom_rule_dimension;
+					}
 					/*
 					if this is a custom rule, register it
 					*/
@@ -3675,13 +3707,15 @@ namespace mpco {
 			void getGeometryAndIntRuleByClassTag(
 				int elem_class_tag,
 				ElementGeometryType::Enum &geom_type,
-				ElementIntegrationRuleType::Enum &int_type) {
+				ElementIntegrationRuleType::Enum &int_type,
+				int &custom_rule_dimension) {
 				/*
 				set default values. custom geometry (i.e. point cloud)
 				and no integration rule
 				*/
 				geom_type = ElementGeometryType::Custom;
 				int_type = ElementIntegrationRuleType::NoIntegrationRule;
+				custom_rule_dimension = 1;
 				/*
 				2-node line with 1 gp
 				*/
@@ -3825,6 +3859,18 @@ namespace mpco {
 					) {
 					geom_type = ElementGeometryType::Quadrilateral_4N;
 					int_type = ElementIntegrationRuleType::Quadrilateral_GaussLegendre_2;
+				}
+				/*
+				4-node quadrilateral cohesive with custom rule
+				*/
+				else if (
+					// ./mvlem
+					elem_class_tag == ELE_TAG_MVLEM_3D ||
+					elem_class_tag == ELE_TAG_SFI_MVLEM_3D
+					) {
+					geom_type = ElementGeometryType::Quadrilateral_CohesiveBand_4N;
+					int_type = ElementIntegrationRuleType::CustomIntegrationRule;
+					custom_rule_dimension = 2;
 				}
 				/*
 				9-node quadrilateral with 3x3 gp
@@ -3980,12 +4026,16 @@ namespace mpco {
 						return;
 				}
 				/*
-				..., otherwise, ask for a dummy response on all sections, findind out what is the number of gauss points
+				..., otherwise, ask for a dummy response on all sections, finding out what is the number of gauss points
 				*/
 				{
 					//std::cout << "get custom gp: trying with \"section(1,2,..,N)\"...\n";
 					bool done = false;
 					std::string request1 = "section";
+					if (elem->getClassTag() == ELE_TAG_MVLEM_3D || 
+						elem->getClassTag() == ELE_TAG_SFI_MVLEM_3D) {
+						request1 = "material";
+					}
 					std::string request3 = "dummy";
 					int argc = 3;
 					const char **argv = new const char*[argc];
@@ -3993,6 +4043,7 @@ namespace mpco {
 					argv[2] = request3.c_str();
 
 					int trial_num = 0;
+					double rule_weight_sum = 0.0;
 					while (true) {
 						trial_num++;
 						if (trial_num > MPCO_MAX_TRIAL_NSEC) {
@@ -4010,7 +4061,9 @@ namespace mpco {
 						if (eo_response)
 							delete eo_response; // we don't need it now
 						std::vector<double> trial_x;
-						eo_descriptor.getGaussLocations(trial_x);
+						std::vector<double> trial_w;
+						eo_descriptor.appendGaussLocation(trial_x);
+						eo_descriptor.appendGaussWeight(trial_w);
 						if (trial_x.size() > 0) {
 							if (trial_x.size() > 1) {
 								// we should never get here!
@@ -4019,6 +4072,7 @@ namespace mpco {
 									<< "\nonly the first one will be considered\n";
 							}
 							rule.x.push_back(trial_x[0]);
+							rule_weight_sum += trial_w[0];
 						}
 						else {
 							// we reached the maximum number of gauss points for this element
@@ -4026,27 +4080,31 @@ namespace mpco {
 						}
 					}
 					if (rule.x.size() > 0) {
-						if (rule.x.size() == 1) {
-							rule.x[0] = 0.0;
-						}
-						else {
-							double x_min = std::numeric_limits<double>::max();
-							double x_max = -x_min;
-							for (size_t i = 0; i < rule.x.size(); i++) {
-								double ieta = rule.x[i];
-								if (ieta < x_min)
-									x_min = ieta;
-								else if (ieta > x_max)
-									x_max = ieta;
-							}
-							double span = x_max - x_min;
-							if (span == 0.0) {
-								for (size_t i = 0; i < rule.x.size(); i++)
-									rule.x[i] = 0.0;
+						if (std::abs(rule_weight_sum - 2.0) > 1.0e-8) {
+							// don't do auto-normalization if the integration weight is explicitly given
+							// (only considered valid if the integration span is 2.0)
+							if (rule.x.size() == 1) {
+								rule.x[0] = 0.0;
 							}
 							else {
-								for (size_t i = 0; i < rule.x.size(); i++)
-									rule.x[i] = 2.0*(rule.x[i] - x_min) / span - 1.0;
+								double x_min = std::numeric_limits<double>::max();
+								double x_max = -x_min;
+								for (size_t i = 0; i < rule.x.size(); i++) {
+									double ieta = rule.x[i];
+									if (ieta < x_min)
+										x_min = ieta;
+									else if (ieta > x_max)
+										x_max = ieta;
+								}
+								double span = x_max - x_min;
+								if (span == 0.0) {
+									for (size_t i = 0; i < rule.x.size(); i++)
+										rule.x[i] = 0.0;
+								}
+								else {
+									for (size_t i = 0; i < rule.x.size(); i++)
+										rule.x[i] = 2.0 * (rule.x[i] - x_min) / span - 1.0;
+								}
 							}
 						}
 						done = true;
@@ -4951,6 +5009,7 @@ int MPCORecorder::writeModelElements()
 						if (elem_by_custom_rule.custom_int_rule_index != 0) {
 							mpco::element::ElementIntegrationRule &custom_rule = m_data->elements.registered_custom_rules[elem_by_custom_rule.custom_int_rule_index];
 							h5::attribute::write(dset_id, "GP_X", custom_rule.x);
+							h5::attribute::write(dset_id, "CUSTOM_INTEGRATION_RULE_DIMENSION", custom_rule.custom_rule_dimension);
 						}
 					}
 					/*

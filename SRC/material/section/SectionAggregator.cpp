@@ -952,24 +952,54 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
   
   Response *theResponse =0;
 
-  if (argc > 2 && (strcmp(argv[0],"addition") == 0) || (strcmp(argv[0],"material") == 0)) {
+  if (argc > 2 && (strcmp(argv[0],"addition") == 0 || strcmp(argv[0],"material") == 0)) {
 
-    // Get the tag of the material
-    int materialTag = atoi(argv[1]);
-    
-    // Loop to find the right material
-    int ok = 0;
-    for (int i = 0; i < numMats; i++)
-      if (materialTag == theAdditions[i]->getTag())
-	theResponse = theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    int sectionCode = SECTION_RESPONSE_NONE;
+    if (strcmp(argv[1],"Mz") == 0)
+      sectionCode = SECTION_RESPONSE_MZ;
+    if (strcmp(argv[1],"My") == 0)
+      sectionCode = SECTION_RESPONSE_MY;
+    if (strcmp(argv[1],"Vy") == 0)
+      sectionCode = SECTION_RESPONSE_VY;
+    if (strcmp(argv[1],"Vz") == 0)
+      sectionCode = SECTION_RESPONSE_VZ;                
+    if (strcmp(argv[1],"P") == 0)
+      sectionCode = SECTION_RESPONSE_P;
+    if (strcmp(argv[1],"T") == 0)
+      sectionCode = SECTION_RESPONSE_T;    
+    // Can add the warping and shell response too (would also need to
+    // add them in OPS_SectionAggregator)
+
+    if (sectionCode != SECTION_RESPONSE_NONE) {
+      int sectionOrder = (theSection == 0) ? 0 : theSection->getOrder();
+      for (int i = 0; i < numMats; i++)
+	if (sectionCode == (*theCode)(sectionOrder + i))
+	  return theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    }
+    else {
+      // Get the tag of the material
+      int materialTag = atoi(argv[1]);
+      
+      // Loop to find the right material
+      int ok = 0;
+      for (int i = 0; i < numMats; i++)
+	if (materialTag == theAdditions[i]->getTag())
+	  return theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    }
   }
 
-  if ((argc > 1) && (strcmp(argv[0],"section") == 0) && (theSection))
+  // For backward compatibility
+  if (argc > 1 && strcmp(argv[0],"section") == 0 && theSection != 0)
     theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
+  // Call default method
   if (theResponse == 0)
-    return SectionForceDeformation::setResponse(argv, argc, output);
-  
+    theResponse = SectionForceDeformation::setResponse(argv, argc, output);
+    
+  // If that didn't work, pass along to section
+  if (theResponse == 0 && theSection != 0)
+    theResponse = theSection->setResponse(argv, argc, output);
+
   return theResponse;
 }
 

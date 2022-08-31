@@ -154,7 +154,7 @@ void* OPS_DispBeamColumnNL3d();
 void* OPS_DispBeamColumnWarping3d();
 void* OPS_DispBeamColumnAsym3d();
 void* OPS_TimoshenkoBeamColumn2d();
-//void* OPS_TimoshenkoBeamColumn3d();
+void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
 void* OPS_MixedBeamColumnAsym3d();
@@ -164,6 +164,7 @@ void* OPS_ForceBeamColumnCBDI3d();
 void* OPS_ForceBeamColumnCSBDI3d();
 void* OPS_ForceBeamColumnWarping2d();
 void* OPS_ElasticForceBeamColumnWarping2d();
+void* OPS_BeamWithHinges();
 void* OPS_DispBeamColumn3dID();
 void* OPS_DispBeamColumn2dThermal();
 void* OPS_DispBeamColumn3dThermal();
@@ -314,6 +315,24 @@ namespace {
 	}
     }
 
+    static void* OPS_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_MVLEM();
+	if(ndm == 3)
+	    return OPS_MVLEM_3D();	
+    }
+
+    static void* OPS_SFI_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_SFI_MVLEM();
+	if(ndm == 3)
+	    return OPS_SFI_MVLEM_3D();	
+    }    
+
     static void* OPS_DispBeamColumn()
     {
 	int ndm = OPS_GetNDM();
@@ -332,8 +351,7 @@ namespace {
 	    ID info;
 	    return OPS_TimoshenkoBeamColumn2d();
 	} else {
-	  //return OPS_TimoshenkoBeamColumn3d();
-	  return 0;
+	  return OPS_TimoshenkoBeamColumn3d();
 	}
     }  
 
@@ -529,7 +547,7 @@ namespace {
 	functionMap.insert(std::make_pair("MSS", &OPS_MultipleShearSpring));
 	functionMap.insert(std::make_pair("multipleShearSpring", &OPS_MultipleShearSpring));
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
-    functionMap.insert(std::make_pair("linearElasicSpring", &OPS_LinearElasticSpring));
+    functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
@@ -642,10 +660,10 @@ namespace {
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
-	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM));
-	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM));
-	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM_3D));
-	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM_3D));
+	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
@@ -689,6 +707,7 @@ namespace {
 	functionMap.insert(std::make_pair("elasticBeamColumnWarping", &OPS_ElasticBeamWarping3d));
 	functionMap.insert(std::make_pair("dispBeamColumnWarping", &OPS_DispBeamColumnWarping3d));	
 	functionMap.insert(std::make_pair("dispBeamColumnAsym", &OPS_DispBeamColumnAsym3d));
+	functionMap.insert(std::make_pair("beamWithHinges", &OPS_BeamWithHinges));
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));

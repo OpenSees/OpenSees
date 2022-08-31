@@ -95,7 +95,7 @@ J2BeamFiber2d::J2BeamFiber2d
 
 J2BeamFiber2d::J2BeamFiber2d():
   NDMaterial(0, ND_TAG_J2BeamFiber2d),
-  E(0.0), nu(0.0), sigmaY(0.0), Hkin(0.0), 
+  E(0.0), nu(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0), 
   parameterID(0), SHVs(0), Tepsilon(2), 
   alphan(0.0), alphan1(0.0), dg_n1(0.0)
 {
@@ -633,7 +633,7 @@ J2BeamFiber2d::sendSelf (int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(6);
+  static Vector data(6+3);
   
   data(0) = this->getTag();
   data(1) = E;
@@ -641,7 +641,10 @@ J2BeamFiber2d::sendSelf (int commitTag, Channel &theChannel)
   data(3) = sigmaY;
   data(4) = Hiso;
   data(5) = Hkin;
-  
+  data(6) = epsPn[0];
+  data(7) = epsPn[1];  
+  data(8) = alphan;
+    
   res += theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
     opserr << "J2BeamFiber2d::sendSelf -- could not send Vector\n";
@@ -657,7 +660,7 @@ J2BeamFiber2d::recvSelf (int commitTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(6);
+  static Vector data(6+3);
   
   res += theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -671,6 +674,9 @@ J2BeamFiber2d::recvSelf (int commitTag, Channel &theChannel,
   sigmaY = data(3);
   Hiso = data(4);
   Hkin = data(5);
+  epsPn[0] = data(6);
+  epsPn[1] = data(7);
+  alphan = data(8);
   
   return res;
 }

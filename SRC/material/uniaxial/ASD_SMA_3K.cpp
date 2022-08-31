@@ -231,8 +231,8 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
                 TupperStressPos = CupperStressPos + (Tstrain - CupperStrainPos) * k2;
                 TupperStrainPos = Tstrain;
 
-                X = (-k3 * TupperStrainPos + TupperStressPos) / (k1 - k3);
-                Y = k1 * ((-k3 * TupperStrainPos + TupperStressPos) / (k1 - k3));
+                double X = (-k3 * TupperStrainPos + TupperStressPos) / (k1 - k3);
+                double Y = k1 * ((-k3 * TupperStrainPos + TupperStressPos) / (k1 - k3));
 
                 TlowerStrainPos = (TupperStressPos - TupperStrainPos * k3 - ActF * (1 - beta) * (1 - (k2 / k1))) / (k2 - k3);
                 TlowerStressPos = k2 * ((TupperStressPos - TupperStrainPos * k3 - ActF * (1 - beta) * (1 - (k2 / k1))) / (k2 - k3)) + ActF * (1 - beta) * (1 - (k2 / k1));
@@ -332,8 +332,8 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
                 TupperStressNeg = CupperStressNeg + (Tstrain - CupperStrainNeg) * k2;
                 TupperStrainNeg = Tstrain;
 
-                X = (-k3 * TupperStrainNeg + TupperStressNeg) / (k1 - k3);
-                Y = k1 * ((-k3 * TupperStrainNeg + TupperStressNeg) / (k1 - k3));
+                double X = (-k3 * TupperStrainNeg + TupperStressNeg) / (k1 - k3);
+                double Y = k1 * ((-k3 * TupperStrainNeg + TupperStressNeg) / (k1 - k3));
 
                 TlowerStrainNeg = (TupperStressNeg - TupperStrainNeg * k3 + ActF * (1 - beta) * (1 - (k2 / k1))) / (k2 - k3);
                 TlowerStressNeg = k2 * ((TupperStressNeg - TupperStrainNeg * k3 + ActF * (1 - beta) * (1 - (k2 / k1))) / (k2 - k3)) - ActF * (1 - beta) * (1 - (k2 / k1));

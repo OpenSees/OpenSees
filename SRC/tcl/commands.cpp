@@ -889,8 +889,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "test", &specifyCTest, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);    
+    Tcl_CreateCommand(interp, "testNorm", &getCTestNorms, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "testNorms", &getCTestNorms, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);    
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);	
     Tcl_CreateCommand(interp, "testIter", &getCTestIter, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);    
 

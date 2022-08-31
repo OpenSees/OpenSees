@@ -832,7 +832,7 @@ J2PlateFibre::sendSelf (int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(6);
+  static Vector data(6+6);
   
   data(0) = this->getTag();
   data(1) = E;
@@ -840,6 +840,12 @@ J2PlateFibre::sendSelf (int commitTag, Channel &theChannel)
   data(3) = sigmaY;
   data(4) = Hiso;
   data(5) = Hkin;
+  data(6) = epsPn[0];
+  data(7) = epsPn[1];
+  data(8) = epsPn[2];
+  data(9) = epsPn[3];
+  data(10) = epsPn[4];
+  data(11) = alphan;
   
   res += theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -856,7 +862,7 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(6);
+  static Vector data(6+6);
   
   res += theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -870,6 +876,12 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
   sigmaY = data(3);
   Hiso = data(4);
   Hkin = data(5);
+  epsPn[0] = data(6);
+  epsPn[1] = data(7);
+  epsPn[2] = data(8);
+  epsPn[3] = data(9);
+  epsPn[4] = data(10);
+  alphan = data(11);
   
   return res;
 }
@@ -891,20 +903,26 @@ int
 J2PlateFibre::setParameter(const char **argv, int argc,
 			    Parameter &param)
 {
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-  
-  else if (strcmp(argv[0],"nu") == 0)
+  }
+  else if (strcmp(argv[0],"nu") == 0) {
+    param.setValue(nu);
     return param.addObject(2, this);  
-  
-  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0)
+  }
+  else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
+    param.setValue(sigmaY);
     return param.addObject(5, this);
-
-  else if (strcmp(argv[0],"Hkin") == 0)
+  }
+  else if (strcmp(argv[0],"Hkin") == 0) {
+    param.setValue(Hkin);
     return param.addObject(6, this);
-
-  else if (strcmp(argv[0],"Hiso") == 0)
+  }
+  else if (strcmp(argv[0],"Hiso") == 0) {
+    param.setValue(Hiso);
     return param.addObject(7, this);
+  }
 
   return -1;
 }
