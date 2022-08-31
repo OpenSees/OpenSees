@@ -103,7 +103,8 @@ ImplicitGradient::computeGradient(double g)
     for (int i = 0; i < nparam; i++) {
         // get parameter tag
         Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-        int tag = theParam->getTag();
+        // int tag = theParam->getTag();
+        int tag = theParam->getPointerTag();
         if (theParam->isImplicit()) {
 
 	  // check for analytic gradient first on dg/dimplicit

@@ -95,7 +95,7 @@ RVParameter::setValue(double newValue)
 bool
 RVParameter::isImplicit(void)
 {
-  return false;
+  return true;
 }
 
 double
