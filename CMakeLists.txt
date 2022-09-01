@@ -35,11 +35,6 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
-# STAMPEDE2
-# module load python3
-# export CC=icc CXX=icpc FC=ifort
-# export MUMPS_DIR=$HOME/MUMPS_5.0.0
-
 #
 # Compiler SPECIFIC
 #
@@ -304,7 +299,31 @@ if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  if (NOT DEFINED MUMPS_DIR)
+  #    include(ExternalProject)
+  #    ExternalProject_Add(mumps
+  #       GIT_REPOSITORY    https://github.com/scivision/mumps.git
+  #       GIT_TAG           v5.5.1.5
+  #       SOURCE_DIR        "${CMAKE_BINARY_DIR}/mumps-src"
+  #       BINARY_DIR        "${CMAKE_BINARY_DIR}"
+  #       INSTALL_COMMAND   ""
+  #     )
+  #
+  #    set (MUMPS_LIBRARIES "${CMAKE_BINARY_DIR}/libdmumps.lib;${CMAKE_BINARY_DIR}/libmumps_common.lib;${CMAKE_BINARY_DIR}/libpord.lib")
+     set (MUMPS_FLAG -D_NOMUMPS)
+     set (MUMPS_LIBRARIES "")
+  else()
+     set (MUMPS_FLAG -D_MUMPS)  
+     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+       set (MUMPS_LIBRARIES "${MUMPS_DIR}/pord.lib;${MUMPS_DIR}/dmumps.lib;${MUMPS_DIR}/mumps_common.lib")
+     else()
+       set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
+     endif()
+
+  endif()
+
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
 else()
@@ -343,7 +362,6 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
-       ${BLAS_LIBRARIES} 
 )
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
@@ -552,7 +570,7 @@ if(MPI_FOUND)
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
     target_compile_definitions(OpenSeesSP 
-      PUBLIC _PARALLEL_PROCESSING _MUMPS
+      PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG}
     )
     
     target_link_libraries(OpenSeesSP 
@@ -561,11 +579,10 @@ if(MPI_FOUND)
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       MUMPS_F
-       MUMPS_C       
        METIS
        SUPERLU_DIST
        OPS_Numerics
+       ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
        ${CONAN_LIBS}
@@ -602,13 +619,16 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    if (NOT DEFINED MUMPS_DIR)
+        add_dependencies(OpenSeesMP mumps)
+    endif()			    
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-        PUBLIC _PARALLEL_INTERPRETERS _MUMPS _OPENMPI)
+    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-        PUBLIC _PARALLEL_INTERPRETERS _MUMPS)
+    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 
@@ -616,12 +636,11 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
-       OPS_Recorder
-       MUMPS_F
-       MUMPS_C       
+       OPS_Recorder      
        METIS
        SUPERLU_DIST
        OPS_Numerics
+       ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
        ${CONAN_LIBS}
