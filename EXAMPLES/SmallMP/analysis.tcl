@@ -10,6 +10,7 @@ proc doGravity {} {
     analysis Static
     
     set ok [analyze 10]
+    wipeAnalysis
     return $ok
 }
 
