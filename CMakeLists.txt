@@ -295,7 +295,20 @@ if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+   
+      include(ExternalProject)
+      ExternalProject_Add(mumps
+         GIT_REPOSITORY    https://github.com/scivision/mumps.git
+         GIT_TAG           v5.5.1.5
+         SOURCE_DIR        "${CMAKE_BINARY_DIR}/mumps-src"
+         BINARY_DIR        "${CMAKE_BINARY_DIR}/mumps-build"
+         INSTALL_COMMAND   ""
+       )
+  else()
+      set (MUMPS_LIBRARIES "${MUMPS_DIR}/pord.lib;${MUMPS_DIR}/dmumps.lib;${MUMPS_DIR}/mumps_common.lib")
+  endif()
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
 else()
@@ -593,6 +606,7 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    #add_dependencies(OpenSeesMP mumps)
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
@@ -607,12 +621,11 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
-       OPS_Recorder
-       MUMPS_F
-       MUMPS_C       
+       OPS_Recorder      
        METIS
        SUPERLU_DIST
        OPS_Numerics
+       ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
        ${CONAN_LIBS}
