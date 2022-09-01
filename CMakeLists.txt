@@ -52,7 +52,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
-  MESSAFE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+  MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
  
@@ -126,7 +126,7 @@ endif()
 
 # Fortran
 #--------------------------------------
-#enable_language(Fortran)
+enable_language(Fortran)
 
 # C++
 #--------------------------------------
@@ -259,7 +259,16 @@ else()
 endif()
 
 find_package (Python COMPONENTS Interpreter Development)
-find_package(MPI)
+
+
+if(TARGET OpenSeesSP)
+  find_package(MPI)
+endif()
+if(TARGET OpenSeesMP)
+  find_package(MPI)
+endif()
+
+
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -339,7 +348,7 @@ endif()
 #list (SORT _variableNames)
 #foreach (_variableName ${_variableNames})
 #  message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()	 
+#endforeach()  
 
 add_library(OPS_Numerics INTERFACE)
 
@@ -508,11 +517,11 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 else ()
      FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
      add_custom_command(
-     	TARGET OpenSees POST_BUILD
-	COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-     	COMMAND ${CMAKE_COMMAND} -E copy
+      TARGET OpenSees POST_BUILD
+  COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
+      COMMAND ${CMAKE_COMMAND} -E copy
         ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-	${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
+  ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
      )
 endif()
 
