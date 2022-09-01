@@ -47,6 +47,8 @@ class Response;
 
 #define MAX_SECTION_RESPONSE_ID 10000
 
+#define SECTION_RESPONSE_NONE   -1
+
 #define SECTION_RESPONSE_MZ		1
 #define SECTION_RESPONSE_P		2
 #define SECTION_RESPONSE_VY		3

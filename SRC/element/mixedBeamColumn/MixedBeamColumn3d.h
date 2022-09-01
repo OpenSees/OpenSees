@@ -110,6 +110,8 @@ class MixedBeamColumn3d : public Element
     void getSectionStress(int sec,Vector &fSection,double &torsion);
     void setSectionDeformation(int sec,Vector &defSection,double &twist);
 
+  void setSectionPointers(void);
+  
     // Private Attributes - a copy for each object of the class
     ID connectedExternalNodes;              // tags of the end nodes
     Node *theNodes[2];                      // pointers to the nodes
@@ -148,14 +150,14 @@ class MixedBeamColumn3d : public Element
     // Committed versions
     Vector committedV;
     Vector committedInternalForceOpenSees;
-    Vector commitedNaturalForce;
-    Vector commitedLastNaturalDisp;
-    Matrix commitedHinv;
-    Matrix commitedGMH;
+    Vector committedNaturalForce;
+    Vector committedLastNaturalDisp;
+    Matrix committedHinv;
+    Matrix committedGMH;
     Matrix kvcommit;
-    Vector *commitedSectionForceFibers;
-    Vector *commitedSectionDefFibers;
-    Matrix *commitedSectionFlexibility;
+    Vector *committedSectionForceFibers;
+    Vector *committedSectionDefFibers;
+    Matrix *committedSectionFlexibility;
 
     // static data - single copy for all objects of the class
     static Matrix theMatrix;
