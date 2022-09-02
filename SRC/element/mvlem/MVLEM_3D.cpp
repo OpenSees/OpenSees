@@ -2907,33 +2907,55 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 	// Fiber strain
 	else if (strcmp(argv[0], "Fiber_Strain") == 0 || strcmp(argv[0], "fiber_strain") == 0) {
 
-		s.tag("ResponseType", "epsy");
+		for (int pointNum = 1; pointNum <= m; ++pointNum) {
+			s.tag("GaussPointOutput");
+			s.attr("number", pointNum);
+			s.attr("eta", x[pointNum - 1] / Lw * 2.0);
+			s.attr("weight", b[pointNum - 1] / Lw * 2.0);
+			s.tag("ResponseType", "epsy");
+			s.endTag();
+		}
 
-		return theResponse = new ElementResponse(this, 4, Vector(m));
+		theResponse = new ElementResponse(this, 4, Vector(m));
 	}
 
 	// Fiber concrete stresses
 	else if (strcmp(argv[0], "Fiber_Stress_Concrete") == 0 || strcmp(argv[0], "fiber_stress_concrete") == 0) {
 
-		s.tag("ResponseType", "sigmayc");
+		for (int pointNum = 1; pointNum <= m; ++pointNum) {
+			s.tag("GaussPointOutput");
+			s.attr("number", pointNum);
+			s.attr("eta", x[pointNum - 1] / Lw * 2.0);
+			s.attr("weight", b[pointNum - 1] / Lw * 2.0);
+			s.tag("ResponseType", "sigmayc");
+			s.endTag();
+		}
 
-		return theResponse = new ElementResponse(this, 5, Vector(m));
+		theResponse = new ElementResponse(this, 5, Vector(m));
 	}
 
 	// Fiber steel stresses
 	else if (strcmp(argv[0], "Fiber_Stress_Steel") == 0 || strcmp(argv[0], "fiber_stress_steel") == 0) {
 
-		s.tag("ResponseType", "sigmays");
+		for (int pointNum = 1; pointNum <= m; ++pointNum) {
+			s.tag("GaussPointOutput");
+			s.attr("number", pointNum);
+			s.attr("eta", x[pointNum - 1] / Lw * 2.0);
+			s.attr("weight", b[pointNum - 1] / Lw * 2.0);
+			s.tag("ResponseType", "sigmays");
+			s.endTag();
+		}
 
-		return theResponse = new ElementResponse(this, 6, Vector(m));
+		theResponse = new ElementResponse(this, 6, Vector(m));
 	}
 
 	// Shear force deformation
 	else if (strcmp(argv[0], "Shear_Force_Deformation") == 0 || strcmp(argv[0], "shear_force_deformation") == 0) {
 
-		s.tag("ResponseType", "shearFD");
+		s.tag("ResponseType", "shearDef");
+		s.tag("ResponseType", "shearFrc");
 
-		return theResponse = new ElementResponse(this, 7, Vector(2));
+		theResponse = new ElementResponse(this, 7, Vector(2));
 	}
 
 	// Shear Deformation
@@ -2941,12 +2963,36 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "shearDef");
 
-		return theResponse = new ElementResponse(this, 8, 0.0);
+		theResponse = new ElementResponse(this, 8, 0.0);
+	}
+
+	// Results at specified integration point
+	else if (strcmp(argv[0], "material") == 0 && (argc > 2)) {
+		int pointNum = atoi(argv[1]);
+		if (pointNum > 0 && pointNum <= m) {
+			s.tag("GaussPointOutput");
+			s.attr("number", pointNum);
+			s.attr("eta", x[pointNum - 1] / Lw * 2.0);
+			s.attr("weight", b[pointNum - 1] / Lw * 2.0);
+			if (argc > 3) {
+				// specify material and forward result type
+				if (strcmp(argv[2], "concrete") == 0 || strcmp(argv[2], "Concrete") == 0) {
+					theResponse = theMaterialsConcrete[pointNum - 1]->setResponse(&argv[3], argc - 3, s);
+				}
+				else if (strcmp(argv[2], "steel") == 0 || strcmp(argv[2], "Steel") == 0) {
+					theResponse = theMaterialsSteel[pointNum - 1]->setResponse(&argv[3], argc - 3, s);
+				}
+				else if (strcmp(argv[2], "shear") == 0 || strcmp(argv[2], "Shear") == 0) {
+					theResponse = theMaterialsShear[0]->setResponse(&argv[3], argc - 3, s);
+				}
+			}
+			s.endTag();
+		}
 	}
 
 	s.endTag();
 
-	return 0;
+	return theResponse;
 }
 
 // get recorders
@@ -2976,7 +3022,7 @@ int MVLEM_3D::getResponse(int responseID, Information &eleInfo)
 		return eleInfo.setVector(this->getShearFD());
 
 	case 8:  // Shear Deformtion
-		return eleInfo.setVector(this->getShearDef());
+		return eleInfo.setDouble(this->getShearDef());
 
 	default:
 

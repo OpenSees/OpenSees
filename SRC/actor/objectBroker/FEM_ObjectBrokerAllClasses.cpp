@@ -90,6 +90,7 @@
 #include "SeriesMaterial.h"
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
+#include "GNGMaterial.h"
 #include "MinMaxMaterial.h"
 #include "ModIMKPeakOriented.h"
 #include "snap/Clough.h"
@@ -97,6 +98,7 @@
 #include "InitStressMaterial.h"
 #include "InitStrainMaterial.h"
 #include "Bond_SP01.h"
+#include "FRCC.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
 
@@ -174,6 +176,7 @@
 #include "J2ThreeDimensional.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
+#include "OrthotropicMaterial.h"
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
@@ -285,8 +288,14 @@
 
 #include "dispBeamColumn/DispBeamColumn2d.h"
 #include "dispBeamColumn/DispBeamColumn3d.h"
+#include "mixedBeamColumn/MixedBeamColumn2d.h"
+#include "mixedBeamColumn/MixedBeamColumn3d.h"
+#include "dispBeamColumn/DispBeamColumnNL2d.h"
+#include "dispBeamColumn/DispBeamColumnNL3d.h"
 #include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
 #include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
+#include "dispBeamColumn/DispBeamColumn2dThermal.h"
+#include "dispBeamColumn/DispBeamColumn3dThermal.h"
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -765,13 +774,31 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new DispBeamColumn2d();					     
       
     case ELE_TAG_DispBeamColumn3d:  
-      return new DispBeamColumn3d(); 
+      return new DispBeamColumn3d();
+
+    case ELE_TAG_MixedBeamColumn2d:  
+      return new MixedBeamColumn2d();					     
+      
+    case ELE_TAG_MixedBeamColumn3d:  
+      return new MixedBeamColumn3d();      
+
+    case ELE_TAG_DispBeamColumnNL2d:  
+      return new DispBeamColumnNL2d();					     
+      
+    case ELE_TAG_DispBeamColumnNL3d:  
+      return new DispBeamColumnNL3d();       
 
 	case ELE_TAG_DispBeamColumnAsym3d:
 		return new DispBeamColumnAsym3d();    //Xinlong Du
 
 	case ELE_TAG_MixedBeamColumnAsym3d:
 		return new MixedBeamColumnAsym3d();   //Xinlong Du
+
+    case ELE_TAG_DispBeamColumn2dThermal:  
+      return new DispBeamColumn2dThermal();					     
+      
+    case ELE_TAG_DispBeamColumn3dThermal:  
+      return new DispBeamColumn3dThermal();
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
@@ -1363,6 +1390,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
+
+	case MAT_TAG_GNG:
+		return new GNGMaterial();		
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
@@ -1426,6 +1456,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_Bond_SP01:
 	  return new Bond_SP01();
+
+        case MAT_TAG_FRCC:
+	  return new FRCC();	  
 
         case MAT_TAG_SimpleFractureMaterial:
 	  return new SimpleFractureMaterial();
@@ -1584,6 +1617,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
+
+  case ND_TAG_OrthotropicMaterial:
+    return new OrthotropicMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:

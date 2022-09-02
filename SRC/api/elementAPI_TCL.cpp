@@ -109,8 +109,8 @@ struct cmp_str {
     }
 };
 
-std::map<char*, eleFunct, cmp_str>theEleFunctions;              // map of user added ele functions
-std::map<char*, eleFunct, cmp_str>theUniaxialMaterialFunctions; // map of user added material functions
+//std::map<char*, eleFunct, cmp_str>theEleFunctions;
+//std::map<char*, eleFunct, cmp_str>theUniaxialMaterialFunctions; 
 
 //std::map<int, UniaxialMaterial *>theUniaxialMaterials;           // map for UniaxialMaterial objects needed by user added ele functions'
 

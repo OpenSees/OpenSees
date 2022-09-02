@@ -617,19 +617,15 @@ TimoshenkoBeamColumn3d::getTangentStiff()
   return K;
 }
 
-const Matrix&
-TimoshenkoBeamColumn3d::getInitialBasicStiff()
+void
+TimoshenkoBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 {
-  static Matrix kb(6,6);
-  
   // Zero for integral
   kb.Zero();
   
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
 
-  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
-  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
   double xi[maxNumSections];
   beamInt->getSectionLocations(numSections, L, xi);
   double wt[maxNumSections];
@@ -648,8 +644,8 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
     double phiz = phizs[i];
     double phiy = phiys[i];
     
-    // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangent();
+    // Get the section tangent stiffness
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent(): theSections[i]->getSectionTangent();
     
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -742,14 +738,14 @@ TimoshenkoBeamColumn3d::getInitialBasicStiff()
     }
     
   }
-  
-  return kb;
 }
 
 const Matrix&
 TimoshenkoBeamColumn3d::getInitialStiff()
 {
-  const Matrix &kb = this->getInitialBasicStiff();
+  static Matrix kb(6,6);
+  
+  this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
   K = crdTransf->getInitialGlobalStiffMatrix(kb);
@@ -1415,7 +1411,20 @@ TimoshenkoBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &out
       output.tag("ResponseType","Mz_2");
 
       theResponse = new ElementResponse(this, 2, P);
+ }
+    else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
 
+      theResponse = new ElementResponse(this, 9, Vector(6));
+    }
+    else if (strcmp(argv[0],"basicStiffness") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
+
+      theResponse = new ElementResponse(this, 19, Matrix(6,6));
     // chord rotation -
     }  else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
 	      || strcmp(argv[0],"basicDeformation") == 0) {
@@ -1457,7 +1466,7 @@ TimoshenkoBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &out
       theResponse = new ElementResponse(this, 110, ID(numSections));
 
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
       if (argc > 2) {
 	float sectionLoc = atof(argv[1]);
 	
@@ -1484,7 +1493,7 @@ TimoshenkoBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &out
       }
     }
     
-    else if (strstr(argv[0],"section") != 0) { 
+    else if (strcmp(argv[0],"section") == 0) { 
       if (argc > 1) {
 	
 	int sectionNum = atoi(argv[1]);
@@ -1589,6 +1598,16 @@ TimoshenkoBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(P);
   }
 
+  else if (responseID == 9) {
+    return eleInfo.setVector(q);
+  }
+
+  else if (responseID == 19) {
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb);
+    return eleInfo.setMatrix(kb);
+  }
+  
   // Chord rotation
   else if (responseID == 3)
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
@@ -1597,7 +1616,8 @@ TimoshenkoBeamColumn3d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 4) {
     static Vector vp(6);
     static Vector ve(6);
-    const Matrix &kb = this->getInitialBasicStiff();
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb, 1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;
