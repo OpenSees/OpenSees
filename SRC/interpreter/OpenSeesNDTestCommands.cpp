@@ -86,6 +86,13 @@ void* OPS_NDSetStrain()
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
 
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDSetStrain - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
+
+
     Vector new_strain(6);
 
     new_strain(0) = strains[0];
@@ -109,6 +116,12 @@ void* OPS_NDPrintStrain()
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
 
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDPrintStrain - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
+
     const Vector &strain = mat->getStrain();
 
     return 0;
@@ -122,6 +135,12 @@ void* OPS_NDPrintStress()
     if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
+
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDPrintStress - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
 
     const Vector &stress = mat->getStress();
 
@@ -138,6 +157,12 @@ void* OPS_NDGetStrain()
     if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
+
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDGetStrain - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
 
     const Vector &strain = mat->getStrain();
 
@@ -200,6 +225,12 @@ void* OPS_NDGetTangentStiffness()
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
 
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDGetTangentStiffness - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
+
     const Matrix &stiffness = mat->getTangent();
 
     std::vector<double> values(size);
@@ -234,6 +265,13 @@ void* OPS_NDCommitState()
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
 
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDCommitState - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
+    
+
     mat->commitState();
 
     return 0;
@@ -253,6 +291,12 @@ void* OPS_NDUpdateIntegerParameter()
 
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
+
+    if (mat == NULL)
+    {
+        opserr << "OPS_getNDMaterial - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
 
     Information info;
 
@@ -278,6 +322,12 @@ void* OPS_NDUpdateDoubleParameter()
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
 
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDUpdateDoubleParameter - material with tag " << tag << " does not exist" << endln;
+        return 0;
+    }
+    
     Information info;
 
     info.theDouble = theNewDoubleParameterValue;
