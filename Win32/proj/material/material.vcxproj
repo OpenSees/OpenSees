@@ -419,6 +419,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\soil\T2Vector.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\soil\TclUpdateMaterialStageCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlateFiberMaterial.cpp" />
@@ -825,6 +826,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\soil\PressureDependMultiYield02.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\soil\PressureIndependMultiYield.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\soil\T2Vector.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressMaterial.h" />
