@@ -967,6 +967,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/IncrementalElasticIsotropicThreeDimensional.o \
 	$(FE)/material/nD/ElasticOrthotropicMaterial.o \
 	$(FE)/material/nD/ElasticOrthotropicThreeDimensional.o \
+	$(FE)/material/nD/OrthotropicMaterial.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
@@ -1053,6 +1054,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/ElasticSection3d.o \
 	$(FE)/material/section/ElasticShearSection2d.o \
 	$(FE)/material/section/ElasticShearSection3d.o \
+	$(FE)/material/section/ElasticBDShearSection2d.o \
 	$(FE)/material/section/ElasticWarpingShearSection2d.o \
 	$(FE)/material/section/ElasticTubeSection3d.o \
 	$(FE)/material/section/FiberSection2d.o \
