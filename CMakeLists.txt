@@ -261,12 +261,8 @@ endif()
 find_package (Python COMPONENTS Interpreter Development)
 
 
-if(TARGET OpenSeesSP)
+
   find_package(MPI)
-endif()
-if(TARGET OpenSeesMP)
-  find_package(MPI)
-endif()
 
 
 find_package(MKL)
@@ -317,7 +313,7 @@ if(MPI_FOUND)
   else()
      set (MUMPS_FLAG -D_MUMPS)  
      if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/pord.lib;${MUMPS_DIR}/dmumps.lib;${MUMPS_DIR}/mumps_common.lib")
+       set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
      else()
        set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
      endif()

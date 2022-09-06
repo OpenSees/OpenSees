@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
 	if (numIMKBilinMaterials == 0) {
 		numIMKBilinMaterials++;
-		OPS_Error("Mod. IMK Bilinear Model - AE-Aug22\n", 1);
+		OPS_Error("Mod. IMK Bilinear Model - AE-Sep22\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -230,6 +230,17 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		K_j = K_j_1;
 	}
 
+	// Fix for force overshooting at new excursions 
+	Mi_temp = Mi_1 + K_j * (Ri - Ri_1);
+	if (Mi_temp*Mi_1 < 0) {
+		Energy_Excrsn = max(0., Energy_total - Energy_Excrsni_1);
+		Energy_Excrsni_1 = Energy_total;
+		Excursion_Flag = 1;
+	}
+	else {
+		Excursion_Flag = 0;
+	}
+
 	//cout << " Ri_1=" << Ri_1 << " Ri=" << Ri << " Di=" << Di << endln;
 	//cout << "                Ex_Flag=" << Excursion_Flag << " Rev_Flag=" << Reversal_Flag << " Yield_Flag=" << Yield_Flag << " Mr+_Flag=" << Mrpos_Flag << " Mr-_Flag=" << Mrneg_Flag << " En_Flag=" << Energy_Flag << endln;
 
@@ -387,8 +398,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	else if (QuarterFlag == 3) {
 		if (fabs(Ri) <= Theta_maxi) {
 			Mi_boundary = -MpeProjecti + slope_pi * Ri;
-			//cout << "        MpeProjecti=" << MpeProjecti << " slope_pi=" << slope_pi << " Mbound=" << Mi_boundary << endln;
-
 		}
 		else if (fabs(Ri) > Theta_maxi) {
 			Mi_boundary = min(-Mr_neg0, -MmaxProjecti - slope_pci * Ri);
@@ -473,7 +482,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
 	// Energy calculation at each new excursion
 	if (Mi / Mi_1 <= 0.0) {
-		Energy_Excrsn = Energy_total - Energy_Excrsni_1;	// total energy dissipated in current excursion
+		Energy_Excrsn = max(0., Energy_total - Energy_Excrsni_1);	// total energy dissipated in current excursion
 		Energy_Excrsni_1 = Energy_total;					// total energy dissipated in previous excursion
 		Excursion_Flag = 1;
 	}
