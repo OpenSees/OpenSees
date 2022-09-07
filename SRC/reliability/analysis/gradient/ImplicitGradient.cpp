@@ -53,8 +53,9 @@ ImplicitGradient::ImplicitGradient(
       theOpenSeesDomain(passedOpenSeesDomain) {
     theSensAlgo = theAlgo;
 
-    int nparam = theOpenSeesDomain->getNumParameters();
-    grad_g = new Vector(nparam);
+    int nrv = passedReliabilityDomain->getNumberOfRandomVariables();
+    // int nparam = theOpenSeesDomain->getNumParameters();
+    grad_g = new Vector(nrv);
 }
 
 ImplicitGradient::~ImplicitGradient() {
@@ -64,16 +65,6 @@ ImplicitGradient::~ImplicitGradient() {
 const Vector &ImplicitGradient::getGradient() { return *grad_g; }
 
 int ImplicitGradient::computeGradient(double g) {
-    // Compute gradients if this is a path-INdependent analysis
-    // (This command only has effect if it IS path-independent.)
-    // if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) )
-    // {
-    if (theSensAlgo != 0) {
-        theSensAlgo->computeSensitivities();
-        opserr << " Implicit function SensAlgo is not zero" << endln;
-    }
-
-    //}
 
     // Initialize gradient vector
     grad_g->Zero();
@@ -84,102 +75,53 @@ int ImplicitGradient::computeGradient(double g) {
         theReliabilityDomain->getLimitStateFunctionPtr(lsf);
     const char *lsfExpression = theLimitStateFunction->getExpression();
 
-    // get parameters created in the domain
-    int nparam = theOpenSeesDomain->getNumParameters();
-    Vector partials(nparam);
+    // get RVs created in the reliability domain
+    int nrv = this->theReliabilityDomain->getNumberOfRandomVariables();
 
     // first check for dg/dimplicit partials
-    for (int i = 0; i < nparam; i++) {
-        // get parameter tag
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-        // int tag = theParam->getTag();
-        int tag = theParam->getPointerTag();
-        if (theParam->isImplicit()) {
-            // check for analytic gradient first on dg/dimplicit
-            const char *gradExpression =
-                theLimitStateFunction->getGradientExpression(tag);
-            if (gradExpression != 0) {
-                theFunctionEvaluator->setExpression(gradExpression);
-
-                if (theFunctionEvaluator->setVariables() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error setting "
-                              "variables in namespace"
-                           << endln;
-                    return -1;
-                }
-
-                partials(i) = theFunctionEvaluator->evaluateExpression();
-
-                // Reset limit state function in evaluator -- subsequent
-                // calls could receive gradient expression
-                theFunctionEvaluator->setExpression(lsfExpression);
-            }
-
-            // if no analytic gradient automatically do finite differences
-            // to get dg/dimplicit
-            else {
-                // use parameter defined perturbation after updating
-                // implicit parameter
-                theParam->update(0.0);
-                double h = theParam->getPerturbation();
-                double original = theParam->getValue();
-                theParam->setValue(original + h);
-
-                // set perturbed values in the variable namespace
-                if (theFunctionEvaluator->setVariables() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error setting "
-                              "variables in namespace"
-                           << endln;
-                    return -1;
-                }
-
-                // run analysis
-                // if (theFunctionEvaluator->runAnalysis() < 0) {
-                //    opserr << "ERROR ImplicitGradient -- error running
-                //    analysis" << endln; return -1;
-                //}
-
-                // evaluate LSF and obtain result
-                theFunctionEvaluator->setExpression(lsfExpression);
-
-                // Add gradient contribution
-                double g_perturbed =
-                    theFunctionEvaluator->evaluateExpression();
-                partials(i) = (g_perturbed - g) / h;
-
-                // return values to previous state
-                theParam->update(0.0);
-
-                // opserr << "g_pert " << g_perturbed << ", g0 = " << g <<
-                // endln;
-            }
+    for (int i = 0; i < nrv; i++) {
+        // get RV
+        auto *theRV =
+            this->theReliabilityDomain->getRandomVariablePtrFromIndex(i);
+        if (theRV == 0) {
+            opserr << "ERROR: can't get RV " << i
+                   << " -- ImplictGradient::computeGradient\n";
+            return -1;
         }
-    }
 
-    // opserr << partials;
+        // get RV tag
+        int rvTag = theRV->getTag();
 
-    // now loop through to create gradient vector
-    // Mackie 7/31/2011: big consideration here is that you CANNOT have an
-    // explicit parameter appear in the same LSF as an implicit parameter.
-    // For example, if there are two parameters: theta1 is modulus E and
-    // theta2 is nodal displacement, then g(theta) = theta1 + theta2
-    // is not a viable LSF.  Note that the implicit computation would need
-    // to consider dg/dtheta1 + dg/du * du/dtheta1 If you insist on solving
-    // this, use FiniteDifferenceGradient
-    for (int i = 0; i < nparam; i++) {
-        // get parameter tag
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-        int tag = theParam->getTag();
-        double result = 0;
+        // get grad expression
+        const char *gradExpression =
+            theLimitStateFunction->getGradientExpression(rvTag);
 
-        for (int j = 0; j < nparam; j++) {
-            Parameter *theImplicit =
-                theOpenSeesDomain->getParameterFromIndex(j);
-            if (theImplicit->isImplicit()) {
-                result = partials(j) * theImplicit->getSensitivity(i);
-                (*grad_g)(i) += result;
-            }
+        // not provided means zero
+        if (gradExpression == 0) {
+            opserr
+                << "WARNING: performance function gradient expression for "
+                   "random variable "
+                << rvTag
+                << " is not defined -- ImplicitGradient::computeGradient";
+            return -1;
         }
+
+        // set expression
+        theFunctionEvaluator->setExpression(gradExpression);
+
+        // update variables
+        if (theFunctionEvaluator->setVariables() < 0) {
+            opserr << "ERROR ImplicitGradient -- error setting "
+                      "variables in namespace"
+                   << endln;
+            return -1;
+        }
+
+        // evaluate grad expression
+        (*grad_g)(i) = theFunctionEvaluator->evaluateExpression();
+
+        // Reset limit state function in evaluator
+        theFunctionEvaluator->setExpression(lsfExpression);
     }
 
     return 0;
