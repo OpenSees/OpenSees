@@ -398,7 +398,7 @@ gemm_division_cpu_gpu(
     //     return;
     // }
 
-    for (int i = 0; i < nstreams; ++i)
+    for (i = 0; i < nstreams; ++i)
     {
         stream_end_col[i] = num_blks;
     }
