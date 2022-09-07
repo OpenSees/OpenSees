@@ -274,19 +274,22 @@ int PythonEvaluator::runAnalysis() {
             return -1;
         }
 
+        // Minjie -- no need to update parameters to previous values
+        // either DDM or FDM
+
         // make sure the parameter variables in the
         // namespace update to reflect the results of
         // above analysis
-        Parameter *theParam;
+        // Parameter *theParam;
 
         // Set values of parameters in the Tcl
         // interpreter
-        int nparam = theOpenSeesDomain->getNumParameters();
+        // int nparam = theOpenSeesDomain->getNumParameters();
 
-        for (int i = 0; i < nparam; i++) {
-            theParam = theOpenSeesDomain->getParameterFromIndex(i);
-            if (theParam->isImplicit()) theParam->update(0.0);
-        }
+        // for (int i = 0; i < nparam; i++) {
+        //     theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        //     if (theParam->isImplicit()) theParam->update(0.0);
+        // }
         this->setVariables();
     }
 
