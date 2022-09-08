@@ -442,7 +442,7 @@ Domain::addElement(Element *element)
   // check if an Element with a similar tag already exists in the Domain
   TaggedObject *other = theElements->getComponentPtr(eleTag);
   if (other != 0) {
-    opserr << "Domain::addElement - element with tag " << eleTag << "already exists in model\n"; 
+    opserr << "Domain::addElement - element with tag " << eleTag << " already exists in model\n"; 
     return false;
   }
 
@@ -480,7 +480,7 @@ Domain::addNode(Node * node)
 
   TaggedObject *other = theNodes->getComponentPtr(nodTag);
   if (other != 0) {
-    opserr << "Domain::addNode - node with tag " << nodTag << "already exists in model\n"; 
+    opserr << "Domain::addNode - node with tag " << nodTag << " already exists in model\n"; 
     return false;
   }
   
@@ -588,7 +588,7 @@ Domain::addSP_Constraint(SP_Constraint *spConstraint)
   TaggedObject *other = theSPs->getComponentPtr(tag);
   if (other != 0) {
     opserr << "Domain::addSP_Constraint - cannot add as constraint with tag " << 
-      tag << "already exists in model\n";             
+      tag << " already exists in model\n";             
     spConstraint->Print(opserr);
 
     return false;
@@ -630,7 +630,7 @@ Domain::addPressure_Constraint(Pressure_Constraint *pConstraint)
     TaggedObject *other = thePCs->getComponentPtr(tag);
     if (other != 0) {
         opserr << "Domain::addPressure_Constraint - cannot add as constraint with tag";
-        opserr << tag << "already exists in model\n";             
+        opserr << tag << " already exists in model\n";             
         return false;
     }
   
@@ -745,7 +745,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
   TaggedObject *other = theMPs->getComponentPtr(tag);
   if (other != 0) {
     opserr << "Domain::addMP_Constraint - cannot add as constraint with tag" <<
-      tag << "already exists in model";             
+      tag << " already exists in model";             
 			      
     return false;
   }
@@ -769,7 +769,7 @@ Domain::addLoadPattern(LoadPattern *load)
     TaggedObject *other = theLoadPatterns->getComponentPtr(tag);
     if (other != 0) {
       opserr << "Domain::addLoadPattern - cannot add as LoadPattern with tag" <<
-	tag << "already exists in model\n";             
+	tag << " already exists in model\n";             
 				
       return false;
     }    
@@ -801,7 +801,7 @@ Domain::addParameter(Parameter *theParam)
   // check if a Parameter with a similar tag already exists in the Domain
   TaggedObject *other = theParameters->getComponentPtr(paramTag);
   if (other != 0) {
-    opserr << "Domain::addParameter - parameter with tag " << paramTag << "already exists in model\n"; 
+    opserr << "Domain::addParameter - parameter with tag " << paramTag << " already exists in model\n"; 
     return false;
   }
 
