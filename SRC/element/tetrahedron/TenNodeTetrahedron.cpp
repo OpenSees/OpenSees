@@ -236,6 +236,12 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
        int node2,
        int node3,
        int node4,
+       int node5,
+       int node6,
+       int node7,
+       int node8,
+       int node9,
+       int node10,
        NDMaterial &theMaterial,
        double b1, double b2, double b3)
   :Element(tag, ELE_TAG_TenNodeTetrahedron),
@@ -247,6 +253,12 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
   connectedExternalNodes(1) = node2 ;
   connectedExternalNodes(2) = node3 ;
   connectedExternalNodes(3) = node4 ;
+  connectedExternalNodes(4) = node5 ;
+  connectedExternalNodes(5) = node6 ;
+  connectedExternalNodes(6) = node7 ;
+  connectedExternalNodes(7) = node8 ;
+  connectedExternalNodes(8) = node9 ;
+  connectedExternalNodes(9) = node10 ;
 
 
   for (int i=0; i<NumGaussPoints; i++ ) 

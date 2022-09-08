@@ -65,7 +65,13 @@ class TenNodeTetrahedron : public Element {
 	  int node1,
 	  int node2,
 	  int node3,
-	  int node4,
+    int node4,
+    int node5,
+    int node6,
+    int node7,
+    int node8,
+    int node9,
+    int node10,
 	  NDMaterial &theMaterial,
 	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
     
