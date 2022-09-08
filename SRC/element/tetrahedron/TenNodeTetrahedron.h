@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // ============================================================================
 // 2022 By Jose Abell and Jose Larenas @ Universidad de los Andes, Chile
 // www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
@@ -34,11 +34,11 @@
 #define TenNodeTetrahedron_H
 
 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <math.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-#include <ID.h> 
+#include <ID.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <Element.h>
@@ -55,27 +55,27 @@
 
 class TenNodeTetrahedron : public Element {
 
-  public :
-    
+public :
+
     //null constructor
     TenNodeTetrahedron();
-  
+
     //full constructor
-    TenNodeTetrahedron(int tag, 
-	  int node1,
-	  int node2,
-	  int node3,
-    int node4,
-    int node5,
-    int node6,
-    int node7,
-    int node8,
-    int node9,
-    int node10,
-	  NDMaterial &theMaterial,
-	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
-    
-    //destructor 
+    TenNodeTetrahedron(int tag,
+                       int node1,
+                       int node2,
+                       int node3,
+                       int node4,
+                       int node5,
+                       int node6,
+                       int node7,
+                       int node8,
+                       int node9,
+                       int node10,
+                       NDMaterial &theMaterial,
+                       double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
+
+    //destructor
     virtual ~TenNodeTetrahedron( ) ;
 
     const char *getClassType(void) const {return "TenNodeTetrahedron";};
@@ -95,11 +95,11 @@ class TenNodeTetrahedron : public Element {
 
     //commit state
     int commitState( ) ;
-    
-    //revert to last commit 
+
+    //revert to last commit
     int revertToLastCommit( ) ;
-    
-    //revert to start 
+
+    //revert to start
     int revertToStart( ) ;
 
     // update
@@ -107,11 +107,11 @@ class TenNodeTetrahedron : public Element {
 
     //print out element data
     void Print( OPS_Stream &s, int flag ) ;
-	
-    //return stiffness matrix 
+
+    //return stiffness matrix
     const Matrix &getTangentStiff();
-    const Matrix &getInitialStiff();    
-    const Matrix &getMass();    
+    const Matrix &getInitialStiff();
+    const Matrix &getMass();
 
     void zeroLoad( ) ;
     int addLoad(ElementalLoad *theLoad, double loadFactor);
@@ -119,15 +119,15 @@ class TenNodeTetrahedron : public Element {
 
     //get residual
     const Vector &getResistingForce( ) ;
-    
+
     //get residual with inertia terms
     const Vector &getResistingForceIncInertia( ) ;
 
     // public methods for element output
     int sendSelf (int commitTag, Channel &theChannel);
-    int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker 
-		  &theBroker);
-      
+    int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker
+                  &theBroker);
+
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInformation);
 
@@ -135,27 +135,37 @@ class TenNodeTetrahedron : public Element {
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
 
-    //plotting 
-    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
+    //plotting
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes = 0, int numModes = 0);
     void onActivate();
     void onDeactivate();
 
-  private : 
+private :
 
-    void shp3d( const double ss[4], double &xsj, double shp[4][4], const double xl[3][4]   );
+    // Routine to compute shape functions and their derivatives. These get stored as follows. 
+    // for node n:
+    //   shp[0][n] --> dN_n / d x, 
+    //   shp[1][n] --> dN_n / d y
+    //   shp[2][n] --> dN_n / d z
+    //   shp[3][n] --> N_n, shape function n value at the z values 
+    void shp3d( 
+        const double zeta[4],  // Tetrahedral coordinates  (input)
+        double &xsj,         // Jacobian determinant (output)
+        double shp[4][NumNodes], // Shape function and derivatives values at the tetrahedral coordinates (output) 
+        const double xl[3][NumNodes]   ); // Node coordinates (input)
 
     //
     // private attributes
     //
 
     ID connectedExternalNodes ;  //four node numbers
-    Node *nodePointers[4] ;      //pointers to eight nodes
+    Node *nodePointers[NumNodes] ;      //pointers to eight nodes
 
     //material information
-    NDMaterial *materialPointers[1]; //pointers to eight materials
+    NDMaterial *materialPointers[NumGaussPoints]; //pointers to eight materials
 
-    double b[3];		// Body forces
-    double appliedB[3];		// Body forces applied with load
+    double b[3];        // Body forces
+    double appliedB[3];     // Body forces applied with load
     int applyLoad;
 
     Vector *load;
@@ -172,12 +182,12 @@ class TenNodeTetrahedron : public Element {
 
     //quadrature data
     static const double root3 ;
-    static const double one_over_root3 ;    
+    static const double one_over_root3 ;
     static const double sg[1] ;
     static const double wg[1] ;
-  
+
     //local nodal coordinates, three coordinates for each of four nodes
-    static double xl[3][4] ; 
+    static double xl[3][NumNodes] ;
 
     //
     // private methods
@@ -186,22 +196,22 @@ class TenNodeTetrahedron : public Element {
     //inertia terms
     void formInertiaTerms( int tangFlag ) ;
 
-    //form residual and tangent					  
+    //form residual and tangent
     void formResidAndTangent( int tang_flag ) ;
 
     //compute coordinate system
     void computeBasis( ) ;
 
     //compute B matrix
-    const Matrix& computeB( int node, const double shp[4][4] ) ;
-  
+    const Matrix& computeB( int node, const double shp[4][NumNodes] ) ;
+
     //Matrix transpose
     Matrix transpose( int dim1, int dim2, const Matrix &M ) ;
-    Vector initDisp[4];
+    Vector initDisp[NumNodes];
 
     int do_update;
 
-} ; 
+} ;
 
 #endif
 
