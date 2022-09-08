@@ -47,8 +47,8 @@
 
 
 //Number of Gauss-points
-#define NumGaussPoints 1
-#define NumNodes 4
+#define NumGaussPoints 4
+#define NumNodes 10
 #define NumDOFsPerNode 3
 #define NumStressComponents 6
 #define NumDOFsTotal NumNodes*NumDOFsPerNode
