@@ -50,26 +50,26 @@
 
 void* OPS_TenNodeTetrahedron()
 {
-    if (OPS_GetNumRemainingInputArgs() < 6) 
+    if (OPS_GetNumRemainingInputArgs() < 12) 
     {
       opserr << "WARNING insufficient arguments\n";
-      opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? matTag?\n";
+      opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? \n";
       return 0;
     }
 
-    int idata[6];
-    int num = 6;
+    int idata[12];
+    int num = 12;
     if (OPS_GetIntInput(&num,idata)<0) 
     {
       opserr<<"WARNING: invalid integer data\n";
       return 0;
     }
 
-    NDMaterial* mat = OPS_getNDMaterial(idata[5]);
+    NDMaterial* mat = OPS_getNDMaterial(idata[11]);
     if (mat == 0) 
     {
       opserr << "WARNING material not found\n";
-      opserr << "material tag: " << idata[5];
+      opserr << "material tag: " << idata[11];
       opserr << "\nTenNodeTetrahedron element: " << idata[0] << endln;
     }
 
@@ -91,7 +91,7 @@ void* OPS_TenNodeTetrahedron()
 
 
     
-    return new TenNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+    return new TenNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],idata[8],idata[9],idata[10],*mat,data[0],data[1],data[2]);
 }
 
 void* OPS_TenNodeTetrahedron(const ID& info)

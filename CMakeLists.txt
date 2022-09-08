@@ -261,8 +261,10 @@ endif()
 find_package (Python COMPONENTS Interpreter Development)
 
 
-
+if((TARGET OpenSeesMP) OR (TARGET OpenSeesSP))
   find_package(MPI)
+  
+endif()
 
 
 find_package(MKL)
