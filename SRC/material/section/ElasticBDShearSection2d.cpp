@@ -31,12 +31,40 @@
 #include <stdlib.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <string.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
 
 Vector ElasticBDShearSection2d::s(3);
 Matrix ElasticBDShearSection2d::ks(3,3);
 ID ElasticBDShearSection2d::code(3);
+
+void* OPS_ElasticBDShearSection2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+      opserr<<"insufficient arguments for elastic BD section" << endln;
+      return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) {
+      opserr << "ERROR reading tag: ElasticBDShearSection" << endln;
+      return 0;
+    }
+
+    // get data
+    numData = 5;
+    double data[5];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+      opserr << "ERROR reading inputs: ElasticBDShearSection" << endln;
+      return 0;
+    }
+    
+    return new ElasticBDShearSection2d(tag,data[0],data[1],data[2],data[3],data[4]);
+}
 
 ElasticBDShearSection2d::ElasticBDShearSection2d(void)
 :SectionForceDeformation(0, SEC_TAG_ElasticBDShear2d),

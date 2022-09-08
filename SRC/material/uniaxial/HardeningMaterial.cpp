@@ -53,14 +53,14 @@ void* OPS_HardeningMaterial()
     int tag;
     numdata = 1;
     if (OPS_GetIntInput(&numdata,&tag) < 0) {
-	opserr << "WARNING: failed to read tag\n";
+      opserr << "WARNING HardeningMaterial: failed to read tag" << endln;
 	return 0;
     }
 
     double data[4];
     numdata = 4;
     if (OPS_GetDoubleInput(&numdata,data)) {
-	opserr << "WARNING: failed to read data\n";
+      opserr << "WARNING HardeningMaterial: failed to read data" << endln;
 	return 0;
     }
 
@@ -69,14 +69,14 @@ void* OPS_HardeningMaterial()
     if (numdata > 0) {
 	numdata = 1;
 	if (OPS_GetDouble(&numdata,&eta)<0) {
-	    opserr << "WARNING: failed to read eta\n";
+	  opserr << "WARNING HardeningMaterial: failed to read eta" << endln;
 	    return 0;
 	}
     }
 
     UniaxialMaterial* mat = new HardeningMaterial(tag,data[0],data[1],data[2],data[3],eta);
     if (mat == 0) {
-	opserr << "WARNING: failed to create Hardeningmaterial material\n";
+      opserr << "WARNING: failed to create Hardeningmaterial material" << endln;
 	return 0;
     }
 
@@ -86,28 +86,20 @@ void* OPS_HardeningMaterial()
 HardeningMaterial::HardeningMaterial(int tag, double e, double s,
 				     double hi, double hk, double n)
 :UniaxialMaterial(tag,MAT_TAG_Hardening),
- E(e), sigmaY(s), Hiso(hi), Hkin(hk), eta(n)
+ E(e), sigmaY(s), Hiso(hi), Hkin(hk), eta(n),
+ parameterID(0), SHVs(0)
 {
-// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-// AddingSensitivity:END //////////////////////////////////////
-
-	// Initialize variables
-    this->revertToStart();
+  // Initialize variables
+  this->revertToStart();
 }
 
 HardeningMaterial::HardeningMaterial()
 :UniaxialMaterial(0,MAT_TAG_Hardening),
- E(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0), eta(0.0)
+ E(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0), eta(0.0),
+ parameterID(0), SHVs(0)
 {
-// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-// AddingSensitivity:END //////////////////////////////////////
-
-	// Initialize variables
-	this->revertToStart();
+  // Initialize variables
+  this->revertToStart();
 }
 
 HardeningMaterial::~HardeningMaterial()
@@ -249,6 +241,11 @@ HardeningMaterial::getCopy(void)
     theCopy->Tstrain = Tstrain;
     theCopy->Tstress = Tstress;
     theCopy->Ttangent = Ttangent;
+
+    theCopy->parameterID = parameterID;
+    if (SHVs != 0) {
+      theCopy->SHVs = new Matrix(*SHVs);
+    }
     
     return theCopy;
 }
@@ -256,9 +253,7 @@ HardeningMaterial::getCopy(void)
 int 
 HardeningMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  int res = 0;
-  
-  static Vector data(11);
+  static Vector data(13);
   
   data(0) = this->getTag();
   data(1) = E;
@@ -271,46 +266,78 @@ HardeningMaterial::sendSelf(int cTag, Channel &theChannel)
   data(8) = Tstrain;
   data(9) = Tstress;
   data(10) = Ttangent;
-  
-  res = theChannel.sendVector(this->getDbTag(), cTag, data);
-  if (res < 0) 
-    opserr << "HardeningMaterial::sendSelf() - failed to send data\n";
+  data(11) = parameterID;
+  data(12) = -1;
+  if (SHVs != 0)
+    data(12) = SHVs->noCols();
 
-  return res;
+  int dbTag = this->getDbTag();
+  
+  if (theChannel.sendVector(dbTag, cTag, data) < 0) {
+    opserr << "HardeningMaterial::sendSelf() - failed to send data" << endln;
+    return -1;
+  }
+
+  if (SHVs != 0) {
+    if (theChannel.sendMatrix(dbTag, cTag, *SHVs) < 0) {
+      opserr << "HardeningMaterial::sendSelf() - failed to send SHVs matrix" << endln;
+      return -2;
+    }
+  }
+  
+  return 0;
 }
 
 int 
 HardeningMaterial::recvSelf(int cTag, Channel &theChannel, 
 			       FEM_ObjectBroker &theBroker)
 {
-  int res = 0;
+  int dbTag = this->getDbTag();
   
-  static Vector data(11);
-  res = theChannel.recvVector(this->getDbTag(), cTag, data);
+  static Vector data(13);
   
-  if (res < 0) {
-      opserr << "HardeningMaterial::recvSelf() - failed to receive data\n";
+  if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << "HardeningMaterial::recvSelf() - failed to receive data" << endln;
       E = 0; 
-      this->setTag(0);      
+      this->setTag(0);
+      return -1;
   }
-  else {
-    this->setTag((int)data(0));
-    E = data(1);
-    sigmaY = data(2);
-    Hiso = data(3);
-    Hkin = data(4);
-    eta = data(5);
-    CplasticStrain = data(6);
-    Chardening = data(7);
-    Tstrain = data(8);
-    Tstress = data(9);
-    Ttangent = data(10);
-	  
-    TplasticStrain = CplasticStrain;
-    Thardening = Chardening;
-  }
+
+  this->setTag((int)data(0));
+  E = data(1);
+  sigmaY = data(2);
+  Hiso = data(3);
+  Hkin = data(4);
+  eta = data(5);
+  CplasticStrain = data(6);
+  Chardening = data(7);
+  Tstrain = data(8);
+  Tstress = data(9);
+  Ttangent = data(10);
+  
+  TplasticStrain = CplasticStrain;
+  Thardening = Chardening;
+
+  parameterID = (int)data(11);
+
+  // Receive sensitivity history variables (SHVs)
+  int noCols = (int)data(12);
+  if (noCols > 0) {
+    if (SHVs != 0)
+      delete SHVs;
+    SHVs = new Matrix(2, noCols);
+    if (SHVs == 0) {
+      opserr << "HardeningMaterial::recvSelf() - failed to allocate SHVs matrix" << endln;
+      return -2;
+    }
     
-  return res;
+    if (theChannel.recvMatrix(dbTag, cTag, *SHVs) < 0) {
+      opserr << "HardeningMaterial::recvSelf() - failed to receive SHVs matrix" << endln;
+      return -3;
+    }
+  }
+	
+  return 0;
 }
 
 void 
@@ -358,6 +385,10 @@ HardeningMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(Hiso);
     return param.addObject(4, this);
   }
+  if (strcmp(argv[0],"eta") == 0) {
+    param.setValue(eta);
+    return param.addObject(5, this);
+  }  
   return -1;
 }
 
@@ -379,6 +410,9 @@ HardeningMaterial::updateParameter(int parameterID, Information &info)
 	case 4:
 		this->Hiso = info.theDouble;
 		break;
+	case 5:
+		this->eta = info.theDouble;
+		break;		
 	default:
 		return -1;
 	}
@@ -538,7 +572,6 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 	}
 
 	if (gradIndex >= SHVs->noCols()) {
-	  //opserr << gradIndex << ' ' << SHVs->noCols() << endln;
 	  return 0;
 	}
 
@@ -562,7 +595,7 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 		HisoSensitivity = 1.0;
 	}
 	else {
-		// Nothing random here, but may have to save SHV's in any case
+		// Nothing random here, but may have to save SHVs in any case
 	}
 
 	// Then pick up history variables for this gradient number
@@ -592,7 +625,7 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 
 		int sign = (xsi < 0) ? -1 : 1;
 		//f = 0.0;
-		double dGamma = f / (E+Hiso+Hkin);
+		//double dGamma = f / (E+Hiso+Hkin);
 
 		double CbackStressSensitivity = (HkinSensitivity*CplasticStrain + Hkin*CplasticStrainSensitivity);
 

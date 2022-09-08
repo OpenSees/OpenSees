@@ -25,4 +25,5 @@ target_sources(OpenSeesPy
    PRIVATE
      PythonModule.cpp
      PythonWrapper.cpp
+     PythonStream.cpp
 )

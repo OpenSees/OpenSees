@@ -138,6 +138,8 @@ using namespace std; //Added by AMK for debugging
 				//Return new material:
 				return theMaterial;
 			}
+
+			return 0;
 	}
 
 //-----------------------------------------------------------------------

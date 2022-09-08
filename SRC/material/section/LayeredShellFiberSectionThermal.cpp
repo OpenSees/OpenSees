@@ -38,6 +38,109 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 #include <MaterialResponse.h>
 #include <Information.h>
 
+#include <elementAPI.h>
+
+void* OPS_LayeredShellFiberSectionThermal()
+{
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+	opserr << "WARNING insufficient arguments" << endln;
+	opserr << "Want: section LayeredShellThermal tag? nLayers? <matTag1? h1? ... matTagn? hn?> -or- <matTag? thickness?> " << endln;
+	return 0;
+    }
+      
+    int tag, nLayers, matTag;
+    double h, *thickness;
+    NDMaterial **theMats;
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid section LayeredShellThermal tag" << endln;
+	return 0;
+    }
+
+    if (OPS_GetIntInput(&numdata, &nLayers) < 0) {
+	opserr << "WARNING invalid nLayers" << endln;
+	opserr << "LayeredShellThermal section: " << tag << endln;	    	    
+	return 0;
+    }
+	
+    if (nLayers < 3) {
+	opserr << "ERROR number of layers must be larger than 2" << endln;
+	opserr << "LayeredShellThermal section: " << tag << endln;	    	    
+	return 0;
+    }
+      
+    theMats   = new NDMaterial*[nLayers];
+    thickness = new double[nLayers];
+
+    // Read one material tag and shell thickness, then distribute
+    // over the layers
+    if (OPS_GetNumRemainingInputArgs() == 2) {
+      
+      if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	opserr << "WARNING invalid matTag" << endln;
+	opserr << "LayeredShellThermal section: " << tag << endln;
+	return 0;
+      }
+      if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	opserr << "WARNING invalid thickness" << endln;
+	opserr << "LayeredShellThermal section: " << tag << endln;
+	return 0;
+      }
+
+      //Change thickness to h for each layer
+      h = h/nLayers;
+
+      NDMaterial *theNDMat = OPS_getNDMaterial(matTag);
+      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
+	theMats[iLayer] = theNDMat;
+	thickness[iLayer] = h;
+      }
+    }
+
+    else {
+      for (int iLayer = 0; iLayer < nLayers; iLayer++) {
+	if (OPS_GetNumRemainingInputArgs() < 2) {
+	  opserr << "WARNING must provide "<<2*nLayers<<"inputs\n";
+	  return 0;
+	}
+	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	  opserr << "WARNING invalid matTag" << endln;
+	  opserr << "LayeredShellThermal section: " << tag << endln;
+	  return 0;
+	}
+	
+	theMats[iLayer] = OPS_getNDMaterial(matTag);
+	if (theMats[iLayer] == 0) {
+	  opserr << "WARNING nD material does not exist" << endln;;
+	  opserr << "nD material: " << matTag; 
+	  opserr << "LayeredShellThermal section: " << tag << endln;
+	  return 0;
+	}
+	
+	if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	  opserr << "WARNING invalid h" << endln;
+	  opserr << "LayeredShellThermal section: " << tag << endln;	    	    
+	  return 0;
+	}
+	
+	if (h < 0) {
+	  opserr << "WARNING invalid h" << endln;
+	  opserr << "LayeredShellThermal section: " << tag << endln;	    	    
+	  return 0;
+	}
+	
+	thickness[iLayer] = h;
+      }
+    }
+      
+    SectionForceDeformation* theSection = new LayeredShellFiberSectionThermal(tag, nLayers, thickness, theMats);
+    if (thickness != 0) delete [] thickness;
+    if (theMats != 0) delete [] theMats;
+
+    return theSection;
+}
+
 //static vector and matrices
 Vector  LayeredShellFiberSectionThermal::stressResultant(8) ;
 Matrix  LayeredShellFiberSectionThermal::tangent(8,8) ;
