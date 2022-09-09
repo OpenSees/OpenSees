@@ -2236,7 +2236,10 @@ static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVTags() < 0) return NULL;
+    if (OPS_getRVTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2245,7 +2248,10 @@ static PyObject *Py_ops_getRVParamTag(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVParamTag() < 0) return NULL;
+    if (OPS_getRVParamTag() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2254,8 +2260,10 @@ static PyObject *Py_ops_getRVMean(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVMean() < 0) return NULL;
-
+    if (OPS_getRVMean() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
     return wrapper->getResults();
 }
 
@@ -2263,7 +2271,10 @@ static PyObject *Py_ops_getRVStdv(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVStdv() < 0) return NULL;
+    if (OPS_getRVStdv() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2272,7 +2283,10 @@ static PyObject *Py_ops_getRVPDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVPDF() < 0) return NULL;
+    if (OPS_getRVPDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2281,8 +2295,10 @@ static PyObject *Py_ops_getRVCDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVCDF() < 0) return NULL;
-
+    if (OPS_getRVCDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
     return wrapper->getResults();
 }
 
@@ -2290,7 +2306,10 @@ static PyObject *Py_ops_getRVInverseCDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVInverseCDF() < 0) return NULL;
+    if (OPS_getRVInverseCDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2299,7 +2318,10 @@ static PyObject *Py_ops_addCorrelate(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_addCorrelate() < 0) return NULL;
+    if (OPS_addCorrelate() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2320,7 +2342,10 @@ static PyObject *Py_ops_transformUtoX(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_transformUtoX() < 0) return NULL;
+    if (OPS_transformUtoX() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
