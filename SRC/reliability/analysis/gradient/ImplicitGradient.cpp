@@ -65,7 +65,6 @@ ImplicitGradient::~ImplicitGradient() {
 const Vector &ImplicitGradient::getGradient() { return *grad_g; }
 
 int ImplicitGradient::computeGradient(double g) {
-
     // Initialize gradient vector
     grad_g->Zero();
 
@@ -99,7 +98,8 @@ int ImplicitGradient::computeGradient(double g) {
         // not provided means zero
         if (gradExpression == 0) {
             opserr
-                << "WARNING: performance function gradient expression for "
+                << "WARNING: lsf " << lsf
+                << ": gradient expression for "
                    "random variable "
                 << rvTag
                 << " is not defined -- ImplicitGradient::computeGradient";
