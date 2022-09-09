@@ -831,6 +831,46 @@ int OPS_getRVParamTag() {
     return 0;
 }
 
+int OPS_getRVValue() {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "ERROR: need getRVValue rvTag\n";
+        return -1;
+    }
+
+    // random variable tag input
+    int rvTag;
+    int num = 1;
+    if (OPS_GetIntInput(&num, &rvTag) < 0) {
+        opserr << "ERROR: failed to get rvTag\n";
+        return -1;
+    }
+
+    // reliability domain
+    auto *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "ERROR: reliability domain is null\n";
+        return -1;
+    }
+
+    // get random variable pointer
+    auto *rv = theReliabilityDomain->getRandomVariablePtr(rvTag);
+    if (rv == 0) {
+        opserr << "ERROR: random variable with tag " << rvTag
+               << " not found\n";
+        return -1;
+    }
+
+    // get value
+    double value = rv->getCurrentValue();
+
+    if (OPS_SetDoubleOutput(&num, &value, true) < 0) {
+        opserr << "ERROR: failed to set value output\n";
+        return -1;
+    }
+
+    return 0;
+}
+
 int OPS_getRVMean() {
     // CHECK THAT AT LEAST ENOUGH ARGUMENTS ARE GIVEN
     if (OPS_GetNumRemainingInputArgs() < 1) {
