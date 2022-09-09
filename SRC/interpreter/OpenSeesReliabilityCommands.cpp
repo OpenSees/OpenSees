@@ -617,11 +617,13 @@ int OPS_randomVariable() {
         // 	}
         // 	if (Tcl_GetDouble(interp, argv[5+2*i], &pdf) != TCL_OK) {
         // 	    opserr << "ERROR: Invalid PDF value point to
-        // user-defined random variable." << "\n"; 	    return TCL_ERROR;
+        // user-defined random variable." << "\n"; 	    return
+        // TCL_ERROR;
         // 	}
         // 	if (i>0 && x<=x_old) {
         // 	    opserr << "ERROR: x-points to user-defined random
-        // variable must be consecutive!" << "\n"; 	    return TCL_ERROR;
+        // variable must be consecutive!" << "\n"; 	    return
+        // TCL_ERROR;
         // 	}
         // 	temp_xPoints(i) = x;
         // 	temp_PDFpoints(i) = pdf;
@@ -762,6 +764,8 @@ int OPS_getRVTags() {
 
     return 0;
 }
+
+int OPS_getRVParamTag() { return 0; }
 
 int OPS_getRVMean() {
     // CHECK THAT AT LEAST ENOUGH ARGUMENTS ARE GIVEN

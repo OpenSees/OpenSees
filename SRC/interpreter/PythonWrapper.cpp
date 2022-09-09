@@ -2241,6 +2241,15 @@ static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getRVParamTag(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVParamTag() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getRVMean(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2862,6 +2871,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNodeLoadData", &Py_ops_getNodeLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("getRVTags", &Py_ops_getRVTags);
+    addCommand("getRVParamTag", &Py_ops_getRVParamTag);
     addCommand("getMean", &Py_ops_getRVMean);
     addCommand("getStdv", &Py_ops_getRVStdv);
     addCommand("getPDF", &Py_ops_getRVPDF);

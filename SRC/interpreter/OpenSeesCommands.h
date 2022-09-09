@@ -353,6 +353,7 @@ int OPS_partition();
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
 int OPS_getRVTags();
+int OPS_getRVParamTag();
 int OPS_getRVMean();
 int OPS_getRVStdv();
 int OPS_getRVPDF();
