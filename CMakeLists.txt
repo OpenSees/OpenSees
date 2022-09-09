@@ -27,7 +27,7 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
 include(OpenSeesFunctions)
 
 # include user config
@@ -261,10 +261,7 @@ endif()
 find_package (Python COMPONENTS Interpreter Development)
 
 
-
-  find_package(MPI)
-
-
+find_package(MPI)
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -565,10 +562,14 @@ if(MPI_FOUND)
     target_include_directories(OpenSeesSP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    target_compile_definitions(OpenSeesSP 
-      PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG}
-    )
-    
+    if (DEFINED OPENMPI)
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+    else()
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+    endif()
+
     target_link_libraries(OpenSeesSP 
        OPS_InterpTcl 
        OpenSeesLIB
