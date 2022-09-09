@@ -571,19 +571,23 @@ static PyObject *Py_ops_eigen(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-void OPS_DomainModalProperties(void);
 static PyObject* Py_ops_modalProperties(PyObject* self, PyObject* args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-    OPS_DomainModalProperties();
+    if (OPS_DomainModalProperties() < 0) {
+        opserr<<(void*)0;
+        return NULL;
+    }
     return wrapper->getResults();
 }
 
-void OPS_ResponseSpectrumAnalysis(void);
 static PyObject* Py_ops_responseSpectrum(PyObject* self, PyObject* args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-    OPS_ResponseSpectrumAnalysis();
+    if (OPS_ResponseSpectrumAnalysis() < 0) {
+        opserr<<(void*)0;
+        return NULL;
+    }
     return wrapper->getResults();
 }
 
