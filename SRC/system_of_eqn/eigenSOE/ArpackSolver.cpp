@@ -156,12 +156,12 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
   int ldv = n;
   int lworkl = ncv*ncv + 8*ncv;
 
-  opserr << "Arpack: n, nev, ncv, ldv, lworkl" << endln;
-  opserr << n << ' ' << nev << ' ' << ncv << ' ' << ldv << ' ' << lworkl << endln;
+  //opserr << "Arpack: n, nev, ncv, ldv, lworkl" << endln;
+  //opserr << n << ' ' << nev << ' ' << ncv << ' ' << ldv << ' ' << lworkl << endln;
   if (nev > 1) {
     ncv = nev+1;
     lworkl = ncv*ncv + 8*ncv;
-    opserr << "now - ncv = " << ncv << ", lworkl = " << lworkl << endln;
+    //opserr << "now - ncv = " << ncv << ", lworkl = " << lworkl << endln;
   }
   
   int processID = theArpackSOE->processID;
