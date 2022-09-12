@@ -178,7 +178,8 @@ private:
 	double Reloading_Flag,	cReloading_Flag;
 	double TargetPeak_Flag,	cTargetPeak_Flag;
 	double Unloading_Flag,	cUnloading_Flag;
-	double Yield_Flag,		cYield_Flag;
+	double Yield_Flag_pos, cYield_Flag_pos;
+	double Yield_Flag_neg, cYield_Flag_neg;
 	double Reversal_Flag,   cReversal_Flag;
 
 	double Krel_j_1,	    cKrel_j_1;	

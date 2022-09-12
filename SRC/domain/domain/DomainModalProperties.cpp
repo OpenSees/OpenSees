@@ -367,7 +367,7 @@ namespace
 
 }
 
-void
+int
 OPS_DomainModalProperties(void)
 {
     // modalProperties <-print> <-file $fileName> <-unorm>
@@ -383,7 +383,7 @@ OPS_DomainModalProperties(void)
     AnalysisModel* theAnalysisModel = *OPS_GetAnalysisModel();
     if (theAnalysisModel == nullptr) {
         opserr << "modalProperties Error: no AnalysisModel available.\n";
-        exit(-1);
+        return -1;
     }
 
     // init default values
@@ -429,6 +429,8 @@ OPS_DomainModalProperties(void)
         modal_props.print();
     if (print_on_file)
         modal_props.print(fname);
+
+    return 0;
 }
 
 DomainModalProperties::DomainModalProperties(bool unorm)
