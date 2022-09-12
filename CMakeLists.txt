@@ -27,18 +27,13 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
 include(OpenSeesFunctions)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
-
-# STAMPEDE2
-# module load python3
-# export CC=icc CXX=icpc FC=ifort
-# export MUMPS_DIR=$HOME/MUMPS_5.0.0
 
 #
 # Compiler SPECIFIC
@@ -55,8 +50,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  add_compile_options(-fPIC)
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
+ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
- MESSAFE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+  MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
  
@@ -130,7 +126,7 @@ endif()
 
 # Fortran
 #--------------------------------------
-#enable_language(Fortran)
+enable_language(Fortran)
 
 # C++
 #--------------------------------------
@@ -263,6 +259,8 @@ else()
 endif()
 
 find_package (Python COMPONENTS Interpreter Development)
+
+
 find_package(MPI)
 find_package(MKL)
 
@@ -294,7 +292,31 @@ if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
+  #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  if (NOT DEFINED MUMPS_DIR)
+  #    include(ExternalProject)
+  #    ExternalProject_Add(mumps
+  #       GIT_REPOSITORY    https://github.com/scivision/mumps.git
+  #       GIT_TAG           v5.5.1.5
+  #       SOURCE_DIR        "${CMAKE_BINARY_DIR}/mumps-src"
+  #       BINARY_DIR        "${CMAKE_BINARY_DIR}"
+  #       INSTALL_COMMAND   ""
+  #     )
+  #
+  #    set (MUMPS_LIBRARIES "${CMAKE_BINARY_DIR}/libdmumps.lib;${CMAKE_BINARY_DIR}/libmumps_common.lib;${CMAKE_BINARY_DIR}/libpord.lib")
+     set (MUMPS_FLAG -D_NOMUMPS)
+     set (MUMPS_LIBRARIES "")
+  else()
+     set (MUMPS_FLAG -D_MUMPS)  
+     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+       set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
+     else()
+       set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
+     endif()
+
+  endif()
+
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
 else()
@@ -305,6 +327,11 @@ endif()
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
   set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set (MKL_LPATH ${MKL_ROOT}/lib/intel64)
+    set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
+  endif() 
+  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")     
 else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
   message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
@@ -314,7 +341,7 @@ endif()
 #list (SORT _variableNames)
 #foreach (_variableName ${_variableNames})
 #  message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()	 
+#endforeach()  
 
 add_library(OPS_Numerics INTERFACE)
 
@@ -328,7 +355,6 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
-       ${BLAS_LIBRARIES} 
 )
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
@@ -484,11 +510,11 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 else ()
      FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
      add_custom_command(
-     	TARGET OpenSees POST_BUILD
-	COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-     	COMMAND ${CMAKE_COMMAND} -E copy
+      TARGET OpenSees POST_BUILD
+  COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
+      COMMAND ${CMAKE_COMMAND} -E copy
         ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-	${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
+  ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
      )
 endif()
 
@@ -536,21 +562,24 @@ if(MPI_FOUND)
     target_include_directories(OpenSeesSP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    target_compile_definitions(OpenSeesSP 
-      PUBLIC _PARALLEL_PROCESSING _MUMPS
-    )
-    
+    if (DEFINED OPENMPI)
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+    else()
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+    endif()
+
     target_link_libraries(OpenSeesSP 
        OPS_InterpTcl 
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       MUMPS_F
-       MUMPS_C       
        METIS
        SUPERLU_DIST
        OPS_Numerics
+       ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
        ${CONAN_LIBS}
@@ -587,13 +616,16 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    if (NOT DEFINED MUMPS_DIR)
+        add_dependencies(OpenSeesMP mumps)
+    endif()			    
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS _MUMPS _OPENMPI)
+    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS _MUMPS)
+    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 
@@ -601,12 +633,11 @@ if(MPI_FOUND)
        OpenSeesLIB
        OPS_Reliability
        OPS_ReliabilityTcl
-       OPS_Recorder
-       MUMPS_F
-       MUMPS_C       
+       OPS_Recorder      
        METIS
        SUPERLU_DIST
        OPS_Numerics
+       ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
        ${CONAN_LIBS}
@@ -743,10 +774,9 @@ endif()
 if(HDF5_FOUND)
    include_directories(${HDF5_INCLUDE_DIR})
    set(_hdf5_libs hdf5 hdf5_cpp)
-   add_compile_definitions(_H5DRM)
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
-      add_compile_definitions(_HDF5)
-         message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")      
+         add_compile_definitions(_H5DRM)
+         message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")    
    endif()
 else()
    message(STATUS "OPS >>> Could not find HDF5")
