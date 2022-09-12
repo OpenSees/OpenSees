@@ -353,6 +353,8 @@ int OPS_partition();
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
 int OPS_getRVTags();
+int OPS_getRVParamTag();
+int OPS_getRVValue();
 int OPS_getRVMean();
 int OPS_getRVStdv();
 int OPS_getRVPDF();
@@ -361,6 +363,7 @@ int OPS_getRVInverseCDF();
 int OPS_getLSFTags();
 int OPS_addCorrelate();
 int OPS_performanceFunction(); // limit state function
+int OPS_gradPerformanceFunction(); // limit state function
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
 int OPS_startPoint();
@@ -445,6 +448,8 @@ int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();
 int OPS_ShallowFoundationGen();
 int OPS_Pressure_Constraint();
+int OPS_DomainModalProperties();
+int OPS_ResponseSpectrumAnalysis();
 
 void* OPS_TimeSeriesIntegrator();
 
