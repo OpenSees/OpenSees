@@ -2240,7 +2240,34 @@ static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVTags() < 0) return NULL;
+    if (OPS_getRVTags() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVParamTag(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVParamTag() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVValue(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVValue() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2249,8 +2276,10 @@ static PyObject *Py_ops_getRVMean(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVMean() < 0) return NULL;
-
+    if (OPS_getRVMean() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
     return wrapper->getResults();
 }
 
@@ -2258,7 +2287,10 @@ static PyObject *Py_ops_getRVStdv(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVStdv() < 0) return NULL;
+    if (OPS_getRVStdv() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2267,7 +2299,10 @@ static PyObject *Py_ops_getRVPDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVPDF() < 0) return NULL;
+    if (OPS_getRVPDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2276,8 +2311,10 @@ static PyObject *Py_ops_getRVCDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVCDF() < 0) return NULL;
-
+    if (OPS_getRVCDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
     return wrapper->getResults();
 }
 
@@ -2285,7 +2322,10 @@ static PyObject *Py_ops_getRVInverseCDF(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_getRVInverseCDF() < 0) return NULL;
+    if (OPS_getRVInverseCDF() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2294,7 +2334,10 @@ static PyObject *Py_ops_addCorrelate(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_addCorrelate() < 0) return NULL;
+    if (OPS_addCorrelate() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2315,7 +2358,10 @@ static PyObject *Py_ops_transformUtoX(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
-    if (OPS_transformUtoX() < 0) return NULL;
+    if (OPS_transformUtoX() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
 
     return wrapper->getResults();
 }
@@ -2325,6 +2371,18 @@ static PyObject *Py_ops_performanceFunction(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_performanceFunction() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_gradPerformanceFunction(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_gradPerformanceFunction() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2854,6 +2912,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNodeLoadData", &Py_ops_getNodeLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("getRVTags", &Py_ops_getRVTags);
+    addCommand("getRVParamTag", &Py_ops_getRVParamTag);
+    addCommand("getRVValue", &Py_ops_getRVValue);
     addCommand("getMean", &Py_ops_getRVMean);
     addCommand("getStdv", &Py_ops_getRVStdv);
     addCommand("getPDF", &Py_ops_getRVPDF);
@@ -2861,6 +2921,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getInverseCDF", &Py_ops_getRVInverseCDF);
     addCommand("correlate", &Py_ops_addCorrelate);
     addCommand("performanceFunction", &Py_ops_performanceFunction);
+    addCommand("gradPerformanceFunction", &Py_ops_gradPerformanceFunction);
     addCommand("transformUtoX", &Py_ops_transformUtoX);
     addCommand("wipeReliability", &Py_ops_wipeReliability);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
