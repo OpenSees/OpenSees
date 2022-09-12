@@ -125,21 +125,21 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%  MAIN CODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	Mpe_pos0 = Mpe_pos0;
+	Mmax_pos0 = MmaxMpe_pos0 * Mpe_pos0;
 	Theta_y_pos0 = Mpe_pos0 / Ke;
 	Theta_max_pos0 = Theta_y_pos0 + Theta_p_pos0;
 	slope_p_pos0 = (Mmax_pos0 - Mpe_pos0) / (Theta_p_pos0);
 	slope_pc_pos0 = Mmax_pos0 / (Theta_pc_pos0);
-	Mpe_pos0 = Mpe_pos0;
-	Mmax_pos0 = MmaxMpe_pos0 * Mpe_pos0;
 	MpeProject_pos0 = Mmax_pos0 - slope_p_pos0 * Theta_max_pos0;
 	MmaxProject_pos0 = Mmax_pos0 + slope_pc_pos0 * Theta_max_pos0;
 
+	Mpe_neg0 = Mpe_neg0;
+	Mmax_neg0 = MmaxMpe_neg0 * Mpe_neg0;
 	Theta_y_neg0 = Mpe_neg0 / Ke;
 	Theta_max_neg0 = Theta_y_neg0 + Theta_p_neg0;
 	slope_p_neg0 = (Mmax_neg0 - Mpe_neg0) / (Theta_p_neg0);
 	slope_pc_neg0 = Mmax_neg0 / (Theta_pc_neg0);
-	Mpe_neg0 = Mpe_neg0;
-	Mmax_neg0 = MmaxMpe_neg0 * Mpe_neg0;
 	MpeProject_neg0 = Mmax_neg0 - slope_p_neg0 * Theta_max_neg0;
 	MmaxProject_neg0 = Mmax_neg0 + slope_pc_neg0 * Theta_max_neg0;
 
@@ -506,6 +506,11 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		if (beta_K_j > 1) {
 			Energy_Flag = 1;
 		}
+	}
+
+	// if energy fail flag is reached in current step
+	if ((Energy_Flag == 1)) {
+		Mi = 0.0;
 	}
 
 	// %%%%%%%%%% PREPARE RETURN VALUES %%%%%%%%%%%%%
