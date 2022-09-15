@@ -1,0 +1,71 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+                                                                        
+// Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
+//
+// ASDPlasticMaterial
+//
+// Fully general templated material class for plasticity modeling
+
+#ifndef ElasticityBase_H
+#define ElasticityBase_H
+
+#include "../../ltensor/LTensor.h"
+#include "EvolvingVariable.h"
+#include <Channel.h>
+
+
+template <class T>
+class ElasticityBase
+{
+public:
+
+    ElasticityBase()
+    {
+        // Derived classes will have custom constructors.
+    }
+
+    // Note the use of the Curiously-recurring-template-pattern
+    // Operator () retunrs a const-reference. Thereforce, implementation must provide
+    // a reference to a persistent data member. Usually this one is declared static
+    // so that storage and be reused across instances, and we avoid calls to malloc.
+    DTensor4& operator()(const DTensor2& stress) // Best practise here would be to return a const reference. But we can't due to LTensor design limitation. Hopefully this will be solved in the future.... by us. -J.Abell
+    {
+        return static_cast<T*>(this)->operator()(stress);
+    }
+
+    int sendSelf(int commitTag, Channel &theChannel)
+    {
+        return static_cast<T*>(this)->sendSelf(commitTag, theChannel);
+    }
+
+    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    {
+        return static_cast<T*>(this)->receiveSelf( commitTag, theChannel, theBroker);
+    }
+
+private:
+    // Derived classes will store their parameters and such.
+};
+
+
+
+
+#endif
