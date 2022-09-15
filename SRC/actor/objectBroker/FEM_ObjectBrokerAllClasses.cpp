@@ -177,6 +177,7 @@
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
+#include "Series3DMaterial.h"
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
@@ -1620,6 +1621,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_OrthotropicMaterial:
     return new OrthotropicMaterial();
+
+  case ND_TAG_Series3DMaterial:
+    return new Series3DMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:
