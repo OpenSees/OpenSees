@@ -129,11 +129,16 @@ private:
 	Vector m_lambda_commit = Vector(6);
 	// the homogenized strain, stress and tangent
 	Vector m_strain = Vector(6);
+	Vector m_strain_commit = Vector(6);
 	Vector m_stress = Vector(6);
+	Vector m_stress_commit = Vector(6);
 	Matrix m_tangent = Matrix(6, 6);
 	Matrix m_initial_tangent = Matrix(6, 6);
 	// stabilization term
-	double m_stab = 0.0;
+	double m_stab = 0.01;
+	// needed to restore the last committed stage on each material
+	// before solving for the iso-stress condition.
+	std::vector<Vector> m_mat_strain_commit;
 
 };
 #endif
