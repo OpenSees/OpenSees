@@ -1006,7 +1006,7 @@ void Series3DMaterial::computeHomogenizedTangent(IterativeTangentType ittype)
 				done = false;
 				break;
 			}
-			Cinv.addMatrix(1.0, iCinv, 1.0);
+			Cinv.addMatrix(1.0, iCinv, m_weights[i]);
 		}
 		if (done)
 			done = (Cinv.Invert(m_tangent) == 0);
