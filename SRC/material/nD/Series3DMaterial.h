@@ -54,7 +54,7 @@ public:
 		int theMaxNumberOfIterations = 10,
 		double theRelativeTolerance = 1.0e-4,
 		double theAbsoluteTolerance = 1.0e-8,
-		double theAbsoluteToleranceStrain = 1.0e-10);
+		bool verbose = false);
 	Series3DMaterial();
 	~Series3DMaterial();
 
@@ -94,7 +94,7 @@ public:
 	Response* setResponse(const char** argv, int argc, OPS_Stream& s);
 
 private:
-	int imposeIsoStressCondition(IterativeTangentType ittype);
+	bool imposeIsoStressCondition(IterativeTangentType ittype);
 	double computeResidualNorm();
 	const Matrix& computeDenominator(IterativeTangentType ittype);
 	const Vector& computeWeightedStrainResidual();
@@ -106,8 +106,10 @@ private:
 		const Vector& ewg,
 		IterativeTangentType ittype,
 		Series3DUtils::SolverWrapper& solver,
-		double &normStrainIncrement);
+		const Matrix &D);
 	const Matrix& getMaterialTangent(NDMaterial* mat, IterativeTangentType ittype) const;
+	void computeHomogenizedTangent(IterativeTangentType ittype);
+	void computeHomogenizedStress();
 
 private:
 	// the list of NDMaterials (size = number of materials)
@@ -120,8 +122,8 @@ private:
 	double m_rel_tol = 1.0e-4;
 	// the absolute tolerance (iso-stress constraint)
 	double m_abs_tol = 1.0e-8;
-	// the absolute tolerance (dStrain)
-	double m_abs_tol_dX = 1.0e-10;
+	// the verbose flag
+	bool m_verbose = false;
 	// the unknown lagrange multipliers (size = strain-size, 6 for 3D problems)
 	Vector m_lambda = Vector(6);
 	Vector m_lambda_commit = Vector(6);

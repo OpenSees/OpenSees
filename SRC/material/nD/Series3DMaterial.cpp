@@ -29,6 +29,7 @@
 #include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
+#include <ID.h>
 #include <cmath>
 #include <string>
 
@@ -63,7 +64,7 @@ namespace Series3DUtils {
 		bool factorize(const Matrix& M) {
 			int n = M.noRows();
 			if (n == 0 || n != M.noCols())
-				return -1;
+				return false;
 			A.resize(static_cast<std::size_t>(n * n));
 			for (int i = 0; i < n; ++i)
 				for (int j = 0; j < n; ++j)
@@ -77,10 +78,10 @@ namespace Series3DUtils {
 #endif
 			return (info == 0);
 		}
-		int solve(const Vector& B, Vector& X) {
+		bool solve(const Vector& B, Vector& X) {
 			int n = B.Size();
 			if (n == 0 || n != static_cast<int>(IPIV.size()))
-				return -1;
+				return false;
 			X = B;
 			int nrhs = 1;
 			int info;
@@ -98,7 +99,7 @@ namespace Series3DUtils {
 void *OPS_Series3DMaterial(void)
 {
 	// info
-	const char* info = "nDMaterial Series3D $tag    $tag1 $tag2 ... $tagN   <-weights $w1 $w2 ... $wN> <-maxIter $maxIter> <-relTol $relTol> <-absTol $absTol> <-absToldStrain $absToldStrain>";
+	const char* info = "nDMaterial Series3D $tag    $tag1 $tag2 ... $tagN   <-weights $w1 $w2 ... $wN> <-maxIter $maxIter> <-relTol $relTol> <-absTol $absTol> <-verbose>";
 
 	// convert string to int
 	auto to_int = [](const std::string& x, bool& ok) {
@@ -150,7 +151,7 @@ void *OPS_Series3DMaterial(void)
 	int max_iter = 10;
 	double rel_tol = 1.0e-4;
 	double abs_tol = 1.0e-8;
-	double abs_tol_dX = 1.0e-10;
+	bool verbose = false;
 	while (argc > 0) {
 		// read next word
 		std::string word = OPS_GetString();
@@ -245,19 +246,8 @@ void *OPS_Series3DMaterial(void)
 				return nullptr;
 			}
 		}
-		if (word == "-absToldStrain") {
-			if (argc == 0) {
-				opserr << "nDMaterial Series3D Error: -absToldStrain keyword provided without a value.\n";
-				return nullptr;
-			}
-			word = OPS_GetString();
-			++counter;
-			argc = OPS_GetNumRemainingInputArgs();
-			abs_tol_dX = abs(to_double(word, ok));
-			if (!ok) {
-				opserr << "nDMaterial Series3D Error: -absToldStrain keyword provided with an invalid value(\"" << word.c_str() << "\").\n";
-				return nullptr;
-			}
+		if (word == "-verbose") {
+			verbose = true;
 		}
 	}
 
@@ -280,7 +270,7 @@ void *OPS_Series3DMaterial(void)
 	}
 
 	// create the series material wrapper
-	NDMaterial* result = new Series3DMaterial(tag, materials, weights, max_iter, rel_tol, abs_tol, abs_tol_dX);
+	NDMaterial* result = new Series3DMaterial(tag, materials, weights, max_iter, rel_tol, abs_tol, verbose);
 	if (result == nullptr) {
 		opserr << "WARNING could not create NDMaterial of type Series3D.\n";
 		return nullptr;
@@ -295,14 +285,14 @@ Series3DMaterial::Series3DMaterial(
 	int theMaxNumberOfIterations,
 	double theRelativeTolerance,
 	double theAbsoluteTolerance,
-	double theAbsoluteToleranceStrain)
+	bool verbose)
 	: NDMaterial(tag, ND_TAG_Series3DMaterial)
 	, m_materials(theMaterials.size(), nullptr)
 	, m_weights(theWeights)
 	, m_max_iter(theMaxNumberOfIterations)
 	, m_rel_tol(theRelativeTolerance)
 	, m_abs_tol(theAbsoluteTolerance)
-	, m_abs_tol_dX(theAbsoluteToleranceStrain)
+	, m_verbose(verbose)
 {
 	// copy the materials
 	for (std::size_t i = 0; i < theMaterials.size(); ++i) {
@@ -327,18 +317,22 @@ Series3DMaterial::Series3DMaterial(
 			for (int col = 0; col < iC.noCols(); ++col)
 				m_stab = fmax(m_stab, abs(iC(row, col)));
 		if (iC.Invert(iCinv) < 0) {
-			opserr << "nDMaterial Series3D Error: Cannot invert the initial tangent of material " << static_cast<int>(i) + 1 << "\n";
+			opserr << 
+				"nDMaterial Series3D Error: Cannot invert the initial tangent of material " << 
+				static_cast<int>(i) + 1 << "\n";
 			exit(-1);
 		}
 		Cinv.addMatrix(1.0, iCinv, m_weights[i]);
 	}
 	if (m_stab == 0.0) {
-		opserr << "nDMaterial Series3D Error: Cannot compute the stabilization term\n";
+		opserr << "nDMaterial Series3D Error: Cannot compute the stabilization term.\n"
+			"Make sure the materials are properly defined.\n";
 		exit(-1);
 	}
 	m_stab = 1.0 / m_stab;
 	if (Cinv.Invert(m_initial_tangent) < 0) {
-		opserr << "nDMaterial Series3D Error: Cannot invert the homogenized initial tangent\n";
+		opserr << "nDMaterial Series3D Error: Cannot invert the homogenized initial tangent.\n"
+			"Make sure the materials are properly defined.\n";
 		exit(-1);
 	}
 }
@@ -371,9 +365,13 @@ int Series3DMaterial::setTrialStrain(const Vector& strain)
 	// set homogenized strain
 	m_strain = strain;
 	// impose iso-stress condition
-	int res = imposeIsoStressCondition();
+	IterativeTangentType ittype = IT_Tangent;
+	bool converged = imposeIsoStressCondition(ittype);
+	// compute tangent
+	computeHomogenizedStress();
+	computeHomogenizedTangent(ittype);
 	// done
-	return res;
+	return 0;
 }
 
 const Vector &Series3DMaterial::getStrain(void)
@@ -398,27 +396,71 @@ const Matrix &Series3DMaterial::getInitialTangent(void)
 
 int Series3DMaterial::commitState(void)
 {
-	// todo
-	return 0;
+	m_lambda_commit = m_lambda;
+	int res = 0;
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		if (m_materials[i]->commitState() != 0) {
+			res = -1;
+		}
+	}
+	return res;
 }
 
 int Series3DMaterial::revertToLastCommit(void)
 {
-	// todo
-	return 0;
+	m_lambda = m_lambda_commit;
+	int res = 0;
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		if (m_materials[i]->revertToLastCommit() != 0) {
+			res = -1;
+		}
+	}
+	return res;
 }
 
 int Series3DMaterial::revertToStart(void)
 {
-	// todo
-	return 0;
+	int res = 0;
+	// only if not called by the initial state analysis off command
+	if (!ops_InitialStateAnalysis) { 
+		m_lambda.Zero();
+		m_lambda_commit.Zero();
+		for (std::size_t i = 0; i < m_materials.size(); ++i) {
+			if (m_materials[i]->revertToStart() != 0) {
+				res = -1;
+			}
+		}
+	}
+	return res;
 }
 
-NDMaterial * Series3DMaterial::getCopy(void)
+NDMaterial* Series3DMaterial::getCopy(void)
 {
 	Series3DMaterial *theCopy = new Series3DMaterial();
 	theCopy->setTag(getTag());
-	// todo...
+	
+	theCopy->m_materials.resize(m_materials.size());
+	theCopy->m_weights.resize(m_weights.size());
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		theCopy->m_materials[i] = m_materials[i]->getCopy("ThreeDimensional");
+		theCopy->m_weights[i] = m_weights[i];
+	}
+
+	theCopy->m_max_iter = m_max_iter;
+	theCopy->m_rel_tol = m_rel_tol;
+	theCopy->m_abs_tol = m_abs_tol;
+
+	theCopy->m_verbose = m_verbose;
+	theCopy->m_lambda = m_lambda;
+	theCopy->m_lambda_commit = m_lambda_commit;
+	
+	theCopy->m_strain = m_strain;
+	theCopy->m_stress = m_stress;
+	theCopy->m_tangent = m_tangent;
+	theCopy->m_initial_tangent = m_initial_tangent;
+
+	theCopy->m_stab = m_stab;
+
 	return theCopy;
 }
 
@@ -446,14 +488,157 @@ void Series3DMaterial::Print(OPS_Stream &s, int flag)
 
 int Series3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 {
-	// todo
-	return -1;
+	int num_mat = static_cast<int>(m_materials.size());
+
+	// send basic int data
+	static ID I1(4);
+	I1(0) = getTag();
+	I1(1) = num_mat;
+	I1(2) = m_max_iter;
+	I1(3) = static_cast<int>(m_verbose);
+	if (theChannel.sendID(getDbTag(), commitTag, I1) < 0) {
+		opserr << "Series3DMaterial::sendSelf() - failed to send data (I1)\n";
+		return -1;
+	}
+
+	// send material class & db tags
+	static ID I2;
+	I2.resize(2 * num_mat);
+	for (int i = 0; i < num_mat; ++i) {
+		NDMaterial* imat = m_materials[static_cast<std::size_t>(i)];
+		I2(i) = imat->getClassTag();
+		int mat_db_tag = imat->getDbTag();
+		if (mat_db_tag == 0) {
+			mat_db_tag = theChannel.getDbTag();
+			if (mat_db_tag != 0)
+				imat->setDbTag(mat_db_tag);
+		}
+		I2(i + num_mat) = mat_db_tag;
+	}
+	if (theChannel.sendID(getDbTag(), commitTag, I2) < 0) {
+		opserr << "Series3DMaterial::sendSelf() - failed to send data (I2)\n";
+		return -1;
+	}
+
+	// send double data
+	static Vector D1;
+	D1.resize(99 + num_mat);
+	int counter = 0;
+	for (int i = 0; i < num_mat; ++i) 
+		D1(counter++) = m_weights[static_cast<std::size_t>(i)];
+	for (int i = 0; i < 6; ++i) 
+		D1(counter++) = m_lambda(i);
+	for (int i = 0; i < 6; ++i) 
+		D1(counter++) = m_lambda_commit(i);
+	for (int i = 0; i < 6; ++i)
+		D1(counter++) = m_strain(i);
+	for (int i = 0; i < 6; ++i)
+		D1(counter++) = m_stress(i);
+	for (int i = 0; i < 6; ++i)
+		for(int j = 0; j < 6; ++j)
+			D1(counter++) = m_tangent(i, j);
+	for (int i = 0; i < 6; ++i)
+		for (int j = 0; j < 6; ++j)
+			D1(counter++) = m_initial_tangent(i, j);
+	D1(counter++) = m_rel_tol;
+	D1(counter++) = m_abs_tol;
+	D1(counter++) = m_stab;
+	if (theChannel.sendVector(getDbTag(), commitTag, D1) < 0) {
+		opserr << "Series3DMaterial::sendSelf() - failed to send data (D1)\n";
+		return -1;
+	}
+
+	// send all materials
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		if (m_materials[i]->sendSelf(commitTag, theChannel) < 0) {
+			opserr << "Series3DMaterial::sendSelf() - failed to send material " << static_cast<int>(i) << "\n";
+			return -1;
+		}
+	}
+
+	// done
+	return 0;
 }
 
 int Series3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_ObjectBroker & theBroker)
 {
-	// todo
-	return -1;
+	// receive basic int data,
+	// reset and reallocate materials and weights vectors
+	static ID I1(4);
+	if (theChannel.recvID(getDbTag(), commitTag, I1) < 0) {
+		opserr << "Series3DMaterial::recvSelf() - failed to receive data (I1)\n";
+		return -1;
+	}
+	setTag(I1(0));
+	int num_mat = I1(1);
+	m_max_iter = I1(2);
+	m_verbose = static_cast<bool>(I1(3));
+	if (m_materials.size() > 0) {
+		for (std::size_t i = 0; i < m_materials.size(); ++i) {
+			if (m_materials[i])
+				delete m_materials[i];
+		}
+		m_materials.clear();
+		m_weights.clear();
+	}
+	m_materials.resize(static_cast<std::size_t>(num_mat), nullptr);
+	m_weights.resize(static_cast<std::size_t>(num_mat), 0.0);
+
+	// receive material class & db tags
+	static ID I2;
+	I2.resize(2 * num_mat);
+	if (theChannel.recvID(getDbTag(), commitTag, I2) < 0) {
+		opserr << "Series3DMaterial::recvSelf() - failed to receive data (I2)\n";
+		return -1;
+	}
+
+	// receive double data
+	static Vector D1;
+	D1.resize(99 + num_mat);
+	int counter = 0;
+	if (theChannel.recvVector(getDbTag(), commitTag, D1) < 0) {
+		opserr << "Series3DMaterial::recvSelf() - failed to receive data (D1)\n";
+		return -1;
+	}
+	for (int i = 0; i < num_mat; ++i)
+		m_weights[static_cast<std::size_t>(i)] = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		m_lambda(i) = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		m_lambda_commit(i) = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		m_strain(i) = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		m_stress(i) = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		for (int j = 0; j < 6; ++j)
+			m_tangent(i, j) = D1(counter++);
+	for (int i = 0; i < 6; ++i)
+		for (int j = 0; j < 6; ++j)
+			m_initial_tangent(i, j) = D1(counter++);
+	m_rel_tol = D1(counter++);
+	m_abs_tol = D1(counter++);
+	m_stab = D1(counter++);
+
+	// receive all materials
+	for (int i = 0; i < num_mat; i++) {
+		int mat_class_tag = I2(i);
+		int mat_db_tag = I2(i + num_mat);
+		NDMaterial* the_material = theBroker.getNewNDMaterial(mat_class_tag);
+		if (the_material == nullptr) {
+			opserr << "Series3DMaterial::recvSelf() - could not get a new NDMaterial\n";
+			return -1;
+		}
+		the_material->setDbTag(mat_db_tag);
+		if (the_material->recvSelf(commitTag, theChannel, theBroker) < 0) {
+			opserr << "Series3DMaterial::recvSelf() - failed to receive material\n";
+			return -1;
+		}
+		m_materials[static_cast<std::size_t>(i)] = the_material;
+	}
+
+	// done
+	return 0;
 }
 
 int Series3DMaterial::setParameter(const char** argv, int argc, Parameter& param)
@@ -473,7 +658,7 @@ Response* Series3DMaterial::setResponse(const char** argv, int argc, OPS_Stream&
 	return NDMaterial::setResponse(argv, argc, s);
 }
 
-int Series3DMaterial::imposeIsoStressCondition(IterativeTangentType ittype)
+bool Series3DMaterial::imposeIsoStressCondition(IterativeTangentType ittype)
 {
 	// declare the static solver
 	static Series3DUtils::SolverWrapper solver;
@@ -496,18 +681,21 @@ int Series3DMaterial::imposeIsoStressCondition(IterativeTangentType ittype)
 		// compute ewg
 		const Vector& ewg = computeWeightedStrainResidual();
 
-		// solve
-		if (!solveForLagrangeMultipliers(ewg, ittype, solver))
+		// solve for unknowns (strain vectors and lagrange multipliers)
+		if (!solveForStrainVectors(ewg, ittype, solver, D))
 			break;
-	}
 
-	// check
-	if (!converged) {
-		return -1;
+		// test convergence
+		double NR = computeResidualNorm();
+		double NRratio = NR0 > 0.0 ? NRratio = NR / NR0 : 1.0;
+		if (NRratio < m_rel_tol || NR < m_abs_tol) {
+			converged = true;
+			break;
+		}
 	}
 
 	// done
-	return 0;
+	return converged;
 }
 
 double Series3DMaterial::computeResidualNorm()
@@ -684,7 +872,7 @@ bool Series3DMaterial::solveForStrainVectors(
 	const Vector& ewg, 
 	IterativeTangentType ittype, 
 	Series3DUtils::SolverWrapper& solver,
-	double& normStrainIncrement)
+	const Matrix& D)
 {
 	/*
 	solves for the iterative correction of the strain 6x1 vectors for each material
@@ -724,7 +912,7 @@ bool Series3DMaterial::solveForStrainVectors(
 	static Vector lsj(6);
 	static Matrix auxM(6, 6);
 
-	// for each material...
+	// for each material, compute and store the strain correction dStrain
 	for (std::size_t i = 0; i < m_materials.size(); ++i) {
 
 		A.Zero();
@@ -759,10 +947,33 @@ bool Series3DMaterial::solveForStrainVectors(
 			}
 		}
 
-		
+		B.addMatrixVector(1.0, A, ewg, -1.0);
+		lsi = m_lambda;
+		lsi.addVector(1.0, m_materials[i]->getStress(), 1.0);
+		B.addMatrixVector(1.0, C, lsi, -1.0);
 
+		// solve for dStrain
+		Vector& dStraini = dStrain_vector[i];
+		if (!solver.solve(B, dStraini))
+			return false;
 	}
 
+	// now, before updating the strain in each material,
+	// we can solve for the lagrange multipliers.
+	solveForLagrangeMultipliers(ewg, ittype, solver);
+
+	// now we can update each material
+	static Vector strain_new(6);
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		NDMaterial* imaterial = m_materials[i];
+		strain_new = imaterial->getStrain();
+		strain_new.addVector(1.0, dStrain_vector[i], 1.0);
+		if (imaterial->setTrialStrain(strain_new) != 0)
+			return false;
+	}
+
+	// done
+	return true;
 }
 
 const Matrix& Series3DMaterial::getMaterialTangent(NDMaterial* mat, IterativeTangentType ittype) const
@@ -779,4 +990,49 @@ const Matrix& Series3DMaterial::getMaterialTangent(NDMaterial* mat, IterativeTan
 	else {
 		return mat->getTangent();
 	}
+}
+
+void Series3DMaterial::computeHomogenizedTangent(IterativeTangentType ittype)
+{
+	static Matrix iCinv(6, 6);
+	static Matrix Cinv(6, 6);
+	if (ittype == IT_Tangent || ittype == IT_StabilizedTangent) {
+		bool done = true;
+		Cinv.Zero();
+		for (std::size_t i = 0; i < m_materials.size(); ++i) {
+			NDMaterial* imaterial = m_materials[i];
+			const Matrix& iC = imaterial->getTangent();
+			if (iC.Invert(iCinv) != 0) {
+				done = false;
+				break;
+			}
+			Cinv.addMatrix(1.0, iCinv, 1.0);
+		}
+		if (done)
+			done = (Cinv.Invert(m_tangent) == 0);
+		if (done) {
+			if (ittype == IT_StabilizedTangent) {
+				m_tangent.addMatrix(1.0 - m_stab, m_initial_tangent, m_stab);
+			}
+		}
+		else {
+			m_tangent = m_initial_tangent;
+		}
+	}
+	else {
+		m_tangent = m_initial_tangent;
+	}
+}
+
+void Series3DMaterial::computeHomogenizedStress()
+{
+	// if the convergence is achieved, all materials should have the same stress.
+	// we compute anyway the average, just because some material may use some non-standard
+	// integration schemes...
+	//m_stress.Zero();
+	//for (std::size_t i = 0; i < m_materials.size(); ++i)
+	//	m_stress.addVector(1.0, m_materials[i]->getStress(), m_weights[i]);
+
+	m_stress = m_lambda;
+	m_stress *= -1.0;
 }
