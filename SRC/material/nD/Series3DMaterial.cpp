@@ -1107,7 +1107,7 @@ void Series3DMaterial::computeHomogenizedTangent(IterativeTangentType ittype)
 		ittype = IT_Initial; // otherwise go with initial tangent
 	}
 
-	// id none of the above worked, fallback to initial
+	// if none of the above worked, fallback to initial
 	m_tangent = m_initial_tangent;
 }
 
