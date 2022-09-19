@@ -529,35 +529,30 @@ int Series3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 		return -1;
 	}
 
-	// send material class & db tags
-	static ID I2;
-	I2.resize(2 * num_mat);
+	// send double data
+	static Vector D1;
+	D1.resize(num_mat*2 /*ints for mats*/ + num_mat * 7 /*floats for mats*/ + 111 /*other fixed data*/);
+	int counter = 0;
+	/*ints for mats*/
 	for (int i = 0; i < num_mat; ++i) {
 		NDMaterial* imat = m_materials[static_cast<std::size_t>(i)];
-		I2(i) = imat->getClassTag();
+		D1(counter++) = static_cast<double>(imat->getClassTag());
 		int mat_db_tag = imat->getDbTag();
 		if (mat_db_tag == 0) {
 			mat_db_tag = theChannel.getDbTag();
 			if (mat_db_tag != 0)
 				imat->setDbTag(mat_db_tag);
 		}
-		I2(i + num_mat) = mat_db_tag;
+		D1(counter++) = static_cast<double>(mat_db_tag);
 	}
-	if (theChannel.sendID(getDbTag(), commitTag, I2) < 0) {
-		opserr << "Series3DMaterial::sendSelf() - failed to send data (I2)\n";
-		return -1;
-	}
-
-	// send double data
-	static Vector D1;
-	D1.resize(111 + num_mat*7);
-	int counter = 0;
+	/*floats for mats*/
 	for (int i = 0; i < num_mat; ++i) {
 		D1(counter++) = m_weights[static_cast<std::size_t>(i)];
 		const Vector& istrain_commit = m_mat_strain_commit[i];
 		for (int j = 0; j < 6; ++j)
 			D1(counter++) = istrain_commit(j);
 	}
+	/*other fixed data*/
 	for (int i = 0; i < 6; ++i) 
 		D1(counter++) = m_lambda(i);
 	for (int i = 0; i < 6; ++i) 
@@ -621,28 +616,24 @@ int Series3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_ObjectBr
 	m_weights.resize(static_cast<std::size_t>(num_mat), 0.0);
 	m_mat_strain_commit.resize(static_cast<std::size_t>(num_mat), Vector(6));
 
-	// receive material class & db tags
-	static ID I2;
-	I2.resize(2 * num_mat);
-	if (theChannel.recvID(getDbTag(), commitTag, I2) < 0) {
-		opserr << "Series3DMaterial::recvSelf() - failed to receive data (I2)\n";
-		return -1;
-	}
-
 	// receive double data
 	static Vector D1;
-	D1.resize(111 + num_mat * 7);
+	D1.resize(num_mat * 2 /*ints for mats*/ + num_mat * 7 /*floats for mats*/ + 111 /*other fixed data*/);
 	int counter = 0;
 	if (theChannel.recvVector(getDbTag(), commitTag, D1) < 0) {
 		opserr << "Series3DMaterial::recvSelf() - failed to receive data (D1)\n";
 		return -1;
 	}
+	/*ints for mats*/
+	counter = 2 * num_mat; // left for later
+	/*floats for mats*/
 	for (int i = 0; i < num_mat; ++i) {
 		m_weights[static_cast<std::size_t>(i)] = D1(counter++);
 		Vector& istrain_commit = m_mat_strain_commit[i];
 		for (int j = 0; j < 6; ++j)
 			istrain_commit(j) = D1(counter++);
 	}
+	/*other fixed data*/
 	for (int i = 0; i < 6; ++i)
 		m_lambda(i) = D1(counter++);
 	for (int i = 0; i < 6; ++i)
@@ -666,9 +657,10 @@ int Series3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_ObjectBr
 	m_stab = D1(counter++);
 
 	// receive all materials
+	counter = 0;
 	for (int i = 0; i < num_mat; i++) {
-		int mat_class_tag = I2(i);
-		int mat_db_tag = I2(i + num_mat);
+		int mat_class_tag = D1(counter++);
+		int mat_db_tag = D1(counter++);
 		NDMaterial* the_material = theBroker.getNewNDMaterial(mat_class_tag);
 		if (the_material == nullptr) {
 			opserr << "Series3DMaterial::recvSelf() - could not get a new NDMaterial\n";
