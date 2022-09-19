@@ -395,6 +395,9 @@ int Series3DMaterial::commitState(void)
 		}
 		m_mat_strain_commit[i] = m_materials[i]->getStrain();
 	}
+	// re-compute homogenized stress in case some sub-material
+	// is using some special integration scheme (such as impl-ex)
+	computeHomogenizedStress();
 	// commit this
 	m_lambda_commit = m_lambda;
 	m_strain_commit = m_strain;
@@ -1064,10 +1067,7 @@ void Series3DMaterial::computeHomogenizedStress()
 	// if the convergence is achieved, all materials should have the same stress.
 	// we compute anyway the average, just because some material may use some non-standard
 	// integration schemes...
-	//m_stress.Zero();
-	//for (std::size_t i = 0; i < m_materials.size(); ++i)
-	//	m_stress.addVector(1.0, m_materials[i]->getStress(), m_weights[i]);
-
-	m_stress = m_lambda;
-	m_stress *= -1.0;
+	m_stress.Zero();
+	for (std::size_t i = 0; i < m_materials.size(); ++i)
+		m_stress.addVector(1.0, m_materials[i]->getStress(), m_weights[i]);
 }
