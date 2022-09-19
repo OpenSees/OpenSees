@@ -358,6 +358,18 @@ int Series3DMaterial::setTrialStrain(const Vector& strain)
 	// impose iso-stress condition
 	IterativeTangentType ittype = IT_Tangent;
 	bool converged = imposeIsoStressCondition(ittype);
+	if (!converged) {
+		ittype = IT_StabilizedTangent;
+		converged = imposeIsoStressCondition(ittype);
+		if (!converged) {
+			ittype = IT_Initial;
+			int aux = m_max_iter;
+			m_max_iter = aux * 10;
+			converged = imposeIsoStressCondition(ittype);
+			m_max_iter = aux;
+		}
+		ittype = IT_Tangent;
+	}
 	// compute tangent
 	computeHomogenizedStress();
 	computeHomogenizedTangent(ittype);
@@ -707,29 +719,50 @@ bool Series3DMaterial::imposeIsoStressCondition(IterativeTangentType ittype)
 	double NR0 = computeResidualNorm();
 
 	// Newton iteration to impose the iso-stress condition
+	if (m_verbose) {
+		opserr << "\n   Series3D (" << getTag() << ") - impose iso-stress condition\n";
+	}
 	bool converged = false;
 	int iter;
 	for (iter = 0; iter < m_max_iter; ++iter) {
 
 		// compute denominator and factorize it
 		const Matrix& D = computeDenominator(ittype);
-		if (!solver.factorize(D))
+		if (!solver.factorize(D)) {
+			if (m_verbose) {
+				opserr << "      singular D matrix\n";
+			}
 			break;
+		}
 
 		// compute ewg
 		const Vector& ewg = computeWeightedStrainResidual();
 
 		// solve for unknowns (strain vectors and lagrange multipliers)
-		if (!solveForStrainVectors(ewg, ittype, solver, D))
+		if (!solveForStrainVectors(ewg, ittype, solver, D)) {
+			if (m_verbose) {
+				opserr << "      cannot solve for dStrain and/or dLambda\n";
+			}
 			break;
+		}
 
 		// test convergence
 		double NR = computeResidualNorm();
 		double NRratio = NR0 > 0.0 ? NRratio = NR / NR0 : 1.0;
+		if (m_verbose) {
+			opserr << "      iter: " << iter + 1 << " - ratio: " << NRratio << " - norm: " << NR << "\n";
+		}
 		if (NRratio < m_rel_tol || NR < m_abs_tol) {
 			converged = true;
 			break;
 		}
+	}
+
+	if (m_verbose) {
+		if (converged)
+			opserr << "      converged in " << iter << " iterations\n";
+		else
+			opserr << "      non-convergence in iso-stress constraint\n";
 	}
 
 	// done
@@ -1034,32 +1067,48 @@ void Series3DMaterial::computeHomogenizedTangent(IterativeTangentType ittype)
 {
 	static Matrix iCinv(6, 6);
 	static Matrix Cinv(6, 6);
-	if (ittype == IT_Tangent || ittype == IT_StabilizedTangent) {
-		bool done = true;
+	bool done;
+
+	if (ittype == IT_Tangent) {
+		done = true;
 		Cinv.Zero();
 		for (std::size_t i = 0; i < m_materials.size(); ++i) {
 			NDMaterial* imaterial = m_materials[i];
-			const Matrix& iC = imaterial->getTangent();
+			const Matrix& iC = getMaterialTangent(imaterial, ittype);
 			if (iC.Invert(iCinv) != 0) {
 				done = false;
 				break;
 			}
 			Cinv.addMatrix(1.0, iCinv, m_weights[i]);
 		}
-		if (done)
-			done = (Cinv.Invert(m_tangent) == 0);
 		if (done) {
-			if (ittype == IT_StabilizedTangent) {
-				m_tangent.addMatrix(1.0 - m_stab, m_initial_tangent, m_stab);
+			done = (Cinv.Invert(m_tangent) == 0);
+		}
+		if (done) return; // ok
+		ittype = IT_StabilizedTangent; // otherwise try the stabilized tangent
+	}
+
+	if (ittype == IT_StabilizedTangent) {
+		done = true;
+		Cinv.Zero();
+		for (std::size_t i = 0; i < m_materials.size(); ++i) {
+			NDMaterial* imaterial = m_materials[i];
+			const Matrix& iC = getMaterialTangent(imaterial, ittype);
+			if (iC.Invert(iCinv) != 0) {
+				done = false;
+				break;
 			}
+			Cinv.addMatrix(1.0, iCinv, m_weights[i]);
 		}
-		else {
-			m_tangent = m_initial_tangent;
+		if (done) {
+			done = (Cinv.Invert(m_tangent) == 0);
 		}
+		if (done) return; // ok
+		ittype = IT_Initial; // otherwise go with initial tangent
 	}
-	else {
-		m_tangent = m_initial_tangent;
-	}
+
+	// id none of the above worked, fallback to initial
+	m_tangent = m_initial_tangent;
 }
 
 void Series3DMaterial::computeHomogenizedStress()
