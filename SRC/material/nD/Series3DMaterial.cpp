@@ -212,7 +212,7 @@ void *OPS_Series3DMaterial(void)
 			word = OPS_GetString();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
-			max_iter = abs(to_int(word, ok));
+			max_iter = std::abs(to_int(word, ok));
 			if (!ok) {
 				opserr << "nDMaterial Series3D Error: -maxIter keyword provided with an invalid value(\"" << word.c_str() << "\").\n";
 				return nullptr;
@@ -226,7 +226,7 @@ void *OPS_Series3DMaterial(void)
 			word = OPS_GetString();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
-			rel_tol = abs(to_double(word, ok));
+			rel_tol = std::abs(to_double(word, ok));
 			if (!ok) {
 				opserr << "nDMaterial Series3D Error: -relTol keyword provided with an invalid value(\"" << word.c_str() << "\").\n";
 				return nullptr;
@@ -240,7 +240,7 @@ void *OPS_Series3DMaterial(void)
 			word = OPS_GetString();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
-			abs_tol = abs(to_double(word, ok));
+			abs_tol = std::abs(to_double(word, ok));
 			if (!ok) {
 				opserr << "nDMaterial Series3D Error: -absTol keyword provided with an invalid value(\"" << word.c_str() << "\").\n";
 				return nullptr;
