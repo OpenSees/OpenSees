@@ -45,6 +45,9 @@ Matrix  PlaneStressMaterial::tangent(3,3) ;
 //null constructor
 PlaneStressMaterial::PlaneStressMaterial( ) : 
 NDMaterial(0, ND_TAG_PlaneStressMaterial ), 
+Tstrain22(0.0), Tgamma02(0.0), Tgamma12(0.0),
+Cstrain22(0.0), Cgamma02(0.0), Cgamma12(0.0),
+theMaterial(nullptr),
 strain(3) 
 { }
 
@@ -547,10 +550,16 @@ PlaneStressMaterial::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // put the strains in a vector and send it
-  static Vector vecData(3);
-  vecData(0) = Cstrain22;
-  vecData(1) = Cgamma02;
-  vecData(2) = Cgamma12;
+  static Vector vecData(9);
+  vecData(0) = Tstrain22;
+  vecData(1) = Tgamma02;
+  vecData(2) = Tgamma12;
+  vecData(3) = Cstrain22;
+  vecData(4) = Cgamma02;
+  vecData(5) = Cgamma12;
+  vecData(6) = strain(0);
+  vecData(7) = strain(1);
+  vecData(8) = strain(2);
 
   res = theChannel.sendVector(this->getDbTag(), commitTag, vecData);
   if (res < 0) {
@@ -575,7 +584,7 @@ PlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
   static ID idData(3);
   res = theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
-    opserr << "PlaneStressMaterial::sendSelf() - failed to send id data\n";
+    opserr << "PlaneStressMaterial::recvSelf() - failed to recv id data\n";
     return res;
   }
 
@@ -596,25 +605,26 @@ PlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
   theMaterial->setDbTag(idData(2));
 
   // recv a vector containing strains and set the strains
-  static Vector vecData(3);
+  static Vector vecData(9);
   res = theChannel.recvVector(this->getDbTag(), commitTag, vecData);
   if (res < 0) {
-    opserr << "PlaneStressMaterial::sendSelf() - failed to send vector data\n";
+    opserr << "PlaneStressMaterial::recvSelf() - failed to recv vector data\n";
     return res;
   }
-
-  Cstrain22 = vecData(0);
-  Cgamma02 = vecData(1);
-  Cgamma12  = vecData(2);
-
-  Tstrain22 = Cstrain22;
-  Tgamma02 = Cgamma02;
-  Tgamma12  = Cgamma12;
+  Tstrain22 = vecData(0);
+  Tgamma02 = vecData(1);
+  Tgamma12 = vecData(2);
+  Cstrain22 = vecData(3);
+  Cgamma02 = vecData(4);
+  Cgamma12 = vecData(5);
+  strain(0) = vecData(6);
+  strain(1) = vecData(7);
+  strain(2) = vecData(8);
 
   // now receive the materials data
   res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
   if (res < 0) 
-    opserr << "PlaneStressMaterial::sendSelf() - failed to send vector material\n";
+    opserr << "PlaneStressMaterial::recvSelf() - failed to recv vector material\n";
   
   return res;
 }

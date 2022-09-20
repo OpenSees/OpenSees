@@ -174,9 +174,11 @@
 #include "J2BeamFiber3d.h"
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
+#include "PlaneStrainMaterial.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
+#include "PlaneStressRebarMaterial.h"
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
@@ -1618,8 +1620,14 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
 
+  case ND_TAG_PlaneStrainMaterial:
+    return new PlaneStrainMaterial();
+
   case ND_TAG_OrthotropicMaterial:
     return new OrthotropicMaterial();
+
+  case ND_TAG_PlaneStressRebarMaterial:
+    return new PlaneStressRebarMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:
