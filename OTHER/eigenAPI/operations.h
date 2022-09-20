@@ -21,33 +21,17 @@
 // Jose Abell (UANDES, github.com/jaabell)
 // Massimo Petracca - ASDEA Software, Italy (2022)
 //
-// Utility header file to interface with the Eigen library
-//
+#ifndef EigenAPI_operations_h
+#define EigenAPI_operations_h
 
-#ifndef EigenAPI_h
-#define EigenAPI_h
+#include "EigenAPI.h"
 
-#include <OPS_Globals.h>
-#include <Matrix.h>
-#include <Vector.h>
 
-// MACROS that should be defined before including ANY eigen file
+double p(const StressVectorType &sigma)
+{
+    return (sigma(0)+sigma(1)+sigma(2))/3;
+}
 
-/*
-The macro EIGEN_DONT_ALIGN is deprecated (it is a synonim of EIGEN_MAX_ALIGN_BYTES=0).
-It disables automatic allignment of fixed size arrays.
-It is necessary to do so to avoid problems using those types as member of structures.
-More information here:
-https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
-*/
+#endif // EigenAPI_operations_h
 
-#define EIGEN_MAX_ALIGN_BYTES 0
 
-// Here we can include all the eigen components we need
-#include "Eigen/Dense"
-
-#include "converters.h"
-#include "typedefs.h"
-#include "operations.h"
-
-#endif // EigenAPI_h

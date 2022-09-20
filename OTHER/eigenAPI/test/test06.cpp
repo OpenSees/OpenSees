@@ -21,33 +21,26 @@
 // Jose Abell (UANDES, github.com/jaabell)
 // Massimo Petracca - ASDEA Software, Italy (2022)
 //
-// Utility header file to interface with the Eigen library
+// Test interface between eigen and opensees matrices.
+//
+// testing: copyToVectorReference
+
+//
+//
+//
+// types and operations
+//
 //
 
-#ifndef EigenAPI_h
-#define EigenAPI_h
 
-#include <OPS_Globals.h>
-#include <Matrix.h>
-#include <Vector.h>
+#include <iostream>
+#include "../EigenAPI.h"
 
-// MACROS that should be defined before including ANY eigen file
 
-/*
-The macro EIGEN_DONT_ALIGN is deprecated (it is a synonim of EIGEN_MAX_ALIGN_BYTES=0).
-It disables automatic allignment of fixed size arrays.
-It is necessary to do so to avoid problems using those types as member of structures.
-More information here:
-https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
-*/
 
-#define EIGEN_MAX_ALIGN_BYTES 0
-
-// Here we can include all the eigen components we need
-#include "Eigen/Dense"
-
-#include "converters.h"
-#include "typedefs.h"
-#include "operations.h"
-
-#endif // EigenAPI_h
+int main()
+{
+	StressVectorType sigma = {1, 1, 1, 1, 1, 1};
+	std::cout << "sigma = " << sigma << std::endl;
+	std::cout << "p = " << p(sigma) << std::endl;
+}
