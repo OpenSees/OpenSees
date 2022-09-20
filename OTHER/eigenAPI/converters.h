@@ -28,43 +28,75 @@
 #define EigenAPI_converters_h
 
 #include "EigenAPI.h"
-#include <Matrix.h>
 
-//Create a new OpenSees Matrix and copy the components of an eigen matrix (or expression) to it. 
+//Create a new OpenSees Matrix and copy the components of an eigen matrix (or expression) to it.
 template <typename Derived>
 Matrix copyToNewMatrix(const Eigen::DenseBase<Derived> &a)
 {
-    Matrix ops_matrix(a.rows(), a.cols());
+	Matrix ops_matrix(a.rows(), a.cols());
 
-    for (int i = 0; i < a.rows(); ++i)
-    {
-        for (int j = 0; j < a.cols(); ++j)
-        {
-            ops_matrix(i,j) = a(i,j);
-        }
-    }
-    return ops_matrix;
+	for (int i = 0; i < a.rows(); ++i)
+	{
+		for (int j = 0; j < a.cols(); ++j)
+		{
+			ops_matrix(i, j) = a(i, j);
+		}
+	}
+	return ops_matrix;
 }
 
-//Copy the components of an eigen matrix (or expression) to a reference to an OpenSees matrix. 
+//Copy the components of an eigen matrix (or expression) to a reference to an OpenSees matrix.
 template <typename Derived>
 void copyToMatrixReference(const Eigen::DenseBase<Derived> &a, Matrix& ops_matrix)
 {
-    // Check if the opensees matrix has an appropriate size, otherwise resize.
-    // might produce a new call to malloc. 
-    if (ops_matrix.noRows() != a.Rows() || ops_matrix.noCols() != a.Cols())
-    {
-        ops_matrix.resize(a.rows(), a.cols())
-    }
+	// Check if the opensees matrix has an appropriate size, otherwise resize.
+	// might produce a new call to malloc.
+	if (ops_matrix.noRows() != a.rows() || ops_matrix.noCols() != a.cols())
+	{
+		ops_matrix.resize(a.rows(), a.cols());
+	}
 
-    for (int i = 0; i < a.rows(); ++i)
-    {
-        for (int j = 0; j < a.cols(); ++j)
-        {
-            ops_matrix(i,j) = a(i,j);
-        }
-    }
-    return ;
+	for (int i = 0; i < a.rows(); ++i)
+	{
+		for (int j = 0; j < a.cols(); ++j)
+		{
+			ops_matrix(i, j) = a(i, j);
+		}
+	}
+	return ;
+}
+
+//Create a new OpenSees Vector and copy the components of an eigen vector (or expression) to it.
+template <typename Derived>
+Vector copyToNewVector(const Eigen::DenseBase<Derived> &a)
+{
+	Vector ops_vector(a.rows());
+
+	for (int i = 0; i < a.rows(); ++i)
+	{
+		ops_vector(i) = a(i);
+	}
+	return ops_vector;
+}
+
+//Copy the components of an eigen vector (or expression) to a reference to an OpenSees vector.
+template <typename Derived>
+void copyToVectorReference(const Eigen::DenseBase<Derived> &a, Vector& ops_vector)
+{
+	// Check if the opensees matrix has an appropriate size, otherwise resize.
+	// might produce a new call to malloc.
+	if (ops_vector.Size() != a.rows() )
+	{
+		ops_vector.resize(a.rows());
+	}
+
+	for (int i = 0; i < a.rows(); ++i)
+	{
+
+		ops_vector(i) = a(i);
+
+	}
+	return ;
 }
 
 #endif // EigenAPI_converters_h

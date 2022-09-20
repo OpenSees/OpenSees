@@ -30,5 +30,10 @@ test03: test03.o
 	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)
 	./test03
 
+
+test06: test06.o
+	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)
+	./test06
+
 clean:
 	rm *.o test??
