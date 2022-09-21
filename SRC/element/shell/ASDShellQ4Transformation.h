@@ -100,14 +100,14 @@ public:
         }
 
         // get nodes and save initial displacements and rotations
-        if (!initialized) {
-            for (size_t i = 0; i < 4; i++) {
-                m_nodes[i] = domain->getNode(node_ids(i));
-                if (m_nodes[i] == nullptr) {
-                    opserr << "ASDShellQ4Transformation::setDomain - no node " << node_ids(i)
-                        << " exists in the model\n";
-                    exit(-1);
-                }
+        for (size_t i = 0; i < 4; i++) {
+            m_nodes[i] = domain->getNode(node_ids(i));
+            if (m_nodes[i] == nullptr) {
+                opserr << "ASDShellQ4Transformation::setDomain - no node " << node_ids(i)
+                    << " exists in the model\n";
+                exit(-1);
+            }
+            if (!initialized) {
                 const Vector& iU = m_nodes[i]->getTrialDisp();
                 if (iU.Size() != 6) {
                     opserr << "ASDShellQ4Transformation::setDomain - node " << node_ids(i)
