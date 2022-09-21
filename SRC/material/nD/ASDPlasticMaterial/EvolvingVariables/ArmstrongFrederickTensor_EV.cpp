@@ -40,7 +40,7 @@ const DTensor2& ArmstrongFrederickTensor_EV::getDerivative(const DTensor2 &depsi
         const DTensor2 &m,
         const DTensor2& stress) const
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     //Zero de static variable
     derivative *= 0;
 
@@ -60,7 +60,7 @@ const DTensor2& ArmstrongFrederickTensor_EV::getDerivative(const DTensor2 &depsi
 }
 
 void ArmstrongFrederickTensor_EV::check_hardening_saturation_limit(DTensor2& backstress, DTensor2 const& plasticFlow_m ){
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     double limit_length = SQRT_2_over_3 * ha / cr ;
 
     // Limit direction is unit vector in the plastic flow direction.

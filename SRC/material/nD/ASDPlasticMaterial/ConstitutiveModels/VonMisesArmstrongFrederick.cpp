@@ -28,10 +28,10 @@
 #include "NDMaterialLT.h"
 #include <iostream>
 #include "../../../ltensor/LTensor.h"
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 //First constructor, creates a material at its "ground state" from its parameters.
 VonMisesArmstrongFrederick::VonMisesArmstrongFrederick(int tag_in, double k0_in, double ha_alpha, double cr_alpha, double H_k, double E, double nu, double rho_) :
-    VMAFBase::ClassicElastoplasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
+    VMAFBase::ASDPlasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
                                            VMAF_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(E, nu), // Create Elasticity
                                            VMAF_PFType(alpha, k),       // Point PF to the internal variables
@@ -58,7 +58,7 @@ VonMisesArmstrongFrederick::VonMisesArmstrongFrederick(int tag_in, double p0, do
         LinearIsotropic3D_EL &el,
         VMAF_PFType &pf,
         VMAFVarsType &vars) :
-    VMAFBase::ClassicElastoplasticMaterial(tag_in, this->getRho(), p0, // Initial confinement can be 0 for this model
+    VMAFBase::ASDPlasticMaterial(tag_in, this->getRho(), p0, // Initial confinement can be 0 for this model
                                            VMAF_YFType(alpha, k),     // Point YF to new internal variables
                                            LinearIsotropic3D_EL(el),  // Create Elasticity -- use copy constructor here
                                            VMAF_PFType(alpha, k),     // Point PF to the internal variables
@@ -69,7 +69,7 @@ VonMisesArmstrongFrederick::VonMisesArmstrongFrederick(int tag_in, double p0, do
 }
 
 VonMisesArmstrongFrederick::VonMisesArmstrongFrederick() :
-    VMAFBase::ClassicElastoplasticMaterial(0, 0, 0.0, //Initial confinement can be 0 for this model
+    VMAFBase::ASDPlasticMaterial(0, 0, 0.0, //Initial confinement can be 0 for this model
                                            VMAF_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(0, 0),  // Create Elasticity
                                            VMAF_PFType(alpha, k),       // Point PF to the internal variables

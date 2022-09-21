@@ -28,7 +28,7 @@
 
 //First constructor, creates a material at its "ground state" from its parameters.
 DruckerPragerArmstrongFrederickLE::DruckerPragerArmstrongFrederickLE(int tag_in, double k0_in, double ha_alpha, double cr_alpha, double H_k, double E, double nu, double rho_, double p0) :
-    DPAFLEBase::ClassicElastoplasticMaterial(tag_in, rho_, p0,
+    DPAFLEBase::ASDPlasticMaterial(tag_in, rho_, p0,
             DPAFLE_YFType(alpha, k),       // Point YF to internal variables
             LinearIsotropic3D_EL(E, nu), // Create Elasticity
             DPAFLE_PFType(alpha, k),       // Point PF to the internal variables
@@ -46,7 +46,7 @@ DruckerPragerArmstrongFrederickLE::DruckerPragerArmstrongFrederickLE(int tag_in,
         LinearIsotropic3D_EL &el,
         DPAFLE_PFType &pf,
         DPAFLEVarsType &vars) :
-    DPAFLEBase::ClassicElastoplasticMaterial(tag_in, this->getRho(),
+    DPAFLEBase::ASDPlasticMaterial(tag_in, this->getRho(),
             p0,     //Sets p0
             DPAFLE_YFType(alpha, k),    // Point YF to new internal variables
             LinearIsotropic3D_EL(el), // Create Elasticity -- use copy constructor here
@@ -59,7 +59,7 @@ DruckerPragerArmstrongFrederickLE::DruckerPragerArmstrongFrederickLE(int tag_in,
 }
 
 DruckerPragerArmstrongFrederickLE::DruckerPragerArmstrongFrederickLE() :
-    DPAFLEBase::ClassicElastoplasticMaterial(0, 0, 0,
+    DPAFLEBase::ASDPlasticMaterial(0, 0, 0,
             DPAFLE_YFType(alpha, k),       // Point YF to internal variables
             LinearIsotropic3D_EL(0, 0), // Create Elasticity
             DPAFLE_PFType(alpha, k),       // Point PF to the internal variables
@@ -80,7 +80,7 @@ int DruckerPragerArmstrongFrederickLE::pre_integration_callback(const DTensor2 &
         double yf2,
         bool & returns)
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 stress(3, 3, 0);
     static DTensor2 plasticstrain(3, 3, 0);
     static DTensor4 stiff(3, 3, 3, 3, 0);

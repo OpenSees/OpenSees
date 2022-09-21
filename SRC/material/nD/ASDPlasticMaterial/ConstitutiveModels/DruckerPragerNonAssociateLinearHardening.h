@@ -25,8 +25,8 @@
 // Fully general templated material class for plasticity modeling
 
 
-#include "../ClassicElastoplasticityGlobals.h"
-#include "../ClassicElastoplasticMaterial.h"
+#include "../ASDPlasticMaterialGlobals.h"
+#include "../ASDPlasticMaterial.h"
 #include "../MaterialInternalVariables.h"
 
 //Yield Functions
@@ -48,7 +48,7 @@
 
 
 
-// New materials are created by subclassing instances of the ClassicElastoplasticMaterial<.,.,.,.,>
+// New materials are created by subclassing instances of the ASDPlasticMaterial<.,.,.,.,>
 // template class, with the appropriate components as template parameters.
 // Heavy use of templating is made, therefore typedeffing is a friend in helping clear up the mess.
 
@@ -69,7 +69,7 @@ typedef DruckerPragerNonAssociate_PF < LinearHardeningTensor_EV, LinearHardening
 // DPNALH_PFType means "Drucker Prager Non-Associate Linear Hardening Plastic Flow"
 
 //Create a helpful typedef for the base class from which we will inherit to create the n
-typedef ClassicElastoplasticMaterial <LinearIsotropic3D_EL,
+typedef ASDPlasticMaterial <LinearIsotropic3D_EL,
         DPNALH_YFType,
         DPNALH_PFType,
         DPNALHVarsType,

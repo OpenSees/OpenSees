@@ -31,7 +31,7 @@
 #include "../PlasticFlowBase.h"
 
 // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 
 #include "../EvolvingVariable.h"
 #include <cmath>

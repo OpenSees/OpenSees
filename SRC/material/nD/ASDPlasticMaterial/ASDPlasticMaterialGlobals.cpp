@@ -25,22 +25,22 @@
 // Fully general templated material class for plasticity modeling
 
 #include <string>
-#include "ClassicElastoplasticityGlobals.h"
-Index<'i'> ClassicElastoplasticityGlobals::i;
-Index<'j'> ClassicElastoplasticityGlobals::j;
-Index<'k'> ClassicElastoplasticityGlobals::k;
-Index<'l'> ClassicElastoplasticityGlobals::l;
-Index<'m'> ClassicElastoplasticityGlobals::m;
-Index<'n'> ClassicElastoplasticityGlobals::n;
-Index<'p'> ClassicElastoplasticityGlobals::p;
-Index<'q'> ClassicElastoplasticityGlobals::q;
-Index<'r'> ClassicElastoplasticityGlobals::r;
-Index<'s'> ClassicElastoplasticityGlobals::s;
+#include "ASDPlasticMaterialGlobals.h"
+Index<'i'> ASDPlasticMaterialGlobals::i;
+Index<'j'> ASDPlasticMaterialGlobals::j;
+Index<'k'> ASDPlasticMaterialGlobals::k;
+Index<'l'> ASDPlasticMaterialGlobals::l;
+Index<'m'> ASDPlasticMaterialGlobals::m;
+Index<'n'> ASDPlasticMaterialGlobals::n;
+Index<'p'> ASDPlasticMaterialGlobals::p;
+Index<'q'> ASDPlasticMaterialGlobals::q;
+Index<'r'> ASDPlasticMaterialGlobals::r;
+Index<'s'> ASDPlasticMaterialGlobals::s;
 
-DTensor2 ClassicElastoplasticityGlobals::kronecker_delta(3, 3, "identity");
+DTensor2 ASDPlasticMaterialGlobals::kronecker_delta(3, 3, "identity");
 
 
-void ClassicElastoplasticityGlobals::printTensor(std::string const& name, DTensor2 const& v)
+void ASDPlasticMaterialGlobals::printTensor(std::string const& name, DTensor2 const& v)
 {
 
     // All 9 elements in one line.
@@ -63,7 +63,7 @@ void ClassicElastoplasticityGlobals::printTensor(std::string const& name, DTenso
     fprintf(stderr, " %16.8f \t %16.8f \t %16.8f] \n",  v(2, 0), v(2, 1), v(2, 2));
 }
 
-void ClassicElastoplasticityGlobals::printTensor4(std::string const& name, DTensor4 const& v)
+void ASDPlasticMaterialGlobals::printTensor4(std::string const& name, DTensor4 const& v)
 {
 
 
@@ -79,7 +79,7 @@ void ClassicElastoplasticityGlobals::printTensor4(std::string const& name, DTens
 }
 
 
-std::tuple<double, double, double> ClassicElastoplasticityGlobals::getI1J2J3(const DTensor2 &mystress)
+std::tuple<double, double, double> ASDPlasticMaterialGlobals::getI1J2J3(const DTensor2 &mystress)
 {
     // ------------------------------------------------------------
     // preliminary
@@ -110,7 +110,7 @@ std::tuple<double, double, double> ClassicElastoplasticityGlobals::getI1J2J3(con
 // q = sqrt(3* J2)
 // cos(3*theta) = 3/2 * sqrt(3) * J3 / J2^(3/2)
 // ------------------------------------------------------------
-std::tuple<double, double, double> ClassicElastoplasticityGlobals::getpqtheta(const DTensor2 &sigma)
+std::tuple<double, double, double> ASDPlasticMaterialGlobals::getpqtheta(const DTensor2 &sigma)
 {
     double I1, J2, J3;
 
@@ -142,9 +142,9 @@ std::tuple<double, double, double> ClassicElastoplasticityGlobals::getpqtheta(co
     }
 }
 
-bool ClassicElastoplasticityGlobals::inverse4thTensor(DTensor4 const & rhs, DTensor4 & ret)
+bool ASDPlasticMaterialGlobals::inverse4thTensor(DTensor4 const & rhs, DTensor4 & ret)
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 intermediate_matrix(9, 9, 0.0);
     intermediate_matrix *= 0;
     // static DTensor4 ret(3,3,3,3,0.0);
@@ -168,7 +168,7 @@ bool ClassicElastoplasticityGlobals::inverse4thTensor(DTensor4 const & rhs, DTen
 
     if (det < MACHINE_EPSILON)
     {
-        // std::cout << "ClassicElastoplasticMaterial matrix T is not invertible to get the consistent stiffness tensor. Use the inconsistent stiffness instead! " << std::endl;
+        // std::cout << "ASDPlasticMaterial matrix T is not invertible to get the consistent stiffness tensor. Use the inconsistent stiffness instead! " << std::endl;
         return false;
     }
     else
@@ -193,9 +193,9 @@ bool ClassicElastoplasticityGlobals::inverse4thTensor(DTensor4 const & rhs, DTen
 
 
 // Some stress derivatives....
-void ClassicElastoplasticityGlobals::dJ2_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of second deviatoric stress invariant
+void ASDPlasticMaterialGlobals::dJ2_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of second deviatoric stress invariant
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 s(3, 3, 0.0);
     s *= 0;
     double p;
@@ -208,9 +208,9 @@ void ClassicElastoplasticityGlobals::dJ2_dsigma_ij(const DTensor2 & sigma, DTens
 }
 
 
-void ClassicElastoplasticityGlobals::dJ3_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of third deviatoric stress invariant
+void ASDPlasticMaterialGlobals::dJ3_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of third deviatoric stress invariant
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 s(3, 3, 0.0);
     s *= 0;
     double p;
@@ -228,9 +228,9 @@ void ClassicElastoplasticityGlobals::dJ3_dsigma_ij(const DTensor2 & sigma, DTens
 }
 
 
-void ClassicElastoplasticityGlobals::dq_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of deviatoric stress q
+void ASDPlasticMaterialGlobals::dq_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of deviatoric stress q
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 s(3, 3, 0.0);
     s *= 0;
     double p;
@@ -254,9 +254,9 @@ void ClassicElastoplasticityGlobals::dq_dsigma_ij(const DTensor2 & sigma, DTenso
 }
 
 
-void ClassicElastoplasticityGlobals::dtheta_dsigma_ij(const DTensor2 & sigma, DTensor2 & ret) // Stress derivative of Lode angle
+void ASDPlasticMaterialGlobals::dtheta_dsigma_ij(const DTensor2 & sigma, DTensor2 & ret) // Stress derivative of Lode angle
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     double I1, J2D, J3D, q, theta;
     double trace;
 

@@ -25,8 +25,8 @@
 // Fully general templated material class for plasticity modeling
 
 
-#include "../ClassicElastoplasticityGlobals.h"
-#include "../ClassicElastoplasticMaterial.h"
+#include "../ASDPlasticMaterialGlobals.h"
+#include "../ASDPlasticMaterial.h"
 #include "../MaterialInternalVariables.h"
 
 //Yield Functions
@@ -44,7 +44,7 @@
 
 
 #include <classTags.h>
-// New materials are created by subclassing instances of the ClassicElastoplasticMaterial<.,.,.,.,>
+// New materials are created by subclassing instances of the ASDPlasticMaterial<.,.,.,.,>
 // template class, with the appropriate components as template parameters.
 // Heavy use of templating is made, therefore typedeffing is a friend in helping clear up the mess.
 
@@ -57,7 +57,7 @@ typedef CamClay_YF < CamClay_p0_EV> CC_YFType;
 typedef CamClay_PF < CamClay_p0_EV> CC_PFType;
 
 //Create a helpful typedef for the base class from which we will inherit to create the new material.
-typedef ClassicElastoplasticMaterial <CamClay_EL,
+typedef ASDPlasticMaterial <CamClay_EL,
         CC_YFType,
         CC_PFType,
         CCVarsType,

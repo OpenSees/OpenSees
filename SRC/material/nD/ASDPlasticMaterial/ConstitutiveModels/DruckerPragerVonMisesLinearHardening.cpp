@@ -28,7 +28,7 @@
 
 //First constructor, creates a material at its "ground state" from its parameters.
 DruckerPragerVonMisesLinearHardening::DruckerPragerVonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_, double p0) :
-    DPVMLHBase::ClassicElastoplasticMaterial(tag_in, rho_, p0,
+    DPVMLHBase::ASDPlasticMaterial(tag_in, rho_, p0,
             DPLH_YFType(alpha, k),       // Point YF to internal variables
             LinearIsotropic3D_EL(E, nu), // Create Elasticity
             DPDLHLH_PFType(alpha, k),       // Point PF to the internal variables
@@ -47,7 +47,7 @@ DruckerPragerVonMisesLinearHardening::DruckerPragerVonMisesLinearHardening(int t
         LinearIsotropic3D_EL &el,
         DPDLHLH_PFType &pf,
         DPLHVarsType &vars) :
-    DPVMLHBase::ClassicElastoplasticMaterial(tag_in, this->getRho(),
+    DPVMLHBase::ASDPlasticMaterial(tag_in, this->getRho(),
             p0,     //Sets p0
             DPLH_YFType(alpha, k),    // Point YF to new internal variables
             LinearIsotropic3D_EL(el), // Create Elasticity -- use copy constructor here
@@ -60,7 +60,7 @@ DruckerPragerVonMisesLinearHardening::DruckerPragerVonMisesLinearHardening(int t
 }
 
 DruckerPragerVonMisesLinearHardening::DruckerPragerVonMisesLinearHardening() :
-    DPVMLHBase::ClassicElastoplasticMaterial(0, 0, 0,
+    DPVMLHBase::ASDPlasticMaterial(0, 0, 0,
             DPLH_YFType(alpha, k),       // Point YF to internal variables
             LinearIsotropic3D_EL(0, 0), // Create Elasticity
             DPDLHLH_PFType(alpha, k),       // Point PF to the internal variables
@@ -81,7 +81,7 @@ int DruckerPragerVonMisesLinearHardening::pre_integration_callback(const DTensor
         double yf2,
         bool & returns)
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 str(3, 3, 0);
     static DTensor4 stiff(3, 3, 3, 3, 0);
     double p = -(TrialStress(0, 0) + TrialStress(1, 1) + TrialStress(2, 2)) / 3;

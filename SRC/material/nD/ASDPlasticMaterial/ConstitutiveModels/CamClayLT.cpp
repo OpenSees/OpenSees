@@ -28,7 +28,7 @@
 #include "NDMaterialLT.h"
 #include <iostream>
 #include "../../../ltensor/LTensor.h"
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 
 //First constructor, creates a material at its "ground state" from its parameters.
 CamClayLT::CamClayLT(int tag_in,
@@ -40,7 +40,7 @@ CamClayLT::CamClayLT(int tag_in,
                      double nu_,
                      double initial_confinement,
                      double rho_) :
-    CCBase::ClassicElastoplasticMaterial(tag_in, rho_, initial_confinement, //Initial confinement
+    CCBase::ASDPlasticMaterial(tag_in, rho_, initial_confinement, //Initial confinement
                                          CC_YFType(M_, p0),       // Point YF to internal variables
                                          CamClay_EL(e0_, kappa_, nu_), // Create Elasticity
                                          CC_PFType(M_, p0),       // Point PF to the internal variables
@@ -60,7 +60,7 @@ CamClayLT::CamClayLT(int tag_in, double rho,
                      CamClay_EL &el,
                      CC_PFType &pf,
                      CCVarsType &vars) :
-    CCBase::ClassicElastoplasticMaterial(tag_in, this->getRho(), pressure, // Initial confinement
+    CCBase::ASDPlasticMaterial(tag_in, this->getRho(), pressure, // Initial confinement
                                          CC_YFType(0, p0),       // Point YF to internal variables
                                          CamClay_EL(0, 0, 0), // Create Elasticity
                                          CC_PFType(0, p0),       // Point PF to the internal variables
@@ -70,7 +70,7 @@ CamClayLT::CamClayLT(int tag_in, double rho,
 }
 
 CamClayLT::CamClayLT() :
-    CCBase::ClassicElastoplasticMaterial(0, 0, 0.0, //Initial confinement
+    CCBase::ASDPlasticMaterial(0, 0, 0.0, //Initial confinement
                                          CC_YFType(0, p0),       // Point YF to internal variables
                                          CamClay_EL(0, 0, 0),  // Create Elasticity
                                          CC_PFType(0, p0),       // Point PF to the internal variables

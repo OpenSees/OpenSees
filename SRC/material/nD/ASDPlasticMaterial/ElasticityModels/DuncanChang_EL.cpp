@@ -26,7 +26,7 @@
 
 #include "DuncanChang_EL.h"
 #include "Vector.h"
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 
 DTensor4 DuncanChang_EL::Ee(3, 3, 3, 3, 0.0);
 
@@ -41,7 +41,7 @@ DuncanChang_EL::DuncanChang_EL(double K_in, double pa_in, double n_in, double nu
 
 DTensor4& DuncanChang_EL::operator()(const DTensor2& stress) //See note on base class
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
 
     double p, q, theta;
     std::tie(p, q, theta) = getpqtheta(stress);

@@ -28,7 +28,7 @@
 
 //First constructor, creates a material at its "ground state" from its parameters.
 DruckerPragerNonAssociateArmstrongFrederick::DruckerPragerNonAssociateArmstrongFrederick(int tag_in, double k0_in, double ha_alpha, double cr_alpha, double H_k, double E, double nu, double rho_, double p0, double xi, double Kd) :
-    DPNAAFBase::ClassicElastoplasticMaterial(tag_in, rho_, p0,
+    DPNAAFBase::ASDPlasticMaterial(tag_in, rho_, p0,
                                            DPNAAF_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(E, nu), // Create Elasticity
                                            DPNAAF_PFType(alpha, k, xi, Kd),       // Point PF to the internal variables
@@ -46,7 +46,7 @@ DruckerPragerNonAssociateArmstrongFrederick::DruckerPragerNonAssociateArmstrongF
         LinearIsotropic3D_EL &el,
         DPNAAF_PFType &pf,
         DPNAAFVarsType &vars) :
-    DPNAAFBase::ClassicElastoplasticMaterial(tag_in, this->getRho(),
+    DPNAAFBase::ASDPlasticMaterial(tag_in, this->getRho(),
                                            p0,     //Sets p0
                                            DPNAAF_YFType(alpha, k),    // Point YF to new internal variables
                                            LinearIsotropic3D_EL(el), // Create Elasticity -- use copy constructor here
@@ -59,7 +59,7 @@ DruckerPragerNonAssociateArmstrongFrederick::DruckerPragerNonAssociateArmstrongF
 }
 
 DruckerPragerNonAssociateArmstrongFrederick::DruckerPragerNonAssociateArmstrongFrederick() :
-    DPNAAFBase::ClassicElastoplasticMaterial(0, 0, 0,
+    DPNAAFBase::ASDPlasticMaterial(0, 0, 0,
                                            DPNAAF_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(0, 0), // Create Elasticity
                                            DPNAAF_PFType(alpha, k, 0.0, 0.0),        // Point PF to the internal variables
@@ -80,7 +80,7 @@ int DruckerPragerNonAssociateArmstrongFrederick::pre_integration_callback(const 
         double yf2,
         bool & returns)
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 stress(3, 3, 0);
     static DTensor2 plasticstrain(3, 3, 0);
     static DTensor4 stiff(3, 3, 3, 3, 0);

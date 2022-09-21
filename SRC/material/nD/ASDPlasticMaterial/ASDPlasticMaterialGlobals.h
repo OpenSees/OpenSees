@@ -25,14 +25,14 @@
 // Fully general templated material class for plasticity modeling
 
 
-#ifndef ClassicElastoplasticityGlobals_H
-#define ClassicElastoplasticityGlobals_H
+#ifndef ASDPlasticMaterialGlobals_H
+#define ASDPlasticMaterialGlobals_H
 
 #include "../../ltensor/LTensor.h"
 #include <limits>
 #include <tuple>
 #include <string>
-namespace ClassicElastoplasticityGlobals
+namespace ASDPlasticMaterialGlobals
 {
 
 //Reserved LTensor indexes

@@ -31,7 +31,7 @@
 #include "../PlasticFlowBase.h"
 
 // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 #include "../EvolvingVariable.h"
 #include <cmath>
 
@@ -57,7 +57,7 @@ public:
 
     const DTensor2& operator()(const DTensor2 &depsilon, const DTensor2& sigma)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         //Identical to derivative of DruckerPrager_YF wrt sigma (a.k.a nij)
         const DTensor2 &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();

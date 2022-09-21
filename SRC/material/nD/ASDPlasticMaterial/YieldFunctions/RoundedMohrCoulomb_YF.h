@@ -34,8 +34,8 @@
 #include <iostream>
 
 // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
-#include "../ClassicElastoplasticityGlobals.h"
-using namespace ClassicElastoplasticityGlobals;
+#include "../ASDPlasticMaterialGlobals.h"
+using namespace ASDPlasticMaterialGlobals;
 
 
 
