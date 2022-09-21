@@ -119,11 +119,15 @@ public:
         }
     }
 
-    virtual void setDomain(Domain* domain, const ID& node_ids)
+    virtual void setDomain(Domain* domain, const ID& node_ids, bool initialized)
     {
         // call base class setDomain to
         // get nodes and save initial displacements and rotations
-        ASDShellQ4Transformation::setDomain(domain, node_ids);
+        ASDShellQ4Transformation::setDomain(domain, node_ids, initialized);
+
+        // quick return
+        if (domain == nullptr || initialized)
+            return;
 
         // init state variables
         revertToStart();
