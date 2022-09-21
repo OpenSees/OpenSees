@@ -35,16 +35,16 @@ LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_) : EvolvingVariabl
 LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_, double k0) : EvolvingVariable(k0), H(H_)
 {}
 
-const double& LinearHardeningScalar_EV::getDerivative(const DTensor2 &depsilon,
-        const DTensor2 &m,
-        const DTensor2& stress) const
+const double& LinearHardeningScalar_EV::getDerivative(const VoightTensor6 &depsilon,
+        const VoightTensor6 &m,
+        const VoightTensor6& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
     // Clear the static variables
     derivative = 0;
 
     //Now compute the equivalent m
-    double m_eq = sqrt((2 * m(i, j) * m(i, j)) / 3);
+    double m_eq = sqrt((2 * m.dot(m)) / 3);
 
     //Compute the derivative.
     derivative = H * m_eq;
@@ -75,7 +75,7 @@ int LinearHardeningScalar_EV::sendSelf(int commitTag, Channel &theChannel)
 int LinearHardeningScalar_EV::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(3);
-    if (theChannel.receiveVector(0, commitTag, data) != 0)
+    if (theChannel.recvVector(0, commitTag, data) != 0)
     {
         cerr << "LinearHardeningScalar_EV::recvSelf() - Failed recieving data" << endl;
         return -1;
