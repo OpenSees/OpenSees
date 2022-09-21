@@ -46,8 +46,12 @@ https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
 // Here we can include all the eigen components we need
 #include "Eigen/Dense"
 
+namespace EigenAPI {
+
 #include "converters.h"
 #include "typedefs.h"
 #include "operations.h"
+
+}
 
 #endif // EigenAPI_h

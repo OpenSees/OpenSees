@@ -28,6 +28,7 @@
 #include "EigenAPI.h"
 
 
+typedef Eigen::Vector<double, 6> VoightTensor6;
 typedef Eigen::Vector<double, 6> StressVectorType;
 typedef Eigen::Vector<double, 6> StrainVectorType;
 

@@ -21,16 +21,17 @@
 // Jose Abell (UANDES, github.com/jaabell)
 // Massimo Petracca - ASDEA Software, Italy (2022)
 //
+#include "EigenAPI.h"
+
 #ifndef EigenAPI_operations_h
 #define EigenAPI_operations_h
 
-#include "EigenAPI.h"
 
 
-double p(const StressVectorType &sigma)
-{
-    return (sigma(0)+sigma(1)+sigma(2))/3;
-}
+// double p(const StressVectorType &sigma)
+// {
+//     return (sigma(0)+sigma(1)+sigma(2))/3;
+// }
 
 #endif // EigenAPI_operations_h
 
