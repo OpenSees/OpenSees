@@ -30,7 +30,7 @@
 #define ASDPlasticMaterial_H
 
 
-#include "NDMaterialLT.h"
+#include "NDMaterial.h"
 #include <G3Globals.h>
 #include <iostream>
 #include "../../ltensor/LTensor.h"
@@ -226,7 +226,7 @@ C++ "Rule of 5"
 
 
 template < class ElasticityType, class YieldFunctionType, class PlasticFlowType, class MaterialInternalVariablesType, int thisClassTag, class T >
-class ASDPlasticMaterial : public NDMaterialLT
+class ASDPlasticMaterial : public NDMaterial
 {
 
 public:
@@ -239,8 +239,8 @@ public:
 //Empty constructor is needed for parallel, sets all the pointers to zero. Resources will be
 //    allocated later
 // ASDPlasticMaterial( )
-//     : NDMaterialLT(0, thisClassTag),
-//       NDMaterialLT(tag, thisClassTag),
+//     : NDMaterial(0, thisClassTag),
+//       NDMaterial(tag, thisClassTag),
 //       TrialStress(3, 3, 0.0),
 //       TrialStrain(3, 3, 0.0),
 //       TrialPlastic_Strain(3, 3, 0.0),
@@ -270,7 +270,7 @@ public:
                                  const PlasticFlowType& pf_in,
                                  const MaterialInternalVariablesType& internal_variables_in
                                 )
-        : NDMaterialLT(tag, thisClassTag),
+        : NDMaterial(tag, thisClassTag),
           rho(rho_),
           TrialStrain(3, 3, 0.0),
           TrialStress(3, 3, 0.0),
@@ -406,35 +406,35 @@ public:
 
         switch (this->constitutive_integration_method)
         {
-        case NDMaterialLT_Constitutive_Integration_Method::Not_Set :
+        case NDMaterial_Constitutive_Integration_Method::Not_Set :
             exitflag = -1;
             cerr << "CEP::setTrialStrainIncr - Integration method not set!\n" ;
             break;
-        case NDMaterialLT_Constitutive_Integration_Method::Forward_Euler :
+        case NDMaterial_Constitutive_Integration_Method::Forward_Euler :
             exitflag = this->Forward_Euler(strain_increment);
             break;
-        case NDMaterialLT_Constitutive_Integration_Method::Forward_Euler_Subincrement :
+        case NDMaterial_Constitutive_Integration_Method::Forward_Euler_Subincrement :
             exitflag = this->Forward_Euler_Subincrement(strain_increment);
             break;
-        case NDMaterialLT_Constitutive_Integration_Method::Backward_Euler :
+        case NDMaterial_Constitutive_Integration_Method::Backward_Euler :
             exitflag = this->Backward_Euler(strain_increment);;
             break;
-        case NDMaterialLT_Constitutive_Integration_Method::Backward_Euler_ddlambda :
+        case NDMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda :
             exitflag = this->Backward_Euler_ddlambda(strain_increment);;
             break;
-        case NDMaterialLT_Constitutive_Integration_Method::Backward_Euler_ddlambda_Subincrement :
+        case NDMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda_Subincrement :
             exitflag = this->Backward_Euler_ddlambda_Subincrement(strain_increment);;
             break;
-        // case NDMaterialLT_Constitutive_Integration_Method::Forward_Euler_Crisfield :
+        // case NDMaterial_Constitutive_Integration_Method::Forward_Euler_Crisfield :
         //     exitflag = this->Forward_Euler(strain_increment, true);
         //     break;
-        // case NDMaterialLT_Constitutive_Integration_Method::Multistep_Forward_Euler_Crisfield :
+        // case NDMaterial_Constitutive_Integration_Method::Multistep_Forward_Euler_Crisfield :
         //     exitflag = this->Multistep_Forward_Euler(strain_increment, true);
         //     break;
-        // case NDMaterialLT_Constitutive_Integration_Method::Modified_Euler_Error_Control :
+        // case NDMaterial_Constitutive_Integration_Method::Modified_Euler_Error_Control :
         //     exitflag = this->Modified_Euler_Error_Control(strain_increment);
         //     break;
-        // case NDMaterialLT_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control :
+        // case NDMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control :
         //     // exitflag = this->Runge_Kutta_45_Error_Control(strain_increment);;
         //     break;
         default:
@@ -561,7 +561,7 @@ public:
         return 0;
     }
 
-    NDMaterialLT *getCopy(void)
+    NDMaterial *getCopy(void)
     {
         ASDPlasticMaterial< ElasticityType,
                                       YieldFunctionType,
@@ -580,7 +580,7 @@ public:
         return newmaterial;
     }
 
-    // NDMaterialLT *getCopy(const char *code);
+    // NDMaterial *getCopy(const char *code);
     // const char *getType(void) const;
 
     int sendSelf(int commitTag, Channel &theChannel)
@@ -627,10 +627,10 @@ public:
                 data(pos++) = CommitPlastic_Strain(i, j);
             }
 
-        data(pos++)  = NDMaterialLT::f_relative_tol        ;
-        data(pos++)  = NDMaterialLT::stress_relative_tol   ;
-        data(pos++)  = NDMaterialLT::n_max_iterations      ;
-        data(pos++)  = (double) NDMaterialLT::constitutive_integration_method ;
+        data(pos++)  = NDMaterial::f_relative_tol        ;
+        data(pos++)  = NDMaterial::stress_relative_tol   ;
+        data(pos++)  = NDMaterial::n_max_iterations      ;
+        data(pos++)  = (double) NDMaterial::constitutive_integration_method ;
 
 
 
@@ -711,10 +711,10 @@ public:
                 CommitPlastic_Strain(i, j) = data(pos++);
             }
 
-        NDMaterialLT::f_relative_tol         = data(pos++) ;
-        NDMaterialLT::stress_relative_tol    = data(pos++) ;
-        NDMaterialLT::n_max_iterations       = data(pos++) ;
-        NDMaterialLT::constitutive_integration_method       = (NDMaterialLT_Constitutive_Integration_Method) data(pos++) ;
+        NDMaterial::f_relative_tol         = data(pos++) ;
+        NDMaterial::stress_relative_tol    = data(pos++) ;
+        NDMaterial::n_max_iterations       = data(pos++) ;
+        NDMaterial::constitutive_integration_method       = (NDMaterial_Constitutive_Integration_Method) data(pos++) ;
 
 
 
@@ -764,7 +764,7 @@ public:
         size += sizeof(et);//et->getObjectSize();
         size += sizeof(pf);//pf->getObjectSize();
         size += sizeof(internal_variables);//internal_variables->getObjectSize();
-        size += sizeof(NDMaterialLT);
+        size += sizeof(NDMaterial);
 
         // size += static_cast<T*>(this)->getObjectSize();
 

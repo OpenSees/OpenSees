@@ -25,7 +25,7 @@
 // Fully general templated material class for plasticity modeling
 
 #include "CamClayLT.h"
-#include "NDMaterialLT.h"
+#include "NDMaterial.h"
 #include <iostream>
 #include "../../../ltensor/LTensor.h"
 #include "../ASDPlasticMaterialGlobals.h"
