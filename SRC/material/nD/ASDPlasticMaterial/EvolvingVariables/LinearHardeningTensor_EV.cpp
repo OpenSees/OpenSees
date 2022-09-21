@@ -40,7 +40,7 @@ const DTensor2& LinearHardeningTensor_EV::getDerivative(const DTensor2 &depsilon
         const DTensor2 &m,
         const DTensor2& stress) const
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     //Zero de static variable
     derivative *= 0;
 

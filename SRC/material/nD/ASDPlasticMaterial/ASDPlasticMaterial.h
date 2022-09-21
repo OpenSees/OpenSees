@@ -26,8 +26,8 @@
 
 
 
-#ifndef ClassicElastoplasticMaterial_H
-#define ClassicElastoplasticMaterial_H
+#ifndef ASDPlasticMaterial_H
+#define ASDPlasticMaterial_H
 
 
 #include "NDMaterialLT.h"
@@ -37,16 +37,16 @@
 #include <Channel.h>
 #include <limits>
 
-#include "CEPTraits.h"
+#include "ASDPlasticMaterialTraits.h"
 #include <type_traits>
 
-#include "ClassicElastoplasticityGlobals.h"
+#include "ASDPlasticMaterialGlobals.h"
 // for print p, q, theta
 #include <tuple>
 // for debugging printing
 #include <fstream>
 
-#define ClassicElastoplasticMaterial_MAXITER_BRENT 20
+#define ASDPlasticMaterial_MAXITER_BRENT 20
 #define TOLERANCE1 1e-6
 /*
 
@@ -172,7 +172,7 @@ C++ "Rule of 5"
 
 // bool inverse4thTensor(DTensor4 const& rhs, DTensor4& ret)
 // {
-//     using namespace ClassicElastoplasticityGlobals;
+//     using namespace ASDPlasticMaterialGlobals;
 //     static DTensor2 intermediate_matrix(9, 9, 0.0);
 //     intermediate_matrix *= 0;
 //     // static DTensor4 ret(3,3,3,3,0.0);
@@ -196,7 +196,7 @@ C++ "Rule of 5"
 
 //     if (det < MACHINE_EPSILON)
 //     {
-//         cout << "ClassicElastoplasticMaterial matrix T is not invertible to get the consistent stiffness tensor. Use the inconsistent stiffness instead! " << endl;
+//         cout << "ASDPlasticMaterial matrix T is not invertible to get the consistent stiffness tensor. Use the inconsistent stiffness instead! " << endl;
 //         return false;
 //     }
 //     else
@@ -226,7 +226,7 @@ C++ "Rule of 5"
 
 
 template < class ElasticityType, class YieldFunctionType, class PlasticFlowType, class MaterialInternalVariablesType, int thisClassTag, class T >
-class ClassicElastoplasticMaterial : public NDMaterialLT
+class ASDPlasticMaterial : public NDMaterialLT
 {
 
 public:
@@ -238,7 +238,7 @@ public:
 //==================================================================================================
 //Empty constructor is needed for parallel, sets all the pointers to zero. Resources will be
 //    allocated later
-// ClassicElastoplasticMaterial( )
+// ASDPlasticMaterial( )
 //     : NDMaterialLT(0, thisClassTag),
 //       NDMaterialLT(tag, thisClassTag),
 //       TrialStress(3, 3, 0.0),
@@ -262,7 +262,7 @@ public:
 //  Main constructor
 //==================================================================================================
 // Constructor... invokes copy constructor for base elastoplastic template parameters
-    ClassicElastoplasticMaterial(int tag,
+    ASDPlasticMaterial(int tag,
                                  double rho_,
                                  double p0,
                                  const YieldFunctionType& yf_in,
@@ -302,7 +302,7 @@ public:
 //==================================================================================================
 //  Destructor
 //==================================================================================================
-    ~ClassicElastoplasticMaterial(void)
+    ~ASDPlasticMaterial(void)
     {
 
     }
@@ -316,7 +316,7 @@ public:
 // Returns a null-terminated character string with the name of the class
     const char *getClassType(void) const
     {
-        std::string name("ClassicElastoplasticMaterial");
+        std::string name("ASDPlasticMaterial");
 
         return name.c_str();
     };
@@ -328,7 +328,7 @@ public:
 
     double getPressure(void)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         return -CommitStress(i, i) / 3;
     }
 
@@ -362,7 +362,7 @@ public:
     // Returns a success flag from the call to setTrialStrainIncr
     int setTrialStrain( const DTensor2 &v )
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         static DTensor2 result( 3, 3, 0.0 );
         result *= 0;
 
@@ -376,7 +376,7 @@ public:
     // Returns a flag depending on the result of the step.
     int setTrialStrainIncr( const DTensor2 &strain_increment )
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
 
         int exitflag = 0;
 
@@ -438,7 +438,7 @@ public:
         //     // exitflag = this->Runge_Kutta_45_Error_Control(strain_increment);;
         //     break;
         default:
-            cerr << "ClassicElastoplasticMaterial::setTrialStrainIncr - Integration method not available!\n" ;
+            cerr << "ASDPlasticMaterial::setTrialStrainIncr - Integration method not available!\n" ;
             exitflag = -1;
         }
 
@@ -451,7 +451,7 @@ public:
 
     const DTensor4 &getTangentTensor( void )
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
 
         // double yf_val = yf(TrialStress);
 
@@ -525,7 +525,7 @@ public:
     int commitState(void)
     {
 
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
         CommitStress(i, j) = TrialStress(i, j);
         CommitStrain(i, j) = TrialStrain(i, j);
@@ -544,7 +544,7 @@ public:
     //Reverts the commited variables to the trials and calls revert on BET Classes.
     int revertToLastCommit(void)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
         TrialStress(i, j) = CommitStress(i, j);
         TrialStrain(i, j) = CommitStrain(i, j);
@@ -563,7 +563,7 @@ public:
 
     NDMaterialLT *getCopy(void)
     {
-        ClassicElastoplasticMaterial< ElasticityType,
+        ASDPlasticMaterial< ElasticityType,
                                       YieldFunctionType,
                                       PlasticFlowType,
                                       MaterialInternalVariablesType,
@@ -639,7 +639,7 @@ public:
         // cout << "Sending data" << endl;
         if (theChannel.sendVector(0, commitTag, data) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::sendSelf() - Failed sending data" << endl;
+            cerr << "ASDPlasticMaterial::sendSelf() - Failed sending data" << endl;
             return -1;
         }
 
@@ -647,7 +647,7 @@ public:
         // ElasticityType    et;
         if (et.sendSelf(commitTag, theChannel) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::sendSelf() - Failed sending elasticity data" << endl;
+            cerr << "ASDPlasticMaterial::sendSelf() - Failed sending elasticity data" << endl;
             return -1;
         }
 
@@ -655,7 +655,7 @@ public:
         // MaterialInternalVariablesType internal_variables;
         if (internal_variables.sendSelf(commitTag, theChannel) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::sendSelf() - Failed sending internal variables data" << endl;
+            cerr << "ASDPlasticMaterial::sendSelf() - Failed sending internal variables data" << endl;
             return -1;
         }
 
@@ -667,7 +667,7 @@ public:
         static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
         if (theChannel.receiveVector(0, commitTag, data) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::receiveSelf() - Failed receiving data" << endl;
+            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving data" << endl;
             return -1;
         }
 
@@ -722,14 +722,14 @@ public:
         // ElasticityType    et;
         if (et.receiveSelf(commitTag, theChannel, theBroker) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::receiveSelf() - Failed receiving elasticity data" << endl;
+            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving elasticity data" << endl;
             return -1;
         }
         // cout << "Receiving variables" << endl;
         // MaterialInternalVariablesType internal_variables;
         if (internal_variables.receiveSelf(commitTag, theChannel, theBroker) != 0)
         {
-            cerr << "ClassicElastoplasticMaterial::receiveSelf() - Failed receiving internal variables data" << endl;
+            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving internal variables data" << endl;
             return -1;
         }
 
@@ -737,7 +737,7 @@ public:
     }
     void Print(ostream &s, int flag = 0)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         static DTensor2 zeroTensor(3, 3, 0);
         s << "TrialStress =  " <<  TrialStress << endl;
         s << "CommitStress = " <<  CommitStress << endl;
@@ -773,7 +773,7 @@ public:
 
     void setTrialStress(const DTensor2& stress)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         TrialStress(i, j) = stress(i, j);
     }
 
@@ -781,38 +781,38 @@ protected:
 
     void setTrialPlastic_Strain(const DTensor2& strain)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         TrialPlastic_Strain(i, j) = strain(i, j);
     }
 
     void setCommitStress(const DTensor2& stress)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         CommitStress(i, j) = stress(i, j);
     }
 
     void setCommitStrain(const DTensor2& strain)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         CommitStrain(i, j) = strain(i, j);
     }
 
     void setCommitPlastic_Strain(const DTensor2& strain)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         CommitPlastic_Strain(i, j) = strain(i, j);
     }
 
     void setStiffness(const DTensor4& stiff)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         Stiffness = stiff;
     }
 
 
     void setStressTensor(DTensor2 &stress)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         CommitStress(i, j) = stress(i, j);
         TrialStress(i, j) = stress(i, j);
         return;
@@ -824,7 +824,7 @@ private:
     // int Forward_Euler(const DTensor2 &strain_incr, bool const& with`_return2yield_surface)
     int Forward_Euler(const DTensor2 &strain_incr)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         // ----------------------------------------------------------------
         // Print p, q, theta for debug--------------------------------------
         // ----------------------------------------------------------------
@@ -1026,7 +1026,7 @@ private:
     // int Forward_Euler_Subincrement(const DTensor2 &strain_incr, bool const& with_return2yield_surface)
     int Forward_Euler_Subincrement(const DTensor2 &strain_incr)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
         static DTensor2 depsilon(3, 3, 0);
@@ -1244,7 +1244,7 @@ private:
 
     int Backward_Euler(const DTensor2 &strain_incr, bool debugrun = false, int NSteps = 1)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
         // // =====Sub-increments =====
         // // Problem is in the stiffness
@@ -1561,7 +1561,7 @@ private:
 
     int Backward_Euler_ddlambda(const DTensor2 &strain_incr, bool debugrun = false)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
         internal_variables.revert();
@@ -1926,7 +1926,7 @@ private:
 
     int Backward_Euler_ddlambda_Subincrement(const DTensor2 &strain_incr, bool debugrun = false)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
         internal_variables.revert();
@@ -2288,7 +2288,7 @@ private:
     // The algorithm below Modified_Euler_Error_Control was implemented by Jose. 18Sep2016
     int Modified_Euler_Error_Control(const DTensor2 &strain_incr)
     {
-        using namespace ClassicElastoplasticityGlobals;  // Brings indexes i,j,k,l,m,n,p,q into current scope
+        using namespace ASDPlasticMaterialGlobals;  // Brings indexes i,j,k,l,m,n,p,q into current scope
 
         int errorcode = 0;
 
@@ -2502,7 +2502,7 @@ private:
                 count += 1;
                 if (count > this-> n_max_iterations)
                 {
-                    cerr << "ClassicElastoplasticMaterial -- Modified euler failed to converge after " << count << " iterations with : \n"
+                    cerr << "ASDPlasticMaterial -- Modified euler failed to converge after " << count << " iterations with : \n"
                          << "  Relative_Error = " << Relative_Error  << endl
                          << "  Relative Tolerance = " << this-> stress_relative_tol  << endl
                          << "  q = " << q  << endl
@@ -2607,7 +2607,7 @@ private:
                         const DTensor2& end_stress,
                         double x1, double x2, double tol) const
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         double EPS = numeric_limits<double>::epsilon();
 
         int iter;
@@ -2649,7 +2649,7 @@ private:
 
         fc = fb;
 
-        for ( iter = 1; iter <= ClassicElastoplasticMaterial_MAXITER_BRENT; iter++ )
+        for ( iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++ )
         {
             if ( (fb * fc) > 0.0)
             {
@@ -2781,18 +2781,18 @@ private:
 
 };
 
-// int ClassicElastoplasticMaterial< class ElasticityType, class YieldFunctionType, , class PlasticFlowType, class HardeningLawType, int thisClassTag >::constitutive_integration_method = 0;
+// int ASDPlasticMaterial< class ElasticityType, class YieldFunctionType, , class PlasticFlowType, class HardeningLawType, int thisClassTag >::constitutive_integration_method = 0;
 
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ClassicElastoplasticMaterial< E,  Y,  P,  M,  tag,  T >::dsigma(3, 3, 0.0);
+DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::dsigma(3, 3, 0.0);
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ClassicElastoplasticMaterial< E,  Y,  P,  M,  tag,  T >::depsilon_elpl(3, 3, 0.0);  //Used to compute the yield surface intersection.
+DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::depsilon_elpl(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ClassicElastoplasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_stress(3, 3, 0.0);  //Used to compute the yield surface intersection.
+DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_stress(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ClassicElastoplasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_strain(3, 3, 0.0);  //Used to compute the yield surface intersection.
+DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_strain(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor4 ClassicElastoplasticMaterial< E,  Y,  P,  M,  tag,  T >::Stiffness(3, 3, 3, 3, 0.0);  //Used to compute the yield surface intersection.
+DTensor4 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::Stiffness(3, 3, 3, 3, 0.0);  //Used to compute the yield surface intersection.
 
 
 #endif

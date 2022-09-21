@@ -28,7 +28,7 @@
 
 //First constructor, creates a material at its "ground state" from its parameters.
 DruckerPragerArmstrongFrederickNE::DruckerPragerArmstrongFrederickNE(int tag_in, double k0_in, double ha_alpha, double cr_alpha, double H_k, double K_in, double pa_in, double n_in, double sigma3_max_in, double nu_in, double rho_, double p0) :
-    DPAFNEBase::ClassicElastoplasticMaterial(tag_in, rho_, p0,
+    DPAFNEBase::ASDPlasticMaterial(tag_in, rho_, p0,
             DPAFNE_YFType(alpha, k),       // Point YF to internal variables
             DuncanChang_EL(K_in, pa_in, n_in, nu_in, sigma3_max_in), // Create Elasticity
             DPAFNE_PFType(alpha, k),       // Point PF to the internal variables
@@ -46,7 +46,7 @@ DruckerPragerArmstrongFrederickNE::DruckerPragerArmstrongFrederickNE(int tag_in,
         DuncanChang_EL &el,
         DPAFNE_PFType &pf,
         DPAFNEVarsType &vars) :
-    DPAFNEBase::ClassicElastoplasticMaterial(tag_in, this->getRho(),
+    DPAFNEBase::ASDPlasticMaterial(tag_in, this->getRho(),
             p0,     //Sets p0
             DPAFNE_YFType(alpha, k),    // Point YF to new internal variables
             DuncanChang_EL(el), // Create Elasticity -- use copy constructor here
@@ -59,7 +59,7 @@ DruckerPragerArmstrongFrederickNE::DruckerPragerArmstrongFrederickNE(int tag_in,
 }
 
 DruckerPragerArmstrongFrederickNE::DruckerPragerArmstrongFrederickNE() :
-    DPAFNEBase::ClassicElastoplasticMaterial(0, 0, 0,
+    DPAFNEBase::ASDPlasticMaterial(0, 0, 0,
             DPAFNE_YFType(alpha, k),       // Point YF to internal variables
             DuncanChang_EL(0, 0, 0, 0, 0), // Create Elasticity
             DPAFNE_PFType(alpha, k),       // Point PF to the internal variables
@@ -80,7 +80,7 @@ int DruckerPragerArmstrongFrederickNE::pre_integration_callback(const DTensor2 &
         double yf2,
         bool & returns)
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     static DTensor2 stress(3, 3, 0);
     static DTensor2 plasticstrain(3, 3, 0);
     static DTensor4 stiff(3, 3, 3, 3, 0);

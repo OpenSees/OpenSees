@@ -30,7 +30,7 @@
 #include "../../ltensor/LTensor.h"
 #include <Channel.h>
 #include <iostream>
-#include "CEPTraits.h"
+#include "ASDPlasticMaterialTraits.h"
 using namespace std;
 
 //Forward declaration needed for declaring the operator overload << (friend)

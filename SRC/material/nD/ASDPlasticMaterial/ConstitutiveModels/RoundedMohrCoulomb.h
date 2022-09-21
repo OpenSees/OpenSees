@@ -25,8 +25,8 @@
 // Fully general templated material class for plasticity modeling
 
 
-#include "../ClassicElastoplasticityGlobals.h"
-#include "../ClassicElastoplasticMaterial.h"
+#include "../ASDPlasticMaterialGlobals.h"
+#include "../ASDPlasticMaterial.h"
 #include "../MaterialInternalVariables.h"
 
 //Yield Functions
@@ -56,7 +56,7 @@ typedef RoundedMohrCoulomb_YF <  LinearHardeningScalar_EV> RMC_YFType;
 typedef VonMises_PF < LinearHardeningTensor_EV, LinearHardeningScalar_EV> RMC_PFType;
 
 //Create a helpful typedef for the base class from which we will inherit to create the n
-typedef ClassicElastoplasticMaterial <LinearIsotropic3D_EL,
+typedef ASDPlasticMaterial <LinearIsotropic3D_EL,
         RMC_YFType,
         RMC_PFType,
         RMCVarsType,

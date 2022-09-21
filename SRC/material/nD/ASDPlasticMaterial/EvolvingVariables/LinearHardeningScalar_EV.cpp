@@ -39,7 +39,7 @@ const double& LinearHardeningScalar_EV::getDerivative(const DTensor2 &depsilon,
         const DTensor2 &m,
         const DTensor2& stress) const
 {
-    using namespace ClassicElastoplasticityGlobals;
+    using namespace ASDPlasticMaterialGlobals;
     // Clear the static variables
     derivative = 0;
 

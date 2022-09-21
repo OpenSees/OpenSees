@@ -34,8 +34,8 @@
 #include <iostream>
 
 // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
-#include "../ClassicElastoplasticityGlobals.h"
-using namespace ClassicElastoplasticityGlobals;
+#include "../ASDPlasticMaterialGlobals.h"
+using namespace ASDPlasticMaterialGlobals;
 
 
 
@@ -157,7 +157,7 @@ public:
     }
     bool in_Apex(DTensor2 const& TrialStress)
     {
-        using namespace ClassicElastoplasticityGlobals;
+        using namespace ASDPlasticMaterialGlobals;
         double I1 = TrialStress(i, i);
         double sigma_m  = I1 / 3.0;
         double DP_p = -sigma_m;
@@ -174,7 +174,7 @@ public:
 
         if (DP_k < MACHINE_EPSILON)
         {
-            cout << "DP_k (denominator) = 0! Error in ClassicElastoplasticMaterial-->requires_DruckerPrager_Apex_Tension_check_\n ";
+            cout << "DP_k (denominator) = 0! Error in ASDPlasticMaterial-->requires_DruckerPrager_Apex_Tension_check_\n ";
         }
 
         // In this range (condition 1 && 2), DP stress state cannot be returned correctly.

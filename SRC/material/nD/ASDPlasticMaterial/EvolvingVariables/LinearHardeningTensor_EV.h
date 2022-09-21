@@ -29,7 +29,7 @@
 #define LinearHardeningTensor_EV_H
 
 #include "../EvolvingVariable.h"
-#include "../ClassicElastoplasticityGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
+#include "../ASDPlasticMaterialGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 
 
 

@@ -25,8 +25,8 @@
 // Fully general templated material class for plasticity modeling
 
 
-#include "../ClassicElastoplasticityGlobals.h"
-#include "../ClassicElastoplasticMaterial.h"
+#include "../ASDPlasticMaterialGlobals.h"
+#include "../ASDPlasticMaterial.h"
 #include "../MaterialInternalVariables.h"
 
 //Yield Functions
@@ -45,7 +45,7 @@
 
 
 #include <classTags.h>
-// New materials are created by subclassing instances of the ClassicElastoplasticMaterial<.,.,.,.,>
+// New materials are created by subclassing instances of the ASDPlasticMaterial<.,.,.,.,>
 // template class, with the appropriate components as template parameters.
 // Heavy use of templating is made, therefore typedeffing is a friend in helping clear up the mess.
 
@@ -58,7 +58,7 @@ typedef VonMises_YF < ArmstrongFrederickTensor_EV, LinearHardeningScalar_EV> VMA
 typedef VonMises_PF < ArmstrongFrederickTensor_EV, LinearHardeningScalar_EV> VMAF_PFType;
 
 //Create a helpful typedef for the base class from which we will inherit to create the new material.
-typedef ClassicElastoplasticMaterial <LinearIsotropic3D_EL,
+typedef ASDPlasticMaterial <LinearIsotropic3D_EL,
         VMAF_YFType,
         VMAF_PFType,
         VMAFVarsType,

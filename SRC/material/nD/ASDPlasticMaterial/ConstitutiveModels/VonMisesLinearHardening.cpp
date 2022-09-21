@@ -28,10 +28,10 @@
 #include "NDMaterialLT.h"
 #include <iostream>
 #include "../../../ltensor/LTensor.h"
-#include "../ClassicElastoplasticityGlobals.h"
+#include "../ASDPlasticMaterialGlobals.h"
 //First constructor, creates a material at its "ground state" from its parameters.
 VonMisesLinearHardening::VonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_) :
-    VMLHBase::ClassicElastoplasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
+    VMLHBase::ASDPlasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
                                            VMLH_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(E, nu), // Create Elasticity
                                            VMLH_PFType(alpha, k),       // Point PF to the internal variables
@@ -58,7 +58,7 @@ VonMisesLinearHardening::VonMisesLinearHardening(int tag_in, double p0, double r
         LinearIsotropic3D_EL &el,
         VMLH_PFType &pf,
         VMLHVarsType &vars) :
-    VMLHBase::ClassicElastoplasticMaterial(tag_in, this->getRho(), p0, // Initial confinement can be 0 for this model
+    VMLHBase::ASDPlasticMaterial(tag_in, this->getRho(), p0, // Initial confinement can be 0 for this model
                                            VMLH_YFType(alpha, k),     // Point YF to new internal variables
                                            LinearIsotropic3D_EL(el),  // Create Elasticity -- use copy constructor here
                                            VMLH_PFType(alpha, k),     // Point PF to the internal variables
@@ -69,7 +69,7 @@ VonMisesLinearHardening::VonMisesLinearHardening(int tag_in, double p0, double r
 }
 
 VonMisesLinearHardening::VonMisesLinearHardening() :
-    VMLHBase::ClassicElastoplasticMaterial(0, 0, 0.0, //Initial confinement can be 0 for this model
+    VMLHBase::ASDPlasticMaterial(0, 0, 0.0, //Initial confinement can be 0 for this model
                                            VMLH_YFType(alpha, k),       // Point YF to internal variables
                                            LinearIsotropic3D_EL(0, 0),  // Create Elasticity
                                            VMLH_PFType(alpha, k),       // Point PF to the internal variables
