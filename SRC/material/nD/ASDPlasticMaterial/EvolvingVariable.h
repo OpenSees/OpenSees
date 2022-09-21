@@ -169,9 +169,9 @@ public:
         return static_cast<T*>(this)->sendSelf(commitTag, theChannel);
     }
 
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
-        return static_cast<T*>(this)->receiveSelf(commitTag, theChannel, theBroker);
+        return static_cast<T*>(this)->recvSelf(commitTag, theChannel, theBroker);
     }
 
     // ///////////////////////////////////////////////////////////////////////////////////

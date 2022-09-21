@@ -114,12 +114,12 @@ int ArmstrongFrederickTensor_EV::sendSelf(int commitTag, Channel &theChannel)
     return 0;
 }
 
-int ArmstrongFrederickTensor_EV::receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int ArmstrongFrederickTensor_EV::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(9 + 9 + 2);
     if (theChannel.receiveVector(0, commitTag, data) != 0)
     {
-        cerr << "ArmstrongFrederickTensor_EV::receiveSelf() - Failed recieving data" << endl;
+        cerr << "ArmstrongFrederickTensor_EV::recvSelf() - Failed recieving data" << endl;
         return -1;
     }
 

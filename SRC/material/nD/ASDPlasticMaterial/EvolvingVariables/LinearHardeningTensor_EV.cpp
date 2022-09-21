@@ -80,12 +80,12 @@ int LinearHardeningTensor_EV::sendSelf(int commitTag, Channel &theChannel)
     return 0;
 }
 
-int LinearHardeningTensor_EV::receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int LinearHardeningTensor_EV::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(9 + 9 + 1);
     if (theChannel.receiveVector(0, commitTag, data) != 0)
     {
-        cerr << "LinearHardeningTensor_EV::receiveSelf() - Failed recieving data" << endl;
+        cerr << "LinearHardeningTensor_EV::recvSelf() - Failed recieving data" << endl;
         return -1;
     }
 

@@ -44,7 +44,7 @@ public:
                                 const DTensor2& stress) const;
     // double const& getHardeningType() const;
     int sendSelf(int commitTag, Channel &theChannel);
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
 
 private:

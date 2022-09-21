@@ -82,13 +82,13 @@ int LinearIsotropic3D_EL::sendSelf(int commitTag, Channel &theChannel)
     return 0;
 }
 
-int LinearIsotropic3D_EL::receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int LinearIsotropic3D_EL::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(2);
 
     if (theChannel.receiveVector(0, commitTag, data) != 0)
     {
-        cerr << "LinearIsotropic3D_EL::receiveSelf() - Failed to receive data. " << endl;
+        cerr << "LinearIsotropic3D_EL::recvSelf() - Failed to receive data. " << endl;
         return -1;
     }
 

@@ -661,13 +661,13 @@ public:
 
         return 0;
     }
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
         // cout << "Receiving data" << endl;
         static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
         if (theChannel.receiveVector(0, commitTag, data) != 0)
         {
-            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving data" << endl;
+            cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving data" << endl;
             return -1;
         }
 
@@ -720,16 +720,16 @@ public:
 
         // cout << "Receiving elasticity" << endl;
         // ElasticityType    et;
-        if (et.receiveSelf(commitTag, theChannel, theBroker) != 0)
+        if (et.recvSelf(commitTag, theChannel, theBroker) != 0)
         {
-            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving elasticity data" << endl;
+            cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving elasticity data" << endl;
             return -1;
         }
         // cout << "Receiving variables" << endl;
         // MaterialInternalVariablesType internal_variables;
-        if (internal_variables.receiveSelf(commitTag, theChannel, theBroker) != 0)
+        if (internal_variables.recvSelf(commitTag, theChannel, theBroker) != 0)
         {
-            cerr << "ASDPlasticMaterial::receiveSelf() - Failed receiving internal variables data" << endl;
+            cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving internal variables data" << endl;
             return -1;
         }
 
