@@ -86,7 +86,7 @@ void* OPS_PlateFromPlaneStressMaterial()
 //null constructor
 PlateFromPlaneStressMaterial::PlateFromPlaneStressMaterial( ) : 
 NDMaterial(0, ND_TAG_PlateFromPlaneStressMaterial ), 
-strain(5) 
+theMat(nullptr), strain(5), gmod(0.0)
 { }
 
 
