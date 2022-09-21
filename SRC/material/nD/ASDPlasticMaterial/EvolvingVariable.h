@@ -27,11 +27,14 @@
 #ifndef EvolvingVariable_H
 #define EvolvingVariable_H
 
-#include "../../ltensor/LTensor.h"
+#include "EigenAPI.h"
 #include <Channel.h>
 #include <iostream>
 #include "ASDPlasticMaterialTraits.h"
 using namespace std;
+
+using EigenAPI::VoightTensor6;
+
 
 //Forward declaration needed for declaring the operator overload << (friend)
 template<class VarType, class T>
@@ -55,9 +58,9 @@ public:
         // cout << "EvolvingVariable::EvolvingVariable(a) a_committed = " << a_committed << endl;
     }
 
-    const VarType &getDerivative(const DTensor2 &depsilon,
-                                 const DTensor2 &m,
-                                 const DTensor2& sigma) const
+    const VarType &getDerivative(const VoightTensor6 &depsilon,
+                                 const VoightTensor6 &m,
+                                 const VoightTensor6& sigma) const
     {
         return static_cast<const T*>(this)->getDerivative(depsilon,  m,  sigma);
     };
@@ -79,9 +82,9 @@ public:
     template <typename U = T>
     typename std::enable_if < !evolving_variable_implements_custom_evolve_function<U>::value, void >::type
     evolve(double dlambda,
-           const DTensor2& depsilon,
-           const DTensor2& m,
-           const DTensor2& sigma)
+           const VoightTensor6& depsilon,
+           const VoightTensor6& m,
+           const VoightTensor6& sigma)
     {
         const VarType& h = getDerivative(depsilon, m, sigma);
         static VarType aux(a);
@@ -93,9 +96,9 @@ public:
     template <typename U = T>
     typename std::enable_if < evolving_variable_implements_custom_evolve_function<U>::value, void >::type
     evolve(double dlambda,
-           const DTensor2& depsilon,
-           const DTensor2& m,
-           const DTensor2& sigma)
+           const VoightTensor6& depsilon,
+           const VoightTensor6& m,
+           const VoightTensor6& sigma)
     {
         static_cast<U*>(this)->evolve(dlambda, depsilon, m, sigma);
     }
@@ -181,11 +184,11 @@ public:
     // //////////////////////////////////////////////////////////////////////////////////
     template <typename U = T>
     typename std::enable_if < !requires_hardening_saturation_limit_check<U>::requires >::type
-    check_hardening_saturation_limit_(VarType& a, DTensor2 const& plasticFlow_m) {}
+    check_hardening_saturation_limit_(VarType& a, VoightTensor6 const& plasticFlow_m) {}
 
     template <typename U = T>
     typename std::enable_if<requires_hardening_saturation_limit_check<U>::requires>::type
-    check_hardening_saturation_limit_(VarType& a, DTensor2 const& plasticFlow_m)
+    check_hardening_saturation_limit_(VarType& a, VoightTensor6 const& plasticFlow_m)
     {
         static_cast<U*>(this)->check_hardening_saturation_limit(a, plasticFlow_m);
     }
@@ -213,4 +216,4 @@ std::ostream& operator<<(std::ostream& os, const EvolvingVariable<VarType, T>& o
 // template<class VarType, class T>
 // VarType EvolvingVariable<VarType, T>::a_tmp;
 
-#endif
+#endif //EvolvingVariable_H
