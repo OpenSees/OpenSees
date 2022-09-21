@@ -361,7 +361,7 @@ PlaneStrainMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
   theMaterial->setDbTag(idData(2));
 
   // recv a vector containing strains and set the strains
-  static Vector vecData(9);
+  static Vector vecData(3);
   res = theChannel.recvVector(this->getDbTag(), commitTag, vecData);
   if (res < 0) {
       opserr << "PlaneStrainMaterial::recvSelf() - failed to recv vector data\n";
