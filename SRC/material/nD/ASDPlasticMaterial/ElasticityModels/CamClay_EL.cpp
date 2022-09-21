@@ -92,13 +92,13 @@ int CamClay_EL::sendSelf(int commitTag, Channel &theChannel)
     return 0;
 }
 
-int CamClay_EL::receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int CamClay_EL::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(3);
 
     if (theChannel.receiveVector(0, commitTag, data) != 0)
     {
-        cerr << "CamClay_EL::receiveSelf() - Failed to receive data. " << endl;
+        cerr << "CamClay_EL::recvSelf() - Failed to receive data. " << endl;
         return -1;
     }
 

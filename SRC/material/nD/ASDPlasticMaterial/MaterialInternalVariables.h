@@ -51,7 +51,7 @@ template <class... Qs> struct MaterialInternalVariables
         return 0;
     }
 
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
         return 0;
     }
@@ -94,10 +94,10 @@ struct MaterialInternalVariables<Q, Qs...> : MaterialInternalVariables<Qs...>
         return 0;
     }
 
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
-        q_i.receiveSelf(commitTag, theChannel, theBroker);
-        static_cast<MaterialInternalVariables<Qs...>*>(this)->receiveSelf(commitTag, theChannel, theBroker);
+        q_i.recvSelf(commitTag, theChannel, theBroker);
+        static_cast<MaterialInternalVariables<Qs...>*>(this)->recvSelf(commitTag, theChannel, theBroker);
         return 0;
     }
 

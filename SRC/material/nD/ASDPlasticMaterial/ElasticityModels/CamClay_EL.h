@@ -42,7 +42,7 @@ public:
     DTensor4& operator()(const DTensor2& stress); //See note on base class
 
     int sendSelf(int commitTag, Channel &theChannel);
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
 private:
 

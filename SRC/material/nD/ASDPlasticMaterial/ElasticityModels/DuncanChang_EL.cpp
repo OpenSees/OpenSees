@@ -100,13 +100,13 @@ int DuncanChang_EL::sendSelf(int commitTag, Channel &theChannel)
     return 0;
 }
 
-int DuncanChang_EL::receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int DuncanChang_EL::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(4);
 
     if (theChannel.receiveVector(0, commitTag, data) != 0)
     {
-        cerr << "DuncanChang_EL::receiveSelf() - Failed to receive data. " << endl;
+        cerr << "DuncanChang_EL::recvSelf() - Failed to receive data. " << endl;
         return -1;
     }
 

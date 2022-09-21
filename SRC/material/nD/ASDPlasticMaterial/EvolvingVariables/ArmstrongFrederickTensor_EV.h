@@ -50,7 +50,7 @@ public:
                                   const DTensor2& stress) const;
     void check_hardening_saturation_limit(DTensor2& backstress, DTensor2 const& plasticFlow_m );
     int sendSelf(int commitTag, Channel &theChannel);
-    int receiveSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
 private:
     double ha, cr;
