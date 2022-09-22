@@ -148,7 +148,7 @@ ID      LayeredShellFiberSection::array(8) ;
 //null constructor
 LayeredShellFiberSection::LayeredShellFiberSection( ) : 
 SectionForceDeformation( 0, SEC_TAG_LayeredShellFiberSection ), 
-strainResultant(8), nLayers(0)
+nLayers(0), sg(nullptr), wg(nullptr), h(0.0), theFibers(nullptr), strainResultant(8)
 {
 
 }
@@ -195,8 +195,8 @@ strainResultant(8)
 LayeredShellFiberSection::~LayeredShellFiberSection( ) 
 { 
   int i ;
-  if (sg != 0) delete sg;
-  if (wg != 0) delete wg;
+  if (sg != 0) delete [] sg;
+  if (wg != 0) delete [] wg;
   if (theFibers != 0)
   {
     for ( i = 0; i < nLayers; i++ )
@@ -695,7 +695,7 @@ LayeredShellFiberSection::sendSelf(int commitTag, Channel &theChannel)
 
   res += theChannel.sendID(dataTag, commitTag, iData);
   if (res < 0) {
-    opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send data" << endln;
+    opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send ID data" << endln;
     return res;
   }
   
@@ -710,7 +710,7 @@ LayeredShellFiberSection::sendSelf(int commitTag, Channel &theChannel)
     vecData(2*nLayers) = h;
     res += theChannel.sendVector(dataTag, commitTag, vecData);
     if (res < 0) {
-      opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send data" << endln;
+      opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
       return res;
     }
     
@@ -760,7 +760,7 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   res += theChannel.recvID(dataTag, commitTag, iData);
 
   if (res < 0) {
-    opserr << "WARNING LayeredShellFiberSection::recvSelf() - " << this->getTag() << " failed to receive data" << endln;
+    opserr << "WARNING LayeredShellFiberSection::recvSelf() - " << this->getTag() << " failed to receive ID data" << endln;
    return res;
   } 
 
@@ -770,9 +770,9 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   if (nLayers != iData(1))
   {
     nLayers = iData(1);
-    if (sg != 0) delete sg;
+    if (sg != 0) delete [] sg;
     sg = new double[nLayers];
-    if (wg != 0) delete sg;
+    if (wg != 0) delete [] wg;
     wg = new double[nLayers];
     if (theFibers !=0)
     {
@@ -783,6 +783,8 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
       delete [] theFibers;
     }
     theFibers = new NDMaterial*[nLayers];
+    for (i = 0; i < nLayers; ++i)
+        theFibers[i] = nullptr;
   }
 
   if (nLayers > 0)
@@ -809,10 +811,10 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
       int matClassTag = idData(i);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
-      if (theFibers[i]->getClassTag() != matClassTag) {
-        if (theFibers[i] != 0) delete theFibers[i];
+      if (theFibers[i] == nullptr || theFibers[i]->getClassTag() != matClassTag) {
+        if (theFibers[i]) delete theFibers[i];
         theFibers[i] = theBroker.getNewNDMaterial(matClassTag);
-        if (theFibers[i] == 0) {
+        if (theFibers[i] == nullptr) {
           opserr << "LayeredShellFiberSection::recvSelf() - " << 
             "Broker could not create NDMaterial of class type" << matClassTag << endln;
          return -1;
