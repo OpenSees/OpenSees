@@ -701,37 +701,32 @@ LayeredShellFiberSection::sendSelf(int commitTag, Channel &theChannel)
   
   if (nLayers > 0)
   {
-    Vector vecData(2*nLayers+1);
+    Vector vecData(2*nLayers+1 + 2*nLayers);
+    int counter = 0;
     int i;
     for (i = 0; i < nLayers; i++) {
-      vecData(i)         = sg[i];
-      vecData(i+nLayers) = wg[i];
+      vecData(counter++) = sg[i];
+      vecData(counter++) = wg[i];
     }
-    vecData(2*nLayers) = h;
-    res += theChannel.sendVector(dataTag, commitTag, vecData);
-    if (res < 0) {
-      opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
-      return res;
-    }
+    vecData(counter++) = h;
     
     // Send the ids of its materials
     
     int matDbTag;
-    ID idData(nLayers*2);
     for (i = 0; i < nLayers; i++) {
-      idData(i) = theFibers[i]->getClassTag();
+      vecData(counter++) = (double)theFibers[i]->getClassTag();
       matDbTag = theFibers[i]->getDbTag();
       // ensure that the material has a database tag
       if (matDbTag == 0) {
         matDbTag = theChannel.getDbTag();
         if (matDbTag != 0) theFibers[i]->setDbTag(matDbTag);
       }
-      idData(i+nLayers) = matDbTag;
+      vecData(counter++) = (double)matDbTag;
     }
     
-    res += theChannel.sendID(dataTag, commitTag, idData);
+    res += theChannel.sendVector(dataTag, commitTag, vecData);
     if (res < 0) {
-      opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send ID" << endln;
+      opserr << "WARNING LayeredShellFiberSection::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
       return res;
     }
     
@@ -789,26 +784,21 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
 
   if (nLayers > 0)
   {
-    Vector vecData(2*nLayers+1);
+    Vector vecData(2*nLayers+1 + 2 * nLayers);
     res += theChannel.recvVector(dataTag, commitTag, vecData);
     if (res < 0) {
-    opserr << "WARNING LayeredShellFiberSection::recvSelf() - " << this->getTag() << " failed to receive data" << endln;
+    opserr << "WARNING LayeredShellFiberSection::recvSelf() - " << this->getTag() << " failed to receive Vector data" << endln;
     return res;
     }  
+    int counter = 0;
     for (i = 0; i < nLayers; i++) {
-      sg[i] = vecData[i];
-      wg[i] = vecData[i+nLayers];
+      sg[i] = vecData[counter++];
+      wg[i] = vecData[counter++];
     }
-    h = vecData[2*nLayers];
-    ID idData(nLayers*2);
-    res += theChannel.recvID(dataTag, commitTag, idData);
-    if (res < 0) {
-      opserr << "WARNING LayeredShellFiberSection::recvSelf() - " << this->getTag() << " failed to receive ID" << endln;
-      return res;
-    }
+    h = vecData[counter++];
 
     for (i = 0; i < nLayers; i++) {
-      int matClassTag = idData(i);
+      int matClassTag = (int)vecData(counter++);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (theFibers[i] == nullptr || theFibers[i]->getClassTag() != matClassTag) {
@@ -820,7 +810,7 @@ LayeredShellFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
          return -1;
         }
       }
-      theFibers[i]->setDbTag(idData(i+nLayers));
+      theFibers[i]->setDbTag((int)vecData(counter++));
       // Receive the material
       res += theFibers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
