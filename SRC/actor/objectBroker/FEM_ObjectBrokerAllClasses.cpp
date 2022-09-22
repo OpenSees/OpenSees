@@ -157,6 +157,7 @@
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
+#include "DoubleMembranePlateFiberSection.h"
 #include "Bidirectional.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 
@@ -1557,6 +1558,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_MembranePlateFiberSection:
 		return new MembranePlateFiberSection();
+
+	case SEC_TAG_DoubleMembranePlateFiberSection:
+		return new DoubleMembranePlateFiberSection();
 
 	//start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
         case SEC_TAG_LayeredShellFiberSection:
