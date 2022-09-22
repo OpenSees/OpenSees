@@ -450,7 +450,8 @@ public:
 
         // 9*4 -> 9 quaternions +
         auto lamq = [&v, &pos](QuaternionType& x) {
-            x = QuaternionType(v(pos++), v(pos++), v(pos++), v(pos++));
+            x = QuaternionType(v(pos), v(pos+1), v(pos+2), v(pos+3));
+            pos += 4;
         };
         lamq(m_Q0);
         for (int i = 0; i < 4; i++)
