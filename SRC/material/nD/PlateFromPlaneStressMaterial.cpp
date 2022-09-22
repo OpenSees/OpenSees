@@ -358,7 +358,7 @@ PlateFromPlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_O
 
   this->setTag(idData(0));
   int matClassTag = idData(1);
-  if (theMat->getClassTag() != matClassTag) {
+  if (theMat == nullptr || theMat->getClassTag() != matClassTag) {
     if (theMat != 0) delete theMat;
     theMat = theBroker.getNewNDMaterial(matClassTag);
     if (theMat == 0) {
