@@ -41,7 +41,7 @@ OPS_IMKPeakOriented()
 {
 	if (numIMKPeakOrientedMaterials == 0) {
 		numIMKPeakOrientedMaterials++;
-		OPS_Error("IMK with Peak-Oriented Response - Code by Elkady & Eljisr (Aug22)\n", 1);
+		OPS_Error("IMK with Peak-Oriented Response - Code by AE-HJ (Sep22)\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -607,7 +607,11 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 			//cout << "  Strength Fail" << endln;
 			Failure_Flag = 1;
 		}
-
+		// trigger failure if force changes sign when loading on the negative post-capping slope
+		if ((fi_1 < 0 && du < 0.0 && fi>0) || (fi_1 > 0 && du > 0.0 && fi < 0)) {
+			fi = 0;
+			Failure_Flag = 1;
+		}
 		dEi = 0.5*(fi + fi_1)*du; // Internal energy increment
 
 	}
