@@ -123,8 +123,7 @@
       <Path>$(IntDir)$(MSBuildProjectName).log</Path>
     </BuildLog>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy "$(TargetPath)" "C:\OpenSees-Solvers\opensees-develop"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">
@@ -211,6 +210,10 @@
     <BuildLog>
       <Path>$(IntDir)$(MSBuildProjectName).log</Path>
     </BuildLog>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
     <Midl>

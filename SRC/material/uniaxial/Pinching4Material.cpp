@@ -297,6 +297,29 @@ int Pinching4Material::setTrialStrain(double strain, double CstrainRate)
 		dstrain = 0.0;
 	}
 
+	if (false) {
+		opserr << "Pinnching4::debug strain = " << strain << endln;
+		opserr << "Commited values: " << endln;
+		opserr << "Cstate: " << Cstate << endln;
+		opserr << "Tstrain: " << Tstrain << endln;
+		opserr << "Cstrain:" << Cstrain << endln;
+		opserr << "Cstress:" << Cstress << endln;
+		opserr << "Cenergy: " << Cenergy << endln;
+		opserr << "hghCstateStrain: " << hghCstateStrain << endln;
+		opserr << "lowCstateStrain: " << lowCstateStrain << endln;
+		opserr << "hghCstateStress: " << hghCstateStress << endln;
+		opserr << "lowCstateStress: " << lowCstateStress << endln;
+		opserr << "CminStrainDmnd: " << CminStrainDmnd << endln;
+		opserr << "CmaxStrainDmnd: " << CmaxStrainDmnd << endln;
+		opserr << "CgammaF: " << CgammaF << endln;
+		opserr << "CgammaK: " << CgammaK << endln;
+		opserr << "CgammaD: " << CgammaD << endln;
+		opserr << "Actual backbone + :\n\t" << envlpPosStrain << "\t" << envlpPosStress << endln;
+		opserr << "Actual backbone - :\n\t" << envlpNegStrain << "\t" << envlpNegStress << endln;
+		opserr << "Actual damaged backbone + :\n\t" << envlpPosStrain << "\t" << envlpPosDamgdStress << endln;
+		opserr << "Actual damaged backbone - :\n\t" << envlpNegStrain << "\t" << envlpNegDamgdStress << endln;
+	}
+
 
 	// determine new state if there is a change in state
 	getstate(Tstrain,dstrain);  

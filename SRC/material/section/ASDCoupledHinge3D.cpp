@@ -54,7 +54,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-//#define _DBG_COUPLEDSEC3D
+#define _DBG_COUPLEDSEC3D
 
 ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
     size(nN * nTheta * nData), numberAxial(nN), numberTheta(nTheta), numberData(nData), theVector(size)
@@ -175,6 +175,7 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     int j = -1;
     int jp1 = 0;
     int inverse = 0;
+    double jXjp1, jXdirection, directionXjp1;
     while ((!found) && (j <= numberTheta)) 
     { 
         j += 1;
@@ -213,9 +214,9 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
         opserr << "direction j+1 = [" << dir_jp1(0) << ", " << dir_jp1(1) << "]\n";
 
 #endif
-        double jXjp1 = dir_j(0) * dir_jp1(1) - dir_j(1) * dir_jp1(0);
-        double jXdirection = dir_j(0) * direction(1) - dir_j(1) * direction(0);
-        double directionXjp1 = direction(0) * dir_jp1(1) - direction(1) * dir_jp1(0);
+        jXjp1 = dir_j(0) * dir_jp1(1) - dir_j(1) * dir_jp1(0);
+        jXdirection = dir_j(0) * direction(1) - dir_j(1) * direction(0);
+        directionXjp1 = direction(0) * dir_jp1(1) - direction(1) * dir_jp1(0);
         if ((jXjp1 * jXdirection > 0) && (directionXjp1 * jXjp1 > 0))
         {
 #ifdef _DBG_COUPLEDSEC3D
@@ -266,7 +267,18 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     opserr << "My : " << My_j << " and " << My_jp1 << "\n";
     opserr << "Mz : " << Mz_j << " and " << Mz_jp1 << "\n";
 #endif
-    if (inverse == 0) 
+    double alfa = jXdirection / jXjp1;
+    double beta = directionXjp1 / jXjp1;
+    double sum = alfa + beta;
+    alfa /= sum;
+    beta /= sum;
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "Check alfa, beta\n";
+    opserr << alfa << " + " << beta << " = " << alfa+beta << "\n";
+#endif
+    My = My_j * alfa + My_jp1 * beta;
+    Mz = Mz_j * alfa + Mz_jp1 * beta;
+   /* if (inverse == 0) 
     {
         My = (My_jp1 - My_j) / (theta_jp1 - theta_j) * (theta - theta_j) + My_j;
         Mz = (Mz_jp1 - Mz_j) / (theta_jp1 - theta_j) * (theta - theta_j) + Mz_j;
@@ -274,7 +286,7 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     {
         My = (My_j - My_jp1) / (theta_j - theta_jp1) * (theta - theta_jp1) + My_jp1;
         Mz = (Mz_j - Mz_jp1) / (theta_j - theta_jp1) * (theta - theta_jp1) + Mz_jp1;
-    }
+    }*/
 
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "Interpolated values:\n";
@@ -744,7 +756,7 @@ void* OPS_ASDCoupledHinge3D()
             }
 #ifdef _DBG_COUPLEDSEC3D
             opserr << "strengthDomain created: " << endln;
-            strengthDomain->print();
+            strengthDomain.print();
 #endif
 
             // get Domain Values for My and Mz positive and negative when N = 0
@@ -761,7 +773,7 @@ void* OPS_ASDCoupledHinge3D()
             opserr << "Mz- = " << Mz_u_n << endln;
 
             opserr << "Domain is this one: \n";
-            ultDomain->print();
+            strengthDomain.print();
             opserr << endln;
 #endif
 
@@ -1030,12 +1042,12 @@ ASDCoupledHinge3D::ASDCoupledHinge3D(
     tolN = (Nmax - Nmin) * 0.001;
     double MminY, MmaxY, MminZ, MmaxZ;
     setUncoupledStrengthDomainforAxial(0.0, MmaxY, MminY, MmaxZ, MminZ);
-    MmaxAbs = std::max(std::max(MmaxY, std::abs(MminY)), std::max(MmaxZ, std::abs(MminZ)));
-    tolM = 0.001 * MmaxAbs;
+    MmaxAbs = std::max(std::max(MmaxY, abs(MminY)), std::max(MmaxZ, abs(MminZ)));
+    tolM = 0.0001 * MmaxAbs;
 
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "The copied ultimate domain: \n";
-    ultimateDomain->print();
+    strengthDomain.print();
 #endif
 }
 
@@ -1301,15 +1313,20 @@ ASDCoupledHinge3D::updateLaws(void)
     double Mz = MzMaterial->getStress();
     double Vy = VyMaterial->getStress();
     double Vz = VzMaterial->getStress();
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "ASDCoupledHinge3D::updateLaws\n";
+    opserr << "My getted from getStress: " << My << "\n";
+    opserr << "Mz getted from getStress: " << Mz << "\n";
+#endif
 
     // Idea: get ky and kz and multiply by elastic stiffness in order to see direction? I am not sure because elastic stiffness can change during analysis...?
     double ky = MyMaterial->getStrain();
     double kz = MzMaterial->getStrain();
-    if (ky > 0)
+    if (ky >= 0)
         My = par_f1p_Y.getValue() / par_d1p_Y.getValue() * ky;
     else
         My = par_f1n_Y.getValue() / par_d1n_Y.getValue() * ky;
-    if (kz > 0)
+    if (kz >= 0)
         Mz = par_f1p_Z.getValue() / par_d1p_Z.getValue() * kz;
     else
         Mz = par_f1n_Z.getValue() / par_d1n_Z.getValue() * kz;
@@ -1331,13 +1348,13 @@ ASDCoupledHinge3D::updateLaws(void)
 //#endif
 
     // Check moments are never exactly zero to avoid numerical problems
-    if (std::abs(My) < tolM) {
+    if (abs(My) < tolM) {
         if (My >= 0)
             My = tolM;
         else
             My = -tolM;
     }
-    if (std::abs(Mz) < tolM) {
+    if (abs(Mz) < tolM) {
         if (Mz >= 0)
             Mz = tolM;
         else
@@ -1348,6 +1365,10 @@ ASDCoupledHinge3D::updateLaws(void)
     if (theta < 0)
         theta += 2 * M_PI;
     // Now compute the points on the domain with the same direction
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "My = " << My << " (tolM = " << tolM << ")" << endln;
+    opserr << "Mz = " << Mz << " (tolM = " << tolM << ")" << endln;
+#endif
     strengthDomain.getMyMzForNAndDirection(N, theta, My_u_p, Mz_u_p);
 #ifdef _DBG_COUPLEDSEC3D
     opserr << "Both moments above tolerance -> biaxial bending\n";
@@ -1390,6 +1411,13 @@ ASDCoupledHinge3D::updateLaws(void)
     std::string thetaPExpressionZ = rawThetaPExpressionZ;
     std::string thetaPCExpressionY = rawThetaPCExpressionY;
     std::string thetaPCExpressionZ = rawThetaPCExpressionZ;
+
+    // Read the actual values
+    N = axialMaterial->getStress();
+    My = MyMaterial->getStress();
+    Mz = MzMaterial->getStress();
+    Vy = VyMaterial->getStress();
+    Vz = VzMaterial->getStress();
 
     // substitute values
     replacePlaceholderWithValue(initialStiffnessExpressionY, "__N__", N);
@@ -1455,6 +1483,7 @@ ASDCoupledHinge3D::updateLaws(void)
     }
 
 #ifdef _DBG_COUPLEDSEC3D
+    opserr << "Initial stiffness evaluation:\n" << rawInitialStiffnessExpressionY.c_str() << endln;
     opserr << initialStiffnessExpressionY.c_str() << " = " << EI << endln;
     opserr << thetaPExpressionY.c_str() << " = " << th_cap_p << endln;
     opserr << thetaPCExpressionY.c_str() << " = " << th_pcap_p << endln;
@@ -1485,7 +1514,7 @@ ASDCoupledHinge3D::updateLaws(void)
     par_d4n_Y.update(d4);
 
 #ifdef _DBG_COUPLEDSEC3D
-    opserr << "\nLaw MyMaterial updated:\n";
+    opserr << "\nLaw MyMaterial updated ***:\n";
     MyMaterial->Print(opserr, 2);
 #endif
 
@@ -1500,6 +1529,7 @@ ASDCoupledHinge3D::updateLaws(void)
         opserr << "Error evaluating expression:\n" << thetaPCExpressionZ.c_str() << "\n";
     }
 #ifdef _DBG_COUPLEDSEC3D
+    opserr << "Initial stiffness evaluation:\n" << rawInitialStiffnessExpressionZ.c_str() << endln;
     opserr << initialStiffnessExpressionZ.c_str() << " = " << EI << endln;
     opserr << thetaPExpressionZ.c_str() << " = " << th_cap_p << endln;
     opserr << thetaPCExpressionZ.c_str() << " = " << th_pcap_p << endln;
@@ -1529,10 +1559,9 @@ ASDCoupledHinge3D::updateLaws(void)
     par_d4n_Z.update(d4);
 
 #ifdef _DBG_COUPLEDSEC3D
-    opserr << "\nLaw MzMaterial updated:\n";
+    opserr << "\nLaw MzMaterial updated ***:\n";
     MzMaterial->Print(opserr, 2);
 #endif
-
 }
 
 int
@@ -1547,8 +1576,20 @@ ASDCoupledHinge3D::commitState(void)
     err += VzMaterial->commitState();
     err += torsionMaterial->commitState();
 
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "ASDCoupleHinge3D::commitState\n\t" << "N = " << axialMaterial->getStress() << endln;
+#endif
     if (err == 0) {
         updateLaws();
+
+#ifdef _DBG_COUPLEDSEC3D
+        opserr << "\nLaws updated after commit: " << endln;
+        opserr << "My\n";
+        MyMaterial->Print(opserr, 2);
+        opserr << "Mz\n";
+        MzMaterial->Print(opserr, 2);
+        opserr << "Finished update " << endln;
+#endif
 
         double My, Mz;
         My = MyMaterial->getStress();
@@ -1558,14 +1599,21 @@ ASDCoupledHinge3D::commitState(void)
         MzMaterial->setTrialStrain(MzMaterial->getStrain());
 
         // compare My with MyMaterial->getStress();
-        double errY = std::abs(MyMaterial->getStress() - My);
-        double errZ = std::abs(MzMaterial->getStress() - Mz);
+        double errY = abs(MyMaterial->getStress() - My);
+        double errZ = abs(MzMaterial->getStress() - Mz);
 
         errExplicit = std::max(errY, errZ) / MmaxAbs;
 
         // revert to last commit
         err += MyMaterial->revertToLastCommit();
         err += MzMaterial->revertToLastCommit();
+#ifdef _DBG_COUPLEDSEC3D
+        opserr << "\nReverted to Last commit\n";
+        opserr << "My\n";
+        MyMaterial->Print(opserr, 2);
+        opserr << "Mz\n";
+        MzMaterial->Print(opserr, 2);
+#endif
     } 
   
     return err;
@@ -1583,6 +1631,9 @@ ASDCoupledHinge3D::revertToLastCommit(void)
     err += VzMaterial->revertToLastCommit();
     err += torsionMaterial->revertToLastCommit();
 
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "ASDCoupleHinge3D::revertToLastCommit\n\t" << "N = " << axialMaterial->getStress() << endln;
+#endif
     if (err == 0) {
         updateLaws();
     }
@@ -1602,6 +1653,9 @@ ASDCoupledHinge3D::revertToStart(void)
     err += VzMaterial->revertToStart();
     err += torsionMaterial->revertToStart();
 
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "ASDCoupleHinge3D::revertToStart\n\t" << "N = " << axialMaterial->getStress() << endln;
+#endif
     if (err == 0) {
         updateLaws();
     }
