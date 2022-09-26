@@ -38,9 +38,14 @@
 // 2019,
 // Pages 101-109,
 // ISSN 0045-7949,
-// https://doi.org/10.1016/j.compstruc.2018.10.016.
-// (http://www.sciencedirect.com/science/article/pii/S0045794918300555)
-
+// https://doi.org/10.1016/j.compstruc.2018.10.016
+//
+// Yuan Tian, Yuli Huang, Zhe Qu, Yifan Fei, Xinzheng Lu,
+// High-performance uniform damping model for response history analysis in OpenSees,
+// Journal of Earthquake Engineering,
+// 2022,
+// https://doi.org/10.1080/13632469.2022.2124557
+//
 // What: "@(#) UniformDamping.cpp, revA"
 
 #include <math.h>

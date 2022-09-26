@@ -31,6 +31,13 @@
 // It is an abstract base class and thus no objects of it's type can be instatiated
 // It has pure virtual functions which  must be implemented in it's derived classes.
 //
+// Reference:
+// Yuan Tian, Yuli Huang, Zhe Qu, Yifan Fei, Xinzheng Lu,
+// High-performance uniform damping model for response history analysis in OpenSees,
+// Journal of Earthquake Engineering,
+// 2022,
+// https://doi.org/10.1080/13632469.2022.2124557
+//
 // What: "@(#) Damping.h, revA"
 
 #ifndef Damping_h
