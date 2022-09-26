@@ -51,6 +51,8 @@
 #define STRENGTH_DOMAIN_SIMPLIFIED 1
 #define STRENGTH_DOMAIN_BY_POINTS 2
 
+#define ASD_HINGE_NUM_TANG
+
 class ASDCoupledHinge3D;
 class ASDCoupledHinge3DDomainData {
     friend class ASDCoupledHinge3D;
@@ -204,6 +206,11 @@ private:
     // working memory
    
     int otherDbTag = 0;
+
+#ifdef ASD_HINGE_NUM_TANG
+    Vector m_num_tang = Vector(6);
+#endif // ASD_HINGE_NUM_TANG
+
 
 };
 

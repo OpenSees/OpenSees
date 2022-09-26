@@ -1085,14 +1085,36 @@ ASDCoupledHinge3D::~ASDCoupledHinge3D()
 int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
 {
   int ret = 0;
-  
+
+#ifdef  ASD_HINGE_NUM_TANG
+
+  static constexpr double pert = 1.0e-9;
+  auto lam_pert = [this](UniaxialMaterial* mat, double strain, int order) {
+      mat->setTrialStrain(strain + pert);
+      double sh = mat->getStress();
+      int ret = mat->setTrialStrain(strain);
+      double ki = (sh - mat->getStress()) / pert;
+      m_num_tang(order) = ki;
+      return ret;
+};
+  ret += lam_pert(axialMaterial, def(0), 0);
+  ret += lam_pert(MyMaterial, def(1), 1);
+  ret += lam_pert(MzMaterial, def(2), 2);
+  ret += lam_pert(VyMaterial, def(3), 3);
+  ret += lam_pert(VzMaterial, def(4), 4);
+  ret += lam_pert(torsionMaterial, def(5), 5);
+
+#else
+
   ret += axialMaterial->setTrialStrain(def(0));
   ret += MyMaterial->setTrialStrain(def(1));
   ret += MzMaterial->setTrialStrain(def(2));
   ret += VyMaterial->setTrialStrain(def(3));
   ret += VzMaterial->setTrialStrain(def(4));
   ret += torsionMaterial->setTrialStrain(def(5));
-  
+
+#endif //  ASD_HINGE_NUM_TANG
+
   return ret;
 }
 
@@ -1113,12 +1135,18 @@ const Matrix &
 ASDCoupledHinge3D::getSectionTangent(void)
 {
     static Matrix k(6, 6);
+#ifdef ASD_HINGE_NUM_TANG
+    for (int i = 0; i < 6; ++i)
+        k(i, i) = m_num_tang(i);
+#else
     k(0, 0) = axialMaterial->getTangent();
     k(1, 1) = MyMaterial->getTangent();
     k(2, 2) = MzMaterial->getTangent();
     k(3, 3) = VyMaterial->getTangent();
     k(4, 4) = VzMaterial->getTangent();
     k(5, 5) = torsionMaterial->getTangent();
+#endif // ASD_HINGE_NUM_TANG
+
     return k;
 }
 
@@ -1140,6 +1168,18 @@ ASDCoupledHinge3D::getSectionFlexibility(void)
 {
     static Matrix f(6, 6);
     
+#ifdef ASD_HINGE_NUM_TANG
+
+    for (int i = 0; i < 6; ++i) {
+        double ki = m_num_tang(i);
+        if (ki == 0.0)
+            ki = 1.0e-14;
+        double fi = 1.0 / ki;
+        f(i, i) = fi;
+    }
+
+#else
+
     double k;
     k = axialMaterial->getTangent();
     if (k == 0.0) {
@@ -1189,6 +1229,8 @@ ASDCoupledHinge3D::getSectionFlexibility(void)
     else {
         f(5, 5) = 1 / k;
     }
+
+#endif
   
     return f;
 }
