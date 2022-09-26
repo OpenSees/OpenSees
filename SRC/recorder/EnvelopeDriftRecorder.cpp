@@ -304,7 +304,7 @@ int
 EnvelopeDriftRecorder::recvSelf(int commitTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-  static ID idData(5); 
+  static ID idData(6); 
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "EnvelopeDriftRecorder::sendSelf() - failed to send idData\n";
     return -1;

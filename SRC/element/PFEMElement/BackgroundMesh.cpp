@@ -695,8 +695,8 @@ void BackgroundMesh::clearGrid() {
         const VInt& tags = bnode.getTags();
         int type = bnode.getType();
 
-        for (int i = 0; i < (int)tags.size(); ++i) {
-            if (type == BACKGROUND_FLUID) {
+        if (type == BACKGROUND_FLUID) {
+            for (int i = 0; i < (int)tags.size(); ++i) {
                 // remove node
                 Node* nd = domain->removeNode(tags[i]);
                 if (nd != 0) {
@@ -709,6 +709,19 @@ void BackgroundMesh::clearGrid() {
                 if (pc != 0) {
                     delete pc;
                 }
+            }
+        } else if (type == BACKGROUND_FLUID_STRUCTURE) {
+            // remove node
+            Node* nd = domain->removeNode(tags[1]);
+            if (nd != 0) {
+                delete nd;
+            }
+
+            // remove pc
+            Pressure_Constraint* pc =
+                domain->removePressure_Constraint(tags[1]);
+            if (pc != 0) {
+                delete pc;
             }
         }
     }
@@ -752,6 +765,32 @@ int BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
     return 0;
 }
 
+// 1. transport particles from last time step
+// 2. remove all elements, cells, and grids
+// 3. add structural nodes
+//     a. closest grid is set to BACKGROUND_STRUCTURE
+//     b. surrounding grids are set to BACKGROUND_FIXED
+//     c. surrounding cells are set to BACKGROUND_STRUCTURE
+// 4. add particles to cells
+//     a. skip BACKGROUND_STRUCTURE cells
+//     b. set grids of fluid cells to BACKGROUND_FLUID
+//     c. set fluid cells to BACKGROUND_FLUID
+//     d. may change some grids from BACKGROUND_FIXED to BACKGROUND_FLUID
+// 5. move particles out of BACKGROUND_STRUCTURE cells
+//     a. set particle velocity with structural velocity
+//     b. move to one of empty neighbor cells
+// 6. loop through all grids
+//     a. skip BACKGROUND_FIXED grids
+//     b. create nodes for BACKGROUND_FLUID grids
+//     c. update pressure for BACKGROUND_STRUCTURE grids
+// 7. loop through all cells
+//     a. skip BACKGROUND_STRUCTURE cells
+//     b. create PFEM elements in BACKGROUND_FLUID cells
+// 8. loop through all cells
+//     a. get BACKGROUND_STRUCTURE cells
+//     b. get tags, sids, types, crds, for cell nodes
+//     c. if all nodes are BACKGROUND_STRUCTURE, create contact elements
+//     d. if, gather particles from surrounding cells e.
 int BackgroundMesh::remesh(bool init) {
     // clear and check
     if (bsize <= 0.0) {
@@ -884,10 +923,17 @@ int BackgroundMesh::addStructure() {
     // add all structural nodes to the background
     int ndtag = Mesh::nextNodeTag();
     std::set<int> allnodes;
-    for (std::map<int, VInt>::iterator it = structuralNodes.begin();
-         it != structuralNodes.end(); ++it) {
+
+    // sid from large to small
+    for (auto it = structuralNodes.rbegin(); it != structuralNodes.rend();
+         ++it) {
         int sid = it->first;
         const VInt& snodes = it->second;
+
+        // sid = 0 is reserved for internal use for fluid
+        if (sid == 0) {
+            continue;
+        }
 
         for (int k = 0; k < (int)snodes.size(); ++k) {
             // check if already there
@@ -970,35 +1016,52 @@ int BackgroundMesh::addStructure() {
 
             // add structural node to the bnode
             BNode& bnode = bnodes[index];
-            bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
-                          BACKGROUND_STRUCTURE, sid);
+            if (bnode.getType() == BACKGROUND_STRUCTURE ||
+                bnode.getType() == BACKGROUND_FLUID_STRUCTURE) {
+                // already a structure, ignore
+                continue;
+            }
 
-            // set fixed  bnodes
+            if (sid > 0) {
+                // FSI and SSI
+                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
+                              BACKGROUND_STRUCTURE, sid);
+            } else {
+                // SSI only
+                bnode.addNode(nd->getTag(), crdsn, vn, dvn, pressure, pdot,
+                              BACKGROUND_FLUID_STRUCTURE, sid);
+            }
+
+            // set fixed bnodes if sid > 0
             VInt ind = index;
             ind -= 1;
             VVInt indices;
-            getCorners(ind, 2, indices);
-            for (int i = 0; i < (int)indices.size(); ++i) {
-                BNode& bnd = bnodes[indices[i]];
-                if (bnd.size() == 0) {
-                    bnd.setType(BACKGROUND_FIXED);
+            if (sid > 0) {
+                getCorners(ind, 2, indices);
+                for (int i = 0; i < (int)indices.size(); ++i) {
+                    BNode& bnd = bnodes[indices[i]];
+                    if (bnd.size() == 0) {
+                        bnd.setType(BACKGROUND_FIXED);
+                    }
                 }
             }
 
-            // set STRUCTURE cells
-            getCorners(ind, 1, indices);
-            for (int i = 0; i < (int)indices.size(); ++i) {
-                BCell& bcell = bcells[indices[i]];
-                bcell.setType(BACKGROUND_STRUCTURE);
+            // set STRUCTURE cells if sid > 0
+            if (sid > 0) {
+                getCorners(ind, 1, indices);
+                for (int i = 0; i < (int)indices.size(); ++i) {
+                    BCell& bcell = bcells[indices[i]];
+                    bcell.setType(BACKGROUND_STRUCTURE);
 
-                // set corners
-                if (bcell.getNodes().empty()) {
-                    VVInt corners;
-                    getCorners(indices[i], 1, corners);
+                    // set corners
+                    if (bcell.getNodes().empty()) {
+                        VVInt corners;
+                        getCorners(indices[i], 1, corners);
 
-                    for (int j = 0; j < (int)corners.size(); ++j) {
-                        BNode& bnd = bnodes[corners[j]];
-                        bcell.addNode(&bnd, corners[j]);
+                        for (int j = 0; j < (int)corners.size(); ++j) {
+                            BNode& bnd = bnodes[corners[j]];
+                            bcell.addNode(&bnd, corners[j]);
+                        }
                     }
                 }
             }
@@ -1078,7 +1141,8 @@ int BackgroundMesh::addParticles() {
                 // set corners
                 for (int i = 0; i < (int)indices.size(); ++i) {
                     BNode& bnode = bnodes[indices[i]];
-                    if (bnode.size() == 0) {
+                    if (bnode.size() == 0 &&
+                        bnode.getType() != BACKGROUND_FLUID_STRUCTURE) {
                         bnode.setType(BACKGROUND_FLUID);
                     }
                     bcell.addNode(&bnode, indices[i]);
@@ -1232,8 +1296,14 @@ int BackgroundMesh::gridNodes() {
         newnodes[j] = node;
 
         // set the bnode
-        bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
-                      BACKGROUND_FLUID);
+        if (bnode.getType() == BACKGROUND_FLUID_STRUCTURE) {
+            // tags[0] = s, tags[1] = f
+            bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
+                          BACKGROUND_FLUID_STRUCTURE);
+        } else {
+            bnode.addNode(node->getTag(), crds, vel, accel, pre, pdot,
+                          BACKGROUND_FLUID);
+        }
 
         // set pressure
         Pressure_Constraint* thePC =
@@ -1333,8 +1403,7 @@ int BackgroundMesh::moveFixedParticles() {
     int ndm = OPS_GetNDM();
 
     // check each cell
-    for (std::map<VInt, BCell>::iterator it = bcells.begin();
-         it != bcells.end(); ++it) {
+    for (auto it = bcells.begin(); it != bcells.end(); ++it) {
         // get cell
         const VInt& index = it->first;
         BCell& cell = it->second;
@@ -1358,16 +1427,16 @@ int BackgroundMesh::moveFixedParticles() {
         // give each cell a score
         VInt scores(indices.size());
         for (int i = 0; i < (int)indices.size(); ++i) {
-            std::map<VInt, BCell>::iterator cellit =
-                bcells.find(indices[i]);
+            auto cellit = bcells.find(indices[i]);
             if (cellit == bcells.end()) {
                 // empty cell
-                scores[i] = 2;
-                continue;
-            }
-            if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
+                scores[i] = -1;
+            } else if (cellit->second.getType() == BACKGROUND_STRUCTURE) {
+                scores[i] = -1;
+            } else if (cellit->second.getPts().empty()) {
                 scores[i] = -1;
             } else {
+                // easier to get into cell already having particles
                 scores[i] = 1;
             }
         }
@@ -1492,10 +1561,10 @@ int BackgroundMesh::moveFixedParticles() {
 
             // not move to a structural cell
             if (scores[j] < 0) {
-                // self is structure, score always < 0
+                // self is structure or empty, score always < 0
                 finalscores[j] = -1;
             } else {
-                // self is not a structure, but score always >= 0
+                // self is not a structure, score always >= 0
                 if (finalscores[j] < 0) {
                     finalscores[j] = 0;
                 }
@@ -1506,12 +1575,33 @@ int BackgroundMesh::moveFixedParticles() {
         int high = -100;
         ind = index;
         for (int i = 0; i < (int)finalscores.size(); ++i) {
-            if (high < finalscores[i]) {
+            if (high < finalscores[i] && finalscores[i] >= 0) {
                 high = finalscores[i];
                 ind = indices[i];
             }
         }
-        if (ind == index) continue;
+
+        // find any cell with particles
+        if (high < 0 || ind == index) {
+            for (auto it2 = bcells.begin(); it2 != bcells.end(); ++it2) {
+                // get cell
+                ind = it2->first;
+                BCell& cell2 = it2->second;
+
+                // empty cell
+                if (cell2.getPts().empty()) {
+                    continue;
+                }
+
+                // check if BACKGROUND_STRUCTURE cell
+                if (cell2.getType() == BACKGROUND_STRUCTURE) {
+                    continue;
+                }
+
+                // find the cell
+                break;
+            }
+        }
 
         // get new  cell
         auto& new_cell = bcells[ind];
@@ -1520,20 +1610,20 @@ int BackgroundMesh::moveFixedParticles() {
         }
 
         // if an new empty cell
-        if (new_cell.getNodes().empty()) {
-            // get corners
-            indices.clear();
-            getCorners(ind, 1, indices);
+        // if (new_cell.getNodes().empty()) {
+        //     // get corners
+        //     indices.clear();
+        //     getCorners(ind, 1, indices);
 
-            // set corners
-            for (int k = 0; k < (int)indices.size(); ++k) {
-                BNode& bnode = bnodes[indices[k]];
-                if (bnode.size() == 0) {
-                    bnode.setType(BACKGROUND_FLUID);
-                }
-                new_cell.addNode(&bnode, indices[k]);
-            }
-        }
+        //     // set corners
+        //     for (int k = 0; k < (int)indices.size(); ++k) {
+        //         BNode& bnode = bnodes[indices[k]];
+        //         if (bnode.size() == 0) {
+        //             bnode.setType(BACKGROUND_FLUID);
+        //         }
+        //         new_cell.addNode(&bnode, indices[k]);
+        //     }
+        // }
 
         // get averate structural velocity
         VDouble svel(ndm);
@@ -1641,7 +1731,13 @@ int BackgroundMesh::gridFluid() {
                 continue;
             }
             auto& tags = bnodes[i]->getTags();
-            cnodes[i] = tags[0];
+            if (bnodes[i]->getType() == BACKGROUND_FLUID_STRUCTURE) {
+                // tags[1] = f;
+                cnodes[i] = tags[1];
+            } else {
+                // tags[0] = f;
+                cnodes[i] = tags[0];
+            }
         }
         for (int i = 0; i < numele; ++i) {
             elends[numele * j + i].resize(numelenodes);
@@ -1723,6 +1819,7 @@ int BackgroundMesh::gridFluid() {
     return 0;
 }
 
+// FSI without Delauney Triangulation
 int BackgroundMesh::gridFSInoDT() {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -1754,28 +1851,20 @@ int BackgroundMesh::gridFSInoDT() {
         // get bnodes
         auto& cbnodes = cells[j]->getNodes();
 
-        // node tags and sids
-        VInt tags(cbnodes.size(), -1), sids(cbnodes.size()),
-            types(cbnodes.size());
-        VVDouble ndcrds(cbnodes.size());
-        for (int i = 0; i < (int)tags.size(); ++i) {
+        // get types
+        VInt types(cbnodes.size());
+        for (int i = 0; i < (int)cbnodes.size(); ++i) {
             types[i] = cbnodes[i]->getType();
-            if (types[i] != BACKGROUND_FIXED) {
-                auto& ctags = cbnodes[i]->getTags();
-                tags[i] = ctags[0];
-                auto& ids = cbnodes[i]->getSid();
-                sids[i] = ids[0];
-                auto& crdsn = cbnodes[i]->getCrds();
-                ndcrds[i] = crdsn[0];
-            }
         }
 
         // get fluid and structural local indices
-        VInt flocal, slocal, fixlocal;
+        VInt flocal, slocal, fixlocal, fslocal;
         for (int i = 0; i < (int)types.size(); ++i) {
             int type = types[i];
             if (type == BACKGROUND_STRUCTURE) {
                 slocal.push_back(i);
+            } else if (type == BACKGROUND_FLUID_STRUCTURE) {
+                fslocal.push_back(i);
             } else if (type == BACKGROUND_FLUID) {
                 flocal.push_back(i);
             } else {
@@ -1783,10 +1872,28 @@ int BackgroundMesh::gridFSInoDT() {
             }
         }
 
-        // contact cell: must fully engaged
-        if (ndm == 2 && slocal.size() == 4) {
-            VInt csnds(3), csids(3);
-            if (slocal.size() == 4) {
+        // FSI or SSI contact
+        if ((ndm == 2 && slocal.size() + fslocal.size() == 4) ||
+            (ndm == 3 && slocal.size() + fslocal.size() == 8)) {
+            // SSI get structural node
+
+            // node tags and sids
+            VInt tags(cbnodes.size(), -1), sids(cbnodes.size());
+            VVDouble ndcrds(cbnodes.size());
+            for (int i = 0; i < (int)tags.size(); ++i) {
+                if (types[i] != BACKGROUND_FIXED) {
+                    auto& ctags = cbnodes[i]->getTags();
+                    auto& ids = cbnodes[i]->getSid();
+                    auto& crdsn = cbnodes[i]->getCrds();
+                    tags[i] = ctags[0];
+                    sids[i] = ids[0];
+                    ndcrds[i] = crdsn[0];
+                }
+            }
+
+            // contact cell: must fully engaged
+            if (ndm == 2) {
+                VInt csnds(3), csids(3);
                 // two contact elements
                 csnds[0] = tags[0];
                 csnds[1] = tags[3];
@@ -1794,7 +1901,9 @@ int BackgroundMesh::gridFSInoDT() {
                 csids[0] = sids[0];
                 csids[1] = sids[3];
                 csids[2] = sids[2];
-                if (createContact(csnds, csids, elends[numele * j])) {
+
+                createContact(csnds, csids, elends[numele * j]);
+                if (!elends[numele * j].empty()) {
                     gtags[numele * j] = contact_tag;
                 }
 
@@ -1804,14 +1913,42 @@ int BackgroundMesh::gridFSInoDT() {
                 csids[0] = sids[0];
                 csids[1] = sids[1];
                 csids[2] = sids[3];
-                if (createContact(csnds, csids, elends[numele * j + 1])) {
+
+                createContact(csnds, csids, elends[numele * j + 1]);
+                if (!elends[numele * j + 1].empty()) {
                     gtags[numele * j + 1] = contact_tag;
                 }
-                continue;
+            } else if (ndm == 3) {
+                // 3D contact element: TODO
             }
-        } else if (ndm == 3 && slocal.size() == 8) {
-            // 3D contact element: TODO
+
             continue;
+        }
+
+        // for FSI
+
+        // node tags and sids
+        VInt tags(cbnodes.size(), -1), sids(cbnodes.size());
+        VVDouble ndcrds(cbnodes.size());
+        for (int i = 0; i < (int)tags.size(); ++i) {
+            if (types[i] != BACKGROUND_FIXED) {
+                auto& ctags = cbnodes[i]->getTags();
+                auto& ids = cbnodes[i]->getSid();
+                auto& crdsn = cbnodes[i]->getCrds();
+
+                // for FSI
+                if (types[i] == BACKGROUND_FLUID_STRUCTURE) {
+                    // tags[1] = f: get fluid node
+                    tags[i] = ctags[1];
+                    sids[i] = ids[1];
+                    ndcrds[i] = crdsn[1];
+                } else {
+                    // tags[0] = f
+                    tags[i] = ctags[0];
+                    sids[i] = ids[0];
+                    ndcrds[i] = crdsn[0];
+                }
+            }
         }
 
         // get surrounding cells
@@ -2113,6 +2250,13 @@ int BackgroundMesh::gridFSInoDT() {
         }
 
         // if all nodes are fluid nodes
+        if (gtags[i] == 0) {
+            opserr << "WARNING: gtags[i] == 0 for elends, elends[i]=\n";
+            for (const auto& val : elends[i]) {
+                opserr << val << "\n";
+            }
+            opserr << "]\n";
+        }
         ID& nds = elenodes[gtags[i]];
         for (int j = 0; j < (int)elends[i].size(); ++j) {
             nds[nds.Size()] = elends[i][j];
@@ -2136,15 +2280,20 @@ int BackgroundMesh::gridFSInoDT() {
         ParticleGroup* group =
             dynamic_cast<ParticleGroup*>(OPS_getMesh(item.first));
         if (group == 0) {
-            opserr << "WARNING: failed to get particle group -- "
-                      "BgMesh::gridFluid\n";
+            opserr << "WARNING: failed to get particle group ";
+            opserr << "(gtag = " << item.first << ")\n";
+            opserr << "elenodes = [\n";
+            for (int k = 0; k < item.second.Size(); ++k) {
+                opserr << item.second(k) << "\n";
+            }
+            opserr << "] -- BgMesh::gridFSInoDT\n";
             return -1;
         }
         group->setEleNodes(item.second);
 
         if (group->newElements(item.second) < 0) {
             opserr << "WARNING: failed to create elements for mesh ";
-            opserr << group->getTag() << " -- BgMesh::gridFluid\n";
+            opserr << group->getTag() << " -- BgMesh::gridFSInoDT\n";
             return -1;
         }
     }
@@ -2915,10 +3064,17 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums) {
                 auto& dvn = bnode.getAccel();
                 auto& pn = bnode.getPressure();
                 auto& dpn = bnode.getPdot();
-                vels[i] = vn[0];
-                dvns[i] = dvn[0];
-                pns[i] = pn[0];
-                dpns[i] = dpn[0];
+                if (types[i] == BACKGROUND_FLUID_STRUCTURE) {
+                    vels[i] = vn[1];
+                    dvns[i] = dvn[1];
+                    pns[i] = pn[1];
+                    dpns[i] = dpn[1];
+                } else {
+                    vels[i] = vn[0];
+                    dvns[i] = dvn[0];
+                    pns[i] = pn[0];
+                    dpns[i] = dpn[0];
+                }
             }
         }
 
@@ -3218,10 +3374,12 @@ int BackgroundMesh::interpolate(const VDouble& values, const VDouble& N,
 
 int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
                                   VInt& elends) {
+    elends.clear();
+
     // check inputs
     int ndm = OPS_GetNDM();
     if (ndtags.size() != sids.size()) {
-        return 1;
+        return 0;
     }
     if (ndm == 2) {
         if (ndtags.size() != 3) {
@@ -3243,29 +3401,33 @@ int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
 
     if (grp.size() == 1) {
         // from same structure
-        return 1;
+        return 0;
     }
 
     // get secondary node
     int secondary = 0;
     int id = 0;
     bool find = false;
-    for (std::map<int, VInt>::iterator it = grp.begin(); it != grp.end();
-         ++it) {
-        VInt& nds = it->second;
+    for (const auto& item : grp) {
+        const VInt& nds = item.second;
         if (nds.size() == 1) {
             // secondary node with largest sid
-            if (!find || (id < it->first)) {
-                id = it->first;
+            if (!find || (id < item.first)) {
+                id = item.first;
                 secondary = nds[0];
                 find = true;
             }
-        } else if (find && id < it->first) {
-            // if primary nodes have larger sid
+        }
+    }
+
+    // if primary nodes have larger sid
+    for (const auto& item : grp) {
+        const VInt& nds = item.second;
+        if (nds.size() > 1 && id < item.first) {
             find = false;
         }
     }
-    if (!find) return 1;
+    if (!find) return 0;
 
     // index for secondary node
     int index = 0;
@@ -3280,7 +3442,6 @@ int BackgroundMesh::createContact(const VInt& ndtags, const VInt& sids,
     }
 
     // get primary nodes
-    elends.clear();
     for (int i = 0; i < (int)ndtags.size() - 1; ++i) {
         elends.push_back(ndtags[index]);
         index += 1;

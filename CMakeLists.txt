@@ -27,7 +27,7 @@ set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
 include(OpenSeesFunctions)
 
 # include user config
@@ -261,10 +261,7 @@ endif()
 find_package (Python COMPONENTS Interpreter Development)
 
 
-
-  find_package(MPI)
-
-
+find_package(MPI)
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -547,6 +544,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -562,13 +562,18 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesSP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+
+    target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    target_compile_definitions(OpenSeesSP 
-      PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG}
-    )
-    
+    if (DEFINED OPENMPI)
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+    else()
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+    endif()
+
     target_link_libraries(OpenSeesSP 
        OPS_InterpTcl 
        OpenSeesLIB
@@ -601,6 +606,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiParameterMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp        
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -613,8 +621,10 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+    target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
+
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
     endif()			    
