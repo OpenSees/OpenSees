@@ -197,6 +197,11 @@ class ShellMITC4 : public Element {
     Matrix *Ki;
     double init_disp[4][6];
     Damping *theDamping[4];
+
+    // Massimo Petracca 2022.
+    // initialization flag: we need this to avoid re-computing
+    // initial displacements if setDomain is called after a recvSelf!
+    bool m_initialzed = false;
 } ; 
 
 
