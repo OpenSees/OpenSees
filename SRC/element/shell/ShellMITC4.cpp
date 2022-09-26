@@ -331,12 +331,14 @@ void  ShellMITC4::setDomain( Domain *theDomain )
        opserr << "ShellMITC4::setDomain - node " << connectedExternalNodes(i);
        opserr << " NEEDS 6 dof - GARBAGE RESULTS or SEGMENTATION FAULT WILL FOLLOW\n";
      }       
-     init_disp[i][0] = nodeDisp(0);
-     init_disp[i][1] = nodeDisp(1);
-     init_disp[i][2] = nodeDisp(2);
-     init_disp[i][3] = nodeDisp(3);
-     init_disp[i][4] = nodeDisp(4);
-     init_disp[i][5] = nodeDisp(5);
+     if (!m_initialzed) {
+         init_disp[i][0] = nodeDisp(0);
+         init_disp[i][1] = nodeDisp(1);
+         init_disp[i][2] = nodeDisp(2);
+         init_disp[i][3] = nodeDisp(3);
+         init_disp[i][4] = nodeDisp(4);
+         init_disp[i][5] = nodeDisp(5);
+     }
   }
 
   //compute drilling stiffness penalty parameter
@@ -360,6 +362,9 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   computeBasis( ) ;
 
   this->DomainComponent::setDomain(theDomain);
+
+  // set as initialized
+  m_initialzed = true;
 }
 
 
@@ -2101,7 +2106,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(14);
+  static ID idData(15);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -2126,6 +2131,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
     idData(13) = 0;
   else
     idData(13) = 1;
+  idData(14) = static_cast<int>(m_initialzed);
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2176,7 +2182,7 @@ int  ShellMITC4::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(14);
+  static ID idData(15);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2193,6 +2199,7 @@ int  ShellMITC4::recvSelf (int commitTag,
     doUpdateBasis = true;
   else
     doUpdateBasis = false;
+  m_initialzed = static_cast<bool>(idData(14));
 
   static Vector vectData(5 + 6*4);
   res += theChannel.recvVector(dataTag, commitTag, vectData);

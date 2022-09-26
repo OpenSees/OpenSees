@@ -74,6 +74,7 @@ Matrix  PlaneStrainMaterial::tangent(3,3) ;
 //null constructor
 PlaneStrainMaterial::PlaneStrainMaterial( ) : 
 NDMaterial(0, ND_TAG_PlaneStrainMaterial ), 
+theMaterial(nullptr),
 strain(3) 
 { }
 
@@ -310,6 +311,18 @@ PlaneStrainMaterial::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }
 
+  // put the strains in a vector and send it
+  static Vector vecData(3);
+  vecData(0) = strain(0);
+  vecData(1) = strain(1);
+  vecData(2) = strain(2);
+
+  res = theChannel.sendVector(this->getDbTag(), commitTag, vecData);
+  if (res < 0) {
+      opserr << "PlaneStrainMaterial::sendSelf() - failed to send vector data\n";
+      return res;
+  }
+
   // now send the materials data
   res = theMaterial->sendSelf(commitTag, theChannel);
   if (res < 0) 
@@ -327,7 +340,7 @@ PlaneStrainMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
   static ID idData(3);
   res = theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
-    opserr << "PlaneStrainMaterial::sendSelf() - failed to send id data\n";
+    opserr << "PlaneStrainMaterial::recvSelf() - failed to recv id data\n";
     return res;
   }
 
@@ -347,10 +360,21 @@ PlaneStrainMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
   }
   theMaterial->setDbTag(idData(2));
 
+  // recv a vector containing strains and set the strains
+  static Vector vecData(3);
+  res = theChannel.recvVector(this->getDbTag(), commitTag, vecData);
+  if (res < 0) {
+      opserr << "PlaneStrainMaterial::recvSelf() - failed to recv vector data\n";
+      return res;
+  }
+  strain(0) = vecData(0);
+  strain(1) = vecData(1);
+  strain(2) = vecData(2);
+
   // now receive the materials data
   res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
   if (res < 0) 
-    opserr << "PlaneStrainMaterial::sendSelf() - failed to send vector material\n";
+    opserr << "PlaneStrainMaterial::recvSelf() - failed to recv vector material\n";
   
   return res;
 }
