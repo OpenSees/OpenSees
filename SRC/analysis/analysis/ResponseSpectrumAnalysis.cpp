@@ -57,7 +57,7 @@
 
 #define DMP_DBL_LARGE 1.0e200
 
-void
+int
 OPS_ResponseSpectrumAnalysis(void)
 {
 	// responseSpectrum $tsTag $dir <-scale $scale>
@@ -73,11 +73,11 @@ OPS_ResponseSpectrumAnalysis(void)
 	AnalysisModel* theAnalysisModel = *OPS_GetAnalysisModel();
 	if (theAnalysisModel == nullptr) {
 		opserr << "modalProperties Error: no AnalysisModel available.\n";
-		exit(-1);
+		return -1;
 	}
 	if (theAnalysisModel->getDomainPtr() == nullptr) {
 		opserr << "modalProperties Error: no Domain available.\n";
-		exit(-1);
+		return -1;
 	}
 
 	// init default arguments
@@ -94,26 +94,26 @@ OPS_ResponseSpectrumAnalysis(void)
 	if (nargs < 2) {
 		opserr << "responseSpectrum $tsTag $dir <-scale $scale> <-damp $damp>\n"
 			"Error: at least 2 arguments should be provided.\n";
-		exit(-1);
+		return -1;
 	}
 	int numData = 1;
 	int tstag;
 	if (OPS_GetInt(&numData, &tstag) < 0) {
 		opserr << "responseSpectrum Error: Failed to get timeSeries tag.\n";
-		exit(-1);
+		return -1;
 	}
 	ts = OPS_getTimeSeries(tstag);
 	if (ts == nullptr) {
 		opserr << "responseSpectrum Error: Failed to get timeSeries with tag = " << tstag << ".\n";
-		exit(-1);
+		return -1;
 	}
 	if (OPS_GetInt(&numData, &dir) < 0) {
 		opserr << "responseSpectrum Error: Failed to get direction.\n";
-		exit(-1);
+		return -1;
 	}
 	if (dir < 1 || dir > ndf) {
 		opserr << "responseSpectrum Error: provided direction (" << dir << ") should be in the range 1-" << ndf << ".\n";
-		exit(-1);
+		return -1;
 	}
 
 	// parse optional data
@@ -127,20 +127,20 @@ OPS_ResponseSpectrumAnalysis(void)
 			if (loc < nargs - 1) {
 				if (OPS_GetDouble(&numData, &scale) < 0) {
 					opserr << "responseSpectrum Error: Failed to get scale factor.\n";
-					exit(-1);
+					return -1;
 				}
 				++loc;
 			}
 			else {
 				opserr << "responseSpectrum Error: scale factor requested but not provided.\n";
-				exit(-1);
+				return -1;
 			}
 		}
 		else if (strcmp(value, "-mode") == 0) {
 			if (loc < nargs - 1) {
 				if (OPS_GetInt(&numData, &mode_id) < 0) {
 					opserr << "responseSpectrum Error: Failed to get the mode_id.\n";
-					exit(-1);
+					return -1;
 				}
 				--mode_id; // make it 0-based
 				single_mode = true;
@@ -148,7 +148,7 @@ OPS_ResponseSpectrumAnalysis(void)
 			}
 			else {
 				opserr << "responseSpectrum Error: mode_id requested but not provided.\n";
-				exit(-1);
+				return -1;
 			}
 		}
 		++loc;
@@ -162,6 +162,7 @@ OPS_ResponseSpectrumAnalysis(void)
 	else
 		rsa.analyze();
 
+	return 0;
 }
 
 ResponseSpectrumAnalysis::ResponseSpectrumAnalysis(

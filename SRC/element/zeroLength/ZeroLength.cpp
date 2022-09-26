@@ -1351,6 +1351,13 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
     if (strcmp(argv[0],"zaxis") == 0) {
       theResponse = new ElementResponse(this, 22, Vector(3));
     }    
+
+    if (strcmp(argv[0],"materials") == 0) {
+      theResponse = new ElementResponse(this, 23, ID(numMaterials1d));
+    }
+    if (strcmp(argv[0],"directions") == 0) {
+      theResponse = new ElementResponse(this, 24, ID(numMaterials1d));
+    }    
     
     if ((strcmp(argv[0],"dampingForces") == 0) || (strcmp(argv[0],"rayleighForces") == 0)) {
             theResponse = new ElementResponse(this, 15, Vector(numDOF));
@@ -1371,7 +1378,8 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
     const Vector& disp2 = theNodes[1]->getTrialDisp();
     const Vector  diff  = disp2-disp1;
     Vector &theVec = *(eleInformation.theVector);
-
+    ID &theID = *(eleInformation.theID);
+    
     switch (responseID) {
     case -1:
         return -1;
@@ -1442,7 +1450,15 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
       theVec(1) = transformation(2,1);
       theVec(2) = transformation(2,2);
       return 0;      
-     
+    case 23:
+      for (int i = 0; i < numMaterials1d; i++)
+	theID(i) = theMaterial1d[i]->getTag();
+      return 0;
+    case 24:
+      for (int i = 0; i < numMaterials1d; i++)
+	theID(i) = (*dir1d)(i) + 1; // Add one to match user input
+      return 0;      
+      
     default:
         return -1;
     }

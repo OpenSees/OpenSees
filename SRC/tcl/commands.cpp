@@ -248,8 +248,8 @@ extern void *OPS_NewmarkHSIncrReduct(void);
 extern void *OPS_WilsonTheta(void);
 
 // for response spectrum analysis
-extern void OPS_DomainModalProperties(void);
-extern void OPS_ResponseSpectrumAnalysis(void);
+extern int OPS_DomainModalProperties(void);
+extern int OPS_ResponseSpectrumAnalysis(void);
 
 #include <Newmark.h>
 #include <StagedNewmark.h>
@@ -5756,7 +5756,8 @@ int
 modalProperties(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
     OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    OPS_DomainModalProperties();
+    if (OPS_DomainModalProperties() < 0)
+	    return TCL_ERROR;
     return TCL_OK;
 }
 
@@ -5764,7 +5765,8 @@ int
 responseSpectrum(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
     OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
-    OPS_ResponseSpectrumAnalysis();
+    if (OPS_ResponseSpectrumAnalysis() < 0)
+	    return TCL_ERROR;
     return TCL_OK;
 }
 
