@@ -119,11 +119,15 @@ public:
         }
     }
 
-    virtual void setDomain(Domain* domain, const ID& node_ids)
+    virtual void setDomain(Domain* domain, const ID& node_ids, bool initialized)
     {
         // call base class setDomain to
         // get nodes and save initial displacements and rotations
-        ASDShellQ4Transformation::setDomain(domain, node_ids);
+        ASDShellQ4Transformation::setDomain(domain, node_ids, initialized);
+
+        // quick return
+        if (domain == nullptr || initialized)
+            return;
 
         // init state variables
         revertToStart();
@@ -446,7 +450,8 @@ public:
 
         // 9*4 -> 9 quaternions +
         auto lamq = [&v, &pos](QuaternionType& x) {
-            x = QuaternionType(v(pos++), v(pos++), v(pos++), v(pos++));
+            x = QuaternionType(v(pos), v(pos+1), v(pos+2), v(pos+3));
+            pos += 4;
         };
         lamq(m_Q0);
         for (int i = 0; i < 4; i++)

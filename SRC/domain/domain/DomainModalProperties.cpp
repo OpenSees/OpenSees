@@ -183,8 +183,8 @@ namespace
             if (ndm != trial)
                 DMP_ERR("Cannot mix nodes with different dimensions\n");
         }
-        if ((ndm != 2) && (ndm != 3))
-            DMP_ERR("DomainModalProperties can be calculated only when NDM is 2 or 3, not " << ndm << "\n");
+        if ((ndm != 1) && (ndm != 2) && (ndm != 3))
+            DMP_ERR("DomainModalProperties can be calculated only when NDM is 1, 2 or 3, not " << ndm << "\n");
         return ndm;
     }
 
@@ -460,7 +460,14 @@ bool DomainModalProperties::compute(Domain* domain)
     // number of dimensions
     int ndm = domainSize(domain);
     // max number of DOFs per node, translational and rotational only
-    int ndf = ndm == 2 ? 3 : 6;
+    int ndf;
+    switch (ndm)
+    {
+    case 1: ndf = 1; break;
+    case 2: ndf = 3; break;
+    case 3: ndf = 6; break;
+    default: ndf = 0; break;
+    }
     // number of nodes
     int num_nodes = domain->getNumNodes();
     // number of equations (not the real one, include rotational dofs even if not present)
@@ -707,8 +714,10 @@ bool DomainModalProperties::compute(Domain* domain)
             }
         }
     };
-    compute_extra_rotary_mass(ML);
-    compute_extra_rotary_mass(MLfree);
+    if (ndf == 3 == ndf == 6) {
+        compute_extra_rotary_mass(ML);
+        compute_extra_rotary_mass(MLfree);
+    }
 
     // compute the total mass of the domain (total and free-only)
     m_total_mass.Zero();
@@ -764,7 +773,7 @@ bool DomainModalProperties::compute(Domain* domain)
             for (int inode = 0; inode < num_nodes; ++inode) {
                 int index = inode * ndf;
                 R(index + i) = 1.0; // one at the current DOF for direct translational or rotational effects
-                if (i >= ndm) {
+                if (i >= ndm && (ndf == 3 || ndf == 6)) {
                     const Vector& pos = nodemap.nodes[static_cast<size_t>(inode)]->getCrds();
                     double dx = pos(0) - m_center_of_mass(0);
                     double dy = pos(1) - m_center_of_mass(1);
@@ -884,12 +893,16 @@ namespace
 
         // labels
         static std::vector<std::string> lab_freq = { "MODE", "LAMBDA", "OMEGA", "FREQUENCY", "PERIOD" };
+        static std::vector<std::string> lab_mass_1d = { "MX" };
         static std::vector<std::string> lab_mass_2d = { "MX", "MY", "RMZ" };
         static std::vector<std::string> lab_mass_3d = { "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_efmass_1d = { "MODE", "MX" };
         static std::vector<std::string> lab_efmass_2d = { "MODE", "MX", "MY", "RMZ" };
         static std::vector<std::string> lab_efmass_3d = { "MODE", "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_pos_1d = { "X" };
         static std::vector<std::string> lab_pos_2d = { "X", "Y" };
         static std::vector<std::string> lab_pos_3d = { "X", "Y", "Z" };
+        static std::vector<std::string> lab_sep_1 = { DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_2 = { DMP_OUT_HLINE, DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_3 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_4 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
@@ -903,7 +916,7 @@ namespace
         // problem size
         int ndm = dmp.centerOfMass().Size();
         out << DMP_OUT_RECORD << " 1. DOMAIN SIZE:\n"
-            << DMP_OUT_COMMENT << " This is the size of the problem: 2 for 2D problems, 3 for 3D problems.\n"
+            << DMP_OUT_COMMENT << " This is the size of the problem: 1 for 1D problems, 2 for 2D problems, 3 for 3D problems.\n"
             << ndm << "\n\n\n";
         
         // eigenvalues and derived quantities
@@ -928,23 +941,23 @@ namespace
         out << DMP_OUT_RECORD << " 3. TOTAL MASS OF THE STRUCTURE:\n"
             << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
             << DMP_OUT_COMMENT << " including the masses at fixed DOFs (if any).\n";
-        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_mass_1d : (ndm == 2 ? lab_mass_2d : lab_mass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_3 : lab_sep_6), DMP_OUT_COMMENT);
         print_vec(dmp.totalMass());
         out << "\n\n";
         out << DMP_OUT_RECORD << " 4. TOTAL FREE MASS OF THE STRUCTURE:\n"
             << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
             << DMP_OUT_COMMENT << " including only the masses at free DOFs.\n";
-        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_mass_1d : (ndm == 2 ? lab_mass_2d : lab_mass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_3 : lab_sep_6), DMP_OUT_COMMENT);
         print_vec(dmp.totalFreeMass());
         out << "\n\n";
 
         // center of mass
         out << DMP_OUT_RECORD << " 5. CENTER OF MASS:\n"
             << DMP_OUT_COMMENT << " The center of mass of the structure, calculated from free masses.\n";
-        print_svec(ndm == 2 ? lab_pos_2d : lab_pos_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_2 : lab_sep_3, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_pos_1d : (ndm == 2 ? lab_pos_2d : lab_pos_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_2 : lab_sep_3), DMP_OUT_COMMENT);
         print_vec(dmp.centerOfMass());
         out << "\n\n";
 
@@ -953,40 +966,40 @@ namespace
             << DMP_OUT_COMMENT << " The participation factor for a certain mode 'a' in a certain direction 'i'\n"
             << DMP_OUT_COMMENT << " indicates how strongly displacement along (or rotation about)\n"
             << DMP_OUT_COMMENT << " the global axes is represented in the eigenvector of that mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationFactors());
         out << "\n\n";
 
         // modal participation masses
         out << DMP_OUT_RECORD << " 7. MODAL PARTICIPATION MASSES:\n"
             << DMP_OUT_COMMENT << " The modal participation masses for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMasses());
         out << "\n\n";
 
         // modal participation masses (cumulative)
         out << DMP_OUT_RECORD << " 8. MODAL PARTICIPATION MASSES (cumulative):\n"
             << DMP_OUT_COMMENT << " The cumulative modal participation masses for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassesCumulative());
         out << "\n\n";
 
         // modal participation masses
         out << DMP_OUT_RECORD << " 9. MODAL PARTICIPATION MASS RATIOS (%):\n"
             << DMP_OUT_COMMENT << " The modal participation mass ratios (%) for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassRatios(), 100.0);
         out << "\n\n";
 
         // modal participation masses (cumulative)
         out << DMP_OUT_RECORD << " 10. MODAL PARTICIPATION MASS RATIOS (%) (cumulative):\n"
             << DMP_OUT_COMMENT << " The cumulative modal participation mass ratios (%) for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassRatiosCumulative(), 100.0);
         out << "\n\n";
     }

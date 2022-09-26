@@ -35,7 +35,9 @@ Matrix  PlaneStressRebarMaterial::tangent(3,3) ;
 //null constructor
 PlaneStressRebarMaterial::PlaneStressRebarMaterial( ) : 
 NDMaterial(0, ND_TAG_PlaneStressRebarMaterial ), 
-strain(5) 
+theMat(nullptr),
+strain(3),
+angle(0.0), c(0.0), s(0.0)
 { }
 
 void* OPS_PlaneStressRebarMaterial()
@@ -117,7 +119,7 @@ PlaneStressRebarMaterial::getCopy( )
 NDMaterial* 
 PlaneStressRebarMaterial::getCopy( const char *type ) 
 {
-  if (strcmp(type,this->getType()) == 0)
+  if (strcmp(type, "PlaneStress2D") == 0 || strcmp(type, "PlaneStress") == 0)
     return this->getCopy( ) ;
   else
     return 0;
@@ -312,8 +314,11 @@ PlaneStressRebarMaterial::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }
 
-  static Vector vecData(1);
+  static Vector vecData(4);
   vecData(0) = angle;
+  vecData(1) = strain(0);
+  vecData(2) = strain(1);
+  vecData(3) = strain(2);
 
   res = theChannel.sendVector(dataTag, commitTag, vecData);
   if (res < 0) {
@@ -322,9 +327,9 @@ PlaneStressRebarMaterial::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // now send the materials data
-  res += theMat->sendSelf(commitTag, theChannel);
+  res = theMat->sendSelf(commitTag, theChannel);
   if (res < 0) 
-    opserr << "PlaneStressRebarMaterial::sendSelf() - failed to send material1" << endln;
+    opserr << "PlaneStressRebarMaterial::sendSelf() - failed to send material" << endln;
 
   return res;
 }
@@ -340,13 +345,13 @@ PlaneStressRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   static ID idData(3);
   res = theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "PlaneStressRebarMaterial::sendSelf() - failed to receive id data" << endln;
+    opserr << "PlaneStressRebarMaterial::recvSelf() - failed to receive id data" << endln;
     return res;
   }
 
   this->setTag(idData(0));
   int matClassTag = idData(1);
-  if (theMat->getClassTag() != matClassTag) {
+  if (theMat == 0 || theMat->getClassTag() != matClassTag) {
     if (theMat != 0) delete theMat;
     theMat = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMat == 0) {
@@ -356,13 +361,16 @@ PlaneStressRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   }
   theMat->setDbTag(idData(2));
 
-  static Vector vecData(1);
+  static Vector vecData(4);
   res = theChannel.recvVector(dataTag, commitTag, vecData);
   if (res < 0) {
-    opserr << "PlaneStressRebarMaterial::sendSelf() - failed to receive vector data" << endln;
+    opserr << "PlaneStressRebarMaterial::recvSelf() - failed to receive vector data" << endln;
     return res;
   }
   angle = vecData(0);
+  strain(0) = vecData(1);
+  strain(1) = vecData(2);
+  strain(2) = vecData(3);
   double rang = angle * 0.0174532925;
   c = cos(rang);
   s = sin(rang);
@@ -370,7 +378,7 @@ PlaneStressRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   // now receive the materials data
   res = theMat->recvSelf(commitTag, theChannel, theBroker);
   if (res < 0) 
-    opserr << "PlaneStressRebarMaterial::sendSelf() - failed to receive material1" << endln;
+    opserr << "PlaneStressRebarMaterial::recvSelf() - failed to receive material1" << endln;
   
   return res;
 }
