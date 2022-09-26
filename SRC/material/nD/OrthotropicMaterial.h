@@ -49,6 +49,9 @@ public:
 	OrthotropicMaterial();
 	~OrthotropicMaterial();
 
+	// info
+	const char* getClassType(void) const { return "OrthotropicMaterial"; };
+
 	// density
 	double getRho(void);
 

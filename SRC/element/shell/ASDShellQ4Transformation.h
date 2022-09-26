@@ -89,8 +89,16 @@ public:
     {
     }
 
-    virtual void setDomain(Domain* domain, const ID& node_ids)
+    virtual void setDomain(Domain* domain, const ID& node_ids, bool initialized)
     {
+        // if domain is null
+        if (domain == nullptr) {
+            for (size_t i = 0; i < 4; i++) {
+                m_nodes[i] = nullptr;
+            }
+            return;
+        }
+
         // get nodes and save initial displacements and rotations
         for (size_t i = 0; i < 4; i++) {
             m_nodes[i] = domain->getNode(node_ids(i));
@@ -99,15 +107,17 @@ public:
                     << " exists in the model\n";
                 exit(-1);
             }
-            const Vector& iU = m_nodes[i]->getTrialDisp();
-            if (iU.Size() != 6) {
-                opserr << "ASDShellQ4Transformation::setDomain - node " << node_ids(i)
-                    << " has " << iU.Size() << " DOFs, while 6 are expected\n";
-                exit(-1);
+            if (!initialized) {
+                const Vector& iU = m_nodes[i]->getTrialDisp();
+                if (iU.Size() != 6) {
+                    opserr << "ASDShellQ4Transformation::setDomain - node " << node_ids(i)
+                        << " has " << iU.Size() << " DOFs, while 6 are expected\n";
+                    exit(-1);
+                }
+                size_t index = i * 6;
+                for (size_t j = 0; j < 6; j++)
+                    m_U0(index + j) = iU(j);
             }
-            size_t index = i * 6;
-            for (size_t j = 0; j < 6; j++)
-                m_U0(index + j) = iU(j);
         }
     }
 
