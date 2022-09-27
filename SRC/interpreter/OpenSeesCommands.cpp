@@ -104,7 +104,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MumpsSOE.h>
 #endif
 #include <BackgroundMesh.h>
-#include <string.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -1017,6 +1016,13 @@ int OPS_SetIntOutput(int *numData, int*data, bool scalar)
 }
 
 int OPS_SetIntListsOutput(std::vector<std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
+int OPS_SetIntDictOutput(std::map<const char*, int>& data)
 {
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
@@ -3373,23 +3379,15 @@ void* OPS_MumpsSolver() {
 }
 
 int OPS_TestLists() {
-    std::vector<std::vector<const char*>> data = {
-        {"ab", "bc", "cd", "de", "ef", "fg"},
-        {"1ab", "2bc", "12cd", "90de", "21ef", "67fg"},
-        {"2ab", "5bc", "23cd", "90de", "111ef", "67fg"},
-        {"3ab", "6bc", "34cd", "90de", "234ef", "98fg"},
-        {"4ab", "7bc", "56cd", "90de", "4567ef", "23fg"},
-        {"5ab", "8bc", "64cd", "90de", "323ef", "76fg"}
-    };
-    // {"ab", "bc", "cd", "de", "ef", "fg"};
-    // for (int i=0; i<N;++i) {
-    //     // for (int j=0; j<i; ++j) {
-    //         char s[128];
-    //         sprintf(s, "%d", i);
-    //         data[i] = s;
-    //     // }
-    // }
-    if (OPS_SetStringLists(data) < 0) {
+    std::map<const char*, int> data;
+    data["a"] = 1;
+    data["aa"] = 2;
+    data["ab"] = 3;
+    data["ac"] = 4;
+    data["dd"] = 5;
+    data["da"] = 6;
+    data["db"] = 7;
+    if (OPS_SetIntDictOutput(data) < 0) {
         opserr << "WARNING: failed to set list\n";
         return -1;
     }

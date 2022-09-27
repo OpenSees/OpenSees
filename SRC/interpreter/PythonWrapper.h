@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 
 #include <vector>
+#include <map>
 
 class PythonWrapper
 {
@@ -78,6 +79,7 @@ public:
     void setOutputs(double* data, int numArgs, bool scalar);
     void setOutputs(const char* str);
     void setOutputs(std::vector<std::vector<int>> &data);
+    void setOutputs(std::map<const char*, int>& data);
     void setOutputs(std::vector<std::vector<double>> &data);
     void setOutputs(std::vector<const char*> &data);
     void setOutputs(std::vector<std::vector<const char*>> &data);

@@ -113,6 +113,10 @@ int DL_Interpreter::setInt(std::vector<std::vector<int>> &data) {
     return -1;
 }
 
+int DL_Interpreter::setInt(std::map<const char*, int>& data) {
+    return -1;
+}
+
 int
 DL_Interpreter::setDouble(double *, int numArgs, bool scalar)
 {

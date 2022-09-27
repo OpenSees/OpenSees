@@ -122,6 +122,8 @@ class ConvergenceTest;
 #define OPS_GetIntInput ops_getintinput_
 #define OPS_SetIntOutput ops_setintoutput_
 #define OPS_SetIntListsOutput ops_setintlistsoutput_
+#define OPS_SetIntDictOutput ops_setintdictoutput_
+#define OPS_SetIntDictListOutput ops_setintdictlistoutput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_SetDoubleListsOutput ops_setdoublelistsoutput_
@@ -171,6 +173,7 @@ class ConvergenceTest;
 
 #include <OPS_Globals.h>
 #include <vector>
+#include <map>
 // #include <tcl.h>
 //#include "TclModelBuilder.h"
 
@@ -185,6 +188,8 @@ extern "C" int         OPS_ResetCurrentInputArg(int cArg);
 extern "C" int         OPS_GetIntInput(int* numData, int* data);
 extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
 extern "C" int         OPS_SetIntListsOutput(std::vector<std::vector<int>>& data);
+extern "C" int         OPS_SetIntDictOutput(std::map<const char*, int>& data);
+extern "C" int         OPS_SetIntDictListOutput(std::map<const char*, std::vector<int>>& data);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
 extern "C" int         OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data);
