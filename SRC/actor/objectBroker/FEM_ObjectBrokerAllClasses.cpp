@@ -157,6 +157,7 @@
 #include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
+#include "DoubleMembranePlateFiberSection.h"
 #include "Bidirectional.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 
@@ -174,9 +175,12 @@
 #include "J2BeamFiber3d.h"
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
+#include "PlaneStrainMaterial.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
+#include "PlaneStressRebarMaterial.h"
+#include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
 #include "PlateRebarMaterial.h"
 #include "PlateFromPlaneStressMaterial.h"
@@ -1555,6 +1559,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_MembranePlateFiberSection:
 		return new MembranePlateFiberSection();
 
+	case SEC_TAG_DoubleMembranePlateFiberSection:
+		return new DoubleMembranePlateFiberSection();
+
 	//start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
         case SEC_TAG_LayeredShellFiberSection:
 	  return new LayeredShellFiberSection();
@@ -1618,8 +1625,17 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
 
+  case ND_TAG_PlaneStrainMaterial:
+    return new PlaneStrainMaterial();
+
   case ND_TAG_OrthotropicMaterial:
     return new OrthotropicMaterial();
+
+  case ND_TAG_PlaneStressRebarMaterial:
+    return new PlaneStressRebarMaterial();
+
+  case ND_TAG_PlaneStressLayeredMaterial:
+    return new PlaneStressLayeredMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:
