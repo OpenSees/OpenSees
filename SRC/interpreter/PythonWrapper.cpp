@@ -161,6 +161,15 @@ void PythonWrapper::setOutputs(std::vector<const char*> &data) {
     currentResult = item;
 }
 
+void PythonWrapper::setOutputs(std::vector<std::vector<const char*>> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(data[i]);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
 PyObject*
 PythonWrapper::getResults()
 {

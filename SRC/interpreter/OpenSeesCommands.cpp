@@ -1081,6 +1081,13 @@ int OPS_SetStringList(std::vector<const char*>& data)
     return interp->setString(data);
 }
 
+int OPS_SetStringLists(std::vector<std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -3366,8 +3373,15 @@ void* OPS_MumpsSolver() {
 }
 
 int OPS_TestLists() {
-    int N = 6;
-    std::vector<const char*> data = {"ab", "bc", "cd", "de", "ef", "fg"};
+    std::vector<std::vector<const char*>> data = {
+        {"ab", "bc", "cd", "de", "ef", "fg"},
+        {"1ab", "2bc", "12cd", "90de", "21ef", "67fg"},
+        {"2ab", "5bc", "23cd", "90de", "111ef", "67fg"},
+        {"3ab", "6bc", "34cd", "90de", "234ef", "98fg"},
+        {"4ab", "7bc", "56cd", "90de", "4567ef", "23fg"},
+        {"5ab", "8bc", "64cd", "90de", "323ef", "76fg"}
+    };
+    // {"ab", "bc", "cd", "de", "ef", "fg"};
     // for (int i=0; i<N;++i) {
     //     // for (int j=0; j<i; ++j) {
     //         char s[128];
@@ -3375,7 +3389,7 @@ int OPS_TestLists() {
     //         data[i] = s;
     //     // }
     // }
-    if (OPS_SetStringList(data) < 0) {
+    if (OPS_SetStringLists(data) < 0) {
         opserr << "WARNING: failed to set list\n";
         return -1;
     }

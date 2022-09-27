@@ -80,6 +80,7 @@ public:
     void setOutputs(std::vector<std::vector<int>> &data);
     void setOutputs(std::vector<std::vector<double>> &data);
     void setOutputs(std::vector<const char*> &data);
+    void setOutputs(std::vector<std::vector<const char*>> &data);
     PyObject* getResults();
 
 private:
