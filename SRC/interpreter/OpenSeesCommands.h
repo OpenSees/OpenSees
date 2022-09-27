@@ -433,6 +433,8 @@ void* OPS_ParallelDisplacementControl();
 
 void* OPS_MumpsSolver();
 
+int OPS_TestIntLists();
+
 // Sensitivity:BEGIN /////////////////////////////////////////////
 int OPS_computeGradients();
 int OPS_sensitivityAlgorithm();

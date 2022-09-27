@@ -77,6 +77,7 @@ public:
     void setOutputs(int* data, int numArgs, bool scalar);
     void setOutputs(double* data, int numArgs, bool scalar);
     void setOutputs(const char* str);
+    void setOutputs(std::vector<std::vector<int>> &data);
     PyObject* getResults();
 
 private:

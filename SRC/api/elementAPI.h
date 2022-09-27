@@ -121,6 +121,7 @@ class ConvergenceTest;
 #define OPS_Error ops_error_
 #define OPS_GetIntInput ops_getintinput_
 #define OPS_SetIntOutput ops_setintoutput_
+#define OPS_SetIntListsOutput ops_setintlistsoutput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_AllocateMaterial ops_allocatematerial_
@@ -166,6 +167,7 @@ class ConvergenceTest;
 #define OPS_GetDomain ops_getdomain_
 
 #include <OPS_Globals.h>
+#include <vector>
 // #include <tcl.h>
 //#include "TclModelBuilder.h"
 
@@ -179,6 +181,7 @@ extern "C" int         OPS_ResetCurrentInputArg(int cArg);
 //extern "C" int       OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 extern "C" int         OPS_GetIntInput(int* numData, int* data);
 extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
+extern "C" int         OPS_SetIntListsOutput(std::vector<std::vector<int>>& data);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
 extern "C" const char* OPS_GetString(); // does a strcpy

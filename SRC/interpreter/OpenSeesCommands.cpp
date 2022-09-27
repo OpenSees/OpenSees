@@ -1015,6 +1015,13 @@ int OPS_SetIntOutput(int *numData, int*data, bool scalar)
     return interp->setInt(data, *numData, scalar);
 }
 
+int OPS_SetIntListsOutput(std::vector<std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
 int OPS_GetDoubleInput(int *numData, double *data)
 {
     if (cmds == 0) return 0;
@@ -3341,6 +3348,21 @@ void* OPS_MumpsSolver() {
 #endif
 #endif
 
+}
+
+int OPS_TestIntLists() {
+    int N = 10;
+    std::vector<std::vector<int>> data(N);
+    for (int i=0; i<N;++i) {
+        for (int j=0; j<i; ++j) {
+            data[i].push_back(j);
+        }
+    }
+    if (OPS_SetIntListsOutput(data) < 0) {
+        opserr << "WARNING: failed to set int list of list\n";
+        return -1;
+    }
+    return 0;
 }
 
 // Sensitivity:BEGIN /////////////////////////////////////////////

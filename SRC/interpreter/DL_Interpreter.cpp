@@ -35,6 +35,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 #include "DL_Interpreter.h"
+#include <iostream>
 
 DL_Interpreter  *ops_TheActiveInterpreter = 0;
 
@@ -105,6 +106,10 @@ DL_Interpreter::resetInput(int cArg)
 int
 DL_Interpreter::setInt(int *, int numArgs, bool scalar)
 {
+    return -1;
+}
+
+int DL_Interpreter::setInt(std::vector<std::vector<int>> &data) {
     return -1;
 }
 

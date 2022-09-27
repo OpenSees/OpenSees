@@ -134,6 +134,15 @@ PythonWrapper::setOutputs(const char* str)
     currentResult = Py_BuildValue("s", str);
 }
 
+void PythonWrapper::setOutputs(std::vector<std::vector<int>> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(&data[i][0], (int)data[i].size(), false);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
 PyObject*
 PythonWrapper::getResults()
 {
@@ -2730,6 +2739,17 @@ static PyObject *Py_ops_NDTest(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_TestIntLists(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_TestIntLists() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -2955,6 +2975,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("runImportanceSamplingAnalysis", &Py_ops_runImportanceSamplingAnalysis);
     addCommand("IGA", &Py_ops_IGA);
     addCommand("NDTest", &Py_ops_NDTest);
+    addCommand("TestIntLists", &Py_ops_TestIntLists);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
