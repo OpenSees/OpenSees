@@ -3413,22 +3413,6 @@ void* OPS_MumpsSolver() {
 
 }
 
-int OPS_TestLists() {
-    std::map<const char*, std::vector<const char*>> data;
-    data["a"] = {"1","2","3"};
-    data["aa"] = {"-1","4","6"};
-    data["ab"] =  {"5","8","3"};
-    data["ac"] = {"1","0","9"};
-    data["dd"] = {"5","6","7"};
-    data["da"] = {"7","8","9"};
-    data["db"] = {"3","4","5"};
-    if (OPS_SetStringDictList(data) < 0) {
-        opserr << "WARNING: failed to set list\n";
-        return -1;
-    }
-    return 0;
-}
-
 // Sensitivity:BEGIN /////////////////////////////////////////////
 
 int OPS_computeGradients()
