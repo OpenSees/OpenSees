@@ -1122,6 +1122,13 @@ int OPS_SetStringDict(std::map<const char*, const char*>& data)
     return interp->setString(data);
 }
 
+int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -3407,15 +3414,15 @@ void* OPS_MumpsSolver() {
 }
 
 int OPS_TestLists() {
-    std::map<const char*, std::vector<double>> data;
-    data["a"] = {1,2,3};
-    data["aa"] = {-1,4,6};
-    data["ab"] =  {5,8,3};
-    data["ac"] = {1,0,9};
-    data["dd"] = {5,6,7};
-    data["da"] = {7,8,9};
-    data["db"] = {3,4,5};
-    if (OPS_SetDoubleDictListOutput(data) < 0) {
+    std::map<const char*, std::vector<const char*>> data;
+    data["a"] = {"1","2","3"};
+    data["aa"] = {"-1","4","6"};
+    data["ab"] =  {"5","8","3"};
+    data["ac"] = {"1","0","9"};
+    data["dd"] = {"5","6","7"};
+    data["da"] = {"7","8","9"};
+    data["db"] = {"3","4","5"};
+    if (OPS_SetStringDictList(data) < 0) {
         opserr << "WARNING: failed to set list\n";
         return -1;
     }

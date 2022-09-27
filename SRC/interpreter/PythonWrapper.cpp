@@ -220,6 +220,16 @@ void PythonWrapper::setOutputs(std::map<const char*, const char*>& data) {
     currentResult = dict;
 }
 
+void PythonWrapper::setOutputs(std::map<const char*, std::vector<const char*>>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        setOutputs(item.second);
+        PyDict_SetItemString(dict, item.first, currentResult);
+        Py_DECREF(currentResult);
+    }
+    currentResult = dict;
+}
+
 PyObject*
 PythonWrapper::getResults()
 {

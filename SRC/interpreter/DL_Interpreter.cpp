@@ -163,6 +163,10 @@ DL_Interpreter::setString(std::vector<std::vector<const char*>>& data)
     return -1;
 }
 
+int DL_Interpreter::setString(std::map<const char*, std::vector<const char*>>& data) {
+    return -1;
+}
+
 int
 DL_Interpreter::runCommand(const char*)
 {
