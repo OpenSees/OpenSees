@@ -335,6 +335,11 @@ PythonModule::setString(std::vector<std::vector<const char*>>& data) {
     return 0;
 }
 
+int PythonModule::setString(std::map<const char*, const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::runCommand(const char *cmd) {
     return PyRun_SimpleString(cmd);

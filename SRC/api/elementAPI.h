@@ -149,6 +149,7 @@ class ConvergenceTest;
 #define OPS_SetString ops_setstring
 #define OPS_SetStringList ops_setstringlist
 #define OPS_SetStringLists ops_setstringlists
+#define OPS_SetStringDict ops_setstringdict
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
 #define OPS_GetFEDatastore ops_getfedatastore_
@@ -200,6 +201,7 @@ extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a st
 extern "C" int         OPS_SetString(const char* str);
 extern "C" int         OPS_SetStringList(std::vector<const char*>& data);
 extern "C" int         OPS_SetStringLists(std::vector<std::vector<const char*>>& data);
+extern "C" int         OPS_SetStringDict(std::map<const char*, const char*>& data);
 extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
 extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
 extern "C" eleObj*     OPS_GetElement(int* eleTag);

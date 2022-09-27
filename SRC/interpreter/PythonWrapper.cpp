@@ -190,6 +190,16 @@ void PythonWrapper::setOutputs(std::vector<std::vector<const char*>> &data) {
     currentResult = item;
 }
 
+void PythonWrapper::setOutputs(std::map<const char*, const char*>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        auto* val = Py_BuildValue("s", item.second);
+        PyDict_SetItemString(dict, item.first, val);
+        Py_DECREF(val);
+    }
+    currentResult = dict;
+}
+
 PyObject*
 PythonWrapper::getResults()
 {
