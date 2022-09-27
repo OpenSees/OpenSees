@@ -80,6 +80,7 @@ public:
     void setOutputs(const char* str);
     void setOutputs(std::vector<std::vector<int>> &data);
     void setOutputs(std::map<const char*, int>& data);
+    void setOutputs(std::map<const char*, std::vector<int>>& data);
     void setOutputs(std::vector<std::vector<double>> &data);
     void setOutputs(std::map<const char*, double>& data);
     void setOutputs(std::vector<const char*> &data);

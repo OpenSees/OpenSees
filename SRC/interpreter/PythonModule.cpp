@@ -299,6 +299,11 @@ int PythonModule::setInt(std::map<const char*, int>& data) {
     return 0;
 }
 
+int PythonModule::setInt(std::map<const char*, std::vector<int>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     wrapper.setOutputs(data, numArgs, scalar);
