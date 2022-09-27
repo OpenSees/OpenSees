@@ -1051,6 +1051,13 @@ int OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data)
     return interp->setDouble(data);
 }
 
+int OPS_SetDoubleDictOutput(std::map<const char* ,double>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
 const char * OPS_GetString(void)
 {
     if (cmds == 0) return "Invalid String Input!";
@@ -3379,7 +3386,7 @@ void* OPS_MumpsSolver() {
 }
 
 int OPS_TestLists() {
-    std::map<const char*, int> data;
+    std::map<const char*, double> data;
     data["a"] = 1;
     data["aa"] = 2;
     data["ab"] = 3;
@@ -3387,7 +3394,7 @@ int OPS_TestLists() {
     data["dd"] = 5;
     data["da"] = 6;
     data["db"] = 7;
-    if (OPS_SetIntDictOutput(data) < 0) {
+    if (OPS_SetDoubleDictOutput(data) < 0) {
         opserr << "WARNING: failed to set list\n";
         return -1;
     }

@@ -81,6 +81,7 @@ public:
     void setOutputs(std::vector<std::vector<int>> &data);
     void setOutputs(std::map<const char*, int>& data);
     void setOutputs(std::vector<std::vector<double>> &data);
+    void setOutputs(std::map<const char*, double>& data);
     void setOutputs(std::vector<const char*> &data);
     void setOutputs(std::vector<std::vector<const char*>> &data);
     PyObject* getResults();
