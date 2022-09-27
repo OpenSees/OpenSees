@@ -450,7 +450,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
-    if ((strcmp(argv[1],"DamperMaterial") == 0)) {
+    if (strcmp(argv[1],"DamperMaterial") == 0 || strcmp(argv[1],"Damper") == 0) {
       void *theMat = OPS_DamperMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
