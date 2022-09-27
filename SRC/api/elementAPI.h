@@ -144,6 +144,7 @@ class ConvergenceTest;
 #define OPS_GetString ops_getstring
 #define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
+#define OPS_SetStringList ops_setstringlist
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
 #define OPS_GetFEDatastore ops_getfedatastore_
@@ -189,6 +190,7 @@ extern "C" int         OPS_SetDoubleListsOutput(std::vector<std::vector<double>>
 extern "C" const char* OPS_GetString(); // does a strcpy
 extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a strcpy
 extern "C" int         OPS_SetString(const char* str);
+extern "C" int         OPS_SetStringList(std::vector<const char*>& data);
 extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
 extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
 extern "C" eleObj*     OPS_GetElement(int* eleTag);

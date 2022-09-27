@@ -104,6 +104,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MumpsSOE.h>
 #endif
 #include <BackgroundMesh.h>
+#include <string.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -1071,6 +1072,13 @@ int OPS_SetString(const char* str)
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->setString(str);
+}
+
+int OPS_SetStringList(std::vector<const char*>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
 }
 
 Domain* OPS_GetDomain(void)
@@ -3358,15 +3366,17 @@ void* OPS_MumpsSolver() {
 }
 
 int OPS_TestLists() {
-    int N = 10;
-    std::vector<std::vector<double>> data(N);
-    for (int i=0; i<N;++i) {
-        for (int j=0; j<i; ++j) {
-            data[i].push_back(j*0.01);
-        }
-    }
-    if (OPS_SetDoubleListsOutput(data) < 0) {
-        opserr << "WARNING: failed to set double list of list\n";
+    int N = 6;
+    std::vector<const char*> data = {"ab", "bc", "cd", "de", "ef", "fg"};
+    // for (int i=0; i<N;++i) {
+    //     // for (int j=0; j<i; ++j) {
+    //         char s[128];
+    //         sprintf(s, "%d", i);
+    //         data[i] = s;
+    //     // }
+    // }
+    if (OPS_SetStringList(data) < 0) {
+        opserr << "WARNING: failed to set list\n";
         return -1;
     }
     return 0;
