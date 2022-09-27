@@ -301,6 +301,11 @@ PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setDouble(std::vector<std::vector<double>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setString(const char *str) {
     wrapper.setOutputs(str);

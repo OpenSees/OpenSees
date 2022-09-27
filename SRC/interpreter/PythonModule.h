@@ -82,6 +82,7 @@ class PythonModule: public DL_Interpreter
     virtual int setInt(int *, int numArgs, bool scalar);
     virtual int setInt(std::vector<std::vector<int>>& data);
     virtual int setDouble(double *, int numArgs, bool scalar);
+    virtual int setDouble(std::vector<std::vector<double>>& data);
     virtual int setString(const char*);
 
     // methods to run a command in the interpreter

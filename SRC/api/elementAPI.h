@@ -124,6 +124,7 @@ class ConvergenceTest;
 #define OPS_SetIntListsOutput ops_setintlistsoutput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
+#define OPS_SetDoubleListsOutput ops_setdoublelistsoutput_
 #define OPS_AllocateMaterial ops_allocatematerial_
 #define OPS_AllocateElement ops_allocateelement_
 #define OPS_GetMaterialType ops_getmaterialtype_
@@ -184,6 +185,7 @@ extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
 extern "C" int         OPS_SetIntListsOutput(std::vector<std::vector<int>>& data);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
+extern "C" int         OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data);
 extern "C" const char* OPS_GetString(); // does a strcpy
 extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a strcpy
 extern "C" int         OPS_SetString(const char* str);
