@@ -86,6 +86,7 @@ class PythonModule: public DL_Interpreter
     virtual int setDouble(double *, int numArgs, bool scalar);
     virtual int setDouble(std::vector<std::vector<double>>& data);
     virtual int setDouble(std::map<const char*, double>& data);
+    virtual int setDouble(std::map<const char*, std::vector<double>>& data);
     virtual int setString(const char*);
     virtual int setString(std::vector<const char*>& data);
     virtual int setString(std::vector<std::vector<const char*>>& data);

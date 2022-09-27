@@ -182,6 +182,16 @@ void PythonWrapper::setOutputs(std::map<const char*, double>& data) {
     currentResult = dict;
 }
 
+void PythonWrapper::setOutputs(std::map<const char*, std::vector<double>>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        setOutputs(&(item.second[0]), (int)item.second.size(), false);
+        PyDict_SetItemString(dict, item.first, currentResult);
+        Py_DECREF(currentResult);
+    }
+    currentResult = dict;
+}
+
 void PythonWrapper::setOutputs(std::vector<const char*> &data) {
     PyObject *item = PyList_New((Py_ssize_t)data.size());
     for (std::size_t i = 0; i < data.size(); ++i) {
