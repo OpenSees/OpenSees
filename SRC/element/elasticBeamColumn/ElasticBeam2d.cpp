@@ -106,7 +106,45 @@ to get element tag and node tags
 to get element data
     */
     if (info.Size() == 0 || info(0) == 1) {
-        if (OPS_GetNumRemainingInputArgs() > 3) {
+            
+        double checkSection = 0.0;
+        bool sectionCheck;
+
+        numData = 1;
+        // Read the first argument after the node, there is only 2 possibilities.
+        // It's an A or its a section tag.
+        if (OPS_GetDoubleInput(&numData, &checkSection) < 0) {
+            opserr << "WARNING failed to read doubles\n";
+            return 0;
+        }
+
+        // check if check first input is an integer or not
+        double intpart;
+        if (modf(checkSection, &intpart) == 0.0) {
+            int checkSectionInt = (int) checkSection;
+            // It's an integer, so check if it's a section or not
+            SectionForceDeformation* theSection =
+                OPS_getSectionForceDeformation(checkSectionInt);
+            if (theSection == 0) {
+                // It is not a section so....
+                 sectionCheck = false;
+            }
+            else
+            {
+                 sectionCheck = true;
+            }
+        }
+        else
+        {
+            // not an integer so it is not an section
+            sectionCheck = false;
+        }
+
+        // Reset the Input Reader back to 5. 5 is the last position in argv (element (1) type (2) eleID (3) nodeI (4) nodeJ (5))
+        OPS_ResetCurrentInputArg(5);
+        
+        // Just add one more checking to ensure that the remaining code work wells.
+        if (sectionCheck == false && OPS_GetNumRemainingInputArgs() > 3) {
             // Read A, E, Iz
             numData = 3;
             if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
