@@ -814,10 +814,11 @@ int OPS_SP()
     }
 
     if(OPS_GetNumRemainingInputArgs() < 3) {
-	opserr<<"insufficient number of args\n";
-	return -1;
+		opserr<<"insufficient number of args\n";
+		return -1;
     }
-
+	
+	// As
     SP_Constraint *theSP = 0;
 
     // get tags
@@ -890,6 +891,105 @@ int OPS_SP()
     }
 
     return 0;
+}
+
+int OPS_SPNode()
+{
+	Domain* theDomain = OPS_GetDomain();
+	if (theDomain == 0) {
+		opserr << "WARNING: domain is not defined\n";
+		return -1;
+	}
+
+	int ndf = OPS_GetNDF();
+
+	if (OPS_GetNumRemainingInputArgs() < (1+ndf)) {
+		opserr << "insufficient number of args\n";
+		return -1;
+	}
+
+	// get tags
+	int nodeID;
+	int numData = 1;
+	if (OPS_GetIntInput(&numData, &nodeID) < 0) {
+		opserr << "WARNING invalid int tags\n";
+		return -1;
+	}
+
+	// get node
+	Node* theNode = theDomain->getNode(nodeID);
+	if (theNode == 0) {
+		opserr << "ERROR node " << nodeID << "does not exist\n";
+		return -1;
+	}
+
+	// get value
+	std::vector<double> value;
+	numData = 1;
+	int dofIterator = 0;
+	double curValue = 0;
+	while (dofIterator < ndf) {
+		if (OPS_GetDoubleInput(&numData, &curValue) < 0) {
+			opserr << "WARNING invalid double value\n";
+			return -1;
+		}
+		value.push_back(curValue);
+		dofIterator++;
+	}
+
+	// get sp const
+	bool isSpConst = false;
+	bool userPattern = false;
+	int loadPatternTag = 0;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* type = OPS_GetString();
+		if (strcmp(type, "-const") == 0) {
+			isSpConst = true;
+		}
+		else if (strcmp(type, "-pattern") == 0) {
+			if (OPS_GetNumRemainingInputArgs() > 0) {
+				int numData = 1;
+				if (OPS_GetIntInput(&numData, &loadPatternTag) < 0) {
+					opserr << "WARNING invalid pattern tag\n";
+					return -1;
+				}
+				userPattern = true;
+			}
+		}
+	}
+
+	// get the current pattern tag
+	LoadPattern* currPattern = theActiveLoadPattern;
+	if (userPattern == false) {
+		if (currPattern == 0) {
+			opserr << "WARNING: no current pattern is set\n";
+			return -1;
+		}
+		loadPatternTag = currPattern->getTag();
+	}
+
+	numData = 1;
+	dofIterator = 0;
+
+	while (dofIterator < ndf) {
+		if (value.at(dofIterator) != 0) {
+			SP_Constraint* theSP = new SP_Constraint(nodeID, dofIterator, value.at(dofIterator), isSpConst);
+			if (theSP == 0) return -1;
+
+			// add load to domain
+			if (theDomain->addSP_Constraint(theSP, loadPatternTag) == false) {
+				opserr << "WARNING: failed to add SP_Constraint to domain\n";
+				delete theSP;
+				return -1;
+			}
+		}
+		dofIterator++;
+
+	}
+	// create pattern
+
+
+	return 0;
 }
 
 int OPS_ImposedMotionSP()

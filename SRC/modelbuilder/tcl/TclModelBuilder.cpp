@@ -270,6 +270,9 @@ TclCommand_addNodalMass(ClientData clientData, Tcl_Interp *interp, int argc,
 int
 TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,   
 		      TCL_Char **argv);
+int
+TclCommand_addSPNode(ClientData clientData, Tcl_Interp* interp, int argc,
+	TCL_Char** argv);
 
 int
 TclCommand_addImposedMotionSP(ClientData clientData, 
@@ -539,6 +542,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
   Tcl_CreateCommand(interp, "sp", TclCommand_addSP,
 		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "spNode", TclCommand_addSPNode,
+	  (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "imposedMotion", 
 		    TclCommand_addImposedMotionSP,
@@ -3562,14 +3568,52 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  //int ndf = theTclBuilder->getNDF();
+  int ndf = theTclBuilder->getNDF();
 
   // check number of arguments
   if (argc < 4) {
     opserr << "WARNING bad command - want: sp nodeId dofID value";
     printCommand(argc, argv);
     return TCL_ERROR;
-  }    
+  }
+  
+  // Notes on the if:
+  // Check if the Arguments could be reasonably assumed as an spNode constraint command. At first, check if the amount of argument is at least satisfty the ndf amount.
+  // Then check if the extra inputs is caused by the -const and -pattern
+  // eg we have Basic Builder -ndm 2 -ndf3
+  // spNode would have 5 args, that is command itself, the Node and three load. 
+  // However we can reasonably presume that it could be
+  // sp 2 2 1.0 -const 1
+  // so check if the extra is caused by -const or -pattern
+  // This would mean that there is a chance that a user with valid command
+  // sp 2 1 1 1 -const 1 would not work, but there is additional check below
+  // if (pos - 1) is already larger than 2 + ndf (e.g. 5), that probably mean its 
+  // sp 2 1 1 1 -const 1 
+  // The if could be simplified but this shoudl work.
+  if (argc >= (2 + (ndf))) {
+	  int pos = (2 + (ndf));
+	  if ((strcmp(argv[pos - 1], "-const") == 0) || (strcmp(argv[pos - 1], "-pattern") == 0)) {
+		  if ((strcmp(argv[pos - 3], "-const") == 0) || (strcmp(argv[pos - 3], "-pattern") == 0)) {
+			  if ((pos - 3) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
+		  else {
+			  if ((pos - 1) > (2 + ndf)) {
+				  TclCommand_addSPNode(clientData, interp, argc,
+					  argv);
+				  return TCL_OK;
+			  }
+		  }
+	  }
+	  else {
+		  TclCommand_addSPNode(clientData, interp, argc,
+			  argv);
+		  return TCL_OK;
+	  }
+  }
 
   // get the nodeID, dofId and value of the constraint
   int nodeId, dofId;
@@ -3643,6 +3687,103 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
+}
+
+int
+TclCommand_addSPNode(ClientData clientData, Tcl_Interp* interp, int argc,
+	TCL_Char** argv)
+{
+	// ensure the destructor has not been called - 
+	if (theTclBuilder == 0) {
+		opserr << "WARNING builder has been destroyed - sp \n";
+		return TCL_ERROR;
+	}
+
+	//int ndf = theTclBuilder->getNDF();
+
+	// check number of arguments
+	int ndf = theTclBuilder->getNDF();
+
+	if (argc < (2 + ndf)) {
+		opserr << "WARNING bad command - want: spNode nodeId valueDOF (in accordance with NDM)";
+		printCommand(argc, argv);
+		return TCL_ERROR;
+	}
+
+	// get the nodeID, dofId and value of the constraint
+	int nodeId;
+	Vector value(ndf);
+	double curValue;
+	if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
+		opserr << "WARNING invalid nodeId: " << argv[1] << " -  spNode nodeId valueDOF (in accordance with NDM) \n";
+		return TCL_ERROR;
+	}
+	int pos = 2;
+
+	while (pos < (2 + (ndf)) && Tcl_GetDouble(interp, argv[pos], &curValue) == TCL_OK) {
+		value(pos - 2) = curValue;
+		pos++;
+	}
+
+	bool isSpConst = false;
+	bool userSpecifiedPattern = false;
+	int loadPatternTag = 0; // some pattern that will never be used!
+
+	while (pos != argc) {
+		if (strcmp(argv[pos], "-const") == 0) {
+			// allow user to specify const load
+			isSpConst = true;
+		}
+		else if (strcmp(argv[pos], "-pattern") == 0) {
+			// allow user to specify load pattern other than current
+			pos++;
+			userSpecifiedPattern = true;
+			if (pos == argc ||
+				Tcl_GetInt(interp, argv[pos], &loadPatternTag) != TCL_OK) {
+
+				opserr << "WARNING invalid patternTag - load " << nodeId << "\n";
+				return TCL_ERROR;
+			}
+		}
+		pos++;
+	}
+
+
+	// if load pattern tag has not changed - get the pattern tag from current one
+	if (userSpecifiedPattern == false) {
+		if (theTclLoadPattern == 0) {
+			opserr << "WARNING no current pattern - sp " << nodeId << " dofID value\n";
+			return TCL_ERROR;
+		}
+		else
+			loadPatternTag = theTclLoadPattern->getTag();
+	}
+
+	LoadPattern* thePattern = theTclDomain->getLoadPattern(loadPatternTag);
+
+	// create a homogeneous constraint
+
+	for (int SP_Iterator = 0; SP_Iterator < (ndf); SP_Iterator++) {
+		if (value(SP_Iterator) != 0.0) {
+			SP_Constraint* theSP = new SP_Constraint(nodeId, SP_Iterator, value(SP_Iterator), isSpConst);
+
+			if (theSP == 0) {
+				opserr << "WARNING ran out of memory for SP_Constraint ";
+				opserr << " - sp " << nodeId << " dofID value\n";
+				return TCL_ERROR;
+			}
+			if (theTclDomain->addSP_Constraint(theSP, loadPatternTag) == false) {
+				opserr << "WARNING could not add SP_Constraint to domain ";
+				printCommand(argc, argv);
+				delete theSP;
+				return TCL_ERROR;
+			}
+		}
+	}
+
+
+	// if get here we have successfully created the node and added it to the domain
+	return TCL_OK;
 }
 
 int

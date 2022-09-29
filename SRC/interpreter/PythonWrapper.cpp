@@ -759,6 +759,18 @@ static PyObject *Py_ops_SP(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject* Py_ops_SPNode(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_SPNode() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_fixX(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2786,6 +2798,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setCreep", &Py_ops_setCreep);
     addCommand("eleResponse", &Py_ops_eleResponse);
     addCommand("sp", &Py_ops_SP);
+    addCommand("spNode", &Py_ops_SPNode);
     addCommand("fixX", &Py_ops_fixX);
     addCommand("fixY", &Py_ops_fixY);
     addCommand("fixZ", &Py_ops_fixZ);
