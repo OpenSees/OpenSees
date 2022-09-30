@@ -49,7 +49,7 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-#include <MaterialResponse.h> // KK
+#include <MaterialResponse.h> // for FSAM
 
 void *
 OPS_Concrete02()
@@ -97,7 +97,7 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
   fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets),
-    mon(0) // KK
+    mon(0) // for FSAM
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -132,7 +132,7 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   Ets = 0.1*fc/epsc0;
 }
 
-// KK
+// for FSAM
 Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
     double _epscu, double _rat, double _ft, double _Ets, int MON) :
     UniaxialMaterial(tag, MAT_TAG_Concrete02),
@@ -165,7 +165,7 @@ UniaxialMaterial*
 Concrete02::getCopy(void)
 {
   //Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
-  Concrete02* theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets, mon); // KK
+  Concrete02* theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets, mon); // for FSAM
   
   return theCopy;
 }
@@ -194,7 +194,7 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
   if (fabs(deps) < DBL_EPSILON)
     return 0;
 
-  if (mon == 1) { // KK: monotonic
+  if (mon == 1) { // for FSAM: monotonic
 
       if (eps <= 0.0) {
 
@@ -523,7 +523,7 @@ Concrete02::getVariable(const char *varName, Information &theInfo)
     return -1;
 }
 
-// KK - probably dont need this if using getVariable !!!
+// for FSAM
 Response* Concrete02::setResponse(const char** argv, int argc,
     OPS_Stream& theOutput)
 {
@@ -542,7 +542,7 @@ Response* Concrete02::setResponse(const char** argv, int argc,
     return theResponse;
 }
 
-// KK - probably dont need this if using getVariable !!!
+// for FSAM
 int Concrete02::getResponse(int responseID, Information& matInfo)
 {
     if (responseID == 100) {
@@ -556,7 +556,7 @@ int Concrete02::getResponse(int responseID, Information& matInfo)
     return 0;
 }
 
-// KK - replace this one with getVariable here and in FSAM !!!
+// for FSAM
 Vector Concrete02::getInputParameters(void)
 {
     Vector input_par(8); // size = max number of parameters (assigned + default)
