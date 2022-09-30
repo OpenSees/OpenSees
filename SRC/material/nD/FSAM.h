@@ -143,6 +143,9 @@ private:
 	double   alfadow;				// stiffness Coefficient of Dowel Action 
 	Vector ConcreteInput;			// vector for storing concrete input variables
 
+	int CrackingCriteria;			// 1 - strain based (original), 2 - stress based (flexible) 
+	int crackBcriteria;
+
 	// Biaxial Damage Parameters ......................
 	// Variables for getting value from betaf4 function
 	double beta;

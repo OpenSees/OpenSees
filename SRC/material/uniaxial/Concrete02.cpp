@@ -49,6 +49,8 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
+#include <MaterialResponse.h> // KK
+
 void *
 OPS_Concrete02()
 {
@@ -94,7 +96,8 @@ OPS_Concrete02()
 Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
-  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets),
+    mon(0) // KK
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -129,6 +132,24 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   Ets = 0.1*fc/epsc0;
 }
 
+// KK
+Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
+    double _epscu, double _rat, double _ft, double _Ets, int MON) :
+    UniaxialMaterial(tag, MAT_TAG_Concrete02),
+    fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets), mon(MON)
+{
+    ecminP = 0.0;
+    deptP = 0.0;
+
+    eP = 2.0 * fc / epsc0;
+    epsP = 0.0;
+    sigP = 0.0;
+    eps = 0.0;
+    sig = 0.0;
+    e = 2.0 * fc / epsc0;
+
+}
+
 Concrete02::Concrete02(void):
   UniaxialMaterial(0, MAT_TAG_Concrete02)
 {
@@ -143,7 +164,8 @@ Concrete02::~Concrete02(void)
 UniaxialMaterial*
 Concrete02::getCopy(void)
 {
-  Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
+  //Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
+  Concrete02* theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets, mon); // KK
   
   return theCopy;
 }
@@ -171,6 +193,22 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
 
   if (fabs(deps) < DBL_EPSILON)
     return 0;
+
+  if (mon == 1) { // KK: monotonic
+
+      if (eps <= 0.0) {
+
+          this->Compr_Envlp(eps, sig, e);
+
+      }
+      else if (eps > 0.0) {
+
+          this->Tens_Envlp(eps, sig, e);
+
+      }
+
+      return 0;
+  }
 
   // if the current strain is less than the smallest previous strain 
   // call the monotonic envelope in compression and reset minimum strain 
@@ -483,4 +521,56 @@ Concrete02::getVariable(const char *varName, Information &theInfo)
     return 0;
   } else
     return -1;
+}
+
+// KK - probably dont need this if using getVariable !!!
+Response* Concrete02::setResponse(const char** argv, int argc,
+    OPS_Stream& theOutput)
+{
+    Response* theResponse = 0;
+
+    if (strcmp(argv[0], "getInputParameters") == 0) {
+        Vector data1(8);
+        data1.Zero();
+        theResponse = new MaterialResponse(this, 100, data1);
+
+    }
+    else
+
+        return this->UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+    return theResponse;
+}
+
+// KK - probably dont need this if using getVariable !!!
+int Concrete02::getResponse(int responseID, Information& matInfo)
+{
+    if (responseID == 100) {
+        matInfo.setVector(this->getInputParameters());
+
+    }
+    else
+
+        return this->UniaxialMaterial::getResponse(responseID, matInfo);
+
+    return 0;
+}
+
+// KK - replace this one with getVariable here and in FSAM !!!
+Vector Concrete02::getInputParameters(void)
+{
+    Vector input_par(8); // size = max number of parameters (assigned + default)
+
+    input_par.Zero();
+
+    input_par(0) = this->getTag();
+    input_par(1) = fc;
+    input_par(2) = epsc0;
+    input_par(3) = fcu;
+    input_par(4) = epscu;
+    input_par(5) = rat;
+    input_par(6) = ft;
+    input_par(7) = Ets;
+
+    return input_par;
 }
