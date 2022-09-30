@@ -93,7 +93,7 @@ class TransformationFE: public FE_Element
     
     // static variables - single copy for all objects of the class	
     static Matrix **modMatrices; // array of pointers to class wide matrices
-    static Vector **modVectors;  // array of pointers to class widde vectors
+    static Vector **modVectors;  // array of pointers to class wide vectors
     static Matrix **theTransformations; // for holding pointers to the T matrices
     static int numTransFE;     // number of objects    
     static int transCounter;   // a counter used to indicate when to do something

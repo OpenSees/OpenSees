@@ -33,7 +33,7 @@
 // Description: This file contains the class definition for DOF_Group.
 // A DOF_Group object is instantiated by the ConstraintHandler for 
 // every unconstrained node in the domain. The constrained nodes require 
-// specialised types of DOF_Group; which deal with the constraints. DOF_Group
+// specialized types of DOF_Group; which deal with the constraints. DOF_Group
 // objects can handle 0 boundary constraints; if the eqn number of a DOF is 
 // less than START_EQN_NUM a value of 0.0 is set for disp, vel and accel when
 // a setNode*(Vector &) is invoked.
@@ -148,7 +148,7 @@ class DOF_Group: public TaggedObject
     static Matrix errMatrix;
     static Vector errVect;
     static Matrix **theMatrices; // array of pointers to class wide matrices
-    static Vector **theVectors;  // array of pointers to class widde vectors
+    static Vector **theVectors;  // array of pointers to class wide vectors
     static int numDOFs;           // number of objects    
 };
 

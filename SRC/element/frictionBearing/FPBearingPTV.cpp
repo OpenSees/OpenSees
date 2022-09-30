@@ -659,7 +659,7 @@ int FPBearingPTV::update()
         return 0;		
     }		
 	
-	//Factors to account for pressure, temperature and velocity dependences of friction
+	//Factors to account for pressure, temperature and velocity dependence of friction
 	double kpF; double kTF; double kvF;
 	double Mu_Adj;	
 	if (iCountTime == 0) {

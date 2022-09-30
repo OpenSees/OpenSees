@@ -307,7 +307,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     error = dlerror();
 
     //
-    // look for fortran procedure, trailing underscore
+    // look for FORTRAN procedure, trailing underscore
     //
 
     if (funcPtr == NULL) {

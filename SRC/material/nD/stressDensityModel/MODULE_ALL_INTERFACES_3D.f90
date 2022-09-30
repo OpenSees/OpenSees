@@ -272,11 +272,11 @@ MODULE ALL_INTERFACES_3D
     SIJ=PREF/HYDROSTATIC_PRESSURE*SIJ
 
     !**********************************************************************************************
-    ! INITIALISE PLASTIC MODULUS, DILATANCY & YIELD SURFACE AT THE START OF LOADING WHEN KEY = 0
+    ! INITIALIZE PLASTIC MODULUS, DILATANCY & YIELD SURFACE AT THE START OF LOADING WHEN KEY = 0
     !**********************************************************************************************
     
     IF (KEY.EQ.0) THEN
-        ! INITIALISATION FOR FIRST STEP IN THE ANALYSIS
+        ! INITIALIZATION FOR FIRST STEP IN THE ANALYSIS
         SURFACE                  = 1
         PLASTIC_SHEAR_MODULUS    = GNMAX*HYDROSTATIC_PRESSURE
         DILATANCY                = DILATANCY_COEFF_MU_MONO        

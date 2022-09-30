@@ -218,7 +218,7 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
     Enrgtot = 0.0;
     Enrgc = 0.0;
    
-    // updated yield forces per exursion in positive and negative loading direction
+    // updated yield forces per excursion in positive and negative loading direction
     fyPos = My_pos;
     fyNeg = My_neg;
    

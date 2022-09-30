@@ -130,7 +130,7 @@ class FE_Element: public TaggedObject
     static Matrix errMatrix;
     static Vector errVector;
     static Matrix **theMatrices; // array of pointers to class wide matrices
-    static Vector **theVectors;  // array of pointers to class widde vectors
+    static Vector **theVectors;  // array of pointers to class wide vectors
     static int numFEs;           // number of objects
     
 

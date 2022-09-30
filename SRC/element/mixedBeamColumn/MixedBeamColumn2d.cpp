@@ -178,7 +178,7 @@ void * OPS_MixedBeamColumn2d() {
     return 0;
   }
 
-  // Get beam integrataion
+  // Get beam integration
   BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(beamIntTag);
   if(theRule == 0) {
     opserr<<"beam integration not found\n";

@@ -33,7 +33,7 @@
 // HHTGeneralizedExplicit_TP is an algorithmic class for performing a transient analysis
 // using the HHTGeneralizedExplicit_TP integration scheme based on the trapezoidal rule.
 // Do not use this integrator for hybrid simulation. It updates the element displacements
-// twice per time step because it needs the resisiting force at Ut and Upt
+// twice per time step because it needs the resisting force at Ut and Upt
 
 #include <TransientIntegrator.h>
 

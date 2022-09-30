@@ -35,7 +35,7 @@
 
 // number of nodes per element
 #define BC3Dp_NUM_NODE 3
-// number of dimesnions
+// number of dimensions
 #define BC3Dp_NUM_NDM  3
 // degrees of freedom per element
 #define BC3Dp_NUM_DOF  15

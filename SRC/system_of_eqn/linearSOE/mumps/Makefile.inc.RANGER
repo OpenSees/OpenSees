@@ -149,11 +149,11 @@ LIBOTHERS =
 #  Use:
 #    -DAdd_ if your Fortran compiler adds an underscore at the end
 #              of symbols,
-#     -DAdd__ if your Fortran compiler adds 2 underscores,
+#     -DAdd__ if your FORTRAN compiler adds 2 underscores,
 #
-#     -DUPPER if your Fortran compiler uses uppercase symbols
+#     -DUPPER if your FORTRAN compiler uses uppercase symbols
 #
-#     leave empty if your Fortran compiler does not change the symbols.
+#     leave empty if your FORTRAN compiler does not change the symbols.
 #
 
 CDEFS = -DAdd_

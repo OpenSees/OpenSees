@@ -48,7 +48,7 @@
 #include <elementAPI.h>
 #include <vector>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix ZeroLength::ZeroLengthM2(2,2);
 Matrix ZeroLength::ZeroLengthM4(4,4);
 Matrix ZeroLength::ZeroLengthM6(6,6);
@@ -128,7 +128,7 @@ void* OPS_ZeroLength()
 
       if (theMats[i] == 0) {
 	opserr << "WARNING no material " << matTags(i) <<
-	  "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+	  "exists - element ZeroLength eleTag? iNode? jNode? " <<
 	  "-mat matID1? ... -dir dirMat1? ... " <<
 	  "<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;
 	return 0;
@@ -461,7 +461,7 @@ ZeroLength::ZeroLength(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 ZeroLength::~ZeroLength()
 {
     // invoke the destructor on any objects created by the object

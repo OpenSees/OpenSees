@@ -378,10 +378,10 @@ DistributedProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
     for (int i=0; i<idSize; i++) {
       int col = id(i);
       if (col < size && col >= 0) {
-	//	double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+	//	double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
 	double *coliiPtr;
 	if (processID == 0)
-	  coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+	  coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
 	else
 	  coliiPtr = &A[iDiagLoc[(*theMap)(col)] -1];
 
@@ -401,10 +401,10 @@ DistributedProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
     for (int i=0; i<idSize; i++) {
       int col = id(i);
       if (col < size && col >= 0) {
-	//  ydouble *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 		
+	//  ydouble *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 		
 	double *coliiPtr;
 	if (processID == 0)
-	  coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+	  coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
 	else
 	  coliiPtr = &A[iDiagLoc[(*theMap)(col)] -1];
 			

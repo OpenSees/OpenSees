@@ -1710,7 +1710,7 @@ int
 BbarBrickWithSensitivity::updateParameter(int parameterID, Information &info)
 {
 
-  opserr<<"warnning: BbarBrickWithSensitivity can not updateParameter!"<<endln;
+  opserr<<"ERROR: BbarBrickWithSensitivity can not updateParameter!"<<endln;
   return -1;
 }
 

@@ -46,7 +46,7 @@
 #include <string.h>
 #include <elementAPI.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix ZeroLengthRocking::ZeroLengthRockingM6(6,6);
 Matrix ZeroLengthRocking::ZeroLengthRockingM12(12,12);
 Vector ZeroLengthRocking::ZeroLengthRockingV6(6);
@@ -75,7 +75,7 @@ void* OPS_ZeroLengthRocking()
     int idata[3];
     int numdata = 3;
     if (OPS_GetIntInput(&numdata, idata) < 0) {
-	opserr << "WARNING invalied int inputs " <<
+	opserr << "WARNING invalid int inputs " <<
 	    "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
 	    "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
 	return 0;
@@ -88,7 +88,7 @@ void* OPS_ZeroLengthRocking()
     double ddata[4];
     numdata = 4;
     if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
-	opserr << "WARNING invalied double inputs " <<
+	opserr << "WARNING invalid double inputs " <<
 	    "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
 	    "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
 	return 0;

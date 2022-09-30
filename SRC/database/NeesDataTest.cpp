@@ -182,7 +182,7 @@ int main(int argc, char **argv)
   }
 
   //
-  //  a number of tests to test the insert data will fail if data invalied
+  //  a number of tests to test the insert data will fail if data invalid
   //     expected result: all should retuen != 0 and <tableName>.out should be unmodified
   //
 

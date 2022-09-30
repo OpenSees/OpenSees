@@ -340,7 +340,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "The user is advised to check that enough workspace and array storage have been allocated.\n";
       break;
     default:
-      opserr << "unrecognised return value\n";
+      opserr << "unrecognized return value\n";
     }
     
     eigenvalues = 0;

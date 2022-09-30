@@ -68,7 +68,7 @@ void* OPS_ZeroLengthContact3D()
     int idata[3];
     int numdata = 3;
     if (OPS_GetIntInput(&numdata, idata) < 0) {
-	opserr << "ZeroLengthContact3D::WARNING invalied int inputs\n";
+	opserr << "ZeroLengthContact3D::WARNING invalid int inputs\n";
 	return 0;
     }
     int eleTag = idata[0];
@@ -79,7 +79,7 @@ void* OPS_ZeroLengthContact3D()
     double ddata[4];
     numdata = 4;
     if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
-	opserr << "ZeroLengthContact3D::WARNING invalied double inputs\n";
+	opserr << "ZeroLengthContact3D::WARNING invalid double inputs\n";
 	return 0;
     }
     double Kn = ddata[0];
@@ -90,7 +90,7 @@ void* OPS_ZeroLengthContact3D()
     int dir;
     numdata = 1;
     if (OPS_GetIntInput(&numdata, &dir) < 0) {
-	opserr << "ZeroLengthContact3D::WARNING invalied direction\n";
+	opserr << "ZeroLengthContact3D::WARNING invalid direction\n";
 	return 0;
     }
   
@@ -105,11 +105,11 @@ void* OPS_ZeroLengthContact3D()
     if (dir==0) {
 	if (OPS_GetNumRemainingInputArgs() > 1) {
 	    if (OPS_GetDoubleInput(&numdata, &originX) < 0) {
-		opserr << "ZeroLengthContact3D::WARNING invalied originX\n";
+		opserr << "ZeroLengthContact3D::WARNING invalid originX\n";
 		return 0;
 	    }
 	    if (OPS_GetDoubleInput(&numdata, &originY) < 0) {
-		opserr << "ZeroLengthContact3D::WARNING invalied originY\n";
+		opserr << "ZeroLengthContact3D::WARNING invalid originY\n";
 		return 0;
 	    }
 	}
@@ -185,7 +185,7 @@ ZeroLengthContact3D::ZeroLengthContact3D(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 ZeroLengthContact3D::~ZeroLengthContact3D()
 {
   if (load != 0)

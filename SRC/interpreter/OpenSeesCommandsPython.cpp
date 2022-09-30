@@ -50,7 +50,7 @@ static PyObject *ops_UniaxialMaterialCommand(PyObject *self, PyObject *args)
   
   // Now add the material to the modelBuilder
   if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    PyErr_SetString(PyExc_RuntimeError, "ERROR could not add uniaaialMaterial.");
+    PyErr_SetString(PyExc_RuntimeError, "ERROR could not add uniaxaialMaterial.");
     delete theMaterial; // invoke the material objects destructor, otherwise mem leak
     return NULL;
   }
@@ -121,7 +121,7 @@ static PyObject *ops_getStrain(PyObject *self, PyObject *args)
     PyObject *ret = Py_BuildValue("d", strain);
     return ret;
   } else {
-    PyErr_SetString(PyExc_ValueError,"getStrain no active uniaxialMaerial - use testUniaxialMaterial function");
+    PyErr_SetString(PyExc_ValueError,"getStrain no active uniaxialMaterial - use testUniaxialMaterial function");
     return NULL;
   }
 }
@@ -134,7 +134,7 @@ static PyObject *ops_getStress(PyObject *self, PyObject *args)
     PyObject *ret = Py_BuildValue("d", stress);
     return ret;
   } else {
-    PyErr_SetString(PyExc_ValueError,"getStress no active uniaxialMaerial - use testUniaxialMaterial function");
+    PyErr_SetString(PyExc_ValueError,"getStress no active uniaxialMaterial - use testUniaxialMaterial function");
     return NULL;
   }
 }
@@ -147,7 +147,7 @@ static PyObject *ops_getTangent(PyObject *self, PyObject *args)
     PyObject *ret = Py_BuildValue("d", tangent);
     return ret;
   } else {
-    PyErr_SetString(PyExc_ValueError,"getTangent no active uniaxialMaerial - use testUniaxialMaterial function");
+    PyErr_SetString(PyExc_ValueError,"getTangent no active uniaxialMaterial - use testUniaxialMaterial function");
     return NULL;
   }
 }
@@ -213,7 +213,7 @@ damage1 -- damage due to ductility: D1(mu-1)\n\
 damage2 -- damage due to energy: D2(Eii/Eult)\n\
 beta -- power used to determine the degraded unloading stiffness based on ductility, \n\
         mu-beta (optional, default=0.0)\n\n\
-* uniaxialMaterial('Cable',tag,presetress,E,effUnitWeight,Lelement)\n\n";
+* uniaxialMaterial('Cable',tag,prestress,E,effUnitWeight,Lelement)\n\n";
 static char testUMaterial_docstring[] =
     "* testUniaxialMaterial(matTag)\n\n\
 Test a uniaxial material which has been defined with matTag\n";
@@ -725,13 +725,13 @@ static char eleLoad_docstring[] =
     "eleTag1,eleTag2,... -- tag of previously defined element\n\n"
     "* eleLoad(,'-type','-beamUniform',Wy[,Wx])\n"
     "* eleLoad(,'-type','-beamPoint',Py,xL[,Px])\n\n"
-    "Two-dimentional problem\n\n"
+    "Two-dimensional problem\n\n"
     "* eleLoad(,'-type','-beamUniform',Wy,Wz[,Wx])\n"
     "* eleLoad(,'-type','-beamPoint',Py,Pz,xL[,Px])\n\n"
-    "Three-dimentional problem\n\n"
-    "Wx -- mag of uniformily distributed ref load acting in direction along member length\n"
-    "Wy -- mag of uniformily distributed ref load acting in local y direction of element\n"
-    "Wz -- mag of uniformily distributed ref load acting in local z direction of element\n"
+    "Three-dimensional problem\n\n"
+    "Wx -- mag of uniformly distributed ref load acting in direction along member length\n"
+    "Wy -- mag of uniformly distributed ref load acting in local y direction of element\n"
+    "Wz -- mag of uniformly distributed ref load acting in local z direction of element\n"
     "Py -- mag of ref point load acting in direction along member length\n"
     "Py -- mag of ref point load acting in local y direction of element\n"
     "Pz -- mag of ref point load acting in local z direction of element\n"

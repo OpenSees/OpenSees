@@ -43,7 +43,7 @@
 // steps followed by Houbolt).
 //
 // note: the implementation does not do sub-step, it just cycles between trapezoidal, 
-// euler methods, and Houbolt. So to compare to paper or to Newmark or some other analysis, 
+// Euler methods, and Houbolt. So to compare to paper or to Newmark or some other analysis, 
 // user should specify dt/3 step size.
 //
 // What: "@(#) TRBDF3.h, revA"
@@ -80,7 +80,7 @@ public:
  protected:
 
  private:
-    int step;      // a flag indicating whether trap or euler step
+    int step;      // a flag indicating whether trap or Euler step
     double dt;     // last dt, if not same as previous we do trapezoidal step
     
     double c1, c2, c3;                  // some constants we need to keep

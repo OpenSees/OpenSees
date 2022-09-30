@@ -39,7 +39,7 @@
 
 //#include <fstream>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix N4BiaxialTruss::trussM2(2,2);
 Matrix N4BiaxialTruss::trussM8(8,8);
 Matrix N4BiaxialTruss::trussM12(12,12);
@@ -214,7 +214,7 @@ L(0.0), A(0.0), rho(0.0)
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 N4BiaxialTruss::~N4BiaxialTruss()
 {
 	// invoke the destructor on any objects created by the object
@@ -325,7 +325,7 @@ N4BiaxialTruss::setDomain(Domain *theDomain)
 		return;
 	}
 
-	// now determine the number of dof and the dimesnion    
+	// now determine the number of dof and the dimension    
 	int dofNd1 = theNodes[0]->getNumberDOF();
 	int dofNd2 = theNodes[1]->getNumberDOF();	
 	int dofNd3 = theNodes[2]->getNumberDOF();	

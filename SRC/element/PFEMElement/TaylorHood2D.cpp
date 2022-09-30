@@ -58,7 +58,7 @@ void* OPS_TaylorHood2D()
 	return 0;
     }
 
-    // (rho, mu, b1, b2, thinkness, kappa) 
+    // (rho, mu, b1, b2, thickness, kappa) 
     num = OPS_GetNumRemainingInputArgs();
     if(num > 6) num = 6;
     double data[6] = {1000.0,1e-3,0,-9.81,1.0,2.15e9};

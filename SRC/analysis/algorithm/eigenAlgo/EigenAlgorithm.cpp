@@ -30,10 +30,10 @@
 // Revision: A
 //
 // Description: This file contains the class definition of EigenAlgorithm.
-// EigenAlgorithm is a class which performs a eigen solution algorithm
+// EigenAlgorithm is a class which performs an eigen solution algorithm
 // to solve the equations. 
 //
-// This class is inheritanted from the base class of SolutionAlgorithm
+// This class is inherited from the base class of SolutionAlgorithm
 // which was created by fmk (Frank).
 
 

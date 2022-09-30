@@ -217,7 +217,7 @@ SteelFractureDI::setTrialStrain(double trialStrain, double strainRate)
 			e = E0;
 			//sig = sigini;                // modified C-P. Lamarche 2006
 			sig = 0;
-			kon = 3;                     // modified C-P. Lamarche 2006 flag to impose initial stess/strain
+			kon = 3;                     // modified C-P. Lamarche 2006 flag to impose initial stress/strain
 			return 0;
 
 		}

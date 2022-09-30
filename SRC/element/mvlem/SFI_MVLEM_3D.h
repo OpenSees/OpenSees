@@ -183,7 +183,7 @@ private:
 	Vector P_24DOF_local;
 
 	// Class-wide matrices/vectors/doubles
-	// Constant stiffnes terms
+	// Constant stiffness terms
 	double K1;
 	double K2;
 	double K3;

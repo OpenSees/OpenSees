@@ -28,7 +28,7 @@
 //
 // Purpose: This file contains the class definition for MPI_MachineBroker.
 // MPI_MachineBroker is the broker responsible for monitoring the usage of
-// the processes in an mpi run.
+// the processes in an MPI run.
 //
 // What: "@(#) MPI_MachineBroker.h, revA"
 

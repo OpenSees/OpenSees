@@ -20,7 +20,7 @@ IPORD    = -I../PORD/include/
 LPORD    = -L$(LPORDDIR) -lpord
 
 #LMETISDIR = /local/metis/
-#IMETIS    = # Metis doesn't need include files (Fortran interface avail.)
+#IMETIS    = # Metis doesn't need include files (FORTRAN interface avail.)
 #LMETIS    = -L$(LMETISDIR) -lmetis
 
 # Corresponding variables reused later
@@ -51,7 +51,7 @@ INCSEQ  = -I../libseq
 LIBSEQ  =  -L../libseq -lmpiseq
 LIBBLAS = -lessl -pesslsmp -lblacssmp -lf
 LIBOTHERS = -lpthread
-#Preprocessor defs for calling Fortran from C (-DAdd_ or -DAdd__ or -DUPPER)
+#Preprocessor defs for calling FORTRAN from C (-DAdd_ or -DAdd__ or -DUPPER)
 CDEFS = 
 
 #Begin Optimization options

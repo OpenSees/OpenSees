@@ -229,7 +229,7 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
       }
     }
     
-    // After gap inititon
+    // After gap initiation
     
     if  ((fabs(Tpugr) > 0.) && (Tstress == 0)) {   //from negative to positive
       

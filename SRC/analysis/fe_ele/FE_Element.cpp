@@ -45,15 +45,15 @@
 
 #define MAX_NUM_DOF 64
 
-// static variables initialisation
+// static variables initialization
 Matrix FE_Element::errMatrix(1,1);
 Vector FE_Element::errVector(1);
 Matrix **FE_Element::theMatrices; // pointers to class wide matrices
-Vector **FE_Element::theVectors;  // pointers to class widde vectors
+Vector **FE_Element::theVectors;  // pointers to class wide vectors
 int FE_Element::numFEs(0);           // number of objects
 
 //  FE_Element(Element *, Integrator *theIntegrator);
-//	construictor that take the corresponding model element.
+//	constructor that take the corresponding model element.
 FE_Element::FE_Element(int tag, Element *ele)
   :TaggedObject(tag),
    myDOF_Groups((ele->getExternalNodes()).Size()), myID(ele->getNumDOF()), 

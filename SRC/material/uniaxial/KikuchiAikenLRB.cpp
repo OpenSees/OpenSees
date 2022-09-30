@@ -250,7 +250,7 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
     return 0;
   }
 
-  //sign of incremental deformation (used in next caluculation step)
+  //sign of incremental deformation (used in next calculation step)
   if (trialDDeform > 0) {
     trialDDeformLastSign = +1;
   } else if (trialDDeform < 0) {
@@ -285,7 +285,7 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 
   if ( trialIfElastic || fabs(trialStrain) == trialMaxStrain ) {
 
-    //if elactic, tmpstrain is max(abs(trialStrain),trgStrain)
+    //if elastic, tmpstrain is max(abs(trialStrain),trgStrain)
     tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(abs(trialStrain),trgStrain)
     tmpDeform = tmpStrain * Hr;
 

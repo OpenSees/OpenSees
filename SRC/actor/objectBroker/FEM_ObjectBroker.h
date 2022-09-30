@@ -105,7 +105,7 @@ class FEM_ObjectBroker
     
     virtual GraphNumberer *getPtrNewGraphNumberer(int classTag);
     
-    // methods to get new modelling class objects
+    // methods to get new modeling class objects
     virtual Element       *getNewElement(int classTag);
     virtual Node          *getNewNode(int classTag);
     virtual MP_Constraint *getNewMP(int classTag);

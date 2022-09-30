@@ -164,7 +164,7 @@ httpGet(const char *URL, const char *page, unsigned int port, char **dataPtr) {
   // open a socket
   sockfd = establishHTTPConnection(URL, port);
   if (sockfd < 0) {
-    fprintf(stderr, "postData: failed to establis connection\n");
+    fprintf(stderr, "postData: failed to establish connection\n");
     return -1;
   }
 

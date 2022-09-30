@@ -42,7 +42,7 @@ OPS_Steel01Thermal()
 {
     // print out some KUDO's
     if (numSteel01Th == 0) {
-        opserr << "Steel01Th unaxial material - Modified by Princeton\n";
+        opserr << "Steel01Th uniaxial material - Modified by Princeton\n";
         numSteel01Th =1;
     }
     
@@ -1156,7 +1156,7 @@ Steel01Thermal::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 	}
 
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double gradient = 0.0;
 
 

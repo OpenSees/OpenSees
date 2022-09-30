@@ -344,7 +344,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
     return 0;
   }
 
-  //sign of incremental strain (used in next caluculation step)
+  //sign of incremental strain (used in next calculation step)
   if (trialDStrain > 0) {
     trialDStrainLastSign = +1;
   } else if (trialDStrain < 0) {

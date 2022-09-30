@@ -61,7 +61,7 @@ ExternalElement::ExternalElement()
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 ExternalElement::~ExternalElement()
 {
 	// free function pointer here

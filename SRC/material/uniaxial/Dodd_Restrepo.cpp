@@ -44,7 +44,7 @@ OPS_Dodd_Restrepo(void)
 {
   if (numDoddRestrepo == 0) {
     numDoddRestrepo++;
-    opserr << "Dodd_Restrepo unaxial material - Written by L.L. Dodd & J. Restepo\n";
+    opserr << "Dodd_Restrepo uniaxial material - Written by L.L. Dodd & J. Restepo\n";
   }
 
   // Pointer to a uniaxial material that will be returned

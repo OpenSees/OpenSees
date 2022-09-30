@@ -173,7 +173,7 @@ int main(int argc, char **argv)
   }
 
   //
-  //  a number of tests to test the insert data will fail if data invalied
+  //  a number of tests to test the insert data will fail if data invalid
   //     expected result: all should return negative values & possible warning messages
   //
 

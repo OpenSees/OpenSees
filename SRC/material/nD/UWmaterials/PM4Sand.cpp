@@ -1242,7 +1242,7 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 			return;
 		}
 		else {
-			// This is an elastic unloding followed by plastic loading
+			// This is an elastic unloading followed by plastic loading
 			elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
 			// dSigma = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
 			dElasStrain = dStrain; dElasStrain *= elasticRatio;
@@ -2413,7 +2413,7 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	alpha_mAlpha_in_true = alpha; alpha_mAlpha_in_true -= mAlpha_in_true;
 	AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha_mAlpha_in_true, n));
 	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*AlphaAlphaInTrueDotN, 2))*Cpzp2*Czpk1;
-	// updataed K_p formulation following PM4Sand V3.1. mAlpha_in is the apparent back-stress ratio. 
+	// updated K_p formulation following PM4Sand V3.1. mAlpha_in is the apparent back-stress ratio. 
 	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
 	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
 	if (fabs(AlphaAlphaBDotN) < small) {

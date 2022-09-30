@@ -129,7 +129,7 @@ class SSPbrickUP : public Element
 	double fDens;                                       // mass density of pore fluid
 	//double eVoid;                                       // voids ratio for solid phase
 	double mAlpha;                                      // pressure field stabilization parameter
-	double perm[3];                                     // cartesian permeabilities
+	double perm[3];                                     // Cartesian permeabilities
 	double b[3];                                        // body forces acting on element
 
 	// load pattern variables

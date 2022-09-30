@@ -42,7 +42,7 @@
 //
 //  set eta := 0 for rate independent case
 
-//Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io]
+//Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io]
 //
 
 #include <J2PlasticityThermal.h>

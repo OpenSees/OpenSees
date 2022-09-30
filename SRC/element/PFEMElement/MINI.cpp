@@ -70,7 +70,7 @@ void* OPS_MINI()
 	return 0;
     }
 
-    // (rho, mu, b1, b2,b3 thinkness, kappa)
+    // (rho, mu, b1, b2,b3 thickness, kappa)
     if (ndm == 2) {
 	num = 6;
     } else if (ndm == 3) {

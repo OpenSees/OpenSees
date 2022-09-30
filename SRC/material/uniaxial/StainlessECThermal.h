@@ -22,9 +22,9 @@
 //
 // Description: This file contains the class definition for 
 // StainlessECThermal. StainlessECThermal is modified on the basis of SteelECThermal
-// and SteelECthermal is developed for modelling steel material 
+// and SteelECthermal is developed for modeling steel material 
 // which strictly satisfies Eurocode regarding the temperature dependent properties.
-//StainlessECThermal is developed for modelling strainless steel material based on BS EN 1993 1-2:2005 and Annex C
+//StainlessECThermal is developed for modeling strainless steel material based on BS EN 1993 1-2:2005 and Annex C
 
 
                                                                                                                                                 

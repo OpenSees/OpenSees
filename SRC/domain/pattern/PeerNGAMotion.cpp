@@ -136,9 +136,9 @@ PeerNGAMotion::PeerNGAMotion(int tag,
     sprintf(peerPage, "/nga_files/ath/%s/%s.AT2",earthquake,station);
   } else if ((strcmp(type,"DISP") == 0) || (strcmp(type,"-disp") == 0) || (strcmp(type,"-DISP") == 0)
       || (strcmp(type,"adisp") == 0) || (strcmp(type,"DTH") == 0) || (strcmp(type,"-DTH") == 0)) {
-    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL requiured)\n";
+    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL required)\n";
   } else {
-    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL requiured)\n";
+    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL required)\n";
     return;
   }
 
@@ -218,9 +218,9 @@ PeerNGAMotion::PeerNGAMotion(int tag,
     sprintf(peerPage, "/nga_files/ath/%s.AT2",earthquakeStation);
   } else if ((strcmp(type,"DISP") == 0) || (strcmp(type,"-disp") == 0) || (strcmp(type,"-DISP") == 0)
       || (strcmp(type,"adisp") == 0) || (strcmp(type,"DTH") == 0) || (strcmp(type,"-DTH") == 0)) {
-    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL requiured)\n";
+    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL required)\n";
   } else {
-    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL requiured)\n";
+    opserr << "PeerNGAMotion::PeerNGAMotion() - not a valid type:" << type << " (-ACCEL required)\n";
     return;
   }
   

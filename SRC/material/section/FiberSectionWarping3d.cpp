@@ -920,7 +920,7 @@ FiberSectionWarping3d::recvSelf(int commitTag, Channel &theChannel,
       int classTag = materialData(2*i);
       int dbTag = materialData(2*i+1);
 
-      // if material pointed to is blank or not of corrcet type, 
+      // if material pointed to is blank or not of correct type, 
       // release old and create a new one
       if (theMaterials[i] == 0)
 	theMaterials[i] = theBroker.getNewUniaxialMaterial(classTag);

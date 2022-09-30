@@ -198,7 +198,7 @@ ParallelNumberer::numberDOF(int lastDOF)
 
     // for each subdomain we receive graph, create an ID (to store
     // subdomain graph to merged graph vertex mapping and the final
-    // subdoain graph vertex to startDOF mapping) and finally merge the
+    // subdomain graph vertex to startDOF mapping) and finally merge the
     // subdomain graph
 
     for (int j=0; j<numChannels; j++) {

@@ -32,7 +32,7 @@
 
 // Description: This file contains the class implementation for 
 // EquiSolnAlgo. EquiSolnAlgo is an abstract base class, 
-// i.e. no objects of it's type can be created.  Its subclasses deifine
+// i.e. no objects of it's type can be created.  Its subclasses define
 // the sequence of operations to be performed in the analysis by static
 // equilibrium of a finite element model.  
 // 

@@ -312,7 +312,7 @@ Newmark1::domainChanged()
       }
     }
 
-    /** NOTE WE CAN't DO TOGETHER BECAUSE DOF_GROUPS USING SINGLE VECTOR ******
+    /** NOTE WE CAN'T DO TOGETHER BECAUSE DOF_GROUPS USING SINGLE VECTOR ******
     for (int i=0; i < id.Size(); i++) {
       int loc = id(i);
       if (loc >= 0) {

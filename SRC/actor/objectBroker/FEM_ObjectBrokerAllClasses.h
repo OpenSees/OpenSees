@@ -52,7 +52,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     
     GraphNumberer *getPtrNewGraphNumberer(int classTag);
     
-    // methods to get new modelling class objects
+    // methods to get new modeling class objects
     Element       *getNewElement(int classTag);
     Node          *getNewNode(int classTag);
     MP_Constraint *getNewMP(int classTag);

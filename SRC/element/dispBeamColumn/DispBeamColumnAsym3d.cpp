@@ -117,7 +117,7 @@ void* OPS_DispBeamColumnAsym3d()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";

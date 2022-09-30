@@ -234,7 +234,7 @@ TransformationConstraintHandler::handle(const ID *nodesLast)
 	  }
 	}
 
-	// create an ordinary DOF_Group object if no dof constrained
+	// create an ordinary DOF_Group object if no DOF constrained
 	if (createdDOF == 0) {
 	    if ((dofPtr = new DOF_Group(numDofGrp++, nodPtr)) == 0) {
 		opserr << "WARNING TransformationConstraintHandler::handle() ";
@@ -377,7 +377,7 @@ TransformationConstraintHandler::handle(const ID *nodesLast)
     theModel->setNumEqn(countDOF);
     
     // set the number of eqn in the model
-    // now see if we have to set any of the dof's to -3
+    // now see if we have to set any of the DOFs to -3
     //    int numLast = 0;
     if (nodesLast != 0) 
 	for (i=0; i<nodesLast->Size(); i++) {
@@ -387,14 +387,14 @@ TransformationConstraintHandler::handle(const ID *nodesLast)
 		DOF_Group *dofPtr = nodPtr->getDOF_GroupPtr();
 		
 		const ID &id = dofPtr->getID();
-		// set all the dof values to -3
+		// set all the DOF values to -3
 		for (int j=0; j < id.Size(); j++) {
 		    if (id(j) == -2) {
 			dofPtr->setID(j,-3);
 			count3++;
 		    } else {
 			opserr << "WARNING TransformationConstraintHandler::handle() ";
-			opserr << " - boundary sp constraint in subdomain";
+			opserr << " - boundary SP constraint in subdomain";
 			opserr << " this should not be - results suspect \n";
 			if (mps != 0) delete [] mps;
 			if (sps != 0) delete [] sps;

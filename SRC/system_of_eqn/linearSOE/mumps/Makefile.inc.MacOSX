@@ -27,7 +27,7 @@ IPORD    = -I../PORD/include/
 LPORD    = -L$(LPORDDIR) -lpord
 
 #LMETISDIR = /local/metis/
-#IMETIS    = # Metis doesn't need include files (Fortran interface avail.)
+#IMETIS    = # Metis doesn't need include files (FORTRAN interface avail.)
 #LMETIS    = -L$(LMETISDIR) -lmetis
 
 # The following variables will be used in the compilation process.
@@ -61,7 +61,7 @@ LIBSEQ  =  -L../libseq -lmpiseq
 #LIBBLAS = -L/usr/lib/xmm/ -lf77blas -latlas
 LIBBLAS =  -lrefblas 
 LIBOTHERS = -lpthread
-#Preprocessor defs for calling Fortran from C (-DAdd_ or -DAdd__ or -DUPPER)
+#Preprocessor defs for calling FORTRAN from C (-DAdd_ or -DAdd__ or -DUPPER)
 CDEFS   = -DAdd_
 
 

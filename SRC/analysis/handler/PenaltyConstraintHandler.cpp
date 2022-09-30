@@ -94,7 +94,7 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
     }
 
     
-    // get number ofelements and nodes in the domain 
+    // get number of elements and nodes in the domain 
     // and init the theFEs and theDOFs arrays
     int numSPs = 0;
     SP_ConstraintIter &theSPs = theDomain->getDomainAndLoadPatternSPs();
@@ -102,7 +102,7 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
     while ((spPtr = theSPs()) != 0)
       numSPs++;
     
-    // initialise the DOF_Groups and add them to the AnalysisModel.
+    // initialize the DOF_Groups and add them to the AnalysisModel.
     //    : must of course set the initial IDs
     NodeIter &theNod = theDomain->getNodes();
     Node *nodPtr;
@@ -133,7 +133,7 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
     theModel->setNumEqn(countDOF);
 
     // set the number of eqn in the model
-    // now see if we have to set any of the dof's to -3
+    // now see if we have to set any of the DOFs to -3
     //    int numLast = 0;
     if (nodesLast != 0) 
 	for (int i=0; i<nodesLast->Size(); i++) {
@@ -143,7 +143,7 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
 		dofPtr = nodPtr->getDOF_GroupPtr();
 		
 		const ID &id = dofPtr->getID();
-		// set all the dof values to -3
+		// set all the DOF values to -3
 		for (int j=0; j < id.Size(); j++) 
 		    if (id(j) == -2) {
 			dofPtr->setID(j,-3);

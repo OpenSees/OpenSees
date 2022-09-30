@@ -67,7 +67,7 @@ int
 PeriodicNewton::solveCurrentStep(void)
 {
     // set up some pointers and check they are valid
-    // NOTE this could be taken away if we set Ptrs as protecetd in superclass
+    // NOTE this could be taken away if we set Ptrs as protected in superclass
     AnalysisModel       *theAnalysisModel = this->getAnalysisModelPtr();
     IncrementalIntegrator *theIncIntegratorr = this->getIncrementalIntegratorPtr();
     LinearSOE	        *theSOE = this->getLinearSOEptr();

@@ -158,7 +158,7 @@ PeerMotion::PeerMotion(int tag,
 	       || (strcmp(type,"adisp") == 0) || (strcmp(type,"DTH") == 0) || (strcmp(type,"-DTH") == 0)) {
       sprintf(peerPage, "/smcat/data/dth/%s/%s.DT2",earthquake,station);
     } else {
-      opserr << "PeerMotion::PeerMotion() - not a valid type:" << type << " (-DISP or -ACCEL requiured)\n";
+      opserr << "PeerMotion::PeerMotion() - not a valid type:" << type << " (-DISP or -ACCEL required)\n";
       return;
     }
 

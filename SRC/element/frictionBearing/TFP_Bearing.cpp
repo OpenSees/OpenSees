@@ -44,7 +44,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 
 static Vector vectorSize8(8);
 
@@ -277,13 +277,13 @@ TFP_Bearing::setDomain(Domain *theDomain)
     opserr << "WARNING TFP_Bearing::setDomain() - at truss " << this->getTag() << " node " <<
       Nd1 << "  does not exist in domain\n";
     exit(-1);    
-    return;  // don't go any further - otherwise segemntation fault
+    return;  // don't go any further - otherwise segmentation fault
   }
   if (end2Ptr == 0) {        
     opserr << "WARNING TFP_Bearing::setDomain() - at truss " << this->getTag() << " node " <<
       Nd2 << "  does not exist in domain\n";
     exit(-1);    
-    return;  // don't go any further - otherwise segemntation fault
+    return;  // don't go any further - otherwise segmentation fault
   }	
   theNodes[0] = end1Ptr;
   theNodes[1] = end2Ptr;

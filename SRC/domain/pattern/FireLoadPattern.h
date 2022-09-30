@@ -31,7 +31,7 @@
 // Purpose: This file contains the class definition for EarthquakePattern.
 // EarthquakePattern is an abstract class.
 
-//Modified by Panagistis Kotsoivnos,[University of Edinburgh]
+//Modified by Panagistis Kotsovinos,[University of Edinburgh]
 
 #include <LoadPattern.h>
 #include <DomainComponent.h>

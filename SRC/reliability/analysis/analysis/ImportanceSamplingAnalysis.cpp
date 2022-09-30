@@ -205,7 +205,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	Vector cov(numLsf);
 	double govCov = 999.0;
 	//Vector temp1;
-	double temp2, denumerator;
+	double temp2, denominator;
 	bool FEconvergence;
 
 
@@ -419,14 +419,14 @@ ImportanceSamplingAnalysis::analyze(void)
 				  //crossSums(i,j) = crossSums(i,j) + g_storage(i) * g_storage(j);
 				  crossSums(i,j) = g_storage(i) * g_storage(j);
 
-				  //denumerator = 	(sum_q_squared(i)-1.0/(double)k*sum_q(i)*sum_q(i))
+				  //denominator = 	(sum_q_squared(i)-1.0/(double)k*sum_q(i)*sum_q(i))
 				  //*(sum_q_squared(j)-1.0/(double)k*sum_q(j)*sum_q(j));
-				  denumerator = 	(sum_q_squared(i)-sum_q(i)/k*sum_q(i))*(sum_q_squared(j)-sum_q(j)/k*sum_q(j));
+				  denominator = 	(sum_q_squared(i)-sum_q(i)/k*sum_q(i))*(sum_q_squared(j)-sum_q(j)/k*sum_q(j));
 
-					if (denumerator <= 0.0)
+					if (denominator <= 0.0)
 						responseCorrelation(i,j) = 0.0;
 					else
-						responseCorrelation(i,j) = (crossSums(i,j)-sum_q(i)/k*sum_q(j)) / sqrt(denumerator);
+						responseCorrelation(i,j) = (crossSums(i,j)-sum_q(i)/k*sum_q(j)) / sqrt(denominator);
 				}
 			}
 		}

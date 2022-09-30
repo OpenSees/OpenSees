@@ -44,7 +44,7 @@
 
 #define MAX_NUM_DOF 64
 
-// static variables initialisation
+// static variables initialization
 Matrix **TransformationFE::modMatrices; 
 Vector **TransformationFE::modVectors;  
 Matrix **TransformationFE::theTransformations; 
@@ -57,7 +57,7 @@ int    *TransformationFE::dofData = 0;    ;
 int TransformationFE::sizeBuffer(0);            
 
 //  TransformationFE(Element *, Integrator *theIntegrator);
-//	construictor that take the corresponding model element.
+//	constructor that take the corresponding model element.
 TransformationFE::TransformationFE(int tag, Element *ele)
 :FE_Element(tag, ele), theDOFs(0), numSPs(0), theSPs(0), modID(0), 
   modTangent(0), modResidual(0), numGroups(0), numTransformedDOF(0)
@@ -319,7 +319,7 @@ TransformationFE::getTangent(Integrator *theNewIntegrator)
 
     static Matrix localK;
 
-    // foreach block row, for each block col do
+    // for each block row, for each block col do
     for (int i=0; i<numNode; i++) {
 
 	int startCol = 0;
@@ -401,7 +401,7 @@ TransformationFE::getResidual(Integrator *theNewIntegrator)
     int startRowOriginal = 0;
     int numNode = numGroups;
 
-    // foreach block row, for each block col do
+    // for each block row, for each block col do
     for (int i=0; i<numNode; i++) {
 	int noRows = 0;
 	int noCols = 0;
@@ -485,7 +485,7 @@ TransformationFE::getK_Force(const Vector &accel, double fact)
   
   static Matrix localK;
   
-  // foreach block row, for each block col do
+  // for each block row, for each block col do
   for (int i=0; i<numNode; i++) {
     
     int startCol = 0;
@@ -600,7 +600,7 @@ TransformationFE::getKi_Force(const Vector &accel, double fact)
   
   static Matrix localK;
   
-  // foreach block row, for each block col do
+  // for each block row, for each block col do
   for (int i=0; i<numNode; i++) {
     
     int startCol = 0;
@@ -714,7 +714,7 @@ TransformationFE::getM_Force(const Vector &accel, double fact)
   
   static Matrix localK;
   
-  // foreach block row, for each block col do
+  // for each block row, for each block col do
   for (int i=0; i<numNode; i++) {
     
     int startCol = 0;
@@ -828,7 +828,7 @@ TransformationFE::getC_Force(const Vector &accel, double fact)
   
   static Matrix localK;
   
-  // foreach block row, for each block col do
+  // for each block row, for each block col do
   for (int i=0; i<numNode; i++) {
     
     int startCol = 0;
@@ -934,7 +934,7 @@ void
 TransformationFE::addM_Force(const Vector &disp,  double fact)
 {
     if (fact == 0.0)
-	return;
+	return;p
 
     static Vector response;
     response.setData(dataBuffer, numOriginalDOF);

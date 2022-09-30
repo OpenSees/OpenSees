@@ -5356,7 +5356,7 @@ TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Inter
 
 			RandomVariablePositioner * theRandomVariablePositioner =0;
 			numberOfRVDVPositioners = theReliabilityDomain->getNumberOfRandomVariablePositioners();
-			if (numberOfRVDVPositioners==0) {opserr<<"warnning: updateParameter no randomVariablePositioner"<<endln;  }
+			if (numberOfRVDVPositioners==0) {opserr<<"ERROR: updateParameter no randomVariablePositioner"<<endln;  }
 			else {
 				int rvNumber; 
 				for (int i=1 ; i<=numberOfRVDVPositioners ; i++ )  {
@@ -7011,7 +7011,7 @@ TclReliabilityModelBuilder_addInitialStaticAnalysis(ClientData clientData, Tcl_I
 
 		opserr << " FATAL error \n";
 		opserr << " -file option for InitialShapeBuilder ";
-		opserr << " is not yete implemented \n";
+		opserr << " is not yet implemented \n";
 		exit(-1);
 //		argvCounter++;
 //		ifstream inputFile( argv[argvCounter], ios::in );

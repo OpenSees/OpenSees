@@ -126,7 +126,7 @@ class TransformationDOF_Group: public DOF_Group
     
     // static variables - single copy for all objects of the class	    
     static Matrix **modMatrices; // array of pointers to class wide matrices
-    static Vector **modVectors;  // array of pointers to class widde vectors
+    static Vector **modVectors;  // array of pointers to class wide vectors
     static int numTransDOFs;           // number of objects        
     static TransformationConstraintHandler *theHandler;
 };

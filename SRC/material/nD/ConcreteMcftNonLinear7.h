@@ -201,10 +201,10 @@ private:
 
 	int searchDirection;
 
-	double tangentstifness00(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
-	double tangentstifness01(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
-	double tangentstifness10(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
-	double tangentstifness11(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
+	double tangentstiffness00(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
+	double tangentstiffness01(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
+	double tangentstiffness10(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
+	double tangentstiffness11(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esvvv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min);
 	
 };
 

@@ -214,7 +214,7 @@ BFGS::solveCurrentStep(void)
 {
  
     // set up some pointers and check they are valid
-    // NOTE this could be taken away if we set Ptrs as protecetd in superclass
+    // NOTE this could be taken away if we set Ptrs as protected in superclass
 
     AnalysisModel   *theAnaModel = this->getAnalysisModelPtr();
 
@@ -351,7 +351,7 @@ BFGS::solveCurrentStep(void)
             << sqrt( (*residNew) ^ (*residNew) ) << endln;
 	*/
         
-        //increment broyden counter
+        //increment Broyden counter
         nBFGS += 1;
 
         //save displacement increment

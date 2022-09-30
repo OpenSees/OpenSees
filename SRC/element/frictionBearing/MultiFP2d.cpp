@@ -324,13 +324,13 @@ MultiFP2d::setDomain(Domain *theDomain)
     opserr << "WARNING MultiFP2d::setDomain() - at truss " << this->getTag() << " node " <<
       Nd1 << "  does not exist in domain\n";
     exit(-1);    
-    return;  // don't go any further - otherwise segemntation fault
+    return;  // don't go any further - otherwise segmentation fault
   }
   if (end2Ptr == 0) {        
     opserr << "WARNING MultiFP2d::setDomain() - at truss " << this->getTag() << " node " <<
       Nd2 << "  does not exist in domain\n";
     exit(-1);    
-    return;  // don't go any further - otherwise segemntation fault
+    return;  // don't go any further - otherwise segmentation fault
   }	
   theNodes[0] = end1Ptr;
   theNodes[1] = end2Ptr;

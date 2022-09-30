@@ -135,7 +135,7 @@ CoupledZeroLength::CoupledZeroLength(int tag,
 
   // initialize uniaxial materials and directions and check for valid values
   if (direction1 < 0 || direction1 > 5 || direction2 < 0 || direction2 > 5) {
-    opserr << "FATAL: CoupledZeroLength::CoupledZeroLength - invalid diection\n";
+    opserr << "FATAL: CoupledZeroLength::CoupledZeroLength - invalid direction\n";
     exit(-1);
   }
 
@@ -171,7 +171,7 @@ CoupledZeroLength::CoupledZeroLength(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 CoupledZeroLength::~CoupledZeroLength()
 {
   if (theMaterial != 0)

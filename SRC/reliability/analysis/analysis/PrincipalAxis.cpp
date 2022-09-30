@@ -60,7 +60,7 @@ PrincipalAxis::PrincipalAxis(int tag, ExperimentalPointRule1D * pExperimentalPoi
 		theExperimentalPointRule=new UniformExperimentalPointRule1D( pExperimentalPointRule);
 	}
 	else {
-		opserr<<"Fatal: only UniformExperimentalPointRule1D is implemented now. unrecgnized ExperimentalPointRule!";
+		opserr<<"Fatal: only UniformExperimentalPointRule1D is implemented now. unrecognized ExperimentalPointRule!";
 		exit(-1);
 	}
 
@@ -92,7 +92,7 @@ PrincipalAxis::PrincipalAxis(int tag, PrincipalAxis * thePrincipalAxis){
 		theExperimentalPointRule=new UniformExperimentalPointRule1D(tmp);
 	}
 	else {
-		opserr<<"Fatal: only UniformExperimentalPointRule1D is implemented now. unrecgnized ExperimentalPointRule!";
+		opserr<<"Fatal: only UniformExperimentalPointRule1D is implemented now. unrecognized ExperimentalPointRule!";
 		exit(-1);
 	}
 	curvature =thePrincipalAxis->getCurvature();	

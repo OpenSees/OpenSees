@@ -29,7 +29,7 @@
 //  using updated Lagrangian formula
 // Ref: Plate Bending Part - DKQ, thin plate element
 //      Membrane Part - GQ12, a membrane element with drilling DOF
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 
 #include <stdio.h> 

@@ -567,7 +567,7 @@ TclFeViewer_setVRP(ClientData clientData, Tcl_Interp *interp, int argc,
   if (theTclFeViewer == 0)
       return TCL_OK;    
   
-  // ensure corrcet num arguments
+  // ensure correct num arguments
   if (argc < 4) {
       opserr << "WARNING args incorrect - vrp xloc yloc zloc \n";
       return TCL_ERROR;
@@ -756,7 +756,7 @@ TclFeViewer_setProjectionMode(ClientData clientData, Tcl_Interp *interp, int arg
   if (theTclFeViewer == 0)
       return TCL_OK;    
   
-  // ensure corrcet num arguments
+  // ensure correct num arguments
   if (argc < 2) {
       opserr << "WARNING args incorrect - projection modeID \n";
       return TCL_ERROR;
@@ -781,7 +781,7 @@ TclFeViewer_setFillMode(ClientData clientData, Tcl_Interp *interp, int argc,
   if (theTclFeViewer == 0)
       return TCL_OK;    
   
-  // ensure corrcet num arguments
+  // ensure correct num arguments
   if (argc < 2) {
       opserr << "WARNING args incorrect - fill modeID \n";
       return TCL_ERROR;
@@ -806,7 +806,7 @@ TclFeViewer_setPRP(ClientData clientData, Tcl_Interp *interp, int argc,
   if (theTclFeViewer == 0)
       return TCL_OK;    
   
-  // ensure corrcet num arguments
+  // ensure correct num arguments
   if (argc < 4) {
       opserr << "WARNING args incorrect - cop xloc yloc zloc \n";
       return TCL_ERROR;

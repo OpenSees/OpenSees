@@ -30,9 +30,9 @@
 //
 // Description: 
 //
-// What: "@(#) ElasticIsotropicThreeDimesnional.h, revA"
+// What: "@(#) ElasticIsotropicThreeDimensional.h, revA"
 
-//Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io]
+//Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io]
 
 #include <ElasticIsotropicMaterialThermal.h>
 #include <NDMaterial.h>

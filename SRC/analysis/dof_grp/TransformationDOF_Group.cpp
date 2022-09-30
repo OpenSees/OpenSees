@@ -47,7 +47,7 @@
 
 #define MAX_NUM_DOF 16
 
-// static variables initialisation
+// static variables initialization
 Matrix **TransformationDOF_Group::modMatrices; 
 Vector **TransformationDOF_Group::modVectors;  
 int TransformationDOF_Group::numTransDOFs(0);     // number of objects

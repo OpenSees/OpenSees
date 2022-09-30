@@ -69,7 +69,7 @@ LagrangeSP_FE::LagrangeSP_FE(int tag, Domain &theDomain, SP_Constraint &TheSP,
     theNode = theDomain.getNode(theSP->getNodeTag());    
     if (theNode == 0) {
 	opserr << "WARNING LagrangeSP_FE::LagrangeSP_FE()";
-	opserr << "- no asscoiated Node\n";
+	opserr << "- no associated Node\n";
 	exit(-1);
     }
 

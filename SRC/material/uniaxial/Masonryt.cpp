@@ -638,7 +638,7 @@ return 0;
 *                              Proposed equations (7.7) & (7.8)                                                                            
 *          3. Plastic_Strain : Calculates Plastic Strain & Reduced                                                            
 *                              tensile strength from eq.(7.19) & (7.35)                                                                
-*          4. Stess_Tangent  : Calculates stress & tangent modulus at the                                             
+*          4. Stress_Tangent  : Calculates stress & tangent modulus at the                                             
 *                              current step                                                                                                                 
 ****************************************************************************/ 
 //1. 

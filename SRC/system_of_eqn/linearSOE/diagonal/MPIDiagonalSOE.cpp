@@ -822,7 +822,7 @@ MPIDiagonalSOE::intersections(ID& arrayA, ID& arrayB, int sizeA, int sizeB, int*
 
   int i =0;
   int j =0;
-  //  opserr << " INside interesctions with pID : " << processID << " sizeA : " << sizeA << " sizeB " << sizeB << "\n";
+  //  opserr << " INside intersections with pID : " << processID << " sizeA : " << sizeA << " sizeB " << sizeB << "\n";
   while ( (i<sizeA) && (j<sizeB) ) {
     if ( arrayA[i] == arrayB[j] ) {
       sharedDOFs[i] = 1;

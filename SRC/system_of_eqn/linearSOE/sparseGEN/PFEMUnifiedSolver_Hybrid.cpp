@@ -86,7 +86,7 @@ PFEMUnifiedSolver_Hybrid::solve()
 	jcn.resize(id.nz,1);
 	for(int j=0; j<id.n; j++) {
 	    for(int k=colPtr[j]; k<colPtr[j+1]; k++) {
-		// increment row index for mumps fortran indexing
+		// increment row index for mumps FORTRAN indexing
 		irn[k] = rowInd[k]+1;
 		jcn[k] = j+1;
 	    }
@@ -345,7 +345,7 @@ int PFEMUnifiedSolver_Hybrid::setSize()
 	jcn.resize(id.nz,1);
 	for(int j=0; j<id.n; j++) {
 	    for(int k=colPtr[j]; k<colPtr[j+1]; k++) {
-		// increment row index for mumps fortran indexing
+		// increment row index for mumps FORTRAN indexing
 		irn[k] = rowInd[k]+1;
 		jcn[k] = j+1;
 	    }

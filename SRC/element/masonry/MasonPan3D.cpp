@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix MasonPan3D::PanelK(72,72);
 Vector MasonPan3D::PanelR(72);
 
@@ -314,13 +314,13 @@ MasonPan3D::setDomain(Domain *theDomain)
       opserr << "WARNING MasonPan3D::setDomain() - at truss " << this->getTag() << " node " <<
         Nd1 << "  does not exist in domain\n";
                                 
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }
     if (end12Ptr == 0) {        
       opserr << "WARNING MasonPan3D::setDomain() - at truss " << this->getTag() << " node " <<
         Nd2 << "  does not exist in domain\n";
 
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }   
 
         theNodes[0] = end1Ptr;

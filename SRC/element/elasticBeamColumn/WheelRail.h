@@ -3,7 +3,7 @@
 // 2.School of Civil Engineering, Central South University, 410075, China;
 // 3.National Engineering Laboratory for High-speed Railway Construction, 410075, China)
 
-// Reference: Quan Gu, Yongdou Liu, et al. A Practical Wheel-Rail Interaction Element for Modelling Vehicle-Track Systems[J]. 
+// Reference: Quan Gu, Yongdou Liu, et al. A Practical Wheel-Rail Interaction Element for Modeling Vehicle-Track Systems[J]. 
 // International Journal of Structural Stability and Dynamics
 //
 // Created: 09/2017

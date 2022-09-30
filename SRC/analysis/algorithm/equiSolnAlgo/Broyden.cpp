@@ -200,7 +200,7 @@ Broyden::solveCurrentStep(void)
 {
  
     // set up some pointers and check they are valid
-    // NOTE this could be taken away if we set Ptrs as protecetd in superclass
+    // NOTE this could be taken away if we set Ptrs as protected in superclass
     AnalysisModel   *theAnaModel = this->getAnalysisModelPtr();
 
     IncrementalIntegrator *theIntegrator = this->getIncrementalIntegratorPtr();
@@ -320,7 +320,7 @@ Broyden::solveCurrentStep(void)
         //save displacement increment
         *du = theSOE->getX( ) ;
 
-        //broyden modifications to du
+        //Broyden modifications to du
         BroydenUpdate( theIntegrator, theSOE, *du, nBroyden )  ;
 
         if ( theIntegrator->update( *du ) < 0 ) {
@@ -335,7 +335,7 @@ Broyden::solveCurrentStep(void)
             << sqrt( (*residNew) ^ (*residNew) ) << endln ;
 	*/
         
-        //increment broyden counter
+        //increment Broyden counter
         nBroyden += 1 ;
 
         //save displacement increment
@@ -427,7 +427,7 @@ void  Broyden::BroydenUpdate( IncrementalIntegrator *theIntegrator,
   } //end for i
 
 
-  //broyden modifications to du
+  //Broyden modifications to du
   for ( i=1; i<=nBroyden; i++ ) {
 
     double p = - ( (*s[i]) ^ (*z[i]) ) ;

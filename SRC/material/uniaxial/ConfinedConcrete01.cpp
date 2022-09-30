@@ -1471,7 +1471,7 @@ int
 ConfinedConcrete01::commitSensitivity(double TstrainSensitivity, int gradNumber, int numGrads)
 {
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double TstressSensitivity = 0.0;
 	double dktdh = 0.0;
 
@@ -1700,7 +1700,7 @@ OPS_ConfinedConcrete01Material()
 {
   if (numConfinedConcrete01Materials == 0) {
     numConfinedConcrete01Materials++;
-    opserr << "ConfinedConceret01 unaxial material - Written by M.D'Amato, University of Basilicata, Italy 2009\n";
+    opserr << "ConfinedConceret01 uniaxial material - Written by M.D'Amato, University of Basilicata, Italy 2009\n";
   }
 
   // Pointer to a uniaxial material that will be returned

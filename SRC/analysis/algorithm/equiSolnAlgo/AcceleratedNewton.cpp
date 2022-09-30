@@ -98,7 +98,7 @@ int
 AcceleratedNewton::solveCurrentStep(void)
 {
   // set up some pointers and check they are valid
-  // NOTE this could be taken away if we set Ptrs as protecetd in superclass
+  // NOTE this could be taken away if we set Ptrs as protected in superclass
   AnalysisModel *theAnaModel = this->getAnalysisModelPtr();
   IncrementalIntegrator *theIntegrator = this->getIncrementalIntegratorPtr();
   LinearSOE *theSOE = this->getLinearSOEptr();
@@ -297,7 +297,7 @@ AcceleratedNewton::recvSelf(int cTag, Channel &theChannel,
 
     theAccelerator = theBroker.getAccelerator(data(1));
     if (theAccelerator == 0) {
-      opserr << "AcceleratedNewton::recvSelf() - no acccelerator of classTag " << data(1) << " exists\n";
+      opserr << "AcceleratedNewton::recvSelf() - no accelerator of classTag " << data(1) << " exists\n";
       return -1;
     }
     

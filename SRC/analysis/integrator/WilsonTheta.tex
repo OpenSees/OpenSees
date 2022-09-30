@@ -271,17 +271,17 @@ associated with the object and $-2$ if {\em commitDomain()} failed. \\
 
 
 {\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
-Places $\Theta$, rayleigh damping flag, $\alpha_M$ and $\beta_K$ in a
+Places $\Theta$, Rayleigh damping flag, $\alpha_M$ and $\beta_K$ in a
 vector if size 4 and invokes {\em sendVector} on the Channel with this
 Vector. Returns $0$ if successful, a warning message is printed and a
 $-1$ is returned if {\em theChannel} fails to send the Vector. \\ 
 
 {\em int recvSelf(int commitTag, Channel \&theChannel, 
 FEM\_ObjectBroker \&theBroker); } \\ 
-Receives in a Vector of size 4 the value of $\Theta$, the rayleigh
+Receives in a Vector of size 4 the value of $\Theta$, the Rayleigh
 damping flag, $\alpha_M$ and $\beta_K$.. Returns $0$ if
 successful, a warning message is printed,  $\Theta$ is set to $0$, the
-rayleigh damping flag to {\em false}, and a $-1$ is returned if {\em
+Rayleigh damping flag to {\em false}, and a $-1$ is returned if {\em
 theChannel} fails to receive the Vector.\\ 
 
 {\em int Print(OPS_Stream \&s, int flag = 0);}\\

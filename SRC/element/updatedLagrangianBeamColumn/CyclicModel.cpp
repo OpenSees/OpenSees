@@ -82,7 +82,7 @@ void CyclicModel::update(double f, double d, bool yield)
 		initFMag = f;
 	}
 
-	// non-dimentionalize d_curr and f_curr
+	// non-dimensionalize d_curr and f_curr
 	d_curr = d/initDMag;
 	f_curr = f/initFMag;
 

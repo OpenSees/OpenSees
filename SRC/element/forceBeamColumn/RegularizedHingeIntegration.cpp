@@ -64,7 +64,7 @@ OPS_RegularizedHingeBeamIntegration(int &integrationTag, ID &secTags)
   }
   BeamIntegration *bi = theRule->getBeamIntegration();
   if (bi == 0) {
-    opserr << "Beam integraiton is null\n";
+    opserr << "Beam integration is null\n";
     return 0;
   }
   const ID &otherSections = theRule->getSectionTags();

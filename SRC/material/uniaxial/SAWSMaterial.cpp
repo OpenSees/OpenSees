@@ -51,8 +51,8 @@ OPS_SAWSMaterial(void)
 {
   if (numSAWSMaterials == 0) {
     numSAWSMaterials++;
-    //OPS_Error("SAWSMaterial unaxial material - Written by Paxti Uriz, Exponent 2009\n", 1);
-    opserr << "SAWSMaterial unaxial material - Written by Paxti Uriz, Exponent 2009\n";
+    //OPS_Error("SAWSMaterial uniaxial material - Written by Paxti Uriz, Exponent 2009\n", 1);
+    opserr << "SAWSMaterial uniaxial material - Written by Paxti Uriz, Exponent 2009\n";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -884,7 +884,7 @@ SAWSMaterial::setTrialStrain(double strain, double strainRate)
      
     //====================================================
     /*
-     *     LPATH = 9: Load-dispalcement response is between the two
+     *     LPATH = 9: Load-displacement response is between the two
      *                pinched curves (LPATH 5 and 7).
     */
     if (LPATH == 9 && foundStateFlag == 0 && checkThisStateFlag == 0) {

@@ -55,7 +55,7 @@ OPS_CableMaterial(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs != 5) {
-    opserr << "Invalid # args, want: uniaxialMaterial Cable tag? $presetress $E $effUnitWeight $Lelement \n";
+    opserr << "Invalid # args, want: uniaxialMaterial Cable tag? $prestress $E $effUnitWeight $Lelement \n";
     return 0;
   }
   

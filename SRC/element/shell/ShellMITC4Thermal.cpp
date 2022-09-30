@@ -28,7 +28,7 @@
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
 //      element for general nonlinear analysis,
 //      Eng.Comput.,1,77-88,1984
-// Modified for SIF modelling by Jian Jiang, Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Jian Jiang, Liming Jiang [http://openseesforfire.github.io] 
 
 
 #include <stdio.h> 

@@ -912,7 +912,7 @@ FourNodeQuadWithSensitivity::Print(OPS_Stream &s, int flag)
       s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
      }
 
-    // spit out the section location & invoke print on the scetion
+    // spit out the section location & invoke print on the section
     const int numMaterials = 4;
 
     static Vector avgStress(nstress);

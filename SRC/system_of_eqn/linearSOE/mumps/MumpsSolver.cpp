@@ -106,7 +106,7 @@ MumpsSolver::initializeMumps(void)
     int *rowA = theMumpsSOE->rowA;
     int *colA = theMumpsSOE->colA;
     
-    // increment row and col A values by 1 for mumps fortran indexing
+    // increment row and col A values by 1 for mumps FORTRAN indexing
     for (int i = 0; i < nnz; i++) {
       rowA[i]++;
       colA[i]++;
@@ -157,7 +157,7 @@ MumpsSolver::solveAfterInitialization(void)
   double *X = theMumpsSOE->X;
   double *B = theMumpsSOE->B;
 
-  // increment row and col A values by 1 for mumps fortran indexing
+  // increment row and col A values by 1 for mumps FORTRAN indexing
   for (int i=0; i<nnz; i++) {
     rowA[i]++;
     colA[i]++;

@@ -63,8 +63,8 @@ Clough::Clough(int tag, Vector inputParam )
 	dyieldPos  =  positive yield displacement
 	dyieldNeg  =  negative yield displacement
 		
-	ecaps, ecapd, ecapk, ecapa = parameter expressing the hystetic
-	energy dissipacion capacity.
+	ecaps, ecapd, ecapk, ecapa = parameter expressing the hysteretic
+	energy dissipation capacity.
 	Enrgts, Enrgtd, Enrgtk, Enrgta = hysteretic energy dissipation capacity
 	*/
 	

@@ -22,7 +22,7 @@
 // --------------------------------------------------------------------
 // Description: This file contains the class definition for 
 // SteelECThermal. SteelECThermal is modified on the basis of Steel02Thermal
-// and steel01Thermal.SteelECthermal is developed for modelling steel material 
+// and steel01Thermal.SteelECthermal is developed for modeling steel material 
 // which strictly satisfies Eurocode regarding the temperature dependent properties.
 
 
@@ -882,7 +882,7 @@ SteelECThermal::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 	}
 
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double gradient = 0.0;
 
 

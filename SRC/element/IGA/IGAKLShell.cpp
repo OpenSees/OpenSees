@@ -923,7 +923,7 @@ IGAKLShell::getResponse(int responseID, Information &eleInfo)
       K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-      K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys, , Tb is T_Gcon_E
+      K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys, , Tb is T_Gcon_E
 
 
 
@@ -1125,8 +1125,8 @@ IGAKLShell::getResponse(int responseID, Information &eleInfo)
       K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-      E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to cartesian coor sys, Tb is T_Gcon_E
-      K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys, , Tb is T_Gcon_E
+      E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to Cartesian coor sys, Tb is T_Gcon_E
+      K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys, , Tb is T_Gcon_E
 
       // E_ca = pipe_calcula_E_ca_para_este_punto_de_gauss();
       // K_ca = pipe_calcula_K_ca_para_este_punto_de_gauss();
@@ -1326,9 +1326,9 @@ const Matrix&  IGAKLShell::getTangentStiff( )
   //   // ! lg3: length of the normal vector g3
 
   //   // ! E_cu: strain vector [E11,E22,E12] referred to the curvilinear coord. sys
-  //   // ! E_ca: strain vector [E11,E22,2*E12] referred to cartesian coord. sys
+  //   // ! E_ca: strain vector [E11,E22,2*E12] referred to Cartesian coord. sys
   //   // ! K_cu: curvature vector [K11,K22,K12] referred to the curvilinear coord. sys
-  //   // ! K_ca: curvature vector [K11,K22,2*K12] referred to the cartesian coord. sys
+  //   // ! K_ca: curvature vector [K11,K22,2*K12] referred to the Cartesian coord. sys
 
   //   // ! dE_cu: first variation of the membrane strain in local coord. system
   //   // ! dE_ca: first variation of the membrane strain in global coord. system
@@ -1405,8 +1405,8 @@ const Matrix&  IGAKLShell::getTangentStiff( )
   //   K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-  //   Vector E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to cartesian coor sys
-  //   Vector K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys
+  //   Vector E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to Cartesian coor sys
+  //   Vector K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys
 
   //   // opserr << "E_ca = " << E_ca << endln;
   //   // opserr << "K_ca = " << K_ca << endln;
@@ -1590,7 +1590,7 @@ const Matrix&  IGAKLShell::getTangentStiff( )
   //   int nLayers = myPatch->getNLayers();
 
   //   Matrix A(3, 3);   // Membrane stiffness matrix
-  //   Matrix B(3, 3);   // Coupling stifness matrix
+  //   Matrix B(3, 3);   // Coupling stiffness matrix
   //   Matrix D(3, 3);   // Bending stiffness matrix
   //   Matrix T(3, 3);   // Rotating laminate matrix
   //   Matrix Cbar(3, 3); // Equivalent constitutive matrix
@@ -2017,7 +2017,7 @@ void IGAKLShell::shellGeo(Matrix G, Matrix H, Vector& G3, double& dA, Vector& N,
   G_con = G * transpose(2, 2, Gab_con);
 
 
-  // Local cartesian coordinates
+  // Local Cartesian coordinates
   Vector g1(3);
   Vector g2_con(3);
   for (int i = 0; i < 3; ++i)
@@ -2285,7 +2285,7 @@ IGAKLShell::addLoad(ElementalLoad *theLoad, double loadFactor)
       }
 
       // opserr << "g3 = " << g3 << endln;
-      // To transform from local covariant g to local cartesian e
+      // To transform from local covariant g to local Cartesian e
       Vector e1 = T_G_E * g1;
       Vector e2 = T_G_E * g2;
 
@@ -2628,9 +2628,9 @@ const Vector&  IGAKLShell::getResistingForce()
   //   // ! lg3: length of the normal vector g3
 
   //   // ! E_cu: strain vector [E11,E22,E12] referred to the curvilinear coord. sys
-  //   // ! E_ca: strain vector [E11,E22,2*E12] referred to cartesian coord. sys
+  //   // ! E_ca: strain vector [E11,E22,2*E12] referred to Cartesian coord. sys
   //   // ! K_cu: curvature vector [K11,K22,K12] referred to the curvilinear coord. sys
-  //   // ! K_ca: curvature vector [K11,K22,2*K12] referred to the cartesian coord. sys
+  //   // ! K_ca: curvature vector [K11,K22,2*K12] referred to the Cartesian coord. sys
 
   //   // ! dE_cu: first variation of the membrane strain in local coord. system
   //   // ! dE_ca: first variation of the membrane strain in global coord. system
@@ -2713,8 +2713,8 @@ const Vector&  IGAKLShell::getResistingForce()
   //   K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-  //   Vector E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to cartesian coor sys
-  //   Vector K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys
+  //   Vector E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to Cartesian coor sys
+  //   Vector K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys
 
   //   //
   //   // Compute the First variation of strain and curvature w.r.t the d.o.f.
@@ -2793,7 +2793,7 @@ const Vector&  IGAKLShell::getResistingForce()
   //   int nLayers = myPatch->getNLayers();
 
   //   Matrix A(3, 3);   // Membrane stiffness matrix
-  //   Matrix B(3, 3);   // Coupling stifness matrix
+  //   Matrix B(3, 3);   // Coupling stiffness matrix
   //   Matrix D(3, 3);   // Bending stiffness matrix
   //   Matrix T(3, 3);   // Rotating laminate matrix
   //   Matrix Cbar(3, 3); // Equivalent constitutive matrix
@@ -2946,7 +2946,7 @@ void IGAKLShell::formStrainsLinear()
 
   // Getting ply matrices
   static Matrix A(3, 3);   // Membrane stiffness matrix
-  static Matrix B(3, 3);   // Coupling stifness matrix
+  static Matrix B(3, 3);   // Coupling stiffness matrix
   static Matrix D(3, 3);   // Bending stiffness matrix
   static Matrix T(3, 3);   // Rotating laminate matrix
   static Matrix C(3, 3); // Equivalent constitutive matrix
@@ -3036,9 +3036,9 @@ void IGAKLShell::formStrainsLinear()
     // ! lg3: length of the normal vector g3
 
     // ! E_cu: strain vector [E11,E22,E12] referred to the curvilinear coord. sys
-    // ! E_ca: strain vector [E11,E22,2*E12] referred to cartesian coord. sys
+    // ! E_ca: strain vector [E11,E22,2*E12] referred to Cartesian coord. sys
     // ! K_cu: curvature vector [K11,K22,K12] referred to the curvilinear coord. sys
-    // ! K_ca: curvature vector [K11,K22,2*K12] referred to the cartesian coord. sys
+    // ! K_ca: curvature vector [K11,K22,2*K12] referred to the Cartesian coord. sys
 
 
     E_cu.Zero();
@@ -3132,11 +3132,11 @@ void IGAKLShell::formStrainsLinear()
     K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-    E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to cartesian coor sys, Tb is T_Gcon_E
-    K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys, , Tb is T_Gcon_E
+    E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to Cartesian coor sys, Tb is T_Gcon_E
+    K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys, , Tb is T_Gcon_E
 
     A.Zero();         // Membrane stiffness matrix
-    B.Zero();         // Coupling stifness matrix
+    B.Zero();         // Coupling stiffness matrix
     D.Zero();         // Bending stiffness matrix
     W = 0.0; //Total laminate weight (kg/m^2)
 
@@ -3161,7 +3161,7 @@ void IGAKLShell::formStrainsLinear()
       Ezeta.Zero();
       Ezeta = T * (E_ca + iZ * K_ca); // Cartesian
 
-      // Giving the trail strain to the material, rotated and in cartesian coordinates
+      // Giving the trail strain to the material, rotated and in Cartesian coordinates
       materialPointers[gp][capa] -> setTrialStrain(Ezeta); 
     }
 
@@ -3249,7 +3249,7 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
 
   // Getting ply matrices
   static Matrix A(3, 3);   // Membrane stiffness matrix
-  static Matrix B(3, 3);   // Coupling stifness matrix
+  static Matrix B(3, 3);   // Coupling stiffness matrix
   static Matrix D(3, 3);   // Bending stiffness matrix
   static Matrix T(3, 3);   // Rotating laminate matrix
   static Matrix C(3, 3); // Equivalent constitutive matrix
@@ -3413,9 +3413,9 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
     // ! lg3: length of the normal vector g3
 
     // ! E_cu: strain vector [E11,E22,E12] referred to the curvilinear coord. sys
-    // ! E_ca: strain vector [E11,E22,2*E12] referred to cartesian coord. sys
+    // ! E_ca: strain vector [E11,E22,2*E12] referred to Cartesian coord. sys
     // ! K_cu: curvature vector [K11,K22,K12] referred to the curvilinear coord. sys
-    // ! K_ca: curvature vector [K11,K22,2*K12] referred to the cartesian coord. sys
+    // ! K_ca: curvature vector [K11,K22,2*K12] referred to the Cartesian coord. sys
 
     // ! dE_cu: first variation of the membrane strain in local coord. system
     // ! dE_ca: first variation of the membrane strain in global coord. system
@@ -3559,11 +3559,11 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
     K_cu(2) = -(bv(2) - Bv_r(2));
 
 
-    E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to cartesian coor sys, Tb is T_Gcon_E
-    K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to cartesian coor sys, , Tb is T_Gcon_E
+    E_ca = Tb * E_cu; // strain vector [E11,E22,2*E12] referred to Cartesian coor sys, Tb is T_Gcon_E
+    K_ca = Tb * K_cu; //curvature vector [K11,K22,2*K12] referred to Cartesian coor sys, , Tb is T_Gcon_E
 
     A.Zero();         // Membrane stiffness matrix
-    B.Zero();         // Coupling stifness matrix
+    B.Zero();         // Coupling stiffness matrix
     D.Zero();         // Bending stiffness matrix
     W = 0.0; //Total laminate weight (kg/m^2)
 
@@ -3588,7 +3588,7 @@ void IGAKLShell::formResidAndTangent( int tang_flag )
       Ezeta.Zero();
       Ezeta = T * (E_ca + iZ * K_ca); // Cartesian
 
-      // Giving the trail strain to the material, rotated and in cartesian coordinates
+      // Giving the trail strain to the material, rotated and in Cartesian coordinates
       materialPointers[gp][capa] -> setTrialStrain(Ezeta); 
 
       const Matrix& Czig = materialPointers[gp][capa]->getTangent();
@@ -4255,7 +4255,7 @@ void IGAKLShell::formTangentNguyen()
     int nLayers = myPatch->getNLayers();
 
     Matrix A(3, 3);   // Membrane stiffness matrix
-    Matrix B(3, 3);   // Coupling stifness matrix
+    Matrix B(3, 3);   // Coupling stiffness matrix
     Matrix D(3, 3);   // Bending stiffness matrix
     Matrix T(3, 3);   // Rotating laminate matrix
     Matrix Cbar(3, 3); // Equivalent constitutive matrix

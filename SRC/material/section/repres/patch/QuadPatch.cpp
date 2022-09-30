@@ -196,7 +196,7 @@ QuadPatch::getCells (void) const
             cellVertCoord(3,0) = cellVertCoord(0,0);
             cellVertCoord(3,1) = cellVertCoord(2,1);
 
-            // map to cartesian coordinates using bilinear
+            // map to Cartesian coordinates using bilinear
             // shape functions
 
             for (r = 0; r < 4; r++)

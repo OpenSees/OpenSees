@@ -73,7 +73,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 
     // get the ele tag 
     if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-      opserr << "WARNING invalied eleTag " << argv[2] <<
+      opserr << "WARNING invalid eleTag " << argv[2] <<
 	"- element ZeroLength eleTag? iNode? jNode? -mat matID1? ... -dir dirMat1? .. " <<
 	"<-orient x1? x2? x3? y1? y2? y3?>\n";
 	return TCL_ERROR;
@@ -81,7 +81,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 
     // get the two end nodes
     if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-      opserr << "WARNING invalied iNode " << argv[3] << 
+      opserr << "WARNING invalid iNode " << argv[3] << 
 	"- element ZeroLength eleTag? iNode? jNode? " <<
 	"-mat matID1? ... -dir dirMat1? .. " <<
 	"<-orient x1? x2? x3? y1? y2? y3?>\n";
@@ -169,7 +169,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matID);
 	if (theMat == 0) {
 	  opserr << "WARNING no material " << matID <<
-	    "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+	    "exists - element ZeroLength eleTag? iNode? jNode? " <<
 	    "-mat matID1? ... -dir dirMat1? .. " <<
 	    "<-orient x1? x2? x3? y1? y2? y3?>\n"  ;
 	  delete [] theMats;		
@@ -212,7 +212,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     // read the dirn identifiers
     for (int j=0; j<numMat; j++) {
 	if (Tcl_GetInt(interp, argv[argi], &dirnID) != TCL_OK) {
-	  opserr << "WARNING invalid directiion " << argv[argi] <<
+	  opserr << "WARNING invalid direction " << argv[argi] <<
 	    "- element ZeroLength eleTag? iNode? jNode? " <<
 	    "-mat matID1? ... -dir dirMat1? .. " <<
 	    "<-orient x1? x2? x3? y1? y2? y3?>\n";	
@@ -301,7 +301,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	      UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matID);
 	      if (theMat == 0) {
 		opserr << "WARNING no material " << matID <<
-		  "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+		  "exists - element ZeroLength eleTag? iNode? jNode? " <<
 		  "-mat matID1? ... -dir dirMat1? .. " <<
 		  "<-orient x1? x2? x3? y1? y2? y3?>\n"  ;
 		delete [] theMats;		
@@ -378,7 +378,7 @@ TclModelBuilder_addZeroLengthSection(ClientData clientData, Tcl_Interp *interp,
 
     // get the ele tag 
     if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-      opserr << "WARNING invalied eleTag " << argv[2] <<
+      opserr << "WARNING invalid eleTag " << argv[2] <<
 	"- element zeroLengthSection eleTag? iNode? jNode? " <<
 	"secTag? " <<
 	"<-orient x1? x2? x3? y1? y2? y3?>\n";	
@@ -387,7 +387,7 @@ TclModelBuilder_addZeroLengthSection(ClientData clientData, Tcl_Interp *interp,
 
     // get the two end nodes
     if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-      opserr << "WARNING invalied iNode " << argv[3] <<
+      opserr << "WARNING invalid iNode " << argv[3] <<
 	"- element zeroLengthSection eleTag? iNode? jNode? " <<
 	"secTag? " <<
 	"<-orient x1? x2? x3? y1? y2? y3?>\n";	
@@ -528,14 +528,14 @@ TclModelBuilder_addZeroLengthContact2D(ClientData clientData, Tcl_Interp *interp
   
   // get the ele tag
   if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-    opserr << "ZeroLengthContact2D::WARNING invalied eleTag " << argv[2] << "\n";
+    opserr << "ZeroLengthContact2D::WARNING invalid eleTag " << argv[2] << "\n";
     return TCL_ERROR;
   }
   
   
   // get the two end nodes
   if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-    opserr << "ZeroLengthContact2D::WARNING invalied iNode " << argv[3] <<  "\n";
+    opserr << "ZeroLengthContact2D::WARNING invalid iNode " << argv[3] <<  "\n";
     
     return TCL_ERROR;
   }
@@ -648,14 +648,14 @@ TclModelBuilder_addZeroLengthContact3D(ClientData clientData, Tcl_Interp *interp
   
   // get the ele tag
   if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-    opserr << "ZeroLengthContact3D::WARNING invalied eleTag " << argv[2] << "\n";
+    opserr << "ZeroLengthContact3D::WARNING invalid eleTag " << argv[2] << "\n";
     return TCL_ERROR;
   }
   
   
   // get the two end nodes
   if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-    opserr << "ZeroLengthContact3D::WARNING invalied iNode " << argv[3] <<  "\n";
+    opserr << "ZeroLengthContact3D::WARNING invalid iNode " << argv[3] <<  "\n";
     
     return TCL_ERROR;
   }
@@ -764,7 +764,7 @@ TclModelBuilder_addZeroLengthND(ClientData clientData, Tcl_Interp *interp,
 
     // get the ele tag 
     if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-	opserr << "WARNING invalied eleTag " << 
+	opserr << "WARNING invalid eleTag " << 
 	  argv[2] << " - element zeroLengthND eleTag? iNode? jNode? NDTag? <1DTag?> <-orient x1? x2? x3? y1? y2? y3?>\n";	
 	  
 	return TCL_ERROR;
@@ -772,7 +772,7 @@ TclModelBuilder_addZeroLengthND(ClientData clientData, Tcl_Interp *interp,
 
     // get the two end nodes
     if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-	opserr << "WARNING invalied iNode " << 
+	opserr << "WARNING invalid iNode " << 
 	  argv[3] <<
 	  "- element zeroLengthND eleTag? iNode? jNode? " <<
 	  "NDTag? <1DTag?>" <<
@@ -919,7 +919,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
     
     // get the ele tag 
     if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
-        opserr << "WARNING invalied eleTag " << argv[2] <<
+        opserr << "WARNING invalid eleTag " << argv[2] <<
         "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
         "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
         return TCL_ERROR;
@@ -927,7 +927,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
     
     // get the two end nodes
     if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
-        opserr << "WARNING invalied iNode " << argv[3] << 
+        opserr << "WARNING invalid iNode " << argv[3] << 
         "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
         "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
         

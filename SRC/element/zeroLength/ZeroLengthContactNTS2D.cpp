@@ -66,7 +66,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   numData = 1;
 
   if (OPS_GetInt(&numData, &eleTag) != 0) {
-    opserr << "ZeroLengthContactNTS2D::WARNING invalied eleTag \n";
+    opserr << "ZeroLengthContactNTS2D::WARNING invalid eleTag \n";
     return 0;
   }
 
@@ -80,7 +80,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   // get the number of secondary nodes
   numData = 1;
   if (OPS_GetInt(&numData, &sNdNum) != 0) {
-    opserr << "ZeroLengthContactNTS2D::WARNING invalied sNdNum \n";
+    opserr << "ZeroLengthContactNTS2D::WARNING invalid sNdNum \n";
     return 0;
   }
 
@@ -95,7 +95,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   
   numData = 1;
   if (OPS_GetInt(&numData, &pNdNum) != 0) {
-    opserr << "ZeroLengthContactNTS2D::WARNING invalied sNdNum \n";
+    opserr << "ZeroLengthContactNTS2D::WARNING invalid sNdNum \n";
     return 0;
   }
 
@@ -226,7 +226,7 @@ ZeroLengthContactNTS2D::ZeroLengthContactNTS2D(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 ZeroLengthContactNTS2D::~ZeroLengthContactNTS2D()
 {
   if (load != 0) delete load;

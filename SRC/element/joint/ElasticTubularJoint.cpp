@@ -48,7 +48,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 
 #define ELE_TAG_ElasticTubularJoint 2519
 

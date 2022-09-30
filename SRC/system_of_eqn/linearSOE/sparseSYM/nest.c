@@ -46,7 +46,7 @@ int i_greater();
         working parameters
                 mask - is used to mask off variables that have been
                         numbered during the ordering process
-                xls, ls - this level strucrre pari is used as temporary storage
+                xls, ls - this level structure parameter is used as temporary storage
                         by fnroot.
         routines called - 
                 fndsep, revrse

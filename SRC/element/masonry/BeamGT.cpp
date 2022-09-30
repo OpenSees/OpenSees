@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix BeamGT::BeamK(6,6);
 Vector BeamGT::BeamR(6);
 
@@ -277,13 +277,13 @@ BeamGT::setDomain(Domain *theDomain)
       opserr << "WARNING BeamGT::setDomain() - at Beam " << this->getTag() << " node " <<
         Nd1 << "  does not exist in domain\n";
                                 
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }
     if (end2Ptr == 0) {        
       opserr << "WARNING BeamGT::setDomain() - at Beam " << this->getTag() << " node " <<
         Nd2 << " does not exist in domain\n";
 
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }   
 
         theNodes[0] = end1Ptr;

@@ -38,7 +38,7 @@ OPS_Trilinwpd()
 {
   // print out some KUDO's
   if (numTrilinwpd == 0) {
-    opserr << "Trilineal with pinching unaxial material - Written by GST UNcuyo Copyright 2017 - Use at your Own Peril\n";
+    opserr << "Trilineal with pinching uniaxial material - Written by GST UNcuyo Copyright 2017 - Use at your Own Peril\n";
     numTrilinwpd =1;
   }
 

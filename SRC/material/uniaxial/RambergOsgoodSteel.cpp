@@ -51,7 +51,7 @@ void *
 OPS_RambergOsgoodSteel(void)
 {
   if (numRambergOsgoodSteel == 0) {
-    opserr << "RambergOsgoodSteel unaxial material - Written by R.Rahimi & R.Sepasdar & Dr. Mo. R. Banan Shiraz University Copyright 2012; \n";
+    opserr << "RambergOsgoodSteel uniaxial material - Written by R.Rahimi & R.Sepasdar & Dr. Mo. R. Banan Shiraz University Copyright 2012; \n";
     numRambergOsgoodSteel++;
   }
 

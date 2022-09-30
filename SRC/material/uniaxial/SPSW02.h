@@ -49,7 +49,7 @@ private:
 	double Fcs	;			//yield stress of a compression strip
 	double FTS, FCS;		//yield stresses before damage
 	double epsPCFac	;		//ratio between post cap strain and yield strain
-	double pstcpEFac;		//ratio between post cap stifness and initial stiffness
+	double pstcpEFac;		//ratio between post cap stiffness and initial stiffness
 	double gama, FailEnerg, c;			//damage parameters
 	double resFac;
 	//Commit HISTORY VARIABLES

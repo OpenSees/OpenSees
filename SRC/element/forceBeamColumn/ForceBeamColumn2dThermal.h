@@ -58,7 +58,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
  *
  */
 
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 #ifndef ForceBeamColumn2dThermal_h
 #define ForceBeamColumn2dThermal_h

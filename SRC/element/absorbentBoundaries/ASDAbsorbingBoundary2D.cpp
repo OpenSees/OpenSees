@@ -56,7 +56,7 @@ namespace {
     struct SortedNode {
         // local position of this node (0 to 3)
         std::size_t pos = 0;
-        // cartesian coordinates
+        // Cartesian coordinates
         double x = 0.0;
         double y = 0.0;
         // number of dofs at this node

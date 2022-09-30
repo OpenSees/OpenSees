@@ -160,7 +160,7 @@ PenaltyMP_FE::setID(void)
 	}
     }
     
-    // now determine the IDs for the retained dof's
+    // now determine the IDs for the retained DOFs
     DOF_Group *theRetainedNodesDOFs = theRetainedNode->getDOF_GroupPtr();
     if (theRetainedNodesDOFs == 0) {
 	opserr << "WARNING PenaltyMP_FE::setID(void)";

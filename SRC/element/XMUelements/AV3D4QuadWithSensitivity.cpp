@@ -330,7 +330,7 @@ AV3D4QuadWithSensitivity::getResistingForceIncInertia(void)
 int 
 AV3D4QuadWithSensitivity::sendSelf (int commitTag, Channel &theChannel) 
 { 
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -338,7 +338,7 @@ int
 AV3D4QuadWithSensitivity::recvSelf (int commitTag, Channel &theChannel, 
   FEM_ObjectBroker &theBroker) 
 {   
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -909,7 +909,7 @@ AV3D4QuadWithSensitivity::setParameter(const char **argv, int argc, Parameter &p
 AV3D4QuadWithSensitivity::updateParameter(int parameterID, Information &info)
 {
 
-  opserr<<"warnning: AV3D4QuadWithSensitivity can not updateParameter!"<<endln;
+  opserr<<"ERROR: AV3D4QuadWithSensitivity can not updateParameter!"<<endln;
   return -1;
 }
 

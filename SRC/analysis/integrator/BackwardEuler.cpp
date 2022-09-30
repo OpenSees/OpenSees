@@ -123,7 +123,7 @@ int BackwardEuler::newStep(double deltaT)
     // set response at t to be that at t+deltaT of previous step
     dt = deltaT;
 
-    // save storage quantites before updating
+    // save storage quantities before updating
     (*Utm1) = *Ut;
     (*Utm1dot) = *Utdot;
 

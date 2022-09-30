@@ -880,7 +880,7 @@ const Matrix& ASDEmbeddedNodeElement::TRI_2D_UR()
     static Matrix invJ(2, 2);
     J.Invert(invJ);
 
-    // shape functions cartesian derivatives
+    // shape functions Cartesian derivatives
     static Matrix dNdX(3, 2);
     dNdX.addMatrixProduct(0.0, dN, invJ, 1.0);
 
@@ -1101,7 +1101,7 @@ const Matrix& ASDEmbeddedNodeElement::TRI_3D_UR()
     static Matrix invJ(2, 2);
     J.Invert(invJ);
 
-    // shape functions cartesian derivatives
+    // shape functions Cartesian derivatives
     static Matrix dNdX(3, 2);
     dNdX.addMatrixProduct(0.0, dN, invJ, 1.0);
 
@@ -1328,7 +1328,7 @@ const Matrix& ASDEmbeddedNodeElement::TET_3D_UR()
     static Matrix invJ(3, 3);
     J.Invert(invJ);
 
-    // shape functions cartesian derivatives
+    // shape functions Cartesian derivatives
     static Matrix dNdX(4, 3);
     dNdX.addMatrixProduct(0.0, dN, invJ, 1.0);
 

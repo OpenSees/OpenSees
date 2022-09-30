@@ -132,7 +132,7 @@ class PinchingLimitStateMaterial : public UniaxialMaterial
 		double As;			// area of longitudinal steel bars in column section (in^2)
 		double Acc;			// gross confined concrete area bounded by the transverse reinforcement in column section (in^2)
 		double ld;			// development length of longitudinal bars using ACI 318-08 Equations 12-1 & 12-2 (in)
-		double db;			// diameter of longitudinial bars (in)
+		double db;			// diameter of longitudinal bars (in)
 		double rhot;		// transverse reinforcement ratio Ast/(st*b)
 		double fc;			// concrete strength (ksi)
 		double fy;			// longitudinal steel yield strength (ksi)

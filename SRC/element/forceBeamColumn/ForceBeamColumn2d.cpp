@@ -144,7 +144,7 @@ void* OPS_ForceBeamColumn2d()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";
@@ -288,7 +288,7 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";
@@ -355,7 +355,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	return -1;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[1]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";

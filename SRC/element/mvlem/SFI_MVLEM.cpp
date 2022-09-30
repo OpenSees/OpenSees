@@ -619,7 +619,7 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
     {
       opserr << "WARNING SFI_MVLEM::setDomain() - at SFI_MVLEM " << this->getTag() << " node " <<
 	Nd1 << " does not exist in domain\n";
-      return;  // Don't go any further - otherwise segemntation fault
+      return;  // Don't go any further - otherwise segmentation fault
     }
   if (theNodes[1] == 0)
     {        
@@ -639,7 +639,7 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
       {
 	opserr << "WARNING SFI_MVLEM::setDomain() - at SFI_MVLEM " << this->getTag() << " node " <<
 	  NdX_temp1 << " does not exist in domain\n";
-	return;  // Don't go any further - otherwise segemntation fault
+	return;  // Don't go any further - otherwise segmentation fault
       }
     
   }

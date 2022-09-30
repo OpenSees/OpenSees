@@ -355,7 +355,7 @@ TCP_SocketNoDelay::recvMsg(Message &msg, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the message and 
+    // if o.k. get a pointer to the data in the message and 
     // place the incoming data there
     int nleft,nread;
     char *gMsg;
@@ -397,7 +397,7 @@ TCP_SocketNoDelay::sendMsg(const Message &msg, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the message and 
+    // if o.k. get a pointer to the data in the message and 
     // place the incoming data there
     int nwrite, nleft;    
     char *gMsg;
@@ -439,7 +439,7 @@ TCP_SocketNoDelay::recvMatrix(Matrix &theMatrix, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the Matrix and 
+    // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int nleft,nread;
     double *data = theMatrix.myData;
@@ -482,7 +482,7 @@ TCP_SocketNoDelay::sendMatrix(const Matrix &theMatrix, ChannelAddress *theAddres
 	}
     }
 
-    // if o.k. get a ponter to the data in the Matrix and 
+    // if o.k. get a pointer to the data in the Matrix and 
     // place the incoming data there
     int nwrite, nleft;    
     double *data = theMatrix.myData;
@@ -529,7 +529,7 @@ TCP_SocketNoDelay::recvVector(Vector &theVector, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the Vector and 
+    // if o.k. get a pointer to the data in the Vector and 
     // place the incoming data there
     int nleft,nread;
     double *data = theVector.theData;
@@ -571,7 +571,7 @@ TCP_SocketNoDelay::sendVector(const Vector &theVector, ChannelAddress *theAddres
 	}
     }
 
-    // if o.k. get a ponter to the data in the Vector and 
+    // if o.k. get a pointer to the data in the Vector and 
     // place the incoming data there
     int nwrite, nleft;    
     double *data = theVector.theData;
@@ -613,7 +613,7 @@ TCP_SocketNoDelay::recvID(ID &theID, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the ID and 
+    // if o.k. get a pointer to the data in the ID and 
     // place the incoming data there
     int nleft,nread;
     int *data = theID.data;
@@ -655,7 +655,7 @@ TCP_SocketNoDelay::sendID(const ID &theID, ChannelAddress *theAddress)
 	}
     }
 
-    // if o.k. get a ponter to the data in the ID and 
+    // if o.k. get a pointer to the data in the ID and 
     // place the incoming data there
     int nwrite, nleft;    
     int *data = theID.data;
@@ -749,7 +749,7 @@ static int GetHostAddr(char *host, char *IntAddr)
 /*
  *  i n t t o a
  *
- *  Function to convert int to ascii
+ *  Function to convert int to ASCII
  *  
  */
 

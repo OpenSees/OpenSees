@@ -55,7 +55,7 @@
 		/// Solve the system of equations this*x=d given the specified d.
 		/// </summary>
 		/// <remarks>
-		/// Uses the Thomas algorithm described in the wikipedia article: http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
+		/// Uses the Thomas algorithm described in the Wikipedia article: http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
 		/// Not optimized. Not destructive.
 		/// </remarks>
 		/// <param name="d">Right side of the equation.</param>

@@ -107,6 +107,6 @@ int main(int argc, char **argv)
 	opserr << *theItem;
     
     theHolder->clearAll();
-    opserr << "the contetnts after clearAll\n";            
+    opserr << "the contents after clearAll\n";            
     theHolder->Print(opserr);
 }

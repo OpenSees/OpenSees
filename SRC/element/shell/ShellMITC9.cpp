@@ -19,7 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // Written: Leopoldo Tesser, Diego Talledo
-// 9-node lagrandian shell element with membrane and drill
+// 9-node lagrangian shell element with membrane and drill
 
 #include <stdio.h> 
 #include <stdlib.h> 

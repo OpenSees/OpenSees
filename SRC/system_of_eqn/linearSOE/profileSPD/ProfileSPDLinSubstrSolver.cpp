@@ -69,7 +69,7 @@ ProfileSPDLinSubstrSolver::setSize(void)
 
 /* ProfileSPDLinSubstrSolver::condenseA(int numInt)
 **
-** purpose: A procedure which takes the stifness matrix A = | A11 A12 |
+** purpose: A procedure which takes the stiffness matrix A = | A11 A12 |
 **							    | A21 A22 |
 **	    and does the following:
 **
@@ -253,7 +253,7 @@ opserr << endln;
 
 /* name: condenseRHS
 **
-** purpose: A procedure which takes the stifness matrix A = | D1\U11   M  | 
+** purpose: A procedure which takes the stiffness matrix A = | D1\U11   M  | 
 **							    | A21    A22* |
 **	    
 **	    and load vector B = | B1 |
@@ -494,7 +494,7 @@ ProfileSPDLinSubstrSolver::setComputedXext(const Vector &xExt)
 
 /* name: S O L V r I
 **
-** purpose: A procedure which takes the stifness matrix K = | D1\U11   M  | 
+** purpose: A procedure which takes the stiffness matrix K = | D1\U11   M  | 
 **							    | K21    K22* |
 **	    
 **	    and load/displ vector R = | R1* |

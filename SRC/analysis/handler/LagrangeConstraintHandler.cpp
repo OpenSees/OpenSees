@@ -92,7 +92,7 @@ LagrangeConstraintHandler::handle(const ID *nodesLast)
 	return -1;
     }
 
-    // get number ofelements and nodes in the domain 
+    // get number of elements and nodes in the domain 
     // and init the theFEs and theDOFs arrays
 
     int numConstraints = 0;
@@ -232,7 +232,7 @@ LagrangeConstraintHandler::handle(const ID *nodesLast)
     theModel->setNumEqn(countDOF);
     
     // set the number of eqn in the model
-    // now see if we have to set any of the dof's to -3
+    // now see if we have to set any of the DOFs to -3
     //    int numLast = 0;
     if (nodesLast != 0) 
 	for (int i=0; i<nodesLast->Size(); i++) {

@@ -83,7 +83,7 @@ class ShearCurve : public LimitCurve
 											   // based on calc drift at axial failure
 											   // if Kdeg >= 0.0
     
-	// Associated beam-colum element information
+	// Associated beam-column element information
 	int eleTag;			// tag for associated beam column element
 
 	Domain *theDomain;	// needed to retrieve element pointer

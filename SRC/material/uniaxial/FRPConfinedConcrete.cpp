@@ -1246,7 +1246,7 @@ FRPConfinedConcrete::getStressSensitivity(int gradNumber, bool conditional)
 int
 FRPConfinedConcrete::commitSensitivity(double TstrainSensitivity, int gradNumber, int numGrads)
 {
-        // Initialize unconditaional stress sensitivity
+        // Initialize unconditional stress sensitivity
         double TstressSensitivity = 0.0;
         double dktdh = 0.0;
 

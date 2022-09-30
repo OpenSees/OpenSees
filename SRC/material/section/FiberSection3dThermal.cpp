@@ -26,7 +26,7 @@
 // Created: 04/04
 //
 // Description: This file contains the class implementation of FiberSection2d.
-// Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
+// Modified for SIF modeling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
 
 
 #include <stdlib.h>
@@ -900,7 +900,7 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
       int classTag = materialData(2*i);
       int dbTag = materialData(2*i+1);
 
-      // if material pointed to is blank or not of corrcet type,
+      // if material pointed to is blank or not of correct type,
       // release old and create a new one
       if (theMaterials[i] == 0)
 	theMaterials[i] = theBroker.getNewUniaxialMaterial(classTag);

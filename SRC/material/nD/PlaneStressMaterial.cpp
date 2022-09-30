@@ -649,6 +649,6 @@ Response* PlaneStressMaterial::setResponse(const char** argv, int argc, OPS_Stre
         ) {
         return NDMaterial::setResponse(argv, argc, s);
     }
-    // otherwise, for other custom results, forward the call to the adaptee
+    // otherwise, for other custom results, forward the call to the adapter
     return theMaterial->setResponse(argv, argc, s);
 }

@@ -1049,7 +1049,7 @@ void SAniSandMS::explicit_integrator(const Vector& CurStress, const Vector& CurS
 					NextAlphaM, NextMM_plus, NextMM_minus, NextDGamma, NextVoidRatio, G, K, aC, aCep, aCep_Consistent);
 			}
 			else {
-				// This is an elastic unloding followed by plastic loading
+				// This is an elastic unloading followed by plastic loading
 				elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
 				dSigma = DoubleDot4_2(aC, elasticRatio * (NextStrain - CurStrain));
 				(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio * (NextStrain - CurStrain), CurElasticStrain + elasticRatio * (NextStrain - CurStrain),
@@ -1252,8 +1252,8 @@ void SAniSandMS::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, c
 	if (bM_distance_trial < -1.0e-3 || bM_distance_tilde_trial < -1.0e-3) 
 		opserr << "bM_distance_trial = " << bM_distance_trial << "bM_distance_tilde_trial = " << bM_distance_tilde_trial << endln;
 	
-	if (MM_trial > 50 || MM_trial < m_m - 1.0e-6) opserr << "weired MM = " << MM_trial << endln;
-	if (CurVoidRatio > 2 || CurVoidRatio < 0.1) opserr << "weired e = " << CurVoidRatio << endln;
+	if (MM_trial > 50 || MM_trial < m_m - 1.0e-6) opserr << "weird MM = " << MM_trial << endln;
+	if (CurVoidRatio > 2 || CurVoidRatio < 0.1) opserr << "weird e = " << CurVoidRatio << endln;
 
 
 	while (T < 1.0)

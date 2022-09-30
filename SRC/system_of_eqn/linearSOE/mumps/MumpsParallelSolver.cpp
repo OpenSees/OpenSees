@@ -121,7 +121,7 @@ MumpsParallelSolver::initializeMumps()
     int *colA = theMumpsSOE->colA;
     int *rowA = theMumpsSOE->rowA;
     
-    // increment row and col A values by 1 for mumps fortran indexing
+    // increment row and col A values by 1 for mumps FORTRAN indexing
     for (int i = 0; i < nnz; i++) {
       rowA[i]++;
       colA[i]++;
@@ -179,7 +179,7 @@ MumpsParallelSolver::solveAfterInitialization(void)
   id.ICNTL(14)=icntl14; 
   id.ICNTL(7)=icntl7; 
   
-  // increment row and col A values by 1 for mumps fortran indexing
+  // increment row and col A values by 1 for mumps FORTRAN indexing
   for (int i=0; i<nnz; i++) {
     rowA[i]++;
     colA[i]++;

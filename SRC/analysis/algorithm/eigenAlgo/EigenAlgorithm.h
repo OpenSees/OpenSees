@@ -33,7 +33,7 @@
 // EigenAlgorithm is a class which performs a eigen solution algorithm
 // to solve the equations. 
 //
-// This class is inheritanted from the base class of SolutionAlgorithm
+// This class is inherited from the base class of SolutionAlgorithm
 // which was created by fmk (Frank).
 
 

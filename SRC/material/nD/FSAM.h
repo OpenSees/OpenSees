@@ -213,7 +213,7 @@ private:
 
 	// Committed .........................................
 	// Panel Strains and Stresses
-	Vector   CStress;  // Committed stesses
+	Vector   CStress;  // Committed stresses
 	Vector   CStrain;  // Committed strain
 
 	const double pi; 

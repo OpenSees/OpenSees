@@ -158,7 +158,7 @@ class stressDensity : public NDMaterial
     Matrix currentTangent;
 
     // member functions
-    void initialise();
+    void initialize();
     void calInitialTangent(void);
     void getCurrentStress(void);
 

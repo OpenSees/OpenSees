@@ -28,7 +28,7 @@
 // Description: This file contains the class implementation for ElasticIsotropicMaterialThermal.
 //
 // What: "@(#) ElasticIsotropicMaterialThermal.C, revA"
-//Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io]
+//Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io]
 
 #include <string.h>
 

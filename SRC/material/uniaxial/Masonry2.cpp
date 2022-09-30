@@ -36,7 +36,7 @@ OPS_Masonry()
 { 
   // print out some KUDO's 
   if (numMasonry == 0) { 
-    opserr << "Masonry unaxial material - Written by Gonzalo Torrisi based on Crisafulli material model, Copyright 2015\n"; 
+    opserr << "Masonry uniaxial material - Written by Gonzalo Torrisi based on Crisafulli material model, Copyright 2015\n"; 
     numMasonry =1; 
   } 
   // Pointer to a uniaxial material that will be returned 
@@ -652,7 +652,7 @@ Masonry::Print(OPS_Stream &s, int flag)
 *                              Proposed equations (7.7) & (7.8)
 *          3. Plastic_Strain : Calculates Plastic Strain & Reduced
 *                              tensile strength from eq.(7.19) & (7.35)
-*          4. Stess_Tangent  : Calculates stress & tangent modulus at the
+*          4. Stress_Tangent  : Calculates stress & tangent modulus at the
 *                              current step
 ****************************************************************************/
 //1. 

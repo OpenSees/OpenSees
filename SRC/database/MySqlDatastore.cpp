@@ -40,7 +40,7 @@ MySqlDatastore::MySqlDatastore(const char *projectName,
   :FE_Datastore(theDomain, theObjectBroker), dbTag(0), dbRun(run), 
    connection(true), query(0), sizeQuery(0), sizeColumnString(0)
 {
-  // initialise the mysql structure
+  // initialize the mysql structure
   mysql_init(&mysql);
 
   // connect to the server
@@ -82,7 +82,7 @@ MySqlDatastore::MySqlDatastore(const char *databaseName,
   :FE_Datastore(theDomain, theObjectBroker), dbTag(0), dbRun(run), 
    connection(true), query(0), sizeQuery(0), sizeColumnString(0)
 {
-  // initialise the mysql structure
+  // initialize the mysql structure
   mysql_init(&mysql);
 
   // connect to the server & database

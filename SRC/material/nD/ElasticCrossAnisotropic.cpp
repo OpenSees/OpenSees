@@ -87,7 +87,7 @@ double  ElasticCrossAnisotropic::getMatParameter(int MatParameterID)
 	    case (6):
 		    return rho;
 	    default: {
-		    opserr << "Warning! ElasticIsotropic3D:: incorrect Materal parameter ID" << "\n";
+		    opserr << "Warning! ElasticIsotropic3D:: incorrect Material parameter ID" << "\n";
 		    return 0.0;
         }
     }

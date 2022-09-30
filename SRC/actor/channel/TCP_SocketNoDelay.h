@@ -30,7 +30,7 @@
 //
 // Purpose: This file contains the class definition for TCP_SocketNoDelay.
 // TCP_SocketNoDelay is a sub-class of channel. It is implemented with Berkeley
-// stream sockets using the TCP protocol. Messages delivery is garaunteed. 
+// stream sockets using the TCP protocol. Messages delivery is guaranteed. 
 // Communication is full-duplex between a pair of connected sockets.
 
 #ifndef TCP_SocketNoDelay_h

@@ -341,7 +341,7 @@ PetscSOE::setSize(Graph &theGraph)
   // Determine start and end rows for each processor
   // ================================================
 
-  PETSCSOE_DEBUGOUT << "        + PetscSOE::setSize() [" << processID <<  "] : Distributing SOE rows amongst processors\n";
+  PETSCSOE_DEBUGOUT << "        + PetscSOE::setSize() [" << processID <<  "] : Distributing SOE rows among processors\n";
 
   // Create array to store number of dofs in each processor (allgather)
   int nlocaldofs[numProcesses];

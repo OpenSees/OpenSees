@@ -93,7 +93,7 @@ int OPS_Node()
     // get crds
     Vector crds(ndm);
     if(OPS_GetDoubleInput(&ndm, &crds(0)) < 0) {
-	opserr<<"WARNING noda coord are not double\n";
+	opserr<<"WARNING nodal coords are not double\n";
 	return -1;
     }
 
@@ -1268,7 +1268,7 @@ Node::setR(int row, int col, double Value)
 {
   // ensure R had been set
   if (R == 0) {
-    opserr << "Node:setR() - R has not been initialised\n";
+    opserr << "Node:setR() - R has not been initialized\n";
     return -1;
   }
   

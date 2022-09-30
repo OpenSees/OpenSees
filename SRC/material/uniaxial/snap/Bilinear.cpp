@@ -96,7 +96,7 @@ Bilinear::Bilinear(int tag, Vector inputParam  ,DamageModel *strength,DamageMode
 	
 	if ( fyieldPos <= 0.0 || fyieldNeg >= 0.0 )
     {
-		opserr << "Error: Bilinear::Bilinear  : Incorrect yield stresse \n" << "\a";
+		opserr << "Error: Bilinear::Bilinear  : Incorrect yield stress \n" << "\a";
 		ErrorFlag =1;
     }
 

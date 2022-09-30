@@ -291,7 +291,7 @@ void  Brick::Print(OPS_Stream &s, int flag)
                 << " " << nodeDisp(0) << " " << nodeDisp(1) << " " << nodeDisp(2) << endln;
         }
         
-        // spit out the section location & invoke print on the scetion
+        // spit out the section location & invoke print on the section
         const int numMaterials = 8;
         
         static Vector avgStress(nstress);

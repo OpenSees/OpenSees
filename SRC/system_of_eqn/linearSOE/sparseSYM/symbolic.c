@@ -123,7 +123,7 @@ int symFactorization(int *fxadj, int *adjncy, int neq, int LSPARSE,
     switch(LSPARSE)
     {
        case 1:
-   /* Now call minimum degree ordering  ( a fortran subroutine) */
+   /* Now call minimum degree ordering  ( a Fortran subroutine) */
 #ifdef WIN32 
 	 MYGENMMD( &neq, fxadj, adjncy, winvp, wperm, &delta, fchild, parent,
 		   sibling, marker, &maxint, &nofsub, &kdx ) ;
@@ -131,7 +131,7 @@ int symFactorization(int *fxadj, int *adjncy, int neq, int LSPARSE,
 	 mygenmmd_( &neq, fxadj, adjncy, winvp, wperm, &delta, fchild, parent,
 		    sibling, marker, &maxint, &nofsub, &kdx ) ;
 #endif
-         /* reset subscripts for c rather than fortran */
+         /* reset subscripts for C rather than FORTRAN */
          for (i=0;i<=neq;i++)
          {
             winvp[i]-- ;
@@ -154,7 +154,7 @@ int symFactorization(int *fxadj, int *adjncy, int neq, int LSPARSE,
          break ;
    }
 
-   /* free up space used just for mygenmmd and the fortran program */
+   /* free up space used just for mygenmmd and the FORTRAN program */
    /*
     free(fxadj);
     free(adjncy);

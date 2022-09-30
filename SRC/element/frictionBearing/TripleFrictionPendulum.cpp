@@ -297,13 +297,13 @@ void TripleFrictionPendulum::setDomain(Domain *theDomain)
         opserr << "WARNING TripleFrictionPendulum::setDomain() - at TripleFrictionPendulum " << this->getTag() << " node " <<
             Nd1 << "  does not exist in domain\n";
     
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }
     if (end2Ptr == 0) {
         opserr << "WARNING TripleFrictionPendulum::setDomain() - at TripleFrictionPendulum " << this->getTag() << " node " <<
             Nd2 << "  does not exist in domain\n";
     
-        return;  // don't go any further - otherwise segemntation fault
+        return;  // don't go any further - otherwise segmentation fault
     }
     theNodes[0] = end1Ptr;
     theNodes[1] = end2Ptr;

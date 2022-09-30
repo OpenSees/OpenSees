@@ -108,7 +108,7 @@ void initValues()
   revised and written in c by David Mackay Jan 1990
   
   acknowledgements:
-    this routine is based on a fortran routine
+    this routine is based on a FORTRAN routine
     written and owned by dr. joseph liu,
     department of computer science, york university.
  
@@ -180,7 +180,7 @@ void etree(int neqns, int **padj, int *perm, int *invp, int *parent, int *ancstr
         fchild - first son vector (left children)
         sibling - siblings or right children
 
-  modeled from a fortran program bntree by Kincho Law
+  modeled from a FORTRAN program bntree by Kincho Law
  
 ************************************************************************/
      

@@ -1031,7 +1031,7 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
                 (this->*exp_int)(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress, NextAlpha, 
                     NextFabric, NextDGamma, NextVoidRatio, G, K, aC, aCep, aCep_Consistent);
             } else {
-                // This is an elastic unloding followed by plastic loading
+                // This is an elastic unloading followed by plastic loading
                 elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
                 // dSigma         = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
 				dElasStrain = dStrain; dElasStrain *= elasticRatio;

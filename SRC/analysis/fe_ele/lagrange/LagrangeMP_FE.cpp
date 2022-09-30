@@ -74,13 +74,13 @@ LagrangeMP_FE::LagrangeMP_FE(int tag, Domain &theDomain, MP_Constraint &TheMP,
 
     if (theRetainedNode == 0) {
 	opserr << "WARNING LagrangeMP_FE::LagrangeMP_FE()";
-	opserr << "- no asscoiated Retained Node\n";
+	opserr << "- no associated Retained Node\n";
 	exit(-1);
     }
     
     if (theConstrainedNode == 0) {
 	opserr << "WARNING LagrangeMP_FE::LagrangeMP_FE()";
-	opserr << "- no asscoiated Constrained Node\n";
+	opserr << "- no associated Constrained Node\n";
 	exit(-1);
     }
     
@@ -129,7 +129,7 @@ LagrangeMP_FE::setID(void)
     // associated with the constrained node
     if (theConstrainedNode == 0) {
 	opserr << "WARNING LagrangeMP_FE::setID(void)";
-	opserr << "- no asscoiated Constrained Node\n";
+	opserr << "- no associated Constrained Node\n";
 	return -1;
     }
     DOF_Group *theConstrainedNodesDOFs = theConstrainedNode->getDOF_GroupPtr();
@@ -168,7 +168,7 @@ LagrangeMP_FE::setID(void)
     // now determine the IDs for the retained dof's
     if (theRetainedNode == 0) {
 	opserr << "WARNING LagrangeMP_FE::setID(void)";
-	opserr << "- no asscoiated Retained Node\n";
+	opserr << "- no associated Retained Node\n";
 	return -1;
     }
     DOF_Group *theRetainedNodesDOFs = theRetainedNode->getDOF_GroupPtr();

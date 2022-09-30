@@ -306,7 +306,7 @@ SuperLU::setSize()
 	sizePerm = n;
       }
 
-      // initialisation
+      // initialization
       StatInit(&stat);
 
       // create the SuperMatrix A	

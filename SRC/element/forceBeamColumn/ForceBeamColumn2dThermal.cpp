@@ -58,7 +58,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
  *
  */
 
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 #include <math.h>
 #include <stdlib.h>
@@ -128,7 +128,7 @@ void* OPS_ForceBeamColumn2dThermal()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam inategration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";
@@ -2330,7 +2330,7 @@ ForceBeamColumn2dThermal::Print(OPS_Stream &s, int flag)
     // compute section location & displacements
     this->compSectionDisplacements(coords, displs);
     
-    // spit out the section location & invoke print on the scetion
+    // spit out the section location & invoke print on the section
     for (int i=0; i<numSections; i++) {
       s << "#SECTION " << (coords[i])(0) << " " << (coords[i])(1);       
       s << " " << (displs[i])(0) << " " << (displs[i])(1) << endln;

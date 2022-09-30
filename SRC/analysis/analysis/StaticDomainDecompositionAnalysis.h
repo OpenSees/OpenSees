@@ -71,12 +71,12 @@ class StaticDomainDecompositionAnalysis: public DomainDecompositionAnalysis
     int initialize(void);
     int domainChanged(void);
 
-    // methods for non standard domain deomposition analysis
+    // methods for non standard domain decomposition analysis
     int analyze(double dT);
     int eigen(int numMode, bool generalized, bool findSmallest);
     bool doesIndependentAnalysis(void);    
 
-    // methods for standard domain deomposition analysis
+    // methods for standard domain decomposition analysis
     // that do some form of condensation to the tangent
     int  getNumExternalEqn(void);
     int  getNumInternalEqn(void);

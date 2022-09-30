@@ -62,7 +62,7 @@ OPS_StressDensityMaterial(void)
 
     int numData = 1;
     if (OPS_GetInt(&numData, &tag) != 0) {
-        opserr << "WARNING: invalied nDMaterial stressDensity material tag" << endln;
+        opserr << "WARNING: invalid nDMaterial stressDensity material tag" << endln;
         return 0;
     }
 
@@ -134,8 +134,8 @@ stressDensity::stressDensity(int tag, int classTag, double massDen,
     materialParam(23) = ssl7;
     materialParam(24) = patm;
 
-    // initialise variables
-    this->initialise();
+    // initialize variables
+    this->initialize();
 }
 
 // null constructor
@@ -153,7 +153,7 @@ stressDensity::stressDensity()
     for (int i=0; i<24; i++) {
         materialParam(i) = 0.0;
     }
-    this->initialise();
+    this->initialize();
 }
 
 // destructor
@@ -196,7 +196,7 @@ stressDensity::revertToStart(void)
 		// do nothing, keep state variables from last step
 	} else {
 		// normal call for revertToStart (not initialStateAnalysis)
-    	this->initialise();
+    	this->initialize();
 	}
     return 0;
 }
@@ -484,11 +484,11 @@ stressDensity::updateParameter(int parameterID, Information &info)
 }
 
 void
-stressDensity::initialise()
+stressDensity::initialize()
 {
-    // initialise analysis stage to zero (elastic response)
+    // initialize analysis stage to zero (elastic response)
     theStage = 0;
-    // initialise Vector and Matrix variables
+    // initialize Vector and Matrix variables
     stressCurrent.Zero();
     stressNext.Zero();
     strainCurrent.Zero();
@@ -503,7 +503,7 @@ stressDensity::initialise()
     // set current tangent as initial tangent to start
     currentTangent = initialTangent;
 
-    // initialise in/out variables for FORTRAN
+    // initialize in/out variables for FORTRAN
     for (int i=0; i<4; i++) {
         strsg[i] = 0.0;
         stran[i] = 0.0;

@@ -356,7 +356,7 @@ void ResponseSpectrumAnalysis::solveMode()
 			// exclude any dof >= node_ndf (if ndf > node_ndf... in case node is U-only)
 			// exclude any dof >= ndf (if node_ndf > ndf... in case the node has more DOFs than U and R)
 
-			// we also need to exclude pressure dofs... easy in 3D because node_ndf is 4,
+			// we also need to exclude pressure DOFs... easy in 3D because node_ndf is 4,
 			// but in 2D it is 3, as in U-R...
 			if (ndf == 6 && node_ndf == 4 && i == 3)
 				continue;

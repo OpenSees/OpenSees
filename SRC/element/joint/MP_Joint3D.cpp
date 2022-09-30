@@ -130,7 +130,7 @@ RotationNode(0), DisplacementNode(0)
   int dimDsp = crdDsp.Size();
   
   if ( dimRet != 3 || dimCon != 3 || dimRot != 3 || dimDsp != 3 ){
-    opserr << "MP_Joint3D::MP_Joint3D - mismatch in dimnesion\n dimension not supported by this type of constraint";
+    opserr << "MP_Joint3D::MP_Joint3D - mismatch in dimension\n dimension not supported by this type of constraint";
     return;
   }
   

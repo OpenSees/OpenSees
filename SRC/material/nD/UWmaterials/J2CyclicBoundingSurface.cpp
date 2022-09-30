@@ -45,7 +45,7 @@ void* OPS_J2CyclicBoundingSurfaceMaterial()
 	int numdata = OPS_GetNumRemainingInputArgs();
 
 	if (numdata < 10) {
-		opserr << "WARNING: Insufficient arguements\n";
+		opserr << "WARNING: Insufficient arguments\n";
 		opserr << "Want: nDMaterial J2CyclicBoundingSurface tag? G? K? su? rho? h? m? k_in?  chi? beta?\n";
 		return 0;
 	}

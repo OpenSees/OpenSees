@@ -28,7 +28,7 @@ OPS_PrestressedConcretePlaneStressMaterial()
 {
   if (numPrestressedConcretePlaneStressMaterials == 0) {
     numPrestressedConcretePlaneStressMaterials++;
-    opserr << "PrestressedConcretePlaneStress unaxial material - Written by A.Laskar, Thomas T.C. Hsu and Y.L. Mo - Copyright@2009\n";
+    opserr << "PrestressedConcretePlaneStress uniaxial material - Written by A.Laskar, Thomas T.C. Hsu and Y.L. Mo - Copyright@2009\n";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -1176,7 +1176,7 @@ int PrestressedConcretePlaneStress::determineTrialStress(void)
   tempStrain[1] = V[1][0]*tempStrain[0] + V[1][1]*tempStrain[1]; //epslon2_bar
   
   
-  //get stiffness of unixail strain of concrete in 12 direction
+  //get stiffness of uniaxial strain of concrete in 12 direction
   double cigmaOneC; //stress of concrete in 12 direction
   double cigmaTwoC;
   double GOneTwoC; //shear modulus of concrete in 12 direction

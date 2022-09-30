@@ -56,7 +56,7 @@ protected:
     OptimizationDomainComponent(int tag, int classTag);
 
     
-//private:    // to save some uncessary functions
+//private:    // to save some unnecessary functions
  
     OptimizationDomain *theOptimizationDomain;
 };

@@ -169,7 +169,7 @@ PARDISOSymLinSOE::setSize(Graph &theGraph)
 				return -1;
 			}
 			int tag = theVertex->getTag() + 1;
-			colA[lastLoc++] = tag; // place diag in first fortran index start at 1
+			colA[lastLoc++] = tag; // place diag in first FORTRAN index start at 1
 			const ID &theAdjacency = theVertex->getAdjacency();
 			int idSize = theAdjacency.Size();
 

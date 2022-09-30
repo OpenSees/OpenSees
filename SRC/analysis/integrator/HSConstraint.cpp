@@ -180,7 +180,7 @@ HSConstraint::update(const Vector &dU)
 
     Vector f_ext = *phat;
 
-    // determine the coeeficients of our quadratic equation
+    // determine the coefficients of our quadratic equation
     double a1 = 
            psi_u2/u_ref2*((*deltaUhat)^(*deltaUhat)) 
            + 

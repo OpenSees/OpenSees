@@ -75,7 +75,7 @@ class RotationShearCurve : public LimitCurve
   protected:
     
   private:
-	// Associated beam-colum element information
+	// Associated beam-column element information
 	int curveTag;		// tag for shear curve
 	int eleTag;			// tag for associated beam column element
 
@@ -96,12 +96,12 @@ class RotationShearCurve : public LimitCurve
 
 	int ndI;			// node I for determining rotation (column base)
 	int ndJ;			// node J for determining rotation (should be located distance h from column base)
-	int rotAxis;		// direction to indicate axis of rotation to be monifored
+	int rotAxis;		// direction to indicate axis of rotation to be monitored
 	double Vn;			// nominal shear critical capacity (kips)
 	double Vr;			// residual capacity of column after failure (kips)
 	double Kdeg;		// degrading slope for LimitState material after failure (kips/in)
 	double rotLim;		// user defined rotation limit if calibrated SF model is not used (radians)
-	int defType;		// 0 Forces user input rotatation limit
+	int defType;		// 0 Forces user input rotation limit
 						// 1 Flexure-Shear capacity based on theta_total rotation capacity
 						// 2 Flexure-Shear capacity based on theta_flexural rotation capacity
 						// 3 Flexure-Shear capacity based on theta_total-plastic rotation capacity
@@ -114,7 +114,7 @@ class RotationShearCurve : public LimitCurve
 	double As;			// area of longitudinal steel bars in column section (in^2)
 	double Acc;			// gross confined concrete area bounded by the transverse reinforcement in column section (in^2)
 	double ld;			// development length of longitudinal bars using ACI 318-08 Equations 12-1 & 12-2 (in)
-	double db;			// diameter of longitudinial bars (in)
+	double db;			// diameter of longitudinal bars (in)
 	double rhot;		// transverse reinforcement ratio Ast/(st*b)
 	double fc;			// concrete strength (ksi)
 	double fy;			// longitudinal steel yield strength (ksi)

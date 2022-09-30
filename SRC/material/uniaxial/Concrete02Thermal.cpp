@@ -1,6 +1,6 @@
 ////J.Z. 01/2010 Concrete02Thermal.cpp   **for Siliceous aggregates
 // this is the second edition of Concrete02Thermal,the interface of it is same with concrete02.
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 
 #include <stdlib.h>
@@ -458,7 +458,7 @@ Concrete02Thermal::getElongTangent(double TempT, double& ET, double& Elong, doub
   else  {
     opserr << "the temperature is invalid\n"; 
   }
-  // PK 2nd step is to determine compressice strength at ambient after cooling as shown in ANNEX C (EN1994-1-2:2005)  
+  // PK 2nd step is to determine compressive strength at ambient after cooling as shown in ANNEX C (EN1994-1-2:2005)  
   if (Tempmax < 0) {
     opserr << "max temperature cannot be less than zero " << " " << Tempmax <<endln;
   }

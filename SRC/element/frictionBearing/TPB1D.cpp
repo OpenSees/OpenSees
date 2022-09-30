@@ -52,7 +52,7 @@
 
 #include <ElementResponse.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix TPB1D::TPB1DM2(2,2);
 Matrix TPB1D::TPB1DM4(4,4);
 Matrix TPB1D::TPB1DM6(6,6);
@@ -264,7 +264,7 @@ TPB1D::TPB1D(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 TPB1D::~TPB1D()
 {
   delete theMaterial;

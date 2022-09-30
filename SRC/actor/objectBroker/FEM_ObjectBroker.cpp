@@ -73,7 +73,7 @@ FEM_ObjectBroker::getPtrNewGraphNumberer(int classTag)
 
 /*****************************************
  *
- * METHODS TO GET NEW MODELLING CLASSES
+ * METHODS TO GET NEW MODELING CLASSES
  *
  *****************************************/
 

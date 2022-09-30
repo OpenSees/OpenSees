@@ -334,7 +334,7 @@ BandArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 	   opserr << "enough workspace and array storage has been allocated.\n";
 	   break;
          default:
-	   opserr << "unrecognised return value\n";
+	   opserr << "unrecognized return value\n";
       }
 
       // clean up the memory

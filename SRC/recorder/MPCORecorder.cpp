@@ -624,7 +624,7 @@ namespace utils {
 		inline bool isShellElementTag(int ele_tag) {
 			/**
 			used to check if an element is a shell.
-			used in workaournd for shell sections.
+			used in workaround for shell sections.
 			note that the keyword "section" doesn't work with shells (only in beams)
 			shells use "material" keyword, and then the "fiber" keyword
 			*/
@@ -5368,7 +5368,7 @@ int MPCORecorder::writeSections()
 							1) # gauss = # sec_id = # dummy_flag = 1
 							2) # fiber can be zero or 1
 							*/
-							/** workaournd for sections that assume 1-based fiber indexing (now only ShellLayeredFiberSection) 
+							/** workaround for sections that assume 1-based fiber indexing (now only ShellLayeredFiberSection) 
 							*/
 							if (trial_fiberdata.size() == 0 && trial_num_fib == 0) {
 								continue; // go to next fiber iteration with id = 1

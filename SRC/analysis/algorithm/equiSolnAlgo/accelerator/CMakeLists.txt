@@ -31,7 +31,7 @@ target_sources(OPS_Analysis
       SecantAccelerator3.h
 )
 # Build files are not properly generated for Windows
-# when libraries contain both C++ and Fortran files
+# when libraries contain both C++ and FORTRAN files
 add_library(OPS_Analysis_Naccel OBJECT naccel.f)
 target_link_libraries(OPS_Analysis OPS_Analysis_Naccel)
 

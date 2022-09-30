@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 
 static int numMyZeroLengthImpact3D = 0;
 

@@ -100,7 +100,7 @@ OPS_StressDensityMaterial(void)
       
       return 0;
     } else if (numArgs > 18 && numArgs < 29) {
-      opserr << "ERROR: Insufficient optional void ratio arguments for StressDensity materal" << endln;
+      opserr << "ERROR: Insufficient optional void ratio arguments for StressDensity material" << endln;
       opserr << "All ten SSL values and single HSL value must be specified if defaults are not used" << endln;
       
       for(int i=numArgs; i < 29; i++)
@@ -108,7 +108,7 @@ OPS_StressDensityMaterial(void)
       
       return 0;
     } else if (numArgs > 29 && numArgs < 39) {
-      opserr << "ERROR: Insufficient optional SSL pressure arguments for StressDensity materal" << endln;
+      opserr << "ERROR: Insufficient optional SSL pressure arguments for StressDensity material" << endln;
       opserr << "All ten pressure values must be specified if defaults are not used" << endln;
       
       for(int i=numArgs; i < 39; i++)

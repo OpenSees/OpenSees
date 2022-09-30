@@ -46,16 +46,16 @@
 #define MAX_NUM_DOF 256
 
 
-// static variables initialisation
+// static variables initialization
 Matrix DOF_Group::errMatrix(1,1);
 Vector DOF_Group::errVect(1);
 Matrix **DOF_Group::theMatrices; // array of pointers to class wide matrices
-Vector **DOF_Group::theVectors;  // array of pointers to class widde vectors
+Vector **DOF_Group::theVectors;  // array of pointers to class wide vectors
 int DOF_Group::numDOFs(0);           // number of objects
 
 
 //  DOF_Group(Node *);
-//	construictor that take the corresponding model node.
+//	constructor that take the corresponding model node.
 
 DOF_Group::DOF_Group(int tag, Node *node)
 :TaggedObject(tag),
@@ -694,7 +694,7 @@ DOF_Group::incrNodeVel(const Vector &udot)
     for (i=0; i<numDOF; i++) {
 	int loc = myID(i);
 	if (loc >= 0)
-	    vel(i) = udot(loc);  // -1 for dof labelled 1 through ndof
+	    vel(i) = udot(loc);  // -1 for dof labeled 1 through ndof
 	else  vel(i) = 0.0;
     }
     myNode->incrTrialVel(vel);

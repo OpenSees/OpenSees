@@ -44,7 +44,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-// initialise all class wise pointers to 0 and numfElements to 0
+// initialize all class wise pointers to 0 and numfElements to 0
 Matrix **fElement::fElementM;
 Vector **fElement::fElementV;
 double *fElement::r;
@@ -122,7 +122,7 @@ fElement::fElement(int tag,
 	    r == 0 || s == 0 || ul == 0 || xl == 0 || tl == 0) {
 
 	    opserr << "FATAL: fElement::fElement() - eleTag: " << tag;
-	    opserr << " ran out of memory initialising static stuff\n";
+	    opserr << " ran out of memory initializing static stuff\n";
 	    exit(-1);	    
 	}
 	
@@ -204,7 +204,7 @@ fElement::fElement(int tag,
 	    r == 0 || s == 0 || ul == 0 || xl == 0 || tl == 0) {
 
 	    opserr << "FATAL: fElement::fElement() - eleTag: " << tag;
-	    opserr << " ran out of memory initialising static stuff\n";
+	    opserr << " ran out of memory initializing static stuff\n";
 	    exit(-1);	    
 	}
 	
@@ -233,7 +233,7 @@ fElement::fElement(int classTag)
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 fElement::~fElement()
 {
     // clear up any space allocated for individual object

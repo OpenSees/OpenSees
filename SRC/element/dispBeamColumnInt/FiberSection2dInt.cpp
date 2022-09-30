@@ -3200,7 +3200,7 @@ FiberSection2dInt::recvSelf(int commitTag, Channel &theChannel,
 
 
 
-      // if material pointed to is blank or not of corrcet type, 
+      // if material pointed to is blank or not of correct type, 
 
       // release old and create a new one
 

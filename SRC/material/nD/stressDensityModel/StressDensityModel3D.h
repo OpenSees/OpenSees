@@ -75,7 +75,7 @@ public:
 	//default constructor 
 	StressDensityModel3D();
 
-	//initialisation constructor
+	//initialization constructor
 	StressDensityModel3D(int tag, double constDensity,
                            // SD model  parameters
                            double initialVoidRatio,	double constA, double exponentN, double poissonRatio,	
@@ -150,7 +150,7 @@ public:
     int _hard_para_int[2];
 
     // member functions
-    void initialise();
+    void initialize();
     void CalInitialTangent(void);
 	void GetCurrentStress(void);
 };

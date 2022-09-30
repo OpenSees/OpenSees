@@ -335,7 +335,7 @@ ASI3D8QuadWithSensitivity::getResistingForceIncInertia(void)
 int 
 ASI3D8QuadWithSensitivity::sendSelf (int commitTag, Channel &theChannel) 
 { 
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -343,7 +343,7 @@ int
 ASI3D8QuadWithSensitivity::recvSelf (int commitTag, Channel &theChannel, 
   FEM_ObjectBroker &theBroker) 
 {   
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -862,7 +862,7 @@ ASI3D8QuadWithSensitivity::setParameter(const char **argv, int argc, Parameter &
 ASI3D8QuadWithSensitivity::updateParameter(int parameterID, Information &info)
 {
 
-  opserr<<"warnning: ASI3D8QuadWithSensitivityWithSensitivity can not updateParameter!"<<endln;
+  opserr<<"ERROR: ASI3D8QuadWithSensitivityWithSensitivity can not updateParameter!"<<endln;
   return -1;
 }
 

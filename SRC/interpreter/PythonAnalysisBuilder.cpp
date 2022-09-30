@@ -1138,7 +1138,7 @@ PyObject *ops_eigenAnalysis(PyObject *self, PyObject *args)
     // check type of eigenvalue analysis
     if(numArgs >1) {
 	std::string type = OPS_GetString();
-	if(type=="frequency"||type=="-frenquency"||type=="generalized"||type=="-generalized") {
+	if(type=="frequency"||type=="-frequency"||type=="generalized"||type=="-generalized") {
 	    generalizedAlgo = true;
 	} else if(type=="standard"||type=="-standard") {
 	    generalizedAlgo = false;

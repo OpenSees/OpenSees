@@ -454,7 +454,7 @@ const Vector &AC3D8HexWithSensitivity::getResistingForceIncInertia(void)
 int 
 AC3D8HexWithSensitivity::sendSelf (int commitTag, Channel &theChannel) 
 { 
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -462,7 +462,7 @@ int
 AC3D8HexWithSensitivity::recvSelf (int commitTag, Channel &theChannel, 
   FEM_ObjectBroker &theBroker) 
 {   
-  // Not implemtented yet
+  // Not implemented yet
   return 0;
 }
 
@@ -470,7 +470,7 @@ int
 AC3D8HexWithSensitivity::displaySelf (Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   int error  = 0;
-  // Not implemtented yet
+  // Not implemented yet
   return error;
 
 }     
@@ -1633,7 +1633,7 @@ AC3D8HexWithSensitivity::setParameter(const char **argv, int argc, Parameter &pa
 AC3D8HexWithSensitivity::updateParameter(int parameterID, Information &info)
 {
 
-  opserr<<"warnning: AC3D8HexWithSensitivity can not updateParameter!"<<endln;
+  opserr<<"ERROR: AC3D8HexWithSensitivity can not updateParameter!"<<endln;
   return -1;
 }
 

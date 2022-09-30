@@ -128,13 +128,13 @@ InitialInterpolatedLineSearch::search(double s0,
     *x *= eta-etaPrev;
 	    
     if (theIntegrator.update(*x) < 0) {
-      opserr << "WARNInG InitialInterpolatedLineSearch::search() -";
+      opserr << "WARNING InitialInterpolatedLineSearch::search() -";
       opserr << "the Integrator failed in update()\n";	
       return -1;
     }
     
     if (theIntegrator.formUnbalance() < 0) {
-      opserr << "WARNInG InitialInterpolatedLineSearch::search() -";
+      opserr << "WARNING InitialInterpolatedLineSearch::search() -";
       opserr << "the Integrator failed in formUnbalance()\n";	
       return -2;
     }	

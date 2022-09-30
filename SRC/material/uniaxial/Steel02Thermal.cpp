@@ -329,7 +329,7 @@ Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, doub
 
       e = E0;
       sig = sigini;                // modified C-P. Lamarche 2006
-      kon = 3;                     // modified C-P. Lamarche 2006 flag to impose initial stess/strain
+      kon = 3;                     // modified C-P. Lamarche 2006 flag to impose initial stress/strain
       return 0;
 
     } else {
@@ -554,7 +554,7 @@ Steel02Thermal::commitState(void)
   sigP = sig;
   epsP = eps;
 
-  E0P = E0;  //Added by liming for tracking the initial stiffnes change
+  E0P = E0;  //Added by liming for tracking the initial stiffness change
   FyP = Fy;  //Added by liming for tracking the yield stress change
   return 0;
 }
@@ -574,7 +574,7 @@ Steel02Thermal::revertToLastCommit(void)
   e = eP;
   sig = sigP;
   eps = epsP;
-   E0 = E0P;  //Added by liming for tracking the initial stiffnes change
+   E0 = E0P;  //Added by liming for tracking the initial stiffness change
    Fy = FyP;  //Added by liming for tracking the yield stress change
   return 0;
 }

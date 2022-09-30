@@ -763,7 +763,7 @@ Steel01::commitSensitivity(double TstrainSensitivity, int gradIndex, int numGrad
 	}
 
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double gradient = 0.0;
 
 

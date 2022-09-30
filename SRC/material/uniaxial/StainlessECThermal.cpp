@@ -22,7 +22,7 @@
 // --------------------------------------------------------------------
 // Description: This file contains the class definition for
 // StainlessECThermal. StainlessECThermal is modified on the basis of Steel02Thermal
-// and steel01Thermal.StainlessECThermal is developed for modelling steel material
+// and steel01Thermal.StainlessECThermal is developed for modeling steel material
 // which strictly satisfies Eurocode regarding the temperature dependent properties.
 
 #include <StainlessECThermal.h>
@@ -149,7 +149,7 @@ StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, 
    Ttangent = E0T;
    Ttemp = 0;
 //
-// // initialise values
+// // initialize values
 	  ThermalElongation = 0;
 	  E0 = E0T;
 	  fy = fyT;
@@ -164,7 +164,7 @@ StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, 
 #ifdef _DEBUG
 		 // opserr << "  CstrainINI:  " << Cstrain << "  CStressINI: " << Cstress << endln;
 #endif
-		  // need to initialise Tstrian? Tstress?? or they will be assigned in the setTrial(), setTrialStrain()anyway	  
+		  // need to initialize Tstrian? Tstress?? or they will be assigned in the setTrial(), setTrialStrain()anyway	  
 	  }
 	  else
 		  epsini = 0.0;
@@ -1001,7 +1001,7 @@ StainlessECThermal::commitSensitivity(double TstrainSensitivity, int gradIndex, 
 	}
 
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double gradient = 0.0;
 
 	

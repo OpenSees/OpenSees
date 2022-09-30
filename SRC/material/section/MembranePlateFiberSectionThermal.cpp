@@ -25,7 +25,7 @@
 // Ed "C++" Love
 //
 //  Generic Plate Section with membrane
-// Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io] 
 
 //
 

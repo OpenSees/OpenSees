@@ -75,11 +75,11 @@ void* OPS_PFEMElement2Dmini(const ID &info)
     // regular element, or save data
     if (info.Size()==0 || info(0)==1) {
 	if(OPS_GetNumRemainingInputArgs() < 4) {
-	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
+	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thickness,kappa)\n";
 	    return 0;
 	}
 
-	// rho, mu, b1, b2, (thinknes,kappa)
+	// rho, mu, b1, b2, (thickness,kappa)
 	numdata = OPS_GetNumRemainingInputArgs();
 	if(numdata > 6) numdata = 6;
 	if(OPS_GetDoubleInput(&numdata,data) < 0) {
@@ -512,7 +512,7 @@ PFEMElement2Dmini::setDomain(Domain *theDomain)
     }
     thePCs[3] = new Pressure_Constraint(ntags[6], 0.0);
     if (thePCs[3] == 0) {
-	opserr<<"WARNING: failed to create PC for buble node\n";
+	opserr<<"WARNING: failed to create PC for bubble node\n";
 	return;
     }
     if (theDomain->addPressure_Constraint(thePCs[3]) == false) {

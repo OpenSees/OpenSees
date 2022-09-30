@@ -203,7 +203,7 @@ int     max_sup;
 flops_t reuse_flops;    /* Triangular solve and matrix vector multiply */
 float   reuse_data;     /* Doubles in updating supernode */
 
-/* Statistics for blas operations */
+/* Statistics for BLAS operations */
 int     num_blas;       /* no of BLAS2 operations, including trsv/gemv */
 int     max_blas_n;     /* max dimension n in tri-solve and mat-vec */
 int     min_blas_n;     /* min dimension n in tri-solve and mat-vec */

@@ -753,7 +753,7 @@ TDConcrete::setResponse(const char **argv, int argc,
 		theOutput.tag("ResponseType", "sigsens11");
 		theResponse =  new MaterialResponse(this, gradient+10000, this->getStress());
 	}
-	// strain sensivitiy
+	// strain sensitivity
 	else if (strstr(argv[0],"strainSensitivity") != 0) {
 		char *token = strtok((char *) argv[0], " ");
 		if (token != NULL) token = strtok(NULL, " ");

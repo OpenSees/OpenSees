@@ -35,7 +35,7 @@
 //      Implicit Time Integration Scheme", Computers and Structures 85(2007),437-445
 //
 // note: the implementation does not do sub-step, it just alternates between trapezoidal
-// and euler methods, if user specifies dt/2 step size result will be as per paper.
+// and Euler methods, if user specifies dt/2 step size result will be as per paper.
 //
 // What: "@(#) TRBDF2.h, revA"
 
@@ -71,7 +71,7 @@ public:
  protected:
 
  private:
-    int step;      // a flag indicating whether trap or euler step
+    int step;      // a flag indicating whether trap or Euler step
     double dt;     // last dt, if not same as previous we do trapezoidal step
     
     double c1, c2, c3;              // some constants we need to kee

@@ -33,7 +33,7 @@
 // EigenAnalysis is a subclass of Analysis, it is used to perform the 
 // eigen value analysis on the FE_Model.
 //
-// This class is inheritanted from the base class of Analysis
+// This class is inherited from the base class of Analysis
 // which was created by fmk (Frank).
 
 

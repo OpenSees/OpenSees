@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
   }
 
   char *page = "/REST/Project/150/Experiment/197/Trial";
-  char *data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <central xmlns=\"http://central.nees.org/api\" xmlns:type=\"central\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:tns=\"http://central.nees.org/api\"> <Trial> <name>123456</name> <title>opensees upload test</title> <objective>the test objective</objective> <description>the test description</description> </Trial> </central> ";
+  char *data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <central xmlns=\"http://central.nees.org/api\" xmlns:type=\"central\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:tns=\"http://central.nees.org/api\"> <Trial> <name>123456</name> <title>OpenSees upload test</title> <objective>the test objective</objective> <description>the test description</description> </Trial> </central> ";
 
   char *contentType = 0;
 

@@ -29,7 +29,7 @@
 // FiberSection3dThermal.h. FiberSection3dThermal provides the abstraction of a
 // 3d beam section discretized by fibers. The section stiffness and
 // stress resultants are obtained by summing fiber contributions.
-// Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
+// Modified for SIF modeling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
 
 
 #ifndef FiberSection3dThermal_h

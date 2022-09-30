@@ -216,7 +216,7 @@ FilePlotter::plotFile(void)
 {
     /*
      * first pass: 1) open file
-     *             2) determine number of entries on first line ASSSSSUME same through file
+     *             2) determine number of entries on first line, assume same through file
      *             3) determine number of lines and bounds [xmin, xmax, ymin, ymax]
      *             4) close the file
      */
@@ -403,7 +403,7 @@ FilePlotter::plotFiles(void)
 {
     /*
      * first pass: 1) open files
-     *             2) determine number of entries on first line ASSSSSUME same through file
+     *             2) determine number of entries on first line, assume same through file
      *             3) determine number of lines and bounds [xmin, xmax, ymin, ymax]
      *             4) close the file
      */

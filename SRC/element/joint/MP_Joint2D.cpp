@@ -115,7 +115,7 @@ MP_Joint2D::MP_Joint2D(Domain *theDomain, int nodeRetain, int nodeConstr,
   int dimC = crdC.Size();
   
   if (dimR != 2 || dimC != 2 ){
-    opserr << "MP_Joint2D::MP_Joint2D - mismatch in dimnesion\n dimension not supported by this type of constraint";
+    opserr << "MP_Joint2D::MP_Joint2D - mismatch in dimension\n dimension not supported by this type of constraint";
     return;
   }
   

@@ -140,13 +140,13 @@ class SimpleContact3D : public Element
 
     Vector d;
 
-    Matrix x;				// matrix of cartesian coords of nodes 1-4, secondary
+    Matrix x;				// matrix of Cartesian coords of nodes 1-4, secondary
     Matrix g_metric;		// metric tensor
 	Matrix G_metric;		// contravariant metric tensor
 
     Vector XiEta_n;			// holds curvlinear coords of xi, eta @ step n
     Vector XiEta_nplus1;	// holds curvlinear coords of xi, eta @ step n+1
-    Vector x_XiCrd;			// holds cartesian coords of xi, eta
+    Vector x_XiCrd;			// holds Cartesian coords of xi, eta
     
     Vector slip;
     

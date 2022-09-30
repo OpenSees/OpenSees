@@ -369,7 +369,7 @@ void  Block3D::shape3d( double r, double s, double t,
       subroutine shp04(shp,glu,glo,gu,eu,to,xjac,detj,r,s,t,xl,ul)
 c-----------------------------------------------------------------------
 c.....compute shape functions and their derivatives for linear,quadratic
-c.....lagrangian and serendipity isoparametric  3-d elements
+c.....Lagrangian and serendipity isoparametric  3-d elements
 c.....global coordinate system x,y,z
 c.....local coordinate system xsi,eta,zeta
 c-----------------------------------------------------------------------

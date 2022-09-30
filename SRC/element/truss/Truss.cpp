@@ -50,7 +50,7 @@
 
 //#include <fstream>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix Truss::trussM2(2,2);
 Matrix Truss::trussM4(4,4);
 Matrix Truss::trussM6(6,6);
@@ -238,7 +238,7 @@ Truss::Truss()
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 Truss::~Truss()
 {
     // invoke the destructor on any objects created by the object
@@ -319,7 +319,7 @@ Truss::setDomain(Domain *theDomain)
       return;
     }
 
-    // now determine the number of dof and the dimesnion    
+    // now determine the number of dof and the dimension    
     int dofNd1 = theNodes[0]->getNumberDOF();
     int dofNd2 = theNodes[1]->getNumberDOF();	
 

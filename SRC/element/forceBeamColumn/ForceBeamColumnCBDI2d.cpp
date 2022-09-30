@@ -146,7 +146,7 @@ void* OPS_ForceBeamColumnCBDI2d()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";
@@ -233,7 +233,7 @@ void* OPS_ForceBeamColumnCSBDI2d()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
     if(theRule == 0) {
 	opserr<<"beam integration not found\n";
@@ -2737,7 +2737,7 @@ ForceBeamColumnCBDI2d::Print(OPS_Stream &s, int flag)
     // compute section location & displacements
     this->compSectionDisplacements(coords, displs);
     
-    // spit out the section location & invoke print on the scetion
+    // spit out the section location & invoke print on the section
     for (int i=0; i<numSections; i++) {
       s << "#SECTION " << (coords[i])(0) << " " << (coords[i])(1);       
       s << " " << (displs[i])(0) << " " << (displs[i])(1) << endln;

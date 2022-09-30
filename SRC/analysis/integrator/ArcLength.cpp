@@ -241,7 +241,7 @@ ArcLength::update(const Vector &dU)
 
     (*deltaUhat) = theLinSOE->getX();    
 
-    // determine the coeeficients of our quadratic equation
+    // determine the coefficients of our quadratic equation
            a = alpha2 + ((*deltaUhat)^(*deltaUhat));
            b = alpha2*deltaLambdaStep 
       + ((*deltaUhat)^(*deltaUbar))
@@ -708,15 +708,15 @@ dlambda1dh=0.0;
 //opserr<<"ArcLength: dLAMBDA=0 !!!!!!!!!!!!!!!!!!!"<<endln;
 } else {
 double ALPHA2=alpha2*alpha2;
-double denomerator=pow((dUhatTdUhat+alpha2),2.0);
-      dlambda1dh=signLastDeltaLambdaStep *1.0/(dLAMBDA)*(-arcLength2*dUhatTUhatdh/(denomerator));
+double denominator=pow((dUhatTdUhat+alpha2),2.0);
+      dlambda1dh=signLastDeltaLambdaStep *1.0/(dLAMBDA)*(-arcLength2*dUhatTUhatdh/(denominator));
     //  opserr<<"first dLambda1dh= "<<dlambda1dh<<endln;
  //dlambda1dh=1.0/(2.0)*dLAMBDA*(-sqrt(arcLength2)*dUhatTUhatdh/(dUhatTdUhat+alpha2));
 //opserr<<"second dlambdadh: "<<dlambda1dh<<".......................,,,,,,,,,,,,////////////"<<endln;
 
  //dlambda1dh *=signLastDeltaLambdaStep;
 //opserr<<"formdLAmbdaDh:   dLAMBDA= "<<dLAMBDA<<endln;
-//opserr<<"denomerator= "<<denomerator<<endln;
+//opserr<<"denominator= "<<denominator<<endln;
 //opserr<<"ArcLength2= "<<arcLength2<<endln;
 //opserr<<"dUhatTUhatdh= "<<dUhatTUhatdh<<endln;
 //opserr<<"dUhatTdUhat= "<<dUhatTdUhat<<endln;
@@ -737,7 +737,7 @@ ArcLength::getLambdaSensitivity(int gradNumber)
 {
 
     //...................
- // determine the coeeficients of our quadratic equation
+ // determine the coefficients of our quadratic equation
   //  double a = alpha2 + ((*deltaUhat)^(*deltaUhat));
  //   double b = alpha2*deltaLambdaStep 
   //    + ((*deltaUhat)^(*deltaUbar))

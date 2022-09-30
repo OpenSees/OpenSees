@@ -54,7 +54,7 @@ void*
 OPS_SPSW02()
 {
 	if (numSPSWcall == 0) {
-		opserr << "------ SPSW02 unaxialMaterial, Written by SAJalali @ Amirkabir University of Technology, Tehran, 2015-------\n";
+		opserr << "------ SPSW02 uniaxialMaterial, Written by SAJalali @ Amirkabir University of Technology, Tehran, 2015-------\n";
 		opserr << "------------------------------ Please Send Comments to: seyyed-jalali@aut.ac.ir-----------------------------\n";
 		opserr<<  "-------Syntax:\n";
 		opserr<<  "-------UniaxialMaterial SPSW02 tag ";

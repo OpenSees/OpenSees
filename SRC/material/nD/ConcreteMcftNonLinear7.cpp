@@ -367,10 +367,10 @@ ConcreteMcftNonLinear7 ::Loadf(void)
     //Update the principle axis Angle LOOP
     this->ForwardAngleSearch();
     
-    Dr(0,0) = this->tangentstifness00(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
-    Dr(0,1) = this->tangentstifness01(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
-    Dr(1,0) = this->tangentstifness10(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
-    Dr(1,1) = this->tangentstifness11(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
+    Dr(0,0) = this->tangentstiffness00(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
+    Dr(0,1) = this->tangentstiffness01(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
+    Dr(1,0) = this->tangentstiffness10(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
+    Dr(1,1) = this->tangentstiffness11(ex,exy,theta,Ec,nE,fcu,ecu,e1,fcr,Esv,RoV,e1max,e2min,fe1max,e1max,fe2min,e2min);
     
     sigf(0) = fx;
     sigf(1) = fxy;
@@ -2210,7 +2210,7 @@ double cL = crackLabel;
 }
 
 double 
-ConcreteMcftNonLinear7 ::tangentstifness00(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
+ConcreteMcftNonLinear7 ::tangentstiffness00(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
 {
 	
   double cott = 1/tan(theta);
@@ -2667,7 +2667,7 @@ return d00;
 }
 
 double 
-ConcreteMcftNonLinear7 ::tangentstifness01(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
+ConcreteMcftNonLinear7 ::tangentstiffness01(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
 {
 	
 	double cott = 1/tan(theta);
@@ -3144,7 +3144,7 @@ return d01;
 
 
 double 
-ConcreteMcftNonLinear7 ::tangentstifness10(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
+ConcreteMcftNonLinear7 ::tangentstiffness10(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
 {
 	
 	double cott = 1/tan(theta);
@@ -3565,7 +3565,7 @@ return d10;
 
 
 double 
-ConcreteMcftNonLinear7 ::tangentstifness11(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
+ConcreteMcftNonLinear7 ::tangentstiffness11(double ex, double exy, double theta, double Ec, double nE, double fcu, double ecu, double e1, double fcr, double Esv, double RoV, double e1P, double e2P, double fe1max, double e1max, double fe2min, double e2min)
 {
 	double cott = 1/tan(theta);
 	double sect = 1/cos(theta);

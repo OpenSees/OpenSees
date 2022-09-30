@@ -889,7 +889,7 @@ PFEMIntegrator::formSensitivityRHS(int passedGradNumber)
     // Get domain
     Domain *theDomain = theModel->getDomainPtr();
 
-    // Loop through nodes to zero the unbalaced load
+    // Loop through nodes to zero the unbalanced load
     Node *nodePtr;
     NodeIter &theNodeIter = theDomain->getNodes();
     while ((nodePtr = theNodeIter()) != 0)

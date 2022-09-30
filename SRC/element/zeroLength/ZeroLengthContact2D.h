@@ -71,7 +71,7 @@
  (5) This element is a modified version of continuum-based implicit formulation
      (Laursen and Simo,1993) for small deformation. Contact detection is simplified
 	 to be only related to these two nodes, and contributions of geometric
-	 nonlinearities to consistent tangent moudulus are neglected.
+	 nonlinearities to consistent tangent modulus are neglected.
 
   References:
   Laursen,T.A. and Simo, J.C. "A Continuum-based Finite Element Formulation for the

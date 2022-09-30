@@ -78,7 +78,7 @@ BerkeleyDbDatastore::BerkeleyDbDatastore(const char *projectName,
   }
 
 
-  // initialise the db structuress
+  // initialize the db structuress
   int result;
   if ((result = db_create(&dbMatrix, dbenv, 0)) != 0) {
     opserr << "BerkeleyDbDatastore::BerkeleyDbDatastore - failed to init dbMatrix";

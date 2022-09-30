@@ -1036,7 +1036,7 @@ DomainPartitioner::swapVertex(int from, int to, int vertexTag,
           j = numPartitions+1;
       }
         }
-    if (internal == 0) { // add to toSubdomain if inteernal
+    if (internal == 0) { // add to toSubdomain if internal
         myDomain->removeSP_Constraint(spPtr->getTag());
         toSubdomain->addSP_Constraint(spPtr);
     }
@@ -1092,7 +1092,7 @@ DomainPartitioner::swapVertex(int from, int to, int vertexTag,
           j = numPartitions+1;
       }
         }
-    if (internal == 0) { // add to toSubdomain if inteernal
+    if (internal == 0) { // add to toSubdomain if internal
         myDomain->removeNodalLoad(loadPtr->getTag());
         toSubdomain->addNodalLoad(loadPtr);
     }
@@ -1424,7 +1424,7 @@ DomainPartitioner::swapBoundary(int from, int to, bool adjacentVertexNotInOther)
       j = numPartitions+1;
         }
     }
-      if (internal == 0) { // add to toSubdomain if inteernal
+      if (internal == 0) { // add to toSubdomain if internal
     myDomain->removeSP_Constraint(spPtr->getTag());
     toSubdomain->addSP_Constraint(spPtr);
       }
@@ -1474,7 +1474,7 @@ DomainPartitioner::swapBoundary(int from, int to, bool adjacentVertexNotInOther)
       j = numPartitions+1;
         }
     }
-      if (internal == 0) { // add to toSubdomain if inteernal
+      if (internal == 0) { // add to toSubdomain if internal
     myDomain->removeNodalLoad(loadPtr->getTag());
     toSubdomain->addNodalLoad(loadPtr);
       }

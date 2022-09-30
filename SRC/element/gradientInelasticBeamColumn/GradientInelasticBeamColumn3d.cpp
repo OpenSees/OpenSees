@@ -157,7 +157,7 @@ void* OPS_GradientInelasticBeamColumn3d()
 		return 0;
 	}
 
-	// check beam integrataion
+	// check beam integration
 	BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(integrTag);
 	if (theRule == 0) {
 		opserr << "WARNING! gradientInelasticBeamColumn3d - BeamIntegrationRule with tag " << integrTag << " not found\n";
@@ -1208,7 +1208,7 @@ double
 GradientInelasticBeamColumn3d::weightedNorm(const Vector &W, const Vector &V, bool sqRt)
 {
 	if (W.Size() != V.Size())
-		opserr << "WARNING! GradientInelasticBeamColumnPF3d::weightedNorm() - element: " << this->getTag() << " - inequal number of elements in vectors\n";
+		opserr << "WARNING! GradientInelasticBeamColumnPF3d::weightedNorm() - element: " << this->getTag() << " - unequal number of elements in vectors\n";
 
 	double sqSum = 0.0;
 	for (int i = 0; i < V.Size(); i++)

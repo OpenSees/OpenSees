@@ -1214,7 +1214,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
   } 
-  else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
+  else if (strcmp(argv[1], "PFEMElement2DBubble") == 0) {
     ID info;
       void *theEle = OPS_PFEMElement2DBubble(info);
       if (theEle != 0) {

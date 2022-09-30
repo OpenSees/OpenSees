@@ -27,7 +27,7 @@
 //
 // Generic Plate Fiber Material
  
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 
 #include <PlateFiberMaterialThermal.h>

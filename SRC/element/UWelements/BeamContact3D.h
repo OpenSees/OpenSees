@@ -39,7 +39,7 @@ class CrdTransf;
 
 // number of nodes per element
 #define BC3D_NUM_NODE 4
-// number of dimesnions
+// number of dimensions
 #define BC3D_NUM_NDM  3
 // degrees of freedom per element
 #define BC3D_NUM_DOF  18

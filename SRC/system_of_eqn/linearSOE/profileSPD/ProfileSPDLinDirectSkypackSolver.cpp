@@ -185,7 +185,7 @@ ProfileSPDLinDirectSkypackSolver::solve(void)
 
 	    // set up invD
 	    for (int i=0; i<size; i++)
-		invD[i] = 1.0/A[iDiagLoc[i]-1]; // iDiagLoc has fortran array indexing
+		invD[i] = 1.0/A[iDiagLoc[i]-1]; // iDiagLoc has FORTRAN array indexing
 	}
       
 	// mark the system as having been factored

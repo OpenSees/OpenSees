@@ -102,7 +102,7 @@ int ParkLMS3::newStep(double deltaT)
   // set response at t to be that at t+deltaT of previous step
   dt = deltaT;
 
-  // save storage quantites before updating
+  // save storage quantities before updating
   (*Utm2) = *Utm1;
     (*Utm2dot) = *Utm1dot;
   (*Utm1) = *Ut;

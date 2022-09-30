@@ -120,7 +120,7 @@ OPS_ShellMITC4(const ID& info)
 	    return 0;
 	}
 	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING: insuficient arguments -- secTag <-updateBasis>\n";
+	    opserr << "WARNING: insufficient arguments -- secTag <-updateBasis>\n";
 	    return 0;
 	}
 

@@ -71,7 +71,7 @@ protected:
 private:
     double deltaT;
     
-    // rayleigh damping factors
+    // Rayleigh damping factors
     double alphaM;
     double betaK;
     double betaKi;

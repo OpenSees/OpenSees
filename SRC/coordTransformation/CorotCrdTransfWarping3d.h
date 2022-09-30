@@ -118,7 +118,7 @@ private:
     Vector alphaIqcommit;       // committed quaternion for node I
     Vector alphaJqcommit;       // committed quaternion for node J
     Vector alphaI;              // last trial rotations end i
-    Vector alphaJ;              // last trial rotatations end j
+    Vector alphaJ;              // last trial rotations end j
     
     Vector ul;                  // local displacements
     Vector ulcommit;            // committed local displacements

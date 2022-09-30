@@ -1096,7 +1096,7 @@ void ConstantPressureVolumeQuad ::  formResidAndTangent( int tang_flag )
       sig.addVector(1.0,  one, -one3*trace ) ;
       sig.addVector(1.0,  one, pressure ) ;
       
-      //multilply by volume elements and compute 
+      //multiply by volume elements and compute 
       sig *= dvol[i] ;
     }
         

@@ -126,7 +126,7 @@ ZeroLengthInterface2D::ZeroLengthInterface2D(void)                              
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 ZeroLengthInterface2D::~ZeroLengthInterface2D()
 {
   if (load != 0) delete load;
@@ -703,7 +703,7 @@ OPS_ZeroLengthInterface2D(void) {
   // get the number of secondary nodes
   numData = 1;
   if (OPS_GetInt(&numData, &sNdNum) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied sNdNum \n";
+    opserr << "ZeroLengthInterface2D::WARNING invalid sNdNum \n";
     return 0;
   }
 
@@ -717,7 +717,7 @@ OPS_ZeroLengthInterface2D(void) {
   
   numData = 1;
   if (OPS_GetInt(&numData, &pNdNum) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied pNdNum \n";
+    opserr << "ZeroLengthInterface2D::WARNING invalid pNdNum \n";
     return 0;
   }
 
@@ -732,13 +732,13 @@ OPS_ZeroLengthInterface2D(void) {
 
   numData = 1;
   if (OPS_GetInt(&numData, &sDOF) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied sDOF\n";
+    opserr << "ZeroLengthInterface2D::WARNING invalid sDOF\n";
     return 0;
   }
 
   numData = 1;
   if (OPS_GetInt(&numData, &mDOF) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied mDOF\n";
+    opserr << "ZeroLengthInterface2D::WARNING invalid mDOF\n";
     return 0;
   }
 

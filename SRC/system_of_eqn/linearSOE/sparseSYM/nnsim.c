@@ -39,7 +39,7 @@ void zeroi(int, int *);
 
        Input:
           (perm, invp) - permutation vector and its inverse
-          padj         - adjancency structure of original ordering
+          padj         - adjacency structure of original ordering
           ancstr       - ancstr of each node in the ordered tree
 
        Output:

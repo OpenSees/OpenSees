@@ -307,7 +307,7 @@ ProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	for (int i=0; i<idSize; i++) {
 	    int col = id(i);
 	    if (col < size && col >= 0) {
-		double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+		double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
 		int minColRow;
 		if (col == 0)
 		    minColRow = 0;
@@ -329,7 +329,7 @@ ProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	for (int i=0; i<idSize; i++) {
 	    int col = id(i);
 	    if (col < size && col >= 0) {
-		double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 		
+		double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 		
 		int minColRow;
 		if (col == 0)
 		    minColRow = 0;
@@ -372,7 +372,7 @@ ProfileSPDLinSOE::addColA(const Vector &colData, int col, double fact)
   
   if (fact == 1.0) { // do not need to multiply 
 
-    double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+    double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
     int minColRow;
     if (col == 0)
       minColRow = 0;
@@ -393,7 +393,7 @@ ProfileSPDLinSOE::addColA(const Vector &colData, int col, double fact)
 
   } else {
 
-    double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+    double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
     int minColRow;
     if (col == 0)
       minColRow = 0;

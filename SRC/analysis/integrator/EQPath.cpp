@@ -28,7 +28,7 @@
 //
 //Comprehensive evaluation of structural geometrical nonlinear solution techniques Part I : Formulation and characteristics of the methods
 //M.Rezaiee - Pajand, M.Ghalishooyan and M.Salehi - Ahmadabad
-//FULLTEXT : https://www.researchgate.net/publication/264146397_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_I_Formulation_and_characteristics_of_the_methods
+//FULL TEXT : https://www.researchgate.net/publication/264146397_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_I_Formulation_and_characteristics_of_the_methods
 
 
 //Structural Engineeringand Mechanics   Volume 48, Number 6, December25 2013, pages 879 - 914
@@ -36,7 +36,7 @@
 //
 //Comprehensive evaluation of structural geometrical nonlinear solution techniques Part II : Comparing efficiencies of the methods
 //M.Rezaiee - Pajand, M.Ghalishooyan and M.Salehi - Ahmadabad
-//FULLTEXT : https://www.researchgate.net/publication/263361974_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_II_Comparing_efficiencies_of_the_methods
+//FULL TEXT : https://www.researchgate.net/publication/263361974_Comprehensive_evaluation_of_structural_geometrical_nonlinear_solution_techniques_Part_II_Comparing_efficiencies_of_the_methods
 
 #include <EQPath.h>
 #include <AnalysisModel.h>
@@ -222,7 +222,7 @@ EQPath::update(const Vector &dU)
 		  dLambda = 0;
 		  if (delta < 0)
 		  {
-			 opserr << "EQPath::update() - negetive denominator\n";
+			 opserr << "EQPath::update() - negative denominator\n";
 			 return -1;
 		  }
 		  else if (delta == 0)

@@ -68,7 +68,7 @@
 */
 #include "petscmath.h"
 /*
-    This shouuld be in petscmath.h?
+    This should be in petscmath.h?
 */
 #if defined(USE_POINTER_CONVERSION)
 #define PetscFortranAddr   int

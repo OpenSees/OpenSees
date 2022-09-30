@@ -134,7 +134,7 @@ namespace
      * This class is a utility to compute at a given integration point,
      * the Jacobian, its inverse, its determinant
      * and the derivatives of the shape functions in the local
-     * cartesian coordinate system.
+     * Cartesian coordinate system.
      */
     struct JacobianOperator
     {
@@ -320,7 +320,7 @@ namespace
         Vector Bd0 = Vector(24); // strain-displacement matrix for drilling (reduced integration)
         Vector N = Vector(4); // shape functions
         Matrix dN = Matrix(4, 2); // shape functions derivatives in isoparametric space
-        Matrix dNdX = Matrix(4, 2); // shape functions derivatives in cartesian space
+        Matrix dNdX = Matrix(4, 2); // shape functions derivatives in Cartesian space
         Vector E = Vector(8); // strain vector
         Vector S = Vector(8); // stress vector
         Vector Elocal = Vector(8); // strain vector in local element coordinate system
@@ -359,7 +359,7 @@ namespace
         Vector& Bd
     )
     {
-        // cartesian derivatives of standard shape function
+        // Cartesian derivatives of standard shape function
         auto& dNdX = ASDShellQ4Globals::instance().dNdX;
         dNdX.addMatrixProduct(0.0, dN, Jac.invJ, 1.0);
 
@@ -434,7 +434,7 @@ namespace
         Vector& Bd
     )
     {
-        // cartesian derivatives of standard shape function
+        // Cartesian derivatives of standard shape function
         auto& dNdX = ASDShellQ4Globals::instance().dNdX;
         dNdX.addMatrixProduct(0.0, dN, Jac.invJ, 1.0);
 

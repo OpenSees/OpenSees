@@ -84,7 +84,7 @@ class AxialCurve : public LimitCurve
 
 	Tcl_Interp *theTclInterp;
 
-	// Associated beam-colum element information
+	// Associated beam-column element information
 	int eleTag;			// tag for associated beam column element
 
 	Domain *theDomain;	// needed to retrieve element pointer

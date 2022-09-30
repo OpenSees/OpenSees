@@ -701,15 +701,15 @@ MinUnbalDispNorm::getLambdaSensitivity(int gradNumber)
   //  opserr<<" LambdaFunction.....Uft= "<<*deltaUhat<<endln;
 // opserr<<"LambdaFunation.... deltaUbar= "<<*deltaUbar<<endln;
     double temp= (*deltaUhat)^(*deltaUhat);
-   double denomerator= pow(temp,2.0);
+   double denominator= pow(temp,2.0);
    double a= (*deltaUhat)^(*dUIJdh);
    double b= (*dUhatdh)^(*deltaUbar);
    double c= (*deltaUhat)^(*deltaUbar);
    double d= (*deltaUhat)^(*dUhatdh);
    double Numerator= -(temp*(a+b)-(c*2.0*d));
-     Dlambdadh=Numerator/denomerator;  //   
+     Dlambdadh=Numerator/denominator;  //   
 
- //opserr<<"dLambdadh=    "<<Dlambdadh<<" a= "<<a<< " b= "<<b <<" c= "<<c << " d= "<<d<< "temp= "<<temp<< " denomera= "<<denomerator<<endln;
+ //opserr<<"dLambdadh=    "<<Dlambdadh<<" a= "<<a<< " b= "<<b <<" c= "<<c << " d= "<<d<< "temp= "<<temp<< " denominator= "<<denominator<<endln;
 // opserr<<"Numerator= "<<Numerator<<endln;
 
    // Now update Lambda_ij

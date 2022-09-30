@@ -81,11 +81,11 @@ void* OPS_PFEMElement2DBubble(const ID &info)
     // regular element, or save data
     if (info.Size()==0 || info(0)==1) {
         if(OPS_GetNumRemainingInputArgs() < 4) {
-            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa,minJ)\n";
+            opserr<<"insufficient arguments: rho, mu, b1, b2, (thickness,kappa,minJ)\n";
             return 0;
         }
 
-        // rho, mu, b1, b2, (thinknes,kappa,minJ)
+        // rho, mu, b1, b2, (thickness,kappa,minJ)
         numdata = OPS_GetNumRemainingInputArgs();
         if(numdata > 7) numdata = 7;
         if(OPS_GetDoubleInput(&numdata,data) < 0) {

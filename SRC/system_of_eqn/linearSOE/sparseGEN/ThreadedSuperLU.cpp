@@ -172,7 +172,7 @@ ThreadedSuperLU::setSize()
 	sizePerm = n;
       }
 
-      // initialisation
+      // initialization
       StatAlloc(n, numThreads, panelSize, relax, &gStat);
 
       // create the SuperMatrixMT A	

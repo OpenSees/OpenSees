@@ -801,7 +801,7 @@ int
 Concrete01A::commitSensitivity(double TstrainSensitivity, int gradIndex, int numGrads)
 {
 
-	// Initialize unconditaional stress sensitivity
+	// Initialize unconditional stress sensitivity
 	double TstressSensitivity = 0.0;
 	double dktdh = 0.0;
 

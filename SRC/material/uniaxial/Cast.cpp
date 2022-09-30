@@ -295,7 +295,7 @@ double  epsmaxr = epsmaxrP;
 
     epsr = epsP;
 
-	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
+	// MG: This ensures that in the case where post-yielding is applied it isn't double counted
     if ((eps > 0 && sig > 0) || (eps < 0 && sig < 0)) {
 	  sigr = sigP * cos(2.0*epsP/l);
   } else {
@@ -343,7 +343,7 @@ double  epsmaxr = epsmaxrP;
 
     epsr = epsP;
 
-	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
+	// MG: This ensures that in the case where post-yielding is applied it isn't double counted
     if ((eps > 0 && sig > 0) || (eps < 0 && sig < 0)) {
 	  sigr = sigP * cos(2.0*epsP/l);
   } else {

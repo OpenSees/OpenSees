@@ -39,7 +39,7 @@ class CrdTransf;
 
 // number of nodes per element
 #define PT3D_NUM_NODE 1
-// number of dimesnions
+// number of dimensions
 #define PT3D_NUM_NDM  3
 // degrees of freedom per element
 #define PT3D_NUM_DOF  6

@@ -89,14 +89,14 @@ PlainHandler::handle(const ID *nodesLast)
     while ((theSP = theSPs()) != 0) {
 	if (theSP->isHomogeneous() == false) {
 	    opserr << "WARNING PlainHandler::handle() - ";
-	    opserr << " non-homogeneos constraint";
+	    opserr << " non-homogeneous constraint";
 	    opserr << " for node " << theSP->getNodeTag();
 	    opserr << " homogeneous constraint assumed\n";
 	}
 	allSPs.insert(std::make_pair(theSP->getNodeTag(),theSP));
     }
 
-    // initialise the DOF_Groups and add them to the AnalysisModel.
+    // initialize the DOF_Groups and add them to the AnalysisModel.
     //    : must of course set the initial IDs
     NodeIter &theNod = theDomain->getNodes();
     Node *nodPtr;
@@ -132,7 +132,7 @@ PlainHandler::handle(const ID *nodesLast)
 		countDOF--;	
 	    } else {
 		opserr << "WARNING PlainHandler::handle() - ";
-		opserr << " multiple single pointconstraints at DOF " << dof;
+		opserr << " multiple single point constraints at DOF " << dof;
 		opserr << " for node " << spPtr->getNodeTag() << endln;
 	    }
 	}
@@ -148,7 +148,7 @@ PlainHandler::handle(const ID *nodesLast)
 		    opserr << "WARNING PlainHandler::handle() - ";
 		    opserr << " time-varying constraint";
 		    opserr << " for node " << nodeID;
-		    opserr << " non-varyng assumed\n";
+		    opserr << " non-varying assumed\n";
 		}
 		const Matrix &C = mpPtr->getConstraint();
 		int numRows = C.noRows();
@@ -157,7 +157,7 @@ PlainHandler::handle(const ID *nodesLast)
 			opserr << "WARNING PlainHandler::handle() - ";
 			opserr << " constraint matrix not diagonal, ignoring constraint";
 			opserr << " for node " << nodeID << endln;
-			opserr << " non-varyng assumed\n";
+			opserr << " non-varying assumed\n";
 		} else {
 		  int ok = 0;
 		  for (int i=0; i<numRows; i++) {
@@ -171,7 +171,7 @@ PlainHandler::handle(const ID *nodesLast)
 		    opserr << "WARNING PlainHandler::handle() - ";
 		    opserr << " constraint matrix not identity, ignoring constraint";
 		    opserr << " for node " << nodeID << endln;
-		    opserr << " non-varyng assumed\n";
+		    opserr << " non-varying assumed\n";
 		  } else {
 		    const ID &dofs = mpPtr->getConstrainedDOFs();
 		    const ID &id = dofPtr->getID();				
@@ -182,7 +182,7 @@ PlainHandler::handle(const ID *nodesLast)
 			countDOF--;	
 		      } else {
 			opserr << "WARNING PlainHandler::handle() - ";
-			opserr << " constraint at dof " << dof << " already specified for constrained node";
+			opserr << " constraint at DOF " << dof << " already specified for constrained node";
 			opserr << " in MP_Constraint at node " << nodeID << endln;
 		      }
 		      
@@ -198,7 +198,7 @@ PlainHandler::handle(const ID *nodesLast)
     // set the number of eqn in the model
     theModel->setNumEqn(countDOF);
 
-    // now see if we have to set any of the dof's to -3
+    // now see if we have to set any of the DOFs to -3
     //    int numLast = 0;
     if (nodesLast != 0) 
 	for (int i=0; i<nodesLast->Size(); i++) {
@@ -208,7 +208,7 @@ PlainHandler::handle(const ID *nodesLast)
 		dofPtr = nodPtr->getDOF_GroupPtr();
 		
 		const ID &id = dofPtr->getID();
-		// set all the dof values to -3
+		// set all the DOF values to -3
 		for (int j=0; j < id.Size(); j++) 
 		    if (id(j) == -2) {
 			dofPtr->setID(j,-3);
@@ -221,7 +221,7 @@ PlainHandler::handle(const ID *nodesLast)
 	    }
 	}
     
-    // initialise the FE_Elements and add to the AnalysisModel.
+    // initialize the FE_Elements and add to the AnalysisModel.
     ElementIter &theEle = theDomain->getElements();
     Element *elePtr;
 

@@ -360,7 +360,7 @@ void *ProfileSPDLinDirectThreadSolver_Worker(void *arg)
 
       mutex_unlock(&TCB_ProfileSPDDirectThreadSolver.start_mutex);
 
-      // do some initialisation for the factorization
+      // do some initialization for the factorization
       double *A = TCB_ProfileSPDDirectThreadSolver.A;
       double *B = TCB_ProfileSPDDirectThreadSolver.B;
       double *X = TCB_ProfileSPDDirectThreadSolver.X;

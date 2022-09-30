@@ -91,7 +91,7 @@
   (6) Currently, only small deformations are considered, however an update on large deformations
       may be implemented in the near future.
   (7) In IMPL-EX scheme, the material tangent and residual at the current step (n+1) are computed
-      by lineary extrapolating the material parameters committed at steps (n) and (n-1). Then, after
+      by linearly extrapolating the material parameters committed at steps (n) and (n-1). Then, after
       the convergence criteria is achieved, extrapolated material parameters are corrected with a
       step of traditional implicit computation from the last committed step (n). Finally, corrected
       parameters are saved as the current step (n+1) committed variables.

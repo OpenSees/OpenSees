@@ -1394,7 +1394,7 @@ void* OPS_NonlinearBeamColumn()
 	return 0;
     }
 
-    // check beam integrataion
+    // check beam integration
     BeamIntegration* bi = 0;
     if (strcmp(integrationType,"Lobatto") == 0) {
 	bi = new LobattoBeamIntegration;

@@ -524,7 +524,7 @@ MVLEM::setDomain(Domain *theDomain)
     {
       opserr << "WARNING MVLEM::setDomain() - at MVLEM " << this->getTag() << " node " <<
 	Nd1 << " does not exist in domain\n";
-      return;  // don't go any further - otherwise segemntation fault
+      return;  // don't go any further - otherwise segmentation fault
     }
   
   if (theNodes[1] == 0)

@@ -30,7 +30,7 @@
 //
 // Description: 
 //
-// What: "@(#) ElasticOrthotropicThreeDimesnional.h, revA"
+// What: "@(#) ElasticOrthotropicThreeDimensional.h, revA"
 
 #include <ElasticOrthotropicMaterial.h>
 

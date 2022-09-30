@@ -81,11 +81,11 @@ class DomainDecompositionAnalysis: public Analysis, public MovableObject
     virtual int initialize(void);
     virtual int domainChanged(void);
 
-    // methods for non standard domain deomposition analysis
+    // methods for non standard domain decomposition analysis
     virtual bool doesIndependentAnalysis(void);    
     virtual int analyze(double dT);
 
-    // methods for standard domain deomposition analysis
+    // methods for standard domain decomposition analysis
     // that do some form of condensation to the tangent
     virtual int  getNumExternalEqn(void);
     virtual int  getNumInternalEqn(void);

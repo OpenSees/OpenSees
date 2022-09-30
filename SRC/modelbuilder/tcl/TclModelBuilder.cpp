@@ -3947,7 +3947,7 @@ TclCommand_RigidLink(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
   } else if ((strcmp(argv[1],"-beam") == 0) || (strcmp(argv[1],"beam") == 0)) {
     RigidBeam theLink(*theTclDomain, rNode, cNode);
   } else {
-      opserr << "WARNING rigidLink linkType? rNode? cNode? - unrecognised link type (-bar, -beam) \n";
+      opserr << "WARNING rigidLink linkType? rNode? cNode? - unrecognized link type (-bar, -beam) \n";
       return TCL_ERROR;	        
   }
 

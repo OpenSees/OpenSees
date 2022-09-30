@@ -5,7 +5,7 @@ Written by: Quan Gu_1,  Yongdou Liu_1, Wei Guo_23, Weiquan Li_1, Zhiwu Yu_23, Li
  3.National Engineering Laboratory for High-speed Railway Construction, 410075, China)
 
  Reference: Quan Gu, Yongdou Liu, et al. A Practical Wheel-Rail Interaction Element for 
- Modelling Vehicle-Track Systems[J]. International Journal of Structural Stability and Dynamics
+ Modeling Vehicle-Track Systems[J]. International Journal of Structural Stability and Dynamics
 
  Created: 09/2017
  revised : on 10/28/2018 by Yongdou Liu

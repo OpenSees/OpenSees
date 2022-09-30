@@ -674,7 +674,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	if (theNodes[0] == 0) {
 		opserr << "WARNING SFI_MVLEM_3D::setDomain() - at SFI_MVLEM_3D " << this->getTag() << " node " <<
 			Nd1 << " does not exist in domain\n";
-		return;  // Don't go any further - otherwise segemntation fault
+		return;  // Don't go any further - otherwise segmentation fault
 	}
 
 	if (theNodes[1] == 0) {
@@ -686,7 +686,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	if (theNodes[2] == 0) {
 		opserr << "WARNING SFI_MVLEM_3D::setDomain() - at SFI_MVLEM_3D " << this->getTag() << " node " <<
 			Nd3 << " does not exist in domain\n";
-		return;  // Don't go any further - otherwise segemntation fault
+		return;  // Don't go any further - otherwise segmentation fault
 	}
 	if (theNodes[3] == 0) {
 		opserr << "WARNING SFI_MVLEM_3D::setDomain() - at SFI_MVLEM_3D " << this->getTag() << " node " <<
@@ -704,7 +704,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		if (theNodesX[i] == 0) {
 			opserr << "WARNING SFI_MVLEM_3D::setDomain() - at SFI_MVLEM_3D " << this->getTag() << " node " <<
 				NdX_temp1 << " does not exist in domain\n";
-			return;  // Don't go any further - otherwise segemntation fault
+			return;  // Don't go any further - otherwise segmentation fault
 		}
 	}
 

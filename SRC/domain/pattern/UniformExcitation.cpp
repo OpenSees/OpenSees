@@ -438,7 +438,7 @@ UniformExcitation::recvSelf(int commitTag, Channel &theChannel,
       delete theMotion;
     theMotion = theBroker.getNewGroundMotion(motionClassTag);
     if (theMotion == 0) {
-      opserr << "UniformExcitation::recvSelf() - could not create a grond motion\n";
+      opserr << "UniformExcitation::recvSelf() - could not create a ground motion\n";
       return -3;
     }
 

@@ -161,7 +161,7 @@ ZeroLengthContact2D::ZeroLengthContact2D(void)
 
 //  Destructor:
 //  delete must be invoked on any objects created by the object
-//  and on the matertial object.
+//  and on the material object.
 ZeroLengthContact2D::~ZeroLengthContact2D()
 {
 

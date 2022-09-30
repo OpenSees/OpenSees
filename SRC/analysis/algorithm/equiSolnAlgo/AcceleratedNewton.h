@@ -76,7 +76,7 @@ class AcceleratedNewton: public EquiSolnAlgo
   
   Accelerator *theAccelerator;
   
-  // Storate for accelerated mod-Newton prediction
+  // Storage for accelerated mod-Newton prediction
   Vector *vAccel;
   
   int numFactorizations;

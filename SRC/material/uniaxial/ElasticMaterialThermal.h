@@ -34,7 +34,7 @@
 // ElasticMaterialThermal. ElasticMaterialThermal provides the abstraction
 // of an viscoelastic uniaxial material,
 // i.e. stress = E*strain + eta*strainrate
-// Modified for SIF modelling by Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modeling by Liming Jiang [http://openseesforfire.github.io] 
 
 
 #include <UniaxialMaterial.h>

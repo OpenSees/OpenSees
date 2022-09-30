@@ -17,8 +17,8 @@ This Version was built on Fri May 4 15:54:01 2007
 
 #if defined(MAIN_COMP)
 /*
- * Some Fortran compilers (COMPAQ fort) define main inside
- * their runtime library while a Fortran program translates
+ * Some FORTRAN compilers (COMPAQ fort) define main inside
+ * their runtime library while a FORTRAN program translates
  * to MAIN_ or MAIN__ which is then called from "main". This
  * is annoying because MAIN__ has no arguments and we must
  * define argc/argv arbitrarily !!

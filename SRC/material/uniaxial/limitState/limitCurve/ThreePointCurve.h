@@ -77,7 +77,7 @@ class ThreePointCurve : public LimitCurve
   protected:
     
   private:
-	// Associated beam-colum element information
+	// Associated beam-column element information
 	int eleTag;			// tag for associated beam column element
 	Element *theElement;// element pointer
 	Domain *theDomain;	// needed to retrieve element pointer

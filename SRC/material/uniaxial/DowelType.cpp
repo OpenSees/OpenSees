@@ -120,7 +120,7 @@ OPS_DowelType()
             eData[5] = 0.;
             eData[11] = 0.;
         } else if (numData != 12) {
-            opserr << "ERROR: invailed number of args (should be 5, 6, 10, or 12). Expected:";
+            opserr << "ERROR: invalid number of args (should be 5, 6, 10, or 12). Expected:";
             opserr << "$K0 $R1 $F0 $Dc $Kd <$Du> <$K0N $R1N $F0N $DcN $KdN <$DuN>>" << endln;
             return 0;
         }

@@ -3290,7 +3290,7 @@ const Vector &MultiYieldSurfaceClay::getCommittedStrainSensitivity(int GradientN
 //	static Vector temp6(6);
 	temp6.Zero();
 	int i;
-	// obtain data from SHVs into temp need attation that T2Vector(0) or T2Vector(1)
+	// obtain data from SHVs into temp need attation[?] that T2Vector(0) or T2Vector(1)
 	if (SHVs !=0){
 		for(i=0;i<6;i++) 	temp6(i)=(*SHVs)(i,GradientNumber-1);	
 	}

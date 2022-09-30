@@ -37,7 +37,7 @@
 
 // Olsson, A.K., and Austrell, P-E., (2001), "A fitting procedure for viscoelastic-elastoplastic material models," 
 // Proceedings of the Second European Conference on Constitutive Models for Rubber, Germany, 2001.
-// Ottosen, N.S., and Ristinmaa, M., (1999). "The mechanics of constitutive modelling, (Numerical and thermodynamical topics)," 
+// Ottosen, N.S., and Ristinmaa, M., (1999). "The mechanics of constitutive modeling, (Numerical and thermodynamical topics)," 
 // Lund University,Division of Solid Mechanics, Sweden, 1999. 
 
 #ifndef Maxwell_h

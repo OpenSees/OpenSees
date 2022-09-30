@@ -113,7 +113,7 @@ OPS_ShellNLDKGQ(const ID& info)
 	    return 0;
 	}
 	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING: insuficient arguments -- secTag <-updateBasis>\n";
+	    opserr << "WARNING: insufficient arguments -- secTag <-updateBasis>\n";
 	    return 0;
 	}
 
@@ -657,7 +657,7 @@ const Matrix&  ShellNLDKGQ::getInitialStiff( )
 	static double dvol[ngauss]; //volume element
 
 	//add for geometric nonlinearity
-	static Vector incrDisp(ndf); //total displamcement
+	static Vector incrDisp(ndf); //total displacement
 
 	static Vector Cstrain(nstress);//commit strain last step/ add for geometric nonlinearity
 

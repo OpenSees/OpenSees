@@ -49,7 +49,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix TrussSection::trussM2(2,2);
 Matrix TrussSection::trussM3(3,3);
 Matrix TrussSection::trussM4(4,4);
@@ -227,7 +227,7 @@ TrussSection::TrussSection()
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 TrussSection::~TrussSection()
 {
   if (theSection != 0)
@@ -306,7 +306,7 @@ TrussSection::setDomain(Domain *theDomain)
       return;
     }
 
-    // now determine the number of dof and the dimesnion    
+    // now determine the number of dof and the dimension    
     int dofNd1 = theNodes[0]->getNumberDOF();
     int dofNd2 = theNodes[1]->getNumberDOF();	
 

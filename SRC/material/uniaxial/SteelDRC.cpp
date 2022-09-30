@@ -345,7 +345,7 @@ double SteelDRC::getInitialTangent(void)
 double SteelDRC::getTangent(void)
 {
 	switch (Etflag) {
-		case 0: // tangent stifness
+		case 0: // tangent stiffness
 			// The function cannot return a slope less than 05% of the initial slope
 			return fmin(fmax(0.005*E,trialTangent),E);
 			break;

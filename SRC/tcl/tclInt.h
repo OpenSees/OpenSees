@@ -1475,7 +1475,7 @@ typedef int (*TclObjCmdProcType) _ANSI_ARGS_((ClientData clientData,
 typedef struct TclpTime_t_ *TclpTime_t;
 
 /* 
- * The following structure is used to pass glob type data amongst
+ * The following structure is used to pass glob type data among
  * the various glob routines and TclpMatchFilesTypes.  Currently
  * most of the fields are ignored.  However they will be used in
  * a future release to implement glob's ability to find files

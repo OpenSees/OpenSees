@@ -77,7 +77,7 @@ void* OPS_PFEMElement2DCompressible(const ID &info)
     // regular element, or in a mesh
     if (info.Size()==0 || info(0)==1) {
 	if(OPS_GetNumRemainingInputArgs() < 4) {
-	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
+	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thickness,kappa)\n";
 	    return 0;
 	}
 
@@ -931,7 +931,7 @@ PFEMElement2DCompressible::setDomain(Domain *theDomain)
     }
     thePCs[3] = new Pressure_Constraint(ntags[6], 0.0);
     if (thePCs[3] == 0) {
-	opserr<<"WARNING: failed to create PC for buble node\n";
+	opserr<<"WARNING: failed to create PC for bubble node\n";
 	return;
     }
     if (theDomain->addPressure_Constraint(thePCs[3]) == false) {

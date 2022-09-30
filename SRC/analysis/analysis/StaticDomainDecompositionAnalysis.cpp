@@ -529,7 +529,7 @@ StaticDomainDecompositionAnalysis::getTangVectProduct(void)
 int 
 StaticDomainDecompositionAnalysis::sendSelf(int commitTag, Channel &theChannel)
 {
-  // receive the data identifyng the objects in the aggregation
+  // receive the data identifying the objects in the aggregation
   int dataTag = this->getDbTag();
   static ID data(8);
 
@@ -609,7 +609,7 @@ StaticDomainDecompositionAnalysis::recvSelf(int commitTag, Channel &theChannel,
 
   Domain *the_Domain = this->getSubdomainPtr();
 
-  // receive the data identifyng the objects in the aggregation
+  // receive the data identifying the objects in the aggregation
   static ID data(8);
   int dataTag = this->getDbTag();
   theChannel.recvID(dataTag, commitTag, data);

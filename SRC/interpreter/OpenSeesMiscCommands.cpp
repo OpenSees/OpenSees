@@ -1246,7 +1246,7 @@ int OPS_RigidLink()
     } else if ((strcmp(type,"-beam") == 0) || (strcmp(type,"beam") == 0)) {
 	RigidBeam theLink(*theDomain, rNode, cNode);
     } else {
-	opserr << "WARNING rigidLink linkType? rNode? cNode? - unrecognised link type (-bar, -beam) \n";
+	opserr << "WARNING rigidLink linkType? rNode? cNode? - unrecognized link type (-bar, -beam) \n";
 	return -1;
     }
 

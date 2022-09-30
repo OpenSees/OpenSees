@@ -241,7 +241,7 @@ void *BandSPDLinThreadSolver_Worker(void *arg)
 
       mutex_unlock(&TCB_BandSPDLinThreadSolver.start_mutex);
 
-      // do some initialisation for the factorization
+      // do some initialization for the factorization
       int currentBlock =0;
       int n = TCB_BandSPDLinThreadSolver.n;
       int kd = TCB_BandSPDLinThreadSolver.kd;

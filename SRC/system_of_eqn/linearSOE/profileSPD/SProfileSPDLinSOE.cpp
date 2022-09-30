@@ -318,7 +318,7 @@ SProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
       for (int i=0; i<idSize; i++) {
 	int col = id(i);
 	if (col < size && col >= 0) {
-	  float *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
+	  float *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 
 	  int minColRow;
 	  if (col == 0)
 	    minColRow = 0;
@@ -340,7 +340,7 @@ SProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
       for (int i=0; i<idSize; i++) {
 	int col = id(i);
 	if (col < size && col >= 0) {
-	  float *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 		
+	  float *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as FORTRAN indexing 		
 	  int minColRow;
 	  if (col == 0)
 	    minColRow = 0;

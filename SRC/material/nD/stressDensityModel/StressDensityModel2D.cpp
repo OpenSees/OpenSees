@@ -57,8 +57,8 @@ StressDensityModel2D::StressDensityModel2D(int tag, double constDensity, double 
     initialTangent(3,3),
     currentTangent(3,3)
 {
-    // initialise variables
-    this->initialise();
+    // initialize variables
+    this->initialize();
     
     // get the initial material tangent
 	this->CalInitialTangent();
@@ -76,7 +76,7 @@ StressDensityModel2D::StressDensityModel2D()
     initialTangent(3,3),
     currentTangent(3,3)
 {
-    this->initialise();
+    this->initialize();
 }
 
 // destructor
@@ -298,9 +298,9 @@ StressDensityModel2D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBrok
 // ******************************* PRIVATE METHODS **********************************
 
 void
-StressDensityModel2D::initialise() 
+StressDensityModel2D::initialize() 
 {
-    // initialise hardening parameters to zeros
+    // initialize hardening parameters to zeros
     for (int i=0;i<7*Nsurface+5;i++) {
         hard_para_real[i]=0.0;
     }
@@ -308,7 +308,7 @@ StressDensityModel2D::initialise()
         hard_para_int[i]=0;
     }
 
-    // initialise Vector and Matrix variables
+    // initialize Vector and Matrix variables
     stressCurrent.Zero();
     stressNext.Zero();
     strainCurrent.Zero();
@@ -316,7 +316,7 @@ StressDensityModel2D::initialise()
     initialTangent.Zero();
     currentTangent.Zero();
 
-    // initialise FORTRAN in/out variables
+    // initialize FORTRAN in/out variables
     for (int i=0;i<16;i++) {
         _model_parameter[i] = 0.0;
     }

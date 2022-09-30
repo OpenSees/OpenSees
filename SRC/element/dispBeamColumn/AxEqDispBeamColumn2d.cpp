@@ -63,7 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Parameter.h>
 
 
-// initialise the class wide variables
+// initialize the class wide variables
 Matrix AxEqDispBeamColumn2d::K(6,6);
 Vector AxEqDispBeamColumn2d::P(6);
 double AxEqDispBeamColumn2d::workArea[100];
@@ -341,7 +341,7 @@ AxEqDispBeamColumn2d::getNumDOF()
 	return 6;
 }
 
-// method adding the element to the DOMAIN, setting the right nodes to the element, initialising the transformation object
+// method adding the element to the DOMAIN, setting the right nodes to the element, initializing the transformation object
 void
 AxEqDispBeamColumn2d::setDomain(Domain *theDomain)
 {

@@ -58,8 +58,8 @@ StressDensityModel3D::StressDensityModel3D(int tag, double constDensity, double 
     initialTangent(6,6),
     currentTangent(6,6)
 {
-    // initialise variables
-    this->initialise();
+    // initialize variables
+    this->initialize();
     
     // get the initial material tangent
 	this->CalInitialTangent();
@@ -78,7 +78,7 @@ StressDensityModel3D::StressDensityModel3D()
     initialTangent(6,6),
     currentTangent(6,6)
 {
-    this->initialise();
+    this->initialize();
 }
 
 StressDensityModel3D::~StressDensityModel3D() 
@@ -322,9 +322,9 @@ StressDensityModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBrok
 // ******************************* PRIVATE METHODS **********************************
 
 void
-StressDensityModel3D::initialise() 
+StressDensityModel3D::initialize() 
 {
-    // initialise hardening parameters to zeros
+    // initialize hardening parameters to zeros
     for (int i=0;i<13*Nsurface+5;i++) {
         hard_para_real[i]=0.0;
     }
@@ -332,7 +332,7 @@ StressDensityModel3D::initialise()
         hard_para_int[i]=0;
     }
 
-    // initialise Vector and Matrix variables
+    // initialize Vector and Matrix variables
     stressCurrent.Zero();
     stressNext.Zero();
     strainCurrent.Zero();
@@ -340,7 +340,7 @@ StressDensityModel3D::initialise()
     initialTangent.Zero();
     currentTangent.Zero();
 
-    // initialise FORTRAN in/out variables
+    // initialize FORTRAN in/out variables
     for (int i=0;i<16;i++) {
         _model_parameter[i] = 0.0;
     }

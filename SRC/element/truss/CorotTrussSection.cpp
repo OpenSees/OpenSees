@@ -193,7 +193,7 @@ CorotTrussSection::CorotTrussSection()
 
 //  destructor
 //     delete must be invoked on any objects created by the object
-//     and on the matertial object.
+//     and on the material object.
 CorotTrussSection::~CorotTrussSection()
 {
   // invoke the destructor on any objects created by the object
@@ -262,7 +262,7 @@ CorotTrussSection::setDomain(Domain *theDomain)
     return;
   }
   
-  // now determine the number of dof and the dimesnion    
+  // now determine the number of dof and the dimension    
   int dofNd1 = theNodes[0]->getNumberDOF();
   int dofNd2 = theNodes[1]->getNumberDOF();	
   
