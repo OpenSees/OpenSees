@@ -54,7 +54,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define _DBG_COUPLEDSEC3D
+//#define _DBG_COUPLEDSEC3D
 
 ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
     size(nN * nTheta * nData), numberAxial(nN), numberTheta(nTheta), numberData(nData), theVector(size)
@@ -1103,6 +1103,13 @@ int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
   ret += lam_pert(VyMaterial, def(3), 3);
   ret += lam_pert(VzMaterial, def(4), 4);
   ret += lam_pert(torsionMaterial, def(5), 5);
+  opserr << "ASDCoupledHinge3D::setTrialSectionDeformation\n";
+  opserr << "My tangent: " << m_num_tang(1);
+  opserr << " Mz tangent: " << m_num_tang(2) << endln;
+  opserr << "set trial strain to My law: " << def(1) << endln;
+  opserr << "My law: " << endln;
+  MyMaterial->Print(opserr, 3);
+  opserr << "\n";
 
 #else
 
@@ -1657,6 +1664,13 @@ ASDCoupledHinge3D::commitState(void)
         MzMaterial->Print(opserr, 2);
 #endif
     } 
+
+    opserr << "ASDCoupledHinge3D::commitState (updated laws)\n";
+    opserr << "My tangent: " << m_num_tang(1);
+    opserr << " Mz tangent: " << m_num_tang(2) << endln;
+    opserr << "My law: " << endln;
+    MyMaterial->Print(opserr, 3);
+    opserr << "\n";
   
     return err;
 }

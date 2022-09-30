@@ -297,30 +297,6 @@ int Pinching4Material::setTrialStrain(double strain, double CstrainRate)
 		dstrain = 0.0;
 	}
 
-	if (false) {
-		opserr << "Pinnching4::debug strain = " << strain << endln;
-		opserr << "Commited values: " << endln;
-		opserr << "Cstate: " << Cstate << endln;
-		opserr << "Tstrain: " << Tstrain << endln;
-		opserr << "Cstrain:" << Cstrain << endln;
-		opserr << "Cstress:" << Cstress << endln;
-		opserr << "Cenergy: " << Cenergy << endln;
-		opserr << "hghCstateStrain: " << hghCstateStrain << endln;
-		opserr << "lowCstateStrain: " << lowCstateStrain << endln;
-		opserr << "hghCstateStress: " << hghCstateStress << endln;
-		opserr << "lowCstateStress: " << lowCstateStress << endln;
-		opserr << "CminStrainDmnd: " << CminStrainDmnd << endln;
-		opserr << "CmaxStrainDmnd: " << CmaxStrainDmnd << endln;
-		opserr << "CgammaF: " << CgammaF << endln;
-		opserr << "CgammaK: " << CgammaK << endln;
-		opserr << "CgammaD: " << CgammaD << endln;
-		opserr << "Actual backbone + :\n\t" << envlpPosStrain << "\t" << envlpPosStress << endln;
-		opserr << "Actual backbone - :\n\t" << envlpNegStrain << "\t" << envlpNegStress << endln;
-		opserr << "Actual damaged backbone + :\n\t" << envlpPosStrain << "\t" << envlpPosDamgdStress << endln;
-		opserr << "Actual damaged backbone - :\n\t" << envlpNegStrain << "\t" << envlpNegDamgdStress << endln;
-	}
-
-
 	// determine new state if there is a change in state
 	getstate(Tstrain,dstrain);  
 
@@ -618,6 +594,31 @@ void Pinching4Material::Print(OPS_Stream &s, int flag)
 		ss << "rForceN = " << rForceN << endln;
 		ss << "uForceN = " << uForceN << endln;
 	}
+	else if (flag == 3) {
+		ss << "Cstrain: " << Cstrain << endln;
+		ss << "Cstress:" << Cstress << endln;
+		ss << "Cstate: " << Cstate << endln;
+		ss << "Tstrain: " << Tstrain << endln;
+		ss << "Cstrainrate: " << CstrainRate << endln;
+		ss << "dstrain: " << dstrain << endln;
+		int cid = 0;
+		if (dstrain * CstrainRate <= 0.0) {
+			cid = 1;
+		}
+		ss << "change in direction? " << dstrain * CstrainRate << "( " << cid << ")\n";
+		ss << "Tstate: " << Tstate << endln;
+		ss << "plt.plot([" << this->strain4n << ", " << this->strain3n << ", " << this->strain2n << ", " << this->strain1n << ", ";
+		ss << this->strain1p << ", " << this->strain2p << ", " << this->strain3p << ", " << this->strain4p << "], [";
+		ss << this->stress4n << ", " << this->stress3n << ", " << this->stress2n << ", " << this->stress1n << ", ";
+		ss << this->stress1p << ", " << this->stress2p << ", " << this->stress3p << ", " << this->stress4p << "],'-o')\n";
+		ss << "points st4:\n";
+		ss << "plt.plot([" << this->state4Strain(0) << ", " << this->state4Strain(1) << ", " << this->state4Strain(2) << ", " << this->state4Strain(3) << "], ["; 
+		ss << this->state4Stress(0) << ", " << this->state4Stress(1) << ", " << this->state4Stress(2) << ", " << this->state4Stress(3) << "],'-o')\n";
+		ss << "Commited point:\n";
+		ss << "plt.plot(" << this->Cstrain << ", " << this->Cstress << ", 's')\n";
+		ss << "Trial point:\n";
+		ss << "plt.plot(" << this->Tstrain << ", " << this->Tstress << ", '^')\n";
+	}
 
 	std::string str = ss.str();
 	s << str.c_str();
@@ -692,7 +693,7 @@ void Pinching4Material::getstate(double u,double du)
 {
 	int cid = 0;
 	int cis = 0;
-	int newState = 0;
+	int newState = 0; 
 	if (du*CstrainRate<=0.0){   
 		cid = 1;
 	}
@@ -1539,6 +1540,10 @@ Pinching4Material::updateParameter(int parameterID, Information& info)
 	// Then we need to force the update of damaged envelope
 	envlpPosDamgdStress = envlpPosStress * (1 - gammaFUsed);
 	envlpNegDamgdStress = envlpNegStress * (1 - gammaFUsed);
+
+	// setTrialStrain and the commit to store history variables
+	this->setTrialStrain(this->getStrain());
+	this->commitState();
 
 
 	return 0;
