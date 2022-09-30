@@ -716,7 +716,7 @@ int OPS_testUniaxialMaterial() {
 }
 
 int OPS_setStrain() {
-  if (OPS_GetNumRemainingInputArgs() != 1) {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
     opserr << "testUniaxialMaterial - You must provide a strain "
               "value.\n";
     return -1;
@@ -737,7 +737,15 @@ int OPS_setStrain() {
     return -1;
   }
 
-  material->setTrialStrain(strain);
+  double strainRate = 0.0;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numData, &strainRate) < 0) {
+          opserr << "invalid strain rate\n";
+          return -1;
+      }
+  }
+
+  material->setTrialStrain(strain, strainRate);
   material->commitState();
 
   return 0;
