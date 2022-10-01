@@ -86,7 +86,12 @@ OPS_ResponseSpectrumAnalysis(void)
 	double scale = 1.0;
 
 	// make sure eigenvalue and modal properties have been called before
-	const auto& modal_props = theAnalysisModel->getDomainPtr()->getModalProperties();
+	//const auto& modal_props = theAnalysisModel->getDomainPtr()->getModalProperties();
+	DomainModalProperties modal_props;
+	if (theAnalysisModel->getDomainPtr()->getModalProperties(modal_props) < 0) {
+	  opserr << "OPS_ResponseSpectrumAnalysis - eigen and modalProperties have not been called" << endln;
+	  return -1;
+	}
 	int ndf = modal_props.totalMass().Size();
 
 	// parse
@@ -190,7 +195,12 @@ void ResponseSpectrumAnalysis::analyze()
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+	  opserr << "ResponseSpectrumAnalysis::analyze() - failed to get modal properties" << endln;
+	  return;
+	}
 
 	// size info
 	int num_eigen = domain->getEigenvalues().Size();
@@ -227,7 +237,12 @@ void ResponseSpectrumAnalysis::analyze(int mode_id)
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+	  opserr << "ResponseSpectrumAnalysis::analyze(mode_id) - failed to get modal properties" << endln;
+	  return;
+	}
 
 	// size info
 	int num_eigen = domain->getEigenvalues().Size();
@@ -257,8 +272,13 @@ void ResponseSpectrumAnalysis::check()
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
-
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+	  opserr << "ResponseSpectrumAnalysis::check() - failed to get modal properties" << endln;
+	  return;
+	}
+	
 	// number of eigen-modes
 	int num_eigen = domain->getEigenvalues().Size();
 	if (num_eigen < 1)
@@ -320,8 +340,13 @@ void ResponseSpectrumAnalysis::solveMode()
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
-
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+	  opserr << "ResponseSpectrumAnalysis::solveMode() - failed to get modal properties" << endln;
+	  return;
+	}
+	
 	// size info
 	int ndf = mp.totalMass().Size();
 
