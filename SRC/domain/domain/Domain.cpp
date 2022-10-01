@@ -2225,13 +2225,16 @@ void Domain::unsetModalProperties(void)
     }
 }
 
-const DomainModalProperties& Domain::getModalProperties(void) const
+int Domain::getModalProperties(DomainModalProperties &dmp) const
 {
     if (theModalProperties == 0) {
-        opserr << "Domain::getModalProperties - DomainModalProperties were never set\n";
-        exit(-1);
+      opserr << "Domain::getModalProperties - DomainModalProperties were never set" << endln;
+      return -1;
     }
-    return *theModalProperties;
+    else {
+      dmp = *theModalProperties;
+      return 0;
+    }
 }
 
 int
