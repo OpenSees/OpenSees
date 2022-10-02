@@ -1343,7 +1343,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
 
   int dmpTag = (int)idData(16);
   if (dmpTag) {
-    for (int i = 0 ;  i < 4; i++) {
+    for (i = 0 ;  i < 4; i++) {
       // Check if the Damping is null; if so, get a new one
       if (theDamping[i] == 0) {
         theDamping[i] = theBroker.getNewDamping(dmpTag);

@@ -1437,7 +1437,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   
   // Ask the Damping to send itself
   if (theDamping) {
-    for (int i = 0 ;  i < 8; i++) {
+    for (i = 0 ;  i < 8; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {
         opserr << "Brick::sendSelf -- could not send Damping\n";
@@ -1570,7 +1570,7 @@ int  Brick::recvSelf (int commitTag,
     }
   }
   else {
-    for (i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++)
     {
       if (theDamping[i])
       {

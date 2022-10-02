@@ -832,7 +832,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
     if (dbTag == 0) {
       dbTag = theChannel.getDbTag();
       if (dbTag != 0)
-        for (i = 0 ;  i < 4; i++)
+        for (int i = 0 ;  i < 4; i++)
 	        theDamping[i]->setDbTag(dbTag);
 	  }
     data(10) = dbTag;
@@ -1023,7 +1023,7 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
     }
   }
   else {
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
       if (theDamping[i])
       {
