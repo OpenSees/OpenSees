@@ -824,10 +824,10 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   data(7) = betaK0;
   data(8) = betaKc;
   
-  idData(9) = 0;
-  idData(10) = 0;
+  data(9) = 0;
+  data(10) = 0;
   if (theDamping) {
-    idData(9) = theDamping[0]->getClassTag();
+    data(9) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
       dbTag = theChannel.getDbTag();
@@ -835,7 +835,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
         for (i = 0 ;  i < 4; i++)
 	        theDamping[i]->setDbTag(dbTag);
 	  }
-    idData(10) = dbTag;
+    data(10) = dbTag;
   }
 
   res += theChannel.sendVector(dataTag, commitTag, data);
@@ -990,7 +990,7 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
     }
   }
   
-  int dmpTag = (int)idData(9);
+  int dmpTag = (int)data(9);
   if (dmpTag) {
     for (int i = 0 ;  i < 4; i++) {
       // Check if the Damping is null; if so, get a new one
@@ -1014,7 +1014,7 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
       }
   
       // Now, receive the Damping
-      theDamping[i]->setDbTag((int)idData(10));
+      theDamping[i]->setDbTag((int)data(10));
       res += theDamping[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
         opserr << "FourNodeQuad::recvSelf -- could not receive Damping\n";
