@@ -2192,10 +2192,9 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     
       // Now, receive the Damping
       theDamping->setDbTag((int)idData(12));
-      res += theDamping->recvSelf(commitTag, theChannel, theBroker);
-      if (res < 0) {
+      if (theDamping->recvSelf(commitTag, theChannel, theBroker) < 0) {
         opserr << "ForceBeamColumn3d::recvSelf -- could not receive Damping\n";
-        return res;
+        return -1;
       }
     }
     else {

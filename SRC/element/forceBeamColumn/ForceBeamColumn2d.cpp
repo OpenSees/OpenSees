@@ -2398,10 +2398,9 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
   
     // Now, receive the Damping
     theDamping->setDbTag((int)idData(12));
-    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
-    if (res < 0) {
+    if (theDamping->recvSelf(commitTag, theChannel, theBroker) < 0) {
       opserr << "ForceBeamColumn2d::recvSelf -- could not receive Damping\n";
-      return res;
+      return -1;
     }
   }
   else {
