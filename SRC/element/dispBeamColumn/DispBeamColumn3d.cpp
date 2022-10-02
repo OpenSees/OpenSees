@@ -1324,10 +1324,9 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   
     // Now, receive the Damping
     theDamping->setDbTag((int)data(15));
-    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
-    if (res < 0) {
+    if (theDamping->recvSelf(commitTag, theChannel, theBroker) < 0) {
       opserr << "DispBeamColumn3d::recvSelf -- could not receive Damping\n";
-      return res;
+      exit(-1);
     }
   }
   else {
