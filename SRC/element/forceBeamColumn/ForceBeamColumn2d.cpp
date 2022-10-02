@@ -2389,7 +2389,7 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
     // the current one and get a new one of the right type
     if (theDamping->getClassTag() != dmpTag) {
       delete theDamping;
-      theDamping = theBroker.getNewDamping(crdTag);
+      theDamping = theBroker.getNewDamping(dmpTag);
       if (theDamping == 0) {
         opserr << "ForceBeamColumn2d::recvSelf -- could not get a Damping\n";
         exit(-1);

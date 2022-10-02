@@ -2750,7 +2750,7 @@ int  ShellNLDKGQ::recvSelf (int commitTag,
       // the current one and get a new one of the right type
       if (theDamping[i]->getClassTag() != dmpTag) {
         delete theDamping;
-        theDamping[i] = theBroker.getNewDamping(crdTag);
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
         if (theDamping == 0) {
           opserr << "ShellNLDKGQ::recvSelf -- could not get a Damping\n";
           exit(-1);

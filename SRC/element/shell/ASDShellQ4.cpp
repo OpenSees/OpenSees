@@ -1357,7 +1357,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
       // the current one and get a new one of the right type
       if (theDamping[i]->getClassTag() != dmpTag) {
         delete theDamping;
-        theDamping[i] = theBroker.getNewDamping(crdTag);
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
         if (theDamping == 0) {
           opserr << "ASDShellQ4::recvSelf -- could not get a Damping\n";
           exit(-1);
