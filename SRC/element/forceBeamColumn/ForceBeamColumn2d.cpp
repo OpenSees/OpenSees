@@ -1989,7 +1989,7 @@ ForceBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
     if (dbTag == 0) {
       dbTag = theChannel.getDbTag();
       if (dbTag != 0)
-	      theCoordTransf->setDbTag(dbTag);
+	      theDamping->setDbTag(dbTag);
 	  }
     idData(12) = dbTag;
   }
@@ -2405,7 +2405,10 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
     }
   }
   else {
-    if (theDamping) delete theDamping;
+    if (theDamping) {
+      delete theDamping;
+      theDamping = 0;
+    }
   }
     
   return 0;

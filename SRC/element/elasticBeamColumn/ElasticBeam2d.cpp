@@ -1080,7 +1080,7 @@ ElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
       if (dbTag == 0) {
         dbTag = theChannel.getDbTag();
         if (dbTag != 0)
-	        theCoordTransf->setDbTag(dbTag);
+	        theDamping->setDbTag(dbTag);
 	    }
       data(18) = dbTag;
     }
@@ -1202,7 +1202,10 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
       }
     }
     else {
-      if (theDamping) delete theDamping;
+      if (theDamping) {
+        delete theDamping;
+        theDamping = 0;
+      }
     }
     
     return res;

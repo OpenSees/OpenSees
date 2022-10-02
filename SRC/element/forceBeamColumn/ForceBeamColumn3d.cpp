@@ -1782,7 +1782,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
       if (dbTag == 0) {
         dbTag = theChannel.getDbTag();
         if (dbTag != 0)
-	        theCoordTransf->setDbTag(dbTag);
+	        theDamping->setDbTag(dbTag);
 	    }
       idData(12) = dbTag;
     }
@@ -2199,7 +2199,10 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
       }
     }
     else {
-      if (theDamping) delete theDamping;
+      if (theDamping) {
+        delete theDamping;
+        theDamping = 0;
+      }
     }
     
     return 0;

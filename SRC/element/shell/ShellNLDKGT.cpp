@@ -2393,12 +2393,13 @@ int  ShellNLDKGT::sendSelf (int commitTag, Channel &theChannel)
   idData(12) = 0;
   idData(13) = 0;
   if (theDamping) {
-    idData(12) = theDamping->getClassTag();
-    int dbTag = theDamping->getDbTag();
+    idData(12) = theDamping[0]->getClassTag();
+    int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
       dbTag = theChannel.getDbTag();
       if (dbTag != 0)
-	      theCoordTransf->setDbTag(dbTag);
+        for (i = 0 ;  i < 4; i++)
+	        theDamping[i]->setDbTag(dbTag);
 	  }
     idData(13) = dbTag;
   }
@@ -2433,10 +2434,12 @@ int  ShellNLDKGT::sendSelf (int commitTag, Channel &theChannel)
 
   // Ask the Damping to send itself
   if (theDamping) {
-    res += theDamping->sendSelf(commitTag, theChannel);
-    if (res < 0) {
-      opserr << "ShellNLDKGT::sendSelf -- could not send Damping\n";
-      return res;
+    for (int i = 0 ;  i < 4; i++) {
+      res += theDamping[i]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+        opserr << "ShellNLDKGT::sendSelf -- could not send Damping\n";
+        return res;
+      }
     }
   }
 
@@ -2525,38 +2528,47 @@ int  ShellNLDKGT::recvSelf (int commitTag,
     }
   }
   
-  // Check if the Damping is null; if so, get a new one
   int dmpTag = (int)idData(13);
   if (dmpTag) {
-    if (theDamping == 0) {
-      theDamping = theBroker.getNewDamping(dmpTag);
-      if (theDamping == 0) {
-        opserr << "ShellNLDKGT::recvSelf -- could not get a Damping\n";
-        exit(-1);
+    for (int i = 0 ;  i < 4; i++) {
+      // Check if the Damping is null; if so, get a new one
+      if (theDamping[i] == 0) {
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
+        if (theDamping[i] == 0) {
+          opserr << "ShellNLDKGT::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
       }
-    }
   
-    // Check that the Damping is of the right type; if not, delete
-    // the current one and get a new one of the right type
-    if (theDamping->getClassTag() != dmpTag) {
-      delete theDamping;
-      theDamping = theBroker.getNewDamping(crdTag);
-      if (theDamping == 0) {
-        opserr << "ShellNLDKGT::recvSelf -- could not get a Damping\n";
-        exit(-1);
+      // Check that the Damping is of the right type; if not, delete
+      // the current one and get a new one of the right type
+      if (theDamping[i]->getClassTag() != dmpTag) {
+        delete theDamping;
+        theDamping[i] = theBroker.getNewDamping(crdTag);
+        if (theDamping == 0) {
+          opserr << "ShellNLDKGT::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
       }
-    }
   
-    // Now, receive the Damping
-    theDamping->setDbTag((int)idData(14));
-    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
-    if (res < 0) {
-      opserr << "ShellNLDKGT::recvSelf -- could not receive Damping\n";
-      return res;
+      // Now, receive the Damping
+      theDamping[i]->setDbTag((int)idData(14));
+      res += theDamping[i]->recvSelf(commitTag, theChannel, theBroker);
+      if (res < 0) {
+        opserr << "ShellNLDKGT::recvSelf -- could not receive Damping\n";
+        return res;
+      }
     }
   }
   else {
-    if (theDamping) delete theDamping;
+    for (i = 0; i < 4; i++)
+    {
+      if (theDamping[i])
+      {
+        delete theDamping[i];
+        theDamping[i] = 0;
+      }
+    }
   }
     
   return res;
