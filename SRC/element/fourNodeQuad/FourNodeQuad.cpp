@@ -1005,9 +1005,9 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
       // Check that the Damping is of the right type; if not, delete
       // the current one and get a new one of the right type
       if (theDamping[i]->getClassTag() != dmpTag) {
-        delete theDamping;
+        delete theDamping[i];
         theDamping[i] = theBroker.getNewDamping(dmpTag);
-        if (theDamping == 0) {
+        if (theDamping[i] == 0) {
           opserr << "FourNodeQuad::recvSelf -- could not get a Damping\n";
           exit(-1);
         }

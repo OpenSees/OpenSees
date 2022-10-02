@@ -1552,9 +1552,9 @@ int  Brick::recvSelf (int commitTag,
       // Check that the Damping is of the right type; if not, delete
       // the current one and get a new one of the right type
       if (theDamping[i]->getClassTag() != dmpTag) {
-        delete theDamping;
+        delete theDamping[i];
         theDamping[i] = theBroker.getNewDamping(dmpTag);
-        if (theDamping == 0) {
+        if (theDamping[i] == 0) {
           opserr << "Brick::recvSelf -- could not get a Damping\n";
           exit(-1);
         }

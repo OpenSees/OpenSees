@@ -1128,14 +1128,14 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 
     idData(16) = 0;
     idData(17) = 0;
-    if (theDamping) {
-      idData(16) = theDamping[0]->getClassTag();
-      int dbTag = theDamping[0]->getDbTag();
+    if (m_damping) {
+      idData(16) = m_damping[0]->getClassTag();
+      int dbTag = m_damping[0]->getDbTag();
       if (dbTag == 0) {
         dbTag = theChannel.getDbTag();
         if (dbTag != 0)
           for (i = 0 ;  i < 4; i++)
-	          theDamping[i]->setDbTag(dbTag);
+	          m_damping[i]->setDbTag(dbTag);
 	    }
       idData(17) = dbTag;
     }
@@ -1207,9 +1207,9 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     }
 
     // Ask the Damping to send itself
-    if (theDamping) {
+    if (m_damping) {
       for (int i = 0 ;  i < 4; i++) {
-        res += theDamping[i]->sendSelf(commitTag, theChannel);
+        res += m_damping[i]->sendSelf(commitTag, theChannel);
         if (res < 0) {
           opserr << "ASDShellQ4::sendSelf -- could not send Damping\n";
           return res;
@@ -1345,9 +1345,9 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
   if (dmpTag) {
     for (i = 0 ;  i < 4; i++) {
       // Check if the Damping is null; if so, get a new one
-      if (theDamping[i] == 0) {
-        theDamping[i] = theBroker.getNewDamping(dmpTag);
-        if (theDamping[i] == 0) {
+      if (m_damping[i] == 0) {
+        m_damping[i] = theBroker.getNewDamping(dmpTag);
+        if (m_damping[i] == 0) {
           opserr << "ASDShellQ4::recvSelf -- could not get a Damping\n";
           exit(-1);
         }
@@ -1355,18 +1355,18 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
   
       // Check that the Damping is of the right type; if not, delete
       // the current one and get a new one of the right type
-      if (theDamping[i]->getClassTag() != dmpTag) {
-        delete theDamping;
-        theDamping[i] = theBroker.getNewDamping(dmpTag);
-        if (theDamping == 0) {
+      if (m_damping[i]->getClassTag() != dmpTag) {
+        delete m_damping[i];
+        m_damping[i] = theBroker.getNewDamping(dmpTag);
+        if (m_damping[i] == 0) {
           opserr << "ASDShellQ4::recvSelf -- could not get a Damping\n";
           exit(-1);
         }
       }
   
       // Now, receive the Damping
-      theDamping[i]->setDbTag((int)idData(17));
-      res += theDamping[i]->recvSelf(commitTag, theChannel, theBroker);
+      m_damping[i]->setDbTag((int)idData(17));
+      res += m_damping[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
         opserr << "ASDShellQ4::recvSelf -- could not receive Damping\n";
         return res;
@@ -1376,10 +1376,10 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
   else {
     for (i = 0; i < 4; i++)
     {
-      if (theDamping[i])
+      if (m_damping[i])
       {
-        delete theDamping[i];
-        theDamping[i] = 0;
+        delete m_damping[i];
+        m_damping[i] = 0;
       }
     }
   }
