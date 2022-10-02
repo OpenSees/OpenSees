@@ -2092,12 +2092,9 @@ ForceBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
   }    
 
   // Ask the Damping to send itself
-  if (theDamping) {
-    res += theDamping->sendSelf(commitTag, theChannel);
-    if (res < 0) {
+  if (theDamping && theDamping->sendSelf(commitTag, theChannel) < 0) {
       opserr << "ForceBeamColumn2d::sendSelf -- could not send Damping\n";
-      return res;
-    }
+      return -1;
   }
 
   return 0;
