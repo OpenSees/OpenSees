@@ -1746,7 +1746,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     int i, j , k;
     int loc = 0;
 
-    static ID idData(11);  
+    static ID idData(13);  
     idData(0) = this->getTag();
     idData(1) = connectedExternalNodes(0);
     idData(2) = connectedExternalNodes(1);
@@ -1773,6 +1773,19 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
 	beamIntegr->setDbTag(beamIntegrDbTag);
     }
     idData(10) = beamIntegrDbTag;
+
+    idData(11) = 0;
+    idData(12) = 0;
+    if (theDamping) {
+      idData(11) = theDamping->getClassTag();
+      int dbTag = theDamping->getDbTag();
+      if (dbTag == 0) {
+        dbTag = theChannel.getDbTag();
+        if (dbTag != 0)
+	        theCoordTransf->setDbTag(dbTag);
+	    }
+      idData(12) = dbTag;
+    }
 
     if (theChannel.sendID(dbTag, commitTag, idData) < 0) {
       opserr << "ForceBeamColumn3d::sendSelf() - failed to send ID data\n";
@@ -1871,6 +1884,16 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
 
        return -1;
     }    
+
+    // Ask the Damping to send itself
+    if (theDamping) {
+      res += theDamping->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+        opserr << "ForceBeamColumn3d::sendSelf -- could not send Damping\n";
+        return res;
+      }
+    }
+
     return 0;
   }    
 
@@ -1883,7 +1906,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     int dbTag = this->getDbTag();
     int i,j,k;
 
-    static ID idData(11); // one bigger than needed 
+    static ID idData(13); // one bigger than needed 
 
     if (theChannel.recvID(dbTag, commitTag, idData) < 0)  {
       opserr << "ForceBeamColumn3d::recvSelf() - failed to recv ID data\n";
@@ -2144,6 +2167,41 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     betaKc = dData(loc++);
     
     initialFlag = 2;  
+
+    // Check if the Damping is null; if so, get a new one
+    int dmpTag = (int)idData(11);
+    if (dmpTag) {
+      if (theDamping == 0) {
+        theDamping = theBroker.getNewDamping(dmpTag);
+        if (theDamping == 0) {
+          opserr << "ForceBeamColumn3d::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+    
+      // Check that the Damping is of the right type; if not, delete
+      // the current one and get a new one of the right type
+      if (theDamping->getClassTag() != dmpTag) {
+        delete theDamping;
+        theDamping = theBroker.getNewDamping(crdTag);
+        if (theDamping == 0) {
+          opserr << "ForceBeamColumn3d::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+    
+      // Now, receive the Damping
+      theDamping->setDbTag((int)idData(12));
+      res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+      if (res < 0) {
+        opserr << "ForceBeamColumn3d::recvSelf -- could not receive Damping\n";
+        return res;
+      }
+    }
+    else {
+      if (theDamping) delete theDamping;
+    }
+    
     return 0;
   }
 

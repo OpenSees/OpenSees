@@ -1064,7 +1064,7 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 
 	// Make one size bigger so not a multiple of 3, otherwise will conflict
 	// with classTags ID
-	static ID idData(7);
+	static ID idData(9);
 
 	idData(0) = this->getTag();
 	idData(1) = dimension;
@@ -1073,6 +1073,19 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 	idData(4) = connectedExternalNodes(0);
 	idData(5) = connectedExternalNodes(1);
 	idData(6) = useRayleighDamping;
+
+  idData(7) = 0;
+  idData(8) = 0;
+  if (theDamping) {
+    idData(7) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theCoordTransf->setDbTag(dbTag);
+	  }
+    idData(8) = dbTag;
+  }
 
 	res += theChannel.sendID(dataTag, commitTag, idData);
 	if (res < 0) {
@@ -1123,6 +1136,15 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 		}
 	}
 
+  // Ask the Damping to send itself
+  if (theDamping) {
+    res += theDamping->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "ZeroLength::sendSelf -- could not send Damping\n";
+      return res;
+    }
+  }
+
 	return res;
 }
 
@@ -1136,7 +1158,7 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   // ZeroLength creates an ID, receives the ID and then sets the 
   // internal data with the data in the ID
 
-  static ID idData(7);
+  static ID idData(9);
 
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1239,6 +1261,40 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
     }
   }
 
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)idData(7);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ZeroLength::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(crdTag);
+      if (theDamping == 0) {
+        opserr << "ZeroLength::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)idData(8));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ZeroLength::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return res;
 }
 

@@ -1146,6 +1146,27 @@ FEM_ObjectBrokerAllClasses::getNewCrdTransf(int classTag)
 
 }
 
+Damping*
+FEM_ObjectBrokerAllClasses::getNewDamping(int classTag)
+{
+	switch(classTag) {
+	case DMP_TAG_UniformDamping:
+		return new UniformDamping();
+	case DMP_TAG_SecStifDamping:
+		return new SecStifDamping();
+	case DMP_TAG_URDDamping:
+		return new URDDamping();
+	case DMP_TAG_URDDampingbeta:
+		return new URDDampingbeta();
+	default:
+	  opserr << "FEM_ObjectBrokerAllClasses::getNewDamping - ";
+	  opserr << " - no Damping type exists for class tag ";
+	  opserr << classTag << endln;
+	  return 0;
+	}
+
+}
+
 BeamIntegration *
 FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
 {

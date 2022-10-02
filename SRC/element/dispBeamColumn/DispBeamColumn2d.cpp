@@ -1087,7 +1087,7 @@ DispBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
   int i, j;
   int loc = 0;
   
-  static Vector data(14);
+  static Vector data(16);
   data(0) = this->getTag();
   data(1) = connectedExternalNodes(0);
   data(2) = connectedExternalNodes(1);
@@ -1115,6 +1115,19 @@ DispBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
   data(12) = betaK0;
   data(13) = betaKc;
   
+  data(14) = 0;
+  data(15) = 0;
+  if (theDamping) {
+    data(14) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theCoordTransf->setDbTag(dbTag);
+	  }
+    data(15) = dbTag;
+  }
+
   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
     opserr << "DispBeamColumn2d::sendSelf() - failed to send data Vector\n";
      return -1;
@@ -1168,6 +1181,12 @@ DispBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
     }
   }
 
+  // Ask the Damping to send itself
+  if (theDamping && theDamping->sendSelf(commitTag, theChannel) < 0) {
+      opserr << "DispBeamColumn2d::sendSelf -- could not send Damping\n";
+      return -1;
+  }
+
   return 0;
 }
 
@@ -1181,7 +1200,7 @@ DispBeamColumn2d::recvSelf(int commitTag, Channel &theChannel,
   int dbTag = this->getDbTag();
   int i;
   
-  static Vector data(14);
+  static Vector data(16);
 
   if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
     opserr << "DispBeamColumn2d::recvSelf() - failed to recv data Vector\n";
@@ -1344,6 +1363,40 @@ opserr << "DispBeamColumn2d::recvSelf() - out of memory creating sections array 
     }
   }
 
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)data(14);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "DispBeamColumn2d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "DispBeamColumn2d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)data(15));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "DispBeamColumn2d::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return 0;
 }
 

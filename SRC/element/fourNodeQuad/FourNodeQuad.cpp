@@ -812,7 +812,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   
   // Quad packs its data into a Vector and sends this to theChannel
   // along with its dbTag and the commitTag passed in the arguments
-  static Vector data(9);
+  static Vector data(11);
   data(0) = this->getTag();
   data(1) = thickness;
   data(2) = b[0];
@@ -824,6 +824,19 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   data(7) = betaK0;
   data(8) = betaKc;
   
+  data(9) = 0;
+  data(10) = 0;
+  if (theDamping) {
+    data(9) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theCoordTransf->setDbTag(dbTag);
+	  }
+    data(10) = dbTag;
+  }
+
   res += theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING FourNodeQuad::sendSelf() - " << this->getTag() << " failed to send Vector\n";
@@ -870,6 +883,15 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
     }
   }
   
+  // Ask the Damping to send itself
+  if (theDamping) {
+    res += theDamping->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "FourNodeQuad::sendSelf -- could not send Damping\n";
+      return res;
+    }
+  }
+
   return res;
 }
 
@@ -883,7 +905,7 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
 
   // Quad creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
-  static Vector data(9);
+  static Vector data(11);
   res += theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING FourNodeQuad::recvSelf() - failed to receive Vector\n";
@@ -965,6 +987,40 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
     }
   }
   
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)data(9);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "FourNodeQuad::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "FourNodeQuad::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)data(10));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "FourNodeQuad::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return res;
 }
 

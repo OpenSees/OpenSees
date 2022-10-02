@@ -115,6 +115,7 @@ class FEM_ObjectBroker
     virtual ElementalLoad *getNewElementalLoad(int classTag);
     
     virtual CrdTransf *getNewCrdTransf(int classTag);
+    virtual Damping *getNewDamping(int classTag);
 
     virtual BeamIntegration *getNewBeamIntegration(int classTag);
     virtual SectionIntegration *getNewSectionIntegration(int classTag);

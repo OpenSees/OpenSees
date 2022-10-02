@@ -1361,7 +1361,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(26);
+  static ID idData(28);
 
   idData(24) = this->getTag();
   if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
@@ -1392,6 +1392,19 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   idData(22) = connectedExternalNodes(6);
   idData(23) = connectedExternalNodes(7);
 
+  idData(26) = 0;
+  idData(27) = 0;
+  if (theDamping) {
+    idData(26) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theCoordTransf->setDbTag(dbTag);
+	  }
+    idData(27) = dbTag;
+  }
+
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING Brick::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -1421,6 +1434,15 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
     }
   }
   
+  // Ask the Damping to send itself
+  if (theDamping) {
+    res += theDamping->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "Brick::sendSelf -- could not send Damping\n";
+      return res;
+    }
+  }
+
   return res;
 
 }
@@ -1433,7 +1455,7 @@ int  Brick::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(26);
+  static ID idData(28);
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING Brick::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1512,6 +1534,40 @@ int  Brick::recvSelf (int commitTag,
     }
   }
 
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)idData(26);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "Brick::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(crdTag);
+      if (theDamping == 0) {
+        opserr << "Brick::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)idData(27));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "Brick::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return res;
 }
 //**************************************************************************

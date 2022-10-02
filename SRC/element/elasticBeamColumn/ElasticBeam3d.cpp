@@ -1000,7 +1000,7 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(19);
+    static Vector data(21);
     
     data(0) = A;
     data(1) = E; 
@@ -1031,6 +1031,19 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
     data(16) = betaKc;
     data(17) = releasez;
     data(18) = releasey;    
+
+    data(19) = 0;
+    data(20) = 0;
+    if (theDamping) {
+      data(19) = theDamping->getClassTag();
+      int dbTag = theDamping->getDbTag();
+      if (dbTag == 0) {
+        dbTag = theChannel.getDbTag();
+        if (dbTag != 0)
+	        theCoordTransf->setDbTag(dbTag);
+	    }
+      data(20) = dbTag;
+    }
     
     // Send the data vector
     res += theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -1046,6 +1059,15 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
       return res;
     }
 
+    // Ask the Damping to send itself
+    if (theDamping) {
+      res += theDamping->sendSelf(cTag, theChannel);
+      if (res < 0) {
+        opserr << "ElasticBeam3d::sendSelf -- could not send Damping\n";
+        return res;
+      }
+    }
+
     return res;
 }
 
@@ -1053,7 +1075,7 @@ int
 ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(19);
+  static Vector data(21);
 
   res += theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) {
@@ -1107,6 +1129,40 @@ ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
   if (res < 0) {
     opserr << "ElasticBeam3d::recvSelf -- could not receive CoordTransf\n";
     return res;
+  }
+
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)data(19);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ElasticBeam3d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ElasticBeam3d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)data(20));
+    res += theDamping->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ElasticBeam3d::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
   }
   
   return res;

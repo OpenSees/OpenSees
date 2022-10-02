@@ -2244,7 +2244,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(15);
+  static ID idData(17);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -2270,6 +2270,19 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   else
     idData(13) = 1;
   idData(14) = static_cast<int>(m_initialzed);
+
+  idData(15) = 0;
+  idData(16) = 0;
+  if (theDamping) {
+    idData(15) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theCoordTransf->setDbTag(dbTag);
+	  }
+    idData(16) = dbTag;
+  }
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2309,6 +2322,15 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
     }
   }
   
+  // Ask the Damping to send itself
+  if (theDamping) {
+    res += theDamping->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "ShellMITC4::sendSelf -- could not send Damping\n";
+      return res;
+    }
+  }
+
   return res;
 }
     
@@ -2320,7 +2342,7 @@ int  ShellMITC4::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(15);
+  static ID idData(17);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2410,6 +2432,40 @@ int  ShellMITC4::recvSelf (int commitTag,
     }
   }
   
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)idData(15);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ShellMITC4::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(crdTag);
+      if (theDamping == 0) {
+        opserr << "ShellMITC4::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)idData(16));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ShellMITC4::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return res;
 }
 //**************************************************************************
