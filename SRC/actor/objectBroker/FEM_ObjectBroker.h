@@ -69,6 +69,7 @@ class DomainDecompositionAnalysis;
 class PartitionedModelBuilder;
 
 class CrdTransf;
+class Damping;
 class GraphNumberer;
 
 class BeamIntegration;
