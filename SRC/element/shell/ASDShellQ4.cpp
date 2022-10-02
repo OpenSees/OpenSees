@@ -1134,7 +1134,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
       if (dbTag == 0) {
         dbTag = theChannel.getDbTag();
         if (dbTag != 0)
-          for (i = 0 ;  i < 4; i++)
+          for (int i = 0 ;  i < 4; i++)
 	          m_damping[i]->setDbTag(dbTag);
 	    }
       idData(17) = dbTag;
@@ -1343,7 +1343,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
 
   int dmpTag = (int)idData(16);
   if (dmpTag) {
-    for (i = 0 ;  i < 4; i++) {
+    for (int i = 0 ;  i < 4; i++) {
       // Check if the Damping is null; if so, get a new one
       if (m_damping[i] == 0) {
         m_damping[i] = theBroker.getNewDamping(dmpTag);
@@ -1374,7 +1374,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
     }
   }
   else {
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
       if (m_damping[i])
       {
