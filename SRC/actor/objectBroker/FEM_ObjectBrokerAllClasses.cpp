@@ -350,6 +350,11 @@
 #include "CorotCrdTransf2d.h"
 #include "CorotCrdTransf3d.h"
 
+#include "UniformDamping.h"
+#include "SecStifDamping.h"
+#include "URDDamping.h"
+#include "URDDampingbeta.h"
+
 #include "HingeMidpointBeamIntegration.h"
 #include "HingeEndpointBeamIntegration.h"
 #include "HingeRadauBeamIntegration.h"
