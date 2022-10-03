@@ -79,9 +79,6 @@ CoulombDamperMaterial::CoulombDamperMaterial(int tag, double k,
       tangent(k),
       friction(f),
       parameterID(0) {
-    if (friction < 0) {
-        friction = -friction;
-    }
 }
 
 CoulombDamperMaterial::CoulombDamperMaterial()
