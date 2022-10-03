@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/element/shell/ShellMITC4.h,v $
 
 // Original implementation: Ed "C++" Love
-// Reimplementation: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
+// Reimplementation: Leopoldo Tesser, Diego A. Talledo, VÃ©ronique Le Corvec
 //
 // Bathe MITC 4 four node shell element with membrane and drill
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
@@ -64,6 +64,8 @@ class ShellMITC4 : public Element {
    
   //destructor 
   virtual ~ShellMITC4( ) ;
+	
+  const char *getClassType(void) const {return "ShellMITC4";}
 
   void setDomain( Domain *theDomain ) ;
   int setDamping(Domain *theDomain, Damping *theDamping);
