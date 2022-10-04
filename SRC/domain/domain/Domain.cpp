@@ -774,16 +774,23 @@ Domain::addLoadPattern(LoadPattern *load)
       return false;
     }    
 
+    int numSPs = 0;
+    SP_Constraint *theSP_Constraint;
+    SP_ConstraintIter &theSP_Constraints = load->getSPs();
+    while ((theSP_Constraint = theSP_Constraints()) != 0)
+      numSPs++;
+    
     // now we add the load pattern to the container for load patterns
     bool result = theLoadPatterns->addComponent(load);
     if (result == true) {
 	load->setDomain(this);
-	this->domainChange();
+	if (numSPs > 0)
+	  this->domainChange();
     }
     else 
       opserr << "Domain::addLoadPattern - cannot add LoadPattern with tag" <<
 	tag << "to the container\n";                   	
-			      
+
     return result;
 }    
 
@@ -922,7 +929,7 @@ Domain::addNodalLoad(NodalLoad *load, int pattern)
     }
 
     load->setDomain(this);    // done in LoadPattern::addNodalLoad()
-    this->domainChange();
+    //this->domainChange(); // a nodal load does not change the domain
 
     return result;
 }    
@@ -2225,13 +2232,16 @@ void Domain::unsetModalProperties(void)
     }
 }
 
-const DomainModalProperties& Domain::getModalProperties(void) const
+int Domain::getModalProperties(DomainModalProperties &dmp) const
 {
     if (theModalProperties == 0) {
-        opserr << "Domain::getModalProperties - DomainModalProperties were never set\n";
-        exit(-1);
+      opserr << "Domain::getModalProperties - DomainModalProperties were never set" << endln;
+      return -1;
     }
-    return *theModalProperties;
+    else {
+      dmp = *theModalProperties;
+      return 0;
+    }
 }
 
 int

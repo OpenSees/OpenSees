@@ -54,7 +54,7 @@ void* OPS_SectionAggregator()
 	opserr << "Want: section Aggregator tag? uniTag1? code1? ... <-section secTag?>" << endln;
 	return 0;
     }
-	    
+
     int tag;
     int secTag;
     SectionForceDeformation *theSec = 0;
@@ -65,16 +65,44 @@ void* OPS_SectionAggregator()
 	return 0;
     }
 
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    int numOptionalArgs = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string arg = OPS_GetString();
+      if (arg == "-section") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING SectionAggregator: failed to get section tag";
+	    return 0;
+	  }
+	  numOptionalArgs++;
+
+	  theSec = OPS_getSectionForceDeformation(secTag);
+	  if (theSec == 0) {
+	    opserr << "WARNING section does not exist\n";
+	    opserr << "section: " << secTag; 
+	    opserr << "\nsection Aggregator: " << tag << endln;
+	    return 0;
+	  }
+	}	
+      }
+    }
+
+    OPS_ResetCurrentInputArg(-numArgs);    
+    numArgs = numArgs - numOptionalArgs;
+
     // uni mat tags and section dofs
     std::vector<UniaxialMaterial*> theMats;
     ID codes(0, 10);
-    while (OPS_GetNumRemainingInputArgs() > 1) {
+    while (numArgs > 1) {
 	int matTag;
 	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-	    OPS_ResetCurrentInputArg(-1);
-	    break;
+	  opserr << "ERROR SectionAggregator - could not read matTag input" << endln;
+	  return 0;
 	}
-
+	numArgs--;
+	
 	UniaxialMaterial* mat = OPS_getUniaxialMaterial(matTag);
 	    
 	if (mat == 0) {
@@ -87,6 +115,8 @@ void* OPS_SectionAggregator()
 	theMats.push_back(mat);
 	
 	const char* type = OPS_GetString();
+	numArgs--;
+
 	int code = 0;
 	if (strcmp(type,"Mz") == 0) 
 	    code = SECTION_RESPONSE_MZ;
@@ -112,24 +142,6 @@ void* OPS_SectionAggregator()
     if (nMats == 0) {
       opserr << "No material is given\n";
       return 0;
-    }
-
-    // section
-    if (OPS_GetNumRemainingInputArgs() > 1) {
-	const char* flag = OPS_GetString();
-	if (strcmp(flag, "-section") == 0) {
-	    if (OPS_GetIntInput(&numdata, &secTag) < 0) {
-		opserr << "WARNING invalid Aggregator section tag" << endln;
-		return 0;
-	    }
-	    theSec = OPS_getSectionForceDeformation(secTag);
-	    if (theSec == 0) {
-		opserr << "WARNING section does not exist\n";
-		opserr << "section: " << secTag; 
-		opserr << "\nsection Aggregator: " << tag << endln;
-		return 0;
-	    }
-	}
     }
 
     if (theSec) {
