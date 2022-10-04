@@ -356,7 +356,7 @@ Concrete02::revertToStart(void)
 int 
 Concrete02::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(14);
+  static Vector data(13);
   data(0) =fc;    
   data(1) =epsc0; 
   data(2) =fcu;   
@@ -369,8 +369,7 @@ Concrete02::sendSelf(int commitTag, Channel &theChannel)
   data(9) =epsP;  
   data(10) =sigP; 
   data(11) =eP;   
-  data(12) = mon;
-  data(13) = this->getTag();
+  data(12) = this->getTag();
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02::sendSelf() - failed to sendSelf\n";
@@ -384,7 +383,7 @@ Concrete02::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(14);
+  static Vector data(13);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "Concrete02::recvSelf() - failed to recvSelf\n";
@@ -403,8 +402,7 @@ Concrete02::recvSelf(int commitTag, Channel &theChannel,
   epsP = data(9);
   sigP = data(10);
   eP = data(11);
-  mon = data(12);
-  this->setTag(data(13));
+  this->setTag(data(12));
 
   e = eP;
   sig = sigP;
