@@ -49,8 +49,6 @@ class Concrete02 : public UniaxialMaterial
 	     double _epscu, double _rat, double _ft, double _Ets);
     Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 	     double _epscu);
-    Concrete02(int tag, double _fc, double _epsc0, double _fcu, // for FSAM
-        double _epscu, double _rat, double _ft, double _Ets, int MON);
 
     Concrete02(void);
 
@@ -95,7 +93,6 @@ class Concrete02 : public UniaxialMaterial
     double rat;   // ratio between unloading slope at epscu and original slope : mp(5)
     double ft;    // concrete tensile strength               : mp(6)
     double Ets;   // tension stiffening slope                : mp(7)
-    int mon;      // for FSAM: switch to use monotonic envelopes only
 
     // hstvP : Concerete HISTORY VARIABLES last committed step
     double ecminP;  //  hstP(1)

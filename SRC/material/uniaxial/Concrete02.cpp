@@ -96,8 +96,7 @@ OPS_Concrete02()
 Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
 		       double _epscu, double _rat, double _ft, double _Ets):
   UniaxialMaterial(tag, MAT_TAG_Concrete02),
-  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets),
-    mon(0) // for FSAM
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
 {
   ecminP = 0.0;
   deptP = 0.0;
@@ -132,24 +131,6 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   Ets = 0.1*fc/epsc0;
 }
 
-// for FSAM
-Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
-    double _epscu, double _rat, double _ft, double _Ets, int MON) :
-    UniaxialMaterial(tag, MAT_TAG_Concrete02),
-    fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets), mon(MON)
-{
-    ecminP = 0.0;
-    deptP = 0.0;
-
-    eP = 2.0 * fc / epsc0;
-    epsP = 0.0;
-    sigP = 0.0;
-    eps = 0.0;
-    sig = 0.0;
-    e = 2.0 * fc / epsc0;
-
-}
-
 Concrete02::Concrete02(void):
   UniaxialMaterial(0, MAT_TAG_Concrete02)
 {
@@ -164,8 +145,7 @@ Concrete02::~Concrete02(void)
 UniaxialMaterial*
 Concrete02::getCopy(void)
 {
-  //Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
-  Concrete02* theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets, mon); // for FSAM
+  Concrete02 *theCopy = new Concrete02(this->getTag(), fc, epsc0, fcu, epscu, rat, ft, Ets);
   
   return theCopy;
 }
@@ -193,22 +173,6 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
 
   if (fabs(deps) < DBL_EPSILON)
     return 0;
-
-  if (mon == 1) { // for FSAM: monotonic
-
-      if (eps <= 0.0) {
-
-          this->Compr_Envlp(eps, sig, e);
-
-      }
-      else if (eps > 0.0) {
-
-          this->Tens_Envlp(eps, sig, e);
-
-      }
-
-      return 0;
-  }
 
   // if the current strain is less than the smallest previous strain 
   // call the monotonic envelope in compression and reset minimum strain 

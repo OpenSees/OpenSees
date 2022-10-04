@@ -368,6 +368,22 @@ FSAM::FSAM (int tag,
 		exit(-1);
 	}
 
+	// Get the copy for Concrete 1.1
+	theMaterial[2] = c1->getCopy();
+	// Check allocation    
+	if (theMaterial[2] == 0) {
+		opserr << " FSAM::FSAM - failed to get a copy for Concrete A1\n";
+		exit(-1);
+	}
+
+	// Get the copy for Concrete 1.2
+	theMaterial[3] = c2->getCopy();
+	// Check allocation    
+	if (theMaterial[3] == 0) {
+		opserr << " FSAM::FSAM - failed to get a copy for Concrete A1\n";
+		exit(-1);
+	}
+
 	// Get the copy for Concrete A1
 	theMaterial[4] = cA1->getCopy();	
 	// Check allocation    
@@ -447,6 +463,7 @@ FSAM::FSAM (int tag,
 	// Instead of: theMaterial[2] = c1->getCopy(); we are creating monotonic ConcreteCM	
 	if (strcmp(cA1->getClassType(), "ConcreteCM") == 0) {
 		
+		/*
 		// Concrete 1.1
 		theMaterial[2] = new ConcreteCM(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3],
 			ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], ConcreteInput[8], ConcreteInput[9], 1); // create monotonic concret
@@ -467,6 +484,7 @@ FSAM::FSAM (int tag,
 			opserr << " FSAM::FSAM - failed to get a copy for Concrete 2\n";
 			exit(-1);
 		}
+		*/
 
 		// Obtain some material properties used later in the FSAM model
 		// Young's modulus for concrete
@@ -495,7 +513,8 @@ FSAM::FSAM (int tag,
 		//for (int i = 0; i < InputConc.Size(); i++)
 		//	ConcreteInput[i] = InputConc[i];
 
-		theMaterial[2] = new Concrete02(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+		/*
+		theMaterial[2] = new Concrete02(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7]);
 
 		// Check allocation
 		if (theMaterial[2] == 0) {
@@ -503,7 +522,7 @@ FSAM::FSAM (int tag,
 			exit(-1);
 		}
 
-		theMaterial[3] = new Concrete02(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7], 1);
+		theMaterial[3] = new Concrete02(-1111, ConcreteInput[1], ConcreteInput[2], ConcreteInput[3], ConcreteInput[4], ConcreteInput[5], ConcreteInput[6], ConcreteInput[7]);
 
 		// Check allocation
 
@@ -511,7 +530,7 @@ FSAM::FSAM (int tag,
 			opserr << " FSAM::FSAM - failed to get a copy for Concrete 1\n";
 			exit(-1);
 		}
-
+		*/
 		// Obtain some material properties used later in the FSAM model
 		// Young's modulus for concrete
 		Ec = theMaterial[4]->getInitialTangent();
@@ -1093,7 +1112,8 @@ int FSAM::commitState(void)
 		// Commit State of Uniaxial Materials
 		for (int i=0; i < 8; i++)
 		{
-			theMaterial[i]->commitState();
+			if (i != 2 || i != 3)
+				theMaterial[i]->commitState();
 		}
 
 	} 
@@ -1122,7 +1142,8 @@ int FSAM::commitState(void)
 		// Commit State of Uniaxial Materials
 		for (int i = 0; i < 8; i++)  // changed from 8 to 10 to include OOHM
 		{
-			theMaterial[i]->commitState();
+			if (i != 2 || i != 3)
+				theMaterial[i]->commitState();
 		}
 
 		// cracking criterium for 2nd crack .....................................
@@ -1181,7 +1202,8 @@ int FSAM::commitState(void)
 			// Commit State of Uniaxial Materials
 			for (int i = 0; i < 8; i++)  // changed from 8 to 10 to include OOHM
 			{
-				theMaterial[i]->commitState();
+				if (i != 2 || i != 3)
+					theMaterial[i]->commitState();
 			}
 
 		}
@@ -1211,7 +1233,8 @@ int FSAM::commitState(void)
 		// Commit State of Uniaxial Materials
 		for (int i=0; i < 8; i++)
 		{
-			theMaterial[i]->commitState();
+			if (i != 2 || i != 3)
+				theMaterial[i]->commitState();
 		}
 
 	}
