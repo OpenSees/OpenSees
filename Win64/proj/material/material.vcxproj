@@ -298,6 +298,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcretewBeta.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CubicSpline.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp" />
