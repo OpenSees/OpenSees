@@ -628,7 +628,7 @@ namespace
 
 ASDShellQ4::ASDShellQ4() 
     : Element(0, ELE_TAG_ASDShellQ4)
-    , m_transformation(new ASDShellQ4Transformation())
+    , m_transformation(nullptr)
 {
 }
 
@@ -663,7 +663,8 @@ ASDShellQ4::~ASDShellQ4( )
 {
     // clean up section
     for (int i = 0; i < 4; i++)
-        delete m_sections[i];
+        if(m_sections[i])
+            delete m_sections[i];
 
     // clean up coordinate transformation
     if(m_transformation)
@@ -676,37 +677,56 @@ ASDShellQ4::~ASDShellQ4( )
 
 void  ASDShellQ4::setDomain(Domain* theDomain)
 {
-    //node pointers
-    for (int i = 0; i < 4; i++)
-        nodePointers[i] = theDomain->getNode(m_node_ids(i));
-    // set domain on transformation
-    m_transformation->setDomain(theDomain, m_node_ids);
-
-    // compute drilling penalty parameter
-    m_drill_stiffness = 0.0;
-    for (int i = 0; i < 4; i++)
-        m_drill_stiffness += m_sections[i]->getInitialTangent()(2, 2);
-    m_drill_stiffness /= 4.0;
-
-    // compute section orientation angle
-    ASDShellQ4LocalCoordinateSystem reference_cs = m_transformation->createReferenceCoordinateSystem();
-    Vector3Type e1_local = reference_cs.Vx();
-    Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
-    Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
-    Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
-    Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
-    Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
-    e1.normalize();
-    m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
-    if (m_angle != 0.0) {
-        // if they are not counter-clock-wise, let's change the sign of the angle
-        const Matrix& R = reference_cs.Orientation();
-        if ((e1(0) * R(1, 0) + e1(1) * R(1, 1) + e1(2) * R(1, 2)) < 0.0)
-            m_angle = -m_angle;
+    // if domain is null
+    if (theDomain == nullptr) {
+        for (int i = 0; i < 4; i++)
+            nodePointers[i] = nullptr;
+        // set domain on transformation
+        m_transformation->setDomain(theDomain, m_node_ids, m_initialized);
+        // call base class implementation
+        DomainComponent::setDomain(theDomain);
+        return;
     }
 
-    // AGQI internal DOFs
-    AGQIinitialize();
+    // node pointers
+    for (int i = 0; i < 4; i++)
+        nodePointers[i] = theDomain->getNode(m_node_ids(i));
+
+    // set domain on transformation
+    m_transformation->setDomain(theDomain, m_node_ids, m_initialized);
+
+    // only if not already initialized from recvSelf
+    if (!m_initialized) {
+
+        // compute drilling penalty parameter
+        m_drill_stiffness = 0.0;
+        for (int i = 0; i < 4; i++)
+            m_drill_stiffness += m_sections[i]->getInitialTangent()(2, 2);
+        m_drill_stiffness /= 4.0;
+
+        // compute section orientation angle
+        ASDShellQ4LocalCoordinateSystem reference_cs = m_transformation->createReferenceCoordinateSystem();
+        Vector3Type e1_local = reference_cs.Vx();
+        Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
+        Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
+        Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
+        Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
+        Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
+        e1.normalize();
+        m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
+        if (m_angle != 0.0) {
+            // if they are not counter-clock-wise, let's change the sign of the angle
+            const Matrix& R = reference_cs.Orientation();
+            if ((e1(0) * R(1, 0) + e1(1) * R(1, 1) + e1(2) * R(1, 2)) < 0.0)
+                m_angle = -m_angle;
+        }
+
+        // AGQI internal DOFs
+        AGQIinitialize();
+
+        // initialized
+        m_initialized = true;
+    }
 
     // call base class implementation
     DomainComponent::setDomain(theDomain);
@@ -999,20 +1019,30 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     // object - don't want to have to do the check if sending data
     int dataTag = this->getDbTag();
 
-    // send the ids of sections
-    int matDbTag;
+    // a counter
+    int counter;
+
+    // has load flag
+    bool has_load = m_load != nullptr;
 
     // INT data
-    // 4 section class tags +
-    // 4 mat db tag +
     // 1 tag +
     // 4 node tags +
     // 1 transformation type
-    static ID idData(14);
-
+    // 1 initialization flag
+    // 1 has_load_flag
+    // 8 -> 4 pairs of (section class tag, mt db tag)
+    static ID idData(16);
+    counter = 0;
+    idData(counter++) = getTag();
+    for(int i = 0; i < 4; ++i)
+        idData(counter++) = m_node_ids(i);
+    idData(counter++) = static_cast<int>(m_transformation->isLinear());
+    idData(counter++) = static_cast<int>(m_initialized);
+    idData(counter++) = static_cast<int>(has_load);
     for (int i = 0; i < 4; i++) {
-        idData(i) = m_sections[i]->getClassTag();
-        matDbTag = m_sections[i]->getDbTag();
+        idData(counter++) = m_sections[i]->getClassTag();
+        int matDbTag = m_sections[i]->getDbTag();
         // NOTE: we do have to ensure that the material has a database
         // tag if we are sending to a database channel.
         if (matDbTag == 0) {
@@ -1020,17 +1050,10 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
             if (matDbTag != 0)
                 m_sections[i]->setDbTag(matDbTag);
         }
-        idData(i + 4) = matDbTag;
+        idData(counter++) = matDbTag;
     }
 
-    idData(8) = getTag();
-    idData(9) = m_node_ids(0);
-    idData(10) = m_node_ids(1);
-    idData(11) = m_node_ids(2);
-    idData(12) = m_node_ids(3);
-    idData(13) = m_transformation->isLinear() ? 0 : 1;
-
-    res += theChannel.sendID(dataTag, commitTag, idData);
+    res = theChannel.sendID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send ID\n";
         return res;
@@ -1038,20 +1061,50 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 
     // DOUBLE data
     // 4 damping factors +
-    // 2 drill stiffness and section orientation angle +
-    // N transformation data
+    // 4 drilling strain +
+    // 1 drilling stiffness +
+    // 1 angle +
+    // 268 AGQI internal data + 
+    // 24 if has_load else 0 +
+    // NT transformation data
+    int NLoad = has_load ? 24 : 0;
     int NT = m_transformation->internalDataSize();
-    Vector vectData(6 + NT);
-    
-    vectData(0) = alphaM;
-    vectData(1) = betaK;
-    vectData(2) = betaK0;
-    vectData(3) = betaKc;
-    vectData(4) = m_drill_stiffness;
-    vectData(5) = m_angle;
-    m_transformation->saveInternalData(vectData, 6);
+    Vector vectData(4 + 4 + 1 + 1 + 268 + NLoad + NT);
+    counter = 0;
+    vectData(counter++) = alphaM;
+    vectData(counter++) = betaK;
+    vectData(counter++) = betaK0;
+    vectData(counter++) = betaKc;
+    for (int i = 0; i < 4; ++i)
+        vectData(counter++) = m_drill_strain[i];
+    vectData(counter++) = m_drill_stiffness;
+    vectData(counter++) = m_angle;
+    for (int i = 0; i < 4; ++i)
+        vectData(counter++) = m_Q(i);
+    for (int i = 0; i < 4; ++i)
+        vectData(counter++) = m_Q_converged(i);
+    for (int i = 0; i < 24; ++i)
+        vectData(counter++) = m_U(i);
+    for (int i = 0; i < 24; ++i)
+        vectData(counter++) = m_U_converged(i);
+    for (int i = 0; i < 4; ++i)
+        vectData(counter++) = m_Q_residual(i);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            vectData(counter++) = m_KQQ_inv(i, j);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 24; ++j)
+            vectData(counter++) = m_KQU(i, j);
+    for (int i = 0; i < 24; ++i)
+        for (int j = 0; j < 4; ++j)
+            vectData(counter++) = m_KUQ(i, j);
+    if (has_load) {
+        for (int i = 0; i < 24; ++i)
+            vectData(counter++) = (*m_load)(i);
+    }
+    m_transformation->saveInternalData(vectData, counter);
 
-    res += theChannel.sendVector(dataTag, commitTag, vectData);
+    res = theChannel.sendVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send Vector\n";
         return res;
@@ -1059,7 +1112,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 
     // send all sections
     for (int i = 0; i < 4; i++) {
-        res += m_sections[i]->sendSelf(commitTag, theChannel);
+        res = m_sections[i]->sendSelf(commitTag, theChannel);
         if (res < 0) {
             opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to send its Material\n";
             return res;
@@ -1076,55 +1129,34 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
 
     int dataTag = this->getDbTag();
 
+    // a counter
+    int counter;
+
     // INT data
-    // 4 section class tags +
-    // 4 mat db tag +
     // 1 tag +
     // 4 node tags +
     // 1 transformation type
-    static ID idData(14);
-    res += theChannel.recvID(dataTag, commitTag, idData);
+    // 1 initialization flag
+    // 1 has_load_flag
+    // 8 -> 4 pairs of (section class tag, mt db tag)
+    static ID idData(16);
+    res = theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive ID\n";
         return res;
     }
 
-    setTag(idData(8));
-    m_node_ids(0) = idData(9);
-    m_node_ids(1) = idData(10);
-    m_node_ids(2) = idData(11);
-    m_node_ids(3) = idData(12);
-
-    if (m_transformation)
-        delete m_transformation;
-    m_transformation = idData(13) == 0 ? new ASDShellQ4Transformation() : new ASDShellQ4CorotationalTransformation();
-
-    // DOUBLE data
-    // 4 damping factors +
-    // 2 drill stiffness and section orientation angle +
-    // N transformation data
-    int NT = m_transformation->internalDataSize();
-    Vector vectData(6 + NT);
-
-    res += theChannel.recvVector(dataTag, commitTag, vectData);
-    if (res < 0) {
-        opserr << "WARNING ASDShellQ4::sendSelf() - " << this->getTag() << " failed to receive Vector\n";
-        return res;
-    }
-
-    alphaM = vectData(0);
-    betaK = vectData(1);
-    betaK0 = vectData(2);
-    betaKc = vectData(3);
-    m_drill_stiffness = vectData(4);
-    m_angle = vectData(5);
-    m_transformation->restoreInternalData(vectData, 6);
-
-    // all sections
+    counter = 0;
+    setTag(idData(counter++));
+    for (int i = 0; i < 4; ++i)
+        m_node_ids(i) = idData(counter++);
+    bool linear_transform = static_cast<bool>(idData(counter++));
+    m_initialized = static_cast<bool>(idData(counter++));
+    bool has_load = static_cast<bool>(idData(counter++));
+    // create sections
     for (int i = 0; i < 4; i++) {
-        int matClassTag = idData(i);
-        int matDbTag = idData(i + 4);
-        // Allocate new material with the sent class tag
+        int matClassTag = idData(counter++);
+        int matDbTag = idData(counter++);
         if (m_sections[i])
             delete m_sections[i];
         m_sections[i] = theBroker.getNewSection(matClassTag);
@@ -1132,9 +1164,79 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
             opserr << "ASDShellQ4::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;;
             return -1;
         }
-        // Receive the material
         m_sections[i]->setDbTag(matDbTag);
-        res += m_sections[i]->recvSelf(commitTag, theChannel, theBroker);
+    }
+    
+    // create transformation
+    if (m_transformation)
+        delete m_transformation;
+    m_transformation = linear_transform ? new ASDShellQ4Transformation() : new ASDShellQ4CorotationalTransformation();
+    // create load
+    if (has_load) {
+        if (m_load == nullptr)
+            m_load = new Vector(24);
+    }
+    else {
+        if (m_load) {
+            delete m_load;
+            m_load = nullptr;
+        }
+    }
+
+    // DOUBLE data
+    // 4 damping factors +
+    // 4 drilling strain +
+    // 1 drilling stiffness +
+    // 1 angle +
+    // 268 AGQI internal data + 
+    // 24 if has_load else 0 +
+    // NT transformation data
+    int NLoad = has_load ? 24 : 0;
+    int NT = m_transformation->internalDataSize();
+    Vector vectData(4 + 4 + 1 + 1 + 268 + NLoad + NT);
+    res = theChannel.recvVector(dataTag, commitTag, vectData);
+    if (res < 0) {
+        opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive Vector\n";
+        return res;
+    }
+
+    counter = 0;
+    alphaM = vectData(counter++);
+    betaK = vectData(counter++);
+    betaK0 = vectData(counter++);
+    betaKc = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        m_drill_strain[i] = vectData(counter++);
+    m_drill_stiffness = vectData(counter++);
+    m_angle = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        m_Q(i) = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        m_Q_converged(i) = vectData(counter++);
+    for (int i = 0; i < 24; ++i)
+        m_U(i) = vectData(counter++);
+    for (int i = 0; i < 24; ++i)
+        m_U_converged(i) = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        m_Q_residual(i) = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            m_KQQ_inv(i, j) = vectData(counter++);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 24; ++j)
+            m_KQU(i, j) = vectData(counter++);
+    for (int i = 0; i < 24; ++i)
+        for (int j = 0; j < 4; ++j)
+            m_KUQ(i, j) = vectData(counter++);
+    if (has_load) {
+        for (int i = 0; i < 24; ++i)
+            (*m_load)(i) = vectData(counter++);
+    }
+    m_transformation->restoreInternalData(vectData, counter);
+
+    // all sections
+    for (int i = 0; i < 4; i++) {
+        res = m_sections[i]->recvSelf(commitTag, theChannel, theBroker);
         if (res < 0) {
             opserr << "ASDShellQ4::recvSelf() - material " << i << "failed to recv itself\n";
             return res;
