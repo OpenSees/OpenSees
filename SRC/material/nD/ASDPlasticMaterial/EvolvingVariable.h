@@ -33,7 +33,7 @@
 #include "ASDPlasticMaterialTraits.h"
 using namespace std;
 
-using EigenAPI::VoightTensor6;
+// using EigenAPI::VoightVector;
 
 
 //Forward declaration needed for declaring the operator overload << (friend)
@@ -58,9 +58,9 @@ public:
         // cout << "EvolvingVariable::EvolvingVariable(a) a_committed = " << a_committed << endl;
     }
 
-    const VarType &getDerivative(const VoightTensor6 &depsilon,
-                                 const VoightTensor6 &m,
-                                 const VoightTensor6& sigma) const
+    const VarType &getDerivative(const VoigtVector &depsilon,
+                                 const VoigtVector &m,
+                                 const VoigtVector& sigma) const
     {
         return static_cast<const T*>(this)->getDerivative(depsilon,  m,  sigma);
     };
@@ -82,9 +82,9 @@ public:
     template <typename U = T>
     typename std::enable_if < !evolving_variable_implements_custom_evolve_function<U>::value, void >::type
     evolve(double dlambda,
-           const VoightTensor6& depsilon,
-           const VoightTensor6& m,
-           const VoightTensor6& sigma)
+           const VoigtVector& depsilon,
+           const VoigtVector& m,
+           const VoigtVector& sigma)
     {
         const VarType& h = getDerivative(depsilon, m, sigma);
         static VarType aux(a);
@@ -96,9 +96,9 @@ public:
     template <typename U = T>
     typename std::enable_if < evolving_variable_implements_custom_evolve_function<U>::value, void >::type
     evolve(double dlambda,
-           const VoightTensor6& depsilon,
-           const VoightTensor6& m,
-           const VoightTensor6& sigma)
+           const VoigtVector& depsilon,
+           const VoigtVector& m,
+           const VoigtVector& sigma)
     {
         static_cast<U*>(this)->evolve(dlambda, depsilon, m, sigma);
     }
@@ -184,11 +184,11 @@ public:
     // //////////////////////////////////////////////////////////////////////////////////
     template <typename U = T>
     typename std::enable_if < !requires_hardening_saturation_limit_check<U>::requires >::type
-    check_hardening_saturation_limit_(VarType& a, VoightTensor6 const& plasticFlow_m) {}
+    check_hardening_saturation_limit_(VarType& a, VoigtVector const& plasticFlow_m) {}
 
     template <typename U = T>
     typename std::enable_if<requires_hardening_saturation_limit_check<U>::requires>::type
-    check_hardening_saturation_limit_(VarType& a, VoightTensor6 const& plasticFlow_m)
+    check_hardening_saturation_limit_(VarType& a, VoigtVector const& plasticFlow_m)
     {
         static_cast<U*>(this)->check_hardening_saturation_limit(a, plasticFlow_m);
     }

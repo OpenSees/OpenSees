@@ -35,9 +35,9 @@ LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_) : EvolvingVariabl
 LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_, double k0) : EvolvingVariable(k0), H(H_)
 {}
 
-const double& LinearHardeningScalar_EV::getDerivative(const VoightTensor6 &depsilon,
-        const VoightTensor6 &m,
-        const VoightTensor6& stress) const
+const double& LinearHardeningScalar_EV::getDerivative(const VoigtVector &depsilon,
+        const VoigtVector &m,
+        const VoigtVector& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
     // Clear the static variables

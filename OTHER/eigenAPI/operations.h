@@ -28,10 +28,11 @@
 
 
 
-// double p(const StressVectorType &sigma)
-// {
-//     return (sigma(0)+sigma(1)+sigma(2))/3;
-// }
+template<class T>
+inline void printNorm(const T& x) {
+    std::cout << x.norm() << "\n";
+}
+
 
 #endif // EigenAPI_operations_h
 
