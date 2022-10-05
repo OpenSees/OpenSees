@@ -48,14 +48,14 @@ public:
 	~ResponseSpectrumAnalysis();
 
 public:
-	void analyze();
-	void analyze(int mode_id);
+	int analyze();
+	int analyze(int mode_id);
 
 private:
-	void check();
-	void beginMode();
-	void endMode();
-	void solveMode();
+	int check();
+	int beginMode();
+	int endMode();
+	int solveMode();
 
 private:
 	// the model
