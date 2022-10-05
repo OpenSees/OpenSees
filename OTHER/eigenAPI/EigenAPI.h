@@ -43,15 +43,14 @@ https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
 
 #define EIGEN_MAX_ALIGN_BYTES 0
 
-// Here we can include all the eigen components we need
 #include "Eigen/Dense"
 
-namespace EigenAPI {
+// namespace EigenAPI {
 
 #include "converters.h"
 #include "typedefs.h"
 #include "operations.h"
 
-}
+// }
 
 #endif // EigenAPI_h

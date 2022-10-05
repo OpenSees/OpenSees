@@ -13,12 +13,12 @@ int main(int argc, char const *argv[])
 
 	cout << "k = " << k << endl;
 
-	VoightTensor6 depsilon 
-		= VoightTensor6::Zero();//{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-	VoightTensor6 m 
+	VoigtVector depsilon 
+		= VoigtVector::Zero();//{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	VoigtVector m 
 		= {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-	VoightTensor6 sigma 
-		= VoightTensor6::Zero();//{0.0,, 0.0,, 0.0,, 0.0,, 0.0,, 0.0};
+	VoigtVector sigma 
+		= VoigtVector::Zero();//{0.0,, 0.0,, 0.0,, 0.0,, 0.0,, 0.0};
 
 
 	double h = k.getDerivative(depsilon, m, sigma);

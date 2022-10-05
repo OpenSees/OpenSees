@@ -41,9 +41,9 @@ public:
 
     LinearHardeningScalar_EV( double H_, double k0);
 
-    const double& getDerivative(const VoightTensor6 &depsilon,
-                                const VoightTensor6 &m,
-                                const VoightTensor6& stress) const;
+    const double& getDerivative(const VoigtVector &depsilon,
+                                const VoigtVector &m,
+                                const VoigtVector& stress) const;
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
