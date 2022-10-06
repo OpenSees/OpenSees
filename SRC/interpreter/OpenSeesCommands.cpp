@@ -349,7 +349,10 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	for (int i=0; i<numEigen; i++) {
 	    data[i] = eigenvalues(i);
 	}
-	OPS_SetDoubleOutput(&numEigen, data, false);
+	if (numEigen == 1)
+	  OPS_SetDoubleOutput(&numEigen, data, true);
+	else
+	  OPS_SetDoubleOutput(&numEigen, data, false);
 	delete [] data;
     }
 
