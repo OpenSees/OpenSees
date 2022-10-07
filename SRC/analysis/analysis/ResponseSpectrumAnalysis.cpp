@@ -56,7 +56,7 @@
 namespace {
 
 	bool string_to_list_of_doubles(const std::string& text, char sep, std::vector<double>& out) {
-		auto to_double = [](const std::string & text, double& num) -> bool {
+		auto to_double = [](const std::string& text, double& num) -> bool {
 			num = 0.0;
 			try {
 				num = std::stod(text);
@@ -224,9 +224,13 @@ OPS_ResponseSpectrumAnalysis(void)
 			// first try expanded list like {*}$the_list,
 			// also used in python like *the_list
 			Tn.clear();
-			while (OPS_GetNumRemainingInputArgs() > 0) { 
+			while (OPS_GetNumRemainingInputArgs() > 0) {
 				double item;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
 				if (OPS_GetDoubleInput(&numData, &item) < 0) {
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
 					break;
 				}
 				Tn.push_back(item);
@@ -235,7 +239,7 @@ OPS_ResponseSpectrumAnalysis(void)
 			if (Tn.size() == 0 && OPS_GetNumRemainingInputArgs() > 0) {
 				std::string list_string = OPS_GetString();
 				if (!string_to_list_of_doubles(list_string, ' ', Tn)) {
-					opserr << "ResponseSpectrumAnalysis Error: cannot part the Tn list.\n";
+					opserr << "ResponseSpectrumAnalysis Error: cannot parse the Tn list.\n";
 					return -1;
 				}
 			}
@@ -246,7 +250,11 @@ OPS_ResponseSpectrumAnalysis(void)
 			Sa.clear();
 			while (OPS_GetNumRemainingInputArgs() > 0) {
 				double item;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
 				if (OPS_GetDoubleInput(&numData, &item) < 0) {
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
 					break;
 				}
 				Sa.push_back(item);
@@ -255,7 +263,7 @@ OPS_ResponseSpectrumAnalysis(void)
 			if (Sa.size() == 0 && OPS_GetNumRemainingInputArgs() > 0) {
 				std::string list_string = OPS_GetString();
 				if (!string_to_list_of_doubles(list_string, ' ', Sa)) {
-					opserr << "ResponseSpectrumAnalysis Error: cannot part the Sa list.\n";
+					opserr << "ResponseSpectrumAnalysis Error: cannot parse the Sa list.\n";
 					return -1;
 				}
 			}
@@ -266,6 +274,7 @@ OPS_ResponseSpectrumAnalysis(void)
 	if (use_lists) {
 		if (Tn.size() != Sa.size()) {
 			opserr << "ResponseSpectrumAnalysis Error: Sa and Tn lists must have the same length\n";
+			opserr << (int)Tn.size() << " != " << (int)Sa.size() << "\n";
 			return -1;
 		}
 		if (Tn.size() == 0) {
@@ -277,8 +286,8 @@ OPS_ResponseSpectrumAnalysis(void)
 				opserr << "ResponseSpectrumAnalysis Error: Tn values must be positive (found " << Tn[i] << ")\n";
 				return -1;
 			}
-			if (i > 0 && Tn[i] <= Tn[i-1]) {
-				opserr << "ResponseSpectrumAnalysis Error: Tn values must be monotonically increasing (found " << Tn[i] << " after " << Tn[i-1] << ")\n";
+			if (i > 0 && Tn[i] <= Tn[i - 1]) {
+				opserr << "ResponseSpectrumAnalysis Error: Tn values must be monotonically increasing (found " << Tn[i] << " after " << Tn[i - 1] << ")\n";
 				return -1;
 			}
 		}
@@ -429,7 +438,7 @@ int ResponseSpectrumAnalysis::check()
 		opserr << "ResponseSpectrumAnalysis::check() - failed to get modal properties" << endln;
 		return -1;
 	}
-	
+
 	// number of eigen-modes
 	int num_eigen = domain->getEigenvalues().Size();
 	if (num_eigen < 1) {
@@ -504,7 +513,7 @@ int ResponseSpectrumAnalysis::solveMode()
 		opserr << "ResponseSpectrumAnalysis::solveMode() - failed to get modal properties" << endln;
 		return -1;
 	}
-	
+
 	// size info
 	int ndf = mp.totalMass().Size();
 
@@ -562,7 +571,7 @@ int ResponseSpectrumAnalysis::solveMode()
 double ResponseSpectrumAnalysis::getSa(double T) const
 {
 	// use the time series if provided
-	if (m_function) 
+	if (m_function)
 		return m_function->getFactor(T);
 	// otherwise use the vectors
 	std::size_t n = m_Tn.size();
