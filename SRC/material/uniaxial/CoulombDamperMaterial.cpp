@@ -58,7 +58,7 @@ void *OPS_CoulombDamperMaterial(void) {
         return 0;
     }
 
-    double cFactor = 0.000005;
+    double cFactor = 1.0;
     if (OPS_GetNumRemainingInputArgs() > 0) {
         numData = 1;
         if (OPS_GetDoubleInput(&numData, &cFactor) < 0) {
