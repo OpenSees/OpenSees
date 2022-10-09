@@ -86,8 +86,8 @@ class CoulombDamperMaterial : public UniaxialMaterial {
     // AddingSensitivity:END
     // ///////////////////////////////////////////
 
-    int sign();
-    int dsign();
+    double sign();
+    double dsign();
     static double pi;
 };
 

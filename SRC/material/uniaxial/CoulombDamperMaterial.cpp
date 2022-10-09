@@ -276,12 +276,27 @@ int CoulombDamperMaterial::commitSensitivity(double strainGradient,
     return 0;
 }
 
-int CoulombDamperMaterial::sign() {
-    return atan(cFactor * trialStrainRate) * 2.0 / pi;
+double CoulombDamperMaterial::sign() {
+    if (cFactor <= 0) {
+        if (trialStrainRate > 0) return 1.0;
+        if (trialStrainRate < 0) return -1.0;
+        return 0.0;
+    } else {
+        return atan(cFactor * trialStrainRate) * 2.0 / pi;
+    }
 }
 
-int CoulombDamperMaterial::dsign() {
-    return cFactor * 2.0 / pi /
-           (1 + (cFactor * trialStrainRate) *
-                    (cFactor * trialStrainRate));
+double CoulombDamperMaterial::dsign() {
+    if (cFactor <= 0) {
+        double UTtol = 0.000005;
+        if (trialStrainRate < UTtol && trialStrainRate > -UTtol) {
+            return friction / UTtol;
+        }
+        return 0.0;
+
+    } else {
+        return cFactor * 2.0 / pi /
+               (1 + (cFactor * trialStrainRate) *
+                        (cFactor * trialStrainRate));
+    }
 }
