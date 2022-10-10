@@ -28,6 +28,7 @@ all:
 	@$(CD) $(FE)/actor; $(MAKE);
 	@$(CD) $(FE)/machine; $(MAKE);
 	@$(CD) $(FE)/element; $(MAKE);
+	@$(CD) $(FE)/damping; $(MAKE);
 	@$(CD) $(FE)/coordTransformation; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
@@ -666,7 +667,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
 	$(FE)/element/masonry/BeamGT.o \
-	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o
+	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o \
+	$(FE)/damping/Damping.o \
+	$(FE)/damping/SecStifDamping.o \
+	$(FE)/damping/URDDamping.o \
+	$(FE)/damping/URDDampingbeta.o \
+	$(FE)/damping/UniformDamping.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
