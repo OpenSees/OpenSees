@@ -62,6 +62,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     ElementalLoad *getNewElementalLoad(int classTag);
     
     CrdTransf *getNewCrdTransf(int classTag);
+    Damping *getNewDamping(int classTag);
 
     BeamIntegration *getNewBeamIntegration(int classTag);
     SectionIntegration *getNewSectionIntegration(int classTag);    

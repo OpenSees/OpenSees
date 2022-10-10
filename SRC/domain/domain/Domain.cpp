@@ -774,16 +774,23 @@ Domain::addLoadPattern(LoadPattern *load)
       return false;
     }    
 
+    int numSPs = 0;
+    SP_Constraint *theSP_Constraint;
+    SP_ConstraintIter &theSP_Constraints = load->getSPs();
+    while ((theSP_Constraint = theSP_Constraints()) != 0)
+      numSPs++;
+    
     // now we add the load pattern to the container for load patterns
     bool result = theLoadPatterns->addComponent(load);
     if (result == true) {
 	load->setDomain(this);
-	this->domainChange();
+	if (numSPs > 0)
+	  this->domainChange();
     }
     else 
       opserr << "Domain::addLoadPattern - cannot add LoadPattern with tag" <<
 	tag << "to the container\n";                   	
-			      
+
     return result;
 }    
 
@@ -922,7 +929,7 @@ Domain::addNodalLoad(NodalLoad *load, int pattern)
     }
 
     load->setDomain(this);    // done in LoadPattern::addNodalLoad()
-    this->domainChange();
+    //this->domainChange(); // a nodal load does not change the domain
 
     return result;
 }    
@@ -1570,6 +1577,12 @@ double
 Domain::getCurrentTime(void) const
 {
     return currentTime;
+}
+
+double
+Domain::getDT(void) const
+{
+    return dT;
 }
 
 int

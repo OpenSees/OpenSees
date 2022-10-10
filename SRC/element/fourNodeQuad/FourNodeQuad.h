@@ -39,6 +39,7 @@
 #include <Matrix.h>
 #include <Vector.h>
 #include <ID.h>
+#include <Damping.h>
 
 class Node;
 class NDMaterial;
@@ -51,7 +52,8 @@ class FourNodeQuad : public Element
 		 NDMaterial &m, const char *type,
 		 double t, double pressure = 0.0, 
 		 double rho = 0.0,
-		 double b1 = 0.0, double b2 = 0.0);
+		 double b1 = 0.0, double b2 = 0.0,
+	   Damping *theDamping = 0);
     FourNodeQuad();
     ~FourNodeQuad();
 
@@ -63,6 +65,7 @@ class FourNodeQuad : public Element
 
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // public methods to set the state of the element    
     int commitState(void);
@@ -138,6 +141,7 @@ class FourNodeQuad : public Element
     void setPressureLoadAtNodes(void);
 
     Matrix *Ki;
+    Damping *theDamping[4];
 };
 
 #endif

@@ -714,7 +714,7 @@ bool DomainModalProperties::compute(Domain* domain)
             }
         }
     };
-    if (ndf == 3 == ndf == 6) {
+    if (ndf == 3 || ndf == 6) {
         compute_extra_rotary_mass(ML);
         compute_extra_rotary_mass(MLfree);
     }

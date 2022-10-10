@@ -246,6 +246,8 @@ void* OPS_TDConcrete(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 
+void* OPS_CoulombDamperMaterial();
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -559,6 +561,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
 
   return 0;
 }
@@ -712,7 +716,7 @@ int OPS_testUniaxialMaterial() {
 }
 
 int OPS_setStrain() {
-  if (OPS_GetNumRemainingInputArgs() != 1) {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
     opserr << "testUniaxialMaterial - You must provide a strain "
               "value.\n";
     return -1;
@@ -733,7 +737,15 @@ int OPS_setStrain() {
     return -1;
   }
 
-  material->setTrialStrain(strain);
+  double strainRate = 0.0;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetDoubleInput(&numData, &strainRate) < 0) {
+          opserr << "invalid strain rate\n";
+          return -1;
+      }
+  }
+
+  material->setTrialStrain(strain, strainRate);
   material->commitState();
 
   return 0;
