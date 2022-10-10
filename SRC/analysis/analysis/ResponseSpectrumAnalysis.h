@@ -33,6 +33,7 @@
 #ifndef ResponseSpectrumAnalysis_h
 #define ResponseSpectrumAnalysis_h
 
+#include <vector>
 class AnalysisModel;
 class TimeSeries;
 
@@ -42,26 +43,31 @@ public:
 	ResponseSpectrumAnalysis(
 		AnalysisModel* theModel,
 		TimeSeries* theFunction,
+		const std::vector<double>& Tn,
+		const std::vector<double>& Sa,
 		int theDirection,
 		double scale
 	);
 	~ResponseSpectrumAnalysis();
 
 public:
-	void analyze();
-	void analyze(int mode_id);
+	int analyze();
+	int analyze(int mode_id);
 
 private:
-	void check();
-	void beginMode();
-	void endMode();
-	void solveMode();
+	int check();
+	int beginMode();
+	int endMode();
+	int solveMode();
+	double getSa(double T) const;
 
 private:
 	// the model
 	AnalysisModel* m_model;
 	// the response spectrum function
 	TimeSeries* m_function;
+	std::vector<double> m_Tn;
+	std::vector<double> m_Sa;
 	// the direction 1 to 3 (for 2D models) or 1 to 6 (for 3D models)
 	int m_direction;
 	// the scale factor for the computed displacement field

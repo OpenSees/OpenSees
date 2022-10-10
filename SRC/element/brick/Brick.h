@@ -41,6 +41,7 @@
 #include <Element.h>
 #include <Node.h>
 #include <NDMaterial.h>
+#include <Damping.h>
 
 
 class Brick : public Element {
@@ -61,7 +62,8 @@ class Brick : public Element {
 	  int node7,
 	  int node8,
 	  NDMaterial &theMaterial,
-	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
+	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0,
+	  Damping *theDamping = 0);
     
     //destructor 
     virtual ~Brick( ) ;
@@ -70,6 +72,7 @@ class Brick : public Element {
 
     //set domain
     void setDomain( Domain *theDomain ) ;
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     //get the number of external nodes
     int getNumExternalNodes( ) const ;
@@ -180,6 +183,8 @@ class Brick : public Element {
   
     //Matrix transpose
     Matrix transpose( int dim1, int dim2, const Matrix &M ) ;
+
+    Damping *theDamping[8];
 
 } ; 
 

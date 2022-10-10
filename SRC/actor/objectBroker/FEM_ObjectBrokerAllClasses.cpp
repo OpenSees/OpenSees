@@ -350,6 +350,11 @@
 #include "CorotCrdTransf2d.h"
 #include "CorotCrdTransf3d.h"
 
+#include "UniformDamping.h"
+#include "SecStifDamping.h"
+#include "URDDamping.h"
+#include "URDDampingbeta.h"
+
 #include "HingeMidpointBeamIntegration.h"
 #include "HingeEndpointBeamIntegration.h"
 #include "HingeRadauBeamIntegration.h"
@@ -1140,6 +1145,27 @@ FEM_ObjectBrokerAllClasses::getNewCrdTransf(int classTag)
 	default:
 	  opserr << "FEM_ObjectBrokerAllClasses::getCrdTransf - ";
 	  opserr << " - no CrdTransf type exists for class tag ";
+	  opserr << classTag << endln;
+	  return 0;
+	}
+
+}
+
+Damping*
+FEM_ObjectBrokerAllClasses::getNewDamping(int classTag)
+{
+	switch(classTag) {
+	case DMP_TAG_UniformDamping:
+		return new UniformDamping();
+	case DMP_TAG_SecStifDamping:
+		return new SecStifDamping();
+	case DMP_TAG_URDDamping:
+		return new URDDamping();
+	case DMP_TAG_URDDampingbeta:
+		return new URDDampingbeta();
+	default:
+	  opserr << "FEM_ObjectBrokerAllClasses::getNewDamping - ";
+	  opserr << " - no Damping type exists for class tag ";
 	  opserr << classTag << endln;
 	  return 0;
 	}

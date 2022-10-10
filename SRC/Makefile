@@ -136,6 +136,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
+	$(FE)/damping/TclDampingCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
 	$(FE)/element/joint/TclBeamColumnJointCommand.o \
@@ -844,6 +845,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HystereticAsym.o \
 	$(FE)/material/uniaxial/SLModel.o \
 	$(FE)/material/uniaxial/MaterialState.o \
+	$(FE)/material/uniaxial/CoulombDamperMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \

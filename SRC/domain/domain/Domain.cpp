@@ -1579,6 +1579,12 @@ Domain::getCurrentTime(void) const
     return currentTime;
 }
 
+double
+Domain::getDT(void) const
+{
+    return dT;
+}
+
 int
 Domain::getCommitTag(void) const
 {

@@ -71,10 +71,24 @@ OPS_ASDShellQ4(void)
     }
     bool corotational = false;
 
-    if (numArgs == 7) {
-        const char* type = OPS_GetString();
-        if ((strcmp(type, "-corotational") == 0) || (strcmp(type, "-Corotational") == 0))
-            corotational = true;
+    int dampingTag = 0;
+    Damping *m_damping = 0;
+  
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+      const char* type = OPS_GetString();
+      if ((strcmp(type, "-corotational") == 0) || (strcmp(type, "-Corotational") == 0))
+        corotational = true;
+      else if(strcmp(type,"-damp") == 0) {
+  	    if(OPS_GetNumRemainingInputArgs() > 0) {
+  	      numData = 1;
+          if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+  		    m_damping = OPS_getDamping(dampingTag);
+          if(m_damping == 0) {
+  	        opserr<<"damping not found\n";
+  	        return 0;
+          }
+  	    }
+      } 
     }
 
     SectionForceDeformation* section = OPS_getSectionForceDeformation(iData[5]);
@@ -84,7 +98,7 @@ OPS_ASDShellQ4(void)
         return 0;
     }
 
-    return new ASDShellQ4(iData[0], iData[1], iData[2], iData[3], iData[4], section, corotational);
+    return new ASDShellQ4(iData[0], iData[1], iData[2], iData[3], iData[4], section, corotational, m_damping);
 }
 
 // anonymous namespace for utilities
@@ -327,6 +341,7 @@ namespace
         Matrix Re = Matrix(8, 8); // rotation matrix for strains
         Matrix Rs = Matrix(8, 8); // rotation matrix for stresses
         Matrix RsT = Matrix(8, 8); // transpose of above
+        Matrix Dsection = Matrix(8, 8);
         Matrix D = Matrix(8, 8); // section tangent
         Matrix DRsT = Matrix(8, 8); // holds the product D * Rs^T
 
@@ -639,7 +654,8 @@ ASDShellQ4::ASDShellQ4(
     int node3,
     int node4,
     SectionForceDeformation* section,
-    bool corotational)
+    bool corotational,
+    Damping *damping)
     : Element(tag, ELE_TAG_ASDShellQ4)
     , m_transformation(corotational ? new ASDShellQ4CorotationalTransformation() : new ASDShellQ4Transformation())
 {
@@ -657,14 +673,24 @@ ASDShellQ4::ASDShellQ4(
             exit(-1);
         }
     }
+    if (damping) {
+      for (int i = 0; i < 4; i++) {
+        m_damping[i] = damping->getCopy();
+        if (!m_damping[i]) {
+          opserr << "ASDShellQ4::constructor - failed to get copy of damping\n";
+        }
+      }
+    }
+    else {
+      for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
+    }
 }
 
 ASDShellQ4::~ASDShellQ4( )
 {
     // clean up section
     for (int i = 0; i < 4; i++)
-        if(m_sections[i])
-            delete m_sections[i];
+        delete m_sections[i];
 
     // clean up coordinate transformation
     if(m_transformation)
@@ -673,6 +699,14 @@ ASDShellQ4::~ASDShellQ4( )
     // clean up load vectors
     if (m_load)
         delete m_load;
+
+    // clean up damping
+    for (int i = 0; i < 4; i++) {
+      if (m_damping[i]) {
+        delete m_damping[i];
+        m_damping[i] = 0;
+      }
+    }
 }
 
 void  ASDShellQ4::setDomain(Domain* theDomain)
@@ -723,6 +757,13 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
 
         // AGQI internal DOFs
         AGQIinitialize();
+
+        for (int i = 0; i < 4; i++) {
+          if (m_damping[i] && m_damping[i]->setDomain(theDomain, 8)) {
+            opserr << "ASDShellQ4::setDomain -- Error initializing damping\n";
+            exit(-1);
+          }
+        }
 
         // initialized
         m_initialized = true;
@@ -785,6 +826,26 @@ void ASDShellQ4::Print(OPS_Stream& s, int flag)
     }
 }
 
+int
+ASDShellQ4::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 4; i++) {
+      m_damping[i] = damping->getCopy();
+      if (!m_damping[i]) {
+        opserr << "ASDShellQ4::setDamping - failed to get copy of damping\n";
+        exit(-1);
+      }
+      if (m_damping[i] && m_damping[i]->setDomain(theDomain, 8)) {
+        opserr << "ASDShellQ4::setDamping -- Error initializing damping\n";
+        exit(-1);
+      }
+    }
+  }
+  return 0;
+}
+
 int  ASDShellQ4::getNumExternalNodes() const
 {
     return 4;
@@ -821,6 +882,10 @@ int  ASDShellQ4::commitState()
     m_U_converged = m_U;
     m_Q_converged = m_Q;
 
+    // damping
+    for (int i = 0; i < 4; i++ )
+      if (m_damping[i]) success += m_damping[i]->commitState();
+
     // done
     return success;
 }
@@ -840,6 +905,10 @@ int  ASDShellQ4::revertToLastCommit()
     m_U = m_U_converged;
     m_Q = m_Q_converged;
 
+    // damping
+    for (int i = 0; i < 4; i++ )
+      if (m_damping[i]) success += m_damping[i]->revertToLastCommit();
+
     // done
     return success;
 }
@@ -857,6 +926,10 @@ int  ASDShellQ4::revertToStart()
 
     // AGQI internal DOFs
     AGQIinitialize();
+
+    // damping
+    for (int i = 0; i < 4; i++ )
+      if (m_damping[i]) success += m_damping[i]->revertToStart();
 
     return success;
 }
@@ -1032,7 +1105,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     // 1 initialization flag
     // 1 has_load_flag
     // 8 -> 4 pairs of (section class tag, mt db tag)
-    static ID idData(16);
+    static ID idData(18);
     counter = 0;
     idData(counter++) = getTag();
     for(int i = 0; i < 4; ++i)
@@ -1051,6 +1124,20 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
                 m_sections[i]->setDbTag(matDbTag);
         }
         idData(counter++) = matDbTag;
+    }
+
+    idData(16) = 0;
+    idData(17) = 0;
+    if (m_damping) {
+      idData(16) = m_damping[0]->getClassTag();
+      int dbTag = m_damping[0]->getDbTag();
+      if (dbTag == 0) {
+        dbTag = theChannel.getDbTag();
+        if (dbTag != 0)
+          for (int i = 0 ;  i < 4; i++)
+	          m_damping[i]->setDbTag(dbTag);
+	    }
+      idData(17) = dbTag;
     }
 
     res = theChannel.sendID(dataTag, commitTag, idData);
@@ -1119,6 +1206,17 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
         }
     }
 
+    // Ask the Damping to send itself
+    if (m_damping) {
+      for (int i = 0 ;  i < 4; i++) {
+        res += m_damping[i]->sendSelf(commitTag, theChannel);
+        if (res < 0) {
+          opserr << "ASDShellQ4::sendSelf -- could not send Damping\n";
+          return res;
+        }
+      }
+    }
+
     // done
     return res;
 }
@@ -1139,7 +1237,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
     // 1 initialization flag
     // 1 has_load_flag
     // 8 -> 4 pairs of (section class tag, mt db tag)
-    static ID idData(16);
+    static ID idData(18);
     res = theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1243,6 +1341,49 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
         }
     }
 
+  int dmpTag = (int)idData(16);
+  if (dmpTag) {
+    for (int i = 0 ;  i < 4; i++) {
+      // Check if the Damping is null; if so, get a new one
+      if (m_damping[i] == 0) {
+        m_damping[i] = theBroker.getNewDamping(dmpTag);
+        if (m_damping[i] == 0) {
+          opserr << "ASDShellQ4::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Check that the Damping is of the right type; if not, delete
+      // the current one and get a new one of the right type
+      if (m_damping[i]->getClassTag() != dmpTag) {
+        delete m_damping[i];
+        m_damping[i] = theBroker.getNewDamping(dmpTag);
+        if (m_damping[i] == 0) {
+          opserr << "ASDShellQ4::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Now, receive the Damping
+      m_damping[i]->setDbTag((int)idData(17));
+      res += m_damping[i]->recvSelf(commitTag, theChannel, theBroker);
+      if (res < 0) {
+        opserr << "ASDShellQ4::recvSelf -- could not receive Damping\n";
+        return res;
+      }
+    }
+  }
+  else {
+    for (int i = 0; i < 4; i++)
+    {
+      if (m_damping[i])
+      {
+        delete m_damping[i];
+        m_damping[i] = 0;
+      }
+    }
+  }
+    
     // done
     return res;
 }
@@ -1308,7 +1449,7 @@ ASDShellQ4::setResponse(const char **argv, int argc, OPS_Stream &output)
 
             output.tag("ResponseType", "p11");
             output.tag("ResponseType", "p22");
-            output.tag("ResponseType", "p1212");
+            output.tag("ResponseType", "p12");
             output.tag("ResponseType", "m11");
             output.tag("ResponseType", "m22");
             output.tag("ResponseType", "m12");
@@ -1348,6 +1489,34 @@ ASDShellQ4::setResponse(const char **argv, int argc, OPS_Stream &output)
         }
 
         theResponse = new ElementResponse(this, 3, Vector(32));
+    }
+
+    else if (m_damping[0] && strcmp(argv[0],"dampingStresses") ==0) {
+  
+      for (int i=0; i<4; i++) {
+        output.tag("GaussPoint");
+        output.attr("number",i+1);
+        output.attr("eta",XI[i]);
+        output.attr("neta",ETA[i]);
+        
+        output.tag("SectionForceDeformation");
+        output.attr("classType", m_damping[i]->getClassTag());
+        output.attr("tag", m_damping[i]->getTag());
+        
+        output.tag("ResponseType","p11");
+        output.tag("ResponseType","p22");
+        output.tag("ResponseType","p12");
+        output.tag("ResponseType","m11");
+        output.tag("ResponseType","m22");
+        output.tag("ResponseType","m12");
+        output.tag("ResponseType","q1");
+        output.tag("ResponseType","q2");
+        
+        output.endTag(); // GaussPoint
+        output.endTag(); // NdMaterialOutput
+      }
+      
+      theResponse =  new ElementResponse(this, 4, Vector(32));
     }
 
     output.endTag();
@@ -1399,6 +1568,22 @@ ASDShellQ4::getResponse(int responseID, Information &eleInfo)
         }
         return eleInfo.setVector(strains);
         break;
+    case 4: // damping stresses
+      for (int i = 0; i < 4; i++) {
+  
+        // Get material stress response
+        const Vector &sigma = m_damping[i]->getDampingForce();
+        stresses(0) = sigma(0);
+        stresses(1) = sigma(1);
+        stresses(2) = sigma(2);
+        stresses(3) = sigma(3);
+        stresses(4) = sigma(4);
+        stresses(5) = sigma(5);
+        stresses(6) = sigma(6);
+        stresses(7) = sigma(7);
+      }
+      return eleInfo.setVector(stresses);
+      break;
     default:
         return -1;
     }
@@ -1475,6 +1660,7 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
     auto& E = ASDShellQ4Globals::instance().E;
     auto& S = ASDShellQ4Globals::instance().S;
     auto& D = ASDShellQ4Globals::instance().D;
+    auto& Dsection = ASDShellQ4Globals::instance().Dsection;
 
     // matrices for orienting strains in section coordinate system
     auto& Re = ASDShellQ4Globals::instance().Re;
@@ -1563,9 +1749,18 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             if (m_angle != 0.0) {
                 auto& Ssection = m_sections[igauss]->getStressResultant();
                 S.addMatrixVector(0.0, Rs, Ssection, 1.0);
+                if (m_damping[igauss]) {
+                  m_damping[igauss]->update(Ssection);
+                  auto& Sdsection = m_damping[igauss]->getDampingForce();
+                  S.addMatrixVector(1.0, Rs, Sdsection, 1.0);
+                }
             }
             else {
                 S = m_sections[igauss]->getStressResultant();
+                if (m_damping[igauss]) {
+                  m_damping[igauss]->update(S);
+                  S += m_damping[igauss]->getDampingForce();
+                }
             }
 
             // Add current integration point contribution (RHS)
@@ -1586,9 +1781,10 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
         {
             // Section tangent
             if (m_angle != 0.0) {
-                const auto& Dsection = (options & OPT_LHS_IS_INITIAL) ?
+                Dsection = (options & OPT_LHS_IS_INITIAL) ?
                     m_sections[igauss]->getInitialTangent() :
                     m_sections[igauss]->getSectionTangent();
+                if(m_damping[igauss]) Dsection *= m_damping[igauss]->getStiffnessMultiplier();
                 auto& RsT = ASDShellQ4Globals::instance().RsT;
                 RsT.addMatrixTranspose(0.0, Rs, 1.0);
                 auto& DRsT = ASDShellQ4Globals::instance().DRsT;
@@ -1599,6 +1795,7 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
                 D = (options & OPT_LHS_IS_INITIAL) ?
                     m_sections[igauss]->getInitialTangent() :
                     m_sections[igauss]->getSectionTangent();
+                if(m_damping[igauss]) D *= m_damping[igauss]->getStiffnessMultiplier();
             }
 
             // Matrices for AGQI static condensation of internal DOFs
