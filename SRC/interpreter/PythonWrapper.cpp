@@ -2522,6 +2522,18 @@ static PyObject *Py_ops_sdfResponse(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_sdfResponseTS(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sdfResponseTS() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getNumThreads(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2926,6 +2938,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("wipeReliability", &Py_ops_wipeReliability);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
     addCommand("sdfResponse", &Py_ops_sdfResponse);
+    addCommand("sdfResponseTS", &Py_ops_sdfResponseTS);    
     addCommand("probabilityTransformation", &Py_ops_probabilityTransformation);
     addCommand("startPoint", &Py_ops_startPoint);
     addCommand("randomNumberGenerator", &Py_ops_randomNumberGenerator);

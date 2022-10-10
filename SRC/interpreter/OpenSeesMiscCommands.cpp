@@ -1844,6 +1844,170 @@ int OPS_Bcast() {
     return 0;
 }
 
+int OPS_sdfResponseTS()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 7) {
+	opserr << "Insufficient arguments to sdfResponse --";
+	opserr << "m, zeta, k, Fy, alpha, dt, tsTag, <uresidual, umaxprev>\n";
+	return -1;
+    }
+
+    double data[8] = {0,0,0,0,0,0,0,0};
+    numdata = 6;
+    if (OPS_GetDoubleInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING sdfResponse -- could not read input \n";
+	return -1;
+    }
+
+    int tstag = 0;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tstag) < 0) {
+      opserr << "WARNING sdfResponse -- could not read timeSeries tag" << endln;
+      return -1;
+    }
+
+    TimeSeries *accelSeries = OPS_getTimeSeries(tstag);
+    if (accelSeries == 0) {
+      opserr << "WARNING invalid accel series: " << tstag;
+      opserr << " sdfResponse\n";
+      return -1;
+    }
+    
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 2) numdata = 2;
+    if (OPS_GetDoubleInput(&numdata, &data[6]) < 0) {
+	opserr << "WARNING sdfResponse -- could not read input \n";
+	return -1;
+    }
+
+    double m = data[0];
+    double zeta = data[1];
+    double k = data[2];
+    double Fy = data[3];
+    double alpha = data[4];
+    double dt = data[5];
+    double uresidual = data[6];
+    double umaxprev = data[7];
+    
+    double gamma = 0.5;
+    double beta = 0.25;
+    double tol = 1.0e-8;
+    int maxIter = 10;
+
+    double c = zeta*2*sqrt(k*m);
+    double Hkin = alpha/(1.0-alpha)*k;
+
+    double p0 = 0.0;
+    double u0 = uresidual;
+    double v0 = 0.0;
+    double fs0 = 0.0;
+    double a0 = (p0-c*v0-fs0)/m;
+
+    double a1 = m/(beta*dt*dt) + (gamma/(beta*dt))*c;
+    double a2 = m/(beta*dt) + (gamma/beta-1.0)*c;
+    double a3 = (0.5/beta-1.0)*m + dt*(0.5*gamma/beta-1.0)*c;
+
+    double au = 1.0/(beta*dt*dt);
+    double av = 1.0/(beta*dt);
+    double aa = 0.5/beta-1.0;
+
+    double vu = gamma/(beta*dt);
+    double vv = 1.0-gamma/beta;
+    double va = dt*(1-0.5*gamma/beta);
+    
+    double kT0 = k;
+
+    double umax = fabs(umaxprev);
+    double amax = 0.0; double tamax = 0.0;
+    double up = uresidual; double up0 = up;
+    int i = 0;
+    double ft, u=0, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0, accel;
+    double time = 0.0;
+    double Tend = accelSeries->getDuration();
+    
+    while (time < Tend) {
+
+      ft = accelSeries->getFactor(time);
+      
+	i++;
+    
+	u = u0;
+      
+	fs = fs0;
+	kT = kT0;
+	up = up0;
+      
+	phat = ft + a1*u0 + a2*v0 + a3*a0;
+      
+	R = phat - fs - a1*u;
+	R0 = R;
+	if (R0 == 0.0) {
+	    R0 = 1.0;
+	}
+    
+	int iter = 0;
+
+	while (iter < maxIter && fabs(R/R0) > tol) {
+	    iter++;
+
+	    kTeff = kT + a1;
+
+	    du = R/kTeff;
+
+	    u = u + du;
+
+	    fs = k*(u-up0);
+	    zs = fs-Hkin*up0;
+	    ftrial = fabs(zs)-Fy;
+	    if (ftrial > 0) {
+		dg = ftrial/(k+Hkin);
+		if (fs < 0) {
+		    fs = fs + dg*k;
+		    up = up0 - dg;
+		} else {
+		    fs = fs - dg*k;
+		    up = up0 + dg;
+		}
+		kT = k*Hkin/(k+Hkin);
+	    } else {
+		kT = k;
+	    }
+      
+	    R = phat - fs - a1*u;
+	}
+
+	v = vu*(u-u0) + vv*v0 + va*a0;
+	a = au*(u-u0) - av*v0 - aa*a0;
+
+	u0 = u;
+	v0 = v;
+	a0 = a;
+	fs0 = fs;
+	kT0 = kT;
+	up0 = up;
+
+	if (fabs(u) > umax) {
+	    umax = fabs(u);
+	}
+	if (fabs(a) > amax) {
+	    amax = fabs(a);
+	    tamax = time;
+	}
+	
+	time += dt;
+    }
+  
+    double output[] = {umax, u, up, amax, tamax};
+    numdata = 5;
+    if (OPS_SetDoubleOutput(&numdata,output, false) < 0) {
+	opserr << "WARNING: failed to set output -- sdfResponse\n";
+	return -1;
+    }
+  
+    return 0;
+}
+
 int OPS_sdfResponse()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -1977,7 +2141,7 @@ int OPS_sdfResponse()
 	}
 	if (fabs(a) > amax) {
 	    amax = fabs(a);
-	    tamax = iter*dt;
+	    tamax = i*dt;
 	}
     }
   
