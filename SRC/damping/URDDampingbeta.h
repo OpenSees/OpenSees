@@ -19,61 +19,68 @@
 ** ****************************************************************** */
 
 // $Revision: 1.0 $
-// $Date: 2020-11-27 18:07:11 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/analysis/ResponseSpectrumAnalysis.h,v $
+// $Date: 2021-07-02 14:29:01 $
+// $Source: /usr/local/cvs/OpenSees/SRC/damping/URDDampingbeta.h,v $
 
-// Written: Massimo Petracca (ASDEA Software) 
-// Created: Fri Nov 27 18:07:11: 2020
+// Revised by: Y Tian
+// Created: 02/2020
 // Revision: A
 //
-// Description: This file contains the class definition for ResponseSpectrumAnalysis.
+// Description: This file contains the definition for the URDDampingbeta class.
+// URDDampingbeta provides the abstraction of an elemental damping imposition
+// providing user-define damping over a frequency range
 //
-// What: "@(#) ResponseSpectrumAnalysis.h, revA"
+// Reference:
+// 
 
-#ifndef ResponseSpectrumAnalysis_h
-#define ResponseSpectrumAnalysis_h
+// What: "@(#) URDDampingbeta.h, revA"
 
-#include <vector>
-class AnalysisModel;
-class TimeSeries;
+#ifndef URDDampingbeta_h
+#define URDDampingbeta_h
 
-class ResponseSpectrumAnalysis
+#include <Damping.h>
+#include <Vector.h>
+#include <TimeSeries.h>
+
+class URDDampingbeta: public Damping
 {
 public:
-	ResponseSpectrumAnalysis(
-		AnalysisModel* theModel,
-		TimeSeries* theFunction,
-		const std::vector<double>& Tn,
-		const std::vector<double>& Sa,
-		int theDirection,
-		double scale
-	);
-	~ResponseSpectrumAnalysis();
+  URDDampingbeta(int tag, int nFilter, Vector *omegac, Vector *beta, double ta, double td, TimeSeries *fac);
+  
+  URDDampingbeta();
+  ~URDDampingbeta();
+  
+  const char *getClassType() const {return "URDDampingbeta";};
 
-public:
-	int analyze();
-	int analyze(int mode_id);
-
+  int Initialize(void);
+  
+  int setDomain(Domain *domain, int nComp);
+  int update(Vector q);
+  
+  int commitState(void);
+  int revertToLastCommit(void);    
+  int revertToStart(void);
+  
+  const Vector &getDampingForce(void);
+  double getStiffnessMultiplier(void);
+  
+  Damping *getCopy(void);
+  
+  int sendSelf(int cTag, Channel &theChannel);
+  int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+  
+  void Print(OPS_Stream &s, int flag = 0);
+  
 private:
-	int check();
-	int beginMode();
-	int endMode();
-	int solveMode();
-	double getSa(double T) const;
-
-private:
-	// the model
-	AnalysisModel* m_model;
-	// the response spectrum function
-	TimeSeries* m_function;
-	std::vector<double> m_Tn;
-	std::vector<double> m_Sa;
-	// the direction 1 to 3 (for 2D models) or 1 to 6 (for 3D models)
-	int m_direction;
-	// the scale factor for the computed displacement field
-	double m_scale;
-	// current mode
-	int m_current_mode;
+  
+  // internal data
+  int nComp, nFilter;
+  double ta, td;
+  TimeSeries *fac;
+  Vector *beta, *omegac;
+  Matrix *qL, *qLC;
+  Vector *qd, *qdC, *q0, *q0C;
+  Domain *theDomain;
 };
 
 #endif

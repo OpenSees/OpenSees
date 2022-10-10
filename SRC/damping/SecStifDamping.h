@@ -19,61 +19,60 @@
 ** ****************************************************************** */
 
 // $Revision: 1.0 $
-// $Date: 2020-11-27 18:07:11 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/analysis/ResponseSpectrumAnalysis.h,v $
+// $Date: 2019-01-28 17:53:01 $
+// $Source: /usr/local/cvs/OpenSees/SRC/damping/SecStifDamping.h,v $
 
-// Written: Massimo Petracca (ASDEA Software) 
-// Created: Fri Nov 27 18:07:11: 2020
+// Written: Yuli Huang (yulee@berkeley.edu)
+// Created: 02/2020
 // Revision: A
 //
-// Description: This file contains the class definition for ResponseSpectrumAnalysis.
+// Description: This file contains the definition for the SecStifDamping class.
+// FRDamping provides the abstraction of an elemental damping imposition
+// providing quasi tangent stiffness proportional damping
 //
-// What: "@(#) ResponseSpectrumAnalysis.h, revA"
+// What: "@(#) FRDamping.h, revA"
 
-#ifndef ResponseSpectrumAnalysis_h
-#define ResponseSpectrumAnalysis_h
+#ifndef SecStifDamping_h
+#define SecStifDamping_h
 
-#include <vector>
-class AnalysisModel;
-class TimeSeries;
+#include <Damping.h>
+#include <Vector.h>
+#include <TimeSeries.h>
 
-class ResponseSpectrumAnalysis
+class SecStifDamping: public Damping
 {
 public:
-	ResponseSpectrumAnalysis(
-		AnalysisModel* theModel,
-		TimeSeries* theFunction,
-		const std::vector<double>& Tn,
-		const std::vector<double>& Sa,
-		int theDirection,
-		double scale
-	);
-	~ResponseSpectrumAnalysis();
-
-public:
-	int analyze();
-	int analyze(int mode_id);
-
+  SecStifDamping(int tag, double beta, double ta, double td, TimeSeries *fac);
+  
+  SecStifDamping();
+  ~SecStifDamping();
+  
+  const char *getClassType() const {return "SecStifDamping";};
+  
+  int setDomain(Domain *domain, int nComp);
+  int update(Vector q);
+  
+  int commitState(void);
+  int revertToLastCommit(void);    
+  int revertToStart(void);
+  
+  const Vector &getDampingForce(void);
+  double getStiffnessMultiplier(void);
+  
+  Damping *getCopy(void);
+  
+  int sendSelf(int cTag, Channel &theChannel);
+  int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+  
+  void Print(OPS_Stream &s, int flag = 0);
+  
 private:
-	int check();
-	int beginMode();
-	int endMode();
-	int solveMode();
-	double getSa(double T) const;
-
-private:
-	// the model
-	AnalysisModel* m_model;
-	// the response spectrum function
-	TimeSeries* m_function;
-	std::vector<double> m_Tn;
-	std::vector<double> m_Sa;
-	// the direction 1 to 3 (for 2D models) or 1 to 6 (for 3D models)
-	int m_direction;
-	// the scale factor for the computed displacement field
-	double m_scale;
-	// current mode
-	int m_current_mode;
+  
+  // internal data
+  double beta, ta, td;
+  TimeSeries *fac;
+  Vector *qd, *q0, *q0C;
+  Domain *theDomain;
 };
 
 #endif
