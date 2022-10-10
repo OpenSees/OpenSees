@@ -42,6 +42,7 @@
 
 #include <Element.h>
 #include <Matrix.h>
+#include <Damping.h>
 
 // Tolerance for zero length of element
 #define	LENTOL 1.0e-6
@@ -89,7 +90,8 @@ class ZeroLength : public Element
 	     int n1dMat,
 	     UniaxialMaterial** theMaterial,  
 	     const ID& direction,
-	     int doRaylieghDamping = 0);
+	     int doRaylieghDamping = 0,
+	     Damping *theDamping = 0);
 
   // Constructor for a multiple 1d material models
   ZeroLength(int tag, 			      
@@ -115,6 +117,7 @@ class ZeroLength : public Element
 
     int getNumDOF(void);	
     void setDomain(Domain *theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // public methods to set the state of the element    
     int commitState(void);
@@ -133,6 +136,7 @@ class ZeroLength : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);    
 
     const Vector &getResistingForce(void);
+    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
 
     // public methods for element output
@@ -202,6 +206,9 @@ class ZeroLength : public Element
     static Vector ZeroLengthV12;  // class wide Vector for size 12
 
     int mInitialize;  // tag to fix bug in recvSelf/setDomain when using database command
+
+    Damping *theDamping;
+    Vector *fd;
 };
 
 #endif

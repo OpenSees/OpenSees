@@ -259,6 +259,7 @@ extern int OPS_ResponseSpectrumAnalysis(void);
 #include <Houbolt.h>
 #include <ParkLMS3.h>
 #include <BackwardEuler.h>
+#include <ExplicitDifference.h>
 
 // analysis
 #include <StaticAnalysis.h>
@@ -5279,6 +5280,13 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }  
   
+  else if (strcmp(argv[1], "Explicitdifference") == 0) {
+  theTransientIntegrator = new ExplicitDifference();
+
+  if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
   else if (strcmp(argv[1],"CentralDifferenceAlternative") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceAlternative();
     
