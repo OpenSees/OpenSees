@@ -206,7 +206,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
    A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
    releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
-   connectedExternalNodes(2), theCoordTransf(0)   
+   connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -230,7 +230,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
     
     if (!theDamping) {
       opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
-      exit(01);
+      //exit(-1); // this is not a fatal error...
     }
   }
 
@@ -257,8 +257,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
   :Element(tag,ELE_TAG_ElasticBeam3d), 
    releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
-   connectedExternalNodes(2), theCoordTransf(0)
-
+   connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
   if (section != 0) {
     E = 1.0;
@@ -317,7 +316,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     
     if (!theDamping) {
       opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
-      exit(-1);
+      //exit(-1); // Not a fatal error...
     }
   }
 
