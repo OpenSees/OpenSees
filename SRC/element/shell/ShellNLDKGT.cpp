@@ -310,11 +310,11 @@ ShellNLDKGT::setDamping(Domain *theDomain, Damping *damping)
     
       if (!theDamping[i]) {
         opserr << "ShellNLDKGT::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return 1;
       }
       if (theDamping[i]->setDomain(theDomain, 8)) {
         opserr << "ShellNLDKGT::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return 2;
       }
     }
   }

@@ -378,11 +378,11 @@ ShellDKGQ::setDamping(Domain *theDomain, Damping *damping)
     
       if (!theDamping[i]) {
         opserr << "ShellDKGQ::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return 1;
       }
       if (theDamping[i]->setDomain(theDomain, 8)) {
         opserr << "ShellDKGQ::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return 2;
       }
     }
   }

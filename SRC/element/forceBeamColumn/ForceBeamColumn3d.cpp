@@ -398,11 +398,11 @@ ForceBeamColumn3d::setDamping(Domain *theDomain, Damping *damping)
     
     if (!theDamping) {
       opserr << "ForceBeamColumn3d::setDamping -- failed to get copy of damping\n";
-      exit(-1);
+      return 1;
     }
     if (theDamping->setDomain(theDomain, NEBD)) {
       opserr << "ForceBeamColumn3d::setDamping -- Error initializing damping\n";
-      exit(-1);
+      return 2;
     }
   }
   
