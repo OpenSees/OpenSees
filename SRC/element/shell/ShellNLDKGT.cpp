@@ -304,6 +304,8 @@ ShellNLDKGT::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 4; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {

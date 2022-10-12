@@ -567,6 +567,8 @@ ElasticBeam2d::setDamping(Domain *theDomain, Damping *damping)
 {
   if (theDomain && damping)
   {
+    if (theDamping) delete theDamping;
+
     theDamping =(*damping).getCopy();
     
     if (!theDamping) {
