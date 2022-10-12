@@ -164,7 +164,7 @@ void* OPS_ElasticBeam3d(void)
     }
     
     if (theSection != 0) {
-      return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,releasez, releasey); 
+      return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
 				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
@@ -231,6 +231,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
     if (!theDamping) {
       opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
       //exit(-1); // this is not a fatal error...
+      theDamping = 0;
     }
   }
 
@@ -317,6 +318,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     if (!theDamping) {
       opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
       //exit(-1); // Not a fatal error...
+      theDamping = 0;
     }
   }
 
