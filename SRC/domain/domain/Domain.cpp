@@ -3065,9 +3065,9 @@ Domain::sendSelf(int cTag, Channel &theChannel)
 	loc+=2;
       }    
 
-      if (theChannel.sendID(dbLPs, currentGeoTag, paramData) < 0) {
-	opserr << "Domain::send - channel failed to send the LoadPattern ID\n";
-	return -6;
+      if (theChannel.sendID(dbParam, currentGeoTag, paramData) < 0) {
+	opserr << "Domain::send - channel failed to send the Parameter ID\n";
+	return -7;
       }    
   }
     // now so that we don't do this next time if nothing in the domain has changed
