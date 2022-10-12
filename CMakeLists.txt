@@ -166,6 +166,7 @@ include_directories(
   ${OPS_SRC_DIR}/element/forceBeamColumn
   ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
   ${OPS_SRC_DIR}/coordTransformation
+  ${OPS_SRC_DIR}/damping
   ${OPS_SRC_DIR}/tagged
   ${OPS_SRC_DIR}/tagged/storage
   ${OPS_SRC_DIR}/recorder
@@ -421,6 +422,7 @@ add_library(G3)
 
 target_link_libraries(G3
     coordTransformation
+    damping
     OPS_Matrix
     OPS_Analysis 
     OPS_ModelBuilder
@@ -468,6 +470,7 @@ target_link_libraries(OpenSeesLIB
     OPS_PFEM
     OPS_Recorder
     coordTransformation
+    damping
     OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface

@@ -99,7 +99,9 @@ ArctangentBackbone::~ArctangentBackbone()
 double
 ArctangentBackbone::getTangent (double strain)
 {
-  return K1/(1+pow(K2*strain,2))*K2;
+  double u = K2*strain;
+
+  return K1/(1+u*u)*K2;
 }
 
 double

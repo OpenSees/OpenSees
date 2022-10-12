@@ -141,6 +141,9 @@
     <Filter Include="IGA">
       <UniqueIdentifier>{3849edad-2941-4fc1-bec5-ebe8e05b7ba1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="damping">
+      <UniqueIdentifier>{d9c89d0b-b0ee-498a-bc11-9303c8b7338b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -997,6 +1000,24 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn3d.cpp">
       <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\Damping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\SecStifDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\TclDampingCommand.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\UniformDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\URDDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\URDDampingbeta.cpp">
+      <Filter>damping</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
