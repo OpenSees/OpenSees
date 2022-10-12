@@ -645,6 +645,7 @@ ASDShellQ4::ASDShellQ4()
     : Element(0, ELE_TAG_ASDShellQ4)
     , m_transformation(nullptr)
 {
+  for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
 }
 
 ASDShellQ4::ASDShellQ4(
