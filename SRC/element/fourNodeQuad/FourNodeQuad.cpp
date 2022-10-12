@@ -341,11 +341,11 @@ FourNodeQuad::setDamping(Domain *theDomain, Damping *damping)
       
       if (!theDamping[i]) {
         opserr << "FourNodeQuad::setDamping -- failed to get copy of damping\n";
-        return 1;
+        return -1;
       }
       if (theDamping[i]->setDomain(theDomain, 3)) {
         opserr << "FourNodeQuad::setDamping -- Error initializing damping\n";
-        return 2;
+        return -2;
       }
     }
   }

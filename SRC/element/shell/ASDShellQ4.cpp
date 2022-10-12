@@ -837,11 +837,11 @@ ASDShellQ4::setDamping(Domain *theDomain, Damping *damping)
       m_damping[i] = damping->getCopy();
       if (!m_damping[i]) {
         opserr << "ASDShellQ4::setDamping - failed to get copy of damping\n";
-        return 1;
+        return -1;
       }
       if (m_damping[i] && m_damping[i]->setDomain(theDomain, 8)) {
         opserr << "ASDShellQ4::setDamping -- Error initializing damping\n";
-        return 2;
+        return -2;
       }
     }
   }

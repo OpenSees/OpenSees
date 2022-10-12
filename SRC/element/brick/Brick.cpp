@@ -255,11 +255,11 @@ Brick::setDamping(Domain *theDomain, Damping *damping)
     
       if (!theDamping[i]) {
         opserr << "Brick::setDamping -- failed to get copy of damping\n";
-        return 1;
+        return -1;
       }
       if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
         opserr << "Brick::setDamping -- Error initializing damping\n";
-        return 2;
+        return -2;
       }
     }
   }

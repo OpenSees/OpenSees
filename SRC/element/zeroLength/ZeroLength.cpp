@@ -692,11 +692,11 @@ ZeroLength::setDamping(Domain *theDomain, Damping *damping)
     
     if (!theDamping) {
       opserr << "ZeroLength::setDamping -- failed to get copy of damping\n";
-      return 1;
+      return -1;
     }
     if (theDamping->setDomain(theDomain, numMaterials1d)) {
       opserr << "ZeroLength::setDamping -- Error initializing damping\n";
-      return 2;
+      return -2;
     }
     fd = new Vector(numDOF);
   }
