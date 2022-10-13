@@ -183,7 +183,9 @@ private :
     //quadrature data
     static const double root3 ;
     static const double one_over_root3 ;
-    static const double sg[1] ;
+    static const double alpha ;
+    static const double beta ;
+    static const double sg[4] ;
     static const double wg[1] ;
 
     //local nodal coordinates, three coordinates for each of four nodes

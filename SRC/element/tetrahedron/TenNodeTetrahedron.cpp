@@ -198,9 +198,12 @@ Matrix  TenNodeTetrahedron::damping(NumDOFsTotal, NumDOFsTotal) ;
 const double  TenNodeTetrahedron::root3 = sqrt(3.0) ;
 const double  TenNodeTetrahedron::one_over_root3 = 1.0 / root3 ;
 
-const double  TenNodeTetrahedron::sg[] = { 0.25 } ;
+const double  TenNodeTetrahedron::alpha = (5.0 + 3.0*sqrt(5.0))/20. ;
+const double  TenNodeTetrahedron::beta = (5.0 - sqrt(5.0))/20. ;
 
-const double  TenNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
+const double  TenNodeTetrahedron::sg[] = { alpha, beta, beta, beta} ;
+
+const double  TenNodeTetrahedron::wg[] = { 0.25} ;
 
 
 static Matrix B(NumStressComponents, NumDOFsPerNode) ;
@@ -280,6 +283,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	b[0] = b1;
 	b[1] = b2;
 	b[2] = b3;
+
 	opserr << "TenNodeTetrahedron::constructor - init disp\n";
 
 	for (int i = 0; i < NumNodes; ++i)
@@ -557,14 +561,20 @@ const Matrix&  TenNodeTetrahedron::getInitialStiff( )
 	{
 		// for ( j = 0; j < NumGaussPointsm; j++ )
 		{
-			// for ( k = 0; k < NumGaussPointsm; k++ )
+			for ( k = 0; k < numberGauss; k++ )
 			{
 
-				i = j = k = 0; // Just one Gauss point in a tet
+				// i = j = k = 0; // Just one Gauss point in a tet
 
-				gaussPoint[0] = sg[i] ;
-				gaussPoint[1] = sg[j] ;
-				gaussPoint[2] = sg[k] ;
+				gaussPoint[0] = sg[k] ;
+				gaussPoint[1] = sg[abs(1-k)] ;
+				gaussPoint[2] = sg[abs(2-k)] ;
+
+				// sg = [alpha, beta, beta, beta]
+				// k = 0: alpha beta beta
+				// k = 1: beta alpha beta
+				// k = 2: beta beta alpha
+				// k = 3: beta beta beta
 
 				//get shape functions
 				shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -575,13 +585,14 @@ const Matrix&  TenNodeTetrahedron::getInitialStiff( )
 					for ( q = 0; q < numberNodes; q++ )
 					{
 						Shape[p][q][count] = shp[p][q] ;
+						std::cout << shp[p][q] << std::endl;
 					}
 				} // end for p
 
 				//volume element to also be saved
 				dvol[count] = wg[count] * xsj ;
 
-				//volume += dvol[count] ;
+				volume += dvol[count] ;
 
 				count++ ;
 			} //end for k
@@ -858,13 +869,12 @@ void   TenNodeTetrahedron::formInertiaTerms( int tangFlag )
 	{
 		// for ( j = 0; j < 2; j++ )
 		{
-			// for ( k = 0; k < 2; k++ )
+			for ( k = 0; k < numberGauss; k++ )
 			{
-				i = j = k = 0;
-
-				gaussPoint[0] = sg[i] ;
-				gaussPoint[1] = sg[j] ;
-				gaussPoint[2] = sg[k] ;
+				
+				gaussPoint[0] = sg[k] ;
+				gaussPoint[1] = sg[abs(1-k)] ;
+				gaussPoint[2] = sg[abs(2-k)] ;
 
 				//get shape functions
 				shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -985,7 +995,7 @@ TenNodeTetrahedron::update(void)
 
 	static const int numberGauss = NumGaussPoints ;
 
-	static const int nShape = NumNodes ;
+	static const int nShape = 4 ;
 
 	int i, j, k, p, q ;
 	int success ;
@@ -1031,13 +1041,12 @@ TenNodeTetrahedron::update(void)
 	{
 		// for ( j = 0; j < 2; j++ )
 		{
-			// for ( k = 0; k < 2; k++ )
+			for ( k = 0; k < numberGauss; k++ )
 			{
-				i = j = k = 0;
-
-				gaussPoint[0] = sg[i] ;
-				gaussPoint[1] = sg[j] ;
-				gaussPoint[2] = sg[k] ;
+				
+				gaussPoint[0] = sg[k] ;
+				gaussPoint[1] = sg[abs(1-k)] ;
+				gaussPoint[2] = sg[abs(2-k)] ;
 
 				//get shape functions
 				shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -1230,21 +1239,23 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 	{
 		// for ( j = 0; j < 2; j++ )
 		{
-			// for ( k = 0; k < 2; k++ )
+			for ( k = 0; k < numberGauss; k++ )
 			{
-				i = j = k = 0;
-
-				gaussPoint[0] = sg[i] ;
-				gaussPoint[1] = sg[j] ;
-				gaussPoint[2] = sg[k] ;
+				
+				gaussPoint[0] = sg[k] ;
+				gaussPoint[1] = sg[abs(1-k)] ;
+				gaussPoint[2] = sg[abs(2-k)] ;
 
 				//get shape functions
 				shp3d( gaussPoint, xsj, shp, xl ) ;
 
 				//save shape functions
 				for ( p = 0; p < nShape; p++ ) {
-					for ( q = 0; q < numberNodes; q++ )
+					for ( q = 0; q < numberNodes; q++ ){
 						Shape[p][q][count] = shp[p][q] ;
+						// std::cout << shp[p][q] << " ";
+					}
+					// std::cout << std::endl;
 				} // end for p
 
 				//volume element to also be saved
@@ -1389,10 +1400,6 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 			jj += ndf ;
 		} // end for j loop
 	} //end for i gauss loop
-
-
-
-
 
 	return ;
 }
@@ -1973,19 +1980,8 @@ void
 TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumNodes], const double xl[3][NumNodes]   )
 {
 	// Mathematica formulation by Carlos Felippa.
-	//
-	// IsoTet4ShapeFunDer[xyztet_,numer_]:= Module[{
-	// x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4,
-	// x12,x13,x14,x23,x24,x34,x21,x31,x32,x42,x43,
-	// y12,y13,y14,y23,y24,y34,y21,y31,y32,y42,y43,
-	// z12,z13,z14,z23,z24,z34,z21,z31,z32,z42,z43,
-	// a1,a2,a3,a4,b1,b2,b3,b4,c1,c2,c3,c4,Nfx,Nyy,Nfz,Jdet},\
-	// x12=x1-x2; x13=x1-x3; x14=x1-x4; x23=x2-x3; x24=x2-x4; x34=x3-x4;
-	// x21=-x12; x31=-x13; x41=-x14; x32=-x23; x42=-x24; x43=-x34;
-	// y12=y1-y2; y13=y1-y3; y14=y1-y4; y23=y2-y3; y24=y2-y4; y34=y3-y4;
-	// y21=-y12; y31=-y13; y41=-y14; y32=-y23; y42=-y24; y43=-y34;
-	// z12=z1-z2; z13=z1-z3; z14=z1-z4; z23=z2-z3; z24=z2-z4; z34=z3-z4;
-	// z21=-z12; z31=-z13; z41=-z14; z32=-z23; z42=-z24; z43=-z34;
+	double zeta4 = 1 - zeta[0] - zeta[1] - zeta[2];
+
 	double x12 = xl[0][0] - xl[0][1];
 	double x13 = xl[0][0] - xl[0][2];
 	double x14 = xl[0][0] - xl[0][3];
@@ -2028,61 +2024,114 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 	double z42 = -z24;
 	double z43 = -z34;
 
-	// Jdet=x21*(y23*z34-y34*z23)+x32*(y34*z12-y12*z34)+x43*(y12*z23-y23*z12);
-	double Jdet = x21 * (y23 * z34 - y34 * z23) + x32 * (y34 * z12 - y12 * z34) + x43 * (y12 * z23 - y23 * z12);
-
-	// a1=y42*z32-y32*z42; b1=x32*z42-x42*z32; c1=x42*y32-x32*y42;
-	// a2=y31*z43-y34*z13; b2=x43*z31-x13*z34; c2=x31*y43-x34*y13;
-	// a3=y24*z14-y14*z24; b3=x14*z24-x24*z14; c3=x24*y14-x14*y24;
-	// a4=y13*z21-y12*z31; b4=x21*z13-x31*z12; c4=x13*y21-x12*y31;
 	double a1 = y42 * z32 - y32 * z42; double b1 = x32 * z42 - x42 * z32; double c1 = x42 * y32 - x32 * y42;
 	double a2 = y31 * z43 - y34 * z13; double b2 = x43 * z31 - x13 * z34; double c2 = x31 * y43 - x34 * y13;
 	double a3 = y24 * z14 - y14 * z24; double b3 = x14 * z24 - x24 * z14; double c3 = x24 * y14 - x14 * y24;
 	double a4 = y13 * z21 - y12 * z31; double b4 = x21 * z13 - x31 * z12; double c4 = x13 * y21 - x12 * y31;
 
+	// dNi/dzeta1
+	double dN1_dzeta1 = 4*zeta[0]-1; double dN2_dzeta1 = 0;
+	double dN3_dzeta1 = 0; double dN4_dzeta1 = 0;
+	double dN5_dzeta1 = 4*zeta[1]; double dN6_dzeta1 = 0;
+	double dN7_dzeta1 = 4*zeta[2]; double dN8_dzeta1 = 4*zeta4;
+	double dN9_dzeta1 = 0; double dN10_dzeta1 = 0;
+
+	// dNi/dzeta2
+	double dN1_dzeta2 = 0; double dN2_dzeta2 = 4*zeta[1]-1;
+	double dN3_dzeta2 = 0; double dN4_dzeta2 = 0;
+	double dN5_dzeta2 = 4*zeta[0]; double dN6_dzeta2 = 4*zeta[2];
+	double dN7_dzeta2 = 0; double dN8_dzeta2 = 0;
+	double dN9_dzeta2 = 4*zeta4; double dN10_dzeta2 = 0;
+
+	// dNi/dzeta3
+	double dN1_dzeta3 = 0; double dN2_dzeta3 = 0;
+	double dN3_dzeta3 = 4*zeta[2]-1; double dN4_dzeta3 = 0;
+	double dN5_dzeta3 = 0; double dN6_dzeta3 = 4*zeta[1];
+	double dN7_dzeta3 = 4*zeta[0]; double dN8_dzeta3 = 0;
+	double dN9_dzeta3 = 0; double dN10_dzeta3 = 4*zeta4;
+
+	// dNi/dzeta3
+	double dN1_dzeta4 = 0; double dN2_dzeta4 = 0;
+	double dN3_dzeta4 = 0; double dN4_dzeta4 = 4*zeta4-1;
+	double dN5_dzeta4 = 0; double dN6_dzeta4 = 0;
+	double dN7_dzeta4 = 0; double dN8_dzeta4 = 4*zeta[0];
+	double dN9_dzeta4 = 4*zeta[1]; double dN10_dzeta4 = 4*zeta[2];
+
+	// Terms in Jacobian Matrix (17.12)
+	double Jx1 = xl[0][0]*(4*zeta[0]-1) + 4*xl[0][4]*zeta[1] + 4*xl[0][6]*zeta[2] + 4*xl[0][7]*zeta4;
+	double Jx2 = xl[0][1]*(4*zeta[1]-1) + 4*xl[0][5]*zeta[2] + 4*xl[0][4]*zeta[0] + 4*xl[0][8]*zeta4;
+	double Jx3 = xl[0][2]*(4*zeta[2]-1) + 4*xl[0][6]*zeta[0] + 4*xl[0][5]*zeta[1] + 4*xl[0][9]*zeta4;
+	double Jx4 = xl[0][3]*(4*zeta4-1) + 4*xl[0][7]*zeta[0] + 4*xl[0][8]*zeta[1] + 4*xl[0][9]*zeta[2];
+
+	double Jy1 = xl[1][0]*(4*zeta[0]-1) + 4*xl[1][4]*zeta[1] + 4*xl[1][6]*zeta[2] + 4*xl[1][7]*zeta4;
+	double Jy2 = xl[1][1]*(4*zeta[1]-1) + 4*xl[1][5]*zeta[2] + 4*xl[1][4]*zeta[0] + 4*xl[1][8]*zeta4;
+	double Jy3 = xl[1][2]*(4*zeta[2]-1) + 4*xl[1][6]*zeta[0] + 4*xl[1][5]*zeta[1] + 4*xl[1][9]*zeta4;
+	double Jy4 = xl[1][3]*(4*zeta4-1) + 4*xl[1][7]*zeta[0] + 4*xl[1][8]*zeta[1] + 4*xl[1][9]*zeta[2];
+
+	double Jz1 = xl[2][0]*(4*zeta[0]-1) + 4*xl[2][4]*zeta[1] + 4*xl[2][6]*zeta[2] + 4*xl[2][7]*zeta4;
+	double Jz2 = xl[2][1]*(4*zeta[1]-1) + 4*xl[2][5]*zeta[2] + 4*xl[2][4]*zeta[0] + 4*xl[2][8]*zeta4;
+	double Jz3 = xl[2][2]*(4*zeta[2]-1) + 4*xl[2][6]*zeta[0] + 4*xl[2][5]*zeta[1] + 4*xl[2][9]*zeta4;
+	double Jz4 = xl[2][3]*(4*zeta4-1) + 4*xl[2][7]*zeta[0] + 4*xl[2][8]*zeta[1] + 4*xl[2][9]*zeta[2];
+
+	// Terms in simplified Jacobian Matrix (3x3)
+	double t1 = Jx2-Jx1; double t2 = Jx3-Jx1; double t3 = Jx4-Jx1;
+	double t4 = Jy2-Jy1; double t5 = Jy3-Jy1; double t6 = Jy4-Jy1;
+	double t7 = Jz2-Jz1; double t8 = Jz3-Jz1; double t9 = Jz4-Jz1;
+
+	// Assembling the Jacobians Determinant
+	double Jdet = (t1*(t5*t9-t6*t8) - t2*(t4*t9-t6*t7) + t3*(t4*t8-t5*t7))/6.0;
+
+	// Saving the Jacobians Determinant
 	xsj = Jdet;
 
-	// Nfx={a1,a2,a3,a4}; Nfy={b1,b2,b3,b4}; Nfz={c1,c2,c3,c4};
-	// For the 4-node tetrahedron, these functions are constant and do not depend on the zetas...
-	shp[0][0] = a1 / Jdet;
-	shp[0][1] = a2 / Jdet;
-	shp[0][2] = a3 / Jdet;
-	shp[0][3] = a4 / Jdet;
+	// qx1 - qx10 (17.24)
+	shp[0][0] = 1/(6.0*Jdet)*(dN1_dzeta1*a1 + dN1_dzeta2*a2 + dN1_dzeta3*a3 + dN1_dzeta4*a4);
+	shp[0][1] = 1/(6.0*Jdet)*(dN2_dzeta1*a1 + dN2_dzeta2*a2 + dN2_dzeta3*a3 + dN2_dzeta4*a4);
+	shp[0][2] = 1/(6.0*Jdet)*(dN3_dzeta1*a1 + dN3_dzeta2*a2 + dN3_dzeta3*a3 + dN3_dzeta4*a4);
+	shp[0][3] = 1/(6.0*Jdet)*(dN4_dzeta1*a1 + dN4_dzeta2*a2 + dN4_dzeta3*a3 + dN4_dzeta4*a4);
+	shp[0][4] = 1/(6.0*Jdet)*(dN5_dzeta1*a1 + dN5_dzeta2*a2 + dN5_dzeta3*a3 + dN5_dzeta4*a4);
+	shp[0][5] = 1/(6.0*Jdet)*(dN6_dzeta1*a1 + dN6_dzeta2*a2 + dN6_dzeta3*a3 + dN6_dzeta4*a4);
+	shp[0][6] = 1/(6.0*Jdet)*(dN7_dzeta1*a1 + dN7_dzeta2*a2 + dN7_dzeta3*a3 + dN7_dzeta4*a4);
+	shp[0][7] = 1/(6.0*Jdet)*(dN8_dzeta1*a1 + dN8_dzeta2*a2 + dN8_dzeta3*a3 + dN8_dzeta4*a4);
+	shp[0][8] = 1/(6.0*Jdet)*(dN9_dzeta1*a1 + dN9_dzeta2*a2 + dN9_dzeta3*a3 + dN9_dzeta4*a4);
+	shp[0][9] = 1/(6.0*Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
 
-	shp[1][0] = b1 / Jdet;
-	shp[1][1] = b2 / Jdet;
-	shp[1][2] = b3 / Jdet;
-	shp[1][3] = b4 / Jdet;
+	// qy1 - qy10 (17.24)
+	shp[1][0] = 1/(6.0*Jdet)*(dN1_dzeta1*b1 + dN1_dzeta2*b2 + dN1_dzeta3*b3 + dN1_dzeta4*b4);
+	shp[1][1] = 1/(6.0*Jdet)*(dN2_dzeta1*b1 + dN2_dzeta2*b2 + dN2_dzeta3*b3 + dN2_dzeta4*b4);
+	shp[1][2] = 1/(6.0*Jdet)*(dN3_dzeta1*b1 + dN3_dzeta2*b2 + dN3_dzeta3*b3 + dN3_dzeta4*b4);
+	shp[1][3] = 1/(6.0*Jdet)*(dN4_dzeta1*b1 + dN4_dzeta2*b2 + dN4_dzeta3*b3 + dN4_dzeta4*b4);
+	shp[1][4] = 1/(6.0*Jdet)*(dN5_dzeta1*b1 + dN5_dzeta2*b2 + dN5_dzeta3*b3 + dN5_dzeta4*b4);
+	shp[1][5] = 1/(6.0*Jdet)*(dN6_dzeta1*b1 + dN6_dzeta2*b2 + dN6_dzeta3*b3 + dN6_dzeta4*b4);
+	shp[1][6] = 1/(6.0*Jdet)*(dN7_dzeta1*b1 + dN7_dzeta2*b2 + dN7_dzeta3*b3 + dN7_dzeta4*b4);
+	shp[1][7] = 1/(6.0*Jdet)*(dN8_dzeta1*b1 + dN8_dzeta2*b2 + dN8_dzeta3*b3 + dN8_dzeta4*b4);
+	shp[1][8] = 1/(6.0*Jdet)*(dN9_dzeta1*b1 + dN9_dzeta2*b2 + dN9_dzeta3*b3 + dN9_dzeta4*b4);
+	shp[1][9] = 1/(6.0*Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
 
-	shp[2][0] = c1 / Jdet;
-	shp[2][1] = c2 / Jdet;
-	shp[2][2] = c3 / Jdet;
-	shp[2][3] = c4 / Jdet;
+	// qz1 - qz10 (17.24)
+	shp[2][0] = 1/(6.0*Jdet)*(dN1_dzeta1*c1 + dN1_dzeta2*c2 + dN1_dzeta3*c3 + dN1_dzeta4*c4);
+	shp[2][1] = 1/(6.0*Jdet)*(dN2_dzeta1*c1 + dN2_dzeta2*c2 + dN2_dzeta3*c3 + dN2_dzeta4*c4);
+	shp[2][2] = 1/(6.0*Jdet)*(dN3_dzeta1*c1 + dN3_dzeta2*c2 + dN3_dzeta3*c3 + dN3_dzeta4*c4);
+	shp[2][3] = 1/(6.0*Jdet)*(dN4_dzeta1*c1 + dN4_dzeta2*c2 + dN4_dzeta3*c3 + dN4_dzeta4*c4);
+	shp[2][4] = 1/(6.0*Jdet)*(dN5_dzeta1*c1 + dN5_dzeta2*c2 + dN5_dzeta3*c3 + dN5_dzeta4*c4);
+	shp[2][5] = 1/(6.0*Jdet)*(dN6_dzeta1*c1 + dN6_dzeta2*c2 + dN6_dzeta3*c3 + dN6_dzeta4*c4);
+	shp[2][6] = 1/(6.0*Jdet)*(dN7_dzeta1*c1 + dN7_dzeta2*c2 + dN7_dzeta3*c3 + dN7_dzeta4*c4);
+	shp[2][7] = 1/(6.0*Jdet)*(dN8_dzeta1*c1 + dN8_dzeta2*c2 + dN8_dzeta3*c3 + dN8_dzeta4*c4);
+	shp[2][8] = 1/(6.0*Jdet)*(dN9_dzeta1*c1 + dN9_dzeta2*c2 + dN9_dzeta3*c3 + dN9_dzeta4*c4);
+	shp[2][9] = 1/(6.0*Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
 
-	shp[3][0] = zeta[0];
-	shp[3][1] = zeta[1];
-	shp[3][2] = zeta[2];
-	shp[3][3] = 1 - zeta[0] - zeta[1] - zeta[2];
+	// N1 - N10
+	shp[3][0] = zeta[0]*(2*zeta[0]-1);
+	shp[3][1] = zeta[1]*(2*zeta[1]-1);
+	shp[3][2] = zeta[2]*(2*zeta[2]-1);
+	shp[3][3] = zeta4*(2*zeta4-1);
+	shp[3][4] = 4*zeta[0]*zeta[1];
+	shp[3][5] = 4*zeta[1]*zeta[2];
+	shp[3][6] = 4*zeta[2]*zeta[0];
+	shp[3][7] = 4*zeta[0]*zeta4;
+	shp[3][8] = 4*zeta[1]*zeta4;
+	shp[3][9] = 4*zeta[2]*zeta4;
 
-
-	// opserr << "ss = " << ss[0] << " "
-	//   << ss[1] << " "
-	//   << ss[2] << " "
-	//   << shp[3][4] << endln;
-
-	// opserr << "Jdet = " << Jdet << endln;
-
-	// opserr << "shp = " <<  endln;
-	// for(int i = 0; i <= 4; i++)
-	// {
-	//   for(int j = 0; j <= 4; j++)
-	//   {
-	//     opserr << shp[i][j] << " ";
-	//   }
-	//   opserr << endln;
-	// }
-
-	// Return[{Nfx,Nfy,Nfz,Jdet}]];
 	return ;
 }
 
