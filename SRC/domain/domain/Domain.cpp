@@ -3065,9 +3065,9 @@ Domain::sendSelf(int cTag, Channel &theChannel)
 	loc+=2;
       }    
 
-      if (theChannel.sendID(dbLPs, currentGeoTag, paramData) < 0) {
-	opserr << "Domain::send - channel failed to send the LoadPattern ID\n";
-	return -6;
+      if (theChannel.sendID(dbParam, currentGeoTag, paramData) < 0) {
+	opserr << "Domain::send - channel failed to send the Parameter ID\n";
+	return -7;
       }    
   }
     // now so that we don't do this next time if nothing in the domain has changed
@@ -3440,7 +3440,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
       ID lpData(2*numLPs);
       
       if (theChannel.recvID(dbLPs, geoTag, lpData) < 0) {
-	opserr << "Domain::recv - channel failed to recv the MP_Constraints ID\n";
+	opserr << "Domain::recv - channel failed to recv the LoadPatterns ID\n";
 	return -2;
       }
 
@@ -3451,7 +3451,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 
 	LoadPattern *theLP = theBroker.getNewLoadPattern(classTag);
 	if (theLP == 0) {
-	  opserr << "Domain::recv - cannot create MP_Constraint with classTag  " << classTag << endln;
+	  opserr << "Domain::recv - cannot create LoadPattern with classTag  " << classTag << endln;
 	  return -2;
 	}			
 	theLP->setDbTag(dbTag);
@@ -3478,7 +3478,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
       ID paramData(2*numParameters);
       
       if (theChannel.recvID(dbParameters, geoTag, paramData) < 0) {
-	opserr << "Domain::recv - channel failed to recv the MP_Constraints ID\n";
+	opserr << "Domain::recv - channel failed to recv the Parameters ID\n";
 	return -2;
       }
 
@@ -3489,7 +3489,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 
 	Parameter *theParameter = theBroker.getParameter(classTag);
 	if (theParameter == 0) {
-	  opserr << "Domain::recv - cannot create MP_Constraint with classTag  " << classTag << endln;
+	  opserr << "Domain::recv - cannot create Parameter with classTag  " << classTag << endln;
 	  return -2;
 	}			
 	theParameter->setDbTag(dbTag);
@@ -3500,7 +3500,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	}			
 
 	if (this->addParameter(theParameter) == false) {
-	  opserr << "Domain::recv - could not add LoadPattern with tag " << theParameter->getTag() <<  " into the Domain\n";
+	  opserr << "Domain::recv - could not add Parameter with tag " << theParameter->getTag() <<  " into the Domain\n";
 	  return -3;
 	}			
 

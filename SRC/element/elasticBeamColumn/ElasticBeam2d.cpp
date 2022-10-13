@@ -395,7 +395,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
     
     if (!theDamping) {
       opserr << "ElasticBeam2d::ElasticBeam2d -- failed to get copy of damping\n";
-      exit(01);
+      //exit(-1); // this is not a fatal error...
+      theDamping = 0;
     }
   }
 
@@ -459,7 +460,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     
     if (!theDamping) {
       opserr << "ElasticBeam2d::ElasticBeam2d -- failed to get copy of damping\n";
-      exit(-1);
+      //exit(-1); // Not a fatal error...
+      theDamping = 0;
     }
   }
 
