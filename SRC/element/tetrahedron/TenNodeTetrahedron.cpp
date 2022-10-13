@@ -250,7 +250,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
                                        NDMaterial &theMaterial,
                                        double b1, double b2, double b3)
 	: Element(tag, ELE_TAG_TenNodeTetrahedron),
-	  connectedExternalNodes(4), applyLoad(0), load(0), Ki(0)
+	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
 {
 	opserr << "TenNodeTetrahedron::constructor - START\n";
 	B.Zero();
@@ -1232,7 +1232,6 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 
 	// opserr << "DEBUGME!" << endln;
 
-	int count = 0 ;
 	volume = 0.0 ;
 
 	// for ( i = 0; i < 2; i++ )
@@ -1252,16 +1251,18 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 				//save shape functions
 				for ( p = 0; p < nShape; p++ ) {
 					for ( q = 0; q < numberNodes; q++ ){
-						Shape[p][q][count] = shp[p][q] ;
+						Shape[p][q][k] = shp[p][q] ;
 						// std::cout << shp[p][q] << " ";
 					}
 					// std::cout << std::endl;
 				} // end for p
 
 				//volume element to also be saved
-				dvol[count] = wg[count] * xsj ;
-
-				count++ ;
+				dvol[k] = wg[k] * xsj ;
+				// opserr << "k = " << k << " gp = (" 
+				// << gaussPoint[0] << " " 
+				// << gaussPoint[1] << " " 
+				// << gaussPoint[2] << ") dvol = " << dvol[k] << endln;
 			} //end for k
 		} //end for j
 	} // end for i
