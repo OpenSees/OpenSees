@@ -243,6 +243,73 @@ int OPS_SetIntOutput(int* numData, int* data, bool scalar)
     return 0;
 }
 
+extern "C" int OPS_SetIntListsOutput(
+    std::vector<std::vector<int>>& data) {
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(data[i][j]);
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(theInterp, lists);
+
+    return 0;
+}
+
+extern "C" int OPS_SetIntDictOutput(
+    std::map<const char*, int>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)),
+            Tcl_NewIntObj(item.second));
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
+extern "C" int OPS_SetIntDictListOutput(
+    std::map<const char*, std::vector<int>>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(item.second[j]);
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
 extern "C"
 int OPS_GetDoubleInput(int* numData, double* data)
 {
