@@ -241,9 +241,8 @@ private:
      int  isCrossingNextSurface(void);
 
 	 double ContractionFactorC(void); // new calibration for sand3
-	 Vector stress0; // for sand3
-	 bool stress0Initialized; // for sand3
-     double myC = 0.0;
+	 Vector stress0 = Vector(6); // for sand3
+	 bool stress0Initialized = false; // for sand3
 };
 
 #endif

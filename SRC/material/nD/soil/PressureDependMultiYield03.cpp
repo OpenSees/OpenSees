@@ -456,8 +456,6 @@ PressureDependMultiYield03::PressureDependMultiYield03 (int tag, int nd,
   maxPress = 0.;
   damage = 0.;
 
-  stress0Initialized = false;
-
   theSurfaces = new MultiYieldSurface[numOfSurfaces+1]; //first surface not used
   committedSurfaces = new MultiYieldSurface[numOfSurfaces+1];
 
@@ -482,7 +480,8 @@ PressureDependMultiYield03::PressureDependMultiYield03 (const PressureDependMult
   currentStrain(a.currentStrain), strainRate(a.strainRate), check(0),
   PPZPivot(a.PPZPivot), PPZCenter(a.PPZCenter), updatedTrialStress(a.updatedTrialStress),
   PPZPivotCommitted(a.PPZPivotCommitted), PPZCenterCommitted(a.PPZCenterCommitted),
-  PivotStrainRate(a.PivotStrainRate), PivotStrainRateCommitted(a.PivotStrainRateCommitted)
+  PivotStrainRate(a.PivotStrainRate), PivotStrainRateCommitted(a.PivotStrainRateCommitted),
+    stress0Initialized(a.stress0Initialized), stress0(a.stress0)
 {
   matN = a.matN;
 
@@ -542,6 +541,11 @@ void PressureDependMultiYield03::elast2Plast(void)
   if (currentStress.volume() > 0.) {
     //opserr << "WARNING:PressureDependMultiYield03::elast2Plast(): material in tension." << endln;
     currentStress.setData(currentStress.deviator(),0);
+  }
+
+  if (!stress0Initialized) {
+      stress0 = currentStress.t2Vector();
+      stress0Initialized = true;
   }
 
   // Active surface is 0, return
@@ -1633,7 +1637,7 @@ int PressureDependMultiYield03::getResponse (int responseID, Information &matInf
       *(matInfo.theVector) = getStressToRecord(7);
     return 0;
   case 111:
-      return matInfo.setDouble(myC);
+      return matInfo.setDouble(ContractionFactorC());
 	// end change by Alborz Ghofrani UW
   default:
     return -1;
@@ -2290,11 +2294,14 @@ double PressureDependMultiYield03::ContractionFactorC(void)
 	double cd = contractParam4x[matN];
 	double ce = contractParam5x[matN];
 
+    // 14/10/2022 - Massimo Petracca - Moved in elast2plast:
+    // this should be computed at the end of the gravity stage.
+    // 
 	// Evaluate stress0 only once 
-	if (!stress0Initialized) {
-		stress0 = currentStress.t2Vector();
-		stress0Initialized = true;
-	}
+	//if (!stress0Initialized) {
+	//	stress0 = currentStress.t2Vector();
+	//	stress0Initialized = true;
+	//}
 
 	// Start - by Arash K.
 	//static Vector stress0 = currentStress.t2Vector();
@@ -2317,10 +2324,9 @@ double PressureDependMultiYield03::ContractionFactorC(void)
 	double factorCSR = pow(tau12*tau12 + tau23*tau23 + tau13*tau13 , 0.5) / factorP0;
 	
 	double C = (1.0 + pow(fabs(factorCSR-factorCSR0)*cd , 3.0)) * pow(1.0 + ce*factorCSR0,2.0);
+
 	// End	
-    myC = C; // save if for output
-    return 1.0; // return 1 -> no scaling
-	//return C;
+	return C;
 }
 
 int PressureDependMultiYield03::isCriticalState(const T2Vector & stress)
