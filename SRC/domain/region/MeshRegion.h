@@ -42,6 +42,7 @@ class Element;
 class Node;
 class ElementRecorder;
 class NodeRecorder;
+class Damping;
 
 class MeshRegion : public DomainComponent
 {
@@ -67,6 +68,8 @@ class MeshRegion : public DomainComponent
 					  double betaK, 
 					  double betaK0,
 					  double betaKc);
+
+    virtual int setDamping(Damping *theDamping);
 
     // methods to send & recv data for database/parallel applications
     virtual int sendSelf(int commitTag, Channel &theChannel);
