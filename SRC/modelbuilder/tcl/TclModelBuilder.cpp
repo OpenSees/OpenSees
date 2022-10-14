@@ -57,6 +57,7 @@
 #include <RigidDiaphragm.h>
 
 #include <CrdTransf.h>
+#include <Damping.h>
 
 #include <NodalLoad.h>
 #include <Beam2dPointLoad.h>
@@ -333,6 +334,12 @@ TclCommand_addRemoGeomTransf(ClientData clientData,
 			     TCL_Char **argv); 
 
 int
+TclCommand_addRemoDamping(ClientData clientData, 
+			     Tcl_Interp *interp, 
+			     int argc,   
+			     TCL_Char **argv); 
+
+int
 TclCommand_addFrictionModel(ClientData clientData,
 				 Tcl_Interp *interp,
 				 int argc,   
@@ -426,6 +433,10 @@ extern int
 TclCommand_addGeomTransf(ClientData, Tcl_Interp *, int, TCL_Char **,
 			 Domain*, TclModelBuilder *);   
 
+
+extern int
+TclCommand_addDamping(ClientData, Tcl_Interp *, int, TCL_Char **,
+			 Domain*, TclModelBuilder *);   
 
 int
 TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -601,6 +612,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   Tcl_CreateCommand(interp, "geomTransf", TclCommand_addRemoGeomTransf,
 		    (ClientData)NULL, NULL);    
 
+  Tcl_CreateCommand(interp, "damping", TclCommand_addRemoDamping,
+		    (ClientData)NULL, NULL);    
+
   Tcl_CreateCommand(interp, "frictionModel",
 		    TclCommand_addFrictionModel,
 		    (ClientData)NULL, NULL);
@@ -671,6 +685,7 @@ TclModelBuilder::~TclModelBuilder()
   //  OPS_clearAllNDMaterial();
   //  OPS_clearAllSectionForceDeformation();
   OPS_clearAllCrdTransf();
+  OPS_clearAllDamping();
   OPS_clearAllFrictionModel();
   OPS_clearAllLimitCurve();
   OPS_clearAllDamageModel();
@@ -4500,6 +4515,15 @@ TclCommand_addRemoGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc
 			   TCL_Char **argv)
 {
   return TclCommand_addGeomTransf(clientData, interp, argc,argv,
+				       theTclDomain,
+				       theTclBuilder);
+}
+
+int
+TclCommand_addRemoDamping(ClientData clientData, Tcl_Interp *interp, int argc,   
+			   TCL_Char **argv)
+{
+  return TclCommand_addDamping(clientData, interp, argc,argv,
 				       theTclDomain,
 				       theTclBuilder);
 }

@@ -38,6 +38,7 @@
 #include <Element.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
+#include <Damping.h>
 
 class ShellDKGT : public Element {
 
@@ -51,13 +52,15 @@ class ShellDKGT : public Element {
 	     int node1,
 	     int node2,
 	     int node3,
-	     SectionForceDeformation &theMaterial, double b1, double b2, double b3) ;
+	     SectionForceDeformation &theMaterial,
+	     Damping *theDamping = 0);
   
   //destructor 
   virtual ~ShellDKGT( ) ;
 
   //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
+  int setDamping(Domain *theDomain, Damping *theDamping);
   
   //get the number of external nodes
   int getNumExternalNodes( ) const ;
@@ -196,7 +199,7 @@ class ShellDKGT : public Element {
     Vector *load;
     Matrix *Ki;
 
-    double b[3];        // Body forces
     double appliedB[3];     // Body forces applied with load
     int applyLoad;
+    Damping *theDamping[4];
 } ; 

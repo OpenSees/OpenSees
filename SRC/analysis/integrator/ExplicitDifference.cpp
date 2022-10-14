@@ -108,6 +108,7 @@ int ExplicitDifference::newStep(double _deltaT)
 
 	// increment the time to t and apply the load
 	double time = theModel->getCurrentDomainTime();
+	time += deltaT;
 	if (theModel->updateDomain(time, deltaT) < 0)  {
 		opserr << "ExplicitDifference::newStep() - failed to update the domain\n";
 		return -3;
@@ -337,11 +338,6 @@ int ExplicitDifference::commit(void)
 		opserr << "WARNING ExplicitDifference::commit() - no AnalysisModel set\n";
 		return -1;
 	}
-
-	// set the time to be t+deltaT
-	double time = theModel->getCurrentDomainTime();
-	time += deltaT;
-	theModel->setCurrentDomainTime(time);
 
 	return theModel->commitDomain();
 }

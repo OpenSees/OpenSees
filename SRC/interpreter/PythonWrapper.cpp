@@ -581,7 +581,7 @@ static PyObject* Py_ops_modalProperties(PyObject* self, PyObject* args)
     return wrapper->getResults();
 }
 
-static PyObject* Py_ops_responseSpectrum(PyObject* self, PyObject* args)
+static PyObject* Py_ops_responseSpectrumAnalysis(PyObject* self, PyObject* args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
     if (OPS_ResponseSpectrumAnalysis() < 0) {
@@ -2771,7 +2771,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeReaction", &Py_ops_nodeReaction);
     addCommand("eigen", &Py_ops_eigen);
     addCommand("modalProperties", &Py_ops_modalProperties);
-    addCommand("responseSpectrum", &Py_ops_responseSpectrum);
+    addCommand("responseSpectrumAnalysis", &Py_ops_responseSpectrumAnalysis);
     addCommand("nDMaterial", &Py_ops_nDMaterial);
     addCommand("block2D", &Py_ops_block2d);
     addCommand("block3D", &Py_ops_block3d);
