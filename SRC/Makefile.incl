@@ -3,6 +3,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/nDarray \
                -I$(FE)/tagged \
                -I$(FE)/damage \
+	       -I$(FE)/damping \
                -I$(FE)/tcl \
                -I$(FE)/material \
                -I$(FE)/material/wall \
