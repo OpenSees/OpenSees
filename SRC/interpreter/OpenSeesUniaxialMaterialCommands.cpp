@@ -97,6 +97,7 @@ void* OPS_SPSW02();
 void* OPS_Concrete01();
 void* OPS_Steel4();
 void* OPS_HystereticMaterial();
+void* OPS_HystereticSMMaterial();
 void* OPS_ReinforcingSteel();
 void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
@@ -292,6 +293,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Steel4", &OPS_Steel4));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hysteretic", &OPS_HystereticMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HystereticSM", &OPS_HystereticSMMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("ReinforcingSteel", &OPS_ReinforcingSteel));
   uniaxialMaterialsMap.insert(

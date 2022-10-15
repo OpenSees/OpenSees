@@ -1388,6 +1388,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
 
+	case MAT_TAG_HystereticSM:			// Silvia Mazzoni
+		return new HystereticSMMaterial();
+
 	case MAT_TAG_ModIMKPeakOriented:
 		return new ModIMKPeakOriented();
 
