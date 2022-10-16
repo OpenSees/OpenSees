@@ -82,6 +82,7 @@
 #include "ReinforcingSteel.h"
 #include "HardeningMaterial.h"
 #include "HystereticMaterial.h"
+#include "HystereticMaterialSM.h"
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
@@ -1388,7 +1389,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
 
-	case MAT_TAG_HystereticSM:			// Silvia Mazzoni
+	case MAT_TAG_HystereticSM:			
 		return new HystereticSMMaterial();
 
 	case MAT_TAG_ModIMKPeakOriented:
