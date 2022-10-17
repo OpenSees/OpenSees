@@ -1454,6 +1454,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticSMMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2686,6 +2689,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\VonPapaDamage.h">
       <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticSMMaterial.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
