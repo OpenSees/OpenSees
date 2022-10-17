@@ -104,7 +104,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\fesensitivity;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\fesensitivity;..\..\..\other\CSPARSE;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_RELIABILITY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -169,7 +169,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\fesensitivity;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\optimization\domain;..\..\..\src\optimization\domain\component;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\fesensitivity;..\..\..\other\CSPARSE;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_RELIABILITY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -203,11 +203,13 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\GimmeMCK.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.cpp" />
@@ -216,6 +218,8 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StagedNewmark.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\DOF_GrpIter.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\FE_EleIter.cpp" />
@@ -235,6 +239,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.cpp" />
@@ -315,6 +320,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h" />
@@ -328,6 +334,8 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedLoadControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\DOF_GrpIter.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\FE_EleIter.h" />
@@ -347,6 +355,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ExpressNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.h" />

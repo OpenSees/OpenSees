@@ -144,7 +144,7 @@ class ZeroLengthContact2D: public Element
   int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   void Print(OPS_Stream &s, int flag =0);
 
-  Response *setResponse(const char **argv, int argc, Information &eleInformation);
+  Response *setResponse(const char **argv, int argc, OPS_Stream &output);
   int getResponse(int responseID, Information &eleInformation);
 
   //void updateDir (const Vector& x, const Vector& y);
@@ -179,7 +179,7 @@ class ZeroLengthContact2D: public Element
   // Normal and Tangental Vectors for Elemental Nodes, (4*1)
   Vector N;
   Vector T;
-  Vector ContactNormal;  // out normal of master element
+  Vector ContactNormal;  // out normal of primary element
 
   int ContactFlag;                    // 0: not contact; 1: stick; 2: slide
   int numDOF;	                        // number of dof for ZeroLength

@@ -60,34 +60,43 @@ void* OPS_FiberSection3d()
     numData = 1;
     int tag;
     if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
-    
-    UniaxialMaterial *torsion = 0;
+
     if (OPS_GetNumRemainingInputArgs() < 2) {
       opserr << "WARNING torsion not specified for FiberSection\n";
       opserr << "Use either -GJ $GJ or -torsion $matTag\n";
       opserr << "\nFiberSection3d section: " << tag << endln;
       return 0;
     }
-    const char* opt = OPS_GetString();
-    numData = 1;
+    
+    UniaxialMaterial *torsion = 0;
     bool deleteTorsion = false;
-    if (strcmp(opt, "-GJ") == 0) {
-      double GJ;
-      if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
-	opserr << "WARNING: failed to read GJ\n";
-	return 0;
+    bool computeCentroid = true;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt,"-noCentroid") == 0) {
+	computeCentroid = false;
       }
-      torsion = new ElasticMaterial(0,GJ);
-      deleteTorsion = true;
-    }
-    if (strcmp(opt, "-torsion") == 0) {
-      int torsionTag;
-      if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
-	opserr << "WARNING: failed to read torsion\n";
-	return 0;
+      if (strcmp(opt, "-GJ") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	double GJ;
+	if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	  opserr << "WARNING: failed to read GJ\n";
+	  return 0;
+	}
+	torsion = new ElasticMaterial(0,GJ);
+	deleteTorsion = true;
       }
-      torsion = OPS_getUniaxialMaterial(torsionTag);
+      if (strcmp(opt, "-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	int torsionTag;
+	if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	  opserr << "WARNING: failed to read torsion\n";
+	  return 0;
+	}
+	torsion = OPS_getUniaxialMaterial(torsionTag);
+      }
     }
+
     if (torsion == 0) {
       opserr << "WARNING torsion not specified for FiberSection\n";
       opserr << "\nFiberSection3d section: " << tag << endln;
@@ -95,17 +104,19 @@ void* OPS_FiberSection3d()
     }
     
     int num = 30;
-    SectionForceDeformation *section = new FiberSection3d(tag, num, *torsion);
+    SectionForceDeformation *section = new FiberSection3d(tag, num, *torsion, computeCentroid);
     if (deleteTorsion)
       delete torsion;
     return section;
 }
 
 // constructors:
-FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMaterial &torsion): 
+FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers,
+			       UniaxialMaterial &torsion, bool compCentroid): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
+  sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -122,9 +133,9 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
       exit(-1);
     }
 
+    double yLoc, zLoc, Area;
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
-      double yLoc, zLoc, Area;
       theFiber->getFiberLocation(yLoc, zLoc);
       Area = theFiber->getArea();
 
@@ -144,8 +155,10 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
       }
     }
 
-    yBar = QzBar/Abar;
-    zBar = QyBar/Abar;
+    if (computeCentroid) {
+      yBar = QzBar/Abar;
+      zBar = QyBar/Abar;
+    }
   }
 
   theTorsion = torsion.getCopy();
@@ -169,10 +182,11 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
   code(3) = SECTION_RESPONSE_T;
 }
 
-FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion): 
+FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion, bool compCentroid): 
     SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
     numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
-    QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
+    QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
+    sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
     if(sizeFibers != 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
@@ -219,10 +233,12 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion):
 }
 
 FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
-			       SectionIntegration &si, UniaxialMaterial &torsion):
+			       SectionIntegration &si, UniaxialMaterial &torsion,
+			       bool compCentroid):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
+  sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -265,10 +281,12 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
       exit(-1);
     }
   }    
-  
-  yBar = QzBar/Abar;  
-  zBar = QyBar/Abar;  
 
+  if (computeCentroid) {
+    yBar = QzBar/Abar;  
+    zBar = QyBar/Abar;  
+  }
+  
   theTorsion = torsion.getCopy();
   if (theTorsion == 0)
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -292,7 +310,8 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
 FiberSection3d::FiberSection3d():
   SectionForceDeformation(0, SEC_TAG_FiberSection3d),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(true),
+  sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
   s = new Vector(sData, 4);
   ks = new Matrix(kData, 4, 4);
@@ -333,7 +352,7 @@ FiberSection3d::addFiber(Fiber &newFiber)
 	  newMatData[3*i+2] = matData[3*i+2];
       }
 
-      // initialize new memomry
+      // initialize new memory
       for (int i = numFibers; i < newSize; i++) {
 	  newArray[i] = 0;
 	  newMatData[3*i] = 0.0;
@@ -370,13 +389,15 @@ FiberSection3d::addFiber(Fiber &newFiber)
   numFibers++;
 
   // Recompute centroid
-  Abar  += Area;
-  QzBar += yLoc*Area;
-  QyBar += zLoc*Area;
-
-  yBar = QzBar/Abar;
-  zBar = QyBar/Abar;
-
+  if (computeCentroid) {
+    Abar  += Area;
+    QzBar += yLoc*Area;
+    QyBar += zLoc*Area;
+    
+    yBar = QzBar/Abar;
+    zBar = QyBar/Abar;
+  }
+  
   return 0;
 }
 
@@ -445,14 +466,13 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
  
   double tangent, stress;
   for (int i = 0; i < numFibers; i++) {
-    UniaxialMaterial *theMat = theMaterials[i];
     double y = yLocs[i] - yBar;
     double z = zLocs[i] - zBar;
     double A = fiberArea[i];
 
     // determine material strain and set it
     double strain = d0 - y*d1 + z*d2;
-    res += theMat->setTrial(strain, stress, tangent);
+    res += theMaterials[i]->setTrial(strain, stress, tangent);
 
     double value = tangent * A;
     double vas1 = -y*value;
@@ -513,12 +533,11 @@ FiberSection3d::getInitialTangent(void)
   }
 
   for (int i = 0; i < numFibers; i++) {
-    UniaxialMaterial *theMat = theMaterials[i];
     double y = yLocs[i] - yBar;
     double z = zLocs[i] - zBar;
     double A = fiberArea[i];
 
-    double tangent = theMat->getInitialTangent();
+    double tangent = theMaterials[i]->getInitialTangent();
 
     double value = tangent * A;
     double vas1 = -y*value;
@@ -607,7 +626,8 @@ FiberSection3d::getCopy(void)
   theCopy->Abar = Abar;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
-
+  theCopy->computeCentroid = computeCentroid;
+  
   for (int i=0; i<16; i++)
     theCopy->kData[i] = kData[i];
 
@@ -819,7 +839,8 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
     theTorsion->setDbTag(dbTag);
     data(3) = theTorsion->getClassTag();
   }
-
+  data(4) = computeCentroid ? 1 : 0; // Now the ID data is really 5
+  
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "FiberSection3d::sendSelf - failed to send ID data\n";
@@ -981,8 +1002,10 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
     Abar  = 0.0;
     double yLoc, zLoc, Area;
 
+    computeCentroid = data(4) ? true : false;
+    
     // Recompute centroid
-    for (i = 0; i < numFibers; i++) {
+    for (i = 0; computeCentroid && i < numFibers; i++) {
       yLoc = matData[3*i];
       zLoc = matData[3*i+1];
       Area = matData[3*i+2];
@@ -990,9 +1013,14 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       QzBar += yLoc*Area;
       QyBar += zLoc*Area;
     }
-    
-    yBar = QzBar/Abar;
-    zBar = QyBar/Abar;
+
+    if (computeCentroid) {
+      yBar = QzBar/Abar;
+      zBar = QyBar/Abar;
+    } else {
+      yBar = 0.0;
+      zBar = 0.0;      
+    }
   }    
 
   return res;
@@ -1005,7 +1033,7 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
     s << "\nFiberSection3d, tag: " << this->getTag() << endln;
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
-    s << "\tCentroid: (" << -yBar << ", " << zBar << ')' << endln;
+    s << "\tCentroid: (" << yBar << ", " << zBar << ')' << endln;
     if (theTorsion != 0)
         theTorsion->Print(s, flag);    
 
@@ -1037,8 +1065,8 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
 	  s << "\t\t\t{";
 	  s << "\"name\": \"" << this->getTag() << "\", ";
 	  s << "\"type\": \"FiberSection3d\", ";
-      if (theTorsion != 0)
-          s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
+	  if (theTorsion != 0)
+	    s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
 	  s << "\"fibers\": [\n";
 	  for (int i = 0; i < numFibers; i++) {
 		  s << "\t\t\t\t{\"coord\": [" << matData[3*i] << ", " << matData[3*i+1] << "], ";
@@ -1056,128 +1084,113 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
 Response*
 FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
-
-  const ID &type = this->getType();
-  int typeSize = this->getOrder();
-
-  Response *theResponse =0;
-
-  output.tag("SectionOutput");
-  output.attr("secType", this->getClassType());
-  output.attr("secTag", this->getTag());
-
-  // deformations
-  if (strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"deformation") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    theResponse =  new MaterialResponse(this, 1, this->getSectionDeformation());
+  Response *theResponse = 0;
   
-  // forces
-  } else if (strcmp(argv[0],"forces") == 0 || strcmp(argv[0],"force") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    theResponse =  new MaterialResponse(this, 2, this->getStressResultant());
-  
-  // force and deformation
-  } else if (strcmp(argv[0],"forceAndDeformation") == 0) { 
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    for (int j=0; j<typeSize; j++) {
-      int code = type(j);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
-    theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
+    static double yLocs[10000];
+    static double zLocs[10000];
+    
+    if (sectionIntegr != 0) {
+      sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+    }  
+    else {
+      for (int i = 0; i < numFibers; i++) {
+	yLocs[i] = matData[3*i];
+	zLocs[i] = matData[3*i+1];
+      }
+    }
+    
+    int key = numFibers;
+    int passarg = 2;
+    
+    if (argc <= 3)	{  // fiber number was input directly
+      
+      key = atoi(argv[1]);
+      
+    } else if (argc > 4) {         // find fiber closest to coord. with mat tag
+      int matTag = atoi(argv[3]);
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist = 0.0;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      int j;
+      
+      // Find first fiber with specified material tag
+      for (j = 0; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    
+	  dy = ySearch-yCoord;
+	  dz = zSearch-zCoord;
+	  closestDist = dy*dy + dz*dz;
+	  key = j;
+	  break;
+	}
+      }
+      
+      // Search the remaining fibers
+      for ( ; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    	    
+	  dy = ySearch-yCoord;
+	  dz = zSearch-zCoord;
+	  distance = dy*dy + dz*dz;
+	  if (distance < closestDist) {
+	    closestDist = distance;
+	    key = j;
+	  }
+	}
+      }
+      passarg = 4;
+    }
+    
+    else {                  // fiber near-to coordinate specified
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      //ySearch = matData[0];
+      //zSearch = matData[1];
+      ySearch = yLocs[0];
+      zSearch = zLocs[0];
+      dy = ySearch-yCoord;
+      dz = zSearch-zCoord;
+      closestDist = sqrt(dy*dy + dz*dz);
+      key = 0;
+      for (int j = 1; j < numFibers; j++) {
+	//ySearch = matData[3*j];
+	//zSearch = matData[3*j+1];
+	ySearch = yLocs[j];
+	zSearch = zLocs[j];	    	    	  
+	dy = ySearch-yCoord;
+	dz = zSearch-zCoord;
+	distance = sqrt(dy*dy + dz*dz);
+	if (distance < closestDist) {
+	  closestDist = distance;
+	  key = j;
+	}
+      }
+      passarg = 3;
+    }
+    
+    if (key < numFibers && key >= 0) {
+      output.tag("FiberOutput");
+      output.attr("yLoc",matData[3*key]);
+      output.attr("zLoc",matData[3*key+1]);
+      output.attr("area",matData[3*key+2]);
+      
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      
+      output.endTag();
+    }
   
   } else if (strcmp(argv[0],"fiberData") == 0) {
     int numData = numFibers*5;
@@ -1196,6 +1209,25 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     Vector theResponseData(numData);
     theResponse = new MaterialResponse(this, 5, theResponseData);
 
+  } else if (strcmp(argv[0],"fiberData2") == 0) {
+    int numData = numFibers*6;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[3*j]);
+      output.attr("zLoc", matData[3*j+1]);
+      output.attr("area", matData[3*j+2]);    
+      output.attr("material", theMaterials[j]->getTag());
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","material");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || 
 	     (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
@@ -1206,103 +1238,18 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 	     (strcmp(argv[0],"hasFailed") == 0)) {
 
     int count = 0;
-    return theResponse = new MaterialResponse(this, 7, count);
+    theResponse = new MaterialResponse(this, 7, count);
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
-	  return theResponse = new MaterialResponse(this, 10, getEnergy());
+	  theResponse = new MaterialResponse(this, 10, getEnergy());
   }
+  else if (strcmp(argv[0],"centroid") == 0) 
+    theResponse = new MaterialResponse(this, 20, Vector(2));
+  
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
 
-
-  else {
-    if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
-      
-      int key = numFibers;
-      int passarg = 2;
-      
-      if (argc <= 3)	{  // fiber number was input directly
-	
-	key = atoi(argv[1]);
-	
-      } else if (argc > 4) {         // find fiber closest to coord. with mat tag
-	int matTag = atoi(argv[3]);
-	double yCoord = atof(argv[1]);
-	double zCoord = atof(argv[2]);
-	double closestDist = 0.0;
-	double ySearch, zSearch, dy, dz;
-	double distance;
-	int j;
-	
-	// Find first fiber with specified material tag
-	for (j = 0; j < numFibers; j++) {
-	  if (matTag == theMaterials[j]->getTag()) {
-	    ySearch = matData[3*j];
-	    zSearch = matData[3*j+1];
-	    dy = ySearch-yCoord;
-	    dz = zSearch-zCoord;
-	    closestDist = sqrt(dy*dy + dz*dz);
-	    key = j;
-	    break;
-	  }
-	}
-	
-	// Search the remaining fibers
-	for ( ; j < numFibers; j++) {
-	  if (matTag == theMaterials[j]->getTag()) {
-	    ySearch = matData[3*j];
-	    zSearch = matData[3*j+1];
-	    dy = ySearch-yCoord;
-	    dz = zSearch-zCoord;
-	    distance = sqrt(dy*dy + dz*dz);
-	    if (distance < closestDist) {
-	      closestDist = distance;
-	      key = j;
-	    }
-	  }
-	}
-	passarg = 4;
-      }
-      
-      else {                  // fiber near-to coordinate specified
-	double yCoord = atof(argv[1]);
-	double zCoord = atof(argv[2]);
-	double closestDist;
-	double ySearch, zSearch, dy, dz;
-	double distance;
-	ySearch = matData[0];
-	zSearch = matData[1];
-	dy = ySearch-yCoord;
-	dz = zSearch-zCoord;
-	closestDist = sqrt(dy*dy + dz*dz);
-	key = 0;
-	for (int j = 1; j < numFibers; j++) {
-	  ySearch = matData[3*j];
-	  zSearch = matData[3*j+1];
-	  dy = ySearch-yCoord;
-	  dz = zSearch-zCoord;
-	  distance = sqrt(dy*dy + dz*dz);
-	  if (distance < closestDist) {
-	    closestDist = distance;
-	    key = j;
-	  }
-	}
-	passarg = 3;
-      }
-      
-      if (key < numFibers && key >= 0) {
-	output.tag("FiberOutput");
-	output.attr("yLoc",-matData[3*key]);
-	output.attr("zLoc",matData[3*key+1]);
-	output.attr("area",matData[3*key+2]);
-	
-	theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
-	
-	output.endTag();
-      }
-    }
-  }
-
-  output.endTag();
   return theResponse;
 }
 
@@ -1310,24 +1257,33 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 FiberSection3d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
   if (responseID == 5) {
     int numData = 5*numFibers;
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      double yLoc, zLoc, A, stress, strain;
-      yLoc = matData[3*j];
-      zLoc = matData[3*j+1];
-      A = matData[3*j+2];
-      stress = theMaterials[j]->getStress();
-      strain = theMaterials[j]->getStrain();
-      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
-      data(count+3) = stress; data(count+4) = strain;
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
+      data(count+3) = theMaterials[j]->getStress();
+      data(count+4) = theMaterials[j]->getStrain();
       count += 5;
     }
     return sectInfo.setVector(data);	
+  } else if (responseID == 55) {
+    int numData = 6*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = matData[3*j]; // y
+      data(count+1) = matData[3*j+1]; // z
+      data(count+2) = matData[3*j+2]; // A
+      data(count+3) = (double)theMaterials[j]->getTag();
+      data(count+4) = theMaterials[j]->getStress();
+      data(count+5) = theMaterials[j]->getStrain();	    
+      count += 6;
+    }
+    return sectInfo.setVector(data);		  
   } else  if (responseID == 6) {
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
@@ -1352,6 +1308,12 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
   else  if (responseID == 10) {
 
 	  return sectInfo.setDouble(getEnergy());
+  }
+  else if (responseID == 20) {
+    static Vector centroid(2);
+    centroid(0) = yBar;
+    centroid(1) = zBar;
+    return sectInfo.setVector(centroid);
   }
 
   return SectionForceDeformation::getResponse(responseID, sectInfo);
@@ -1581,14 +1543,13 @@ FiberSection3d::commitSensitivity(const Vector& defSens, int gradIndex, int numG
   double depsdh = 0;
 
   for (int i = 0; i < numFibers; i++) {
-    UniaxialMaterial *theMat = theMaterials[i];
     y = yLocs[i] - yBar;
     z = zLocs[i] - zBar;
 
     // determine material strain and set it
     depsdh = d0 - y*d1 + z*d2 - dydh[i]*e(1) + dzdh[i]*e(2);
 
-    theMat->commitSensitivity(depsdh,gradIndex,numGrads);
+    theMaterials[i]->commitSensitivity(depsdh,gradIndex,numGrads);
   }
 
   theTorsion->commitSensitivity(d3, gradIndex, numGrads);

@@ -366,7 +366,7 @@ WindowDevice::WINOPEN(const char *_title, int _xLoc, int _yLoc, int _width, int 
     hints.height = _height;
     hints.flags = PPosition | PSize;
 
-    // set the defualt foreground and background colors
+    // set the default foreground and background colors
     XVisualInfo visual; 
     visual.visual = 0;
     int depth = DefaultDepth(theDisplay, theScreen);
@@ -408,7 +408,7 @@ WindowDevice::WINOPEN(const char *_title, int _xLoc, int _yLoc, int _width, int 
 	//	XMatchVisualInfo(theDisplay, theScreen, depth, PseudoColor, &visual);
 	if (XMatchVisualInfo(theDisplay, theScreen, depth, PseudoColor, &visual) == 0) {
 	  opserr << "WindowDevice::initX11() - could not get a visual for PseudoColor\n";
-	  opserr << "Colors diplayed will be all over the place\n";
+	  opserr << "Colors displayed will be all over the place\n";
 	  cmap = DefaultColormap(theDisplay, theScreen);
 	  fail = true;
         } else {
@@ -604,7 +604,7 @@ WindowDevice::STARTIMAGE()
 
 #else
    
-  // ensure that the gl contex is the one for this object & do a flush
+  // ensure that the gl context is the one for this object & do a flush
   wglMakeCurrent(theHDC, theHRC);
  // glFlush();
 #endif
@@ -747,7 +747,7 @@ WindowDevice::initWindow(void) {
 
     theScreen = DefaultScreen(theDisplay);
     
-    // set the defualt foreground and background colors
+    // set the default foreground and background colors
     //    foreground = BlackPixel(theDisplay, theScreen);
     // background = WhitePixel(theDisplay, theScreen);    
 
@@ -755,7 +755,7 @@ WindowDevice::initWindow(void) {
     cmap = DefaultColormap(theDisplay, theScreen);
 
     // we now try to allocate some color cells from the colormap
-    // we start by tring to obtain 256 colors, then 192, finally 64
+    // we start by trying to obtain 256 colors, then 192, finally 64
     // if we can't get these (and as a last resort) we create a new color map
 
     if (XAllocColorCells(theDisplay, cmap, false, NULL, 0, pixels, 256) != 0) {

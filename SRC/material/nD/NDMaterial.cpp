@@ -129,23 +129,27 @@ NDMaterial::getCopy(const char *type)
       strcmp(type,"PlaneStress2D") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     PlaneStressMaterial *clone = new PlaneStressMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"BeamFiber") == 0 ||
 	   strcmp(type,"TimoshenkoFiber") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     BeamFiberMaterial *clone = new BeamFiberMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"BeamFiber2d") == 0 ||
 	   strcmp(type,"TimoshenkoFiber2d") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     BeamFiberMaterial2d *clone = new BeamFiberMaterial2d(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"PlateFiber") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     PlateFiberMaterial *clone = new PlateFiberMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else
@@ -208,8 +212,6 @@ NDMaterial::getStrain(void)
    return errVector;    
 }
 
-
-
 //Functions for obtaining and updating temperature-dependent information Added by L.Jiang [SIF]
 double
 NDMaterial::getThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
@@ -234,8 +236,7 @@ NDMaterial::getTempAndElong()
 //end of adding thermo-mechanical functions, L.Jiang [SIF]
 
 Response*
-NDMaterial::setResponse (const char **argv, int argc, 
-			 OPS_Stream &output)
+NDMaterial::setResponse (const char **argv, int argc, OPS_Stream &output)
 {
   Response *theResponse =0;
   const char *matType = this->getType();
@@ -297,14 +298,22 @@ NDMaterial::setResponse (const char **argv, int argc,
 	  }
 	  //opserr<<"tempElong "<<this->getTempAndElong()<<endln;
 	  theResponse = new MaterialResponse(this, 3, this->getTempAndElong());
-
   }
+  //end of adding output request,L.Jiang [SIF]
   else if (strcmp(argv[0], "Tangent") == 0 || strcmp(argv[0], "tangent") == 0) {
 	  const Matrix &res = this->getTangent();
 	  theResponse = new MaterialResponse(this, 4, this->getTangent());
-
   }
-  //end of adding output request,L.Jiang [SIF]
+
+  // Massimo Petracca - 28/12/2021:
+  // this should be handled by the PlaneStressUserMaterial... not here!
+  //default damage output - added by V.K. Papanikolaou [AUTh] - start
+  //else if (strcmp(argv[0], "Damage") == 0 || strcmp(argv[0], "damage") == 0) {
+  //    static Vector vec = Vector(3);
+  //    for (int i = 0; i < 3; i++) vec[i] = 0;
+  //    theResponse = new MaterialResponse(this, 5, vec);  // zero vector
+  //}
+  //default damage output - added by V.K. Papanikolaou [AUTh] - end 
 
   output.endTag(); // NdMaterialOutput
 
@@ -321,12 +330,16 @@ NDMaterial::getResponse (int responseID, Information &matInfo)
   case 2:
     return matInfo.setVector(this->getStrain());
     
+    // Massimo Petracca - 28/12/2021: adding missing responseID
+  case 3:
+      return matInfo.setVector(this->getTempAndElong());
+  case 4:
+      return matInfo.setMatrix(this->getTangent());
+
   default:
     return -1;
   }
 }
-
-
 
 // AddingSensitivity:BEGIN ////////////////////////////////////////
 const Vector &
@@ -355,18 +368,21 @@ NDMaterial::getDampTangentSensitivity(int gradIndex)
 	static Matrix dummy(1,1);
 	return dummy;
 }
+
 const Matrix &
 NDMaterial::getTangentSensitivity(int gradIndex)
 {
 	static Matrix dummy(1,1);
 	return dummy;
 }
+
 const Matrix &
 NDMaterial::getInitialTangentSensitivity(int gradIndex)
 {
 	static Matrix dummy(1,1);
 	return dummy;
 }
+
 int
 NDMaterial::commitSensitivity(const Vector & strainSensitivity, int gradIndex, int numGrads)
 {

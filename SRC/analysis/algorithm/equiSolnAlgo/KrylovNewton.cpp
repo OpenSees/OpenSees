@@ -313,7 +313,8 @@ KrylovNewton::leastSquares(int k)
   B = r;
   
   // No transpose
-  char *trans = "N";
+  //  char *trans = "N";
+  char trans[] = "N";
 
   // The number of right hand side vectors
   int nrhs = 1;

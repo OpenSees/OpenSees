@@ -75,6 +75,8 @@ class FEM_ObjectBroker;
 
 class TaggedObjectStorage;
 
+class DomainModalProperties;
+
 class Domain
 {
   public:
@@ -152,6 +154,7 @@ class Domain
 
     // methods to query the state of the domain
     virtual double  getCurrentTime(void) const;
+    virtual double  getDT(void) const;
     virtual int getCreep(void) const;
     virtual int     getCommitTag(void) const;    	
     virtual int getNumElements(void) const;
@@ -197,7 +200,9 @@ class Domain
     virtual int setEigenvalues(const Vector &theEigenvalues);
     virtual const Vector &getEigenvalues(void);
     virtual double getTimeEigenvaluesSet(void);
-
+    void setModalProperties(const DomainModalProperties& dmp);
+    void unsetModalProperties(void);
+    int getModalProperties(DomainModalProperties & dmp) const;
     int setModalDampingFactors(Vector *, bool inclModalMatrix = false);
     const Vector *getModalDampingFactors(void);
     bool inclModalDampingMatrix(void);
@@ -234,6 +239,9 @@ class Domain
 
     virtual int calculateNodalReactions(int flag);
 	Recorder* getRecorder(int tag);	//by SAJalali
+
+    virtual int activateElements(const ID& elementList);
+    virtual int deactivateElements(const ID& elementList);
 
   protected:    
 
@@ -282,9 +290,12 @@ class Domain
     int commitTag;
     
     Vector theBounds;
+    bool initBounds; // added to fix bug when all nodes are positive or negative - ambaker1
+    bool resetBounds; // added to optimize bound resetting for when nodes are removed.
     
     Vector *theEigenvalues;
     double theEigenvalueSetTime;
+    DomainModalProperties* theModalProperties;
     Vector *theModalDampingFactors;
     bool inclModalMatrix;
 

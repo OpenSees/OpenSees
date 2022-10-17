@@ -36,6 +36,41 @@
 #include <MaterialResponse.h>
 #include <Information.h>
 
+#include <elementAPI.h>
+
+void* OPS_MembranePlateFiberSectionThermal()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section PlateFiberThermal tag? matTag? h? " << endln;
+	return 0;
+    }
+    
+    int idata[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata, idata) < 0) {
+	opserr << "WARNING: invalid tags\n";
+	return 0;
+    }
+
+    double h;
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	opserr << "WARNING: invalid h\n";
+	return 0;
+    }
+
+    NDMaterial *theMaterial = OPS_getNDMaterial(idata[1]);
+    if (theMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << idata[1]; 
+	opserr << "\nPlateFiberThermal section: " << idata[0] << endln;
+	return 0;
+    }
+
+    return new MembranePlateFiberSectionThermal(idata[0], h, *theMaterial);
+}
 
 //parameters
 //const double MembranePlateFiberSectionThermal::root56 = 1 ; //shear correction
@@ -149,7 +184,19 @@ int MembranePlateFiberSectionThermal::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& MembranePlateFiberSectionThermal::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -734,59 +781,9 @@ Response*
 MembranePlateFiberSectionThermal::setResponse(const char **argv, int argc,
                                       OPS_Stream &output)
 {
-  const ID &type = this->getType();
-  int typeSize = this->getOrder();
-  
   Response *theResponse =0;
 
-  output.tag("SectionOutput");
-  output.attr("secType", this->getClassType());
-  output.attr("secTag", this->getTag());
-
-  // deformations
-  if (strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"deformation") == 0) {
-    output.tag("ResponseType","eps11");
-    output.tag("ResponseType","eps22");
-    output.tag("ResponseType","gamma12");
-    output.tag("ResponseType","theta11");
-    output.tag("ResponseType","theta22");
-    output.tag("ResponseType","theta33");
-    output.tag("ResponseType","gamma13");
-    output.tag("ResponseType","gamma23");
-    theResponse =  new MaterialResponse(this, 1, this->getSectionDeformation());
-  // forces
-  } else if (strcmp(argv[0],"forces") == 0 || strcmp(argv[0],"force") == 0) {
-    output.tag("ResponseType","p11");
-    output.tag("ResponseType","p22");
-    output.tag("ResponseType","p12");
-    output.tag("ResponseType","m11");
-    output.tag("ResponseType","m22");
-    output.tag("ResponseType","m12");
-    output.tag("ResponseType","q1");
-    output.tag("ResponseType","q2");
-    theResponse =  new MaterialResponse(this, 2, this->getStressResultant());
-  
-  // force and deformation
-  } else if (strcmp(argv[0],"forceAndDeformation") == 0) { 
-    output.tag("ResponseType","eps11");
-    output.tag("ResponseType","eps22");
-    output.tag("ResponseType","gamma12");
-    output.tag("ResponseType","theta11");
-    output.tag("ResponseType","theta22");
-    output.tag("ResponseType","theta33");
-    output.tag("ResponseType","gamma13");
-    output.tag("ResponseType","gamma23");
-    output.tag("ResponseType","p11");
-    output.tag("ResponseType","p22");
-    output.tag("ResponseType","p12");
-    output.tag("ResponseType","m11");
-    output.tag("ResponseType","m22");
-    output.tag("ResponseType","m12");
-    output.tag("ResponseType","q1");
-    output.tag("ResponseType","q2");
-    theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
-  }  
-  else if (strcmp(argv[0],"fiber") == 0 || strcmp(argv[0],"Fiber") == 0) {
+  if (strcmp(argv[0],"fiber") == 0 || strcmp(argv[0],"Fiber") == 0) {
     if (argc < 3) {
       opserr << "MembranePlateFiberSectionThermal::setResponse() - need to specify more data\n";
       return 0;
@@ -796,39 +793,69 @@ MembranePlateFiberSectionThermal::setResponse(const char **argv, int argc,
       
       output.tag("FiberOutput");
       output.attr("number",pointNum);
+      output.attr("zLoc", 0.5 * h * sg[pointNum - 1]);
+      output.attr("thickness", 0.5 * h * wg[pointNum - 1]);
       
-      theResponse =  theFibers[pointNum-1]->setResponse(&argv[2], argc-2, output);
+      theResponse = theFibers[pointNum-1]->setResponse(&argv[2], argc-2, output);
       
       output.endTag();
     }
   }
-  output.endTag(); // SectionOutput
+  
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
   return theResponse;
 }
 
 int 
 MembranePlateFiberSectionThermal::getResponse(int responseID, Information &secInfo)
 {
-  switch (responseID) {
-  case 1:
-    return secInfo.setVector(this->getSectionDeformation());
-    
-  case 2:
-    return secInfo.setVector(this->getStressResultant());
-    
-  case 4: {
-    Vector &theVec = *(secInfo.theVector);
-    const Vector &e = this->getSectionDeformation();
-    const Vector &s = this->getStressResultant();
-    for (int i = 0; i < 8; i++) {
-      theVec(i) = e(i);
-      theVec(i+8) = s(i);
-    }
-    
-    return secInfo.setVector(theVec);
-  }
-  default:
-    return -1;
-  }
+  return SectionForceDeformation::getResponse(responseID, secInfo);
 }
 
+int MembranePlateFiberSectionThermal::setParameter(const char** argv, int argc, Parameter& param)
+{
+    // if the user explicitly wants to update a material in this section...
+    if (argc > 1) {
+        // case 1: fiber value (all fibers)
+        // case 2: fiber id value (one specific fiber)
+        if (strcmp(argv[0], "fiber") == 0 || strcmp(argv[0], "Fiber") == 0) {
+            // test case 2 (one specific fiber) ...
+            if (argc > 2) {
+                int pointNum = atoi(argv[1]);
+                if (pointNum > 0 && pointNum <= 5) {
+                    return theFibers[pointNum - 1]->setParameter(&argv[2], argc - 2, param);
+                }
+            }
+            // ... otherwise case 1 (all fibers), if the argv[1] is not a valid id
+            int mixed_result = -1;
+            for (int i = 0; i < 5; ++i) {
+                if (theFibers[i]->setParameter(&argv[1], argc - 1, param) == 0)
+                    mixed_result = 0; // if at least one fiber handles the param, make it successful
+            }
+            return mixed_result;
+        }
+    }
+    // if we are here, the first keyword is not "fiber", so we can check for parameters
+    // specific to this section (if any) or forward the request to all fibers.
+    if (argc > 0) {
+        // we don't have parameters for this section, so we directly forward it to all fibers.
+        // placeholder for future implementations: if we will have parameters for this class, check them here
+        // before forwarding to all fibers
+        int mixed_result = -1;
+        for (int i = 0; i < 5; ++i) {
+            if (theFibers[i]->setParameter(argv, argc, param) == 0)
+                mixed_result = 0; // if at least one fiber handles the param, make it successful
+        }
+        return mixed_result;
+    }
+    // fallback to base class implementation
+    return SectionForceDeformation::setParameter(argv, argc, param);
+}
+
+int MembranePlateFiberSectionThermal::updateParameter(int parameterID, Information& info)
+{
+    // placeholder for future implementations: if we will have parameters for this class, update them here
+    return SectionForceDeformation::updateParameter(parameterID, info);
+}

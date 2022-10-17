@@ -43,6 +43,7 @@
 // All code specific to LimitStateMaterial separated by ////////////////
 
 #include <stdlib.h>
+#include "LimitCurve.h"
 
 #include <LimitStateMaterial.h>
 #include <G3Globals.h>
@@ -887,7 +888,7 @@ LimitStateMaterial::revertToStart(void)
 	Ploss = 0.0;
 	/////////////////
 
-	// Do the same thin inthe limit curve (done by Terje)
+	// Do the same thing in the limit curve (done by Terje)
 	theCurve->revertToStart();
 
 

@@ -33,7 +33,7 @@
 //   Uriz, Patxi, "Towards Earthquake Resistant Design of 
 //      Concentrically Braced Steel Frames," Ph.D. Dissertation, 
 //      Structural Engineering, Mechanics, and Materials, Civil 
-//      and Envrironmental Engineering, University of California, 
+//      and Environmental Engineering, University of California, 
 //      Berkeley, December 2005
 //
 // Modifications to the code have been added by Kevin Mackie, Ph.D., as
@@ -69,7 +69,7 @@ void* OPS_FatigueMaterial()
     int idata[2];
     numdata = 2;
     if (OPS_GetIntInput(&numdata,idata)<0) {
-	opserr<<"WARNING invlid int inputs\n";
+	opserr<<"WARNING invalid int inputs\n";
 	return 0;
     }
 
@@ -604,7 +604,7 @@ FatigueMaterial::commitState(void)
 
       } else {
 	
-	// One full cycle of |C-D| and 1/2 cyle of |A-B|
+	// One full cycle of |C-D| and 1/2 cycle of |A-B|
 	
 	if (fabs(C-trialStrain) < 1e-10) {
 	  DL = DI;
@@ -704,12 +704,6 @@ FatigueMaterial::revertToStart(void)
   SF  = 0; /*Start Flag = 0 if very first strain, (i.e. when initializing)
 	     = 1 otherwise */
   DL  = 0; //Damage if current strain was last peak.
-
-  Dmax    = 0;
-  E0      = 0; 
-  m       = 0;
-  minStrain    = 0;
-  maxStrain    = 0;
 
   // added 6/9/2006
   //values for recorder

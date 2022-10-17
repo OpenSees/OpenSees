@@ -118,12 +118,12 @@ int main(int argc, char **argv)
     //		SP_Constraint(tag, nodeTag, dofID, value)
     // and then add them to the domain
     
-    SP_Constraint *sp1 = new SP_Constraint(1, 1, 0, 0.0);
-    SP_Constraint *sp2 = new SP_Constraint(2, 1, 1, 0.0);    
-    SP_Constraint *sp3 = new SP_Constraint(3, 2, 0, 0.0);
-    SP_Constraint *sp4 = new SP_Constraint(4, 2, 1, 0.0);    
-    SP_Constraint *sp5 = new SP_Constraint(5, 3, 0, 0.0);
-    SP_Constraint *sp6 = new SP_Constraint(6, 3, 1, 0.0);        
+    SP_Constraint *sp1 = new SP_Constraint(1, 0, 0.0);
+    SP_Constraint *sp2 = new SP_Constraint(1, 1, 0.0);    
+    SP_Constraint *sp3 = new SP_Constraint(2, 0, 0.0);
+    SP_Constraint *sp4 = new SP_Constraint(2, 1, 0.0);    
+    SP_Constraint *sp5 = new SP_Constraint(3, 0, 0.0);
+    SP_Constraint *sp6 = new SP_Constraint(3, 1, 0.0);        
     theDomain->addSP_Constraint(sp1);
     theDomain->addSP_Constraint(sp2);
     theDomain->addSP_Constraint(sp3);
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
     
     TimeSeries *theSeries = new LinearSeries();
     
-    // construct a load pattren using constructor:
+    // construct a load pattern using constructor:
     //		LoadPattern(tag)
     // and then set it's TimeSeries and add it to the domain
     
@@ -187,6 +187,12 @@ int main(int argc, char **argv)
     theAnalysis.analyze(numSteps);
     opserr << *theDomain;
 
+    // Clean up memory before exit
+    theAnalysis.clearAll();
+    theDomain->clearAll();
+    delete theDomain;
+    delete theMaterial;
+    
     exit(0);
 }	
 	

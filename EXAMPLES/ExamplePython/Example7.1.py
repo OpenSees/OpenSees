@@ -18,7 +18,7 @@
 # Date: September 2017
 
 # import the OpenSees Python module
-from opensees import *
+from openseespy.opensees import *
 
 # ----------------------------
 # Start of model generation
@@ -100,7 +100,7 @@ algorithm("Newton")
 # DOF numberer
 numberer("RCM")
 
-# Cosntraint handler
+# Constraint handler
 constraints("Plain") 
 
 # System of equations solver

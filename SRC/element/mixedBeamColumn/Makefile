@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS = MixedBeamColumn2d.o MixedBeamColumn3d.o
+OBJS = MixedBeamColumn2d.o MixedBeamColumn3d.o MixedBeamColumnAsym3d.o
 
 # Compilation control
 

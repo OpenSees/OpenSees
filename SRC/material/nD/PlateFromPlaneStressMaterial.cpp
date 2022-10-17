@@ -86,7 +86,7 @@ void* OPS_PlateFromPlaneStressMaterial()
 //null constructor
 PlateFromPlaneStressMaterial::PlateFromPlaneStressMaterial( ) : 
 NDMaterial(0, ND_TAG_PlateFromPlaneStressMaterial ), 
-strain(5) 
+theMat(nullptr), strain(5), gmod(0.0)
 { }
 
 
@@ -358,7 +358,7 @@ PlateFromPlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_O
 
   this->setTag(idData(0));
   int matClassTag = idData(1);
-  if (theMat->getClassTag() != matClassTag) {
+  if (theMat == nullptr || theMat->getClassTag() != matClassTag) {
     if (theMat != 0) delete theMat;
     theMat = theBroker.getNewNDMaterial(matClassTag);
     if (theMat == 0) {
@@ -383,4 +383,26 @@ PlateFromPlaneStressMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_O
   
   return res;
 }
- 
+
+//setResponse - added by V.K. Papanikolaou [AUTh] - start
+Response*
+PlateFromPlaneStressMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
+{
+    if (strcmp(argv[0], "Tangent") == 0 || strcmp(argv[0], "tangent") == 0 ||
+        strcmp(argv[0], "stress") == 0 || strcmp(argv[0], "stresses") == 0 ||
+        strcmp(argv[0], "strain") == 0 || strcmp(argv[0], "strains") == 0) {
+        
+        return NDMaterial::setResponse(argv, argc, output);  // for stresses/strains, get response from NDMaterial
+    }
+
+    // for material-specific output
+
+    Response *theResponse = 0;
+    theResponse = theMat->setResponse(argv, argc, output);
+
+    if (theResponse == 0) 
+        return NDMaterial::setResponse(argv, argc, output);  // not implemented, get default (zero) response from NDMaterial
+
+    return theResponse;  // implemented, get damage response from theMat
+}
+//setResponse - added by V.K. Papanikolaou [AUTh] - end

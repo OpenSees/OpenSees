@@ -29,14 +29,14 @@
 //
 // Description: This file contains the class implementation for AlgorithmIncrements
 // AlgorithmIncrements is a class for building a Plane Frame model in an interpreted
-// enviroment. The constructor is used to add new commands to the interpreter,
+// environment. The constructor is used to add new commands to the interpreter,
 // these commands are also defined in this file.
 //
 // What: "@(#) AlgorithmIncrements.C, revA"
 
 
 #include <AlgorithmIncrements.h>
-#include <EquiSolnAlgo.h>
+#include "equiSolnAlgo/EquiSolnAlgo.h"
 #include <LinearSOE.h>
 #include <stdlib.h>
 #include <string.h>

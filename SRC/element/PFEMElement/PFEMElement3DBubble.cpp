@@ -295,17 +295,17 @@ int PFEMElement3DBubble::updateMatrix()
         for(int b=0; b<(int)thePCs.size(); ++b) {
 
             // Gt
-            M(numDOFs(2*a+1), numDOFs(2*b)) = G(3*b,a);   // GxT
-            M(numDOFs(2*a+1), numDOFs(2*b)+1) = G(3*b+1,a); // GyT
-            M(numDOFs(2*a+1), numDOFs(2*b)+2) = G(3*b+2,a); // GzT
+            D(numDOFs(2*a+1), numDOFs(2*b)) = G(3*b,a);   // GxT
+            D(numDOFs(2*a+1), numDOFs(2*b)+1) = G(3*b+1,a); // GyT
+            D(numDOFs(2*a+1), numDOFs(2*b)+2) = G(3*b+2,a); // GzT
 
             // G
-            M(numDOFs(2*a), numDOFs(2*b+1)) = -G(3*a,b);   // -Gx
-            M(numDOFs(2*a)+1, numDOFs(2*b+1)) = -G(3*a+1,b); // -Gy
-            M(numDOFs(2*a)+2, numDOFs(2*b+1)) = -G(3*a+2,b); // -Gz
+            D(numDOFs(2*a), numDOFs(2*b+1)) = -G(3*a,b);   // -Gx
+            D(numDOFs(2*a)+1, numDOFs(2*b+1)) = -G(3*a+1,b); // -Gy
+            D(numDOFs(2*a)+2, numDOFs(2*b+1)) = -G(3*a+2,b); // -Gz
 
             // L
-            M(numDOFs(2*a+1), numDOFs(2*b+1)) = L(a,b);   // bubble
+            D(numDOFs(2*a+1), numDOFs(2*b+1)) = L(a,b);   // bubble
         }
     }
 
@@ -397,7 +397,7 @@ PFEMElement3DBubble::getResistingForceIncInertia()
 	return P;
     }
 
-    // get velocity, accleration
+    // get velocity, acceleration
     Vector v(ndf), vdot(ndf);
     for(int i=0; i<(int)thePCs.size(); i++) {
         const Vector& accel = nodes[2*i]->getTrialAccel();
@@ -687,7 +687,7 @@ PFEMElement3DBubble::setParameter(const char **argv, int argc,
         parameter.setValue(mu);
         return parameter.addObject(1, this);
     }
-    // Mass densitity of the
+    // Mass density of the
     if (strcmp(argv[0],"rho") == 0) {
         parameter.setValue(rho);
         return parameter.addObject(2, this);

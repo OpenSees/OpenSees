@@ -223,7 +223,7 @@ PyObject *ops_addHomogeneousBC(PyObject *self, PyObject *args)
     Domain* theDomain = OPS_GetDomain();
     Node* theNode = theDomain->getNode(data[0]);
     if(theNode == 0) {
-	opserr<<"ERROR node "<<data[0]<<"does not exsit\n";
+	opserr<<"ERROR node "<<data[0]<<"does not exist\n";
 	return NULL;
     }
     int ndf = theNode->getNumberDOF();
@@ -330,7 +330,7 @@ PyObject *ops_addPattern(PyObject *self, PyObject *args)
     	return NULL;
     }
   
-    // Now add the patter
+    // Now add the pattern
     Domain& theDomain = *(OPS_GetDomain());
     if(theDomain.addLoadPattern(thePattern) == false) {
     	PyErr_SetString(PyExc_RuntimeError, "ERROR could not add LoadPattern.");
@@ -584,7 +584,7 @@ PyObject *ops_addFiber(PyObject *self, PyObject *args)
     
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
 
-    // check if a section is being proccessed
+    // check if a section is being processed
     SectionForceDeformation* section = pBuilder.getCurrentSection();
     if(section == 0) {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR no current section");
@@ -624,7 +624,7 @@ PyObject *ops_addPatch(PyObject *self, PyObject *args)
     
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
 
-    // check if a section is being proccessed
+    // check if a section is being processed
     SectionForceDeformation* section = pBuilder.getCurrentSection();
     if(section == 0) {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR no current section");
@@ -641,7 +641,7 @@ PyObject *ops_addPatch(PyObject *self, PyObject *args)
     } else if(type == "circ" || type == "circular") {
 	thePatch = (Patch*) OPS_CircPatch();
     } else {
-	PyErr_SetString(PyExc_RuntimeError,"ERROR unknow patch type");
+	PyErr_SetString(PyExc_RuntimeError,"ERROR unknown patch type");
 	return NULL;
     }
 
@@ -732,7 +732,7 @@ PyObject *ops_addLayer(PyObject *self, PyObject *args)
     
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
 
-    // check if a section is being proccessed
+    // check if a section is being processed
     SectionForceDeformation* section = pBuilder.getCurrentSection();
     if(section == 0) {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR no current section");
@@ -747,7 +747,7 @@ PyObject *ops_addLayer(PyObject *self, PyObject *args)
     } else if(type == "circ" || type == "circular") {
 	theLayer = (ReinfLayer*) OPS_CircReinfLayer();
     } else {
-	PyErr_SetString(PyExc_RuntimeError,"ERROR unknow layer type");
+	PyErr_SetString(PyExc_RuntimeError,"ERROR unknown layer type");
 	return NULL;
     }
 

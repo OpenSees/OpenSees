@@ -54,18 +54,9 @@ class ID
     int Size(void) const;
     void Zero(void);
     int setData(int *newData, int size, bool cleanIt = false);
-    int resize(int newSize);
-#if _DLL
-	inline int* GetData() { return this->data; }
-	void Print() {
-		opserr << "[";
-		for (int i = 0; i < this->sz; i++)
-		{
-			opserr << this->operator()(i) << ", ";
-		}
-		opserr << "]" << endln;
-	}
-#endif
+    int resize(int newSize, int fill_value=0);
+    int fill(int fill_value);
+
     // overloaded operators
     inline int &operator()(int x);
     inline int operator()(int x) const;

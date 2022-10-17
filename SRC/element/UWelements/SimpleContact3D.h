@@ -109,7 +109,7 @@ class SimpleContact3D : public Element
 
     Vector project(Vector XiEta0);
     
-    // method to obtain projection point on master surface
+    // method to obtain projection point on primary surface
     Vector GetPoint(Vector XiEta);
     // method to update base vectors g1 & g2
     int UpdateBase(Vector XiEta);
@@ -140,7 +140,7 @@ class SimpleContact3D : public Element
 
     Vector d;
 
-    Matrix x;				// matrix of cartesian coords of nodes 1-4, slave
+    Matrix x;				// matrix of cartesian coords of nodes 1-4, secondary
     Matrix g_metric;		// metric tensor
 	Matrix G_metric;		// contravariant metric tensor
 
@@ -169,11 +169,11 @@ class SimpleContact3D : public Element
     Vector Bn;		// gap-displacement matrix
     Matrix Bs;		// slip-displacement matrix
 
-    Vector dcrd1;       // current coordinates of nore 1
-    Vector dcrd2;       // current coordinates of nore 2
-    Vector dcrd3;       // current coordinates of nore 3
-    Vector dcrd4;       // current coordinates of nore 4
-    Vector dcrdS;       // current coordinates of nore S
+    Vector dcrd1;       // current coordinates of node 1
+    Vector dcrd2;       // current coordinates of node 2
+    Vector dcrd3;       // current coordinates of node 3
+    Vector dcrd4;       // current coordinates of node 4
+    Vector dcrdS;       // current coordinates of node S
     Vector dispL;       // current value of the Lagrangean multiplier
 
 	int MyTag;          // what is my name?

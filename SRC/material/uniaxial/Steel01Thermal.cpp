@@ -698,7 +698,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
         opserr << "the temperature is invalid\n";
     }
     
-    // caculation of thermal elongation of reinforcing steel. JZ
+    // calculation of thermal elongation of reinforcing steel. JZ
     ///*
 	if (TempT <= 20) {
         //ThermalElongation = TempT * 1.2164e-5;
@@ -1229,7 +1229,7 @@ Steel01Thermal::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 // AddingSensitivity:END /////////////////////////////////////////////
 
 
-//this function is no use, just for the definiation of pure virtual function.
+//this function is no use, just for the definition of pure virtual function.
 int Steel01Thermal::setTrialStrain (double strain, double strainRate)
 {
   opserr << "Steel01Thermal::setTrialStrain (double strain, double strainRate) - should never be called\n";

@@ -117,7 +117,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         R[2][2] = vecInLocXZPlane(2);
         
         // check rigid joint offset for node I
-        if (&rigJntOffset1 == 0 || rigJntOffset1.Size() != 3 ) {
+        if (rigJntOffset1.Size() != 3 ) {
             opserr << "LinearCrdTransf3d::LinearCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
             opserr << "Size must be 3\n";      
         }
@@ -129,7 +129,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         }
         
         // check rigid joint offset for node J
-        if (&rigJntOffset2 == 0 || rigJntOffset2.Size() != 3 ) {
+        if (rigJntOffset2.Size() != 3 ) {
             opserr << "LinearCrdTransf3d::LinearCrdTransf3d:  Invalid rigid joint offset vector for node J\n";
             opserr << "Size must be 3\n";      
         }
@@ -293,8 +293,9 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
     L = dx.Norm();
     
     if (L == 0.0) {
-        opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
-        return -2;  
+      opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien transfTag = "
+	     << this->getTag() << "\nelement has zero length" << endln;
+      return -2;  
     }
     
     // calculate the element local x axis components (direction cosines)
@@ -345,9 +346,9 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     double ynorm = yAxis.Norm();
     
     if (ynorm == 0) {
-        opserr << "\nLinearCrdTransf3d::getLocalAxes";
-        opserr << "\nvector v that defines plane xz is parallel to x axis\n";
-        return -3;
+      opserr << "\nLinearCrdTransf3d::getLocalAxes transfTag = " << this->getTag();
+      opserr << "\nvector v that defines plane xz is parallel to x axis" << endln;
+      return -3;
     }
     
     yAxis /= ynorm;
@@ -372,6 +373,23 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     R[2][2] = zAxis(2);
     
     return 0;
+}
+
+int
+LinearCrdTransf3d::getRigidOffsets(Vector &offsets)
+{
+  if (nodeIOffset != 0) {
+    offsets(0) = nodeIOffset[0];
+    offsets(1) = nodeIOffset[1];
+    offsets(2) = nodeIOffset[2];
+  }
+  if (nodeJOffset != 0) {
+    offsets(3) = nodeJOffset[0];
+    offsets(4) = nodeJOffset[1];
+    offsets(5) = nodeJOffset[2];
+  }
+  
+  return 0;
 }
 
 
@@ -1423,6 +1441,74 @@ LinearCrdTransf3d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
     uxg(2) = R[0][2]*uxl[0] + R[1][2]*uxl[1] + R[2][2]*uxl[2];
     
     return uxg;  
+}
+
+
+const Vector &
+LinearCrdTransf3d::getPointLocalDisplFromBasic(double xi, const Vector &uxb)
+{
+    // determine global displacements
+    const Vector &disp1 = nodeIPtr->getTrialDisp();
+    const Vector &disp2 = nodeJPtr->getTrialDisp();
+    
+    static double ug[12];
+    for (int i = 0; i < 6; i++)
+    {
+        ug[i]   = disp1(i);
+        ug[i+6] = disp2(i);
+    }
+    
+    if (nodeIInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j] -= nodeIInitialDisp[j];
+    }
+    
+    if (nodeJInitialDisp != 0) {
+        for (int j=0; j<6; j++)
+            ug[j+6] -= nodeJInitialDisp[j];
+    }
+    
+    
+    
+    // transform global end displacements to local coordinates
+    //ul.addMatrixVector(0.0, Tlg,  ug, 1.0);       //  ul = Tlg *  ug;
+    static double ul[12];
+    
+    ul[0]  = R[0][0]*ug[0] + R[0][1]*ug[1] + R[0][2]*ug[2];
+    ul[1]  = R[1][0]*ug[0] + R[1][1]*ug[1] + R[1][2]*ug[2];
+    ul[2]  = R[2][0]*ug[0] + R[2][1]*ug[1] + R[2][2]*ug[2];
+    
+    ul[7]  = R[1][0]*ug[6] + R[1][1]*ug[7] + R[1][2]*ug[8];
+    ul[8]  = R[2][0]*ug[6] + R[2][1]*ug[7] + R[2][2]*ug[8];
+    
+    static double Wu[3];
+    if (nodeIOffset) {
+        Wu[0] =  nodeIOffset[2]*ug[4] - nodeIOffset[1]*ug[5];
+        Wu[1] = -nodeIOffset[2]*ug[3] + nodeIOffset[0]*ug[5];
+        Wu[2] =  nodeIOffset[1]*ug[3] - nodeIOffset[0]*ug[4];
+        
+        ul[0] += R[0][0]*Wu[0] + R[0][1]*Wu[1] + R[0][2]*Wu[2];
+        ul[1] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[2] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+    
+    if (nodeJOffset) {
+        Wu[0] =  nodeJOffset[2]*ug[10] - nodeJOffset[1]*ug[11];
+        Wu[1] = -nodeJOffset[2]*ug[9]  + nodeJOffset[0]*ug[11];
+        Wu[2] =  nodeJOffset[1]*ug[9]  - nodeJOffset[0]*ug[10];
+        
+        ul[7] += R[1][0]*Wu[0] + R[1][1]*Wu[1] + R[1][2]*Wu[2];
+        ul[8] += R[2][0]*Wu[0] + R[2][1]*Wu[1] + R[2][2]*Wu[2];
+    }
+    
+    // compute displacements at point xi, in local coordinates
+    static Vector uxl(3);
+    
+    uxl(0) = uxb(0) +        ul[0];
+    uxl(1) = uxb(1) + (1-xi)*ul[1] + xi*ul[7];
+    uxl(2) = uxb(2) + (1-xi)*ul[2] + xi*ul[8];
+    
+    return uxl;  
 }
 
 

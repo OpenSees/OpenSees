@@ -53,7 +53,7 @@ OPS_DamperMaterial(void)
   }
 
   int numData = 2;
-  int *iData = new int[2];
+  int iData[2];
   
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid data for uniaxialMaterial Damper" << endln;
@@ -64,7 +64,6 @@ OPS_DamperMaterial(void)
   if (theMat == 0) {
     opserr << "WARNING no existing material with tag " << iData[1] 
 	   << " for uniaxialMaterial Damper" << iData[0] << endln;
-    delete [] iData;
     return 0;
   }
 
@@ -74,8 +73,6 @@ OPS_DamperMaterial(void)
     opserr << "WARNING could not create uniaxialMaterial of type Damper\n";
     return 0;
   }
-  
-  delete [] iData;
 
   return theMaterial;
 }
@@ -88,6 +85,9 @@ DamperMaterial::DamperMaterial(int tag,
  trialStrain(0.0), trialStrainRate(0.0), theMaterial(0)
 {
   theMaterial = theMaterialModel->getCopy();
+
+  if (theMaterial == 0)
+    opserr << "DamperMaterial::DamperMaterial -- failed to get copy of material\n";
 }
 
 
@@ -105,7 +105,8 @@ DamperMaterial::DamperMaterial()
 
 DamperMaterial::~DamperMaterial()
 {
-  delete theMaterial;
+  if (theMaterial)
+    delete theMaterial;
 }
 
 
@@ -118,9 +119,10 @@ DamperMaterial::setTrialStrain(double strain, double strainRate)
     trialStrain = strain;
     trialStrainRate = strainRate;
 
-    theMaterial->setTrialStrain(strainRate, 0);
-
-    return 0;
+    if (theMaterial)
+      return theMaterial->setTrialStrain(strainRate, 0);
+    else
+      return -1;
 }
 
 
@@ -139,39 +141,49 @@ DamperMaterial::getStrainRate(void)
 double 
 DamperMaterial::getStress(void)
 {
-  return theMaterial->getStress();
+  if (theMaterial)
+    return theMaterial->getStress();
+  else
+    return 0.0;
 }
-
-
 
 double 
 DamperMaterial::getTangent(void)
 {
-  return 0;
+  return 0.0;
 }
 
 double 
 DamperMaterial::getInitialTangent(void)
 {
-  return 0;
+  return 0.0;
 }
 
 double 
 DamperMaterial::getDampTangent(void)
 {
-  return theMaterial->getTangent();
+  if (theMaterial)
+    return theMaterial->getTangent();
+  else
+    return 0.0;
 }
 
 int 
 DamperMaterial::commitState(void)
 {
-  return theMaterial->commitState();
+  if (theMaterial)
+    return theMaterial->commitState();
+  else
+    return -1;
 }
 
 int 
 DamperMaterial::revertToLastCommit(void)
 {
-  return theMaterial->revertToLastCommit();
+  if (theMaterial)
+    return theMaterial->revertToLastCommit();
+  else
+    return -1;
 }
 
 
@@ -180,9 +192,11 @@ DamperMaterial::revertToStart(void)
 {
     trialStrain = 0.0;
     trialStrainRate = 0.0;
-    theMaterial->revertToStart();
-    
-    return 0;    
+
+    if (theMaterial)
+      return theMaterial->revertToStart();
+    else
+      return -1;    
 }
 
 
@@ -190,11 +204,13 @@ DamperMaterial::revertToStart(void)
 UniaxialMaterial *
 DamperMaterial::getCopy(void)
 {
-  DamperMaterial *theCopy = new 
-    DamperMaterial(this->getTag(), theMaterial);
+  DamperMaterial *theCopy = 0;
+  if (theMaterial) {
+    theCopy = new DamperMaterial(this->getTag(), theMaterial);
   
-  theCopy->trialStrain = trialStrain;
-  theCopy->trialStrainRate = trialStrainRate;
+    theCopy->trialStrain = trialStrain;
+    theCopy->trialStrainRate = trialStrainRate;
+  }
   
   return theCopy;
 }
@@ -203,6 +219,11 @@ DamperMaterial::getCopy(void)
 int 
 DamperMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "DamperMaterial::sendSelf() - theMaterial is null, nothing to send\n";
+    return -1;
+  }
+  
     int res = 0;
 
     static ID data(3);
@@ -253,7 +274,8 @@ DamperMaterial::recvSelf(int cTag, Channel &theChannel,
     if (theMaterial  == 0) {
       opserr << "FATAL DamperMaterial::recvSelf() ";
       opserr << " could not get a UniaxialMaterial \n";
-      exit(-1);
+      //exit(-1);
+      return -1;
     }    	    
     theMaterial->setDbTag(dbTag);
     theMaterial->recvSelf(cTag, theChannel, theBroker);
@@ -264,11 +286,11 @@ DamperMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 DamperMaterial::Print(OPS_Stream &s, int flag)
 {
-    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
-      s << "DamperMaterial tag: " << this->getTag() << endln;
-      s << " ";
-      theMaterial->Print(s, flag);
-    }
+  s << "DamperMaterial tag: " << this->getTag() << endln;
+  if (theMaterial)
+    s << "\tMaterial: " << theMaterial->getTag() << endln;
+  else
+    s << "\tMaterial is NULL" << endln;
 }
 
 

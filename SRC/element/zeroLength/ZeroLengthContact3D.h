@@ -64,16 +64,16 @@
 
  where:
   $eleID: element ID of this contact element
-  $sNdID: slave node ID
-  $mNdID: master node ID
+  $sNdID: secondary node ID
+  $pNdID: primary node ID
   $Kn   : penalty in normal directions
   $Kt:  : penalty in tangential directions
   $c    : cohesion
   $dir  : direction of the contact (0,1,2,3)
-          0: circular contact (slave node is inside)
-		  1: out normal of master plane pointing to +X direction
-		  2: out normal of master plane pointing to +Y direction
-		  3: out normal of master plane pointing to +Z direction
+          0: circular contact (secondary node is inside)
+		  1: out normal of primary plane pointing to +X direction
+		  2: out normal of primary plane pointing to +Y direction
+		  3: out normal of primary plane pointing to +Z direction
 
  Description: This file contains the class definition for ZeroLengthContact3D.
  (1) A ZeroLengthContact3D element is defined by two nodes with the same coordinate
@@ -160,7 +160,7 @@ class ZeroLengthContact3D: public Element
   int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   void Print(OPS_Stream &s, int flag =0);
   
-  Response *setResponse(const char **argv, int argc, Information &eleInformation);
+  Response *setResponse(const char **argv, int argc, OPS_Stream &output);
   int getResponse(int responseID, Information &eleInformation);
   
   

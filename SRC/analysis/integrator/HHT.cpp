@@ -64,7 +64,7 @@ OPS_HHT(void)
     if (argc == 1)
         theIntegrator = new HHT(dData[0]);
     else
-        theIntegrator = new HHT(dData[0], dData[1], dData[2]);
+        theIntegrator = new HHT(dData[0], dData[2], dData[1]); // alpha, beta, gamma for constructor
     
     if (theIntegrator == 0)
         opserr << "WARNING - out of memory creating HHT integrator\n";

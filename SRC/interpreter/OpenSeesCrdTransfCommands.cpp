@@ -18,6 +18,8 @@ void* OPS_PDeltaCrdTransf2d();
 void* OPS_PDeltaCrdTransf3d();
 void* OPS_CorotCrdTransf2d();
 void* OPS_CorotCrdTransf3d();
+void* OPS_CorotCrdTransfWarping2d();
+void* OPS_CorotCrdTransfWarping3d();  
 
 namespace {
     static void* OPS_LinearCrdTransf()
@@ -53,9 +55,13 @@ namespace {
 	int ndf = OPS_GetNDF();
 	if(ndm == 2 && ndf == 3) {
 	    return OPS_CorotCrdTransf2d();
+	} else if(ndm == 2 && ndf == 4) {
+	    return OPS_CorotCrdTransfWarping2d();
 	} else if(ndm == 3 && ndf == 6) {
-	    return OPS_CorotCrdTransf3d();
-	} else {
+	    return OPS_CorotCrdTransf3d();	    
+	} else if(ndm == 3 && ndf == 7) {
+	    return OPS_CorotCrdTransfWarping3d();
+	} else {	  
 	    opserr<<"current NDM and NDF is incompatible with frame elements\n";
 	    return 0;
 	}

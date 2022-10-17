@@ -14,6 +14,7 @@
 
 #include <PyLiq1.h>
 #include <TzLiq1.h>
+#include <QzLiq1.h>
 
 #include <string.h>
 
@@ -77,6 +78,8 @@ TclModelBuilderUpdateMaterialStageCommand(ClientData clientData,
   theDomain->updateParameter(parTag, value);
 
   theDomain->removeParameter(parTag);
+
+  delete theParameter;
 
   return TCL_OK;
 }

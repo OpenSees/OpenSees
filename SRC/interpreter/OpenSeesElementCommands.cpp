@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
 
 #include <BeamIntegration.h>
@@ -98,12 +99,16 @@ void* OPS_LeadRubberX();
 void* OPS_ElastomericX();
 void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
+void* OPS_MVLEM_3D();
+void* OPS_SFI_MVLEM_3D();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
 void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
+void* OPS_ShellNLDKGT();
+void* OPS_ASDShellQ4();
 void* OPS_CoupledZeroLength();
 void* OPS_BeamContact2D();
 void* OPS_BeamContact2Dp();
@@ -135,6 +140,7 @@ void* OPS_PFEMElement2Dmini(const ID& info);
 void* OPS_fElmt02();
 void* OPS_ElasticBeam2d(const ID& info);
 void* OPS_ElasticBeam3d();
+void* OPS_ElasticBeamWarping3d();
 void* OPS_DispBeamColumn2dInt();
 void* OPS_ForceBeamColumn2d(const ID& info);
 void* OPS_NonlinearBeamColumn();
@@ -144,12 +150,22 @@ void* OPS_ForceBeamColumn2dThermal();
 void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
+void* OPS_DispBeamColumnNL3d();
+void* OPS_DispBeamColumnWarping3d();
+void* OPS_DispBeamColumnAsym3d();
+void* OPS_TimoshenkoBeamColumn2d();
+void* OPS_TimoshenkoBeamColumn3d();
 void* OPS_MixedBeamColumn2d();
 void* OPS_MixedBeamColumn3d();
+void* OPS_MixedBeamColumnAsym3d();
 void* OPS_ForceBeamColumnCBDI2d();
 void* OPS_ForceBeamColumnCSBDI2d();
+void* OPS_ForceBeamColumnCBDI3d();
+void* OPS_ForceBeamColumnCSBDI3d();
 void* OPS_ForceBeamColumnWarping2d();
 void* OPS_ElasticForceBeamColumnWarping2d();
+void* OPS_BeamWithHinges();
+void* OPS_DispBeamColumn3dID();
 void* OPS_DispBeamColumn2dThermal();
 void* OPS_DispBeamColumn3dThermal();
 void* OPS_ElasticForceBeamColumn2d();
@@ -161,6 +177,9 @@ void* OPS_FourNodeQuadWithSensitivity();
 void* OPS_EnhancedQuad();
 void* OPS_ConstantPressureVolumeQuad();
 void* OPS_NineNodeMixedQuad();
+void* OPS_NineNodeQuad();
+void* OPS_EightNodeQuad();
+void* OPS_SixNodeTri();
 void* OPS_FourNodeQuadUP();
 void* OPS_BrickUP();
 void* OPS_NineFourNodeQuadUP();
@@ -174,6 +193,7 @@ void* OPS_BbarBrickWithSensitivity();
 void* OPS_ZeroLengthRocking();
 void* OPS_ZeroLengthContact2D();
 void* OPS_ZeroLengthContact3D();
+void* OPS_ZeroLengthContactASDimplex();
 void* OPS_Joint2D();
 void* OPS_Joint3D();
 void* OPS_LehighJoint2d();
@@ -208,8 +228,13 @@ void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
 void* OPS_CatenaryCableElement();
+void *OPS_ASDEmbeddedNodeElement(void);
 void* OPS_GradientInelasticBeamColumn2d();
 void* OPS_GradientInelasticBeamColumn3d();
+void* OPS_RockingBC();
+void* OPS_InertiaTrussElement();
+void *OPS_ASDAbsorbingBoundary2D(void);
+void *OPS_ASDAbsorbingBoundary3D(void);
 
 namespace {
 
@@ -236,12 +261,35 @@ namespace {
 	}
     }
 
+    static void* OPS_ForceBeamColumnCBDI()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_ForceBeamColumnCBDI2d();
+	} else {
+	    return OPS_ForceBeamColumnCBDI3d();
+	}
+    }
+
+  static void* OPS_ForceBeamColumnCSBDI()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_ForceBeamColumnCSBDI2d();
+	} else {
+	    return OPS_ForceBeamColumnCSBDI3d();
+	}
+    }  
+
   static void* OPS_ForceBeamColumnThermal()
     {
 	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
 	    return OPS_ForceBeamColumn2dThermal();
 	} else {
+		return 0;
 	  //return OPS_ForceBeamColumn3dThermal();
 	}
     }
@@ -267,6 +315,24 @@ namespace {
 	}
     }
 
+    static void* OPS_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_MVLEM();
+	if(ndm == 3)
+	    return OPS_MVLEM_3D();	
+    }
+
+    static void* OPS_SFI_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_SFI_MVLEM();
+	if(ndm == 3)
+	    return OPS_SFI_MVLEM_3D();	
+    }    
+
     static void* OPS_DispBeamColumn()
     {
 	int ndm = OPS_GetNDM();
@@ -277,6 +343,17 @@ namespace {
 	    return OPS_DispBeamColumn3d();
 	}
     }
+
+    static void* OPS_TimoshenkoBeamColumn()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_TimoshenkoBeamColumn2d();
+	} else {
+	  return OPS_TimoshenkoBeamColumn3d();
+	}
+    }  
 
   static void* OPS_MixedBeamColumn()
     {
@@ -295,7 +372,7 @@ namespace {
 	    ID info;
 	    return OPS_DispBeamColumnNL2d(info);
 	} else {
-	    return OPS_DispBeamColumn3d();
+	    return OPS_DispBeamColumnNL3d();
 	}
     }
 
@@ -449,6 +526,18 @@ namespace {
     }
   }
 
+  static void* OPS_DispBeamColumn3dID()
+  {
+    int ndm = OPS_GetNDM();
+    if (ndm == 2) {
+		return 0;
+      // return OPS_DispBeamColumn2dID();
+    }
+    else {
+      return OPS_DispBeamColumn3dID();
+    }
+  }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
@@ -458,7 +547,7 @@ namespace {
 	functionMap.insert(std::make_pair("MSS", &OPS_MultipleShearSpring));
 	functionMap.insert(std::make_pair("multipleShearSpring", &OPS_MultipleShearSpring));
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
-    functionMap.insert(std::make_pair("linearElasicSpring", &OPS_LinearElasticSpring));
+    functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
@@ -486,6 +575,7 @@ namespace {
 	functionMap.insert(std::make_pair("LehighJoint2d", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("zeroLengthContact2D", &OPS_ZeroLengthContact2D));
 	functionMap.insert(std::make_pair("zeroLengthContact3D", &OPS_ZeroLengthContact3D));
+	functionMap.insert(std::make_pair("zeroLengthContactASDimplex", &OPS_ZeroLengthContactASDimplex));
 	functionMap.insert(std::make_pair("zeroLengthRocking", &OPS_ZeroLengthRocking));
 	functionMap.insert(std::make_pair("bbarBrickWithSensitivity", &OPS_BbarBrickWithSensitivity));
 	functionMap.insert(std::make_pair("bbarBrick", &OPS_BbarBrick));
@@ -505,6 +595,9 @@ namespace {
 	functionMap.insert(std::make_pair("quadWithSensitivity", &OPS_FourNodeQuadWithSensitivity));
 	functionMap.insert(std::make_pair("quad", &OPS_FourNodeQuad));
 	functionMap.insert(std::make_pair("stdQuad", &OPS_FourNodeQuad));
+	functionMap.insert(std::make_pair("quad9n", &OPS_NineNodeQuad));
+	functionMap.insert(std::make_pair("quad8n", &OPS_EightNodeQuad));
+	functionMap.insert(std::make_pair("tri6n", &OPS_SixNodeTri));
 	functionMap.insert(std::make_pair("dispBeamColumnWithSensitivity", &OPS_DispBeamColumnWithSensitivity));
 	functionMap.insert(std::make_pair("elasticForceBeamColumn", &OPS_ElasticForceBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumnThermal", &OPS_DispBeamColumnThermal));
@@ -567,8 +660,10 @@ namespace {
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
-	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM));
-	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM));
+	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
@@ -578,10 +673,15 @@ namespace {
 	functionMap.insert(std::make_pair("ShellNL", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("shellMITC9", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("ShellMITC9", &OPS_ShellMITC9));
+	functionMap.insert(std::make_pair("shellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("ShellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("shellDKGT", &OPS_ShellDKGT));
+	functionMap.insert(std::make_pair("ShellDKGT", &OPS_ShellDKGT));
 	functionMap.insert(std::make_pair("ShellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("shellNLDKGQ", &OPS_ShellNLDKGQ));
+	functionMap.insert(std::make_pair("ShellNLDKGT", &OPS_ShellNLDKGT));
+	functionMap.insert(std::make_pair("shellNLDKGT", &OPS_ShellNLDKGT));	
+	functionMap.insert(std::make_pair("ASDShellQ4", &OPS_ASDShellQ4));
 	functionMap.insert(std::make_pair("CoupledZeroLength", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("ZeroLengthCoupled", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("BeamContact2d", &OPS_BeamContact2D));
@@ -604,20 +704,31 @@ namespace {
 	functionMap.insert(std::make_pair("SSPBrickUP", &OPS_SSPbrickUP));
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
 	functionMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
+	functionMap.insert(std::make_pair("elasticBeamColumnWarping", &OPS_ElasticBeamWarping3d));
+	functionMap.insert(std::make_pair("dispBeamColumnWarping", &OPS_DispBeamColumnWarping3d));	
+	functionMap.insert(std::make_pair("dispBeamColumnAsym", &OPS_DispBeamColumnAsym3d));
+	functionMap.insert(std::make_pair("beamWithHinges", &OPS_BeamWithHinges));
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
+	functionMap.insert(std::make_pair("timoshenkoBeamColumn", &OPS_TimoshenkoBeamColumn));	
+	functionMap.insert(std::make_pair("dispBeamColumn3dID", &OPS_DispBeamColumn3dID));
 	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
-	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI2d));
-	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI2d));
+	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI));
+	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI));
 	functionMap.insert(std::make_pair("mixedBeamColumn", &OPS_MixedBeamColumn));
+	functionMap.insert(std::make_pair("mixedBeamColumnAsym", &OPS_MixedBeamColumnAsym3d));
 	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
+	functionMap.insert(std::make_pair("ASDEmbeddedNodeElement", &OPS_ASDEmbeddedNodeElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));
-
+	functionMap.insert(std::make_pair("RockingBC", &OPS_RockingBC));
+	functionMap.insert(std::make_pair("InertiaTruss", &OPS_InertiaTrussElement));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
+	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
 	return 0;
     }
 }
@@ -678,12 +789,12 @@ int OPS_doBlock2D()
 
     if (ndm < 2) {
 	opserr << "WARNING block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
-	opserr << " : model dimension (ndm) must be at leat 2 \n";
+	opserr << " : model dimension (ndm) must be at least 2 \n";
 	return -1;
     }
 
     if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING incorrect numer of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -733,6 +844,20 @@ int OPS_doBlock2D()
 	}
 	cArg = 7;
 
+	
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
+	if (OPS_GetNumRemainingInputArgs() < 1) {
+	    opserr<<"WARNING: want - secTag\n";
+	    return -1;
+	}
+	int numdata = 1;
+	if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING invalid secTag\n";
+	    return -1;
+	}
+	cArg = 7;
+		
+		
     } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 2) {
 	    opserr<<"WARNING: want - thick, matTag\n";
@@ -940,6 +1065,28 @@ int OPS_doBlock2D()
 		theEle = new ShellMITC4(eleID,nd1,nd2,nd3,nd4,*sec);
 
 
+			
+	    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
+
+		if (numEleNodes != 4) {
+		    opserr<<"WARNING ShellNLDKGQ element only needs four nodes\n";
+		    return -1;
+		}
+		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
+
+		if (sec == 0) {
+		    opserr << "WARNING:  section " << secTag << " not found\n";
+		    return -1;
+		}
+
+		int nd1 = nodeTags(0) + idata[2];
+		int nd2 = nodeTags(1) + idata[2];
+		int nd3 = nodeTags(2) + idata[2];
+		int nd4 = nodeTags(3) + idata[2];
+		theEle = new ShellNLDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);
+
+		
+			
 	    } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 
 		if (numEleNodes != 4) {
@@ -1017,7 +1164,7 @@ int OPS_doBlock3D()
     int ndm = OPS_GetNDM();
     if (ndm < 3) {
 	opserr << "WARNING block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs?";
-	opserr << " : model dimension (ndm) must be at leat 3 \n";
+	opserr << " : model dimension (ndm) must be at least 3 \n";
 	return -1;
     }
 
@@ -1026,7 +1173,7 @@ int OPS_doBlock3D()
     if (theDomain == 0) return -1;
 
     if (OPS_GetNumRemainingInputArgs() < 8) {
-	opserr << "WARNING incorrect numer of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -1184,7 +1331,7 @@ int OPS_doBlock3D()
     return 0;
 }
 
-// For backward compatability
+// For backward compatibility
 void* OPS_NonlinearBeamColumn()
 {
     int ndm = OPS_GetNDM();

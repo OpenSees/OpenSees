@@ -792,41 +792,13 @@ int LinearElasticSpring::recvSelf(int commitTag, Channel &rChannel,
 int LinearElasticSpring::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the element based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    
     static Vector v1(3);
     static Vector v2(3);
-    
-    if (displayMode >= 0)  {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i=0; i<numDIM; i++)  {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-    } else  {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        
-        if (eigen1.noCols() >= mode)  {
-            for (int i=0; i<numDIM; i++)  {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }
-        } else  {
-            for (int i=0; i<numDIM; i++)  {
-                v1(i) = end1Crd(i);
-                v2(i) = end2Crd(i);
-            }
-        }
-    }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 
@@ -972,6 +944,16 @@ Response* LinearElasticSpring::setResponse(const char **argv, int argc,
         }
         theResponse = new ElementResponse(this, 6, Vector(numDIR*2));
     }
+
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }
     
     output.endTag(); // ElementOutput
     
@@ -982,6 +964,7 @@ Response* LinearElasticSpring::setResponse(const char **argv, int argc,
 int LinearElasticSpring::getResponse(int responseID, Information &eleInfo)
 {
     Vector defoAndForce(numDIR*2);
+    Vector &theVec = *(eleInfo.theVector);
     
     switch (responseID)  {
     case 1:  // global forces
@@ -1012,9 +995,25 @@ int LinearElasticSpring::getResponse(int responseID, Information &eleInfo)
         defoAndForce.Assemble(qb,numDIR);
         
         return eleInfo.setVector(defoAndForce);
-        
+
+    case 20:
+      theVec(0) = trans(0,0);
+      theVec(1) = trans(0,1);
+      theVec(2) = trans(0,2);
+      return 0;
+    case 21:
+      theVec(0) = trans(1,0);
+      theVec(1) = trans(1,1);
+      theVec(2) = trans(1,2);
+      return 0;
+    case 22:
+      theVec(0) = trans(2,0);
+      theVec(1) = trans(2,1);
+      theVec(2) = trans(2,2);
+      return 0;
+      
     default:
-        return 0;
+        return -1;
     }
 }
 

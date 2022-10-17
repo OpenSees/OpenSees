@@ -15,7 +15,6 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>  
 
-#define ND_TAG_LinearCap  12345654342
 #include <T2Vector.h>
 #include <MaterialResponse.h>
 #include <elementAPI.h>
@@ -315,7 +314,7 @@ int LinearCap::recvSelf(int commitTag, Channel &theChannel,
 		   FEM_ObjectBroker &theBroker )  {return 0;};
 
 
-Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &matInformation)  {
+Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &output)  {
 
   if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
 		return new MaterialResponse(this, 1, stress);
@@ -331,7 +330,7 @@ Response * LinearCap::setResponse (const char **argv, int argc, OPS_Stream &matI
 		return new MaterialResponse(this, 4, plastStrain);
 
  	
-		return 0;
+  return NDMaterial::setResponse(argv, argc, output);
 	
 
 };
@@ -363,7 +362,7 @@ int LinearCap::getResponse (int responseID, Information &matInfo)  {
 
 		}
 
-	return 0;
+		return NDMaterial::getResponse(responseID, matInfo);
 
 };
 
@@ -443,7 +442,7 @@ const Vector & LinearCap::getStress(void) {
 	//if (theMode!=4) 
 	//opserr<<" this mode = "<<theMode<<endln;
 
-//	theMode = mode;  //  ÎªÁË±£´æmodeµ½³ÉÔ±º¯Êý£¬ÎªÁËgetTangent()µ÷ÊÔÓÃ¡£
+//	theMode = mode;  //  ä¸ºäº†ä¿å­˜modeåˆ°æˆå‘˜å‡½æ•°ï¼Œä¸ºäº†getTangent()è°ƒè¯•ç”¨ã€‚
 
 	double deltGammar1 =0.0;
 	double deltGammar2 =0.0;
@@ -545,7 +544,7 @@ const Vector & LinearCap::getStress(void) {
 		       elasticTangent(i,j) = bulkModulus-2.0/3.0*shearModulus;     
 
         for(int  i=0; i<6; i++)
-		       elasticTangent(i,i) += 2.0*shearModulus;       //¶¨Òå³öµ¯ÐÔ¾ØÕó
+		       elasticTangent(i,i) += 2.0*shearModulus;       //å®šä¹‰å‡ºå¼¹æ€§çŸ©é˜µ
 	    theTangent = elasticTangent;
 
 	}

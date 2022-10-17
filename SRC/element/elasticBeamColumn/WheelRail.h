@@ -25,21 +25,28 @@
 class Channel;
 class UniaxialMaterial;
 
-#define ELE_TAG_WheelRail 10035443001
-
 class WheelRail : public Element
 {
   public:
-    WheelRail(int pTag, double pDeltT, double pVel, double pInitLocation, int pNd1, 
-		double pRWheel,double pI,double pE,double pA,CrdTransf *ptheCoordTransf,int pnLoad,
-		Vector * pNodeList,
-		Vector * pDeltaYList=0,Vector * pDeltaYLocationList=0);
-
+    WheelRail(int pTag, 
+	      double pDeltT, 
+	      double pVel, 
+	      double pInitLocation, 
+	      int pNd1, 
+	      double pRWheel,
+	      double pI,
+	      double pE,
+	      double pA,
+	      CrdTransf *ptheCoordTransf,
+	      int pnLoad,
+	      Vector * pNodeList,
+	      Vector * pDeltaYList=0,
+	      Vector * pDeltaYLocationList=0);
     ~WheelRail();
 
     const char *getClassType(void) const {return "WheelRail";};
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -56,6 +63,7 @@ class WheelRail : public Element
     // public methods to obtain stiffness, mass, damping and 
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
+
     //---------new Algorithm--------------
     void NewtonBisection(Vector limits,double uWheel);
     double FalsePostionAlgorithm(Vector limits,double uWheel);
@@ -86,21 +94,23 @@ class WheelRail : public Element
  private:
 //--------------------members in the construtor--------------------------
 
+    Vector *P;
+    Matrix *theTangent;
+
     ID  connectedExternalNodes;    // must reset using above four values   // contains the tags of the end nodes
     ID activeDof;
     
     Node **theNodes;
-    Vector *P;
-    Matrix *theTangent;
     
     CrdTransf *theCoordTransf;
     Domain *theDomain;
     
-    Vector shapFun1,shapFun2;
+    Vector shapFun1;
+    Vector shapFun2;
     
     double deltT,vel,initLocation;
     double I,E,A;
-    double currentLocation;  // from left node of the last commited beam element.
+    double currentLocation;  // from left node of the last committed beam element.
     double deltaU,Fhz,uF,theDeltaY;
     double theEleLength,a,b;
     double G, rollingRadiusWheel;
@@ -110,13 +120,17 @@ class WheelRail : public Element
     int numRailNodeList;
     int theNumOfDeltaYList;
     
-    Vector rearRailNode,frontRailNode,railDisp;
+    Vector rearRailNode;
+    Vector frontRailNode;
+    Vector railDisp;
     
     Vector * theNodeList;
     Vector * theDeltaYList;
     Vector * theDeltaYLocationList;
     
-    static Vector contactData,localActiveForce,activeData;
+    static Vector contactData;
+    static Vector localActiveForce;
+    static Vector activeData;
 
 };
 

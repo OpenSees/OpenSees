@@ -613,7 +613,7 @@ AxEqDispBeamColumn2d::getAxialStrainIncrement(void) {
 	// 2) definition of the vector for the integration weights
 	double wi[maxNumSections];
 	beamInt->getSectionWeights(numSections, L, wi);  // be careful that wi sums up to 1!!!			
-	for (int i = 0; i < numSections; i++)  // set sum of integration weigths to 2
+	for (int i = 0; i < numSections; i++)  // set sum of integration weights to 2
 		wi[i] *= 2;
 	
 
@@ -771,7 +771,7 @@ AxEqDispBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 		double xi6[maxNumSections];
 		beamInt->getSectionWeights(numSections, L, wi);  // be careful that wi sums up to 1!!!
 		beamInt->getSectionLocations(numSections, L, xi);
-		for (int i = 0; i < numSections; i++) {  // set sum of integration weigths to 2
+		for (int i = 0; i < numSections; i++) {  // set sum of integration weights to 2
 			wi[i] *= 2;
 			xi6[i] = 6.0*xi[i];
 		}
@@ -1573,28 +1573,8 @@ AxEqDispBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fa
 	static Vector v1(3);
 	static Vector v2(3);
 
-	if (displayMode >= 0) {
-
-		theNodes[0]->getDisplayCrds(v1, fact);
-		theNodes[1]->getDisplayCrds(v2, fact);
-
-	}
-	else {
-
-		theNodes[0]->getDisplayCrds(v1, 0.);
-		theNodes[1]->getDisplayCrds(v2, 0.);
-
-		// add eigenvector values
-		int mode = displayMode  *  -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 2; i++) {
-				v1(i) += eigen1(i, mode - 1)*fact;
-				v2(i) += eigen2(i, mode - 1)*fact;
-			}
-		}
-	}
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
 	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

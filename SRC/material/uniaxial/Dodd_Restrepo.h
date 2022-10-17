@@ -81,7 +81,7 @@
    double Conv     ; // strain factor (1 for strain 1.E6 for microstrain)
    double OmegaFac ; // Multiplication factor for Omega
    
-   // addiional function input
+   // additional function input
    double Es       ; // Engineering Strain
    double EpsLast  ; // Natural strain at last increment
    double FpsLast  ; // True stress at last increment

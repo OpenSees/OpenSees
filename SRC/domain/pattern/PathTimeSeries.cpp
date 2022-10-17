@@ -291,7 +291,10 @@ PathTimeSeries::~PathTimeSeries()
 TimeSeries *
 PathTimeSeries::getCopy(void) 
 {
-  return new PathTimeSeries(this->getTag(), *thePath, *time, cFactor, useLast);
+  if (thePath != 0 && time != 0)
+    return new PathTimeSeries(this->getTag(), *thePath, *time, cFactor, useLast);
+  else
+    return 0;
 }
 
 double

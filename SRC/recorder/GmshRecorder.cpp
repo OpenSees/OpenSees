@@ -429,7 +429,7 @@ GmshRecorder::write_node_data()
     }
 
     std::string viewname(" ");
-    if(nodedata.disp) viewname = std::string("\"Displacment\"");
+    if(nodedata.disp) viewname = std::string("\"Displacement\"");
     if(nodedata.vel) viewname = std::string("\"Velocity\"");
     if(nodedata.accel) viewname = std::string("\"Acceleration\"");
     if(nodedata.incrdisp) viewname = std::string("\"Incremental Displacement\"");
@@ -1273,6 +1273,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ZeroLengthND] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContact3D] = GMSH_LINE;
+    gmshtypes[ELE_TAG_ZeroLengthContactASDimplex] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthContactNTS2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_ZeroLengthInterface2D] = GMSH_LINE;
     gmshtypes[ELE_TAG_CoupledZeroLength] = GMSH_LINE;
@@ -1283,6 +1284,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_FourNodeQuad] = GMSH_QUAD;
     gmshtypes[ELE_TAG_FourNodeQuad3d] = GMSH_QUAD;
     gmshtypes[ELE_TAG_Tri31] = GMSH_TRIANGLE;
+    gmshtypes[ELE_TAG_SixNodeTri] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_BeamWithHinges2d] = GMSH_LINE;
     gmshtypes[ELE_TAG_BeamWithHinges3d] = GMSH_LINE;
     gmshtypes[ELE_TAG_EightNodeBrick] = GMSH_HEXAHEDRON;
@@ -1304,6 +1306,8 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_PlateMITC4] = GMSH_QUAD;
     gmshtypes[ELE_TAG_ShellMITC4] = GMSH_QUAD;
     gmshtypes[ELE_TAG_ShellMITC9] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_ASDShellQ4] = GMSH_QUAD;
+    gmshtypes[ELE_TAG_ASDShellT3] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_Plate1] = GMSH_QUAD;
     gmshtypes[ELE_TAG_Brick] = GMSH_HEXAHEDRON;
     gmshtypes[ELE_TAG_BbarBrick] = GMSH_HEXAHEDRON;
@@ -1311,6 +1315,8 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_EnhancedQuad] = GMSH_QUAD;
     gmshtypes[ELE_TAG_ConstantPressureVolumeQuad] = GMSH_QUAD;
     gmshtypes[ELE_TAG_NineNodeMixedQuad] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_NineNodeQuad] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_EightNodeQuad] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_DispBeamColumn2d] = GMSH_LINE;
     gmshtypes[ELE_TAG_TimoshenkoBeamColumn2d] = GMSH_LINE;
     gmshtypes[ELE_TAG_DispBeamColumn3d] = GMSH_LINE;
@@ -1417,6 +1423,8 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_YamamotoBiaxialHDR] = GMSH_LINE;
     gmshtypes[ELE_TAG_MVLEM] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_SFI_MVLEM] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_MVLEM_3D] = GMSH_POLY_VERTEX;
+    gmshtypes[ELE_TAG_SFI_MVLEM_3D] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_PFEMElement2DFIC] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_CatenaryCable] = GMSH_LINE;
     gmshtypes[ELE_TAG_FourNodeTetrahedron] = GMSH_TETRA;
@@ -1424,4 +1432,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ShellANDeS] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellNLDKGT] = GMSH_TRIANGLE;
+    gmshtypes[ELE_TAG_InertiaTruss] = GMSH_LINE;
+    gmshtypes[ELE_TAG_ASDAbsorbingBoundary2D] = GMSH_QUAD;
+    gmshtypes[ELE_TAG_ASDAbsorbingBoundary3D] = GMSH_HEXAHEDRON;
 }

@@ -198,6 +198,7 @@ PFEMContact2D::setDomain(Domain *theDomain) {
     }
 }
 
+// return current distances between node 3 and edge 1-2
 double
 PFEMContact2D::getLine(double &A, double &B, double &C,
                        double &dx, double &dy,

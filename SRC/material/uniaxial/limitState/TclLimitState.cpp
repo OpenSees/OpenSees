@@ -36,7 +36,10 @@
 #include <TclModelBuilder.h> //MRL
 
 #include <string.h>
+#include <tcl.h>
 #include <elementAPI.h>//MRL
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+
 #include <packages.h>//MRL
 #include <LimitCurve.h>//**MRL
 
@@ -52,13 +55,6 @@ static void printCommand(int argc, TCL_Char **argv)
 //start //**MRL
 //Package Commands
 extern LimitCurve *Tcl_addWrapperLimitCurve(limCrvObj *, ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-
-extern int OPS_ResetInputNoBuilder(ClientData clientData, 
-				  Tcl_Interp *interp,  
-				  int cArg, 
-				  int mArg, 
-				  TCL_Char **argv, 
-				  Domain *domain);
 
 typedef struct limitCurvePackageCommand {
 	char *funcName;

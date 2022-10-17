@@ -10,6 +10,7 @@ OBJS       = UniaxialMaterial.o \
 	IMKBilin.o \
 	IMKPeakOriented.o \
 	IMKPinching.o \
+	SLModel.o \
 	Steel2.o \
 	OriginCentered.o \
 	ConcretewBeta.o \
@@ -34,6 +35,7 @@ OBJS       = UniaxialMaterial.o \
 	Cast.o \
         HardeningMaterial.o \
         HardeningMaterial2.o \
+	ASD_SMA_3K.o \
 	Concrete01.o \
 	Concrete02Thermal.o \
 	Steel02Thermal.o \
@@ -45,6 +47,7 @@ OBJS       = UniaxialMaterial.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
+        SteelDRC.o \
 	EPPGapMaterial.o \
         ViscousMaterial.o \
 	SeriesMaterial.o \
@@ -76,6 +79,7 @@ OBJS       = UniaxialMaterial.o \
 	MultiLinear.o \
 	HookGap.o \
 	Bond_SP01.o \
+	FRCC.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
 	ImpactMaterial.o \
@@ -84,6 +88,7 @@ OBJS       = UniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
 	PenaltyMaterial.o \
+	MultiplierMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
 	SecantMaterial.o \
@@ -129,7 +134,23 @@ OBJS       = UniaxialMaterial.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
-        TclModelBuilderUniaxialMaterialCommand.o
+	PlateBearingConnectionThermal.o \
+	DegradingPinchedBW.o \
+	HystereticPoly.o \
+	SMAMaterial.o \
+	Masonry.o \
+	Masonryt.o \
+	Trilinwpd.o \
+	Trilinwp.o \
+	Trilinwp2.o \
+	SteelFractureDI.o \
+	DowelType.o \
+	DuctileFracture.o \
+	BoucWenInfill.o \
+	HystereticSmooth.o \
+	HystereticAsym.o \
+	CoulombDamperMaterial.o \
+    TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/uniaxial/fedeas; $(MAKE);

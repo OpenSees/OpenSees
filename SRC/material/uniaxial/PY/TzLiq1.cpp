@@ -30,9 +30,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <InitialStateAnalysisWrapper.h>
-#include <SSPquadUP.h>
-#include <SSPquad.h>
+#include <UWelements/SSPquadUP.h>
+#include <UWelements/SSPquad.h>
 #include <elementAPI.h>
+#include <FluidSolidPorousMaterial.h>
+#include <TzSimple1.h>
+#include <iostream>
+#include <fourNodeQuad/FourNodeQuad.h>
+#include <UP-ucsd/FourNodeQuadUP.h>
+#include <UP-ucsd/Nine_Four_Node_QuadUP.h>
+#include <TimeSeries.h>
 
 // Control on internal iteration between spring components
 const int TZmaxIterations = 20;
@@ -184,8 +191,11 @@ TzLiq1::setTrialStrain (double newz, double zRate)
 			meanStress = getEffectiveStress(theSeries);
 		else
 			meanStress = getEffectiveStress();
+		if(meanStress>meanConsolStress)
+			meanStress=meanConsolStress;
 		Tru = 1.0 - meanStress/meanConsolStress;
 		if(Tru > 0.999) Tru = 0.999;
+		if(Tru < 0) Tru = 0;
 	}
 	else {
 		Tru = 0.0;
@@ -228,8 +238,8 @@ TzLiq1::setTrialStrain (double newz, double zRate)
 		}
 	}
 
-	//  Now set the tangent and Tt values accordingly
-	//
+	 // Now set the tangent and Tt values accordingly
+	
 
 	Tt = baseT*(1.0-Hru);
 	if(Hru==Cru || Hru==Tru){

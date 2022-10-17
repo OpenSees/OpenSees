@@ -328,7 +328,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		}
 	}
 
-	// If the residual moment is reached in a given direction, Ovverride the values of Mmax, Theta_max, slope_p and slope_pc
+	// If the residual moment is reached in a given direction, Override the values of Mmax, Theta_max, slope_p and slope_pc
 	if (Di >= 0.0) {
 		if (Mmax_pos_j <= Mr_pos0) {
 			Mmax_pos_j = Mr_pos0;
@@ -490,7 +490,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		Excursion_Flag = 0.0;
 	}
 
-	// Check if the Component inheret Reference Energy is Consumed
+	// Check if the Component inherit Reference Energy is Consumed
 	if (Excursion_Flag == 1) {
 		if ((Energy_total >= Ref_Energy_S) || (Energy_total >= Ref_Energy_C)) {
 			Energy_Flag = 1;

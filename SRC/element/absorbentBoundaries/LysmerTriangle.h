@@ -57,7 +57,7 @@ class LysmerTriangle : public Element
     LysmerTriangle();
     ~LysmerTriangle();
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -90,7 +90,7 @@ class LysmerTriangle : public Element
 
     void Print(OPS_Stream &s, int flag =0);    
 
-    Response *setResponse(const char **argv, int argc, Information &eleInfo);
+    Response *setResponse(const char **argv, int argc, OPS_Stream &output);
     int getResponse(int responseID, Information &eleInformation);
 
     int setParameter(const char **argv, int argc, Parameter &param);

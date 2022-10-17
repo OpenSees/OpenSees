@@ -70,7 +70,7 @@ OPS_SeriesMaterial(void)
     UniaxialMaterial *theMat = OPS_GetUniaxialMaterial(iData[i]);
     if (theMat == 0) {
       opserr << "WARNING no existing material with tag " << iData[i] 
-	     << " for uniaxialMaterial Series" << iData[0] << endln;
+	     << " for uniaxialMaterial Series " << iData[0] << endln;
       delete [] iData;
       delete [] theMats;
       return 0;
@@ -81,7 +81,7 @@ OPS_SeriesMaterial(void)
   // Parsing was successful, allocate the material
   theMaterial = new SeriesMaterial(iData[0], numArgs-1, theMats);
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type Series\n";
+    opserr << "WARNING could not create uniaxialMaterial of type Series" << endln;
     return 0;
   }
   
@@ -104,7 +104,7 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
     theModels = new UniaxialMaterial *[numMaterials];
 
     if (theModels == 0) {
-      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate material array\n";
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate material array" << endln;
       exit(-1);
     }
 
@@ -119,19 +119,19 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
 
     strain = new double [numMaterials];
     if (strain == 0) {
-      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate strain array\n";
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate strain array" << endln;
       exit(-1);
     }
     
     stress = new double [numMaterials];
     if (stress == 0) {
-      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate stress array\n";
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate stress array" << endln;
       exit(-1);
     }
 
     flex = new double [numMaterials];
     if (flex == 0) {
-      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate flex array\n";
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate flex array" << endln;
       exit(-1);
     }
 
@@ -377,8 +377,11 @@ SeriesMaterial::getCopy(void)
       SeriesMaterial(this->getTag(), numMaterials, theModels,
 		     maxIterations, tolerance);
 
+    theCopy->Tstrain = Tstrain;
     theCopy->Cstrain = Cstrain;
-    theCopy->Cstress = Cstress;
+    theCopy->Tstress = Tstress;
+    theCopy->Cstress = Cstress;    
+    theCopy->Ttangent = Ttangent;
     theCopy->Ctangent = Ctangent;
     theCopy->initialFlag = initialFlag;
     
@@ -395,8 +398,6 @@ SeriesMaterial::getCopy(void)
 int 
 SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  int res = 0;
-
   int dataTag = this->getDbTag();
   
   static Vector data(5);
@@ -407,16 +408,14 @@ SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
   data(3) = maxIterations;
   data(4) = tolerance;
   
-  res = theChannel.sendVector(dataTag, cTag, data);
-  if (res < 0) {
-    opserr << "SeriesMaterial::sendSelf -- failed to send data Vector\n";
-    return res;
+  if (theChannel.sendVector(dataTag, cTag, data) < 0) {
+    opserr << "SeriesMaterial::sendSelf -- failed to send data Vector" << endln;
+    return -1;
   }
   
   ID classTags(2*numMaterials);
   
-  int i;
-  for (i = 0; i < numMaterials; i++) {
+  for (int i = 0; i < numMaterials; i++) {
     classTags(i) = theModels[i]->getClassTag();
     
     int dbTag = theModels[i]->getDbTag();
@@ -429,37 +428,45 @@ SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
     classTags(i+numMaterials) = dbTag;
   }
   
-  res = theChannel.sendID(dataTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "SeriesMaterial::sendSelf -- failed to send classTags ID\n";
-    return res;
+  if (theChannel.sendID(dataTag, cTag, classTags) < 0) {
+    opserr << "SeriesMaterial::sendSelf -- failed to send classTags ID" << endln;
+    return -2;
+  }
+
+  // Note: will not clash with Vector of length 5 above
+  Vector stateData(3*numMaterials);
+  for (int i = 0; i < numMaterials; i++) {
+    stateData(i               ) = strain[i];
+    stateData(i+  numMaterials) = stress[i];
+    stateData(i+2*numMaterials) = flex[i];    
   }
   
-  for (i = 0; i < numMaterials; i++) {
-    res = theModels[i]->sendSelf(cTag, theChannel);
-    if (res < 0) {
+  if (theChannel.sendVector(dataTag, cTag, stateData) < 0) {
+    opserr << "SeriesMaterial::sendSelf -- failed to send stateData Vector" << endln;
+    return -3;
+  }
+  
+  for (int i = 0; i < numMaterials; i++) {
+    if (theModels[i]->sendSelf(cTag, theChannel) < 0) {
       opserr << "SeriesMaterial::sendSelf -- failed to send UniaxialMaterial: " << i << endln;
-      return res;
+      return -4;
     }
   }
   
-  return res;
+  return 0;
 }
 
 int 
 SeriesMaterial::recvSelf(int cTag, Channel &theChannel, 
-				FEM_ObjectBroker &theBroker)
+			 FEM_ObjectBroker &theBroker)
 {
-  int res = 0;
-
   int dataTag = this->getDbTag();
 
   static Vector data(5);
 
-  res = theChannel.recvVector(dataTag, cTag, data);
-  if (res < 0) {
-    opserr << "SeriesMaterial::recvSelf -- failed to receive data Vector\n";
-    return res;
+  if (theChannel.recvVector(dataTag, cTag, data) < 0) {
+    opserr << "SeriesMaterial::recvSelf -- failed to receive data Vector" << endln;
+    return -1;
   }
 
   this->setTag((int)data(0));
@@ -468,12 +475,11 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
   tolerance = data(4);
 
   // if number of materials != new number we must alolocate space for data
-  int i;
   if (numMaterials != (int)data(1)) {
     
     // free up old memory if allocated
     if (theModels != 0) {
-      for (i = 0; i < numMaterials; i++)
+      for (int i = 0; i < numMaterials; i++)
 	if (theModels[i] != 0)
 	  delete theModels[i];
       delete [] theModels;
@@ -492,40 +498,50 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
     numMaterials = (int)data(1);
     theModels = new UniaxialMaterial *[numMaterials];
     if (theModels == 0) {
-      opserr << "SeriesMaterial::recvSelf -- failed to allocate UniaxialMaterial array\n";
-      return -1;
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate UniaxialMaterial array" << endln;
+      return -2;
     }
 
-    for (i = 0; i < numMaterials; i++)
+    for (int i = 0; i < numMaterials; i++)
       theModels[i] = 0;
 
     strain = new double [numMaterials];
     if (strain == 0) {
-      opserr << "SeriesMaterial::recvSelf -- failed to allocate strain array\n";
-      return -1;
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate strain array" << endln;
+      return -3;
     }
 
     stress = new double [numMaterials];
     if (stress == 0) {
-      opserr << "SeriesMaterial::recvSelf -- failed to allocate stress array\n";
-      return -1;
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate stress array" << endln;
+      return -3;
     }
 
     flex = new double [numMaterials];
-    if (flex== 0) {
-      opserr << "SeriesMaterial::recvSelf -- failed to allocate flex array\n";
-      return -1;
+    if (flex == 0) {
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate flex array" << endln;
+      return -3;
     }
   }
 
   ID classTags(2*numMaterials);
-  res = theChannel.recvID(dataTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "SeriesMaterial::recvSelf -- failed to receive classTags ID\n";
-    return res;
+  if (theChannel.recvID(dataTag, cTag, classTags) < 0) {
+    opserr << "SeriesMaterial::recvSelf -- failed to receive classTags ID" << endln;
+    return -4;
   }
 
-  for (i = 0; i < numMaterials; i++) {
+  Vector stateData(3*numMaterials);
+  if (theChannel.recvVector(dataTag, cTag, stateData) < 0) {
+    opserr << "SeriesMaterial::recvSelf -- failed to receive stateData Vector" << endln;
+    return -5;
+  }
+  for (int i = 0; i < numMaterials; i++) {
+    strain[i] = stateData(i               );
+    stress[i] = stateData(i+  numMaterials);
+    flex[i]   = stateData(i+2*numMaterials);
+  }
+  
+  for (int i = 0; i < numMaterials; i++) {
     int matClassTag = classTags(i);
 
     if (theModels[i] == 0)
@@ -537,19 +553,18 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
     }
     
     if (theModels[i] == 0) {
-      opserr << "SeriesMaterial::recvSelf -- failed to get a newUniaxialMaterial\n";
-      return -1;
+      opserr << "SeriesMaterial::recvSelf -- failed to get a newUniaxialMaterial" << endln;
+      return -6;
     }
     
     theModels[i]->setDbTag(classTags(i+numMaterials));
-    res = theModels[i]->recvSelf(cTag, theChannel, theBroker);
-    if (res < 0) {
+    if (theModels[i]->recvSelf(cTag, theChannel, theBroker) < 0) {
       opserr << "SeriesMaterial::recvSelf -- failed to receive UniaxialMaterial: " << i << endln;
-      return res;
+      return -7;
     }
   }
   
-  return res;
+  return 0;
 }
 
 void 
@@ -557,7 +572,7 @@ SeriesMaterial::Print(OPS_Stream &s, int flag)
 {
     if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
         s << "\nSeriesMaterial, tag: " << this->getTag() << endln;
-        s << "\tUniaxial Componenets" << endln;
+        s << "\tUniaxial Components" << endln;
         for (int i = 0; i < numMaterials; i++)
             s << "\t\tUniaxial Material, tag: " << theModels[i]->getTag() << endln;
     }
@@ -579,36 +594,7 @@ SeriesMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
 
   Response *theResponse = 0;
 
-  theOutput.tag("UniaxialMaterialOutput");
-  theOutput.attr("matType", this->getClassType());
-  theOutput.attr("matTag", this->getTag());
-
-  // stress
-  if (strcmp(argv[0],"stress") == 0) {
-    theOutput.tag("ResponseType", "sigma11");
-    theResponse =  new MaterialResponse(this, 1, this->getStress());
-  }  
-  // tangent
-  else if (strcmp(argv[0],"tangent") == 0) {
-    theOutput.tag("ResponseType", "C11");
-    theResponse =  new MaterialResponse(this, 2, this->getTangent());
-  }
-
-  // strain
-  else if (strcmp(argv[0],"strain") == 0) {
-    theOutput.tag("ResponseType", "eps11");
-    theResponse =  new MaterialResponse(this, 3, this->getStrain());
-  }
-
-  // strain
-  else if ((strcmp(argv[0],"stressStrain") == 0) || 
-	   (strcmp(argv[0],"stressANDstrain") == 0)) {
-    theOutput.tag("ResponseType", "sig11");
-    theOutput.tag("ResponseType", "eps11");
-    theResponse =  new MaterialResponse(this, 4, Vector(2));
-  }
-
-  else if (strcmp(argv[0],"strains") == 0) {
+  if (strcmp(argv[0],"strains") == 0) {
     for (int i=0; i<numMaterials; i++) {
       theOutput.tag("UniaxialMaterialOutput");
       theOutput.attr("matType", this->getClassType());
@@ -628,8 +614,10 @@ SeriesMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
     }
   }
 
-  theOutput.endTag();
-  return theResponse;
+  if (theResponse != 0)
+    return theResponse;
+  else
+    return UniaxialMaterial::setResponse(argv, argc, theOutput);
 }
 
 int

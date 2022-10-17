@@ -989,41 +989,13 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
 int TwoNodeLink::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the element based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    
     static Vector v1(3);
     static Vector v2(3);
-    
-    if (displayMode >= 0)  {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i=0; i<numDIM; i++)  {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-    } else  {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        
-        if (eigen1.noCols() >= mode)  {
-            for (int i=0; i<numDIM; i++)  {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }
-        } else  {
-            for (int i=0; i<numDIM; i++)  {
-                v1(i) = end1Crd(i);
-                v2(i) = end2Crd(i);
-            }
-        }
-    }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 
@@ -1188,6 +1160,23 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
                 theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
+
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }
+
+    if (strcmp(argv[0],"materials") == 0) {
+      theResponse = new ElementResponse(this, 23, ID(numDIR));
+    }
+    if (strcmp(argv[0],"directions") == 0) {
+      theResponse = new ElementResponse(this, 24, ID(numDIR));
+    }
     
     output.endTag(); // ElementOutput
     
@@ -1198,7 +1187,9 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
 int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
 {
     Vector defoAndForce(numDIR*2);
-    
+    Vector &theVec = *(eleInfo.theVector);
+    ID &theID = *(eleInfo.theID);    
+	
     switch (responseID)  {
     case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
@@ -1228,9 +1219,34 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
         defoAndForce.Assemble(qb,numDIR);
         
         return eleInfo.setVector(defoAndForce);
-        
+
+    case 20:
+      theVec(0) = trans(0,0);
+      theVec(1) = trans(0,1);
+      theVec(2) = trans(0,2);
+      return 0;
+    case 21:
+      theVec(0) = trans(1,0);
+      theVec(1) = trans(1,1);
+      theVec(2) = trans(1,2);
+      return 0;
+    case 22:
+      theVec(0) = trans(2,0);
+      theVec(1) = trans(2,1);
+      theVec(2) = trans(2,2);
+      return 0;
+
+    case 23:
+      for (int i = 0; i < numDIR; i++)
+	theID(i) = theMaterials[i]->getTag();
+      return 0;
+    case 24:
+      for (int i = 0; i < numDIR; i++)
+	theID(i) = (*dir)(i) + 1; // Add one to match user input
+      return 0;
+      
     default:
-        return 0;
+        return -1;
     }
 }
 
@@ -1262,7 +1278,10 @@ void TwoNodeLink::setUp()
         if (y.Size() == 0)  {
             y.resize(3);
             y.Zero();
-            y(0) = -xp(1);
+	    if (xp.Size() == 1) // Make a 1D model work
+	      y(1) = 1.0;
+	    else
+	      y(0) = -xp(1);
             if (xp.Size() > 1)
                 y(1) = xp(0);
             if (xp.Size() > 2)
@@ -1300,7 +1319,7 @@ void TwoNodeLink::setUp()
     y(0) = z(1)*x(2) - z(2)*x(1);
     y(1) = z(2)*x(0) - z(0)*x(2);
     y(2) = z(0)*x(1) - z(1)*x(0);
-    
+
     // compute length(norm) of vectors
     double xn = x.Norm();
     double yn = y.Norm();

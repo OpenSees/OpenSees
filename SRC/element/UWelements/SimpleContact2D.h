@@ -134,8 +134,8 @@ class SimpleContact2D : public Element
     Vector n;		// normal Vector - 
                             // perpendicular to line between nodes 1 & 2
     Vector T;		// unit tangent vector (reference state)
-    double Lmaster;		// Length of master segment
-    double Lsquare;		// square of Lmaster
+    double Lprimary;		// Length of primary segment
+    double Lsquare;		// square of Lprimary
 
     double N1;		// value of shape function 1
     double N2;		// value of shape function 2
@@ -143,9 +143,9 @@ class SimpleContact2D : public Element
     Vector Bn;		// gap-displacement matrix
     Vector Bs;		// slip-displacement matrix
 
-    Vector dcrd1;       // current coordinates of nore 1
-    Vector dcrd2;       // current coordinates of nore 2
-    Vector dcrdS;       // current coordinates of nore S
+    Vector dcrd1;       // current coordinates of node 1
+    Vector dcrd2;       // current coordinates of node 2
+    Vector dcrdS;       // current coordinates of node S
     Vector dispL;       // current value of the Lagrangean multiplier
 
     int MyTag;          // what is my name?

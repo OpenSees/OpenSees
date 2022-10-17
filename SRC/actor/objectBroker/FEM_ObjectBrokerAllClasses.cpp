@@ -37,489 +37,567 @@
 #include <FEM_ObjectBrokerAllClasses.h>
 
 // ActorTypes
-#include <ActorSubdomain.h>
+#include "domain/subdomain/ActorSubdomain.h"
 
 // Convergence tests
-#include <CTestNormUnbalance.h>
-#include <CTestRelativeNormUnbalance.h>
-#include <CTestNormDispIncr.h>
-#include <CTestRelativeNormDispIncr.h>
-#include <CTestRelativeTotalNormDispIncr.h>
-#include <CTestEnergyIncr.h>
-#include <CTestRelativeEnergyIncr.h>
-#include <CTestFixedNumIter.h>
+#include "convergenceTest/CTestNormUnbalance.h"
+#include "convergenceTest/CTestRelativeNormUnbalance.h"
+#include "convergenceTest/CTestNormDispIncr.h"
+#include "convergenceTest/CTestRelativeNormDispIncr.h"
+#include "convergenceTest/CTestRelativeTotalNormDispIncr.h"
+#include "convergenceTest/CTestEnergyIncr.h" 
+#include "convergenceTest/CTestRelativeEnergyIncr.h"
+#include "convergenceTest/CTestFixedNumIter.h"
 
 // graph numbering schemes
-#include <RCM.h>
-#include <MyRCM.h>
-#include <SimpleNumberer.h>
+#include "graph/numberer/RCM.h"
+#include "graph/numberer/MyRCM.h"
+#include "graph/numberer/SimpleNumberer.h"
 
 
 // uniaxial material model header files
-#include <BoucWenMaterial.h>		//SAJalali
-#include <SPSW02.h>			//SAJalali
-#include <ElasticMaterial.h>
-#include <ElasticMultiLinear.h>
-#include <ElasticPowerFunc.h>
-#include <Elastic2Material.h>
-#include <ElasticPPMaterial.h>
-#include <ParallelMaterial.h>
-#include <Concrete01.h>
-#include <Concrete02.h>
-#include <Concrete04.h>
-#include <Concrete06.h> 
-#include <Concrete07.h>
-#include <ConcretewBeta.h>
-#include <OriginCentered.h>
-#include <Steel01.h>
-#include <Steel02.h>
-#include <Steel2.h>
-#include <FatigueMaterial.h>
-#include <ReinforcingSteel.h>
-#include <HardeningMaterial.h>
-#include <HystereticMaterial.h>
-#include <EPPGapMaterial.h>
-#include <ViscousMaterial.h>
-#include <ViscousDamper.h>
-#include <PathIndependentMaterial.h>
-#include <SeriesMaterial.h>
-#include <CableMaterial.h>
-#include <ENTMaterial.h>
-#include <MinMaxMaterial.h>
-#include <ModIMKPeakOriented.h>
-#include <Clough.h>
-#include <LimitStateMaterial.h>
-#include <InitStressMaterial.h>
-#include <InitStrainMaterial.h>
-#include <Bond_SP01.h>
-#include <SimpleFractureMaterial.h>
-#include <ConfinedConcrete01.h>
+#include "ElasticBilin.h"
+#include "BoucWenMaterial.h"		//SAJalali
+#include "SPSW02.h"			//SAJalali
+#include "ElasticMaterial.h"
+#include "ElasticMultiLinear.h"
+#include "ElasticPowerFunc.h"
+#include "Elastic2Material.h"
+#include "ElasticPPMaterial.h"
+#include "ParallelMaterial.h"
+#include "ASD_SMA_3K.h"
+#include "Concrete01.h"
+#include "Concrete02.h"
+#include "Concrete04.h"
+#include "Concrete06.h" 
+#include "Concrete07.h"
+#include "ConcretewBeta.h"
+#include "OriginCentered.h"
+#include "Steel01.h"
+#include "Steel02.h"
+#include "Steel2.h"
+#include "Steel4.h"
+#include "SteelFractureDI.h"
+#include "FatigueMaterial.h"
+#include "ReinforcingSteel.h"
+#include "HardeningMaterial.h"
+#include "HystereticMaterial.h"
+#include "HystereticSMMaterial.h"
+#include "EPPGapMaterial.h"
+#include "ViscousMaterial.h"
+#include "ViscousDamper.h"
+#include "PathIndependentMaterial.h"
+#include "BackboneMaterial.h"
+#include "SeriesMaterial.h"
+#include "CableMaterial.h"
+#include "ENTMaterial.h"
+#include "GNGMaterial.h"
+#include "MinMaxMaterial.h"
+#include "ModIMKPeakOriented.h"
+#include "snap/Clough.h"
+#include "limitState/LimitStateMaterial.h"
+#include "InitStressMaterial.h"
+#include "InitStrainMaterial.h"
+#include "Bond_SP01.h"
+#include "FRCC.h"
+#include "SimpleFractureMaterial.h"
+#include "ConfinedConcrete01.h"
+
+#include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
+#include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
+#include <HystereticAsym.h>					// Salvatore Sessa Apr-21-2022
+
+
+#include "DowelType.h"
+#include "DuctileFracture.h" // Kuanshi Zhong
 
 //PY springs: RWBoulanger and BJeremic
-#include <PySimple1.h>
-#include <TzSimple1.h>
-#include <QzSimple1.h>
-#include <PySimple2.h>
-#include <TzSimple2.h>
-#include <QzSimple2.h>
-#include <PyLiq1.h>
-#include <TzLiq1.h>
+#include "PY/PySimple1.h"
+#include "PY/TzSimple1.h"
+#include "PY/QzSimple1.h"
+#include "PY/PySimple2.h"
+#include "PY/TzSimple2.h"
+#include "PY/QzSimple2.h"
+#include "PY/PyLiq1.h"
+#include "PY/TzLiq1.h"
+#include "PY/QzLiq1.h"
 
-#include <FedeasBond1Material.h>
-#include <FedeasBond2Material.h>
-#include <FedeasConcr1Material.h>
-#include <FedeasConcr2Material.h>
-#include <FedeasConcr3Material.h>
-#include <FedeasHardeningMaterial.h>
-#include <FedeasHyster1Material.h>
-#include <FedeasHyster2Material.h>
-#include <FedeasSteel1Material.h>
-#include <FedeasSteel2Material.h>
+#include "fedeas/FedeasBond1Material.h"
+#include "fedeas/FedeasBond2Material.h"
+#include "fedeas/FedeasConcr1Material.h"
+#include "fedeas/FedeasConcr2Material.h"
+#include "fedeas/FedeasConcr3Material.h"
+#include "fedeas/FedeasHardeningMaterial.h"
+#include "fedeas/FedeasHyster1Material.h"
+#include "fedeas/FedeasHyster2Material.h"
+#include "fedeas/FedeasSteel1Material.h"
+#include "fedeas/FedeasSteel2Material.h"
 
-#include <Bilin.h>
-#include <DrainBilinearMaterial.h>
-#include <DrainClough1Material.h>
-#include <DrainClough2Material.h>
-#include <DrainPinch1Material.h>
-#include <HyperbolicGapMaterial.h>
-#include <ImpactMaterial.h>
+#include "Bilin.h"
+#include "drain/DrainBilinearMaterial.h"
+#include "drain/DrainClough1Material.h"
+#include "drain/DrainClough2Material.h"
+#include "drain/DrainPinch1Material.h"
+#include "HyperbolicGapMaterial.h"
+#include "ImpactMaterial.h"
 
 // Sections
-#include <ElasticSection2d.h>
-#include <ElasticSection3d.h>
-#include <ElasticShearSection2d.h>
-#include <ElasticShearSection3d.h>
-#include <GenericSection1d.h>
-//#include <GenericSectionNd.h>
-#include <SectionAggregator.h>
-//#include <FiberSection.h>
-#include <FiberSection2d.h>
-#include <FiberSection3d.h>
-#include <ElasticPlateSection.h>
-#include <ElasticMembranePlateSection.h>
-#include <MembranePlateFiberSection.h>
-#include <Bidirectional.h>
-#include <LayeredShellFiberSection.h> // Yuli Huang & Xinzheng Lu 
+#include "ElasticSection2d.h"
+#include "ElasticSection3d.h"
+#include "ElasticShearSection2d.h"
+#include "ElasticShearSection3d.h"
+#include "GenericSection1d.h"
+//#include "GenericSectionNd.h"
+#include "SectionAggregator.h"
+//#include "FiberSection.h"
+#include "FiberSection2d.h"
+#include "FiberSection3d.h"
+#include "NDFiberSection2d.h"
+#include "NDFiberSection3d.h"
+#include "FiberSectionAsym3d.h" //Xinlong Du
+#include "ElasticPlateSection.h"
+#include "ElasticMembranePlateSection.h"
+#include "MembranePlateFiberSection.h"
+#include "DoubleMembranePlateFiberSection.h"
+#include "Bidirectional.h"
+#include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 
 // NDMaterials
-#include <ElasticIsotropicPlaneStrain2D.h>
-#include <ElasticIsotropicPlaneStress2D.h>
-#include <ElasticIsotropicPlateFiber.h>
-#include <ElasticIsotropicAxiSymm.h>
-#include <ElasticIsotropicThreeDimensional.h>
-#include <J2PlaneStrain.h>
-#include <J2PlaneStress.h>
-#include <J2PlateFiber.h>
-#include <J2AxiSymm.h>
-#include <J2ThreeDimensional.h>
-#include <PlaneStressMaterial.h>
-#include <PlateFiberMaterial.h>
+#include "ElasticIsotropicPlaneStrain2D.h"
+#include "ElasticIsotropicPlaneStress2D.h"
+#include "ElasticIsotropicPlateFiber.h"
+#include "ElasticIsotropicBeamFiber.h"
+#include "ElasticIsotropicAxiSymm.h"
+#include "ElasticIsotropicThreeDimensional.h"
+#include "J2PlaneStrain.h"
+#include "J2PlaneStress.h"
+#include "J2PlateFiber.h"
+#include "J2BeamFiber2d.h"
+#include "J2BeamFiber3d.h"
+#include "J2AxiSymm.h"
+#include "J2ThreeDimensional.h"
+#include "PlaneStrainMaterial.h"
+#include "PlaneStressMaterial.h"
+#include "PlateFiberMaterial.h"
+#include "OrthotropicMaterial.h"
+#include "PlaneStressRebarMaterial.h"
+#include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
-#include <PlateRebarMaterial.h>
-#include <PlateFromPlaneStressMaterial.h>
-//#include <ConcreteS.h>
-#include <PlaneStressUserMaterial.h>
+#include "PlateRebarMaterial.h"
+#include "PlateFromPlaneStressMaterial.h"
+//#include "ConcreteS.h"
+#include "PlaneStressUserMaterial.h"
 //end Yuli Huang & Xinzheng Lu
-#include <FeapMaterial03.h>
-#include <CycLiqCP3D.h>
-#include <CycLiqCPPlaneStrain.h>
-#include <CycLiqCPSP3D.h>
-#include <CycLiqCPSPPlaneStrain.h>
+#include "feap/FeapMaterial03.h"
+#include "CycLiqCP3D.h"
+#include "CycLiqCPPlaneStrain.h"
+#include "CycLiqCPSP3D.h"
+#include "CycLiqCPSPPlaneStrain.h"
 
 
-#include <FluidSolidPorousMaterial.h>
-#include <PressureDependMultiYield.h>
-#include <PressureDependMultiYield02.h>
-#include <PressureIndependMultiYield.h>
+#include "soil/FluidSolidPorousMaterial.h"
+#include "soil/PressureDependMultiYield.h"
+#include "soil/PressureDependMultiYield02.h"
+#include "soil/PressureIndependMultiYield.h"
 
-#include <ContactMaterial2D.h>
-#include <ContactMaterial3D.h>
-#include <DruckerPrager3D.h>           
-#include <DruckerPragerPlaneStrain.h>
-#include <BoundingCamClay.h>        
-#include <BoundingCamClay3D.h>
-#include <BoundingCamClayPlaneStrain.h>
-#include <ManzariDafalias.h>
-#include <ManzariDafalias3D.h>
-#include <ManzariDafaliasPlaneStrain.h>
-#include <ManzariDafaliasRO.h>
-#include <ManzariDafalias3DRO.h>
-#include <ManzariDafaliasPlaneStrainRO.h>
-#include <PM4Sand.h>
-#include <PM4Silt.h>
-#include <InitialStateAnalysisWrapper.h>
-#if !_DLL
-#include <stressDensity.h>
-#endif
-#include <InitStressNDMaterial.h>
+#include "UWmaterials/ContactMaterial2D.h"
+#include "UWmaterials/ContactMaterial3D.h"
+#include "UWmaterials/DruckerPrager3D.h"           
+#include "UWmaterials/DruckerPragerPlaneStrain.h"
+#include "UWmaterials/BoundingCamClay.h"        
+#include "UWmaterials/BoundingCamClay3D.h"
+#include "UWmaterials/BoundingCamClayPlaneStrain.h"
+#include "UWmaterials/ManzariDafalias.h"
+#include "UWmaterials/ManzariDafalias3D.h"
+#include "UWmaterials/ManzariDafaliasPlaneStrain.h"
+#include "UWmaterials/ManzariDafaliasRO.h"
+#include "UWmaterials/ManzariDafalias3DRO.h"
+#include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
+#include "UWmaterials/PM4Sand.h"
+#include "UWmaterials/PM4Silt.h"
+#include "J2CyclicBoundingSurface.h"
+#include "J2CyclicBoundingSurface3D.h"
+#include "J2CyclicBoundingSurfacePlaneStrain.h"
+#include "UWmaterials/InitialStateAnalysisWrapper.h"
+#include "stressDensityModel/stressDensity.h"
+#include "InitStressNDMaterial.h"
 
 // Fibers
-#include <UniaxialFiber2d.h>
-#include <UniaxialFiber3d.h>
+#include "fiber/UniaxialFiber2d.h"
+#include "fiber/UniaxialFiber3d.h"
 
 // friction models
-#include <Coulomb.h>
-#include <VelDependent.h>
-#include <VelPressureDep.h>
-#include <VelDepMultiLinear.h>
-#include <VelNormalFrcDep.h>
+#include "frictionBearing/frictionModel/Coulomb.h"
+#include "frictionBearing/frictionModel/VelDependent.h"
+#include "frictionBearing/frictionModel/VelPressureDep.h"
+#include "frictionBearing/frictionModel/VelDepMultiLinear.h"
+#include "frictionBearing/frictionModel/VelNormalFrcDep.h"
+
+#include "ArctangentBackbone.h"
 
 // element header files
-#include <Element.h>
-#include <beam2d02.h>
-#include <beam2d03.h>
-#include <beam2d04.h>
-#include <beam3d01.h>
-#include <beam3d02.h>
-#include <Truss.h>
-#include <Truss2.h>
-#include <TrussSection.h>
-#include <CorotTruss.h>
-#include <CorotTrussSection.h>
-#include <ZeroLength.h>
-#include <ZeroLengthSection.h>
-#include <ZeroLengthContact2D.h>
-#include <ZeroLengthContact3D.h>
-#include <ZeroLengthContactNTS2D.h>
-#include <ZeroLengthInterface2D.h>
-//#include <ZeroLengthND.h>
-#include <FourNodeQuad.h>
-#include <EnhancedQuad.h>
-#include <NineNodeMixedQuad.h>
-#include <ConstantPressureVolumeQuad.h>
-#include <ElasticBeam2d.h>
-#include <ElasticBeam3d.h>
-#include <ModElasticBeam2d.h>			//SAJalali
-#include <ElasticTimoshenkoBeam2d.h>
-#include <ElasticTimoshenkoBeam3d.h>
-#include <ForceBeamColumn2d.h>
-#include <ForceBeamColumn3d.h>
-#include <Tri31.h>
+#include "Element.h"
+#include "truss/Truss.h"
+#include "truss/Truss2.h"
+#include "truss/TrussSection.h"
+#include "truss/CorotTruss.h"
+#include "truss/CorotTrussSection.h"
+#include "truss/InertiaTruss.h"
+#include "zeroLength/ZeroLength.h"
+#include "zeroLength/ZeroLengthSection.h"
+#include "zeroLength/ZeroLengthContact2D.h"
+#include "zeroLength/ZeroLengthContact3D.h"
+#include "zeroLength/ZeroLengthContactNTS2D.h"
+#include "zeroLength/ZeroLengthInterface2D.h"
+#include "zeroLength/ZeroLengthContactASDimplex.h"
+//#include "ZeroLengthND.h"
 
-#include <SSPquad.h>
-#include <SSPquadUP.h>
-#include <SSPbrick.h>
-#include <SSPbrickUP.h>
-#include <BeamContact2D.h>
-#include <BeamContact2Dp.h>
-#include <BeamContact3D.h>
-#include <BeamContact3Dp.h>
-#include <BeamEndContact3D.h>
-#include <BeamEndContact3Dp.h>
-#include <QuadBeamEmbedContact.h>
+#include "fourNodeQuad/FourNodeQuad.h"
+#include "fourNodeQuad/EnhancedQuad.h"
+#include "fourNodeQuad/NineNodeMixedQuad.h"
+#include "fourNodeQuad/NineNodeQuad.h"
+#include "fourNodeQuad/EightNodeQuad.h"
+#include "fourNodeQuad/ConstantPressureVolumeQuad.h"
+#include "elasticBeamColumn/ElasticBeam2d.h"
+#include "elasticBeamColumn/ElasticBeam3d.h"
+#include "elasticBeamColumn/ModElasticBeam2d.h"			//SAJalali
+#include "elasticBeamColumn/ElasticTimoshenkoBeam2d.h"
+#include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
+#include "forceBeamColumn/ForceBeamColumn2d.h"
+#include "forceBeamColumn/ForceBeamColumn3d.h"
+#include "dispBeamColumn/TimoshenkoBeamColumn2d.h"
+#include "dispBeamColumn/TimoshenkoBeamColumn3d.h"
+#include "triangle/Tri31.h"
 
-#include <Nine_Four_Node_QuadUP.h>
-#include <BrickUP.h>
-#include <BBarBrickUP.h>
-#include <BBarFourNodeQuadUP.h>
-#include <Twenty_Eight_Node_BrickUP.h>
-#include <FourNodeQuadUP.h>
+#include "UWelements/SSPquad.h"
+#include "UWelements/SSPquadUP.h"
+#include "UWelements/SSPbrick.h"
+#include "UWelements/SSPbrickUP.h"
+#include "UWelements/BeamContact2D.h"
+#include "UWelements/BeamContact2Dp.h"
+#include "UWelements/BeamContact3D.h"
+#include "UWelements/BeamContact3Dp.h"
+#include "UWelements/BeamEndContact3D.h"
+#include "UWelements/BeamEndContact3Dp.h"
+#include "UWelements/QuadBeamEmbedContact.h"
 
-#include <DispBeamColumn2d.h>
-#include <DispBeamColumn3d.h>
-#include <ShellMITC4.h>
-#include <ShellMITC9.h>
-#include <ShellDKGQ.h>   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-#include <ShellNLDKGQ.h> //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-#include <Brick.h>
-#include <BbarBrick.h>
-#include <Joint2D.h>		// Arash
-#include <TwoNodeLink.h>
-#include <LinearElasticSpring.h>
-#include <Inerter.h>
+#include "PML/PML2D.h"
+#include "PML/PML3D.h"
 
-#include <ElastomericBearingBoucWen2d.h>
-#include <ElastomericBearingBoucWen3d.h>
-#include <ElastomericBearingPlasticity2d.h>
-#include <ElastomericBearingPlasticity3d.h>
-#include <ElastomericBearingUFRP2d.h>
-#include <ElastomericX.h>
-#include <HDR.h>
-#include <LeadRubberX.h>
+#include "UP-ucsd/Nine_Four_Node_QuadUP.h"
+#include "UP-ucsd/BrickUP.h"
+#include "UP-ucsd/BBarBrickUP.h"
+#include "UP-ucsd/BBarFourNodeQuadUP.h"
+#include "UP-ucsd/Twenty_Eight_Node_BrickUP.h"
+#include "UP-ucsd/FourNodeQuadUP.h"
 
-#include <FlatSliderSimple2d.h>
-#include <FlatSliderSimple3d.h>
-#include <FPBearingPTV.h>
-#include <RJWatsonEQS2d.h>
-#include <RJWatsonEQS3d.h>
-#include <SingleFPSimple2d.h>
-#include <SingleFPSimple3d.h>
-#include <TripleFrictionPendulum.h>
+#include "dispBeamColumn/DispBeamColumn2d.h"
+#include "dispBeamColumn/DispBeamColumn3d.h"
+#include "mixedBeamColumn/MixedBeamColumn2d.h"
+#include "mixedBeamColumn/MixedBeamColumn3d.h"
+#include "dispBeamColumn/DispBeamColumnNL2d.h"
+#include "dispBeamColumn/DispBeamColumnNL3d.h"
+#include "dispBeamColumn/DispBeamColumnAsym3d.h"    //Xinlong Du
+#include "mixedBeamColumn/MixedBeamColumnAsym3d.h"  //Xinlong Du
+#include "dispBeamColumn/DispBeamColumn2dThermal.h"
+#include "dispBeamColumn/DispBeamColumn3dThermal.h"
+#include "shell/ShellMITC4.h"
+#include "shell/ShellMITC9.h"
+#include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+#include "shell/ShellNLDKGQ.h" //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+#include "shell/ASDShellQ4.h" // Massimo Petracca
+#include "brick/Brick.h"
+#include "brick/BbarBrick.h"
+#include "joint/Joint2D.h"		// Arash
+#include "twoNodeLink/TwoNodeLink.h"
+#include "twoNodeLink/LinearElasticSpring.h"
+#include "twoNodeLink/Inerter.h"
 
-#include <PFEMElement2D.h>
+#include "mvlem/MVLEM.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
+#include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM_3D.h"		// Kristijan Kolozvari
 
-#include <LinearCrdTransf2d.h>
-#include <LinearCrdTransf3d.h>
-#include <PDeltaCrdTransf2d.h>
-#include <PDeltaCrdTransf3d.h>
-#include <CorotCrdTransf2d.h>
-#include <CorotCrdTransf3d.h>
+#include "elastomericBearing/ElastomericBearingBoucWen2d.h"
+#include "elastomericBearing/ElastomericBearingBoucWen3d.h"
+#include "elastomericBearing/ElastomericBearingPlasticity2d.h"
+#include "elastomericBearing/ElastomericBearingPlasticity3d.h"
+#include "elastomericBearing/ElastomericBearingUFRP2d.h"
+#include "elastomericBearing/ElastomericX.h"
+#include "elastomericBearing/HDR.h"
+#include "elastomericBearing/LeadRubberX.h"
 
-#include <HingeMidpointBeamIntegration.h>
-#include <HingeEndpointBeamIntegration.h>
-#include <HingeRadauBeamIntegration.h>
-#include <HingeRadauTwoBeamIntegration.h>
-#include <UserDefinedHingeIntegration.h>
-#include <DistHingeIntegration.h>
-#include <RegularizedHingeIntegration.h>
+#include "frictionBearing/FlatSliderSimple2d.h"
+#include "frictionBearing/FlatSliderSimple3d.h"
+#include "frictionBearing/FPBearingPTV.h"
+#include "frictionBearing/RJWatsonEQS2d.h"
+#include "frictionBearing/RJWatsonEQS3d.h"
+#include "frictionBearing/SingleFPSimple2d.h"
+#include "frictionBearing/SingleFPSimple3d.h"
+#include "frictionBearing/TripleFrictionPendulum.h"
 
-#include <LobattoBeamIntegration.h>
-#include <LegendreBeamIntegration.h>
-#include <RadauBeamIntegration.h>
-#include <NewtonCotesBeamIntegration.h>
-#include <TrapezoidalBeamIntegration.h>
-#include <UserDefinedBeamIntegration.h>
-#include <FixedLocationBeamIntegration.h>
-#include <LowOrderBeamIntegration.h>
-#include <MidDistanceBeamIntegration.h>
-#include <CompositeSimpsonBeamIntegration.h>
+#include "PFEMElement/PFEMElement2D.h"
+#include "RockingBC/RockingBC.h"
+
+#include "CEqElement/ASDEmbeddedNodeElement.h"
+
+#include "absorbentBoundaries/ASDAbsorbingBoundary2D.h"
+#include "absorbentBoundaries/ASDAbsorbingBoundary3D.h"
+
+#include "LinearCrdTransf2d.h"
+#include "LinearCrdTransf3d.h"
+#include "PDeltaCrdTransf2d.h"
+#include "PDeltaCrdTransf3d.h"
+#include "CorotCrdTransf2d.h"
+#include "CorotCrdTransf3d.h"
+
+#include "UniformDamping.h"
+#include "SecStifDamping.h"
+#include "URDDamping.h"
+#include "URDDampingbeta.h"
+
+#include "HingeMidpointBeamIntegration.h"
+#include "HingeEndpointBeamIntegration.h"
+#include "HingeRadauBeamIntegration.h"
+#include "HingeRadauTwoBeamIntegration.h"
+#include "UserDefinedHingeIntegration.h"
+#include "DistHingeIntegration.h"
+#include "RegularizedHingeIntegration.h"
+
+#include "LobattoBeamIntegration.h"
+#include "LegendreBeamIntegration.h"
+#include "RadauBeamIntegration.h"
+#include "NewtonCotesBeamIntegration.h"
+#include "TrapezoidalBeamIntegration.h"
+#include "UserDefinedBeamIntegration.h"
+#include "FixedLocationBeamIntegration.h"
+#include "LowOrderBeamIntegration.h"
+#include "MidDistanceBeamIntegration.h"
+#include "CompositeSimpsonBeamIntegration.h"
+
+#include "RCCircularSectionIntegration.h"
+#include "RCSectionIntegration.h"
+#include "RCTBeamSectionIntegration.h"
+#include "RCTunnelSectionIntegration.h"
+#include "TubeSectionIntegration.h"
+#include "WideFlangeSectionIntegration.h"
 
 // node header files
-#include <Node.h>
+#include "Node.h"
 
 
-#include <FileStream.h>
-#include <StandardStream.h>
-#include <XmlFileStream.h>
-#include <DataFileStream.h>
-#include <DataFileStreamAdd.h>
-#include <BinaryFileStream.h>
-#include <DatabaseStream.h>
-#include <DummyStream.h>
+#include "FileStream.h"
+#include "StandardStream.h"
+#include "XmlFileStream.h"
+#include "DataFileStream.h"
+#include "DataFileStreamAdd.h"
+#include "BinaryFileStream.h"
+#include "DatabaseStream.h"
+#include "DummyStream.h"
 
-#include <NodeRecorder.h>
-#include <ElementRecorder.h>
-#include <EnvelopeNodeRecorder.h>
-#include <EnvelopeElementRecorder.h>
-#include <DriftRecorder.h>
-#include <MPCORecorder.h>
-#include <VTK_Recorder.h>
+#include "NodeRecorder.h"
+#include "ElementRecorder.h"
+#include "EnvelopeNodeRecorder.h"
+#include "EnvelopeElementRecorder.h"
+#include "DriftRecorder.h"
+#ifdef _HDF5
+#include "MPCORecorder.h"
+#endif // _HDF5
+#include "VTK_Recorder.h"
+#include "GmshRecorder.h"
 
 // mp_constraint header files
-#include <MP_Constraint.h>
-#include <MP_Joint2D.h>
+#include "MP_Constraint.h"
+#include "joint/MP_Joint2D.h"
 
 // sp_constraint header files
-#include <SP_Constraint.h>
-#include <SP_Constraint.h>
-#include <ImposedMotionSP.h>
-#include <ImposedMotionSP1.h>
+#include "SP_Constraint.h"
+#include "SP_Constraint.h"
+#include "ImposedMotionSP.h"
+#include "ImposedMotionSP1.h"
 
 // Pressure_Constraint header file
-#include <Pressure_Constraint.h>
+#include "Pressure_Constraint.h"
 
 // nodal load header files
-#include <NodalLoad.h>
+#include "NodalLoad.h"
 
 // elemental load header files
-#include <ElementalLoad.h>
-#include <Beam2dUniformLoad.h>
-#include <Beam2dPointLoad.h>
-#include <Beam3dUniformLoad.h>
-#include <Beam3dPointLoad.h>
-#include <BrickSelfWeight.h>
-#include <SelfWeight.h>
+#include "ElementalLoad.h"
+#include "Beam2dUniformLoad.h"
+#include "Beam2dPointLoad.h"
+#include "Beam3dUniformLoad.h"
+#include "Beam3dPointLoad.h"
+#include "BrickSelfWeight.h"
+#include "SelfWeight.h"
+#include "SurfaceLoader.h"
 
 // matrix, vector & id header files
-#include <Matrix.h>
-#include <Vector.h>
-#include <ID.h>
+#include "Matrix.h"
+#include "Vector.h"
+#include "ID.h"
 
 // subdomain header files
-#include <Subdomain.h>
+#include "Subdomain.h"
 
 // constraint handler header files
-#include <ConstraintHandler.h>
-#include <PlainHandler.h>
-#include <PenaltyConstraintHandler.h>
-#include <LagrangeConstraintHandler.h>
-#include <TransformationConstraintHandler.h>
+#include "ConstraintHandler.h"
+#include "PlainHandler.h"
+#include "PenaltyConstraintHandler.h"
+#include "LagrangeConstraintHandler.h"
+#include "TransformationConstraintHandler.h"
 
 // dof numberer header files
-#include <DOF_Numberer.h>   
-#include <PlainNumberer.h>
+#include "DOF_Numberer.h"   
+#include "PlainNumberer.h"
 
 // analysis model header files
-#include <AnalysisModel.h>    
+#include "AnalysisModel.h"    
 
 // equi soln algo header files
-#include <EquiSolnAlgo.h>
-#include <Linear.h>
-#include <NewtonRaphson.h>
-#include <Broyden.h>
-#include <NewtonLineSearch.h>
-#include <KrylovNewton.h>
-#include <AcceleratedNewton.h>
-#include <ModifiedNewton.h>
+#include "EquiSolnAlgo.h"
+#include "Linear.h"
+#include "NewtonRaphson.h"
+#include "Broyden.h"
+#include "NewtonLineSearch.h"
+#include "KrylovNewton.h"
+#include "AcceleratedNewton.h"
+#include "ModifiedNewton.h"
 
-#include <KrylovAccelerator.h>
-#include <RaphsonAccelerator.h>
+#include "accelerator/KrylovAccelerator.h"
+#include "accelerator/RaphsonAccelerator.h"
 
 
-#include <BisectionLineSearch.h>
-#include <InitialInterpolatedLineSearch.h>
-#include <RegulaFalsiLineSearch.h>
-#include <SecantLineSearch.h>
+#include "BisectionLineSearch.h"
+#include "InitialInterpolatedLineSearch.h"
+#include "RegulaFalsiLineSearch.h"
+#include "SecantLineSearch.h"
 
 // domain decomp soln algo header files
-#include <DomainDecompAlgo.h>
+#include "DomainDecompAlgo.h"
 
 // integrator header files
-#include <ArcLength.h>
-#include <DisplacementControl.h>
+#include "ArcLength.h"
+#include "DisplacementControl.h"
 #ifdef _PARALLEL_PROCESSING
-#include <DistributedDisplacementControl.h>
+#include "DistributedDisplacementControl.h"
 #endif
-#include <LoadControl.h>
+#include "LoadControl.h"
+#include "StagedLoadControl.h"
 
-#include <TransientIntegrator.h>
-#include <AlphaOS.h>
-#include <AlphaOS_TP.h>
-#include <AlphaOSGeneralized.h>
-#include <AlphaOSGeneralized_TP.h>
-#include <CentralDifference.h>
-#include <CentralDifferenceAlternative.h>
-#include <CentralDifferenceNoDamping.h>
-#include <Collocation.h>
-#include <CollocationHSFixedNumIter.h>
-#include <CollocationHSIncrLimit.h>
-#include <CollocationHSIncrReduct.h>
-#include <HHT.h>
-#include <HHT_TP.h>
-#include <HHTExplicit.h>
-#include <HHTExplicit_TP.h>
-#include <HHTGeneralized.h>
-#include <HHTGeneralized_TP.h>
-#include <HHTGeneralizedExplicit.h>
-#include <HHTGeneralizedExplicit_TP.h>
-#include <HHTHSFixedNumIter.h>
-#include <HHTHSFixedNumIter_TP.h>
-#include <HHTHSIncrLimit.h>
-#include <HHTHSIncrLimit_TP.h>
-#include <HHTHSIncrReduct.h>
-#include <HHTHSIncrReduct_TP.h>
-#include <KRAlphaExplicit.h>
-#include <KRAlphaExplicit_TP.h>
-#include <Newmark.h>
-#include <NewmarkExplicit.h>
-#include <NewmarkHSFixedNumIter.h>
-#include <NewmarkHSIncrLimit.h>
-#include <NewmarkHSIncrReduct.h>
-#include <PFEMIntegrator.h>
-#include <TRBDF2.h>
-#include <TRBDF3.h>
-#include <WilsonTheta.h>
+#include "TransientIntegrator.h"
+#include "AlphaOS.h"
+#include "AlphaOS_TP.h"
+#include "AlphaOSGeneralized.h"
+#include "AlphaOSGeneralized_TP.h"
+#include "CentralDifference.h"
+#include "CentralDifferenceAlternative.h"
+#include "CentralDifferenceNoDamping.h"
+#include "Collocation.h"
+#include "CollocationHSFixedNumIter.h"
+#include "CollocationHSIncrLimit.h"
+#include "CollocationHSIncrReduct.h"
+#include "HHT.h"
+#include "HHT_TP.h"
+#include "HHTExplicit.h"
+#include "HHTExplicit_TP.h"
+#include "HHTGeneralized.h"
+#include "HHTGeneralized_TP.h"
+#include "HHTGeneralizedExplicit.h"
+#include "HHTGeneralizedExplicit_TP.h"
+#include "HHTHSFixedNumIter.h"
+#include "HHTHSFixedNumIter_TP.h"
+#include "HHTHSIncrLimit.h"
+#include "HHTHSIncrLimit_TP.h"
+#include "HHTHSIncrReduct.h"
+#include "HHTHSIncrReduct_TP.h"
+#include "KRAlphaExplicit.h"
+#include "KRAlphaExplicit_TP.h"
+#include "Newmark.h"
+#include "StagedNewmark.h"
+#include "NewmarkExplicit.h"
+#include "NewmarkHSFixedNumIter.h"
+#include "NewmarkHSIncrLimit.h"
+#include "NewmarkHSIncrReduct.h"
+#include "PFEMIntegrator.h"
+#include "TRBDF2.h"
+#include "TRBDF3.h"
+#include "WilsonTheta.h"
 
 // system of eqn header files
-#include <LinearSOE.h>
-#include <DomainSolver.h>
-#include <FullGenLinSOE.h>
-#include <BandGenLinSOE.h>
-#include <BandSPDLinSOE.h>
-#include <ProfileSPDLinSOE.h>
-#include <ProfileSPDLinSubstrSolver.h>
-
-#include <SparseGenColLinSOE.h>
-
-#include <DomainDecompositionAnalysis.h>
+#include "LinearSOE.h"
+#include "DomainSolver.h"
+#include "fullGEN/FullGenLinSOE.h"
+#include "bandGEN/BandGenLinSOE.h"
+#include "bandSPD/BandSPDLinSOE.h"
+#include "profileSPD/ProfileSPDLinSOE.h"
+#include "profileSPD/ProfileSPDLinSubstrSolver.h"
+#include "sparseGEN/SparseGenColLinSOE.h"
+#include "DomainDecompositionAnalysis.h"
 
 // load patterns
-#include <LoadPattern.h>
-#include <UniformExcitation.h>
-#include <MultiSupportPattern.h>
-#include <GroundMotion.h>
-#include <InterpolatedGroundMotion.h>
-#include <DRMLoadPatternWrapper.h>
+#include "LoadPattern.h"
+#include "UniformExcitation.h"
+#include "MultiSupportPattern.h"
+#include "GroundMotion.h"
+#include "InterpolatedGroundMotion.h"
+#include "drm/DRMLoadPatternWrapper.h"
 
-#include <Parameter.h>
-#include <ElementParameter.h>
-#include <MaterialStageParameter.h>
-#include <MatParameter.h>
-#include <InitialStateParameter.h>
-#include <ElementStateParameter.h>
+#ifdef _H5DRM
+#include "drm/H5DRM.h"
+#endif
+
+#include "Parameter.h"
+#include "ElementParameter.h"
+#include "MaterialStageParameter.h"
+#include "MatParameter.h"
+#include "InitialStateParameter.h"
+#include "ElementStateParameter.h"
 
 // time series
-#include <LinearSeries.h>
-#include <PathSeries.h>
-#include <PathTimeSeries.h>
-#include <RectangularSeries.h>
-#include <ConstantSeries.h>
-#include <TrigSeries.h>
+#include "LinearSeries.h"
+#include "PathSeries.h"
+#include "PathTimeSeries.h"
+#include "RectangularSeries.h"
+#include "ConstantSeries.h"
+#include "TrigSeries.h"
+#include "TriangleSeries.h"
 
 // time series integrators
-#include <TrapezoidalTimeSeriesIntegrator.h>
+#include "TrapezoidalTimeSeriesIntegrator.h"
 
-#include <ArpackSOE.h>
+#include "eigenSOE/ArpackSOE.h"
 
 #ifdef _PETSC
-#include <PetscSOE.h>
-#include <SparseGenColLinSOE.h>
+#include "PetscSOE.h"
+#include "PetscSolver.h"
+#include "SparseGenColLinSOE.h"
 #endif
 
 
 #ifdef _MUMPS
-#include <MumpsSOE.h>
+#include "MumpsSOE.h"
 #ifdef _PARALLEL_PROCESSING
-#include <MumpsParallelSOE.h>
+#include "MumpsParallelSOE.h"
 #endif
 #endif
 
 #ifdef _PARALLEL_PROCESSING
-#include <DistributedBandSPDLinSOE.h>
-#include <DistributedProfileSPDLinSOE.h>
-#include <DistributedSparseGenColLinSOE.h>
-#include <DistributedSparseGenRowLinSOE.h>
-#include <DistributedBandGenLinSOE.h>
-#include <DistributedSuperLU.h>
-#include <ParallelNumberer.h>
-#include <StaticDomainDecompositionAnalysis.h>
-#include <TransientDomainDecompositionAnalysis.h>
-#include <DistributedDiagonalSOE.h>
+#include "DistributedBandSPDLinSOE.h"
+#include "DistributedProfileSPDLinSOE.h"
+#include "DistributedSparseGenColLinSOE.h"
+#include "DistributedSparseGenRowLinSOE.h"
+#include "DistributedBandGenLinSOE.h"
+#include "DistributedSuperLU.h"
+#include "ParallelNumberer.h"
+#include "StaticDomainDecompositionAnalysis.h"
+#include "TransientDomainDecompositionAnalysis.h"
+#include "DistributedDiagonalSOE.h"
 #endif
 
-#include <TclFeViewer.h>
+//#include "TclFeViewer.h"
 
-#include <packages.h>
+#include "packages.h"
 
 typedef struct uniaxialPackage {
   int classTag;
@@ -636,7 +714,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new CorotTruss(); 
       
     case ELE_TAG_CorotTrussSection:  
-      return new CorotTrussSection(); 	     
+      return new CorotTrussSection(); 
+
+	case ELE_TAG_InertiaTruss:
+		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
       return new ZeroLength(); 	     
@@ -655,7 +736,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ZeroLengthContactNTS2D:  
       return new ZeroLengthContactNTS2D(); 	     
-      
+    
+    case ELE_TAG_ZeroLengthContactASDimplex:
+      return new ZeroLengthContactASDimplex();
       
       //case ELE_TAG_ZeroLengthND:  
       //return new ZeroLengthND(); 	     
@@ -684,6 +767,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ElasticTimoshenkoBeam3d:
       return new ElasticTimoshenkoBeam3d();
+
+    case ELE_TAG_TimoshenkoBeamColumn2d:
+      return new TimoshenkoBeamColumn2d();
+      
+    case ELE_TAG_TimoshenkoBeamColumn3d:
+      return new TimoshenkoBeamColumn3d();
       
     case ELE_TAG_ForceBeamColumn2d:  
       return new ForceBeamColumn2d();					     
@@ -695,13 +784,43 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new DispBeamColumn2d();					     
       
     case ELE_TAG_DispBeamColumn3d:  
-      return new DispBeamColumn3d(); 
+      return new DispBeamColumn3d();
+
+    case ELE_TAG_MixedBeamColumn2d:  
+      return new MixedBeamColumn2d();					     
+      
+    case ELE_TAG_MixedBeamColumn3d:  
+      return new MixedBeamColumn3d();      
+
+    case ELE_TAG_DispBeamColumnNL2d:  
+      return new DispBeamColumnNL2d();					     
+      
+    case ELE_TAG_DispBeamColumnNL3d:  
+      return new DispBeamColumnNL3d();       
+
+	case ELE_TAG_DispBeamColumnAsym3d:
+		return new DispBeamColumnAsym3d();    //Xinlong Du
+
+	case ELE_TAG_MixedBeamColumnAsym3d:
+		return new MixedBeamColumnAsym3d();   //Xinlong Du
+
+    case ELE_TAG_DispBeamColumn2dThermal:  
+      return new DispBeamColumn2dThermal();					     
+      
+    case ELE_TAG_DispBeamColumn3dThermal:  
+      return new DispBeamColumn3dThermal();
       
     case ELE_TAG_EnhancedQuad:
       return new EnhancedQuad();
       
     case ELE_TAG_NineNodeMixedQuad:
       return new NineNodeMixedQuad();
+      
+    case ELE_TAG_NineNodeQuad:
+      return new NineNodeQuad();
+      
+    case ELE_TAG_EightNodeQuad:
+      return new EightNodeQuad();
       
     case ELE_TAG_ConstantPressureVolumeQuad:
       return new ConstantPressureVolumeQuad();
@@ -720,7 +839,13 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-      
+
+	case ELE_TAG_PML2D:
+	  return new PML2D();
+
+	case ELE_TAG_PML3D:
+	  return new PML3D();
+
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -753,7 +878,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ShellNLDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellNLDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-      
+    
+    case ELE_TAG_ASDShellQ4:   // Massimo Petracca
+      return new ASDShellQ4(); // Massimo Petracca
+    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
             
@@ -768,6 +896,18 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_Inerter:
         return new Inerter();
+
+	case ELE_TAG_MVLEM:				// Kristijan Kolozvari
+		return new MVLEM();	// Kristijan Kolozvari
+
+	case ELE_TAG_SFI_MVLEM:			// Kristijan Kolozvari
+		return new SFI_MVLEM();	// Kristijan Kolozvari
+
+	case ELE_TAG_MVLEM_3D:		// Kristijan Kolozvari
+		return new MVLEM_3D();	// Kristijan Kolozvari
+
+	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
+		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -834,6 +974,18 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
+
+    case ELE_TAG_RockingBC:
+      return new RockingBC();
+
+    case ELE_TAG_ASDEmbeddedNodeElement:
+      return new ASDEmbeddedNodeElement();
+
+    case ELE_TAG_ASDAbsorbingBoundary2D:
+      return new ASDAbsorbingBoundary2D();
+
+    case ELE_TAG_ASDAbsorbingBoundary3D:
+      return new ASDAbsorbingBoundary3D();
 
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
@@ -961,6 +1113,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     case LOAD_TAG_SelfWeight:
       return new SelfWeight();
 	     
+    case LOAD_TAG_SurfaceLoader:
+      return new SurfaceLoader();     	     
+        
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNodalLoad - ";
     opserr << " - no NodalLoad type exists for class tag ";
@@ -991,6 +1146,27 @@ FEM_ObjectBrokerAllClasses::getNewCrdTransf(int classTag)
 	default:
 	  opserr << "FEM_ObjectBrokerAllClasses::getCrdTransf - ";
 	  opserr << " - no CrdTransf type exists for class tag ";
+	  opserr << classTag << endln;
+	  return 0;
+	}
+
+}
+
+Damping*
+FEM_ObjectBrokerAllClasses::getNewDamping(int classTag)
+{
+	switch(classTag) {
+	case DMP_TAG_UniformDamping:
+		return new UniformDamping();
+	case DMP_TAG_SecStifDamping:
+		return new SecStifDamping();
+	case DMP_TAG_URDDamping:
+		return new URDDamping();
+	case DMP_TAG_URDDampingbeta:
+		return new URDDampingbeta();
+	default:
+	  opserr << "FEM_ObjectBrokerAllClasses::getNewDamping - ";
+	  opserr << " - no Damping type exists for class tag ";
 	  opserr << classTag << endln;
 	  return 0;
 	}
@@ -1060,11 +1236,59 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   }
 }
 
+SectionIntegration *
+FEM_ObjectBrokerAllClasses::getNewSectionIntegration(int classTag)
+{
+  switch(classTag) {
+  case SECTION_INTEGRATION_TAG_WideFlange:        
+    return new WideFlangeSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RC:        
+    return new RCSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCT:        
+    return new RCTBeamSectionIntegration();        
+
+  case SECTION_INTEGRATION_TAG_RCCIRCULAR:        
+    return new RCCircularSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_RCTUNNEL:        
+    return new RCTunnelSectionIntegration();
+
+  case SECTION_INTEGRATION_TAG_Tube:        
+    return new TubeSectionIntegration();    
+    
+  default:
+    opserr << "FEM_ObjectBrokerAllClasses::getSectionIntegration - ";
+    opserr << " - no SectionIntegration type exists for class tag ";
+    opserr << classTag << endln;
+    return 0;
+  }
+}
+
+
+HystereticBackbone *
+FEM_ObjectBrokerAllClasses::getNewHystereticBackbone(int classTag)
+{
+  switch (classTag) {
+  case BACKBONE_TAG_Arctangent:
+    return new ArctangentBackbone();
+    
+  default:
+    opserr << "FEM_ObjectBrokerAllClasses::getHystereticBackbone - ";
+    opserr << " - no HystereticBackbone type exists for class tag ";
+    opserr << classTag << endln;
+    return 0;
+  }
+}
 
 UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
+    case MAT_TAG_ElasticBilin:
+      return new ElasticBilin();
+      
 	case MAT_TAG_SPSW02:
 		return new SPSW02(); // SAJalali
 	case MAT_TAG_BoucWen:
@@ -1086,6 +1310,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
     case MAT_TAG_ParallelMaterial:
 	     return new ParallelMaterial();
+
+	case MAT_TAG_ASD_SMA_3K:  
+	     return new ASD_SMA_3K();
 
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
@@ -1114,6 +1341,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Steel2:  
 	     return new Steel2();
 
+	case MAT_TAG_Steel4:  
+	     return new Steel4();	     
+
+	case MAT_TAG_SteelFractureDI:
+		return new SteelFractureDI();
+
 	case MAT_TAG_OriginCentered:  
 	     return new OriginCentered();
 
@@ -1141,7 +1374,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
-       case MAT_TAG_TzLiq1:
+    case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
@@ -1150,8 +1383,14 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_QzSimple2:
 		return new QzSimple2();
 
+    case MAT_TAG_QzLiq1:
+		return new QzLiq1();
+
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
+
+	case MAT_TAG_HystereticSM:			
+		return new HystereticSMMaterial();
 
 	case MAT_TAG_ModIMKPeakOriented:
 		return new ModIMKPeakOriented();
@@ -1174,6 +1413,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_PathIndependent:
 		return new PathIndependentMaterial();
 
+	case MAT_TAG_Backbone:
+		return new BackboneMaterial();		
+
 	case MAT_TAG_SeriesMaterial:
 		return new SeriesMaterial();
 
@@ -1183,6 +1425,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ENTMaterial:
 		return new ENTMaterial();
 
+	case MAT_TAG_GNG:
+		return new GNGMaterial();		
+#if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
 
@@ -1212,7 +1457,7 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FedeasSteel2:
 		return new FedeasSteel2Material();
-
+#endif // OPSDEF_UNIAXIAL_FEDEAS
 	case MAT_TAG_DrainBilinear:
 		return new DrainBilinearMaterial();
 
@@ -1246,11 +1491,29 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
         case MAT_TAG_Bond_SP01:
 	  return new Bond_SP01();
 
+        case MAT_TAG_FRCC:
+	  return new FRCC();	  
+
         case MAT_TAG_SimpleFractureMaterial:
 	  return new SimpleFractureMaterial();
 
         case MAT_TAG_ConfinedConcrete01:
             return new ConfinedConcrete01();
+		    
+	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
+	    return new HystereticPoly();
+		    
+	case MAT_TAG_HystereticSmooth:			// Salvatore Sessa
+			return new HystereticSmooth();
+
+	case MAT_TAG_HystereticAsym:			// Salvatore Sessa
+		return new HystereticAsym();	    
+
+	case MAT_TAG_DowelType:
+		return new DowelType();
+
+	case MAT_TAG_DuctileFracture:
+		return new DuctileFracture();
 
 
 	default:
@@ -1308,6 +1571,15 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
 
+	case SEC_TAG_NDFiberSection2d:
+		return new NDFiberSection2d();
+      
+	case SEC_TAG_NDFiberSection3d:
+		return new NDFiberSection3d();		
+
+	case SEC_TAG_FiberSectionAsym3d:
+		return new FiberSectionAsym3d(); //Xinlong Du
+
 	case SEC_TAG_ElasticPlateSection:
 		return new ElasticPlateSection();
 
@@ -1316,6 +1588,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_MembranePlateFiberSection:
 		return new MembranePlateFiberSection();
+
+	case SEC_TAG_DoubleMembranePlateFiberSection:
+		return new DoubleMembranePlateFiberSection();
 
 	//start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
         case SEC_TAG_LayeredShellFiberSection:
@@ -1349,6 +1624,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_ElasticIsotropicPlateFiber:
     return new ElasticIsotropicPlateFiber();
+
+  case ND_TAG_ElasticIsotropicBeamFiber:
+    return new ElasticIsotropicBeamFiber();    
     
   case ND_TAG_ElasticIsotropicThreeDimensional:
     return new ElasticIsotropicThreeDimensional();
@@ -1364,12 +1642,30 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_J2PlateFiber:
     return new J2PlateFiber();
+
+  case ND_TAG_J2BeamFiber2d:
+    return new J2BeamFiber2d();
+
+  case ND_TAG_J2BeamFiber3d:
+    return new J2BeamFiber3d();
     
   case ND_TAG_J2ThreeDimensional:
     return new J2ThreeDimensional();
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
+
+  case ND_TAG_PlaneStrainMaterial:
+    return new PlaneStrainMaterial();
+
+  case ND_TAG_OrthotropicMaterial:
+    return new OrthotropicMaterial();
+
+  case ND_TAG_PlaneStressRebarMaterial:
+    return new PlaneStressRebarMaterial();
+
+  case ND_TAG_PlaneStressLayeredMaterial:
+    return new PlaneStressLayeredMaterial();
 
   //start Yuli Huang & Xinzheng 
   case ND_TAG_PlateRebarMaterial:
@@ -1400,8 +1696,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
+#if defined(OPSDEF_ELEMENT_FEAP)
   case ND_TAG_FeapMaterial03:
     return new FeapMaterial03();
+#endif // OPSDEF_ELEMENT_FEAP
 
   case ND_TAG_ContactMaterial2D:
     return new ContactMaterial2D();			
@@ -1448,13 +1746,19 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PM4Silt:
 	return new PM4Silt();
 
+  case ND_TAG_J2CyclicBoundingSurface:
+	  return new J2CyclicBoundingSurface();
+
+  case ND_TAG_J2CyclicBoundingSurface3D:
+	  return new J2CyclicBoundingSurface3D();
+  
+  case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
+	  return new J2CyclicBoundingSurfacePlaneStrain();
+
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
-
-#if !_DLL
   case ND_TAG_stressDensity:
       return new stressDensity();
-#endif
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
 
@@ -1577,6 +1881,10 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 	case PATTERN_TAG_DRMLoadPattern:
 	     return new DRMLoadPatternWrapper();
 
+#ifdef _H5DRM
+    case PATTERN_TAG_H5DRM:
+         return new H5DRM();
+#endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
 	     opserr << " - no Load type exists for class tag ";
@@ -1625,6 +1933,9 @@ FEM_ObjectBrokerAllClasses::getNewTimeSeries(int classTag)
 
         case TSERIES_TAG_ConstantSeries:
 	  return new ConstantSeries;
+
+        case TSERIES_TAG_TriangleSeries:
+          return new TriangleSeries;
 
         case TSERIES_TAG_TrigSeries:
 	  return new TrigSeries;
@@ -1777,11 +2088,13 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
         case RECORDER_TAGS_TclFeViewer:  
 	  return 0;
-  //           return new TclFeViewer();
 
-		case RECORDER_TAGS_MPCORecorder:
-			return new MPCORecorder();
-	     
+        case RECORDER_TAGS_GmshRecorder:
+           return new GmshRecorder();
+#ifdef _HDF5
+	case RECORDER_TAGS_MPCORecorder:
+	  return new MPCORecorder();
+#endif // _HDF5
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
 	     opserr << " - no Recorder type exists for class tag ";
@@ -1972,6 +2285,9 @@ FEM_ObjectBrokerAllClasses::getNewStaticIntegrator(int classTag)
 	case INTEGRATOR_TAGS_LoadControl:  
 	     return new LoadControl(1.0,1,1.0,.10); // must recvSelf
 
+    case INTEGRATOR_TAGS_StagedLoadControl:
+        return new StagedLoadControl(1.0, 1, 1.0, .10); // must recvSelf
+
 #ifdef _PARALLEL_PROCESSING
 	case INTEGRATOR_TAGS_DistributedDisplacementControl:  
 	     return new DistributedDisplacementControl(); // must recvSelf
@@ -2079,6 +2395,9 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
     case INTEGRATOR_TAGS_Newmark:  
 	     return new Newmark();
 
+        case INTEGRATOR_TAGS_StagedNewmark:
+        return new StagedNewmark();
+
     case INTEGRATOR_TAGS_NewmarkExplicit:  
 	     return new NewmarkExplicit();
 
@@ -2170,17 +2489,18 @@ FEM_ObjectBrokerAllClasses::getNewLinearSOE(int classTagSOE)
 	  theSOE = new SparseGenColLinSOE();
 	  return theSOE;
 
-#ifdef _PETSC
-        case LinSOE_TAGS_PetscSOE:  
-	  theSOE = new PetscSOE();
-	  return theSOE;
-#endif
 
 #ifdef _PARALLEL_PROCESSING
 
 #ifdef _MUMPS
         case LinSOE_TAGS_MumpsParallelSOE:  
 	  theSOE = new MumpsParallelSOE();
+          return theSOE;
+#endif
+
+#ifdef _PETSC
+    case LinSOE_TAGS_PetscSOE:
+        theSOE = new PetscSOE(*( new PetscSolver()));
 	  return theSOE;
 #endif
 
@@ -2318,7 +2638,7 @@ FEM_ObjectBrokerAllClasses::getSubdomainPtr(int classTag)
     return 0;
 }
 
-
+/*
 int 
 FEM_ObjectBrokerAllClasses::addUniaxialMaterial(int classTag, 
 				      const char *lib, 
@@ -2371,7 +2691,7 @@ FEM_ObjectBrokerAllClasses::addUniaxialMaterial(int classTag,
   return 0;
 
 }
-
+*/
 
 Parameter *
 FEM_ObjectBrokerAllClasses::getParameter(int classTag)

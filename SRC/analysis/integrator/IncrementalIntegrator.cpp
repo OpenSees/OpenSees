@@ -300,9 +300,9 @@ IncrementalIntegrator::setModalDampingFactors(const Vector &factors)
 }
 */
 
-/* slow code
+ /*
 int 
-IncrementalIntegrator::addModalDampingForce(void)
+IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
 {
   int res = 0;
   
@@ -344,9 +344,9 @@ IncrementalIntegrator::addModalDampingForce(void)
 
   return res;
 }
-*/
+ */
 
- /*int 
+/*int 
 IncrementalIntegrator::addModalDampingForce(void)
 {
   int res = 0;
@@ -509,8 +509,10 @@ IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
   const Vector &eigenvalues = theAnalysisModel->getEigenvalues();
   int numEigen = eigenvalues.Size();
 
-  if (numEigen < numModes) 
+  if (numEigen < numModes) {
     numModes = numEigen;
+    opserr << "WARNING: HAving to reset numModes to : " << numModes << "as not enough eigenvalues. NOTE if 0 you have done something to require new analysis or have not issued eigen command\n";
+  }
 
   int numDOF = theSOE->getNumEqn();
 
@@ -518,8 +520,8 @@ IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
     this->setupModal(modalDampingValues);
   }
 
-
   const Vector &vel = this->getVel();
+
   dampingForces->Zero();
 
   for (int i=0; i<numModes; i++) {
@@ -527,15 +529,17 @@ IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
     double eigenvalue = (*eigenValues)(i);
     if (eigenvalue > 0) {
       double wn = sqrt(eigenvalue);
+
       double *eigenVectorI = &eigenVectors[numDOF*i];
       double beta = 0.0;
       
       for (int j=0; j<numDOF; j++) {
 	double eij = eigenVectorI[j];
-	if (eij != 0)
+	if (eij != 0) {
 	  beta += eij * vel(j);
+	}
       }
-      
+
       beta = -2.0 * (*modalDampingValues)(i) * wn * beta;
 
       for (int j=0; j<numDOF; j++) {
@@ -614,7 +618,7 @@ IncrementalIntegrator::addModalDampingMatrix(const Vector *modalDampingValues) {
 
 const Vector &
 IncrementalIntegrator::getVel(void) {
-  opserr << "IncrementalIntegrator::getVel() - not implemeneted for this integrator\n";
+  opserr << "IncrementalIntegrator::getVel() - not implemented for this integrator\n";
   return theSOE->getX();
 }
 

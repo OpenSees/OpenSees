@@ -822,7 +822,7 @@ UDP_Socket::getBytesAvailable()
 char *
 UDP_Socket::addToProgram()
 {
-    char *tcp = " 2 ";
+    const char *tcp = " 2 ";
     
     char  my_InetAddr[MAX_INET_ADDR];
     char  myPortNum[8];
@@ -852,7 +852,8 @@ UDP_Socket::addToProgram()
 static int
 GetHostAddr(char *host, char *IntAddr)
 {
-    register struct hostent *hostptr;
+  //    register struct hostent *hostptr;
+  struct hostent *hostptr;
 
     if ( (hostptr = gethostbyname(host)) == NULL) 
         return (-1);

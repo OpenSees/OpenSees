@@ -88,6 +88,7 @@ public:
     // functions used in post-processing only    
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
     const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps);
+    const Vector &getPointLocalDisplFromBasic(double xi, const Vector &basicDisps);    
     
 private:
     int compElemtLengthAndOrient(void);
@@ -111,7 +112,7 @@ private:
     double Lxdotdot, Lydotdot; // double time derivatives of components of the deformed member
     
     Vector ub;                 // basic displacements
-    Vector ubcommit;           // commited basic displacements
+    Vector ubcommit;           // committed basic displacements
     Vector ubpr;               // previous basic displacements
     
     static Matrix Tlg;         // matrix that transforms from global to local coordinates

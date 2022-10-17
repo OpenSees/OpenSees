@@ -93,7 +93,7 @@ class AC3D8HexWithSensitivity: public Element
     int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker
 		  &theBroker);
 
-    Response *setResponse (const char **argv, int argc, OPS_Stream &matInformation);
+    Response *setResponse (const char **argv, int argc, OPS_Stream &output);
     int getResponse (int responseID, Information &matInformation);
       
     int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);

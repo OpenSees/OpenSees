@@ -31,7 +31,7 @@
 //
 // Description: This file contains the class implementation for TclVideoPlayer
 // TclVideoPlayer is a class for building a Plane Frame model in an interpreted
-// enviroment. The constructor is used to add new commands to the interpreter,
+// environment. The constructor is used to add new commands to the interpreter,
 // these commands are also defined in this file.
 //
 // What: "@(#) TclVideoPlayer.C, revA"
@@ -136,7 +136,7 @@ TclVideoPlayer::TclVideoPlayer(const char *title, const char *fileName, const ch
 
 
     // see if a file containing rigid offsets has been supplied,
-    // if so - make space, copy the string and try opeing the file
+    // if so - make space, copy the string and try opening the file
     if (offsetFileName != 0) {
       // make copy of offset file name
       theOffsetFileName = new char[strlen(offsetFileName)]; 

@@ -57,21 +57,14 @@
 
 #include <UniaxialMaterial.h>
 #include <Domain.h>
-#include <FourNodeQuad.h>
-#include <FluidSolidPorousMaterial.h>
-#include <PressureDependMultiYield.h>
 //#include <InitialStateAnalysisWrapper.h>
-#include <PySimple1.h>
+#include "PySimple1.h"
 #include <iostream>
 #include <string>
-#include <FourNodeQuadUP.h>
-#include <Nine_Four_Node_QuadUP.h>
-//#include <SSPquad.h>
-//#include <SSPquadUP.h>
-#include <TimeSeries.h>
 
+class TimeSeries;
 
-	class PyLiq1 : public PySimple1
+class PyLiq1 : public PySimple1
 {
   public:
   PyLiq1(int tag, int classtag, int soilType, double pult, double y50, double drag,

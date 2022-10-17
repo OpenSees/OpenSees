@@ -71,7 +71,7 @@ ParkAng::setTrial (const Vector & trialVector )
 	// Trial step
 	double TForce, TDeformation, TUnloadingK, TEnergy, TMaxDefo, TDamage;
 
-	// Commited state
+	// Committed state
 	double CForce		= CommitInfo[0];;
 	double CDeformation	= CommitInfo[1];;
 	double CUnloadingK	= CommitInfo[2];;

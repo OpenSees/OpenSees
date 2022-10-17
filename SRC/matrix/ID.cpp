@@ -363,10 +363,10 @@ ID::operator[](int x)
     
 
 int 
-ID::resize(int newSize){
+ID::resize(int newSize, int fill_value){
 
   // first check that newSize is valid
-  if (newSize <= 0) {
+  if (newSize < 0) {
     opserr << "ID::resize() - size specified " << newSize << " <= 0\n";
     return -1;
   } 
@@ -383,7 +383,7 @@ ID::resize(int newSize){
     // without having to go get more space
     
     for (int i=sz; i<newSize; i++)
-      data[i] = 0;
+      data[i] = fill_value;
     sz = newSize;
 
   } else if (newSize > arraySize) {
@@ -397,7 +397,7 @@ ID::resize(int newSize){
 	newData[i] = data[i];
       // zero the new
       for (int j=sz; j<newSize; j++)
-	newData[j] = 0;
+	newData[j] = fill_value;
       
       sz = newSize;
       // release the memory held by the old
@@ -417,9 +417,17 @@ ID::resize(int newSize){
 
 
 
+int 
+ID::fill(int fill_value){
+  for (int i=0; i<sz; i++)
+    data[i] = fill_value;
+  return 0;
+}
+
+
 // ID &operator=(const ID  &V):
 //	the assignment operator, This is assigned to be a copy of V. if sizes
-//	are not compatable this.data [] is deleted. The data pointers will not
+//	are not compatible this.data [] is deleted. The data pointers will not
 //	point to the same area in mem after the assignment.
 //
 
@@ -429,7 +437,7 @@ ID::operator=(const ID &V)
     // first check we are not trying v = v
     if (this != &V) {
 	
-	// check size compatability, if different delete
+	// check size compatibility, if different delete
 	// old and make room for new.
 	if (sz != V.sz) {
 	    if (arraySize < V.sz) {

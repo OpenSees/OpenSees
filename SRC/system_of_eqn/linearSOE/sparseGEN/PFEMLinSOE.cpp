@@ -55,7 +55,7 @@ using std::nothrow;
 #include <NodeIter.h>
 #include <DOF_Group.h>
 #include <AnalysisModel.h>
-#include <BackgroundMesh.h>
+#include <elementAPI.h>
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
 #endif
@@ -64,7 +64,7 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver)
     :LinearSOE(the_Solver, LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0), stage(0)
+     dofType(), dofID()
 {
     the_Solver.setLinearSOE(*this);
 }
@@ -74,7 +74,7 @@ PFEMLinSOE::PFEMLinSOE()
     :LinearSOE(LinSOE_TAGS_PFEMLinSOE),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0), stage(0)
+     dofType(), dofID()
 {
 
 }
@@ -83,7 +83,7 @@ PFEMLinSOE::PFEMLinSOE(int classTag)
     :LinearSOE(classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0), stage(0)
+     dofType(), dofID()
 {
 
 }
@@ -93,9 +93,8 @@ PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver, int classTag)
     :LinearSOE(the_Solver, classTag),
      M(0), Gft(0), Git(0), L(0), Qt(0),
      X(), B(), Mhat(), Mf(),
-     dofType(), dofID(), assemblyFlag(0), stage(0)
+     dofType(), dofID()
 {
-
 }
 
 
@@ -118,7 +117,6 @@ PFEMLinSOE::solve(void)
         return res;
     }
 
-    assemblyFlag = 1;
     return 0;
 }
 
@@ -152,16 +150,6 @@ PFEMLinSOE::setSize(Graph &theGraph)
 
     // set matrix IDs
     result = this->setMatIDs(theGraph, Ssize, Fsize, Isize, Psize, Pisize);
-
-    // reset flags
-    assemblyFlag = 0;
-
-    BackgroundMesh& bgmesh = OPS_getBgMesh();
-    bool pressureonce = bgmesh.isPressureOnce();
-    stage = 0;
-    if (pressureonce) {
-        stage = 1;
-    }
     
     // invoke setSize() on the Solver    
     LinearSOESolver *the_Solver = this->getSolver();
@@ -191,8 +179,6 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
         return -1;
     }
 
-    bool hasFluid = !skipFluid();
-
     int Ssize = M->n - Git->n;
 
     if (fact == 1.0) { // do not need to multiply 
@@ -203,9 +189,9 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
             int colid = dofID(col);             // column id
 
             if(coltype == 4) {                  // diganol of Mhat
-                if (hasFluid) Mhat(colid) += m(i,i);
+                Mhat(colid) += m(i,i);
             } else if(coltype == 1) {           // diganol of Mf
-                if (hasFluid) Mf(colid) += m(i,i);
+                Mf(colid) += m(i,i);
             }
 
             if(coltype==4 || coltype<0) continue;
@@ -233,13 +219,13 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
                     mat = M;
                     rowid += Ssize;
                 } else if(rowtype==3 && coltype==1) {          // Gft
-                    if (hasFluid) mat = Gft;
+                    mat = Gft;
                 } else if(rowtype==3 && coltype==2) {          // Git
                     mat = Git;
                 } else if(rowtype==3 && coltype==3) {          // L
-                    if (hasFluid) mat = L;
+                    mat = L;
                 } else if(rowtype==4 && coltype==3) {          // Qt
-                    if (hasFluid) mat = Qt;
+                    mat = Qt;
                 }
 
                 if(mat == 0) continue;
@@ -261,9 +247,9 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
             int colid = dofID(col);             // column id
 
             if(coltype == 4) {                  // diganol of Mhat
-                if (hasFluid) Mhat(colid) += fact*m(i,i);
+                Mhat(colid) += fact*m(i,i);
             } else if(coltype == 1) {           // diganol of Mf
-                if (hasFluid) Mf(colid) += fact*m(i,i);
+                Mf(colid) += fact*m(i,i);
             }
 
             if(coltype==4 || coltype<0) continue;
@@ -291,13 +277,13 @@ PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
                     mat = M;
                     rowid += Ssize;
                 } else if(rowtype==3 && coltype==1) {          // Gft
-                    if (hasFluid) mat = Gft;
+                    mat = Gft;
                 } else if(rowtype==3 && coltype==2) {          // Git
                     mat = Git;
                 } else if(rowtype==3 && coltype==3) {          // L
-                    if (hasFluid) mat = L;
+                    mat = L;
                 } else if(rowtype==4 && coltype==3) {          // Qt
-                    if (hasFluid) mat = Qt;
+                    mat = Qt;
                 }
 
                 if(mat == 0) continue;
@@ -392,18 +378,15 @@ PFEMLinSOE::zeroA(void)
         Git->x[i] = 0.0;
 
     // zero fluid part
-    bool hasFluid = !skipFluid();
-    if (hasFluid) {
-        for (int i = 0; i < Gft->nzmax; i++)
-            Gft->x[i] = 0.0;
-        for (int i = 0; i < L->nzmax; i++)
-            L->x[i] = 0.0;
-        for (int i = 0; i < Qt->nzmax; i++)
-            Qt->x[i] = 0.0;
+    for (int i = 0; i < Gft->nzmax; i++)
+        Gft->x[i] = 0.0;
+    for (int i = 0; i < L->nzmax; i++)
+        L->x[i] = 0.0;
+    for (int i = 0; i < Qt->nzmax; i++)
+        Qt->x[i] = 0.0;
 
-        Mhat.Zero();
-        Mf.Zero();
-    }
+    Mhat.Zero();
+    Mf.Zero();
 }
 	
 void 
@@ -658,7 +641,7 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
         int colid = dofID(col);         // column id
         if(coltype==4 || coltype<0) continue;      // don't need this column
 
-        // diagnol terms
+        // diagonal terms
         if(coltype == 0) {                      // structure momentum
             cs_entry(M1, colid, colid, 0.0);   
         } else if(coltype == 2) {               // interface momentum
@@ -667,7 +650,7 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
             cs_entry(L1, colid, colid, 0.0);    
         }
 
-        // off diagnol terms
+        // off diagonal terms
         const ID &theAdjacency = theVertex->getAdjacency();
         int idSize = theAdjacency.Size();
         for (int i=0; i<idSize; i++) {       // rows
@@ -749,9 +732,16 @@ PFEMLinSOE::isFluidID(const ID &id) const
     return fluid;
 }
 
-bool
-PFEMLinSOE::skipFluid() const
-{
-    BackgroundMesh& bgmesh = OPS_getBgMesh();
-    return assemblyFlag==1 && bgmesh.isDispOn()==false && bgmesh.isFastAssembly();
+void PFEMLinSOE::saveK(OPS_Stream& output) {
+    if (M == 0) return;
+    output << "sparse matrix <" << M->m << ", " << M->n << "> with "
+           << M->nzmax << " entries\n";
+
+    // save the matrix
+    for (int j = 0; j < M->n; ++j) {
+        for (int k = M->p[j]; k < M->p[j + 1]; ++k) {
+            output << "    " << M->i[k] << "    " << j << "    ("
+                   << M->x[k] << ")\n";
+        }
+    }
 }

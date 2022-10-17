@@ -32,12 +32,15 @@
 // degraded unloading stiffness based on maximum ductility.  This
 // is a modified implementation of Hyster2.f90 by Filippou.
 #include <stdlib.h>
-#include <HystereticMaterial.h>
-#include <OPS_Globals.h>
 #include <math.h>
 #include <float.h>
-#include <Channel.h>
 
+#include <HystereticMaterial.h>
+#include <Channel.h>
+#include <Information.h>
+#include <Parameter.h>
+
+#include <OPS_Globals.h>
 #include <elementAPI.h>
 
 void *
@@ -683,6 +686,160 @@ HystereticMaterial::Print(OPS_Stream &s, int flag)
         s << "\"energyA\": " << energyA << ", ";
         s << "\"beta\": " << beta << "}";
     }
+}
+
+int
+HystereticMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"mom1p") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
+    param.setValue(mom1p);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"rot1p") == 0) {
+    param.setValue(rot1p);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"mom2p") == 0) {
+    param.setValue(mom2p);
+    return param.addObject(3, this);
+  }
+  if (strcmp(argv[0],"rot2p") == 0) {
+    param.setValue(rot2p);
+    return param.addObject(4, this);
+  }
+  if (strcmp(argv[0],"mom3p") == 0) {
+    param.setValue(mom3p);
+    return param.addObject(5, this);
+  }
+  if (strcmp(argv[0],"rot3p") == 0) {
+    param.setValue(rot3p);
+    return param.addObject(6, this);
+  }
+  if (strcmp(argv[0],"mom1n") == 0) {
+    param.setValue(mom1n);
+    return param.addObject(7, this);
+  }
+  if (strcmp(argv[0],"rot1n") == 0) {
+    param.setValue(rot1n);
+    return param.addObject(8, this);
+  }
+  if (strcmp(argv[0],"mom2n") == 0) {
+    param.setValue(mom2n);
+    return param.addObject(9, this);
+  }
+  if (strcmp(argv[0],"rot2n") == 0) {
+    param.setValue(rot2n);
+    return param.addObject(10, this);
+  }
+  if (strcmp(argv[0],"mom3n") == 0) {
+    param.setValue(mom3n);
+    return param.addObject(11, this);
+  }
+  if (strcmp(argv[0],"rot3n") == 0) {
+    param.setValue(rot3n);
+    return param.addObject(12, this);
+  }
+  if (strcmp(argv[0],"mom1") == 0) {
+    param.setValue(mom1p);
+    return param.addObject(13, this);
+  }
+  if (strcmp(argv[0],"rot1") == 0) {
+    param.setValue(rot1p);
+    return param.addObject(14, this);
+  }
+  if (strcmp(argv[0],"mom2") == 0) {
+    param.setValue(mom2p);
+    return param.addObject(15, this);
+  }
+  if (strcmp(argv[0],"rot2") == 0) {
+    param.setValue(rot2p);
+    return param.addObject(16, this);
+  }
+  if (strcmp(argv[0],"mom3") == 0) {
+    param.setValue(mom3p);
+    return param.addObject(17, this);
+  }
+  if (strcmp(argv[0],"rot3") == 0) {
+    param.setValue(rot3p);
+    return param.addObject(18, this);
+  }
+	
+  return -1;
+}
+
+int
+HystereticMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->mom1p = info.theDouble;
+    break;
+  case 2:
+    this->rot1p = info.theDouble;
+    break;
+  case 3:
+    this->mom2p = info.theDouble;
+    break;
+  case 4:
+    this->rot2p = info.theDouble;
+    break;
+  case 5:
+    this->mom3p = info.theDouble;
+    break;
+  case 6:
+    this->rot3p = info.theDouble;
+    break;
+  case 7:
+    this->mom1n = info.theDouble;
+    break;
+  case 8:
+    this->rot1n = info.theDouble;
+    break;
+  case 9:
+    this->mom2n = info.theDouble;
+    break;
+  case 10:
+    this->rot2n = info.theDouble;
+    break;
+  case 11:
+    this->mom3n = info.theDouble;
+    break;
+  case 12:
+    this->rot3n = info.theDouble;
+    break;
+  case 13:
+    this->mom1p = info.theDouble;
+    this->mom1n = -mom1p;
+    break;
+  case 14:
+    this->rot1p = info.theDouble;
+    this->rot1n = -rot1p;
+    break;
+  case 15:
+    this->mom2p = info.theDouble;
+    this->mom2n = -mom2p;
+    break;
+  case 16:
+    this->rot2p = info.theDouble;
+    this->rot2n = -rot2p;
+    break;
+  case 17:
+    this->mom3p = info.theDouble;
+    this->mom3n = -mom3p;
+    break;
+  case 18:
+    this->rot3p = info.theDouble;
+    this->rot3n = -rot3p;
+    break;		  
+  default:
+    return -1;
+  }
+
+  this->setEnvelope();
+	
+  return 0;
 }
 
 void

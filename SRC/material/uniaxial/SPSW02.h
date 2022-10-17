@@ -45,7 +45,7 @@ private:
 	double E0	;			//initial stiffness
 	double b	;			//hardening ratio
 	double R;
-	double Fts	;			//trial yield stress of a tension strip (damage not commited)
+	double Fts	;			//trial yield stress of a tension strip (damage not committed)
 	double Fcs	;			//yield stress of a compression strip
 	double FTS, FCS;		//yield stresses before damage
 	double epsPCFac	;		//ratio between post cap strain and yield strain

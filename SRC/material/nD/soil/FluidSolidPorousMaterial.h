@@ -14,8 +14,9 @@
 #define FluidSolidPorousMaterial_h
 
 #include <NDMaterial.h>
-#include <MultiYieldSurface.h>
 #include <Matrix.h>
+#include "soil/T2Vector.h"
+class MultiYieldSurface;
 
 class Response;
 
@@ -91,8 +92,9 @@ class FluidSolidPorousMaterial : public NDMaterial
      int updateParameter(int responseID, Information &eleInformation);
 
      // RWB; PyLiq1 & TzLiq1 need to see the excess pore pressure and initial stresses.
-     friend class PyLiq1;
-     friend class TzLiq1;
+    friend class PyLiq1;
+    friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
    protected:
 

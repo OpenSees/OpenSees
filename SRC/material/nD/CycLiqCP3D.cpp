@@ -76,7 +76,7 @@ NDMaterial* CycLiqCP3D :: getCopy( )
 { 
   CycLiqCP3D  *clone;
   clone = new CycLiqCP3D( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

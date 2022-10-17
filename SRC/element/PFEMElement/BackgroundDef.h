@@ -30,12 +30,13 @@
 #ifndef BackgroundDef_h
 #define BackgroundDef_h
 
-#include <vector>
-#include <set>
-#include <map>
 #include <Vector.h>
 #include <math.h>
+
 #include <iostream>
+#include <map>
+#include <set>
+#include <vector>
 
 class Particle;
 class ParticleGroup;
@@ -57,8 +58,12 @@ const VDouble& operator+=(VDouble& v1, double val);
 const VDouble& operator-=(VDouble& v1, double val);
 const VDouble& operator*=(VDouble& v1, double val);
 const VDouble& operator/=(VDouble& v1, double val);
+const VInt& operator+=(VInt& v1, const VInt& v2);
+const VInt& operator-=(VInt& v1, const VInt& v2);
 const VInt& operator+=(VInt& v1, int val);
 const VInt& operator-=(VInt& v1, int val);
+const VInt& operator*=(VInt& v1, int val);
+const VInt& operator/=(VInt& v1, int val);
 std::ostream& operator<<(std::ostream& os, const VDouble& v);
 std::ostream& operator<<(std::ostream& os, const VInt& v);
 void toVDouble(const Vector& vec, VDouble& res);
@@ -66,5 +71,17 @@ void toVector(const VDouble& v, Vector& res);
 double normVDouble(const VDouble& v);
 double dotVDouble(const VDouble& v1, const VDouble& v2);
 void crossVDouble(const VDouble& v1, const VDouble& v2, VDouble& res);
+double distanceVDouble(const VDouble& v1, const VDouble& v2);
+
+// BACKGROUND_FLUID - a grid fluid node
+// BACKGROUND_STRUCTURE - a structural node
+// BACKGROUND_FLUID_STRUCTURE - a structural node for SSI and a fluid node for FSI
+// BACKGROUND_FIXED - a temporary node, used to mark grids around structure
+enum BackgroundType {
+    BACKGROUND_FLUID,
+    BACKGROUND_STRUCTURE,
+    BACKGROUND_FLUID_STRUCTURE,
+    BACKGROUND_FIXED
+};
 
 #endif

@@ -1,11 +1,48 @@
 #include "Mesh3DSubdomain.h"
+#include <stdlib.h>
+#include <iostream>
+#include <OPS_Globals.h>
+#include <StandardStream.h>
+//#include <Timer.h>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <stdexcept>
+#include <NDMaterial.h>
+
+#include <ArrayOfTaggedObjects.h>
+
+// includes for the domain classes
+#include <Domain.h>
+#include <ShadowSubdomain.h>
+#include <ActorSubdomain.h>
+#include <Node.h>
+#include <Element.h>
+#include <zeroLength/ZeroLength.h>
+#include <ElasticMaterial.h>
+#include <ElasticIsotropicThreeDimensional.h>
+
+#include <SP_Constraint.h>
+
+#include <SingleDomAllSP_Iter.h>
+#include <NodeIter.h>
+#include <Vertex.h>
+#include <VertexIter.h>
+#include <Graph.h>
+#include <Vector.h>
+#include <Matrix.h>
+#include "GeometricBrickDecorator.h"
+#include <math.h>
+using namespace std;
+
+
 #include <Element.h>
 #include <Node.h>
 #include <DummyNode.h>
 #include <RigidBeam.h>
 #include <ElementIter.h>
 #include <LinearCrdTransf3d.h>
-#include <ElasticBeam3d.h>
+#include <elasticBeamColumn/ElasticBeam3d.h>
 #include <MP_Constraint.h>
 #include <classTags.h>
 //general constructor

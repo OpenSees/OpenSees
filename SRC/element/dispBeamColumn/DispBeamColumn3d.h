@@ -40,6 +40,7 @@
 #include <Matrix.h>
 #include <Vector.h>
 #include <ID.h>
+#include <Damping.h>
 
 class Node;
 class SectionForceDeformation;
@@ -53,7 +54,8 @@ class DispBeamColumn3d : public Element
     DispBeamColumn3d(int tag, int nd1, int nd2,
 		     int numSections, SectionForceDeformation **s,
 		     BeamIntegration &bi, CrdTransf &coordTransf,
-             double rho = 0.0, int cMass = 0);
+             double rho = 0.0, int cMass = 0,
+             Damping *theDamping = 0);
     DispBeamColumn3d();
     ~DispBeamColumn3d();
 
@@ -65,6 +67,7 @@ class DispBeamColumn3d : public Element
 
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // public methods to set the state of the element    
     int commitState(void);
@@ -82,6 +85,7 @@ class DispBeamColumn3d : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Vector &getResistingForce(void);
+    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
 
     // public methods for element output
@@ -99,27 +103,20 @@ class DispBeamColumn3d : public Element
     int            updateParameter(int parameterID, Information &info);
     int            activateParameter(int parameterID);
     const Vector & getResistingForceSensitivity(int gradNumber);
-    const Matrix & getKiSensitivity(int gradNumber);
+    const Matrix & getInitialStiffSensitivity(int gradNumber);
     const Matrix & getMassSensitivity(int gradNumber);
     int            commitSensitivity(int gradNumber, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
-#if _DLL
-	int numSections;
-	SectionForceDeformation** theSections; // pointer to the ND material objects
-	CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-	BeamIntegration* beamInt;
-#endif
+
   protected:
     
   private:
-    const Matrix &getInitialBasicStiff(void);
+    void getBasicStiff(Matrix &kb, int initial = 0);  
 
-#if !_DLL
 	int numSections;
 	SectionForceDeformation** theSections; // pointer to the ND material objects
-	CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
+	CrdTransf* crdTransf;        // pointer to coordinate transformation object 
 	BeamIntegration* beamInt;
-#endif
 
     ID connectedExternalNodes; // Tags of quad nodes
 
@@ -135,6 +132,8 @@ class DispBeamColumn3d : public Element
 
     double rho;    // Mass density per unit length
     int cMass;     // consistent mass flag
+
+    Damping *theDamping;
 
 	int parameterID;
 

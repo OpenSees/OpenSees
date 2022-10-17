@@ -39,7 +39,7 @@ void* OPS_MembranePlateFiberSection()
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: section PlateFiber tag? matTag? h? " << endln;
+	opserr << "Want: section PlateFiber tag? matTag? h? <integrationType?>" << endln;
 	return 0;
     }
     
@@ -57,6 +57,15 @@ void* OPS_MembranePlateFiberSection()
 	return 0;
     }
 
+    int integrationType = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char *type = OPS_GetString();
+      if (strcmp(type,"Lobatto") == 0)
+	integrationType = 0;
+      if (strcmp(type,"Gauss") == 0 || strcmp(type,"Legendre") == 0)
+	integrationType = 1;
+    }
+    
     NDMaterial *theMaterial = OPS_getNDMaterial(idata[1]);
     if (theMaterial == 0) {
 	opserr << "WARNING nD material does not exist\n";
@@ -65,7 +74,7 @@ void* OPS_MembranePlateFiberSection()
 	return 0;
     }
 
-    return new MembranePlateFiberSection(idata[0], h, *theMaterial);
+    return new MembranePlateFiberSection(idata[0], h, *theMaterial, integrationType);
 }
 
 //parameters
@@ -77,39 +86,36 @@ Matrix  MembranePlateFiberSection::tangent(8,8) ;
 ID      MembranePlateFiberSection::array(8) ;
 
 
-const double  MembranePlateFiberSection::sg[] = { -1, 
-						  -0.65465367, 
-					           0, 
-					           0.65465367, 
-					           1 } ;
+const double  MembranePlateFiberSection::sgLobatto[] = { -1, 
+							 -0.65465367, 
+							 0, 
+							 0.65465367, 
+							 1 } ;
  
-const double  MembranePlateFiberSection::wg[] = { 0.1, 
-					          0.5444444444, 
-						  0.7111111111, 
-						  0.5444444444, 
-						  0.1  };
+const double  MembranePlateFiberSection::wgLobatto[] = { 0.1, 
+							 0.5444444444, 
+							 0.7111111111, 
+							 0.5444444444, 
+							 0.1  };
 
-/*      from Ham-O
-        case 5:
-         xi(0,0) = -1.;
-         xi(1,0) = -0.65465367;
-         xi(2,0) =  0.;
-         xi(3,0) =  0.65465367;
-         xi(4,0) =  1.;
-      
-         w(0) =  0.1;
-         w(1) =  0.5444444444;
-         w(2) =  0.7111111111;
-         w(3) =  0.5444444444;
-         w(4) =  0.1;
-      break;
-*/
+const double MembranePlateFiberSection::sgGauss[] = { -0.906179845938664,
+						      -0.538469310105683,
+						      0.0,
+						      0.538469310105683,
+						      0.906179845938664 };
+
+const double MembranePlateFiberSection::wgGauss[] = { 0.236926885056189,
+						      0.478628670499366,
+						      0.568888888888889,
+						      0.478628670499366,
+						      0.236926885056189};
 
 
 //null constructor
 MembranePlateFiberSection::MembranePlateFiberSection( ) : 
 SectionForceDeformation( 0, SEC_TAG_MembranePlateFiberSection ), 
-strainResultant(8) 
+h(0.), integrationType(0),
+strainResultant(8)
 { 
   for ( int i = 0; i < numFibers; i++ )
       theFibers[i] = 0 ;
@@ -121,14 +127,11 @@ strainResultant(8)
 MembranePlateFiberSection::MembranePlateFiberSection(    
 				   int tag, 
                                    double thickness, 
-                                   NDMaterial &Afiber ) :
+                                   NDMaterial &Afiber, int integrType ) :
 SectionForceDeformation( tag, SEC_TAG_MembranePlateFiberSection ),
-strainResultant(8)
+h(thickness), integrationType(integrType), strainResultant(8)
 {
-  this->h  = thickness ;
-
-  int i ;
-  for ( i = 0; i < numFibers; i++ )
+  for ( int i = 0; i < numFibers; i++ )
       theFibers[i] = Afiber.getCopy( "PlateFiber" ) ;
 
 }
@@ -138,8 +141,7 @@ strainResultant(8)
 //destructor
 MembranePlateFiberSection::~MembranePlateFiberSection( ) 
 { 
-  int i ;
-  for ( i = 0; i < numFibers; i++ )
+  for ( int i = 0; i < numFibers; i++ )
      delete theFibers[i] ; 
 } 
 
@@ -152,7 +154,9 @@ SectionForceDeformation  *MembranePlateFiberSection::getCopy( )
 
   clone = new MembranePlateFiberSection( this->getTag(), 
                                          this->h,
-                                         *theFibers[0] ) ; //make the copy
+                                         *theFibers[0], integrationType ) ; //make the copy
+  clone->strainResultant = strainResultant;
+  
   return clone ;
 }
 
@@ -168,7 +172,19 @@ int MembranePlateFiberSection::getOrder( ) const
 //send back order of strainResultant in vector form
 const ID& MembranePlateFiberSection::getType( ) 
 {
-  return array ;
+    static bool initialized = false;
+    if (!initialized) {
+        array(0) = SECTION_RESPONSE_FXX;
+        array(1) = SECTION_RESPONSE_FYY;
+        array(2) = SECTION_RESPONSE_FXY;
+        array(3) = SECTION_RESPONSE_MXX;
+        array(4) = SECTION_RESPONSE_MYY;
+        array(5) = SECTION_RESPONSE_MXY;
+        array(6) = SECTION_RESPONSE_VXZ;
+        array(7) = SECTION_RESPONSE_VYZ;
+        initialized = true;
+    }
+    return array;
 }
 
 
@@ -178,8 +194,7 @@ int MembranePlateFiberSection::commitState( )
 {
   int success = 0 ;
 
-  int i ;
-  for ( i = 0; i < numFibers; i++ )
+  for ( int i = 0; i < numFibers; i++ )
     success += theFibers[i]->commitState( ) ;
 
   return success ;
@@ -192,8 +207,7 @@ int MembranePlateFiberSection::revertToLastCommit( )
 {
   int success = 0 ;
 
-  int i ;
-  for ( i = 0; i < numFibers; i++ )
+  for ( int i = 0; i < numFibers; i++ )
     success += theFibers[i]->revertToLastCommit( ) ;
 
   return success ;
@@ -204,8 +218,7 @@ int MembranePlateFiberSection::revertToStart( )
 {
   int success = 0 ;
 
-  int i ;
-  for ( i = 0; i < numFibers; i++ )
+  for ( int i = 0; i < numFibers; i++ )
     success += theFibers[i]->revertToStart( ) ;
 
   return success ;
@@ -221,6 +234,8 @@ MembranePlateFiberSection::getRho( )
 
   double rhoH = 0.0 ;
 
+  const double *wg = (integrationType == 0) ? wgLobatto : wgGauss;        
+  
   for ( int i = 0; i < numFibers; i++ ) {
     
     weight = ( 0.5*h ) * wg[i] ;
@@ -244,11 +259,11 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 
   int success = 0 ;
 
-  int i ;
-
   double z ;
 
-  for ( i = 0; i < numFibers; i++ ) {
+  const double *sg = (integrationType == 0) ? sgLobatto : sgGauss;  
+  
+  for ( int i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
   
@@ -283,13 +298,14 @@ const Vector&  MembranePlateFiberSection::getStressResultant( )
 
   static Vector stress(numFibers) ;
 
-  int i ;
-
   double z, weight ;
 
   stressResultant.Zero( ) ;
 
-  for ( i = 0; i < numFibers; i++ ) {
+  const double *sg = (integrationType == 0) ? sgLobatto : sgGauss;
+  const double *wg = (integrationType == 0) ? wgLobatto : wgGauss;        
+  
+  for ( int i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
 
@@ -335,13 +351,14 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
 
   static Matrix Asig(8,5) ;
 
-  int i ;
-
   double z, weight ;
 
   tangent.Zero( ) ;
 
-  for ( i = 0; i < numFibers; i++ ) {
+  const double *sg = (integrationType == 0) ? sgLobatto : sgGauss;
+  const double *wg = (integrationType == 0) ? wgLobatto : wgGauss;      
+  
+  for ( int i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
 
@@ -515,14 +532,22 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   // object - don't want to have to do the check if sending data
   int dataTag = this->getDbTag();
   
+  static Vector vectData(2);
+  vectData(0) = h;
+  vectData(1) = integrationType;
+
+  res += theChannel.sendVector(dataTag, commitTag, vectData);
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send vectData\n";
+      return res;
+  }
 
   // Now quad sends the ids of its materials
   int matDbTag;
   
   static ID idData(2*numFibers+1);
   
-  int i;
-  for (i = 0; i < numFibers; i++) {
+  for (int i = 0; i < numFibers; i++) {
     idData(i) = theFibers[i]->getClassTag();
     matDbTag = theFibers[i]->getDbTag();
     // NOTE: we do have to ensure that the material has a database
@@ -545,7 +570,7 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // Finally, quad asks its material objects to send themselves
-  for (i = 0; i < numFibers; i++) {
+  for (int i = 0; i < numFibers; i++) {
     res += theFibers[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
       opserr << "WARNING MembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send its Material\n";
@@ -564,6 +589,17 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   
   int dataTag = this->getDbTag();
 
+  static Vector vectData(2);
+  res += theChannel.recvVector(dataTag, commitTag, vectData);
+
+  if (res < 0) {
+      opserr << "WARNING MembranePlateFiberSection::recvSelf() - " << this->getTag() << " failed to recv vectData\n";
+      return res;
+  }
+
+  h = vectData(0);
+  integrationType = (int)vectData(1);
+
   static ID idData(2*numFibers+1);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
@@ -574,10 +610,8 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
 
   this->setTag(idData(2*numFibers));
 
-  int i;
-
   if (theFibers[0] == 0) {
-    for (i = 0; i < numFibers; i++) {
+    for (int i = 0; i < numFibers; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+numFibers);
       // Allocate new material with the sent class tag
@@ -599,7 +633,7 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   }
   // Number of materials is the same, receive materials into current space
   else {
-    for (i = 0; i < numFibers; i++) {
+    for (int i = 0; i < numFibers; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+numFibers);
       // Check that material is of the right type; if not,
@@ -635,20 +669,28 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
 {
   Response *theResponse =0;
 
-  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
     
     int passarg = 2;
     int key = atoi(argv[1]);    
     
     if (key > 0 && key <= numFibers) {
-      theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      output.tag("FiberOutput");
+      output.attr("number", key);
+      const double *sg = (integrationType == 0) ? sgLobatto : sgGauss;
+      const double *wg = (integrationType == 0) ? wgLobatto : wgGauss;      
+      output.attr("zLoc", 0.5 * h * sg[key - 1]);
+      output.attr("thickness", 0.5 * h * wg[key - 1]);
+      theResponse = theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+      output.endTag();
     }
 
-    return theResponse;
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;
 }
 
 
@@ -658,4 +700,50 @@ MembranePlateFiberSection::getResponse(int responseID, Information &sectInfo)
   // Just call the base class method ... don't need to define
   // this function, but keeping it here just for clarity
   return SectionForceDeformation::getResponse(responseID, sectInfo);
+}
+
+int MembranePlateFiberSection::setParameter(const char** argv, int argc, Parameter& param)
+{
+    // if the user explicitly wants to update a material in this section...
+    if (argc > 1) {
+        // case 1: fiber value (all fibers)
+        // case 2: fiber id value (one specific fiber)
+        if (strcmp(argv[0], "fiber") == 0 || strcmp(argv[0], "Fiber") == 0) {
+            // test case 2 (one specific fiber) ...
+            if (argc > 2) {
+                int pointNum = atoi(argv[1]);
+                if (pointNum > 0 && pointNum <= numFibers) {
+                    return theFibers[pointNum - 1]->setParameter(&argv[2], argc - 2, param);
+                }
+            }
+            // ... otherwise case 1 (all fibers), if the argv[1] is not a valid id
+            int mixed_result = -1;
+            for (int i = 0; i < numFibers; ++i) {
+                if (theFibers[i]->setParameter(&argv[1], argc - 1, param) == 0)
+                    mixed_result = 0; // if at least one fiber handles the param, make it successful
+            }
+            return mixed_result;
+        }
+    }
+    // if we are here, the first keyword is not "fiber", so we can check for parameters
+    // specific to this section (if any) or forward the request to all fibers.
+    if (argc > 0) {
+        // we don't have parameters for this section, so we directly forward it to all fibers.
+        // placeholder for future implementations: if we will have parameters for this class, check them here
+        // before forwarding to all fibers
+        int mixed_result = -1;
+        for (int i = 0; i < numFibers; ++i) {
+            if (theFibers[i]->setParameter(argv, argc, param) == 0)
+                mixed_result = 0; // if at least one fiber handles the param, make it successful
+        }
+        return mixed_result;
+    }
+    // fallback to base class implementation
+    return SectionForceDeformation::setParameter(argv, argc, param);
+}
+
+int MembranePlateFiberSection::updateParameter(int parameterID, Information& info)
+{
+    // placeholder for future implementations: if we will have parameters for this class, update them here
+    return SectionForceDeformation::updateParameter(parameterID, info);
 }

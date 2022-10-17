@@ -331,7 +331,7 @@ X11Device::initX11(void) {
 
     theScreen = DefaultScreen(theDisplay);
     
-    // set the defualt foreground and background colors
+    // set the default foreground and background colors
     foreground = BlackPixel(theDisplay, theScreen);
     background = WhitePixel(theDisplay, theScreen);    
 
@@ -342,7 +342,7 @@ X11Device::initX11(void) {
 	opserr << "X11Device::initX11 - could not get info\n";
 
     // we now try to allocate some color cells from the colormap
-    // we start by tring to obtain 256 colors, then 192, finally 64
+    // we start by trying to obtain 256 colors, then 192, finally 64
     // if we can't get these (and as a last resort) we create a new color map
 
     if (XAllocColorCells(theDisplay, cmap, false, NULL, 0, pixels, 256) != 0) {

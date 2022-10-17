@@ -527,7 +527,7 @@ RCTunnelSectionIntegration::getWeightsDeriv(int nFibers, double *dwtsdh)
 
   static const double pi = 3.141592653589793;
 
-  // theta, Nrings, and Nwedges are contant
+  // theta, Nrings, and Nwedges are constant
   // when taking derivatives
   double theta = pi/Nwedges;
 

@@ -218,11 +218,12 @@
 #define MAT_TAG_QzSimple1                    207
 #define MAT_TAG_PyLiq1                       208
 #define MAT_TAG_TzLiq1                       209
-#define MAT_TAG_PySimple2                    210
-#define MAT_TAG_TzSimple2                    211
-#define MAT_TAG_QzSimple2                    212
-#define MAT_TAG_SteelBRB                     213
-#define MAT_TAG_PySimple3                    214
+#define MAT_TAG_QzLiq1                       210
+#define MAT_TAG_PySimple2                    211
+#define MAT_TAG_TzSimple2                    212
+#define MAT_TAG_QzSimple2                    213
+#define MAT_TAG_SteelBRB                     214
+#define MAT_TAG_PySimple3                    215
 
 
 
@@ -718,6 +719,11 @@
 #define ELE_TAG_PFEMElement2DQuasi        187
 #define ELE_TAG_MINI                      188
 #define ELE_TAG_PFEMElement3DBubble       189
+#define ELE_TAG_NineNodeQuad              207
+#define ELE_TAG_EightNodeQuad             208
+#define ELE_TAG_SixNodeTri                209
+
+#define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -904,6 +910,9 @@
 #define INTEGRATOR_TAGS_ExplicitDifference              55
 #define INTEGRATOR_TAGS_EQPath                          56
 #define INTEGRATOR_TAGS_GimmeMCK                        57
+#define INTEGRATOR_TAGS_StagedLoadControl               58
+#define INTEGRATOR_TAGS_StagedNewmark                   59
+#define INTEGRATOR_TAGS_HarmonicSteadyState             60
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

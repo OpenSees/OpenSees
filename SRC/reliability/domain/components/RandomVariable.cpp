@@ -346,6 +346,71 @@ RandomVariable::betaFunction(double q, double r)
 	return exp(loggammaq+loggammar-loggammaqpr);
 }
 
+double 
+RandomVariable::incompleteBetaFunction(double q, double r, double x) {
+	// Regularized Incomplete Beta Function
+	// Original implementation 
+	// Lewis Van Winkle
+	// http://CodePlea.com
+
+	const double stop = 1e-8;
+	const double tiny = 1e-30;
+
+	if (x < 0.0 || x > 1.0) {
+		return 0.0;
+	}
+	if (x > ((q + 1) / (q + r + 2.0))) {
+		return 1.0 - incompleteBetaFunction(r, q, 1 - x);
+	}
+
+	const double lbeta_qr = log(gammaFunction(q)) + log(gammaFunction(r)) - log(gammaFunction(q + r));
+
+	const double front = exp(log(x) * q + log(1.0 - x) * r - lbeta_qr) / q;
+
+	// Lentz's algorithm to evaluate the continued fraction
+	double f = 1.0, c = 1.0, d = 0.0;
+
+	int i, m;
+	for (i = 0; i <= 200; ++i) {
+		m = i / 2;
+
+		double numerator;
+		if (i == 0) {
+			numerator = 1.0;
+		}
+		else if (i % 2 == 0) {
+			// Even terms
+			numerator = (m * (r - m) * x) / ((q + 2.0 * m - 1.0) * (q + 2.0 * m));
+		}
+		else {
+			// Odd terms
+			numerator = -((q+m)*(q+r+m)*x) / ((q+2.0*m)*(q+2.0*m+1.0));
+		}
+
+		// Perform an iteration of Lentz algorithm
+		d = 1.0 + numerator * d;
+		if (fabs(d) < tiny) {
+			d = tiny;
+		}
+		d = 1.0 / d;
+
+		c = 1.0 + numerator / c;
+		if (fabs(c) < tiny) {
+			c = tiny;
+		}
+
+		const double cd = c * d;
+		f *= cd;
+
+		// check for stop
+		if (fabs(1.0 - cd) < stop) {
+			return front * (f - 1.0);
+		}
+	}
+
+	return 0.0;
+}
+
 
 double 
 RandomVariable::errorFunction(double x)

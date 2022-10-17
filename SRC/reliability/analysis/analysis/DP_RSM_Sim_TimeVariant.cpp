@@ -145,7 +145,7 @@ DP_RSM_Sim_TimeVariant::DP_RSM_Sim_TimeVariant(ReliabilityDomain *passedReliabil
 		opserr<<"typeSurfaceDesign not implemented yet "; 
 
 
-		// need to set (1) pointer to pointer arry of principalAxes (2) pointer to pointer arry of gridPlanes later
+		// need to set (1) pointer to pointer array of principalAxes (2) pointer to pointer array of gridPlanes later
 
 	}
 // -----

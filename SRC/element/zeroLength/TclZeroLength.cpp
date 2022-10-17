@@ -60,6 +60,8 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     //
     
     int eleTag, iNode, jNode;
+    int dampingTag = 0;
+    Damping *theDamping = 0;
     
     // a quick check on number of args
     if (argc < 9) {
@@ -314,6 +316,29 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	    argi++;
 	  }
 
+	} else 	if (strcmp(argv[argi],"-damp") == 0)  {
+	if (argc < argi+2) {
+	  opserr << "WARNING not enough -damp args need -damp dampingTag?\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	if (Tcl_GetInt(interp, argv[argi+1], &dampingTag) != TCL_OK) {
+	  opserr << "WARNING invalid dampingTag\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+  if (dampingTag)
+  {
+    theDamping = OPS_getDamping(dampingTag);
+    if (theDamping == 0)
+    {
+      opserr << "WARNING damping not found\n";
+      opserr << "damping: " << dampingTag;
+      opserr << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+  }
+	argi += 2;
 	}  else
 
 
@@ -328,7 +353,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     Element *theEle;
 
     if (doRayleighDamping != 2) 
-      theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDirns, doRayleighDamping);
+      theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDirns, doRayleighDamping, theDamping);
     else
       theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDampMats, theDirns, doRayleighDamping);
 
@@ -496,7 +521,7 @@ TclModelBuilder_addZeroLengthSection(ClientData clientData, Tcl_Interp *interp,
 
 // Command:
 //
-// element zeroLengthContact2D $tag $slaveNd $masterNd $Kn $Kt $fs $ContactDirction
+// element zeroLengthContact2D $tag $secondaryNd $primaryNd $Kn $Kt $fs $ContactDirction
 //
 //
 
@@ -512,7 +537,7 @@ TclModelBuilder_addZeroLengthContact2D(ClientData clientData, Tcl_Interp *interp
   int ndm = theBuilder->getNDM(); // the spatial dimension of the problem
   
   //
-  // first scan the command line to obtain eleID, SlaveNode, MasterNode,
+  // first scan the command line to obtain eleID, SecondaryNode, PrimaryNode,
   
   int eleTag, iNode, jNode;
   
@@ -618,7 +643,7 @@ TclModelBuilder_addZeroLengthContact2D(ClientData clientData, Tcl_Interp *interp
 
 // Command:
 //
-// element zeroLengthContact3D $tag $slaveNd $masterNd $Kn $Kt $fs $c $ContactDir
+// element zeroLengthContact3D $tag $secondaryNd $primaryNd $Kn $Kt $fs $c $ContactDir
 //
 //
 
@@ -632,7 +657,7 @@ TclModelBuilder_addZeroLengthContact3D(ClientData clientData, Tcl_Interp *interp
   int ndm = theBuilder->getNDM(); // the spatial dimension of the problem
   
   //
-  // first scan the command line to obtain eleID, SlaveNode, MasterNode,
+  // first scan the command line to obtain eleID, SecondaryNode, PrimaryNode,
   
   int eleTag, iNode, jNode;
   
