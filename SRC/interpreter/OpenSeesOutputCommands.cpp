@@ -3142,9 +3142,10 @@ int OPS_cbdiDisplacement()
     if (theResponse == 0) {
 	return 0;
     }
-
-    theResponse->getResponse();
     Information &info = theResponse->getInformation();
+    info.theDouble = xOverL;
+    
+    theResponse->getResponse();
 
     const Matrix &theMatrix = *(info.theMatrix);
     if (xOverL < 0.0 || xOverL > 1.0) {
@@ -3153,18 +3154,10 @@ int OPS_cbdiDisplacement()
 	return -1;
     }
 
-    double value[3]; // Need to interpolate
-    int N = theMatrix.noRows();
-    double dx = 1.0/(N-1);
-    for (int i = 0; i < N; i++) {
-      double xi = double(i)/(N-1);
-      double xf = double(i+1)/(N-1);
-      if (xOverL >= xi && xOverL < xf) {
-	value[0] = theMatrix(i,0) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,0)-theMatrix(i,0));
-	value[1] = theMatrix(i,1) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,1)-theMatrix(i,1));
-	value[2] = theMatrix(i,2) + (xOverL-xi)/(xf-xi)*(theMatrix(i+1,2)-theMatrix(i,2));	
-      }
-    }
+    double value[3];
+    value[0] = theMatrix(0,0);
+    value[1] = theMatrix(0,1);
+    value[2] = theMatrix(0,2);
     
     numdata = 3;
     if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
