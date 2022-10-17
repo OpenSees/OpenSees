@@ -828,7 +828,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   
   data(9) = 0;
   data(10) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     data(9) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
