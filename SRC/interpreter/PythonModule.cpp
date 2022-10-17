@@ -289,6 +289,21 @@ PythonModule::setInt(int *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setInt(std::vector<std::vector<int>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, int>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, std::vector<int>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     wrapper.setOutputs(data, numArgs, scalar);
@@ -296,10 +311,47 @@ PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setDouble(std::vector<std::vector<double>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, double>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, std::vector<double>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setString(const char *str) {
     wrapper.setOutputs(str);
 
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
     return 0;
 }
 
