@@ -975,9 +975,6 @@ OpenSeesCommands::wipe()
     // wipe CyclicModel
     OPS_clearAllCyclicModel();
 
-    if (reliability != 0) {
-      reliability->wipe();
-    }
 }
 
 void
