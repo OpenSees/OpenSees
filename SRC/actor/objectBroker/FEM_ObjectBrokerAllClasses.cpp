@@ -82,7 +82,7 @@
 #include "ReinforcingSteel.h"
 #include "HardeningMaterial.h"
 #include "HystereticMaterial.h"
-#include "HystereticMaterialSM.h"
+#include "HystereticSMMaterial.h"
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"

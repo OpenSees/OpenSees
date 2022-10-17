@@ -61,7 +61,7 @@ OPS_HystereticSMMaterial(void)
 
     if (numHystereticSMMaterials == 0) {
         numHystereticSMMaterials++;
-        OPS_Error("HystereticSM: multi-point envelope + recorders  - Code by Silvia Mazzoni, 2022 (silviamazzoni@yahoo.com) \n", 1);
+        OPS_Error("HystereticSM: multi-point envelope + DCR recorders  - Code by Silvia Mazzoni, 2022 (silviamazzoni@yahoo.com) \n", 1);
     }
 
     // Pointer to a uniaxial material that will be returned
@@ -119,10 +119,9 @@ OPS_HystereticSMMaterial(void)
         }
     }
     
-    
 
+    OPS_ResetCurrentInputArg(-numArgs);
     double degEnvFactor = 0;
-    // i can't get this to work, but I am leaving it here
     OPS_ResetCurrentInputArg(-numArgs);
     while (OPS_GetNumRemainingInputArgs() > 0) {
         std::string theType = OPS_GetString();
@@ -136,12 +135,10 @@ OPS_HystereticSMMaterial(void)
         }
     }
 
-
     OPS_ResetCurrentInputArg(-numArgs);
+
     int numargs0 = numArgs;
     numArgs = numArgs - numOptionalArgs;
-
-
 
 
   if (numArgs != 34 && numArgs != 33 && numArgs != 25 && numArgs != 26 && numArgs != 18           && numArgs != 17 && numArgs != 14 && numArgs != 13) {
@@ -298,60 +295,70 @@ degEnvFactor(degEnvFactorIN)
 
   //// ensure there is no zero-tangent line. it causes convergence issues when used in a section
 
-  if (mom3p == mom2p) {
-      mom3p = 0.99999 * mom2p;
-      opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3p was adjusted to be less than m2p\n";
+  if (mom3p >= mom2p) {
+      opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3p will be adjusted to be less than m2p. Current value: " << mom3p << "\n";
+      mom3p = 0.99 * mom2p;
+      opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3p was adjusted to be less than m2p. New value: " << mom3p <<"\n";
   }
 
-    if (mom4p == mom3p) {
-        mom4p = 0.99999 * mom3p;
-        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4p was adjusted to be less than m3p\n";
+    if (mom4p >= mom3p) {
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4p will be adjusted to be less than mom3p. Current value: " << mom4p << "\n";
+        mom4p = 0.99 * mom3p;
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4p was adjusted to be less than m3p. New value: " << mom4p << "\n";
     }
 
 
-    if (mom5p == mom4p) {
-        mom5p = 0.99999 * mom4p;
-        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5p was adjusted to be less than m4p\n";
+    if (mom5p >= mom4p) {
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5p will be adjusted to be less than mom4p. Current value: " << mom5p << "\n";
+        mom5p = 0.99 * mom4p;
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5p was adjusted to be less than m4p. New value: " << mom5p << "\n";
     }
 
 
-    if (mom6p == mom5p) {
-        mom6p = 0.99999 * mom5p;
-        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6p was adjusted to be less than m5p\n";
+    if (mom6p >= mom5p) {
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6p will be adjusted to be less than mom5p. Current value: " << mom6p << "\n";
+        mom6p = 0.99 * mom5p;
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6p was adjusted to be less than m5p. New value: " << mom6p << "\n";
     }
 
-    if (mom7p == mom6p) {
-        mom7p = 0.99999 * mom6p;
-        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7p was adjusted to be less than m6p\n";
+    if (mom7p >= mom6p) {
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7p will be adjusted to be less than mom6p. Current value: " << mom7p << "\n";
+        mom7p = 0.99 * mom6p;
+        opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7p was adjusted to be less than m6p. New value: " << mom7p << "\n";
     }
 
 
       // negative side
-      if (mom3n == mom2n) {
-          mom3n = 0.99999 * mom2n;
-          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3n was adjusted to be less than m2n\n";
+      if (mom3n <= mom2n) {
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3n will be adjusted to be less than m2n. Current value: " << mom3n << "\n";
+          mom3n = 0.99 * mom2n;
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom3n was adjusted to be less than m2n. New value: " << mom3n << "\n";
       }
 
-      if (mom4n == mom3n) {
-          mom4n = 0.99999 * mom3n;
-          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4n was adjusted to be less than m3n\n";
-      }
-
-
-      if (mom5n == mom4n) {
-          mom5n = 0.99999 * mom4n;
-          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5n was adjusted to be less than m4n\n";
+      if (mom4n <= mom3n) {
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4n will be adjusted to be less than mom3n. Current value: " << mom4n << "\n";
+          mom4n = 0.99 * mom3n;
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom4n was adjusted to be less than m3n. New value: " << mom4n << "\n";
       }
 
 
-      if (mom6n == mom5n) {
-          mom6n = 0.99999 * mom5n;
-          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6n was adjusted to be less than m5n\n";
+      if (mom5n <= mom4n) {
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5n will be adjusted to be less than mom4n. Current value: " << mom5n << "\n";
+          mom5n = 0.99 * mom4n;
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom5n was adjusted to be less than m4n. New value: " << mom5n << "\n";
       }
 
-      if (mom7n == mom6n) {
-          mom7n = 0.99999 * mom6n;
-          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7n was adjusted to be less than m6n\n";
+
+      if (mom6n <= mom5n) {
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6n will be adjusted to be less than mom5n. Current value: " << mom6n << "\n";
+          mom6n = 0.99 * mom5n;
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom6n was adjusted to be less than m5n. New value: " << mom6n << "\n";
+      }
+
+      if (mom7n <= mom6n) {
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7n will be adjusted to be less than m6n. Current value: " << mom7n << "\n";
+          mom7n = 0.99 * mom6n;
+          opserr << "HystereticSMMaterial::HystereticSMMaterial -- mom7n was adjusted to be less than m6n. New value: " << mom7n << "\n";
       }
 
 
