@@ -2275,7 +2275,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
 
   idData(15) = 0;
   idData(16) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(15) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {

@@ -1735,7 +1735,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
 
   idData(12) = 0;
   idData(13) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(12) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {

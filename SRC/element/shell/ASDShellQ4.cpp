@@ -1130,7 +1130,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 
     idData(16) = 0;
     idData(17) = 0;
-    if (m_damping) {
+    if (m_damping[0]) {
       idData(16) = m_damping[0]->getClassTag();
       int dbTag = m_damping[0]->getDbTag();
       if (dbTag == 0) {
