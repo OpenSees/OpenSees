@@ -1209,7 +1209,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     }
 
     // Ask the Damping to send itself
-    if (m_damping) {
+    if (m_damping[0]) {
       for (int i = 0 ;  i < 4; i++) {
         res += m_damping[i]->sendSelf(commitTag, theChannel);
         if (res < 0) {
