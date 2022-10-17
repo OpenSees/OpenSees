@@ -118,6 +118,7 @@ target_sources(OPS_Material
       HyperbolicGapMaterial.cpp
       HystereticAsym.cpp
       HystereticMaterial.cpp
+      HystereticSMMaterial.cpp
       HystereticPoly.cpp
       HystereticSmooth.cpp
       ImpactMaterial.cpp
@@ -228,6 +229,7 @@ target_sources(OPS_Material
       HyperbolicGapMaterial.h
       HystereticAsym.h
       HystereticMaterial.h
+      HystereticSMMaterial.h
       HystereticPoly.h
       HystereticSmooth.h
       ImpactMaterial.h

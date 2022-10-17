@@ -64,7 +64,8 @@ extern void *OPS_FatigueMaterial(void);
 extern void *OPS_HardeningMaterial(void);
 extern void *OPS_UniaxialJ2Plasticity(void);
 extern void *OPS_SmoothPSConcrete(void);
-extern void *OPS_HystereticMaterial(void);
+extern void* OPS_HystereticMaterial(void);
+extern void* OPS_HystereticSMMaterial(void);
 extern void *OPS_CableMaterial(void);
 extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
@@ -961,13 +962,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
     }
-    if (strcmp(argv[1],"Hysteretic") == 0) {
+    if (strcmp(argv[1], "Hysteretic") == 0) {
 
-      void *theMat = OPS_HystereticMaterial();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
+        void* theMat = OPS_HystereticMaterial();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "HystereticSM") == 0) {
+
+        void* theMat = OPS_HystereticSMMaterial();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
     }
     if (strcmp(argv[1],"OOHysteretic") == 0) {
 

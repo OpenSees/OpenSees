@@ -50,7 +50,7 @@
 //#include <iomanip>
 //using namespace std;
 
-extern StaticAnalysis *theStaticAnalysis;
+//extern StaticAnalysis *theStaticAnalysis;
 
 // constructor:
 URDDampingbeta::URDDampingbeta(int tag, int nfreq, Vector *tmpomegac, Vector *tmpbeta, double t1, double t2, TimeSeries *f):
@@ -151,7 +151,8 @@ URDDampingbeta::update(Vector q)
 {
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
-  if (theStaticAnalysis)
+  StaticAnalysis **theStaticAnalysis = OPS_GetStaticAnalysis();  
+  if (*theStaticAnalysis)
   {
     *q0 = q;
     (*qd).Zero();

@@ -38,7 +38,7 @@ void *OPS_CoulombDamperMaterial(void) {
     if (OPS_GetNumRemainingInputArgs() < 3) {
         opserr
             << "Invalid #args,  want: uniaxialMaterial CoulombDamper "
-               "tag? Tangent? FrictionForce? cFactor?\n";
+               "tag? Tangent? FrictionForce? \n";
         return 0;
     }
 
@@ -58,18 +58,9 @@ void *OPS_CoulombDamperMaterial(void) {
         return 0;
     }
 
-    double cFactor = 1.0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-        numData = 1;
-        if (OPS_GetDoubleInput(&numData, &cFactor) < 0) {
-            opserr << "WARNING: failed to get cFactor\n";
-            return 0;
-        }
-    }
-
     // Parsing was successful, allocate the material
     theMaterial = new CoulombDamperMaterial(iData[0], dData[0],
-                                            dData[1], cFactor);
+                                            dData[1]);
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type "
                   "CoulombDamperMaterial"
@@ -80,16 +71,14 @@ void *OPS_CoulombDamperMaterial(void) {
     return theMaterial;
 }
 
-double CoulombDamperMaterial::pi = 2.0 * acos(0.0);
-
 CoulombDamperMaterial::CoulombDamperMaterial(int tag, double k,
-                                             double f, double c)
+                                             double f)
     : UniaxialMaterial(tag, MAT_TAG_CoulombDamperMaterial),
       trialStrain(0.0),
       trialStrainRate(0.0),
       tangent(k),
       friction(f),
-      cFactor(c),
+      prevTrialStrainRate(0),
       parameterID(0) {}
 
 CoulombDamperMaterial::CoulombDamperMaterial()
@@ -98,7 +87,7 @@ CoulombDamperMaterial::CoulombDamperMaterial()
       trialStrainRate(0.0),
       tangent(0.0),
       friction(0.0),
-      cFactor(0.0),
+      prevTrialStrainRate(0),
       parameterID(0) {}
 
 CoulombDamperMaterial::~CoulombDamperMaterial() {
@@ -135,32 +124,41 @@ double CoulombDamperMaterial::getInitialTangent(void) {
     return tangent;
 }
 
-int CoulombDamperMaterial::commitState(void) { return 0; }
+int CoulombDamperMaterial::commitState(void) {
+    prevTrialStrainRate = trialStrainRate;
+    return 0;
+}
 
-int CoulombDamperMaterial::revertToLastCommit(void) { return 0; }
+int CoulombDamperMaterial::revertToLastCommit(void) {
+    trialStrainRate = prevTrialStrainRate;
+    return 0;
+}
 
 int CoulombDamperMaterial::revertToStart(void) {
     trialStrain = 0.0;
     trialStrainRate = 0.0;
+    prevTrialStrainRate = 0.0;
     return 0;
 }
 
 UniaxialMaterial *CoulombDamperMaterial::getCopy(void) {
     CoulombDamperMaterial *theCopy = new CoulombDamperMaterial(
-        this->getTag(), tangent, friction, cFactor);
+        this->getTag(), tangent, friction);
     theCopy->trialStrain = trialStrain;
     theCopy->trialStrainRate = trialStrainRate;
+    theCopy->prevTrialStrainRate = prevTrialStrainRate;
     theCopy->parameterID = parameterID;
     return theCopy;
 }
 
 int CoulombDamperMaterial::sendSelf(int cTag, Channel &theChannel) {
     int res = 0;
-    static Vector data(4);
+    static Vector data(5);
     data(0) = this->getTag();
     data(1) = tangent;
     data(2) = friction;
     data(3) = parameterID;
+    data(4) = prevTrialStrainRate;
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "CoulombDamperMaterial::sendSelf() - failed to "
@@ -173,7 +171,7 @@ int CoulombDamperMaterial::sendSelf(int cTag, Channel &theChannel) {
 int CoulombDamperMaterial::recvSelf(int cTag, Channel &theChannel,
                                     FEM_ObjectBroker &theBroker) {
     int res = 0;
-    static Vector data(4);
+    static Vector data(5);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
     if (res < 0) {
@@ -183,11 +181,13 @@ int CoulombDamperMaterial::recvSelf(int cTag, Channel &theChannel,
         tangent = 0;
         friction = 0;
         this->setTag(0);
+        friction = 0;
     } else {
         this->setTag(int(data(0)));
         tangent = data(1);
         friction = data(2);
         parameterID = (int)data(3);
+        prevTrialStrainRate = data(4);
     }
 
     return res;
@@ -277,26 +277,12 @@ int CoulombDamperMaterial::commitSensitivity(double strainGradient,
 }
 
 double CoulombDamperMaterial::sign() {
-    if (cFactor <= 0) {
-        if (trialStrainRate > 0) return 1.0;
-        if (trialStrainRate < 0) return -1.0;
-        return 0.0;
-    } else {
-        return atan(cFactor * trialStrainRate) * 2.0 / pi;
-    }
+    double UTtol = 0.000005;
+    if (prevTrialStrainRate > UTtol) return 1.0;
+    if (prevTrialStrainRate < -UTtol) return -1.0;
+    return 0.0;
 }
 
 double CoulombDamperMaterial::dsign() {
-    if (cFactor <= 0) {
-        double UTtol = 0.000005;
-        if (trialStrainRate < UTtol && trialStrainRate > -UTtol) {
-            return friction / UTtol;
-        }
-        return 0.0;
-
-    } else {
-        return cFactor * 2.0 / pi /
-               (1 + (cFactor * trialStrainRate) *
-                        (cFactor * trialStrainRate));
-    }
+    return 0.0;
 }
