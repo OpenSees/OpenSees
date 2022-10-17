@@ -27,7 +27,7 @@
 
 class CoulombDamperMaterial : public UniaxialMaterial {
    public:
-    CoulombDamperMaterial(int tag, double k, double f);
+    CoulombDamperMaterial(int tag, double k, double fc, double d, double f);
     CoulombDamperMaterial();
     ~CoulombDamperMaterial();
 
@@ -79,6 +79,9 @@ class CoulombDamperMaterial : public UniaxialMaterial {
     double tangent;
     double friction;
     double prevTrialStrainRate;
+    double flipDamping;
+    double factor;
+    double curFactor;
 
     // AddingSensitivity:BEGIN
     // //////////////////////////////////////////
