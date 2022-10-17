@@ -1776,7 +1776,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
   }
 
   // Ask the Damping to send itself
-  if (theDamping) {
+  if (theDamping[0]) {
     for (int i = 0 ;  i < 4; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {

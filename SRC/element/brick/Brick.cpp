@@ -1396,7 +1396,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
 
   idData(26) = 0;
   idData(27) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(26) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
