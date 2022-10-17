@@ -425,15 +425,17 @@ ShellMITC4::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 4; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {
         opserr << "ShellMITC4::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i]->setDomain(theDomain, 8)) {
         opserr << "ShellMITC4::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }

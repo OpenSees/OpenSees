@@ -376,15 +376,17 @@ ShellNLDKGQ::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 4; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {
         opserr << "ShellNLDKGQ::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i]->setDomain(theDomain, 8)) {
         opserr << "ShellNLDKGQ::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
