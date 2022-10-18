@@ -24,6 +24,7 @@ target_sources(OPS_PFEM
         Particle.cpp
         ParticleGroup.cpp
         PFEMContact2D.cpp
+        PFEMContact3D.cpp
         PFEMElement2DBubble.cpp
         PFEMElement2DCompressible.cpp
         PFEMElement2D.cpp
