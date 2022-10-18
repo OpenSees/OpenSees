@@ -38,7 +38,8 @@ void *OPS_CoulombDamperMaterial(void) {
     if (OPS_GetNumRemainingInputArgs() < 3) {
         opserr
             << "Invalid #args,  want: uniaxialMaterial CoulombDamper "
-               "tag? Tangent? FrictionForce? \n";
+               "tag? Tangent? FrictionForce? numFlipped? -dampOut? "
+               "-reduceFc?\n";
         return 0;
     }
 
@@ -58,9 +59,28 @@ void *OPS_CoulombDamperMaterial(void) {
         return 0;
     }
 
+    int method = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *mth = OPS_GetString();
+        if (strcmp(mth, "-dampOut") == 0) {
+            method = 1;
+        } else if (strcmp(mth, "-reduceFc") == 0) {
+            method = 2;
+        }
+    }
+
+    int numFlipped = 5;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        numData = 1;
+        if (OPS_GetIntInput(&numData, &numFlipped) < 0) {
+            opserr << "WARNING: failed to get numFlipped\n";
+            return 0;
+        }
+    }
+
     // Parsing was successful, allocate the material
-    theMaterial =
-        new CoulombDamperMaterial(iData[0], dData[0], dData[1]);
+    theMaterial = new CoulombDamperMaterial(
+        iData[0], dData[0], dData[1], method, numFlipped);
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type "
                   "CoulombDamperMaterial"
@@ -72,7 +92,7 @@ void *OPS_CoulombDamperMaterial(void) {
 }
 
 CoulombDamperMaterial::CoulombDamperMaterial(int tag, double k,
-                                             double fc)
+                                             double fc, int m, int n)
     : UniaxialMaterial(tag, MAT_TAG_CoulombDamperMaterial),
       trialStrain(0.0),
       trialStrainRate(0.0),
@@ -81,7 +101,8 @@ CoulombDamperMaterial::CoulombDamperMaterial(int tag, double k,
       commitTrialStrainRate(0),
       flipped(0),
       tol(1e-5),
-      numFlipped(5),
+      numFlipped(n),
+      method(m),
       parameterID(0) {}
 
 CoulombDamperMaterial::CoulombDamperMaterial()
@@ -94,6 +115,7 @@ CoulombDamperMaterial::CoulombDamperMaterial()
       flipped(0),
       tol(1e-5),
       numFlipped(5),
+      method(1),
       parameterID(0) {}
 
 CoulombDamperMaterial::~CoulombDamperMaterial() {
@@ -164,8 +186,8 @@ int CoulombDamperMaterial::revertToStart(void) {
 }
 
 UniaxialMaterial *CoulombDamperMaterial::getCopy(void) {
-    CoulombDamperMaterial *theCopy =
-        new CoulombDamperMaterial(this->getTag(), tangent, friction);
+    CoulombDamperMaterial *theCopy = new CoulombDamperMaterial(
+        this->getTag(), tangent, friction, method, numFlipped);
     theCopy->trialStrain = trialStrain;
     theCopy->trialStrainRate = trialStrainRate;
     theCopy->commitTrialStrainRate = commitTrialStrainRate;
@@ -181,6 +203,8 @@ int CoulombDamperMaterial::sendSelf(int cTag, Channel &theChannel) {
     data(2) = friction;
     data(3) = parameterID;
     data(4) = commitTrialStrainRate;
+    data(5) = method;
+    data(6) = numFlipped;
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "CoulombDamperMaterial::sendSelf() - failed to "
@@ -210,6 +234,8 @@ int CoulombDamperMaterial::recvSelf(int cTag, Channel &theChannel,
         friction = data(2);
         parameterID = (int)data(3);
         commitTrialStrainRate = data(4);
+        method = data(5);
+        numFlipped = data(6);
     }
 
     return res;
@@ -308,7 +334,11 @@ double CoulombDamperMaterial::sign() {
 
     } else if (flipped > numFlipped) {
         // rate flipped n times
-        res = factor() * dampTangent * trialStrainRate;
+        if (method == 1) {
+            res = factor() * dampTangent * trialStrainRate;
+        } else if (method == 2) {
+            res = factor() * friction;
+        }
 
     } else {
         // rate not flipped
@@ -334,7 +364,11 @@ double CoulombDamperMaterial::dsign() {
 
     } else if (flipped > numFlipped) {
         // rate flipped n times
-        res = factor() * dampTangent;
+        if (method == 1) {
+            res = factor() * dampTangent;
+        } else if (method == 2) {
+            res = 0.0;
+        }
 
     } else {
         res = 0.0;
