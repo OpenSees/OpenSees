@@ -77,10 +77,13 @@ int OPS_BgMesh() {
                   "-wave wavefilename? numl? locs? -numsub numsub? "
                   "-dispon? "
                   "-structure sid? ?numnodes? structuralNodes? "
-                  "-alphaS sid? alphaS?";
+                  "-alphaS sid? alphaS? ";
         if (ndm == 2) {
             opserr << "-contact kdoverAd? thk? mu? beta? Dc? alpha? "
-                      "E? rho?>";
+                      "E? rho?>\n";
+        } else if (ndm == 3) {
+            opserr
+                << "-contact Dc? alpha? E? rho? nx? ny? nz? Ae?>\n";
         }
         return -1;
     }
@@ -214,20 +217,38 @@ int OPS_BgMesh() {
             }
 
         } else if (strcmp(opt, "-contact") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 8) {
-                opserr
-                    << "WARNING: need kdoverAd, thk, mu, beta, Dc, "
-                       "alpha, E, rho\n";
-                return -1;
+            if (ndm == 2) {
+                if (OPS_GetNumRemainingInputArgs() < 8) {
+                    opserr << "WARNING: need kdoverAd, thk, mu, "
+                              "beta, Dc, "
+                              "alpha, E, rho\n";
+                    return -1;
+                }
+                num = 8;
+                VDouble data(num);
+                if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
+                    opserr << "WARNING: failed to get kdoverAd, thk, "
+                              "mu, "
+                              "beta, Dc, alpha, E, rho\n";
+                    return -1;
+                }
+                bgmesh.setContactData(data);
+            } else if (ndm == 3) {
+                if (OPS_GetNumRemainingInputArgs() < 8) {
+                    opserr << "WARNING: Dc? alpha? E? rho? nx? ny? "
+                              "nz? Ae?\n";
+                    return -1;
+                }
+                num = 8;
+                VDouble data(num);
+                if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
+                    opserr << "WARNING: failed to get Dc? alpha? E? "
+                              "rho? nx? ny? "
+                              "nz? Ae\n";
+                    return -1;
+                }
+                bgmesh.setContactData(data);
             }
-            num = 8;
-            VDouble data(num);
-            if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
-                opserr << "WARNING: failed to get kdoverAd, thk, mu, "
-                          "beta, Dc, alpha, E, rho\n";
-                return -1;
-            }
-            bgmesh.setContactData(data);
 
         } else if (strcmp(opt, "-alphaS") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 2) {
