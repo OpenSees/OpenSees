@@ -53,6 +53,7 @@
 #include <Node.h>
 #include <NodeIter.h>
 #include <PFEMContact2D.h>
+#include <PFEMContact3D.h>
 #include <Pressure_Constraint.h>
 #include <SP_Constraint.h>
 #include <TetMeshGenerator.h>
@@ -3460,11 +3461,6 @@ int BackgroundMesh::createContact(const VInt& ndtags,
             opserr << "WARNING: 2D contact needs 3 nodes\n";
             return -1;
         }
-    } else if (ndm == 3) {
-        if (ndtags.size() != 4) {
-            opserr << "WARNING: 3D contact needs 4 nodes\n";
-            return -1;
-        }
     }
 
     // get groups
@@ -3589,4 +3585,76 @@ bool BackgroundMesh::check_vol(const VDouble& ndcrds1,
     }
 
     return zerovol;
+}
+
+int BackgroundMesh::createContact3D(const VInt& ndtags,
+                                    const VInt& sids, VInt& elends,
+                                    int& ndir) {
+    elends.clear();
+
+    // order of ndtags for 3D should follow those in getCorners
+
+    // check inputs
+    int ndm = OPS_GetNDM();
+    if (ndtags.size() != sids.size()) {
+        return 0;
+    }
+    if (ndm == 3) {
+        if (ndtags.size() != 8) {
+            opserr << "WARNING: 3D contact needs 8 nodes\n";
+            return -1;
+        }
+    }
+
+    // get groups
+    std::map<int, VInt> grp;
+    for (int i = 0; i < (int)sids.size(); ++i) {
+        grp[sids[i]].push_back(ndtags[i]);
+    }
+
+    if (grp.size() == 1) {
+        // from same structure
+        return 0;
+    }
+
+    // faces in three directions
+    int faceNodes[3][8] = {{1, 3, 5, 7, 0, 2, 4, 6},
+                           {2, 3, 6, 7, 0, 1, 4, 5},
+                           {4, 5, 6, 7, 0, 1, 2, 3}};
+
+    // the number of different group in opposite faces
+    double maxDiffSid = 0;
+
+    // main impact direction: 0-x, 1-y, 2-z
+    ndir = 0;
+
+    // check direction
+    int numNodesFace = (int)ndtags.size() / 2;
+    for (int i = 0; i < ndm; ++i) {
+        // average sid for face1 and face2
+        double aveSid1 = 0.0;
+        double aveSid2 = 0.0;
+        for (int j = 0; j < numNodesFace; ++j) {
+            // index of nodes on face1 and face2
+            int index1 = faceNodes[i][j];
+            int index2 = faceNodes[i][j + numNodesFace];
+
+            // average sid
+            aveSid1 += sids[index1];
+            aveSid2 += sids[index2];
+        }
+
+        // difference of sids of face1 and fac2
+        if (maxDiffSid < fabs(aveSid1 - aveSid2)) {
+            maxDiffSid = fabs(aveSid1 - aveSid2);
+            ndir = i;
+        }
+    }
+
+    // elenodes
+    for (int i = 0; i < (int)ndtags.size(); ++i) {
+        elends.push_back(ndtags[faceNodes[ndir][i]]);
+    }
+
+    return 0;
 }
