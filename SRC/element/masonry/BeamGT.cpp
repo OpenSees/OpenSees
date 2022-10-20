@@ -19,6 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // Written by: Gonzalo Torrisi, Universidad Nacional de Cuyo
+// Input modified 20/19/2022
 
 // we specify what header files we need
 #include "BeamGT.h"
