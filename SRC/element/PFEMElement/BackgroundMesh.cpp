@@ -83,8 +83,7 @@ int OPS_BgMesh() {
             opserr << "-contact kdoverAd? thk? mu? beta? Dc? alpha? "
                       "E? rho?>\n";
         } else if (ndm == 3) {
-            opserr
-                << "-contact Dc? alpha? E? rho? nx? ny? nz? Ae?>\n";
+            opserr << "-contact Dc? E? rho?>\n";
         }
         return -1;
     }
@@ -235,17 +234,14 @@ int OPS_BgMesh() {
                 }
                 bgmesh.setContactData(data);
             } else if (ndm == 3) {
-                if (OPS_GetNumRemainingInputArgs() < 8) {
-                    opserr << "WARNING: Dc? alpha? E? rho? nx? ny? "
-                              "nz? Ae?\n";
+                if (OPS_GetNumRemainingInputArgs() < 3) {
+                    opserr << "WARNING: Dc? E? rho?\n";
                     return -1;
                 }
-                num = 8;
+                num = 3;
                 VDouble data(num);
                 if (OPS_GetDoubleInput(&num, &data[0]) < 0) {
-                    opserr << "WARNING: failed to get Dc? alpha? E? "
-                              "rho? nx? ny? "
-                              "nz? Ae\n";
+                    opserr << "WARNING: failed to get Dc? E? rho?\n";
                     return -1;
                 }
                 bgmesh.setContactData(data);
@@ -303,7 +299,7 @@ BackgroundMesh::BackgroundMesh()
       currentTime(0.0),
       theFile(),
       structuralNodes(),
-      contactData(8),
+      contactData(),
       contactEles(),
       dispon(true),
       alphaS() {}
@@ -1895,6 +1891,7 @@ int BackgroundMesh::gridFSInoDT() {
     }
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
+    VInt contact3Ddir(numele * cells.size(), -1);
 #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // get indices
@@ -1971,7 +1968,13 @@ int BackgroundMesh::gridFSInoDT() {
                     gtags[numele * j + 1] = contact_tag;
                 }
             } else if (ndm == 3) {
-                // 3D contact element: TODO
+                // 3D contact element, 1 contact element
+                int ndir = 0;
+                createContact3D(tags, sids, elends[numele * j], ndir);
+                if (!elends[numele * j].empty()) {
+                    gtags[numele * j] = contact_tag;
+                    contact3Ddir[numele * j] = ndir;
+                }
             }
 
             continue;
@@ -2273,10 +2276,7 @@ int BackgroundMesh::gridFSInoDT() {
                 }
                 if (created) continue;
 
-                if (contactData[0] <= 0 || contactData[1] <= 0 ||
-                    contactData[2] < 0 || contactData[3] < 0 ||
-                    contactData[4] <= 0 || contactData[6] <= 0 ||
-                    contactData[7] <= 0) {
+                if (contactData.empty()) {
                     opserr << "WARNING: contact data is not "
                               "correctly "
                               "set\n";
@@ -2302,13 +2302,79 @@ int BackgroundMesh::gridFSInoDT() {
                 nextEletag += 1;
 
             } else if (ndm == 3) {
-                if (elends[i].size() != 4) {
-                    opserr << "WARNING: 3D contact should have 4 "
+                if (elends[i].size() != 8) {
+                    opserr << "WARNING: 3D contact should have 8 "
                               "nodes\n";
                     return -1;
                 }
-                opserr << "WARNING: 3D contact element hasn't been "
-                          "developed\n";
+
+                // check if exists
+                bool created = false;
+                for (int j = 0; j < (int)oldContactEles.size(); ++j) {
+                    if (removedEles[j] == 0) continue;
+                    Element* ele =
+                        domain->getElement(oldContactEles[j]);
+                    if (ele == 0) continue;
+                    const ID& contactNodes = ele->getExternalNodes();
+                    if (contactNodes(0) == elends[i][0] &&
+                        contactNodes(1) == elends[i][1] &&
+                        contactNodes(2) == elends[i][2] &&
+                        contactNodes(3) == elends[i][3] &&
+                        contactNodes(4) == elends[i][4] &&
+                        contactNodes(5) == elends[i][5] &&
+                        contactNodes(6) == elends[i][6] &&
+                        contactNodes(7) == elends[i][7]) {
+                        created = true;
+                        removedEles[j] = 0;
+                        contactEles.push_back(oldContactEles[j]);
+                        break;
+                    }
+                }
+                if (created) continue;
+
+                // no contact direction
+                int ndir = contact3Ddir[i];
+                if (ndir < 0) continue;
+
+                if (contactData.empty()) {
+                    opserr << "WARNING: contact data is not "
+                              "correctly "
+                              "set\n";
+                    return -1;
+                }
+
+                double nx = 0, ny = 0, nz = 0;
+                if (ndir == 0) {
+                    nx = 1.0;
+                } else if (ndir == 1) {
+                    ny = 1.0;
+                } else if (ndir == 2) {
+                    nz = 1.0;
+                }
+
+                double Ae = bsize * bsize;
+
+                Element* ele = new PFEMContact3D(
+                    nextEletag, elends[i][0], elends[i][1],
+                    elends[i][2], elends[i][3], elends[i][4],
+                    elends[i][5], elends[i][6], elends[i][7],
+                    contactData[0], contactData[1], contactData[2],
+                    nx, ny, nz, Ae);
+
+                if (ele == 0) {
+                    opserr << "WARNING: failed to create contact 3D "
+                              "element\n";
+                    return -1;
+                }
+                if (domain->addElement(ele) == false) {
+                    opserr << "WARNING: failed to add element "
+                           << nextEletag << "\n";
+                    delete ele;
+                    return -1;
+                }
+
+                contactEles.push_back(nextEletag);
+                nextEletag += 1;
             }
             continue;
         }
@@ -2728,10 +2794,7 @@ int BackgroundMesh::gridFSI() {
                 }
                 if (created) continue;
 
-                if (contactData[0] <= 0 || contactData[1] <= 0 ||
-                    contactData[2] < 0 || contactData[3] < 0 ||
-                    contactData[4] <= 0 || contactData[6] <= 0 ||
-                    contactData[7] <= 0) {
+                if (contactData.empty()) {
                     opserr << "WARNING: contact data is not "
                               "correctly "
                               "set\n";
