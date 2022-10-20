@@ -353,11 +353,7 @@ double CoulombDamperMaterial::sign() {
     double res = 0.0;
     double dampTangent = friction / tol;
 
-    if (trialStrainRate > -tol && trialStrainRate < tol) {
-        // linear rate
-        res = dampTangent * trialStrainRate;
-
-    } else if (flipped > numFlipped) {
+    if (flipped > numFlipped) {
         // rate flipped n times
         if (method == 1) {
             res = factor() * dampTangent * trialStrainRate;
@@ -370,6 +366,10 @@ double CoulombDamperMaterial::sign() {
         } else if (dampOutTangent == 3) {
             res = dampOutTangent * trialStrainRate;
         }
+
+    } else if (trialStrainRate > -tol && trialStrainRate < tol) {
+        // linear rate
+        res = dampTangent * trialStrainRate;
 
     } else {
         // rate not flipped
@@ -389,11 +389,7 @@ double CoulombDamperMaterial::dsign() {
     double res = 0.0;
     double dampTangent = friction / tol;
 
-    if (trialStrainRate > -tol && trialStrainRate < tol) {
-        // linear rate
-        res = dampTangent;
-
-    } else if (flipped > numFlipped) {
+    if (flipped > numFlipped) {
         // rate flipped n times
         if (method == 1) {
             res = factor() * dampTangent;
@@ -402,6 +398,9 @@ double CoulombDamperMaterial::dsign() {
         } else if (method == 3) {
             res = dampOutTangent;
         }
+    } else if (trialStrainRate > -tol && trialStrainRate < tol) {
+        // linear rate
+        res = dampTangent;
 
     } else {
         res = 0.0;
@@ -412,7 +411,7 @@ double CoulombDamperMaterial::dsign() {
 
 double CoulombDamperMaterial::factor() {
     double res = 1.0;
-    for (int i = 0; i < flipped; i += 1) {
+    for (int i = 0; i < flipped; i += 2) {
         res *= 0.5;
     }
     return res;
