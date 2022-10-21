@@ -290,7 +290,7 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        if (mdata.Size() < 11) return 0;
         data[0] = mdata(0);
         data[1] = mdata(1);
         data[2] = mdata(2);
