@@ -438,6 +438,9 @@ Mesh::newElements(const ID &elends) {
     if (elends.Size() < numelenodes) {
         return 0;
     }
+    if (numelenodes <= 0) {
+        return 0;
+    }
 
     // function to call
     void *(*OPS_Func)(const ID &info) = 0;

@@ -1406,6 +1406,7 @@ extern int OPS_TetMesh();
 extern int OPS_QuadMesh();
 extern int OPS_BgMesh();
 extern int OPS_ParticleGroup();
+extern int OPS_Flume();
 extern BackgroundMesh& OPS_getBgMesh();
 
 
@@ -1433,6 +1434,8 @@ int OPS_mesh()
 	res = OPS_TetMesh();
     } else if (strcmp(type, "quad") == 0) {
 	res = OPS_QuadMesh();
+    } else if (strcmp(type, "flume") == 0) {
+	res = OPS_Flume();
     } else {
         opserr<<"WARNING: mesh type "<<type<<" is unknown\n";
         return -1;
