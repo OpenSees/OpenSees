@@ -330,5 +330,11 @@ int Flume::mesh() {
         }
     }
 
+    ID newndtags(nodes.size());
+    for (int i=0; i<newndtags.Size(); ++i) {
+        newndtags(i) = nodes[i]->getTag();
+    }
+    this->setNewNodeTags(newndtags);
+
     return 0;
 }
