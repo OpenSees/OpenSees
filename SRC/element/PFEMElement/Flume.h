@@ -36,14 +36,22 @@ class Flume : public Mesh {
     ~Flume();
     int mesh();
 
+    virtual Node* create_node(const std::vector<double>& crds,
+                              int& nodeTag);
+    virtual int create_line(Node* nd1, Node* nd2, int& nodeTag,
+                            int dir);
+    virtual int create_face(Node* nd1, Node* nd2, int& nodeTag,
+                            int dir1, int dir2);
+
+    const std::vector<double>& getCrds() const { return crds; }
+    const std::vector<double>& getDimensions() const {
+        return dimensions;
+    }
+
    private:
     const std::vector<double> crds;
     const std::vector<double> dimensions;
     bool top;
-
-    Node* create_node(const std::vector<double>& crds, int& nodeTag);
-    int create_line(Node* nd1, Node* nd2, int& nodeTag, int dir);
-    int create_face(Node* nd1, Node* nd2, int& nodeTag, int dir1, int dir2);
 };
 
 #endif
