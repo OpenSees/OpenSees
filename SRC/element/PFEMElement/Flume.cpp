@@ -220,6 +220,7 @@ int Flume::mesh() {
 
     // create corner nodes
     int nodeTag = nextNodeTag();
+    int initNodeTag = nodeTag;
     int ndm = (int)crds.size();
     std::vector<double> curr(ndm);
     std::vector<Node*> nodes;
@@ -330,9 +331,9 @@ int Flume::mesh() {
         }
     }
 
-    ID newndtags(nodes.size());
-    for (int i=0; i<newndtags.Size(); ++i) {
-        newndtags(i) = nodes[i]->getTag();
+    ID newndtags(nodeTag - initNodeTag);
+    for (int i = 0; i < newndtags.Size(); ++i) {
+        newndtags(i) = initNodeTag + i;
     }
     this->setNewNodeTags(newndtags);
 
