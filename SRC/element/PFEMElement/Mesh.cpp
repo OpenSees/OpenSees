@@ -472,11 +472,20 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ElasticBeam2d:
             OPS_Func = OPS_ElasticBeam2d;
             break;
+        case ELE_TAG_ElasticBeam3d:
+            OPS_Func = OPS_ElasticBeam3d;
+            break;
         case ELE_TAG_ForceBeamColumn2d:
             OPS_Func = OPS_ForceBeamColumn2d;
             break;
+        case ELE_TAG_ForceBeamColumn3d:
+            OPS_Func = OPS_ForceBeamColumn3d;
+            break;
         case ELE_TAG_DispBeamColumn2d:
             OPS_Func = OPS_DispBeamColumn2d;
+            break;
+        case ELE_TAG_DispBeamColumn3d:
+            OPS_Func = OPS_DispBeamColumn3d;
             break;
         case ELE_TAG_PFEMElement2DBubble:
             OPS_Func = OPS_PFEMElement2DBubble;
