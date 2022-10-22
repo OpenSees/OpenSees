@@ -1,5 +1,6 @@
 #include <iostream>
 #include "LinearHardeningScalar_EV.h"
+#include "LinearHardeningTensor_EV.h"
 
 #include <StandardStream.h>
 

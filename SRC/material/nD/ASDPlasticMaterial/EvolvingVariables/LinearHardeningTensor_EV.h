@@ -33,22 +33,22 @@
 
 
 
-class LinearHardeningTensor_EV : public EvolvingVariable<DTensor2, LinearHardeningTensor_EV> //CRTP on LinearHardeningTensor_EV
+class LinearHardeningTensor_EV : public EvolvingVariable<VoigtVector, LinearHardeningTensor_EV> //CRTP on LinearHardeningTensor_EV
 {
 public:
 
     LinearHardeningTensor_EV( double H_);
-    LinearHardeningTensor_EV( double H_, DTensor2& alpha0);
+    LinearHardeningTensor_EV( double H_, VoigtVector& alpha0);
 
-    const DTensor2& getDerivative(const DTensor2 &depsilon,
-                                  const DTensor2 &m,
-                                  const DTensor2& stress) const;
+    const VoigtVector& getDerivative(const VoigtVector &depsilon,
+                                  const VoigtVector &m,
+                                  const VoigtVector& stress) const;
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
 private:
     double H;
-    static DTensor2 derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
+    static VoigtVector derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
 };
 
 

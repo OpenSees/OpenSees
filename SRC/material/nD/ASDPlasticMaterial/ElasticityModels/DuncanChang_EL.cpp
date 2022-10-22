@@ -28,7 +28,7 @@
 #include "Vector.h"
 #include "../ASDPlasticMaterialGlobals.h"
 
-DTensor4 DuncanChang_EL::Ee(3, 3, 3, 3, 0.0);
+VoigtMatrix DuncanChang_EL::Ee(3, 3, 3, 3, 0.0);
 
 
 DuncanChang_EL::DuncanChang_EL(double K_in, double pa_in, double n_in, double nu_in, double sigma3_max_in) :
@@ -39,7 +39,7 @@ DuncanChang_EL::DuncanChang_EL(double K_in, double pa_in, double n_in, double nu
 }
 
 
-DTensor4& DuncanChang_EL::operator()(const DTensor2& stress) //See note on base class
+VoigtMatrix& DuncanChang_EL::operator()(const VoigtVector& stress) //See note on base class
 {
     using namespace ASDPlasticMaterialGlobals;
 

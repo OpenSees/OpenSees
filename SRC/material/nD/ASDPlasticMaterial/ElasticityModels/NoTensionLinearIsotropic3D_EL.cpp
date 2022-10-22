@@ -27,7 +27,7 @@
 #include "NoTensionLinearIsotropic3D_EL.h"
 #include "Vector.h"
 
-DTensor4 NoTensionLinearIsotropic3D_EL::Ee(3, 3, 3, 3, 0.0);
+VoigtMatrix NoTensionLinearIsotropic3D_EL::Ee(3, 3, 3, 3, 0.0);
 
 
 NoTensionLinearIsotropic3D_EL::NoTensionLinearIsotropic3D_EL(double E, double nu) : ElasticityBase<NoTensionLinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
@@ -39,7 +39,7 @@ NoTensionLinearIsotropic3D_EL::NoTensionLinearIsotropic3D_EL(double E, double nu
 }
 
 
-DTensor4& NoTensionLinearIsotropic3D_EL::operator()(const DTensor2& stress) //See note on base class
+VoigtMatrix& NoTensionLinearIsotropic3D_EL::operator()(const VoigtVector& stress) //See note on base class
 {
     Ee *= 0; //Zero it. It may have values from another instance with different parameters;
 

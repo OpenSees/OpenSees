@@ -39,7 +39,7 @@ class NoTensionLinearIsotropic3D_EL : public ElasticityBase<NoTensionLinearIsotr
 public:
     NoTensionLinearIsotropic3D_EL(double E, double nu);
 
-    DTensor4& operator()(const DTensor2& stress); //See note on base class
+    VoigtMatrix& operator()(const VoigtVector& stress); //See note on base class
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -48,7 +48,7 @@ private:
 
     double lambda;
     double mu;
-    static DTensor4 Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
+    static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 

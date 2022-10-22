@@ -42,7 +42,7 @@ class DruckerPrager_PF : public PlasticFlowBase<DruckerPrager_PF<AlphaHardeningT
 {
 public:
 
-    typedef EvolvingVariable<DTensor2, AlphaHardeningType> AlphaType;
+    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
     typedef EvolvingVariable<double, KHardeningType> KType;
 
 
@@ -55,11 +55,11 @@ public:
     }
 
 
-    const DTensor2& operator()(const DTensor2 &depsilon, const DTensor2& sigma)
+    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
     {
         using namespace ASDPlasticMaterialGlobals;
         //Identical to derivative of DruckerPrager_YF wrt sigma (a.k.a nij)
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
 
         // cout << "     --> PF alpha = " << alpha << endl;
@@ -89,7 +89,7 @@ public:
             / den;
         result(i, j) += SQRT_2_over_27 * k * kronecker_delta(i, j);
 
-        // DTensor2 bshit(3, 3, 0.0);
+        // VoigtVector bshit(3, 3, 0.0);
         // bshit(i, j) = SQRT_2_over_27 * k * kronecker_delta(i, j);
 
         // cout << "     --> PF result     = " << result << endl;
@@ -97,15 +97,15 @@ public:
         return result;
     }
 
-    DTensor4 const& dm_over_dsigma(DTensor2 const& sigma)
+    VoigtMatrix const& dm_over_dsigma(VoigtVector const& sigma)
     {
-        static DTensor2 s(3, 3, 0.0);
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        static VoigtVector s(3, 3, 0.0);
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         // const double &k = k_.getVariableConstReference();
         double p = 0.0;
         sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
         p = -p;
-        static DTensor2 s_minus_p_alpha(3, 3, 0.0);
+        static VoigtVector s_minus_p_alpha(3, 3, 0.0);
         s_minus_p_alpha(i, j) = s(i, j) - p * alpha(i, j);
         double s_minus_p_alpha_square = s_minus_p_alpha(i, j) * s_minus_p_alpha(i, j) ;
 
@@ -146,7 +146,7 @@ public:
         double alpha_times_s = alpha(i, j) * s(i, j);
         // =========================================
 
-        static DTensor4 dm__dsigma(3, 3, 3, 3, 0.0);
+        static VoigtMatrix dm__dsigma(3, 3, 3, 3, 0.0);
         dm__dsigma *= 0;
         // Four free indices
         for (int ig = 0; ig < 3; ++ig)
@@ -193,23 +193,23 @@ public:
 
 
 
-    DTensor2 const& dm_over_dq_start_h_star(DTensor2 const& depsilon, DTensor2 const& pf_m, const DTensor2& stress){
-        static DTensor2 s(3, 3, 0.0);
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+    VoigtVector const& dm_over_dq_start_h_star(VoigtVector const& depsilon, VoigtVector const& pf_m, const VoigtVector& stress){
+        static VoigtVector s(3, 3, 0.0);
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         // const double &_k_ = k_.getVariableConstReference();
         double p=0;
         stress.compute_deviatoric_tensor(s, p); // here p is positive if in tension
         p=-p;
 
-        static DTensor4 IdentityTensor4(3,3,3,3, 0); //optimize this to global later.
+        static VoigtMatrix IdentityTensor4(3,3,3,3, 0); //optimize this to global later.
         IdentityTensor4(i,j,k,l)=kronecker_delta(i, j)*kronecker_delta(k,l);
         // (1) isotropic hardening part. 
-        static DTensor2 dm_dk(3,3,0.0);
+        static VoigtVector dm_dk(3,3,0.0);
         dm_dk(i,j) = SQRT_2_over_27 * kronecker_delta(i, j) ; 
 
         // (2) kinematic hardening part: dm_dalpha
-        static DTensor4 dm_dalpha(3,3,3,3,0.0);
-        static DTensor2 s_minus_p_alpha(3,3,0.0);
+        static VoigtMatrix dm_dalpha(3,3,3,3,0.0);
+        static VoigtVector s_minus_p_alpha(3,3,0.0);
         s_minus_p_alpha(i,j) = s(i,j) - p * alpha(i,j);
         double s_minus_p_alpha_square = s_minus_p_alpha(i,j) * s_minus_p_alpha(i,j) ; 
         double alpha_times_s_minus_p_alpha = s_minus_p_alpha(i,j) * alpha(i,j);
@@ -231,7 +231,7 @@ public:
                             );
                         }
 
-        static DTensor2 ret(3,3,0.0);
+        static VoigtVector ret(3,3,0.0);
         ret(i,j) = dm_dalpha(i,j,m,n) * alpha_.getDerivative(depsilon, pf_m, stress)(m,n);
         ret(i,j) += dm_dk(i,j) * k_.getDerivative(depsilon, pf_m, stress) ;
 
@@ -244,21 +244,21 @@ private:
     AlphaType &alpha_;
     KType &k_;
 
-    static DTensor2 s; //sigma deviator
-    static DTensor2 result; //For returning Dtensor2s
-    // static DTensor4 dm__dsigma; //For returning dm_over_dsigma
-    // static DTensor4 dm__dalpha; //For returning dm_over_dsigma
+    static VoigtVector s; //sigma deviator
+    static VoigtVector result; //For returning VoigtVectors
+    // static VoigtMatrix dm__dsigma; //For returning dm_over_dsigma
+    // static VoigtMatrix dm__dalpha; //For returning dm_over_dsigma
 
 };
 
 template<class AlphaHardeningType, class KHardeningType>
-DTensor2 DruckerPrager_PF<AlphaHardeningType , KHardeningType >::s(3, 3, 0.0);
+VoigtVector DruckerPrager_PF<AlphaHardeningType , KHardeningType >::s(3, 3, 0.0);
 template<class AlphaHardeningType, class KHardeningType>
-DTensor2 DruckerPrager_PF<AlphaHardeningType , KHardeningType >::result(3, 3, 0.0);
+VoigtVector DruckerPrager_PF<AlphaHardeningType , KHardeningType >::result(3, 3, 0.0);
 // template<typename AlphaHardeningType, typename KHardeningType>
-// DTensor4 DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dsigma(3, 3, 3, 3, 0.0);
+// VoigtMatrix DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dsigma(3, 3, 3, 3, 0.0);
 // template<typename AlphaHardeningType, typename KHardeningType>
-// DTensor4 DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dalpha(3, 3, 3, 3, 0.0);
+// VoigtMatrix DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dalpha(3, 3, 3, 3, 0.0);
 
 #endif
 
@@ -268,17 +268,17 @@ DTensor2 DruckerPrager_PF<AlphaHardeningType , KHardeningType >::result(3, 3, 0.
 // should be removed later
 // ============================
 
-// DTensor4 const& dm_over_dalpha(DTensor2 const& sigma){
-//     static DTensor2 s(3, 3, 0.0);
-//     const DTensor2 &alpha = alpha_.getVariableConstReference();
+// VoigtMatrix const& dm_over_dalpha(VoigtVector const& sigma){
+//     static VoigtVector s(3, 3, 0.0);
+//     const VoigtVector &alpha = alpha_.getVariableConstReference();
 //     // const double &k = k_.getVariableConstReference();
 //     double p=0.0;
 //     sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
 //     p=-p;
-//     static DTensor2 s_minus_palpha(3,3,0.0);
+//     static VoigtVector s_minus_palpha(3,3,0.0);
 //     s_minus_palpha(i,j) = s(i,j) - p*alpha(i,j);
 //     double s_minus_p_alpha_square = s_minus_palpha(i,j) * s_minus_palpha(i,j) ;
-//     static DTensor4 dm__dalpha(3,3,3,3,0.0);
+//     static VoigtMatrix dm__dalpha(3,3,3,3,0.0);
 //     dm__dalpha*=0;
 //     for (int ig = 0; ig < 3; ++ig)
 //         for (int mg = 0; mg < 3; ++mg)

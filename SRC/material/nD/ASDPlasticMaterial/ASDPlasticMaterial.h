@@ -93,7 +93,7 @@ C++ "Rule of 5"
 
 // using namespace std;
 
-// void printTensor(std::string const& name, DTensor2 const& v)
+// void printTensor(std::string const& name, VoigtVector const& v)
 // {
 
 //     // All 9 elements in one line.
@@ -116,7 +116,7 @@ C++ "Rule of 5"
 //     fprintf(stderr, " %16.8f \t %16.8f \t %16.8f] \n",  v(2, 0), v(2, 1), v(2, 2));
 // }
 
-// void printTensor4(std::string const& name, DTensor4 const& v)
+// void printTensor4(std::string const& name, VoigtMatrix const& v)
 // {
 
 
@@ -136,13 +136,13 @@ C++ "Rule of 5"
 // // q = sqrt(3* J2)
 // // cos(3*theta) = 3/2 * sqrt(3) * J3 / J2^(3/2)
 // // ------------------------------------------------------------
-// std::tuple<double, double, double> getpqtheta(const DTensor2 &mystress)
+// std::tuple<double, double, double> getpqtheta(const VoigtVector &mystress)
 // {
 //     // ------------------------------------------------------------
 //     // preliminary
 //     const double I1 = mystress(0, 0) + mystress(1, 1) + mystress(2, 2);
 //     const double sigma_m = I1 / 3.0;
-//     DTensor2 s = mystress;
+//     VoigtVector s = mystress;
 //     s(0, 0) -= sigma_m;
 //     s(1, 1) -= sigma_m;
 //     s(2, 2) -= sigma_m;
@@ -170,12 +170,12 @@ C++ "Rule of 5"
 //     // return result;
 // }
 
-// bool inverse4thTensor(DTensor4 const& rhs, DTensor4& ret)
+// bool inverse4thTensor(VoigtMatrix const& rhs, VoigtMatrix& ret)
 // {
 //     using namespace ASDPlasticMaterialGlobals;
-//     static DTensor2 intermediate_matrix(9, 9, 0.0);
+//     static VoigtVector intermediate_matrix(9, 9, 0.0);
 //     intermediate_matrix *= 0;
-//     // static DTensor4 ret(3,3,3,3,0.0);
+//     // static VoigtMatrix ret(3,3,3,3,0.0);
 //     int m41 = 0,  m42 = 0;
 //     // (1). convert 4th order Tensor to matrix
 //     for ( int c44 = 1 ; c44 <= 3 ; c44++ )
@@ -201,7 +201,7 @@ C++ "Rule of 5"
 //     }
 //     else
 //     {
-//         static DTensor2 inv_matrix(3, 3, 0.0);
+//         static VoigtVector inv_matrix(3, 3, 0.0);
 //         inv_matrix = intermediate_matrix.Inv();
 //         // (3). convert Matrix to 4th order tensor
 //         for ( int c44 = 1 ; c44 <= 3 ; c44++ )
@@ -360,10 +360,10 @@ public:
     // This function then computes the incremental strain (subtracting from the committed one)
     // and sets the increment.
     // Returns a success flag from the call to setTrialStrainIncr
-    int setTrialStrain( const DTensor2 &v )
+    int setTrialStrain( const VoigtVector &v )
     {
         using namespace ASDPlasticMaterialGlobals;
-        static DTensor2 result( 3, 3, 0.0 );
+        static VoigtVector result( 3, 3, 0.0 );
         result *= 0;
 
         TrialStrain(i, j) = v(i, j);
@@ -374,7 +374,7 @@ public:
 
     // Directly sets the trial strain increment and does an explicit or implicit step.
     // Returns a flag depending on the result of the step.
-    int setTrialStrainIncr( const DTensor2 &strain_increment )
+    int setTrialStrainIncr( const VoigtVector &strain_increment )
     {
         using namespace ASDPlasticMaterialGlobals;
 
@@ -449,13 +449,13 @@ public:
 //  Getters
 //==================================================================================================
 
-    const DTensor4 &getTangentTensor( void )
+    const VoigtMatrix &getTangentTensor( void )
     {
         using namespace ASDPlasticMaterialGlobals;
 
         // double yf_val = yf(TrialStress);
 
-        // DTensor4& Eelastic = et(TrialStress);
+        // VoigtMatrix& Eelastic = et(TrialStress);
 
 
         // if (yf_val <= 0.0)
@@ -464,8 +464,8 @@ public:
         // }
         // else
         // {
-        //     const DTensor2& n = yf.df_dsigma_ij(intersection_stress);
-        //     const DTensor2& m = pf(depsilon_elpl, intersection_stress);
+        //     const VoigtVector& n = yf.df_dsigma_ij(intersection_stress);
+        //     const VoigtVector& m = pf(depsilon_elpl, intersection_stress);
 
         //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, depsilon_elpl,  intersection_stress);
         //     double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
@@ -476,7 +476,7 @@ public:
 
         if (first_step)
         {
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
             first_step = false;
         }
@@ -484,32 +484,32 @@ public:
         return Stiffness;
     }
 
-    const DTensor2 &getStressTensor( void )
+    const VoigtVector &getStressTensor( void )
     {
         return TrialStress;
     }
 
-    const DTensor2 &getStrainTensor( void )
+    const VoigtVector &getStrainTensor( void )
     {
         return TrialStrain;
     }
 
-    const DTensor2 &getPlasticStrainTensor( void )
+    const VoigtVector &getPlasticStrainTensor( void )
     {
         return TrialPlastic_Strain;
     }
 
-    const DTensor2  &getCommittedStressTensor(void)
+    const VoigtVector  &getCommittedStressTensor(void)
     {
         return CommitStress;
     }
 
-    const DTensor2 &getCommittedStrainTensor(void)
+    const VoigtVector &getCommittedStrainTensor(void)
     {
         return CommitStrain;
     }
 
-    const DTensor2 &getCommittedPlasticStrainTensor(void)
+    const VoigtVector &getCommittedPlasticStrainTensor(void)
     {
         return CommitPlastic_Strain;
     }
@@ -590,37 +590,37 @@ public:
 
         // double rho;
         data(pos++) = rho;
-        // DTensor2 TrialStrain;
+        // VoigtVector TrialStrain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 data(pos++) = TrialStrain(i, j);
             }
-        // DTensor2 TrialStress;
+        // VoigtVector TrialStress;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 data(pos++) = TrialStress(i, j);
             }
-        // DTensor2 TrialPlastic_Strain;
+        // VoigtVector TrialPlastic_Strain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 data(pos++) = TrialPlastic_Strain(i, j);
             }
-        // DTensor2 CommitStress;
+        // VoigtVector CommitStress;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 data(pos++) = CommitStress(i, j);
             }
-        // DTensor2 CommitStrain;
+        // VoigtVector CommitStrain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 data(pos++) = CommitStrain(i, j);
             }
-        // DTensor2 CommitPlastic_Strain;
+        // VoigtVector CommitPlastic_Strain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
@@ -674,37 +674,37 @@ public:
         int pos = 0;
         // double rho;
         rho = data(pos++);
-        // DTensor2 TrialStrain;
+        // VoigtVector TrialStrain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 TrialStrain(i, j) = data(pos++);
             }
-        // DTensor2 TrialStress;
+        // VoigtVector TrialStress;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 TrialStress(i, j) = data(pos++);
             }
-        // DTensor2 TrialPlastic_Strain;
+        // VoigtVector TrialPlastic_Strain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 TrialPlastic_Strain(i, j) = data(pos++);
             }
-        // DTensor2 CommitStress;
+        // VoigtVector CommitStress;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 CommitStress(i, j) = data(pos++);
             }
-        // DTensor2 CommitStrain;
+        // VoigtVector CommitStrain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
                 CommitStrain(i, j) = data(pos++);
             }
-        // DTensor2 CommitPlastic_Strain;
+        // VoigtVector CommitPlastic_Strain;
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
             {
@@ -738,12 +738,12 @@ public:
     void Print(ostream &s, int flag = 0)
     {
         using namespace ASDPlasticMaterialGlobals;
-        static DTensor2 zeroTensor(3, 3, 0);
+        static VoigtVector zeroTensor(3, 3, 0);
         s << "TrialStress =  " <<  TrialStress << endl;
         s << "CommitStress = " <<  CommitStress << endl;
         s << "yf  = " << yf(CommitStress) << endl;
-        const DTensor2& n = yf.df_dsigma_ij(CommitStress);
-        const DTensor2& m = pf(zeroTensor, CommitStress);
+        const VoigtVector& n = yf.df_dsigma_ij(CommitStress);
+        const VoigtVector& m = pf(zeroTensor, CommitStress);
         s << "n = " <<  n  << endl;
         s << "m = " <<  m  << endl;
         s << "xi_star_h_star  = " << yf.xi_star_h_star(zeroTensor, m, CommitStress) << endl;
@@ -753,7 +753,7 @@ public:
     {
         int size = 0;
 
-        // 6 3x3 DTensor2s and 1 DTensor4 (3x3x3x3)
+        // 6 3x3 VoigtVectors and 1 VoigtMatrix (3x3x3x3)
         size += (3 * 3 * 6 + 3 * 3 * 3 * 3) * sizeof(double);
 
         //Four pointers
@@ -771,7 +771,7 @@ public:
         return size;
     }
 
-    void setTrialStress(const DTensor2& stress)
+    void setTrialStress(const VoigtVector& stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         TrialStress(i, j) = stress(i, j);
@@ -779,38 +779,38 @@ public:
 
 protected:
 
-    void setTrialPlastic_Strain(const DTensor2& strain)
+    void setTrialPlastic_Strain(const VoigtVector& strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         TrialPlastic_Strain(i, j) = strain(i, j);
     }
 
-    void setCommitStress(const DTensor2& stress)
+    void setCommitStress(const VoigtVector& stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStress(i, j) = stress(i, j);
     }
 
-    void setCommitStrain(const DTensor2& strain)
+    void setCommitStrain(const VoigtVector& strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStrain(i, j) = strain(i, j);
     }
 
-    void setCommitPlastic_Strain(const DTensor2& strain)
+    void setCommitPlastic_Strain(const VoigtVector& strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitPlastic_Strain(i, j) = strain(i, j);
     }
 
-    void setStiffness(const DTensor4& stiff)
+    void setStiffness(const VoigtMatrix& stiff)
     {
         using namespace ASDPlasticMaterialGlobals;
         Stiffness = stiff;
     }
 
 
-    void setStressTensor(DTensor2 &stress)
+    void setStressTensor(VoigtVector &stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStress(i, j) = stress(i, j);
@@ -821,8 +821,8 @@ protected:
 private:
 
 
-    // int Forward_Euler(const DTensor2 &strain_incr, bool const& with`_return2yield_surface)
-    int Forward_Euler(const DTensor2 &strain_incr)
+    // int Forward_Euler(const VoigtVector &strain_incr, bool const& with`_return2yield_surface)
+    int Forward_Euler(const VoigtVector &strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
         // ----------------------------------------------------------------
@@ -842,12 +842,12 @@ private:
         // ----------------------------------------------------------------
 
         int errorcode = 0;
-        static DTensor2 depsilon(3, 3, 0);
+        static VoigtVector depsilon(3, 3, 0);
         depsilon *= 0;
         depsilon(i, j) = strain_incr(i, j);
 
-        const DTensor2& sigma = CommitStress;
-        const DTensor2& epsilon = CommitStrain;
+        const VoigtVector& sigma = CommitStress;
+        const VoigtVector& epsilon = CommitStrain;
 
         internal_variables.revert();
         internal_variables.commit_tmp();
@@ -856,7 +856,7 @@ private:
         intersection_stress *= 0;
         intersection_strain *= 0;
 
-        DTensor4& Eelastic = et(sigma);
+        VoigtMatrix& Eelastic = et(sigma);
         Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
         dsigma(i, j) = Eelastic(i, j, k, l) * depsilon(k, l);
@@ -868,14 +868,14 @@ private:
         double yf_val_start = yf(sigma);
         double yf_val_end = yf(TrialStress);
 
-        DTensor2& start_stress = CommitStress;
-        DTensor2& end_stress = TrialStress;
+        VoigtVector& start_stress = CommitStress;
+        VoigtVector& end_stress = TrialStress;
 
         intersection_stress(i, j) = start_stress(i, j);
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
         }
         else  //Plasticity
@@ -895,8 +895,8 @@ private:
             TrialStress(i, j)  += Eelastic(i, j, k, l) * depsilon_elpl(k, l);
 
             //Compute normal to YF (n) and Plastic Flow direction (m)
-            const DTensor2& n = yf.df_dsigma_ij(intersection_stress);
-            const DTensor2& m = pf(depsilon_elpl, intersection_stress);
+            const VoigtVector& n = yf.df_dsigma_ij(intersection_stress);
+            const VoigtVector& m = pf(depsilon_elpl, intersection_stress);
 
             double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress);
             double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
@@ -936,7 +936,7 @@ private:
             // DruckerPrager requries this part.
             if (yf.hasCorner() && yf.in_Apex(TrialStress))
             {
-                static DTensor2 small_stress(3, 3, 0.0);
+                static VoigtVector small_stress(3, 3, 0.0);
                 small_stress *= 0;
                 // The small value 50*Pa refers to the lowest confinement test:
                 // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
@@ -948,9 +948,9 @@ private:
                 small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
                 small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
                 small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
-                static DTensor2 dstress(3, 3, 0.0);
+                static VoigtVector dstress(3, 3, 0.0);
                 dstress(i, j) = small_stress(i, j) - sigma(i, j);
-                static DTensor2 depsilon_Inv(3, 3, 0.0);
+                static VoigtVector depsilon_Inv(3, 3, 0.0);
                 depsilon_Inv = depsilon.Inv();
 
                 // Return results (member variables) :
@@ -978,8 +978,8 @@ private:
             //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
             //     // Make surface the internal variables are already updated. And then, return to the yield surface.
             //     double yf_val_after_corrector = yf(TrialStress);
-            //     const DTensor2& n_after_corrector = yf.df_dsigma_ij(TrialStress);
-            //     const DTensor2& m_after_corrector = pf(depsilon_elpl, TrialStress);
+            //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
+            //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
             //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
             //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
             //     double dLambda_after_corrector = yf_val_after_corrector / (
@@ -1023,18 +1023,18 @@ private:
 
 
 
-    // int Forward_Euler_Subincrement(const DTensor2 &strain_incr, bool const& with_return2yield_surface)
-    int Forward_Euler_Subincrement(const DTensor2 &strain_incr)
+    // int Forward_Euler_Subincrement(const VoigtVector &strain_incr, bool const& with_return2yield_surface)
+    int Forward_Euler_Subincrement(const VoigtVector &strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
-        static DTensor2 depsilon(3, 3, 0);
+        static VoigtVector depsilon(3, 3, 0);
         depsilon *= 0;
         depsilon(i, j) = strain_incr(i, j);
 
-        const DTensor2& sigma = CommitStress;
-        const DTensor2& epsilon = CommitStrain;
+        const VoigtVector& sigma = CommitStress;
+        const VoigtVector& epsilon = CommitStrain;
         internal_variables.revert();
         internal_variables.commit_tmp();
 
@@ -1042,7 +1042,7 @@ private:
         intersection_stress *= 0;
         intersection_strain *= 0;
 
-        DTensor4& Eelastic = et(sigma);
+        VoigtMatrix& Eelastic = et(sigma);
         Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
         dsigma(i, j) += Eelastic(i, j, k, l) * depsilon(k, l);
@@ -1054,15 +1054,15 @@ private:
         double yf_val_start = yf(sigma);
         double yf_val_end = yf(TrialStress);
 
-        DTensor2& start_stress = CommitStress;
-        DTensor2& end_stress = TrialStress;
+        VoigtVector& start_stress = CommitStress;
+        VoigtVector& end_stress = TrialStress;
 
         intersection_stress(i, j) = start_stress(i, j);
 
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
         }
         else  //Plasticity
@@ -1081,7 +1081,7 @@ private:
 
 
             int Nsubsteps = this-> n_max_iterations;
-            static DTensor2 sub_depsilon_elpl(3, 3, 0);
+            static VoigtVector sub_depsilon_elpl(3, 3, 0);
 
             sub_depsilon_elpl *= 0;
             sub_depsilon_elpl(i, j) = depsilon_elpl(i, j) / Nsubsteps;
@@ -1099,8 +1099,8 @@ private:
 
                 //Compute normal to YF (n) and Plastic Flow direction (m) at the starting point.
                 // Now TrialStress is at the starting point.
-                const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m = pf(sub_depsilon_elpl, TrialStress);
+                const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m = pf(sub_depsilon_elpl, TrialStress);
 
                 double xi_star_h_star = yf.xi_star_h_star( sub_depsilon_elpl, m,  TrialStress);
                 double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
@@ -1123,13 +1123,13 @@ private:
                 TrialStress(i, j)  += Eelastic(i, j, k, l) * sub_depsilon_elpl(k, l) ;
 
 
-                static DTensor4 Stiffness_substep(3, 3, 3, 3, 0.0);
+                static VoigtMatrix Stiffness_substep(3, 3, 3, 3, 0.0);
                 Stiffness_substep *= 0;
                 // vonMises does NOT enter this part.
                 // DruckerPrager requries this part.
                 if (yf.hasCorner() && yf.in_Apex(TrialStress))
                 {
-                    static DTensor2 small_stress(3, 3, 0.0);
+                    static VoigtVector small_stress(3, 3, 0.0);
                     small_stress *= 0;
                     // The small value 50*Pa refers to the lowest confinement test:
                     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
@@ -1142,14 +1142,14 @@ private:
                     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
                     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
 
-                    static DTensor2 Predictor_Stress(3, 3, 0.0);
+                    static VoigtVector Predictor_Stress(3, 3, 0.0);
                     Predictor_Stress(i, j) = TrialStress(i, j);
                     // (1) Update the trial stress
                     TrialStress(i, j) = small_stress(i, j);
 
                     // (2) Update the trial plastic strain
-                    const DTensor2& n = yf.df_dsigma_ij(small_stress);
-                    const DTensor2& m = pf(depsilon, small_stress);
+                    const VoigtVector& n = yf.df_dsigma_ij(small_stress);
+                    const VoigtVector& m = pf(depsilon, small_stress);
                     const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  small_stress);
                     double denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
                     double dLambda = yf(Predictor_Stress) / denominator;
@@ -1160,9 +1160,9 @@ private:
                     internal_variables.commit_tmp();
 
                     // (4) Update the stiffness
-                    static DTensor2 dstress(3, 3, 0.0);
+                    static VoigtVector dstress(3, 3, 0.0);
                     dstress(i, j) = small_stress(i, j) - sigma(i, j);
-                    static DTensor2 depsilon_Inv(3, 3, 0.0);
+                    static VoigtVector depsilon_Inv(3, 3, 0.0);
                     depsilon_Inv = depsilon.Inv();
                     Stiffness_substep(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
 
@@ -1200,8 +1200,8 @@ private:
                 //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
                 //     // Make surface the internal variables are already updated. And then, return to the yield surface.
                 //     double yf_val_after_corrector = yf(TrialStress);
-                //     const DTensor2& n_after_corrector = yf.df_dsigma_ij(TrialStress);
-                //     const DTensor2& m_after_corrector = pf(depsilon_elpl, TrialStress);
+                //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
+                //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
                 //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
                 //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
                 //     double dLambda_after_corrector = yf_val_after_corrector / (
@@ -1242,7 +1242,7 @@ private:
         return errorcode;
     }
 
-    int Backward_Euler(const DTensor2 &strain_incr, bool debugrun = false, int NSteps = 1)
+    int Backward_Euler(const VoigtVector &strain_incr, bool debugrun = false, int NSteps = 1)
     {
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
@@ -1258,9 +1258,9 @@ private:
         // // =====Sub-increments =====END
         internal_variables.revert();
         internal_variables.commit_tmp();
-        static DTensor2 depsilon(3, 3, 0);
-        static DTensor2 PredictorStress(3, 3, 0);
-        const DTensor2& sigma = CommitStress;
+        static VoigtVector depsilon(3, 3, 0);
+        static VoigtVector PredictorStress(3, 3, 0);
+        const VoigtVector& sigma = CommitStress;
         depsilon(i, j) = strain_incr(i, j) / NSteps;
         TrialStress(i, j) = sigma(i, j);
         TrialStrain(i, j) = CommitStrain(i, j) + depsilon(i, j);
@@ -1269,7 +1269,7 @@ private:
         // Uncomment next line to enable the subincrement in Backward_Euler.
         // for (int step = 0; step < NSteps; step++)
         {
-            DTensor4& Eelastic = et(sigma);
+            VoigtMatrix& Eelastic = et(sigma);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
             dsigma(i, j) = Eelastic(i, j, k, l) * depsilon(k, l);
@@ -1290,13 +1290,13 @@ private:
 
             if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
             {
-                DTensor4& Eelastic = et(TrialStress);
+                VoigtMatrix& Eelastic = et(TrialStress);
                 Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
             }
             else  //Plasticity
             {
-                static DTensor2 ResidualStress(3, 3, 0);
-                static DTensor2 TrialStress_prev(3, 3, 0);
+                static VoigtVector ResidualStress(3, 3, 0);
+                static VoigtVector TrialStress_prev(3, 3, 0);
                 ResidualStress *= 0;
                 TrialStress_prev *= 0;
                 double normResidualStress = -1;
@@ -1312,7 +1312,7 @@ private:
                 // DruckerPrager requries this part.
                 if (yf.hasCorner() && yf.in_Apex(PredictorStress))
                 {
-                    static DTensor2 small_stress(3, 3, 0.0);
+                    static VoigtVector small_stress(3, 3, 0.0);
                     small_stress *= 0;
                     // The small value 50*Pa refers to the lowest confinement test:
                     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
@@ -1328,8 +1328,8 @@ private:
                     // (1) Update the trial stress
                     TrialStress(i, j) = small_stress(i, j);
                     // (2) Update the trial plastic strain
-                    const DTensor2& n = yf.df_dsigma_ij(small_stress);
-                    const DTensor2& m = pf(depsilon, small_stress);
+                    const VoigtVector& n = yf.df_dsigma_ij(small_stress);
+                    const VoigtVector& m = pf(depsilon, small_stress);
                     const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  small_stress);
                     double denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
                     double dLambda = yf_PredictorStress / denominator;
@@ -1346,28 +1346,28 @@ private:
                     // // Working on consistent stiffness
                     // // ===================================================================
                     // // Construct the Tensor T
-                    static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+                    static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
                     IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                    static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                    static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                     dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                    static DTensor4 Ts(3, 3, 3, 3, 0.0);
+                    static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
                     Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
                     // // ===================================================================
                     // // Construct the Tensor H
-                    static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                    static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                     dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, m, TrialStress);
-                    static DTensor2 H(3, 3, 0.0);
+                    static VoigtVector H(3, 3, 0.0);
                     H(k, l) = m(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-                    static DTensor4 invT(3, 3, 3, 3, 0.0);
+                    static VoigtMatrix invT(3, 3, 3, 3, 0.0);
                     // // If cannot inverse T, return directly with the inconsistent stiffness tensor.
                     if ( !inverse4thTensor(Ts, invT) )
                     {
                         return 0;
                     }
-                    static DTensor4 R(3, 3, 3, 3, 0.0);
+                    static VoigtMatrix R(3, 3, 3, 3, 0.0);
                     R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
                     // // ===================================================================
@@ -1395,8 +1395,8 @@ private:
                     // PredictorStress and the initial committed internal variables.
                     internal_variables.revert_tmp();
 
-                    const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-                    const DTensor2& m = pf(depsilon, TrialStress);
+                    const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+                    const VoigtVector& m = pf(depsilon, TrialStress);
                     double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  TrialStress);
                     denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
 
@@ -1497,8 +1497,8 @@ private:
                 } // while for el-pl this step
 
                 //Update the trial plastic strain.
-                const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m = pf(depsilon, TrialStress);
+                const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m = pf(depsilon, TrialStress);
                 const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  TrialStress);
 
                 denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
@@ -1511,34 +1511,34 @@ private:
                 // Working on consistent stiffness
                 // ===================================================================
                 // Update the m and n:
-                static DTensor2 nf(3, 3, 0.0);
+                static VoigtVector nf(3, 3, 0.0);
                 nf = yf.df_dsigma_ij(TrialStress);
-                static DTensor2 mf(3, 3, 0.0);
+                static VoigtVector mf(3, 3, 0.0);
                 mf = pf(depsilon, TrialStress);
                 // Construct the Tensor T
-                static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+                static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
                 IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                 dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                static DTensor4 Ts(3, 3, 3, 3, 0.0);
+                static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
                 Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
                 // ===================================================================
                 // Construct the Tensor H
-                static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                 dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, mf, TrialStress);
-                static DTensor2 H(3, 3, 0.0);
+                static VoigtVector H(3, 3, 0.0);
                 H(k, l) = mf(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-                static DTensor4 invT(3, 3, 3, 3, 0.0);
+                static VoigtMatrix invT(3, 3, 3, 3, 0.0);
                 // If cannot inverse T, return directly.
                 // So "Stiffness" is the inconsistent stiffness tensor.
                 if ( !inverse4thTensor(Ts, invT) )
                 {
                     return 0;
                 }
-                static DTensor4 R(3, 3, 3, 3, 0.0);
+                static VoigtMatrix R(3, 3, 3, 3, 0.0);
                 R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
                 // ===================================================================
@@ -1559,22 +1559,22 @@ private:
         return errorcode;
     }
 
-    int Backward_Euler_ddlambda(const DTensor2 &strain_incr, bool debugrun = false)
+    int Backward_Euler_ddlambda(const VoigtVector &strain_incr, bool debugrun = false)
     {
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
         internal_variables.revert();
         internal_variables.commit_tmp();
-        static DTensor2 depsilon(3, 3, 0);
-        static DTensor2 PredictorStress(3, 3, 0);
-        const DTensor2& sigma = CommitStress;
+        static VoigtVector depsilon(3, 3, 0);
+        static VoigtVector PredictorStress(3, 3, 0);
+        const VoigtVector& sigma = CommitStress;
         depsilon(i, j) = strain_incr(i, j) ;
         TrialStress(i, j) = sigma(i, j);
         TrialStrain(i, j) = CommitStrain(i, j) + depsilon(i, j);
         TrialPlastic_Strain(i, j) = CommitPlastic_Strain(i, j);
 
-        DTensor4& Eelastic = et(sigma);
+        VoigtMatrix& Eelastic = et(sigma);
         Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
         dsigma(i, j) = Eelastic(i, j, k, l) * depsilon(k, l);
@@ -1595,13 +1595,13 @@ private:
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
         }
         else  //Plasticity
         {
-            static DTensor2 ResidualStress(3, 3, 0);
-            static DTensor2 TrialStress_prev(3, 3, 0);
+            static VoigtVector ResidualStress(3, 3, 0);
+            static VoigtVector TrialStress_prev(3, 3, 0);
             ResidualStress *= 0;
             TrialStress_prev *= 0;
             double normResidualStress = -1;
@@ -1616,7 +1616,7 @@ private:
             // DruckerPrager requries this part.
             if (yf.hasCorner() && yf.in_Apex(PredictorStress))
             {
-                static DTensor2 small_stress(3, 3, 0.0);
+                static VoigtVector small_stress(3, 3, 0.0);
                 small_stress *= 0;
                 // The small value 50*Pa refers to the lowest confinement test:
                 // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
@@ -1632,8 +1632,8 @@ private:
                 // (1) Update the trial stress
                 TrialStress(i, j) = small_stress(i, j);
                 // (2) Update the trial plastic strain
-                const DTensor2& n = yf.df_dsigma_ij(small_stress);
-                const DTensor2& m = pf(depsilon, small_stress);
+                const VoigtVector& n = yf.df_dsigma_ij(small_stress);
+                const VoigtVector& m = pf(depsilon, small_stress);
                 const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  small_stress);
                 double denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
                 double dLambda = yf_PredictorStress / denominator;
@@ -1648,27 +1648,27 @@ private:
                 // // Working on consistent stiffness
                 // // ========================================================
                 // // Construct the Tensor T
-                static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+                static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
                 IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                 dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                static DTensor4 Ts(3, 3, 3, 3, 0.0);
+                static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
                 Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
                 // // Construct the Tensor H
-                static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                 dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, m, TrialStress);
-                static DTensor2 H(3, 3, 0.0);
+                static VoigtVector H(3, 3, 0.0);
                 H(k, l) = m(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-                static DTensor4 invT(3, 3, 3, 3, 0.0);
+                static VoigtMatrix invT(3, 3, 3, 3, 0.0);
                 // // If cannot inverse T, return directly with the inconsistent stiffness tensor.
                 if ( !inverse4thTensor(Ts, invT) )
                 {
                     return 0;
                 }
-                static DTensor4 R(3, 3, 3, 3, 0.0);
+                static VoigtMatrix R(3, 3, 3, 3, 0.0);
                 R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
                 // // =======================================================
@@ -1695,8 +1695,8 @@ private:
                 iteration_count++;
                 internal_variables.revert_tmp();
 
-                const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m = pf(depsilon, TrialStress);
+                const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m = pf(depsilon, TrialStress);
                 double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  TrialStress);
                 denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
                 if (abs(denominator) < MACHINE_EPSILON)
@@ -1735,42 +1735,42 @@ private:
                 // Works to calculate the ddlambda
                 // ==========================================
                 // Update the m and n:
-                static DTensor2 n_new(3, 3, 0.0);
+                static VoigtVector n_new(3, 3, 0.0);
                 n_new = yf.df_dsigma_ij(TrialStress);
-                static DTensor2 m_new(3, 3, 0.0);
+                static VoigtVector m_new(3, 3, 0.0);
                 m_new = pf(depsilon, TrialStress);
                 // Construct the Tensor T
-                static DTensor4 IdentityTensor4(3, 3, 3, 3, 0.0);
+                static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0.0);
                 IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                 dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                static DTensor4 T_new(3, 3, 3, 3, 0.0);
+                static VoigtMatrix T_new(3, 3, 3, 3, 0.0);
                 T_new(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
-                static DTensor4 invTnew(3, 3, 3, 3, 0.0);
+                static VoigtMatrix invTnew(3, 3, 3, 3, 0.0);
                 if ( !inverse4thTensor(T_new, invTnew) )
                 {
                     // cout<<"Singularity. Cannot inverse tensor T! "<<endl;
                     return 0;
                 }
 
-                static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                 dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, m_new, TrialStress);
-                static DTensor2 H_new(3, 3, 0.0);
+                static VoigtVector H_new(3, 3, 0.0);
                 H_new(k, l) = m_new(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
                 double const& xi_star_h_star_new = yf.xi_star_h_star( depsilon, m_new,  TrialStress);
 
                 double denomina_ddlambda = 0.0;
-                static DTensor2 E_times_H (3, 3, 0.0);
+                static VoigtVector E_times_H (3, 3, 0.0);
                 Eelastic = et(TrialStress);
                 E_times_H(i, j) = Eelastic(i, j, k, l) * H_new(k, l);
                 denomina_ddlambda = n_new(r, s) * (E_times_H(p, q) * invTnew(p, q, r, s)) - xi_star_h_star_new ;
                 double numerator_ddlambda = 0.0;
                 numerator_ddlambda = yf(TrialStress) - n_new(r, s) * (ResidualStress(i, j) * invTnew(i, j, r, s)) ;
                 double ddlambda =   numerator_ddlambda / denomina_ddlambda ;
-                static DTensor2 dSigma_(3, 3, 0.0);
+                static VoigtVector dSigma_(3, 3, 0.0);
                 dSigma_(r, s) = -
                                 (
                                     ResidualStress(i, j) + ddlambda * Eelastic(i, j, p, q) * H_new(p, q)
@@ -1865,8 +1865,8 @@ private:
             // ===============================================
             // Inconsistent stiffness
             //Update the trial plastic strain. and internal variables
-            const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-            const DTensor2& m = pf(depsilon, TrialStress);
+            const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+            const VoigtVector& m = pf(depsilon, TrialStress);
             const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  TrialStress);
 
             denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
@@ -1878,33 +1878,33 @@ private:
             // Working on consistent stiffness
             // ===================================================================
             // Update the m and n:
-            static DTensor2 nf(3, 3, 0.0);
+            static VoigtVector nf(3, 3, 0.0);
             nf = yf.df_dsigma_ij(TrialStress);
-            static DTensor2 mf(3, 3, 0.0);
+            static VoigtVector mf(3, 3, 0.0);
             mf = pf(depsilon, TrialStress);
             // Construct the Tensor T
-            static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+            static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
             IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-            static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+            static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
             dm_dsigma = pf.dm_over_dsigma(TrialStress);
-            static DTensor4 Ts(3, 3, 3, 3, 0.0);
+            static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
             Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
             // Construct the Tensor H
-            static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+            static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
             dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, mf, TrialStress);
-            static DTensor2 H(3, 3, 0.0);
+            static VoigtVector H(3, 3, 0.0);
             H(k, l) = mf(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-            static DTensor4 invT(3, 3, 3, 3, 0.0);
+            static VoigtMatrix invT(3, 3, 3, 3, 0.0);
             // If cannot inverse T, return directly.
             // So "Stiffness" is the inconsistent stiffness tensor.
             if ( !inverse4thTensor(Ts, invT) )
             {
                 return 0;
             }
-            static DTensor4 R(3, 3, 3, 3, 0.0);
+            static VoigtMatrix R(3, 3, 3, 3, 0.0);
             R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
             // ===================================================================
@@ -1924,22 +1924,22 @@ private:
     }
 
 
-    int Backward_Euler_ddlambda_Subincrement(const DTensor2 &strain_incr, bool debugrun = false)
+    int Backward_Euler_ddlambda_Subincrement(const VoigtVector &strain_incr, bool debugrun = false)
     {
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = 0;
 
         internal_variables.revert();
         internal_variables.commit_tmp();
-        static DTensor2 depsilon(3, 3, 0);
-        static DTensor2 PredictorStress(3, 3, 0);
-        const DTensor2& sigma = CommitStress;
+        static VoigtVector depsilon(3, 3, 0);
+        static VoigtVector PredictorStress(3, 3, 0);
+        const VoigtVector& sigma = CommitStress;
         depsilon(i, j) = strain_incr(i, j) ;
         TrialStress(i, j) = sigma(i, j);
         TrialStrain(i, j) = CommitStrain(i, j) + depsilon(i, j);
         TrialPlastic_Strain(i, j) = CommitPlastic_Strain(i, j);
 
-        DTensor4& Eelastic = et(sigma);
+        VoigtMatrix& Eelastic = et(sigma);
         Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
         dsigma(i, j) = Eelastic(i, j, k, l) * depsilon(k, l);
@@ -1960,13 +1960,13 @@ private:
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
         }
         else  //Plasticity
         {
-            static DTensor2 ResidualStress(3, 3, 0);
-            static DTensor2 TrialStress_prev(3, 3, 0);
+            static VoigtVector ResidualStress(3, 3, 0);
+            static VoigtVector TrialStress_prev(3, 3, 0);
             ResidualStress *= 0;
             TrialStress_prev *= 0;
             double normResidualStress = -1;
@@ -1981,7 +1981,7 @@ private:
             // DruckerPrager requries this part.
             if (yf.hasCorner() && yf.in_Apex(PredictorStress))
             {
-                static DTensor2 small_stress(3, 3, 0.0);
+                static VoigtVector small_stress(3, 3, 0.0);
                 small_stress *= 0;
                 // The small value 50*Pa refers to the lowest confinement test:
                 // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
@@ -1997,8 +1997,8 @@ private:
                 // (1) Update the trial stress
                 TrialStress(i, j) = small_stress(i, j);
                 // (2) Update the trial plastic strain
-                const DTensor2& n = yf.df_dsigma_ij(small_stress);
-                const DTensor2& m = pf(depsilon, small_stress);
+                const VoigtVector& n = yf.df_dsigma_ij(small_stress);
+                const VoigtVector& m = pf(depsilon, small_stress);
                 const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  small_stress);
                 double denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
                 double dLambda = yf_PredictorStress / denominator;
@@ -2013,27 +2013,27 @@ private:
                 // // Working on consistent stiffness
                 // // ========================================================
                 // // Construct the Tensor T
-                static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+                static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
                 IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                 dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                static DTensor4 Ts(3, 3, 3, 3, 0.0);
+                static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
                 Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
                 // // Construct the Tensor H
-                static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                 dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, m, TrialStress);
-                static DTensor2 H(3, 3, 0.0);
+                static VoigtVector H(3, 3, 0.0);
                 H(k, l) = m(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-                static DTensor4 invT(3, 3, 3, 3, 0.0);
+                static VoigtMatrix invT(3, 3, 3, 3, 0.0);
                 // // If cannot inverse T, return directly with the inconsistent stiffness tensor.
                 if ( !inverse4thTensor(Ts, invT) )
                 {
                     return 0;
                 }
-                static DTensor4 R(3, 3, 3, 3, 0.0);
+                static VoigtMatrix R(3, 3, 3, 3, 0.0);
                 R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
                 // // =======================================================
@@ -2054,8 +2054,8 @@ private:
             // From the start point(elastic predictor) to the first plastic corrector.
             // ==================================================================
             yf_PredictorStress = yf(PredictorStress);
-            const DTensor2& n = yf.df_dsigma_ij(PredictorStress);
-            const DTensor2& m = pf(depsilon, PredictorStress);
+            const VoigtVector& n = yf.df_dsigma_ij(PredictorStress);
+            const VoigtVector& m = pf(depsilon, PredictorStress);
             double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  PredictorStress);
             denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
 
@@ -2096,35 +2096,35 @@ private:
                 // Works to calculate the ddlambda
                 // ==========================================
                 // Update the m and n:
-                static DTensor2 n_new(3, 3, 0.0);
+                static VoigtVector n_new(3, 3, 0.0);
                 n_new = yf.df_dsigma_ij(TrialStress);
-                static DTensor2 m_new(3, 3, 0.0);
+                static VoigtVector m_new(3, 3, 0.0);
                 m_new = pf(depsilon, TrialStress);
                 // Construct the Tensor T
-                static DTensor4 IdentityTensor4(3, 3, 3, 3, 0.0);
+                static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0.0);
                 IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-                static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+                static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
                 dm_dsigma = pf.dm_over_dsigma(TrialStress);
-                static DTensor4 T_new(3, 3, 3, 3, 0.0);
+                static VoigtMatrix T_new(3, 3, 3, 3, 0.0);
                 T_new(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
-                static DTensor4 invTnew(3, 3, 3, 3, 0.0);
+                static VoigtMatrix invTnew(3, 3, 3, 3, 0.0);
                 if ( !inverse4thTensor(T_new, invTnew) )
                 {
                     // cout<<"Singularity. Cannot inverse tensor T! "<<endl;
                     return 0;
                 }
 
-                static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+                static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
                 dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, m_new, TrialStress);
-                static DTensor2 H_new(3, 3, 0.0);
+                static VoigtVector H_new(3, 3, 0.0);
                 H_new(k, l) = m_new(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
                 double const& xi_star_h_star_new = yf.xi_star_h_star( depsilon, m_new,  TrialStress);
 
                 double denomina_ddlambda = 0.0;
-                static DTensor2 E_times_H (3, 3, 0.0);
+                static VoigtVector E_times_H (3, 3, 0.0);
                 Eelastic = et(TrialStress);
                 E_times_H(i, j) = Eelastic(i, j, k, l) * H_new(k, l);
                 denomina_ddlambda = n_new(r, s) * (E_times_H(p, q) * invTnew(p, q, r, s)) - xi_star_h_star_new ;
@@ -2132,7 +2132,7 @@ private:
                 numerator_ddlambda = yf(TrialStress) - n_new(r, s) * (ResidualStress(i, j) * invTnew(i, j, r, s)) ;
                 double ddlambda =   numerator_ddlambda / denomina_ddlambda ;
 
-                static DTensor2 dSigma_(3, 3, 0.0);
+                static VoigtVector dSigma_(3, 3, 0.0);
                 dSigma_(r, s) = -
                                 (
                                     ResidualStress(i, j) + ddlambda * Eelastic(i, j, p, q) * H_new(p, q)
@@ -2227,8 +2227,8 @@ private:
             // ===============================================
             // Inconsistent stiffness
             //Update the trial plastic strain. and internal variables
-            const DTensor2& n_ = yf.df_dsigma_ij(TrialStress);
-            const DTensor2& m_ = pf(depsilon, TrialStress);
+            const VoigtVector& n_ = yf.df_dsigma_ij(TrialStress);
+            const VoigtVector& m_ = pf(depsilon, TrialStress);
             const double xi_star_h_star_ = yf.xi_star_h_star( depsilon, m_,  TrialStress);
 
             denominator = n_(p, q) * Eelastic(p, q, r, s) * m_(r, s) - xi_star_h_star_;
@@ -2239,33 +2239,33 @@ private:
             // Working on consistent stiffness
             // ===================================================================
             // Update the m and n:
-            static DTensor2 nf(3, 3, 0.0);
+            static VoigtVector nf(3, 3, 0.0);
             nf = yf.df_dsigma_ij(TrialStress);
-            static DTensor2 mf(3, 3, 0.0);
+            static VoigtVector mf(3, 3, 0.0);
             mf = pf(depsilon, TrialStress);
             // Construct the Tensor T
-            static DTensor4 IdentityTensor4(3, 3, 3, 3, 0);
+            static VoigtMatrix IdentityTensor4(3, 3, 3, 3, 0);
             IdentityTensor4(i, j, k, l) = kronecker_delta(i, j) * kronecker_delta(k, l);
 
-            static DTensor4 dm_dsigma(3, 3, 3, 3, 0.0);
+            static VoigtMatrix dm_dsigma(3, 3, 3, 3, 0.0);
             dm_dsigma = pf.dm_over_dsigma(TrialStress);
-            static DTensor4 Ts(3, 3, 3, 3, 0.0);
+            static VoigtMatrix Ts(3, 3, 3, 3, 0.0);
             Ts(i, j, k, l) = IdentityTensor4(i, k, j, l) + dLambda * Eelastic(i, j, p, q) * dm_dsigma(p, q, k, l);
 
             // Construct the Tensor H
-            static DTensor2 dm_dq_star_h_star(3, 3, 0.0);
+            static VoigtVector dm_dq_star_h_star(3, 3, 0.0);
             dm_dq_star_h_star = pf.dm_over_dq_start_h_star(depsilon, mf, TrialStress);
-            static DTensor2 H(3, 3, 0.0);
+            static VoigtVector H(3, 3, 0.0);
             H(k, l) = mf(k, l) + dLambda * dm_dq_star_h_star(k, l);
 
-            static DTensor4 invT(3, 3, 3, 3, 0.0);
+            static VoigtMatrix invT(3, 3, 3, 3, 0.0);
             // If cannot inverse T, return directly.
             // So "Stiffness" is the inconsistent stiffness tensor.
             if ( !inverse4thTensor(Ts, invT) )
             {
                 return 0;
             }
-            static DTensor4 R(3, 3, 3, 3, 0.0);
+            static VoigtMatrix R(3, 3, 3, 3, 0.0);
             R(p, q, r, s) = invT(k, l, p, q) * Eelastic(k, l, r, s);
 
             // ===================================================================
@@ -2286,16 +2286,16 @@ private:
 
 
     // The algorithm below Modified_Euler_Error_Control was implemented by Jose. 18Sep2016
-    int Modified_Euler_Error_Control(const DTensor2 &strain_incr)
+    int Modified_Euler_Error_Control(const VoigtVector &strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;  // Brings indexes i,j,k,l,m,n,p,q into current scope
 
         int errorcode = 0;
 
-        static DTensor2 depsilon(3, 3, 0);
-        static DTensor2 start_stress(3, 3, 0.0);
-        static DTensor2 end_stress(3, 3, 0.0);
-        // const DTensor2& sigma = CommitStress;
+        static VoigtVector depsilon(3, 3, 0);
+        static VoigtVector start_stress(3, 3, 0.0);
+        static VoigtVector end_stress(3, 3, 0.0);
+        // const VoigtVector& sigma = CommitStress;
 
         //Zero out static variables to ensure nothing is there.
         depsilon *= 0;
@@ -2314,7 +2314,7 @@ private:
         TrialPlastic_Strain(i, j) = CommitPlastic_Strain(i, j);
 
         //Compute elasticity for current (committed) stress level and assign stiffness to be this.
-        DTensor4& Eelastic = et(TrialStress);
+        VoigtMatrix& Eelastic = et(TrialStress);
         Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
 
         //Compute the elastic stress increment
@@ -2350,17 +2350,17 @@ private:
         {
             //For an elastic step, compute the elasticity at the incremented stress,
             //for use in next step.
-            DTensor4& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress);
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
         }
         else  //Plasticity
         {
             //Some temporary variables used herein
-            static DTensor2 sub_depsilon_elpl(3, 3, 0);
-            static DTensor2 dsigma1(3, 3, 0);
-            static DTensor2 dsigma2(3, 3, 0);
-            static DTensor2 sigma_error(3, 3, 0);
-            static DTensor2 m(3, 3, 0);
+            static VoigtVector sub_depsilon_elpl(3, 3, 0);
+            static VoigtVector dsigma1(3, 3, 0);
+            static VoigtVector dsigma2(3, 3, 0);
+            static VoigtVector sigma_error(3, 3, 0);
+            static VoigtVector m(3, 3, 0);
 
             sub_depsilon_elpl *= 0;
             dsigma1 *= 0;
@@ -2406,8 +2406,8 @@ private:
                 printTensor("  dsigma_elastic", dsigma1);
 
                 //Compute normal to YF (n) and Plastic Flow direction (m)
-                const DTensor2& n1 = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m1 = pf(sub_depsilon_elpl, TrialStress);
+                const VoigtVector& n1 = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m1 = pf(sub_depsilon_elpl, TrialStress);
                 printTensor("  n1", n1);
                 printTensor("  m1", m1);
 
@@ -2436,8 +2436,8 @@ private:
                 //Now evaluate everything at the new trial stress
                 Eelastic = et(TrialStress);
                 dsigma2(i, j)  = Eelastic(i, j, k, l) * sub_depsilon_elpl(k, l);
-                const DTensor2& n2 = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m2 = pf(sub_depsilon_elpl, TrialStress);
+                const VoigtVector& n2 = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m2 = pf(sub_depsilon_elpl, TrialStress);
                 double xi_star_h_star2 = yf.xi_star_h_star( sub_depsilon_elpl, m2,  TrialStress);
                 double den2 = n2(p, q) * Eelastic(p, q, r, s) * m2(r, s) - xi_star_h_star2;
                 if (den2 == 0)
@@ -2530,8 +2530,8 @@ private:
             while (yc > this-> f_relative_tol && ys_correction_count < this-> n_max_iterations)
             {
                 cout << "    +++ yf() = " << yc << endl;
-                const DTensor2& n = yf.df_dsigma_ij(TrialStress);
-                const DTensor2& m = pf(depsilon_elpl, TrialStress);
+                const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
+                const VoigtVector& m = pf(depsilon_elpl, TrialStress);
                 double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s);
                 double dLambda_correction = yc / den;
                 TrialStress(i, j) = TrialStress(i, j) - dLambda_correction * Eelastic(i, j, k, l) * m(k, l);
@@ -2544,8 +2544,8 @@ private:
 
             // Once done compute the stiffness for the next step
             Eelastic = et(TrialStress);
-            const DTensor2& nf = yf.df_dsigma_ij(TrialStress);
-            const DTensor2& mf = pf(depsilon_elpl, TrialStress);
+            const VoigtVector& nf = yf.df_dsigma_ij(TrialStress);
+            const VoigtVector& mf = pf(depsilon_elpl, TrialStress);
             double xi_star_h_star_f = yf.xi_star_h_star( depsilon_elpl, mf,  TrialStress);
             double denf = nf(p, q) * Eelastic(p, q, r, s) * mf(r, s) - xi_star_h_star_f;
             Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * mf(p, q)) * (nf(r, s) * Eelastic(r, s, k, l) ) / denf;
@@ -2584,7 +2584,7 @@ private:
     template <typename U = T>
     typename std::enable_if < !supports_pre_integration_callback<U>::value, int >::type
 // typename std::enable_if < !std::is_base_of<defines_pre_integration_callback, U>::value, int >::type
-    pre_integration_callback_(const DTensor2 &depsilon, const DTensor2 &dsigma,  const DTensor2 &TrialStress, const DTensor4 &Stiffness, double yf1, double yf2, bool & returns)
+    pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma,  const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
     {
         // cout << "pre_integration_callback_ disabled\n";
         returns = false;
@@ -2594,7 +2594,7 @@ private:
     template <typename U = T>
     typename std::enable_if<supports_pre_integration_callback<U>::value, int>::type
 // typename std::enable_if<std::is_base_of<defines_pre_integration_callback, U>::value, int>::type
-    pre_integration_callback_(const DTensor2 &depsilon, const DTensor2 &dsigma, const DTensor2 &TrialStress, const DTensor4 &Stiffness, double yf1, double yf2, bool & returns)
+    pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma, const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
     {
         // cout << "pre_integration_callback_ enabled\n";
         return static_cast<U*>(this)->pre_integration_callback(depsilon, dsigma, TrialStress, Stiffness,  yf1,  yf2, returns);
@@ -2603,8 +2603,8 @@ private:
 private:
 // Routine used by yield_surface_cross to find the stresstensor at cross point
 //================================================================================
-    double zbrentstress(const DTensor2& start_stress,
-                        const DTensor2& end_stress,
+    double zbrentstress(const VoigtVector& start_stress,
+                        const VoigtVector& end_stress,
                         double x1, double x2, double tol) const
     {
         using namespace ASDPlasticMaterialGlobals;
@@ -2629,8 +2629,8 @@ private:
         // double fa = func(start_stress, end_stress, *ptr_material_parameter, a);
         // double fb = func(start_stress, end_stress, *ptr_material_parameter, b);
 
-        static DTensor2 sigma_a(3, 3, 0.0);
-        static DTensor2 sigma_b(3, 3, 0.0);
+        static VoigtVector sigma_a(3, 3, 0.0);
+        static VoigtVector sigma_b(3, 3, 0.0);
 
         sigma_a(i, j) = start_stress(i, j) * (1 - a)  + end_stress(i, j) * a;
         sigma_b(i, j) = start_stress(i, j) * (1 - b)  + end_stress(i, j) * b;
@@ -2739,7 +2739,7 @@ private:
         return 0.0;
     }
 
-    double Max_abs_Component(DTensor2 const& matrix3by3)
+    double Max_abs_Component(VoigtVector const& matrix3by3)
     {
         double ret = 0.0;
         for (int i = 0; i < 3; ++i)
@@ -2755,13 +2755,13 @@ private:
 
     double rho;
 
-    DTensor2 TrialStrain;
-    DTensor2 TrialStress;
-    DTensor2 TrialPlastic_Strain;
+    VoigtVector TrialStrain;
+    VoigtVector TrialStress;
+    VoigtVector TrialPlastic_Strain;
 
-    DTensor2 CommitStress;
-    DTensor2 CommitStrain;
-    DTensor2 CommitPlastic_Strain;
+    VoigtVector CommitStress;
+    VoigtVector CommitStrain;
+    VoigtVector CommitPlastic_Strain;
 
 
     YieldFunctionType yf;
@@ -2771,12 +2771,12 @@ private:
 
     bool first_step;
 
-    static DTensor2 dsigma;
-    static DTensor2 depsilon_elpl;    //Elastoplastic strain increment : For a strain increment that causes first yield, the step is divided into an elastic one (until yield) and an elastoplastic one.
-    static DTensor2 intersection_stress;
-    static DTensor2 intersection_strain;
-    static DTensor4 Stiffness;
-// static DTensor2 m;
+    static VoigtVector dsigma;
+    static VoigtVector depsilon_elpl;    //Elastoplastic strain increment : For a strain increment that causes first yield, the step is divided into an elastic one (until yield) and an elastoplastic one.
+    static VoigtVector intersection_stress;
+    static VoigtVector intersection_strain;
+    static VoigtMatrix Stiffness;
+// static VoigtVector m;
 
 
 };
@@ -2784,15 +2784,15 @@ private:
 // int ASDPlasticMaterial< class ElasticityType, class YieldFunctionType, , class PlasticFlowType, class HardeningLawType, int thisClassTag >::constitutive_integration_method = 0;
 
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::dsigma(3, 3, 0.0);
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::dsigma(3, 3, 0.0);
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::depsilon_elpl(3, 3, 0.0);  //Used to compute the yield surface intersection.
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::depsilon_elpl(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_stress(3, 3, 0.0);  //Used to compute the yield surface intersection.
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_stress(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor2 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_strain(3, 3, 0.0);  //Used to compute the yield surface intersection.
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_strain(3, 3, 0.0);  //Used to compute the yield surface intersection.
 template < class E, class Y, class P, class M, int tag, class T >
-DTensor4 ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::Stiffness(3, 3, 3, 3, 0.0);  //Used to compute the yield surface intersection.
+VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::Stiffness(3, 3, 3, 3, 0.0);  //Used to compute the yield surface intersection.
 
 
 #endif

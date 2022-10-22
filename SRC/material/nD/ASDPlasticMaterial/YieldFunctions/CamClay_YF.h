@@ -53,7 +53,7 @@ public:
                 M(M_in), p0_(p0_in)
     {    }
 
-    double operator()(const DTensor2& sigma) const
+    double operator()(const VoigtVector& sigma) const
     {
         double p, q, theta;
         std::tie(p, q, theta) = getpqtheta(sigma);
@@ -64,7 +64,7 @@ public:
         return yf;
     }
 
-    const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
         //Zero these tensors
         s *= 0;
@@ -82,7 +82,7 @@ public:
         return result;
     }
 
-    double xi_star_h_star(const DTensor2& depsilon, const DTensor2& m, const DTensor2& sigma)
+    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
     {
         double dbl_result = 0.0;
 
@@ -108,12 +108,12 @@ public:
         return 0;
     }
 
-    DTensor2 & get_alpha() const
+    VoigtVector & get_alpha() const
     {
         return s;
     }
 
-    bool in_Apex(DTensor2 const& TrialStress)
+    bool in_Apex(VoigtVector const& TrialStress)
     {
 
         return false;
@@ -124,14 +124,14 @@ private:
 
     double M;
     p0Type &p0_;
-    static DTensor2 s; //Stress deviator
-    static DTensor2 result; //For returning Dtensor2's
+    static VoigtVector s; //Stress deviator
+    static VoigtVector result; //For returning VoigtVector's
 };
 
 template <class p0HardeningType>
-DTensor2 CamClay_YF<p0HardeningType>::s(3, 3, 0.0);
+VoigtVector CamClay_YF<p0HardeningType>::s(3, 3, 0.0);
 template <class p0HardeningType>
-DTensor2 CamClay_YF<p0HardeningType>::result(3, 3, 0.0);
+VoigtVector CamClay_YF<p0HardeningType>::result(3, 3, 0.0);
 
 
 #endif

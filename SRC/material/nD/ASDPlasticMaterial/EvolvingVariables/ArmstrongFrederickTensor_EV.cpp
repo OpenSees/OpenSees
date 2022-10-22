@@ -28,17 +28,17 @@
 #include "ArmstrongFrederickTensor_EV.h"
 #include <Vector.h>
 
-DTensor2 ArmstrongFrederickTensor_EV::derivative(3, 3, 0.0);
+VoigtVector ArmstrongFrederickTensor_EV::derivative(3, 3, 0.0);
 
-ArmstrongFrederickTensor_EV::ArmstrongFrederickTensor_EV( double ha_, double cr_) : EvolvingVariable(DTensor2(3, 3, 0.0)), ha(ha_), cr(cr_)
+ArmstrongFrederickTensor_EV::ArmstrongFrederickTensor_EV( double ha_, double cr_) : EvolvingVariable(VoigtVector(3, 3, 0.0)), ha(ha_), cr(cr_)
 {}
 
-ArmstrongFrederickTensor_EV::ArmstrongFrederickTensor_EV( double ha_, double cr_, DTensor2& alpha0) : EvolvingVariable(alpha0), ha(ha_), cr(cr_)
+ArmstrongFrederickTensor_EV::ArmstrongFrederickTensor_EV( double ha_, double cr_, VoigtVector& alpha0) : EvolvingVariable(alpha0), ha(ha_), cr(cr_)
 {}
 
-const DTensor2& ArmstrongFrederickTensor_EV::getDerivative(const DTensor2 &depsilon,
-        const DTensor2 &m,
-        const DTensor2& stress) const
+const VoigtVector& ArmstrongFrederickTensor_EV::getDerivative(const VoigtVector &depsilon,
+        const VoigtVector &m,
+        const VoigtVector& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
     //Zero de static variable
@@ -47,8 +47,8 @@ const DTensor2& ArmstrongFrederickTensor_EV::getDerivative(const DTensor2 &depsi
 
 
     //Compute the derivative (hardening function)
-    const DTensor2 &alpha = this->getVariableConstReference();
-    static DTensor2 mdev(3, 3, 0);
+    const VoigtVector &alpha = this->getVariableConstReference();
+    static VoigtVector mdev(3, 3, 0);
     mdev *= 0;
     mdev(i, j) = m(i, j) - m(k, k) / 3 * kronecker_delta(i, j);
     derivative(i, j) =  (2. / 3.) * ha * m(i, j) - cr * sqrt((2. / 3.) * m(k, l) * m(k, l)) * alpha(i, j);
@@ -59,12 +59,12 @@ const DTensor2& ArmstrongFrederickTensor_EV::getDerivative(const DTensor2 &depsi
     return derivative;
 }
 
-void ArmstrongFrederickTensor_EV::check_hardening_saturation_limit(DTensor2& backstress, DTensor2 const& plasticFlow_m ){
+void ArmstrongFrederickTensor_EV::check_hardening_saturation_limit(VoigtVector& backstress, VoigtVector const& plasticFlow_m ){
     using namespace ASDPlasticMaterialGlobals;
     double limit_length = SQRT_2_over_3 * ha / cr ;
 
     // Limit direction is unit vector in the plastic flow direction.
-    static DTensor2 limit_direction(3,3,0.0);
+    static VoigtVector limit_direction(3,3,0.0);
     limit_direction(i,j) = plasticFlow_m(i,j) / sqrt (plasticFlow_m(k,l) * plasticFlow_m(k,l)) ;
 
     // Limit each component
@@ -89,8 +89,8 @@ int ArmstrongFrederickTensor_EV::sendSelf(int commitTag, Channel &theChannel)
 {
     //Shove all data into single vector for sending
     static Vector data(9 + 9 + 2);
-    const DTensor2 &a = this->getVariableConstReference();
-    const DTensor2 &a_committed = this->getVariableConstReference();
+    const VoigtVector &a = this->getVariableConstReference();
+    const VoigtVector &a_committed = this->getVariableConstReference();
     int pos = 0;
 
     data(pos++) = ha;
@@ -125,8 +125,8 @@ int ArmstrongFrederickTensor_EV::recvSelf(int commitTag, Channel &theChannel, FE
 
     //Extract data from vector
     int pos = 0;
-    static DTensor2 tmp_a(3, 3, 0);
-    static DTensor2 tmp_a_committed(3, 3, 0);
+    static VoigtVector tmp_a(3, 3, 0);
+    static VoigtVector tmp_a_committed(3, 3, 0);
     ha = data(pos++);
     cr = data(pos++);
 

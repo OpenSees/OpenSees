@@ -39,9 +39,9 @@ public:
 
     CamClay_p0_EV( double M_, double lambda_, double kappa_, double e0_, double p0_);
 
-    const double& getDerivative(const DTensor2 &depsilon,
-                                const DTensor2 &m,
-                                const DTensor2& stress) const;
+    const double& getDerivative(const VoigtVector &depsilon,
+                                const VoigtVector &m,
+                                const VoigtVector& stress) const;
     // double const& getHardeningType() const;
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);

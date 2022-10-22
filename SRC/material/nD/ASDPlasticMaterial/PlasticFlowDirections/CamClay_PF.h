@@ -51,7 +51,7 @@ public:
     {    }
 
 
-    const DTensor2& operator()(const DTensor2 &depsilon, const DTensor2& sigma)
+    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
     {
         //Zero these tensors
         s *= 0;
@@ -69,11 +69,11 @@ public:
         return result;
     }
 
-    DTensor4 const& dm_over_dsigma(DTensor2 const& sigma)
+    VoigtMatrix const& dm_over_dsigma(VoigtVector const& sigma)
     {
-        static DTensor4 dm__dsigma(3, 3, 3, 3, 0.0);
-        static DTensor4 delta_imjn(3, 3, 3, 3, 0.0)        ;
-        static DTensor4 delta_ijmn(3, 3, 3, 3, 0.0)        ;
+        static VoigtMatrix dm__dsigma(3, 3, 3, 3, 0.0);
+        static VoigtMatrix delta_imjn(3, 3, 3, 3, 0.0)        ;
+        static VoigtMatrix delta_ijmn(3, 3, 3, 3, 0.0)        ;
         delta_imjn(i, j, m, n) = kronecker_delta(i, m) * kronecker_delta(j, n);
         delta_ijmn(i, j, m, n) = kronecker_delta(i, j) * kronecker_delta(m, n);
 
@@ -87,7 +87,7 @@ public:
     }
 
 
-    DTensor2 const& dm_over_dq_start_h_star(const DTensor2&dumb1, const DTensor2&dumb2, const DTensor2& stress)
+    VoigtVector const& dm_over_dq_start_h_star(const VoigtVector&dumb1, const VoigtVector&dumb2, const VoigtVector& stress)
     {
         result *= 0;
         // const double &p0 = p0_.getVariableConstReference();
@@ -103,16 +103,16 @@ private:
     double M;
     p0Type &p0_;
 
-    static DTensor2 s; //sigma deviator
-    static DTensor2 result; //For returning Dtensor2s
-    // static DTensor4 dm__dsigma; //For returning dm_over_dsigma
-    // static DTensor4 dm__dalpha; //For returning dm_over_dsigma
+    static VoigtVector s; //sigma deviator
+    static VoigtVector result; //For returning VoigtVectors
+    // static VoigtMatrix dm__dsigma; //For returning dm_over_dsigma
+    // static VoigtMatrix dm__dalpha; //For returning dm_over_dsigma
 
 };
 
 template<class p0HardeningType>
-DTensor2 CamClay_PF<p0HardeningType >::s(3, 3, 0.0);
+VoigtVector CamClay_PF<p0HardeningType >::s(3, 3, 0.0);
 template<class p0HardeningType>
-DTensor2 CamClay_PF<p0HardeningType >::result(3, 3, 0.0);
+VoigtVector CamClay_PF<p0HardeningType >::result(3, 3, 0.0);
 
 #endif

@@ -39,7 +39,7 @@ class CamClay_EL : public ElasticityBase<CamClay_EL> // CRTP on ElasticityBase
 public:
     CamClay_EL(double e0_, double kappa_, double nu_);
 
-    DTensor4& operator()(const DTensor2& stress); //See note on base class
+    VoigtMatrix& operator()(const VoigtVector& stress); //See note on base class
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -49,7 +49,7 @@ private:
     double e0;
     double kappa;
     double nu;
-    static DTensor4 Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
+    static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 

@@ -54,7 +54,7 @@ public:
         // std::cout << "k_in = " << &k_in << std::endl;
     }
 
-    double operator()(const DTensor2& sigma) const
+    double operator()(const VoigtVector& sigma) const
     {
         double p, q, theta;
         std::tie(p, q, theta) = getpqtheta(sigma);
@@ -68,7 +68,7 @@ public:
         return yf;
     }
 
-    const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
         const double &eta = eta_.getVariableConstReference();
 
@@ -79,8 +79,8 @@ public:
         double gg = g(theta);
         double dgg = dg_dlode(theta);
 
-        static DTensor2 dq_dsij(3, 3, 0);
-        static DTensor2 dtheta_dsij(3, 3, 0);
+        static VoigtVector dq_dsij(3, 3, 0);
+        static VoigtVector dtheta_dsij(3, 3, 0);
         dq_dsij *= 0;
         dtheta_dsij *= 0;
         dq_dsigma_ij(sigma, dq_dsij);
@@ -102,7 +102,7 @@ public:
         return result;
     }
 
-    double xi_star_h_star(const DTensor2& depsilon, const DTensor2& m, const DTensor2& sigma)
+    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
     {
         // const double &k = k_.getVariableConstReference();
 
@@ -129,12 +129,12 @@ public:
         return 0;
     }
 
-    DTensor2 & get_alpha() const
+    VoigtVector & get_alpha() const
     {
         return s;
     }
 
-    bool in_Apex(DTensor2 const& TrialStress)
+    bool in_Apex(VoigtVector const& TrialStress)
     {
 
         return false;
@@ -171,14 +171,14 @@ private:
 
     double m, qa, pc, e;
     ETAType &eta_;
-    static DTensor2 s; //Stress deviator
-    static DTensor2 result; //For returning Dtensor2's
+    static VoigtVector s; //Stress deviator
+    static VoigtVector result; //For returning VoigtVector's
 };
 
 template < class ETAHardeningType>
-DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::s(3, 3, 0.0);
+VoigtVector RoundedMohrCoulomb_YF< ETAHardeningType>::s(3, 3, 0.0);
 template <  class ETAHardeningType>
-DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
+VoigtVector RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 
 
 
@@ -197,7 +197,7 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 // {
 // public:
 
-//     typedef EvolvingVariable<DTensor2, AlphaHardeningType> AlphaType;
+//     typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
 //     typedef EvolvingVariable<double, ETAHardeningType> ETAType;
 
 
@@ -208,14 +208,14 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //         // std::cout << "k_in = " << &k_in << std::endl;
 //     }
 
-//     double operator()(const DTensor2& sigma) const
+//     double operator()(const VoigtVector& sigma) const
 //     {
 //         double p, q, theta;
 //         std::tie(p, q, theta) = getpqtheta(sigma);
 
 //         theta *= M_PI / 180;  // Convert theta back to radians! :/
 
-//         const DTensor2 &alpha = alpha_.getVariableConstReference();
+//         const VoigtVector &alpha = alpha_.getVariableConstReference();
 //         const double &k = k_.getVariableConstReference();
 
 //         double yf = q * pow(1 + q / qa, m)  - k * (p - pc) / g(theta);
@@ -223,13 +223,13 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //         return yf;
 //     }
 
-//     const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+//     const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
 //     {
-//         const DTensor2 &alpha = alpha_.getVariableConstReference();
+//         const VoigtVector &alpha = alpha_.getVariableConstReference();
 //         const double &k = k_.getVariableConstReference();
 
 //         double p, q, theta;
-//         static DTensor2 sigma_minus_alpha(3, 3, 0.0);
+//         static VoigtVector sigma_minus_alpha(3, 3, 0.0);
 //         sigma_minus_alpha *= 0;
 //         sigma_minus_alpha(i, j) = sigma(i, j) - sigma(i, i) / 3 * alpha(i, j);
 
@@ -238,8 +238,8 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //         double gg = g(theta);
 //         double dgg = dg_dlode(theta);
 
-//         static DTensor2 dq_dsij(3, 3, 0);
-//         static DTensor2 dtheta_dsij(3, 3, 0);
+//         static VoigtVector dq_dsij(3, 3, 0);
+//         static VoigtVector dtheta_dsij(3, 3, 0);
 //         dq_dsij * = 0;
 //         dtheta_dsij * = 0;
 //         dq_dsigma_ij(sigma_minus_alpha, dq_dsij);
@@ -251,7 +251,7 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //         return result;
 //     }
 
-//     double xi_star_h_star(const DTensor2& depsilon, const DTensor2& m, const DTensor2& sigma)
+//     double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
 //     {
 
 //         return dbl_result;
@@ -265,7 +265,7 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //     {
 //         return k_.getVariableConstReference();
 //     }
-//     DTensor2 const& get_alpha() const
+//     VoigtVector const& get_alpha() const
 //     {
 //         return alpha_.getVariableConstReference();
 //     }
@@ -300,14 +300,14 @@ DTensor2 RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
 //     double m, qa, pc, e;
 //     AlphaType &alpha_;
 //     ETAType &k_;
-//     static DTensor2 s; //Stress deviator
-//     static DTensor2 result; //For returning Dtensor2's
+//     static VoigtVector s; //Stress deviator
+//     static VoigtVector result; //For returning VoigtVector's
 // };
 
 // template <class AlphaHardeningType,  class ETAHardeningType>
-// DTensor2 RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::s(3, 3, 0.0);
+// VoigtVector RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::s(3, 3, 0.0);
 // template <class AlphaHardeningType,  class ETAHardeningType>
-// DTensor2 RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::result(3, 3, 0.0);
+// VoigtVector RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::result(3, 3, 0.0);
 
 
 #endif

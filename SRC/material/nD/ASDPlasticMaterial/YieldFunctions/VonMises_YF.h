@@ -45,7 +45,7 @@ class VonMises_YF : public YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHa
 {
 public:
 
-    typedef EvolvingVariable<DTensor2, AlphaHardeningType> AlphaType;
+    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
     typedef EvolvingVariable<double, KHardeningType> KType;
 
 
@@ -57,11 +57,11 @@ public:
         // std::cout << "&k_in = " << &k_in << std::endl;
     }
 
-    double operator()(const DTensor2& sigma) const
+    double operator()(const VoigtVector& sigma) const
     {
         double p;
-        static DTensor2 s(3, 3, 0.0);
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        static VoigtVector s(3, 3, 0.0);
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
         sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
 
@@ -70,10 +70,10 @@ public:
         return sqrt( (s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)) ) - SQRT_2_over_3 * k ;  // This one assumes p positive in tension
     }
 
-    const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
 
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
 
 
         //Zero these tensors
@@ -97,11 +97,11 @@ public:
 
     }
 
-    double xi_star_h_star(const DTensor2& depsilon, const DTensor2& m, const DTensor2& sigma)
+    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
     {
         double dbl_result = 0.0;
 
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         // const double &k = k_.getVariableConstReference();
 
         //Zero the stress deviator
@@ -131,7 +131,7 @@ public:
     bool hasCorner() const{
         return false;
     }
-    bool in_Apex(DTensor2 const& TrialStress)
+    bool in_Apex(VoigtVector const& TrialStress)
     {
         std::cout<<"von Mises yield surface does not have a corner. This function should never be callled!"<<std::endl;
         return false;
@@ -139,22 +139,22 @@ public:
     double get_k() const{
         return k_.getVariableConstReference();
     }
-    DTensor2 const& get_alpha() const{
+    VoigtVector const& get_alpha() const{
         return alpha_.getVariableConstReference();
     }
 private:
 
     AlphaType &alpha_;
     KType &k_;
-    static DTensor2 s; //Stress deviator
-    static DTensor2 result; //For returning Dtensor2's
+    static VoigtVector s; //Stress deviator
+    static VoigtVector result; //For returning VoigtVector's
 
 };
 
 template <class AlphaHardeningType,  class KHardeningType>
-DTensor2 VonMises_YF<AlphaHardeningType, KHardeningType>::s(3, 3, 0.0);
+VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::s(3, 3, 0.0);
 template <class AlphaHardeningType,  class KHardeningType>
-DTensor2 VonMises_YF<AlphaHardeningType, KHardeningType>::result(3, 3, 0.0);
+VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::result(3, 3, 0.0);
 
 
 #endif

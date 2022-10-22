@@ -39,9 +39,9 @@ CamClay_p0_EV::CamClay_p0_EV( double M_, double lambda_, double kappa_, double e
     e0(e0_)
 {}
 
-const double& CamClay_p0_EV::getDerivative(const DTensor2 &depsilon,
-        const DTensor2 &m,
-        const DTensor2& stress) const
+const double& CamClay_p0_EV::getDerivative(const VoigtVector &depsilon,
+        const VoigtVector &m,
+        const VoigtVector& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
     // Clear the static variables
