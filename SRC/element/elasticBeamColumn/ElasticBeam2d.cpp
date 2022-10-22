@@ -569,15 +569,17 @@ ElasticBeam2d::setDamping(Domain *theDomain, Damping *damping)
 {
   if (theDomain && damping)
   {
+    if (theDamping) delete theDamping;
+
     theDamping =(*damping).getCopy();
     
     if (!theDamping) {
       opserr << "ElasticBeam2d::setDamping -- failed to get copy of damping\n";
-      exit(-1);
+      return -1;
     }
     if (theDamping->setDomain(theDomain, 3)) {
       opserr << "ElasticBeam2d::setDamping -- Error initializing damping\n";
-      exit(-1);
+      return -2;
     }
   }
   
