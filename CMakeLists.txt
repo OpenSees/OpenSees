@@ -260,8 +260,11 @@ endif()
 
 find_package (Python COMPONENTS Interpreter Development)
 
+if((TARGET OpenSeesMP) OR (TARGET OpenSeesSP))
+  find_package(MPI)
+endif()
 
-find_package(MPI)
+
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -544,6 +547,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -559,7 +565,8 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesSP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+
+    target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
     if (DEFINED OPENMPI)
@@ -602,6 +609,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiParameterMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp        
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -614,8 +624,10 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+    target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
+
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
     endif()			    
