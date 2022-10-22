@@ -44,6 +44,10 @@ int OPS_Flume() {
         opserr << "WARNING: failed to get tag, id, ndf \n";
         return -1;
     }
+    if (idata[2] <= 0) {
+        opserr << "WARING: ndf <= 0\n";
+        return -1;
+    }
 
     num = ndm;
     std::vector<double> crds(num);
@@ -90,8 +94,8 @@ int OPS_Flume() {
         return -1;
     }
 
-    mesh->setID(idata[0]);
-    mesh->setNdf(idata[1]);
+    mesh->setID(idata[1]);
+    mesh->setNdf(idata[2]);
     mesh->setMeshsize(size);
 
     // mesh
