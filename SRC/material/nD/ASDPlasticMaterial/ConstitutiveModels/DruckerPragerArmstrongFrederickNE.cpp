@@ -72,18 +72,18 @@ DruckerPragerArmstrongFrederickNE::DruckerPragerArmstrongFrederickNE() :
 
 //Checks whether predicted stress is less than zero, in which case sets stress to low confinement
 //value and gives a reduced stiffness.
-int DruckerPragerArmstrongFrederickNE::pre_integration_callback(const DTensor2 &depsilon,
-        const DTensor2 &dsigma,
-        const DTensor2 &TrialStress,
-        const DTensor4 &Stiffness,
+int DruckerPragerArmstrongFrederickNE::pre_integration_callback(const VoigtVector &depsilon,
+        const VoigtVector &dsigma,
+        const VoigtVector &TrialStress,
+        const VoigtMatrix &Stiffness,
         double yf1,
         double yf2,
         bool & returns)
 {
     using namespace ASDPlasticMaterialGlobals;
-    static DTensor2 stress(3, 3, 0);
-    static DTensor2 plasticstrain(3, 3, 0);
-    static DTensor4 stiff(3, 3, 3, 3, 0);
+    static VoigtVector stress(3, 3, 0);
+    static VoigtVector plasticstrain(3, 3, 0);
+    static VoigtMatrix stiff(3, 3, 3, 3, 0);
     double p = -(TrialStress(0, 0) + TrialStress(1, 1) + TrialStress(2, 2)) / 3;
     if (p < 0)
     {

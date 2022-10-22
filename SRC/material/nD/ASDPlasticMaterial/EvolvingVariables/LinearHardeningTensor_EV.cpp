@@ -28,17 +28,17 @@
 #include "LinearHardeningTensor_EV.h"
 #include <Vector.h>
 
-DTensor2 LinearHardeningTensor_EV::derivative(3, 3, 0.0);
+VoigtVector LinearHardeningTensor_EV::derivative(3, 3, 0.0);
 
-LinearHardeningTensor_EV::LinearHardeningTensor_EV( double H_) : EvolvingVariable(DTensor2(3, 3, 0.0)), H(H_)
+LinearHardeningTensor_EV::LinearHardeningTensor_EV( double H_) : EvolvingVariable(VoigtVector(3, 3, 0.0)), H(H_)
 {}
 
-LinearHardeningTensor_EV::LinearHardeningTensor_EV( double H_, DTensor2& alpha0) : EvolvingVariable(alpha0), H(H_)
+LinearHardeningTensor_EV::LinearHardeningTensor_EV( double H_, VoigtVector& alpha0) : EvolvingVariable(alpha0), H(H_)
 {}
 
-const DTensor2& LinearHardeningTensor_EV::getDerivative(const DTensor2 &depsilon,
-        const DTensor2 &m,
-        const DTensor2& stress) const
+const VoigtVector& LinearHardeningTensor_EV::getDerivative(const VoigtVector &depsilon,
+        const VoigtVector &m,
+        const VoigtVector& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
     //Zero de static variable
@@ -56,8 +56,8 @@ int LinearHardeningTensor_EV::sendSelf(int commitTag, Channel &theChannel)
 {
     //Shove all data into single vector for sending
     static Vector data(9 + 9 + 1);
-    const DTensor2 &a = this->getVariableConstReference();
-    const DTensor2 &a_committed = this->getVariableConstReference();
+    const VoigtVector &a = this->getVariableConstReference();
+    const VoigtVector &a_committed = this->getVariableConstReference();
     int pos = 0;
 
     data(pos++) = H;
@@ -91,8 +91,8 @@ int LinearHardeningTensor_EV::recvSelf(int commitTag, Channel &theChannel, FEM_O
 
     //Extract data from vector
     int pos = 0;
-    static DTensor2 tmp_a(3, 3, 0);
-    static DTensor2 tmp_a_committed(3, 3, 0);
+    static VoigtVector tmp_a(3, 3, 0);
+    static VoigtVector tmp_a_committed(3, 3, 0);
     H = data(pos++);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)

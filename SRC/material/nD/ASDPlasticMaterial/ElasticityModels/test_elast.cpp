@@ -15,9 +15,9 @@ int main(void)
 
     LinearIsotropic3D_EL elasticity(E, nu);
 
-    DTensor2 eps(3, 3, 0.0);
-    DTensor2 sig(3, 3, 0.0);
-    DTensor4 Et(3, 3, 3, 3, 0.0);
+    VoigtVector eps(3, 3, 0.0);
+    VoigtVector sig(3, 3, 0.0);
+    VoigtMatrix Et(3, 3, 3, 3, 0.0);
 
     Et = elasticity(sig);
 

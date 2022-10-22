@@ -40,17 +40,17 @@ public:
     {
     }
 
-    double operator()( const DTensor2& sigma) const
+    double operator()( const VoigtVector& sigma) const
     {
         return static_cast<T*>(this)->operator()(sigma);
     }
 
-    const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
         return static_cast<T*>(this)->df_dsigma_ij(sigma);
     }
 
-    double xi_star_h_star(const DTensor2& depsilon, const DTensor2& depsilon_pl, const DTensor2& sigma)
+    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& depsilon_pl, const VoigtVector& sigma)
     {
         return static_cast<T*>(this)->df_dxi_star_h_star(depsilon, depsilon_pl , sigma);
     }

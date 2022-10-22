@@ -37,10 +37,10 @@ Index<'q'> ASDPlasticMaterialGlobals::q;
 Index<'r'> ASDPlasticMaterialGlobals::r;
 Index<'s'> ASDPlasticMaterialGlobals::s;
 
-DTensor2 ASDPlasticMaterialGlobals::kronecker_delta(3, 3, "identity");
+VoigtVector ASDPlasticMaterialGlobals::kronecker_delta(3, 3, "identity");
 
 
-void ASDPlasticMaterialGlobals::printTensor(std::string const& name, DTensor2 const& v)
+void ASDPlasticMaterialGlobals::printTensor(std::string const& name, VoigtVector const& v)
 {
 
     // All 9 elements in one line.
@@ -63,7 +63,7 @@ void ASDPlasticMaterialGlobals::printTensor(std::string const& name, DTensor2 co
     fprintf(stderr, " %16.8f \t %16.8f \t %16.8f] \n",  v(2, 0), v(2, 1), v(2, 2));
 }
 
-void ASDPlasticMaterialGlobals::printTensor4(std::string const& name, DTensor4 const& v)
+void ASDPlasticMaterialGlobals::printTensor4(std::string const& name, VoigtMatrix const& v)
 {
 
 
@@ -79,13 +79,13 @@ void ASDPlasticMaterialGlobals::printTensor4(std::string const& name, DTensor4 c
 }
 
 
-std::tuple<double, double, double> ASDPlasticMaterialGlobals::getI1J2J3(const DTensor2 &mystress)
+std::tuple<double, double, double> ASDPlasticMaterialGlobals::getI1J2J3(const VoigtVector &mystress)
 {
     // ------------------------------------------------------------
     // preliminary
     const double I1 = mystress(0, 0) + mystress(1, 1) + mystress(2, 2);
     const double sigma_m = I1 / 3.0;
-    DTensor2 s = mystress;
+    VoigtVector s = mystress;
     s(0, 0) -= sigma_m;
     s(1, 1) -= sigma_m;
     s(2, 2) -= sigma_m;
@@ -110,7 +110,7 @@ std::tuple<double, double, double> ASDPlasticMaterialGlobals::getI1J2J3(const DT
 // q = sqrt(3* J2)
 // cos(3*theta) = 3/2 * sqrt(3) * J3 / J2^(3/2)
 // ------------------------------------------------------------
-std::tuple<double, double, double> ASDPlasticMaterialGlobals::getpqtheta(const DTensor2 &sigma)
+std::tuple<double, double, double> ASDPlasticMaterialGlobals::getpqtheta(const VoigtVector &sigma)
 {
     double I1, J2, J3;
 
@@ -142,12 +142,12 @@ std::tuple<double, double, double> ASDPlasticMaterialGlobals::getpqtheta(const D
     }
 }
 
-bool ASDPlasticMaterialGlobals::inverse4thTensor(DTensor4 const & rhs, DTensor4 & ret)
+bool ASDPlasticMaterialGlobals::inverse4thTensor(VoigtMatrix const & rhs, VoigtMatrix & ret)
 {
     using namespace ASDPlasticMaterialGlobals;
-    static DTensor2 intermediate_matrix(9, 9, 0.0);
+    static VoigtVector intermediate_matrix(9, 9, 0.0);
     intermediate_matrix *= 0;
-    // static DTensor4 ret(3,3,3,3,0.0);
+    // static VoigtMatrix ret(3,3,3,3,0.0);
     int m41 = 0,  m42 = 0;
     // (1). convert 4th order Tensor to matrix
     for ( int c44 = 1 ; c44 <= 3 ; c44++ )
@@ -173,7 +173,7 @@ bool ASDPlasticMaterialGlobals::inverse4thTensor(DTensor4 const & rhs, DTensor4 
     }
     else
     {
-        static DTensor2 inv_matrix(3, 3, 0.0);
+        static VoigtVector inv_matrix(3, 3, 0.0);
         inv_matrix = intermediate_matrix.Inv();
         // (3). convert Matrix to 4th order tensor
         for ( int c44 = 1 ; c44 <= 3 ; c44++ )
@@ -193,10 +193,10 @@ bool ASDPlasticMaterialGlobals::inverse4thTensor(DTensor4 const & rhs, DTensor4 
 
 
 // Some stress derivatives....
-void ASDPlasticMaterialGlobals::dJ2_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of second deviatoric stress invariant
+void ASDPlasticMaterialGlobals::dJ2_dsigma_ij(const VoigtVector & sigma, VoigtVector & result) // Stress derivative of second deviatoric stress invariant
 {
     using namespace ASDPlasticMaterialGlobals;
-    static DTensor2 s(3, 3, 0.0);
+    static VoigtVector s(3, 3, 0.0);
     s *= 0;
     double p;
     sigma.compute_deviatoric_tensor(s, p);
@@ -208,10 +208,10 @@ void ASDPlasticMaterialGlobals::dJ2_dsigma_ij(const DTensor2 & sigma, DTensor2 &
 }
 
 
-void ASDPlasticMaterialGlobals::dJ3_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of third deviatoric stress invariant
+void ASDPlasticMaterialGlobals::dJ3_dsigma_ij(const VoigtVector & sigma, VoigtVector & result) // Stress derivative of third deviatoric stress invariant
 {
     using namespace ASDPlasticMaterialGlobals;
-    static DTensor2 s(3, 3, 0.0);
+    static VoigtVector s(3, 3, 0.0);
     s *= 0;
     double p;
     sigma.compute_deviatoric_tensor(s, p);
@@ -228,10 +228,10 @@ void ASDPlasticMaterialGlobals::dJ3_dsigma_ij(const DTensor2 & sigma, DTensor2 &
 }
 
 
-void ASDPlasticMaterialGlobals::dq_dsigma_ij(const DTensor2 & sigma, DTensor2 & result) // Stress derivative of deviatoric stress q
+void ASDPlasticMaterialGlobals::dq_dsigma_ij(const VoigtVector & sigma, VoigtVector & result) // Stress derivative of deviatoric stress q
 {
     using namespace ASDPlasticMaterialGlobals;
-    static DTensor2 s(3, 3, 0.0);
+    static VoigtVector s(3, 3, 0.0);
     s *= 0;
     double p;
     sigma.compute_deviatoric_tensor(s, p);
@@ -254,7 +254,7 @@ void ASDPlasticMaterialGlobals::dq_dsigma_ij(const DTensor2 & sigma, DTensor2 & 
 }
 
 
-void ASDPlasticMaterialGlobals::dtheta_dsigma_ij(const DTensor2 & sigma, DTensor2 & ret) // Stress derivative of Lode angle
+void ASDPlasticMaterialGlobals::dtheta_dsigma_ij(const VoigtVector & sigma, VoigtVector & ret) // Stress derivative of Lode angle
 {
     using namespace ASDPlasticMaterialGlobals;
     double I1, J2D, J3D, q, theta;
@@ -265,14 +265,14 @@ void ASDPlasticMaterialGlobals::dtheta_dsigma_ij(const DTensor2 & sigma, DTensor
     // ===============================================================
     // tensor ret(2, def_dim_2, 0.0); //Defined above
     // stresstensor s( 0.0);
-    static DTensor2 s(3, 3, 0);
+    static VoigtVector s(3, 3, 0);
     // stresstensor t( 0.0);
-    static DTensor2 t(3, 3, 0);
+    static VoigtVector t(3, 3, 0);
     s *= 0;
     t *= 0;
 
     // tensor I2("I", 2, def_dim_2);
-    const DTensor2& I2 = kronecker_delta;
+    const VoigtVector& I2 = kronecker_delta;
 
     // double J2D   = this->Jinvariant2();
     // double q     = this->q_deviatoric();
@@ -316,9 +316,9 @@ void ASDPlasticMaterialGlobals::dtheta_dsigma_ij(const DTensor2 & sigma, DTensor
     // }
     // else
     // {
-    //     static DTensor2 s(3, 3, 0.0);
-    //     static DTensor2 dJ2_ij(3, 3, 0.0);
-    //     static DTensor2 dJ3_ij(3, 3, 0.0);
+    //     static VoigtVector s(3, 3, 0.0);
+    //     static VoigtVector dJ2_ij(3, 3, 0.0);
+    //     static VoigtVector dJ3_ij(3, 3, 0.0);
     //     s *= 0;
     //     dJ2_ij *= 0;
     //     dJ3_ij *= 0;

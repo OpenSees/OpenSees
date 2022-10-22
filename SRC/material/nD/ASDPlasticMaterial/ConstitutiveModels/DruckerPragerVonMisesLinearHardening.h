@@ -91,7 +91,7 @@ public:
     // Empty constructor for parallel
     DruckerPragerVonMisesLinearHardening() ;
 
-    int pre_integration_callback(const DTensor2&, const DTensor2&, const DTensor2&, const DTensor4&, double, double, bool&);
+    int pre_integration_callback(const VoigtVector&, const VoigtVector&, const VoigtVector&, const VoigtMatrix&, double, double, bool&);
 
     void Print(ostream& s, int flag);
 

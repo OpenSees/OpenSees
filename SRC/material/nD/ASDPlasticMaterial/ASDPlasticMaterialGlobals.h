@@ -44,16 +44,16 @@ constexpr double SQRT_2_over_27 = sqrt(2.0 / 27.0);
 constexpr double MACHINE_EPSILON = std::numeric_limits<double>::epsilon();
 
 
-// void printTensor(std::string const& name, DTensor2 const& v);
-// void printTensor4(std::string const& name, DTensor4 const& v);
-// std::tuple<double, double, double> getpqtheta(const DTensor2 &mystress);
-// std::tuple<double, double, double> getI1J2J3(const DTensor2 &mystress);
-// bool inverse4thTensor(DTensor4 const& rhs, DTensor4& ret);
+// void printTensor(std::string const& name, VoigtVector const& v);
+// void printTensor4(std::string const& name, VoigtMatrix const& v);
+// std::tuple<double, double, double> getpqtheta(const VoigtVector &mystress);
+// std::tuple<double, double, double> getI1J2J3(const VoigtVector &mystress);
+// bool inverse4thTensor(VoigtMatrix const& rhs, VoigtMatrix& ret);
 
-// void dJ2_dsigma_ij(const DTensor2& sigma, DTensor2 &result);   // Stress derivative of second deviatoric stress invariant
-// void dJ3_dsigma_ij(const DTensor2& sigma, DTensor2 &result);   // Stress derivative of third deviatoric stress invariant
-// void dq_dsigma_ij(const DTensor2& sigma, DTensor2 &result);   // Stress derivative of deviatoric stress q
-// void dtheta_dsigma_ij(const DTensor2& sigma, DTensor2 &result);   // Stress derivative of Lode angle
+// void dJ2_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of second deviatoric stress invariant
+// void dJ3_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of third deviatoric stress invariant
+// void dq_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of deviatoric stress q
+// void dtheta_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of Lode angle
 
 
 // Macaulay Bracket < >  operator. (Integral of Heaviside function)

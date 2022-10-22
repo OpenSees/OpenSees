@@ -28,16 +28,16 @@
 #define MaterialInternalVariables_H
 
 #include <iostream>
-#include "../../ltensor/LTensor.h"
+#include "EigenAPI.h"
 #include <Channel.h>
 
 
 template <class... Qs> struct MaterialInternalVariables
 {
     void evolve(double dlambda,
-                const DTensor2& depsilon,
-                const DTensor2& m,
-                const DTensor2& sigma)
+                const VoigtVector& depsilon,
+                const VoigtVector& m,
+                const VoigtVector& sigma)
     {
         // Last guy does nothing, as it holds nothing.
         // Probably gets optimized out. (Empty struct optimization)
@@ -79,9 +79,9 @@ struct MaterialInternalVariables<Q, Qs...> : MaterialInternalVariables<Qs...>
 
     //Recurse, calling evolve on each internal variable.
     void evolve(double dlambda,
-                const DTensor2& depsilon,
-                const DTensor2& m,
-                const DTensor2& sigma)
+                const VoigtVector& depsilon,
+                const VoigtVector& m,
+                const VoigtVector& sigma)
     {
         q_i.evolve( dlambda,  depsilon,  m,  sigma);
         static_cast<MaterialInternalVariables<Qs...>*>(this)->evolve(dlambda,  depsilon,  m,  sigma);

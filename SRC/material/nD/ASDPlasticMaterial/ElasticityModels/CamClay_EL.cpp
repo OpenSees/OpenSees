@@ -28,7 +28,7 @@
 #include "Vector.h"
 #include "../ASDPlasticMaterialGlobals.h"
 
-DTensor4 CamClay_EL::Ee(3, 3, 3, 3, 0.0);
+VoigtMatrix CamClay_EL::Ee(3, 3, 3, 3, 0.0);
 
 
 CamClay_EL::CamClay_EL(double e0_, double kappa_, double nu_) : ElasticityBase<CamClay_EL>::ElasticityBase(),  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
@@ -40,7 +40,7 @@ CamClay_EL::CamClay_EL(double e0_, double kappa_, double nu_) : ElasticityBase<C
 }
 
 
-DTensor4& CamClay_EL::operator()(const DTensor2& stress) //See note on base class
+VoigtMatrix& CamClay_EL::operator()(const VoigtVector& stress) //See note on base class
 {
     using namespace ASDPlasticMaterialGlobals;
 

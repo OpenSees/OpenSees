@@ -45,7 +45,7 @@ class DruckerPrager_YF : public YieldFunctionBase<DruckerPrager_YF<AlphaHardenin
 {
 public:
 
-    typedef EvolvingVariable<DTensor2, AlphaHardeningType> AlphaType;
+    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
     typedef EvolvingVariable<double, KHardeningType> KType;
 
 
@@ -55,11 +55,11 @@ public:
     {
     }
 
-    double operator()(const DTensor2& sigma) const
+    double operator()(const VoigtVector& sigma) const
     {
         double p;
-        static DTensor2 s(3, 3, 0.0);
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        static VoigtVector s(3, 3, 0.0);
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
         sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
         p = -p;
@@ -69,12 +69,12 @@ public:
         return yf;
     }
 
-    const DTensor2& df_dsigma_ij(const DTensor2& sigma)
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
 
-        static DTensor2 r(3, 3, 0.0);
-        static DTensor2 n(3, 3, 0.0);
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        static VoigtVector r(3, 3, 0.0);
+        static VoigtVector n(3, 3, 0.0);
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
 
         //Zero these tensors
@@ -94,9 +94,9 @@ public:
         double nr = n(i, j) * r(i, j);
         result(i, j) = n(i, j) - nr * kronecker_delta(i, j) / 3;
 
-        // static DTensor2 n(3, 3, 0.0);
-        // static DTensor2 sbar(3, 3, 0.0);
-        // const DTensor2 &alpha = alpha_.getVariableConstReference();
+        // static VoigtVector n(3, 3, 0.0);
+        // static VoigtVector sbar(3, 3, 0.0);
+        // const VoigtVector &alpha = alpha_.getVariableConstReference();
         // const double &k = k_.getVariableConstReference();
 
         // n *= 0;
@@ -119,11 +119,11 @@ public:
         return result;
     }
 
-    double xi_star_h_star(const DTensor2& depsilon, const DTensor2& m, const DTensor2& sigma)
+    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
     {
         double dbl_result = 0.0;
 
-        const DTensor2 &alpha = alpha_.getVariableConstReference();
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
 
         //Zero the stress deviator
@@ -142,7 +142,7 @@ public:
 
         //This is for the hardening of alpha
         dbl_result +=  (( p * alpha(i, j) - s(i, j)) / den) * alpha_.getDerivative(depsilon, m, sigma)(i, j);
-        // static DTensor2 sbar(3, 3, 0);
+        // static VoigtVector sbar(3, 3, 0);
         // sbar *= 0;
         // sbar(i, j) = s(i, j) - p * alpha(i, j);
         // double s_norm = sqrt(sbar(i, j) * sbar(i, j));
@@ -155,18 +155,18 @@ public:
     {
         return true;
     }
-    bool in_Apex(DTensor2 const& TrialStress)
+    bool in_Apex(VoigtVector const& TrialStress)
     {
         using namespace ASDPlasticMaterialGlobals;
         double I1 = TrialStress(i, i);
         double sigma_m  = I1 / 3.0;
         double DP_p = -sigma_m;
-        static DTensor2 DP_s(3, 3, 0.0);
+        static VoigtVector DP_s(3, 3, 0.0);
         DP_s(i, j) = TrialStress(i, j) - kronecker_delta(i, j) * sigma_m;
         double DP_k = k_.getVariableConstReference();
-        static DTensor2 DP_alpha(3, 3, 0.0);
+        static VoigtVector DP_alpha(3, 3, 0.0);
         DP_alpha    =  alpha_.getVariableConstReference();
-        static DTensor2 relative_s(3, 3, 0.0);
+        static VoigtVector relative_s(3, 3, 0.0);
         // Remove the influence of kinematic hardening:
         relative_s(i, j) = DP_s(i, j) - DP_p * DP_alpha(i, j);
         double J2   = 0.5 * relative_s(i, j) * relative_s(i, j) ;
@@ -194,7 +194,7 @@ public:
     {
         return k_.getVariableConstReference();
     }
-    DTensor2 const& get_alpha() const
+    VoigtVector const& get_alpha() const
     {
         return alpha_.getVariableConstReference();
     }
@@ -203,14 +203,14 @@ private:
 
     AlphaType &alpha_;
     KType &k_;
-    static DTensor2 s; //Stress deviator
-    static DTensor2 result; //For returning Dtensor2's
+    static VoigtVector s; //Stress deviator
+    static VoigtVector result; //For returning VoigtVector's
 };
 
 template <class AlphaHardeningType,  class KHardeningType>
-DTensor2 DruckerPrager_YF<AlphaHardeningType, KHardeningType>::s(3, 3, 0.0);
+VoigtVector DruckerPrager_YF<AlphaHardeningType, KHardeningType>::s(3, 3, 0.0);
 template <class AlphaHardeningType,  class KHardeningType>
-DTensor2 DruckerPrager_YF<AlphaHardeningType, KHardeningType>::result(3, 3, 0.0);
+VoigtVector DruckerPrager_YF<AlphaHardeningType, KHardeningType>::result(3, 3, 0.0);
 
 
 #endif

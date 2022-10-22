@@ -39,7 +39,7 @@ class DuncanChang_EL : public ElasticityBase<DuncanChang_EL> // CRTP on Elastici
 public:
     DuncanChang_EL(double K_in, double pa_in, double n_in, double nu_in, double sigma3_max_in);
 
-    DTensor4& operator()(const DTensor2& stress); //See note on base class
+    VoigtMatrix& operator()(const VoigtVector& stress); //See note on base class
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -51,7 +51,7 @@ private:
     double n;
     double nu;
     double sigma3_max;
-    static DTensor4 Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
+    static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 

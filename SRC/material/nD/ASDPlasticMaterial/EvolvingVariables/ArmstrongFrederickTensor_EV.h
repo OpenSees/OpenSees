@@ -38,23 +38,23 @@ struct requires_hardening_saturation_limit_check<ArmstrongFrederickTensor_EV>
     static const bool requires = true;
 };
 
-class ArmstrongFrederickTensor_EV : public EvolvingVariable<DTensor2, ArmstrongFrederickTensor_EV> //CRTP on ArmstrongFrederickTensor_EV
+class ArmstrongFrederickTensor_EV : public EvolvingVariable<VoigtVector, ArmstrongFrederickTensor_EV> //CRTP on ArmstrongFrederickTensor_EV
 {
 public:
 
     ArmstrongFrederickTensor_EV( double ha_, double cr_);
-    ArmstrongFrederickTensor_EV( double ha_, double cr_, DTensor2& alpha0);
+    ArmstrongFrederickTensor_EV( double ha_, double cr_, VoigtVector& alpha0);
 
-    const DTensor2& getDerivative(const DTensor2 &depsilon,
-                                  const DTensor2 &m,
-                                  const DTensor2& stress) const;
-    void check_hardening_saturation_limit(DTensor2& backstress, DTensor2 const& plasticFlow_m );
+    const VoigtVector& getDerivative(const VoigtVector &depsilon,
+                                  const VoigtVector &m,
+                                  const VoigtVector& stress) const;
+    void check_hardening_saturation_limit(VoigtVector& backstress, VoigtVector const& plasticFlow_m );
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
 private:
     double ha, cr;
-    static DTensor2 derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
+    static VoigtVector derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
 };
 
 

@@ -39,7 +39,7 @@ public:
 
     }
 
-    const DTensor2& operator()(const DTensor2 &depsilon, const DTensor2& sigma)
+    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
     {
         return static_cast<T*>(this)->operator()( depsilon,  sigma);
     }
