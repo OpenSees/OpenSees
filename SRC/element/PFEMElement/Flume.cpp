@@ -117,6 +117,7 @@ Node* Flume::create_node(const std::vector<double>& crds,
                          int& nodeTag) {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
+        opserr << "no domain - create_node\n";
         return 0;
     }
     Node* node = 0;
@@ -127,10 +128,12 @@ Node* Flume::create_node(const std::vector<double>& crds,
         node = new Node(nodeTag, ndf, crds[0], crds[1], crds[2]);
     }
     if (node == 0) {
+        opserr << "failed to create node - create_node\n";
         return 0;
     }
     if (domain->addNode(node) == false) {
-        opserr << "WARNING: node " << nodeTag << "already exists\n";
+        opserr << "WARNING: node " << nodeTag
+               << "already exists - create_node\n";
         delete node;
         return 0;
     }
@@ -141,12 +144,15 @@ Node* Flume::create_node(const std::vector<double>& crds,
 int Flume::create_line(Node* nd1, Node* nd2, int& nodeTag, int dir) {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
+        opserr << "no domain\n";
         return -1;
     }
     if (dir < 0 || dir > 2) {
+        opserr << "dir not correct - create_line\n";
         return -1;
     }
     if (nd1 == 0 || nd2 == 0) {
+        opserr << "nd1 or nd2 invalid - create_line\n";
         return -1;
     }
 
@@ -173,15 +179,19 @@ int Flume::create_face(Node* nd1, Node* nd2, int& nodeTag, int dir1,
                        int dir2) {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
+        opserr << "no domain - create_face\n";
         return -1;
     }
     if (dir1 < 0 || dir1 > 2) {
+        opserr << "dir1 invalid - create_face\n";
         return -1;
     }
     if (dir2 < 0 || dir2 > 2) {
+        opserr << "dir2 invalid - create_face\n";
         return -1;
     }
     if (nd1 == 0 || nd2 == 0) {
+        opserr << "nd1 or nd2 invalid - create_face\n";
         return -1;
     }
 
