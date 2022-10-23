@@ -22,8 +22,8 @@
 
 //**********************************************************************                                                                     
 // Code Developed by: Ahmed Elkady
-// Lecturer, University of Southampton
-// Last Updated: October 25th 2021
+// Lecturer,	University of Southampton
+// Last Updated: October 24th 2022
 //**********************************************************************
 
 #ifndef IMKBilin_h
@@ -34,151 +34,110 @@
 class IMKBilin : public UniaxialMaterial
 {
 public:
-	IMKBilin(int tag, double Ke,
-		double Theta_p_pos0, double Theta_pc_pos0, double Theta_u_pos0, double Mpe_pos0, double MmaxMpe_pos0, double ResM_pos0,
-		double Theta_p_neg0, double Theta_pc_neg0, double Theta_u_neg0, double Mpe_neg0, double MmaxMpe_neg0, double ResM_neg0,
-		double LAMBDA_S, double LAMBDA_C, double LAMBDA_K, double c_S, double c_C, double c_K, double D_pos, double D_neg);
-	IMKBilin();
-	~IMKBilin();
-	const char *getClassType(void) const { return "IMKBilin"; };
-	int setTrialStrain(double strain, double strainRate = 0.0);
-	double getStrain(void);
-	double getStress(void);
-	double getTangent(void);
-	double getInitialTangent(void);
-	int commitState(void);
-	int revertToLastCommit(void);
-	int revertToStart(void);
-	UniaxialMaterial *getCopy(void);
-	int sendSelf(int commitTag, Channel &theChannel);
-	int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-	void Print(OPS_Stream &s, int flag = 0);
+    IMKBilin(int tag, double Ke,
+        double posUp_0,  double posUpc_0, double posUu_0,  double posFy_0, double posFcapFy_0, double posFresFy_0,
+        double negUp_0,  double negUpc_0, double negUu_0,  double negFy_0, double negFcapFy_0, double negFresFy_0,
+        double LAMBDA_S, double LAMBDA_C, double LAMBDA_K, double c_S, double c_C, double c_K, double D_pos, double D_neg);
+    IMKBilin();
+    ~IMKBilin();
+    const char *getClassType(void) const { return "IMKBilin"; };
+    int setTrialStrain(double strain, double strainRate = 0.0);
+    double  getStrain(void);
+    double  getStress(void);
+    double  getTangent(void);
+    double  getInitialTangent(void);
+    int commitState(void);
+    int revertToLastCommit(void);
+    int revertToStart(void);
+    UniaxialMaterial *getCopy(void);
+    int sendSelf(int commitTag, Channel &theChannel);
+    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+    void Print(OPS_Stream &s, int flag = 0);
 
 
 protected:
 
 private:
-	//my functions
-
-
-	//Fixed input material parameters 
-	double Ke;
-	double Theta_p_pos0;
-	double Theta_pc_pos0;
-	double Theta_u_pos0;
-	double Mpe_pos0;
-	double MmaxMpe_pos0;
-	double ResM_pos0;
-	double Theta_p_neg0;
-	double Theta_pc_neg0;
-	double Theta_u_neg0;
-	double Mpe_neg0;
-	double MmaxMpe_neg0;
-	double ResM_neg0;
-	double LAMBDA_S;
-	double LAMBDA_C;
-	double LAMBDA_K;
-	double c_S;
-	double c_C;
-	double c_K;
-	double D_pos;
-	double D_neg;
-
-	//State variables 
-	double U, cU;
-
-	//History variables 
-	double 			Mr_pos0, cMr_pos0;
-	double 			Mr_neg0, cMr_neg0;
-	double 	 Theta_y_pos0;
-	double    Theta_max_pos0;
-	double 	 slope_p_pos0;
-	double 	slope_pc_pos0;
-	double 		Mmax_pos0;
-	double   MpeProject_pos0;
-	double  MmaxProject_pos0;
-
-	double 	 Theta_y_neg0;
-	double    Theta_max_neg0;
-	double 	 slope_p_neg0;
-	double 	slope_pc_neg0;
-	double 		Mmax_neg0;
-	double   MpeProject_neg0;
-	double  MmaxProject_neg0;
-
-	double     Ref_Energy_S;
-	double     Ref_Energy_C;
-	double     Ref_Energy_K;
-
-	double    			 K_j_1, cK_j_1;
-	double     Theta_y_pos_j_1, cTheta_y_pos_j_1;
-	double   Theta_max_pos_j_1, cTheta_max_pos_j_1;
-	double     slope_p_pos_j_1, cslope_p_pos_j_1;
-	double    slope_pc_pos_j_1, cslope_pc_pos_j_1;
-	double         Mpe_pos_j_1, cMpe_pos_j_1;
-	double  MpeProject_pos_j_1, cMpeProject_pos_j_1;
-	double        Mmax_pos_j_1, cMmax_pos_j_1;
-	double MmaxProject_pos_j_1, cMmaxProject_pos_j_1;
-
-	double     Theta_y_neg_j_1, cTheta_y_neg_j_1;
-	double   Theta_max_neg_j_1, cTheta_max_neg_j_1;
-	double     slope_p_neg_j_1, cslope_p_neg_j_1;
-	double    slope_pc_neg_j_1, cslope_pc_neg_j_1;
-	double         Mpe_neg_j_1, cMpe_neg_j_1;
-	double  MpeProject_neg_j_1, cMpeProject_neg_j_1;
-	double        Mmax_neg_j_1, cMmax_neg_j_1;
-	double MmaxProject_neg_j_1, cMmaxProject_neg_j_1;
-
-	double Ri, cRi;
-	double Mi, cMi;
-	double Di, cDi;
-	double Ri_1, cRi_1;
-	double Mi_1, cMi_1;
-	double Di_1, cDi_1;
-
-	double   beta_S_j_1, cbeta_S_j_1;
-	double   beta_C_j_1, cbeta_C_j_1;
-	double   beta_K_j_1, cbeta_K_j_1;
-
-	double Excursion_Flag, cExcursion_Flag;
-	double  Reversal_Flag, cReversal_Flag;
-	double 	   Yield_Flag, cYield_Flag;
-	double   Fail_FlagPos, cFail_FlagPos;
-	double   Fail_FlagNeg, cFail_FlagNeg;
-	double 	   Mrpos_Flag, cMrpos_Flag;
-	double 	   Mrneg_Flag, cMrneg_Flag;
-	double 	  Energy_Flag, cEnergy_Flag;
-
-	double Energy_Excrsni_1, cEnergy_Excrsni_1;
-	double 	  Energy_Excrsn, cEnergy_Excrsn;
-	double  	 Energy_Rev, cEnergy_Rev;
-	double     Energy_total, cEnergy_total;
-
-	double Rreversal, cRreversal;
-	double Mreversal, cMreversal;
-	double TangentK, cTangentK;
-
-
+// 21 Fixed input material parameters
+    double  Ke;
+    double  posUp_0;
+    double  posUpc_0;
+    double  posUu_0;
+    double  posFy_0;
+    double  posFcapFy_0;
+    double  posFresFy_0;
+    double  negUp_0;
+    double  negUpc_0;
+    double  negUu_0;
+    double  negFy_0;
+    double  negFcapFy_0;
+    double  negFresFy_0;
+    double  LAMBDA_S;
+    double  LAMBDA_C;
+    double  LAMBDA_K;
+    double  c_S;
+    double  c_C;
+    double  c_K;
+    double  D_pos;
+    double  D_neg;
+// 13 Initial Variables
+    double  posUy_0,        negUy_0;
+    double  posUcap_0,      negUcap_0;
+    double  posFcap_0,      negFcap_0;
+    double  posKp_0,        negKp_0;
+    double  posKpc_0,       negKpc_0;
+    double  engRefS;
+    double  engRefC;
+    double  engRefK;
+// History Variables 
+// 7 Positive U and F
+    double  posUy,          cPosUy;
+    double  posFy,          cPosFy;
+    double  posUcap,        cPosUcap;
+    double  posFcap,        cPosFcap;
+    double  posFres,        cPosFres;
+    double  posKp,          cPosKp;
+    double  posKpc,         cPosKpc;
+// 7 Negative U and F
+    double  negUy,          cNegUy;
+    double  negFy,          cNegFy;
+    double  negUcap,        cNegUcap;
+    double  negFcap,        cNegFcap;
+    double  negFres,        cNegFres;
+    double  negKp,          cNegKp;
+    double  negKpc,         cNegKpc;
+// 3 State Variables 
+    double  U,              cU;
+    double  Ui,             cUi;
+    double  Fi,             cFi;
+// 2 Stiffness
+    double  KgetTangent;
+    double  Kunload,        cKunload;
+// 2 Energy
+    double  engAcml,        cEngAcml;
+    double  engDspt,        cEngDspt;
+// 2 Flag
+    int     Failure_State,  cFailure_State;
+    bool    onBackbone,     cOnBackbone;
 };
-
 
 #endif
 
 //////////////////////////// Variables Definitions /////////////////////////////
 /*
 Ke 					Initial elastic stiffness
-Theta_p_pos0 		Initial pre-capping plastic rotation in the +ve loading direction
-Theta_pc_pos0   	Initial post-capping plastic rotation in the +ve loading direction
-Theta_u_pos0 		Ultimate rotation in the +ve loading direction
-Mpe_pos0 			Initial effective plastic moment in the +ve loading direction
-MmaxMpe_pos0 		Initial maximum-to-effective plastic moment ratio in the +ve loading direction
-ResM_pos0 			Residual moment in the +ve loading direction
-Theta_p_neg0 		Initial pre-capping plastic rotation in the -ve loading direction
-Theta_pc_neg0   	Initial post-capping plastic rotation in the -ve loading direction
-Theta_u_neg0    	Ultimate rotation in the -ve loading direction
-Mpe_neg0        	Initial effective plastic moment in the -ve loading direction
-MmaxMpe_neg0    	Initial maximum-to-effective plastic moment ratio in the -ve loading direction
-ResM_neg0       	Residual moment in the -ve loading direction
+posUp_0 		Initial pre-capping plastic rotation in the +ve loading direction
+posUpc_0   	Initial post-capping plastic rotation in the +ve loading direction
+posUu_0 		Ultimate rotation in the +ve loading direction
+posFy_0 			Initial effective plastic moment in the +ve loading direction
+posFcapFy_0 		Initial maximum-to-effective plastic moment ratio in the +ve loading direction
+posFresFy_0 			Residual moment in the +ve loading direction
+negUp_0 		Initial pre-capping plastic rotation in the -ve loading direction
+negUpc_0   	Initial post-capping plastic rotation in the -ve loading direction
+negUu_0    	Ultimate rotation in the -ve loading direction
+negFy_0        	Initial effective plastic moment in the -ve loading direction
+negFcapFy_0    	Initial maximum-to-effective plastic moment ratio in the -ve loading direction
+negFresFy_0       	Residual moment in the -ve loading direction
 LAMBDA_S 			Cyclic deterioration parameter for strength deterioration 
 LAMBDA_C 			Cyclic deterioration parameter for post-capping strength deterioration
 LAMBDA_K 			Cyclic deterioration parameter for unloading stiffness deterioration 
@@ -191,50 +150,50 @@ n					Parameter identifying the offset rotation on the unloading side
 Roffset				Offset rotation identifying the Smooth Transition region
 LAMBDA_F			Cyclic deterioration parameter for Smooth Transition deterioration 
 c_F					Cyclic deterioration parameter for Smooth Transition deterioration
-Ri 					Rotation at current step
-Mi 					Moment at current step 
+Ui 					Rotation at current step
+Fi 					Moment at current step 
 Di 					Rotation Direction at current step 
-Ri_1  				Rotation at previous step
-Mi_1            	Moment at previous step 
+Ui_1  				Rotation at previous step
+Fi_1            	Moment at previous step 
 Di_1            	Rotation Direction at previous step
-Rreversal 			Rotation at direction reversal points
-Mreversal 			Moment at direction reversal points
-TangentK 			Tangent stiffness
-K_j_1 				Unloading stiffness in the previous excursion
-Theta_y_pos_j_1 	Yielding rotation in the previous +ve excursion
-Theta_max_pos_j_1 	Capping point rotation in the previous +ve excursion
-slope_p_pos_j_1 	Pre-capping slope in the previous +ve excursion
-slope_pc_pos_j_1 	Post-capping slope in the previous +ve excursion
-Mpe_pos_j_1 		Effective plastic moment in the previous +ve excursion
-MpeProject_pos_j_1  Projected effective plastic moment in the previous +ve excursion
-Mmax_pos_j_1        Maximum moment in the previous +ve excursion
-MmaxProject_pos_j_1 Projected maximum  moment in the previous +ve excursion
-Theta_y_neg_j_1     Yielding rotation in the previous -ve excursion
-Theta_max_neg_j_1   Capping point rotation in the previous -ve excursion
-slope_p_neg_j_1     Pre-capping slope in the previous -ve excursion
-slope_pc_neg_j_1    Post-capping slope in the previous -ve excursion
-Mpe_neg_j_1         Effective plastic moment in the previous -ve excursion
-MpeProject_neg_j_1  Projected effective plastic moment in the previous -ve 
-Mmax_neg_j_1        Maximum moment in the previous -ve excursion
-MmaxProject_neg_j_1 Projected maximum  moment in the previous -ve excursion
-beta_S_j_1    
-beta_C_j_1    
-beta_K_j_1    
-beta_F_j_1 	  
-Ref_Energy_S    	Refernence energy for strength deterioration
-Ref_Energy_C    	Refernence energy for post-capping strength deterioration
-Ref_Energy_K    	Refernence energy for unloading stiffness deterioration
-Ref_Energy_F    	Refernence energy for Smooth Transition deterioration
-Excursion_Flag 		Flag for Excursion occurrence (i.e., crossing the x-axis)
+Ulocal 			Rotation at direction reversal points
+Flocal 			Moment at direction reversal points
+Ktangent 			Tangent stiffness
+Kunload 				Unloading stiffness in the previous excursion
+posUy 	Yielding rotation in the previous +ve excursion
+posUcap 	Capping point rotation in the previous +ve excursion
+posKp 	Pre-capping slope in the previous +ve excursion
+posKpc 	Post-capping slope in the previous +ve excursion
+posFy 		Effective plastic moment in the previous +ve excursion
+posFyProj  Projed effective plastic moment in the previous +ve excursion
+posFcap        Maximum moment in the previous +ve excursion
+posFcapProj Projed maximum  moment in the previous +ve excursion
+negUy     Yielding rotation in the previous -ve excursion
+negUcap   Capping point rotation in the previous -ve excursion
+negKp     Pre-capping slope in the previous -ve excursion
+negKpc    Post-capping slope in the previous -ve excursion
+negFy         Effective plastic moment in the previous -ve excursion
+negFyProj  Projed effective plastic moment in the previous -ve 
+negFcap        Maximum moment in the previous -ve excursion
+negFcapProj Projed maximum  moment in the previous -ve excursion
+betaS    
+betaC    
+betaK    
+betaF 	  
+engRefS    	Refernence energy for strength deterioration
+engRefC    	Refernence energy for post-capping strength deterioration
+engRefK    	Refernence energy for unloading stiffness deterioration
+engRefF    	Refernence energy for Smooth Transition deterioration
+Excursion_Flag 		Flag for Excursion occurrence (i.e.,	crossing the x-axis)
 Reversal_Flag 		Flag for Loading direction reversal occurrence
 Yield_Flag 			Flag for Yielding occurrence
-Fail_FlagPos 		Flag for reaching the ultimate rotation in the +ve loading direction
-Fail_FlagNeg 		Flag for reaching the ultimate rotation in the -ve loading direction
+posFail_State 		Flag for reaching the ultimate rotation in the +ve loading direction
+negFail_State 		Flag for reaching the ultimate rotation in the -ve loading direction
 Mrpos_Flag 			Flag for reaching the residual moment in the +ve loading direction
 Mrneg_Flag 			Flag for reaching the residual moment in the -ve loading direction
-Energy_Flag 		Flag for reaching the reference energy
-Energy_Excrsni_1	Dissipated energy in previous excursion
-Energy_Excrsn 		Dissipated energy in current excursion
-Energy_Rev 			Total dissipated energy till previous load reversal point
-Energy_total 		Total dissipated energy till current step
+Failure_State 		Flag for reaching the reference energy
+engDspt	Dissipated energy in previous excursion
+Ei 		Dissipated energy in current excursion
+engRvrs 			Total dissipated energy till previous load reversal point
+engAcml 		Total dissipated energy till current step
 */
