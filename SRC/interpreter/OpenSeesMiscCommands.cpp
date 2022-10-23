@@ -1407,6 +1407,7 @@ extern int OPS_QuadMesh();
 extern int OPS_BgMesh();
 extern int OPS_ParticleGroup();
 extern int OPS_Flume();
+extern int OPS_BeamBrick();
 extern BackgroundMesh& OPS_getBgMesh();
 
 
@@ -1436,6 +1437,8 @@ int OPS_mesh()
 	res = OPS_QuadMesh();
     } else if (strcmp(type, "flume") == 0) {
 	res = OPS_Flume();
+    } else if (strcmp(type, "beamBrick") == 0) {
+	res = OPS_BeamBrick();
     } else {
         opserr<<"WARNING: mesh type "<<type<<" is unknown\n";
         return -1;
