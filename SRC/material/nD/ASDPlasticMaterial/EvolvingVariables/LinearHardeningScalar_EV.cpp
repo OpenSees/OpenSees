@@ -40,14 +40,9 @@ const double& LinearHardeningScalar_EV::getDerivative(const VoigtVector &depsilo
         const VoigtVector& stress) const
 {
     using namespace ASDPlasticMaterialGlobals;
-    // Clear the static variables
-    derivative = 0;
-
-    //Now compute the equivalent m
-    double m_eq = sqrt((2 * m.dot(m)) / 3);
 
     //Compute the derivative.
-    derivative = H * m_eq;
+    derivative = H * sqrt((2 * m.dot(m)) / 3);
     return derivative ;
 }
 
@@ -55,41 +50,41 @@ const double& LinearHardeningScalar_EV::getDerivative(const VoigtVector &depsilo
 int LinearHardeningScalar_EV::sendSelf(int commitTag, Channel &theChannel)
 {
     //Shove all data into single vector for sending
-    static Vector data(3);
-    const double &a = this->getVariableConstReference();
-    const double &a_committed = this->getVariableConstReference();
+    // static Vector data(3);
+    // const double &a = this->getVariableConstReference();
+    // const double &a_committed = this->getVariableConstReference();
 
-    data(0) = H;
-    data(1) = a;
-    data(2) = a_committed;
+    // data(0) = H;
+    // data(1) = a;
+    // data(2) = a_committed;
 
-    if (theChannel.sendVector(0, commitTag, data) != 0)
-    {
-        cerr << "LinearHardeningScalar_EV::sendSelf() - Failed sending data" << endl;
-        return -1;
-    }
+    // if (theChannel.sendVector(0, commitTag, data) != 0)
+    // {
+    //     cerr << "LinearHardeningScalar_EV::sendSelf() - Failed sending data" << endl;
+    //     return -1;
+    // }
 
     return 0;
 }
 
 int LinearHardeningScalar_EV::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    static Vector data(3);
-    if (theChannel.recvVector(0, commitTag, data) != 0)
-    {
-        cerr << "LinearHardeningScalar_EV::recvSelf() - Failed recieving data" << endl;
-        return -1;
-    }
+    // static Vector data(3);
+    // if (theChannel.recvVector(0, commitTag, data) != 0)
+    // {
+    //     cerr << "LinearHardeningScalar_EV::recvSelf() - Failed recieving data" << endl;
+    //     return -1;
+    // }
 
-    //Extract data from vector
-    double tmp_a;
-    double tmp_a_committed;
-    H = data(0);
-    tmp_a = data(1);
-    tmp_a_committed = data(2);
+    // //Extract data from vector
+    // double tmp_a;
+    // double tmp_a_committed;
+    // H = data(0);
+    // tmp_a = data(1);
+    // tmp_a_committed = data(2);
 
-    this->setVar(tmp_a);
-    this->setCommittedVar(tmp_a_committed);
+    // this->setVar(tmp_a);
+    // this->setCommittedVar(tmp_a_committed);
 
     return 0;
 }
