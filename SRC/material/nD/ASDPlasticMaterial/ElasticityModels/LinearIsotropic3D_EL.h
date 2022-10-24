@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
 //
 // ASDPlasticMaterial
@@ -36,21 +36,38 @@
 class LinearIsotropic3D_EL : public ElasticityBase<LinearIsotropic3D_EL> // CRTP on ElasticityBase
 {
 public:
-    LinearIsotropic3D_EL(double E, double nu);
+	LinearIsotropic3D_EL(double E, double nu): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
+	{
+		lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
+		mu = E / ( 2.0 * ( 1.0 + nu ) );
+	}
 
-    VoigtMatrix& operator()(const VoigtVector& stress); //See note on base class
+	VoigtMatrix& operator()(const VoigtVector& stress)
+	{
+		Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
 
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+		const double mu2 = mu * mu;
+
+		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = mu2;
+		Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;
+		Ee(3, 3) = mu;
+		Ee(4, 4) = mu;
+		Ee(5, 5) = mu;
+
+		return Ee;
+	}
+
+	int sendSelf(int commitTag, Channel &theChannel) {return 0;}
+	int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
 
 private:
 
-    double lambda;
-    double mu;
-    static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
+	double lambda;
+	double mu;
+	static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 
-
+VoigtMatrix LinearIsotropic3D_EL::Ee;
 
 #endif
