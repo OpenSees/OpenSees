@@ -27,15 +27,15 @@
 #include "LinearHardeningScalar_EV.h"
 #include "Vector.h"
 
-double LinearHardeningScalar_EV::derivative = 0.0;
+VoigtScalar LinearHardeningScalar_EV::derivative = 0.0;
 
-LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_) : EvolvingVariable(0.0), H(H_)
+LinearHardeningScalar_EV::LinearHardeningScalar_EV( VoigtScalar H_) : EvolvingVariable(0.0), H(H_)
 {}
 
-LinearHardeningScalar_EV::LinearHardeningScalar_EV( double H_, double k0) : EvolvingVariable(k0), H(H_)
+LinearHardeningScalar_EV::LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0) : EvolvingVariable(k0), H(H_)
 {}
 
-const double& LinearHardeningScalar_EV::getDerivative(const VoigtVector &depsilon,
+const VoigtScalar& LinearHardeningScalar_EV::getDerivative(const VoigtVector &depsilon,
         const VoigtVector &m,
         const VoigtVector& stress) const
 {
@@ -51,8 +51,8 @@ int LinearHardeningScalar_EV::sendSelf(int commitTag, Channel &theChannel)
 {
     //Shove all data into single vector for sending
     // static Vector data(3);
-    // const double &a = this->getVariableConstReference();
-    // const double &a_committed = this->getVariableConstReference();
+    // const VoigtScalar &a = this->getVariableConstReference();
+    // const VoigtScalar &a_committed = this->getVariableConstReference();
 
     // data(0) = H;
     // data(1) = a;
@@ -77,8 +77,8 @@ int LinearHardeningScalar_EV::recvSelf(int commitTag, Channel &theChannel, FEM_O
     // }
 
     // //Extract data from vector
-    // double tmp_a;
-    // double tmp_a_committed;
+    // VoigtScalar tmp_a;
+    // VoigtScalar tmp_a_committed;
     // H = data(0);
     // tmp_a = data(1);
     // tmp_a_committed = data(2);

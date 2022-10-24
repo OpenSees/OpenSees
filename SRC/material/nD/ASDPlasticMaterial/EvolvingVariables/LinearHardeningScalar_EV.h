@@ -33,15 +33,15 @@
 #include "../ASDPlasticMaterialGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 
 
-class LinearHardeningScalar_EV : public EvolvingVariable<double, LinearHardeningScalar_EV> //CRTP on LinearHardeningScalar_EV
+class LinearHardeningScalar_EV : public EvolvingVariable<VoigtScalar, LinearHardeningScalar_EV> //CRTP on LinearHardeningScalar_EV
 {
 public:
 
-    LinearHardeningScalar_EV( double H_);
+    LinearHardeningScalar_EV( VoigtScalar H_);
 
-    LinearHardeningScalar_EV( double H_, double k0);
+    LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0);
 
-    const double& getDerivative(const VoigtVector &depsilon,
+    const VoigtScalar& getDerivative(const VoigtVector &depsilon,
                                 const VoigtVector &m,
                                 const VoigtVector& stress) const;
     int sendSelf(int commitTag, Channel &theChannel);
@@ -49,8 +49,8 @@ public:
 
 
 private:
-    double H;
-    static double derivative; //Must return a reference.
+    VoigtScalar H;
+    static VoigtScalar derivative; //Must return a reference.
 };
 
  
