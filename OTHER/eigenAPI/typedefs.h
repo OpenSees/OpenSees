@@ -121,14 +121,14 @@ public:
 	VoigtVector(const Eigen::MatrixBase<OtherDerived>& other)
 		: Eigen::Vector6d(other)
 	{
-		std::cout << "c-tor from EXPR: " << typeid(other).name() << "\n";
+		// std::cout << "c-tor from EXPR: " << typeid(other).name() << "\n";
 	}
 
 	// This method allows you to assign Eigen expressions to VoigtVector
 	template<typename OtherDerived>
 	VoigtVector& operator=(const Eigen::MatrixBase<OtherDerived>& other)
 	{
-		std::cout << "assignment from EXPR: " << typeid(other).name() << "\n";
+		// std::cout << "assignment from EXPR: " << typeid(other).name() << "\n";
 		this->Eigen::Vector6d::operator=(other);
 		return *this;
 	}
