@@ -35,6 +35,7 @@
 
 // define fixed size 6x1 vectors and 6x6 tensors for voigt notation
 namespace Eigen {
+typedef Eigen::Matrix<double, 1, 1> Vector1d;
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 }
@@ -58,6 +59,25 @@ typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 //     typedef Eigen::CwiseNullaryOp<kronecker_delta<double>, Eigen::Vector6d::PlainObject> KroneckerDeltaReturnType;
 
 // }
+
+
+// inherit from matrix
+class VoigtScalar : public Eigen::Vector1d
+{
+public:
+
+
+	// empty constructor
+	VoigtScalar() : Eigen::Vector1d() {}
+
+	// full constructor
+	VoigtScalar(double value)
+		: Eigen::Vector1d()
+	{
+		*this << value;
+	}
+};
+
 
 class VoigtVector;
 

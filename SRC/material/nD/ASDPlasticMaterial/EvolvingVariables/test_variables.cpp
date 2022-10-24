@@ -1,11 +1,14 @@
 #include <iostream>
 #include "LinearHardeningScalar_EV.h"
 #include "LinearHardeningTensor_EV.h"
+#include "../MaterialInternalVariables.h"
 
 #include <StandardStream.h>
 
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
+
+typedef MaterialInternalVariables < LinearHardeningScalar_EV, LinearHardeningTensor_EV> InternalVariablesList;
 
 int main(int argc, char const *argv[])
 {
@@ -61,6 +64,25 @@ int main(int argc, char const *argv[])
 	LinearHardeningTensor_EV alpha3(H, alpha0);
 	VoigtVector dalpha3 = alpha3.getDerivative(depsilon, m, sigma);
 	cout << "dalpha3 = " << dalpha3 << endl;
+
+
+
+	// Test container of internal variables...;
+
+	double H_scalar = 2;
+	double initial_scalar = 1.0;
+	LinearHardeningScalar_EV aScalar(H_scalar, initial_scalar);
+
+	double H_tensor = 1000;
+	VoigtVector initial_tensor(1,2,3,4,5,6);
+
+	LinearHardeningTensor_EV aTensor(H_tensor, initial_tensor);
+
+	InternalVariablesList state(aScalar, aTensor);
+
+	cout << "Print state" << endl;
+
+	state.print(cout);
 
 	return 0;
 }
