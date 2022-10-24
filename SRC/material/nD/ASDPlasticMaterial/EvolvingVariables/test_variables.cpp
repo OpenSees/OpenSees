@@ -24,15 +24,43 @@ int main(int argc, char const *argv[])
 
 	double h = k.getDerivative(depsilon, m, sigma);
 
-
-
 	cout << "depsilon = \n" << depsilon << endl;
 	cout << "m = \n" << m << endl;
-	cout << "sigma = \n" << sigma << endl;
 
+	cout << "LinearHardeningScalar_EV" << endl;
 	cout << "h = " << h << endl;
 
+	VoigtVector kd = kronecker_delta();
 
+	cout << "kd = " << kd << endl;
+
+
+	VoigtVector alpha0;
+	double H = 10;
+
+	cout << "LinearHardeningTensor_EV alpha 1 H = " << H << " alpha0 = " << alpha0 << endl;
+	cout << "m = \n" << m << endl;
+	cout << "alpha0 = \n" << alpha0 << endl;
+	LinearHardeningTensor_EV alpha1(H, alpha0);
+	VoigtVector dalpha1 = alpha1.getDerivative(depsilon, m, sigma);
+	cout << "dalpha1 = " << dalpha1 << endl;
+
+	alpha0 = 2*kronecker_delta();
+	H = 10;
+	cout << "LinearHardeningTensor_EV alpha2 H = " << H << " alpha0 = " << alpha0 << endl;
+	cout << "m = \n" << m << endl;
+	LinearHardeningTensor_EV alpha2(H, alpha0);
+	VoigtVector dalpha2 = alpha2.getDerivative(depsilon, m, sigma);
+	cout << "dalpha2 = " << dalpha2 << endl;
+
+	alpha0.setZero();
+	H = 10;
+	m = {3.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0};
+	cout << "LinearHardeningTensor_EV alpha3 H = " << H << " alpha0 = " << alpha0 << endl;
+	cout << "m = \n" << m << endl;
+	LinearHardeningTensor_EV alpha3(H, alpha0);
+	VoigtVector dalpha3 = alpha3.getDerivative(depsilon, m, sigma);
+	cout << "dalpha3 = " << dalpha3 << endl;
 
 	return 0;
 }

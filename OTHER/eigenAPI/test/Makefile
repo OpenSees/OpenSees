@@ -30,6 +30,14 @@ test03: test03.o
 	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)
 	./test03
 
+test04: test04.o
+	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)
+	./test04
+
+
+test05: test05.o
+	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)
+	./test05
 
 test06: test06.o
 	$(CXX)  -o $@ $^ $(CFLAGS) $(LINKLIBS)

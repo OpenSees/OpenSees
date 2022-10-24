@@ -13,7 +13,7 @@ CXXFLAGS=\
    -I$(OPS_SRC)/actor/actor\
    -I$(OPS_SRC)/actor/channel
 
-DEPS = LinearHardeningScalar_EV.o
+DEPS = LinearHardeningScalar_EV.o LinearHardeningTensor_EV.o
 OBJ = test_variables.o
 LINKLIBS = /home/jaabell/Repositories/OpenSees/build/libOpenSeesLIB.a -lopenblas
 

@@ -40,7 +40,7 @@
 
 int main()
 {
-	StressVectorType sigma = {1, 1, 1, 1, 1, 1};
+	VoigtVector sigma = {1, 1, 1, 1, 1, 1};
 	std::cout << "sigma = " << sigma << std::endl;
-	std::cout << "p = " << p(sigma) << std::endl;
+	std::cout << "p = " << sigma.trace() << std::endl;
 }
