@@ -43,9 +43,9 @@ public:
     }
 
     // Note the use of the Curiously-recurring-template-pattern
-    // Operator () retunrs a const-reference. Thereforce, implementation must provide
+    // Operator () returns a const-reference. Thereforce, implementation must provide
     // a reference to a persistent data member. Usually this one is declared static
-    // so that storage and be reused across instances, and we avoid calls to malloc.
+    // so that storage can be reused across instances and we avoid calls to malloc.
     const VoigtMatrix& operator()(const VoigtVector& stress) 
     {
         return static_cast<T*>(this)->operator()(stress);
