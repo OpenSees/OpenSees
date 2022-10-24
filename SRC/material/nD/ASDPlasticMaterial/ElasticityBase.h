@@ -46,7 +46,7 @@ public:
     // Operator () retunrs a const-reference. Thereforce, implementation must provide
     // a reference to a persistent data member. Usually this one is declared static
     // so that storage and be reused across instances, and we avoid calls to malloc.
-    const VoigtMatrix& operator()(const VoigtVector& stress) // Best practise here would be to return a const reference. But we can't due to LTensor design limitation. Hopefully this will be solved in the future.... by us. -J.Abell
+    const VoigtMatrix& operator()(const VoigtVector& stress) 
     {
         return static_cast<T*>(this)->operator()(stress);
     }

@@ -33,8 +33,6 @@
 #include "ASDPlasticMaterialTraits.h"
 using namespace std;
 
-// using EigenAPI::VoightVector;
-
 
 //Forward declaration needed for declaring the operator overload << (friend)
 template<class VarType, class T>
@@ -64,6 +62,7 @@ public:
     {
         return static_cast<const T*>(this)->getDerivative(depsilon,  m,  sigma);
     };
+
     EvolvingVariable<VarType, T> & operator= ( const EvolvingVariable<VarType, T> & other)
     {
         //Check self-assignment
@@ -192,6 +191,7 @@ public:
     {
         static_cast<U*>(this)->check_hardening_saturation_limit(a, plasticFlow_m);
     }
+
     // ///////////////////////////////////////////////////////////////////////////////////
 private:
     VarType a;
