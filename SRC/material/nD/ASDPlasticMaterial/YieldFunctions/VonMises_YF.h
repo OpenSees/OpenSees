@@ -27,7 +27,6 @@
 #ifndef VonMises_YF_H
 #define VonMises_YF_H
 
-#include "../../../ltensor/LTensor.h"
 #include "../EvolvingVariable.h"
 #include "../YieldFunctionBase.h"
 #include "cmath"
@@ -46,52 +45,32 @@ class VonMises_YF : public YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHa
 public:
 
     typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-    typedef EvolvingVariable<double, KHardeningType> KType;
-
+    typedef EvolvingVariable<VoigtScalar, KHardeningType> KType;
 
     VonMises_YF( AlphaType &alpha_in, KType& k_in):
         YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHardeningType>>::YieldFunctionBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-                alpha_(alpha_in), k_(k_in)
-    {
-        // std::cout << "k_in = " << k_in << std::endl;
-        // std::cout << "&k_in = " << &k_in << std::endl;
-    }
+                alpha_(alpha_in), k_(k_in) {}
 
     double operator()(const VoigtVector& sigma) const
     {
-        double p;
-        static VoigtVector s(3, 3, 0.0);
+        double p = -(sigma.trace())/3;
+        static VoigtVector s = sigma.deviator();
+
         const VoigtVector &alpha = alpha_.getVariableConstReference();
         const double &k = k_.getVariableConstReference();
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-
-        // cout << "   YF : k = " << k << endl;
-
-        return sqrt( (s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)) ) - SQRT_2_over_3 * k ;  // This one assumes p positive in tension
+        auto tmp = (s - alpha).dot(s - alpha);
+        return sqrt( tmp ) - SQRT_2_over_3 * k ;  // This one assumes p positive in tension
     }
 
     const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
-
         const VoigtVector &alpha = alpha_.getVariableConstReference();
 
+        result = sigma.deviator() - alpha;
 
-        //Zero these tensors
-        s *= 0;
-        result *= 0;
-
-        double p;
-
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-
-        double den = sqrt((s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)));
-
-        if (den == 0)
-        {
-            return result;
-        }
-
-        result(i, j) = (s(i, j) - alpha(i, j)) / den;
+        double den = sqrt(result.dot(result));
+        if (abs(den) > 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+            result = result / den;
 
         return result;
 
@@ -101,30 +80,30 @@ public:
     {
         double dbl_result = 0.0;
 
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // const double &k = k_.getVariableConstReference();
+        // const VoigtVector &alpha = alpha_.getVariableConstReference();
+        // // const double &k = k_.getVariableConstReference();
 
-        //Zero the stress deviator
-        s *= 0;
+        // //Zero the stress deviator
+        // s *= 0;
 
-        //Compute stress deviator (s) and mean pressure (p)
-        double p;
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension, so flip the sign
+        // //Compute stress deviator (s) and mean pressure (p)
+        // double p;
+        // sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension, so flip the sign
 
-        //Denominator of the expression
-        double den = sqrt((s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)));
+        // //Denominator of the expression
+        // double den = sqrt((s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)));
 
-        if (den == 0)
-        {
-            return 0;
-        }
+        // if (den == 0)
+        // {
+        //     return 0;
+        // }
 
-        // This is for the hardening of k
-        constexpr double df_dk = -SQRT_2_over_3;
-        dbl_result +=  df_dk * k_.getDerivative(depsilon, m, sigma);
+        // // This is for the hardening of k
+        // constexpr double df_dk = -SQRT_2_over_3;
+        // dbl_result +=  df_dk * k_.getDerivative(depsilon, m, sigma);
 
-        //This is for the hardening of alpha
-        dbl_result +=  -(s(i, j) - alpha(i, j)) / den * alpha_.getDerivative(depsilon, m, sigma)(i, j);
+        // //This is for the hardening of alpha
+        // dbl_result +=  -(s(i, j) - alpha(i, j)) / den * alpha_.getDerivative(depsilon, m, sigma)(i, j);
 
         return dbl_result;
     }
