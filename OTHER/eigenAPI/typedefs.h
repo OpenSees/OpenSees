@@ -76,6 +76,23 @@ public:
 	{
 		*this << value;
 	}
+
+	// This constructor allows you to construct VoigtScalar from Eigen expressions
+	template<typename OtherDerived>
+	VoigtScalar(const Eigen::MatrixBase<OtherDerived>& other)
+		: Eigen::Vector1d(other)
+	{
+		// std::cout << "c-tor from EXPR: " << typeid(other).name() << "\n";
+	}
+
+	// This method allows you to assign Eigen expressions to VoigtScalar
+	template<typename OtherDerived>
+	VoigtScalar& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+	{
+		// std::cout << "assignment from EXPR: " << typeid(other).name() << "\n";
+		this->Eigen::Vector1d::operator=(other);
+		return *this;
+	}
 };
 
 
