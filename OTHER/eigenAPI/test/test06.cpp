@@ -42,5 +42,6 @@ int main()
 {
 	VoigtVector sigma = {1, 1, 1, 1, 1, 1};
 	std::cout << "sigma = " << sigma << std::endl;
-	std::cout << "p = " << sigma.trace() << std::endl;
+	std::cout << "sigma.trace() = " << sigma.trace() << std::endl;
+	std::cout << "sigma.deviator() = " << sigma.deviator() << std::endl;
 }
