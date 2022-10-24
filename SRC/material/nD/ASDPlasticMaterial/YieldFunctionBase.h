@@ -27,7 +27,7 @@
 #ifndef YieldFunctionBase_H
 #define YieldFunctionBase_H
 
-#include "../../ltensor/LTensor.h"
+#include "EigenAPI.h"
 #include "EvolvingVariable.h"
 #include <Channel.h>
 
