@@ -105,15 +105,6 @@ class VoigtVector : public Eigen::Vector6d
 {
 public:
 
-	/***********************************************************************
-
-	ConsStrainVectorVoigttructors and assignment operators needed for inheriting from Eigen
-
-	@todo: override << operator for copying from OpenSees
-	@todo: override >> operator for copying to OpenSees
-
-	************************************************************************/
-
 	// empty constructor
 	VoigtVector() : Eigen::Vector6d() {}
 
@@ -172,6 +163,15 @@ public:
 
 	// friend ostream & operator << (ostream &out, const VoigtVector &c);
 	// friend istream & operator >> (istream &in,  VoigtVector &c);
+	
+	/***********************************************************************
+
+	ConsStrainVectorVoigttructors and assignment operators needed for inheriting from Eigen
+
+	@todo: override << operator for copying from OpenSees
+	@todo: override >> operator for copying to OpenSees
+
+	************************************************************************/
 
 public:
 
@@ -214,22 +214,6 @@ EIGEN_STRONG_INLINE VoigtVector kronecker_delta()
 {
 	return VoigtVector(1.0, 1.0, 1.0, 0, 0, 0);
 }
-// ostream & operator << (ostream &out, const VoigtVector &v)
-// {
-// 	out << c.real;
-// 	out << "+i" << c.imag << endl;
-// 	return out;
-// }
-
-// istream & operator >> (istream &in,  VoigtVector &v)
-// {
-// 	cout << "Enter Real Part ";
-// 	in >> c.real;
-// 	cout << "Enter Imaginary Part ";
-// 	in >> c.imag;
-// 	return in;
-// }
-
 
 
 // inherit from matrix
@@ -280,8 +264,6 @@ public:
 	}
 
 public:
-
-
 };
 
 
