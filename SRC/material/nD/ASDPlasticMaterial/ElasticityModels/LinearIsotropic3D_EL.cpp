@@ -34,8 +34,6 @@ LinearIsotropic3D_EL::LinearIsotropic3D_EL(double E, double nu) : ElasticityBase
 {
 	lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
 	mu = E / ( 2.0 * ( 1.0 + nu ) );
-	// std::cout << "E  = " << E << std::endl;
-	// std::cout << "nu = " << nu << std::endl;
 }
 
 
