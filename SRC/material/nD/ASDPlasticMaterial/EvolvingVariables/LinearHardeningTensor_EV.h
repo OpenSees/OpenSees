@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
 //
 // ASDPlasticMaterial
@@ -37,20 +37,28 @@ class LinearHardeningTensor_EV : public EvolvingVariable<VoigtVector, LinearHard
 {
 public:
 
-    LinearHardeningTensor_EV( double H_);
-    LinearHardeningTensor_EV( double H_, const VoigtVector& alpha0);
+    LinearHardeningTensor_EV( double H_) : EvolvingVariable(VoigtVector()), H(H_) {};
+
+    LinearHardeningTensor_EV( double H_, const VoigtVector& alpha0)  : EvolvingVariable(alpha0), H(H_) {};
 
     const VoigtVector& getDerivative(const VoigtVector &depsilon,
-                                  const VoigtVector &m,
-                                  const VoigtVector& stress) const;
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+                                     const VoigtVector &m,
+                                     const VoigtVector& stress) const
+    {
+        derivative = H * m.deviator();
+        return derivative;
+    }
+
+    // int sendSelf(int commitTag, Channel &theChannel) {return 0;}
+    // int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
 
 private:
     double H;
     static VoigtVector derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
 };
 
+
+VoigtVector LinearHardeningTensor_EV::derivative;
 
 
 #endif
