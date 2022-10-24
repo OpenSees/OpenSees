@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
 		= VoigtVector::Zero();//{0.0,, 0.0,, 0.0,, 0.0,, 0.0,, 0.0};
 
 
-	double h = k.getDerivative(depsilon, m, sigma);
+	VoigtScalar h = k.getDerivative(depsilon, m, sigma);
 
 	cout << "depsilon = \n" << depsilon << endl;
 	cout << "m = \n" << m << endl;
@@ -33,9 +33,6 @@ int main(int argc, char const *argv[])
 	cout << "LinearHardeningScalar_EV" << endl;
 	cout << "h = " << h << endl;
 
-	VoigtVector kd = kronecker_delta();
-
-	cout << "kd = " << kd << endl;
 
 
 	VoigtVector alpha0;
