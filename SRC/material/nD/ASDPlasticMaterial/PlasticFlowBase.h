@@ -27,8 +27,9 @@
 #ifndef PlasticFlowBase_H
 #define PlasticFlowBase_H
 
-#include "../../ltensor/LTensor.h"
 #include <Channel.h>
+
+#include "EigenAPI.h"
 
 template <class T>
 class PlasticFlowBase
