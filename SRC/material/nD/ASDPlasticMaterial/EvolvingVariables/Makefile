@@ -13,17 +13,17 @@ CXXFLAGS=\
    -I$(OPS_SRC)/actor/actor\
    -I$(OPS_SRC)/actor/channel
 
-DEPS = LinearHardeningScalar_EV.o LinearHardeningTensor_EV.o
+DEPS = 
 OBJ = test_variables.o
 LINKLIBS = /home/jaabell/Repositories/OpenSees/build/libOpenSeesLIB.a -lopenblas
 
 all: test_variables
 
-%.o: %.cpp 
-	$(CXX) $(CXXFLAGS) -c -o $@ $^
+# %.o: %.cpp 
+# 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
-test_variables: test_variables.o $(DEPS)
-	$(CXX) -o $@ $^ $(CFLAGS) $(LINKLIBS)
+test_variables: test_variables.cpp 
+	$(CXX) $(CXXFLAGS) $(DEPS) -o $@ $^ $(CFLAGS) $(LINKLIBS)
 	./test_variables
 
 

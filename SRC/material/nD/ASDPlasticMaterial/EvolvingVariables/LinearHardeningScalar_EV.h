@@ -37,15 +37,20 @@ class LinearHardeningScalar_EV : public EvolvingVariable<VoigtScalar, LinearHard
 {
 public:
 
-    LinearHardeningScalar_EV( VoigtScalar H_);
+    LinearHardeningScalar_EV( VoigtScalar H_) : EvolvingVariable(0.0), H(H_) {};
 
-    LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0);
+    LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0) : EvolvingVariable(k0), H(H_) {};
 
     const VoigtScalar& getDerivative(const VoigtVector &depsilon,
                                 const VoigtVector &m,
-                                const VoigtVector& stress) const;
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+                                const VoigtVector& stress) const
+    {
+        derivative = H * sqrt((2 * m.dot(m)) / 3);
+        return derivative;
+    }
+
+    // int sendSelf(int commitTag, Channel &theChannel) {return 0;}
+    // int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
 
 
 private:
@@ -53,5 +58,6 @@ private:
     static VoigtScalar derivative; //Must return a reference.
 };
 
- 
+ VoigtScalar LinearHardeningScalar_EV::derivative;
+
 #endif //Linear_HardeningScalarV_H
