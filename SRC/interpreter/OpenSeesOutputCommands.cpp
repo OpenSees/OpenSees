@@ -1571,6 +1571,29 @@ int OPS_setNodeCoord()
     return 0;
 }
 
+int OPS_getPatterns()
+{
+  Domain* theDomain = OPS_GetDomain();
+  if (theDomain == 0) return -1;
+    
+  LoadPattern *thePattern;
+  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+  std::vector <int> data;
+  
+  while ((thePattern = thePatterns()) != 0)
+    data.push_back(thePattern->getTag());
+
+  int size = data.size();
+  
+  if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+    opserr << "WARNING getPatterns - failed to set output\n";
+    return -1;
+  }
+  
+  return 0;
+}
+
 int OPS_getFixedNodes()
 {
     Domain* theDomain = OPS_GetDomain();

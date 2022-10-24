@@ -1203,6 +1203,18 @@ static PyObject *Py_ops_setNodeCoord(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getPatterns(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getPatterns() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getFixedNodes(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2912,6 +2924,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeResponse", &Py_ops_nodeResponse);
     addCommand("nodeCoord", &Py_ops_nodeCoord);
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
+    addCommand("getPatterns", &Py_ops_getPatterns);    
     addCommand("getFixedNodes", &Py_ops_getFixedNodes);
     addCommand("getFixedDOFs", &Py_ops_getFixedDOFs);
     addCommand("getConstrainedNodes", &Py_ops_getConstrainedNodes);
