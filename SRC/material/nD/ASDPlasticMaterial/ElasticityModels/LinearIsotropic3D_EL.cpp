@@ -27,7 +27,7 @@
 #include "LinearIsotropic3D_EL.h"
 #include "Vector.h"
 
-VoigtMatrix LinearIsotropic3D_EL::Ee(3, 3, 3, 3, 0.0);
+VoigtMatrix LinearIsotropic3D_EL::Ee();
 
 
 LinearIsotropic3D_EL::LinearIsotropic3D_EL(double E, double nu) : ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
