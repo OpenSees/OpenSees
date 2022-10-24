@@ -13,17 +13,17 @@ CXXFLAGS=\
    -I$(OPS_SRC)/actor/actor\
    -I$(OPS_SRC)/actor/channel
 
-DEPS = LinearIsotropic3D_EL.o
+DEPS = 
 OBJ = test_elast.o
 LINKLIBS = /home/jaabell/Repositories/OpenSees/build/libOpenSeesLIB.a -lopenblas
 
 all: test_elast
 
-%.o: %.cpp 
-	$(CXX) $(CXXFLAGS) -c -o $@ $^
+# %.o: %.cpp 
+# 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
-test_elast: test_elast.o $(DEPS)
-	$(CXX) -o $@ $^ $(CFLAGS) $(LINKLIBS)
+test_elast: test_elast.cpp $(DEPS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(CFLAGS) $(LINKLIBS)
 	./test_elast
 
 
