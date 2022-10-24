@@ -280,6 +280,7 @@ int OPS_nodeAccel();
 int OPS_nodeResponse();
 int OPS_nodeCoord();
 int OPS_setNodeCoord();
+int OPS_getPatterns();
 int OPS_getFixedNodes();
 int OPS_getFixedDOFs();
 int OPS_getConstrainedNodes();
