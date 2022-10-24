@@ -27,10 +27,7 @@
 #ifndef VonMises_PF_H
 #define VonMises_PF_H
 
-#include "../../../ltensor/LTensor.h"
 #include "../PlasticFlowBase.h"
-
-// Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 #include "../ASDPlasticMaterialGlobals.h"
 
 #include "../EvolvingVariable.h"
@@ -44,162 +41,36 @@ class VonMises_PF : public PlasticFlowBase<VonMises_PF<AlphaHardeningType, KHard
 public:
 
     typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-    typedef EvolvingVariable<double, KHardeningType> KType;
-
+    typedef EvolvingVariable<VoigtScalar, KHardeningType> KType;
 
     // PlasticFlowBase<VonMises_PF<HardeningType>>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
     VonMises_PF( AlphaType &alpha_in, KType &k_in):
         PlasticFlowBase<VonMises_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-                alpha_(alpha_in), k_(k_in)
-    {
-
-    }
-
+                alpha_(alpha_in), k_(k_in) { }
 
     const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
     {
         //Identical to derivative of VonMises_YF wrt sigma (a.k.a nij)
         const VoigtVector &alpha = alpha_.getVariableConstReference();
 
-        //Zero these tensors
-        s *= 0;
-        result *= 0;
+        result = sigma.deviator() - alpha;
 
-        double p = -sigma(i, i) / 3;
-
-        s(i, j) = sigma(i, j) + p * kronecker_delta(i, j);
-        result(i, j) = s(i, j) - alpha(i, j);
-        double den = sqrt(result(i, j) * result(i, j));
-
-        if (den == 0)
-        {
-            return result;
-        }
-        else
-        {
-            result(i, j) = result(i, j) / den;
-        }
-
-        // cout << "m = [";
-        // for (int ii = 0; ii < 3; ii++)
-        //     for (int jj = 0; jj < 3; jj++)
-        //     {
-        //         cout << result(ii, jj) << " ";
-        //     }
-        // cout << "]\n";
-        // cout << "alpha = [";
-        // for (int ii = 0; ii < 3; ii++)
-        //     for (int jj = 0; jj < 3; jj++)
-        //     {
-        //         cout << alpha(ii, jj) << " ";
-        //     }
-        // cout << "]\n";
+        double den = sqrt(result.dot(result));
+        if (abs(den) > 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+            result = result / den;
 
         return result;
     }
 
-    VoigtMatrix const& dm_over_dsigma(VoigtVector const& sigma){
-        static VoigtVector s(3, 3, 0.0);
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // const double &k = k_.getVariableConstReference();
-        double p=0;
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-        p=-p;
-        static VoigtVector s_minus_alpha(3,3,0.0);
-        s_minus_alpha(i,j) = s(i,j) - alpha(i,j);
-        double s_minus_alpha_square = s_minus_alpha(i,j) * s_minus_alpha(i,j) ; 
-
-        static VoigtMatrix dm__dsigma(3,3,3,3,0.0);
-        dm__dsigma*=0;
-        for (int ig = 0; ig < 3; ++ig)
-            for (int jg = 0; jg < 3; ++jg)
-                for (int mg = 0; mg < 3; ++mg)
-                    for (int ng = 0; ng < 3; ++ng){
-                        dm__dsigma(ig,jg,mg,ng) = 
-                            (
-                                kronecker_delta(ig,mg) * kronecker_delta(jg,ng) 
-                                - 1.0/3.0 * kronecker_delta(ig,jg) * kronecker_delta(mg,ng) 
-                            ) * pow(s_minus_alpha_square, -0.5) - 
-                            (
-                                (s_minus_alpha(ig,jg)) * (s_minus_alpha(mg,ng))
-                            ) * pow(s_minus_alpha_square, -1.5); 
-                    }
-
-        // // ==============
-        // //  Legacy . LTensor do not accept this. Change to the naive for-loop.
-        // // ==============
-        // dm__dsigma(i,j,m,n) = 
-        //     (
-        //         kronecker_delta(i,m) * kronecker_delta(j,n) - 1.0/3.0 * kronecker_delta(i,j) * kronecker_delta(m,n) 
-        //     ) * pow(s_minus_alpha_square, -0.5) - 
-        //     (
-        //         (s(i,j)-alpha(i,j)) * (s(m,n)-alpha(m,n))
-        //     ) * pow(s_minus_alpha_square, -1.5); 
-        // // ==============
-        // =========================================
-        // minimal failed example
-        // =========================================
-        // test(i,j,m,n)=kronecker_delta(i,m) * kronecker_delta(j,n) - 1.0/3.0 * kronecker_delta(i,j) * kronecker_delta(m,n) ;
-        // =========================================
-
-        // static VoigtMatrix IdentityTensor4(3,3,3,3, 0); //optimize this to global later.
-        // IdentityTensor4(i,j,k,l)=kronecker_delta(i, j)*kronecker_delta(k,l);
-
-        // dm__dsigma(i,j,k,l) = 
-        //     (
-        //         IdentityTensor4(i,k,j,l) - 1.0/3.0 * IdentityTensor4(i,j,k,l) 
-        //     ) * pow(s_minus_alpha_square, -0.5) - 
-        //     (
-        //         (s_minus_alpha(i,j)) * (s_minus_alpha(k,l))
-        //     ) * pow(s_minus_alpha_square, -1.5); 
-
-        return dm__dsigma;
-    }
-
-    VoigtVector const& dm_over_dq_start_h_star(VoigtVector const& depsilon, VoigtVector const& pf_m, const VoigtVector& stress){
-        static VoigtVector s(3, 3, 0.0);
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // const double &k = k_.getVariableConstReference();
-        double p=0;
-        stress.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-        p=-p;
-
-        static VoigtMatrix IdentityTensor4(3,3,3,3, 0.0); //optimize this to global later.
-        IdentityTensor4(i,j,k,l)=kronecker_delta(i, j)*kronecker_delta(k,l);
-        // (1) von Mises material always has this part zero. 
-        // double dm_dk=0.0; 
-        // (2) dm_dalpha part: kinematic hardening
-        static VoigtMatrix dm_dalpha(3,3,3,3,0.0);
-        static VoigtVector s_minus_alpha(3,3,0.0);
-        s_minus_alpha(i,j) = s(i,j) - alpha(i,j);
-        double s_minus_alpha_square = s_minus_alpha(i,j) * s_minus_alpha(i,j) ; 
-
-        dm_dalpha(i,j,m,n) = - IdentityTensor4(i,m,j,n) * pow(s_minus_alpha_square,-0.5) 
-            + s_minus_alpha(i,j)*s_minus_alpha(m,n) * pow(s_minus_alpha_square,-1.5);
-        static VoigtVector ret(3,3,0.0);
-        ret(i,j) = dm_dalpha(i,j,m,n)*alpha_.getDerivative(depsilon, pf_m, stress)(m,n);
-
-        return ret;
-    }
-
-
 private:
-
     AlphaType &alpha_;
     KType &k_;
 
-    static VoigtVector s; //sigma deviator
     static VoigtVector result; //For returning VoigtVectors
-    // static VoigtMatrix dm__dsigma; //For returning dm_over_dsigma
-
 };
 
+template<class AlphaHardeningType, class KHardeningType>
+VoigtVector VonMises_PF<AlphaHardeningType , KHardeningType >::result;
 
-template<class AlphaHardeningType, class KHardeningType>
-VoigtVector VonMises_PF<AlphaHardeningType , KHardeningType >::s(3, 3, 0.0);
-template<class AlphaHardeningType, class KHardeningType>
-VoigtVector VonMises_PF<AlphaHardeningType , KHardeningType >::result(3, 3, 0.0);
-// template<typename AlphaHardeningType, typename KHardeningType>
-// VoigtMatrix VonMises_PF<AlphaHardeningType , KHardeningType >::dm__dsigma(3, 3, 3, 3, 0.0);
 
 #endif
