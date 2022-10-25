@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
     if (numIMKBilinMaterials == 0) {
         numIMKBilinMaterials++;
-        OPS_Error("Mod. IMK Bilinear Model - AE-Oct22\n", 1);
+        OPS_Error("IMK with Bilinear Response - Code by AE_KI (Oct22)\n", 1);
     }
 
     // Pointer to a uniaxial material that will be returned
@@ -131,17 +131,20 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
         Fi  = Fi_1;
     } else {
         double  betaS=0,betaC=0,betaK=0;
+        bool    FailS=false,FailC=false,FailK=false;
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN REVERSAL /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if ( onBackbone && Fi_1*dU < 0.0) {
+        if ( (onBackbone && Fi_1*dU < 0.0) || (onBackbone && Fi_1==0 && Ui_1*dU<=0) ) {
             onBackbone      = false;
     /////////////////// UPDATE UNLOADING STIFFNESS ////////////////////////////////////////////
             double  EpjK    = engAcml            - 0.5*(Fi_1 / Kunload)*Fi_1;
             double  EiK     = engAcml - engDspt  - 0.5*(Fi_1 / Kunload)*Fi_1;
             betaK           = pow( (EiK / (engRefK - EpjK)), c_K );
+            FailK           = (betaK>1);
+            betaK           = betaK < 0 ? 0 : (betaK>1 ? 1 : betaK);
             Kunload         *= (1 - betaK);
-            if (Failure_State==2) {
+            if (Failure_State>1) {
                 Kunload     = 0.5*Ke;
             }
             KgetTangent     = Kunload;
@@ -152,10 +155,14 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
         if (!onBackbone && Fi_1*Fi <= 0.0 && Failure_State>0) {
     /////////////////// UPDATE BACKBONE CURVE /////////////////////////////////////////////////
-            double FcapProj, FyProj=0;
+            double FcapProj, FyProj;
             double Ei   = max(0.0, engAcml - engDspt);
             betaS       = pow((Ei / (engRefS - engAcml)), c_S);
             betaC       = pow((Ei / (engRefC - engAcml)), c_C);
+            FailS       = (betaS>1);
+            FailC       = (betaC>1);
+            betaS       = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
+            betaC       = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
             engDspt     = engAcml;
         // Positive
             if (dU > 0) {
@@ -180,7 +187,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                     FyProj      = posFy - posKp*posUy;
                     posUcap     = (FcapProj - FyProj) / (posKp - posKpc);
                     posFcap     = FyProj + posKp*posUcap;
-                    double candidateKp = (posFcap - posFres) / (posUcap - Ui - posFres/Kunload);
+                    double candidateKp = (posFcap - posFres) / (posUcap - Ui - (posFres - Fi)/Kunload);
                     if (posKp > candidateKp) {
                         posKp   = candidateKp;
                     }
@@ -210,7 +217,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                     FyProj      = negFy - negKp*negUy;
                     negUcap     = (FcapProj - FyProj) / (negKp - negKpc);
                     negFcap     = FyProj + negKp*negUcap;
-                    double candidateKp = (negFcap - negFres) / (negUcap - Ui - negFres/Kunload);
+                    double candidateKp = (negFcap - negFres) / (negUcap - Ui - (negFres - Fi)/Kunload);
                     if (negKp > candidateKp) {
                         negKp   = candidateKp;
                     }
@@ -228,7 +235,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
         if (dU > 0) {   // Backbone in Positive
             KgetTangent = (Ui < posUcap) ? posKp : posKpc;
             Fi_backbone = posFcap + (Ui - posUcap) * KgetTangent;
-
             if (Fi_backbone < posFres || Failure_State==4) {
                 Fi_backbone = posFres;
                 KgetTangent = 0;
@@ -247,7 +253,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
         else {          // Backbone in Negative
             KgetTangent = (negUcap < Ui) ? negKp : negKpc;
             Fi_backbone = negFcap + (Ui - negUcap) * KgetTangent;
-
             if (Fi_backbone > negFres || Failure_State==3) {
                 Fi_backbone = negFres;
                 KgetTangent = 0;
@@ -271,32 +276,41 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     // 0: Elastic
-    // 1: Yield either Positive or Negative
-    // 2: Residual Branch either Positive or Negative
-    // 3: Strength Lost in Positive
-    // 4: Strength Lost in Negative
-    // 5: Strength Lost in Both Positive and Negative
-        // Failure criteria (Tolerance	= 1//)
-    // I have no idea about why it can' t be 0 nor 1.
-        bool    FailS	= ( betaS < -0.01 || betaS > 1.01 );
-        bool    FailC	= ( betaC < -0.01 || betaC > 1.01 );
-        bool	FailK	= ( betaK < -0.01 || betaK > 1.01 );
-        bool	FailDp 	= ( Ui >  posUu_0                 );
-        bool	FailDn 	= ( Ui < -negUu_0                 );
-        bool	FailRp 	= ( onBackbone && dU > 0 && Fi <= 0);
-        bool	FailRn 	= ( onBackbone && dU < 0 && Fi >= 0);
-        bool    ResP    = ( onBackbone && Fi_backbone==posFres );
-        bool    ResN    = ( onBackbone && Fi_backbone==negFres );
+    // 1: Experienced Yield in either Positive or Negative.
+    // 2: Experienced Residual Branch in either Positive or Negative.
+    // 3: Strength Lost in Positive. Negative Backbone Strength will be set the Residual Strength.
+    // 4: Strength Lost in Negative. Positive Backbone Strength will be set the Residual Strength.
+    // 5: Strength Lost in Both Positive and Negative.
+        bool    ResP,ResN;
+        if (posKpc==0) {
+            ResP    = true;
+        } else {
+            double  posUres = (posFres - posFcap + posKpc * posUcap) / posKpc;
+            ResP    = (Ui >= posUres);
+        }
+        if (negKpc==0) {
+            ResN    = true;
+        } else {
+            double  negUres = (negFres - negFcap + negKpc * negUcap) / negKpc;
+            ResN    = (Ui <= negUres);
+        }
+        bool	FailDp 	= ( dU > 0 && Ui >=  posUu_0       );
+        bool	FailDn 	= ( dU < 0 && Ui <= -negUu_0       );
+        bool	FailRp 	= ( dU > 0 && onBackbone && Fi <= 0);
+        bool	FailRn 	= ( dU < 0 && onBackbone && Fi >= 0);
         // int exFailure_State = Failure_State;
         if (FailS||FailC||FailK) {
+            Fi  = 0;
             Failure_State   = 5;
         } else if (FailDp||FailRp) {
+            Fi  = 0;
             if (Failure_State==4) {
                 Failure_State   = 5;
             } else {
                 Failure_State   = 3;
             }
         } else if (FailDn||FailRn) {
+            Fi  = 0;
             if (Failure_State==3) {
                 Failure_State   = 5;
             } else {
@@ -311,9 +325,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
         //     std::cout << exFailure_State << " -> " << Failure_State << "\n";
         // }
 
-        if (Failure_State==5) {
-            Fi  = 0;
-        }
 
         engAcml     += 0.5*(Fi + Fi_1)*dU;
 

@@ -41,7 +41,7 @@ OPS_IMKPinching()
 {
 	if (numIMKPinchingMaterials == 0) {
 		numIMKPinchingMaterials++;
-		OPS_Error("IMK with Pinched Response - Code by AE_HJ (Oct22)\n", 1);
+		OPS_Error("IMK with Pinched Response - Code by AE_KI (Oct22)\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -143,8 +143,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     //      Excursion_Flag: When crossing X-axis.  Evokes re-considering of the deteriorations and which peak to go for.
     //      Reversal_Flag:  When unloading starts. Evokes re-condiersing of the stiffness deterioration and peak point registration.
-        double  betaS=0,betaC=0,betaK=0;
-        double  dF,betaA=0;
+        double  betaS=0,betaC=0,betaK=0,betaA=0;
+        bool    FailS=false,FailC=false,FailK=false,FailA=false;
+        double  dF;
         double  Kglobal,Klocal,Kpinch;
         int     exBranch        = Branch;
         bool    Excursion_Flag  = false;
@@ -203,6 +204,8 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
             double  EpjK    = engAcml            - 0.5*(Fi_1 / Kunload)*Fi_1;
             double  EiK     = engAcml - engDspt  - 0.5*(Fi_1 / Kunload)*Fi_1;
             betaK           = pow( (EiK / (engRefK - EpjK)), c_K );
+            FailK           = (betaK>1);
+            betaK           = betaK < 0 ? 0 : (betaK>1 ? 1 : betaK);
             Kunload         *= (1 - betaK);
             Ktangent        = Kunload;
         // Detect unloading completed in a step.
@@ -222,6 +225,12 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
             betaS       = pow((Ei / (engRefS - engAcml)), c_S);
             betaC       = pow((Ei / (engRefC - engAcml)), c_C);
             betaA       = pow((Ei / (engRefA - engAcml)), c_A);
+            FailS       = (betaS>1);
+            FailC       = (betaC>1);
+            FailA       = (betaA>1);
+            betaS       = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
+            betaC       = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
+            betaA       = betaA < 0 ? 0 : (betaA>1 ? 1 : betaA);
             engDspt     = engAcml;
         // Positive
             if (dU > 0) {
@@ -542,12 +551,6 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        // Failure criteria (Tolerance	= 1//)
-    // I have no idea about why it can' t be 0 nor 1.
-        bool    FailS	= ( betaS < -0.01 || betaS > 1.01 );
-        bool    FailC	= ( betaC < -0.01 || betaC > 1.01 );
-        bool	FailA	= ( betaA < -0.01 || betaA > 1.01 );
-        bool	FailK	= ( betaK < -0.01 || betaK > 1.01 );
         bool	FailPp 	= ( posFglobal == 0               );
         bool	FailPn 	= ( negFglobal == 0               );
         bool	FailDp 	= ( Ui >  posUu_0                 );
@@ -555,10 +558,8 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
         bool	FailRp 	= ( Branch ==  7 && posFres == 0  );
         bool	FailRn 	= ( Branch == 17 && negFres == 0  );
         if (FailS||FailC||FailA||FailK||FailPp||FailPn||FailRp||FailRn||FailDp||FailDn) {
+            Fi  = 0;
             Failure_Flag    = true;
-        }
-        if (Failure_Flag) {
-            Fi 	= 0;
         }
 
         dEi	= 0.5*(Fi + Fi_1)*dU;   // Internal energy increment

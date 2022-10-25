@@ -41,7 +41,7 @@ OPS_IMKPeakOriented()
 {
 	if (numIMKPeakOrientedMaterials == 0) {
 		numIMKPeakOrientedMaterials++;
-		OPS_Error("IMK with Peak-Oriented Response - Code by AE-HJ (Oct22)\n", 1);
+		OPS_Error("IMK with Peak-Oriented Response - Code by AE_KI (Oct22)\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -89,7 +89,7 @@ IMKPeakOriented::IMKPeakOriented(int tag, double p_Ke,
     double p_posUp_0, double p_posUpc_0, double p_posUu_0, double p_posFy_0, double p_posFcapFy_0, double p_posFresFy_0,
     double p_negUp_0, double p_negUpc_0, double p_negUu_0, double p_negFy_0, double p_negFcapFy_0, double p_negFresFy_0,
     double p_LAMBDA_S, double p_LAMBDA_C, double p_LAMBDA_A, double p_LAMBDA_K, double p_c_S, double p_c_C, double p_c_A, double p_c_K, double p_D_pos, double p_D_neg)
-    :UniaxialMaterial(tag, 0), Ke(p_Ke),
+    : UniaxialMaterial(tag, 0), Ke(p_Ke),
     posUp_0(p_posUp_0), posUpc_0(p_posUpc_0), posUu_0(p_posUu_0), posFy_0(p_posFy_0), posFcapFy_0(p_posFcapFy_0), posFresFy_0(p_posFresFy_0),
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_A(p_LAMBDA_A), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_A(p_c_A), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg)
@@ -143,8 +143,9 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     //      Excursion_Flag: When crossing X-axis.  Evokes re-considering of the deteriorations and which peak to go for.
     //      Reversal_Flag:  When unloading starts. Evokes re-condiersing of the stiffness deterioration and peak point registration.
-        double  betaS=0,betaC=0,betaK=0;
-        double  dF,betaA=0;
+        double  betaS=0,betaC=0,betaK=0,betaA=0;
+        bool    FailS=false,FailC=false,FailK=false,FailA=false;
+        double  dF;
         int     exBranch        = Branch;
         bool    Excursion_Flag  = false;
         bool    Reversal_Flag   = false;
@@ -190,6 +191,8 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
             double  EpjK    = engAcml            - 0.5*(Fi_1 / Kunload)*Fi_1;
             double  EiK     = engAcml - engDspt  - 0.5*(Fi_1 / Kunload)*Fi_1;
             betaK           = pow( (EiK / (engRefK - EpjK)), c_K );
+            FailK           = (betaK>1);
+            betaK           = betaK < 0 ? 0 : (betaK>1 ? 1 : betaK);
             Kunload         *= (1 - betaK);
             Ktangent        = Kunload;
         // Detect unloading completed in a step.
@@ -209,6 +212,12 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
             betaS       = pow((Ei / (engRefS - engAcml)), c_S);
             betaC       = pow((Ei / (engRefC - engAcml)), c_C);
             betaA       = pow((Ei / (engRefA - engAcml)), c_A);
+            FailS       = (betaS>1);
+            FailC       = (betaC>1);
+            FailA       = (betaA>1);
+            betaS       = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
+            betaC       = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
+            betaA       = betaA < 0 ? 0 : (betaA>1 ? 1 : betaA);
             engDspt     = engAcml;
         // Positive
             if (dU > 0) {
@@ -374,7 +383,6 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
             exBranch    = 16;
             Branch 	    = 17;
         }
-
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -466,12 +474,6 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        // Failure criteria (Tolerance	= 1//)
-    // I have no idea about why it can' t be 0 nor 1.
-        bool    FailS	= ( betaS < -0.01 || betaS > 1.01 );
-        bool    FailC	= ( betaC < -0.01 || betaC > 1.01 );
-        bool	FailA	= ( betaA < -0.01 || betaA > 1.01 );
-        bool	FailK	= ( betaK < -0.01 || betaK > 1.01 );
         bool	FailPp 	= ( posFglobal == 0               );
         bool	FailPn 	= ( negFglobal == 0               );
         bool	FailDp 	= ( Ui >  posUu_0                 );
@@ -479,10 +481,8 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
         bool	FailRp 	= ( Branch ==  7 && posFres == 0  );
         bool	FailRn 	= ( Branch == 17 && negFres == 0  );
         if (FailS||FailC||FailA||FailK||FailPp||FailPn||FailRp||FailRn||FailDp||FailDn) {
+            Fi  = 0;
             Failure_Flag    = true;
-        }
-        if (Failure_Flag) {
-            Fi 	= 0;
         }
 
         dEi	= 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
