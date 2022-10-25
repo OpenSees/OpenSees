@@ -22,7 +22,7 @@
 
 //**********************************************************************                                                                     
 // Code Developed by: Ahmed Elkady and Hammad ElJisr
-// Last Updated: July 2020
+// Last Updated: October 2022
 //**********************************************************************
 
 #ifndef IMKPinching_h
@@ -93,14 +93,7 @@ private:
     double  engRefC;
     double  engRefA;
     double  engRefK;
-// 3 State Variables
-    double  U,              cU;
-    double  Ui,             cUi;
-    double  Fi,             cFi;
 // History Variables 
-// 3 Stiffness
-    double  Ktangent,       cKtangent, ki;
-    double  Kunload,        cKunload;
 // 12 Positive U and F
     double  posUy,          cPosUy;
     double  posFy,          cPosFy;
@@ -127,17 +120,22 @@ private:
     double  negFres,        cNegFres;
     double  negKp,          cNegKp;
     double  negKpc,         cNegKpc;
-// 2 Energy
-    double  engAcml,        cEngAcml;
-    double  engDspt,        cEngDspt;
-// 3 Flag
-    bool    Failure_Flag,   cFailure_Flag;
-    bool    posYield_Flag,  cPosYield_Flag;
-    bool    negYield_Flag,  cNegYield_Flag;
-    int     Branch,         cBranch;
 // 2 Pinching
     double  Fpinch,         cFpinch;
     double  Upinch,         cUpinch;
+// 3 State Variables
+    double  U,              cU;
+    double  Ui,             cUi;
+    double  Fi,             cFi;
+// 3 Stiffness
+    double  Ktangent,       cKtangent, KgetTangent;
+    double  Kunload,        cKunload;
+// 2 Energy
+    double  engAcml,        cEngAcml;
+    double  engDspt,        cEngDspt;
+// 2 Flag
+    bool    Failure_Flag,   cFailure_Flag;
+    int     Branch,         cBranch;
 };
 
 #endif
