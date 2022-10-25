@@ -137,7 +137,7 @@ int BeamBrick::create_line(Node* nd1, Node* nd2, int& nodeTag,
     lnodes.push_back(nd1->getTag());
 
     // loop from nd1 to nd2
-    while (curr[dir] < crds2[dir] - size / 2.0) {
+    while (curr[dir] < crds2[dir] - size * 0.1) {
         if (create_node(curr, nodeTag) == 0) {
             opserr << "failed to create node - create_line\n";
             return -1;
