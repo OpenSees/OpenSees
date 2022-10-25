@@ -300,6 +300,8 @@ PVDRecorder::vtu()
     }
     if (nodendf < 3) {
 	nodendf = 3;
+    } else if (nodendf > 3) {
+        nodendf = 3;
     }
 
     // get parts
