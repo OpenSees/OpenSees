@@ -117,7 +117,7 @@ void PFEMContact3D::setDomain(Domain *theDomain) {
     // impact velocity
     double vI = getVI();
     if (vI > 0) {
-        Fi *= vI * Ae * sqrt(E * rho);
+        Fi = vI * Ae * sqrt(E * rho);
     } else {
         Fi = 0;
     }
