@@ -108,7 +108,18 @@ public:
         return a;
     }
 
+    VarType getVariable() const
+    {
+        return a;
+    }
+
+
     const VarType& getCommittedVariableConstReference() const
+    {
+        return a_committed;
+    }
+
+    VarType getCommittedVariable() const
     {
         return a_committed;
     }

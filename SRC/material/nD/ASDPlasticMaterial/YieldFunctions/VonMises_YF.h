@@ -51,20 +51,21 @@ public:
         YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHardeningType>>::YieldFunctionBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
                 alpha_(alpha_in), k_(k_in) {}
 
-    double operator()(const VoigtVector& sigma) const
+    double operator()(const VoigtVector& sigma) const 
     {
-        double p = -(sigma.trace())/3;
-        static VoigtVector s = sigma.deviator();
+        auto s = sigma.deviator();
 
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        const double &k = k_.getVariableConstReference();
-        auto tmp = (s - alpha).dot(s - alpha);
-        return sqrt( tmp ) - SQRT_2_over_3 * k ;  // This one assumes p positive in tension
+        auto alpha = alpha_.getVariableConstReference();
+        auto k = k_.getVariableConstReference();
+
+        double tmp = (s - alpha).dot(s - alpha);
+
+        return std::sqrt( tmp ) - SQRT_2_over_3 * k.value() ;  // This one assumes p positive in tension
     }
 
     const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
     {
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
+        VoigtVector alpha = alpha_.getVariable();
 
         result = sigma.deviator() - alpha;
 
@@ -80,30 +81,28 @@ public:
     {
         double dbl_result = 0.0;
 
-        // const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // // const double &k = k_.getVariableConstReference();
+        const VoigtVector &alpha = alpha_.getVariableConstReference();
+        const VoigtScalar &k = k_.getVariableConstReference();
 
-        // //Zero the stress deviator
-        // s *= 0;
+        //Zero the stress deviator
+        auto s = sigma.deviator();
 
-        // //Compute stress deviator (s) and mean pressure (p)
-        // double p;
-        // sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension, so flip the sign
+        //Denominator of the expression
 
-        // //Denominator of the expression
-        // double den = sqrt((s(i, j) - alpha(i, j)) * (s(i, j) - alpha(i, j)));
+        // This is for the hardening of k
+        constexpr double df_dk = -SQRT_2_over_3;
+        dbl_result +=  (df_dk * k_.getDerivative(depsilon, m, sigma)).value();
 
-        // if (den == 0)
-        // {
-        //     return 0;
-        // }
+        //This is for the hardening of alpha
+        double den = sqrt((s - alpha).dot(s - alpha));
 
-        // // This is for the hardening of k
-        // constexpr double df_dk = -SQRT_2_over_3;
-        // dbl_result +=  df_dk * k_.getDerivative(depsilon, m, sigma);
+        if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+        {
+            return dbl_result;
+        }
 
-        // //This is for the hardening of alpha
-        // dbl_result +=  -(s(i, j) - alpha(i, j)) / den * alpha_.getDerivative(depsilon, m, sigma)(i, j);
+        auto df_dalpha = -(s - alpha) / den;
+        dbl_result +=  df_dalpha.dot(alpha_.getDerivative(depsilon, m, sigma));
 
         return dbl_result;
     }
@@ -131,9 +130,9 @@ private:
 };
 
 template <class AlphaHardeningType,  class KHardeningType>
-VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::s(3, 3, 0.0);
+VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::s;
 template <class AlphaHardeningType,  class KHardeningType>
-VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::result(3, 3, 0.0);
+VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::result;
 
 
 #endif
