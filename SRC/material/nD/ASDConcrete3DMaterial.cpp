@@ -1019,7 +1019,7 @@ void ASDConcrete3DMaterial::CrackPlanes::updateCurrentEquivalentStrain(double x,
 	if (m_closest_normal_loc < m_equivalent_strain.size()) {
 		// smooth only if necessary
 		if (m_normals) {
-			double sig = std::min(1.0e-6, smooth_angle) / 2.3546;
+			double sig = std::max(1.0e-6, smooth_angle) / 2.3546;
 			double sden = 2.0 * sig * sig;
 			const auto& normals = *m_normals;
 			for (std::size_t i = 0; i < normals.size(); ++i) {
@@ -1428,7 +1428,18 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 
 	// compute stress split
 	static StressDecomposition D;
-	D.compute(stress_eff);
+	if (implex && do_implex) {
+		// take eigenvectors from known (n-1) effective stress.
+		// we need them for the crack planes' normals
+		D.compute(stress_eff_commit);
+		// update the ST and SC with the committed PT and PC, but with current effective stress
+		// don't update eigenvalues, we don't need them
+		D.ST.addMatrixVector(0.0, D.PT, stress_eff, 1.0);
+		D.SC.addMatrixVector(0.0, D.PC, stress_eff, 1.0);
+	}
+	else {
+		D.compute(stress_eff);
+	}
 
 	// update normals
 	Vector3 Tnormal(D.V(0, 0), D.V(1, 0), D.V(2, 0));
@@ -1445,8 +1456,19 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 	double xc_pl = pc.plasticStrain(E);
 
 	// compute new trial equivalent strain measures
-	double xt_trial = tensileCriterion(D) + xt_pl;
-	double xc_trial = compressiveCriterion(D) + xc_pl;
+	double xt_trial, xc_trial;
+	if (implex && do_implex) {
+		// extrapolated equivalent strain measures (explicit)
+		// already in equivalent total stress space
+		xt_trial = svt_commit.getCurrentEquivalentStrain() + 
+			time_factor * (svt_commit.getCurrentEquivalentStrain() - svt_commit_old.getCurrentEquivalentStrain());
+		xc_trial = svc_commit.getCurrentEquivalentStrain() +
+			time_factor * (svc_commit.getCurrentEquivalentStrain() - svc_commit_old.getCurrentEquivalentStrain());
+	}
+	else {
+		xt_trial = tensileCriterion(D) + xt_pl;
+		xc_trial = compressiveCriterion(D) + xc_pl;
+	}
 
 	// update hardening variables
 	if (xt_trial > pt.x) {
