@@ -240,20 +240,11 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 posKp       *= (1 - betaS * D_pos); // Post-Yield Stiffness
                 FcapProj    *= (1 - betaC * D_pos);
                 posUglobal  *= (1 + betaA * D_pos); // Accelerated Reloading Stiffness
-                if (posFy < posFres) {
-                    posFy   = posFres;
-                    posFcap = posFres;
-                    posKp   = 0;
-                    posKpc  = 0;
-                    posUy   = posFy / Ke;
-                    posUcap = 0;
-                } else {
-                    posUy   = posFy / Ke;
-                // Capping Point
-                    FyProj      = posFy - posKp*posUy;
-                    posUcap     = (FcapProj - FyProj) / (posKp - posKpc);
-                    posFcap     = FyProj + posKp*posUcap;
-                }
+                posUy       = posFy / Ke;
+            // Capping Point
+                FyProj      = posFy - posKp*posUy;
+                posUcap     = (FcapProj - FyProj) / (posKp - posKpc);
+                posFcap     = FyProj + posKp*posUcap;
             // Global Peak on the Updated Backbone
                 if (posUglobal < posUy) {           // Elastic Branch
                     posFglobal = Ke * posUglobal;
@@ -278,20 +269,11 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 negKp	    *= (1 - betaS * D_neg); // Post-Yield Stiffness
                 FcapProj    *= (1 - betaC * D_neg);
                 negUglobal	*= (1 + betaA * D_neg); // Accelerated Reloading Stiffness
-                if (negFy > negFres) {
-                    negFy	= negFres;
-                    negFcap = negFres;
-                    negKp	= 0;
-                    negKpc  = 0;
-                    negUy   = negFy/Ke;
-                    negUcap = 0;
-                } else {
-                    negUy   = negFy / Ke;
-                // Capping Point
-                    FyProj      = negFy - negKp*negUy;
-                    negUcap     = (FcapProj - FyProj) / (negKp - negKpc);
-                    negFcap     = FyProj + negKp*negUcap;
-                }
+                negUy       = negFy / Ke;
+            // Capping Point
+                FyProj      = negFy - negKp*negUy;
+                negUcap     = (FcapProj - FyProj) / (negKp - negKpc);
+                negFcap     = FyProj + negKp*negUcap;
             // Global Peak on the Updated Backbone
                 if (negUy < negUglobal) {           // Elastic Branch
                     negFglobal	= Ke * negUglobal; 

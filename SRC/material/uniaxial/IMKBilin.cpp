@@ -171,26 +171,23 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 posFy       *= (1 - betaS * D_pos);
                 posKp       *= (1 - betaS * D_pos); // Post-Yield Stiffness
                 FcapProj    *= (1 - betaC * D_pos);
-                if (posFy < posFres) {
+                posUy       = posFy / Ke;
+                posKpc      = posFy < posFres ? 0 : -posKpc_0 * (posFy - posFres) / (posFy_0 - posFres);
+            // Capping Point
+                FyProj      = posFy - posKp*posUy;
+                posUcap     = posKp <= posKpc ? 0 : (FcapProj - FyProj) / (posKp - posKpc);
+                posFcap     = FyProj + posKp*posUcap;
+            // When a part of backbone is beneath the residual strength
+                double candidateKp = (posFcap - posFres) / (posUcap - Ui - (posFres - Fi)/Kunload);                
+                if (posFcap < posFres) {
                     posFy   = posFres;
                     posFcap = posFres;
                     posKp   = 0;
                     posKpc  = 0;
                     posUy   = posFy / Ke;
                     posUcap = 0;
-                } else {
-                    posUy   = posFy / Ke;
-                // Capping Point
-                    if (posFres > 0) {
-                        posKpc  = -posKpc_0 * (posFy - posFres) / (posFy_0 - posFres);
-                    }
-                    FyProj      = posFy - posKp*posUy;
-                    posUcap     = (FcapProj - FyProj) / (posKp - posKpc);
-                    posFcap     = FyProj + posKp*posUcap;
-                    double candidateKp = (posFcap - posFres) / (posUcap - Ui - (posFres - Fi)/Kunload);
-                    if (posKp > candidateKp) {
-                        posKp   = candidateKp;
-                    }
+                } else if (posKp > candidateKp) {
+                    posKp   = candidateKp;
                 }
             }
 
@@ -201,26 +198,23 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 negFy	    *= (1 - betaS * D_neg);
                 negKp	    *= (1 - betaS * D_neg); // Post-Yield Stiffness
                 FcapProj    *= (1 - betaC * D_neg);
-                if (negFy > negFres) {
-                    negFy	= negFres;
+                negUy       = negFy / Ke;
+                negKpc      = negFy > negFres ? 0 : -negKpc_0 * (negFy - negFres) / (-negFy_0 - negFres);
+            // Capping Point
+                FyProj      = negFy - negKp*negUy;
+                negUcap     = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
+                negFcap     = FyProj + negKp*negUcap;
+            // When a part of backbone is beneath the residual strength
+                double candidateKp = (negFcap - negFres) / (negUcap - Ui - (negFres - Fi)/Kunload);
+                if (negFcap > negFres) {
+                    negFy   = negFres;
                     negFcap = negFres;
-                    negKp	= 0;
+                    negKp   = 0;
                     negKpc  = 0;
-                    negUy   = negFy/Ke;
-                    negUcap = 0;
-                } else {
                     negUy   = negFy / Ke;
-                // Capping Point
-                    if (negFres < 0) {
-                        negKpc  = -negKpc_0 * (negFy - negFres) / (-negFy_0 - negFres);
-                    }
-                    FyProj      = negFy - negKp*negUy;
-                    negUcap     = (FcapProj - FyProj) / (negKp - negKpc);
-                    negFcap     = FyProj + negKp*negUcap;
-                    double candidateKp = (negFcap - negFres) / (negUcap - Ui - (negFres - Fi)/Kunload);
-                    if (negKp > candidateKp) {
-                        negKp   = candidateKp;
-                    }
+                    negUcap = 0;
+                } else if (negKp > candidateKp) {
+                    negKp   = candidateKp;
                 }
             }
         }
