@@ -18,13 +18,13 @@ OBJ =
 LINKLIBS = /home/jaabell/Repositories/OpenSees/build/libOpenSeesLIB.a -lopenblas
 
 
-all: test_yf
+all: test_00_VonMises_YF
 
 
-test_yf: test_yf.cpp $(DEPS)
+test_00_VonMises_YF: test_00_VonMises_YF.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $(CPP_OTHER_OBJ) -o $@ $^ $(CFLAGS)  $(LINKLIBS)
-	./test_yf
+	./test_00_VonMises_YF
 
 
 clean:
-	rm *.o test_yf
+	rm *.o test_00_VonMises_YF
