@@ -769,17 +769,17 @@ ASDConcrete3DMaterial::HardeningLawPoint ASDConcrete3DMaterial::HardeningLaw::ev
 		x1 = m_points.back().x;
 		x2 = x;
 		double span = x - x1;
-		// interpolate last tangent for y (it can go negative..., it will be set to a minimum later on)
+		// interpolate last tangent if positive, otherwise keep constant
 		y1 = m_points.back().y;
 		double tangent = (y1 - m_points[m_points.size() - 2].y) / (x1 - m_points[m_points.size() - 2].x);
-		y2 = y1 + span * tangent;
+		y2 = tangent > 0.0 ? y1 + span * tangent : y1;
 		// interpolate last tangent if positive, otherwise keep constant
 		q1 = m_points.back().q;
 		tangent = (q1 - m_points[m_points.size() - 2].q) / (x1 - m_points[m_points.size() - 2].x);
 		q2 = tangent > 0.0 ? q1 + span * tangent : q1;
 	}
 	// interpolate
-	double  xspan = x2 - x1;
+	double xspan = x2 - x1;
 	double xratio = xspan > 0.0 ? (x - x1) / xspan : 0.0;
 	double y = std::max(m_ytolerance, y1 + (y2 - y1) * xratio);
 	double q = std::max(m_ytolerance, q1 + (q2 - q1) * xratio);
