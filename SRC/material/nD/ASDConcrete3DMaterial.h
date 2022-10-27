@@ -339,7 +339,6 @@ private:
 	double dtime_0 = 0.0;
 	bool dtime_is_user_defined = false;
 	bool commit_done = false;
-	Matrix PT_commit = Matrix(6, 6);
 	double implex_error = 0.0;
 	// strain, stress and tangent
 	Vector strain = Vector(6);

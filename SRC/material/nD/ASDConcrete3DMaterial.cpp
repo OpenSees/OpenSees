@@ -1087,10 +1087,6 @@ ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	, svc_commit(ncc)
 	, svc_commit_old(ncc)
 {
-	// Initialize the committed PT (for implex) to Identity/2
-	PT_commit.Zero();
-	for (int i = 0; i < 6; ++i)
-		PT_commit(i, i) = 0.5;
 }
 
 ASDConcrete3DMaterial::ASDConcrete3DMaterial()
@@ -1163,13 +1159,10 @@ int ASDConcrete3DMaterial::setTrialStrain(const Vector& v)
 		if (implex) {
 			if (implex_control) {
 				// implicit solution 
-				static Matrix aux(6, 6);
-				aux = PT_commit;
 				retval = compute(false, false);
 				if (retval < 0) return retval;
 				double dt_implicit = dt_bar;
 				double dc_implicit = dc_bar;
-				PT_commit = aux;
 				// standard call 
 				retval = compute(true, true);
 				if (retval < 0) return retval;
@@ -1301,11 +1294,6 @@ int ASDConcrete3DMaterial::revertToStart(void)
 
 	// Commit flag
 	commit_done = false;
-
-	// Initialize the committed PT (for implex) to Identity/2
-	PT_commit.Zero();
-	for (int i = 0; i < 6; ++i)
-		PT_commit(i, i) = 0.5;
 
 	// IMPL-EX error
 	implex_error = 0.0;
