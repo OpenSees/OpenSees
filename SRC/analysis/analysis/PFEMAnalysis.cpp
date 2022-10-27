@@ -133,6 +133,11 @@ PFEMAnalysis::analyze()
 	break;
     }
 
+    Domain* the_Domain = this->getDomainPtr();
+    if (the_Domain != 0) {
+        the_Domain->flushRecorders();
+    }
+
     return 0;
 }
 

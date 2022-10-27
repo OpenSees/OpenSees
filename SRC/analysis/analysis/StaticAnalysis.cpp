@@ -216,6 +216,10 @@ StaticAnalysis::analyze(int numSteps)
 	    return -4;
 	}    	
     }
+
+  if (the_Domain != 0) {
+    the_Domain->flushRecorders();
+  }
     
     return 0;
 }

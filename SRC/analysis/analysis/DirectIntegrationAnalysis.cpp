@@ -178,6 +178,12 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 	return result;
     }
   }
+
+  Domain *the_Domain = this->getDomainPtr();
+  if (the_Domain != 0) {
+    the_Domain->flushRecorders();
+  }
+
   return result;
 }
 

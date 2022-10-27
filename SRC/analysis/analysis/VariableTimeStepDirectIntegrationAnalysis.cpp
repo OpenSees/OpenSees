@@ -167,6 +167,9 @@ VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, doub
     currentDt = this->determineDt(currentDt, dtMin, dtMax, Jd, theTest);
   }
 
+if (theDom != 0) {
+    theDom->flushRecorders();
+  }
 
   return 0;
 }
