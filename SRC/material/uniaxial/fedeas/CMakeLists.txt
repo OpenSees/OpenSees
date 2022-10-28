@@ -47,4 +47,4 @@ target_link_libraries(OPS_Uniaxial_Fedeas PUBLIC
   #${BUNDLE_LIBS}/fedeas.lib
 )
 #target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
+add_subdirectory(FedeasUniaxialDamage)

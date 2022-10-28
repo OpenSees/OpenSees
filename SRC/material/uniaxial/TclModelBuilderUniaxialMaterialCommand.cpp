@@ -206,7 +206,10 @@ static void printCommand(int argc, TCL_Char **argv)
 
 UniaxialMaterial *
 TclModelBuilder_addFedeasMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-				  
+
+UniaxialMaterial *
+TclModelBuilder_addFedeasUniaxialDamage(Tcl_Interp* interp, void *cd, int argc, TCL_Char **argv);
+
 
 UniaxialMaterial *
 TclModelBuilder_addDrainMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -1880,6 +1883,11 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 					    gammaF1, gammaF2, gammaF3, gammaF4, gammaFLimit, gammaE, yStr);		
     }
   }
+
+    if (strcmp(argv[1], "FedeasUniaxialDamage") == 0) {
+        theMaterial = TclModelBuilder_addFedeasUniaxialDamage(interp, clientData, argc, argv);
+    }
+
     if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       void *theMat = OPS_Concrete01WithSITC();
       if (theMat != 0)
@@ -2014,10 +2022,11 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             return TCL_ERROR;
     }
       // Fedeas
- #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
+#if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
       theMaterial = TclModelBuilder_addFedeasMaterial(clientData, interp, argc, argv);
- #endif
+#endif
+
       // Drain
       if (theMaterial == 0)
 	theMaterial = TclModelBuilder_addDrainMaterial(clientData, interp, argc, argv);
@@ -2034,11 +2043,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       if (theMaterial == 0)
 	theMaterial = Tcl_AddLimitStateMaterial(clientData, interp, argc, argv);
     
-
-#if defined(OPSDEF_DAMAGE_FEDEAS)
-      if (theMaterial == 0)
-        theMaterial = TclModelBuilder_addDegradingMaterial(clientData, interp, argc, argv);
-#endif
+    
 
     if (theMaterial == 0) {
       
