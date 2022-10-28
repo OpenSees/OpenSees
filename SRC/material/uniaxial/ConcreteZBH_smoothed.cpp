@@ -6,17 +6,9 @@
 #include <math.h>
 #include <float.h>
 
-#ifdef _USRDLL
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#endif
-
 static int numConcreteZBH_smoothed = 0;
 
-OPS_Export void *
+void *
 OPS_ConcreteZBH_smoothed()
 {
   // print out some KUDO's
