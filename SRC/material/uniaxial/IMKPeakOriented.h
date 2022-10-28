@@ -123,7 +123,7 @@ private:
     double  Ui,             cUi;
     double  Fi,             cFi;
 // 3 Stiffness
-    double  Ktangent,       cKtangent, KgetTangent;
+    double  Kreload,        cKreload, KgetTangent;
     double  Kunload,        cKunload;
 // 2 Energy
     double  engAcml,        cEngAcml;

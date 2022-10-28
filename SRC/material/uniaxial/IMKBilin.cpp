@@ -135,8 +135,9 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN REVERSAL /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if ( (onBackbone && Fi_1*dU < 0.0) || (onBackbone && Fi_1==0 && Ui_1*dU<=0) ) {
+        if ( (onBackbone && Fi_1*dU < 0) || (onBackbone && Fi_1==0 && Ui_1*dU<=0) ) {
             onBackbone      = false;
+    /////////////////////////// UPDATE PEAK POINTS ////////////////////////////////////////////
     /////////////////// UPDATE UNLOADING STIFFNESS ////////////////////////////////////////////
             double  EpjK    = engAcml            - 0.5*(Fi_1 / Kunload)*Fi_1;
             double  EiK     = engAcml - engDspt  - 0.5*(Fi_1 / Kunload)*Fi_1;
@@ -155,18 +156,17 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
         if (!onBackbone && Fi_1*Fi <= 0.0 && Failure_State>0) {
     /////////////////// UPDATE BACKBONE CURVE /////////////////////////////////////////////////
-            double FcapProj, FyProj;
             double Ei   = max(0.0, engAcml - engDspt);
-            betaS       = pow((Ei / (engRefS - engAcml)), c_S);
-            betaC       = pow((Ei / (engRefC - engAcml)), c_C);
-            FailS       = (betaS>1);
-            FailC       = (betaC>1);
-            betaS       = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
-            betaC       = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
-            engDspt     = engAcml;
+            betaS   = pow((Ei / (engRefS - engAcml)), c_S);
+            betaC   = pow((Ei / (engRefC - engAcml)), c_C);
+            FailS   = (betaS>1);
+            FailC   = (betaC>1);
+            betaS   = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
+            betaC   = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
+            engDspt = engAcml;
         // Positive
             if (dU > 0) {
-                FcapProj    = posFcap  - posKpc * posUcap;
+                double FcapProj = posFcap  - posKpc * posUcap;
             // Yield Point
                 posFy       *= (1 - betaS * D_pos);
                 posKp       *= (1 - betaS * D_pos); // Post-Yield Stiffness
@@ -174,11 +174,11 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 posUy       = posFy / Ke;
                 posKpc      = posFy < posFres ? 0 : -posKpc_0 * (posFy - posFres) / (posFy_0 - posFres);
             // Capping Point
-                FyProj      = posFy - posKp*posUy;
-                posUcap     = posKp <= posKpc ? 0 : (FcapProj - FyProj) / (posKp - posKpc);
-                posFcap     = FyProj + posKp*posUcap;
+                double FyProj   = posFy - posKp*posUy;
+                posUcap         = posKp <= posKpc ? 0 : (FcapProj - FyProj) / (posKp - posKpc);
+                posFcap         = FyProj + posKp*posUcap;
             // When a part of backbone is beneath the residual strength
-                double candidateKp = (posFcap - posFres) / (posUcap - Ui - (posFres - Fi)/Kunload);                
+                double candidateKp = (posFcap - posFres) / (posUcap - Ui_1 - (posFres - Fi_1)/Kunload);                
                 if (posFcap < posFres) {
                     posFy   = posFres;
                     posFcap = posFres;
@@ -186,14 +186,14 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                     posKpc  = 0;
                     posUy   = posFy / Ke;
                     posUcap = 0;
-                } else if (posKp > candidateKp) {
+                } else if (candidateKp > 0 && posKp > candidateKp) {
                     posKp   = candidateKp;
                 }
+            // Global Peak on the Updated Backbone
             }
-
         // Negative
             else {
-                FcapProj    = negFcap   - negKpc * negUcap;
+                double FcapProj = negFcap   - negKpc * negUcap;
             // Yield Point
                 negFy	    *= (1 - betaS * D_neg);
                 negKp	    *= (1 - betaS * D_neg); // Post-Yield Stiffness
@@ -201,11 +201,11 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 negUy       = negFy / Ke;
                 negKpc      = negFy > negFres ? 0 : -negKpc_0 * (negFy - negFres) / (-negFy_0 - negFres);
             // Capping Point
-                FyProj      = negFy - negKp*negUy;
-                negUcap     = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
-                negFcap     = FyProj + negKp*negUcap;
+                double FyProj   = negFy - negKp*negUy;
+                negUcap         = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
+                negFcap         = FyProj + negKp*negUcap;
             // When a part of backbone is beneath the residual strength
-                double candidateKp = (negFcap - negFres) / (negUcap - Ui - (negFres - Fi)/Kunload);
+                double candidateKp = (negFcap - negFres) / (negUcap - Ui_1 - (negFres - Fi_1)/Kunload);
                 if (negFcap > negFres) {
                     negFy   = negFres;
                     negFcap = negFres;
@@ -213,22 +213,22 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                     negKpc  = 0;
                     negUy   = negFy / Ke;
                     negUcap = 0;
-                } else if (negKp > candidateKp) {
+                } else if (candidateKp > 0 && negKp > candidateKp) {
                     negKp   = candidateKp;
                 }
+            // Global Peak on the Updated Backbone
             }
+    ////////////////////////// RELOADING TARGET DETERMINATION /////////////////////////////////
         }
-    ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////// COMPUTE FORCE ASSUMING IT'S ON BACKBONE ///////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-        double	Fi_backbone;
+    // Positive
         if (dU > 0) {   // Backbone in Positive
             KgetTangent = (Ui < posUcap) ? posKp : posKpc;
-            Fi_backbone = posFcap + (Ui - posUcap) * KgetTangent;
+            double Fi_backbone = posFcap + (Ui - posUcap) * KgetTangent;
             if (Fi_backbone < posFres || Failure_State==4) {
                 Fi_backbone = posFres;
                 KgetTangent = 0;
@@ -244,9 +244,10 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 KgetTangent = Kunload;
             }
         }
+    // Negative
         else {          // Backbone in Negative
             KgetTangent = (negUcap < Ui) ? negKp : negKpc;
-            Fi_backbone = negFcap + (Ui - negUcap) * KgetTangent;
+            double Fi_backbone = negFcap + (Ui - negUcap) * KgetTangent;
             if (Fi_backbone > negFres || Failure_State==3) {
                 Fi_backbone = negFres;
                 KgetTangent = 0;
@@ -264,32 +265,32 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
         }
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    // FAILURE STATE CHECK
-    ///////////////////////////////////////////////////////////////////////////////////////////
+    // CHECK FOR FAILURE
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-    // 0: Elastic
-    // 1: Experienced Yield in either Positive or Negative.
-    // 2: Experienced Residual Branch in either Positive or Negative.
-    // 3: Strength Lost in Positive. Negative Backbone Strength will be set the Residual Strength.
-    // 4: Strength Lost in Negative. Positive Backbone Strength will be set the Residual Strength.
-    // 5: Strength Lost in Both Positive and Negative.
+    // Failure_State
+    //     0: Elastic
+    //     1: Experienced Yield in either Positive or Negative.
+    //     2: Experienced Residual Branch in either Positive or Negative.
+    //     3: Strength Lost in Positive. Negative Backbone Strength will be set the Residual Strength.
+    //     4: Strength Lost in Negative. Positive Backbone Strength will be set the Residual Strength.
+    //     5: Strength Lost in Both Positive and Negative.
         bool    ResP,ResN;
-        if (posKpc==0) {
-            ResP    = true;
+        if (posKpc==0) {    // Kpc can be zero when deteriorated Fy is smaller than Fres
+            ResP    = (Fi == posFres);
         } else {
             double  posUres = (posFres - posFcap + posKpc * posUcap) / posKpc;
             ResP    = (Ui >= posUres);
         }
         if (negKpc==0) {
-            ResN    = true;
+            ResN    = (Fi == negFres);
         } else {
             double  negUres = (negFres - negFcap + negKpc * negUcap) / negKpc;
             ResN    = (Ui <= negUres);
         }
-        bool	FailDp 	= ( dU > 0 && Ui >=  posUu_0       );
-        bool	FailDn 	= ( dU < 0 && Ui <= -negUu_0       );
+
+        bool	FailDp 	= ( dU > 0 && Ui >=  posUu_0  );
+        bool	FailDn 	= ( dU < 0 && Ui <= -negUu_0  );
         bool	FailRp 	= ( dU > 0 && onBackbone && Fi <= 0);
         bool	FailRn 	= ( dU < 0 && onBackbone && Fi >= 0);
         // int exFailure_State = Failure_State;
@@ -312,15 +313,15 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
             }
         } else if ( Failure_State < 2 && (ResP||ResN) ) {
             Failure_State   = 2;
-        } else if ( Failure_State==0 && onBackbone ) {
+        } else if ( Failure_State == 0 && onBackbone ) {
             Failure_State   = 1;
         }
+    // Failure_State Change check
         // if (Failure_State!=exFailure_State) {
         //     std::cout << exFailure_State << " -> " << Failure_State << "\n";
         // }
 
-
-        engAcml     += 0.5*(Fi + Fi_1)*dU;
+        engAcml += 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
 
         if (KgetTangent!=exKgetTangent) {
             KgetTangent  = (Fi - Fi_1) / dU;

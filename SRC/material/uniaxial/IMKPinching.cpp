@@ -122,8 +122,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     U           = strain; //set trial displacement
     Ui          = U;
     double dU   = Ui - Ui_1;    // Incremental deformation at current step
-    double dEi  = 0;
-    KgetTangent = Ktangent;
+    double exKgetTangent = KgetTangent;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////  MAIN CODE //////////////////////////////////////////////////////////
@@ -134,56 +133,14 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     } else if (dU == 0) {   // When deformation doesn't change from the last
         Fi  = Fi_1;
     } else {
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////// FLAG RAISE ////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //      Excursion_Flag: When crossing X-axis.  Evokes re-considering of the deteriorations and which peak to go for.
-    //      Reversal_Flag:  When unloading starts. Evokes re-condiersing of the stiffness deterioration and peak point registration.
         double  betaS=0,betaC=0,betaK=0,betaA=0;
         bool    FailS=false,FailC=false,FailK=false,FailA=false;
-        double  dF;
-        double  Kglobal,Klocal,Kpinch;
-        int     exBranch        = Branch;
-        bool    Excursion_Flag  = false;
-        bool    Reversal_Flag   = false;
-        if (Branch == 0) {                          // Elastic Branch
-            if (Ui > posUy) {                           // Yield in Positive
-                Branch 	= 5;
-            } else if (Ui < negUy) {                    // Yield in Negative
-                Branch 	= 15;
-            }
-        } else if (Branch == 1) {                   // Unloading Branch
-            if (Fi_1*(Fi_1+dU*Kunload) <= 0) {          // Crossing X-axis and Reloading Towards Opposite Direction
-                Excursion_Flag 	= true;
-            } else if (Fi_1 > 0 && Ui > posUlocal) {    // Back to Reloading (Positive)
-                Kpinch  = (Fpinch       - posFlocal) / (Upinch      - posUlocal);
-                Kglobal = (posFglobal   - posFlocal) / (posUglobal  - posUlocal);
-                if (posUlocal < Upinch && posFlocal < Fpinch && Upinch < posUglobal && Fpinch < posFglobal && Kpinch < Kglobal) {
-                    Branch  = 2;                        // Pinching Branch
-                } else {
-                    Branch  = 4;                        // Towards Global Peak
-                }
-            } else if (Fi_1 < 0 && Ui < negUlocal) {    // Back to Reloading (Negative)
-                Kpinch  = (Fpinch       - negFlocal) / (Upinch      - negUlocal);
-                Kglobal = (negFglobal   - negFlocal) / (negUglobal  - negUlocal);
-                if (negUglobal < Upinch && negFglobal < Fpinch && Upinch < negUlocal && Fpinch < negFlocal && Kpinch < Kglobal) {
-                    Branch  = 12;                       // Pinching Branch
-                } else {
-                    Branch  = 14;                       // Towards Global Peak
-                }
-            }
-        } else if (Fi_1*dU < 0) {                   // Reversal from Reloading or Backbone Section
-            Reversal_Flag  	= true;
-            Branch 	= 1;
-        }
+        bool    onBackbone  = (Branch > 1);
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN REVERSAL /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if (Reversal_Flag) {
+        if ( (onBackbone && Fi_1*dU < 0) || (onBackbone && Fi_1==0 && Ui_1*dU<=0) ) {
+            Branch          = 1;
     /////////////////////////// UPDATE PEAK POINTS ////////////////////////////////////////////
             if ( Fi_1 > 0 ){
                 posUlocal	= Ui_1;           // UPDATE LOCAL
@@ -207,34 +164,28 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
             FailK           = (betaK>1);
             betaK           = betaK < 0 ? 0 : (betaK>1 ? 1 : betaK);
             Kunload         *= (1 - betaK);
-            Ktangent        = Kunload;
-        // Detect unloading completed in a step.
-            if (Fi_1*(Fi_1+dU*Kunload) <= 0) {
-                exBranch        = 1;
-                Excursion_Flag  = true;
-                Reversal_Flag   = false;
-            }
+            KgetTangent     = Kunload;
         }
+        Fi	    = Fi_1 + Kunload * dU;
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN NEW EXCURSION /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if ( Excursion_Flag ) {
+        if (Branch == 1 && Fi_1*Fi <= 0.0) {
     /////////////////// UPDATE BACKBONE CURVE /////////////////////////////////////////////////
-            double FcapProj, FyProj;
             double Ei   = max(0.0, engAcml - engDspt);
-            betaS       = pow((Ei / (engRefS - engAcml)), c_S);
-            betaC       = pow((Ei / (engRefC - engAcml)), c_C);
-            betaA       = pow((Ei / (engRefA - engAcml)), c_A);
-            FailS       = (betaS>1);
-            FailC       = (betaC>1);
-            FailA       = (betaA>1);
-            betaS       = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
-            betaC       = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
-            betaA       = betaA < 0 ? 0 : (betaA>1 ? 1 : betaA);
-            engDspt     = engAcml;
+            betaS   = pow((Ei / (engRefS - engAcml)), c_S);
+            betaC   = pow((Ei / (engRefC - engAcml)), c_C);
+            betaA   = pow((Ei / (engRefA - engAcml)), c_A);
+            FailS   = (betaS>1);
+            FailC   = (betaC>1);
+            FailA   = (betaA>1);
+            betaS   = betaS < 0 ? 0 : (betaS>1 ? 1 : betaS);
+            betaC   = betaC < 0 ? 0 : (betaC>1 ? 1 : betaC);
+            betaA   = betaA < 0 ? 0 : (betaA>1 ? 1 : betaA);
+            engDspt = engAcml;
         // Positive
             if (dU > 0) {
-                FcapProj    = posFcap  - posKpc * posUcap;
+                double FcapProj = posFcap  - posKpc * posUcap;
             // Yield Point
                 posFy       *= (1 - betaS * D_pos);
                 posKp       *= (1 - betaS * D_pos); // Post-Yield Stiffness
@@ -242,9 +193,10 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 posUglobal  *= (1 + betaA * D_pos); // Accelerated Reloading Stiffness
                 posUy       = posFy / Ke;
             // Capping Point
-                FyProj      = posFy - posKp*posUy;
-                posUcap     = (FcapProj - FyProj) / (posKp - posKpc);
-                posFcap     = FyProj + posKp*posUcap;
+                double FyProj   = posFy - posKp*posUy;
+                posUcap         = posKp <= posKpc ? 0 : (FcapProj - FyProj) / (posKp - posKpc);
+                posFcap         = FyProj + posKp*posUcap;
+            // When a part of backbone is beneath the residual strength
             // Global Peak on the Updated Backbone
                 if (posUglobal < posUy) {           // Elastic Branch
                     posFglobal = Ke * posUglobal;
@@ -260,10 +212,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 }
                 posUres = (posFres - posFcap + posKpc * posUcap) / posKpc;
             }
-
         // Negative
             else {
-                FcapProj    = negFcap   - negKpc * negUcap;
+                double FcapProj = negFcap   - negKpc * negUcap;
             // Yield Point
                 negFy	    *= (1 - betaS * D_neg);
                 negKp	    *= (1 - betaS * D_neg); // Post-Yield Stiffness
@@ -271,9 +222,10 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 negUglobal	*= (1 + betaA * D_neg); // Accelerated Reloading Stiffness
                 negUy       = negFy / Ke;
             // Capping Point
-                FyProj      = negFy - negKp*negUy;
-                negUcap     = (FcapProj - FyProj) / (negKp - negKpc);
-                negFcap     = FyProj + negKp*negUcap;
+                double FyProj   = negFy - negKp*negUy;
+                negUcap         = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
+                negFcap         = FyProj + negKp*negUcap;
+            // When a part of backbone is beneath the residual strength
             // Global Peak on the Updated Backbone
                 if (negUy < negUglobal) {           // Elastic Branch
                     negFglobal	= Ke * negUglobal; 
@@ -289,62 +241,50 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
                 }
                 negUres  	= (negFres - negFcap + negKpc * negUcap) / negKpc;
             }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////// RELOADING TARGET DETERMINATION /////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-            double  u0 	= Ui_1 - (Fi_1 / Kunload);
-            double  Uplstc;
             if (dU > 0) {
-                Uplstc      = posUglobal    - (posFglobal / Kunload);
-                Upinch      = (1-kappaD)*Uplstc;
-                Fpinch      = kappaF*posFglobal*(Upinch-u0)/(posUglobal-u0);
-                Kpinch      = Fpinch        / (Upinch       - u0);
-                Kglobal   	= posFglobal    / (posUglobal - u0);
-                Klocal    	= posFlocal     / (posUlocal  - u0);
+                double u0 	    = Ui_1 - (Fi_1 / Kunload);
+                double Uplstc   = posUglobal    - (posFglobal / Kunload);
+                Upinch          = (1-kappaD)*Uplstc;
+                Fpinch          = kappaF*posFglobal*(Upinch-u0)/(posUglobal-u0);
+                double Kpinch   = Fpinch        / (Upinch       - u0);
+                double Kglobal  = posFglobal    / (posUglobal - u0);
+                double Klocal   = posFlocal     / (posUlocal  - u0);
                 if (u0 < Upinch) {
-                    Branch     	= 2;
-                    Ktangent   	= Kpinch;
-                }
-                else  if ( u0 < posUlocal && posFlocal < posFglobal && Klocal > Kglobal) {
-                    Branch      = 3;
-                    Ktangent     = Klocal;
-                }
-                else {
-                    Branch      = 4;
-                    Ktangent     = Kglobal;
+                    Branch  = 2;
+                    Kreload = Kpinch;
+                } else  if ( u0 < posUlocal && posFlocal < posFglobal && Klocal > Kglobal) {
+                    Branch  = 3;
+                    Kreload = Klocal;
+                } else {
+                    Branch  = 4;
+                    Kreload = Kglobal;
                 }
             }
             else {
-                Uplstc      = negUglobal    - (negFglobal / Kunload);
-                Upinch      = (1-kappaD)*Uplstc;
-                Fpinch      = kappaF*negFglobal*(Upinch-u0)/(negUglobal-u0);
-                Kpinch      = Fpinch        / (Upinch       - u0);
-                Kglobal     = negFglobal    / (negUglobal - u0);
-                Klocal    	= negFlocal     / (negUlocal  - u0);
+                double u0 	    = Ui_1 - (Fi_1 / Kunload);
+                double Uplstc   = negUglobal    - (negFglobal / Kunload);
+                Upinch          = (1-kappaD)*Uplstc;
+                Fpinch          = kappaF*negFglobal*(Upinch-u0)/(negUglobal-u0);
+                double Kpinch   = Fpinch        / (Upinch       - u0);
+                double Kglobal  = negFglobal    / (negUglobal - u0);
+                double Klocal   = negFlocal     / (negUlocal  - u0);
                 if (u0 > Upinch) {
-                    Branch     	= 12;
-                    Ktangent   	= Kpinch;
-                }
-                else  if ( u0 > negUlocal && negFlocal > negFglobal && Klocal > Kglobal) {
-                    Branch      = 13;
-                    Ktangent     = Klocal;
-                }
-                else {
-                    Branch      = 14;
-                    Ktangent     = Kglobal;
+                    Branch 	= 12;
+                    Kreload = Kpinch;
+                } else  if ( u0 > negUlocal && negFlocal > negFglobal && Klocal > Kglobal) {
+                    Branch  = 13;
+                    Kreload = Klocal;
+                } else {
+                    Branch  = 14;
+                    Kreload = Kglobal;
                 }
             }
+            KgetTangent = Kreload;
          }
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////// BRANCH SHIFT CHECK /////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////// BRANCH SHIFT CHECK AND TANGENT STIFFNESS UPDATE ////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     //  Branch
@@ -363,194 +303,158 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     //      16: Towards Residual Point  -
     //      17: Residual Branch         -
     // Branch shifting from 2 -> 3 -> 4 -> 5 -> 6 -> 7
+        // int exBranch = Branch;
+        if (Branch == 0 && Ui > posUy) {            // Yield in Positive
+            Branch  = 5;
+            KgetTangent = posKp;
+        } else if (Branch == 0 && Ui < negUy) {     // Yield in Negative
+            Branch  = 15;
+            KgetTangent = negKp;
+        } else if (Branch == 1 && Fi_1 > 0 && Ui > posUlocal) {
+            double Kpinch  = (Fpinch       - posFlocal) / (Upinch      - posUlocal);
+            double Kglobal = (posFglobal   - posFlocal) / (posUglobal  - posUlocal);
+            if (posUlocal < Upinch && posFlocal < Fpinch && Upinch < posUglobal && Fpinch < posFglobal && Kpinch < Kglobal) {
+                Kreload = Kpinch;
+                Branch  = 2;                        // Pinching Branch
+            } else {
+                Kreload = Kglobal;
+                Branch  = 4;                        // Towards Global Peak
+            }
+            KgetTangent = Kreload;
+        } else if (Branch == 1 && Fi_1 < 0 && Ui < negUlocal) {    // Back to Reloading (Negative)
+            double Kpinch  = (Fpinch       - negFlocal) / (Upinch      - negUlocal);
+            double Kglobal = (negFglobal   - negFlocal) / (negUglobal  - negUlocal);
+            if (negUglobal < Upinch && negFglobal < Fpinch && Upinch < negUlocal && Fpinch < negFlocal && Kpinch < Kglobal) {
+                Kreload = Kpinch;
+                Branch  = 12;                   // Pinching Branch
+            } else {
+                Kreload = Kglobal;
+                Branch  = 14;                   // Towards Global Peak
+            }
+            KgetTangent = Kreload;
+        }
+    // Positive
         if (Branch == 2 && Ui > Upinch) {
-            exBranch    = 2;
-            Kglobal     = (posFglobal   - Fpinch) / (posUglobal - Upinch);
-            Klocal      = (posFlocal    - Fpinch) / (posUlocal  - Upinch);
+            double Kglobal  = (posFglobal   - Fpinch) / (posUglobal - Upinch);
+            double Klocal   = (posFlocal    - Fpinch) / (posUlocal  - Upinch);
             if (Upinch < posUlocal && Fpinch < posFlocal && posFlocal < posFglobal && Klocal > Kglobal) {
+                Kreload = Klocal;
                 Branch  = 3;
             } else {
+                Kreload = Kglobal;
                 Branch 	= 4;
             }
-
+            KgetTangent = Kreload;
         }
         if (Branch == 3 && Ui > posUlocal) {
-            exBranch    = 3;
+            Kreload     = (posFglobal - posFlocal) / (posUglobal - posUlocal);
+            KgetTangent = Kreload;
             Branch      = 4;
         }
         if (Branch == 4 && Ui > posUglobal) {
-            exBranch    = 4;
+            KgetTangent = posKp;
             Branch 	    = 5;
         }
         if (Branch == 5 && Ui > posUcap) {
-            exBranch    = 5;
+            KgetTangent = posKpc;
             Branch 	    = 6;
         }
         if (Branch == 6 && Ui > posUres) {
-            exBranch    = 6;
+            KgetTangent = 0;
             Branch 	    = 7;
         }
-
+    // Negative
         if (Branch == 12 && Ui < Upinch) {
-            exBranch    = 12;
-            Kglobal     = (negFglobal   - Fpinch) / (negUglobal - Upinch);
-            Klocal      = (negFlocal    - Fpinch) / (negUlocal  - Upinch);
+            double Kglobal  = (negFglobal   - Fpinch) / (negUglobal - Upinch);
+            double Klocal   = (negFlocal    - Fpinch) / (negUlocal  - Upinch);
             if (negFglobal < negFlocal && negUlocal < Upinch && negFlocal < Fpinch && Klocal > Kglobal) {
+                Kreload = Klocal;
                 Branch  = 13;
             } else {
+                Kreload = Kglobal;
                 Branch 	= 14;
             }
+            KgetTangent = Kreload;
         }
         if (Branch == 13 && Ui < negUlocal) {
-            exBranch    = 13;
+            Kreload     = (negFglobal - negFlocal) / (negUglobal - negUlocal);
+            KgetTangent = Kreload;
             Branch      = 14;
         }
         if (Branch == 14 && Ui < negUglobal) {
-            exBranch    = 14;
+            KgetTangent = negKp;
             Branch 	    = 15;
         }
         if (Branch == 15 && Ui < negUcap) {
-            exBranch    = 15;
+            KgetTangent = negKpc;
             Branch 	    = 16;
         }
         if (Branch == 16 && Ui < negUres) {
-            exBranch    = 16;
+            KgetTangent = 0;
             Branch 	    = 17;
-        }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////// COMPUTE FORCE INCREMENT /////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    // Without Branch Change
-        if (Branch == exBranch || Branch == 1) {
-            dF	= dU*Ktangent;
-        }
-    // With Branch Change
-    // Positive Force
-        else if (exBranch == 1 && Excursion_Flag) {
-            double  u0 	= Ui_1 - (Fi_1 / Kunload);
-            dF 	= 0             - Fi_1 + Ktangent*  (Ui - u0);
-        }
-        else if (Branch == 2) {
-            Ktangent    = (Fpinch   - posFlocal)    / (Upinch       - posUlocal);
-            dF          = posFlocal - Fi_1          + Ktangent*(Ui   - posUlocal);
-        }
-        else if (Branch == 3) {
-            Ktangent    = (posFlocal - Fpinch)    / (posUlocal - Upinch);
-            dF          = Fpinch - Fi_1          + Ktangent*(Ui   - Upinch);
-        }
-        else if (Branch == 4 && exBranch == 2) {
-            Ktangent   	= (posFglobal   - Fpinch)   / (posUglobal   - Upinch);
-            dF 	        = Fpinch        - Fi_1      + Ktangent*(Ui   - Upinch);
-        }
-        // CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
-        // CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
-        // CASE 6: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
-        else if (Branch == 4) {
-            Ktangent   	= (posFglobal   - posFlocal)    / (posUglobal - posUlocal);
-            dF      	= posFlocal     - Fi_1          + Ktangent*(Ui - posUlocal);
-        }
-        // CASE 7: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
-        else if (Branch == 5 && exBranch == 0) {
-            dF 	= posFy       - Fi_1 + posKp*   (Ui - posUy);
-            Ktangent	= posKp;
-        }
-        else if (Branch == 5) {
-            dF 	= posFglobal  - Fi_1 + posKp*   (Ui - posUglobal);
-            Ktangent	= posKp;
-        }
-        // CASE 8: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
-        else if (Branch == 6 && exBranch == 5) {
-            dF 	= posFcap     - Fi_1 + posKpc*  (Ui - posUcap);
-            Ktangent	= posKpc;
-        }
-        else if (Branch == 6) {
-            dF 	= posFglobal  - Fi_1 + posKpc*  (Ui - posUglobal);
-            Ktangent	= posKpc;
-        }
-        // CASE 9: WHEN LOADING AND BEYOND THE RESIDUAL POINT
-        else if (Branch == 7) {
-            dF 	= posFres     - Fi_1;
-            Ktangent	= 0;
-    // Negative Force
-        }
-        else if (Branch == 12) {
-            Ktangent     = (Fpinch   - negFlocal)    / (Upinch       - negUlocal);
-            dF          = negFlocal - Fi_1          + Ktangent*(Ui   - negUlocal);
-        }
-        else if (Branch == 13) {
-            Ktangent     = (negFlocal - Fpinch)    / (negUlocal - Upinch);
-            dF          = Fpinch - Fi_1          + Ktangent*(Ui   - Upinch);
-        }
-        else if (Branch == 14 && exBranch == 12) {
-            Ktangent   	= (negFglobal   - Fpinch)   / (negUglobal   - Upinch);
-            dF 	        = Fpinch        - Fi_1      + Ktangent*(Ui   - Upinch);
-        }
-        else if (Branch == 14) {
-        // CASE 4: WHEN RELOADING BUT BETWEEN LAST CYCLE PEAK POINT AND GLOBAL PEAK POINT
-        // CASE 5: WHEN LOADING IN GENERAL TOWARDS THE TARGET PEAK
-        // CASE 6: WHEN LOADING IN GENERAL TOWARDS THE LAST CYCLE PEAK POINT BUT BEYOND IT
-            Ktangent   	= (negFglobal - negFlocal) / (negUglobal - negUlocal);
-            dF         	= negFlocal - Fi_1 + Ktangent*(Ui - negUlocal);
-        }
-        // CASE 7: WHEN LOADING BEYOND THE TARGET PEAK BUT BEFORE THE CAPPING POINT
-        else if (Branch == 15 && exBranch == 0) {
-            dF 	= negFy - Fi_1 + negKp*(Ui - negUy);
-            Ktangent	= negKp;
-        }
-        else if (Branch == 15) {
-            dF 	= negFglobal - Fi_1 + negKp*(Ui - negUglobal);
-            Ktangent	= negKp;
-        }
-        // CASE 8: WHEN LOADING AND BETWEEN THE CAPPING POINT AND THE RESIDUAL POINT
-        else if (Branch == 16 && exBranch == 15) {
-            dF 	= negFcap - Fi_1 + negKpc*(Ui - negUcap);
-            Ktangent	= negKpc;
-        }
-        else if (Branch == 16) {
-            dF 	= negFglobal - Fi_1 + negKpc*(Ui - negUglobal);
-            Ktangent	= negKpc;
-        }
-        // CASE 9: WHEN LOADING AND BEYOND THE RESIDUAL POINT
-        else if (Branch == 17) {
-            dF 	= negFres - Fi_1;
-            Ktangent	= 0;
         }
     // Branch Change check
         // if (Branch!=exBranch) {
-        //  std::cout << exBranch << " -> " << Branch << "\n";
+        //     std::cout << exBranch << " -> " << Branch << "\n";
         // }
-// Force
-        Fi	= Fi_1 + dF;
     ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////// COMPUTE FORCE BASED ON BRANCH /////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+        if (Branch == 0) {
+            Fi  = Ke*Ui;
+        } else if (Branch == 1) {
+            Fi  = Fi_1 + Kunload*dU;
+    // Positive
+        } else if (Branch == 2) {
+            Fi  = Fpinch    + Kreload*(Ui - Upinch);
+        } else if (Branch == 3) {
+            Fi  = posFlocal + Kreload*(Ui - posUlocal);
+        } else if (Branch == 4) {
+            Fi  = posFglobal + Kreload*(Ui - posUglobal);
+        } else if (Branch == 5) {
+            Fi  = posFcap   + posKp*(Ui - posUcap);
+        } else if (Branch == 6) {
+            Fi  = posFcap   + posKpc*(Ui - posUcap);
+        } else if (Branch == 7) {
+            Fi  = posFres;
+    // Negative
+        } else if (Branch == 12) {
+            Fi  = Fpinch    + Kreload*(Ui - Upinch);
+        } else if (Branch == 13) {
+            Fi  = negFlocal + Kreload*(Ui - negUlocal);
+        } else if (Branch == 14) {
+            Fi  = negFglobal + Kreload*(Ui - negUglobal);
+        } else if (Branch == 15) {
+            Fi  = negFcap   + negKp*(Ui - negUcap);
+        } else if (Branch == 16) {
+            Fi  = negFcap   + negKpc*(Ui - negUcap);
+        } else if (Branch == 17) {
+            Fi  = negFres;
+        }
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     // CHECK FOR FAILURE
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
-        bool	FailPp 	= ( posFglobal == 0               );
-        bool	FailPn 	= ( negFglobal == 0               );
-        bool	FailDp 	= ( Ui >  posUu_0                 );
-        bool	FailDn 	= ( Ui < -negUu_0                 );
-        bool	FailRp 	= ( Branch ==  7 && posFres == 0  );
-        bool	FailRn 	= ( Branch == 17 && negFres == 0  );
+        bool	FailPp 	= ( posFglobal == 0           );
+        bool	FailPn 	= ( negFglobal == 0           );
+        bool	FailDp 	= ( dU > 0 && Ui >=  posUu_0  );
+        bool	FailDn 	= ( dU < 0 && Ui <= -negUu_0  );
+        bool	FailRp 	= ( Branch == 7     && Fi <= 0);
+        bool	FailRn 	= ( Branch == 17    && Fi >= 0);
         if (FailS||FailC||FailA||FailK||FailPp||FailPn||FailRp||FailRn||FailDp||FailDn) {
             Fi  = 0;
             Failure_Flag    = true;
         }
 
-        dEi	= 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
+        engAcml += 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
 
-        if (KgetTangent!=Ktangent) {
+        if (KgetTangent!=exKgetTangent) {
             KgetTangent  = (Fi - Fi_1) / dU;
         }
     }
-    engAcml	+= dEi; 	            // Energy
     if (KgetTangent==0) {
         KgetTangent  = 1e-6;
     }
@@ -625,7 +529,7 @@ int IMKPinching::commitState(void)
     cUi	    	= Ui;
     cFi	        = Fi;
 // 2 Stiffness
-    cKtangent	= Ktangent;
+    cKreload	= Kreload;
     cKunload	= Kunload;
 // 2 Energy
     cEngAcml	= engAcml;
@@ -674,7 +578,7 @@ int IMKPinching::revertToLastCommit(void)
     Ui	            = cUi;
     Fi	            = cFi;
 // 2 Stiffness
-    Ktangent	    = cKtangent;
+    Kreload	    = cKreload;
     Kunload	        = cKunload;
 // 2 Energy
     engAcml	        = cEngAcml;
@@ -736,7 +640,7 @@ int IMKPinching::revertToStart(void)
     Ui      	= cUi 	        = 0;
     Fi 	        = cFi 	        = 0;
 // 2 Stiffness
-    Ktangent	= cKtangent	    = Ke;
+    Kreload	= cKreload	    = Ke;
     Kunload	    = cKunload	    = Ke;
 // 2 Energy
     engAcml 	= cEngAcml	    = 0.0;
@@ -747,7 +651,7 @@ int IMKPinching::revertToStart(void)
 // 2 Pinching
     Fpinch      = cFpinch       = 0.0;
     Upinch      = cUpinch       = 0.0;
-    //cout << " revertToStart:" << endln; //<< " U=" << U << " Ui=" << Ui << " TanK=" << Ktangent << endln;
+    //cout << " revertToStart:" << endln; //<< " U=" << U << " Ui=" << Ui << " TanK=" << Kreload << endln;
     return 0;
 }
 
@@ -791,7 +695,7 @@ IMKPinching::getCopy(void)
     theCopy->Ui         = Ui;
     theCopy->Fi         = Fi;
 // 2 Stiffness
-    theCopy->Ktangent   = Ktangent;
+    theCopy->Kreload   = Kreload;
     theCopy->Kunload    = Kunload;
 // 2 Energy
     theCopy->engAcml    = engAcml;
@@ -830,7 +734,7 @@ IMKPinching::getCopy(void)
     theCopy->cUi        = cUi;
     theCopy->cFi        = cFi;
 // 2 Stiffness
-    theCopy->cKtangent  = cKtangent;
+    theCopy->cKreload  = cKreload;
     theCopy->cKunload   = cKunload;
 // 2 Energy
     theCopy->cEngAcml   = cEngAcml;
@@ -910,7 +814,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
     data(64) 	= Ui;
     data(65) 	= Fi;
 // 2 Stiffness 66 67
-    data(66)	= Ktangent;
+    data(66)	= Kreload;
     data(67) 	= Kunload;
 // 2 Energy 68 69
     data(68) 	= engAcml;
@@ -952,7 +856,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
     data(114)	= cUi;
     data(115)	= cFi;
 // 2 Stiffness 116 117
-    data(116)   = cKtangent;
+    data(116)   = cKreload;
     data(117)	= cKunload;
 // 2 Energy 118 119
     data(118)   = cEngAcml;
@@ -1054,7 +958,7 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         Ui				= data(64);
         Fi				= data(65);
     // 2 Stiffness
-        Ktangent		= data(66);
+        Kreload		= data(66);
         Kunload	    	= data(67);
     // 2 Energy
         engAcml			= data(68);
@@ -1096,7 +1000,7 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         cUi				= data(114);
         cFi				= data(115);
     // 2 Stiffness
-        cKtangent       = data(116);
+        cKreload       = data(116);
         cKunload		= data(117);
     // 2 Energy
         cEngAcml        = data(118);
