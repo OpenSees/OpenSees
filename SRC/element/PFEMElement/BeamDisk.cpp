@@ -99,3 +99,5 @@ BeamDisk::BeamDisk(int tag, const std::vector<double>& center,
     : Flume(tag, center, data, true) {}
 
 BeamDisk::~BeamDisk() {}
+
+int BeamDisk::mesh() { return 0; }
