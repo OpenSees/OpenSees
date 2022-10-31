@@ -93,6 +93,8 @@ class BackgroundMesh {
     int gridEles();
     static int createContact(const VInt& ndtags, const VInt& sids,
                              VInt& elends);
+    static int createContact3D(const VInt& ndtags, const VInt& sids,
+                             VInt& elends, int& ndir);
 
     // particle kernel
     static double QuinticKernel(double q, double h, int ndm);
