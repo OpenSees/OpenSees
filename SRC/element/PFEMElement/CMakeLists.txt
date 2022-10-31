@@ -48,6 +48,7 @@ target_sources(OPS_PFEM
         TriMesh.cpp
         Flume.cpp
         BeamBrick.cpp
+        BeamDick.cpp
     PUBLIC
         BackgroundDef.h
         BackgroundFixData.h
@@ -87,6 +88,7 @@ target_sources(OPS_PFEM
         TriMesh.h
         Flume.h
         BeamBrick.h
+        BeamDisk.h
 )
 
 target_include_directories(OPS_PFEM PUBLIC ${CMAKE_CURRENT_LIST_DIR})
