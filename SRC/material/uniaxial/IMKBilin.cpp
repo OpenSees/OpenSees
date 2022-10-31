@@ -473,8 +473,9 @@ int IMKBilin::revertToStart(void)
     U	        = cU	        = 0;
     Ui      	= cUi 	        = 0;
     Fi 	        = cFi 	        = 0;
-// 1 Stiffness
+// 2 Stiffness
     Kunload	    = cKunload	    = Ke;
+    KgetTangent = Ke;
 // 2 Energy
     engAcml 	= cEngAcml	    = 0.0;
     engDspt	    = cEngDspt	    = 0.0;

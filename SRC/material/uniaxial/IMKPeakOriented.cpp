@@ -516,7 +516,7 @@ int IMKPeakOriented::revertToLastCommit(void)
     Ui	            = cUi;
     Fi	            = cFi;
 // 2 Stiffness
-    Kreload	    = cKreload;
+    Kreload	        = cKreload;
     Kunload	        = cKunload;
 // 2 Energy
     engAcml	        = cEngAcml;
@@ -578,8 +578,9 @@ int IMKPeakOriented::revertToStart(void)
     Ui      	= cUi 	        = 0;
     Fi 	        = cFi 	        = 0;
 // 2 Stiffness
-    Kreload	= cKreload	    = Ke;
+    Kreload	    = cKreload	    = Ke;
     Kunload	    = cKunload	    = Ke;
+    KgetTangent = Ke;
 // 2 Energy
     engAcml 	= cEngAcml	    = 0.0;
     engDspt	    = cEngDspt	    = 0.0;
@@ -629,7 +630,7 @@ IMKPeakOriented::getCopy(void)
     theCopy->Ui         = Ui;
     theCopy->Fi         = Fi;
 // 2 Stiffness
-    theCopy->Kreload   = Kreload;
+    theCopy->Kreload    = Kreload;
     theCopy->Kunload    = Kunload;
 // 2 Energy
     theCopy->engAcml    = engAcml;
@@ -668,7 +669,7 @@ IMKPeakOriented::getCopy(void)
     theCopy->cUi        = cUi;
     theCopy->cFi        = cFi;
 // 2 Stiffness
-    theCopy->cKreload  = cKreload;
+    theCopy->cKreload   = cKreload;
     theCopy->cKunload   = cKunload;
 // 2 Energy
     theCopy->cEngAcml   = cEngAcml;
