@@ -24,6 +24,7 @@ target_sources(OPS_PFEM
         Particle.cpp
         ParticleGroup.cpp
         PFEMContact2D.cpp
+        PFEMContact3D.cpp
         PFEMElement2DBubble.cpp
         PFEMElement2DCompressible.cpp
         PFEMElement2D.cpp
@@ -45,6 +46,8 @@ target_sources(OPS_PFEM
         TriangleMeshGenerator.cpp
         TriGaussPoints.cpp
         TriMesh.cpp
+        Flume.cpp
+        BeamBrick.cpp
     PUBLIC
         BackgroundDef.h
         BackgroundFixData.h
@@ -61,6 +64,7 @@ target_sources(OPS_PFEM
         ParticleGroup.h
         Particle.h
         PFEMContact2D.h
+        PFEMContact3D.h
         PFEMElement2DBubble.h
         PFEMElement2DCompressible.h
         PFEMElement2DFIC.h
@@ -81,6 +85,8 @@ target_sources(OPS_PFEM
         TriangleMeshGenerator.h
         TriGaussPoints.h
         TriMesh.h
+        Flume.h
+        BeamBrick.h
 )
 
 target_include_directories(OPS_PFEM PUBLIC ${CMAKE_CURRENT_LIST_DIR})

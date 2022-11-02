@@ -637,8 +637,11 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/HigherOrder.o \
 	$(FE)/element/PFEMElement/Mesh.o \
 	$(FE)/element/PFEMElement/PFEMContact2D.o \
+	$(FE)/element/PFEMElement/PFEMContact3D.o \
 	$(FE)/element/PFEMElement/BNode.o \
 	$(FE)/element/PFEMElement/BCell.o \
+	$(FE)/element/PFEMElement/Flume.o \
+	$(FE)/element/PFEMElement/BeamBrick.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -834,6 +837,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
 	$(FE)/material/uniaxial/Bond_SP01.o \
         $(FE)/material/uniaxial/FRCC.o \
+        $(FE)/material/uniaxial/ConcreteZBH_original.o \
+        $(FE)/material/uniaxial/ConcreteZBH_fitted.o \
+        $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \

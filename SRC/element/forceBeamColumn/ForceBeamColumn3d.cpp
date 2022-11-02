@@ -177,6 +177,151 @@ void* OPS_ForceBeamColumn3d()
     return theEle;
 }
 
+void *OPS_ForceBeamColumn3d(const ID &info) {
+    // data needed
+    int iData[5];
+    double mass = 0.0, tol = 1e-12;
+    int maxIter = 10;
+    int numData;
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 3 || ndf != 6) {
+        opserr << "ndm must be 3 and ndf must be 6\n";
+        return 0;
+    }
+
+    // 1. regular elements
+    if (info.Size() == 0) {
+        numData = 3;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:eleTag,iNode,jNode\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+    }
+
+    // 2. regular elements or save data
+    if (info.Size() == 0 || info(0) == 1) {
+        numData = 2;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:transfTag,integrationTag\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[3]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+
+        numData = 1;
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            const char *type = OPS_GetString();
+            if (strcmp(type, "-iter") == 0) {
+                if (OPS_GetNumRemainingInputArgs() > 1) {
+                    if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+                        opserr << "WARNING invalid maxIter\n";
+                        return 0;
+                    }
+                    if (OPS_GetDoubleInput(&numData, &tol) < 0) {
+                        opserr << "WARNING invalid tol\n";
+                        return 0;
+                    }
+                }
+            } else if (strcmp(type, "-mass") == 0) {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+                        opserr << "WARNING invalid mass\n";
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3: save data
+    static std::map<int, Vector> meshdata;
+    if (info.Size() > 0 && info(0) == 1) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+
+        // save the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(5);
+        mdata(0) = iData[3];
+        mdata(1) = iData[4];
+        mdata(2) = mass;
+        mdata(3) = tol;
+        mdata(4) = maxIter;
+        return &meshdata;
+    }
+
+    // 4: load data
+    if (info.Size() > 0 && info(0) == 2) {
+        if (info.Size() < 5) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2\n";
+            return 0;
+        }
+
+        // get the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 5) return 0;
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
+        iData[3] = mdata(0);
+        iData[4] = mdata(1);
+        mass = mdata(2);
+        tol = mdata(3);
+        maxIter = mdata(4);
+    }
+
+    // 5: create element
+    CrdTransf *theTransf = OPS_getCrdTransf(iData[3]);
+    if (theTransf == 0) {
+        opserr << "coord transfomration not found\n";
+        return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule *theRule =
+        OPS_getBeamIntegrationRule(iData[4]);
+    if (theRule == 0) {
+        opserr << "beam integration not found\n";
+        return 0;
+    }
+    BeamIntegration *bi = theRule->getBeamIntegration();
+    if (bi == 0) {
+        opserr << "beam integration is null\n";
+        return 0;
+    }
+
+    // check sections
+    const ID &secTags = theRule->getSectionTags();
+    SectionForceDeformation **sections =
+        new SectionForceDeformation *[secTags.Size()];
+    for (int i = 0; i < secTags.Size(); i++) {
+        sections[i] = OPS_getSectionForceDeformation(secTags(i));
+        if (sections[i] == 0) {
+            opserr << "section " << secTags(i) << "not found\n";
+            return 0;
+        }
+    }
+
+    Element *theEle = new ForceBeamColumn3d(
+        iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
+        *theTransf, mass, maxIter, tol);
+    delete[] sections;
+    return theEle;
+}
 
 // constructor:
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.

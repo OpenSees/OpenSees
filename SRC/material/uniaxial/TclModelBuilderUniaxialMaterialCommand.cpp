@@ -149,6 +149,9 @@ extern void *OPS_SteelMPF(void); // K Kolozvari
 extern void *OPS_ConcreteCM(void); // K Kolozvari
 extern void *OPS_Bond_SP01(void); // K Kolozvari
 extern void *OPS_FRCC(void); // Feras Khlef + Andre Barbosa
+extern void *OPS_ConcreteZBH_original(void);
+extern void *OPS_ConcreteZBH_fitted(void);
+extern void *OPS_ConcreteZBH_smoothed(void);
 extern void *OPS_Steel4(void);
 extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenMaterial(void);
@@ -482,6 +485,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;      
     }
+    if (strcmp(argv[1], "ConcreteZBH_original") == 0) {
+      void *theMat = OPS_ConcreteZBH_original();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1], "ConcreteZBH_fitted") == 0) {
+      void *theMat = OPS_ConcreteZBH_fitted();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1], "ConcreteZBH_smoothed") == 0) {
+      void *theMat = OPS_ConcreteZBH_smoothed();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }        
     if ((strcmp(argv[1],"Cast") == 0) || (strcmp(argv[1],"CastFuse") == 0)) {
       void *theMat = OPS_Cast();
       if (theMat != 0) 
