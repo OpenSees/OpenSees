@@ -543,10 +543,10 @@ void PressureDependMultiYield03::elast2Plast(void)
     currentStress.setData(currentStress.deviator(),0);
   }
 
-  if (!stress0Initialized) {
-      stress0 = currentStress.t2Vector();
-      stress0Initialized = true;
-  }
+  //if (!stress0Initialized) {
+  //    stress0 = currentStress.t2Vector();
+  //    stress0Initialized = true;
+  //}
 
   // Active surface is 0, return
   if (currentStress.deviatorLength() == 0.) return;
@@ -651,6 +651,7 @@ const Matrix & PressureDependMultiYield03::getTangent (void)
       initPress = currentStress.volume();
 //	   opserr << "PDMY03::getTang() - 2\n";
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
 //	   opserr << "PDMY03::getTang() - 3\n";
   }
   if (loadStage>=2 && initPress==refPressure) 
@@ -790,6 +791,7 @@ const Matrix & PressureDependMultiYield03::getInitialTangent (void)
   if (loadStage == 1 && e2p == 0) {
       initPress = currentStress.volume();
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
   }
   if (loadStage>=2 && initPress==refPressure) 
 	  initPress = currentStress.volume();
@@ -857,6 +859,7 @@ const Vector & PressureDependMultiYield03::getStress (void)
   if (loadStage == 1 && e2p == 0) {
       initPress = currentStress.volume();
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
   }
 
   if (loadStage!=1) {  //linear elastic
