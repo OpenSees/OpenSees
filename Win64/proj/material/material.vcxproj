@@ -296,6 +296,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcretewBeta.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteZBH_fitted.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteZBH_original.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteZBH_smoothed.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
