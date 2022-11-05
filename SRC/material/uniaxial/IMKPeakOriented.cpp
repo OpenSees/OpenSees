@@ -228,7 +228,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
             // When a part of backbone is beneath the residual strength
             // Global Peak on the Updated Backbone
                 if (negUy < negUglobal) {           // Elastic Branch
-                    negFglobal	= Ke * negUglobal; 
+                    negFglobal	= Ke * negUglobal;
                 }
                 else if (negUcap < negUglobal) {    // Post-Yield Branch
                     negFglobal	= negFy   + negKp  * (negUglobal - negUy);
@@ -289,11 +289,11 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     // Branch shifting from 3 -> 4 -> 5 -> 6 -> 7
         // int exBranch = Branch;
         if (Branch == 0 && Ui > posUy) {            // Yield in Positive
-            Branch  = 5;
             KgetTangent = posKp;
+            Branch  = 5;
         } else if (Branch == 0 && Ui < negUy) {     // Yield in Negative
-            Branch  = 15;
             KgetTangent = negKp;
+            Branch  = 15;
         } else if (Branch == 1 && Fi_1 > 0 && Ui > posUlocal) {
             double Kglobal = (posFglobal   - posFlocal) / (posUglobal  - posUlocal);
             Kreload = Kglobal;
