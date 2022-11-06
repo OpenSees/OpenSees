@@ -248,7 +248,9 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BCell.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BeamBrick.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BNode.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Flume.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.cpp" />
@@ -257,6 +259,7 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp" />
