@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
     if (numIMKBilinMaterials == 0) {
         numIMKBilinMaterials++;
-        OPS_Error("IMK with Bilinear Response - Code by AE_KI (Oct22)\n", 1);
+        opserr << "IMK with Bilinear Response - Code by AE_KI (Oct22)\n";
     }
 
     // Pointer to a uniaxial material that will be returned
@@ -119,12 +119,11 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     U           = strain; //set trial displacement
     Ui          = U;
     double dU   = Ui - Ui_1;    // Incremental deformation at current step
-    double exKgetTangent = KgetTangent;
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////  MAIN CODE //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////  MAIN CODE //////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (Failure_State==5) {     // When a failure has already occured
         Fi  = 0;
     } else if (dU == 0) {   // When deformation doesn't change from the last
@@ -178,7 +177,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
                 posUcap         = posKp <= posKpc ? 0 : (FcapProj - FyProj) / (posKp - posKpc);
                 posFcap         = FyProj + posKp*posUcap;
             // When a part of backbone is beneath the residual strength
-                double candidateKp = (posFcap - posFres) / (posUcap - Ui_1 - (posFres - Fi_1)/Kunload);                
+                double candidateKp = (posFcap - posFres) / (posUcap - Ui_1 - (posFres - Fi_1)/Kunload);
                 if (posFcap < posFres) {
                     posFy   = posFres;
                     posFcap = posFres;
@@ -227,40 +226,32 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Positive
         if (dU > 0) {   // Backbone in Positive
-            KgetTangent = (Ui < posUcap) ? posKp : posKpc;
-            double Fi_backbone = posFcap + (Ui - posUcap) * KgetTangent;
+            double Kbackbone = (Ui < posUcap) ? posKp : posKpc;
+            double Fi_backbone = posFcap + (Ui - posUcap) * Kbackbone;
             if (Fi_backbone < posFres || Failure_State==4) {
                 Fi_backbone = posFres;
-                KgetTangent = 0;
             }
             if (Failure_State==3) {
                 Fi_backbone = 0;
-                KgetTangent = 0;
             }
             if (Fi > Fi_backbone) {
                 Fi = Fi_backbone;
                 onBackbone  = true;
-            } else {
-                KgetTangent = Kunload;
             }
         }
     // Negative
         else {          // Backbone in Negative
-            KgetTangent = (negUcap < Ui) ? negKp : negKpc;
-            double Fi_backbone = negFcap + (Ui - negUcap) * KgetTangent;
+            double Kbackbone = (negUcap < Ui) ? negKp : negKpc;
+            double Fi_backbone = negFcap + (Ui - negUcap) * Kbackbone;
             if (Fi_backbone > negFres || Failure_State==3) {
                 Fi_backbone = negFres;
-                KgetTangent = 0;
             }
             if (Failure_State==4) {
                 Fi_backbone = 0;
-                KgetTangent = 0;
             }
             if (Fi < Fi_backbone) {
                 Fi = Fi_backbone;
                 onBackbone  = true;
-            } else {
-                KgetTangent = Kunload;
             }
         }
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -323,9 +314,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
         engAcml += 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
 
-        if (KgetTangent!=exKgetTangent) {
-            KgetTangent  = (Fi - Fi_1) / dU;
-        }
+        KgetTangent  = (Fi - Fi_1) / dU;
     }
     if (KgetTangent==0) {
         KgetTangent  = 1e-6;

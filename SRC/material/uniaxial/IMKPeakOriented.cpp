@@ -39,24 +39,24 @@ static int numIMKPeakOrientedMaterials = 0;
 void *
 OPS_IMKPeakOriented()
 {
-	if (numIMKPeakOrientedMaterials == 0) {
-		numIMKPeakOrientedMaterials++;
-		OPS_Error("IMK with Peak-Oriented Response - Code by AE_KI (Oct22)\n", 1);
-	}
+    if (numIMKPeakOrientedMaterials == 0) {
+        numIMKPeakOrientedMaterials++;
+        opserr << "IMK with Peak-Oriented Response - Code by AE_KI (Nov22)\n";
+    }
 
-	// Pointer to a uniaxial material that will be returned
-	UniaxialMaterial *theMaterial = 0;
+    // Pointer to a uniaxial material that will be returned
+    UniaxialMaterial *theMaterial = 0;
 
-	int    iData[1];
-	double dData[23];
-	int numData = 1;
+    int    iData[1];
+    double dData[23];
+    int numData = 1;
 
-	if (OPS_GetIntInput(&numData, iData) != 0) {
-		opserr << "WARNING invalid uniaxialMaterial IMKPeakOriented tag" << endln;
-		return 0;
-	}
+    if (OPS_GetIntInput(&numData, iData) != 0) {
+        opserr << "WARNING invalid uniaxialMaterial IMKPeakOriented tag" << endln;
+        return 0;
+    }
 
-	numData = 23;
+    numData = 23;
 
 
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
@@ -68,21 +68,20 @@ OPS_IMKPeakOriented()
     }
 
 
+    // Parsing was successful, allocate the material
+    theMaterial = new IMKPeakOriented(iData[0],
+        dData[0],
+        dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
+        dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
+        dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
+        dData[21], dData[22]);
 
-	// Parsing was successful, allocate the material
-	theMaterial = new IMKPeakOriented(iData[0],
-		dData[0],
-		dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
-		dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
-		dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
-		dData[21], dData[22]);
+    if (theMaterial == 0) {
+        opserr << "WARNING could not create uniaxialMaterial of type IMKPeakOriented Material\n";
+        return 0;
+    }
 
-	if (theMaterial == 0) {
-		opserr << "WARNING could not create uniaxialMaterial of type IMKPeakOriented Material\n";
-		return 0;
-	}
-
-	return theMaterial;
+    return theMaterial;
 }
 
 IMKPeakOriented::IMKPeakOriented(int tag, double p_Ke,
@@ -94,7 +93,7 @@ IMKPeakOriented::IMKPeakOriented(int tag, double p_Ke,
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_A(p_LAMBDA_A), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_A(p_c_A), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg)
 {
-	this->revertToStart();
+    this->revertToStart();
 }
 
 IMKPeakOriented::IMKPeakOriented()
@@ -103,18 +102,18 @@ IMKPeakOriented::IMKPeakOriented()
     negUp_0(0), negUpc_0(0), negUu_0(0), negFy_0(0), negFcapFy_0(0), negFresFy_0(0),
     LAMBDA_S(0), LAMBDA_C(0), LAMBDA_A(0), LAMBDA_K(0), c_S(0), c_C(0), c_A(0), c_K(0), D_pos(0), D_neg(0)
 {
-	this->revertToStart();
+    this->revertToStart();
 }
 
 IMKPeakOriented::~IMKPeakOriented()
 {
-	// does nothing
+    // does nothing
 }
 
 int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 {
-	//all variables to the last commit
-	this->revertToLastCommit();
+    //all variables to the last commit
+    this->revertToLastCommit();
 
     //state determination algorithm: defines the current force and tangent stiffness
     double Ui_1 = Ui;
@@ -122,7 +121,6 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     U           = strain; //set trial displacement
     Ui          = U;
     double dU   = Ui - Ui_1;    // Incremental deformation at current step
-    double exKgetTangent = KgetTangent;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////  MAIN CODE //////////////////////////////////////////////////////////
@@ -164,7 +162,6 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
             FailK           = (betaK>1);
             betaK           = betaK < 0 ? 0 : (betaK>1 ? 1 : betaK);
             Kunload         *= (1 - betaK);
-            KgetTangent     = Kunload;
         }
         Fi	    = Fi_1 + Kunload * dU;
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +263,6 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
                     Kreload = Kglobal;
                 }
             }
-            KgetTangent = Kreload;
         }
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -289,56 +285,44 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     // Branch shifting from 3 -> 4 -> 5 -> 6 -> 7
         // int exBranch = Branch;
         if (Branch == 0 && Ui > posUy) {            // Yield in Positive
-            KgetTangent = posKp;
             Branch  = 5;
         } else if (Branch == 0 && Ui < negUy) {     // Yield in Negative
-            KgetTangent = negKp;
             Branch  = 15;
         } else if (Branch == 1 && Fi_1 > 0 && Ui > posUlocal) {
             double Kglobal = (posFglobal   - posFlocal) / (posUglobal  - posUlocal);
             Kreload = Kglobal;
             Branch  = 4;                        // Towards Global Peak
-            KgetTangent = Kreload;
         } else if (Branch == 1 && Fi_1 < 0 && Ui < negUlocal) {    // Back to Reloading (Negative)
             double Kglobal = (negFglobal   - negFlocal) / (negUglobal  - negUlocal);
             Kreload = Kglobal;
             Branch  = 14;                   // Towards Global Peak
-            KgetTangent = Kreload;
         }
     // Positive
         if (Branch == 3 && Ui > posUlocal) {
             Kreload     = (posFglobal - posFlocal) / (posUglobal - posUlocal);
-            KgetTangent = Kreload;
             Branch      = 4;
         }
         if (Branch == 4 && Ui > posUglobal) {
-            KgetTangent = posKp;
             Branch 	    = 5;
         }
         if (Branch == 5 && Ui > posUcap) {
-            KgetTangent = posKpc;
             Branch 	    = 6;
         }
         if (Branch == 6 && Ui > posUres) {
-            KgetTangent = 0;
             Branch 	    = 7;
         }
     // Negative
         if (Branch == 13 && Ui < negUlocal) {
             Kreload     = (negFglobal - negFlocal) / (negUglobal - negUlocal);
-            KgetTangent = Kreload;
             Branch      = 14;
         }
         if (Branch == 14 && Ui < negUglobal) {
-            KgetTangent = negKp;
             Branch 	    = 15;
         }
         if (Branch == 15 && Ui < negUcap) {
-            KgetTangent = negKpc;
             Branch 	    = 16;
         }
         if (Branch == 16 && Ui < negUres) {
-            KgetTangent = 0;
             Branch 	    = 17;
         }
     // Branch Change check
@@ -395,9 +379,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
         engAcml += 0.5*(Fi + Fi_1)*dU;   // Internal energy increment
 
-        if (KgetTangent!=exKgetTangent) {
-            KgetTangent  = (Fi - Fi_1) / dU;
-        }
+        KgetTangent  = (Fi - Fi_1) / dU;
     }
     if (KgetTangent==0) {
         KgetTangent  = 1e-6;
@@ -407,13 +389,13 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 ////////////////////////////////////////////// END OF MAIN CODE ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	return 0;
+    return 0;
 }
 
 double IMKPeakOriented::getStress(void)
 {
-	//cout << " getStress" << endln;
-	return (Fi);
+    //cout << " getStress" << endln;
+    return (Fi);
 }
 
 double IMKPeakOriented::getTangent(void)
@@ -424,19 +406,19 @@ double IMKPeakOriented::getTangent(void)
 
 double IMKPeakOriented::getInitialTangent(void)
 {
-	//cout << " getInitialTangent" << endln;
-	return (Ke);
+    //cout << " getInitialTangent" << endln;
+    return (Ke);
 }
 
 double IMKPeakOriented::getStrain(void)
 {
-	//cout << " getStrain" << endln;
-	return (U);
+    //cout << " getStrain" << endln;
+    return (U);
 }
 
 int IMKPeakOriented::commitState(void)
 {
-	//cout << " commitState" << endln;
+    //cout << " commitState" << endln;
 
     //commit trial  variables
 // 12 Pos U and F
@@ -682,8 +664,8 @@ IMKPeakOriented::getCopy(void)
 
 int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 {
-	int res = 0;
-	cout << " sendSelf" << endln;
+    int res = 0;
+    cout << " sendSelf" << endln;
 
     static Vector data(137);
     data(0) = this->getTag();
@@ -807,14 +789,14 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "IMKPeakOriented::sendSelf() - failed to send data\n";
-	return res;
+    return res;
 }
 
 int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	int res = 0;
-	static Vector data(137);
-	res = theChannel.recvVector(this->getDbTag(), cTag, data);
+    int res = 0;
+    static Vector data(137);
+    res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
     if (res < 0) {
         opserr << "IMKPeakOriented::recvSelf() - failed to receive data\n";
@@ -942,10 +924,10 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         cBranch			= data(136);
     }
 
-	return res;
+    return res;
 }
 
 void IMKPeakOriented::Print(OPS_Stream &s, int flag)
 {
-	cout << "IMKPeakOriented tag: " << this->getTag() << endln;
+    cout << "IMKPeakOriented tag: " << this->getTag() << endln;
 }
