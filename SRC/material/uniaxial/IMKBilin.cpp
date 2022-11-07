@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
     if (numIMKBilinMaterials == 0) {
         numIMKBilinMaterials++;
-        opserr << "IMK with Bilinear Response - Code by AE_KI (Oct22)\n";
+        opserr << "IMK with Bilinear Response - Code by AE_KI (Nov22)\n";
     }
 
     // Pointer to a uniaxial material that will be returned
