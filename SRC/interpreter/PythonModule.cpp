@@ -255,7 +255,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     // Py_DECREF(space);
     // Py_DECREF(empty);
 
-    int lenres = strlen(res) + 1;
+    int lenres = int(strlen(res)) + 1;
     if (lenres > len) {
         lenres = len;
     }
