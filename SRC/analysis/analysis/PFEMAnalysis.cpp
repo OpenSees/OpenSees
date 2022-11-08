@@ -79,7 +79,7 @@ PFEMAnalysis::~PFEMAnalysis()
 }
 
 int 
-PFEMAnalysis::analyze()
+PFEMAnalysis::analyze(bool flush)
 {
     Domain* theDomain = this->getDomainPtr();
     double current = theDomain->getCurrentTime();
@@ -134,7 +134,7 @@ PFEMAnalysis::analyze()
     }
 
     Domain* the_Domain = this->getDomainPtr();
-    if (the_Domain != 0) {
+    if (the_Domain != 0 && flush) {
         the_Domain->flushRecorders();
     }
 

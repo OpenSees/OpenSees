@@ -124,7 +124,7 @@ StaticAnalysis::clearAll(void)
 
 
 int 
-StaticAnalysis::analyze(int numSteps)
+StaticAnalysis::analyze(int numSteps, bool flush)
 {
     int result = 0;
     Domain *the_Domain = this->getDomainPtr();
@@ -217,7 +217,7 @@ StaticAnalysis::analyze(int numSteps)
 	}    	
     }
 
-  if (the_Domain != 0) {
+  if (the_Domain != 0 && flush) {
     the_Domain->flushRecorders();
   }
     

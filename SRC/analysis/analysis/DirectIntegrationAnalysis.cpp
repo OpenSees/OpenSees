@@ -165,7 +165,7 @@ DirectIntegrationAnalysis::initialize(void)
 
 
 int 
-DirectIntegrationAnalysis::analyze(int numSteps, double dT)
+DirectIntegrationAnalysis::analyze(int numSteps, double dT, bool flush)
 {
   int result = 0;
 
@@ -180,7 +180,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
   }
 
   Domain *the_Domain = this->getDomainPtr();
-  if (the_Domain != 0) {
+  if (the_Domain != 0 && flush) {
     the_Domain->flushRecorders();
   }
 
