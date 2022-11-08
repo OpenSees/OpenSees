@@ -3,6 +3,7 @@
 #include <Domain.h>
 #include <Node.h>
 #include <elementAPI.h>
+#include <cmath>
 
 int OPS_BeamDisk() {
     // get inputs
@@ -100,4 +101,18 @@ BeamDisk::BeamDisk(int tag, const std::vector<double>& center,
 
 BeamDisk::~BeamDisk() {}
 
-int BeamDisk::mesh() { return 0; }
+int BeamDisk::mesh() { 
+    
+    // dimensions
+    const auto& dimensions = this->getDimensions();
+    double thk = dimensions[0];
+    double radius = dimensions[1];
+    double size = dimensions[2];
+    int dir = (int)dimensions[3];
+
+    // number of layers
+    // int nlayer = 
+
+
+    return 0; 
+}
