@@ -93,6 +93,9 @@ target_sources(OPS_Material
       ConcreteECThermal.cpp
       ConcreteSakaiKawashima.cpp
       ConcretewBeta.cpp
+      ConcreteZBH_fitted.cpp
+      ConcreteZBH_original.cpp
+      ConcreteZBH_smoothed.cpp 
       ConfinedConcrete01.cpp
       ContinuumUniaxial.cpp
       CubicSpline.cpp
@@ -204,6 +207,9 @@ target_sources(OPS_Material
       ConcreteECThermal.h
       ConcreteSakaiKawashima.h
       ConcretewBeta.h
+      ConcreteZBH_fitted.h
+      ConcreteZBH_original.h
+      ConcreteZBH_smoothed.h
       ConfinedConcrete01.h
       ContinuumUniaxial.h
       CubicSpline.h
