@@ -1302,7 +1302,8 @@ BeamGT::displaySelf(Renderer &theViewer, int displayMode, float fact, const char
 	{
 		code = 0;
 		double ww = 10*(force[2] + force[5]) /L;
-		code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5],0,0,ww,1);
+		//code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5],0,0,ww,1);
+		code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5]);
 		return code;
 	}
 
