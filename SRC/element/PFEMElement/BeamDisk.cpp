@@ -3,7 +3,10 @@
 #include <Domain.h>
 #include <Node.h>
 #include <elementAPI.h>
+
 #include <cmath>
+
+double PI = atan(1.0) * 4.0;
 
 int OPS_BeamDisk() {
     // get inputs
@@ -58,6 +61,7 @@ int OPS_BeamDisk() {
         opserr << "WARNING: dir has to be 1, 2, or 3\n";
         return -1;
     }
+    --data[3];
 
     // create mesh
     BeamDisk* mesh = new BeamDisk(idata[0], crds, data);
@@ -97,12 +101,11 @@ int OPS_BeamDisk() {
 
 BeamDisk::BeamDisk(int tag, const std::vector<double>& center,
                    const std::vector<double>& data)
-    : Flume(tag, center, data, true) {}
+    : Flume(tag, center, data, true), layerNodes() {}
 
 BeamDisk::~BeamDisk() {}
 
-int BeamDisk::mesh() { 
-    
+int BeamDisk::mesh() {
     // dimensions
     const auto& dimensions = this->getDimensions();
     double thk = dimensions[0];
@@ -110,9 +113,83 @@ int BeamDisk::mesh() {
     double size = dimensions[2];
     int dir = (int)dimensions[3];
 
-    // number of layers
-    // int nlayer = 
+    // clear layers
+    layerNodes.clear();
+    elenodes.clear();
 
+    // nlayers
+    int nlayers = int(ceil(thk / size));
+    layerNodes.resize(nlayers);
 
-    return 0; 
+    // vertical thickness size
+    double vsize = thk / nlayers;
+
+    // angle size
+    double angle = size / radius;
+    int nangle = int(ceil(2 * PI / angle));
+    double asize = 2 * PI / nangle;
+
+    // radius size
+    int nr = int(ceil(radius / size));
+    double rsize = radius / nr;
+
+    // loop all angles
+    int ndm = OPS_GetNDM();
+    int nodeTag = nextNodeTag();
+    int initNodeTag = nodeTag;
+    std::vector<double> currCrds(ndm);
+    const auto& crds = getCrds();
+    for (int j = 0; j < nangle; ++j) {
+        Node* prev = 0;
+        for (int i = 0; i < nlayers; ++i) {
+            // nodetags for this layer
+            auto& ndtags = layerNodes[i];
+
+            // loop all angles
+            double angle = j * asize;
+            int dir1 = dir + 1;
+            int dir2 = dir + 2;
+            if (dir1 >= ndm) dir1 -= ndm;
+            if (dir2 >= ndm) dir2 -= ndm;
+            currCrds[dir] = crds[dir] + i * vsize;
+            currCrds[dir1] = crds[dir1] + cos(angle) * radius;
+            currCrds[dir2] = crds[dir2] + sin(angle) * radius;
+            Node* node = create_node(currCrds, nodeTag);
+            if (node == 0) {
+                return -1;
+            }
+            ndtags.push_back(node->getTag());
+
+            // add elements
+            if (prev != 0) {
+                elenodes.push_back(prev->getTag());
+                elenodes.push_back(node->getTag());
+            }
+
+            // set prev
+            prev = node;
+        }
+    }
+
+    // add new nodes
+    ID newndtags(nodeTag - initNodeTag);
+    for (int i = 0; i < newndtags.Size(); ++i) {
+        newndtags(i) = initNodeTag + i;
+    }
+    this->setNewNodeTags(newndtags);
+
+    // add new elements
+    ID newelenodes(elenodes.size());
+    for (int i = 0; i < newelenodes.Size(); ++i) {
+        newelenodes(i) = elenodes[i];
+    }
+    this->setEleNodes(newelenodes);
+
+    // create elements
+    if (this->newElements(newelenodes) < 0) {
+        opserr << "WARNING: failed to create elements\n";
+        return -1;
+    }
+
+    return 0;
 }

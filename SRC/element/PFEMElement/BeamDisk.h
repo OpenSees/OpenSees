@@ -12,6 +12,10 @@ class BeamDisk : public Flume {
              const std::vector<double>& data);
     ~BeamDisk();
     int mesh();
+
+   private:
+    std::vector<std::vector<int>> layerNodes;
+    std::vector<int> elenodes;
 };
 
 #endif
