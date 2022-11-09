@@ -114,7 +114,7 @@ int BeamDisk::mesh() {
     int dir = (int)dimensions[3];
 
     // nlayers
-    int nlayers = int(ceil(thk / size));
+    int nlayers = int(ceil(thk / size)) + 1;
     std::vector<std::vector<Node*>> layerNodes(nlayers);
     std::vector<int> elenodes;
 
@@ -126,7 +126,7 @@ int BeamDisk::mesh() {
     if (dir2 >= ndm) dir2 -= ndm;
 
     // vertical thickness size
-    double vsize = thk / nlayers;
+    double vsize = thk / (nlayers - 1);
 
     // angle size
     double angle = size / radius;
@@ -182,20 +182,30 @@ int BeamDisk::mesh() {
     }
 
     // top and bottom face
-    for (int i = 0; i < nlayers; i += nlayers - 1 + 2) {
+    for (int i = 0; i < nlayers; i += nlayers - 1) {
         // nodetags for this layer
         auto& ndtags = layerNodes[i];
 
-        // loop 1/4 of nodes on circle
+        // loop half circle
         std::vector<double> curr(ndm);
         curr[dir] = crds[dir] + i * vsize;
+        std::map<int, int> prevList;
+        for (int j = 1; j < 2 * nangle; ++j) {
+            prevList[2 * nangle + j] =
+                ndtags[2 * nangle + j]->getTag();
+        }
         for (int j = 1; j < nangle; ++j) {
             // center nodes
             curr[dir1] = ndtags[3 * nangle]->getCrds()[dir1];
             curr[dir2] = ndtags[3 * nangle + j]->getCrds()[dir2];
+            int prev1 = nodeTag;
+            int prev2 = nodeTag;
             if (create_node(curr, nodeTag) == 0) {
                 return -1;
             }
+            elenodes.push_back(prevList[3 * nangle]);
+            elenodes.push_back(nodeTag - 1);
+            prevList[3 * nangle] = nodeTag - 1;
 
             // side nodes
             for (int k = 1; k < j; ++k) {
@@ -203,19 +213,49 @@ int BeamDisk::mesh() {
                 if (create_node(curr, nodeTag) == 0) {
                     return -1;
                 }
+                elenodes.push_back(prev1);
+                elenodes.push_back(nodeTag - 1);
+                prev1 = nodeTag - 1;
+
+                elenodes.push_back(prevList[3 * nangle + k]);
+                elenodes.push_back(nodeTag - 1);
+                prevList[3 * nangle + k] = nodeTag - 1;
+
                 curr[dir1] = ndtags[3 * nangle - k]->getCrds()[dir1];
                 if (create_node(curr, nodeTag) == 0) {
                     return -1;
                 }
+                elenodes.push_back(prev2);
+                elenodes.push_back(nodeTag - 1);
+                prev2 = nodeTag - 1;
+
+                elenodes.push_back(prevList[3 * nangle - k]);
+                elenodes.push_back(nodeTag - 1);
+                prevList[3 * nangle - k] = nodeTag - 1;
             }
+
+            // ele for ends
+            elenodes.push_back(prev1);
+            elenodes.push_back(ndtags[3 * nangle + j]->getTag());
+            elenodes.push_back(prev2);
+            elenodes.push_back(ndtags[3 * nangle - j]->getTag());
+        }
+
+        for (int j = 1; j < 2 * nangle; ++j) {
+            prevList[j] = ndtags[j]->getTag();
         }
         for (int j = 1; j < nangle + 1; ++j) {
             // center nodes
             curr[dir1] = ndtags[nangle]->getCrds()[dir1];
             curr[dir2] = ndtags[nangle + j]->getCrds()[dir2];
+            int prev1 = nodeTag;
+            int prev2 = nodeTag;
             if (create_node(curr, nodeTag) == 0) {
                 return -1;
             }
+            elenodes.push_back(prevList[nangle]);
+            elenodes.push_back(nodeTag - 1);
+            prevList[nangle] = nodeTag - 1;
 
             // side nodes
             for (int k = 1; k < j; ++k) {
@@ -223,11 +263,37 @@ int BeamDisk::mesh() {
                 if (create_node(curr, nodeTag) == 0) {
                     return -1;
                 }
+                elenodes.push_back(prev1);
+                elenodes.push_back(nodeTag - 1);
+                prev1 = nodeTag - 1;
+
+                elenodes.push_back(prevList[nangle + k]);
+                elenodes.push_back(nodeTag - 1);
+                prevList[nangle + k] = nodeTag - 1;
+
                 curr[dir1] = ndtags[nangle - k]->getCrds()[dir1];
                 if (create_node(curr, nodeTag) == 0) {
                     return -1;
                 }
+                elenodes.push_back(prev2);
+                elenodes.push_back(nodeTag - 1);
+                prev2 = nodeTag - 1;
+
+                elenodes.push_back(prevList[nangle - k]);
+                elenodes.push_back(nodeTag - 1);
+                prevList[nangle - k] = nodeTag - 1;
             }
+
+            // ele for ends
+            elenodes.push_back(prev1);
+            elenodes.push_back(ndtags[nangle + j]->getTag());
+            elenodes.push_back(prev2);
+            elenodes.push_back(ndtags[nangle - j]->getTag());
+        }
+
+        for (int j = 1; j < 2 * nangle; ++j) {
+            elenodes.push_back(prevList[2 * nangle + j]);
+            elenodes.push_back(prevList[2 * nangle - j]);
         }
     }
 
