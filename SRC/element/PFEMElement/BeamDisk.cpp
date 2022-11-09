@@ -101,7 +101,7 @@ int OPS_BeamDisk() {
 
 BeamDisk::BeamDisk(int tag, const std::vector<double>& center,
                    const std::vector<double>& data)
-    : Flume(tag, center, data, true), layerNodes() {}
+    : Flume(tag, center, data, true) {}
 
 BeamDisk::~BeamDisk() {}
 
@@ -113,13 +113,10 @@ int BeamDisk::mesh() {
     double size = dimensions[2];
     int dir = (int)dimensions[3];
 
-    // clear layers
-    layerNodes.clear();
-    elenodes.clear();
-
     // nlayers
     int nlayers = int(ceil(thk / size));
-    layerNodes.resize(nlayers);
+    std::vector<std::vector<int>> layerNodes(nlayers);
+    std::vector<int> elenodes;
 
     // vertical thickness size
     double vsize = thk / nlayers;
@@ -169,6 +166,20 @@ int BeamDisk::mesh() {
             // set prev
             prev = node;
         }
+    }
+
+    // connect circles
+    for (int i = 0; i < nlayers; ++i) {
+        // nodetags for this layer
+        auto& ndtags = layerNodes[i];
+
+        // elenodes
+        elenodes.push_back(ndtags.front());
+        for (int j = 1; j < (int)ndtags.size(); ++j) {
+            elenodes.push_back(ndtags[j]);
+            elenodes.push_back(ndtags[j]);
+        }
+        elenodes.push_back(ndtags.front());
     }
 
     // add new nodes
