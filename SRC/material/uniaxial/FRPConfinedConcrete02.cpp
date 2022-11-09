@@ -298,6 +298,8 @@ m_Tstrain(0.0), m_Tstress(0.0), m_trialTangent(0.0)
 
 FRPConfinedConcrete02::~FRPConfinedConcrete02()
 {
+	if (SHVs != 0)
+		delete SHVs;
 }
 
 int 
