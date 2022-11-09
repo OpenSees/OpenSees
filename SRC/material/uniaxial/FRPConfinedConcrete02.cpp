@@ -30,6 +30,7 @@
 #include "FRPConfinedConcrete02.h"
 
 #include <Vector.h>
+#include <Matrix.h>
 #include <Channel.h>
 #include <math.h>
 #include <float.h>
