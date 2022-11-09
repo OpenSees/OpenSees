@@ -33,6 +33,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 #include <Element.h>
+#include <MaterialResponse.h>
 #include <algorithm>
 #include <limits>
 #include <string>
@@ -245,6 +246,13 @@ namespace {
 
 		// done
 		return 0;
+	}
+
+	// Stress weight factor
+	inline double RFactor(double s1, double s2, double s3) {
+		double A = Macauley(s1) + Macauley(s2) + Macauley(s3);
+		double B = std::abs(s1) + std::abs(s2) + std::abs(s3);
+		return B > 0.0 ? A / B : 0.0;
 	}
 
 	/*
@@ -609,8 +617,26 @@ int ASDConcrete3DMaterial::StressDecomposition::compute(const Vector& S)
 	ST.addMatrixVector(0.0, PT, S, 1.0);
 	SC.addMatrixVector(0.0, PC, S, 1.0);
 
+	// R factor
+	R = RFactor(Si(0), Si(1), Si(2));
+
 	// done
 	return 0;
+}
+
+void ASDConcrete3DMaterial::StressDecomposition::recompose(const Vector& S, Vector& Sv) const
+{
+	Sv(0) = S(0) * std::pow(V(0, 0), 2) + S(1) * std::pow(V(0, 1), 2) + S(2) * std::pow(V(0, 2), 2);
+	Sv(1) = S(0) * std::pow(V(1, 0), 2) + S(1) * std::pow(V(1, 1), 2) + S(2) * std::pow(V(1, 2), 2);
+	Sv(2) = S(0) * std::pow(V(2, 0), 2) + S(1) * std::pow(V(2, 1), 2) + S(2) * std::pow(V(2, 2), 2);
+	Sv(3) = S(0) * V(0, 0) * V(1, 0) + S(1) * V(0, 1) * V(1, 1) + S(2) * V(0, 2) * V(1, 2);
+	Sv(4) = S(0) * V(1, 0) * V(2, 0) + S(1) * V(1, 1) * V(2, 1) + S(2) * V(1, 2) * V(2, 2);
+	Sv(5) = S(0) * V(0, 0) * V(2, 0) + S(1) * V(0, 1) * V(2, 1) + S(2) * V(0, 2) * V(2, 2);
+}
+
+void ASDConcrete3DMaterial::StressDecomposition::recompose(Vector& Sv) const
+{
+	recompose(Si, Sv);
 }
 
 ASDConcrete3DMaterial::HardeningLaw::HardeningLaw(
@@ -1376,7 +1402,7 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 
 	// check specific responses
 	if (argc > 0) {
-		//todo
+		// todo
 	}
 
 	// iotherwise return base-class response
@@ -1439,7 +1465,7 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 	HardeningLawPoint pt = ht.evaluateAt(svt.getCurrentEquivalentStrain());
 	HardeningLawPoint pc = hc.evaluateAt(svc.getCurrentEquivalentStrain());
 
-	// tempoary clone of old equivalent plastic strains
+	// temporary clone of old equivalent plastic strains
 	double xt_pl = pt.plasticStrain(E);
 	double xc_pl = pc.plasticStrain(E);
 
@@ -1454,8 +1480,8 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 			time_factor * (svc_commit.getCurrentEquivalentStrain() - svc_commit_old.getCurrentEquivalentStrain());
 	}
 	else {
-		xt_trial = tensileCriterion(D) + xt_pl;
-		xc_trial = compressiveCriterion(D) + xc_pl;
+		xt_trial = equivalentTensileStrainMeasure(D.Si(0), D.Si(1), D.Si(2)) + xt_pl;
+		xc_trial = equivalentCompressiveStrainMeasure(D.Si(0), D.Si(1), D.Si(2)) + xc_pl;
 	}
 
 	// update hardening variables
@@ -1501,47 +1527,225 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 	return 0;
 }
 
-double ASDConcrete3DMaterial::lublinerCriterion(const StressDecomposition& D, double ft, double fc, double k1, double scale)
+int ASDConcrete3DMaterial::compute_v1(bool do_implex, bool do_tangent)
+{
+	// get committed variables
+	svt = svt_commit;
+	svc = svc_commit;
+	stress_eff = stress_eff_commit;
+
+	// time factor for explicit extrapolation
+	double time_factor = 1.0;
+	if (implex && do_implex && (dtime_n_commit > 0.0))
+		time_factor = dtime_n / dtime_n_commit;
+
+	// compute rate coefficients
+	double rate_coeff_1 = 0.0;
+	double rate_coeff_2 = 1.0;
+	if ((dtime_n > 0.0) && (eta > 0.0)) {
+		rate_coeff_1 = eta / (eta + dtime_n);
+		rate_coeff_2 = dtime_n / (eta + dtime_n);
+	}
+
+	// compute elastic effective stress: SEFFn = C0 : (En - En-1)
+	static Vector dStrain(6);
+	dStrain = strain;
+	dStrain.addVector(1.0, strain_commit, -1.0);
+	stress_eff.addMatrixVector(1.0, getInitialTangent(), dStrain, 1.0);
+
+	// compute stress split
+	static StressDecomposition D;
+	D.compute(stress_eff);
+
+	// update normals
+	Vector3 Tnormal(D.V(0, 0), D.V(1, 0), D.V(2, 0));
+	Vector3 Cnormal(D.V(0, 2), D.V(1, 2), D.V(2, 2));
+	svt.setCurrentNormal(Tnormal);
+	svc.setCurrentNormal(Cnormal);
+
+	// compute committed hardening variables
+	HardeningLawPoint pt = ht.evaluateAt(svt.getCurrentEquivalentStrain());
+	HardeningLawPoint pc = hc.evaluateAt(svc.getCurrentEquivalentStrain());
+
+	// temporary clone of old equivalent plastic strains
+	double xt_pl = pt.plasticStrain(E);
+	double xc_pl = pc.plasticStrain(E);
+
+	// compute new trial equivalent strain measures
+	double xt_trial, xc_trial;
+	xt_trial = equivalentTensileStrainMeasure(D.Si(0), D.Si(1), D.Si(2)) + xt_pl;
+	xc_trial = equivalentCompressiveStrainMeasure(D.Si(0), D.Si(1), D.Si(2)) + xc_pl;
+
+	// update hardening variables
+	if (xt_trial > pt.x) {
+		double xt_new = rate_coeff_1 * pt.x + rate_coeff_2 * xt_trial;
+		pt = ht.evaluateAt(xt_new);
+		svt.updateCurrentEquivalentStrain(pt.x, smoothing_angle);
+	}
+	if (xc_trial > pc.x) {
+		double xc_new = rate_coeff_1 * pc.x + rate_coeff_2 * xc_trial;
+		pc = hc.evaluateAt(xc_new);
+		svc.updateCurrentEquivalentStrain(pc.x, smoothing_angle);
+	}
+
+	// update effective stress (update R factor)
+	double F = yieldFunction(D.Si(0), D.Si(1), D.Si(2), pt.effectiveStress(), pc.effectiveStress()) - pc.effectiveStress();
+	double R = RFactor(D.Si(0), D.Si(1), D.Si(2));
+	if (F > 0.0) {
+		Vector3 dG, Pbar, S2;
+		flowVector(D.Si(0), D.Si(1), D.Si(2), dG, Pbar);
+		double scale = 0.0;
+		bool converged = false;
+		for (int iter = 0; iter < 10; ++iter) {
+			S2 = Pbar + dG * scale;
+			F = yieldFunction(S2.x, S2.y, S2.z, pt.effectiveStress(), pc.effectiveStress()) - pc.effectiveStress();
+			double error = std::abs(F) / pc.effectiveStress();
+			if (error < 1.0e-6) {
+				converged = true;
+				break;
+			}
+			double h = 1.0e-6;
+			S2 = Pbar + dG * (scale + h);
+			double Fh = yieldFunction(S2.x, S2.y, S2.z, pt.effectiveStress(), pc.effectiveStress()) - pc.effectiveStress();
+			double dFdS = (Fh - F) / h;
+			scale -= F / dFdS;
+		}
+		if (!converged) {
+			opserr << "ASDConcrete3DMaterial Error: non-convergence of the plastic corrector\n";
+			exit(-1);
+		}
+		D.Si(0) = S2.x;
+		D.Si(1) = S2.y;
+		D.Si(2) = S2.z;
+		D.recompose(stress_eff);
+		R = RFactor(D.Si(0), D.Si(1), D.Si(2));
+	}
+
+	// update nominal stress
+	double wt = 1.0;
+	double wc = 1.0;
+	double st = 1.0 - wt * R;
+	double sc = 1.0 - wc * (1.0 - R);
+	double damage = 1.0 - (1.0 - st * pc.d) * (1.0 - sc * pt.d);
+	stress.addVector(0.0, stress_eff, 1.0 - damage);
+
+	// tangent matrix
+	if (do_tangent) {
+		C.addMatrix(0.0, getInitialTangent(), 1.0 - damage);
+	}
+
+	// done
+	return 0;
+}
+
+double ASDConcrete3DMaterial::lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale)
 {
 	double fb = 1.16 * fc;
 	double Kc = 2.0 / 3.0;
 	double gamma = 3.0 * (1.0 - Kc) / (2.0 * Kc - 1.0);
 	double alpha = (fb - fc) / (2.0 * fb - fc);
-	double I1 = D.Si(0) + D.Si(1) + D.Si(2);
-	static Vector Sdev(3);
-	for (int i = 0; i < 3; i++)
-		Sdev(i) = D.Si(i) - I1 / 3.0;
-	double J2 = 0.5 * (Sdev ^ Sdev);
+	double I1 = s1 + s2 + s3;
+	double p = I1 / 3.0;
+	Vector3 Sdev(s1 - p, s2 - p, s3 - p);
+	double J2 = 0.5 * Sdev.dot(Sdev);
 	double beta = fc / ft * (1.0 - alpha) - (1.0 + alpha);
-	double smax_alg = D.Si(0);
+	double smax_alg = s1;
 	double smax = Macauley(smax_alg);
 	double smin = Macauley(-smax_alg);
-	return (1.0 / (1.0 - alpha) * (alpha * I1 + std::sqrt(3.0 * J2) + k1 * beta * smax - gamma * smin)) * scale / E;
+	return (1.0 / (1.0 - alpha) * (alpha * I1 + std::sqrt(3.0 * J2) + k1 * beta * smax - gamma * smin)) * scale;
 }
 
-double ASDConcrete3DMaterial::tensileCriterion(const StressDecomposition& D)
+double ASDConcrete3DMaterial::equivalentTensileStrainMeasure(double s1, double s2, double s3)
 {
 	// skip if maximum principal stress is not strictly positive
-	if (D.Si(0) < ht.stressTolerance())
+	if (s1 < ht.stressTolerance())
 		return 0.0;
 
 	// compute equivalent strain measure
 	// - Lubliner criterion
 	// - normalized to fc
 	// - assume ratio ft/fc = 0.1 (don't take the ratio from the hardening laws!)
-	return lublinerCriterion(D, 0.1, 1.0, 1.0, 0.1);
+	return lublinerCriterion(s1, s2, s3, 0.1, 1.0, 1.0, 0.1) / E;
 }
 
-double ASDConcrete3DMaterial::compressiveCriterion(const StressDecomposition& D)
+double ASDConcrete3DMaterial::equivalentCompressiveStrainMeasure(double s1, double s2, double s3)
 {
 	// skip if minimum principal stress is not strictly negative
-	if (D.Si(2) > -hc.stressTolerance())
+	if (s3 > -hc.stressTolerance())
 		return 0.0;
 
 	// compute equivalent strain measure
 	// - Lubliner criterion
 	// - normalized to fc
 	// - assume ratio ft/fc = 0.1 (don't take the ratio from the hardening laws!)
-	return lublinerCriterion(D, 0.1, 1.0, 0.0, 1.0);
+	return lublinerCriterion(s1, s2, s3, 0.1, 1.0, 0.0, 1.0) / E;
+}
+
+double ASDConcrete3DMaterial::yieldFunction(double s1, double s2, double s3, double ft, double fc)
+{
+	// Compute the minimum fc/ft ratio for a correct evaluation of the Lubliner's criterion.
+	// If the current ratio is less than the min, perform an interpolation of 2 criteria with
+	// the min ratio allowed.
+	static constexpr double min_ratio = 1.276 * 3.0;
+	double ratio = fc / ft;
+	if(ratio > min_ratio) {
+		return lublinerCriterion(s1, s2, s3, ft, fc, 1.0, 1.0);
+	}
+	else {
+		double Fc = lublinerCriterion(s1, s2, s3, fc / min_ratio, fc, 1.0, 1.0);
+		double Ft = lublinerCriterion(s1, s2, s3, ft, ft * min_ratio, 1.0, fc / (ft * min_ratio)) ;
+		double R = RFactor(s1, s2, s3);
+		return R * Ft + (1.0 - R) * Fc;
+	}
+}
+
+void ASDConcrete3DMaterial::flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar)
+{
+	// Compute the flow vector using the Drucker-Prager surface
+	double I1 = s1 + s2 + s3;
+	double p = I1 / 3.0;
+	Vector3 Sdev(s1 - p, s2 - p, s3 - p);
+	double J2 = 0.5 * Sdev.dot(Sdev);
+	double q = std::sqrt(3.0 * J2);
+	double tp3 = std::tan(psi) / 3.0;
+	dG.x = (s1 - s2 / 2.0 - s3 / 2.0 + q * tp3) / q;
+	dG.y = (s2 - s1 / 2.0 - s3 / 2.0 + q * tp3) / q;
+	dG.z = (s3 - s1 / 2.0 - s2 / 2.0 + q * tp3) / q;
+	dG.normalize();
+
+	// Intersection with the hydrostatic axis
+	double pint = 0.0;
+	Vector3 D1 = -dG;
+	double di = -1.0 / std::sqrt(3.0);
+	Vector3 D2(di, di, di);
+	Vector3 D1XD2 = D1.cross(D2);
+	double denom = D1XD2.dot(D1XD2);
+	if (denom > 0.0) {
+		Vector3 O2O1(-s1, -s2, -s3);
+		double det2 =
+			O2O1.x * D1.y * D1XD2.z +
+			O2O1.y * D1.z * D1XD2.x +
+			O2O1.z * D1.x * D1XD2.y -
+			O2O1.z * D1.y * D1XD2.x -
+			O2O1.y * D1.x * D1XD2.z -
+			O2O1.x * D1.z * D1XD2.y;
+		pint = det2 / denom / std::sqrt(3);
+	}
+
+	// check for alternate flow vector
+	if (pint < 0.0) {
+		dG.x = s1;
+		dG.y = s2;
+		dG.z = s3;
+		dG.normalize();
+		pint = 0.0;
+	}
+	
+	// P-bar
+	Pbar.x = Pbar.y = Pbar.z = -pint;
+
+	// return the non-normalized flow vector
+	// so that the scale factor goes from 0 (Pbar) to 1 (S)
+	dG = Vector3(s1, s2, s3) - Pbar;
 }
 

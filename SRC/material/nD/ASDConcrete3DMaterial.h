@@ -62,18 +62,28 @@ public:
 			}
 		}
 		inline double dot(const Vector3& b)const { return x * b.x + y * b.y + z * b.z; }
+		inline Vector3 cross(const Vector3& b)const {
+			return Vector3(b.z * y - b.y * z, b.x * z - b.z * x, b.y * x - b.x * y);
+		}
+		inline Vector3 operator-()const { return Vector3(-x, -y, -z); }
+		inline Vector3 operator*(double s)const { return Vector3(x * s, y * s, z * s); }
+		inline Vector3 operator+(const Vector3& b)const { return Vector3(x + b.x, y + b.y, z + b.z); }
+		inline Vector3 operator-(const Vector3& b)const { return Vector3(x - b.x, y - b.y, z - b.z); }
 	};
 
 	// A class for performing stress decomposition
 	struct StressDecomposition {
 		StressDecomposition() = default;
 		int compute(const Vector& S);
+		void recompose(const Vector& S, Vector& Sv) const;
+		void recompose(Vector& Sv) const;
 		Vector Si = Vector(3); // principal stressess 0>1>2
 		Matrix V = Matrix(3, 3); // principal directions in columns
 		Matrix PT = Matrix(6, 6); // tensile projector
 		Matrix PC = Matrix(6, 6); // compressive projector
 		Vector ST = Vector(6); // tensile stress
 		Vector SC = Vector(6); // compressive stress
+		double R = 0.0; // tension/compression weight factor
 	};
 
 	// A point in the hardening law
@@ -290,10 +300,13 @@ public:
 
 private:
 	// internal computation
+	int compute_v1(bool do_implex, bool do_tangent);
 	int compute(bool do_implex, bool do_tangent);
-	double lublinerCriterion(const StressDecomposition& D, double ft, double fc, double k1, double scale);
-	double tensileCriterion(const StressDecomposition& D);
-	double compressiveCriterion(const StressDecomposition& D);
+	double lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale);
+	double equivalentTensileStrainMeasure(double s1, double s2, double s3);
+	double equivalentCompressiveStrainMeasure(double s1, double s2, double s3);
+	double yieldFunction(double s1, double s2, double s3, double ft, double fc);
+	void flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar);
 
 private:
 	// Young's modulus
@@ -304,6 +317,8 @@ private:
 	double rho = 0.0;
 	// Viscosity for rate-dependent damage
 	double eta = 0.0;
+	// Dilation angle (in radians)
+	double psi = 0.5236; // 30 deg
 	// True = use the IMPL-EX algorithm
 	bool implex = false;
 	// True = keep IMPL-EX error under control
@@ -324,7 +339,7 @@ private:
 	// number of normals & smoothing angle ( 0 means isotropic internal variables )
 	int nct = 0;
 	int ncc = 0;
-	double smoothing_angle = 0.785; // 45 deg
+	double smoothing_angle = 0.7854; // 45 deg
 	// state variables - tension
 	CrackPlanes svt;
 	CrackPlanes svt_commit;
@@ -350,7 +365,6 @@ private:
 	// other variables for output purposes
 	double dt_bar = 0.0;
 	double dc_bar = 0.0;
-
 };
 
 #endif
