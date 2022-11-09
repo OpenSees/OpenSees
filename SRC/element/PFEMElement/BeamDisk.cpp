@@ -115,28 +115,31 @@ int BeamDisk::mesh() {
 
     // nlayers
     int nlayers = int(ceil(thk / size));
-    std::vector<std::vector<int>> layerNodes(nlayers);
+    std::vector<std::vector<Node*>> layerNodes(nlayers);
     std::vector<int> elenodes;
+
+    // directions
+    int ndm = OPS_GetNDM();
+    int dir1 = dir + 1;
+    int dir2 = dir + 2;
+    if (dir1 >= ndm) dir1 -= ndm;
+    if (dir2 >= ndm) dir2 -= ndm;
 
     // vertical thickness size
     double vsize = thk / nlayers;
 
     // angle size
     double angle = size / radius;
-    int nangle = int(ceil(2 * PI / angle));
-    double asize = 2 * PI / nangle;
-
-    // radius size
-    int nr = int(ceil(radius / size));
-    double rsize = radius / nr;
+    int nangle = int(ceil(0.5 * PI / angle));
+    double asize = 0.5 * PI / nangle;
+    int na = 4 * nangle;
 
     // loop all angles
-    int ndm = OPS_GetNDM();
     int nodeTag = nextNodeTag();
     int initNodeTag = nodeTag;
     std::vector<double> currCrds(ndm);
     const auto& crds = getCrds();
-    for (int j = 0; j < nangle; ++j) {
+    for (int j = 0; j < na; ++j) {
         Node* prev = 0;
         for (int i = 0; i < nlayers; ++i) {
             // nodetags for this layer
@@ -144,10 +147,6 @@ int BeamDisk::mesh() {
 
             // loop all angles
             double angle = j * asize;
-            int dir1 = dir + 1;
-            int dir2 = dir + 2;
-            if (dir1 >= ndm) dir1 -= ndm;
-            if (dir2 >= ndm) dir2 -= ndm;
             currCrds[dir] = crds[dir] + i * vsize;
             currCrds[dir1] = crds[dir1] + cos(angle) * radius;
             currCrds[dir2] = crds[dir2] + sin(angle) * radius;
@@ -155,7 +154,7 @@ int BeamDisk::mesh() {
             if (node == 0) {
                 return -1;
             }
-            ndtags.push_back(node->getTag());
+            ndtags.push_back(node);
 
             // add elements
             if (prev != 0) {
@@ -174,12 +173,62 @@ int BeamDisk::mesh() {
         auto& ndtags = layerNodes[i];
 
         // elenodes
-        elenodes.push_back(ndtags.front());
+        elenodes.push_back(ndtags.front()->getTag());
         for (int j = 1; j < (int)ndtags.size(); ++j) {
-            elenodes.push_back(ndtags[j]);
-            elenodes.push_back(ndtags[j]);
+            elenodes.push_back(ndtags[j]->getTag());
+            elenodes.push_back(ndtags[j]->getTag());
         }
-        elenodes.push_back(ndtags.front());
+        elenodes.push_back(ndtags.front()->getTag());
+    }
+
+    // top and bottom face
+    for (int i = 0; i < nlayers; i += nlayers - 1 + 2) {
+        // nodetags for this layer
+        auto& ndtags = layerNodes[i];
+
+        // loop 1/4 of nodes on circle
+        std::vector<double> curr(ndm);
+        curr[dir] = crds[dir] + i * vsize;
+        for (int j = 1; j < nangle; ++j) {
+            // center nodes
+            curr[dir1] = ndtags[3 * nangle]->getCrds()[dir1];
+            curr[dir2] = ndtags[3 * nangle + j]->getCrds()[dir2];
+            if (create_node(curr, nodeTag) == 0) {
+                return -1;
+            }
+
+            // side nodes
+            for (int k = 1; k < j; ++k) {
+                curr[dir1] = ndtags[3 * nangle + k]->getCrds()[dir1];
+                if (create_node(curr, nodeTag) == 0) {
+                    return -1;
+                }
+                curr[dir1] = ndtags[3 * nangle - k]->getCrds()[dir1];
+                if (create_node(curr, nodeTag) == 0) {
+                    return -1;
+                }
+            }
+        }
+        for (int j = 1; j < nangle + 1; ++j) {
+            // center nodes
+            curr[dir1] = ndtags[nangle]->getCrds()[dir1];
+            curr[dir2] = ndtags[nangle + j]->getCrds()[dir2];
+            if (create_node(curr, nodeTag) == 0) {
+                return -1;
+            }
+
+            // side nodes
+            for (int k = 1; k < j; ++k) {
+                curr[dir1] = ndtags[nangle + k]->getCrds()[dir1];
+                if (create_node(curr, nodeTag) == 0) {
+                    return -1;
+                }
+                curr[dir1] = ndtags[nangle - k]->getCrds()[dir1];
+                if (create_node(curr, nodeTag) == 0) {
+                    return -1;
+                }
+            }
+        }
     }
 
     // add new nodes
