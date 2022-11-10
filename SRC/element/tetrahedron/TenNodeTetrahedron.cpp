@@ -378,7 +378,6 @@ int  TenNodeTetrahedron::commitState( )
 }
 
 
-
 //revert to last commit
 int  TenNodeTetrahedron::revertToLastCommit( )
 {
@@ -499,7 +498,6 @@ const Matrix&  TenNodeTetrahedron::getTangentStiff( )
 
 	return stiff ;
 }
-
 
 //return secant matrix
 //const Matrix&  TenNodeTetrahedron::getSecantStiff( )
