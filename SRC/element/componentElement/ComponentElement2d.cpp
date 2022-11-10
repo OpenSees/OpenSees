@@ -875,6 +875,15 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
       s << "\"A\": " << A << ", ";
       s << "\"Iz\": " << I << ", ";
       s << "\"massperlength\": " << rho << ", ";
+      s << "\"materials\": [" ;
+      if (end1Hinge) 
+        s << "\"" << end1Hinge->getTag() << "\", ";
+      else
+        s << "null, ";
+      if (end2Hinge) 
+        s << "\"" << end2Hinge->getTag() << "\"], ";
+      else
+        s << "null], ";
       s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
   }
 }

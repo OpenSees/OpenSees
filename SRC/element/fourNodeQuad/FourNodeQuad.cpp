@@ -335,15 +335,17 @@ FourNodeQuad::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 4; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
       
       if (!theDamping[i]) {
         opserr << "FourNodeQuad::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i]->setDomain(theDomain, 3)) {
         opserr << "FourNodeQuad::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
@@ -826,7 +828,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   
   data(9) = 0;
   data(10) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     data(9) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
@@ -885,7 +887,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   }
   
   // Ask the Damping to send itself
-  if (theDamping) {
+  if (theDamping[0]) {
     for (int i = 0 ;  i < 4; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {

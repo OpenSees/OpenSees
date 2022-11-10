@@ -76,6 +76,7 @@ public:
     virtual bool hasEleArgs() {return eleType != 0;}
 
     virtual bool isFluid() const {return fluid;}
+    virtual int getEleType() const {return eleType;}
 
     // mesh
     virtual bool ismeshed() const {return newndtags.Size()!=0;}

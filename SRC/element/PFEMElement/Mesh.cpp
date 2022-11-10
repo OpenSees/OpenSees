@@ -46,10 +46,13 @@ int Mesh::startNodeTag = 1;
 #endif
 
 void *OPS_ElasticBeam2d(const ID &info);
+void *OPS_ElasticBeam3d(const ID &info);
 
 void *OPS_ForceBeamColumn2d(const ID &info);
+void *OPS_ForceBeamColumn3d(const ID &info);
 
 void *OPS_DispBeamColumn2d(const ID &info);
+void *OPS_DispBeamColumn3d(const ID &info);
 
 void *OPS_PFEMElement2DCompressible(const ID &info);
 
@@ -268,6 +271,13 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ElasticBeam3d;
+            if (OPS_ElasticBeam3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "forceBeamColumn") == 0) {
@@ -278,12 +288,26 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ForceBeamColumn3d;
+            if (OPS_ForceBeamColumn3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "dispBeamColumn") == 0) {
         if (ndm == 2) {
             eleType = ELE_TAG_DispBeamColumn2d;
             if (OPS_DispBeamColumn2d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_DispBeamColumn3d;
+            if (OPS_DispBeamColumn3d(info) == 0) {
                 opserr << "WARNING: failed to read eleArgs\n";
                 return -1;
             }
@@ -438,6 +462,9 @@ Mesh::newElements(const ID &elends) {
     if (elends.Size() < numelenodes) {
         return 0;
     }
+    if (numelenodes <= 0) {
+        return 0;
+    }
 
     // function to call
     void *(*OPS_Func)(const ID &info) = 0;
@@ -445,11 +472,20 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ElasticBeam2d:
             OPS_Func = OPS_ElasticBeam2d;
             break;
+        case ELE_TAG_ElasticBeam3d:
+            OPS_Func = OPS_ElasticBeam3d;
+            break;
         case ELE_TAG_ForceBeamColumn2d:
             OPS_Func = OPS_ForceBeamColumn2d;
             break;
+        case ELE_TAG_ForceBeamColumn3d:
+            OPS_Func = OPS_ForceBeamColumn3d;
+            break;
         case ELE_TAG_DispBeamColumn2d:
             OPS_Func = OPS_DispBeamColumn2d;
+            break;
+        case ELE_TAG_DispBeamColumn3d:
+            OPS_Func = OPS_DispBeamColumn3d;
             break;
         case ELE_TAG_PFEMElement2DBubble:
             OPS_Func = OPS_PFEMElement2DBubble;

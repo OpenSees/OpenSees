@@ -315,15 +315,17 @@ ShellDKGT::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 4; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {
         opserr << "ShellDKGT::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i]->setDomain(theDomain, 8)) {
         opserr << "ShellDKGT::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
@@ -1733,7 +1735,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
 
   idData(12) = 0;
   idData(13) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(12) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
@@ -1774,7 +1776,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
   }
 
   // Ask the Damping to send itself
-  if (theDamping) {
+  if (theDamping[0]) {
     for (int i = 0 ;  i < 4; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {
