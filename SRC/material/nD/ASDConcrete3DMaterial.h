@@ -302,11 +302,11 @@ private:
 	// internal computation
 	int compute_v1(bool do_implex, bool do_tangent);
 	int compute(bool do_implex, bool do_tangent);
-	double lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale);
-	double equivalentTensileStrainMeasure(double s1, double s2, double s3);
-	double equivalentCompressiveStrainMeasure(double s1, double s2, double s3);
-	double yieldFunction(double s1, double s2, double s3, double ft, double fc);
-	void flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar);
+	double lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale) const;
+	double equivalentTensileStrainMeasure(double s1, double s2, double s3) const;
+	double equivalentCompressiveStrainMeasure(double s1, double s2, double s3) const;
+	double yieldFunction(double s1, double s2, double s3, double ft, double fc) const;
+	void flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar) const;
 
 private:
 	// Young's modulus

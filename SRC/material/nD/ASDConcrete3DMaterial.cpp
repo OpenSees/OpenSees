@@ -1638,7 +1638,7 @@ int ASDConcrete3DMaterial::compute_v1(bool do_implex, bool do_tangent)
 	return 0;
 }
 
-double ASDConcrete3DMaterial::lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale)
+double ASDConcrete3DMaterial::lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale) const
 {
 	double fb = 1.16 * fc;
 	double Kc = 2.0 / 3.0;
@@ -1655,7 +1655,7 @@ double ASDConcrete3DMaterial::lublinerCriterion(double s1, double s2, double s3,
 	return (1.0 / (1.0 - alpha) * (alpha * I1 + std::sqrt(3.0 * J2) + k1 * beta * smax - gamma * smin)) * scale;
 }
 
-double ASDConcrete3DMaterial::equivalentTensileStrainMeasure(double s1, double s2, double s3)
+double ASDConcrete3DMaterial::equivalentTensileStrainMeasure(double s1, double s2, double s3) const
 {
 	// skip if maximum principal stress is not strictly positive
 	if (s1 < ht.stressTolerance())
@@ -1668,7 +1668,7 @@ double ASDConcrete3DMaterial::equivalentTensileStrainMeasure(double s1, double s
 	return lublinerCriterion(s1, s2, s3, 0.1, 1.0, 1.0, 0.1) / E;
 }
 
-double ASDConcrete3DMaterial::equivalentCompressiveStrainMeasure(double s1, double s2, double s3)
+double ASDConcrete3DMaterial::equivalentCompressiveStrainMeasure(double s1, double s2, double s3) const
 {
 	// skip if minimum principal stress is not strictly negative
 	if (s3 > -hc.stressTolerance())
@@ -1681,7 +1681,7 @@ double ASDConcrete3DMaterial::equivalentCompressiveStrainMeasure(double s1, doub
 	return lublinerCriterion(s1, s2, s3, 0.1, 1.0, 0.0, 1.0) / E;
 }
 
-double ASDConcrete3DMaterial::yieldFunction(double s1, double s2, double s3, double ft, double fc)
+double ASDConcrete3DMaterial::yieldFunction(double s1, double s2, double s3, double ft, double fc) const
 {
 	// Compute the minimum fc/ft ratio for a correct evaluation of the Lubliner's criterion.
 	// If the current ratio is less than the min, perform an interpolation of 2 criteria with
@@ -1699,7 +1699,7 @@ double ASDConcrete3DMaterial::yieldFunction(double s1, double s2, double s3, dou
 	}
 }
 
-void ASDConcrete3DMaterial::flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar)
+void ASDConcrete3DMaterial::flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar) const
 {
 	// Compute the flow vector using the Drucker-Prager surface
 	double I1 = s1 + s2 + s3;
