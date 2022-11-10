@@ -83,7 +83,6 @@ public:
 		Matrix PC = Matrix(6, 6); // compressive projector
 		Vector ST = Vector(6); // tensile stress
 		Vector SC = Vector(6); // compressive stress
-		double R = 0.0; // tension/compression weight factor
 	};
 
 	// A point in the hardening law
@@ -300,13 +299,10 @@ public:
 
 private:
 	// internal computation
-	int compute_v1(bool do_implex, bool do_tangent);
 	int compute(bool do_implex, bool do_tangent);
 	double lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale) const;
 	double equivalentTensileStrainMeasure(double s1, double s2, double s3) const;
 	double equivalentCompressiveStrainMeasure(double s1, double s2, double s3) const;
-	double yieldFunction(double s1, double s2, double s3, double ft, double fc) const;
-	void flowVector(double s1, double s2, double s3, Vector3& dG, Vector3& Pbar) const;
 
 private:
 	// Young's modulus
@@ -317,8 +313,6 @@ private:
 	double rho = 0.0;
 	// Viscosity for rate-dependent damage
 	double eta = 0.0;
-	// Dilation angle (in radians)
-	double psi = 0.5236; // 30 deg
 	// True = use the IMPL-EX algorithm
 	bool implex = false;
 	// True = keep IMPL-EX error under control
