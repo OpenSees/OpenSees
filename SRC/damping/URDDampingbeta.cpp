@@ -56,10 +56,11 @@
 URDDampingbeta::URDDampingbeta(int tag, int nfreq, Vector *tmpomegac, Vector *tmpbeta, double t1, double t2, TimeSeries *f):
 Damping(tag, DMP_TAG_URDDampingbeta),
 nComp(0), nFilter(nfreq),
-beta(tmpbeta), omegac(tmpomegac), ta(t1), td(t2), fac(f),
+ta(t1), td(t2), fac(f),
 qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
 {
-  
+  beta = new Vector(*tmpbeta);
+  omegac = new Vector(*tmpomegac);
 }
 
 
@@ -205,7 +206,8 @@ double URDDampingbeta::getStiffnessMultiplier(void)
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   double km = 0.0;
-  if (dT > 0.0 && t > ta && t < td)
+  StaticAnalysis **theStaticAnalysis = OPS_GetStaticAnalysis();
+  if (!*theStaticAnalysis && dT > 0.0 && t > ta && t < td)
   {
     for (int i = 0; i < nFilter; ++i)
     {

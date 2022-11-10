@@ -51,6 +51,7 @@ public:
     bool compute(Domain* domain);
     void print();
     void print(const std::string& file_name);
+    void printDict();
 
 public:
     inline bool isUnormalized() const { return m_unorm; }

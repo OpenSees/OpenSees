@@ -54,6 +54,13 @@ extern void *OPS_ManderBackbone(void);
 extern void *OPS_TrilinearBackbone(void);
 extern void *OPS_BilinearBackbone(void);
 extern void *OPS_MultilinearBackbone(void);
+extern void* OPS_MaterialBackbone();
+extern void* OPS_ReeseStiffClayBelowWS();
+extern void* OPS_ReeseStiffClayAboveWS();
+extern void* OPS_VuggyLimestone();
+extern void* OPS_CementedSoil();
+extern void* OPS_WeakRock();
+extern void* OPS_LiquefiedSand();
 
 #include <packages.h>
 
@@ -108,6 +115,70 @@ TclModelBuilderHystereticBackboneCommand(ClientData clientData,
   
   else if (strcmp(argv[1],"Arctangent") == 0) {
     void *theBB = OPS_ArctangentBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"Material") == 0) {
+    void *theBB = OPS_MaterialBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"ReeseStiffClayBelowWS") == 0) {
+    void *theBB = OPS_ReeseStiffClayBelowWS();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"ReeseStiffClayAboveWS") == 0) {
+    void *theBB = OPS_ReeseStiffClayAboveWS();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"Material") == 0) {
+    void *theBB = OPS_MaterialBackbone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"VuggyLimestone") == 0) {
+    void *theBB = OPS_VuggyLimestone();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"CementedSoil") == 0) {
+    void *theBB = OPS_CementedSoil();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"WeakRock") == 0) {
+    void *theBB = OPS_WeakRock();
+    if (theBB != 0)
+      theBackbone = (HystereticBackbone *)theBB;
+    else
+      return TCL_ERROR;
+  }
+  
+  else if (strcmp(argv[1],"LiquefiedSand") == 0) {
+    void *theBB = OPS_LiquefiedSand();
     if (theBB != 0)
       theBackbone = (HystereticBackbone *)theBB;
     else

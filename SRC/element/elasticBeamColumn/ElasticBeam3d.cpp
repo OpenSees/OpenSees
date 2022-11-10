@@ -171,6 +171,155 @@ void* OPS_ElasticBeam3d(void)
     }
 }
 
+void *OPS_ElasticBeam3d(const ID &info) {
+    // 1. data needed
+    int iData[3];
+    double data[6];
+    int transfTag;
+    double mass = 0.0;
+    int cMass = 0;
+    int releasez = 0;
+    int releasey = 0;
+    int numData = 1;
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 3 || ndf != 6) {
+        opserr << "ndm must be 3 and ndf must be 6\n";
+        return 0;
+    }
+
+    // 2. regular elements
+    if (info.Size() == 0) {
+        if (OPS_GetNumRemainingInputArgs() < 3) {
+            opserr << "insufficient "
+                      "arguments:eleTag,iNode,jNode\n";
+            return 0;
+        }
+
+        // inputs:
+        int numData = 3;
+        if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+            opserr << "WARNING failed to read integers\n";
+            return 0;
+        }
+    }
+
+    // 3. regular elements or save data
+    if (info.Size() == 0 || info(0) == 1) {
+        if (OPS_GetNumRemainingInputArgs() < 6) {
+            opserr << "insufficient "
+                      "arguments:A, E, G, J, Iy, Iz\n";
+            return 0;
+        }
+
+        // Read A, E, G, J, Iy, Iz
+        numData = 6;
+        if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+            opserr << "WARNING failed to read doubles\n";
+            return 0;
+        }
+
+        if (OPS_GetNumRemainingInputArgs() < 1) {
+            opserr << "WARNING: transfTag is needed\n";
+        }
+        numData = 1;
+        if (OPS_GetIntInput(&numData, &transfTag) < 0) {
+            opserr << "WARNING transfTag is not integer\n";
+            return 0;
+        }
+
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            std::string theType = OPS_GetString();
+            if (theType == "-mass") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+                        opserr << "WARNING: failed to read mass\n";
+                        return 0;
+                    }
+                }
+            } else if (theType == "-cMass") {
+                cMass = 1;
+            } else if (theType == "-releasez") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &releasez) < 0) {
+                        opserr << "WARNING: failed to get releasez";
+                        return 0;
+                    }
+                }
+            } else if (theType == "-releasey") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &releasey) < 0) {
+                        opserr << "WARNING: failed to get releasey";
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+
+    // 4. save data
+    static std::map<int, Vector> meshdata;
+    if (info.Size() > 0 && info(0) == 1) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+        }
+
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(11);
+        mdata(0) = data[0];
+        mdata(1) = data[1];
+        mdata(2) = data[2];
+        mdata(3) = data[3];
+        mdata(4) = data[4];
+        mdata(5) = data[5];
+        mdata(6) = mass;
+        mdata(7) = cMass;
+        mdata(8) = releasez;
+        mdata(9) = releasey;
+        mdata(10) = transfTag;
+        return &meshdata;
+    }
+
+    // 5: load data
+    if (info.Size() > 0 && info(0) == 2) {
+        if (info.Size() < 5) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2\n";
+            return 0;
+        }
+
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 11) return 0;
+        data[0] = mdata(0);
+        data[1] = mdata(1);
+        data[2] = mdata(2);
+        data[3] = mdata(3);
+        data[4] = mdata(4);
+        data[5] = mdata(5);
+        mass = mdata(6);
+        cMass = (int)mdata(7);
+        releasez = (int)mdata(8);
+        releasey = (int)mdata(9);
+        transfTag = (int)mdata(10);
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
+    }
+
+    // 6: create element
+    CrdTransf *theTrans = OPS_getCrdTransf(transfTag);
+    if (theTrans == 0) {
+        opserr << "no CrdTransf is found\n";
+        return 0;
+    }
+
+    return new ElasticBeam3d(iData[0], data[0], data[1], data[2],
+                             data[3], data[4], data[5], iData[1],
+                             iData[2], *theTrans, mass, cMass,
+                             releasez, releasey);
+}
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
@@ -432,15 +581,17 @@ ElasticBeam3d::setDamping(Domain *theDomain, Damping *damping)
 {
   if (theDomain && damping)
   {
+    if (theDamping) delete theDamping;
+
     theDamping =(*damping).getCopy();
     
     if (!theDamping) {
       opserr << "ElasticBeam3d::setDamping -- failed to get copy of damping\n";
-      exit(-1);
+      return -1;
     }
     if (theDamping->setDomain(theDomain, 6)) {
       opserr << "ElasticBeam3d::setDamping -- Error initializing damping\n";
-      exit(-1);
+      return -2;
     }
   }
   
