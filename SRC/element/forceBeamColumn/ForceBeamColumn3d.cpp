@@ -177,6 +177,151 @@ void* OPS_ForceBeamColumn3d()
     return theEle;
 }
 
+void *OPS_ForceBeamColumn3d(const ID &info) {
+    // data needed
+    int iData[5];
+    double mass = 0.0, tol = 1e-12;
+    int maxIter = 10;
+    int numData;
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 3 || ndf != 6) {
+        opserr << "ndm must be 3 and ndf must be 6\n";
+        return 0;
+    }
+
+    // 1. regular elements
+    if (info.Size() == 0) {
+        numData = 3;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:eleTag,iNode,jNode\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+    }
+
+    // 2. regular elements or save data
+    if (info.Size() == 0 || info(0) == 1) {
+        numData = 2;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:transfTag,integrationTag\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[3]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+
+        numData = 1;
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            const char *type = OPS_GetString();
+            if (strcmp(type, "-iter") == 0) {
+                if (OPS_GetNumRemainingInputArgs() > 1) {
+                    if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+                        opserr << "WARNING invalid maxIter\n";
+                        return 0;
+                    }
+                    if (OPS_GetDoubleInput(&numData, &tol) < 0) {
+                        opserr << "WARNING invalid tol\n";
+                        return 0;
+                    }
+                }
+            } else if (strcmp(type, "-mass") == 0) {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+                        opserr << "WARNING invalid mass\n";
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3: save data
+    static std::map<int, Vector> meshdata;
+    if (info.Size() > 0 && info(0) == 1) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+
+        // save the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(5);
+        mdata(0) = iData[3];
+        mdata(1) = iData[4];
+        mdata(2) = mass;
+        mdata(3) = tol;
+        mdata(4) = maxIter;
+        return &meshdata;
+    }
+
+    // 4: load data
+    if (info.Size() > 0 && info(0) == 2) {
+        if (info.Size() < 5) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2\n";
+            return 0;
+        }
+
+        // get the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 5) return 0;
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
+        iData[3] = mdata(0);
+        iData[4] = mdata(1);
+        mass = mdata(2);
+        tol = mdata(3);
+        maxIter = mdata(4);
+    }
+
+    // 5: create element
+    CrdTransf *theTransf = OPS_getCrdTransf(iData[3]);
+    if (theTransf == 0) {
+        opserr << "coord transfomration not found\n";
+        return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule *theRule =
+        OPS_getBeamIntegrationRule(iData[4]);
+    if (theRule == 0) {
+        opserr << "beam integration not found\n";
+        return 0;
+    }
+    BeamIntegration *bi = theRule->getBeamIntegration();
+    if (bi == 0) {
+        opserr << "beam integration is null\n";
+        return 0;
+    }
+
+    // check sections
+    const ID &secTags = theRule->getSectionTags();
+    SectionForceDeformation **sections =
+        new SectionForceDeformation *[secTags.Size()];
+    for (int i = 0; i < secTags.Size(); i++) {
+        sections[i] = OPS_getSectionForceDeformation(secTags(i));
+        if (sections[i] == 0) {
+            opserr << "section " << secTags(i) << "not found\n";
+            return 0;
+        }
+    }
+
+    Element *theEle = new ForceBeamColumn3d(
+        iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
+        *theTransf, mass, maxIter, tol);
+    delete[] sections;
+    return theEle;
+}
 
 // constructor:
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.
@@ -392,15 +537,17 @@ ForceBeamColumn3d::setDamping(Domain *theDomain, Damping *damping)
 {
   if (theDomain && damping)
   {
+    if (theDamping) delete theDamping;
+
     theDamping =(*damping).getCopy();
     
     if (!theDamping) {
       opserr << "ForceBeamColumn3d::setDamping -- failed to get copy of damping\n";
-      exit(-1);
+      return -1;
     }
     if (theDamping->setDomain(theDomain, NEBD)) {
       opserr << "ForceBeamColumn3d::setDamping -- Error initializing damping\n";
-      exit(-1);
+      return -2;
     }
   }
   
@@ -2912,7 +3059,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     }
     
     else if (strcmp(argv[0],"cbdiDisplacements") == 0)
-      theResponse = new ElementResponse(this, 112, Matrix(20,3));
+      theResponse = new ElementResponse(this, 112, Matrix(1,3));
 
     // section response -
     else if (strcmp(argv[0],"sectionX") == 0) {
@@ -3199,11 +3346,10 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     double ipts[maxNumSections];
     beamIntegr->getSectionLocations(numSections, L, ipts);
     // CBDI influence matrix
-    double pts[20];
-    for (int i = 0; i < 20; i++)
-      pts[i] = 1.0/(20-1)*i;
-    Matrix ls(20, numSections);
-    getCBDIinfluenceMatrix(20, pts, numSections, ipts, L, ls);
+    double pts[1];
+    pts[0] = eleInfo.theDouble;
+    Matrix ls(1, numSections);
+    getCBDIinfluenceMatrix(1, pts, numSections, ipts, L, ls);
     // Curvature vector
     Vector kappaz(numSections); // about section z
     Vector kappay(numSections); // about section y    
@@ -3219,23 +3365,22 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
       }
     }
     // Displacement vector
-    Vector dispsy(20); // along local y
-    Vector dispsz(20); // along local z    
+    Vector dispsy(1); // along local y
+    Vector dispsz(1); // along local z    
     dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
-    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);
     static Vector uxb(3);
     static Vector uxg(3);
-    Matrix disps(20,3);
+    Matrix disps(1,3);
     vp = crdTransf->getBasicTrialDisp();
-    for (int i = 0; i < 20; i++) {
-      uxb(0) = pts[i]*vp(0); // linear shape function
-      uxb(1) = dispsy(i);
-      uxb(2) = dispsz(i);      
-      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
-      disps(i,0) = uxg(0);
-      disps(i,1) = uxg(1);
-      disps(i,2) = uxg(2);            
-    }
+    uxb(0) = pts[0]*vp(0); // linear shape function
+    uxb(1) = dispsy(0);
+    uxb(2) = dispsz(0);      
+    uxg = crdTransf->getPointGlobalDisplFromBasic(pts[0],uxb);
+    disps(0,0) = uxg(0);
+    disps(0,1) = uxg(1);
+    disps(0,2) = uxg(2);            
+
     return eleInfo.setMatrix(disps);
   }
 

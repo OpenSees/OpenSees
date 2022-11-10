@@ -134,6 +134,102 @@ PythonWrapper::setOutputs(const char* str)
     currentResult = Py_BuildValue("s", str);
 }
 
+void PythonWrapper::setOutputs(std::vector<std::vector<int>> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(&data[i][0], (int)data[i].size(), false);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, int>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        auto* val = Py_BuildValue("i", item.second);
+        PyDict_SetItemString(dict, item.first, val);
+        Py_DECREF(val);
+    }
+    currentResult = dict;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, std::vector<int>>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        setOutputs(&(item.second[0]), (int)item.second.size(), false);
+        PyDict_SetItemString(dict, item.first, currentResult);
+        Py_DECREF(currentResult);
+    }
+    currentResult = dict;
+}
+
+void PythonWrapper::setOutputs(std::vector<std::vector<double>> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(&data[i][0], (int)data[i].size(), false);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, double>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        auto* val = Py_BuildValue("d", item.second);
+        PyDict_SetItemString(dict, item.first, val);
+        Py_DECREF(val);
+    }
+    currentResult = dict;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, std::vector<double>>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        setOutputs(&(item.second[0]), (int)item.second.size(), false);
+        PyDict_SetItemString(dict, item.first, currentResult);
+        Py_DECREF(currentResult);
+    }
+    currentResult = dict;
+}
+
+void PythonWrapper::setOutputs(std::vector<const char*> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(data[i]);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
+void PythonWrapper::setOutputs(std::vector<std::vector<const char*>> &data) {
+    PyObject *item = PyList_New((Py_ssize_t)data.size());
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        setOutputs(data[i]);
+        PyList_SET_ITEM(item, i, currentResult);
+    }
+    currentResult = item;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, const char*>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        auto* val = Py_BuildValue("s", item.second);
+        PyDict_SetItemString(dict, item.first, val);
+        Py_DECREF(val);
+    }
+    currentResult = dict;
+}
+
+void PythonWrapper::setOutputs(std::map<const char*, std::vector<const char*>>& data) {
+    PyObject *dict = PyDict_New();
+    for (auto& item: data) {
+        setOutputs(item.second);
+        PyDict_SetItemString(dict, item.first, currentResult);
+        Py_DECREF(currentResult);
+    }
+    currentResult = dict;
+}
+
 PyObject*
 PythonWrapper::getResults()
 {
@@ -1100,6 +1196,18 @@ static PyObject *Py_ops_setNodeCoord(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_setNodeCoord() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getPatterns(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getPatterns() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2816,6 +2924,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeResponse", &Py_ops_nodeResponse);
     addCommand("nodeCoord", &Py_ops_nodeCoord);
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
+    addCommand("getPatterns", &Py_ops_getPatterns);    
     addCommand("getFixedNodes", &Py_ops_getFixedNodes);
     addCommand("getFixedDOFs", &Py_ops_getFixedDOFs);
     addCommand("getConstrainedNodes", &Py_ops_getConstrainedNodes);

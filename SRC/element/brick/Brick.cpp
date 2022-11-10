@@ -249,15 +249,17 @@ Brick::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 8; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {
         opserr << "Brick::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
         opserr << "Brick::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
@@ -1394,7 +1396,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
 
   idData(26) = 0;
   idData(27) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(26) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
@@ -1436,7 +1438,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   }
   
   // Ask the Damping to send itself
-  if (theDamping) {
+  if (theDamping[0]) {
     for (i = 0 ;  i < 8; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {

@@ -62,6 +62,8 @@ class ShellNLDKGQ : public Element {
   //destructor 
   virtual ~ShellNLDKGQ( ) ;
 
+  const char *getClassType(void) const {return "ShellNLDKGQ";}
+	
   //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
   int setDamping(Domain *theDomain, Damping *theDamping);
