@@ -58,6 +58,8 @@ class ShellDKGT : public Element {
   //destructor 
   virtual ~ShellDKGT( ) ;
 
+  const char *getClassType(void) const {return "ShellDKGT";}
+	
   //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
   int setDamping(Domain *theDomain, Damping *theDamping);

@@ -333,8 +333,9 @@ MeshRegion::setDamping(Damping *theDamping)
     for (int i=0; i<theElements->Size(); i++) {
       int eleTag = (*theElements)(i);
       Element *theEle = theDomain->getElement(eleTag);
-      if (theEle != 0)
-	theEle->setDamping(theDomain, theDamping);
+      if (theEle != 0 && theEle->setDamping(theDomain, theDamping)) {
+        opserr << "MeshRegion::setDamping - failed to set damping for " << theEle->getClassType() << " Element #" << eleTag << endln;
+      }
     }
   }
 
