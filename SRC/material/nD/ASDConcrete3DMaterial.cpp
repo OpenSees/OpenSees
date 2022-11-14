@@ -1063,6 +1063,13 @@ void ASDConcrete3DMaterial::CrackPlanes::reset()
 		m_equivalent_strain[i] = 0.0;
 }
 
+double ASDConcrete3DMaterial::CrackPlanes::getEquivalentStrainAtNormal(std::size_t i) const
+{
+	if (i < m_equivalent_strain.size())
+		return m_equivalent_strain[i];
+	return 0.0;
+}
+
 ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	int _tag,
 	double _E,
@@ -1381,27 +1388,69 @@ int ASDConcrete3DMaterial::updateParameter(int parameterID, Information& info)
 Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
 	// utils
-	auto lam_begin = [&output, this]() {
+	auto make_resp = [&output, this](int rid, const Vector& v, const std::vector<std::string>* labels = nullptr) -> MaterialResponse* {
 		output.tag("NdMaterialOutput");
 		output.attr("matType", getClassType());
 		output.attr("matTag", getTag());
+		if (labels) {
+			for(const auto& item : (*labels))
+				output.tag("ResponseType", item.c_str());
+		}
+		MaterialResponse* resp = new MaterialResponse(this, rid, v);
+		output.endTag();
+		return resp;
 	};
-	auto lam_end = [&output]() {
-		output.endTag(); // NdMaterialOutput
-	};
+
+	// labels
+	static std::vector<std::string> lb_damage = { "d+", "d-" };
 
 	// check specific responses
 	if (argc > 0) {
-		// todo
+		// 1000 - compressive hardening variables
+		if (strcmp(argv[0], "Ce") == 0) 
+			return make_resp(1000, getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::TotalStrain));
+		if (strcmp(argv[0], "Cs") == 0)
+			return make_resp(1001, getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::NominalStress));
+		if (strcmp(argv[0], "Cq") == 0)
+			return make_resp(1002, getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::EffectiveStress));
+		// 1100 - tensile hardening variables
+		if (strcmp(argv[0], "Te") == 0)
+			return make_resp(1100, getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::TotalStrain));
+		if (strcmp(argv[0], "Ts") == 0)
+			return make_resp(1101, getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::NominalStress));
+		if (strcmp(argv[0], "Tq") == 0)
+			return make_resp(1102, getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::EffectiveStress));
+		// 2000 - damage
+		if (strcmp(argv[0], "damage") == 0 || strcmp(argv[0], "Damage") == 0) {
+			if(argc > 1 && strcmp(argv[1], "-avg") == 0)
+				return make_resp(2000, getAvgDamage(), &lb_damage);
+			else
+				return make_resp(2001, getMaxDamage(), &lb_damage);
+		}
 	}
 
-	// iotherwise return base-class response
+	// otherwise return base-class response
 	return NDMaterial::setResponse(argv, argc, output);
 }
 
 int ASDConcrete3DMaterial::getResponse(int responseID, Information& matInformation)
 {
-	return -1; // todo
+	switch (responseID) {
+		// 1000 - compressive hardening variables
+	case 1000: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::TotalStrain));
+	case 1001: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::NominalStress));
+	case 1002: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Compression, HardeningLawPointComponent::EffectiveStress));
+		// 1100 - tensile hardening variables
+	case 1100: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::TotalStrain));
+	case 1101: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::NominalStress));
+	case 1102: return matInformation.setVector(getHardeningLawVector(HardeningLawType::Tension, HardeningLawPointComponent::EffectiveStress));
+		// 2000 - damage
+	case 2000: return matInformation.setVector(getAvgDamage());
+	case 2001: return matInformation.setVector(getMaxDamage());
+	default:
+		break;
+	}
+	return NDMaterial::getResponse(responseID, matInformation);
 }
 
 int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
@@ -1558,5 +1607,82 @@ double ASDConcrete3DMaterial::equivalentCompressiveStrainMeasure(double s1, doub
 	// - normalized to fc
 	// - assume ratio ft/fc = 0.1 (don't take the ratio from the hardening laws!)
 	return lublinerCriterion(s1, s2, s3, 0.1, 1.0, 0.0, 1.0) / E;
+}
+
+Vector ASDConcrete3DMaterial::getHardeningLawVector(HardeningLawType ltype, HardeningLawPointComponent c) const
+{
+	Vector r;
+	const HardeningLaw& h = ltype == HardeningLawType::Tension ? ht : hc;
+	r.resize(static_cast<int>(h.points().size()));
+	for (std::size_t i = 0; i < h.points().size(); ++i) {
+		const HardeningLawPoint& p = h.points()[i];
+		switch (c)
+		{
+		case ASDConcrete3DMaterial::HardeningLawPointComponent::TotalStrain:
+			r(static_cast<int>(i)) = p.totalStrain();
+			break;
+		case ASDConcrete3DMaterial::HardeningLawPointComponent::EffectiveStress:
+			r(static_cast<int>(i)) = p.effectiveStress();
+			break;
+		case ASDConcrete3DMaterial::HardeningLawPointComponent::NominalStress:
+			r(static_cast<int>(i)) = p.stress();
+			break;
+		default:
+			break;
+		}
+	}
+	return r;
+}
+
+const Vector& ASDConcrete3DMaterial::getMaxStrainMeasure() const
+{
+	static Vector d(2);
+	double xt_max = 0.0;
+	double xc_max = 0.0;
+	for (std::size_t i = 0; i < svt.count(); ++i)
+		xt_max = std::max(xt_max, svt.getEquivalentStrainAtNormal(i));
+	for (std::size_t i = 0; i < svc.count(); ++i)
+		xc_max = std::max(xc_max, svc.getEquivalentStrainAtNormal(i));
+	d(0) = xt_max;
+	d(1) = xc_max;
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getAvgStrainMeasure() const
+{
+	static Vector d(2);
+	double xt = 0.0;
+	double xc = 0.0;
+	if (svt.count() > 0) {
+		for (std::size_t i = 0; i < svt.count(); ++i)
+			xt += svt.getEquivalentStrainAtNormal(i);
+		xt /= static_cast<double>(svt.count());
+	}
+	if (svc.count() > 0) {
+		for (std::size_t i = 0; i < svc.count(); ++i)
+			xc += svc.getEquivalentStrainAtNormal(i);
+		xc /= static_cast<double>(svc.count());
+	}
+	d(0) = xt;
+	d(1) = xc;
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getMaxDamage() const
+{
+	static Vector d(2);
+	const Vector& x = getMaxStrainMeasure();
+	d(0) = ht.evaluateAt(x(0)).crackingDamage();
+	d(1) = hc.evaluateAt(x(1)).crackingDamage();
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getAvgDamage() const
+{
+	static Vector d(2);
+	const Vector& x = getAvgStrainMeasure();
+	d(0) = ht.evaluateAt(x(0)).crackingDamage();
+	d(1) = hc.evaluateAt(x(1)).crackingDamage();
+	return d;
 }
 

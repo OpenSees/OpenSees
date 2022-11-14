@@ -108,6 +108,13 @@ public:
 		Compression
 	};
 
+	// The Hardening Law Point Component (for output)
+	enum class HardeningLawPointComponent {
+		TotalStrain = 0,
+		EffectiveStress,
+		NominalStress
+	};
+
 	// The Hardening law
 	class HardeningLaw {
 	public:
@@ -227,6 +234,10 @@ public:
 		void updateCurrentEquivalentStrain(double x, double smooth_angle);
 		// reset to zero
 		void reset();
+		// get count
+		inline std::size_t count()const { return m_equivalent_strain.size(); }
+		// get equivalent strain
+		double getEquivalentStrainAtNormal(std::size_t i) const;
 	private:
 		int m_n90 = 0;
 		CrackPlanesStorage::Vector3ListPointer m_normals;
@@ -303,6 +314,11 @@ private:
 	double lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale) const;
 	double equivalentTensileStrainMeasure(double s1, double s2, double s3) const;
 	double equivalentCompressiveStrainMeasure(double s1, double s2, double s3) const;
+	Vector getHardeningLawVector(HardeningLawType ltype, HardeningLawPointComponent c) const;
+	const Vector& getMaxStrainMeasure() const;
+	const Vector& getAvgStrainMeasure() const;
+	const Vector& getMaxDamage() const;
+	const Vector& getAvgDamage() const;
 
 private:
 	// Young's modulus
