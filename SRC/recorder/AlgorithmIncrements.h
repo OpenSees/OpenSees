@@ -64,6 +64,7 @@ class AlgorithmIncrements : public Recorder
     int record(int commitTag, double timeStamp);
     int playback(int commitTag);
     int restart(void);    
+    int flush();
 
   protected:
 

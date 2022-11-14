@@ -2489,6 +2489,15 @@ Domain::removeRecorders(void)
     return 0;
 }
 
+int Domain::flushRecorders() {
+    for (int i = 0; i < numRecorders; i++) {
+      if (theRecorders[i] != 0) {
+      theRecorders[i]->flush();
+      }
+    }
+    return 0;
+}
+
 int
 Domain::removeRecorder(int tag)
 {
