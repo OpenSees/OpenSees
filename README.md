@@ -15,7 +15,7 @@ For a brief introduction to using your new FORK we suggest:
 https://www.atlassian.com/git/tutorials/saving-changes
 
 ## Documentation
-The documentation for OpenSees is being moved to a parellel github repo:
+The documentation for OpenSees is being moved to a parallel github repo:
 https://github.com/OpenSees/OpenSeesDocumentation
 
 The documentation (in its present form) can be viewed in the browser using the following url:
