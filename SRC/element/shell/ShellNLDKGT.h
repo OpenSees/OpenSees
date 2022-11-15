@@ -60,6 +60,8 @@ class ShellNLDKGT : public Element {
   //destructor 
   virtual ~ShellNLDKGT( ) ;
 
+  const char *getClassType(void) const {return "ShellNLDKGT";}
+	
   //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
   int setDamping(Domain *theDomain, Damping *theDamping);

@@ -1921,7 +1921,7 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
   if (theStaticAnalysis != 0) {
     if (argc < 2) {
-      opserr << "WARNING static analysis: analysis numIncr?\n";
+      opserr << "WARNING static analysis: analysis numIncr? <-noFlush>\n";
       return TCL_ERROR;
     }
     int numIncr;
@@ -1929,12 +1929,25 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     if (Tcl_GetInt(interp, argv[1], &numIncr) != TCL_OK)	
       return TCL_ERROR;	      
 
-    result = theStaticAnalysis->analyze(numIncr);
+    bool flush = true;
+    if (argc > 2) {
+      if (strcmp(argv[2], "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+
+    result = theStaticAnalysis->analyze(numIncr, flush);
   } else if(thePFEMAnalysis != 0) {
-      result = thePFEMAnalysis->analyze();
+    bool flush = true;
+    if (argc > 1) {
+      if (strcmp(argv[1], "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+    result = thePFEMAnalysis->analyze(flush);
   } else if (theTransientAnalysis != 0) {
     if (argc < 3) {
-      opserr << "WARNING transient analysis: analysis numIncr? deltaT?\n";
+      opserr << "WARNING transient analysis: analysis numIncr? deltaT? <-noFlush>\n";
       return TCL_ERROR;
     }
     int numIncr;
@@ -1947,7 +1960,14 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     // Set global timestep variable
     ops_Dt = dT;
 
-    if (argc == 6) {
+    bool flush = true;
+    if (argc == 4) {
+      if (strcmp(argv[3], "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+
+    if (argc >= 6) {
       int Jd;
       double dtMin, dtMax;
       if (Tcl_GetDouble(interp, argv[3], &dtMin) != TCL_OK)	
@@ -1956,16 +1976,21 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 	return TCL_ERROR;
       if (Tcl_GetInt(interp, argv[5], &Jd) != TCL_OK)	
 	return TCL_ERROR;
+      if (argc > 6) {
+        if (strcmp(argv[6], "-noFlush") == 0) {
+        flush = false;
+      }
+      }
 
       if (theVariableTimeStepTransientAnalysis != 0)
-	result =  theVariableTimeStepTransientAnalysis->analyze(numIncr, dT, dtMin, dtMax, Jd);
+	result =  theVariableTimeStepTransientAnalysis->analyze(numIncr, dT, dtMin, dtMax, Jd, flush);
       else {
 	opserr << "WARNING analyze - no variable time step transient analysis object constructed\n";
 	return TCL_ERROR;
       }
 
     } else {
-      result = theTransientAnalysis->analyze(numIncr, dT);
+      result = theTransientAnalysis->analyze(numIncr, dT, flush);
     }
 
   } else {

@@ -733,3 +733,9 @@ NormEnvelopeElementRecorder::initialize(void)
   return 0;
 }
   
+int NormEnvelopeElementRecorder::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
+}

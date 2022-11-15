@@ -1035,3 +1035,10 @@ double EnvelopeElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool
 		first = true;
 	return res;
 }
+
+int EnvelopeElementRecorder::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
+}

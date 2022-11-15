@@ -214,7 +214,8 @@ FRPConfinedConcrete::FRPConfinedConcrete():UniaxialMaterial(0, MAT_TAG_FRPConfin
 
 FRPConfinedConcrete::~FRPConfinedConcrete()
 {
-  // Does nothing - It's a destructor
+  if (SHVs != 0)
+	  delete SHVs;
 }
 
 double FRPConfinedConcrete::getInitialTangent( ) {return Ec;}

@@ -52,11 +52,11 @@ public:
                  ConvergenceTest *theTest,
                  double max, double min, double g, double r);
 
-    int analyze();
+    int analyze(bool flush = true);
 
     virtual ~PFEMAnalysis();
 
-private:
+   private:
 
     int identify();
 
