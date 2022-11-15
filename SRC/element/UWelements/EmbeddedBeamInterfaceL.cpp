@@ -41,12 +41,18 @@
 #include <NodeIter.h>
 #include <FileStream.h>
 
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-#endif
 
 static int num_EmbeddedBeamInterfaceL = 0;
 static const double m_Pi = 3.141592653589793;
+
+#ifdef _PARALLEL_PROCESSING
+#include <PartitionedDomain.h>
+extern PartitionedDomain theDomain;
+#else
+extern Domain theDomain;
+#endif
+
+
 
 void *
 OPS_EmbeddedBeamInterfaceL(void)
@@ -97,13 +103,6 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
     mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
 {
   
-    // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
-
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags  = new int[m_numEmbeddedPoints];
     solidNodeTags = new int[8 * m_numEmbeddedPoints];

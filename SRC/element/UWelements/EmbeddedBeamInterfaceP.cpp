@@ -43,6 +43,9 @@
 
 #ifdef _PARALLEL_PROCESSING
 #include <PartitionedDomain.h>
+extern PartitionedDomain theDomain;
+#else
+extern Domain theDomain;
 #endif
 
 static int num_EmbeddedBeamInterfaceP = 0;
@@ -97,13 +100,6 @@ EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag, std::vector <int> beamTa
     m_ep(penaltyParam), mQa(3, 3), mQb(3, 3), mQc(3, 3),
     mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
 {
-    // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
 
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags = new int[m_numEmbeddedPoints];
