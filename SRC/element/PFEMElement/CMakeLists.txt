@@ -48,7 +48,7 @@ target_sources(OPS_PFEM
         TriMesh.cpp
         Flume.cpp
         BeamBrick.cpp
-        BeamDick.cpp
+        BeamDisk.cpp
     PUBLIC
         BackgroundDef.h
         BackgroundFixData.h
