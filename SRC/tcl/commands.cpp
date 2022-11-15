@@ -7983,7 +7983,9 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer [10];
+    sprintf(buffer,"%.2f", 0.0);	    
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
