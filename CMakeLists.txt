@@ -67,19 +67,29 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 # Conan (manages external dependencies for a typical build)
 # 
 
+MESSAGE("${CMAKE_BINARY_DIR}")
+
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+
+   MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
+   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+
 else()
+
+  MESSAGE("NOT USING CONAN")
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
+
 endif()
 
 # define user-selectable options for end target
