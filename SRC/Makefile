@@ -89,6 +89,7 @@ all:
 	@$(CD) $(FE)/actor; $(MAKE);
 	@$(CD) $(FE)/machine; $(MAKE);
 	@$(CD) $(FE)/element; $(MAKE);
+	
 	@$(CD) $(FE)/coordTransformation; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
