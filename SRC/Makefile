@@ -1504,6 +1504,7 @@ wipe: spotless
 	@$(CD) $(FE)/interpreter; $(MAKE) wipe;
 	@$(CD) $(FE)/damage; $(MAKE) wipe;
 	@$(CD) $(FE)/string; $(MAKE) wipe;
+	@$(CD) $(FE)/damping; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
