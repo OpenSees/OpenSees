@@ -948,3 +948,10 @@ double ElementRecorderRMS::getRecordedValue(int clmnId, int rowOffset, bool rese
 	  count = 0;
 	return (res*res)/count;
 }
+
+int ElementRecorderRMS::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
+}

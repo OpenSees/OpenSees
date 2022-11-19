@@ -480,3 +480,10 @@ double DriftRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 	res = (*data)(clmnId);
 	return res;
 }
+
+int DriftRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
+}
