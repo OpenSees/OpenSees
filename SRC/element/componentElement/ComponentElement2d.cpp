@@ -259,7 +259,7 @@ ComponentElement2d::setDomain(Domain *theDomain)
 
     EAoverL  = A*E/L;		// EA/L
     EIoverL2 = 2.0*I*E/L;	// 2EI/L
-    EIoverL4 = 4.0*E*I/L;	// 4EI/L
+    EIoverL4 = 2.0*EoverL2;	// 4EI/L
 }
 
 int
@@ -1137,12 +1137,18 @@ ComponentElement2d::updateParameter (int parameterID, Information &info)
 		return -1;
 	case 1:
 		E = info.theDouble;
+    EAoverL = E*A/L;
+    EIoverL2 = 2*E*I/L;
+    EIoverL4 = 2*EIoverL2;
 		return 0;
 	case 2:
 		A = info.theDouble;
+    EAoverL = E*A/L;
 		return 0;
 	case 3:
 		I = info.theDouble;
+		EIoverL2 = 2*E*I/L;
+    EIoverL4 = 2*EIoverL2;
 		return 0;
 	default:
 		return -1;
