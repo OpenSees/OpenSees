@@ -259,7 +259,7 @@ ComponentElement2d::setDomain(Domain *theDomain)
 
     EAoverL  = A*E/L;		// EA/L
     EIoverL2 = 2.0*I*E/L;	// 2EI/L
-    EIoverL4 = 2.0*EoverL2;	// 4EI/L
+    EIoverL4 = 2.0*EIoverL2;	// 4EI/L
 }
 
 int
