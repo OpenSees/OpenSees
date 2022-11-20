@@ -260,6 +260,8 @@
 #include "fourNodeQuad/ConstantPressureVolumeQuad.h"
 #include "elasticBeamColumn/ElasticBeam2d.h"
 #include "elasticBeamColumn/ElasticBeam3d.h"
+#include "componentElement/ComponentElement2d.h"
+#include "componentElement/ComponentElement3d.h"
 #include "elasticBeamColumn/ModElasticBeam2d.h"			//SAJalali
 #include "elasticBeamColumn/ElasticTimoshenkoBeam2d.h"
 #include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
@@ -761,6 +763,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
+
+    case ELE_TAG_ComponentElement2d:
+      return new ComponentElement2d();
+
+    case ELE_TAG_ComponentElement3d:
+      return new ComponentElement3d();      
       
     case ELE_TAG_ElasticTimoshenkoBeam2d:
       return new ElasticTimoshenkoBeam2d();
