@@ -179,10 +179,8 @@ int HystereticPoly::setTrialStrain (double strain, double strainRate)
    
    if (uj*st - 2*Uo <= Tstrain *st &&  Tstrain *st < uj*st) {
    
-   Tstress = c*pow(Tstrain, 3) + d*pow(Tstrain, 5) + k2*Tstrain + k12*(pow(1 + st*Tstrain - st*uj + 2 * uo, 1 - a) / st / (1 - a) - am1*Uoa/st ) + st*Fbar;
-
-   
-   Ttangent = 3 * c*pow(Tstrain, 2) + 5 * d*pow(Tstrain, 4) + k2 + k12*pow(1 + st*Tstrain - st*uj + 2 * uo, -1 * a);
+   	Tstress = c*pow(Tstrain, 3) + d*pow(Tstrain, 5) + k2*Tstrain + k12*(pow(1 + st*Tstrain - st*uj + 2 * uo, 1 - a) / st / (1 - a) - am1*Uoa/st ) + st*Fbar;
+   	Ttangent = 3 * c*pow(Tstrain, 2) + 5 * d*pow(Tstrain, 4) + k2 + k12*pow(1 + st*Tstrain - st*uj + 2 * uo, -1 * a);
    }
    
    else {
