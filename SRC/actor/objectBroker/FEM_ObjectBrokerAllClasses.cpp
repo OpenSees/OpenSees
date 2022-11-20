@@ -110,6 +110,7 @@
 
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
+#include <GMG_CyclicReinforcedConcrete.h> // Rasool Ghorbani
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"

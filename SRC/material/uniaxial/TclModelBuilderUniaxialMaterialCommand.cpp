@@ -178,6 +178,7 @@ extern void *OPS_AxialSp(void);
 extern void *OPS_AxialSpHD(void);
 extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
+extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -635,6 +636,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
+	if (strcmp(argv[1], "GMG_CyclicReinforcedConcrete") == 0) {
+		void *theMat = OPS_GMG_CyclicReinforcedConcrete();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+
+	}
     if ((strcmp(argv[1],"InitStrainMaterial") == 0) || (strcmp(argv[1],"InitStrain") == 0)) {
       void *theMat = OPS_InitStrainMaterial();
       if (theMat != 0) 

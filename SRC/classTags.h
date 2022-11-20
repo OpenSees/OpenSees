@@ -301,6 +301,7 @@
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
+#define MAT_TAG_GMG_CyclicReinforcedConcrete    9999 // Rasool Ghorbani
 
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
