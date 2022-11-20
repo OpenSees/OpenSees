@@ -38,14 +38,14 @@
 #include <Channel.h>
 #include <Information.h>
 #include <Parameter.h>
-
+#include <iostream>
 #include <math.h>
 #include <float.h>
 
 #include <elementAPI.h>
 #include <MaterialResponse.h>
 
-
+using namespace std;
 
 void *
 OPS_HystereticPoly()
@@ -174,21 +174,23 @@ int HystereticPoly::setTrialStrain (double strain, double strainRate)
    Tstrain = strain;
    dStrain = strain - Cstrain;
    st = signum(dStrain);	
-
-
-
-   
-   
    
    uj = Cstrain + st*Uo - st*pow(st*a1 / k12*(Cstress - c*pow(Cstrain , 3) - d*pow(Cstrain, 5) - k2*Cstrain - st*Fbar + k12*am1*Uoa / st ),am1);
    
+   if (uj*st - 2*Uo <= Tstrain *st &&  Tstrain *st < uj*st) {
    
    Tstress = c*pow(Tstrain, 3) + d*pow(Tstrain, 5) + k2*Tstrain + k12*(pow(1 + st*Tstrain - st*uj + 2 * uo, 1 - a) / st / (1 - a) - am1*Uoa/st ) + st*Fbar;
 
    
    Ttangent = 3 * c*pow(Tstrain, 2) + 5 * d*pow(Tstrain, 4) + k2 + k12*pow(1 + st*Tstrain - st*uj + 2 * uo, -1 * a);
+   }
    
-
+   else {
+   
+   	Tstress = c*pow(Tstrain, 3) + d*pow(Tstrain, 5) + k2*Tstrain + st*Fbar;
+   	Ttangent = 3 * c*pow(Tstrain, 2) + 5 * d*pow(Tstrain, 4) + k2 ;
+   }
+   
    return 0;
 }
 
@@ -687,3 +689,4 @@ HystereticPoly::signum(double value)
 		return -1.0;
 	}
 }
+
