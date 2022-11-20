@@ -89,6 +89,7 @@ all:
 	@$(CD) $(FE)/actor; $(MAKE);
 	@$(CD) $(FE)/machine; $(MAKE);
 	@$(CD) $(FE)/element; $(MAKE);
+	@$(CD) $(FE)/damping; $(MAKE);
 	@$(CD) $(FE)/coordTransformation; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
@@ -1503,6 +1504,7 @@ wipe: spotless
 	@$(CD) $(FE)/interpreter; $(MAKE) wipe;
 	@$(CD) $(FE)/damage; $(MAKE) wipe;
 	@$(CD) $(FE)/string; $(MAKE) wipe;
+	@$(CD) $(FE)/damping; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

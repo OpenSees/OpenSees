@@ -48,7 +48,8 @@ class Recorder: public MovableObject, public TaggedObject
     virtual ~Recorder();
 
     virtual int record(int commitTag, double timeStamp) =0;
-    
+    virtual int flush();
+
     virtual int restart(void);
     virtual int domainChanged(void);
     virtual int setDomain(Domain &theDomain);
