@@ -224,6 +224,7 @@ void * OPS_MixedBeamColumn3d() {
     return 0;
   }
 
+  delete [] sections;
   return theElement;
 }
 
@@ -245,17 +246,17 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
   V(NDM_NATURAL), committedV(NDM_NATURAL),
   internalForceOpenSees(NDM_NATURAL_WITH_TORSION),
   committedInternalForceOpenSees(NDM_NATURAL_WITH_TORSION),
-  naturalForce(NDM_NATURAL), commitedNaturalForce(NDM_NATURAL),
-  lastNaturalDisp(NDM_NATURAL), commitedLastNaturalDisp(NDM_NATURAL),
+  naturalForce(NDM_NATURAL), committedNaturalForce(NDM_NATURAL),
+  lastNaturalDisp(NDM_NATURAL), committedLastNaturalDisp(NDM_NATURAL),
   sp(0),
-  Hinv(NDM_NATURAL,NDM_NATURAL), commitedHinv(NDM_NATURAL,NDM_NATURAL),
-  GMH(NDM_NATURAL,NDM_NATURAL), commitedGMH(NDM_NATURAL,NDM_NATURAL),
+  Hinv(NDM_NATURAL,NDM_NATURAL), committedHinv(NDM_NATURAL,NDM_NATURAL),
+  GMH(NDM_NATURAL,NDM_NATURAL), committedGMH(NDM_NATURAL,NDM_NATURAL),
   kv(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION),
   kvcommit(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION),
   Ki(0),
-  sectionForceFibers(0), commitedSectionForceFibers(0),
-  sectionDefFibers(0), commitedSectionDefFibers(0),
-  sectionFlexibility(0), commitedSectionFlexibility(0)
+  sectionForceFibers(0), committedSectionForceFibers(0),
+  sectionDefFibers(0), committedSectionDefFibers(0),
+  sectionFlexibility(0), committedSectionFlexibility(0)
 {
   theNodes[0] = 0;
   theNodes[1] = 0;
@@ -312,28 +313,7 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
   p0[3] = 0.0;
   p0[4] = 0.0;
 
-  // Element vectors and matrices
-  sectionForceFibers = new Vector [numSections];
-  commitedSectionForceFibers = new Vector [numSections];
-  sectionDefFibers = new Vector [numSections];
-  commitedSectionDefFibers = new Vector [numSections];
-  sectionFlexibility = new Matrix [numSections];
-  commitedSectionFlexibility = new Matrix [numSections];
-
-  for (int i = 0; i < numSections; i++){
-    sectionForceFibers[i] = Vector(NDM_SECTION);
-    sectionForceFibers[i].Zero();
-    commitedSectionForceFibers[i] = Vector(NDM_SECTION);
-    commitedSectionForceFibers[i].Zero();
-    sectionDefFibers[i] = Vector(NDM_SECTION);
-    sectionDefFibers[i].Zero();
-    commitedSectionDefFibers[i] = Vector(NDM_SECTION);
-    commitedSectionDefFibers[i].Zero();
-    sectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
-    sectionFlexibility[i].Zero();
-    commitedSectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
-    commitedSectionFlexibility[i].Zero();
-  }
+  this->setSectionPointers();
 
   V.Zero();
   internalForceOpenSees.Zero();
@@ -345,10 +325,10 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
 
   committedV.Zero();
   committedInternalForceOpenSees.Zero();
-  commitedNaturalForce.Zero();
-  commitedLastNaturalDisp.Zero();
-  commitedHinv.Zero();
-  commitedGMH.Zero();
+  committedNaturalForce.Zero();
+  committedLastNaturalDisp.Zero();
+  committedHinv.Zero();
+  committedGMH.Zero();
   kvcommit.Zero();
 
   if ( transformNaturalCoords(1,1) != 1 ) {
@@ -400,6 +380,54 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
 
 }
 
+void
+MixedBeamColumn3d::setSectionPointers(void)
+{
+  if (numSections < 1)
+    return;
+  
+  // Element vectors and matrices
+  if (sectionForceFibers != 0)
+    delete [] sectionForceFibers;
+  sectionForceFibers = new Vector [numSections];
+
+  if (committedSectionForceFibers != 0)
+    delete [] committedSectionForceFibers;
+  committedSectionForceFibers = new Vector [numSections];
+
+  if (sectionDefFibers != 0)
+    delete [] sectionDefFibers;  
+  sectionDefFibers = new Vector [numSections];
+
+  if (committedSectionDefFibers != 0)
+    delete [] committedSectionDefFibers;
+  committedSectionDefFibers = new Vector [numSections];
+
+  if (sectionFlexibility != 0)
+    delete [] sectionFlexibility;
+  sectionFlexibility = new Matrix [numSections];
+
+  if (committedSectionFlexibility != 0)
+    delete [] committedSectionFlexibility;
+  committedSectionFlexibility = new Matrix [numSections];
+
+
+  for (int i = 0; i < numSections; i++){
+    sectionForceFibers[i] = Vector(NDM_SECTION);
+    sectionForceFibers[i].Zero();
+    committedSectionForceFibers[i] = Vector(NDM_SECTION);
+    committedSectionForceFibers[i].Zero();
+    sectionDefFibers[i] = Vector(NDM_SECTION);
+    sectionDefFibers[i].Zero();
+    committedSectionDefFibers[i] = Vector(NDM_SECTION);
+    committedSectionDefFibers[i].Zero();
+    sectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
+    sectionFlexibility[i].Zero();
+    committedSectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
+    committedSectionFlexibility[i].Zero();
+  }
+}
+
 // constructor:
 // invoked by a FEM_ObjectBroker, recvSelf() needs to be invoked on this object.
 // CONSTRUCTOR FOR PARALLEL PROCESSING
@@ -410,15 +438,15 @@ MixedBeamColumn3d::MixedBeamColumn3d():
   itr(0), initialFlag(0),
   V(NDM_NATURAL), committedV(NDM_NATURAL),
   internalForceOpenSees(NDM_NATURAL_WITH_TORSION), committedInternalForceOpenSees(NDM_NATURAL_WITH_TORSION),
-  naturalForce(NDM_NATURAL), commitedNaturalForce(NDM_NATURAL),
-  lastNaturalDisp(NDM_NATURAL), commitedLastNaturalDisp(NDM_NATURAL),
+  naturalForce(NDM_NATURAL), committedNaturalForce(NDM_NATURAL),
+  lastNaturalDisp(NDM_NATURAL), committedLastNaturalDisp(NDM_NATURAL),
   sp(0),
-  Hinv(NDM_NATURAL,NDM_NATURAL), commitedHinv(NDM_NATURAL,NDM_NATURAL),
-  GMH(NDM_NATURAL,NDM_NATURAL), commitedGMH(NDM_NATURAL,NDM_NATURAL),
+  Hinv(NDM_NATURAL,NDM_NATURAL), committedHinv(NDM_NATURAL,NDM_NATURAL),
+  GMH(NDM_NATURAL,NDM_NATURAL), committedGMH(NDM_NATURAL,NDM_NATURAL),
   kv(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION), kvcommit(NDM_NATURAL_WITH_TORSION,NDM_NATURAL_WITH_TORSION),
   Ki(0),
-  sectionForceFibers(0), commitedSectionForceFibers(0), sectionDefFibers(0), commitedSectionDefFibers(0),
-  sectionFlexibility(0), commitedSectionFlexibility(0)
+  sectionForceFibers(0), committedSectionForceFibers(0), sectionDefFibers(0), committedSectionDefFibers(0),
+  sectionFlexibility(0), committedSectionFlexibility(0)
 {
   theNodes[0] = 0;
   theNodes[1] = 0;
@@ -428,29 +456,6 @@ MixedBeamColumn3d::MixedBeamColumn3d():
   p0[2] = 0.0;
   p0[3] = 0.0;
   p0[4] = 0.0;
-
-  // Element vectors and matrices
-  sectionForceFibers = new Vector [numSections];
-  commitedSectionForceFibers = new Vector [numSections];
-  sectionDefFibers = new Vector [numSections];
-  commitedSectionDefFibers = new Vector [numSections];
-  sectionFlexibility = new Matrix [numSections];
-  commitedSectionFlexibility = new Matrix [numSections];
-
-  for (int i = 0; i < numSections; i++){
-    sectionForceFibers[i] = Vector(NDM_SECTION);
-    sectionForceFibers[i].Zero();
-    commitedSectionForceFibers[i] = Vector(NDM_SECTION);
-    commitedSectionForceFibers[i].Zero();
-    sectionDefFibers[i] = Vector(NDM_SECTION);
-    sectionDefFibers[i].Zero();
-    commitedSectionDefFibers[i] = Vector(NDM_SECTION);
-    commitedSectionDefFibers[i].Zero();
-    sectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
-    sectionFlexibility[i].Zero();
-    commitedSectionFlexibility[i] = Matrix(NDM_SECTION,NDM_SECTION);
-    commitedSectionFlexibility[i].Zero();
-  }
 
   V.Zero();
   internalForceOpenSees.Zero();
@@ -462,10 +467,10 @@ MixedBeamColumn3d::MixedBeamColumn3d():
 
   committedV.Zero();
   committedInternalForceOpenSees.Zero();
-  commitedNaturalForce.Zero();
-  commitedLastNaturalDisp.Zero();
-  commitedHinv.Zero();
-  commitedGMH.Zero();
+  committedNaturalForce.Zero();
+  committedLastNaturalDisp.Zero();
+  committedHinv.Zero();
+  committedGMH.Zero();
   kvcommit.Zero();
 
 
@@ -540,20 +545,20 @@ MixedBeamColumn3d::~MixedBeamColumn3d() {
   if (sectionForceFibers != 0)
     delete [] sectionForceFibers;
 
-  if (commitedSectionForceFibers != 0)
-    delete [] commitedSectionForceFibers;
+  if (committedSectionForceFibers != 0)
+    delete [] committedSectionForceFibers;
 
   if (sectionDefFibers != 0)
     delete [] sectionDefFibers;
 
-  if (commitedSectionDefFibers != 0)
-    delete [] commitedSectionDefFibers;
+  if (committedSectionDefFibers != 0)
+    delete [] committedSectionDefFibers;
 
   if (sectionFlexibility != 0)
     delete [] sectionFlexibility;
 
-  if (commitedSectionFlexibility != 0)
-    delete [] commitedSectionFlexibility;
+  if (committedSectionFlexibility != 0)
+    delete [] committedSectionFlexibility;
 }
 
 int MixedBeamColumn3d::getNumExternalNodes(void) const {
@@ -653,15 +658,15 @@ int MixedBeamColumn3d::commitState() {
   // commit the element variables state
   committedV = V;
   committedInternalForceOpenSees = internalForceOpenSees;
-  commitedNaturalForce = naturalForce;
-  commitedLastNaturalDisp = lastNaturalDisp;
-  commitedHinv = Hinv;
-  commitedGMH = GMH;
+  committedNaturalForce = naturalForce;
+  committedLastNaturalDisp = lastNaturalDisp;
+  committedHinv = Hinv;
+  committedGMH = GMH;
   kvcommit = kv;
   for( i = 0; i < numSections; i++){
-    commitedSectionForceFibers[i] = sectionForceFibers[i];
-    commitedSectionDefFibers[i] = sectionDefFibers[i];
-    commitedSectionFlexibility[i] = sectionFlexibility[i];
+    committedSectionForceFibers[i] = sectionForceFibers[i];
+    committedSectionDefFibers[i] = sectionDefFibers[i];
+    committedSectionFlexibility[i] = sectionFlexibility[i];
   }
 
   // Reset iteration counter
@@ -690,15 +695,15 @@ int MixedBeamColumn3d::revertToLastCommit() {
   // revert the element state to last commit
   V = committedV;
   internalForceOpenSees = committedInternalForceOpenSees;
-  naturalForce = commitedNaturalForce;
-  lastNaturalDisp = commitedLastNaturalDisp;
-  Hinv = commitedHinv;
-  GMH = commitedGMH;
+  naturalForce = committedNaturalForce;
+  lastNaturalDisp = committedLastNaturalDisp;
+  Hinv = committedHinv;
+  GMH = committedGMH;
   kv   = kvcommit;
   for( i = 0; i < numSections; i++){
-    sectionForceFibers[i] = commitedSectionForceFibers[i];
-    sectionDefFibers[i] = commitedSectionDefFibers[i];
-    sectionFlexibility[i] = commitedSectionFlexibility[i];
+    sectionForceFibers[i] = committedSectionForceFibers[i];
+    sectionDefFibers[i] = committedSectionDefFibers[i];
+    sectionFlexibility[i] = committedSectionFlexibility[i];
   }
 
   // Reset iteration counter
@@ -759,15 +764,15 @@ int MixedBeamColumn3d::revertToStart()
   for ( i = 0; i < numSections; i++ ){
     getSectionTangent(i,2,ks,GJ);
     invertMatrix(NDM_SECTION,ks,sectionFlexibility[i]);
-    commitedSectionFlexibility[i] = sectionFlexibility[i];
+    committedSectionFlexibility[i] = sectionFlexibility[i];
   }
 
   // Set initial and committed section forces and deformations
   for ( i = 0; i < numSections; i++ ){
     sectionForceFibers[i].Zero();
-    commitedSectionForceFibers[i].Zero();
+    committedSectionForceFibers[i].Zero();
     sectionDefFibers[i].Zero();
-    commitedSectionDefFibers[i].Zero();
+    committedSectionDefFibers[i].Zero();
   }
 
   // Compute the following matrices: G, G2, H, H12, H22, Md, Kg
@@ -798,12 +803,12 @@ int MixedBeamColumn3d::revertToStart()
 
   // Compute the inverse of the H matrix
   invertMatrix(NDM_NATURAL, H, Hinv);
-  commitedHinv = Hinv;
+  committedHinv = Hinv;
 
   // Compute the GMH matrix ( G + Md - H12 ) and its transpose
   GMH = G + Md - H12;
   //GMH = G; // Omit P-small delta
-  commitedGMH = GMH;
+  committedGMH = GMH;
 
   // Compute the transposes of the following matrices: G2, GMH
   Matrix G2T(NDM_NATURAL,NDM_NATURAL);
@@ -842,11 +847,11 @@ int MixedBeamColumn3d::revertToStart()
   internalForceOpenSees.Zero();
   committedInternalForceOpenSees.Zero();
   naturalForce.Zero();
-  commitedNaturalForce.Zero();
+  committedNaturalForce.Zero();
 
   // Last natural displacement is zero at initial state
   lastNaturalDisp.Zero();
-  commitedLastNaturalDisp.Zero();
+  committedLastNaturalDisp.Zero();
 
   // Reset iteration counter
   itr = 0;
@@ -1369,13 +1374,13 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"sectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[15];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"axialStrain_%i",i+1);
+      sprintf(q,"axialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureZ_%i",i+1);
+      sprintf(q,"curvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"curvatureY_%i",i+1);
+      sprintf(q,"curvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1385,13 +1390,13 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"plasticSectionDeformation_Force") == 0) {
 
     int i;
-    char *q  = new char[25];
+    char *q  = new char[80];
     for ( i = 0; i < numSections; i++ ){
-      sprintf(q,"plasticAxialStrain_%i",i+1);
+      sprintf(q,"plasticAxialStrain_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureZ_%i",i+1);
+      sprintf(q,"plasticCurvatureZ_%d",i+1);
       output.tag("ResponseType",q);
-      sprintf(q,"plasticCurvatureY_%i",i+1);
+      sprintf(q,"plasticCurvatureY_%d",i+1);
       output.tag("ResponseType",q);
     }
     delete [] q;
@@ -1404,24 +1409,68 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
   } else if (strcmp(argv[0],"integrationWeights") == 0) {
     theResponse =  new ElementResponse(this, 101, Vector(numSections));
 
+  } else if (strcmp(argv[0],"sectionTags") == 0) {
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+    
   } else if (strcmp(argv[0],"connectedNodes") == 0) {
-    theResponse =  new ElementResponse(this, 102, Vector(2));
+    theResponse =  new ElementResponse(this, 102, ID(2));
 
   } else if (strcmp(argv[0],"numSections") == 0 ||
              strcmp(argv[0],"numberOfSections") == 0 ) {
-    theResponse =  new ElementResponse(this, 103, Vector(1));
+    theResponse =  new ElementResponse(this, 103, ID(1));
 
   }
 
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
+  else if (strcmp(argv[0],"sectionDisplacements") == 0) {
+    if (argc > 1 && strcmp(argv[1],"local") == 0)
+      theResponse = new ElementResponse(this, 1111, Matrix(numSections,3));
+    else
+      theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
+  }
 
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
+  else if (strcmp(argv[0],"sectionX") ==0) {
+    if (argc > 2) {
+      
+      float sectionLoc = atof(argv[1]);
+	
+      double xi[MAX_NUM_SECTIONS];
+      double L = crdTransf->getInitialLength();
+      beamIntegr->getSectionLocations(numSections, L, xi);
 
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));  
+      sectionLoc /= L;
 
+      float minDistance = fabs(xi[0]-sectionLoc);
+      int sectionNum = 1;
+      for (int i = 1; i < numSections; i++) {
+	if (fabs(xi[i]-sectionLoc) < minDistance) {
+	  minDistance = fabs(xi[i]-sectionLoc);
+	  sectionNum = i+1;
+	}
+      }
+	
+      output.tag("GaussPointOutput");
+      output.attr("number",sectionNum);
+      output.attr("eta",xi[sectionNum-1]*L);
+      
+      // A kinda hacky thing to record section shear even though this
+      // element doesn't include shear effects
+      bool thisSectionHasShear = false;
+      int order = sections[sectionNum-1]->getOrder();
+      const ID &type = sections[sectionNum-1]->getType();
+      for (int i = 0; i < order; i++) {
+	if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
+	  thisSectionHasShear = true;
+      }
+      
+      if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+      else
+	theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+      
+      output.endTag();
+    }
+  }
+    
   else if (strcmp(argv[0],"section") ==0) {
     if (argc > 2) {
 
@@ -1436,12 +1485,28 @@ Response* MixedBeamColumn3d::setResponse(const char **argv, int argc,
         output.attr("number",sectionNum);
         output.attr("eta",xi[sectionNum-1]*L);
 
-        theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	// A kinda hacky thing to record section shear even though this
+	// element doesn't include shear effects
+	bool thisSectionHasShear = false;
+	int order = sections[sectionNum-1]->getOrder();
+	const ID &type = sections[sectionNum-1]->getType();
+	for (int i = 0; i < order; i++) {
+	  if (type(i) == SECTION_RESPONSE_VY || type(i) == SECTION_RESPONSE_VZ)
+	    thisSectionHasShear = true;
+	}
 
-        output.endTag();
+	if (!thisSectionHasShear || strcmp(argv[2],"force") != 0)
+	  theResponse =  sections[sectionNum-1]->setResponse(&argv[2], argc-2, output);	  
+	else
+	  theResponse = new ElementResponse(this, 500 + sectionNum, Vector(order));
+	
+	output.endTag();
       }
     }
   }
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
 
   output.endTag();
   return theResponse;
@@ -1478,7 +1543,7 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
     M2 = internalForceOpenSees(4);
     theVector(4)  = M1;
     theVector(10) = M2;
-    V = -(M1+M2)/L;
+    V = (M1+M2)/L;
     theVector(2) = -V+p0[3];
     theVector(8) =  V+p0[4];
 
@@ -1544,34 +1609,96 @@ int MixedBeamColumn3d::getResponse(int responseID, Information &eleInfo) {
         weights(i) = wts[i]*L;
       return eleInfo.setVector(weights);
 
+  } else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = sections[i]->getTag();
+    return eleInfo.setID(tags);
+      
   } else if (responseID == 102) { // connected nodes
-    Vector tempVector(2);
+    ID tempVector(2);
     tempVector(0) = connectedExternalNodes(0);
     tempVector(1) = connectedExternalNodes(1);
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   } else if (responseID == 103) { // number of sections
-    Vector tempVector(1);
+    ID tempVector(1);
     tempVector(0) = numSections;
-    return eleInfo.setVector(tempVector);
+    return eleInfo.setID(tempVector);
 
   }
 
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
+  else if (responseID == 111 || responseID == 1111) {
+    double L = crdTransf->getInitialLength();
+    double pts[MAX_NUM_SECTIONS];
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    // CBDI influence matrix
+    Matrix ls(numSections, numSections);
+    getCBDIinfluenceMatrix(numSections, pts, L, ls);
+    // Curvature vector
+    Vector kappaz(numSections); // about section z
+    Vector kappay(numSections); // about section y
+    for (int i = 0; i < numSections; i++) {
+      const ID &code = sections[i]->getType();
+      const Vector &e = sections[i]->getSectionDeformation();
+      int order = sections[i]->getOrder();
+      for (int j = 0; j < order; j++) {
+	if (code(j) == SECTION_RESPONSE_MZ)
+	  kappaz(i) += e(j);
+	if (code(j) == SECTION_RESPONSE_MY)
+	  kappay(i) += e(j);
+      }
+    }
+    // Displacement vector
+    Vector dispsy(numSections); // along local y
+    Vector dispsz(numSections); // along local z    
+    dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
+    dispsz.addMatrixVector(0.0, ls, kappay, -1.0);    
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    static Vector uxb(3);
+    static Vector uxg(3);
+    Matrix disps(numSections,3);
+    static Vector vp(6);
+    vp = crdTransf->getBasicTrialDisp();
+    for (int i = 0; i < numSections; i++) {
+      uxb(0) = pts[i]*vp(0); // linear shape function
+      uxb(1) = dispsy(i);
+      uxb(2) = dispsz(i);
+      if (responseID == 111)
+	uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
+      else
+	uxg = crdTransf->getPointLocalDisplFromBasic(pts[i],uxb);
+      disps(i,0) = uxg(0);
+      disps(i,1) = uxg(1);
+      disps(i,2) = uxg(2);            
+    }
+    return eleInfo.setMatrix(disps);
+  }
+  
+  else if (responseID > 500 && responseID <= 550) {
+    int sectionNum = responseID % 500;
+    double L = crdTransf->getInitialLength();
     
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
-  }
+    double M1 = internalForceOpenSees(1);
+    double M2 = internalForceOpenSees(2);
+    double Vy = (M1+M2)/L;
 
+    double M3 = internalForceOpenSees(3);
+    double M4 = internalForceOpenSees(4);
+    double Vz = (M3+M4)/L;
+
+    int order = sections[sectionNum-1]->getOrder();
+    Vector s(sections[sectionNum-1]->getStressResultant());
+    const ID &type = sections[sectionNum-1]->getType();
+    for (int i = 0; i < order; i++) {
+      if (type(i) == SECTION_RESPONSE_VY) 
+	s(i) = Vy;
+      if (type(i) == SECTION_RESPONSE_VZ)
+	s(i) = Vz;
+    }
+    return eleInfo.setVector(s);
+  }
+  
   else {
     return -1;
   }
@@ -1909,20 +2036,442 @@ void MixedBeamColumn3d::setSectionDeformation(int sec,Vector &defSection,
     }
   }
 
+  // ***
+  //
+  // Hack the shears
+  double L = crdTransf->getInitialLength();
+  
+  double M1 = internalForceOpenSees(1);
+  double M2 = internalForceOpenSees(2);
+  double Vy = (M1+M2)/L;
+  
+  double M3 = internalForceOpenSees(3);
+  double M4 = internalForceOpenSees(4);
+  double Vz = (M3+M4)/L;
+  
+  const Matrix &ks = sections[sec]->getInitialTangent();
+  double gamma = 0.0;
+  for (int i = 0; i < order; i++) {
+    if (code(i) == SECTION_RESPONSE_VY) {
+      gamma = Vy/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }
+    if (code(i) == SECTION_RESPONSE_VZ) {
+      gamma = Vz/ks(i,i);
+      sectionDeformation(i) = gamma;
+    }      
+  }  
+  //
+  // ***
+  
   // Set the section deformations
   int res = sections[sec]->setTrialSectionDeformation(sectionDeformation);
 }
 
 
-int MixedBeamColumn3d::sendSelf(int commitTag, Channel &theChannel) {
-  // @todo write MixedBeamColumn3d::sendSelf
-  opserr << "Error: MixedBeamColumn3d::sendSelf -- not yet implemented for MixedBeamColumn3d element";
-  return -1;
+int MixedBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
+{
+  int dbTag = this->getDbTag();
+
+  static ID idData(11); // Make sure cannot be 2*numSections
+  idData(0) = this->getTag();
+  idData(1) = connectedExternalNodes(0);
+  idData(2) = connectedExternalNodes(1);  
+  idData(3) = numSections;
+  idData(4) = crdTransf->getClassTag();
+  int crdTransfDbTag  = crdTransf->getDbTag();
+  if (crdTransfDbTag  == 0) {
+    crdTransfDbTag = theChannel.getDbTag();
+    if (crdTransfDbTag  != 0) 
+      crdTransf->setDbTag(crdTransfDbTag);
+  }
+  idData(5) = crdTransfDbTag;
+  idData(6) = beamIntegr->getClassTag();
+  int beamIntDbTag  = beamIntegr->getDbTag();
+  if (beamIntDbTag  == 0) {
+    beamIntDbTag = theChannel.getDbTag();
+    if (beamIntDbTag  != 0) 
+      beamIntegr->setDbTag(beamIntDbTag);
+  }
+  idData(7) = beamIntDbTag;
+  idData(8) = geomLinear ? 1 : 0;
+  idData(9) = initialFlag;
+  idData(10) = doRayleigh;
+
+  if (theChannel.sendID(dbTag, commitTag, idData) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send data ID" << endln;
+    return -1;
+  }
+  
+  static Vector data(2);
+  data(0) = rho;
+  data(1) = initialLength;
+
+  if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send data Vector" << endln;
+    return -2;
+  }
+
+  // send the coordinate transformation
+  if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send crdTranf" << endln;
+    return -3;
+  }      
+
+  // send the beam integration
+  if (beamIntegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send beamInt" << endln;
+    return -4;
+  }
+
+  //
+  // send an ID for the sections containing each sections dbTag and classTag
+  // if section ha no dbTag get one and assign it
+  //
+  ID idSections(2*numSections);
+  int loc = 0;
+  for (int i = 0; i<numSections; i++) {
+    int sectClassTag = sections[i]->getClassTag();
+    int sectDbTag = sections[i]->getDbTag();
+    if (sectDbTag == 0) {
+      sectDbTag = theChannel.getDbTag();
+      sections[i]->setDbTag(sectDbTag);
+    }
+
+    idSections(loc) = sectClassTag;
+    idSections(loc+1) = sectDbTag;
+    loc += 2;
+  }
+
+  if (theChannel.sendID(dbTag, commitTag, idSections) < 0)  {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send ID data" << endln;
+    return -5;
+  }    
+
+  //
+  // send the sections
+  //
+  
+  for (int i = 0; i<numSections; i++) {
+    if (sections[i]->sendSelf(commitTag, theChannel) < 0) {
+      opserr << "MixedBeamColumn3d::sendSelf() - section " << 
+	i << " failed to send itself" << endln;
+      return -6;
+    }
+  }
+
+  /*
+  Vector committedV; // NDM_NATURAL
+  Vector committedInternalForceOpenSees;  // NDM_NATURAL
+  Vector committedNaturalForce; // NDM_NATURAL
+  Vector committedLastNaturalDisp; // NDM_NATURAL
+  Matrix committedHinv; // NDM_NATURAL x NDM_NATURAL
+  Matrix committedGMH; // NDM_NATURAL x NDM_NATURAL
+  Matrix kvcommit; // NDM_NATURAL x NDM_NATURAL
+  */
+  
+  // 4*NDM_NATURAL + 3*NDM_NATURAL**2 = 4*5 + 3*5**2 = 20 + 75 = 95
+  int lenElementData = 4*NDM_NATURAL + 3*NDM_NATURAL*NDM_NATURAL;
+  static Vector elementData(lenElementData);
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    elementData(i              ) = committedV(i);
+    elementData(i+  NDM_NATURAL) = committedInternalForceOpenSees(i);
+    elementData(i+2*NDM_NATURAL) = committedNaturalForce(i);
+    elementData(i+3*NDM_NATURAL) = committedLastNaturalDisp(i);    
+  }
+  loc = 4*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      elementData(loc++) = committedHinv(i,j);
+  }
+  loc = 4*NDM_NATURAL + NDM_NATURAL*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      elementData(loc++) = committedGMH(i,j);
+  }
+  loc = 4*NDM_NATURAL + 2*NDM_NATURAL*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      elementData(loc++) = kvcommit(i,j);
+  }
+
+  if (theChannel.sendVector(dbTag, commitTag, elementData) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send elementData Vector" << endln;
+    return -7;
+  }
+ 
+  /*
+  Vector *committedSectionForceFibers; // numSections
+  Vector *committedSectionDefFibers; // numSections
+  Matrix *committedSectionFlexibility; // numSections
+  */
+  
+  // 2*numSections*order + numSections*order**2
+  int order = sections[0]->getOrder(); // Assume all sections have same order
+  order = NDM_SECTION;
+  int lenSectionData = 2*numSections*order + numSections*order*order;
+  if (lenSectionData == lenElementData) {
+    lenSectionData++;
+  }
+  Vector sectionData(lenSectionData);
+  for (int i = 0; i < numSections; i++) {
+    for (int j = 0; j < order; j++) {
+      sectionData(                    i*order + j) = committedSectionForceFibers[i](j);
+      sectionData(numSections*order + i*order + j) = committedSectionDefFibers[i](j);
+    }
+  }
+  loc = 2*numSections*order;
+  for (int i = 0; i < numSections; i++) {
+    for (int j = 0; j < order; j++)
+      for (int k = 0; k < order; k++) {
+	sectionData(loc++) = committedSectionFlexibility[i](j,k);
+      }
+  }
+
+  if (theChannel.sendVector(dbTag, commitTag, sectionData) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to send sectionData Vector" << endln;
+    return -8;
+  }  
+
+  return 0;
 }
 
 int MixedBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
-                                FEM_ObjectBroker &theBroker) {
-  // @todo write MixedBeamColumn3d::recvSelf
-  opserr << "Error: MixedBeamColumn3d::sendSelf -- not yet implemented for MixedBeamColumn3d element";
-  return -1;
+                                FEM_ObjectBroker &theBroker)
+{
+  int dbTag = this->getDbTag();
+
+  static ID idData(11);
+  if (theChannel.recvID(dbTag, commitTag, idData) < 0) {
+    opserr << "MixedBeamColumn3d::recvSelf() - failed to receive data ID" << endln;
+    return -1;
+  }
+
+  this->setTag(idData(0));
+  connectedExternalNodes(0) = idData(1);
+  connectedExternalNodes(1) = idData(2);  
+  int nSect = idData(3);
+  int crdTransfClassTag = idData(4);
+  int crdTransfDbTag = idData(5);
+  int beamIntClassTag = idData(6);
+  int beamIntDbTag = idData(7);  
+  geomLinear = (idData(8) == 1) ? true : false;
+  initialFlag = idData(9);
+  doRayleigh = idData(10);
+
+  
+  static Vector data(2);
+  if (theChannel.recvVector(dbTag, commitTag, data) < 0) {
+    opserr << "MixedBeamColumn3d::recvSelf() - failed to receive data Vector" << endln;
+    return -2;
+  }
+
+  rho = data(0);
+  initialLength = data(1);
+
+  // create a new crdTransf object if one needed
+  if (crdTransf == 0 || crdTransf->getClassTag() != crdTransfClassTag) {
+      if (crdTransf != 0)
+	  delete crdTransf;
+
+      crdTransf = theBroker.getNewCrdTransf(crdTransfClassTag);
+
+      if (crdTransf == 0) {
+	opserr << "MixedBeamColumn3d::recvSelf() - failed to obtain a CrdTransf object with classTag " <<
+	  crdTransfClassTag << endln;
+	exit(-1);
+      }
+  }
+  crdTransf->setDbTag(crdTransfDbTag);
+
+  // invoke recvSelf on the crdTransf object
+  if (crdTransf->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to recv crdTranf" << endln;
+    return -3;
+  }      
+
+  // create a new beamInt object if one needed
+  if (beamIntegr == 0 || beamIntegr->getClassTag() != beamIntClassTag) {
+      if (beamIntegr != 0)
+	  delete beamIntegr;
+
+      beamIntegr = theBroker.getNewBeamIntegration(beamIntClassTag);
+
+      if (beamIntegr == 0) {
+	opserr << "MixedBeamColumn3d::recvSelf() - failed to obtain the beam integration object with classTag" <<
+	  beamIntClassTag << endln;
+	exit(-1);
+      }
+  }
+
+  beamIntegr->setDbTag(beamIntDbTag);
+
+  // invoke recvSelf on the beamInt object
+  if (beamIntegr->recvSelf(commitTag, theChannel, theBroker) < 0)  
+  {
+    opserr << "MixedBeamColumn3d::sendSelf() - failed to recv beam integration" << endln;
+    return -4;
+  }      
+
+
+  ID idSections(2*nSect);
+
+  if (theChannel.recvID(dbTag, commitTag, idSections) < 0)  {
+    opserr << "DispBeamColumn3d::recvSelf() - failed to recv ID data\n";
+    return -5;
+  }    
+
+  //
+  // now receive the sections
+  //
+  
+  if (numSections != nSect) {
+
+    //
+    // we do not have correct number of sections, must delete the old and create
+    // new ones before can recvSelf on the sections
+    //
+
+    // delete the old
+    if (numSections != 0) {
+      for (int i=0; i<numSections; i++)
+	delete sections[i];
+      delete [] sections;
+    }
+
+    // create a new array to hold pointers
+    sections = new SectionForceDeformation *[nSect];
+    if (sections == 0) {
+      opserr << "MixedBeamColumn3d::recvSelf() - out of memory creating sections array of size " <<
+	nSect << endln;
+      return -5;
+    }    
+
+    // create a section and recvSelf on it
+    numSections = nSect;
+    int loc = 0;
+    for (int i=0; i<numSections; i++) {
+      int sectClassTag = idSections(loc);
+      int sectDbTag = idSections(loc+1);
+      loc += 2;
+      sections[i] = theBroker.getNewSection(sectClassTag);
+      if (sections[i] == 0) {
+	opserr << "MixedpBeamColumn3d::recvSelf() - Broker could not create Section of class type " <<
+	  sectClassTag << endln;
+	exit(-1);
+      }
+      sections[i]->setDbTag(sectDbTag);
+      if (sections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	opserr << "MixedBeamColumn3d::recvSelf() - section " << i << " failed to recv itself" << endln;
+	return -5;
+      }     
+    }
+
+  } else {
+
+    // 
+    // for each existing section, check it is of correct type
+    // (if not delete old & create a new one) then recvSelf on it
+    //
+    
+    int loc = 0;
+    for (int i=0; i<numSections; i++) {
+      int sectClassTag = idSections(loc);
+      int sectDbTag = idSections(loc+1);
+      loc += 2;
+
+      // check of correct type
+      if (sections[i]->getClassTag() !=  sectClassTag) {
+	// delete the old section[i] and create a new one
+	delete sections[i];
+	sections[i] = theBroker.getNewSection(sectClassTag);
+	if (sections[i] == 0) {
+	  opserr << "MixedBeamColumn3d::recvSelf() - Broker could not create Section of class type " <<
+	    sectClassTag << endln;
+	  exit(-1);
+	}
+      }
+
+      // recvSelf on it
+      sections[i]->setDbTag(sectDbTag);
+      if (sections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	opserr << "MixedBeamColumn3d::recvSelf() - section " << i << " failed to recv itself" << endln;
+	return -5;
+      }     
+    }
+  }
+
+  
+  int lenElementData = 4*NDM_NATURAL + 3*NDM_NATURAL*NDM_NATURAL;
+  static Vector elementData(lenElementData);
+  if (theChannel.recvVector(dbTag, commitTag, elementData) < 0) {
+    opserr << "MixedBeamColumn3d::recvSelf() - failed to receive elementData Vector" << endln;
+    return -6;
+  }
+  
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    committedV(i)                       = elementData(i              );
+    committedInternalForceOpenSees(i)   = elementData(i+  NDM_NATURAL);
+    committedNaturalForce(i)            = elementData(i+2*NDM_NATURAL);
+    committedLastNaturalDisp(i)         = elementData(i+3*NDM_NATURAL);
+  }
+  int loc;
+  loc = 4*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      committedHinv(i,j) = elementData(loc++);
+  }
+  loc = 4*NDM_NATURAL + NDM_NATURAL*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      committedGMH(i,j) = elementData(loc++);
+  }
+  loc = 4*NDM_NATURAL + 2*NDM_NATURAL*NDM_NATURAL;
+  for (int i = 0; i < NDM_NATURAL; i++) {
+    for (int j = 0; j < NDM_NATURAL; j++)
+      kvcommit(i,j) = elementData(loc++);
+  }  
+
+
+  // Allocate section vectors and matrices
+  this->setSectionPointers();
+  
+  int order = sections[0]->getOrder(); // Assume all sections have same order
+  order = NDM_SECTION;
+  int lenSectionData = 2*numSections*order + numSections*order*order;
+  if (lenSectionData == lenElementData) {
+    lenSectionData++;
+  }
+  Vector sectionData(lenSectionData);
+  if (theChannel.recvVector(dbTag, commitTag, sectionData) < 0) {
+    opserr << "MixedBeamColumn3d::recvSelf() - failed to receive sectionData Vector" << endln;
+    return -7;
+  }
+
+  for (int i = 0; i < numSections; i++) {
+    for (int j = 0; j < order; j++) {
+      committedSectionForceFibers[i](j) = sectionData(                    i*order + j);
+      committedSectionDefFibers[i](j)   = sectionData(numSections*order + i*order + j);
+    }
+  }
+  loc = 2*numSections*order;
+  for (int i = 0; i < numSections; i++) {
+    for (int j = 0; j < order; j++)
+      for (int k = 0; k < order; k++) {
+	committedSectionFlexibility[i](j,k) = sectionData(loc++);
+      }
+  }  
+
+  return 0;
+}
+
+int MixedBeamColumn3d::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+{
+    static Vector v1(3);
+    static Vector v2(3);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

@@ -39,7 +39,7 @@
 //
 // What: "@(#) Metis.C, revA"
 
-#include <Metis.h>
+#include <MetisWrapper.h>
 #include <Graph.h>
 #include <Vertex.h>
 
@@ -252,7 +252,7 @@ Metis::partition(Graph &theGraph, int numPart)
 
 	if (vertexPtr == 0) {
 	    opserr << "WARNING Metis::partition - No partitioning done";
-	    opserr << " Metis requires consequtive Vertex Numbering\n";
+	    opserr << " Metis requires consecutive Vertex Numbering\n";
 	    
 	    delete [] options;
 	    delete [] partition;

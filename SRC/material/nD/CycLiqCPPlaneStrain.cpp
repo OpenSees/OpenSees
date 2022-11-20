@@ -76,7 +76,7 @@ NDMaterial* CycLiqCPPlaneStrain :: getCopy( )
 { 
   CycLiqCPPlaneStrain  *clone;
   clone = new CycLiqCPPlaneStrain( ) ;   //new instance of this class
-  *clone = *this ;          //asignment to make copy
+  *clone = *this ;          //assignment to make copy
   return clone ;
 }
 

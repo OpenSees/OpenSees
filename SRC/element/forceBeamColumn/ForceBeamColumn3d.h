@@ -69,6 +69,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 #include <BeamIntegration.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 
 class Response;
 class ElementalLoad;
@@ -81,7 +82,8 @@ class ForceBeamColumn3d: public Element
 		    int numSections, SectionForceDeformation **sec,
 		    BeamIntegration &beamIntegr,
 		    CrdTransf &coordTransf, double rho = 0.0, 
-		    int maxNumIters = 10, double tolerance = 1.0e-12);
+		    int maxNumIters = 10, double tolerance = 1.0e-12,
+		    Damping *theDamping = 0);
   
   ~ForceBeamColumn3d();
 
@@ -94,6 +96,7 @@ class ForceBeamColumn3d: public Element
   int getNumDOF(void);
   
   void setDomain(Domain *theDomain);
+  int setDamping(Domain *theDomain, Damping *theDamping);
   int commitState(void);
   int revertToLastCommit(void);        
   int revertToStart(void);
@@ -108,11 +111,12 @@ class ForceBeamColumn3d: public Element
   int addInertiaLoadToUnbalance(const Vector &accel);
   
   const Vector &getResistingForce(void);
+  const Vector &getDampingForce(void);
   const Vector &getResistingForceIncInertia(void);            
   
   int sendSelf(int cTag, Channel &theChannel);
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-  int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes);        
+  int displaySelf(Renderer &theViewer, int displayMode, float fact, const char** displayModes = 0, int numModes = 0);
   
   friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumn3d &E);        
   void Print(OPS_Stream &s, int flag =0);    
@@ -131,12 +135,7 @@ class ForceBeamColumn3d: public Element
   int getResponseSensitivity(int responseID, int gradNumber,
 			     Information &eleInformation);
   // AddingSensitivity:END ///////////////////////////////////////////
-#if _DLL
-  BeamIntegration* beamIntegr;
-  int numSections;
-  SectionForceDeformation** sections;          // array of pointers to sections
-  CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+
  protected:
   void setSectionPointers(int numSections, SectionForceDeformation **secPtrs);
   int getInitialFlexibility(Matrix &fe);
@@ -157,12 +156,11 @@ class ForceBeamColumn3d: public Element
   // internal data
   ID     connectedExternalNodes; // tags of the end nodes
 
-#if !_DLL
   BeamIntegration* beamIntegr;
   int numSections;
   SectionForceDeformation** sections;          // array of pointers to sections
-  CrdTransf* crdTransf;        // pointer to coordinate tranformation object 
-#endif
+  CrdTransf* crdTransf;        // pointer to coordinate transformation object 
+
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   int    maxIters;               // maximum number of local iterations
@@ -199,6 +197,8 @@ class ForceBeamColumn3d: public Element
   Matrix *Ki;
 
   bool isTorsion;
+
+  Damping *theDamping;
   
   static Matrix theMatrix;
   static Vector theVector;

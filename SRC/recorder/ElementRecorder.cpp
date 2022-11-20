@@ -25,7 +25,7 @@
 // Written: fmk 
 // Created: 09/99
 //
-// Description: This file contains the class implementatation of ElementRecorder.
+// Description: This file contains the class implementation of ElementRecorder.
 //
 // What: "@(#) ElementRecorder.C, revA"
 
@@ -60,8 +60,8 @@ void*
 OPS_ElementRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder Element ";
-        opserr << "-ele <list elements> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder Element ";
+        opserr << "-ele <list elements> -file <fileName> -dT <dT> response";
         return 0;
     }
 
@@ -83,6 +83,7 @@ OPS_ElementRecorder()
 
     bool echoTimeFlag = false;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     bool doScientific = false;
 
     int precision = 6;
@@ -95,6 +96,8 @@ OPS_ElementRecorder()
     ID elements(0, 6);
     ID dofs(0, 6);
 
+    char **argv = 0;
+    
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
         const char* option = OPS_GetString();
@@ -159,6 +162,15 @@ OPS_ElementRecorder()
                 int num = 1;
                 if (OPS_GetDoubleInput(&num, &dT) < 0) {
                     opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-rTolDt") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+                    opserr << "WARNING: failed to read rTolDt\n";
                     return 0;
                 }
             }
@@ -247,8 +259,15 @@ OPS_ElementRecorder()
             nargrem = 1 + OPS_GetNumRemainingInputArgs();
             data = new const char *[nargrem];
             data[0] = option;
-            for (int i = 1; i < nargrem; i++)
-                data[i] = OPS_GetString();
+	    //argv = new char*[nargrem];
+	    char buffer[128];
+            for (int i = 1; i < nargrem; i++) {
+	      data[i] = new char[128];
+
+	      // Turn everything in to a string for setResponse
+	      //data[i] = OPS_GetStringFromAll(buffer, 128);
+	      OPS_GetStringFromAll((char*)data[i], 128);
+	    }
         }
     }
     
@@ -277,8 +296,15 @@ OPS_ElementRecorder()
         return 0;
     ElementRecorder* recorder = new ElementRecorder(&elements,
         data, nargrem, echoTimeFlag, *domain, *theOutputStream,
-        dT, &dofs);
+        dT, rTolDt, &dofs);
 
+    if (data != 0) {
+      for (int i=1; i<nargrem; ++i) {
+	delete [] data[i];
+      }
+      delete [] data;
+    }
+    
     return recorder;
 }
 
@@ -287,7 +313,7 @@ ElementRecorder::ElementRecorder()
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(0), theOutputHandler(0),
- echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0), data(0), 
+ echoTimeFlag(true), deltaT(0.0), relDeltaTTol(0.00001), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -300,11 +326,12 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 Domain &theDom, 
 				 OPS_Stream &theOutput,
 				 double dT,
+				 double rTolDt,
 				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(&theDom), theOutputHandler(&theOutput),
- echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
+ echoTimeFlag(echoTime), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
@@ -396,9 +423,11 @@ ElementRecorder::record(int commitTag, double timeStamp)
   }
   
   int result = 0;
-  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
+  // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
+  // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
+    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
-    if (deltaT != 0.0) 
+    if (deltaT != 0.0)
       nextTimeStampToRecord = timeStamp + deltaT;
 
     int loc = 0;
@@ -410,7 +439,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     //
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -440,7 +469,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     theOutputHandler->write(*data);
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 
@@ -508,9 +537,10 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(2);
+  static Vector dData(3);
   dData(0) = deltaT;
   dData(1) = nextTimeStampToRecord;
+  dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -627,13 +657,14 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
 
   numEle = eleSize;
 
-  static Vector dData(2);
+  static Vector dData(3);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
   }
   deltaT = dData(0);
   nextTimeStampToRecord = dData(1);
+  relDeltaTTol = dData(2);
 
   //
   // resize & recv the eleID
@@ -765,7 +796,7 @@ ElementRecorder::initialize(void)
   if (eleID != 0) {
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
     int eleCount = 0;
@@ -778,7 +809,7 @@ ElementRecorder::initialize(void)
       responseCount =1;
     }
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle != 0) {
@@ -801,10 +832,10 @@ ElementRecorder::initialize(void)
     }
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
-    // allocate memory for Reponses & set to 0
+    // allocate memory for Responses & set to 0
     theResponses = new Response *[numEle];
     if (theResponses == 0) {
       opserr << "ElementRecorder::initialize() - out of memory\n";
@@ -814,7 +845,7 @@ ElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle == 0) {
@@ -872,7 +903,7 @@ ElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     ElementIter &theElements = theDomain->getElements();
     Element *theEle;
 
@@ -928,4 +959,11 @@ double ElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 		return res;
 	res = (*data)(clmnId);
 	return res;
+}
+
+int ElementRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
 }

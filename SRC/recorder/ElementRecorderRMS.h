@@ -52,12 +52,14 @@ class ElementRecorderRMS: public Recorder
 		       Domain &theDomain, 
 		       OPS_Stream &theOutputHandler,
 		       double deltaT = 0.0,
+		       double relDeltaTTol = 0.00001,
 		       const ID *dof =0); 
     
     ~ElementRecorderRMS();
 
     int record(int commitTag, double timeStamp);
     int restart(void);    
+    int flush(void);    
 
     int setDomain(Domain &theDomain);
     int sendSelf(int commitTag, Channel &theChannel);  
@@ -82,6 +84,7 @@ class ElementRecorderRMS: public Recorder
     OPS_Stream *theHandler;
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     Vector *runningTotal;

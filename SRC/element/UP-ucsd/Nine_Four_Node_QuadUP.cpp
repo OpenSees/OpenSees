@@ -33,12 +33,12 @@
 void* OPS_NineFourNodeQuadUP()
 {
     if (OPS_GetNDM() != 2) {
-	opserr << "WARNING -- model dimensions not compatible with 9-4-NodeQuadUP element\n";
+	opserr << "WARNING -- model dimensions not compatible with 9-4-NodeQuadUP element" << endln;
 	return 0;
     }
     if (OPS_GetNumRemainingInputArgs() < 16) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: element FourNodeQuadUP eleTag? Node1? ... Node9? thk? type? matTag? bulk? rho? perm_x? perm_y? <b1? b2? pressure? dM? dK?>\n";
+	opserr << "Want: element FourNodeQuadUP eleTag? Node1? ... Node9? thk? type? matTag? bulk? rho? perm_x? perm_y? <b1? b2? pressure? dM? dK?>" << endln;
 	return 0;
     }
 
@@ -46,20 +46,20 @@ void* OPS_NineFourNodeQuadUP()
     int tags[10];
     int num = 10;
     if (OPS_GetIntInput(&num,tags) < 0) {
-	opserr<<"WARNING: invalid integer input\n";
+	opserr<<"WARNING: invalid integer input" << endln;
 	return 0;
     }
 
     double thk;
     num = 1;
     if (OPS_GetDoubleInput(&num,&thk) < 0) {
-	opserr<<"WARNING: invalid double input\n";
+	opserr<<"WARNING: invalid double input" << endln;
 	return 0;
     }
 
     int matTag;
     if (OPS_GetIntInput(&num,&matTag) < 0) {
-	opserr<<"WARNING: invalid integer input\n";
+	opserr<<"WARNING: invalid integer input" << endln;
 	return 0;
     }
     NDMaterial* mat = OPS_getNDMaterial(matTag);
@@ -73,7 +73,7 @@ void* OPS_NineFourNodeQuadUP()
     double data[4];
     num = 4;
     if (OPS_GetDoubleInput(&num,data) < 0) {
-	opserr<<"WARNING: invalid double input\n";
+	opserr<<"WARNING: invalid double input" << endln;
 	return 0;
     }
 
@@ -85,7 +85,7 @@ void* OPS_NineFourNodeQuadUP()
     }
     if (num > 0) {
 	if (OPS_GetDoubleInput(&num,opt) < 0) {
-	    opserr<<"WARNING: invalid double input\n";
+	    opserr<<"WARNING: invalid double input" << endln;
 	    return 0;
 	}
     }
@@ -189,7 +189,7 @@ NineFourNodeQuadUP::NineFourNodeQuadUP(int tag,
 
     if (theMaterial == 0) {
 
-      opserr << "NineFourNodeQuadUP::NineFourNodeQuadUP - failed allocate material model pointer\n";
+      opserr << "NineFourNodeQuadUP::NineFourNodeQuadUP - failed allocate material model pointer" << endln;
 
       exit(-1);
 
@@ -211,7 +211,7 @@ NineFourNodeQuadUP::NineFourNodeQuadUP(int tag,
 
       if (theMaterial[i] == 0) {
 
-	     opserr << "NineFourNodeQuadUP::NineFourNodeQuadUP -- failed to get a copy of material model\n";
+	     opserr << "NineFourNodeQuadUP::NineFourNodeQuadUP -- failed to get a copy of material model" << endln;
 
 	     exit(-1);
 
@@ -377,7 +377,7 @@ NineFourNodeQuadUP::setDomain(Domain *theDomain)
 
       opserr << "FATAL ERROR NineFourNodeQuadUP, node not found in domain, tag "
 
-	     << this->getTag();
+	     << this->getTag() << endln;
 
       return;
 
@@ -394,8 +394,8 @@ NineFourNodeQuadUP::setDomain(Domain *theDomain)
     dof = theNodes[i]->getNumberDOF();
 
     if ((i<nenp && dof != 3) || (i>=nenp && dof != 2)) {
-      opserr << "FATAL ERROR NineFourNodeQuadUP, has wrong number of DOFs at its nodes "
-	     << this->getTag();
+      opserr << "FATAL ERROR NineFourNodeQuadUP tag=" << this->getTag()
+	     << " has wrong number of DOFs at node " << theNodes[i]->getTag() << endln;
 
       return;
     }
@@ -434,7 +434,7 @@ NineFourNodeQuadUP::commitState()
 
     if ((retVal = this->Element::commitState()) != 0) {
 
-      opserr << "Nine_Four_Node_Quad_UP::commitState () - failed in base class";
+      opserr << "Nine_Four_Node_Quad_UP::commitState () - failed in base class" << endln;
 
     }
 
@@ -809,7 +809,7 @@ const Matrix &NineFourNodeQuadUP::getInitialStiff ()
 
     opserr << "FATAL NineFourNodeQuadUP::getInitialStiff() -";
 
-    opserr << "ran out of memory\n";
+    opserr << "ran out of memory" << endln;
 
     exit(-1);
 
@@ -1131,7 +1131,7 @@ NineFourNodeQuadUP::addInertiaLoadToUnbalance(const Vector &accel)
 
       if ((i<nenp && 3 != Raccel.Size()) || (i>=nenp && 2 != Raccel.Size())) {
 
-         opserr << "NineFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
+         opserr << "NineFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatible" << endln;
 
          return -1;
 
@@ -1311,7 +1311,7 @@ NineFourNodeQuadUP::getResistingForceIncInertia()
 
     if ((i<nenp && 3 != accel.Size()) || (i>=nenp && 2 != accel.Size())) {
 
-      opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
+      opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible" << endln;
 
          return P;
 
@@ -1365,7 +1365,7 @@ NineFourNodeQuadUP::getResistingForceIncInertia()
 
       if ((i<nenp && 3 != vel.Size()) || (i>=nenp && 2 != vel.Size())) {
 
-         opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
+         opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible" << endln;
 
          return P;
 
@@ -1442,7 +1442,7 @@ NineFourNodeQuadUP::sendSelf(int commitTag, Channel &theChannel)
 
   res += theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
-    opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send Vector" << endln;
     return res;
   }
 
@@ -1470,7 +1470,7 @@ NineFourNodeQuadUP::sendSelf(int commitTag, Channel &theChannel)
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send ID" << endln;
     return res;
   }
 
@@ -1478,7 +1478,7 @@ NineFourNodeQuadUP::sendSelf(int commitTag, Channel &theChannel)
   for (i = 0; i < 9; i++) {
     res += theMaterial[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
-      opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+      opserr << "WARNING NineFourNodeQuadUP::sendSelf() - " << this->getTag() << " failed to send its Material" << endln;
       return res;
     }
   }
@@ -1505,7 +1505,7 @@ NineFourNodeQuadUP::recvSelf(int commitTag, Channel &theChannel,
   static Vector data(13);
   res += theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
-    opserr << "WARNING NineFourNodeQuadUP::recvSelf() - failed to receive Vector\n";
+    opserr << "WARNING NineFourNodeQuadUP::recvSelf() - failed to receive Vector" << endln;
     return res;
   }
 
@@ -1529,7 +1529,7 @@ NineFourNodeQuadUP::recvSelf(int commitTag, Channel &theChannel,
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "WARNING NineFourNodeQuadUP::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    opserr << "WARNING NineFourNodeQuadUP::recvSelf() - " << this->getTag() << " failed to receive ID" << endln;
     return res;
   }
 
@@ -1540,7 +1540,7 @@ NineFourNodeQuadUP::recvSelf(int commitTag, Channel &theChannel,
     // Allocate new materials
     theMaterial = new NDMaterial *[nintu];
     if (theMaterial == 0) {
-      opserr << "NineFourNodeQuadUP::recvSelf() - Could not allocate NDMaterial* array\n";
+      opserr << "NineFourNodeQuadUP::recvSelf() - Could not allocate NDMaterial* array" << endln;
       return -1;
     }
     for (int i = 0; i < 9; i++) {
@@ -1556,7 +1556,7 @@ NineFourNodeQuadUP::recvSelf(int commitTag, Channel &theChannel,
       theMaterial[i]->setDbTag(matDbTag);
       res += theMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to recv itself\n";
+opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to recv itself" << endln;
 	return res;
       }
     }
@@ -1573,7 +1573,7 @@ opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to recv i
 	delete theMaterial[i];
 	theMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
 	if (theMaterial[i] == 0) {
-opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to create\n";
+opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to create" << endln;
 
 	  return -1;
 	}
@@ -1582,7 +1582,7 @@ opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to create
       theMaterial[i]->setDbTag(matDbTag);
       res += theMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to recv itself\n";
+opserr << "NineFourNodeQuadUP::recvSelf() - material " << i << "failed to recv itself" << endln;
 	return res;
       }
     }
@@ -1629,95 +1629,65 @@ int
 NineFourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    static Vector v5(3);
+    static Vector v6(3);
+    static Vector v7(3);
+    static Vector v8(3);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+    theNodes[2]->getDisplayCrds(v3, fact, displayMode);
+    theNodes[3]->getDisplayCrds(v4, fact, displayMode);
+    theNodes[4]->getDisplayCrds(v5, fact, displayMode);
+    theNodes[5]->getDisplayCrds(v6, fact, displayMode);
+    theNodes[6]->getDisplayCrds(v7, fact, displayMode);
+    theNodes[7]->getDisplayCrds(v8, fact, displayMode);
 
-    // first set the quantity to be displayed at the nodes;
-
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-
-
-    static Vector values(9);
-
-
-
-    for (int j=0; j<9; j++)
-
-	   values(j) = 0.0;
-
-
-
-    if (displayMode < 4 && displayMode > 0) {
-
-	for (int i=0; i<9; i++) {
-
-	  const Vector &stress = theMaterial[i]->getStress();
-
-	  values(i) = stress(displayMode-1);
-
-	}
-
+    // place values in coords matrix
+    static Matrix coords(8, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v5(i);
+        coords(2, i) = v2(i);
+        coords(3, i) = v6(i);
+        coords(4, i) = v3(i);
+        coords(5, i) = v7(i);
+        coords(6, i) = v4(i);
+        coords(7, i) = v8(i);
     }
 
-
-
-    // now  determine the end points of the quad based on
-
-    // the display factor (a measure of the distorted image)
-
-    // store this information in 4 3d vectors v1 through v4
-
-    /*const Vector &end1Crd = nd1Ptr->getCrds();
-
-    const Vector &end2Crd = nd2Ptr->getCrds();
-
-    const Vector &end3Crd = nd3Ptr->getCrds();
-
-    const Vector &end4Crd = nd4Ptr->getCrds();
-
-
-
-    const Vector &end1Disp = nd1Ptr->getDisp();
-
-    const Vector &end2Disp = nd2Ptr->getDisp();
-
-    const Vector &end3Disp = nd3Ptr->getDisp();
-
-    const Vector &end4Disp = nd4Ptr->getDisp();
-
-
-
-    static Matrix coords(4,3);
-
-
-
-    for (int i = 0; i < 2; i++) {
-
-      coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-
-      coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-
-      coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-
-      coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-
+    // set the quantity to be displayed at the nodes;
+    // if displayMode is 1 through 8 we will plot material stresses otherwise 0.0
+    static Vector values(8);
+    if (displayMode < 8 && displayMode > 0) {
+        const Vector& stress1 = theMaterial[0]->getStress();
+        const Vector& stress2 = theMaterial[1]->getStress();
+        const Vector& stress3 = theMaterial[2]->getStress();
+        const Vector& stress4 = theMaterial[3]->getStress();
+        const Vector& stress5 = theMaterial[4]->getStress();
+        const Vector& stress6 = theMaterial[5]->getStress();
+        const Vector& stress7 = theMaterial[6]->getStress();
+        const Vector& stress8 = theMaterial[7]->getStress();
+        values(0) = stress1(displayMode - 1);
+        values(1) = stress5(displayMode - 1);
+        values(2) = stress2(displayMode - 1);
+        values(3) = stress6(displayMode - 1);
+        values(4) = stress3(displayMode - 1);
+        values(5) = stress7(displayMode - 1);
+        values(6) = stress4(displayMode - 1);
+        values(7) = stress8(displayMode - 1);
+    }
+    else {
+        for (int i = 0; i < 8; i++)
+            values(i) = 0.0;
     }
 
-
-
-    int error = 0;
-
-
-
-    // finally we draw the element using drawPolygon
-
-    error += theViewer.drawPolygon (coords, values);
-
-
-
-    return error;*/
-
-	return 0;
-
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }
 
 

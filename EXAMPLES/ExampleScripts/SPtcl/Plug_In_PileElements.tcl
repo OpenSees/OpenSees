@@ -46,5 +46,5 @@ for {set i 0} {$i < $num_of_pile_element} {incr i} {
   }   
 
 }
-puts "Finished Pluging in pile elements..."
+puts "Finished Plugging in pile elements..."
 close $els_in_pile

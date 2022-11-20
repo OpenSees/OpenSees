@@ -18,14 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.31 $
-// $Date: 2010-04-23 22:56:02 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/brick/FourNodeTetrahedron.cpp,v $
-
-// Ed "C++" Love
-//
-// Eight node FourNodeTetrahedron element
-//
+// ============================================================================
+// 2018 By Jose Abell @ Universidad de los Andes, Chile
+// www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
+// ============================================================================
+// Please read detailed description in FourNodeTetrahedron.h.
+// ============================================================================
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -71,7 +69,7 @@ void* OPS_FourNodeTetrahedron()
     if (mat == 0) 
     {
       opserr << "WARNING material not found\n";
-      opserr << "material tag: " << idata[9];
+      opserr << "material tag: " << idata[5];
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
     }
 
@@ -197,7 +195,7 @@ const double  FourNodeTetrahedron::one_over_root3 = 1.0 / root3 ;
 
 const double  FourNodeTetrahedron::sg[] = { 0.25 } ;
 
-const double  FourNodeTetrahedron::wg[] = { 0.16667 } ;
+const double  FourNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
 
   
 static Matrix B(NumStressComponents,NumDOFsPerNode) ;
@@ -453,8 +451,8 @@ void  FourNodeTetrahedron::Print(OPS_Stream &s, int flag)
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"FourNodeTetrahedron\", ";
-        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 2; i++)
+        s << "\"nodes\": [";
+        for (int i = 0; i < 3; i++)
             s << connectedExternalNodes(i) << ", ";
         s << connectedExternalNodes(3) << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
@@ -1627,7 +1625,59 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
 int
 FourNodeTetrahedron::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    return -1;
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
+
+    // color vector
+    static Vector values(3);
+    values(0) = 0;
+    values(1) = 0;
+    values(2) = 0;
+
+    // draw polygons for each tetrahedron face -ambaker1
+    int res = 0;
+    static Matrix coords(3, 3); // rows are face nodes
+
+    // face 1 (1 3 2)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v3(i);
+        coords(2, i) = v2(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 2 (1 2 4)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v4(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 3 (1 4 3)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v4(i);
+        coords(2, i) = v3(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+
+    // face 4 (2 3 4)
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v2(i);
+        coords(1, i) = v3(i);
+        coords(2, i) = v4(i);
+    }
+    res += theViewer.drawPolygon(coords, values, this->getTag());
+    
+    return res;
 }
 
 Response*
@@ -1649,7 +1699,7 @@ FourNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output
 
   if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
   {
-    for (int i=1; i<=3; i++) 
+    for (int i=1; i<=4; i++) 
     {
       sprintf(outputData,"P1_%d",i);
       output.tag("ResponseType",outputData);
@@ -1884,19 +1934,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
 }
 
-/*
-      Inputs:
-         ss[4]     - Natural coordinates of point
-         xl[3][4]  - Nodal coordinates for element
 
-      Outputs:
-         xsj        - Jacobian determinant at point
-         shp[4][4]  - Shape functions and derivatives at point
-                     shp[0][i] = dN_i/dx
-                     shp[1][i] = dN_i/dy
-                     shp[2][i] = dN_i/dzc
-                     shp[3][i] =  N_i
-*/
 void  
 FourNodeTetrahedron::shp3d( const double ss[4], double &xsj, double shp[4][4], const double xl[3][4]   )
 {

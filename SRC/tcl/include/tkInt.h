@@ -371,9 +371,9 @@ typedef struct TkDisplay {
      */
 
     int placeInit;              /* 0 means tables below need initializing. */
-    Tcl_HashTable masterTable;  /* Maps from Tk_Window toke to the Master
+    Tcl_HashTable masterTable;  /* Maps from Tk_Window took to the Master
 				 * structure for the window, if it exists. */
-    Tcl_HashTable slaveTable;   /* Maps from Tk_Window toke to the Slave
+    Tcl_HashTable slaveTable;   /* Maps from Tk_Window took to the Slave
 				 * structure for the window, if it exists. */
 
     /*
@@ -436,7 +436,7 @@ typedef struct TkDisplay {
 				/* Default resource allocator for display. */
     struct TkIdStack *windowStackPtr;
 				/* First in list of chunks of window
-				 * identifers that can't be reused right
+				 * identifiers that can't be reused right
 				 * now. */
     int idCleanupScheduled;	/* 1 means a call to WindowIdCleanup has
 				 * already been scheduled, 0 means it

@@ -265,17 +265,25 @@ double ViscousDamper::getStress(void)
 
 double ViscousDamper::getTangent(void)
 {
-  return 0;
+  return K;
 }
 
 double ViscousDamper::getInitialTangent(void)
 {
-  return 0;
+  return K;
 }
 
 double ViscousDamper::getDampTangent(void)
 {
-  
+  if (Alpha == 0) {
+    return 0.0;
+  } else if (Alpha == 1) {
+    return C*sgn(Tstress);
+  } else if (Alpha > 0 && Alpha < 1) {
+    return C * Alpha / pow(fabs(TVel), 1.0 - Alpha);
+  } else if (Alpha > 1) {
+    return C * Alpha * pow(fabs(TVel), Alpha - 1.0);
+  }
   return 0; 
 }
 
@@ -554,11 +562,11 @@ int
 ViscousDamper::setParameter(const char **argv, int argc, Parameter &param)
 {
 
-  if (strcmp(argv[0],"E") == 0) {
+  if (strcmp(argv[0],"E") == 0 || strcmp(argv[0],"K") == 0) {
     param.setValue(K);
     return param.addObject(1, this);
   }
-  else if (strcmp(argv[0],"eta") == 0) {
+  else if (strcmp(argv[0],"eta") == 0 || strcmp(argv[0],"C") == 0) {
     param.setValue(C);
     return param.addObject(4, this);
   }

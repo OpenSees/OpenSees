@@ -46,13 +46,45 @@
 #include <NDMaterial.h>
 #include <SectionIntegration.h>
 #include <Parameter.h>
+#include <elementAPI.h>
 
 ID NDFiberSectionWarping2d::code(5);
+
+void* OPS_NDFiberSectionWarping2d()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) {
+	opserr<<"insufficient arguments for NDFiberSectionWarping2d\n";
+	return 0;
+    }
+
+    numData = 1;
+    int tag;
+    if (OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    double alpha = 1.0;
+    bool computeCentroid = true;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noCentroid") == 0)
+	computeCentroid = false;
+      if (strcmp(opt, "-alpha") == 0 || strcmp(opt, "-shape") == 0) {
+	if (OPS_GetNumRemainingInputArgs() < 1)
+	  break;
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData,&alpha) < 0)
+	  return 0;
+      }
+    }
+    
+    int num = 30;
+    return new NDFiberSectionWarping2d(tag, num, alpha);
+}
 
 // constructors:
 NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, Fiber **fibers, double a): 
 SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
-	numFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a), sectionIntegr(0),
+numFibers(num), sizeFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a), sectionIntegr(0),
 	e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
 { 
 	if (numFibers != 0) {
@@ -141,10 +173,56 @@ SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
 	code(4) = SECTION_RESPONSE_Q;
 }
 
+NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, double a): 
+    SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
+    numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
+    yBar(0.0), alpha(a), sectionIntegr(0), e(5), s(0), ks(0), 
+    parameterID(0), dedh(5)
+{
+    if (sizeFibers != 0) {
+	theMaterials = new NDMaterial *[sizeFibers];
+
+	if (theMaterials == 0) {
+	    opserr << "NDFiberSection2d::NDFiberSection2d -- failed to allocate Material pointers";
+	    exit(-1);
+	}
+
+	matData = new double [sizeFibers*2];
+
+	if (matData == 0) {
+	    opserr << "NDFiberSection2d::NDFiberSection2d -- failed to allocate double array for material data\n";
+	    exit(-1);
+	}
+
+
+	for (int i = 0; i < sizeFibers; i++) {
+	    matData[i*2] = 0.0;
+	    matData[i*2+1] = 0.0;
+	    theMaterials[i] = 0;
+	}    
+    }
+
+    int order = 5;
+    s = new Vector(sData, order);
+    ks = new Matrix(kData, order, order);
+
+    for (int i = 0; i < order; i++) {
+      sData[i] = 0.0;
+      for (int j = 0; j < order; j++)
+	kData[5*i + j] = 0.0;
+    }
+    
+    code(0) = SECTION_RESPONSE_P;
+    code(1) = SECTION_RESPONSE_MZ;
+    code(2) = SECTION_RESPONSE_VY;
+    code(3) = SECTION_RESPONSE_R;
+    code(4) = SECTION_RESPONSE_Q;    
+}
+
 NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, NDMaterial **mats,
 	SectionIntegration &si, double a):
 SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
-	numFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a),
+  numFibers(num), sizeFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a),
 	sectionIntegr(0), e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
 {
 	if (numFibers != 0) {
@@ -238,7 +316,7 @@ SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
 // constructor for blank object that recvSelf needs to be invoked upon
 NDFiberSectionWarping2d::NDFiberSectionWarping2d():
 SectionForceDeformation(0, SEC_TAG_NDFiberSectionWarping2d),
-	numFibers(0), theMaterials(0), matData(0), yBar(0.0), alpha(6.0/6),
+  numFibers(0), sizeFibers(0), theMaterials(0), matData(0), yBar(0.0), alpha(6.0/6),
 	sectionIntegr(0), e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
 {
 	s = new Vector(sData, 5);
@@ -284,9 +362,10 @@ SectionForceDeformation(0, SEC_TAG_NDFiberSectionWarping2d),
 }
 
 int
-	NDFiberSectionWarping2d::addFiber(Fiber &newFiber)
+NDFiberSectionWarping2d::addFiber(Fiber &newFiber)
 {
 	// need to create larger arrays
+  if (numFibers == sizeFibers) {
 	int newSize = numFibers+1;
 	NDMaterial **newArray = new NDMaterial *[newSize]; 
 	double *newMatData = new double [2 * newSize];
@@ -303,36 +382,45 @@ int
 		newMatData[2*i+1] = matData[2*i+1];
 	}
 
-	// set the new pointers and data
-	double yLoc, zLoc, Area;
-	newFiber.getFiberLocation(yLoc, zLoc);
-	Area = newFiber.getArea();
-	newMatData[numFibers*2] = yLoc;
-	newMatData[numFibers*2+1] = Area;
-	NDMaterial *theMat = newFiber.getNDMaterial();
-	newArray[numFibers] = theMat->getCopy("BeamFiber2d");
+      // initial memory
+      for (int i = numFibers; i < newSize; i++) {
+	  newArray[i] = 0;
+	  newMatData[2*i] = 0.0;
+	  newMatData[2*i+1] = 0.0;
+      }
+      sizeFibers = newSize;
 
-	if (newArray[numFibers] == 0) {
-		opserr <<"NDFiberSectionWarping2d::addFiber -- failed to get copy of a Material\n";
-		delete [] newMatData;
-		return -1;
-	}
+      // set new memory
+      if (theMaterials != 0) {
+	  delete [] theMaterials;
+	  delete [] matData;
+      }
 
-	numFibers++;
+      theMaterials = newArray;
+      matData = newMatData;	
+  }
+  
+  // set the new pointers and data
+  double yLoc, zLoc, Area;
+  newFiber.getFiberLocation(yLoc, zLoc);
+  Area = newFiber.getArea();
+  matData[numFibers*2] = yLoc;
+  matData[numFibers*2+1] = Area;
+  NDMaterial *theMat = newFiber.getNDMaterial();
+  theMaterials[numFibers] = theMat->getCopy("BeamFiber2d");
 
-	if (theMaterials != 0) {
-		delete [] theMaterials;
-		delete [] matData;
-	}
+  if (theMaterials[numFibers] == 0) {
+    opserr <<"NDFiberSectionWarping2d::addFiber -- failed to get copy of a Material\n";
+    return -1;
+  }
 
-	theMaterials = newArray;
-	matData = newMatData;
+  numFibers++;
 
 	double Qz = 0.0;
 	double A  = 0.0;
 
 	// Recompute centroid
-	for (i = 0; i < numFibers; i++) {
+	for (int i = 0; i < numFibers; i++) {
 		yLoc = -matData[2*i];
 		Area = matData[2*i+1];
 		A  += Area;
@@ -706,6 +794,7 @@ SectionForceDeformation*
 	theCopy->setTag(this->getTag());
 
 	theCopy->numFibers = numFibers;
+	theCopy->sizeFibers = numFibers;	
 
 	if (numFibers != 0) {
 		theCopy->theMaterials = new NDMaterial *[numFibers];
@@ -1214,6 +1303,7 @@ int
 
 			// create memory to hold material pointers and fiber data
 			numFibers = data(1);
+			sizeFibers = data(1);			
 			if (numFibers != 0) {
 				theMaterials = new NDMaterial *[numFibers];
 
@@ -1306,7 +1396,7 @@ Response*
 {
 	Response *theResponse =0;
 
-	if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+	if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
 		int key = numFibers;
 		int passarg = 2;
@@ -1329,7 +1419,7 @@ Response*
 				if (matTag == theMaterials[j]->getTag()) {
 					ySearch = matData[2*j];
 					dy = ySearch-yCoord;
-					closestDist = fabs(dy);
+					closestDist = dy*dy;
 					key = j;
 					break;
 				}
@@ -1339,7 +1429,7 @@ Response*
 				if (matTag == theMaterials[j]->getTag()) {
 					ySearch = matData[2*j];
 					dy = ySearch-yCoord;
-					distance = fabs(dy);
+					distance = dy*dy;
 					if (distance < closestDist) {
 						closestDist = distance;
 						key = j;
@@ -1358,13 +1448,13 @@ Response*
 
 			ySearch = matData[0];
 			dy = ySearch-yCoord;
-			closestDist = fabs(dy);
+			closestDist = dy*dy;
 			key = 0;
 			for (int j = 1; j < numFibers; j++) {
 				ySearch = matData[2*j];
 				dy = ySearch-yCoord;
 
-				distance = fabs(dy);
+				distance = dy*dy;
 				if (distance < closestDist) {
 					closestDist = distance;
 					key = j;
@@ -1384,16 +1474,17 @@ Response*
 			output.endTag();
 		}
 
-		return theResponse;
 	}
 
-	// If not a fiber response, call the base class method
-	return SectionForceDeformation::setResponse(argv, argc, output);
+	if (theResponse == 0)
+	  return SectionForceDeformation::setResponse(argv, argc, output);
+
+	return theResponse;
 }
 
 
 int 
-	NDFiberSectionWarping2d::getResponse(int responseID, Information &sectInfo)
+NDFiberSectionWarping2d::getResponse(int responseID, Information &sectInfo)
 {
 	// Just call the base class method ... don't need to define
 	// this function, but keeping it here just for clarity

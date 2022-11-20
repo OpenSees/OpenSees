@@ -65,7 +65,7 @@ algorithm Newton
 # DOF numberer
 numberer RCM
 
-# Cosntraint handler
+# Constraint handler
 constraints Plain 
 
 # System of equations solver

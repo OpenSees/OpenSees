@@ -144,7 +144,7 @@ void TzSimple1::getFarField(double z)
 /////////////////////////////////////////////////////////////////////
 void TzSimple1::getNearField(double zlast, double dz, double dz_old)
 {
-	// Limit "dz" step size if it is osillating and not shrinking.
+	// Limit "dz" step size if it is oscillating and not shrinking.
 	//
 	if(dz*dz_old < 0.0 && fabs(dz/dz_old) > 0.5) dz = -dz_old/2.0;
 

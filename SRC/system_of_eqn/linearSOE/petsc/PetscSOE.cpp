@@ -790,7 +790,7 @@ PetscSOE::setB(const Vector &v, double fact)
     if (v.Size() != size)
     {
       cerr << "WARNING BandGenLinSOE::setB() -";
-      cerr << " incomptable sizes " << size << " and " << v.Size() << endln;
+      cerr << " incompatible sizes " << size << " and " << v.Size() << endln;
       return -1;
     }
 

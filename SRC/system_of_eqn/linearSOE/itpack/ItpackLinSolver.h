@@ -68,7 +68,7 @@ class ItpackLinSolver : public LinearSOESolver
 	       FEM_ObjectBroker &theBroker);
   
  private:
-  // Sparse Ax=b represntation
+  // Sparse Ax=b representation
   ItpackLinSOE *theSOE;
   
   int *IA;

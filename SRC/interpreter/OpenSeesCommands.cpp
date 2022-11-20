@@ -70,6 +70,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TransformationConstraintHandler.h>
 #include <Newmark.h>
 #include <GimmeMCK.h>
+#include <HarmonicSteadyState.h>
 #include <ProfileSPDLinSolver.h>
 #include <ProfileSPDLinDirectSolver.h>
 #include <ProfileSPDLinSOE.h>
@@ -144,6 +145,7 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
+     theVariableTimeStepTransientAnalysis(0),
      thePFEMAnalysis(0),
      theAnalysisModel(0), theTest(0), numEigen(0), theDatabase(0),
      theBroker(), theTimer(), theSimulationInfo(), theMachineBroker(0),
@@ -208,6 +210,20 @@ OpenSeesCommands::getDomain()
     return theDomain;
 }
 
+ReliabilityDomain*
+OpenSeesCommands::getReliabilityDomain()
+{
+  if (reliability == 0) {
+    return 0;
+  }
+  return reliability->getDomain();
+}
+
+AnalysisModel** OpenSeesCommands::getAnalysisModel()
+{
+    return &theAnalysisModel;
+}
+
 void
 OpenSeesCommands::setSOE(LinearSOE* soe)
 {
@@ -256,7 +272,7 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    theNumberer = new DOF_Numberer(*theRCM);
 	}
 	if (theTransientIntegrator == 0) {
-	    theTransientIntegrator = new Newmark(0.5,0.25);
+        setIntegrator(new Newmark(0.5,0.25), true);
 	}
 	if (theSOE == 0) {
 	    ProfileSPDLinSolver *theSolver;
@@ -446,7 +462,7 @@ OpenSeesCommands::setStaticIntegrator(StaticIntegrator* integrator)
     }
 
     // set new one
-    theStaticIntegrator = integrator;
+    setIntegrator(integrator, false);
     if (integrator == 0) return;
 
     // set in analysis object
@@ -476,13 +492,28 @@ OpenSeesCommands::setTransientIntegrator(TransientIntegrator* integrator)
     }
 
     // set new one
-    theTransientIntegrator = integrator;
+    setIntegrator(integrator, true);
     if (integrator == 0) return;
 
     // set in analysis object
     if (theTransientAnalysis != 0) {
 	theTransientAnalysis->setIntegrator(*integrator);
     }
+}
+
+void OpenSeesCommands::setIntegrator(Integrator* inte,
+                                     bool transient) {
+  if (inte == 0) {
+    return;
+  }
+  if (transient) {
+    theTransientIntegrator = (TransientIntegrator*)inte;
+  } else {
+    theStaticIntegrator = (StaticIntegrator*)inte;
+  }
+  if (this->reliability != 0) {
+    this->reliability->setSensitivityAlgorithm(inte);
+  }
 }
 
 void
@@ -516,7 +547,7 @@ OpenSeesCommands::setAlgorithm(EquiSolnAlgo* algorithm)
 }
 
 void
-OpenSeesCommands::setStaticAnalysis()
+OpenSeesCommands::setStaticAnalysis(bool suppress)
 {
     // delete the old analysis
     if (theStaticAnalysis != 0) {
@@ -536,29 +567,39 @@ OpenSeesCommands::setStaticAnalysis()
 	theTest = new CTestNormUnbalance(1.0e-6,25,0);
     }
     if (theAlgorithm == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
 	opserr << " NewtonRaphson default will be used\n";
+      }
 	theAlgorithm = new NewtonRaphson(*theTest);
     }
     if (theHandler == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Static - no ConstraintHandler yet specified, \n";
 	opserr << " PlainHandler default will be used\n";
+      }
 	theHandler = new PlainHandler();
     }
     if (theNumberer == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Static - no Numberer specified, \n";
 	opserr << " RCM default will be used\n";
+      }
 	RCM* theRCM = new RCM(false);
 	theNumberer = new DOF_Numberer(*theRCM);
     }
     if (theStaticIntegrator == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Static - no Integrator specified, \n";
 	opserr << " StaticIntegrator default will be used\n";
-	theStaticIntegrator = new LoadControl(1, 1, 1, 1);
+      }
+    setIntegrator(new LoadControl(1, 1, 1, 1), false);
     }
     if (theSOE == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Static - no LinearSOE specified, \n";
 	opserr << " ProfileSPDLinSOE default will be used\n";
+      }
 	ProfileSPDLinSolver *theSolver;
 	theSolver = new ProfileSPDLinDirectSolver();
 	theSOE = new ProfileSPDLinSOE(*theSolver);
@@ -585,7 +626,7 @@ OpenSeesCommands::setStaticAnalysis()
 }
 
 int
-OpenSeesCommands::setPFEMAnalysis()
+OpenSeesCommands::setPFEMAnalysis(bool suppress)
 {
     // delete the old analysis
     if (theStaticAnalysis != 0) {
@@ -642,7 +683,7 @@ OpenSeesCommands::setPFEMAnalysis()
 	theNumberer = new DOF_Numberer(*theRCM);
     }
     if(theTransientIntegrator == 0) {
-	theTransientIntegrator = new PFEMIntegrator();
+        setIntegrator(new PFEMIntegrator(), true);
     }
     if(theSOE == 0) {
 	PFEMSolver* theSolver = new PFEMSolver();
@@ -673,7 +714,7 @@ OpenSeesCommands::setPFEMAnalysis()
 }
 
 void
-OpenSeesCommands::setVariableAnalysis()
+OpenSeesCommands::setVariableAnalysis(bool suppress)
 {
     // delete the old analysis
     if (theStaticAnalysis != 0) {
@@ -696,33 +737,43 @@ OpenSeesCommands::setVariableAnalysis()
     }
 
     if (theAlgorithm == 0) {
-	opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
+      if (!suppress) {
+	opserr << "WARNING analysis VariableTransient - no Algorithm yet specified, \n";
 	opserr << " NewtonRaphson default will be used\n";
+      }
 	theAlgorithm = new NewtonRaphson(*theTest);
     }
 
     if (theHandler == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
+      if (!suppress) {
+	opserr << "WARNING analysis VariableTransient dt tFinal - no ConstraintHandler\n";
 	opserr << " yet specified, PlainHandler default will be used\n";
+      }
 	theHandler = new PlainHandler();
     }
 
     if (theNumberer == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
+      if (!suppress) {
+	opserr << "WARNING analysis VariableTransient dt tFinal - no Numberer specified, \n";
 	opserr << " RCM default will be used\n";
+      }
 	RCM *theRCM = new RCM(false);
 	theNumberer = new DOF_Numberer(*theRCM);
     }
 
     if (theTransientIntegrator == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
+      if (!suppress) {
+	opserr << "WARNING analysis VariableTransient dt tFinal - no Integrator specified, \n";
 	opserr << " Newmark(.5,.25) default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+      }
+        setIntegrator(new Newmark(0.5, 0.25), true);
     }
 
     if (theSOE == 0) {
-	opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
+      if (!suppress) {
+	opserr << "WARNING analysis VariableTransient dt tFinal - no LinearSOE specified, \n";
 	opserr << " ProfileSPDLinSOE default will be used\n";
+      }
 	ProfileSPDLinSolver *theSolver;
 	theSolver = new ProfileSPDLinDirectSolver();
 	theSOE = new ProfileSPDLinSOE(*theSolver);
@@ -738,7 +789,7 @@ OpenSeesCommands::setVariableAnalysis()
 	 *theTransientIntegrator,
 	 theTest);
 
-    // set the pointer for variabble time step analysis
+    // set the pointer for variable time step analysis
     theTransientAnalysis = theVariableTimeStepTransientAnalysis;
 
     if (theEigenSOE != 0) {
@@ -748,7 +799,7 @@ OpenSeesCommands::setVariableAnalysis()
 }
 
 void
-OpenSeesCommands::setTransientAnalysis()
+OpenSeesCommands::setTransientAnalysis(bool suppress)
 {
     // delete the old analysis
     if (theStaticAnalysis != 0) {
@@ -768,29 +819,39 @@ OpenSeesCommands::setTransientAnalysis()
 	theTest = new CTestNormUnbalance(1.0e-6,25,0);
     }
     if (theAlgorithm == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
 	opserr << " NewtonRaphson default will be used\n";
+      }
 	theAlgorithm = new NewtonRaphson(*theTest);
     }
     if (theHandler == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Transient - no ConstraintHandler yet specified, \n";
 	opserr << " PlainHandler default will be used\n";
+      }
 	theHandler = new PlainHandler();
     }
     if (theNumberer == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Transient - no Numberer specified, \n";
 	opserr << " RCM default will be used\n";
+      }
 	RCM* theRCM = new RCM(false);
 	theNumberer = new DOF_Numberer(*theRCM);
     }
     if (theTransientIntegrator == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Transient - no Integrator specified, \n";
 	opserr << " TransientIntegrator default will be used\n";
-	theTransientIntegrator = new Newmark(0.5,0.25);
+      }
+    setIntegrator(new Newmark(0.5,0.25), true);
     }
     if (theSOE == 0) {
+      if (!suppress) {
 	opserr << "WARNING analysis Transient - no LinearSOE specified, \n";
 	opserr << " ProfileSPDLinSOE default will be used\n";
+      }
 	ProfileSPDLinSolver *theSolver;
 	theSolver = new ProfileSPDLinDirectSolver();
 	theSOE = new ProfileSPDLinSOE(*theSolver);
@@ -847,6 +908,7 @@ OpenSeesCommands::wipeAnalysis()
     theTransientIntegrator = 0;
     theStaticAnalysis = 0;
     theTransientAnalysis = 0;
+    theVariableTimeStepTransientAnalysis = 0;
     thePFEMAnalysis = 0;
     theTest = 0;
 
@@ -913,12 +975,6 @@ OpenSeesCommands::wipe()
     // wipe CyclicModel
     OPS_clearAllCyclicModel();
 
-    if (reliability != 0) {
-      ReliabilityDomain* theReliabilityDomain = reliability->getDomain();
-      if (theReliabilityDomain != 0) {
-	//theReliabilityDomain->clearAll();
-      }
-    }
 }
 
 void
@@ -956,6 +1012,27 @@ int OPS_SetIntOutput(int *numData, int*data, bool scalar)
     return interp->setInt(data, *numData, scalar);
 }
 
+int OPS_SetIntListsOutput(std::vector<std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
+int OPS_SetIntDictOutput(std::map<const char*, int>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
+int OPS_SetIntDictListOutput(std::map<const char*, std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
 int OPS_GetDoubleInput(int *numData, double *data)
 {
     if (cmds == 0) return 0;
@@ -971,11 +1048,43 @@ int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
     return interp->setDouble(data, *numData, scalar);
 }
 
+int OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
+int OPS_SetDoubleDictOutput(std::map<const char* ,double>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
+int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
 const char * OPS_GetString(void)
 {
     if (cmds == 0) return "Invalid String Input!";
     DL_Interpreter* interp = cmds->getInterpreter();
     const char* res = interp->getString();
+    if (res == 0) {
+	return "Invalid String Input!";
+    }
+    return res;
+}
+
+const char * OPS_GetStringFromAll(char* buffer, int len)
+{
+    if (cmds == 0) return "Invalid String Input!";
+    DL_Interpreter* interp = cmds->getInterpreter();
+    const char* res = interp->getStringFromAll(buffer, len);
     if (res == 0) {
 	return "Invalid String Input!";
     }
@@ -989,10 +1098,106 @@ int OPS_SetString(const char* str)
     return interp->setString(str);
 }
 
+int OPS_SetStringList(std::vector<const char*>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringLists(std::vector<std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringDict(std::map<const char*, const char*>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
+}
+
+ReliabilityDomain* OPS_GetReliabilityDomain(void) {
+  if (cmds == 0) return 0;
+  return cmds->getReliabilityDomain();
+}
+
+AnalysisModel**
+OPS_GetAnalysisModel(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getAnalysisModel();
+}
+
+EquiSolnAlgo** OPS_GetAlgorithm(void) {
+    if (cmds == 0) return 0;
+    return cmds->getAlgorithmPointer();
+}
+
+ConstraintHandler** OPS_GetHandler(void) {
+    if (cmds == 0) return 0;
+    return cmds->getHandlerPointer();
+}
+
+DOF_Numberer** OPS_GetNumberer(void) {
+    if (cmds == 0) return 0;
+    return cmds->getNumbererPointer();
+}
+
+LinearSOE** OPS_GetSOE(void) {
+    if (cmds == 0) return 0;
+    return cmds->getSOEPointer();
+}
+
+EigenSOE** OPS_GetEigenSOE(void) {
+    if (cmds == 0) return 0;
+    return cmds->getEigenSOEPointer();
+}
+
+StaticAnalysis** OPS_GetStaticAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getStaticAnalysisPointer();
+}
+
+DirectIntegrationAnalysis** OPS_GetTransientAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getTransientAnalysisPointer();
+}
+
+VariableTimeStepDirectIntegrationAnalysis**
+OPS_GetVariableTimeStepTransientAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getVariableAnalysisPointer();
+}
+
+StaticIntegrator** OPS_GetStaticIntegrator(void) {
+    if (cmds == 0) return 0;
+    return cmds->getStaticIntegratorPointer();
+}
+
+TransientIntegrator** OPS_GetTransientIntegrator(void) {
+    if (cmds == 0) return 0;
+    return cmds->getTransientIntegratorPointer();
+}
+
+ConvergenceTest** OPS_GetTest(void) {
+    if (cmds == 0) return 0;
+    return cmds->getCTestPointer();
 }
 
 int OPS_GetNDF()
@@ -1070,7 +1275,7 @@ int OPS_model()
     // ndm
     const char* ndmopt = OPS_GetString();
     if (strcmp(ndmopt,"-ndm") != 0) {
-	opserr<<"WARNING frist option must be -ndm\n";
+	opserr<<"WARNING first option must be -ndm\n";
 	return -1;
     }
     int numdata = 1;
@@ -1188,11 +1393,11 @@ int OPS_System()
 	    if(strcmp(type, "-compressible") == 0) {
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
-
+#ifdef _MUMPS
 	    } else if(strcmp(type, "-mumps") == 0) {
 		
 	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
-
+#endif
 	    } else if (strcmp(type, "-umfpack") == 0) {
 	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
         }
@@ -1220,10 +1425,11 @@ int OPS_System()
 	theSOE = (LinearSOE*)OPS_FullGenLinLapackSolver();
 
     } else if (strcmp(type,"Petsc") == 0) {
-
+	    
+#ifdef _MUMPS
     } else if (strcmp(type,"Mumps") == 0) {
         theSOE = (LinearSOE*)OPS_MumpsSolver();
-
+#endif
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
     	return -1;
@@ -1416,6 +1622,9 @@ int OPS_Integrator()
     } else if (strcmp(type,"MinUnbalDispNorm") == 0) {
 	si = (StaticIntegrator*)OPS_MinUnbalDispNorm();
 
+    } else if (strcmp(type,"HarmonicSteadyState") == 0 || strcmp(type,"HarmonicSS") == 0) {
+	si = (StaticIntegrator*)OPS_HarmonicSteadyState();
+
     } else if (strcmp(type,"Newmark") == 0) {
 	ti = (TransientIntegrator*)OPS_Newmark();
 
@@ -1486,10 +1695,10 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
 
     } else if (strcmp(type,"HHTHSFixedNumIter") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter();
 
     } else if (strcmp(type,"HHTHSFixedNumIter_TP") == 0) {
-	ti = (TransientIntegrator*)OPS_HHTHSIncrReduct_TP();
+	ti = (TransientIntegrator*)OPS_HHTHSFixedNumIter_TP();
 
     } else if (strcmp(type,"GeneralizedAlpha") == 0) {
 	ti = (TransientIntegrator*)OPS_GeneralizedAlpha();
@@ -1540,7 +1749,7 @@ int OPS_Integrator()
 	ti = (TransientIntegrator*)OPS_CentralDifferenceNoDamping();
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
-    ti = (TransientIntegrator*)OPS_Explicitdifference();
+    ti = (TransientIntegrator*)OPS_ExplicitDifference();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
@@ -1595,6 +1804,8 @@ int OPS_Algorithm()
     } else if (strcmp(type, "PeriodicNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_PeriodicNewton();
 
+    } else if (strcmp(type, "ExpressNewton") == 0) {
+	theAlgo = (EquiSolnAlgo*) OPS_ExpressNewton();	
 
     } else if (strcmp(type, "Broyden") == 0) {
 	theAlgo = (EquiSolnAlgo*)OPS_Broyden();
@@ -1619,101 +1830,186 @@ int OPS_Algorithm()
     return 0;
 }
 
-int OPS_Analysis()
-{
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-    	opserr << "WARNING insufficient args: analysis type ...\n";
-    	return -1;
-    }
+int OPS_Analysis() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "WARNING insufficient args: analysis type ...\n";
+    return -1;
+  }
 
-    const char* type = OPS_GetString();
-
-    // create analysis
-    if (strcmp(type, "Static") == 0) {
-	if (cmds != 0) {
-	    cmds->setStaticAnalysis();
-	}
-    } else if (strcmp(type, "Transient") == 0) {
-	if (cmds != 0) {
-	    cmds->setTransientAnalysis();
-	}
-    } else if (strcmp(type, "PFEM") == 0) {
-	if (cmds != 0) {
-	    if (cmds->setPFEMAnalysis() < 0) {
-		return -1;
-	    }
-	}
-    } else if (strcmp(type, "VariableTimeStepTransient") == 0 ||
-	       (strcmp(type,"TransientWithVariableTimeStep") == 0) ||
-	       (strcmp(type,"VariableTransient") == 0)) {
-	if (cmds != 0) {
-	    cmds->setVariableAnalysis();
-	}
-
+  const char* type = OPS_GetString();
+  bool suppressWarnings = false;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* opt = OPS_GetString();
+    if (strcmp(opt, "-noWarnings") == 0) {
+        suppressWarnings = true;
     } else {
-	opserr<<"WARNING unknown analysis type "<<type<<"\n";
+        OPS_ResetCurrentInputArg(-1);
+    }
+  }
+
+  // create analysis
+  if (strcmp(type, "Static") == 0) {
+    if (cmds != 0) {
+      cmds->setStaticAnalysis(suppressWarnings);
+    }
+  } else if (strcmp(type, "Transient") == 0) {
+    if (cmds != 0) {
+      cmds->setTransientAnalysis(suppressWarnings);
+    }
+  } else if (strcmp(type, "PFEM") == 0) {
+    if (cmds != 0) {
+      if (cmds->setPFEMAnalysis(suppressWarnings) < 0) {
+        return -1;
+      }
+    }
+  } else if (strcmp(type, "VariableTimeStepTransient") == 0 ||
+             (strcmp(type, "TransientWithVariableTimeStep") ==
+              0) ||
+             (strcmp(type, "VariableTransient") == 0)) {
+    if (cmds != 0) {
+      cmds->setVariableAnalysis(suppressWarnings);
     }
 
-    return 0;
+  } else {
+    opserr << "WARNING unknown analysis type " << type << "\n";
+  }
+
+  return 0;
 }
 
-int OPS_analyze()
-{
-    if (cmds == 0) return 0;
+int OPS_analyze() {
+  if (cmds == 0) return 0;
 
-    int result = 0;
-    StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
-    TransientAnalysis* theTransientAnalysis = cmds->getTransientAnalysis();
-    PFEMAnalysis* thePFEMAnalysis = cmds->getPFEMAnalysis();
+  int result = 0;
+  StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
+  TransientAnalysis* theTransientAnalysis =
+      cmds->getTransientAnalysis();
+  PFEMAnalysis* thePFEMAnalysis = cmds->getPFEMAnalysis();
 
-    if (theStaticAnalysis != 0) {
-	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING insufficient args: analyze numIncr ...\n";
-	    return -1;
-	}
-	int numIncr;
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &numIncr) < 0) return -1;
-	result = theStaticAnalysis->analyze(numIncr);
-
-    } else if (thePFEMAnalysis != 0) {
-
-	result = thePFEMAnalysis->analyze();
-
-    } else if (theTransientAnalysis != 0) {
-	if (OPS_GetNumRemainingInputArgs() < 2) {
-	    opserr << "WARNING insufficient args: analyze numIncr deltaT ...\n";
-	    return -1;
-	}
-	int numIncr;
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &numIncr) < 0) return -1;
-
-	double dt;
-	if (OPS_GetDoubleInput(&numdata, &dt) < 0) return -1;
-	ops_Dt = dt;
-
-	result = theTransientAnalysis->analyze(numIncr, dt);
-    } else {
-	opserr << "WARNING No Analysis type has been specified \n";
-	return -1;
+  if (theStaticAnalysis != 0) {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+      opserr << "WARNING insufficient args: analyze numIncr "
+                "<-noFlush> ...\n";
+      return -1;
     }
-
-    if (result < 0) {
-	opserr << "OpenSees > analyze failed, returned: " << result << " error flag\n";
-    }
-
+    int numIncr;
     int numdata = 1;
-    if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
-	opserr<<"WARNING failed to set output\n";
-	return -1;
+    if (OPS_GetIntInput(&numdata, &numIncr) < 0) {
+      opserr << "WARNING: invalid numIncr\n";
+      return -1;
     }
 
-    return 0;
+    bool flush = true;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+    result = theStaticAnalysis->analyze(numIncr, flush);
+
+  } else if (thePFEMAnalysis != 0) {
+    bool flush = true;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+    result = thePFEMAnalysis->analyze(flush);
+
+  } else if (theTransientAnalysis != 0) {
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING insufficient args: analyze numIncr deltaT "
+                "...\n";
+      return -1;
+    }
+    int numIncr;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &numIncr) < 0) {
+      opserr << "WARNING: invalid numIncr\n";
+      return -1;
+    }
+
+    double dt;
+    if (OPS_GetDoubleInput(&numdata, &dt) < 0) {
+      opserr << "WARNING: invalid dt\n";
+      return -1;
+    }
+    ops_Dt = dt;
+
+    if (OPS_GetNumRemainingInputArgs() == 0) {
+      result = theTransientAnalysis->analyze(numIncr, dt, true);
+    } else if (OPS_GetNumRemainingInputArgs() == 1) {
+      bool flush = true;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-noFlush") == 0) {
+            flush = false;
+        }
+      }
+      result = theTransientAnalysis->analyze(numIncr, dt, flush);
+
+    } else if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "WARNING insufficient args for variable transient "
+                "need: dtMin dtMax Jd \n";
+      opserr << "n_args" << OPS_GetNumRemainingInputArgs() << "\n";
+      return -1;
+
+    } else {
+      double dtMin;
+      if (OPS_GetDoubleInput(&numdata, &dtMin) < 0) {
+        opserr << "WARNING: invalid dtMin\n";
+        return -1;
+      }
+      double dtMax;
+      if (OPS_GetDoubleInput(&numdata, &dtMax) < 0) {
+        opserr << "WARNING: invalid dtMax\n";
+        return -1;
+      }
+      int Jd;
+      if (OPS_GetIntInput(&numdata, &Jd) < 0) {
+        opserr << "WARNING: invalid Jd\n";
+        return -1;
+      }
+      bool flush = true;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-noFlush") == 0) {
+            flush = false;
+        }
+      }
+      // Included getVariableAnalysis here as dont need it except
+      // for here. and analyze() is called a lot.
+      VariableTimeStepDirectIntegrationAnalysis*
+          theVariableTimeStepTransientAnalysis =
+              cmds->getVariableAnalysis();
+      result = theVariableTimeStepTransientAnalysis->analyze(
+          numIncr, dt, dtMin, dtMax, Jd, flush);
+    }
+  } else {
+    opserr << "WARNING No Analysis type has been specified \n";
+    return -1;
+  }
+
+  if (result < 0) {
+    opserr << "OpenSees > analyze failed, returned: " << result
+           << " error flag\n";
+  }
+
+  int numdata = 1;
+  if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+    opserr << "WARNING failed to set output\n";
+    return -1;
+  }
+
+  return 0;
 }
 
 int OPS_eigenAnalysis()
 {
+    static bool warning_displayed = false;
+
     // make sure at least one other argument to contain type of system
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING want - eigen <type> numModes?\n";
@@ -1758,16 +2054,21 @@ int OPS_eigenAnalysis()
 		 (strcmp(type,"-symmBandLapackEigen") == 0))
 	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
 
-	else if ((strcmp(type,"fullGenLapack") == 0) ||
-		 (strcmp(type,"-fullGenLapack") == 0) ||
-		 (strcmp(type,"fullGenLapackEigen") == 0) ||
-		 (strcmp(type,"-fullGenLapackEigen") == 0))
-	    typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    else if ((strcmp(type, "fullGenLapack") == 0) ||
+                (strcmp(type, "-fullGenLapack") == 0) ||
+                (strcmp(type, "fullGenLapackEigen") == 0) ||
+                (strcmp(type, "-fullGenLapackEigen") == 0)) {
+	    if (!warning_displayed) {
+            opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
+            warning_displayed = true;
+		}
+        typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+    }
 
-	else {
-	    opserr << "eigen - unknown option specified " << type << endln;
-	}
-
+    else {
+        opserr << "eigen - unknown option specified " << type
+                << endln;
+    }
     }
 
     // check argv[loc] for number of modes
@@ -1778,8 +2079,8 @@ int OPS_eigenAnalysis()
 	return -1;
     }
 
-    if (numEigen < 0) {
-	opserr << "WARNING eigen numModes?  - illegal numModes\n";
+    if (numEigen < 1) {
+	opserr << "WARNING eigen numModes?  - illegal numModes: " << numEigen << "\n";
 	return -1;
     }
     cmds->setNumEigen(numEigen);
@@ -1814,6 +2115,8 @@ int OPS_initializeAnalysis()
     if (cmds == 0) return 0;
     DirectIntegrationAnalysis* theTransientAnalysis =
 	cmds->getTransientAnalysis();
+	VariableTimeStepDirectIntegrationAnalysis* theVariableTimeStepTransientAnalysis =
+	cmds->getVariableAnalysis();
 
     StaticAnalysis* theStaticAnalysis =
 	cmds->getStaticAnalysis();
@@ -1938,9 +2241,9 @@ int OPS_printB()
     }
     if (theSOE != 0) {
 	if (theStaticIntegrator != 0) {
-	    theStaticIntegrator->formTangent();
+	    theStaticIntegrator->formUnbalance();
 	} else if (theTransientIntegrator != 0) {
-	    theTransientIntegrator->formTangent(0);
+	    theTransientIntegrator->formUnbalance();
 	}
 
 	Vector &b = const_cast<Vector&>(theSOE->getB());
@@ -2601,7 +2904,7 @@ int OPS_modalDamping()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
@@ -2655,7 +2958,7 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARINING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
@@ -2743,15 +3046,15 @@ int OPS_neesMetaData()
 
 int OPS_defaultUnits()
 {
-    if (OPS_GetNumRemainingInputArgs() < 8) {
-        opserr << "WARNING defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+        opserr << "WARNING defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     const char *force = 0;
     const char *length = 0;
     const char *time = 0;
-    const char *temperature = 0;
+    const char *temperature = "N/A";
 
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char* unitType = OPS_GetString();
@@ -2774,20 +3077,19 @@ int OPS_defaultUnits()
             temperature = OPS_GetString();
         }
         else {
-            opserr << "WARNING defaultUnits - unrecognized unit: " << unitType << " want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+            opserr << "WARNING defaultUnits - unrecognized unit: " << unitType << " want: defaultUnits -Force type? -Length type? -Time type?\n";
             return -1;
         }
     }
 
-    if (length == 0 || force == 0 || time == 0 || temperature == 0) {
-        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+    if (length == 0 || force == 0 || time == 0) {
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type?\n";
         return -1;
     }
 
     double lb, kip, n, kn, mn, kgf, tonf;
     double in, ft, mm, cm, m;
     double sec, msec;
-    double F, C;
 
     if ((strcmp(force, "lb") == 0) || (strcmp(force, "lbs") == 0)) {
         lb = 1.0;
@@ -2805,10 +3107,10 @@ int OPS_defaultUnits()
         lb = 0.0000044482216152605;
     }
     else if ((strcmp(force, "kgf") == 0)) {
-        lb = 9.80665*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665;
     }
     else if ((strcmp(force, "tonf") == 0)) {
-        lb = 9.80665 / 1000.0*4.4482216152605;
+        lb = 4.4482216152605 / 9.80665 / 1000.0;
     }
     else {
         lb = 1.0;
@@ -2849,33 +3151,19 @@ int OPS_defaultUnits()
         return -1;
     }
 
-    if ((strcmp(temperature, "F") == 0) || (strcmp(temperature, "degF") == 0)) {
-        F = 1.0;
-    }
-    else if ((strcmp(temperature, "C") == 0) || (strcmp(temperature, "degC") == 0)) {
-        F = 9.0 / 5.0 + 32.0;
-    }
-    else {
-        F = 1.0;
-        opserr << "defaultUnits - unknown temperature type, valid options: F, C\n";
-        return -1;
-    }
-
     kip = lb / 0.001;
     n = lb / 4.4482216152605;
     kn = lb / 0.0044482216152605;
     mn = lb / 0.0000044482216152605;
-    kgf = lb / (9.80665*4.4482216152605);
-    tonf = lb / (9.80665 / 1000.0*4.4482216152605);
+    kgf = lb / (4.4482216152605/9.80665);
+    tonf = lb / (4.4482216152605/9.80665/1000.0);
 
     ft = in * 12.0;
-    mm = in / 25.44;
+    mm = in / 25.4;
     cm = in / 2.54;
     m = in / 0.0254;
 
     msec = sec * 0.001;
-
-    C = (F - 32.0)*5.0 / 9.0;
 
     char string[50];
     DL_Interpreter* theInter = cmds->getInterpreter();
@@ -2902,11 +3190,6 @@ int OPS_defaultUnits()
 
     sprintf(string, "sec = %.18e", sec);   theInter->runCommand(string);
     sprintf(string, "msec = %.18e", msec);   theInter->runCommand(string);
-
-    sprintf(string, "F = %.18e", F);   theInter->runCommand(string);
-    sprintf(string, "degF = %.18e", F);   theInter->runCommand(string);
-    sprintf(string, "C = %.18e", C);   theInter->runCommand(string);
-    sprintf(string, "degC = %.18e", C);   theInter->runCommand(string);
 
     double g = 32.174049*ft / (sec*sec);
     sprintf(string, "g = %.18e", g);   theInter->runCommand(string);
@@ -3054,6 +3337,28 @@ int OPS_systemSize()
     if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_domainCommitTag() {
+    if (cmds == 0) {
+        return 0;
+    }
+
+    int commitTag = cmds->getDomain()->getCommitTag();
+    int numdata = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetIntInput(&numdata, &commitTag) < 0) {
+            opserr << "WARNING: failed to get commitTag\n";
+            return -1;
+        }
+        cmds->getDomain()->setCommitTag(commitTag);
+    }
+    if (OPS_SetIntOutput(&numdata, &commitTag, true) < 0) {
+        opserr << "WARNING failed to set commitTag\n";
+        return 0;
     }
 
     return 0;

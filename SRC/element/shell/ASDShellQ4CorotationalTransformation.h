@@ -33,7 +33,7 @@
 #include <ASDShellQ4Transformation.h>
 
 // this is experimental: it fits the corotational frame following the polar
-// decomposition rather than the 1-2 side allignement as per Felippa's work
+// decomposition rather than the 1-2 side alignment as per Felippa's work
 #define USE_POLAR_DECOMP_ALLIGN
 
 /** \brief ASDShellQ4CorotationalTransformation
@@ -119,11 +119,15 @@ public:
         }
     }
 
-    virtual void setDomain(Domain* domain, const ID& node_ids)
+    virtual void setDomain(Domain* domain, const ID& node_ids, bool initialized)
     {
         // call base class setDomain to
         // get nodes and save initial displacements and rotations
-        ASDShellQ4Transformation::setDomain(domain, node_ids);
+        ASDShellQ4Transformation::setDomain(domain, node_ids, initialized);
+
+        // quick return
+        if (domain == nullptr || initialized)
+            return;
 
         // init state variables
         revertToStart();
@@ -177,7 +181,7 @@ public:
         // reference coordinate system
         ASDShellQ4LocalCoordinateSystem a = createReferenceCoordinateSystem();
 
-        // compute nodal positions at current configuration removing intial displacements if any
+        // compute nodal positions at current configuration removing initial displacements if any
         std::array<Vector3Type, 4> def = {
             Vector3Type(m_nodes[0]->getCrds()),
             Vector3Type(m_nodes[1]->getCrds()),
@@ -446,7 +450,8 @@ public:
 
         // 9*4 -> 9 quaternions +
         auto lamq = [&v, &pos](QuaternionType& x) {
-            x = QuaternionType(v(pos++), v(pos++), v(pos++), v(pos++));
+            x = QuaternionType(v(pos), v(pos+1), v(pos+2), v(pos+3));
+            pos += 4;
         };
         lamq(m_Q0);
         for (int i = 0; i < 4; i++)

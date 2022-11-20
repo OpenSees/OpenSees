@@ -56,7 +56,7 @@ CompositeResponse::addResponse(Response *nextResponse)
 
   //
   // check valid type double, Vector, int, ID only
-  // resize theType accordiingly (vector or ID)
+  // resize theType accordingly (vector or ID)
   //
 
   Information&otherType = nextResponse->getInformation();
@@ -70,7 +70,7 @@ CompositeResponse::addResponse(Response *nextResponse)
     }
     
     if (myInfo.theType != VectorType) {
-      opserr << "WARNING: CompositeResponse::addResponse() - mismatching type, no responses will be addeed\n";
+      opserr << "WARNING: CompositeResponse::addResponse() - mismatching type, no responses will be added\n";
       return -1;
     }
     
@@ -92,7 +92,7 @@ CompositeResponse::addResponse(Response *nextResponse)
     }
     
     if (myInfo.theType != IdType) {
-      opserr << "WARNING: CompositeResponse::addResponse() - mismatching type, no responses will be addeed\n";
+      opserr << "WARNING: CompositeResponse::addResponse() - mismatching type, no responses will be added\n";
       return -1;
     }
     

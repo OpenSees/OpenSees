@@ -61,7 +61,7 @@
 void* OPS_GradientInelasticBeamColumn3d()
 {
 	// Necessary Arguments
-	if (OPS_GetNumRemainingInputArgs() < 11) {
+	if (OPS_GetNumRemainingInputArgs() < 6) {
 		opserr << "WARNING! gradientInelasticBeamColumn3d - insufficient arguments\n" <<
 			"         Want: eleTag? iNode? jNode? transfTag? integrationTag? lc?\n" <<
 			"         <-constH> <-iter maxIter? minTol? maxTol?> <-corControl maxEpsInc? maxPhiInc?>\n";
@@ -89,13 +89,15 @@ void* OPS_GradientInelasticBeamColumn3d()
 	int transfTag = iData[3];
 	int integrTag = iData[4];
 
-	double LC;
+	double lc;
 	numData = 1;
-	if (OPS_GetDoubleInput(&numData, &LC) < 0) {
-		opserr << "WARNING! gradientInelasticBeamColumn3d - invalid lc\n";
+	if (OPS_GetDoubleInput(&numData, &lc) < 0) {
+		opserr << "WARNING! gradientInelasticBeamColumn2d - invalid double input\n";
 		return 0;
 	}
-
+	
+	double lam1 = 0.1, lam2 = 0.1;	// would not affect the results
+	
 	// Optional Arguments
 	int maxIter = 50;
 	double minTol = 1E-10, maxTol = 1E-8;
@@ -172,8 +174,8 @@ void* OPS_GradientInelasticBeamColumn3d()
 	const ID& secTags = theRule->getSectionTags();
 	int numIntegrPoints = secTags.Size();
 
-	for (int i = 2; i < numIntegrPoints; i++) {
-		if (secTags(i) == secTags(i - 1)) {
+	for (int i = 2; i < numIntegrPoints - 1; i++) {
+		if (secTags(i) != secTags(i - 1)) {
 			opserr << "WARNING! gradientInelasticBeamColumn3d - internal integration points should have identical tags\n"
 				<< "continued using section tag of integration point 2 for all internal integration points\n";
 			return 0;
@@ -199,7 +201,7 @@ void* OPS_GradientInelasticBeamColumn3d()
 	}
 
 	Element* theEle = new GradientInelasticBeamColumn3d(eleTag, nodeTagI, nodeTagJ, numIntegrPoints, &endSection1, &intSection, &endSection2,
-		0.01, 0.01, *beamIntegr, *theTransf, LC, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
+		lam1, lam2, *beamIntegr, *theTransf, lc, minTol, maxTol, maxIter, constH, correctionControl, maxEpsInc, maxPhiInc);
 
 	return theEle;
 }
@@ -807,8 +809,8 @@ GradientInelasticBeamColumn3d::revertToLastCommit(void)
 		sections[i]->setTrialSectionDeformation(d_sec[i]);
 	}
 
-	d_tot = d_tot_commit;
-	d_nl_tot = d_nl_tot_commit;
+	*d_tot = *d_tot_commit;
+	*d_nl_tot = *d_nl_tot_commit;
 
 	// Revert Coordinate Transformation Object to Last Committed State
 	if ((err = crdTransf->revertToLastCommit()))
@@ -1559,32 +1561,11 @@ GradientInelasticBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 int
 GradientInelasticBeamColumn3d::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** displayModes, int numModes)
 {
-
 	static Vector v1(3);
 	static Vector v2(3);
 
-	if (displayMode >= 0) {
-
-		theNodes[0]->getDisplayCrds(v1, fact);
-		theNodes[1]->getDisplayCrds(v2, fact);
-
-	}
-	else {
-
-		theNodes[0]->getDisplayCrds(v1, 0.);
-		theNodes[1]->getDisplayCrds(v2, 0.);
-
-		// add eigenvector values
-		int mode = displayMode * -1;
-		const Matrix& eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix& eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 3; i++) {
-				v1(i) += eigen1(i, mode - 1) * fact;
-				v2(i) += eigen2(i, mode - 1) * fact;
-			}
-		}
-	}
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
 	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }

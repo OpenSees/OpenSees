@@ -46,18 +46,21 @@ class DriftRecorder: public Recorder
 		Domain &theDomain, 
 		OPS_Stream &theHandler,
 		bool echoTime = false,
-		double dT = 0.0);
+		double dT = 0.0,
+		double relDeltaTTol = 0.00001);
 
   DriftRecorder(const ID &ndI, const ID &ndJ, int dof, int perpDirn,
 		Domain &theDomain, 
 		OPS_Stream &theHandler,
 		bool echoTime = false,
-		double dT = 0.0);
+		double dT = 0.0,
+		double relDeltaTTol = 0.00001);
   
   ~DriftRecorder();
 
   int record(int commitTag, double timeStamp);
   int restart(void);    
+  int flush(void);    
 
   int setDomain(Domain &theDomain);
   int sendSelf(int commitTag, Channel &theChannel);  
@@ -87,6 +90,7 @@ class DriftRecorder: public Recorder
   bool echoTimeFlag;   // flag indicating whether time to be included in o/p
   
   double deltaT, nextTimeStampToRecord;
+  double relDeltaTTol;
 };
 
 #endif

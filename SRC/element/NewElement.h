@@ -1,36 +1,36 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
-** ****************************************************************** */
-                                                                        
-// $Revision: 1.7 $
-// $Date: 2007-02-02 01:30:47 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/NewElement.h,v $
-                                                                        
 #ifndef NewElement_h
 #define NewElement_h
 
+/********************************************************************************
+(C) Copyright 2001-2022, The Regents of the University of California    
+All Rights Reserved.                                               
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list
+of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or other
+materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+
+******************************************************************************* */
+
+
 // Written: fmk 
 // Created: 08/01
-//
-// Description: This file contains the class definition for NewElement. 
-//
-// What: "@(#) NewElement.h, revA"
 
 #include <Element.h>
 #include <Matrix.h>
@@ -48,7 +48,7 @@ class NewElement : public Element
     NewElement();    
     ~NewElement();
 
-	const char *getClassType(void) const {return "NewElement";};
+    const char *getClassType(void) const {return "NewElement";};
 
     // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
@@ -68,11 +68,7 @@ class NewElement : public Element
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
 
-    void zeroLoad(void);	
-    int addLoad(const Vector &addP);
-    int addInertiaLoadToUnbalance(const Vector &accel);
     const Vector &getResistingForce(void);
-    const Vector &getResistingForceIncInertia(void);            
 
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
@@ -84,13 +80,10 @@ class NewElement : public Element
     Response *setResponse(const char **argv, int argc, OPS_Stream &);
     int getResponse(int responseID, Information &eleInformation);
 
-    int setParameter (const char **argv, int argc, Parameter &param);
-    int updateParameter (int parameterID, Information &info);
-
   protected:
     
   private:
-    ID  connectedExternalNodes;   // contains the tags of the end nodes
+    ID  theNodeTags;   // contains the tags of the end nodes
     Matrix theMatrix;             // matrix to return stiff, damp & mass
     Vector theVector;             // vector to return the residual
 };

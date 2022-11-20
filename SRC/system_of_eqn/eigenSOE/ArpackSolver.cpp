@@ -44,7 +44,10 @@
 #include <ArpackSolver.h>
 #include <ArpackSOE.h>
 #include <LinearSOE.h>
+
 #include <math.h>
+#include <f2c.h>
+
 #include <stdio.h>
 #include <AnalysisModel.h>
 #include <DOF_GrpIter.h>
@@ -103,16 +106,7 @@ extern "C" int  DSAUPD(int *ido, char* bmat,
 		       int *ldv,
 		       int *iparam, int *ipntr, double *workd, double *workl,
 		       int *lworkl, int *info);
-#if _DLL
-extern "C" int  DSEUPD(bool* rvec, char* howmny,
-	long int* select, double* d, double* z,
-	int* ldz, double* sigma, char* bmat,
-	int* n, char* which,
-	int* nev, double* tol, double* resid, int* ncv,
-	double* v,
-	int* ldv, int* iparam, int* ipntr, double* workd,
-	double* workl, int* lworkl, int* info);
-#else
+
 extern "C" int  DSEUPD(bool *rvec, char *howmny,
 		       logical *select, double *d, double *z,
 		       int *ldz, double *sigma, char *bmat,
@@ -121,7 +115,6 @@ extern "C" int  DSEUPD(bool *rvec, char *howmny,
 		       double *v,
 		       int *ldv, int *iparam, int *ipntr, double *workd, 
 		       double *workl, int *lworkl, int *info);
-#endif
 #else
 
 extern "C" int dsaupd_(int *ido, char* bmat, int *n, char *which, int *nev, 
@@ -183,11 +176,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     eigenvalues = new double[nev];
     eigenvectors = new double[n * nev];
     resid = new double[n];
-#if _DLL
-	select = new long int[ncv];
-#else
-	select = new logical[ncv];
-#endif
+    select = new int[ncv];
 
     for (int i=0; i<lworkl+1; i++)
 	   workl[i] = 0;
@@ -200,7 +189,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     numModesMax = numModes;
   }
 
-  static char which[3];
+  char which[3];
   if (findSmallest == true) {
     strcpy(which, "LM");
   }  else {
@@ -315,7 +304,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "NCV must be greater than NEV and less than or equal to N.\n";
       break;
     case -4:
-      opserr << "The maximum number of Arnoldi update iterations allowed";
+      opserr << "The maximum number of Arnoldi update iterations allowed\n";
       break;
     case -5: 
       opserr << "WHICH must be one of 'LM', 'SM', 'LA', 'SA' or 'BE'.\n";
@@ -327,7 +316,7 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "Length of private work array WORKL is not sufficient.\n";
       break;
     case -8: 
-      opserr << "Error return from trid. eigenvalue calculation";
+      opserr << "Error return from trid. eigenvalue calculation\n";
       opserr << "Informatinal error from LAPACK routine dsteqr.\n";
       break;
     case -9: 
@@ -346,11 +335,9 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       opserr << "NEV and WHICH = 'BE' are incompatible.\n";
       break;
     case -9999:
-      opserr << "Could not build an Arnoldi factorization.";
-      opserr << "IPARAM(5) the size of the current Arnoldi factorization: is ";
-      opserr << iparam[4];
-      opserr << "factorization. The user is advised to check that";
-      opserr << "enough workspace and array storage has been allocated.\n";
+      opserr << "Could not build an Arnoldi factorization.\n";
+      opserr << "IPARAM(5) - the size of the current Arnoldi factorization is " << iparam[4] << ".\n";
+      opserr << "The user is advised to check that enough workspace and array storage have been allocated.\n";
       break;
     default:
       opserr << "unrecognised return value\n";
@@ -379,11 +366,11 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       unsigned int sizeBmat =1;
       unsigned int sizeHowmany =1;
       
-      DSEUPD(&rvec, &howmy, select, eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
+      DSEUPD(&rvec, &howmy, (logical*)(select), eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
 	     &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 	     workl, &lworkl, &info);
 #else
-      dseupd_(&rvec, &howmy, select, eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
+      dseupd_(&rvec, &howmy, (logical*)(select), eigenvalues, eigenvectors, &ldv, &sigma, &bmat, &n, which,
 	      &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 	      workl, &lworkl, &info);
 #endif

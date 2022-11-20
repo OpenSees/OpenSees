@@ -60,6 +60,8 @@ public:
     int revertToLastStep(void);
     int update(const Vector &aiPlusOne);
 
+    double getCFactor(void) {return c;}
+
     const Vector &getVel(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);

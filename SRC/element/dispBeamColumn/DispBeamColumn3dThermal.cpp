@@ -919,7 +919,7 @@ else if (type == LOAD_TAG_NodalThermalAction) {
 	 for(int i =0; i<9;i++){
 		 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 			 opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 		 else{
 			 (*Loc)(i)=data0(2*i+1);
@@ -937,7 +937,7 @@ else if (type == LOAD_TAG_NodalThermalAction) {
 	for(int i =0; i<5;i++){
 	 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 		opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			  << "incompatiable loc input for datapoint "<< i << endln;
+			  << "incompatible loc input for datapoint "<< i << endln;
 	 }else{
 		 //for loc
 		(*Loc)(i)=data0(2*i+1);
@@ -1596,32 +1596,13 @@ DispBeamColumn3dThermal::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumn3dThermal::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
-	static Vector v1(3);
-	static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-	if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-		theNodes[0]->getDisplayCrds(v1, fact);
-		theNodes[1]->getDisplayCrds(v2, fact);
-
-	}
-	else {
-
-		theNodes[0]->getDisplayCrds(v1, 0.);
-		theNodes[1]->getDisplayCrds(v2, 0.);
-
-		// add eigenvector values
-		int mode = displayMode * -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 3; i++) {
-				v1(i) += eigen1(i, mode - 1)*fact;
-				v2(i) += eigen2(i, mode - 1)*fact;
-			}
-		}
-	}
-	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*

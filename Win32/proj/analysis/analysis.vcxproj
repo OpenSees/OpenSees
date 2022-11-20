@@ -114,6 +114,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\EQPath.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\ResponseSpectrumAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h" />

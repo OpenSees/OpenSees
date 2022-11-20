@@ -80,7 +80,7 @@ Actor::~Actor()
 
 
 // void AddMethod(int tag, int (*fp)()):
-//	Method to add a function to the list of avaiable actor methods.
+//	Method to add a function to the list of available actor methods.
 //	The function will be identified as tag, it is a function with
 //	no args that returns an int.
 

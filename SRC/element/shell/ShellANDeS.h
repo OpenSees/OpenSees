@@ -106,6 +106,8 @@ public:
 
     ~ShellANDeS();
 
+    const char *getClassType(void) const {return "ShellANDeS";}
+    
     int getNumExternalNodes () const;
     const ID &getExternalNodes ();
     Node **getNodePtrs(void);
@@ -136,6 +138,8 @@ public:
     Response* setResponse (const char** argv, int argc, OPS_Stream& theHandler);
     int getResponse (int responseID, Information& eleInformation);
 
+    int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
+
     Matrix returnMass(void);
 
     void useThisCoordinateSystem(Vector e1, Vector e2, Vector e3);
@@ -155,6 +159,8 @@ public:
     {
         return "ShellANDeS";
     }
+
+
 
 private:
     const Matrix &getBendingTangentStiffness();

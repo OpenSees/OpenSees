@@ -115,7 +115,8 @@ Matrix  PlaneStressLayeredMaterial::tangent(3,3) ;
 
 //null constructor
 PlaneStressLayeredMaterial::PlaneStressLayeredMaterial() 
-:NDMaterial(0, ND_TAG_PlaneStressLayeredMaterial), strain(3)
+:NDMaterial(0, ND_TAG_PlaneStressLayeredMaterial), 
+h(0.0), nLayers(0), wg(nullptr), theFibers(nullptr), strain(3)
 {
 
 }
@@ -148,7 +149,7 @@ PlaneStressLayeredMaterial::PlaneStressLayeredMaterial(int tag,
 PlaneStressLayeredMaterial::~PlaneStressLayeredMaterial( ) 
 { 
   int i ;
-  if (wg != 0) delete wg;
+  if (wg != 0) delete [] wg;
   if (theFibers != 0) {
     for ( i = 0; i < nLayers; i++ ) {
       if (theFibers[i] != 0) delete theFibers[i] ;
@@ -321,16 +322,120 @@ void  PlaneStressLayeredMaterial::Print( OPS_Stream &s, int flag )
 int 
 PlaneStressLayeredMaterial::sendSelf(int commitTag, Channel &theChannel) 
 {
-  opserr << "PlaneStressLayeredMaterial::sendSelf() - not implemented\n";
-  return -1;
+    int res = 0;
+
+    // basic int data
+    static ID idData(2);
+    idData(0) = this->getTag();
+    idData(1) = nLayers;
+    res = theChannel.sendID(this->getDbTag(), commitTag, idData);
+    if (res < 0) {
+        opserr << "PlaneStressLayeredMaterial::sendSelf() - failed to send ID" << endln;
+        return res;
+    }
+
+    // float data: (1)h + (3)strain + (nLayers)[wgi, classTagi, dbTagi]
+    static Vector vecData;
+    vecData.resize(4 + nLayers * 3);
+    int counter = 0;
+    vecData(counter++) = h;
+    for (int i = 0; i < 3; ++i)
+        vecData(counter++) = strain(i);
+    for (int i = 0; i < nLayers; ++i) {
+        vecData(counter++) = wg[i];
+        NDMaterial* ifiber = theFibers[i];
+        vecData(counter++) = static_cast<int>(ifiber->getClassTag());
+        int matDbTag = ifiber->getDbTag();
+        if (matDbTag == 0) {
+            matDbTag = theChannel.getDbTag();
+            ifiber->setDbTag(matDbTag);
+        }
+        vecData(counter++) = static_cast<int>(matDbTag);
+    }
+    res = theChannel.sendVector(this->getDbTag(), commitTag, vecData);
+    if (res < 0) {
+        opserr << "PlaneStressLayeredMaterial::sendSelf() - failed to send Vector" << endln;
+        return res;
+    }
+
+    // now send the materials data
+    for (int i = 0; i < nLayers; ++i) {
+        res = theFibers[i]->sendSelf(commitTag, theChannel);
+        if (res < 0) {
+            opserr << "PlateFromPlaneStressMaterial::sendSelf() - failed to send materials" << endln;
+            return res;
+        }
+    }
+    
+    // done
+    return res;
 }
 
 
 int 
 PlaneStressLayeredMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  opserr << "PlaneStressLayeredMaterial::recvSelf() - not implemented\n";
-  return -1;
+    int res = 0;
+
+    // de-allocate previous layer data (if any)
+    if (wg) delete[] wg;
+    if (theFibers) {
+        for (int i = 0; i < nLayers; ++i) {
+            if (theFibers[i])
+                delete theFibers[i];
+        }
+        delete [] theFibers;
+    }
+
+    // basic int data
+    static ID idData(2);
+    res = theChannel.recvID(this->getDbTag(), commitTag, idData);
+    if (res < 0) {
+        opserr << "PlaneStressLayeredMaterial::recvSelf() - failed to recv ID" << endln;
+        return res;
+    }
+    this->setTag(idData(0));
+    nLayers = idData(1);
+    
+    // allocate new layer data
+    wg = new double[nLayers];
+    theFibers = new NDMaterial* [nLayers];
+
+    // float data: (1)h + (3)strain + (nLayers)[wgi, classTagi, dbTagi]
+    static Vector vecData;
+    vecData.resize(4 + nLayers * 3);
+    res = theChannel.recvVector(this->getDbTag(), commitTag, vecData);
+    if (res < 0) {
+        opserr << "PlaneStressLayeredMaterial::recvSelf() - failed to recv Vector" << endln;
+        return res;
+    }
+    int counter = 0;
+    h = vecData(counter++);
+    for (int i = 0; i < 3; ++i)
+        strain(i) = vecData(counter++);
+    for (int i = 0; i < nLayers; ++i) {
+        wg[i] = vecData(counter++);
+        int matClassTag = static_cast<int>(vecData(counter++));
+        NDMaterial* ifiber = theBroker.getNewNDMaterial(matClassTag);
+        if (ifiber == 0) {
+            opserr << "PlaneStressLayeredMaterial::recvSelf() - failed to get a material of type: " << matClassTag << endln;
+            return -1;
+        }
+        ifiber->setDbTag(static_cast<int>(vecData(counter++)));
+        theFibers[i] = ifiber;
+    }
+
+    // now recv the materials data
+    for (int i = 0; i < nLayers; ++i) {
+        res = theFibers[i]->recvSelf(commitTag, theChannel, theBroker);
+        if (res < 0) {
+            opserr << "PlaneStressLayeredMaterial::sendSelf() - failed to send materials" << endln;
+            return res;
+        }
+    }
+
+    // done
+    return res;
 }
  
 

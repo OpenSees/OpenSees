@@ -764,7 +764,7 @@ FileDatastore::recvMatrix(int dataTag, int commitTag,
 
   if (pos < fileEnd) {
     theStream->read(data, stepSize);
-    if ((*(theIntData.dbTag) == dataTag)) {
+    if (*(theIntData.dbTag) == dataTag) {
       found = true;
       pos += stepSize;
     } 
@@ -1183,7 +1183,7 @@ FileDatastore::getData(const char *tableName, char *columns[], int commitTag, Ve
 
 
 /*******************************************************************
- *              MISC METHODS & FUNCTONS FOR OPENING THE FILE       *
+ *              MISC METHODS & FUNCTIONS FOR OPENING THE FILE      *
  *******************************************************************/
 
 int

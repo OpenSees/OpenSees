@@ -110,7 +110,7 @@ int NullEvolution::getResponse(int responseID, Information & info)
 }
 
 /** No descriptions */
-Response * NullEvolution::setResponse(char * * argv, int argc, Information & info)
+Response * NullEvolution::setResponse(char * * argv, int argc, OPS_Stream &output)
 {
 	return 0;
 }

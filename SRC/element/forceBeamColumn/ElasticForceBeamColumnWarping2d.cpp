@@ -29,7 +29,7 @@
 Shear Wall with Warping
  ---
 Hsiang-Chuan Tsai, James M. Kelly (2004), "Buckling of short beams with warping effect included."
-International Journal of Solids and Structures, 42:239–253
+International Journal of Solids and Structures, 42:239ï¿½253
 
 
 State Determination Algorithm
@@ -511,7 +511,7 @@ ElasticForceBeamColumnWarping2d::update()
 		int order      = sections[i]->getOrder();
 		const ID &code = sections[i]->getType();
 
-			    // compute coeficient w
+			    // compute coefficient w
 	const Matrix &ks = sections[i]->getSectionTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -831,7 +831,7 @@ ElasticForceBeamColumnWarping2d::getInitialFlexibility(Matrix &fe)
     int order      = sections[i]->getOrder();
     const ID &code = sections[i]->getType();
 
-				    // compute coeficient w
+				    // compute coefficient w
 	const Matrix &ks = sections[i]->getSectionTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -1062,7 +1062,7 @@ ElasticForceBeamColumnWarping2d::Print(OPS_Stream &s, int flag)
     double V  = (M1+M2)/L;
 	double R1(0), R2(0);
 
-	// compute coeficient w
+	// compute coefficient w
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();
 	const Matrix &ks0 = sections[0]->getSectionTangent(); 
@@ -1178,7 +1178,7 @@ ElasticForceBeamColumnWarping2d::Print(OPS_Stream &s, int flag)
     double L  = crdTransf->getInitialLength();
     double V  = (M1+M2)/L;
 	double R1(0), R2(0);
-		// compute coeficient w
+		// compute coefficient w
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();
 	const Matrix &ks0 = sections[0]->getSectionTangent(); 
@@ -1259,40 +1259,13 @@ OPS_Stream &operator<<(OPS_Stream &s, ElasticForceBeamColumnWarping2d &E)
 int
 ElasticForceBeamColumnWarping2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
-  // first determine the end points of the beam based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
+    static Vector v1(3);
+    static Vector v2(3);
 
-  static Vector v1(5);
-  static Vector v2(5);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-  if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
-  } else {
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-      }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
-      }    
-    }
-  }
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1464,7 +1437,7 @@ ElasticForceBeamColumnWarping2d::getResponse(int responseID, Information &eleInf
 	double V = (Se(1)+Se(3))/crdTransf->getInitialLength();
 	double R1(0), R2(0);
 
-			// compute coeficient w
+			// compute coefficient w
 	double L = crdTransf->getInitialLength();
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();

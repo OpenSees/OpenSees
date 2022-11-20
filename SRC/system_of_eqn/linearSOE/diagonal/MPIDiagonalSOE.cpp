@@ -140,7 +140,7 @@ MPIDiagonalSOE::setSize(Graph &theGraph)
     myDOFsArray[count++] = vertexTag;
   }
   static ID otherSize(1);
-  delete &theGraph;
+//  delete &theGraph;
   
 
   myDOFs.setData(myDOFsArray, size);
@@ -202,7 +202,7 @@ MPIDiagonalSOE::setSize(Graph &theGraph)
   // Receive from all other processes their size and their ID's
   // perform intersection operation and figure out
   // with which processes does myProcessID have to communicate
-  // to avoid bloking we call Irecv & wait, to make up for the send's
+  // to avoid blocking we call Irecv & wait, to make up for the send's
 
   
   //figure out total # of shared dofs

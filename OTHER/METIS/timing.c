@@ -72,3 +72,20 @@ double seconds(void)
 }
 
 
+void cleartimer(timer tmr) {
+  tmr = 0.;
+}
+
+void starttimer(timer tmr)
+{
+  tmr -= seconds();
+}
+void stoptimer(timer tmr)
+{
+  tmr += seconds();
+}
+
+timer gettimer(timer tmr)
+{
+  return tmr;
+}

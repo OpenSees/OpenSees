@@ -125,13 +125,15 @@ void* OPS_YamamotoBiaxialHDR()
 	}
 
 	// Tp
-	const char* tparg = OPS_GetString();
-	if (strcmp(tparg,"1") == 0) {
-	    Tp = 1; // Bridgestone X0.6R (EESD version)
-	} else {
+	if (OPS_GetIntInput(&numdata, &Tp) < 0) {
 	    opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
 	    ifNoError = false;
 	}
+  if (Tp != 1) {
+      // Bridgestone X0.6R (EESD version)
+      opserr << "WARNING invalid YamamotoBiaxialHDR Tp != 1" << endln;
+	    ifNoError = false;
+  }
 
 	// DDo
 	if (OPS_GetDoubleInput(&numdata, &DDo) < 0 || DDo <= 0.0) {
@@ -868,23 +870,13 @@ int YamamotoBiaxialHDR::displaySelf(Renderer &theViewer,
 				    int displayMode, float fact,
 				    const char **modes, int numMode)
 {
-  // first determine the end points of the element based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
-  
-  const Vector &end1Disp = theNodes[0]->getDisp();
-  const Vector &end2Disp = theNodes[1]->getDisp();
-  
-  static Vector v1(3);
-  static Vector v2(3);
-  
-  for (int i = 0; i < 3; i++)  {
-    v1(i) = end1Crd(i) + end1Disp(i)*fact;
-    v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-  }
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    static Vector v1(3);
+    static Vector v2(3);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 

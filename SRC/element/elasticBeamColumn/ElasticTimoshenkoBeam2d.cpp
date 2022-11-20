@@ -24,11 +24,18 @@
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam2d.
 // ElasticTimoshenkoBeam2d is a 2d beam element. As such it can only
 // connect to a node with 3-dof.
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam2d.h>
 
@@ -70,11 +77,12 @@ void *OPS_ElasticTimoshenkoBeam2d()
     }
     
     int numData;
-    int iData[5];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
     double dData[6];  // E, G, A, Iz, Avy, mass
     
     iData[4] = 0;     // cMass
     dData[5] = 0.0;   // mass per unit length
+    iData[5] = 0;     // Geometric linear
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -118,22 +126,25 @@ void *OPS_ElasticTimoshenkoBeam2d()
         if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
             iData[4] = 1;  // consistent mass matrix
         }
+        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
+            iData[5] = 1;  // geometric nonlinearity within the element
+        }	
         numRemainingArgs = OPS_GetNumRemainingInputArgs();      
     }
     
     theElement = new ElasticTimoshenkoBeam2d(iData[0], iData[1], iData[2],
-        dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4]);
+					     dData[0], dData[1], dData[2], dData[3], dData[4], *theTrans, dData[5], iData[4], iData[5]);
     
     return theElement;
 }
 
 
 ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, 
-    double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
-    double r, int cm)
+						 double e, double g, double a, double iz, double avy, CrdTransf &coordTransf,
+						 double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam2d),
     connectedExternalNodes(2), theCoordTransf(0), E(e), G(g), A(a), Iz(iz),
-    Avy(avy), rho(r), cMass(cm), nlGeo(0), phi(0.0), L(0.0), ul(6), ql(6),
+    Avy(avy), rho(r), cMass(cm), nlGeo(gnl), phi(0.0), L(0.0), ul(6), ql(6),
     ql0(6), kl(6,6), klgeo(6,6), Tgl(6,6), Ki(6,6), M(6,6), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -157,7 +168,10 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "failed to get copy of coordinate transformation.\n";
         exit(-1);
     }
-    
+
+    // Now reading geometric nonlinear flag from user input
+    //
+    /*
     // get coordinate transformation type and save flag
     if (strncmp(theCoordTransf->getClassType(),"Linear",6) == 0)  {
         nlGeo = 0;
@@ -170,6 +184,7 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
             << "Unsupported Corotational transformation assigned.\n"
             << "Using PDelta transformation instead.\n";
     }
+    */
     
     // zero fixed end forces vector
     ql0.Zero();
@@ -632,41 +647,13 @@ int ElasticTimoshenkoBeam2d::recvSelf(int commitTag, Channel &rChannel,
 int ElasticTimoshenkoBeam2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numModes)
 {
-    // first determine the end points of the element based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    
     static Vector v1(3);
     static Vector v2(3);
-    
-    if (displayMode >= 0)  {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i=0; i<2; i++)  {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-    } else  {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        
-        if (eigen1.noCols() >= mode)  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }
-        } else  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i);
-                v2(i) = end2Crd(i);
-            }
-        }
-    }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 
@@ -752,6 +739,7 @@ int ElasticTimoshenkoBeam2d::getResponse (int responseID, Information &eleInfo)
         return eleInfo.setVector(this->getResistingForce());
     
     case 2: // local forces
+	    this->getResistingForce();
         theVector.Zero();
         // determine resisting forces in local system
         theVector = ql;
@@ -830,28 +818,9 @@ void ElasticTimoshenkoBeam2d::setUp()
     
     dx = ndJCoords - ndICoords;
     
-    //if (nodeIInitialDisp != 0) {
-    //    dx(0) -= nodeIInitialDisp[0];
-    //    dx(1) -= nodeIInitialDisp[1];
-    //}
-    
-    //if (nodeJInitialDisp != 0) {
-    //    dx(0) += nodeJInitialDisp[0];
-    //    dx(1) += nodeJInitialDisp[1];
-    //}
-    
-    //if (nodeJOffset != 0) {
-    //    dx(0) += nodeJOffset[0];
-    //    dx(1) += nodeJOffset[1];
-    //}
-    
-    //if (nodeIOffset != 0) {
-    //    dx(0) -= nodeIOffset[0];
-    //    dx(1) -= nodeIOffset[1];
-    //}
-    
     // determine the element length
-    L = dx.Norm();
+    L = theCoordTransf->getInitialLength();
+
     if (L == 0.0)  {
         opserr << "ElasticTimoshenkoBeam2d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";

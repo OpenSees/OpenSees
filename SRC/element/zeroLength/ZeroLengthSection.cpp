@@ -63,7 +63,9 @@ void* OPS_ZeroLengthSection()
     int iData[4];
     int numData = 4;
     if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
-	opserr<<"WARNING: invalid integer inputs\n";
+      opserr << "WARNING too few arguments " <<
+	"want - element ZeroLengthSection eleTag? iNode? jNode? secTag? " <<
+	"<-orient x1? x2? x3? <y1? y2? y3?> >" << endln;      
 	return 0;
     }
 
@@ -75,30 +77,43 @@ void* OPS_ZeroLengthSection()
     while(OPS_GetNumRemainingInputArgs() > 1) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "-orient") == 0) {
-	    if(OPS_GetNumRemainingInputArgs() > 5) {
-		numData = 3;
-		if(OPS_GetDoubleInput(&numData,x_ptr) < 0) {
-		    opserr<<"WARNING: invalid double inputs\n";
-		    return 0;
-		}
-		if(OPS_GetDoubleInput(&numData,y_ptr) < 0) {
-		    opserr<<"WARNING: invalid double inputs\n";
-		    return 0;
-		}
-	    }
+	  if (ndm == 2 && OPS_GetNumRemainingInputArgs() < 3) {
+	    opserr<<"WARNING zeroLengthSection - insufficient orient values for 2D model" << endln;
+	    return 0;
+	  }
+	  if (ndm == 3 && OPS_GetNumRemainingInputArgs() < 6) {
+	    opserr<<"WARNING zeroLengthSection - insufficient orient values for 3D model" << endln;
+	    return 0;
+	  }	    	      
+	  numData = 3;
+	  if(OPS_GetDoubleInput(&numData,x_ptr) < 0) {
+	    opserr<<"WARNING zeroLengthSection invalid double inputs for x axis" << endln;
+	    return 0;
+	  }
+	  if(ndm == 3 && OPS_GetDoubleInput(&numData,y_ptr) < 0) {
+	    opserr<<"WARNING zeroLengthSection invalid double inputs for y axis" << endln;
+	    return 0;
+	  }
 	} else if(strcmp(type, "-doRayleigh") == 0) {
 	    numData = 1;
 	    if(OPS_GetIntInput(&numData,&doRayleighDamping) < 0) {
-		opserr<<"WARNING: invalid integer inputs\n";
+	      opserr<<"WARNING zeroLengthSection - invalid integer input for doRayleigh" << endln;
 		return 0;
 	    }
 	}
     }
 
+    // Calculate y = z cross x
+    if (ndm == 2) {
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) = 0.0;
+    }
+    
     // get section
     SectionForceDeformation* theSection = OPS_getSectionForceDeformation(iData[3]);
     if(theSection == 0) {
-	opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain\n";
+      opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain" << endln;
 	return 0;
     }
 
@@ -311,10 +326,10 @@ const Matrix &
 ZeroLengthSection::getTangentStiff(void)
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section tangent stiffness, the element basic stiffness
 	const Matrix &kb = theSection->getSectionTangent();
@@ -374,10 +389,10 @@ const Vector &
 ZeroLengthSection::getResistingForce()
 {
 	// Compute section deformation vector
-	// this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+	// this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
 	// Set trial section deformation
-	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+	// theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
 	// Get section stress resultants, the element basic forces
 	const Vector &q = theSection->getStressResultant();
@@ -563,26 +578,14 @@ ZeroLengthSection::displaySelf(Renderer &theViewer, int displayMode, float fact,
     if (theNodes[0] == 0 || theNodes[1] == 0)
 		return 0;
 
-    // first determine the two end points of the ZeroLengthSection based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();    
+	// get the end point display coords    
+	static Vector v1(3);
+	static Vector v2(3);
+	theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+	theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-    if (displayMode == 1 || displayMode == 2) {
-		static Vector v1(3);
-		static Vector v2(3);
-		for (int i = 0; i < dimension; i++) {
-			v1(i) = end1Crd(i)+end1Disp(i)*fact;
-			v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-		}
-		
-		return theViewer.drawLine(v1, v2, 0.0, 0.0);
-    }
-
-    return 0;
+	// draw the line
+	return theViewer.drawLine(v1, v2, 0.0, 0.0, this->getTag());
 }
 
 void
@@ -626,7 +629,7 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
 
-    char outputData[5];
+    char outputData[20];
     // element forces
     if ((strcmp(argv[0],"force") == 0) || (strcmp(argv[0],"forces") == 0)
         || (strcmp(argv[0],"globalForces") == 0) || (strcmp(argv[0],"globalforces") == 0)) {
@@ -665,6 +668,16 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
         theResponse = theSection->setResponse(&argv[1], argc-1, output);
     }
 
+    if (strcmp(argv[0],"xaxis") == 0) {
+      theResponse = new ElementResponse(this, 20, Vector(3));
+    }
+    if (strcmp(argv[0],"yaxis") == 0) {
+      theResponse = new ElementResponse(this, 21, Vector(3));
+    }
+    if (strcmp(argv[0],"zaxis") == 0) {
+      theResponse = new ElementResponse(this, 22, Vector(3));
+    }
+    
     output.endTag();
     return theResponse;
 
@@ -675,7 +688,8 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
 {
     Vector q(order);
     Matrix kb(order,order);
-
+    Vector &theVec = *(eleInfo.theVector);
+    
     switch (responseID) {
     case 1:
         return eleInfo.setVector(this->getResistingForce());
@@ -693,7 +707,22 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
       kb = theSection->getSectionTangent();
       return eleInfo.setMatrix(kb);
 
-
+    case 20:
+      theVec(0) = transformation(0,0);
+      theVec(1) = transformation(0,1);
+      theVec(2) = transformation(0,2);
+      return 0;
+    case 21:
+      theVec(0) = transformation(1,0);
+      theVec(1) = transformation(1,1);
+      theVec(2) = transformation(1,2);
+      return 0;
+    case 22:
+      theVec(0) = transformation(2,0);
+      theVec(1) = transformation(2,1);
+      theVec(2) = transformation(2,2);
+      return 0;
+      
     default:
         return -1;
     }
@@ -894,10 +923,10 @@ const Vector &
 ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
 {
   // Compute section deformation vector
-  // this->computeSectionDefs();	// MSN: commented out beause the method "update()" was added to the class
+  // this->computeSectionDefs();	// MSN: commented out because the method "update()" was added to the class
 
   // Set trial section deformation
-  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out beause the method "update()" was added to the class
+  // theSection->setTrialSectionDeformation(*v);	// MSN: commented out because the method "update()" was added to the class
 
   // Get section stress resultants, the element basic forces
   const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);

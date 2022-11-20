@@ -119,7 +119,7 @@ if {$ok != 0} {
 
 	# if the analysis fails try initial tangent iteration
 	if {$ok != 0} {
-	    puts "regular newton failed .. lets try an initail stiffness for this step"
+	    puts "regular newton failed .. lets try an initial stiffness for this step"
 	    test NormUnbalance 1.0  1000 5
 	    algorithm ModifiedNewton -initial
 	    set ok [analyze 1]

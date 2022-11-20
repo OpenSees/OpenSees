@@ -44,25 +44,33 @@
 void* OPS_ENTMaterial()
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
-	opserr<<"WARNING: invalid #args: ENT matTag E\n";
+      opserr<<"WARNING: invalid #args: ENT matTag E" << endln;
 	return 0;
     }
 
     int tag;
     int num = 1;
-    if(OPS_GetIntInput(&num, &tag) < 0) return 0;
+    if(OPS_GetIntInput(&num, &tag) < 0) {
+      opserr << "WARNING invalid tag for uniaxialMaterial ENT" << endln;
+      return 0;
+    }
+    
+    double data[3] = {0.0, 0.0, 1.0};
+    num = OPS_GetNumRemainingInputArgs();
+    if (num > 3)
+      num = 3;
+    
+    if(OPS_GetDoubleInput(&num, data) < 0) {
+      opserr << "Invalid data for uniaxialMaterial ENT " << tag << endln;
+      return 0;
+    }
 
-    double E;
-    if(OPS_GetDoubleInput(&num, &E) < 0) return 0;
-
-    UniaxialMaterial* mat = new ENTMaterial(tag,E);
-    if(mat == 0) return 0;
-
-    // if(OPS_addUniaxialMaterial(mat) == false) {
-    // 	opserr<<"WARNING: failed to add ENT material\n";
-    // 	delete mat;
-    // 	return 0;
-    // }
+    UniaxialMaterial* mat = new ENTMaterial(tag,data[0],data[1],data[2]);
+    if(mat == 0) {
+      opserr << "WARNING could not create uniaxialMaterial of type ENT" << endln;
+      return 0;
+    }
+    
     return mat;
 }
 
@@ -75,7 +83,7 @@ ENTMaterial::ENTMaterial(int tag, double e, double A, double B)
 
 ENTMaterial::ENTMaterial()
 :UniaxialMaterial(0,MAT_TAG_ENTMaterial),
- E(0.0), trialStrain(0.0), parameterID(0)
+ E(0.0), trialStrain(0.0), parameterID(0), a(0.0), b(1.0)
 {
 
 }
@@ -124,7 +132,7 @@ ENTMaterial::getTangent(void)
 
 int 
 ENTMaterial::commitState(void)
-{
+{   
     return 0;
 }
 
@@ -137,13 +145,13 @@ ENTMaterial::revertToLastCommit(void)
 int 
 ENTMaterial::revertToStart(void)
 {
-  return 0;
+    return 0;
 }
 
 UniaxialMaterial *
 ENTMaterial::getCopy(void)
 {
-  ENTMaterial *theCopy = new ENTMaterial(this->getTag(),E);
+  ENTMaterial *theCopy = new ENTMaterial(this->getTag(),E,a,b);
   theCopy->trialStrain = trialStrain;
   theCopy->parameterID = parameterID;
   return theCopy;
@@ -153,12 +161,17 @@ int
 ENTMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(2);
+
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = E;
+  data(2) = a;
+  data(3) = b;
+  data(4) = parameterID;
+
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ENTMaterial::sendSelf() - failed to send data\n";
+    opserr << "ENTMaterial::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -168,17 +181,23 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(2);
+  static Vector data(5);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
-      opserr << "ENTMaterial::recvSelf() - failed to receive data\n";
-      E = 0; 
-      this->setTag(0);      
+    opserr << "ENTMaterial::recvSelf() - failed to receive data" << endln;
+      E = 0;
+      a = 0;
+      b = 0;
+      this->setTag(0);
+      parameterID = 0;
   }
   else {
     this->setTag((int)data(0));
     E = data(1);
+    a = data(2);
+    b = data(3);
+    parameterID = (int)data(4);
   }
     
   return res;
@@ -190,13 +209,17 @@ ENTMaterial::Print(OPS_Stream &s, int flag)
 	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
 		s << "ENTMaterial, tag: " << this->getTag() << endln;
 		s << "  E: " << E << endln;
+		s << "  a: " << a << endln;
+		s << "  b: " << b << endln;		
 	}
     
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"ENTMaterial\", ";
-		s << "\"E\": " << E << "}";
+		s << "\"E\": " << E << ",";
+		s << "\"a\": " << a << ",";
+		s << "\"b\": " << b << "}";		
 	}
 }
 
@@ -207,6 +230,14 @@ ENTMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(E);
     return param.addObject(1, this);
   }
+  if (strcmp(argv[0],"a") == 0) {
+    param.setValue(a);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"b") == 0) {
+    param.setValue(b);
+    return param.addObject(3, this);
+  }  
   return -1;
 }
 
@@ -217,6 +248,12 @@ ENTMaterial::updateParameter(int parameterID, Information &info)
   case 1:
     E = info.theDouble;
     return 0;
+  case 2:
+    a = info.theDouble;
+    return 0;
+  case 3:
+    b = info.theDouble;
+    return 0;    
   default:
     return -1;
   }
@@ -242,7 +279,10 @@ ENTMaterial::getStressSensitivity(int gradIndex, bool conditional)
 double
 ENTMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-  return 0.0;
+  if (parameterID == 1)
+    return 1.0;
+  else
+    return 0.0;
 }
 
 int

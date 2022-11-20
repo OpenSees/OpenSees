@@ -119,6 +119,7 @@
 #define MAT_TAG_Steel01				 5
 #define MAT_TAG_Hardening			 6
 #define MAT_TAG_Hysteretic			 7
+#define MAT_TAG_HystereticSM		1969  // Silvia Mazzoni, 2022
 #define MAT_TAG_EPPGap				 8
 #define MAT_TAG_Viscous				 9
 #define MAT_TAG_Backbone			10
@@ -142,6 +143,7 @@
 #define MAT_TAG_Steel02				26
 #define MAT_TAG_Bond_SP01                       27
 #define MAT_TAG_Hysteretic2			28
+#define MAT_TAG_SteelDRC			29
 #define MAT_TAG_Concrete04                      30
 #define MAT_TAG_SecantConcrete                  31
 #define MAT_TAG_ContinuumUniaxial               32
@@ -223,14 +225,25 @@
 #define MAT_TAG_QzSimple1                    207
 #define MAT_TAG_PyLiq1                       208
 #define MAT_TAG_TzLiq1                       209
-#define MAT_TAG_PySimple2                    210
-#define MAT_TAG_TzSimple2                    211
-#define MAT_TAG_QzSimple2                    212
-#define MAT_TAG_SteelBRB                     213
-#define MAT_TAG_PySimple3                    214
-#define MAT_TAG_PlateBearingConnectionThermal 215
-#define MAT_TAG_ASD_SMA_3K                    216
-
+#define MAT_TAG_QzLiq1                       210
+#define MAT_TAG_PySimple2                    211
+#define MAT_TAG_TzSimple2                    212
+#define MAT_TAG_QzSimple2                    213
+#define MAT_TAG_SteelBRB                     214
+#define MAT_TAG_PySimple3                    215
+#define MAT_TAG_PlateBearingConnectionThermal 216
+#define MAT_TAG_ASD_SMA_3K                    217
+#define MAT_TAG_SteelFractureDI			218 // galvisf
+#define MAT_TAG_Masonry 219
+#define MAT_TAG_Masonryt 220
+#define MAT_TAG_Trilinwp 221
+#define MAT_TAG_Trilinwp2 222
+#define MAT_TAG_Trilinwpd 223
+#define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteEXP 225
+#define MAT_TAG_TDConcreteMC10 226
+#define MAT_TAG_TDConcreteMC10NL 227
+#define MAT_TAG_CoulombDamperMaterial 228
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -247,7 +260,7 @@
 
 #define MAT_TAG_LimitState	   1972
 #define MAT_TAG_Elastic2Material   1973
-
+#define MAT_TAG_FRCC		   1980		   		
 #define MAT_TAG_DrainMaterial		2000
 #define MAT_TAG_DrainHardening		2001
 #define MAT_TAG_DrainBilinear		2002
@@ -272,8 +285,18 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+#define MAT_TAG_HystereticPoly 6113			// Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it
+#define MAT_TAG_DowelType  6114
+
+#define MAT_TAG_DuctileFracture 6115 // Kuanshi Zhong
+
+#define MAT_TAG_HystereticSmooth 6116			// Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+#define MAT_TAG_HystereticAsym 6117			// Salvatore Sessa 19-Apr-2022 Mail: salvatore.sessa2@unina.it
+
 #define ND_TAG_ExternalNDMaterial 999901
 #define MAT_TAG_ExternalUniaxialMaterial 999901
+
+#define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
 
 // GNG material - J.Cook UCanterbury
@@ -290,6 +313,7 @@
 #define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
 #define SEC_TAG_FiberSectionWarping3d		        1010
+#define SEC_TAG_FiberSectionAsym3d		        1011
 #define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
@@ -317,6 +341,8 @@
 #define SEC_TAG_MembranePlateFiberSectionThermal 34  // L.Jiang[SIF]
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
 #define SEC_TAG_BiaxialHysteretic 36
+#define SEC_TAG_ElasticTube3d 37
+
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
@@ -327,6 +353,7 @@
 #define SECTION_INTEGRATION_TAG_RCCIRCULAR 5
 #define SECTION_INTEGRATION_TAG_RCTUNNEL 6
 #define SECTION_INTEGRATION_TAG_Tube 7
+#define SECTION_INTEGRATION_TAG_HSS 8
 
 #define ND_TAG_WrapperNDMaterial		9
 #define ND_TAG_ElasticIsotropic			10
@@ -378,6 +405,7 @@
 #define ND_TAG_StressDensityModel3D 57
 #define ND_TAG_UVCmultiaxial  58
 #define ND_TAG_UVCplanestress 59
+#define ND_TAG_LinearCap 60
 
 #define ND_TAG_LowTension 65
 #define ND_TAG_LowTensionPlaneStress 66
@@ -408,7 +436,8 @@
 #define ND_TAG_J2ThreeDimensional             3009
 #define ND_TAG_J2PlateFiber		      3010
 #define ND_TAG_J2BeamFiber		      3011
-
+#define ND_TAG_J2BeamFiber2d 91625
+#define ND_TAG_J2BeamFiber3d 92516
 
 #define ND_TAG_FeapMaterial                 1000
 #define ND_TAG_FeapMaterial01                 1001
@@ -420,6 +449,7 @@
 #define ND_TAG_BeamFiberMaterial		2002
 #define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_BeamFiberMaterial2dPS		2005
+#define ND_TAG_OrthotropicMaterial		2006
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -456,7 +486,7 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - D.Turello
+// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
@@ -484,7 +514,13 @@
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
+#define ND_TAG_SAniSandMS 7011 //UANDES - Chile
+#define ND_TAG_SAniSandMSPlaneStrain 7012 //UANDES - Chile
+#define ND_TAG_SAniSandMS3D 7013 //UANDES - Chile
 
+#define ND_TAG_ElasticPlaneStress 7014
+#define ND_TAG_ElasticOrthotropicPlaneStress 7015
+#define ND_TAG_VonPapaDamage 7016
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -503,6 +539,11 @@
 #define BACKBONE_TAG_ReeseStiffClayBelowWS 10
 #define BACKBONE_TAG_ReeseSoftClay      11
 #define BACKBONE_TAG_ReeseSand          12
+#define BACKBONE_TAG_ReeseStiffClayAboveWS 13
+#define BACKBONE_TAG_VuggyLimestone 14
+#define BACKBONE_TAG_CementedSoil 15
+#define BACKBONE_TAG_WeakRock 16
+#define BACKBONE_TAG_LiquefiedSand 17
 
 
 #define DEG_TAG_STIFF_Constant		1
@@ -546,6 +587,7 @@
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]
 #define LOAD_TAG_ThermalActionWrapper     16 //L.Jiang [ SIF ]
 #define LOAD_TAG_LysmerVelocityLoader      17  //Jose Abell (UANDES)
+#define LOAD_TAG_IGAFollowerLoad      18  //Jose Abell (UANDES)
 
 
 #define MAT_TAG_IsotropicLinElastic         1001
@@ -558,7 +600,7 @@
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
 #define ELE_TAG_ElasticBeam3d            5
-#define ELE_TAG_ElasticWarpingBeam3d            5001
+#define ELE_TAG_ElasticBeamWarping3d            5001
 #define ELE_TAG_Beam2d    	         6
 #define ELE_TAG_beam2d02    	         7
 #define ELE_TAG_beam2d03    	         8
@@ -619,8 +661,11 @@
 #define ELE_TAG_DispBeamColumn2d        62
 #define ELE_TAG_DispBeamColumnNL2d        621
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
+#define ELE_TAG_TimoshenkoBeamColumn3d  631
 #define ELE_TAG_DispBeamColumn3d        64
+#define ELE_TAG_DispBeamColumnNL3d        640
 #define ELE_TAG_DispBeamColumnWarping3d        641
+#define ELE_TAG_DispBeamColumnAsym3d           642
 #define ELE_TAG_HingedBeam2d            65
 #define ELE_TAG_HingedBeam3d            66
 #define ELE_TAG_TwoPointHingedBeam2d    67
@@ -639,6 +684,7 @@
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
 #define ELE_TAG_MixedBeamColumn2d 30766
 #define ELE_TAG_MixedBeamColumn3d 30765
+#define ELE_TAG_MixedBeamColumnAsym3d 30767
 #define ELE_TAG_DispBeamColumn2dInt     79
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
@@ -724,8 +770,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
-#define ELE_TAG_MVLEM                     162
-#define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_MVLEM                     162 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM                 163 // Kristijan Kolozvari
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
@@ -770,7 +816,25 @@
 #define ELE_TAG_NineNodeQuad              207
 #define ELE_TAG_EightNodeQuad             208
 #define ELE_TAG_SixNodeTri                209
-#define ELE_TAG_RockingBC	              210
+#define ELE_TAG_RockingBC	          210
+#define ELE_TAG_BeamColumn2DwLHNMYS_Damage 211
+#define ELE_TAG_MVLEM_3D	          212 // Kristijan Kolozvari
+#define ELE_TAG_SFI_MVLEM_3D	          213 // Kristijan Kolozvari
+#define ELE_TAG_BeamGT                    214
+#define ELE_TAG_MasonPan12                    215
+#define ELE_TAG_MasonPan3D                    216
+#define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
+#define ELE_TAG_InertiaTruss              218	//Added by Xiaodong Ji, Yuhao Cheng, Yue Yu
+#define ELE_TAG_ASDAbsorbingBoundary2D    219  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ASDAbsorbingBoundary3D    220  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ZeroLengthContactASDimplex  221  // Onur Deniz Akan (IUSS), Massimo Petracca (ASDEA)
+#define ELE_TAG_IGALinePatch       	  250 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGASurfacePatch       	  251 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAVolumePatch       	  252 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAKLShell       	  253 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
+#define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
+#define ELE_TAG_PFEMContact3D             255
+
 #define ELE_TAG_ExternalElement           99990
 
 
@@ -828,6 +892,11 @@
 #define CRDTR_TAG_CorotCrdTransf3d  6
 #define CRDTR_TAG_CorotCrdTransfWarping3d  61
 #define CRDTR_TAG_LinearCrdTransf2dInt 7
+
+#define DMP_TAG_UniformDamping 1
+#define DMP_TAG_SecStifDamping 2
+#define DMP_TAG_URDDamping 3
+#define DMP_TAG_URDDampingbeta 4
 
 #define NOD_TAG_Node      	1
 #define NOD_TAG_DummyNode 	2
@@ -964,6 +1033,7 @@
 #define INTEGRATOR_TAGS_GimmeMCK       	                57
 #define INTEGRATOR_TAGS_StagedLoadControl               58
 #define INTEGRATOR_TAGS_StagedNewmark                   59
+#define INTEGRATOR_TAGS_HarmonicSteadyState             60
 
 
 #define LinSOE_TAGS_FullGenLinSOE		1

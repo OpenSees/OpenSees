@@ -46,9 +46,8 @@
 
 #include <EigenSolver.h>
 #include <ArpackSOE.h>
-#if !_DLL
-#include <f2c.h>
-#endif
+
+// #include <f2c.h>
 
 class LinearSOE;
 
@@ -89,11 +88,8 @@ class ArpackSolver : public EigenSolver
     double *resid;
     int iparam[11];
     int ipntr[11];
-#if _DLL
-	long int* select;
-#else
-	logical* select;
-#endif
+  //	long int* select;
+  int* select;
     
     void myMv(int n, double *v, double *result);
     void myCopy(int n, double *v, double *result);

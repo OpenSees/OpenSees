@@ -93,7 +93,7 @@ class MixedBeamColumn2d : public Element
     int getResponse(int responseID, Information &eleInfo);
 
     const char *getClassType(void) const {return "MixedBeamColumn2d";};
-
+    int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
   protected:
 
   private:
@@ -110,13 +110,15 @@ class MixedBeamColumn2d : public Element
     void getSectionStress(int sec,Vector &fSection);
     void setSectionDeformation(int sec,Vector &defSection);
 
+  void setSectionPointers(void);
+  
     // private attributes - a copy for each object of the class
     ID connectedExternalNodes; // tags of the end nodes
     Node *theNodes[2];   // pointers to the nodes
     BeamIntegration *beamIntegr;
     int numSections;
     SectionForceDeformation **sections;          // array of pointers to sections
-    CrdTransf *crdTransf;        // pointer to coordinate tranformation object
+    CrdTransf *crdTransf;        // pointer to coordinate transformation object
 
     int doRayleigh;                         // flag for whether or not rayleigh damping is active for this element
     bool geomLinear;						// flag for whether or not the interation geometric nonlinearity is active
@@ -147,15 +149,15 @@ class MixedBeamColumn2d : public Element
 
     // Committed versions
     Vector committedV;
-    Vector commitedInternalForce;
-    Vector commitedNaturalForce;
-    Vector commitedLastNaturalDisp;
-    Matrix commitedHinv;
-    Matrix commitedGMH;
+    Vector committedInternalForce;
+    Vector committedNaturalForce;
+    Vector committedLastNaturalDisp;
+    Matrix committedHinv;
+    Matrix committedGMH;
     Matrix kvcommit;               // Committed stiffness matrix in the basic system
-    Vector *commitedSectionForceFibers;
-    Vector *commitedSectionDefFibers;
-    Matrix *commitedSectionFlexibility;
+    Vector *committedSectionForceFibers;
+    Vector *committedSectionDefFibers;
+    Matrix *committedSectionFlexibility;
 
     // static data - single copy for all objects of the class
     static Matrix theMatrix;

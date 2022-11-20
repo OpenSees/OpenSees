@@ -35,6 +35,7 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
+
 #include "PFEMElement/BackgroundDef.h"
 #include "PFEMElement/Particle.h"
 #include "PFEMElement/ParticleGroup.h"
@@ -59,6 +60,7 @@ void* OPS_PVDRecorder()
     PVDRecorder::NodeData nodedata;
     std::vector<PVDRecorder::EleData> eledata;
     double dT = 0.0;
+    double rTolDt = 0.00001;
     while(numdata > 0) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "disp") == 0) {
@@ -126,22 +128,34 @@ void* OPS_PVDRecorder()
 		return 0;
 	    }
 	    if (dT < 0) dT = 0;
+	} else if(strcmp(type, "-rTolDt") == 0) {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WARNING: needs rTolDt \n";
+		return 0;
+	    }
+	    numdata = 1;
+	    if(OPS_GetDoubleInput(&numdata,&rTolDt) < 0) {
+		opserr << "WARNING: failed to read rTolDt\n";
+		return 0;
+	    }
+	    if (rTolDt < 0) rTolDt = 0;
 	}
 	numdata = OPS_GetNumRemainingInputArgs();
     }
 
     // create recorder
-    return new PVDRecorder(name,nodedata,eledata,indent,precision,dT);
+    return new PVDRecorder(name,nodedata,eledata,indent,precision,dT, rTolDt);
 }
 
 PVDRecorder::PVDRecorder(const char *name, const NodeData& ndata,
 			 const std::vector<EleData>& edata, int ind, int pre,
-			 double dt)
+			 double dt, double rTolDt)
     :Recorder(RECORDER_TAGS_PVDRecorder), indentsize(ind), precision(pre),
      indentlevel(0), pathname(), basename(),
      timestep(), timeparts(), theFile(), quota('\"'), parts(),
      nodedata(ndata), eledata(edata), theDomain(0), partnum(),
-     dT(dt), nextTime(0.0)
+     dT(dt), relDeltaTTol(rTolDt), nextTime(0.0)
 {
     PVDRecorder::setVTKType();
     getfilename(name);
@@ -164,26 +178,28 @@ PVDRecorder::~PVDRecorder()
 int
 PVDRecorder::record(int ctag, double timestamp)
 {
-    if (dT>0 && nextTime>timestamp) {
-	return 0;
+    if (dT == 0.0 || timestamp - nextTime >= -dT * relDeltaTTol) {
+      if (dT > 0.0) {
+        nextTime = timestamp + dT;
+      }
+
+
+      if (dT > 0) {
+        nextTime = timestamp+dT;
+      }
+
+      if(precision==0)
+         return 0;
+
+      // get current time
+      timestep.push_back(timestamp);
+
+      // save vtu file
+      if(vtu() < 0) return -1;
+
+      // save pvd file
+      if(pvd() < 0) return -1;
     }
-
-    if (dT > 0) {
-	nextTime = timestamp+dT;
-    }
-
-    if(precision==0)
-        return 0;
-
-    // get current time
-    timestep.push_back(timestamp);
-
-    // save vtu file
-    if(vtu() < 0) return -1;
-
-    // save pvd file
-    if(pvd() < 0) return -1;
-
     return 0;
 }
 
@@ -284,6 +300,8 @@ PVDRecorder::vtu()
     }
     if (nodendf < 3) {
 	nodendf = 3;
+    } else if (nodendf > 3) {
+        nodendf = 3;
     }
 
     // get parts
@@ -552,27 +570,27 @@ PVDRecorder::savePart0(int nodendf)
     // node displacement
     if(nodedata.disp) {
 	// all displacement
-    this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
-	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
-	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
-	this->incrLevel();
-	for(int i=0; i<(int)nodes.size(); i++) {
-	    const Vector& vel = nodes[i]->getTrialDisp();
-	    this->indent();
-	    for(int j=0; j<nodendf; j++) {
-		if(j < vel.Size()) {
-		    theFile<<vel(j)<<' ';
-		} else {
-		    theFile<<0.0<<' ';
-		}
-	    }
-	    theFile<<std::endl;
-	}
-	this->decrLevel();
-	this->indent();
-	theFile<<"</DataArray>\n";
+    // this->indent();
+	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
+	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	// this->incrLevel();
+	// for(int i=0; i<(int)nodes.size(); i++) {
+	//     const Vector& vel = nodes[i]->getTrialDisp();
+	//     this->indent();
+	//     for(int j=0; j<nodendf; j++) {
+	// 	if(j < vel.Size()) {
+	// 	    theFile<<vel(j)<<' ';
+	// 	} else {
+	// 	    theFile<<0.0<<' ';
+	// 	}
+	//     }
+	//     theFile<<std::endl;
+	// }
+	// this->decrLevel();
+	// this->indent();
+	// theFile<<"</DataArray>\n";
 
     // displacement
     this->indent();
@@ -972,7 +990,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     this->incrLevel();
     for(int i=0; i<(int)particles.size(); i++) {
 	this->indent();
-	theFile<<i<<std::endl;
+	theFile<<particles[i]->getTag()<<std::endl;
     }
     this->decrLevel();
     this->indent();
@@ -1304,7 +1322,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     for(int i=0; i<ndtags.Size(); i++) {
 	nodes[i] = theDomain->getNode(ndtags(i));
 	if(nodes[i] == 0) {
-	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
+	    opserr<<"WARNING: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
 	    return -1;
 	}
 	const Vector& crds = nodes[i]->getCrds();
@@ -1449,27 +1467,27 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node displacement
     if(nodedata.disp) {
 	// all displacement
-    this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
-	theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
-	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
-	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
-	this->incrLevel();
-	for(int i=0; i<ndtags.Size(); i++) {
-	    const Vector& vel = nodes[i]->getTrialDisp();
-	    this->indent();
-	    for(int j=0; j<nodendf; j++) {
-		if(j < vel.Size()) {
-		    theFile<<vel(j)<<' ';
-		} else {
-		    theFile<<0.0<<' ';
-		}
-	    }
-	    theFile<<std::endl;
-	}
-	this->decrLevel();
-	this->indent();
-	theFile<<"</DataArray>\n";
+    // this->indent();
+	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
+	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	// this->incrLevel();
+	// for(int i=0; i<ndtags.Size(); i++) {
+	//     const Vector& vel = nodes[i]->getTrialDisp();
+	//     this->indent();
+	//     for(int j=0; j<nodendf; j++) {
+	// 	if(j < vel.Size()) {
+	// 	    theFile<<vel(j)<<' ';
+	// 	} else {
+	// 	    theFile<<0.0<<' ';
+	// 	}
+	//     }
+	//     theFile<<std::endl;
+	// }
+	// this->decrLevel();
+	// this->indent();
+	// theFile<<"</DataArray>\n";
 
     // displacement
     this->indent();
@@ -1814,6 +1832,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ZeroLengthND] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContactASDimplex] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthContactNTS2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_ZeroLengthInterface2D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_CoupledZeroLength] = VTK_POLY_VERTEX;
@@ -1963,6 +1982,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_YamamotoBiaxialHDR] = VTK_LINE;
     vtktypes[ELE_TAG_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_MVLEM_3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_TaylorHood2D] = VTK_QUADRATIC_TRIANGLE;
     vtktypes[ELE_TAG_PFEMElement2DQuasi] = VTK_TRIANGLE;
@@ -1975,6 +1996,10 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMContact3D] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
 }
 
 void
@@ -2007,4 +2032,11 @@ PVDRecorder::getfilename(const char* name)
     // more slash
     pathname = fname.substr(0,found+1);
     basename = fname.substr(found+1);
+}
+
+int PVDRecorder::flush(void) {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
 }

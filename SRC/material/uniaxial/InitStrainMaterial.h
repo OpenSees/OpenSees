@@ -63,8 +63,13 @@ class InitStrainMaterial : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-    
+
+  Response *setResponse(const char **argv, int argc, 
+			OPS_Stream &theOutputStream);
+  int getResponse(int responseID, Information &matInformation);
+  
     int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     double getStressSensitivity(int gradIndex, bool conditional);
@@ -77,6 +82,7 @@ class InitStrainMaterial : public UniaxialMaterial
   private:
     UniaxialMaterial *theMaterial;
     double epsInit;
+    double localStrain;
 };
 
 

@@ -272,13 +272,13 @@ ThermalActionWrapper::setRatios(const Vector& theRatio){
 		theRatios = theRatio;
 	}
 	else{
-		opserr<<"WARNIGN::ThermalActionWrapper received invalid ratios"<<endln;
+		opserr<<"WARNING::ThermalActionWrapper received invalid ratios"<<endln;
 		return -1;
 	}
   
   //check the num of interpolation points
   if (theRatios.Size()!=NodalLocs.noRows()) {
-    opserr<<"WARNIGN::ThermalActionWrapper received an incompatible ratio"<<endln;
+    opserr<<"WARNING::ThermalActionWrapper received an incompatible ratio"<<endln;
     return -2;
   }
   
@@ -390,7 +390,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
      for(int i =0; i<9;i++){
        if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6){
          opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
        }
        else{
 		   if(distInt<constStart){
@@ -417,7 +417,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
      for(int i =0; i<5;i++){
        if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6&&fabs(data0(3*i+12)-data1(3*i+12))>1e-6){
          opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
        }
        else{
 		   if(distInt<constStart){
@@ -476,7 +476,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<9;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){
@@ -498,7 +498,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<5;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6&&fabs(data0(3*i+12)-data1(3*i+12))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){
@@ -547,7 +547,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<9;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){
@@ -569,7 +569,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<5;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6&&fabs(data0(3*i+12)-data1(3*i+12))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){
@@ -606,7 +606,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 	ratio[2] = (distInt-Transpoint)*(distInt-r3)/(r-Transpoint)/(r-r3);
    }
    else{
-	opserr<<"WARNIGN ThermalActionWrapper received a int Value "<<distInt<<" out of range"<<endln;
+	opserr<<"WARNING ThermalActionWrapper received a int Value "<<distInt<<" out of range"<<endln;
 	   }
   
    // ratio[2]= (locs(crdi)-NodalLocs(0,crdi))*(locs(crdi)-NodalLocs(1,crdi))/(NodalLocs(2,crdi)-NodalLocs(0,crdi))/(NodalLocs(2,crdi)-NodalLocs(1,crdi));
@@ -628,7 +628,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<9;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){
@@ -654,7 +654,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 		for(int i =0; i<5;i++){
 			if(fabs(data0(2*i+1)-data1(2*i+1))>1e-6&&fabs(data0(3*i+12)-data1(3*i+12))>1e-6){
 				opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 			else{
 				if(distInt<constStart){

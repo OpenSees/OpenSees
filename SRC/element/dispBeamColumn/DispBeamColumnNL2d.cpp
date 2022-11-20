@@ -1414,40 +1414,13 @@ DispBeamColumnNL2d::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumnNL2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
+    static Vector v1(3);
+    static Vector v2(3);
 
-  static Vector v1(3);
-  static Vector v2(3);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-  if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
-  } else {
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-      }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
-      }    
-    }
-  }
-	
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1532,7 +1505,7 @@ DispBeamColumnNL2d::setResponse(const char **argv, int argc,
   }
 
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
 
@@ -1558,7 +1531,7 @@ DispBeamColumnNL2d::setResponse(const char **argv, int argc,
       theResponse = theSections[sectionNum]->setResponse(&argv[2], argc-2, output);
     }
   }
-  else if (strstr(argv[0],"section") != 0) {
+  else if (strcmp(argv[0],"section") == 0) {
 
     if (argc > 1) {
       
@@ -1628,6 +1601,12 @@ DispBeamColumnNL2d::setResponse(const char **argv, int argc,
   
   else if (strcmp(argv[0],"integrationWeights") == 0)
     return new ElementResponse(this, 8, Vector(numSections));
+
+  else if (strcmp(argv[0],"sectionTags") == 0)
+    theResponse = new ElementResponse(this, 110, ID(numSections));
+
+  if (theResponse == 0)
+    theResponse = crdTransf->setResponse(argv, argc, output);
   
   output.endTag();
   return theResponse;
@@ -1750,6 +1729,13 @@ DispBeamColumnNL2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
+  }
+  
   else
     return Element::getResponse(responseID, eleInfo);
 }

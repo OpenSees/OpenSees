@@ -46,10 +46,13 @@ int Mesh::startNodeTag = 1;
 #endif
 
 void *OPS_ElasticBeam2d(const ID &info);
+void *OPS_ElasticBeam3d(const ID &info);
 
 void *OPS_ForceBeamColumn2d(const ID &info);
+void *OPS_ForceBeamColumn3d(const ID &info);
 
 void *OPS_DispBeamColumn2d(const ID &info);
+void *OPS_DispBeamColumn3d(const ID &info);
 
 void *OPS_PFEMElement2DCompressible(const ID &info);
 
@@ -64,6 +67,10 @@ void *OPS_Tri31(const ID &info);
 void *OPS_FourNodeTetrahedron(const ID &info);
 
 void *OPS_ShellMITC4(const ID &info);
+
+void *OPS_ShellNLDKGQ(const ID &info);
+
+void *OPS_ShellDKGQ(const ID &info);
 
 void *OPS_CorotTrussElement(const ID &info);
 
@@ -171,7 +178,7 @@ Mesh::newNode(int tag, const Vector &crds) {
     // check ndf
     if (ndf <= 0) return 0;
 
-    // craete new node
+    // create new node
     Node *node = 0;
     if (crds.Size() == 1) {
         node = new Node(tag, ndf, crds(0));
@@ -264,6 +271,13 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ElasticBeam3d;
+            if (OPS_ElasticBeam3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "forceBeamColumn") == 0) {
@@ -274,12 +288,26 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ForceBeamColumn3d;
+            if (OPS_ForceBeamColumn3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "dispBeamColumn") == 0) {
         if (ndm == 2) {
             eleType = ELE_TAG_DispBeamColumn2d;
             if (OPS_DispBeamColumn2d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_DispBeamColumn3d;
+            if (OPS_DispBeamColumn3d(info) == 0) {
                 opserr << "WARNING: failed to read eleArgs\n";
                 return -1;
             }
@@ -318,8 +346,6 @@ Mesh::setEleArgs() {
         }
 
     } else if (strcmp(type, "PFEMElementCompressible") == 0) {
-        opserr << "WARNING: PFEMElementCompressible needs fix in TriMesh\n";
-        return -1;
         if (ndm == 2) {
             eleType = ELE_TAG_PFEMElement2DCompressible;
             if (OPS_PFEMElement2DCompressible(info) == 0) {
@@ -352,6 +378,22 @@ Mesh::setEleArgs() {
             return -1;
         }
         numelenodes = 4;
+
+    } else if (strcmp(type, "ShellNLDKGQ") == 0) {
+        eleType = ELE_TAG_ShellNLDKGQ;
+        if (OPS_ShellNLDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "ShellDKGQ") == 0) {
+        eleType = ELE_TAG_ShellDKGQ;
+        if (OPS_ShellDKGQ(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;		
 
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
@@ -420,6 +462,9 @@ Mesh::newElements(const ID &elends) {
     if (elends.Size() < numelenodes) {
         return 0;
     }
+    if (numelenodes <= 0) {
+        return 0;
+    }
 
     // function to call
     void *(*OPS_Func)(const ID &info) = 0;
@@ -427,11 +472,20 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ElasticBeam2d:
             OPS_Func = OPS_ElasticBeam2d;
             break;
+        case ELE_TAG_ElasticBeam3d:
+            OPS_Func = OPS_ElasticBeam3d;
+            break;
         case ELE_TAG_ForceBeamColumn2d:
             OPS_Func = OPS_ForceBeamColumn2d;
             break;
+        case ELE_TAG_ForceBeamColumn3d:
+            OPS_Func = OPS_ForceBeamColumn3d;
+            break;
         case ELE_TAG_DispBeamColumn2d:
             OPS_Func = OPS_DispBeamColumn2d;
+            break;
+        case ELE_TAG_DispBeamColumn3d:
+            OPS_Func = OPS_DispBeamColumn3d;
             break;
         case ELE_TAG_PFEMElement2DBubble:
             OPS_Func = OPS_PFEMElement2DBubble;
@@ -454,6 +508,12 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ShellMITC4:
             OPS_Func = OPS_ShellMITC4;
             break;
+        case ELE_TAG_ShellNLDKGQ:
+	  OPS_Func = OPS_ShellNLDKGQ;
+            break;
+        case ELE_TAG_ShellDKGQ:
+	  OPS_Func = OPS_ShellDKGQ;
+            break;	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
@@ -462,7 +522,8 @@ Mesh::newElements(const ID &elends) {
     }
 
 
-    int eletag = this->nextEleTag();
+    int eletag = nextEleTag();
+    int ndtag = nextNodeTag();
 
     // create elements
     ID neweletags(elends.Size() / numelenodes);
@@ -476,12 +537,18 @@ Mesh::newElements(const ID &elends) {
 
         // info
         ID info(numelenodes + 3);
+        if (eleType == ELE_TAG_PFEMElement2DCompressible) {
+            info.resize(numelenodes + 4);
+        }
         info(0) = 2; // load data
         info(1) = this->getTag(); // mesh tag
         info(2) = neweletags(i); // ele tag
         for (int j = 0; j < numelenodes; ++j) {
             // get elenode
             info(3 + j) = elends(numelenodes * i + j);
+        }
+        if (eleType == ELE_TAG_PFEMElement2DCompressible) {
+            info(3+numelenodes) = ndtag + i;
         }
 
         // create element
@@ -491,7 +558,7 @@ Mesh::newElements(const ID &elends) {
     // add elements to domain
     for (unsigned int i = 0; i < neweles.size(); ++i) {
         if (neweles[i] == 0) {
-            opserr << "WARING: run out of memory for creating element\n";
+            opserr << "WARNING: run out of memory for creating element\n";
             return -1;
         }
         if (domain->addElement(neweles[i]) == false) {

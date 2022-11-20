@@ -127,7 +127,13 @@
       <UniqueIdentifier>{01757374-de7e-4d75-aa0d-450317e0f184}</UniqueIdentifier>
     </Filter>
     <Filter Include="RockingBC">
-      <UniqueIdentifier>{db29c8b8-63a0-4fb4-83ca-08df7e19036f}</UniqueIdentifier>
+      <UniqueIdentifier>{91ebcb15-2aac-4ce7-ad6a-0b8c7b83b286}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CEqElement">
+      <UniqueIdentifier>{0e9b8d94-5562-43c8-a721-4ab2cc9c0edf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PML">
+      <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +198,9 @@
       <Filter>zeroLength</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp">
+      <Filter>zeroLength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactASDimplex.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp">
@@ -701,6 +710,12 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
       <Filter>componentElement</Filter>
     </ClCompile>
@@ -845,6 +860,12 @@
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp">
       <Filter>absorbentBoundaries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp">
       <Filter>UWelements</Filter>
     </ClCompile>
@@ -911,6 +932,24 @@
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp">
       <Filter>RockingBC</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp">
+      <Filter>CEqElement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
+      <Filter>crdTransf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -965,6 +1004,9 @@
       <Filter>zeroLength</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.h">
+      <Filter>zeroLength</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactASDimplex.h">
       <Filter>zeroLength</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.h">
@@ -1411,6 +1453,12 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
       <Filter>componentElement</Filter>
     </ClInclude>
@@ -1558,6 +1606,12 @@
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h">
       <Filter>absorbentBoundaries</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h">
       <Filter>UWelements</Filter>
     </ClInclude>
@@ -1620,6 +1674,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h">
+      <Filter>CEqElement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ElasticBeamWarping3d.h">
+      <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnWarping3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
+      <Filter>crdTransf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
+      <Filter>PML</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

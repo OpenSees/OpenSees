@@ -117,7 +117,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         R[2][2] = vecInLocXZPlane(2);
         
         // check rigid joint offset for node I
-        if (&rigJntOffset1 == 0 || rigJntOffset1.Size() != 3 ) {
+        if (rigJntOffset1.Size() != 3 ) {
             opserr << "LinearCrdTransf3d::LinearCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
             opserr << "Size must be 3\n";      
         }
@@ -129,7 +129,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         }
         
         // check rigid joint offset for node J
-        if (&rigJntOffset2 == 0 || rigJntOffset2.Size() != 3 ) {
+        if (rigJntOffset2.Size() != 3 ) {
             opserr << "LinearCrdTransf3d::LinearCrdTransf3d:  Invalid rigid joint offset vector for node J\n";
             opserr << "Size must be 3\n";      
         }
@@ -293,8 +293,9 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
     L = dx.Norm();
     
     if (L == 0.0) {
-        opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
-        return -2;  
+      opserr << "\nLinearCrdTransf3d::computeElemtLengthAndOrien transfTag = "
+	     << this->getTag() << "\nelement has zero length" << endln;
+      return -2;  
     }
     
     // calculate the element local x axis components (direction cosines)
@@ -345,9 +346,9 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     double ynorm = yAxis.Norm();
     
     if (ynorm == 0) {
-        opserr << "\nLinearCrdTransf3d::getLocalAxes";
-        opserr << "\nvector v that defines plane xz is parallel to x axis\n";
-        return -3;
+      opserr << "\nLinearCrdTransf3d::getLocalAxes transfTag = " << this->getTag();
+      opserr << "\nvector v that defines plane xz is parallel to x axis" << endln;
+      return -3;
     }
     
     yAxis /= ynorm;
@@ -372,6 +373,23 @@ LinearCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     R[2][2] = zAxis(2);
     
     return 0;
+}
+
+int
+LinearCrdTransf3d::getRigidOffsets(Vector &offsets)
+{
+  if (nodeIOffset != 0) {
+    offsets(0) = nodeIOffset[0];
+    offsets(1) = nodeIOffset[1];
+    offsets(2) = nodeIOffset[2];
+  }
+  if (nodeJOffset != 0) {
+    offsets(3) = nodeJOffset[0];
+    offsets(4) = nodeJOffset[1];
+    offsets(5) = nodeJOffset[2];
+  }
+  
+  return 0;
 }
 
 

@@ -38,11 +38,9 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <MatrixUtil.h>
-#include <classTags.h>
 #include <SectionAggregator.h>
 #include <MaterialResponse.h>
 #include <ID.h>
-#include <FiberSection2d.h>			//by SAJalali
 #include <string.h>
 
 #include <classTags.h>
@@ -56,7 +54,7 @@ void* OPS_SectionAggregator()
 	opserr << "Want: section Aggregator tag? uniTag1? code1? ... <-section secTag?>" << endln;
 	return 0;
     }
-	    
+
     int tag;
     int secTag;
     SectionForceDeformation *theSec = 0;
@@ -67,16 +65,44 @@ void* OPS_SectionAggregator()
 	return 0;
     }
 
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    int numOptionalArgs = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string arg = OPS_GetString();
+      if (arg == "-section") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING SectionAggregator: failed to get section tag";
+	    return 0;
+	  }
+	  numOptionalArgs++;
+
+	  theSec = OPS_getSectionForceDeformation(secTag);
+	  if (theSec == 0) {
+	    opserr << "WARNING section does not exist\n";
+	    opserr << "section: " << secTag; 
+	    opserr << "\nsection Aggregator: " << tag << endln;
+	    return 0;
+	  }
+	}	
+      }
+    }
+
+    OPS_ResetCurrentInputArg(-numArgs);    
+    numArgs = numArgs - numOptionalArgs;
+
     // uni mat tags and section dofs
     std::vector<UniaxialMaterial*> theMats;
     ID codes(0, 10);
-    while (OPS_GetNumRemainingInputArgs() > 1) {
+    while (numArgs > 1) {
 	int matTag;
 	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-	    OPS_ResetCurrentInputArg(-1);
-	    break;
+	  opserr << "ERROR SectionAggregator - could not read matTag input" << endln;
+	  return 0;
 	}
-
+	numArgs--;
+	
 	UniaxialMaterial* mat = OPS_getUniaxialMaterial(matTag);
 	    
 	if (mat == 0) {
@@ -89,6 +115,8 @@ void* OPS_SectionAggregator()
 	theMats.push_back(mat);
 	
 	const char* type = OPS_GetString();
+	numArgs--;
+
 	int code = 0;
 	if (strcmp(type,"Mz") == 0) 
 	    code = SECTION_RESPONSE_MZ;
@@ -114,24 +142,6 @@ void* OPS_SectionAggregator()
     if (nMats == 0) {
       opserr << "No material is given\n";
       return 0;
-    }
-
-    // section
-    if (OPS_GetNumRemainingInputArgs() > 1) {
-	const char* flag = OPS_GetString();
-	if (strcmp(flag, "-section") == 0) {
-	    if (OPS_GetIntInput(&numdata, &secTag) < 0) {
-		opserr << "WARNING invalid Aggregator section tag" << endln;
-		return 0;
-	    }
-	    theSec = OPS_getSectionForceDeformation(secTag);
-	    if (theSec == 0) {
-		opserr << "WARNING section does not exist\n";
-		opserr << "section: " << secTag; 
-		opserr << "\nsection Aggregator: " << tag << endln;
-		return 0;
-	    }
-	}
     }
 
     if (theSec) {
@@ -954,51 +964,61 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
   
   Response *theResponse =0;
 
-  if ( (strcmp(argv[0],"deformations") == 0) || (strcmp(argv[0],"deformation") == 0) || 
-	(strcmp(argv[0],"forces") == 0) || (strcmp(argv[0],"force") == 0) ||
-       (strcmp(argv[0],"forceAndDeformation") == 0)) {
-    
-    return this->SectionForceDeformation::setResponse(argv, argc, output);
-  } 
-  // by SAJalali
-  int num = numMats;
-  if (theSection != 0)
-	  num++;
-  if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
-	  return theResponse = new MaterialResponse(this, 8, Vector(num));
+  if (argc > 2 && (strcmp(argv[0],"addition") == 0 || strcmp(argv[0],"material") == 0)) {
+
+    int sectionCode = SECTION_RESPONSE_NONE;
+    if (strcmp(argv[1],"Mz") == 0)
+      sectionCode = SECTION_RESPONSE_MZ;
+    if (strcmp(argv[1],"My") == 0)
+      sectionCode = SECTION_RESPONSE_MY;
+    if (strcmp(argv[1],"Vy") == 0)
+      sectionCode = SECTION_RESPONSE_VY;
+    if (strcmp(argv[1],"Vz") == 0)
+      sectionCode = SECTION_RESPONSE_VZ;                
+    if (strcmp(argv[1],"P") == 0)
+      sectionCode = SECTION_RESPONSE_P;
+    if (strcmp(argv[1],"T") == 0)
+      sectionCode = SECTION_RESPONSE_T;    
+    // Can add the warping and shell response too (would also need to
+    // add them in OPS_SectionAggregator)
+
+    if (sectionCode != SECTION_RESPONSE_NONE) {
+      int sectionOrder = (theSection == 0) ? 0 : theSection->getOrder();
+      for (int i = 0; i < numMats; i++)
+	if (sectionCode == (*theCode)(sectionOrder + i))
+	  return theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    }
+    else {
+      // Get the tag of the material
+      int materialTag = atoi(argv[1]);
+      
+      // Loop to find the right material
+      int ok = 0;
+      for (int i = 0; i < numMats; i++)
+	if (materialTag == theAdditions[i]->getTag())
+	  return theAdditions[i]->setResponse(&argv[2], argc-2, output);
+    }
   }
 
+  // For backward compatibility
+  if (argc > 1 && strcmp(argv[0],"section") == 0 && theSection != 0)
+    theResponse = theSection->setResponse(&argv[1], argc-1, output);
 
-  if (theSection != 0)
-    return theSection->setResponse(argv, argc, output);
-  else 
-    return this->SectionForceDeformation::setResponse(argv, argc, output);
+  // Call default method
+  if (theResponse == 0)
+    theResponse = SectionForceDeformation::setResponse(argv, argc, output);
+    
+  // If that didn't work, pass along to section
+  if (theResponse == 0 && theSection != 0)
+    theResponse = theSection->setResponse(argv, argc, output);
 
-  return 0;
+  return theResponse;
 }
 
-//by SAJalali
 int
 SectionAggregator::getResponse(int responseID, Information &sectInfo)
 {
-	FiberSection2d* sec = 0;
-	int num = numMats;
-	if (theSection != 0)
-		num++;
-	Vector res(num);
-	if (responseID == 8) {
-		for (int i = 0; i < numMats; i++)
-			res(i) = theAdditions[i]->getEnergy();
-		sec = (FiberSection2d*)theSection;
-		if (sec != 0)
-			res(numMats) = sec->getEnergy();
-		sectInfo.setVector(res);
-		//opserr << "energyVect=" << res << "\n";
-	}
-	else
-		return SectionForceDeformation::getResponse(responseID, sectInfo);
-
-	return 0;
+  return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 
 

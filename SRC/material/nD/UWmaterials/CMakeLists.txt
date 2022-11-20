@@ -1,0 +1,52 @@
+#==============================================================================
+# 
+#        OpenSees -- Open System For Earthquake Engineering Simulation
+#                Pacific Earthquake Engineering Research Center
+#
+#==============================================================================
+target_sources(OPS_Material
+    PRIVATE
+      BoundingCamClay.cpp
+      BoundingCamClay3D.cpp
+      BoundingCamClayPlaneStrain.cpp
+      ContactMaterial2D.cpp
+      ContactMaterial3D.cpp
+      DruckerPrager.cpp
+      DruckerPrager3D.cpp
+      DruckerPragerPlaneStrain.cpp
+      InitialStateAnalysisWrapper.cpp
+      J2CyclicBoundingSurface.cpp
+      J2CyclicBoundingSurface3D.cpp
+      J2CyclicBoundingSurfacePlaneStrain.cpp
+      ManzariDafalias.cpp
+      ManzariDafalias3D.cpp
+      ManzariDafalias3DRO.cpp
+      ManzariDafaliasPlaneStrain.cpp
+      ManzariDafaliasPlaneStrainRO.cpp
+      ManzariDafaliasRO.cpp
+      PM4Sand.cpp
+      PM4Silt.cpp
+    PUBLIC
+      BoundingCamClay.h
+      BoundingCamClay3D.h
+      BoundingCamClayPlaneStrain.h
+      ContactMaterial2D.h
+      ContactMaterial3D.h
+      DruckerPrager.h
+      DruckerPrager3D.h
+      DruckerPragerPlaneStrain.h
+      InitialStateAnalysisWrapper.h
+      J2CyclicBoundingSurface.h
+      J2CyclicBoundingSurface3D.h
+      J2CyclicBoundingSurfacePlaneStrain.h
+      ManzariDafalias.h
+      ManzariDafalias3D.h
+      ManzariDafalias3DRO.h
+      ManzariDafaliasPlaneStrain.h
+      ManzariDafaliasPlaneStrainRO.h
+      ManzariDafaliasRO.h
+      PM4Sand.h
+      PM4Silt.h
+)
+
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

@@ -160,7 +160,7 @@ class ZeroLengthContact3D: public Element
   int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   void Print(OPS_Stream &s, int flag =0);
   
-  Response *setResponse(const char **argv, int argc, Information &eleInformation);
+  Response *setResponse(const char **argv, int argc, OPS_Stream &output);
   int getResponse(int responseID, Information &eleInformation);
   
   

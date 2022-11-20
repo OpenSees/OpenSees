@@ -44,6 +44,7 @@ class CircSectionCell: public Cell
     // reinforcing bar inquiring functions
     
     double getArea                     (void) const;
+    double getdValue                   (void) const;    
     const  Matrix &getVertCoords       (void) const;
     const  Vector &getCentroidPosition (void);
 

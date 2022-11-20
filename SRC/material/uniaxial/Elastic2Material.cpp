@@ -41,20 +41,20 @@
 
 int Elastic2Material::zeroE = 0;
 
-void* OPS_Elastic2()
+void* OPS_Elastic2Material()
 {
     int argc = OPS_GetNumRemainingInputArgs() + 2;
     
     if (argc < 4 || argc > 5) {
 	opserr << "WARNING invalid number of arguments\n";
-	opserr << "Want: uniaxialMaterial Elastic tag? E? <eta?>\n";
+	opserr << "Want: uniaxialMaterial Elastic2 tag? E? <eta?>\n";
 	return 0;
     }    
 
     int tag;
     int numdata = 1;
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING invalid uniaxialMaterial Elastic tag\n";
+	opserr << "WARNING invalid uniaxialMaterial Elastic2 tag\n";
 	return 0;
     }
 

@@ -82,6 +82,7 @@
 #include <ID.h>
 #include <Vector.h>
 #include <Matrix.h>
+#include <Damping.h>
 
 class SectionForceDeformation;
 class ASDShellQ4Transformation;
@@ -101,11 +102,15 @@ public:
         int node3,
         int node4,
         SectionForceDeformation* section,
-        bool corotational = false);
+        bool corotational = false,
+        Damping *theDamping = 0);
     virtual ~ASDShellQ4();
 
+    const char *getClassType(void) const {return "ASDShellQ4";}
+    
     // domain
     void setDomain(Domain* theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // print
     void Print(OPS_Stream& s, int flag);
@@ -146,6 +151,9 @@ public:
 
     int setParameter(const char** argv, int argc, Parameter& param);
 
+    // display -ambaker1
+    int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
+
 private:
 
     // internal method to compute everything using switches...
@@ -155,6 +163,8 @@ private:
     void AGQIupdate(const Vector& UL);
     void AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs);
 
+
+
 private:
 
     // cross sections
@@ -162,6 +172,7 @@ private:
 
     // nodal ids
     ID m_node_ids = ID(4);
+    Node* nodePointers[4] = { nullptr, nullptr, nullptr, nullptr }; //pointers to four nodes -ambaker1
 
     // coordinate transformation
     ASDShellQ4Transformation* m_transformation = nullptr;
@@ -169,14 +180,14 @@ private:
     // vectors for applying load (allocated only if necessary)
     Vector* m_load = nullptr;
 
-    // drilling strain for the indipendent rotation field (Hughes-Brezzi)
+    // drilling strain for the independent rotation field (Hughes-Brezzi)
     double m_drill_strain[4] = { 0.0, 0.0, 0.0, 0.0 };
     double m_drill_stiffness = 0.0;
 
     // section orientation with respect to the local coordinate system
     double m_angle = 0.0;
 
-    // members for non-linear treatement of AGQI internal DOFs:
+    // members for non-linear treatment of AGQI internal DOFs:
     // it has 24 displacement DOFs
     // and 4 internal DOFs for membrane enhancement
     Vector m_Q = Vector(4);
@@ -187,6 +198,10 @@ private:
     Matrix m_KQQ_inv = Matrix(4, 4);
     Matrix m_KQU = Matrix(4, 24); // L = G'*C*B
     Matrix m_KUQ = Matrix(24, 4); // L^T = B'*C'*G
+    Damping *m_damping[4] = { nullptr, nullptr, nullptr, nullptr };
+
+    // initialization flag
+    bool m_initialized = false;
 };
 
 #endif // ASDShellQ4_h

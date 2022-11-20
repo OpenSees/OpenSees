@@ -129,23 +129,27 @@ NDMaterial::getCopy(const char *type)
       strcmp(type,"PlaneStress2D") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     PlaneStressMaterial *clone = new PlaneStressMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"BeamFiber") == 0 ||
 	   strcmp(type,"TimoshenkoFiber") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     BeamFiberMaterial *clone = new BeamFiberMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"BeamFiber2d") == 0 ||
 	   strcmp(type,"TimoshenkoFiber2d") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     BeamFiberMaterial2d *clone = new BeamFiberMaterial2d(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else if (strcmp(type,"PlateFiber") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     PlateFiberMaterial *clone = new PlateFiberMaterial(this->getTag(),*copy);
+    delete copy;
     return clone;
   }
   else
@@ -300,12 +304,15 @@ NDMaterial::setResponse (const char **argv, int argc, OPS_Stream &output)
 	  const Matrix &res = this->getTangent();
 	  theResponse = new MaterialResponse(this, 4, this->getTangent());
   }
+
+  // Massimo Petracca - 28/12/2021:
+  // this should be handled by the PlaneStressUserMaterial... not here!
   //default damage output - added by V.K. Papanikolaou [AUTh] - start
-  else if (strcmp(argv[0], "Damage") == 0 || strcmp(argv[0], "damage") == 0) {
-      static Vector vec = Vector(3);
-      for (int i = 0; i < 3; i++) vec[i] = 0;
-      theResponse = new MaterialResponse(this, 5, vec);  // zero vector
-  }
+  //else if (strcmp(argv[0], "Damage") == 0 || strcmp(argv[0], "damage") == 0) {
+  //    static Vector vec = Vector(3);
+  //    for (int i = 0; i < 3; i++) vec[i] = 0;
+  //    theResponse = new MaterialResponse(this, 5, vec);  // zero vector
+  //}
   //default damage output - added by V.K. Papanikolaou [AUTh] - end 
 
   output.endTag(); // NdMaterialOutput
@@ -323,6 +330,12 @@ NDMaterial::getResponse (int responseID, Information &matInfo)
   case 2:
     return matInfo.setVector(this->getStrain());
     
+    // Massimo Petracca - 28/12/2021: adding missing responseID
+  case 3:
+      return matInfo.setVector(this->getTempAndElong());
+  case 4:
+      return matInfo.setMatrix(this->getTangent());
+
   default:
     return -1;
   }

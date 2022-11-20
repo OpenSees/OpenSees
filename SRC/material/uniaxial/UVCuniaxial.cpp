@@ -64,7 +64,7 @@ void* OPS_UVCuniaxial(void) {
     return 0;
   }
 
-  // Read in the updated model paramters
+  // Read in the updated model parameters
   nInputsToRead = N_UPDATED_PROPERTIES;
   if (OPS_GetDoubleInput(&nInputsToRead, updProps) != 0) {
     opserr << inputInstructions.c_str() << endln;
@@ -182,6 +182,7 @@ void UVCuniaxial::returnMapping(double strainIncrement) {
   double stressRadius = 0.;
   double phi = 0.;
   double ePEq = strainPEqConverged;
+  double ePTotal = 0.;
 
   // Yield criteria
   for (int i = 0; i < nBackstresses; ++i) {
@@ -203,14 +204,13 @@ void UVCuniaxial::returnMapping(double strainIncrement) {
 
     aux = elasticModulus;
     for (int i = 0; i < nBackstresses; ++i) {
-      aux = aux + sgn<double>(stressRadius) * cK[i] -
-        gammaK[i] * alphaKTrial[i];
+      aux = aux + cK[i] - sgn<double>(stressRadius) * gammaK[i] * alphaKTrial[i];
     }
 
     // Calculate the plastic strain from the strain increment
     dit = 2. * stressRadius * aux +
-      2. * sy * qInf * bIso * exp(-bIso * ePEq) -
-      2. * sy * dInf * aIso * exp(-aIso * ePEq);
+          sgn<double>(stressRadius) * 2. * sy * qInf * bIso * exp(-bIso * ePEq) -
+          sgn<double>(stressRadius) * 2. * sy * dInf * aIso * exp(-aIso * ePEq);
     plasticStrainIncrement = phi / dit;
 
     // Prevent Newton step from overshooting
@@ -220,7 +220,8 @@ void UVCuniaxial::returnMapping(double strainIncrement) {
     }
 
     // Update the variables
-    ePEq = ePEq + abs(plasticStrainIncrement);
+    ePTotal = ePTotal + plasticStrainIncrement;
+    ePEq = strainPEqConverged + abs(ePTotal);
     stressTrial = stressTrial - elasticModulus * plasticStrainIncrement;
     sigmaY1 = qInf * (1. - exp(-bIso * ePEq));
     sigmaY2 = dInf * (1. - exp(-aIso * ePEq));

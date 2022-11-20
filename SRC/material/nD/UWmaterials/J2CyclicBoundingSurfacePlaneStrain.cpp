@@ -121,7 +121,7 @@ const Matrix&
 J2CyclicBoundingSurfacePlaneStrain::getTangent()
 {
 	Matrix C(6,6);
-	C = J2CyclicBoundingSurface::getTangent();
+	C = J2CyclicBoundingSurface::calcTangent();
 
 	tangent(0,0) = C(0,0);
 	tangent(0,1) = C(0,1);

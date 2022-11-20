@@ -38,23 +38,20 @@ in STKO components are assumed all different!
 // some definitions
 
 /* 
-loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked dynamically.
-If uncommeted, then you need to define the macro H5_BUILT_AS_DYNAMIC_LIB to tell hdf5 that
-we want to dynamic link (shared library).
-Then we need to set the HDF5 include directory.
-And finally for the linker: hdf5 or libhdf5
-and path to HDF5 lib dir
+loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked statically.
 */
-#define MPCO_HDF5_LOADED_AT_RUNTIME 
+#ifndef _HDF5
+#define MPCO_HDF5_LOADED_AT_RUNTIME
+#endif // !_HDF5 
 
 /* if hdf5 is loaded at runtime, this macro makes the process of loading hdf5 verbose */
 #define MPCO_LIBLOADER_VERBOSE
 
 /* max number of iterations to guess the number of cross sections in elements */
-#define MPCO_MAX_TRIAL_NSEC 1000
+#define MPCO_MAX_TRIAL_NSEC 100
 
 /* max number of iterations to guess the number of fibers in cross sections */
-#define MPCO_MAX_TRIAL_NFIB 1000000
+#define MPCO_MAX_TRIAL_NFIB 100000
 
 //#define MPCO_WRITE_SECTION_IS_VERBOSE
 //#define MPCO_WRITE_LOC_AX_IS_VERBOSE
@@ -64,7 +61,7 @@ and path to HDF5 lib dir
 enables SWMR (Single Writer - Multiple Readers) to allow reading this database from multiple processes
 while opensees is writing data. Warning: this is a new feature in hdf5 version 1.10.0.
 */
-#define MPCO_USE_SWMR
+//#define MPCO_USE_SWMR
 
 // opensees
 #include "MPCORecorder.h"
@@ -165,19 +162,19 @@ typedef int64_t hid_t;
 typedef int herr_t;
 typedef unsigned long long 	hsize_t;
 typedef int H5T_str_t; // enum (int) in hdf5
-typedef unsigned int H5F_libver_t; // enum (uint) in hdf5
-typedef unsigned int H5F_scope_t; // enum (uint) in hdf5
+typedef int H5F_libver_t; // enum (int) in hdf5
+typedef int H5F_scope_t; // enum (int) in hdf5
 
 /*
 HDF5 version info
 */
 
 #define H5_VERS_MAJOR	1	/* For major interface/format changes  	     */
-#define H5_VERS_MINOR	10	/* For minor interface/format changes  	     */
-#define H5_VERS_RELEASE	1	/* For tweaks, bug-fixes, or development     */
+#define H5_VERS_MINOR	12	/* For minor interface/format changes  	     */
+#define H5_VERS_RELEASE	0	/* For tweaks, bug-fixes, or development     */
 #define H5_VERS_SUBRELEASE ""	/* For pre-releases like snap0       */
                               /* Empty string for real releases.           */
-#define H5_VERS_INFO    "HDF5 library version: 1.10.1"      /* Full version string */
+#define H5_VERS_INFO    "HDF5 library version: 1.12.0"      /* Full version string */
 
 /*
 cout wrapper for library loader verbosity
@@ -1289,7 +1286,8 @@ namespace mpco {
 			Tetrahedron_10N,
 			Hexahedron_8N = 400,
 			Hexahedron_20N,
-			Hexahedron_27N
+			Hexahedron_27N,
+			Quadrilateral_CohesiveBand_4N = 500
 		};
 	};
 
@@ -1317,7 +1315,7 @@ namespace mpco {
 
 	struct ElementOutputDescriptorType {
 		/**
-		these paths are intepreted as
+		these paths are interpreted as
 		results on elements (either constant over element (# metadata = 1) or per element node (# metadata = # element nodes)
 		[Element]
 		these paths are interpreted as
@@ -1407,7 +1405,7 @@ namespace mpco {
 	};
 
 	/*
-	holds current informations
+	holds current information
 	*/
 	class ProcessInfo
 	{
@@ -2682,6 +2680,7 @@ namespace mpco {
 				, dummy_section_flag(false)
 				, gp_number(0)
 				, gp_eta(0.0)
+				, gp_weight(0.0)
 				, fib_y(0.0)
 				, fib_z(0.0)
 				, fib_a(0.0)
@@ -2695,6 +2694,7 @@ namespace mpco {
 				, dummy_section_flag(other.dummy_section_flag)
 				, gp_number(other.gp_number)
 				, gp_eta(other.gp_eta)
+				, gp_weight(other.gp_weight)
 				, fib_y(other.fib_y)
 				, fib_z(other.fib_z)
 				, fib_a(other.fib_a)
@@ -2720,6 +2720,7 @@ namespace mpco {
 					dummy_section_flag = other.dummy_section_flag;
 					gp_number = other.gp_number;
 					gp_eta = other.gp_eta;
+					gp_weight = other.gp_weight;
 					fib_y = other.fib_y;
 					fib_z = other.fib_z;
 					fib_a = other.fib_a;
@@ -2740,8 +2741,9 @@ namespace mpco {
 			bool dummy_section_flag;
 			// for gauss point
 			int gp_number;
-			double gp_eta; // use only eta (for beams)
-						   // for fibers
+			double gp_eta; // use only eta (for 1D custom integration)
+			double gp_weight;
+			// for fibers
 			double fib_y;
 			double fib_z;
 			double fib_a;
@@ -2793,6 +2795,20 @@ namespace mpco {
 				}
 			}
 
+			void appendGaussLocation(std::vector<double>& x) const {
+				if (type == mpco::ElementOutputDescriptorType::Gauss)
+					x.push_back(gp_eta);
+				for (size_t i = 0; i < items.size(); i++)
+					items[i]->appendGaussLocation(x);
+			}
+
+			void appendGaussWeight(std::vector<double>& x) const {
+				if (type == mpco::ElementOutputDescriptorType::Gauss)
+					x.push_back(gp_weight);
+				for (size_t i = 0; i < items.size(); i++)
+					items[i]->appendGaussWeight(x);
+			}
+
 			void getFiberData(std::vector<mpco::element::FiberData> &data,
 				std::vector<int> &data_mat_id,
 				std::vector<int> &sec_id,
@@ -2831,6 +2847,16 @@ namespace mpco {
 				fixFloatingFiberOutputInternal();
 			}
 
+			void fixSectionAfterFiberDueToFiberOutputFail() {
+				/*
+				due to a recent commit, the SectionForceDeformation first checks for fibers.
+				If it fails when the fiber does not have the requested output, the SectionForceDeformation
+				falls back to its setResponse, thus opening a section tag after a fiber tag without giving any result.
+				This messes up everything!
+				*/
+				fixSectionAfterFiberDueToFiberOutputFailInternal();
+			}
+
 			int getNextGpTag() {
 				int next_gp_tag = -1;
 				getNextGpTagInternal(next_gp_tag);
@@ -2849,7 +2875,7 @@ namespace mpco {
 				std::string indent = ss_indent.str();
 				ss << indent << "<" << mpco::ElementOutputDescriptorType::toString(this->type);
 				if (this->type == mpco::ElementOutputDescriptorType::Gauss) {
-					ss << " number=\"" << this->gp_number << "\" eta=\"" << this->gp_eta << "\"";
+					ss << " number=\"" << this->gp_number << "\" eta=\"" << this->gp_eta << "\" weight=\"" << this->gp_weight << "\"";
 				}
 				else if (this->type == mpco::ElementOutputDescriptorType::Section) {
 					ss << " tag=\"" << this->tag << "\"";
@@ -2910,13 +2936,6 @@ namespace mpco {
 				for (size_t i = 0; i < items.size(); i++)
 					items[i]->makeHeaderInternal(header, temp_path, temp_gp_id);
 				temp_path.pop_back();
-			}
-
-			void appendGaussLocation(std::vector<double> &x) const {
-				if (type == mpco::ElementOutputDescriptorType::Gauss)
-					x.push_back(gp_eta);
-				for (size_t i = 0; i < items.size(); i++)
-					items[i]->appendGaussLocation(x);
 			}
 
 			void appendFiberData(std::vector<mpco::element::FiberData> &data, std::vector<int> &data_mat_id,
@@ -2983,6 +3002,21 @@ namespace mpco {
 				}
 			}
 
+			void fixSectionAfterFiberDueToFiberOutputFailInternal() {
+				if (items.size() > 0) {
+					if (items[0]->type == mpco::ElementOutputDescriptorType::Fiber) {
+						/* check only the first one. items are of the same type...*/
+						if (items.size() > 1) {
+							if (items.back()->type != mpco::ElementOutputDescriptorType::Fiber) {
+								items.pop_back();
+							}
+						}
+					}
+					for (size_t i = 0; i < items.size(); i++)
+						items[i]->fixSectionAfterFiberDueToFiberOutputFailInternal();
+				}
+			}
+
 			void getNextGpTagInternal(int &next_gp_tag) {
 				if (type == mpco::ElementOutputDescriptorType::Gauss) {
 					if (next_gp_tag < gp_number)
@@ -3028,6 +3062,7 @@ namespace mpco {
 					}
 				}
 			}
+
 			void mergeSecInternal() {
 				if (items.size() > 0) {
 					if (items[0]->type == mpco::ElementOutputDescriptorType::Section) {
@@ -3062,11 +3097,18 @@ namespace mpco {
 		class OutputDescriptorStream : public OPS_Stream
 		{
 		public:
+			enum StreamErrorCode {
+				ERROR_CODE_OK = 0,
+				ERROR_CODE_SECTION_AFTER_FIBER,
+				ERROR_CODE_GENERIC
+			};
+		public:
 			OutputDescriptorStream(mpco::element::OutputDescriptor * _d)
 				: OPS_Stream(OPS_STREAM_TAGS_MPCORecorder_ElementOutputDescriptorStream)
 				, descr(_d)
 				, current_level(0)
 				, pending_close_tag(false)
+				, error_code(ERROR_CODE_OK)
 			{}
 			~OutputDescriptorStream() {}
 
@@ -3116,7 +3158,7 @@ namespace mpco {
 						when the 'real' tag gets closed, we automatically close the 'manual' gauss tag
 						*/
 						pending_close_tag = true;
-						// recursion: recal this request now inside a gauss point tag
+						// recursion: recall this request now inside a gauss point tag
 						tag(name);
 					}
 				}
@@ -3126,6 +3168,14 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Material;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
+						if (eo_curr_lev->items.size() > 0) {
+							// multiple materials cannot be children of same gauss/fiber point. this happens when
+							// an objects opens the tag, fails in getting response, and falls back to base class implementation,
+							// which opens again the same tag
+							for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items)
+								delete sub_item;
+							eo_curr_lev->items.clear();
+						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3142,6 +3192,17 @@ namespace mpco {
 						mpco::element::OutputDescriptor *eo_new_curr_lev = new mpco::element::OutputDescriptor();
 						eo_new_curr_lev->type = mpco::ElementOutputDescriptorType::Section;
 						ensureItemsOfUniformType(eo_curr_lev, eo_new_curr_lev);
+						if (error_code == ERROR_CODE_OK) {
+							if (eo_curr_lev->items.size() > 0) {
+								// multiple sections cannot be children of same gauss point. this happens when
+								// an objects opens the tag, fails in getting response, and falls back to base class implementation,
+								// which opens again the same tag
+								for (mpco::element::OutputDescriptor* sub_item : eo_curr_lev->items)
+									delete sub_item;
+								eo_curr_lev->items.clear();
+							}
+							// do the above check only if there is no inconsistency with previous items!
+						}
 						eo_curr_lev->items.push_back(eo_new_curr_lev);
 						current_level++;
 					}
@@ -3254,6 +3315,8 @@ namespace mpco {
 					if (eo_curr_lev->type == mpco::ElementOutputDescriptorType::Gauss) {
 						if (strcmp(name, "eta") == 0)
 							eo_curr_lev->gp_eta = value;
+						if (strcmp(name, "weight") == 0)
+							eo_curr_lev->gp_weight = value;
 					}
 					else if (eo_curr_lev->type == mpco::ElementOutputDescriptorType::Fiber) {
 						if (strcmp(name, "yLoc") == 0)
@@ -3315,11 +3378,18 @@ namespace mpco {
 			void ensureItemsOfUniformType(mpco::element::OutputDescriptor *parent, mpco::element::OutputDescriptor *child) {
 				if (parent->items.size() > 0) {
 					if (child->type != parent->items.back()->type) {
-						opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
+						/*opserr << "MPCORecorder Error: (mpco::element::OutputDescriptor) "
 							"Responses at the same level of the response tree must be of the same type.\n"
 							"Expected: " << mpco::ElementOutputDescriptorType::toString(parent->items.back()->type)
 							<< ", given: " << mpco::ElementOutputDescriptorType::toString(child->type) << "\n";
-						exit(-1);
+						exit(-1);*/
+						// M.Petracca - due to a recent commit (08/10/2021)
+						// this one can be converted from a fatal error to a silent-skip...
+						error_code = ERROR_CODE_GENERIC;
+						if ((child->type == mpco::ElementOutputDescriptorType::Section) &&
+							(parent->items.back()->type == mpco::ElementOutputDescriptorType::Fiber)) {
+							error_code = ERROR_CODE_SECTION_AFTER_FIBER;
+						}
 					}
 				}
 			}
@@ -3328,6 +3398,7 @@ namespace mpco {
 			mpco::element::OutputDescriptor *descr;
 			int current_level;
 			bool pending_close_tag;
+			StreamErrorCode error_code;
 		};
 
 		class OutputResponse
@@ -3407,15 +3478,17 @@ namespace mpco {
 		struct ElementIntegrationRule
 		{
 			ElementIntegrationRule()
-				: int_rule_type(ElementIntegrationRuleType::CustomIntegrationRule), x()
+				: int_rule_type(ElementIntegrationRuleType::CustomIntegrationRule)
 			{}
 			ElementIntegrationRule(ElementIntegrationRuleType::Enum _int_rule_type)
-				: int_rule_type(_int_rule_type), x()
+				: int_rule_type(_int_rule_type)
 			{}
 			inline bool operator < (const ElementIntegrationRule &other) const {
 				const double rel_tol = 1.0e-5;
 				if (int_rule_type < other.int_rule_type) return true;
 				if (int_rule_type > other.int_rule_type) return false;
+				if (custom_rule_dimension < other.custom_rule_dimension) return true;
+				if (custom_rule_dimension > other.custom_rule_dimension) return false;
 				if (x.size() < other.x.size()) return true;
 				if (x.size() > other.x.size()) return false;
 				for (size_t i = 0; i < x.size(); i++) {
@@ -3430,6 +3503,8 @@ namespace mpco {
 				const double rel_tol = 1.0e-5;
 				if (int_rule_type > other.int_rule_type) return true;
 				if (int_rule_type < other.int_rule_type) return false;
+				if (custom_rule_dimension > other.custom_rule_dimension) return true;
+				if (custom_rule_dimension < other.custom_rule_dimension) return false;
 				if (x.size() > other.x.size()) return true;
 				if (x.size() < other.x.size()) return false;
 				for (size_t i = 0; i < x.size(); i++) {
@@ -3442,6 +3517,7 @@ namespace mpco {
 			}
 			ElementIntegrationRuleType::Enum int_rule_type;
 			std::vector<double> x;
+			int custom_rule_dimension = 1;
 		};
 
 		struct ElementWithSameCustomIntRuleCollection
@@ -3496,6 +3572,15 @@ namespace mpco {
 
 			void mapElements(Domain *d, bool has_region, const std::vector<int> &subset) {
 				/*
+				utilties
+				*/
+				auto lam_get_num_ext_nodes = [](Element* elem) {
+					switch (elem->getClassTag()) {
+					case ELE_TAG_SFI_MVLEM_3D: return 4;
+					default: return elem->getNumExternalNodes();
+					}
+				};
+				/*
 				clear previous mappings
 				*/
 				registered_custom_rules.clear();
@@ -3535,16 +3620,18 @@ namespace mpco {
 					get class tag, geometry and integration rule type
 					*/
 					int elem_type = current_element->getClassTag();
-
-					if (elem_type == ELE_TAG_Subdomain)
+					/*
+					skip element classes that we don't want to record
+					*/
+					if (elem_type == ELE_TAG_Subdomain ||
+						elem_type == ELE_TAG_ASDEmbeddedNodeElement)
 					{
-						//Skip subdomains
 						continue;
 					}
-
 					ElementGeometryType::Enum geom_type;
 					ElementIntegrationRuleType::Enum int_rule_type;
-					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type);
+					int custom_rule_dimension;
+					getGeometryAndIntRuleByClassTag(elem_type, geom_type, int_rule_type, custom_rule_dimension);
 					/*
 					map by class tag
 					*/
@@ -3552,24 +3639,26 @@ namespace mpco {
 					if (elem_coll_by_tag.is_new) {
 						elem_coll_by_tag.class_tag = elem_type;
 						elem_coll_by_tag.class_name = current_element->getClassType();
-						elem_coll_by_tag.num_nodes = current_element->getNumExternalNodes();
+						elem_coll_by_tag.num_nodes = lam_get_num_ext_nodes(current_element);
 						elem_coll_by_tag.geom_type = geom_type;
 						elem_coll_by_tag.is_new = false;
 					}
 					/*
 					make sure that every element with the same tag have the same number of nodes
 					*/
-					if (current_element->getNumExternalNodes() != elem_coll_by_tag.num_nodes) {
+					if (lam_get_num_ext_nodes(current_element) != elem_coll_by_tag.num_nodes) {
 						opserr << "MPCORecorder Error while mapping elements: elements with different number of nodes "
-							"exist withing the same class tag. This is not supported\n";
+							"exist within the same class tag. This is not supported\n";
 						exit(-1);
 					}
 					/*
 					create the integration rule
 					*/
 					ElementIntegrationRule int_rule(int_rule_type);
-					if (int_rule_type == ElementIntegrationRuleType::CustomIntegrationRule)
+					if (int_rule_type == ElementIntegrationRuleType::CustomIntegrationRule) {
 						getCustomGaussPointLocations(current_element, int_rule);
+						int_rule.custom_rule_dimension = custom_rule_dimension;
+					}
 					/*
 					if this is a custom rule, register it
 					*/
@@ -3618,18 +3707,20 @@ namespace mpco {
 			void getGeometryAndIntRuleByClassTag(
 				int elem_class_tag,
 				ElementGeometryType::Enum &geom_type,
-				ElementIntegrationRuleType::Enum &int_type) {
+				ElementIntegrationRuleType::Enum &int_type,
+				int &custom_rule_dimension) {
 				/*
 				set default values. custom geometry (i.e. point cloud)
 				and no integration rule
 				*/
 				geom_type = ElementGeometryType::Custom;
 				int_type = ElementIntegrationRuleType::NoIntegrationRule;
+				custom_rule_dimension = 1;
 				/*
 				2-node line with 1 gp
 				*/
 				if (
-					// ./adpter actuators
+					// ./adapter actuators
 					elem_class_tag == ELE_TAG_Actuator ||
 					elem_class_tag == ELE_TAG_ActuatorCorot ||
 					// ./truss
@@ -3639,6 +3730,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_CorotTruss ||
 					elem_class_tag == ELE_TAG_CorotTruss2 ||
 					elem_class_tag == ELE_TAG_CorotTrussSection ||
+					elem_class_tag == ELE_TAG_InertiaTruss ||
 					// ./zeroLength
 					elem_class_tag == ELE_TAG_ZeroLength ||
 					elem_class_tag == ELE_TAG_ZeroLengthSection ||
@@ -3647,6 +3739,7 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthRocking ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact2D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
+					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
@@ -3736,7 +3829,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPquad ||
-					elem_class_tag == ELE_TAG_SSPquadUP
+					elem_class_tag == ELE_TAG_SSPquadUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D
 					)
 				{
 					geom_type = ElementGeometryType::Quadrilateral_4N;
@@ -3764,6 +3859,18 @@ namespace mpco {
 					) {
 					geom_type = ElementGeometryType::Quadrilateral_4N;
 					int_type = ElementIntegrationRuleType::Quadrilateral_GaussLegendre_2;
+				}
+				/*
+				4-node quadrilateral cohesive with custom rule
+				*/
+				else if (
+					// ./mvlem
+					elem_class_tag == ELE_TAG_MVLEM_3D ||
+					elem_class_tag == ELE_TAG_SFI_MVLEM_3D
+					) {
+					geom_type = ElementGeometryType::Quadrilateral_CohesiveBand_4N;
+					int_type = ElementIntegrationRuleType::CustomIntegrationRule;
+					custom_rule_dimension = 2;
 				}
 				/*
 				9-node quadrilateral with 3x3 gp
@@ -3797,7 +3904,9 @@ namespace mpco {
 				else if (
 					// ./UWelements
 					elem_class_tag == ELE_TAG_SSPbrick ||
-					elem_class_tag == ELE_TAG_SSPbrickUP
+					elem_class_tag == ELE_TAG_SSPbrickUP ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary3D
 					)
 				{
 					geom_type = ElementGeometryType::Hexahedron_8N;
@@ -3874,7 +3983,6 @@ namespace mpco {
 										x_max = ieta;
 								}
 								double span = x_max - x_min;
-								//elem->getNodePtrs(); // HERE
 								if (span == 0.0) {
 									rule.x.resize((size_t)data.Size(), 0.0);
 								}
@@ -3909,7 +4017,7 @@ namespace mpco {
 					Response *eo_response = elem->setResponse(argv, argc, eo_stream);
 					eo_stream.finalizeSetResponse();
 					if (eo_response)
-						delete eo_response; // we dont need it now
+						delete eo_response; // we don't need it now
 					eo_descriptor.getGaussLocations(rule.x);
 					if (rule.x.size() > 0)
 						done = true;
@@ -3918,12 +4026,16 @@ namespace mpco {
 						return;
 				}
 				/*
-				..., otherwise, ask for a dummy response on all sections, findind out what is the number of gauss points
+				..., otherwise, ask for a dummy response on all sections, finding out what is the number of gauss points
 				*/
 				{
 					//std::cout << "get custom gp: trying with \"section(1,2,..,N)\"...\n";
 					bool done = false;
 					std::string request1 = "section";
+					if (elem->getClassTag() == ELE_TAG_MVLEM_3D || 
+						elem->getClassTag() == ELE_TAG_SFI_MVLEM_3D) {
+						request1 = "material";
+					}
 					std::string request3 = "dummy";
 					int argc = 3;
 					const char **argv = new const char*[argc];
@@ -3931,6 +4043,7 @@ namespace mpco {
 					argv[2] = request3.c_str();
 
 					int trial_num = 0;
+					double rule_weight_sum = 0.0;
 					while (true) {
 						trial_num++;
 						if (trial_num > MPCO_MAX_TRIAL_NSEC) {
@@ -3946,9 +4059,11 @@ namespace mpco {
 						Response *eo_response = elem->setResponse(argv, argc, eo_stream);
 						eo_stream.finalizeSetResponse();
 						if (eo_response)
-							delete eo_response; // we dont need it now
+							delete eo_response; // we don't need it now
 						std::vector<double> trial_x;
-						eo_descriptor.getGaussLocations(trial_x);
+						std::vector<double> trial_w;
+						eo_descriptor.appendGaussLocation(trial_x);
+						eo_descriptor.appendGaussWeight(trial_w);
 						if (trial_x.size() > 0) {
 							if (trial_x.size() > 1) {
 								// we should never get here!
@@ -3957,6 +4072,7 @@ namespace mpco {
 									<< "\nonly the first one will be considered\n";
 							}
 							rule.x.push_back(trial_x[0]);
+							rule_weight_sum += trial_w[0];
 						}
 						else {
 							// we reached the maximum number of gauss points for this element
@@ -3964,27 +4080,31 @@ namespace mpco {
 						}
 					}
 					if (rule.x.size() > 0) {
-						if (rule.x.size() == 1) {
-							rule.x[0] = 0.0;
-						}
-						else {
-							double x_min = std::numeric_limits<double>::max();
-							double x_max = -x_min;
-							for (size_t i = 0; i < rule.x.size(); i++) {
-								double ieta = rule.x[i];
-								if (ieta < x_min)
-									x_min = ieta;
-								else if (ieta > x_max)
-									x_max = ieta;
-							}
-							double span = x_max - x_min;
-							if (span == 0.0) {
-								for (size_t i = 0; i < rule.x.size(); i++)
-									rule.x[i] = 0.0;
+						if (std::abs(rule_weight_sum - 2.0) > 1.0e-8) {
+							// don't do auto-normalization if the integration weight is explicitly given
+							// (only considered valid if the integration span is 2.0)
+							if (rule.x.size() == 1) {
+								rule.x[0] = 0.0;
 							}
 							else {
-								for (size_t i = 0; i < rule.x.size(); i++)
-									rule.x[i] = 2.0*(rule.x[i] - x_min) / span - 1.0;
+								double x_min = std::numeric_limits<double>::max();
+								double x_max = -x_min;
+								for (size_t i = 0; i < rule.x.size(); i++) {
+									double ieta = rule.x[i];
+									if (ieta < x_min)
+										x_min = ieta;
+									else if (ieta > x_max)
+										x_max = ieta;
+								}
+								double span = x_max - x_min;
+								if (span == 0.0) {
+									for (size_t i = 0; i < rule.x.size(); i++)
+										rule.x[i] = 0.0;
+								}
+								else {
+									for (size_t i = 0; i < rule.x.size(); i++)
+										rule.x[i] = 2.0 * (rule.x[i] - x_min) / span - 1.0;
+								}
 							}
 						}
 						done = true;
@@ -4007,6 +4127,130 @@ namespace mpco {
 		};
 	}
 
+}
+
+/*utilities for serialization into a string*/
+namespace mpco
+{
+
+	namespace serialization
+	{
+
+#define SerializerFormatDouble std::setprecision(std::numeric_limits<double>::digits10 + 1)
+
+		class Serializer
+		{
+		private:
+			std::stringstream ss;
+
+		public:
+			Serializer() = default;
+			Serializer(const char* c)
+				: ss(c)
+			{}
+			inline std::string str() const {
+				return ss.str();
+			}
+			explicit operator bool() const {
+				return !ss.fail();
+			}
+			bool operator!() const {
+				return ss.fail();
+			}
+
+		public:
+			inline Serializer& operator << (const std::string& x) {
+				ss << x.length() << ' ' << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (bool x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (int x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (mpco::OutputFrequency::IncrementType x) {
+				ss << static_cast<int>(x) << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (std::size_t x) {
+				ss << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (double x) {
+				ss << SerializerFormatDouble << x << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (const std::vector<int>& x) {
+				ss << x.size() << '\n';
+				for (auto i : x)
+					ss << i << '\n';
+				return *this;
+			}
+			inline Serializer& operator << (const std::vector<mpco::NodalResultType::Enum>& x) {
+				ss << x.size() << '\n';
+				for (auto i : x)
+					ss << i << '\n';
+				return *this;
+			}
+
+		public:
+			inline Serializer& operator >> (std::string& x) {
+				std::size_t n;
+				ss >> n; // needed to make it work even when string is not the first entry
+				char dummy;
+				ss.read(&dummy, 1); // 1 white space
+				std::getline(ss, x, '\n');
+				return *this;
+			}
+			inline Serializer& operator >> (bool& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (int& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (mpco::OutputFrequency::IncrementType& x) {
+				int temp;
+				ss >> temp;
+				x = static_cast<mpco::OutputFrequency::IncrementType>(temp);
+				return *this;
+			}
+			inline Serializer& operator >> (std::size_t& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (double& x) {
+				ss >> x;
+				return *this;
+			}
+			inline Serializer& operator >> (std::vector<int>& x) {
+				std::size_t n;
+				if (!(ss >> n))
+					return *this;
+				x.resize(n);
+				for(std::size_t i = 0; i < n; ++i)
+					ss >> x[i];
+				return *this;
+			}
+			inline Serializer& operator >> (std::vector<mpco::NodalResultType::Enum>& x) {
+				std::size_t n;
+				if (!(ss >> n))
+					return *this;
+				x.resize(n);
+				for (std::size_t i = 0; i < n; ++i) {
+					int temp;
+					ss >> temp;
+					x[i] = static_cast<mpco::NodalResultType::Enum>(temp);
+				}
+				return *this;
+			}
+		};
+
+	}
 }
 
 /*************************************************************************************
@@ -4047,7 +4291,6 @@ public:
 
 	// domain changed stuff...
 	bool first_domain_changed_done;
-	int domain_changed_stamp;
 
 	// info
 	mpco::ProcessInfo info;
@@ -4171,7 +4414,7 @@ int MPCORecorder::record(int commitTag, double timeStamp)
 		return retval;
 	}
 	/*
-	perform initilization on first call
+	perform initialization on first call
 	*/
 	if (!m_data->initialized) {
 		retval = initialize();
@@ -4262,123 +4505,73 @@ int MPCORecorder::sendSelf(int commitTag, Channel &theChannel)
 
 	m_data->send_self_count++;
 
-	std::stringstream _info;
-	_info << "MPCORecorder sendSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	std::cout << _info.str();
-
 	// element results requests
 	std::string elem_res_merged_string;
 	{
 		std::stringstream ss;
 		for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-			if (i > 0) {
+			if (i > 0) 
 				ss << ':'; // char separator for results
-			}
-			const std::vector<std::string> &i_request = m_data->elemental_results_requests[i];
+			const std::vector<std::string>& i_request = m_data->elemental_results_requests[i];
 			for (size_t j = 0; j < i_request.size(); j++) {
-				if (j > 0) {
+				if (j > 0) 
 					ss << '.'; // char separator for jth token
-				}
+				ss << i_request[j];
 			}
 		}
 		elem_res_merged_string = ss.str();
 	}
+
+	// serializer
+	mpco::serialization::Serializer ser;
 	
-	// send misc info
+	// serialize everything
+	if (!(ser
+		// misc info
+		<< getTag()
+		<< m_data->send_self_count
+		// filename
+		<< m_data->filename
+		// output frequency
+		<< m_data->output_freq.type
+		<< m_data->output_freq.dt
+		<< m_data->output_freq.nsteps
+		// node result requests
+		<< m_data->nodal_results_requests
+		// node result requests (sens grad indices)
+		<< m_data->sens_grad_indices
+		// element result requests
+		<< elem_res_merged_string
+		// region
+		<< m_data->has_region
+		<< m_data->node_set
+		<< m_data->elem_set
+		))
 	{
-		ID aux(9);
-		aux(0) = getTag();
-		aux(1) = m_data->send_self_count; // use the send self counter as p_id in the receiver
-		aux(2) = static_cast<int>(m_data->filename.size());
-		aux(3) = static_cast<int>(m_data->nodal_results_requests.size());
-		aux(4) = static_cast<int>(elem_res_merged_string.size());
-		aux(5) = static_cast<int>(m_data->has_region);
-		aux(6) = static_cast<int>(m_data->node_set.size());
-		aux(7) = static_cast<int>(m_data->elem_set.size());
-		aux(8) = static_cast<int>(m_data->sens_grad_indices.size());
-
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send misc info\n";
-			return -1;
-		}
+		opserr << "MPCORecorder::sendSelf() - failed to serialize data\n";
+		return -1;
 	}
 
-	// send filename
-	if (m_data->filename.size() > 0) {
-		std::vector<char> aux(m_data->filename.begin(), m_data->filename.end());
-		Message msg(aux.data(), static_cast<int>(m_data->filename.size()));
-		if (theChannel.sendMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send filename\n";
-			return -1;
-		}
+	// get message string and size
+	std::string msg_string = ser.str();
+	std::vector<char> msg_data(msg_string.size() + 1);
+	std::copy(msg_string.begin(), msg_string.end(), msg_data.begin());
+	msg_data.back() = '\0';
+	int msg_data_size = static_cast<int>(msg_string.size());
+
+	// send message size
+	ID idata(1);
+	idata(0) = msg_data_size;
+	if (theChannel.sendID(0, commitTag, idata) < 0) {
+		opserr << "MPCORecorder::sendSelf() - failed to send message size\n";
+		return -1;
 	}
 
-	// send output frequency
-	{
-		Vector aux(3);
-		aux(0) = static_cast<double>(m_data->output_freq.type);
-		aux(1) = static_cast<double>(m_data->output_freq.dt);
-		aux(2) = static_cast<double>(m_data->output_freq.nsteps);
-		if (theChannel.sendVector(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send output frequency\n";
-			return -1;
-		}
-	}
-
-	// send node result requests
-	if (m_data->nodal_results_requests.size() > 0) {
-		ID aux(static_cast<int>(m_data->nodal_results_requests.size()));
-		for (size_t i = 0; i < m_data->nodal_results_requests.size(); i++)
-			aux(static_cast<int>(i)) = static_cast<int>(m_data->nodal_results_requests[i]);
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send node result requests\n";
-			return -1;
-		}
-	}
-
-	// send node result requests (sens grad indices)
-	if (m_data->sens_grad_indices.size() > 0) {
-		ID aux(static_cast<int>(m_data->sens_grad_indices.size()));
-		for (size_t i = 0; i < m_data->sens_grad_indices.size(); i++)
-			aux(static_cast<int>(i)) = static_cast<int>(m_data->sens_grad_indices[i]);
-		if (theChannel.sendID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send node result requests (sensitivity parameter indices)\n";
-			return -1;
-		}
-	}
-
-	// send element result requests
-	if (elem_res_merged_string.size() > 0) {
-		std::vector<char> aux(elem_res_merged_string.begin(), elem_res_merged_string.end());
-		Message msg(aux.data(), static_cast<int>(elem_res_merged_string.size()));
-		if (theChannel.sendMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::sendSelf() - failed to send element result requests\n";
-			return -1;
-		}
-	}
-
-	if (m_data->has_region) {
-		// send node set
-		if (m_data->node_set.size()) {
-			ID aux(static_cast<int>(m_data->node_set.size()));
-			for (size_t i = 0; i < m_data->node_set.size(); i++)
-				aux(static_cast<int>(i)) = m_data->node_set[i];
-			if (theChannel.sendID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to send node set\n";
-				return -1;
-			}
-		}
-
-		// send elem set
-		if (m_data->elem_set.size()) {
-			ID aux(static_cast<int>(m_data->elem_set.size()));
-			for (size_t i = 0; i < m_data->elem_set.size(); i++)
-				aux(static_cast<int>(i)) = m_data->elem_set[i];
-			if (theChannel.sendID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::sendSelf() - failed to send element set\n";
-				return -1;
-			}
-		}
+	// send message
+	Message msg(msg_data.data(), msg_data_size);
+	if (theChannel.sendMsg(0, commitTag, msg) < 0) {
+		opserr << "MPCORecorder::sendSelf() - failed to send message\n";
+		return -1;
 	}
 
 	return 0;
@@ -4399,86 +4592,64 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	m_data = new private_data();
 	m_data->send_self_count = -1;
 
-	// recv misc info
-	size_t aux_filename_size(0);
-	size_t aux_node_res_size(0);
-	size_t aux_res_merged_string_size(0);
-	size_t aux_node_set_size(0);
-	size_t aux_elem_set_size(0);
-	size_t aux_sens_grad_indices_size(0);
+	// recv message size
+	ID idata(1);
+	if (theChannel.recvID(0, commitTag, idata) < 0) {
+		opserr << "MPCORecorder::recvSelf() - failed to recv message size\n";
+		return -1;
+	}
+	int msg_data_size = idata(0);
+
+	// recv message
+	std::vector<char> msg_data(static_cast<size_t>(msg_data_size) + 1);
+	Message msg(msg_data.data(), msg_data_size);
+	if (theChannel.recvMsg(0, commitTag, msg) < 0) {
+		opserr << "MPCORecorder::recvSelf() - failed to recv message\n";
+		return -1;
+	}
+	msg_data.back() = '\0';
+
+	// serializer
+	mpco::serialization::Serializer ser(msg_data.data());
+
+	// aux data for de-serialziation
+	int my_tag;
+	std::string elem_res_merged_string;
+
+	// de-serialize everything
+	if (!(ser
+		// misc info
+		>> my_tag
+		>> m_data->p_id // use the send self counter as p_id in the receiver
+		// filename
+		>> m_data->filename
+		// output frequency
+		>> m_data->output_freq.type
+		>> m_data->output_freq.dt
+		>> m_data->output_freq.nsteps
+		// node result requests
+		>> m_data->nodal_results_requests
+		// node result requests (sens grad indices)
+		>> m_data->sens_grad_indices
+		// element result requests
+		>> elem_res_merged_string
+		// region
+		>> m_data->has_region
+		>> m_data->node_set
+		>> m_data->elem_set
+		))
 	{
-		ID aux(9);
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - " << m_data->p_id  << " - failed to recv misc info\n";
-			return -1;
-		}
-		setTag(aux(0));
-		m_data->p_id = aux(1); // use the send self counter as p_id in the receiver
-		aux_filename_size = aux(2);
-		aux_node_res_size = aux(3);
-		aux_res_merged_string_size = aux(4);
-		m_data->has_region = aux(5);// != 0;
-		aux_node_set_size = static_cast<size_t>(aux(6));
-		aux_elem_set_size = static_cast<size_t>(aux(7));
+		opserr << "MPCORecorder::recvSelf() - failed to de-serialize data\n";
+		return -1;
 	}
 
-	// recv filename
-	if (aux_filename_size > 0) {
-		std::vector<char> aux(aux_filename_size);
-		Message msg(aux.data(), static_cast<int>(aux_filename_size));
-		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv filename\n";
-			return -1;
-		}
-		m_data->filename = std::string(aux.begin(), aux.end());
-	}
-
-	// recv output frequency
-	{
-		Vector aux(3);
-		if (theChannel.recvVector(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv output frequency\n";
-			return -1;
-		}
-		m_data->output_freq.type = static_cast<mpco::OutputFrequency::IncrementType>(static_cast<int>(aux(0)));
-		m_data->output_freq.dt = aux(1);
-		m_data->output_freq.nsteps = static_cast<int>(aux(2));
-	}
-
-	// recv node result requests
-	if (aux_node_res_size > 0) {
-		ID aux(static_cast<int>(aux_node_res_size));
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests\n";
-			return -1;
-		}
-		m_data->nodal_results_requests.resize(aux_node_res_size);
-		for (size_t i = 0; i < aux_node_res_size; i++)
-			m_data->nodal_results_requests[i] = static_cast<mpco::NodalResultType::Enum>(aux(static_cast<int>(i)));
-	}
-
-	// recv node result requests (sens grad indices)
-	if (aux_sens_grad_indices_size > 0) {
-		ID aux(static_cast<int>(aux_sens_grad_indices_size));
-		if (theChannel.recvID(0, commitTag, aux) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv node result requests (sensitivity parameter indices)\n";
-			return -1;
-		}
-		m_data->sens_grad_indices.resize(aux_sens_grad_indices_size);
-		for (size_t i = 0; i < aux_sens_grad_indices_size; i++)
-			m_data->sens_grad_indices[i] = aux(static_cast<int>(i));
-	}
+	// set tag
+	setTag(my_tag);
 
 	// recv element result requests
-	if (aux_res_merged_string_size > 0) {
-		std::vector<char> aux(aux_res_merged_string_size);
-		Message msg(aux.data(), static_cast<int>(aux_res_merged_string_size));
-		if (theChannel.recvMsg(0, commitTag, msg) < 0) {
-			opserr << "MPCORecorder::recvSelf() - failed to recv element result requests\n";
-			return -1;
-		}
+	if (elem_res_merged_string.size() > 0) {
 		std::vector<std::string> aux_1;
-		utils::strings::split(std::string(aux.begin(), aux.end()), ':', aux_1, true);
+		utils::strings::split(std::string(elem_res_merged_string.begin(), elem_res_merged_string.end()), ':', aux_1, true);
 		for (size_t i = 0; i < aux_1.size(); i++) {
 			std::vector<std::string> aux_2;
 			utils::strings::split(aux_1[i], '.', aux_2, true);
@@ -4486,82 +4657,7 @@ int MPCORecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		}
 	}
 
-	if (m_data->has_region) {
-		// recv node set
-		if (aux_node_set_size > 0) {
-			ID aux(static_cast<int>(aux_node_set_size));
-			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::recvSelf() - failed to recv node set\n";
-				return -1;
-			}
-			m_data->node_set.resize(aux_node_set_size);
-			for (size_t i = 0; i < aux_node_set_size; i++)
-				m_data->node_set[i] = aux(static_cast<int>(i));
-		}
-
-		// recv elem set
-		if (aux_elem_set_size > 0) {
-			ID aux(static_cast<int>(aux_elem_set_size));
-			if (theChannel.recvID(0, commitTag, aux) < 0) {
-				opserr << "MPCORecorder::recvSelf() - failed to recv elem set\n";
-				return -1;
-			}
-			m_data->elem_set.resize(aux_elem_set_size);
-			for (size_t i = 0; i < aux_elem_set_size; i++)
-				m_data->elem_set[i] = aux(static_cast<int>(i));
-		}
-	}
-
-	std::stringstream _info;
-	_info << "MPCORecorder recvSelf from: " << m_data->p_id << ", send self count = " << m_data->send_self_count << "\n";
-	_info << "filename = " << m_data->filename << "\n";
-	_info << "freq: ";
-	if (m_data->output_freq.type == mpco::OutputFrequency::DeltaTime) 
-		_info << "dt = " << m_data->output_freq.dt << "\n";
-	else 
-		_info << "nsteps = " << m_data->output_freq.nsteps << "\n";
-	_info << "nodal results [" << m_data->nodal_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->nodal_results_requests.size(); i++) {
-		_info << "   " << m_data->nodal_results_requests[i] << "\n";
-	}
-	_info << "elemental results [" << m_data->elemental_results_requests.size() << "]" << "\n";
-	for (size_t i = 0; i < m_data->elemental_results_requests.size(); i++) {
-		const std::vector<std::string> &ireq = m_data->elemental_results_requests[i];
-		for (size_t j = 0; j < ireq.size(); j++) {
-			if (j > 0)
-				_info << ".";
-			_info << ireq[j];
-		}
-		_info << "\n";
-	}
-	_info << "node set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->node_set.size(); i++) {
-			_info << m_data->node_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]\n";
-	_info << "elem set:" << "\n" << "[";
-	{
-		int n_counter(0);
-		for (size_t i = 0; i < m_data->elem_set.size(); i++) {
-			_info << m_data->elem_set[i] << " ";
-			n_counter++;
-			if (n_counter >= 5) {
-				_info << "\n";
-				n_counter = 0;
-			}
-		}
-	}
-	_info << "]" << "\n";
-	std::cout << _info.str();
-
+	// done
 	return 0;
 }
 
@@ -4626,7 +4722,7 @@ int MPCORecorder::initialize()
 		for (size_t i = 0; i < filename_words.size() - 1; i++)
 			ss_filename << filename_words[i] << '.';
 		if (m_data->send_self_count != 0) { // > 0 -> we are in p0, < 0 -> we are in secondary procs, = 0 -> not in parallel
-			ss_filename << "p" << m_data->p_id << '.';
+			ss_filename << "part-" << m_data->p_id << '.';
 		}
 		ss_filename << filename_words.back();
 		the_filename = ss_filename.str();
@@ -4913,6 +5009,7 @@ int MPCORecorder::writeModelElements()
 						if (elem_by_custom_rule.custom_int_rule_index != 0) {
 							mpco::element::ElementIntegrationRule &custom_rule = m_data->elements.registered_custom_rules[elem_by_custom_rule.custom_int_rule_index];
 							h5::attribute::write(dset_id, "GP_X", custom_rule.x);
+							h5::attribute::write(dset_id, "CUSTOM_INTEGRATION_RULE_DIMENSION", custom_rule.custom_rule_dimension);
 						}
 					}
 					/*
@@ -5133,6 +5230,17 @@ int MPCORecorder::writeSections()
 					argv[0] = request1.c_str();
 					argv[2] = request2.c_str();
 					argv[4] = request3.c_str();
+					// prepare also an alternative request for the case of section aggregators.
+					// 23/11/2021 due to a recent clean up of the setResponse method of the sectionAggregator
+					// the results of the underlying fiber section must be requested with an extra "section" keyword
+					int woagg_agrc = 6;
+					const char** woagg_argv = new const char* [woagg_agrc];
+					woagg_argv[0] = request1.c_str(); // 0: section
+					// 1: section id
+					woagg_argv[2] = request1.c_str(); // 2: section inside aggregator
+					woagg_argv[3] = request2.c_str(); // 3: fiber
+					// 4: fiber id
+					woagg_argv[5] = request3.c_str(); // 5: stress
 					/*
 					fiber section data for each gauss point
 					*/
@@ -5158,12 +5266,14 @@ int MPCORecorder::writeSections()
 						std::stringstream ss_trial_num_sec; ss_trial_num_sec << trial_num_sec;
 						std::string s_trial_num_sec = ss_trial_num_sec.str();
 						argv[1] = s_trial_num_sec.c_str();
+						woagg_argv[1] = s_trial_num_sec.c_str();
 						/*
 						for each fiber
 						*/
 						int trial_num_fib = -1; /* note: in setResponse fiber index is 0-based */
 						bool break_sec_loop = false;
 						bool first_fiber_done = false;
+						bool do_workaround_for_aggregator = false;
 						while (true) {
 							trial_num_fib++;
 							if (trial_num_fib > MPCO_MAX_TRIAL_NFIB) {
@@ -5174,15 +5284,18 @@ int MPCORecorder::writeSections()
 							std::stringstream ss_trial_num_fib; ss_trial_num_fib << trial_num_fib;
 							std::string s_trial_num_fib = ss_trial_num_fib.str();
 							argv[3] = s_trial_num_fib.c_str();
+							woagg_argv[4] = s_trial_num_fib.c_str();
 							/*
 							get the element response for the ith section and the ith fiber
 							*/
 							mpco::element::OutputDescriptor eo_descriptor;
 							mpco::element::OutputDescriptorStream eo_stream(&eo_descriptor);
-							Response *eo_response = elem->setResponse(argv, argc, eo_stream);
+							Response *eo_response = do_workaround_for_aggregator ?
+								elem->setResponse(woagg_argv, woagg_agrc, eo_stream) :
+								elem->setResponse(argv, argc, eo_stream);
 							eo_stream.finalizeSetResponse();
 							if (eo_response)
-								delete eo_response; // we dont need it now
+								delete eo_response; // we don't need it now
 							/*
 							post process the response descriptor
 							*/
@@ -5282,6 +5395,31 @@ int MPCORecorder::writeSections()
 #ifdef MPCO_WRITE_SECTION_IS_VERBOSE
 								std::cout << "MPCORecorder: exiting fiber loop. iter = " << trial_num_fib << "\n";
 #endif // MPCO_WRITE_SECTION_IS_VERBOSE
+								/*
+								this condition can trigger the workaround for sectionAggregator if we
+								are not doing it already.
+								trial_num_fib should be = 1, due to the 1-based workaround for shell sections
+								*/
+								if (!do_workaround_for_aggregator && (trial_num_fib == 1)) {
+									do_workaround_for_aggregator = true;
+									// remove data set in previous if-block
+									if (first_fiber_done) {
+										elem_gauss_id.pop_back();
+										elem_sec_id.pop_back();
+										elem_dummy_sec_flags.pop_back();
+										elem_sections.pop_back();
+										elem_fiber_base_index.pop_back();
+									}
+									// reset data and continue to simulate a new while loop
+									trial_num_fib = -1;
+									break_sec_loop = false;
+									first_fiber_done = false;
+#ifdef MPCO_WRITE_SECTION_IS_VERBOSE
+									std::cout << "MPCORecorder: begin workaround for sectionAggregator\n";
+#endif // MPCO_WRITE_SECTION_IS_VERBOSE
+									continue;
+								}
+								// break the fiber loop
 								break;
 							}
 							/*
@@ -5325,6 +5463,7 @@ int MPCORecorder::writeSections()
 					free argv
 					*/
 					delete[] argv;
+					delete[] woagg_argv;
 					/*
 					fiber section data for each gauss point has been obtained
 					*/
@@ -5359,7 +5498,7 @@ int MPCORecorder::writeSections()
 					nfibers_per_gauss_point.resize(elem_gauss_id.size());
 					for (size_t igp = 0; igp < elem_gauss_id.size(); igp++) {
 						mpco::element::FiberSectionData &igp_fibersec_data = elem_sections[igp];
-						nfibers_per_gauss_point[igp].first = elem_fiber_base_index[igp]; // start witn standard 0-based
+						nfibers_per_gauss_point[igp].first = elem_fiber_base_index[igp]; // start with standard 0-based
 						nfibers_per_gauss_point[igp].second = static_cast<int>(igp_fibersec_data.fibers.size());
 					}
 					/*
@@ -5419,7 +5558,7 @@ int MPCORecorder::writeSections()
 	}
 	/*
 	here we call the OPS_GetSectionForceDeformation to get the class name. This is not necessary, just to
-	give the user more informations about the written sections. warning: in this method (writeSections())
+	give the user more information about the written sections. warning: in this method (writeSections())
 	we assume that all sections have been created by the user via the "section" command, so that they all have different tags.
 	However, in some places in opensees, sections are manually created with hardcoded tags
 	(see "beamWithHinges")
@@ -5435,7 +5574,7 @@ int MPCORecorder::writeSections()
 			FiberSection3d SEC_TAG_FiberSection3d
 			FiberSectionGJ SEC_TAG_FiberSectionGJ
 			*/
-			switch (sfd->getClassTag()) {
+			/*switch (sfd->getClassTag()) {
 			case SEC_TAG_FiberSection3d:
 			case SEC_TAG_FiberSectionGJ: {
 				mpco::element::SectionAssignment &i_sec_asgn = it->second;
@@ -5443,7 +5582,12 @@ int MPCORecorder::writeSections()
 					i_sec_asgn.fiber_section_data.fibers[fiber_id].y *= -1.0;
 				}
 			}
-			}
+			}*/
+			/*
+			$MP(2021/02/05). Update: This bug in the FiberSection3d has been solved by prof. Scott
+			in commit: https://github.com/OpenSees/OpenSees/commit/948b6f94c602e5d0140645c95a836ffb806e1eb6
+			(Making centroid computation an option for fiber sections)
+			*/
 		}
 	}
 	/*
@@ -5874,9 +6018,16 @@ int MPCORecorder::initElementRecorders()
 											argv[fiber_id_placeholder_index] = s_fiber_id.c_str();
 											// set response
 											Response *fib_response = 0;
+											bool was_valid_before = (eo_stream.error_code == mpco::element::OutputDescriptorStream::ERROR_CODE_OK);
 											fib_response = elem->setResponse(argv, argc, eo_stream);
 											if (fib_response) {
 												num_fib_responses = fib_comp_response->addResponse(fib_response);
+											}
+											else {
+												if (was_valid_before && (eo_stream.error_code == mpco::element::OutputDescriptorStream::ERROR_CODE_SECTION_AFTER_FIBER)) {
+													eo_descriptor.fixSectionAfterFiberDueToFiberOutputFail();
+													eo_stream.error_code = mpco::element::OutputDescriptorStream::ERROR_CODE_OK;
+												}
 											}
 										} // end fiber while loop
 										if (num_fib_responses == 0) { // no valid fiber responses found
@@ -5941,7 +6092,7 @@ int MPCORecorder::initElementRecorders()
 						if (do_all_fibers) {
 							eo_descriptor.purge();
 						}
-						if (eo_response) {
+						if (eo_response && (eo_stream.error_code == mpco::element::OutputDescriptorStream::ERROR_CODE_OK)) {
 							/*
 							get (or create and get) the list of MPCORecorder_ElementResultRecorder mapped to this descriptor
 							and add the new element-response pair
