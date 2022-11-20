@@ -858,6 +858,9 @@
 #define BEAM_INTEGRATION_TAG_LowOrder     9
 #define BEAM_INTEGRATION_TAG_MidDistance     40
 
+#define BEAM_INTEGRATION_TAG_ConcentratedPlasticity     41
+#define BEAM_INTEGRATION_TAG_ConcentratedCurvature     42
+
 #define BEAM_INTEGRATION_TAG_HingeMidpoint 10
 #define BEAM_INTEGRATION_TAG_HingeEndpoint 11
 #define BEAM_INTEGRATION_TAG_HingeRadau    12
