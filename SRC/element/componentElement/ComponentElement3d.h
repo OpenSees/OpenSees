@@ -110,12 +110,16 @@ class ComponentElement3d : public Element
     UniaxialMaterial *end2yHinge;  
     double cD1z, cD2z, tD1z, tD2z; // committed and trial interior dof displacements
   double cD1y, cD2y, tD1y, tD2y;
-    Matrix kTrial;
-    Vector R;
-    Vector uTrial;
-    Vector uCommit;
-    Vector rTrial;
-    Vector rCommit;
+    Matrix kzTrial;
+  //Vector Rz;
+    Vector uzTrial;
+    Vector uzCommit;
+    Matrix kyTrial;
+  //Vector Ry;
+    Vector uyTrial;
+    Vector uyCommit;  
+  //Vector rTrial;
+  //Vector rCommit;
     Matrix kb;
 
     static Vector P;

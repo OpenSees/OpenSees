@@ -149,7 +149,8 @@ ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
    Q(12), q(6), kb(6,6),
    connectedExternalNodes(2), theCoordTransf(0),
    end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -185,8 +186,8 @@ ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
   if (end2y != 0)
     end2yHinge = end2y->getCopy();  
 
-  uTrial.Zero();
-  uCommit.Zero();
+  uzTrial.Zero();
+  uzCommit.Zero();
 }
 
 ComponentElement3d::~ComponentElement3d()
@@ -297,7 +298,8 @@ ComponentElement3d::commitState()
   if ((retVal = this->Element::commitState()) != 0) {
     opserr << "ComponentElement3d::commitState () - failed in base class";
   }    
-  uCommit = uTrial;
+  uzCommit = uzTrial;
+  uyCommit = uyTrial;
 
   retVal += theCoordTransf->commitState();
 
@@ -312,8 +314,9 @@ ComponentElement3d::commitState()
 int
 ComponentElement3d::revertToLastCommit()
 {
-  uTrial = uCommit;
-
+  uzTrial = uzCommit;
+  uyTrial = uyCommit;
+  
   end1zHinge->revertToLastCommit();
   end2zHinge->revertToLastCommit();
   end1yHinge->revertToLastCommit();
@@ -325,8 +328,10 @@ ComponentElement3d::revertToLastCommit()
 int
 ComponentElement3d::revertToStart()
 {
-  uCommit.Zero();
-  uTrial.Zero();
+  uzCommit.Zero();
+  uzTrial.Zero();
+  uyCommit.Zero();
+  uyTrial.Zero();  
   init = false;
   end1zHinge->revertToStart();
   end2zHinge->revertToStart();
@@ -341,14 +346,18 @@ ComponentElement3d::update(void)
   // get previous displacements and the new end delta displacements
   theCoordTransf->update();
 
-  double u1 = uTrial(0);
-  double u2 = uTrial(1);
-  double u3 = uTrial(2);
-  double u4 = uTrial(3);
+  double u1 = uzTrial(0);
+  double u2 = uzTrial(1);
+  double u3 = uzTrial(2);
+  double u4 = uzTrial(3);
   
   const Vector &v = theCoordTransf->getBasicTrialDisp();
   const Vector &dv = theCoordTransf->getBasicIncrDeltaDisp();
 
+  q(0) = EAoverL*v(0);
+  q(5) = GJoverL*v(5);  
+
+  
   double du1 = dv(1);
   double du4 = dv(2);
 
@@ -455,22 +464,158 @@ ComponentElement3d::update(void)
   delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
   
   // compute new condensed matrix
-  kTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIzoverL4);
-  kTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIzoverL4);
-  kTrial(0,1) = delta*(k1*k2*EIzoverL2);
-  kTrial(1,0) = delta*(k1*k2*EIzoverL2);
+  kzTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIzoverL4);
+  kzTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIzoverL4);
+  kzTrial(0,1) = delta*(k1*k2*EIzoverL2);
+  kzTrial(1,0) = delta*(k1*k2*EIzoverL2);
 
   // compute basic forces, leaving off q0's .. added in getResistingForce
-  q(0) = EAoverL*v(0);
   q(1) = R1 + delta*k1*((k2+EIzoverL4)*R2 - EIzoverL2*R3);
   q(2) = R4 + delta*k2*((k1+EIzoverL4)*R3 - EIzoverL2*R2);
 
   // store new displacements
-  uTrial(0) = u1;
-  uTrial(1) = u2;
-  uTrial(2) = u3;
-  uTrial(3) = u4;
+  uzTrial(0) = u1;
+  uzTrial(1) = u2;
+  uzTrial(2) = u3;
+  uzTrial(3) = u4;
 
+
+
+
+
+
+  u1 = uyTrial(0);
+  u2 = uyTrial(1);
+  u3 = uyTrial(2);
+  u4 = uyTrial(3);
+  
+  //const Vector &v = theCoordTransf->getBasicTrialDisp();
+  //const Vector &dv = theCoordTransf->getBasicIncrDeltaDisp();
+
+  du1 = dv(3);
+  du4 = dv(4);
+
+  // get hinge forces and tangent
+  // NOTE: need tangent used in solution algorithm
+  k1 = 0.;
+  F1 = 0.0;
+  if (end1yHinge != 0) {
+    F1 = end1yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
+      k1 = end1yHinge->getInitialTangent();      
+    }
+    else
+      k1 = end1yHinge->getTangent();
+  }
+  //  k1 = end1yHinge->getTangent();
+
+  k2 = 0.;
+  F2 = 0.0;
+  if (end2yHinge != 0) {
+    F2 = end2yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
+      k2 = end2yHinge->getInitialTangent();      
+    else
+      k2 = end2yHinge->getTangent();
+  }
+  //  k2 = end2yHinge->getTangent();
+
+  // calculate forces for our superelement structure
+  R1 = -F1;
+  R2 =  F1 + EIyoverL2*(2*u2 + u3) + q0[3];
+  R3 = -F2 + EIyoverL2*(u2 + 2*u3) + q0[4];
+  R4 =  F2;
+
+  // determine change in internal dof, using last K
+  // dUi = inv(Kii)*(Pi-Kie*dUe)
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  du2 = delta*((k2+EIyoverL4)*(k1*du1-R2) - EIyoverL2*(k2*du4-R3));
+  du3 = delta*(-EIyoverL2*(k1*du1-R2) + (k1+EIyoverL4)*(k2*du4-R3));
+
+  // update displacements at nodes
+  u1 += du1;
+  u2 += du2;
+  u3 += du3;
+  u4 += du4;
+
+  converged = false;
+  count = 0;
+  maxCount = 10;
+  tol = 1.0e-10;
+
+  // iterate, at least once, to remove internal node unbalance
+  while (converged == false) {
+
+    // set new strain in hinges
+    end1yHinge->setTrialStrain(u2-u1);
+    end2yHinge->setTrialStrain(u4-u3);
+
+    // obtain new hinge forces and tangents
+    k1 = 0.;
+    F1 = 0.0;
+    if (end1yHinge != 0) {
+      F1 = end1yHinge->getStress();
+      k1 = end1yHinge->getTangent();    
+    }
+
+    k2 = 0.;
+    F2 = 0.0;
+    if (end2yHinge != 0) {
+      F2 = end2yHinge->getStress();
+      k2 = end2yHinge->getTangent();
+    }
+    
+    // determine nodal forces
+    R1 = -F1;
+    R2 =  F1 + EIyoverL2 * (2*u2 + u3) + q0[3];
+    R3 = -F2 + EIyoverL2 * (u2 + 2*u3) + q0[4];
+    R4 =  F2;
+
+    // check if converged:
+    //    norm resisting forces at internal dof or change in displacement
+    //    at these internal dof is less than some tolerance
+
+    if ((sqrt(R2*R2 + R3*R3) > tol) && 
+	(sqrt(du2*du2+du3*du3) > tol) &&
+	count < maxCount) {
+
+      // if not converged we determine new internal dof displacements
+      // note we have not changed du1 or du4 from previous step
+      delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+      du2 = delta*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+      du3 = delta*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+      // unbalance was negative of P so subtract instead of add
+      u2 -= du2;
+      u3 -= du3;
+
+      count++;
+
+    } else
+      converged = true;
+  }
+
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  
+  // compute new condensed matrix
+  kyTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIyoverL4);
+  kyTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIyoverL4);
+  kyTrial(0,1) = delta*(k1*k2*EIyoverL2);
+  kyTrial(1,0) = delta*(k1*k2*EIyoverL2);
+
+  // compute basic forces, leaving off q0's .. added in getResistingForce
+  q(3) = R1 + delta*k1*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+  q(4) = R4 + delta*k2*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+  // store new displacements
+  uyTrial(0) = u1;
+  uyTrial(1) = u2;
+  uyTrial(2) = u3;
+  uyTrial(3) = u4;
+
+
+
+  
   return 0;
 }
 
@@ -502,8 +647,8 @@ ComponentElement3d::getResistingForce()
   }
   //  k2 = end2zHinge->getTangent();
 
-  double u2 = uTrial(1);
-  double u3 = uTrial(2);
+  double u2 = uzTrial(1);
+  double u3 = uzTrial(2);
 
   // compute internal forces in our superelement structure
   double R1 = -F1;
@@ -518,6 +663,48 @@ ComponentElement3d::getResistingForce()
   q(1) = R1 + delta*k1*((k2+EIzoverL4)*R2 - EIzoverL2*R3);
   q(2) = R4 + delta*k2*((k1+EIzoverL4)*R3 - EIzoverL2*R2);
 
+
+  // get hinge forces and tangents
+  // NOTE: condense out using same tangent as algorithm
+  k1 = 0.;
+  F1 = 0.0;
+  if (end1yHinge != 0) {
+    F1 = end1yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
+      k1 = end1yHinge->getInitialTangent();      
+    }
+    else
+      k1 = end1yHinge->getTangent();
+  }
+  //  k1 = end1yHinge->getTangent();
+
+  k2 = 0.;
+  F2 = 0.0;
+  if (end2yHinge != 0) {
+    F2 = end2yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
+      k2 = end2yHinge->getInitialTangent();      
+    else
+      k2 = end2yHinge->getTangent();
+  }
+  //  k2 = end2yHinge->getTangent();
+
+  u2 = uyTrial(1);
+  u3 = uyTrial(2);
+
+  // compute internal forces in our superelement structure
+  R1 = -F1;
+  R2 =  F1 + EIyoverL2*(2*u2 + u3) + q0[3];
+  R3 = -F2 + EIyoverL2*(u2 + 2*u3) + q0[4];
+  R4 =  F2;
+
+  // condense out internal forces
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+
+  q(3) = R1 + delta*k1*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+  q(4) = R4 + delta*k2*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+  
   // Vector for reactions in basic system
   Vector p0Vec(p0, 5);
   
@@ -541,10 +728,17 @@ ComponentElement3d::getTangentStiff(void)
   q(4) += q0[4];
   
   kb(0,0) = EAoverL;
-  kb(1,1) = kTrial(0,0);
-  kb(2,2) = kTrial(1,1);
-  kb(1,2) = kTrial(0,1);
-  kb(2,1) = kTrial(1,0);
+  kb(5,5) = GJoverL;
+  
+  kb(1,1) = kzTrial(0,0);
+  kb(2,2) = kzTrial(1,1);
+  kb(1,2) = kzTrial(0,1);
+  kb(2,1) = kzTrial(1,0);
+
+  kb(3,3) = kyTrial(0,0);
+  kb(4,4) = kyTrial(1,1);
+  kb(3,4) = kyTrial(0,1);
+  kb(4,3) = kyTrial(1,0);  
 
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
@@ -564,12 +758,30 @@ ComponentElement3d::getInitialStiff(void)
   double delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
   
   // compute new condensed matrix
-  static Matrix kb0(3,3);
+  static Matrix kb0(6,6);
   kb0(0,0) = EAoverL;
+  kb0(5,5) = GJoverL;
+  
   kb0(1,1) = k1 - delta*(k1*k1*(k2+EIzoverL4));
   kb0(2,2) = k2 - delta*(k2*k2*(k1+EIzoverL4));
   kb0(1,2) = delta*(k1*k2*EIzoverL2);
   kb0(2,1) = delta*(k1*k2*EIzoverL2);
+
+
+  k1 = 0.;
+  if (end1yHinge != 0) 
+    k1 = end1yHinge->getInitialTangent();
+  k2 = 0.;
+  if (end2yHinge != 0) 
+    k2 = end2yHinge->getInitialTangent();
+
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  
+  kb0(3,3) = k1 - delta*(k1*k1*(k2+EIyoverL4));
+  kb0(4,4) = k2 - delta*(k2*k2*(k1+EIyoverL4));
+  kb0(3,4) = delta*(k1*k2*EIyoverL2);
+  kb0(4,3) = delta*(k1*k2*EIyoverL2);
+
   
   return theCoordTransf->getInitialGlobalStiffMatrix(kb0);
 }
