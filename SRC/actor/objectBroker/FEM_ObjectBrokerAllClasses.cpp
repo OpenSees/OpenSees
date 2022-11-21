@@ -375,6 +375,9 @@
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
 
+#include "ConcentratedPlasticityBeamIntegration.h"
+#include "ConcentratedCurvatureBeamIntegration.h"
+
 #include "RCCircularSectionIntegration.h"
 #include "RCSectionIntegration.h"
 #include "RCTBeamSectionIntegration.h"
@@ -1206,6 +1209,12 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
 
   case BEAM_INTEGRATION_TAG_CompositeSimpson:        
     return new CompositeSimpsonBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_ConcentratedPlasticity:
+	  return new ConcentratedPlasticityBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_ConcentratedCurvature:
+	  return new ConcentratedCurvatureBeamIntegration();
 
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();

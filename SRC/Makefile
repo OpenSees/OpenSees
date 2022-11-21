@@ -244,6 +244,8 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/FixedLocationBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LowOrderBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/ChebyshevBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/ConcentratedPlasticityBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/ConcentratedCurvatureBeamIntegration.o \
 	$(FE)/coordTransformation/CrdTransf.o \
 	$(FE)/coordTransformation/LinearCrdTransf2d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf2d.o \
