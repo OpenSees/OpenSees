@@ -1408,6 +1408,7 @@ extern int OPS_BgMesh();
 extern int OPS_ParticleGroup();
 extern int OPS_Flume();
 extern int OPS_BeamBrick();
+extern int OPS_BeamDisk();
 extern BackgroundMesh& OPS_getBgMesh();
 
 
@@ -1439,6 +1440,8 @@ int OPS_mesh()
 	res = OPS_Flume();
     } else if (strcmp(type, "beamBrick") == 0) {
 	res = OPS_BeamBrick();
+    } else if (strcmp(type, "beamDisk") == 0) {
+	res = OPS_BeamDisk();
     } else {
         opserr<<"WARNING: mesh type "<<type<<" is unknown\n";
         return -1;
