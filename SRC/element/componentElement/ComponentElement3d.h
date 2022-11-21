@@ -44,9 +44,11 @@ class ComponentElement3d : public Element
 {
   public:
     ComponentElement3d();        
-    ComponentElement3d(int tag, double A, double E, double I, 
+    ComponentElement3d(int tag, double A, double E, double Iz,
+		       double Iy, double G, double J,
 		       int Nd1, int Nd2, CrdTransf &theTransf, 
-		       UniaxialMaterial *end1, UniaxialMaterial *end2,
+		       UniaxialMaterial *end1z, UniaxialMaterial *end2z,
+		       UniaxialMaterial *end1y, UniaxialMaterial *end2y,		       
 		       double rho = 0.0, int cMass = 0);
     ~ComponentElement3d();
 
@@ -88,23 +90,26 @@ class ComponentElement3d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
-    double A,E,I;     // area, elastic modulus, moment of inertia
+  double A,E,Iz,Iy,G,J;     // area, elastic modulus, moment of inertia
     double rho;       // mass per unit length
     int cMass;        // consistent mass flag
 
     Vector Q;
     
     Vector q;
-    double q0[3];  // Fixed end forces in basic system
-    double p0[3];  // Reactions in basic system
+    double q0[5];  // Fixed end forces in basic system
+    double p0[5];  // Reactions in basic system
     
     Node *theNodes[2];
     ID  connectedExternalNodes;    
     CrdTransf *theCoordTransf;
 
-    UniaxialMaterial *end1Hinge;
-    UniaxialMaterial *end2Hinge;
-    double cD1, cD2, tD1, tD2; // committed and trial interior dof displacements
+    UniaxialMaterial *end1zHinge;
+    UniaxialMaterial *end2zHinge;
+    UniaxialMaterial *end1yHinge;
+    UniaxialMaterial *end2yHinge;  
+    double cD1z, cD2z, tD1z, tD2z; // committed and trial interior dof displacements
+  double cD1y, cD2y, tD1y, tD2y;
     Matrix kTrial;
     Vector R;
     Vector uTrial;
@@ -119,8 +124,11 @@ class ComponentElement3d : public Element
 
   double L;
   double EAoverL;		// EA/L
-  double EIoverL2;		// 2EI/L
-  double EIoverL4;		// 4EI/L
+  double EIzoverL2;		// 2EIz/L
+  double EIzoverL4;		// 4EIz/L
+  double EIyoverL2;		// 2EIy/L
+  double EIyoverL4;		// 4EIy/L
+  double GJoverL;               // GJ/L
 };
 
 #endif
