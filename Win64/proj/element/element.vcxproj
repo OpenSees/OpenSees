@@ -220,6 +220,8 @@
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ExternalElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.cpp" />
@@ -514,6 +516,8 @@
     <ClInclude Include="..\..\..\SRC\element\Element.h" />
     <ClInclude Include="..\..\..\SRC\element\ElementalLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\ExternalElement.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI3d.h" />

@@ -1086,7 +1086,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
       vect4(0) = end1Hinge->getStrain();
       vect4(1) = end1Hinge->getStress();
     }
-    if (end1Hinge != 0) {
+    if (end2Hinge != 0) {
       vect4(2) = end2Hinge->getStrain();
       vect4(3) = end2Hinge->getStress();
     }
@@ -1096,7 +1096,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     if (end1Hinge != 0) {
       vect2(0) = end1Hinge->getTangent();
     }
-    if (end1Hinge != 0) {
+    if (end2Hinge != 0) {
       vect2(1) = end2Hinge->getTangent();
     }
     return eleInfo.setVector(vect2);
