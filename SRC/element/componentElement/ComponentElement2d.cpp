@@ -274,8 +274,10 @@ ComponentElement2d::commitState()
 
   retVal += theCoordTransf->commitState();
 
-  end1Hinge->commitState();
-  end2Hinge->commitState();
+  if (end1Hinge != 0)
+    end1Hinge->commitState();
+  if (end2Hinge != 0)
+    end2Hinge->commitState();
 
   return retVal;
 }
@@ -285,8 +287,10 @@ ComponentElement2d::revertToLastCommit()
 {
   uTrial = uCommit;
 
-  end1Hinge->revertToLastCommit();
-  end2Hinge->revertToLastCommit();
+  if (end1Hinge != 0)  
+    end1Hinge->revertToLastCommit();
+  if (end2Hinge != 0)
+    end2Hinge->revertToLastCommit();
 
   return theCoordTransf->revertToLastCommit();
 }
@@ -297,8 +301,12 @@ ComponentElement2d::revertToStart()
   uCommit.Zero();
   uTrial.Zero();
   init = false;
-  end1Hinge->revertToStart();
-  end2Hinge->revertToStart();
+
+  if (end1Hinge != 0)
+    end1Hinge->revertToStart();
+  if (end2Hinge != 0)
+    end2Hinge->revertToStart();
+  
   return theCoordTransf->revertToStart();
 }
 
@@ -371,8 +379,10 @@ ComponentElement2d::update(void)
   while (converged == false) {
 
     // set new strain in hinges
-    end1Hinge->setTrialStrain(u2-u1);
-    end2Hinge->setTrialStrain(u4-u3);
+    if (end1Hinge != 0)
+      end1Hinge->setTrialStrain(u2-u1);
+    if (end2Hinge != 0)
+      end2Hinge->setTrialStrain(u4-u3);
 
     // obtain new hinge forces and tangents
     k1 = 0.;
