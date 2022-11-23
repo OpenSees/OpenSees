@@ -303,10 +303,14 @@ ComponentElement3d::commitState()
 
   retVal += theCoordTransf->commitState();
 
-  end1zHinge->commitState();
-  end2zHinge->commitState();
-  end1yHinge->commitState();
-  end2yHinge->commitState();  
+  if (end1zHinge != 0)
+    end1zHinge->commitState();
+  if (end2zHinge != 0)
+    end2zHinge->commitState();
+  if (end1yHinge != 0)
+    end1yHinge->commitState();
+  if (end2yHinge != 0)
+    end2yHinge->commitState();  
 
   return retVal;
 }
@@ -316,11 +320,15 @@ ComponentElement3d::revertToLastCommit()
 {
   uzTrial = uzCommit;
   uyTrial = uyCommit;
-  
-  end1zHinge->revertToLastCommit();
-  end2zHinge->revertToLastCommit();
-  end1yHinge->revertToLastCommit();
-  end2yHinge->revertToLastCommit();  
+
+  if (end1zHinge != 0)  
+    end1zHinge->revertToLastCommit();
+  if (end2zHinge != 0)
+    end2zHinge->revertToLastCommit();
+  if (end1yHinge != 0)
+    end1yHinge->revertToLastCommit();
+  if (end2yHinge != 0)
+    end2yHinge->revertToLastCommit();  
 
   return theCoordTransf->revertToLastCommit();
 }
@@ -333,10 +341,16 @@ ComponentElement3d::revertToStart()
   uyCommit.Zero();
   uyTrial.Zero();  
   init = false;
-  end1zHinge->revertToStart();
-  end2zHinge->revertToStart();
-  end1yHinge->revertToStart();
-  end2yHinge->revertToStart();  
+
+  if (end1zHinge != 0)  
+    end1zHinge->revertToStart();
+  if (end2zHinge != 0)
+    end2zHinge->revertToStart();
+  if (end1yHinge != 0)
+    end1yHinge->revertToStart();
+  if (end2yHinge != 0)
+    end2yHinge->revertToStart();
+  
   return theCoordTransf->revertToStart();
 }
 
@@ -413,8 +427,10 @@ ComponentElement3d::update(void)
   while (converged == false) {
 
     // set new strain in hinges
-    end1zHinge->setTrialStrain(u2-u1);
-    end2zHinge->setTrialStrain(u4-u3);
+    if (end1zHinge != 0)
+      end1zHinge->setTrialStrain(u2-u1);
+    if (end2zHinge != 0)
+      end2zHinge->setTrialStrain(u4-u3);
 
     // obtain new hinge forces and tangents
     k1 = 0.;
@@ -547,8 +563,10 @@ ComponentElement3d::update(void)
   while (converged == false) {
 
     // set new strain in hinges
-    end1yHinge->setTrialStrain(u2-u1);
-    end2yHinge->setTrialStrain(u4-u3);
+    if (end1yHinge != 0)
+      end1yHinge->setTrialStrain(u2-u1);
+    if (end2yHinge != 0)
+      end2yHinge->setTrialStrain(u4-u3);
 
     // obtain new hinge forces and tangents
     k1 = 0.;
