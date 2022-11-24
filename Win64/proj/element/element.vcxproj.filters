@@ -1034,6 +1034,9 @@
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BeamDisk.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
