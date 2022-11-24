@@ -95,7 +95,7 @@ public:
 		HardeningLawPoint(double _x, double _y, double _d, double _q)
 			: x(_x), y(_y), d(_d), q(_q) {}
 		inline double totalStrain()const { return x; }
-		inline double plasticStrain(double E) { return x - q / E; }
+		inline double plasticStrain(double E)const { return x - q / E; }
 		inline double stress()const { return y; }
 		inline double effectiveStress()const { return q; }
 		inline double elasticStress(double E) const { return E * x; }
@@ -135,6 +135,10 @@ public:
 		void deRegularize();
 		// evaluate the hardening law at a certain strain
 		HardeningLawPoint evaluateAt(double x) const;
+		// serialization
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
 		// properties
 		inline bool isValid() const { return m_valid; }
 		inline int tag()const { return m_tag; }
@@ -142,6 +146,12 @@ public:
 		inline const std::vector<HardeningLawPoint>& points()const { return m_points; }
 		inline double strainTolerance()const { return m_xtolerance; }
 		inline double stressTolerance()const { return m_ytolerance; }
+		inline bool hasStrainSoftening()const { return m_fracture_energy_is_bounded; }
+		inline double strainAtOnsetOfCrack()const {
+			if (m_fracture_energy_is_bounded && m_softening_begin < m_points.size())
+				return m_points[m_softening_begin].totalStrain();
+			return 0.0;
+		}
 
 	private:
 		// adjusts the points
@@ -238,6 +248,16 @@ public:
 		inline std::size_t count()const { return m_equivalent_strain.size(); }
 		// get equivalent strain
 		double getEquivalentStrainAtNormal(std::size_t i) const;
+		// set equivalent strain
+		void setEquivalentStrainAtNormal(std::size_t i, double x);
+		// get normal
+		const Vector3& getNormal(std::size_t i) const;
+		// closest normal
+		std::size_t getClosestNormal(const Vector3& N) const;
+		// serialization
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
 	private:
 		int m_n90 = 0;
 		CrackPlanesStorage::Vector3ListPointer m_normals;
@@ -258,6 +278,7 @@ public:
 		bool _implex_control,
 		double _implex_error_tolerance,
 		double _implex_time_reduction_limit,
+		double _implex_alpha,
 		bool _tangent,
 		bool _auto_regularize,
 		const HardeningLaw& _ht,
@@ -319,6 +340,11 @@ private:
 	const Vector& getAvgStrainMeasure() const;
 	const Vector& getMaxDamage() const;
 	const Vector& getAvgDamage() const;
+	const Vector& getMaxCrackWidth() const;
+	const Vector& getAvgCrackWidth() const;
+	const Vector& getCrackPattern() const;
+	const Vector& getCrushPattern() const;
+	const Vector& getImplexError() const;
 
 private:
 	// Young's modulus
@@ -337,16 +363,19 @@ private:
 	double implex_error_tolerance = 0.05;
 	// Minimum allowed time step reduction factor under which IMPL-EX error is not controlled anymore (default = 1%)
 	double implex_time_redution_limit = 0.01;
+	// Scale factor for implex extrapolation
+	double implex_alpha = 1.0;
 	// True = use the tangent matrix, False (default) = use the secant matrix
 	bool tangent = false;
 	// True = automatically regularize the fracture energy using the element's characteristic length
 	bool auto_regularize = true;
 	bool regularization_done = false;
+	double lch = 1.0;
 	// The hardening law for the tensile response
 	HardeningLaw ht;
 	// The hardening law for the compressive response
 	HardeningLaw hc;
-	// number of normals & smoothing angle ( 0 means isotropic internal variables )
+	// number of normals and smoothing angle ( 0 means isotropic internal variables )
 	int nct = 0;
 	int ncc = 0;
 	double smoothing_angle = 0.7854; // 45 deg
@@ -365,6 +394,7 @@ private:
 	bool dtime_is_user_defined = false;
 	bool commit_done = false;
 	double implex_error = 0.0;
+	Matrix PT_commit = Matrix(6, 6);
 	// strain, stress and tangent
 	Vector strain = Vector(6);
 	Vector strain_commit = Vector(6);
@@ -375,6 +405,12 @@ private:
 	// other variables for output purposes
 	double dt_bar = 0.0;
 	double dc_bar = 0.0;
+	Vector iso_crack_normal = Vector(3);
+	Vector iso_crush_normal = Vector(3);
+	double xt_max = 0.0;
+	double xt_max_commit = 0.0;
+	double xc_max = 0.0;
+	double xc_max_commit = 0.0;
 };
 
 #endif
