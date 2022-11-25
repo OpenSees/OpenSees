@@ -199,6 +199,7 @@
 #include "soil/FluidSolidPorousMaterial.h"
 #include "soil/PressureDependMultiYield.h"
 #include "soil/PressureDependMultiYield02.h"
+#include "soil/PressureDependMultiYield03.h"
 #include "soil/PressureIndependMultiYield.h"
 
 #include "UWmaterials/ContactMaterial2D.h"
@@ -375,6 +376,9 @@
 #include "LowOrderBeamIntegration.h"
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
+
+#include "ConcentratedPlasticityBeamIntegration.h"
+#include "ConcentratedCurvatureBeamIntegration.h"
 
 #include "RCCircularSectionIntegration.h"
 #include "RCSectionIntegration.h"
@@ -1208,6 +1212,12 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   case BEAM_INTEGRATION_TAG_CompositeSimpson:        
     return new CompositeSimpsonBeamIntegration();
 
+  case BEAM_INTEGRATION_TAG_ConcentratedPlasticity:
+	  return new ConcentratedPlasticityBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_ConcentratedCurvature:
+	  return new ConcentratedCurvatureBeamIntegration();
+
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
     
@@ -1697,6 +1707,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureDependMultiYield02:
     return new PressureDependMultiYield02();
 
+  case ND_TAG_PressureDependMultiYield03:
+    return new PressureDependMultiYield03();
+	
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 

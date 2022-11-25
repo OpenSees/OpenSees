@@ -2033,3 +2033,10 @@ PVDRecorder::getfilename(const char* name)
     pathname = fname.substr(0,found+1);
     basename = fname.substr(found+1);
 }
+
+int PVDRecorder::flush(void) {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}
