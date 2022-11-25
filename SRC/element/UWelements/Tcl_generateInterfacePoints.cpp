@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
@@ -701,7 +702,7 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
         if (lagrangeTag > 1)
         {
             if (lagrangeTag == 2)
-                theElement = new EmbeddedBeamInterfaceL(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, writeConnectivity, connectivityFN);
+	      theElement = new EmbeddedBeamInterfaceL(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, &theDomain, writeConnectivity, connectivityFN);
             else if (lagrangeTag == 3)
 	    {
             //    if (beamConnected)
@@ -710,7 +711,7 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
             //        theElement = new EmbeddedBeamInterfaceAL2(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, writeConnectivity, connectivityFN);
             }
             else if (lagrangeTag == 4)
-                theElement = new EmbeddedBeamInterfaceP(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, penaltyParam, writeConnectivity, connectivityFN);
+	      theElement = new EmbeddedBeamInterfaceP(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, &theDomain, penaltyParam, writeConnectivity, connectivityFN);
             else if (lagrangeTag == 5)
             {
                 // theElement = new EmbeddedBeamInterfaceAL2(maxTag, beamTag, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, area);
@@ -718,7 +719,7 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
             }
             else if (lagrangeTag == 6)
             {
-                theElement = new EmbeddedEPBeamInterface(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, matTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, writeConnectivity, connectivityFN);
+	      theElement = new EmbeddedEPBeamInterface(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, matTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, &theDomain, writeConnectivity, connectivityFN);
             }
             else if (lagrangeTag == 7)
             {

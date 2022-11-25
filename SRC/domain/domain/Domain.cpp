@@ -799,11 +799,13 @@ Domain::addParameter(Parameter *theParam)
 {
   int paramTag = theParam->getTag();
 
-  if (paramTag == 0) {
-    // don't add it .. just invoke setDomain on the parameter
-    theParam->setDomain(this);
-    return true;
-  }
+  // Commenting out bc setDomain is done below for all parameters -- MHS
+  // We need to be able to have tag=0 for parameters just like nodes, elements, etc.
+  //if (paramTag == 0) {
+  //  // don't add it .. just invoke setDomain on the parameter
+  //  theParam->setDomain(this);
+  //  return true;
+  //}
 
   // check if a Parameter with a similar tag already exists in the Domain
   TaggedObject *other = theParameters->getComponentPtr(paramTag);
@@ -2486,6 +2488,15 @@ Domain::removeRecorders(void)
   
     theRecorders = 0;
     numRecorders = 0;
+    return 0;
+}
+
+int Domain::flushRecorders() {
+    for (int i = 0; i < numRecorders; i++) {
+      if (theRecorders[i] != 0) {
+      theRecorders[i]->flush();
+      }
+    }
     return 0;
 }
 

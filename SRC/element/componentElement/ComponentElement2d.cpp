@@ -259,7 +259,7 @@ ComponentElement2d::setDomain(Domain *theDomain)
 
     EAoverL  = A*E/L;		// EA/L
     EIoverL2 = 2.0*I*E/L;	// 2EI/L
-    EIoverL4 = 4.0*E*I/L;	// 4EI/L
+    EIoverL4 = 2.0*EIoverL2;	// 4EI/L
 }
 
 int
@@ -1086,7 +1086,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
       vect4(0) = end1Hinge->getStrain();
       vect4(1) = end1Hinge->getStress();
     }
-    if (end1Hinge != 0) {
+    if (end2Hinge != 0) {
       vect4(2) = end2Hinge->getStrain();
       vect4(3) = end2Hinge->getStress();
     }
@@ -1096,7 +1096,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     if (end1Hinge != 0) {
       vect2(0) = end1Hinge->getTangent();
     }
-    if (end1Hinge != 0) {
+    if (end2Hinge != 0) {
       vect2(1) = end2Hinge->getTangent();
     }
     return eleInfo.setVector(vect2);
@@ -1137,12 +1137,18 @@ ComponentElement2d::updateParameter (int parameterID, Information &info)
 		return -1;
 	case 1:
 		E = info.theDouble;
+    EAoverL = E*A/L;
+    EIoverL2 = 2*E*I/L;
+    EIoverL4 = 2*EIoverL2;
 		return 0;
 	case 2:
 		A = info.theDouble;
+    EAoverL = E*A/L;
 		return 0;
 	case 3:
 		I = info.theDouble;
+		EIoverL2 = 2*E*I/L;
+    EIoverL4 = 2*EIoverL2;
 		return 0;
 	default:
 		return -1;

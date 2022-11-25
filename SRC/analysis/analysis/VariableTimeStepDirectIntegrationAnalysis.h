@@ -60,9 +60,10 @@ class VariableTimeStepDirectIntegrationAnalysis: public DirectIntegrationAnalysi
 					      ConvergenceTest *theTest =0);
     virtual ~VariableTimeStepDirectIntegrationAnalysis();
 
-    int analyze(int numSteps, double dT, double dtMin, double dtMax, int Jd);
+    int analyze(int numSteps, double dT, double dtMin, double dtMax,
+                int Jd, bool flush = true);
 
-  protected:
+   protected:
     virtual double determineDt(double dT, double dtMin, double dtMax, int Jd,
 			       ConvergenceTest *theTest);
 
