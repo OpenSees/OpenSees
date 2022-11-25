@@ -73,7 +73,7 @@ OPS_ComponentElement3d(void)
   }
 
   numData = 5;
-  if (OPS_GetIntInput(&numData, &iData[5]) != 0) {
+  if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
     opserr << "WARNING ElasticComponent2d - invalids second set ints" << endln;
     return 0;
   }
@@ -155,7 +155,7 @@ ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
     
-  theCoordTransf = coordTransf.getCopy2d();
+  theCoordTransf = coordTransf.getCopy3d();
   if (!theCoordTransf) {
     opserr << "ComponentElement3d::ComponentElement3d -- failed to get copy of coordinate transformation\n";
     exit(-1);
@@ -871,54 +871,48 @@ ComponentElement3d::addLoad(ElementalLoad *theLoad, double loadFactor)
   double L = theCoordTransf->getInitialLength();
 
   if (type == LOAD_TAG_Beam2dUniformLoad) {
-    double wt = data(0)*loadFactor;  // Transverse (+ve upward)
-    double wa = data(1)*loadFactor;  // Axial (+ve from node I to J)
-
-    double V = 0.5*wt*L;
-    double M = V*L/6.0; // wt*L*L/12
-    double P = wa*L;
+    double wy = data(0)*loadFactor;  // Transverse
+    double wz = data(1)*loadFactor;  // Transverse
+    double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
+    
+    double Vy = 0.5*wy*L;
+    double Mz = Vy*L/6.0; // wy*L*L/12
+    double Vz = 0.5*wz*L;
+    double My = Vz*L/6.0; // wz*L*L/12
+    double P = wx*L;
 
     // Reactions in basic system
     p0[0] -= P;
-    p0[1] -= V;
-    p0[2] -= V;
+    p0[1] -= Vy;
+    p0[2] -= Vy;
+    p0[3] -= Vz;
+    p0[4] -= Vz;
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    q0[1] -= M;
-    q0[2] += M;
+    if (end1zHinge != 0 && end2zHinge != 0) {
+      q0[1] -= Mz;
+      q0[2] += Mz;
+    }
+    if (end1zHinge == 0 && end2zHinge != 0) {
+      q0[2] += wy*L*L/8;
+    }
+    if (end1zHinge != 0 && end2zHinge == 0) {
+      q0[1] -= wy*L*L/8;
+    }
+    
+    if (end1yHinge != 0 && end2yHinge != 0) {
+      q0[3] += My;
+      q0[4] -= My;
+    }
+    if (end1yHinge == 0 && end2yHinge != 0) {
+      q0[4] -= wz*L*L/8;
+    }
+    if (end1yHinge != 0 && end2yHinge == 0) {
+      q0[3] += wz*L*L/8;
+    }    
   }
 
-  else if (type == LOAD_TAG_Beam2dPointLoad) {
-    double P = data(0)*loadFactor;
-    double N = data(1)*loadFactor;
-    double aOverL = data(2);
-
-    if (aOverL < 0.0 || aOverL > 1.0)
-      return 0;
-
-    double a = aOverL*L;
-    double b = L-a;
-
-    // Reactions in basic system
-    p0[0] -= N;
-    double V1 = P*(1.0-aOverL);
-    double V2 = P*aOverL;
-    p0[1] -= V1;
-    p0[2] -= V2;
-
-    double L2 = 1.0/(L*L);
-    double a2 = a*a;
-    double b2 = b*b;
-
-    // Fixed end forces in basic system
-    q0[0] -= N*aOverL;
-    double M1 = -a * b2 * P * L2;
-    double M2 = a2 * b * P * L2;
-    q0[1] += M1;
-    q0[2] += M2;
-  }
-  
   else {
     opserr << "ComponentElement3d::addLoad()  -- load type unknown for element with tag: " << this->getTag() << endln;
     return -1;
