@@ -870,7 +870,7 @@ ComponentElement3d::addLoad(ElementalLoad *theLoad, double loadFactor)
   const Vector &data = theLoad->getData(type, loadFactor);
   double L = theCoordTransf->getInitialLength();
 
-  if (type == LOAD_TAG_Beam2dUniformLoad) {
+  if (type == LOAD_TAG_Beam3dUniformLoad) {
     double wy = data(0)*loadFactor;  // Transverse
     double wz = data(1)*loadFactor;  // Transverse
     double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
@@ -1315,6 +1315,9 @@ ComponentElement3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
   output.endTag(); // ElementOutput
 
+  if (theResponse == 0)
+    theResponse = theCoordTransf->setResponse(argv, argc, output);
+  
   return theResponse;
 }
 
