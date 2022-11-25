@@ -50,7 +50,7 @@
 
 void* OPS_TenNodeTetrahedron()
 {
-	opserr << "OPS_TenNodeTetrahedron START" << endln;
+	// opserr << "OPS_TenNodeTetrahedron START" << endln;
 	if (OPS_GetNumRemainingInputArgs() < 12)
 	{
 		opserr << "WARNING insufficient arguments\n";
@@ -92,7 +92,7 @@ void* OPS_TenNodeTetrahedron()
 
 
 
-	opserr << "OPS_TenNodeTetrahedron END" << endln;
+	// opserr << "OPS_TenNodeTetrahedron END" << endln;
 	return new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2]);
 }
 
@@ -252,7 +252,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	: Element(tag, ELE_TAG_TenNodeTetrahedron),
 	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
 {
-	opserr << "TenNodeTetrahedron::constructor - START\n";
+	// opserr << "TenNodeTetrahedron::constructor - START\n";
 	B.Zero();
 	do_update = 1;
 	connectedExternalNodes(0) = node1 ;
@@ -267,7 +267,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	connectedExternalNodes(9) = node10 ;
 
 
-	opserr << "TenNodeTetrahedron::constructor - material copy\n";
+	// opserr << "TenNodeTetrahedron::constructor - material copy\n";
 	for (int i = 0; i < NumGaussPoints; i++ )
 	{
 		materialPointers[i] = theMaterial.getCopy("ThreeDimensional") ;
@@ -284,14 +284,14 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	b[1] = b2;
 	b[2] = b3;
 
-	opserr << "TenNodeTetrahedron::constructor - init disp\n";
+	// opserr << "TenNodeTetrahedron::constructor - init disp\n";
 
 	for (int i = 0; i < NumNodes; ++i)
 	{
 		initDisp[i] = Vector(3);
 		initDisp[i].Zero();
 	}
-	opserr << "TenNodeTetrahedron::constructor - END\n";
+	// opserr << "TenNodeTetrahedron::constructor - END\n";
 }
 //******************************************************************
 
@@ -300,7 +300,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 TenNodeTetrahedron::~TenNodeTetrahedron( )
 {
 
-	opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - START\n";
+	// opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - START\n";
 	for (int i = 0 ; i < NumGaussPoints; i++ ) {
 		delete materialPointers[i] ;
 	} //end for i
@@ -318,7 +318,7 @@ TenNodeTetrahedron::~TenNodeTetrahedron( )
 //set domain
 void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 {
-	opserr << "TenNodeTetrahedron::setDomain( Domain *theDomain ) tag = " << this->getTag() << endln;
+	// opserr << "TenNodeTetrahedron::setDomain( Domain *theDomain ) tag = " << this->getTag() << endln;
 	int i ;
 
 	//node pointers
@@ -330,7 +330,7 @@ void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 
 	this->DomainComponent::setDomain(theDomain);
 
-	opserr << "TenNodeTetrahedron::setDomain - END\n";
+	// opserr << "TenNodeTetrahedron::setDomain - END\n";
 }
 
 
@@ -969,7 +969,7 @@ int
 TenNodeTetrahedron::update(void)
 {
 
-	opserr << "TenNodeTetrahedron::update -- START" << endln;
+	// opserr << "TenNodeTetrahedron::update -- START" << endln;
 	if (do_update == 0)
 	{
 		stiff.Zero();
@@ -979,7 +979,7 @@ TenNodeTetrahedron::update(void)
 		return 0;
 	}
 
-	opserr << "TenNodeTetrahedron::update -- 1" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 1" << endln;
 
 	//strains ordered : eps11, eps22, eps33, 2*eps12, 2*eps23, 2*eps31
 
@@ -1025,11 +1025,11 @@ TenNodeTetrahedron::update(void)
 	//-------------------------------------------------------
 
 
-	opserr << "TenNodeTetrahedron::update -- 2" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 2" << endln;
 	//compute basis vectors and local nodal coordinates
 	computeBasis( ) ;
 
-	opserr << "TenNodeTetrahedron::update -- 3" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 3" << endln;
 	//gauss loop to compute and save shape functions
 
 	int count = 0 ;
@@ -1065,13 +1065,13 @@ TenNodeTetrahedron::update(void)
 		} //end for j
 	} // end for i
 
-	opserr << "TenNodeTetrahedron::update -- 4" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 4" << endln;
 
 	//gauss loop
 	for ( i = 0; i < numberGauss; i++ )
 	{
 
-		opserr << "TenNodeTetrahedron::update -- 4.1 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.1 i = " << i << endln;
 		//extract shape functions from saved array
 		for ( p = 0; p < nShape; p++ )
 		{
@@ -1083,12 +1083,12 @@ TenNodeTetrahedron::update(void)
 
 		//zero the strains
 		strain.Zero( ) ;
-		opserr << "TenNodeTetrahedron::update -- 4.2 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.2 i = " << i << endln;
 
 		// j-node loop to compute strain
 		for ( j = 0; j < numberNodes; j++ )  {
 
-			opserr << "TenNodeTetrahedron::update -- 4.2.1 j = " << j << endln;
+			// opserr << "TenNodeTetrahedron::update -- 4.2.1 j = " << j << endln;
 			/**************** fmk - unwinding for performance
 			//compute B matrix
 			BJ = computeB( j, shp ) ;
@@ -1143,16 +1143,16 @@ TenNodeTetrahedron::update(void)
 			strain(5) += b50 * ul0 + b52 * ul2;
 
 		} // end for j
-		opserr << "TenNodeTetrahedron::update -- 4.3 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.3 i = " << i << endln;
 
 		//send the strain to the material
 		success = materialPointers[i]->setTrialStrain( strain ) ;
 
-		opserr << "TenNodeTetrahedron::update -- 4.4 i = " << i << "strain = " << strain << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.4 i = " << i << "strain = " << strain << endln;
 
 	} //end for i gauss loop
-	opserr << "TenNodeTetrahedron::update -- 5" << endln;
-	opserr << "TenNodeTetrahedron::update -- END" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 5" << endln;
+	// opserr << "TenNodeTetrahedron::update -- END" << endln;
 	return 0;
 }
 
@@ -1927,14 +1927,14 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 		if (doit == 1)
 		{
 			Domain * mydomain = this->getDomain();
-			opserr << "TenNodeTetrahedron::updateParameter - ele tag = " << this->getTag()  << " - sets init disp ";
+			// opserr << "TenNodeTetrahedron::updateParameter - ele tag = " << this->getTag()  << " - sets init disp ";
 			for ( int i = 0; i < NumNodes; i++ )
 			{
 				nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
 				initDisp[i] = nodePointers[i]->getDisp();
-				opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+				// opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
 			}
-			opserr << endln;
+			// opserr << endln;
 		}
 		return 0;
 	}
@@ -1945,14 +1945,14 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 		{
 			do_update = 1;
 			Domain * mydomain = this->getDomain();
-			opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
+			// opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
 			for ( int i = 0; i < NumNodes; i++ )
 			{
 				nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
 				initDisp[i] = nodePointers[i]->getDisp();
-				opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+				// opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
 			}
-			opserr << endln;
+			// opserr << endln;
 		}
 		if (new_do_update == 0)
 		{
