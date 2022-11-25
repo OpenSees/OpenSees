@@ -880,3 +880,11 @@ BinaryFileStream::setOrder(const ID &orderData)
 
   return 0;
 }
+
+int
+BinaryFileStream::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}

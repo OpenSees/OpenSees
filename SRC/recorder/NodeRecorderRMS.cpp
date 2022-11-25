@@ -1101,3 +1101,10 @@ double NodeRecorderRMS::getRecordedValue(int clmnId, int rowOffset, bool reset)
 	  count = 0;
 	return res;
 }
+
+int NodeRecorderRMS::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
+}
