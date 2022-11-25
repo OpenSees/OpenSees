@@ -1669,7 +1669,7 @@ int OPS_getConstrainedNodes()
     int rNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
 		opserr << "WARNING getConstrainedNodes <rNodeTag?> - could not read rNodeTag\n";
 		return -1;
@@ -1793,7 +1793,7 @@ int OPS_getRetainedNodes()
     int cNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
 		opserr << "WARNING getRetainedNodes <cNodeTag?> - could not read cNodeTag\n";
 		return -1;
