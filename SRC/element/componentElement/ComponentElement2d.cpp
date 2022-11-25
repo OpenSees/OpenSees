@@ -1052,6 +1052,9 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
   output.endTag(); // ElementOutput
 
+  if (theResponse == 0)
+    theResponse = theCoordTransf->setResponse(argv, argc, output);
+  
   return theResponse;
 }
 
