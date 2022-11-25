@@ -1108,10 +1108,12 @@ void Series3DMaterial::computeHomogenizedStress()
 	// if the convergence is achieved, all materials should have the same stress.
 	// we compute anyway the average, just because some material may use some non-standard
 	// integration schemes...
-	// note: we do an arithmetic average here! not the user defined weights... because
-	// they do not necessarily sum to 1.0!
 	m_stress.Zero();
-	double w = 1.0 / static_cast<double>(m_materials.size());
-	for (std::size_t i = 0; i < m_materials.size(); ++i)
-		m_stress.addVector(1.0, m_materials[i]->getStress(), w);
+	double wsum = 0.0;
+	for (std::size_t i = 0; i < m_materials.size(); ++i) {
+		m_stress.addVector(1.0, m_materials[i]->getStress(), m_weights[i]);
+		wsum += m_weights[i];
+	}
+	if (wsum > 0.0)
+		m_stress /= wsum;
 }
