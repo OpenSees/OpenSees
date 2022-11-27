@@ -47,8 +47,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <cstring>
 #include <cctype>
 
-#define OPSPY_VERSION "3.4.0.3"
-
 // define opserr
 static PythonStream sserr;
 OPS_Stream *opserrPtr = &sserr;
@@ -462,31 +460,6 @@ initopensees(void)
     }
     if (PyModule_AddObject(pymodule, "OpenSeesParameter", par) < 0) {
         Py_DECREF(par);
-        INITERROR;
-    }
-
-    // add OpenSeesInfo dict
-    auto *info = PyDict_New();
-    if (info == NULL) {
-      INITERROR;
-    }
-    if (PyModule_AddObject(pymodule, "OpenSeesInfo", info) < 0) {
-        Py_DECREF(info);
-        INITERROR;
-    }
-
-    auto* opsver = PyUnicode_FromString(OPS_VERSION);
-    if (PyDict_SetItemString(info, "OpenSeesVersion", opsver) < 0) {
-        Py_DECREF(info);
-        Py_DECREF(opsver);
-        INITERROR;
-    }
-
-    PyObject* opspyver = PyUnicode_FromString(OPSPY_VERSION);
-    if (PyDict_SetItemString(info, "OpenSeesPyVersion", opspyver) < 0) {
-        Py_DECREF(info);
-        Py_DECREF(opsver);
-        Py_DECREF(opspyver);
         INITERROR;
     }
 

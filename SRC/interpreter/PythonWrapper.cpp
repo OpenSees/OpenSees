@@ -43,6 +43,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSeesCommands.h"
 #include <OPS_Globals.h>
 
+#define OPS_PYVERSION "3.4.0.4"
+
 static PythonWrapper* wrapper = 0;
 
 PythonWrapper::PythonWrapper()
@@ -1888,6 +1890,18 @@ static PyObject *Py_ops_version(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_pyversion(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_SetString(OPS_PYVERSION) < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_setMaxOpenFiles(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2981,6 +2995,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("numIter", &Py_ops_numIter);
     addCommand("systemSize", &Py_ops_systemSize);
     addCommand("version", &Py_ops_version);
+    addCommand("pyversion", &Py_ops_pyversion);
     addCommand("setMaxOpenFiles", &Py_ops_setMaxOpenFiles);
     addCommand("limitCurve", &Py_ops_limitCurve);
     addCommand("imposedMotion", &Py_ops_imposedMotion);
