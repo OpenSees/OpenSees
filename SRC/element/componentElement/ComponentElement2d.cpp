@@ -115,7 +115,9 @@ OPS_ComponentElement2d(void)
 ComponentElement2d::ComponentElement2d()
   :Element(0,ELE_TAG_ComponentElement2d), 
    A(0.0), E(0.0), I(0.0), rho(0.0), cMass(0),
-   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
+   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
+   end1Hinge(0), end2Hinge(0),
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)   
 {
   // does nothing
   q0[0] = 0.0;
