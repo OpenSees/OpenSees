@@ -50,6 +50,11 @@ class ComponentElement3d : public Element
 		       UniaxialMaterial *end1z, UniaxialMaterial *end2z,
 		       UniaxialMaterial *end1y, UniaxialMaterial *end2y,		       
 		       double rho = 0.0, int cMass = 0);
+    ComponentElement3d(int tag, double A, double E, double Iz,
+		       double Iy, double G, double J,
+		       int Nd1, int Nd2, CrdTransf &theTransf, 
+		       double kzI, double kzJ, double kyI, double kyJ,
+		       double rho = 0.0, int cMass = 0);  
     ~ComponentElement3d();
 
     const char *getClassType(void) const {return "ComponentElement3d";};

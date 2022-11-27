@@ -23,6 +23,7 @@
 #include "ComponentElement3d.h"
 #include <ElementalLoad.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
 
 #include <Domain.h>
 #include <Channel.h>
@@ -118,7 +119,10 @@ OPS_ComponentElement3d(void)
 ComponentElement3d::ComponentElement3d()
   :Element(0,ELE_TAG_ComponentElement3d), 
    A(0.0), E(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0), rho(0.0), cMass(0),
-   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0)
+   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+   end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
 {
   // does nothing
   q0[0] = 0.0;
@@ -146,11 +150,11 @@ ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
 				       double r, int cm)
   :Element(tag,ELE_TAG_ComponentElement3d), 
    A(a), E(e), Iz(iz), Iy(iy), G(g), J(j), rho(r), cMass(cm),
-   Q(12), q(6), kb(6,6),
+   Q(12), q(6), 
    connectedExternalNodes(2), theCoordTransf(0),
    end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
    kzTrial(2,2), uzTrial(4), uzCommit(4),
-   kyTrial(2,2), uyTrial(4), uyCommit(4), init(false)
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -188,6 +192,61 @@ ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
 
   uzTrial.Zero();
   uzCommit.Zero();
+  uyTrial.Zero();
+  uyCommit.Zero();  
+}
+
+ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
+				       double iy, double g, double j,
+				       int Nd1, int Nd2, CrdTransf &coordTransf,
+				       double kzI, double kzJ, double kyI, double kyJ,
+				       double r, int cm)
+  :Element(tag,ELE_TAG_ComponentElement3d), 
+   A(a), E(e), Iz(iz), Iy(iy), G(g), J(j), rho(r), cMass(cm),
+   Q(12), q(6), 
+   connectedExternalNodes(2), theCoordTransf(0),
+   end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
+{
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+    
+  theCoordTransf = coordTransf.getCopy3d();
+  if (!theCoordTransf) {
+    opserr << "ComponentElement3d::ComponentElement3d -- failed to get copy of coordinate transformation\n";
+    exit(-1);
+  }
+
+  q0[0] = 0.0;
+  q0[1] = 0.0;
+  q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;    
+
+  p0[0] = 0.0;
+  p0[1] = 0.0;
+  p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;    
+
+  // set node pointers to NULL
+  theNodes[0] = 0;
+  theNodes[1] = 0;
+  
+  if (kzI > 0.0)
+    end1zHinge = new ElasticMaterial(0, kzI);
+  if (kzJ > 0.0)
+    end2zHinge = new ElasticMaterial(0, kzJ);
+  if (kyI > 0.0)
+    end1yHinge = new ElasticMaterial(0, kyI);
+  if (kyJ > 0.0)
+    end2yHinge = new ElasticMaterial(0, kyJ);  
+
+  uzTrial.Zero();
+  uzCommit.Zero();
+  uyTrial.Zero();
+  uyCommit.Zero();    
 }
 
 ComponentElement3d::~ComponentElement3d()
