@@ -48,6 +48,10 @@ class ComponentElement2d : public Element
 		       int Nd1, int Nd2, CrdTransf &theTransf, 
 		       UniaxialMaterial *end1, UniaxialMaterial *end2,
 		       double rho = 0.0, int cMass = 0);
+    ComponentElement2d(int tag, double A, double E, double I, 
+		       int Nd1, int Nd2, CrdTransf &theTransf, 
+		       double kI, double kJ,
+		       double rho = 0.0, int cMass = 0);  
     ~ComponentElement2d();
 
     const char *getClassType(void) const {return "ComponentElement2d";};

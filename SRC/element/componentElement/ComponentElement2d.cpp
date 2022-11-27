@@ -23,6 +23,7 @@
 #include "ComponentElement2d.h"
 #include <ElementalLoad.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
 
 #include <Domain.h>
 #include <Channel.h>
@@ -168,6 +169,46 @@ ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i,
     end1Hinge = end1->getCopy();
   if (end2 != 0)
     end2Hinge = end2->getCopy();
+
+  uTrial.Zero();
+  uCommit.Zero();
+}
+
+ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
+				       int Nd1, int Nd2, CrdTransf &coordTransf,
+				       double kI, double kJ,
+				       double r, int cm)
+  :Element(tag,ELE_TAG_ComponentElement2d), 
+   A(a), E(e), I(i), rho(r), cMass(cm),
+   Q(6), q(3), kb(3,3),
+   connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
+{
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+    
+  theCoordTransf = coordTransf.getCopy2d();
+  if (!theCoordTransf) {
+    opserr << "ComponentElement2d::ComponentElement2d -- failed to get copy of coordinate transformation\n";
+    exit(01);
+  }
+
+  q0[0] = 0.0;
+  q0[1] = 0.0;
+  q0[2] = 0.0;
+
+  p0[0] = 0.0;
+  p0[1] = 0.0;
+  p0[2] = 0.0;
+
+  // set node pointers to NULL
+  theNodes[0] = 0;
+  theNodes[1] = 0;
+
+  if (kI > 0.0)
+    end1Hinge = new ElasticMaterial(0,kI);
+  if (kJ > 0.0)
+    end2Hinge = new ElasticMaterial(0,kJ);
 
   uTrial.Zero();
   uCommit.Zero();
