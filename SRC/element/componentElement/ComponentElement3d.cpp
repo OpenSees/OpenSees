@@ -764,8 +764,6 @@ ComponentElement3d::getTangentStiff(void)
 const Matrix &
 ComponentElement3d::getInitialStiff(void)
 {
-  double L = theCoordTransf->getInitialLength();
-
   double k1 = 0.;
   if (end1zHinge != 0) 
     k1 = end1zHinge->getInitialTangent();
