@@ -118,7 +118,7 @@ ComponentElement2d::ComponentElement2d()
    A(0.0), E(0.0), I(0.0), rho(0.0), cMass(0),
    Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
    end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)   
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)   
 {
   // does nothing
   q0[0] = 0.0;
@@ -140,9 +140,9 @@ ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i,
 				       double r, int cm)
   :Element(tag,ELE_TAG_ComponentElement2d), 
    A(a), E(e), I(i), rho(r), cMass(cm),
-   Q(6), q(3), kb(3,3),
+   Q(6), q(3), 
    connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -180,9 +180,9 @@ ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i,
 				       double r, int cm)
   :Element(tag,ELE_TAG_ComponentElement2d), 
    A(a), E(e), I(i), rho(r), cMass(cm),
-   Q(6), q(3), kb(3,3),
+   Q(6), q(3),
    connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
