@@ -108,13 +108,13 @@ class ComponentElement2d : public Element
 
     UniaxialMaterial *end1Hinge;
     UniaxialMaterial *end2Hinge;
-    double cD1, cD2, tD1, tD2; // committed and trial interior dof displacements
+  //double cD1, cD2, tD1, tD2; // committed and trial interior dof displacements
     Matrix kTrial;
     Vector R;
     Vector uTrial;
     Vector uCommit;
-    Vector rTrial;
-    Vector rCommit;
+  //Vector rTrial;
+  //Vector rCommit;
     Matrix kb;
 
     static Vector P;
