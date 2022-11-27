@@ -480,7 +480,8 @@ PressureDependMultiYield03::PressureDependMultiYield03 (const PressureDependMult
   currentStrain(a.currentStrain), strainRate(a.strainRate), check(0),
   PPZPivot(a.PPZPivot), PPZCenter(a.PPZCenter), updatedTrialStress(a.updatedTrialStress),
   PPZPivotCommitted(a.PPZPivotCommitted), PPZCenterCommitted(a.PPZCenterCommitted),
-  PivotStrainRate(a.PivotStrainRate), PivotStrainRateCommitted(a.PivotStrainRateCommitted)
+  PivotStrainRate(a.PivotStrainRate), PivotStrainRateCommitted(a.PivotStrainRateCommitted),
+    stress0Initialized(a.stress0Initialized), stress0(a.stress0)
 {
   matN = a.matN;
 
@@ -541,6 +542,11 @@ void PressureDependMultiYield03::elast2Plast(void)
     //opserr << "WARNING:PressureDependMultiYield03::elast2Plast(): material in tension." << endln;
     currentStress.setData(currentStress.deviator(),0);
   }
+
+  //if (!stress0Initialized) {
+  //    stress0 = currentStress.t2Vector();
+  //    stress0Initialized = true;
+  //}
 
   // Active surface is 0, return
   if (currentStress.deviatorLength() == 0.) return;
@@ -645,6 +651,7 @@ const Matrix & PressureDependMultiYield03::getTangent (void)
       initPress = currentStress.volume();
 //	   opserr << "PDMY03::getTang() - 2\n";
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
 //	   opserr << "PDMY03::getTang() - 3\n";
   }
   if (loadStage>=2 && initPress==refPressure) 
@@ -784,6 +791,7 @@ const Matrix & PressureDependMultiYield03::getInitialTangent (void)
   if (loadStage == 1 && e2p == 0) {
       initPress = currentStress.volume();
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
   }
   if (loadStage>=2 && initPress==refPressure) 
 	  initPress = currentStress.volume();
@@ -851,6 +859,7 @@ const Vector & PressureDependMultiYield03::getStress (void)
   if (loadStage == 1 && e2p == 0) {
       initPress = currentStress.volume();
       elast2Plast();
+	  stress0 = currentStress.t2Vector();
   }
 
   if (loadStage!=1) {  //linear elastic
@@ -1151,7 +1160,7 @@ int PressureDependMultiYield03::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }
 
-  Vector data(72+numOfSurfaces*8);
+  Vector data(79+numOfSurfaces*8);
   data(0) = rho;
   data(1) = einit;
   data(2) = refShearModulus;
@@ -1221,6 +1230,13 @@ int PressureDependMultiYield03::sendSelf(int commitTag, Channel &theChannel)
   data(i+1) = mTypex[matN];
   data(i+2) = contractParam4x[matN];
   data(i+3) = contractParam5x[matN];
+  data(i+4) = stress0Initialized;
+  data(i+5) = stress0[0];
+  data(i+6) = stress0[1];
+  data(i+7) = stress0[2];
+  data(i+8) = stress0[3];
+  data(i+9) = stress0[4];
+  data(i+10) = stress0[5];
 
   res += theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -1253,7 +1269,7 @@ int PressureDependMultiYield03::recvSelf(int commitTag, Channel &theChannel,
 
   int otherMatCount = idData(5);
 
-  Vector data(72+idData(1)*8);
+  Vector data(79+idData(1)*8);
   res += theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
     opserr << "PressureDependMultiYield03::recvSelf -- could not recv Vector\n";
@@ -1336,7 +1352,13 @@ int PressureDependMultiYield03::recvSelf(int commitTag, Channel &theChannel,
   int mType = data(i+1);
   double contractParam4 = data(i+2);
   double contractParam5 = data(i+3);
-  
+  stress0Initialized = data(i+4);
+  stress0[0] = data(i+5);
+  stress0[1] = data(i+6);
+  stress0[2] = data(i+7);
+  stress0[3] = data(i+8);
+  stress0[4] = data(i+9);
+  stress0[5] = data(i+10);
   
   int *temp1, *temp2, *temp11;
   double *temp3, *temp4, *temp5, *temp6, *temp7, *temp8, *temp9, *temp10, *temp12;
@@ -1503,26 +1525,30 @@ Response*
 PressureDependMultiYield03::setResponse (const char **argv, int argc, OPS_Stream &s)
 {
   // begin change by Alborz Ghofrani - UW --- get only 6 components of stress
-  if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
-	  if ((argc > 1) && (atoi(argv[1]) > 2) && (atoi(argv[1]) < 8)) 
-		 return new MaterialResponse(this, 2 + atoi(argv[1]), this->getStressToRecord(atoi(argv[1])));
-	  else
-		 return new MaterialResponse(this, 1, this->getCommittedStress());
-	// end change by Alborz Ghofrani - UW
+    if (strcmp(argv[0], "stress") == 0 || strcmp(argv[0], "stresses") == 0)
+        if ((argc > 1) && (atoi(argv[1]) > 2) && (atoi(argv[1]) < 8))
+            return new MaterialResponse(this, 2 + atoi(argv[1]), this->getStressToRecord(atoi(argv[1])));
+        else
+            return new MaterialResponse(this, 1, this->getCommittedStress());
+    // end change by Alborz Ghofrani - UW
 
-  else if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strains") == 0)
-		return new MaterialResponse(this, 2, this->getCommittedStrain());
+    else if (strcmp(argv[0], "strain") == 0 || strcmp(argv[0], "strains") == 0)
+        return new MaterialResponse(this, 2, this->getCommittedStrain());
 
-	else if (strcmp(argv[0],"tangent") == 0)
-		return new MaterialResponse(this, 3, this->getTangent());
+    else if (strcmp(argv[0], "tangent") == 0)
+        return new MaterialResponse(this, 3, this->getTangent());
 
-	else if (strcmp(argv[0],"backbone") == 0) {
-	    int numOfSurfaces = numOfSurfacesx[matN];
-	    Matrix curv(numOfSurfaces+1,(argc-1)*2);
-		for (int i=1; i<argc; i++)
-			curv(0,(i-1)*2) = atoi(argv[i]);
-		return new MaterialResponse(this, 4, curv);
-  }
+    else if (strcmp(argv[0], "backbone") == 0) {
+        int numOfSurfaces = numOfSurfacesx[matN];
+        Matrix curv(numOfSurfaces + 1, (argc - 1) * 2);
+        for (int i = 1; i < argc; i++)
+            curv(0, (i - 1) * 2) = atoi(argv[i]);
+        return new MaterialResponse(this, 4, curv);
+    }
+
+    else if (strcmp(argv[0], "C") == 0)
+        return new MaterialResponse(this, 111, 0.0);
+
 	else
 		return 0;
 }
@@ -1613,6 +1639,8 @@ int PressureDependMultiYield03::getResponse (int responseID, Information &matInf
     if (matInfo.theVector != 0)
       *(matInfo.theVector) = getStressToRecord(7);
     return 0;
+  case 111:
+      return matInfo.setDouble(ContractionFactorC());
 	// end change by Alborz Ghofrani UW
   default:
     return -1;
@@ -2269,8 +2297,17 @@ double PressureDependMultiYield03::ContractionFactorC(void)
 	double cd = contractParam4x[matN];
 	double ce = contractParam5x[matN];
 
+    // 14/10/2022 - Massimo Petracca - Moved in elast2plast:
+    // this should be computed at the end of the gravity stage.
+    // 
+	// Evaluate stress0 only once 
+	//if (!stress0Initialized) {
+	//	stress0 = currentStress.t2Vector();
+	//	stress0Initialized = true;
+	//}
+
 	// Start - by Arash K.
-	static Vector stress0 = currentStress.t2Vector();
+	//static Vector stress0 = currentStress.t2Vector();
 	double sig110 = stress0[0];
 	double sig220 = stress0[1];
 	double sig330 = stress0[2];
@@ -2290,8 +2327,8 @@ double PressureDependMultiYield03::ContractionFactorC(void)
 	double factorCSR = pow(tau12*tau12 + tau23*tau23 + tau13*tau13 , 0.5) / factorP0;
 	
 	double C = (1.0 + pow(fabs(factorCSR-factorCSR0)*cd , 3.0)) * pow(1.0 + ce*factorCSR0,2.0);
+
 	// End	
-	
 	return C;
 }
 
