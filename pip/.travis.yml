@@ -1,0 +1,16 @@
+os:
+  - linux
+language: python
+python:
+  - "3.6"
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install codecov
+  - pip install pytest-cov
+# command to run tests
+script:
+  - py.test --cov=./
+after_success:
+  - coveralls   # uploads reports to coveralls.io
