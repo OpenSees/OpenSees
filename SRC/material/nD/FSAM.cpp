@@ -39,7 +39,7 @@
 #include <UniaxialMaterial.h>
 #include <Vector.h>
 #include <Matrix.h>
-#include <math.h>
+#include <cmath>
 #include <float.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>

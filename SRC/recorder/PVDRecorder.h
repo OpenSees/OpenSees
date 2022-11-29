@@ -60,6 +60,7 @@ public:
 
     int record(int commitTag, double timeStamp);
     int restart();
+    int flush();
     int domainChanged();    
     int setDomain(Domain &theDomain);
     int sendSelf(int commitTag, Channel &theChannel);  

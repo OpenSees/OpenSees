@@ -65,7 +65,7 @@ VariableTimeStepDirectIntegrationAnalysis::~VariableTimeStepDirectIntegrationAna
 }    
 
 int 
-VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, double dtMin, double dtMax, int Jd)
+VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, double dtMin, double dtMax, int Jd, bool flush)
 {
   // get some pointers
   Domain *theDom = this->getDomainPtr();
@@ -167,6 +167,9 @@ VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, doub
     currentDt = this->determineDt(currentDt, dtMin, dtMax, Jd, theTest);
   }
 
+  if (theDom != 0 && flush) {
+    theDom->flushRecorders();
+  }
 
   return 0;
 }

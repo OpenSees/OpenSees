@@ -45,7 +45,7 @@ Matrix  PlateRebarMaterial::tangent(5,5) ;
 //null constructor
 PlateRebarMaterial::PlateRebarMaterial( ) : 
 NDMaterial(0, ND_TAG_PlateRebarMaterial ), 
-strain(5) 
+theMat(nullptr), angle(0.0), c(0.0), s(0.0), strain(5) 
 { }
 
 void* OPS_PlateRebarMaterial()
@@ -250,14 +250,14 @@ PlateRebarMaterial::getTangent( )
     tangent(1,1) = tan;
   else {
     tangent(0,0) = tan * c * c * c * c ;
-    tangent(0,1) = tan * c * c * c * s ;
-    tangent(0,2) = tan * c * c * s * s ;
+    tangent(0,1) = tan * c * c * s * s ;
+    tangent(0,2) = tan * c * c * c * s ;
     tangent(1,0) = tangent(0,1) ;
-    tangent(1,1) = tangent(0,2) ;
+    tangent(1,1) = tan * s * s * s * s ;
     tangent(1,2) = tan * c * s * s * s ;
     tangent(2,0) = tangent(0,2) ;
     tangent(2,1) = tangent(1,2) ;
-    tangent(2,2) = tan * s * s * s * s ;
+    tangent(2,2) = tangent(0,1) ;
   }
 
   return tangent ;
@@ -275,14 +275,14 @@ PlateRebarMaterial::getInitialTangent
     tangent(1,1) = tan;
   else {
     tangent(0,0) = tan * c * c * c * c ;
-    tangent(0,1) = tan * c * c * c * s ;
-    tangent(0,2) = tan * c * c * s * s ;
+    tangent(0,1) = tan * c * c * s * s ;
+    tangent(0,2) = tan * c * c * c * s ;
     tangent(1,0) = tangent(0,1) ;
-    tangent(1,1) = tangent(0,2) ;
+    tangent(1,1) = tan * s * s * s * s ;
     tangent(1,2) = tan * c * s * s * s ;
     tangent(2,0) = tangent(0,2) ;
     tangent(2,1) = tangent(1,2) ;
-    tangent(2,2) = tan * s * s * s * s ;
+    tangent(2,2) = tangent(0,1) ;
   }
 
   return tangent ;
@@ -331,7 +331,7 @@ PlateRebarMaterial::sendSelf(int commitTag, Channel &theChannel)
 
   res = theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "PlateRebarMaterial::sendSelf() - failed to send data" << endln;
+    opserr << "PlateRebarMaterial::sendSelf() - failed to send ID" << endln;
     return res;
   }
 
@@ -340,14 +340,14 @@ PlateRebarMaterial::sendSelf(int commitTag, Channel &theChannel)
 
   res = theChannel.sendVector(dataTag, commitTag, vecData);
   if (res < 0) {
-    opserr << "PlateRebarMaterial::sendSelf() - failed to send data" << endln;
+    opserr << "PlateRebarMaterial::sendSelf() - failed to send Vector" << endln;
     return res;
   }
 
   // now send the materials data
   res += theMat->sendSelf(commitTag, theChannel);
   if (res < 0) 
-    opserr << "PlateRebarMaterial::sendSelf() - failed to send material1" << endln;
+    opserr << "PlateRebarMaterial::sendSelf() - failed to send material" << endln;
 
   return res;
 }
@@ -363,13 +363,13 @@ PlateRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
   static ID idData(3);
   res = theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "PlateRebarMaterial::sendSelf() - failed to receive id data" << endln;
+    opserr << "PlateRebarMaterial::sendSelf() - failed to receive ID" << endln;
     return res;
   }
 
   this->setTag(idData(0));
   int matClassTag = idData(1);
-  if (theMat->getClassTag() != matClassTag) {
+  if (theMat == nullptr || theMat->getClassTag() != matClassTag) {
     if (theMat != 0) delete theMat;
     theMat = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMat == 0) {
@@ -382,7 +382,7 @@ PlateRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
   static Vector vecData(1);
   res = theChannel.recvVector(dataTag, commitTag, vecData);
   if (res < 0) {
-    opserr << "PlateRebarMaterial::sendSelf() - failed to receive vector data" << endln;
+    opserr << "PlateRebarMaterial::sendSelf() - failed to receive Vector" << endln;
     return res;
   }
   angle = vecData(0);

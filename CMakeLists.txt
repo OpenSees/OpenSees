@@ -21,13 +21,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
 
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/BuildTools/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
 include(OpenSeesFunctions)
 
 # include user config
@@ -41,15 +42,24 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
+ # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ # set(CMAKE_EXE_LINKER_FLAGS "-static")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ set(CMAKE_EXE_LINKER_FLAGS "-static")
  # add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
  MESSAGE("COMPILER: Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+ set(BUILD_SHARED_LIBS OFF)
  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
   MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
@@ -67,19 +77,29 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 # Conan (manages external dependencies for a typical build)
 # 
 
+MESSAGE("${CMAKE_BINARY_DIR}")
+
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+
+   MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
+   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+
 else()
+
+  MESSAGE("NOT USING CONAN")
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
+
 endif()
 
 # define user-selectable options for end target
@@ -166,6 +186,7 @@ include_directories(
   ${OPS_SRC_DIR}/element/forceBeamColumn
   ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
   ${OPS_SRC_DIR}/coordTransformation
+  ${OPS_SRC_DIR}/damping
   ${OPS_SRC_DIR}/tagged
   ${OPS_SRC_DIR}/tagged/storage
   ${OPS_SRC_DIR}/recorder
@@ -260,10 +281,8 @@ endif()
 
 find_package (Python COMPONENTS Interpreter Development)
 
-
 if((TARGET OpenSeesMP) OR (TARGET OpenSeesSP))
   find_package(MPI)
-  
 endif()
 
 
@@ -426,6 +445,7 @@ add_library(G3)
 
 target_link_libraries(G3
     coordTransformation
+    damping
     OPS_Matrix
     OPS_Analysis 
     OPS_ModelBuilder
@@ -473,6 +493,7 @@ target_link_libraries(OpenSeesLIB
     OPS_PFEM
     OPS_Recorder
     coordTransformation
+    damping
     OPS_Renderer
     OPS_Section_Repres
     OPS_Section_YieldSurface
@@ -549,6 +570,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -564,13 +588,18 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesSP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+
+    target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
     target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    target_compile_definitions(OpenSeesSP 
-      PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG}
-    )
-    
+    if (DEFINED OPENMPI)
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+    else()
+        target_compile_definitions(OpenSeesSP 
+    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+    endif()
+
     target_link_libraries(OpenSeesSP 
        OPS_InterpTcl 
        OpenSeesLIB
@@ -603,6 +632,9 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/tcl/mpiParameterMain.cpp
       ${OPS_SRC_DIR}/tcl/tclMain.cpp
       ${OPS_SRC_DIR}/tcl/commands.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
+      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp        
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
@@ -615,8 +647,10 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
-    target_include_directories(OpenSeesMP PRIVATE ${MPI_CXX_INCLUDE_DIRS})
+    target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
+
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
     endif()			    

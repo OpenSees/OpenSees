@@ -34,6 +34,8 @@
 #include <FunctionEvaluator.h>
 #include <Python.h>
 #include <ReliabilityDomain.h>
+#include <vector>
+#include <string>
 
 class PythonEvaluator : public FunctionEvaluator {
  public:
@@ -58,6 +60,10 @@ class PythonEvaluator : public FunctionEvaluator {
   double getResponseVariable(const char *label, int lsfTag);
 
  protected:
+
+  // load module dict, return [pymodule, moduleDict]
+  std::vector<PyObject*> loadModuleDict();
+
  private:
   ReliabilityDomain *theReliabilityDomain;
   Domain *theOpenSeesDomain;
@@ -66,6 +72,8 @@ class PythonEvaluator : public FunctionEvaluator {
   char *theExpression;
 
   double current_val;
+
+  std::string moduleName;
 };
 
 #endif

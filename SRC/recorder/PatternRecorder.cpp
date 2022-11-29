@@ -175,3 +175,10 @@ PatternRecorder::restart(void)
   }
   return 0;
 }
+
+int PatternRecorder::flush(void) {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}

@@ -200,6 +200,13 @@ Element::setRayleighDampingFactors(double alpham, double betak, double betak0, d
   return 0;
 }
 
+int
+Element::setDamping(Domain *theDomain, Damping *theDamping)
+{
+  opserr << "Element::setDamping - Damping is yet to be implemented for " << this->getClassType() << " Element #" << this->getTag() << endln;
+  return 0;
+}
+
 const Matrix &
 Element::getDamp(void) 
 {

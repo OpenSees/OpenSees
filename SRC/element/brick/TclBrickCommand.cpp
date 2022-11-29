@@ -132,28 +132,71 @@ TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,  int argc,
   double b1=0.0;
   double b2=0.0; 
   double b3=0.0;
-  if ((argc-eleArgStart) > 11) {
+
+  int dampingTag = 0;
+  Damping *theDamping = 0;
+
+  if ((argc-eleArgStart) == 13) {
+    if (strcmp(argv[11+eleArgStart],"-damp") == 0 && Tcl_GetInt(interp, argv[12+eleArgStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "Brick element: " << BrickId << endln;
+        return TCL_ERROR;
+      }
+	  }
+  }
+  else if ((argc-eleArgStart) == 14) {
     if (Tcl_GetDouble(interp, argv[11+eleArgStart], &b1) != TCL_OK) {
        opserr << "WARNING invalid b1\n";
        opserr << "Brick element: " << BrickId << endln;
        return TCL_ERROR;
-	}
-  }
-
-  if ((argc-eleArgStart) > 12) {
+	  }
     if (Tcl_GetDouble(interp, argv[12+eleArgStart], &b2) != TCL_OK) {
        opserr << "WARNING invalid b2\n";
        opserr << "Brick element: " << BrickId << endln;
        return TCL_ERROR;
-	}
-  }
-
-  if ((argc-eleArgStart) > 13) {
+	  }
     if (Tcl_GetDouble(interp, argv[13+eleArgStart], &b3) != TCL_OK) {
        opserr << "WARNING invalid b3\n";
        opserr << "Brick element: " << BrickId << endln;
        return TCL_ERROR;
-	}
+    }
+  }
+  else if ((argc-eleArgStart) == 16) {
+    int argB1 = 11;
+    if (strcmp(argv[11+eleArgStart],"-damp") == 0 && Tcl_GetInt(interp, argv[12+eleArgStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "Brick element: " << BrickId << endln;
+        return TCL_ERROR;
+      }
+      argB1 = 13;
+	  }
+	  else if (strcmp(argv[14+eleArgStart],"-damp") == 0 && Tcl_GetInt(interp, argv[15+eleArgStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "Brick element: " << BrickId << endln;
+        return TCL_ERROR;
+      }
+	  }
+    if (Tcl_GetDouble(interp, argv[argB1+eleArgStart], &b1) != TCL_OK) {
+       opserr << "WARNING invalid b1\n";
+       opserr << "Brick element: " << BrickId << endln;
+       return TCL_ERROR;
+	  }
+    if (Tcl_GetDouble(interp, argv[1+argB1+eleArgStart], &b2) != TCL_OK) {
+       opserr << "WARNING invalid b2\n";
+       opserr << "Brick element: " << BrickId << endln;
+       return TCL_ERROR;
+	  }
+    if (Tcl_GetDouble(interp, argv[2+argB1+eleArgStart], &b3) != TCL_OK) {
+       opserr << "WARNING invalid b3\n";
+       opserr << "Brick element: " << BrickId << endln;
+       return TCL_ERROR;
+    }
   }
 
   // now create the Brick and add it to the Domain
@@ -161,7 +204,7 @@ TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,  int argc,
   if (strcmp(argv[1],"stdBrick") == 0) {
     theBrick = new Brick(BrickId,Node1,Node2,Node3,Node4,
 			 Node5, Node6, Node7, Node8, *theMaterial,
-			 b1, b2, b3);
+			 b1, b2, b3, theDamping);
   }
   else if (strcmp(argv[1],"bbarBrickWithSensitivity") == 0) {
     theBrick = new BbarBrickWithSensitivity(BrickId,Node1,Node2,Node3,Node4,
