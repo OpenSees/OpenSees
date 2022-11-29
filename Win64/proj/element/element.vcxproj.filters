@@ -1028,6 +1028,9 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact3D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement3d.cpp">
+      <Filter>componentElement</Filter>
+    </ClCompile>      
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>

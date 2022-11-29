@@ -553,6 +553,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/ConstantPressureVolumeQuad.o \
 	$(FE)/element/fourNodeQuad/EnhancedQuad.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
+	$(FE)/element/componentElement/ComponentElement3d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
 	$(FE)/element/fourNodeQuad/EightNodeQuad.o \

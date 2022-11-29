@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// Written: fmk 09/15
+// Written: fmk 09/15, MHS 11/22 for 3D
 
-#include "ComponentElement2d.h"
+#include "ComponentElement3d.h"
 #include <ElementalLoad.h>
 #include <UniaxialMaterial.h>
 #include <ElasticMaterial.h>
@@ -45,35 +45,35 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-Vector ComponentElement2d::P(6);
-Matrix ComponentElement2d::K(6,6);
+Vector ComponentElement3d::P(12);
+Matrix ComponentElement3d::K(12,12);
 
 void *
-OPS_ComponentElement2d(void)
+OPS_ComponentElement3d(void)
 {
   Element *theElement = 0;
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs < 3) {
-    opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
+    opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E G J Iy Iz crdTag hinge1z hinge2z hinge1y hinge2y \n";
     return 0;
   }
   
-  int iData[6];
-  double dData[3];  
+  int iData[8];
+  double dData[6];  
   int numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING ElasticComponent2d - invalids ints" << endln;
     return 0;
   }
 
-  numData = 3;
+  numData = 6;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING ElasticComponent2d - invalids double" << endln;
     return 0;
   }
 
-  numData = 3;
+  numData = 5;
   if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
     opserr << "WARNING ElasticComponent2d - invalids second set ints" << endln;
     return 0;
@@ -95,17 +95,20 @@ OPS_ComponentElement2d(void)
 
   CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
 
-  UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
-  UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
+  UniaxialMaterial *end1z = OPS_getUniaxialMaterial(iData[4]);
+  UniaxialMaterial *end2z = OPS_getUniaxialMaterial(iData[5]);
+  UniaxialMaterial *end1y = OPS_getUniaxialMaterial(iData[6]);
+  UniaxialMaterial *end2y = OPS_getUniaxialMaterial(iData[7]);  
 
   // Parsing was successful, allocate the material
-  theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
+  theElement = new ComponentElement3d(iData[0], dData[0], dData[1], dData[5],
+				      dData[4], dData[2], dData[3],
 				      iData[1], iData[2], 
-				      *theTrans, end1, end2, 
+				      *theTrans, end1z, end2z, end1y, end2y, 
 				      mass,cMass);
 
   if (theElement == 0) {
-    opserr << "WARNING could not create element of type ComponentElement2d\n";
+    opserr << "WARNING could not create element of type ComponentElement3d\n";
     return 0;
   }
   
@@ -113,148 +116,186 @@ OPS_ComponentElement2d(void)
 }
 
 
-ComponentElement2d::ComponentElement2d()
-  :Element(0,ELE_TAG_ComponentElement2d), 
-   A(0.0), E(0.0), I(0.0), rho(0.0), cMass(0),
-   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
-   end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)   
+ComponentElement3d::ComponentElement3d()
+  :Element(0,ELE_TAG_ComponentElement3d), 
+   A(0.0), E(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0), rho(0.0), cMass(0),
+   Q(12), q(6), connectedExternalNodes(2), theCoordTransf(0),
+   end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
 {
   // does nothing
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;
 
   p0[0] = 0.0;
   p0[1] = 0.0;
   p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;  
 
   // set node pointers to NULL
-  for (int i=0; i<2; i++)
-    theNodes[i] = 0;      
+  theNodes[0] = 0;
+  theNodes[1] = 0;        
 }
 
-ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
+ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
+				       double iy, double g, double j,
 				       int Nd1, int Nd2, CrdTransf &coordTransf,
-				       UniaxialMaterial *end1, UniaxialMaterial *end2,
+				       UniaxialMaterial *end1z, UniaxialMaterial *end2z,
+				       UniaxialMaterial *end1y, UniaxialMaterial *end2y,
 				       double r, int cm)
-  :Element(tag,ELE_TAG_ComponentElement2d), 
-   A(a), E(e), I(i), rho(r), cMass(cm),
-   Q(6), q(3), 
-   connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)
+  :Element(tag,ELE_TAG_ComponentElement3d), 
+   A(a), E(e), Iz(iz), Iy(iy), G(g), J(j), rho(r), cMass(cm),
+   Q(12), q(6), 
+   connectedExternalNodes(2), theCoordTransf(0),
+   end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
     
-  theCoordTransf = coordTransf.getCopy2d();
+  theCoordTransf = coordTransf.getCopy3d();
   if (!theCoordTransf) {
-    opserr << "ComponentElement2d::ComponentElement2d -- failed to get copy of coordinate transformation\n";
-    exit(01);
+    opserr << "ComponentElement3d::ComponentElement3d -- failed to get copy of coordinate transformation\n";
+    exit(-1);
   }
 
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;    
 
   p0[0] = 0.0;
   p0[1] = 0.0;
   p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;    
 
   // set node pointers to NULL
   theNodes[0] = 0;
   theNodes[1] = 0;
   
-  if (end1 != 0)
-    end1Hinge = end1->getCopy();
-  if (end2 != 0)
-    end2Hinge = end2->getCopy();
+  if (end1z != 0)
+    end1zHinge = end1z->getCopy();
+  if (end2z != 0)
+    end2zHinge = end2z->getCopy();
+  if (end1y != 0)
+    end1yHinge = end1y->getCopy();
+  if (end2y != 0)
+    end2yHinge = end2y->getCopy();  
 
-  uTrial.Zero();
-  uCommit.Zero();
+  uzTrial.Zero();
+  uzCommit.Zero();
+  uyTrial.Zero();
+  uyCommit.Zero();  
 }
 
-ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
+ComponentElement3d::ComponentElement3d(int tag, double a, double e, double iz,
+				       double iy, double g, double j,
 				       int Nd1, int Nd2, CrdTransf &coordTransf,
-				       double kI, double kJ,
+				       double kzI, double kzJ, double kyI, double kyJ,
 				       double r, int cm)
-  :Element(tag,ELE_TAG_ComponentElement2d), 
-   A(a), E(e), I(i), rho(r), cMass(cm),
-   Q(6), q(3),
-   connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), init(false)
+  :Element(tag,ELE_TAG_ComponentElement3d), 
+   A(a), E(e), Iz(iz), Iy(iy), G(g), J(j), rho(r), cMass(cm),
+   Q(12), q(6), 
+   connectedExternalNodes(2), theCoordTransf(0),
+   end1zHinge(0), end2zHinge(0), end1yHinge(0), end2yHinge(0),
+   kzTrial(2,2), uzTrial(4), uzCommit(4),
+   kyTrial(2,2), uyTrial(4), uyCommit(4), kb(6,6), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
     
-  theCoordTransf = coordTransf.getCopy2d();
+  theCoordTransf = coordTransf.getCopy3d();
   if (!theCoordTransf) {
-    opserr << "ComponentElement2d::ComponentElement2d -- failed to get copy of coordinate transformation\n";
-    exit(01);
+    opserr << "ComponentElement3d::ComponentElement3d -- failed to get copy of coordinate transformation\n";
+    exit(-1);
   }
 
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;    
 
   p0[0] = 0.0;
   p0[1] = 0.0;
   p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;    
 
   // set node pointers to NULL
   theNodes[0] = 0;
   theNodes[1] = 0;
+  
+  if (kzI > 0.0)
+    end1zHinge = new ElasticMaterial(0, kzI);
+  if (kzJ > 0.0)
+    end2zHinge = new ElasticMaterial(0, kzJ);
+  if (kyI > 0.0)
+    end1yHinge = new ElasticMaterial(0, kyI);
+  if (kyJ > 0.0)
+    end2yHinge = new ElasticMaterial(0, kyJ);  
 
-  if (kI > 0.0)
-    end1Hinge = new ElasticMaterial(0,kI);
-  if (kJ > 0.0)
-    end2Hinge = new ElasticMaterial(0,kJ);
-
-  uTrial.Zero();
-  uCommit.Zero();
+  uzTrial.Zero();
+  uzCommit.Zero();
+  uyTrial.Zero();
+  uyCommit.Zero();    
 }
 
-ComponentElement2d::~ComponentElement2d()
+ComponentElement3d::~ComponentElement3d()
 {
   if (theCoordTransf)
     delete theCoordTransf;
 
-  if (end1Hinge != 0)
-    delete end1Hinge;
+  if (end1zHinge != 0)
+    delete end1zHinge;
   
-  if (end2Hinge != 0)
-    delete end2Hinge;
+  if (end2zHinge != 0)
+    delete end2zHinge;
+
+  if (end1yHinge != 0)
+    delete end1yHinge;
+  
+  if (end2yHinge != 0)
+    delete end2yHinge;  
 }
 
 int
-ComponentElement2d::getNumExternalNodes(void) const
+ComponentElement3d::getNumExternalNodes(void) const
 {
     return 2;
 }
 
 const ID &
-ComponentElement2d::getExternalNodes(void) 
+ComponentElement3d::getExternalNodes(void) 
 {
     return connectedExternalNodes;
 }
 
 Node **
-ComponentElement2d::getNodePtrs(void) 
+ComponentElement3d::getNodePtrs(void) 
 {
   return theNodes;
 }
 
 int
-ComponentElement2d::getNumDOF(void)
+ComponentElement3d::getNumDOF(void)
 {
-    return 6;
+    return 12;
 }
 
 void
-ComponentElement2d::setDomain(Domain *theDomain)
+ComponentElement3d::setDomain(Domain *theDomain)
 {
   if (theDomain == 0) {
-    opserr << "ComponentElement2d::setDomain -- Domain is null\n";
+    opserr << "ComponentElement3d::setDomain -- Domain is null\n";
     exit(-1);
   }
     
@@ -262,26 +303,26 @@ ComponentElement2d::setDomain(Domain *theDomain)
     theNodes[1] = theDomain->getNode(connectedExternalNodes(1));    
     
     if (theNodes[0] == 0) {
-      opserr << "ComponentElement2d::setDomain -- Node 1: " << connectedExternalNodes(0) << " does not exist\n";
+      opserr << "ComponentElement3d::setDomain -- Node 1: " << connectedExternalNodes(0) << " does not exist\n";
       exit(-1);
     }
 			      
     if (theNodes[1] == 0) {
-      opserr << "ComponentElement2d::setDomain -- Node 2: " << connectedExternalNodes(1) << " does not exist\n";
+      opserr << "ComponentElement3d::setDomain -- Node 2: " << connectedExternalNodes(1) << " does not exist\n";
       exit(-1);
     }
 
     int dofNd1 = theNodes[0]->getNumberDOF();
     int dofNd2 = theNodes[1]->getNumberDOF();    
     
-    if (dofNd1 != 3) {
-      opserr << "ComponentElement2d::setDomain -- Node 1: " << connectedExternalNodes(0) 
+    if (dofNd1 != 6) {
+      opserr << "ComponentElement3d::setDomain -- Node 1: " << connectedExternalNodes(0) 
 	     << " has incorrect number of DOF\n";
       exit(-1);
     }
     
-    if (dofNd2 != 3) {
-      opserr << "ComponentElement2d::setDomain -- Node 2: " << connectedExternalNodes(1) 
+    if (dofNd2 != 6) {
+      opserr << "ComponentElement3d::setDomain -- Node 2: " << connectedExternalNodes(1) 
 	     << " has incorrect number of DOF\n";
       exit(-1);
     }
@@ -289,84 +330,107 @@ ComponentElement2d::setDomain(Domain *theDomain)
     this->DomainComponent::setDomain(theDomain);
     
     if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0) {
-	opserr << "ComponentElement2d::setDomain -- Error initializing coordinate transformation\n";
+	opserr << "ComponentElement3d::setDomain -- Error initializing coordinate transformation\n";
 	exit(-1);
     }
     
     double L = theCoordTransf->getInitialLength();
 
     if (L == 0.0) {
-      opserr << "ComponentElement2d::setDomain -- Element has zero length\n";
+      opserr << "ComponentElement3d::setDomain -- Element has zero length\n";
       exit(-1);
     }
 
     EAoverL  = A*E/L;		// EA/L
-    EIoverL2 = 2.0*I*E/L;	// 2EI/L
-    EIoverL4 = 2.0*EIoverL2;	// 4EI/L
+    EIzoverL2 = 2.0*Iz*E/L;	// 2EI/L
+    EIzoverL4 = 2.0*EIzoverL2;	// 4EI/L
+    EIyoverL2 = 2.0*Iy*E/L;	// 2EI/L
+    EIyoverL4 = 2.0*EIyoverL2;	// 4EI/L
+    GJoverL = G*J/L;
 }
 
 int
-ComponentElement2d::commitState()
+ComponentElement3d::commitState()
 {
   int retVal = 0;
   // call element commitState to do any base class stuff
   if ((retVal = this->Element::commitState()) != 0) {
-    opserr << "ComponentElement2d::commitState () - failed in base class";
+    opserr << "ComponentElement3d::commitState () - failed in base class";
   }    
-  uCommit = uTrial;
+  uzCommit = uzTrial;
+  uyCommit = uyTrial;
 
   retVal += theCoordTransf->commitState();
 
-  if (end1Hinge != 0)
-    end1Hinge->commitState();
-  if (end2Hinge != 0)
-    end2Hinge->commitState();
+  if (end1zHinge != 0)
+    end1zHinge->commitState();
+  if (end2zHinge != 0)
+    end2zHinge->commitState();
+  if (end1yHinge != 0)
+    end1yHinge->commitState();
+  if (end2yHinge != 0)
+    end2yHinge->commitState();  
 
   return retVal;
 }
 
 int
-ComponentElement2d::revertToLastCommit()
+ComponentElement3d::revertToLastCommit()
 {
-  uTrial = uCommit;
+  uzTrial = uzCommit;
+  uyTrial = uyCommit;
 
-  if (end1Hinge != 0)  
-    end1Hinge->revertToLastCommit();
-  if (end2Hinge != 0)
-    end2Hinge->revertToLastCommit();
+  if (end1zHinge != 0)  
+    end1zHinge->revertToLastCommit();
+  if (end2zHinge != 0)
+    end2zHinge->revertToLastCommit();
+  if (end1yHinge != 0)
+    end1yHinge->revertToLastCommit();
+  if (end2yHinge != 0)
+    end2yHinge->revertToLastCommit();  
 
   return theCoordTransf->revertToLastCommit();
 }
 
 int
-ComponentElement2d::revertToStart()
+ComponentElement3d::revertToStart()
 {
-  uCommit.Zero();
-  uTrial.Zero();
+  uzCommit.Zero();
+  uzTrial.Zero();
+  uyCommit.Zero();
+  uyTrial.Zero();  
   init = false;
 
-  if (end1Hinge != 0)
-    end1Hinge->revertToStart();
-  if (end2Hinge != 0)
-    end2Hinge->revertToStart();
+  if (end1zHinge != 0)  
+    end1zHinge->revertToStart();
+  if (end2zHinge != 0)
+    end2zHinge->revertToStart();
+  if (end1yHinge != 0)
+    end1yHinge->revertToStart();
+  if (end2yHinge != 0)
+    end2yHinge->revertToStart();
   
   return theCoordTransf->revertToStart();
 }
 
 int
-ComponentElement2d::update(void)
+ComponentElement3d::update(void)
 {
   // get previous displacements and the new end delta displacements
   theCoordTransf->update();
 
-  double u1 = uTrial(0);
-  double u2 = uTrial(1);
-  double u3 = uTrial(2);
-  double u4 = uTrial(3);
+  double u1 = uzTrial(0);
+  double u2 = uzTrial(1);
+  double u3 = uzTrial(2);
+  double u4 = uzTrial(3);
   
   const Vector &v = theCoordTransf->getBasicTrialDisp();
   const Vector &dv = theCoordTransf->getBasicIncrDeltaDisp();
 
+  q(0) = EAoverL*v(0);
+  q(5) = GJoverL*v(5);  
+
+  
   double du1 = dv(1);
   double du4 = dv(2);
 
@@ -374,38 +438,38 @@ ComponentElement2d::update(void)
   // NOTE: need tangent used in solution algorithm
   double k1 = 0.;
   double F1 = 0.0;
-  if (end1Hinge != 0) {
-    F1 = end1Hinge->getStress();
+  if (end1zHinge != 0) {
+    F1 = end1zHinge->getStress();
     if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
-      k1 = end1Hinge->getInitialTangent();      
+      k1 = end1zHinge->getInitialTangent();      
     }
     else
-      k1 = end1Hinge->getTangent();
+      k1 = end1zHinge->getTangent();
   }
-  //  k1 = end1Hinge->getTangent();
+  //  k1 = end1zHinge->getTangent();
 
   double k2 = 0.;
   double F2 = 0.0;
-  if (end2Hinge != 0) {
-    F2 = end2Hinge->getStress();
+  if (end2zHinge != 0) {
+    F2 = end2zHinge->getStress();
     if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
-      k2 = end2Hinge->getInitialTangent();      
+      k2 = end2zHinge->getInitialTangent();      
     else
-      k2 = end2Hinge->getTangent();
+      k2 = end2zHinge->getTangent();
   }
-  //  k2 = end2Hinge->getTangent();
+  //  k2 = end2zHinge->getTangent();
 
   // calculate forces for our superelement structure
   double R1 = -F1;
-  double R2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
-  double R3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
+  double R2 =  F1 + EIzoverL2*(2*u2 + u3) + q0[1];
+  double R3 = -F2 + EIzoverL2*(u2 + 2*u3) + q0[2];
   double R4 =  F2;
 
   // determine change in internal dof, using last K
   // dUi = inv(Kii)*(Pi-Kie*dUe)
-  double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
-  double du2 = delta*((k2+EIoverL4)*(k1*du1-R2) - EIoverL2*(k2*du4-R3));
-  double du3 = delta*(-EIoverL2*(k1*du1-R2) + (k1+EIoverL4)*(k2*du4-R3));
+  double delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
+  double du2 = delta*((k2+EIzoverL4)*(k1*du1-R2) - EIzoverL2*(k2*du4-R3));
+  double du3 = delta*(-EIzoverL2*(k1*du1-R2) + (k1+EIzoverL4)*(k2*du4-R3));
 
   // update displacements at nodes
   u1 += du1;
@@ -422,30 +486,30 @@ ComponentElement2d::update(void)
   while (converged == false) {
 
     // set new strain in hinges
-    if (end1Hinge != 0)
-      end1Hinge->setTrialStrain(u2-u1);
-    if (end2Hinge != 0)
-      end2Hinge->setTrialStrain(u4-u3);
+    if (end1zHinge != 0)
+      end1zHinge->setTrialStrain(u2-u1);
+    if (end2zHinge != 0)
+      end2zHinge->setTrialStrain(u4-u3);
 
     // obtain new hinge forces and tangents
     k1 = 0.;
     F1 = 0.0;
-    if (end1Hinge != 0) {
-      F1 = end1Hinge->getStress();
-      k1 = end1Hinge->getTangent();    
+    if (end1zHinge != 0) {
+      F1 = end1zHinge->getStress();
+      k1 = end1zHinge->getTangent();    
     }
 
     k2 = 0.;
     F2 = 0.0;
-    if (end2Hinge != 0) {
-      F2 = end2Hinge->getStress();
-      k2 = end2Hinge->getTangent();
+    if (end2zHinge != 0) {
+      F2 = end2zHinge->getStress();
+      k2 = end2zHinge->getTangent();
     }
     
     // determine nodal forces
     R1 = -F1;
-    R2 =  F1 + EIoverL2 * (2*u2 + u3) + q0[1];
-    R3 = -F2 + EIoverL2 * (u2 + 2*u3) + q0[2];
+    R2 =  F1 + EIzoverL2 * (2*u2 + u3) + q0[1];
+    R3 = -F2 + EIzoverL2 * (u2 + 2*u3) + q0[2];
     R4 =  F2;
 
     // check if converged:
@@ -458,9 +522,9 @@ ComponentElement2d::update(void)
 
       // if not converged we determine new internal dof displacements
       // note we have not changed du1 or du4 from previous step
-      delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
-      du2 = delta*((k2+EIoverL4)*R2 - EIoverL2*R3);
-      du3 = delta*((k1+EIoverL4)*R3 - EIoverL2*R2);
+      delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
+      du2 = delta*((k2+EIzoverL4)*R2 - EIzoverL2*R3);
+      du3 = delta*((k1+EIzoverL4)*R3 - EIzoverL2*R2);
 
       // unbalance was negative of P so subtract instead of add
       u2 -= du2;
@@ -472,74 +536,254 @@ ComponentElement2d::update(void)
       converged = true;
   }
 
-  delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
+  delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
   
   // compute new condensed matrix
-  kTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIoverL4);
-  kTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIoverL4);
-  kTrial(0,1) = delta*(k1*k2*EIoverL2);
-  kTrial(1,0) = delta*(k1*k2*EIoverL2);
+  kzTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIzoverL4);
+  kzTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIzoverL4);
+  kzTrial(0,1) = delta*(k1*k2*EIzoverL2);
+  kzTrial(1,0) = delta*(k1*k2*EIzoverL2);
 
   // compute basic forces, leaving off q0's .. added in getResistingForce
-  q(0) = EAoverL*v(0);
-  q(1) = R1 + delta*k1*((k2+EIoverL4)*R2 - EIoverL2*R3);
-  q(2) = R4 + delta*k2*((k1+EIoverL4)*R3 - EIoverL2*R2);
+  q(1) = R1 + delta*k1*((k2+EIzoverL4)*R2 - EIzoverL2*R3);
+  q(2) = R4 + delta*k2*((k1+EIzoverL4)*R3 - EIzoverL2*R2);
 
   // store new displacements
-  uTrial(0) = u1;
-  uTrial(1) = u2;
-  uTrial(2) = u3;
-  uTrial(3) = u4;
+  uzTrial(0) = u1;
+  uzTrial(1) = u2;
+  uzTrial(2) = u3;
+  uzTrial(3) = u4;
 
+
+
+
+
+
+  u1 = uyTrial(0);
+  u2 = uyTrial(1);
+  u3 = uyTrial(2);
+  u4 = uyTrial(3);
+  
+  //const Vector &v = theCoordTransf->getBasicTrialDisp();
+  //const Vector &dv = theCoordTransf->getBasicIncrDeltaDisp();
+
+  du1 = dv(3);
+  du4 = dv(4);
+
+  // get hinge forces and tangent
+  // NOTE: need tangent used in solution algorithm
+  k1 = 0.;
+  F1 = 0.0;
+  if (end1yHinge != 0) {
+    F1 = end1yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
+      k1 = end1yHinge->getInitialTangent();      
+    }
+    else
+      k1 = end1yHinge->getTangent();
+  }
+  //  k1 = end1yHinge->getTangent();
+
+  k2 = 0.;
+  F2 = 0.0;
+  if (end2yHinge != 0) {
+    F2 = end2yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
+      k2 = end2yHinge->getInitialTangent();      
+    else
+      k2 = end2yHinge->getTangent();
+  }
+  //  k2 = end2yHinge->getTangent();
+
+  // calculate forces for our superelement structure
+  R1 = -F1;
+  R2 =  F1 + EIyoverL2*(2*u2 + u3) + q0[3];
+  R3 = -F2 + EIyoverL2*(u2 + 2*u3) + q0[4];
+  R4 =  F2;
+
+  // determine change in internal dof, using last K
+  // dUi = inv(Kii)*(Pi-Kie*dUe)
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  du2 = delta*((k2+EIyoverL4)*(k1*du1-R2) - EIyoverL2*(k2*du4-R3));
+  du3 = delta*(-EIyoverL2*(k1*du1-R2) + (k1+EIyoverL4)*(k2*du4-R3));
+
+  // update displacements at nodes
+  u1 += du1;
+  u2 += du2;
+  u3 += du3;
+  u4 += du4;
+
+  converged = false;
+  count = 0;
+  maxCount = 10;
+  tol = 1.0e-10;
+
+  // iterate, at least once, to remove internal node unbalance
+  while (converged == false) {
+
+    // set new strain in hinges
+    if (end1yHinge != 0)
+      end1yHinge->setTrialStrain(u2-u1);
+    if (end2yHinge != 0)
+      end2yHinge->setTrialStrain(u4-u3);
+
+    // obtain new hinge forces and tangents
+    k1 = 0.;
+    F1 = 0.0;
+    if (end1yHinge != 0) {
+      F1 = end1yHinge->getStress();
+      k1 = end1yHinge->getTangent();    
+    }
+
+    k2 = 0.;
+    F2 = 0.0;
+    if (end2yHinge != 0) {
+      F2 = end2yHinge->getStress();
+      k2 = end2yHinge->getTangent();
+    }
+    
+    // determine nodal forces
+    R1 = -F1;
+    R2 =  F1 + EIyoverL2 * (2*u2 + u3) + q0[3];
+    R3 = -F2 + EIyoverL2 * (u2 + 2*u3) + q0[4];
+    R4 =  F2;
+
+    // check if converged:
+    //    norm resisting forces at internal dof or change in displacement
+    //    at these internal dof is less than some tolerance
+
+    if ((sqrt(R2*R2 + R3*R3) > tol) && 
+	(sqrt(du2*du2+du3*du3) > tol) &&
+	count < maxCount) {
+
+      // if not converged we determine new internal dof displacements
+      // note we have not changed du1 or du4 from previous step
+      delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+      du2 = delta*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+      du3 = delta*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+      // unbalance was negative of P so subtract instead of add
+      u2 -= du2;
+      u3 -= du3;
+
+      count++;
+
+    } else
+      converged = true;
+  }
+
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  
+  // compute new condensed matrix
+  kyTrial(0,0) = k1 - (delta*k1*k1)*(k2+EIyoverL4);
+  kyTrial(1,1) = k2 - (delta*k2*k2)*(k1+EIyoverL4);
+  kyTrial(0,1) = delta*(k1*k2*EIyoverL2);
+  kyTrial(1,0) = delta*(k1*k2*EIyoverL2);
+
+  // compute basic forces, leaving off q0's .. added in getResistingForce
+  q(3) = R1 + delta*k1*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+  q(4) = R4 + delta*k2*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+  // store new displacements
+  uyTrial(0) = u1;
+  uyTrial(1) = u2;
+  uyTrial(2) = u3;
+  uyTrial(3) = u4;
+
+
+
+  
   return 0;
 }
 
 const Vector &
-ComponentElement2d::getResistingForce()
+ComponentElement3d::getResistingForce()
 {
   // get hinge forces and tangents
   // NOTE: condense out using same tangent as algorithm
   double k1 = 0.;
   double F1 = 0.0;
-  if (end1Hinge != 0) {
-    F1 = end1Hinge->getStress();
+  if (end1zHinge != 0) {
+    F1 = end1zHinge->getStress();
     if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
-      k1 = end1Hinge->getInitialTangent();      
+      k1 = end1zHinge->getInitialTangent();      
     }
     else
-      k1 = end1Hinge->getTangent();
+      k1 = end1zHinge->getTangent();
   }
-  //  k1 = end1Hinge->getTangent();
+  //  k1 = end1zHinge->getTangent();
 
   double k2 = 0.;
   double F2 = 0.0;
-  if (end2Hinge != 0) {
-    F2 = end2Hinge->getStress();
+  if (end2zHinge != 0) {
+    F2 = end2zHinge->getStress();
     if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
-      k2 = end2Hinge->getInitialTangent();      
+      k2 = end2zHinge->getInitialTangent();      
     else
-      k2 = end2Hinge->getTangent();
+      k2 = end2zHinge->getTangent();
   }
-  //  k2 = end2Hinge->getTangent();
+  //  k2 = end2zHinge->getTangent();
 
-  double u2 = uTrial(1);
-  double u3 = uTrial(2);
+  double u2 = uzTrial(1);
+  double u3 = uzTrial(2);
 
   // compute internal forces in our superelement structure
   double R1 = -F1;
-  double R2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
-  double R3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
+  double R2 =  F1 + EIzoverL2*(2*u2 + u3) + q0[1];
+  double R3 = -F2 + EIzoverL2*(u2 + 2*u3) + q0[2];
   double R4 =  F2;
 
   // condense out internal forces
-  double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
+  double delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
 
   q(0) += q0[0];
-  q(1) = R1 + delta*k1*((k2+EIoverL4)*R2 - EIoverL2*R3);
-  q(2) = R4 + delta*k2*((k1+EIoverL4)*R3 - EIoverL2*R2);
+  q(1) = R1 + delta*k1*((k2+EIzoverL4)*R2 - EIzoverL2*R3);
+  q(2) = R4 + delta*k2*((k1+EIzoverL4)*R3 - EIzoverL2*R2);
 
+
+  // get hinge forces and tangents
+  // NOTE: condense out using same tangent as algorithm
+  k1 = 0.;
+  F1 = 0.0;
+  if (end1yHinge != 0) {
+    F1 = end1yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT) {
+      k1 = end1yHinge->getInitialTangent();      
+    }
+    else
+      k1 = end1yHinge->getTangent();
+  }
+  //  k1 = end1yHinge->getTangent();
+
+  k2 = 0.;
+  F2 = 0.0;
+  if (end2yHinge != 0) {
+    F2 = end2yHinge->getStress();
+    if (SOLUTION_ALGORITHM_tangentFlag == INITIAL_TANGENT)
+      k2 = end2yHinge->getInitialTangent();      
+    else
+      k2 = end2yHinge->getTangent();
+  }
+  //  k2 = end2yHinge->getTangent();
+
+  u2 = uyTrial(1);
+  u3 = uyTrial(2);
+
+  // compute internal forces in our superelement structure
+  R1 = -F1;
+  R2 =  F1 + EIyoverL2*(2*u2 + u3) + q0[3];
+  R3 = -F2 + EIyoverL2*(u2 + 2*u3) + q0[4];
+  R4 =  F2;
+
+  // condense out internal forces
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+
+  q(3) = R1 + delta*k1*((k2+EIyoverL4)*R2 - EIyoverL2*R3);
+  q(4) = R4 + delta*k2*((k1+EIyoverL4)*R3 - EIyoverL2*R2);
+
+  
   // Vector for reactions in basic system
-  Vector p0Vec(p0, 3);
+  Vector p0Vec(p0, 5);
   
   // Vector for reactions in basic system
   P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
@@ -549,49 +793,76 @@ ComponentElement2d::getResistingForce()
 
 
 const Matrix &
-ComponentElement2d::getTangentStiff(void)
+ComponentElement3d::getTangentStiff(void)
 {
   // determine q = kv + q0
-  static Vector R(6);  
+  static Vector R(12);  
 
   q(0) += q0[0];
   q(1) += q0[1];
   q(2) += q0[2];
+  q(3) += q0[3];
+  q(4) += q0[4];
   
   kb(0,0) = EAoverL;
-  kb(1,1) = kTrial(0,0);
-  kb(2,2) = kTrial(1,1);
-  kb(1,2) = kTrial(0,1);
-  kb(2,1) = kTrial(1,0);
+  kb(5,5) = GJoverL;
+  
+  kb(1,1) = kzTrial(0,0);
+  kb(2,2) = kzTrial(1,1);
+  kb(1,2) = kzTrial(0,1);
+  kb(2,1) = kzTrial(1,0);
+
+  kb(3,3) = kyTrial(0,0);
+  kb(4,4) = kyTrial(1,1);
+  kb(3,4) = kyTrial(0,1);
+  kb(4,3) = kyTrial(1,0);  
 
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
 
 const Matrix &
-ComponentElement2d::getInitialStiff(void)
+ComponentElement3d::getInitialStiff(void)
 {
   double k1 = 0.;
-  if (end1Hinge != 0) 
-    k1 = end1Hinge->getInitialTangent();
+  if (end1zHinge != 0) 
+    k1 = end1zHinge->getInitialTangent();
   double k2 = 0.;
-  if (end2Hinge != 0) 
-    k2 = end2Hinge->getInitialTangent();
+  if (end2zHinge != 0) 
+    k2 = end2zHinge->getInitialTangent();
 
-  double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
+  double delta = 1.0/((k1+EIzoverL4)*(k2+EIzoverL4)-EIzoverL2*EIzoverL2);
   
   // compute new condensed matrix
-  static Matrix kb0(3,3);
+  static Matrix kb0(6,6);
   kb0(0,0) = EAoverL;
-  kb0(1,1) = k1 - delta*(k1*k1*(k2+EIoverL4));
-  kb0(2,2) = k2 - delta*(k2*k2*(k1+EIoverL4));
-  kb0(1,2) = delta*(k1*k2*EIoverL2);
-  kb0(2,1) = delta*(k1*k2*EIoverL2);
+  kb0(5,5) = GJoverL;
+  
+  kb0(1,1) = k1 - delta*(k1*k1*(k2+EIzoverL4));
+  kb0(2,2) = k2 - delta*(k2*k2*(k1+EIzoverL4));
+  kb0(1,2) = delta*(k1*k2*EIzoverL2);
+  kb0(2,1) = delta*(k1*k2*EIzoverL2);
+
+
+  k1 = 0.;
+  if (end1yHinge != 0) 
+    k1 = end1yHinge->getInitialTangent();
+  k2 = 0.;
+  if (end2yHinge != 0) 
+    k2 = end2yHinge->getInitialTangent();
+
+  delta = 1.0/((k1+EIyoverL4)*(k2+EIyoverL4)-EIyoverL2*EIyoverL2);
+  
+  kb0(3,3) = k1 - delta*(k1*k1*(k2+EIyoverL4));
+  kb0(4,4) = k2 - delta*(k2*k2*(k1+EIyoverL4));
+  kb0(3,4) = delta*(k1*k2*EIyoverL2);
+  kb0(4,3) = delta*(k1*k2*EIyoverL2);
+
   
   return theCoordTransf->getInitialGlobalStiffMatrix(kb0);
 }
 
 const Matrix &
-ComponentElement2d::getMass(void)
+ComponentElement3d::getMass(void)
 { 
   K.Zero();
   
@@ -603,7 +874,7 @@ ComponentElement2d::getMass(void)
 
             // lumped mass matrix
             double m = 0.5*rho*L;
-            K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+            K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
 
         } else  {
             // consistent mass matrix
@@ -630,79 +901,77 @@ ComponentElement2d::getMass(void)
 }
 
 void 
-ComponentElement2d::zeroLoad(void)
+ComponentElement3d::zeroLoad(void)
 {
   Q.Zero();
 
   q0[0] = 0.0;
   q0[1] = 0.0;
   q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;  
 
   p0[0] = 0.0;
   p0[1] = 0.0;
   p0[2] = 0.0;
-
+  p0[3] = 0.0;
+  p0[4] = 0.0;
+  
   return;
 }
 
 int 
-ComponentElement2d::addLoad(ElementalLoad *theLoad, double loadFactor)
+ComponentElement3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
   double L = theCoordTransf->getInitialLength();
 
-  if (type == LOAD_TAG_Beam2dUniformLoad) {
-    double wt = data(0)*loadFactor;  // Transverse (+ve upward)
-    double wa = data(1)*loadFactor;  // Axial (+ve from node I to J)
-
-    double V = 0.5*wt*L;
-    double M = V*L/6.0; // wt*L*L/12
-    double P = wa*L;
+  if (type == LOAD_TAG_Beam3dUniformLoad) {
+    double wy = data(0)*loadFactor;  // Transverse
+    double wz = data(1)*loadFactor;  // Transverse
+    double wx = data(2)*loadFactor;  // Axial (+ve from node I to J)
+    
+    double Vy = 0.5*wy*L;
+    double Mz = Vy*L/6.0; // wy*L*L/12
+    double Vz = 0.5*wz*L;
+    double My = Vz*L/6.0; // wz*L*L/12
+    double P = wx*L;
 
     // Reactions in basic system
     p0[0] -= P;
-    p0[1] -= V;
-    p0[2] -= V;
+    p0[1] -= Vy;
+    p0[2] -= Vy;
+    p0[3] -= Vz;
+    p0[4] -= Vz;
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    q0[1] -= M;
-    q0[2] += M;
+    if (end1zHinge != 0 && end2zHinge != 0) {
+      q0[1] -= Mz;
+      q0[2] += Mz;
+    }
+    if (end1zHinge == 0 && end2zHinge != 0) {
+      q0[2] += wy*L*L/8;
+    }
+    if (end1zHinge != 0 && end2zHinge == 0) {
+      q0[1] -= wy*L*L/8;
+    }
+    
+    if (end1yHinge != 0 && end2yHinge != 0) {
+      q0[3] += My;
+      q0[4] -= My;
+    }
+    if (end1yHinge == 0 && end2yHinge != 0) {
+      q0[4] -= wz*L*L/8;
+    }
+    if (end1yHinge != 0 && end2yHinge == 0) {
+      q0[3] += wz*L*L/8;
+    }    
   }
 
-  else if (type == LOAD_TAG_Beam2dPointLoad) {
-    double P = data(0)*loadFactor;
-    double N = data(1)*loadFactor;
-    double aOverL = data(2);
-
-    if (aOverL < 0.0 || aOverL > 1.0)
-      return 0;
-
-    double a = aOverL*L;
-    double b = L-a;
-
-    // Reactions in basic system
-    p0[0] -= N;
-    double V1 = P*(1.0-aOverL);
-    double V2 = P*aOverL;
-    p0[1] -= V1;
-    p0[2] -= V2;
-
-    double L2 = 1.0/(L*L);
-    double a2 = a*a;
-    double b2 = b*b;
-
-    // Fixed end forces in basic system
-    q0[0] -= N*aOverL;
-    double M1 = -a * b2 * P * L2;
-    double M2 = a2 * b * P * L2;
-    q0[1] += M1;
-    q0[2] += M2;
-  }
-  
   else {
-    opserr << "ComponentElement2d::addLoad()  -- load type unknown for element with tag: " << this->getTag() << endln;
+    opserr << "ComponentElement3d::addLoad()  -- load type unknown for element with tag: " << this->getTag() << endln;
     return -1;
   }
 
@@ -710,7 +979,7 @@ ComponentElement2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 }
 
 int
-ComponentElement2d::addInertiaLoadToUnbalance(const Vector &accel)
+ComponentElement3d::addInertiaLoadToUnbalance(const Vector &accel)
 {
   if (rho == 0.0)
     return 0;
@@ -719,8 +988,8 @@ ComponentElement2d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel1 = theNodes[0]->getRV(accel);
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 	
-  if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-    opserr << "ComponentElement2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
+  if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
+    opserr << "ComponentElement3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
     
@@ -731,15 +1000,17 @@ ComponentElement2d::addInertiaLoadToUnbalance(const Vector &accel)
   
   Q(0) -= m * Raccel1(0);
   Q(1) -= m * Raccel1(1);
+  Q(2) -= m * Raccel1(2);  
   
-  Q(3) -= m * Raccel2(0);
-  Q(4) -= m * Raccel2(1);
+  Q(6) -= m * Raccel2(0);
+  Q(7) -= m * Raccel2(1);
+  Q(8) -= m * Raccel2(2);  
   
   return 0;
 }
 
 const Vector &
-ComponentElement2d::getResistingForceIncInertia()
+ComponentElement3d::getResistingForceIncInertia()
 {	
   P = this->getResistingForce();
   
@@ -763,9 +1034,11 @@ ComponentElement2d::getResistingForceIncInertia()
   
   P(0) += m * accel1(0);
   P(1) += m * accel1(1);
+  P(2) += m * accel1(2);  
   
-  P(3) += m * accel2(0);
-  P(4) += m * accel2(1);
+  P(6) += m * accel2(0);
+  P(7) += m * accel2(1);
+  P(8) += m * accel2(2);  
   
   return P;
 }
@@ -773,15 +1046,18 @@ ComponentElement2d::getResistingForceIncInertia()
 
 
 int
-ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
+ComponentElement3d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(16);
+  static Vector data(19);
   
   data(0) = A;
   data(1) = E; 
-  data(2) = I; 
+  data(2) = Iz;
+  data(16) = Iy;
+  data(17) = G;
+  data(18) = J;
   data(3) = rho;
   //  data(4) = cMass;
   data(5) = this->getTag();
@@ -810,14 +1086,14 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
   // Send the data vector
   res += theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) {
-      opserr << "ComponentElement2d::sendSelf -- could not send data Vector\n";
+      opserr << "ComponentElement3d::sendSelf -- could not send data Vector\n";
       return res;
   }
   
   // Ask the CoordTransf to send itself
   res += theCoordTransf->sendSelf(cTag, theChannel);
   if (res < 0) {
-    opserr << "ComponentElement2d::sendSelf -- could not send CoordTransf\n";
+    opserr << "ComponentElement3d::sendSelf -- could not send CoordTransf\n";
     return res;
   }
   
@@ -825,21 +1101,24 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
 }
 
 int
-ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+ComponentElement3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     int res = 0;
 	
-    static Vector data(16);
+    static Vector data(19);
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
-      opserr << "ComponentElement2d::recvSelf -- could not receive data Vector\n";
+      opserr << "ComponentElement3d::recvSelf -- could not receive data Vector\n";
       return res;
     }
 
     A = data(0);
     E = data(1); 
-    I = data(2); 
+    Iz = data(2);
+    Iy = data(16);
+    G = data(17);
+    J = data(18);         
 
     //    alpha = data(10);
     //    d = data(11);
@@ -860,7 +1139,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     if (theCoordTransf == 0) {
       theCoordTransf = theBroker.getNewCrdTransf(crdTag);
       if (theCoordTransf == 0) {
-	opserr << "ComponentElement2d::recvSelf -- could not get a CrdTransf2d\n";
+	opserr << "ComponentElement3d::recvSelf -- could not get a CrdTransf2d\n";
 	exit(-1);
       }
     }
@@ -871,7 +1150,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
       delete theCoordTransf;
       theCoordTransf = theBroker.getNewCrdTransf(crdTag);
       if (theCoordTransf == 0) {
-	opserr << "ComponentElement2d::recvSelf -- could not get a CrdTransf2d\n";
+	opserr << "ComponentElement3d::recvSelf -- could not get a CrdTransf2d\n";
 	exit(-1);
       }
     }
@@ -880,7 +1159,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     theCoordTransf->setDbTag((int)data(9));
     res += theCoordTransf->recvSelf(cTag, theChannel, theBroker);
     if (res < 0) {
-      opserr << "ComponentElement2d::recvSelf -- could not receive CoordTransf\n";
+      opserr << "ComponentElement3d::recvSelf -- could not receive CoordTransf\n";
       return res;
     }
     
@@ -888,7 +1167,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
 }
 
 void
-ComponentElement2d::Print(OPS_Stream &s, int flag)
+ComponentElement3d::Print(OPS_Stream &s, int flag)
 {
   // to update forces!
   this->getResistingForce();
@@ -902,7 +1181,7 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
 
   if (flag == OPS_PRINT_CURRENTSTATE) {
       this->getResistingForce();
-      s << "\nComponentElement2d: " << this->getTag() << endln;
+      s << "\nComponentElement3d: " << this->getTag() << endln;
       s << "\tConnected Nodes: " << connectedExternalNodes;
       s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
       s << "\tmass density:  " << rho << endln;
@@ -920,19 +1199,19 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
       s << "\t\t\t{";
       s << "\"name\": " << this->getTag() << ", ";
-      s << "\"type\": \"ComponentElement2d\", ";
+      s << "\"type\": \"ComponentElement3d\", ";
       s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
       s << "\"E\": " << E << ", ";
       s << "\"A\": " << A << ", ";
-      s << "\"Iz\": " << I << ", ";
+      s << "\"Iz\": " << Iz << ", ";
       s << "\"massperlength\": " << rho << ", ";
       s << "\"materials\": [" ;
-      if (end1Hinge) 
-        s << "\"" << end1Hinge->getTag() << "\", ";
+      if (end1zHinge) 
+        s << "\"" << end1zHinge->getTag() << "\", ";
       else
         s << "null, ";
-      if (end2Hinge) 
-        s << "\"" << end2Hinge->getTag() << "\"], ";
+      if (end2zHinge) 
+        s << "\"" << end2zHinge->getTag() << "\"], ";
       else
         s << "null], ";
       s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
@@ -940,7 +1219,7 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
 }
 
 int
-ComponentElement2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+ComponentElement3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   static Vector v1(3);
   static Vector v2(3);
@@ -1027,13 +1306,13 @@ ComponentElement2d::displaySelf(Renderer &theViewer, int displayMode, float fact
 }
 
 Response*
-ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
+ComponentElement3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
 
   Response *theResponse = 0;
 
   output.tag("ElementOutput");
-  output.attr("eleType","ComponentElement2d");
+  output.attr("eleType","ComponentElement3d");
   output.attr("eleTag",this->getTag());
   output.attr("node1",connectedExternalNodes[0]);
   output.attr("node2",connectedExternalNodes[1]);
@@ -1100,7 +1379,7 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 }
 
 int
-ComponentElement2d::getResponse (int responseID, Information &eleInfo)
+ComponentElement3d::getResponse (int responseID, Information &eleInfo)
 {
   double N, M1, M2, V;
   double L = theCoordTransf->getInitialLength();
@@ -1136,22 +1415,22 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
 
   case 5: // basic forces
     vect4.Zero();
-    if (end1Hinge != 0) {
-      vect4(0) = end1Hinge->getStrain();
-      vect4(1) = end1Hinge->getStress();
+    if (end1zHinge != 0) {
+      vect4(0) = end1zHinge->getStrain();
+      vect4(1) = end1zHinge->getStress();
     }
-    if (end2Hinge != 0) {
-      vect4(2) = end2Hinge->getStrain();
-      vect4(3) = end2Hinge->getStress();
+    if (end2zHinge != 0) {
+      vect4(2) = end2zHinge->getStrain();
+      vect4(3) = end2zHinge->getStress();
     }
     return eleInfo.setVector(vect4);
 
   case 6: // basic forces
-    if (end1Hinge != 0) {
-      vect2(0) = end1Hinge->getTangent();
+    if (end1zHinge != 0) {
+      vect2(0) = end1zHinge->getTangent();
     }
-    if (end2Hinge != 0) {
-      vect2(1) = end2Hinge->getTangent();
+    if (end2zHinge != 0) {
+      vect2(1) = end2zHinge->getTangent();
     }
     return eleInfo.setVector(vect2);
 
@@ -1163,7 +1442,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
 }
 
 int
-ComponentElement2d::setParameter(const char **argv, int argc, Parameter &param)
+ComponentElement3d::setParameter(const char **argv, int argc, Parameter &param)
 {
   if (argc < 1)
     return -1;
@@ -1177,33 +1456,54 @@ ComponentElement2d::setParameter(const char **argv, int argc, Parameter &param)
     return param.addObject(2, this);
   
   // I of the beam interior
-  if (strcmp(argv[0],"I") == 0)
+  if (strcmp(argv[0],"Iz") == 0)
     return param.addObject(3, this);
+  if (strcmp(argv[0],"Iy") == 0)
+    return param.addObject(4, this);  
+
+  if (strcmp(argv[0],"G") == 0)
+    return param.addObject(5, this);
+
+  if (strcmp(argv[0],"J") == 0)
+    return param.addObject(6, this);  
   
   return -1;
 }
 
 int
-ComponentElement2d::updateParameter (int parameterID, Information &info)
+ComponentElement3d::updateParameter (int parameterID, Information &info)
 {
 	switch (parameterID) {
 	case -1:
 		return -1;
 	case 1:
 		E = info.theDouble;
-    EAoverL = E*A/L;
-    EIoverL2 = 2*E*I/L;
-    EIoverL4 = 2*EIoverL2;
+		EAoverL = E*A/L;
+		EIzoverL2 = 2*E*Iz/L;
+		EIzoverL4 = 2*EIzoverL2;
+		EIyoverL2 = 2*E*Iy/L;
+		EIyoverL4 = 2*EIyoverL2;		
 		return 0;
 	case 2:
 		A = info.theDouble;
-    EAoverL = E*A/L;
+		EAoverL = E*A/L;		
 		return 0;
 	case 3:
-		I = info.theDouble;
-		EIoverL2 = 2*E*I/L;
-    EIoverL4 = 2*EIoverL2;
+		Iz = info.theDouble;
+		EIzoverL2 = 2*E*Iz/L;
+		EIzoverL4 = 2*EIzoverL2;		
 		return 0;
+	case 4:
+		Iy = info.theDouble;
+		EIyoverL2 = 2*E*Iy/L;
+		EIyoverL4 = 2*EIyoverL2;				
+		return 0;
+	case 5:
+	  G = info.theDouble;
+	  GJoverL = G*J/L;
+	case 6:
+	  J = info.theDouble;
+	  GJoverL = G*J/L;	  
 	default:
 		return -1;
 	}
