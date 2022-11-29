@@ -975,9 +975,6 @@ OpenSeesCommands::wipe()
     // wipe CyclicModel
     OPS_clearAllCyclicModel();
 
-    if (reliability != 0) {
-      reliability->wipe();
-    }
 }
 
 void
@@ -1015,6 +1012,27 @@ int OPS_SetIntOutput(int *numData, int*data, bool scalar)
     return interp->setInt(data, *numData, scalar);
 }
 
+int OPS_SetIntListsOutput(std::vector<std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
+int OPS_SetIntDictOutput(std::map<const char*, int>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
+int OPS_SetIntDictListOutput(std::map<const char*, std::vector<int>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setInt(data);
+}
+
 int OPS_GetDoubleInput(int *numData, double *data)
 {
     if (cmds == 0) return 0;
@@ -1028,6 +1046,27 @@ int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->setDouble(data, *numData, scalar);
+}
+
+int OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
+int OPS_SetDoubleDictOutput(std::map<const char* ,double>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
+}
+
+int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setDouble(data);
 }
 
 const char * OPS_GetString(void)
@@ -1059,6 +1098,34 @@ int OPS_SetString(const char* str)
     return interp->setString(str);
 }
 
+int OPS_SetStringList(std::vector<const char*>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringLists(std::vector<std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringDict(std::map<const char*, const char*>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
+int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setString(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -1075,6 +1142,62 @@ OPS_GetAnalysisModel(void)
 {
     if (cmds == 0) return 0;
     return cmds->getAnalysisModel();
+}
+
+EquiSolnAlgo** OPS_GetAlgorithm(void) {
+    if (cmds == 0) return 0;
+    return cmds->getAlgorithmPointer();
+}
+
+ConstraintHandler** OPS_GetHandler(void) {
+    if (cmds == 0) return 0;
+    return cmds->getHandlerPointer();
+}
+
+DOF_Numberer** OPS_GetNumberer(void) {
+    if (cmds == 0) return 0;
+    return cmds->getNumbererPointer();
+}
+
+LinearSOE** OPS_GetSOE(void) {
+    if (cmds == 0) return 0;
+    return cmds->getSOEPointer();
+}
+
+EigenSOE** OPS_GetEigenSOE(void) {
+    if (cmds == 0) return 0;
+    return cmds->getEigenSOEPointer();
+}
+
+StaticAnalysis** OPS_GetStaticAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getStaticAnalysisPointer();
+}
+
+DirectIntegrationAnalysis** OPS_GetTransientAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getTransientAnalysisPointer();
+}
+
+VariableTimeStepDirectIntegrationAnalysis**
+OPS_GetVariableTimeStepTransientAnalysis(void) {
+    if (cmds == 0) return 0;
+    return cmds->getVariableAnalysisPointer();
+}
+
+StaticIntegrator** OPS_GetStaticIntegrator(void) {
+    if (cmds == 0) return 0;
+    return cmds->getStaticIntegratorPointer();
+}
+
+TransientIntegrator** OPS_GetTransientIntegrator(void) {
+    if (cmds == 0) return 0;
+    return cmds->getTransientIntegratorPointer();
+}
+
+ConvergenceTest** OPS_GetTest(void) {
+    if (cmds == 0) return 0;
+    return cmds->getCTestPointer();
 }
 
 int OPS_GetNDF()
@@ -1754,75 +1877,133 @@ int OPS_Analysis() {
   return 0;
 }
 
-int OPS_analyze()
-{
-    if (cmds == 0) return 0;
+int OPS_analyze() {
+  if (cmds == 0) return 0;
 
-    int result = 0;
-    StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
-    TransientAnalysis* theTransientAnalysis = cmds->getTransientAnalysis();
-    PFEMAnalysis* thePFEMAnalysis = cmds->getPFEMAnalysis();
+  int result = 0;
+  StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
+  TransientAnalysis* theTransientAnalysis =
+      cmds->getTransientAnalysis();
+  PFEMAnalysis* thePFEMAnalysis = cmds->getPFEMAnalysis();
 
-    if (theStaticAnalysis != 0) {
-	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING insufficient args: analyze numIncr ...\n";
-	    return -1;
-	}
-	int numIncr;
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &numIncr) < 0) return -1;
-	result = theStaticAnalysis->analyze(numIncr);
-
-    } else if (thePFEMAnalysis != 0) {
-
-	result = thePFEMAnalysis->analyze();
-
-    } else if (theTransientAnalysis != 0) {
-	if (OPS_GetNumRemainingInputArgs() < 2) {
-	    opserr << "WARNING insufficient args: analyze numIncr deltaT ...\n";
-	    return -1;
-	}
-	int numIncr;
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &numIncr) < 0) return -1;
-
-	double dt;
-	if (OPS_GetDoubleInput(&numdata, &dt) < 0) return -1;
-	ops_Dt = dt;
-
-	if (OPS_GetNumRemainingInputArgs() == 0) {
-	    result = theTransientAnalysis->analyze(numIncr, dt);
-	} else if (OPS_GetNumRemainingInputArgs() < 3) {
-	  opserr << "WARNING insufficient args for variable transient need: dtMin dtMax Jd \n";
-	  opserr << "n_args" << OPS_GetNumRemainingInputArgs() << "\n";
-	    return -1;
-	} else {
-	double dtMin;
-	if (OPS_GetDoubleInput(&numdata, &dtMin) < 0) return -1;
-	double dtMax;
-	if (OPS_GetDoubleInput(&numdata, &dtMax) < 0) return -1;
-	int Jd;
-	if (OPS_GetIntInput(&numdata, &Jd) < 0) return -1;
-	  // Included getVariableAnalysis here as dont need it except for here. and analyze() is called a lot.
-	  VariableTimeStepDirectIntegrationAnalysis* theVariableTimeStepTransientAnalysis = cmds->getVariableAnalysis();
-	  result = theVariableTimeStepTransientAnalysis->analyze(numIncr, dt, dtMin, dtMax, Jd);
-	}
-    } else {
-	opserr << "WARNING No Analysis type has been specified \n";
-	return -1;
+  if (theStaticAnalysis != 0) {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+      opserr << "WARNING insufficient args: analyze numIncr "
+                "<-noFlush> ...\n";
+      return -1;
     }
-
-    if (result < 0) {
-	opserr << "OpenSees > analyze failed, returned: " << result << " error flag\n";
-    }
-
+    int numIncr;
     int numdata = 1;
-    if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
-	opserr<<"WARNING failed to set output\n";
-	return -1;
+    if (OPS_GetIntInput(&numdata, &numIncr) < 0) {
+      opserr << "WARNING: invalid numIncr\n";
+      return -1;
     }
 
-    return 0;
+    bool flush = true;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+    result = theStaticAnalysis->analyze(numIncr, flush);
+
+  } else if (thePFEMAnalysis != 0) {
+    bool flush = true;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt, "-noFlush") == 0) {
+        flush = false;
+      }
+    }
+    result = thePFEMAnalysis->analyze(flush);
+
+  } else if (theTransientAnalysis != 0) {
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING insufficient args: analyze numIncr deltaT "
+                "...\n";
+      return -1;
+    }
+    int numIncr;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &numIncr) < 0) {
+      opserr << "WARNING: invalid numIncr\n";
+      return -1;
+    }
+
+    double dt;
+    if (OPS_GetDoubleInput(&numdata, &dt) < 0) {
+      opserr << "WARNING: invalid dt\n";
+      return -1;
+    }
+    ops_Dt = dt;
+
+    if (OPS_GetNumRemainingInputArgs() == 0) {
+      result = theTransientAnalysis->analyze(numIncr, dt, true);
+    } else if (OPS_GetNumRemainingInputArgs() == 1) {
+      bool flush = true;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-noFlush") == 0) {
+            flush = false;
+        }
+      }
+      result = theTransientAnalysis->analyze(numIncr, dt, flush);
+
+    } else if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "WARNING insufficient args for variable transient "
+                "need: dtMin dtMax Jd \n";
+      opserr << "n_args" << OPS_GetNumRemainingInputArgs() << "\n";
+      return -1;
+
+    } else {
+      double dtMin;
+      if (OPS_GetDoubleInput(&numdata, &dtMin) < 0) {
+        opserr << "WARNING: invalid dtMin\n";
+        return -1;
+      }
+      double dtMax;
+      if (OPS_GetDoubleInput(&numdata, &dtMax) < 0) {
+        opserr << "WARNING: invalid dtMax\n";
+        return -1;
+      }
+      int Jd;
+      if (OPS_GetIntInput(&numdata, &Jd) < 0) {
+        opserr << "WARNING: invalid Jd\n";
+        return -1;
+      }
+      bool flush = true;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-noFlush") == 0) {
+            flush = false;
+        }
+      }
+      // Included getVariableAnalysis here as dont need it except
+      // for here. and analyze() is called a lot.
+      VariableTimeStepDirectIntegrationAnalysis*
+          theVariableTimeStepTransientAnalysis =
+              cmds->getVariableAnalysis();
+      result = theVariableTimeStepTransientAnalysis->analyze(
+          numIncr, dt, dtMin, dtMax, Jd, flush);
+    }
+  } else {
+    opserr << "WARNING No Analysis type has been specified \n";
+    return -1;
+  }
+
+  if (result < 0) {
+    opserr << "OpenSees > analyze failed, returned: " << result
+           << " error flag\n";
+  }
+
+  int numdata = 1;
+  if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+    opserr << "WARNING failed to set output\n";
+    return -1;
+  }
+
+  return 0;
 }
 
 int OPS_eigenAnalysis()

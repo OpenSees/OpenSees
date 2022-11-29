@@ -19,6 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // Written by: Gonzalo Torrisi, Universidad Nacional de Cuyo
+// Input modified 20/19/2022
 
 // we specify what header files we need
 #include "BeamGT.h"
@@ -65,14 +66,15 @@ void* OPS_BeamGT()
     return theBeam;
   }
 
-  if (numRemainingArgs != 14) {
-    opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? E? G? A? I? Lp1? Lp2? Lr? fc?\n";
+  if (numRemainingArgs != 12) {
+    //opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? E? G? A? I? Lp1? Lp2? Lr? fc? Nite? Tol?\n";
+	opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? Lp1? Lp2? Lr? fc? Nite? Tol?\n";
    // numMyBeam++;
   }
 
   // get the id and end nodes 
-  int iData[6];
- double dData[8];
+  int iData[7];
+ double dData[5];
   int numData;
 
   numData = 3;
@@ -101,7 +103,7 @@ void* OPS_BeamGT()
   int matID2 = iData[4];
   int matID3 = iData[5];
  
-  numData =8 ;
+  numData =4 ;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
    opserr << "WARNING error reading Elastic properties for element" << eleTag << endln;
    return 0;
@@ -125,15 +127,25 @@ void* OPS_BeamGT()
     opserr << "WARNING material with tag " << matID3 << "not found for element " << eleTag << endln;
     return 0;
   }
+	numData = 1;
+   if (OPS_GetIntInput(&numData, &iData[6]) != 0) {
+		   opserr << "WARNING error reading element Iteration number for element " << eleTag << endln;
+	   return 0;
+   }
+   numData = 1;
+   if (OPS_GetDoubleInput(&numData, &dData[4]) != 0) {
+	   opserr << "WARNING error reading element Tolerance for element " << eleTag << endln;
+	   return 0;
+   }
     // now create the truss and add it to the Domain
 
-  theBeam = new BeamGT(eleTag, iData[1], iData[2], *theMaterial, *theMaterial2, *theMaterial3, dData[0],dData[1],dData[2],dData[3],dData[4],dData[5],dData[6],dData[7]  );
+  theBeam = new BeamGT(eleTag, iData[1], iData[2], *theMaterial, *theMaterial2, *theMaterial3, dData[0],dData[1],dData[2],dData[3], iData[6], dData[4]);
 
   if (theBeam == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
-    delete theMaterial;
-	delete theMaterial2;
-	delete theMaterial3;
+    delete [] theMaterial;
+	delete [] theMaterial2;
+	delete [] theMaterial3;
 	return 0;
   }
 
@@ -145,12 +157,11 @@ void* OPS_BeamGT()
 BeamGT::BeamGT(int tag, 
                    int Nd1, int Nd2,
                    UniaxialMaterial &theMat, UniaxialMaterial &theMat2, UniaxialMaterial &theMat3,
-                    double e, double g, double a, double i, double lp1, double lp2, double lr, double fc)
+                    double lp1, double lp2, double lr, double fc, int Nite, double Tol)
 :Element(tag, ELE_TAG_BeamGT),     
  externalNodes(2),
- trans(4,4),E(e),  G(g), A(a), I(i), LP1(lp1),LP2(lp2),LR(lr),FC(fc), theMaterial(0),theMaterial2(0),theMaterial3(0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3)
- //L1(0.0),L2(0.0),L3(0.0),L4(0.0),L5(0.0),L6(0.0)
-{       
+ trans(4,4),LP1(lp1),LP2(lp2),LR(lr),FC(fc), theMaterial(0),theMaterial2(0),theMaterial3(0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3),NITE(Nite), TOL(Tol)
+ {       
     // allocate memory for numMaterials1d uniaxial material models
   theMaterial = new UniaxialMaterial *[2];
   theMaterial2= 0;
@@ -206,7 +217,7 @@ BeamGT::BeamGT()
  theMaterial2(0),
  theMaterial3(0),
  externalNodes(2),
- trans(4,4), E(0.0),A(0.0),G(0.0),I(0.0),LP1(0.0),LP2(0.0), LR(0.0),FC(0.0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3)
+ trans(4,4), LP1(0.0),LP2(0.0), LR(0.0),FC(0.0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3),NITE(0),TOL(0.0)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;
@@ -223,7 +234,6 @@ BeamGT::~BeamGT()
 	    if (theMaterial[i] != 0)
         delete theMaterial[i];    
 	 }
-	 delete [] theMaterial;
  	delete theMaterial2;
 	delete theMaterial3;
 }
@@ -316,7 +326,7 @@ BeamGT::setDomain(Domain *theDomain)
       return;  // don't go any further - otherwise divide by 0 error
     }
 
-        // cosines of the diagonals
+        // cosenos de las diagonales
         double coseno=dx/L;
         double seno=dy/L;
 		trans(0,0)=L;
@@ -439,8 +449,6 @@ BeamGT::update()
  //    strain     = this->computeCurrentStrain(mat );
    // strainRate = this->computeCurrentStrain();
 
-
-	// opserr << "Material for Axial     :" << *theMaterial3<< "\n";
 	double str[3];
 
     // determine the strain
@@ -449,20 +457,18 @@ BeamGT::update()
 	const Vector &Idisp1 =theNodes[0]->getIncrDisp();
 	const Vector &Idisp2 =theNodes[1]->getIncrDisp();
 
-	//double r1c=RR[0];
-	//double r2c=RR[1];
-
      double L=trans(0,0);
      double c1=trans(0,1);
      double	s1=trans(0,2);
 	//global displacements
-	//	double cur1=0.0;
-	//	double cur2=0.0;
-	//	double dg=0.0;
-	//	double gam=0.0;
-	//	double dcur1=0.0;
-	//	double dcur2=0.0;
-	//	double dgam=0.0;
+		double dcur1r=0.0;
+	   double dcur2r=0.0;
+		double ddcur1=0.0;
+	    double ddcur2=0.0;
+		double ddgam=0.0;
+	// 
+	// momentos convergidos
+
      // displacements at the ends of the beam
 		double dx1=Idisp1(0);
 		double dy1=Idisp1(1);
@@ -474,8 +480,6 @@ BeamGT::update()
 		double x2=disp2(0);
 		double y1=disp1(1);
 		double y2=disp2(1);
-
-
 		//Displacements at the ends of the beam in local coordinates
 		double u1 = dx1*c1+dy1*s1;
 		double v1 = -dx1*s1+dy1*c1;
@@ -484,68 +488,100 @@ BeamGT::update()
 		double xnorm = 1.0;
 		double du1 = x1*c1+y1*s1;
 		double du2 = x2*c1+y2*s1;
-
-
 		 //CURVATURES
-		 		//incremento de esfuerzos de extremo y curvaturas
+		 //incremento de esfuerzos de extremo y curvaturas
 		double DM1=0.0;
 	    double DM2=0.0;
 		double DV=0.0;
 		double DN = 0.0;
-		 
-		//tengo que traer la matriz de rigidez convergida
+
+ 		//tengo que traer la matriz de rigidez convergida
+		double ei = theMaterial[0]->getInitialTangent();
+		double EA = theMaterial3->getInitialTangent();
+		double ret = 0;
 		
-		//matriz de rigidez en locales
-		double a1=theMaterial[0]->getTangent();
-	    double b1=theMaterial[0]->getInitialTangent();
-	    double re1=a1/b1;
-	    double f1=(1.0-re1)*LP1/(re1*E*I);
+			//matriz de rigidez en locales
+			double a1 = theMaterial[0]->getTangent();
+			double b1 = theMaterial[0]->getInitialTangent();
+			double re1 = a1 / b1;
+			double f1 = (1.0 - re1) * LP1 / (re1 * ei);
 
-	    double a2=theMaterial[1]->getTangent();
-	    double b2=theMaterial[1]->getInitialTangent();
-	    double re2=a2/b2;
-	    double f2=(1.0-re2)*LP2/(re2*E*I);
-	
-		double a3=theMaterial2->getTangent();
-		double b3=theMaterial2->getInitialTangent();
-		double re3=a3/b3;
-		double f3=(1.0-re3)*LR/(re3*G*A*L*L);
-	// Tangent Flexibility matrix
-		 double f11=L/(3.0*E*I)+f1+FC*1.2/(L*A*G)+f3;
-		 double f22=L/(3.0*E*I)+f2+FC*1.2/(L*A*G)+f3;
-		 double f12=-L/(6.0*E*I)+FC*1.2/(L*A*G)+f3;
+			double a2 = theMaterial[1]->getTangent();
+			double b2 = theMaterial[1]->getInitialTangent();
+			double re2 = a2 / b2;
+			double f2 = (1.0 - re2) * LP2 / (re2 * ei);
 
-     	 double det=f11*f22-f12*f12;
-		 double fa1=f22/det;
-		 double fb1=-f12/det;
-		 double fc1=-f12/det;
-		 double fd1=f11/det;
-		 double x=1.0/L;
-		 double Am=(fa1+2*fb1+fd1)*x*x;
-		 double B=(fa1+fb1)*x;
-		 double C=(fb1+fd1)*x;
-			
-		DV=Am*(v1-v2)+B*r1+C*r2;
-		DM1=B*(v1-v2)+fa1*r1+fb1*r2;
-		DM2=C*(v1-v2)+fb1*r1+fd1*r2;
-				
-		double dcur1=DM1/theMaterial[0]->getTangent();
-		double dcur2=DM2/theMaterial[1]->getTangent();
-		double dgam=DV/theMaterial2->getTangent();
-		double dax=(du2-du1)/L;
-	
-        double ret=0;
-		dcur1c=dcur1c+dcur1;
-		dcur2c=dcur2c+dcur2;
-		dgamc=dgamc+dgam;
-		daxc = 0.0;
-		daxc = daxc + dax;
-		ret=theMaterial3->setTrialStrain(daxc);
-		double N=1.0*theMaterial3->getStress();
-		ret=theMaterial[0]->setTrialStrain(dcur1c,N);
-		ret=theMaterial[1]->setTrialStrain(dcur2c,N);
-		ret=theMaterial2->setTrialStrain(dgamc,N);
+			double a3 = theMaterial2->getTangent();
+			double b3 = theMaterial2->getInitialTangent();
+			double re3 = a3 / b3;
+			double f3 = (1.0 - re3) * LR / (re3 * b3 * L * L);
+			// Tangent Flexibility matrix
+			double f11 = L / (3.0 * ei) + f1 + FC * 1.2 / (L * b3) + f3;
+			double f22 = L / (3.0 * ei) + f2 + FC * 1.2 / (L * b3) + f3;
+			double f12 = -L / (6.0 * ei) + FC * 1.2 / (L * b3) + f3;
+			double det = f11 * f22 - f12 * f12;
+			double fa1 = f22 / det;
+			double fb1 = -f12 / det;
+			double fc1 = -f12 / det;
+			double fd1 = f11 / det;
+			double x = 1.0 / L;
+			double Am = (fa1 + 2 * fb1 + fd1) * x * x;
+			double B = (fa1 + fb1) * x;
+			double C = (fb1 + fd1) * x;
+			// Momentos convergidos MCE y corte convergido VCE
 
+
+			DV = Am * (v1 - v2) + B * r1 + C * r2;
+			DM1 = (B * (v1 - v2) + fa1 * r1 + fb1 * r2);
+			DM2 = C * (v1 - v2) + fb1 * r1 + fd1 * r2;
+			double MCE1 = DM1 + theMaterial[0]->getStress();
+			double MCE2 = DM2 + theMaterial[1]->getStress();
+			double VCE = DV + theMaterial2->getStress();
+
+
+
+			// incremento de curvaturas
+			double dcur1 = DM1 / theMaterial[0]->getTangent();
+			double dcur2 = DM2 / theMaterial[1]->getTangent();
+			double dgam = DV / theMaterial2->getTangent();
+			double dax = (du2 - du1) / L;
+
+			dcur1c = dcur1c + dcur1 ;
+			dcur2c = dcur2c + dcur2 ;
+		    dgamc = dgamc + dgam;
+			daxc = 0.0;
+			daxc = daxc + dax;
+			ret = theMaterial3->setTrialStrain(daxc);
+			double N = 1.0 * theMaterial3->getStress();
+
+
+			double err = 1;
+			int it = 0;
+			if (NITE == 0) {
+				ret = theMaterial2->setTrialStrain(dgamc, N);
+				ret = theMaterial[0]->setTrialStrain(dcur1c, N);
+				ret = theMaterial[1]->setTrialStrain(dcur2c, N);
+			}
+			else {
+				while (err > TOL && it < NITE) {
+					dcur1c = dcur1c + ddcur1;
+					dcur2c = dcur2c + ddcur2;
+					dgamc = dgamc + ddgam;
+
+					ret = theMaterial2->setTrialStrain(dgamc, N);
+					ret = theMaterial[0]->setTrialStrain(dcur1c, N);
+					ret = theMaterial[1]->setTrialStrain(dcur2c, N);
+					DM1 = MCE1 - theMaterial[0]->getStress();
+					DM2 = MCE2 - theMaterial[1]->getStress();
+					DV = VCE - theMaterial2->getStress();
+					err = sqrt(DM1 * DM1 + DM2 * DM2 + DV * DV);
+					ddcur1 = DM1 / theMaterial[0]->getTangent();
+					ddcur2 = DM2 / theMaterial[1]->getTangent();
+					ddgam = DV / theMaterial2->getTangent();
+					it = it + 1;
+				}
+			}
+			//opserr<< "error : " << err << "iter :"<< it<<"\n";
   return ret;
 }
 
@@ -576,10 +612,9 @@ BeamGT::getTangentStiff(void)
 		 re3=1.0;
 	 }
 
-	 double f11=L/(3.0*b2)+f1+FC*1.2/(L*A*G)+f3;
-	 double f22=L/(3.0*b2)+f2+FC*1.2/(L*A*G)+f3;
-	 double f12=-L/(6.0*b2)+FC*1.2/(L*A*G)+f3;
-
+	 double f11 = L / (3.0 * b2) + f1 + FC * 1.2 / (L * b3) + f3;
+	 double f22 = L / (3.0 * b2) + f2 + FC * 1.2 / (L * b3) + f3;
+	 double f12 = -L / (6.0 * b2) + FC * 1.2 / (L * b3) + f3;
 
 	 //TAngent stiffness
 	 double det=f11*f22-f12*f12;
@@ -645,12 +680,13 @@ BeamGT::getInitialStiff(void)
 	 double L=trans(0,0);
      double c1=trans(0,1);
      double	s1=trans(0,2);
-	 
-	 
-	 double f11=L/(3.0*E*I)+FC*1.2/(L*A*G);
-	 double f22=L/(3.0*E*I)+FC*1.2/(L*A*G);
-	 double f12=-L/(6.0*E*I)+FC*1.2/(L*A*G);
-	 double EA=theMaterial3->getInitialTangent();
+	 double ei= theMaterial[0]->getInitialTangent();
+	 double EA = theMaterial3->getInitialTangent();
+	 double GA = theMaterial2->getInitialTangent();
+	 double f11 = L / (3.0 * ei) + FC * 1.2 / (L * GA);
+	 double f22 = L / (3.0 * ei) + FC * 1.2 / (L * GA);
+	 double f12 = -L / (6.0 * ei) + FC * 1.2 / (L * GA);
+
 
 	 double det=f11*f22-f12*f12;
 	 double fa1=f22/det;
@@ -733,13 +769,10 @@ BeamGT::getResistingForce()
 		
 
 	
-//		double N=E*A*(du1-du2)/L;
-//		double V1=theMaterial2->getStress();
 		double M1=theMaterial[0]->getStress();
 		double M2=theMaterial[1]->getStress();
 		double V1=theMaterial2->getStress();
 		double N=-1.0*theMaterial3->getStress();
-//double		V1=(M1+M2)/L;
 		double V2=-V1;
 		double N2=-N;
 		BeamR(0)=1.0*(N*c1-V1*s1);
@@ -748,10 +781,6 @@ BeamGT::getResistingForce()
 		BeamR(3)=(N2*c1-V2*s1);
 		BeamR(4)=(N2*s1+V2*c1);
 		BeamR(5)=1.0*M2;
-//	opserr<<" N= "<<N<<"\n";
-//	opserr<<" V1= "<<V1<<"\n";
-//	opserr<<" M1= "<<M1<<"\n"; 
-//	opserr<<" M2= "<<M2<<"\n"; 
       return BeamR;
 }
 
@@ -769,19 +798,15 @@ BeamGT::sendSelf(int commitTag, Channel &theChannel)
     // Truss2D packs it's data into a Vector and sends this to theChannel
     // along with it's dbTag and the commitTag passed in the arguments
 	
-	Vector data(16);
+	Vector data(17);
 	data(0)=this->getTag();
-	data(1)=A;
-	data(2)=I;
-	data(3)=E;
-	data(4)=G;
 	data(5)=LP1;
 	data(6)=LP2;
 	data(7)=LR;
 	data(8)=theMaterial[0]->getClassTag();
 	data(9)=theMaterial[1]->getClassTag();
 	data(10)=theMaterial2->getClassTag();
-   data(14)=theMaterial3->getClassTag();
+    data(14)=theMaterial3->getClassTag();
 	int matDbTag1=theMaterial[0]->getDbTag();
 	int matDbTag2=theMaterial[1]->getDbTag();
 	int matDbTag3=theMaterial2->getDbTag();
@@ -816,7 +841,7 @@ BeamGT::sendSelf(int commitTag, Channel &theChannel)
 			 theMaterial3->setDbTag(matDbTag4);
 	}
 	data(15)=matDbTag4;
-
+	data(16) = FC;
 
   	res=0;
      res = theChannel.sendVector(dataTag, commitTag, data);
@@ -869,7 +894,7 @@ BeamGT::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     // Truss2D creates a Vector, receives the Vector and then sets the 
     // internal data with the data in the Vector
 
-    Vector data(16);
+    Vector data(17);
     res = theChannel.recvVector(dataTag, commitTag, data);
     res=-1;
 	if (res < 0) {
@@ -880,10 +905,6 @@ BeamGT::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     this->setTag((int)data(0));
    
 
-	A=data(1);
-	I=data(2);
-	E=data(3);
-	G=data(4);
 	LP1=data(5);
 	LP2=data(6);
 	LR=data(7);
@@ -906,6 +927,7 @@ BeamGT::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker
 	int matDb3 = data(13);
 	int matClass4 = data(14);
 	int matDb4 = data(15);
+	FC = data(16);
     theMaterial[0] = theBroker.getNewUniaxialMaterial(matClass1);
     if (theMaterial[0] == 0) {
       opserr << "WARNING BeamGT::recvSelf() - failed to create a Material[0]\n";
@@ -982,16 +1004,18 @@ BeamGT::Print(OPS_Stream &s, int flag)
   s << "             Nodes: " << "\n";
   s << "Nodo 1  :"<< externalNodes(0)<< "\n";
   s << "Nodo 2  :"<< externalNodes(1)<< "\n";
-  s << "        BeamGT Elastic properties: " << "\n";
-  s << "Beam Area :"<< A<< "\n";  
-  s << "Beam I    :"<< I<< "\n";
-  s << "Beam E    :"<< E<< "\n";
-  s << "Beam G    :"<< G<< "\n";
   s << "         BeamGT Materials: " << "\n";
   s << "Material for Flexure 1 :" << *theMaterial[0]<< "\n";
   s << "Material for Flexure 2 :" << *theMaterial[1]<< "\n";
   s << "Material for Shear     :" << *theMaterial2<< "\n";
   s << "Material for Axial     :" << *theMaterial3<< "\n";
+  s << "Nonlinear properties:" << "\n";
+  s << "Plastic hinge length end 1 :" << LP1 << "\n";
+  s << "Plastic hinge length end 2 :" << LP2 << "\n";
+  s << "Length subjected to shear  :" << LR << "\n";
+  s << "Factor for shear correction:" << FC << "\n";
+  s << "Number of iterations:" << NITE << "\n";
+  s << "Tolerance:" << TOL << "\n";
   s << " " << "\n";
 }
 
@@ -1029,11 +1053,13 @@ BeamGT::setResponse(const char **argv, int argc, OPS_Stream &output)
     } else if ((strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) ||
 	       (strcmp(argv[0],"localForce") == 0 || strcmp(argv[0],"localForces") == 0)) {
 
-       for (int i=0; i<4; i++) {
+       for (int i=0; i<6; i++) {
            sprintf(outputData,"P%d",i+1);
            output.tag("ResponseType",outputData);
+
+
        }
-       theResponse = new ElementResponse(this, 2, Vector(4));
+       theResponse = new ElementResponse(this, 2, Vector(6));
 
 
     } else if (strcmp(argv[0],"defo") == 0 || strcmp(argv[0],"deformations") == 0 ||
@@ -1104,17 +1130,25 @@ BeamGT::getResponse(int responseID, Information &eleInformation)
 
     case 2:
         if (eleInformation.theVector != 0) {
-            for (int i = 0; i < 2; i++)
-                (*(eleInformation.theVector))(i) = theMaterial[i]->getStress();
-                   (*(eleInformation.theVector))(2) = theMaterial2->getStress();       		
-                  (*(eleInformation.theVector))(3) = theMaterial3->getStress();     
-        }
+       //     for (int i = 0; i < 2; i++)
+       //         (*(eleInformation.theVector))(i) = theMaterial[i]->getStress();
+       //            (*(eleInformation.theVector))(2) = theMaterial2->getStress();       		
+       //           (*(eleInformation.theVector))(3) = theMaterial3->getStress();     
+
+				  (*(eleInformation.theVector))(0) = -1.0*theMaterial3->getStress();
+				  (*(eleInformation.theVector))(1) = theMaterial2->getStress();
+				  (*(eleInformation.theVector))(2) = theMaterial[0]->getStress();
+				  (*(eleInformation.theVector))(3) = theMaterial3->getStress();
+				  (*(eleInformation.theVector))(4) = -1.0*theMaterial2->getStress();
+				  (*(eleInformation.theVector))(5) = theMaterial[1]->getStress();
+
+         }
         return 0;
 
     case 3:
         if (eleInformation.theVector != 0) {
             for (int i = 0; i < 2; i++)
-                (*(eleInformation.theVector))(i) = theMaterial[i]->getStrain();
+             (*(eleInformation.theVector))(i) = theMaterial[i]->getStrain();
 			 (*(eleInformation.theVector))(2) = theMaterial2->getStrain();
 			 (*(eleInformation.theVector))(3) = theMaterial3->getStrain();
 		}
@@ -1241,10 +1275,8 @@ BeamGT::displaySelf(Renderer &theViewer, int displayMode, float fact, const char
 		double ro2=strain[5]+(strain[4]-strain[1])/L;
 		double dg=(strain[4]-strain[1])/L;
 
-	   // theMaterial[0]->setTrialStrain(ro1);
-	 //	theMaterial[1]->setTrialStrain(ro2);
-	//	theMaterial2->setTrialStrain(dg);
-		force[0]=E*A/L*(strain[3]-strain[0]);
+		double EA=theMaterial3->getInitialTangent();
+		force[0]=EA/L*(strain[3]-strain[0]);
 		force[1]=theMaterial2->getStress();
 		force[2]=theMaterial[0]->getStress();
 		force[3]=force[0];
@@ -1252,13 +1284,29 @@ BeamGT::displaySelf(Renderer &theViewer, int displayMode, float fact, const char
 		force[5]=theMaterial[1]->getStress();
 
 		//		
-	if (displayMode == 2) // use the strain as the drawing measure
+	if (displayMode == 1) { //  use the moment as measure
+	code = 0;
+	code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5]);
+
+	return code;
+	}
+
+	else if (displayMode == 2) // use the strain as the drawing measure
 		{
 			code=0;
-		  //code +=theViewer.drawLine(v1,v2,(float)strain[2],(float)strain[5],0,0,2,1);
 		  code += theViewer.drawLine(v1, v2, (float)strain[2], (float)strain[5]);
 		  return code;
 }
+
+	else if (displayMode == 3) // use the strain as the drawing measure
+	{
+		code = 0;
+		double ww = 10*(force[2] + force[5]) /L;
+		//code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5],0,0,ww,1);
+		code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5]);
+		return code;
+	}
+
 	else if(displayMode < 0)
 	{
 		code = 0;
@@ -1267,10 +1315,9 @@ BeamGT::displaySelf(Renderer &theViewer, int displayMode, float fact, const char
 	}
 
 
-	else { // otherwise use the axial force as measure
+	else { 
 		code=0;
-		  //code +=theViewer.drawLine(v1,v2,(float)force[2],(float)force[5],0,0,2,1);
-		  code += theViewer.drawLine(v1, v2, (float)force[2], (float)force[5]);
+		  code += theViewer.drawLine(v1, v2, 0, 0);
 
 		  return code;
 	}

@@ -390,6 +390,7 @@ OPS_DomainModalProperties(void)
     bool unorm = false; // by default do not displacement-normalize eigenvectors 
     bool print_on_console = false; // by default do not print on console
     bool print_on_file = false; // by default do no print on file
+    bool print_to_dict = false;
     std::string fname;
 
     // check options
@@ -402,6 +403,9 @@ OPS_DomainModalProperties(void)
         }
         else if (strcmp(iarg, "-print") == 0) {
             print_on_console = true;
+        }
+        else if (strcmp(iarg, "-return") == 0) {
+            print_to_dict = true;
         }
         else if (strcmp(iarg, "-file") == 0) {
             print_on_file = true;
@@ -429,6 +433,9 @@ OPS_DomainModalProperties(void)
         modal_props.print();
     if (print_on_file)
         modal_props.print(fname);
+    if (print_to_dict) {
+        modal_props.printDict();
+    }
 
     return 0;
 }
@@ -714,7 +721,7 @@ bool DomainModalProperties::compute(Domain* domain)
             }
         }
     };
-    if (ndf == 3 == ndf == 6) {
+    if (ndf == 3 || ndf == 6) {
         compute_extra_rotary_mass(ML);
         compute_extra_rotary_mass(MLfree);
     }
@@ -1022,4 +1029,156 @@ void DomainModalProperties::print(const std::string& file_name)
     ss.close();
 }
 
+void DomainModalProperties::printDict() {
+    // output data
+    std::map<const char*, std::vector<double>> data;
 
+    // 1. domain size
+    auto& dmp = *this;
+    int ndm = dmp.centerOfMass().Size();
+    data["domainSize"].push_back(ndm);
+
+    // 2. EIGENVALUE ANALYSIS
+    for (int i = 0; i < dmp.eigenvalues().Size(); ++i) {
+        double lambda = dmp.eigenvalues()(i);
+        double omega = std::sqrt(lambda);
+        double freq = omega / 2.0 / M_PI;
+        double period = 1.0 / freq;
+        data["eigenLambda"].push_back(lambda);
+        data["eigenOmega"].push_back(omega);
+        data["eigenFrequency"].push_back(freq);
+        data["eigenPeriod"].push_back(period);
+    }
+
+    // 3. TOTAL MASS OF THE STRUCTURE
+    for (int i = 0; i < dmp.totalMass().Size(); ++i) {
+        double mass = dmp.totalMass()(i);
+        data["totalMass"].push_back(mass);
+    }
+
+    // 4. TOTAL FREE MASS OF THE STRUCTURE
+    for (int i = 0; i < dmp.totalFreeMass().Size(); ++i) {
+        double mass = dmp.totalFreeMass()(i);
+        data["totalFreeMass"].push_back(mass);
+    }
+
+    // 5. CENTER OF MASS
+    for (int i = 0; i < dmp.centerOfMass().Size(); ++i) {
+        double x = dmp.centerOfMass()(i);
+        data["centerOfMass"].push_back(x);
+    }
+
+    // 6. MODAL PARTICIPATION FACTORS
+    const auto& factors = dmp.modalParticipationFactors();
+    for (int i = 0; i < factors.noRows(); ++i) {
+        data["partiFactorMX"].push_back(factors(i, 0));
+        if (factors.noCols() > 1) {
+            data["partiFactorMY"].push_back(factors(i, 1));
+        }
+        if (factors.noCols() == 3) {
+            data["partiFactorRMZ"].push_back(factors(i, 2));
+        } else if (factors.noCols() == 6) {
+            data["partiFactorMZ"].push_back(factors(i, 2));
+            data["partiFactorRMX"].push_back(factors(i, 3));
+            data["partiFactorRMY"].push_back(factors(i, 4));
+            data["partiFactorRMZ"].push_back(factors(i, 5));
+        }
+    }
+
+    // 7. MODAL PARTICIPATION MASSES
+    const auto& partiMasses = dmp.modalParticipationMasses();
+    for (int i = 0; i < partiMasses.noRows(); ++i) {
+        data["partiMassMX"].push_back(partiMasses(i, 0));
+        if (partiMasses.noCols() > 1) {
+            data["partiMassMY"].push_back(partiMasses(i, 1));
+        }
+        if (partiMasses.noCols() == 3) {
+            data["partiMassRMZ"].push_back(partiMasses(i, 2));
+        } else if (partiMasses.noCols() == 6) {
+            data["partiMassMZ"].push_back(partiMasses(i, 2));
+            data["partiMassRMX"].push_back(partiMasses(i, 3));
+            data["partiMassRMY"].push_back(partiMasses(i, 4));
+            data["partiMassRMZ"].push_back(partiMasses(i, 5));
+        }
+    }
+
+    // 8. MODAL PARTICIPATION MASSES (cumulative)
+    const auto& partiMassesCumu =
+        dmp.modalParticipationMassesCumulative();
+    for (int i = 0; i < partiMassesCumu.noRows(); ++i) {
+        data["partiMassesCumuMX"].push_back(partiMassesCumu(i, 0));
+        if (partiMassesCumu.noCols() > 1) {
+            data["partiMassesCumuMY"].push_back(
+                partiMassesCumu(i, 1));
+        }
+        if (partiMassesCumu.noCols() == 3) {
+            data["partiMassesCumuRMZ"].push_back(
+                partiMassesCumu(i, 2));
+        } else if (partiMassesCumu.noCols() == 6) {
+            data["partiMassesCumuMZ"].push_back(
+                partiMassesCumu(i, 2));
+            data["partiMassesCumuRMX"].push_back(
+                partiMassesCumu(i, 3));
+            data["partiMassesCumuRMY"].push_back(
+                partiMassesCumu(i, 4));
+            data["partiMassesCumuRMZ"].push_back(
+                partiMassesCumu(i, 5));
+        }
+    }
+
+    // 9. MODAL PARTICIPATION MASS RATIOS (%)
+    const auto& partiMassRatios = dmp.modalParticipationMassRatios();
+    double scale = 100.0;
+    for (int i = 0; i < partiMassRatios.noRows(); ++i) {
+        data["partiMassRatiosMX"].push_back(partiMassRatios(i, 0) *
+                                            scale);
+        if (partiMassRatios.noCols() > 1) {
+            data["partiMassRatiosMY"].push_back(
+                partiMassRatios(i, 1) * scale);
+        }
+        if (partiMassRatios.noCols() == 3) {
+            data["partiMassRatiosRMZ"].push_back(
+                partiMassRatios(i, 2) * scale);
+        } else if (partiMassRatios.noCols() == 6) {
+            data["partiMassRatiosMZ"].push_back(
+                partiMassRatios(i, 2) * scale);
+            data["partiMassRatiosRMX"].push_back(
+                partiMassRatios(i, 3) * scale);
+            data["partiMassRatiosRMY"].push_back(
+                partiMassRatios(i, 4) * scale);
+            data["partiMassRatiosRMZ"].push_back(
+                partiMassRatios(i, 5) * scale);
+        }
+    }
+
+    // 10. MODAL PARTICIPATION MASS RATIOS (%) (cumulative)
+    const auto& partiMassRatiosCumu =
+        dmp.modalParticipationMassRatiosCumulative();
+    for (int i = 0; i < partiMassRatiosCumu.noRows(); ++i) {
+        data["partiMassRatiosCumuMX"].push_back(
+            partiMassRatiosCumu(i, 0) * scale);
+        if (partiMassRatiosCumu.noCols() > 1) {
+            data["partiMassRatiosCumuMY"].push_back(
+                partiMassRatiosCumu(i, 1) * scale);
+        }
+        if (partiMassRatiosCumu.noCols() == 3) {
+            data["partiMassRatiosCumuRMZ"].push_back(
+                partiMassRatiosCumu(i, 2) * scale);
+        } else if (partiMassRatiosCumu.noCols() == 6) {
+            data["partiMassRatiosCumuMZ"].push_back(
+                partiMassRatiosCumu(i, 2) * scale);
+            data["partiMassRatiosCumuRMX"].push_back(
+                partiMassRatiosCumu(i, 3) * scale);
+            data["partiMassRatiosCumuRMY"].push_back(
+                partiMassRatiosCumu(i, 4) * scale);
+            data["partiMassRatiosCumuRMZ"].push_back(
+                partiMassRatiosCumu(i, 5) * scale);
+        }
+    }
+
+    // set outputs
+    if (OPS_SetDoubleDictListOutput(data) < 0) {
+        opserr
+            << "WARNING: failed to set outputs for modalProperties\n";
+    }
+}

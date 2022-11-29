@@ -93,6 +93,9 @@ target_sources(OPS_Material
       ConcreteECThermal.cpp
       ConcreteSakaiKawashima.cpp
       ConcretewBeta.cpp
+      ConcreteZBH_fitted.cpp
+      ConcreteZBH_original.cpp
+      ConcreteZBH_smoothed.cpp 
       ConfinedConcrete01.cpp
       ContinuumUniaxial.cpp
       CubicSpline.cpp
@@ -118,6 +121,7 @@ target_sources(OPS_Material
       HyperbolicGapMaterial.cpp
       HystereticAsym.cpp
       HystereticMaterial.cpp
+      HystereticSMMaterial.cpp
       HystereticPoly.cpp
       HystereticSmooth.cpp
       ImpactMaterial.cpp
@@ -173,6 +177,7 @@ target_sources(OPS_Material
       WrapperUniaxialMaterial.cpp
       pyUCLA.cpp
       SMAMaterial.cpp
+      CoulombDamperMaterial.cpp
       
       TriMatrix.cpp
       DuctileFracture.cpp
@@ -202,6 +207,9 @@ target_sources(OPS_Material
       ConcreteECThermal.h
       ConcreteSakaiKawashima.h
       ConcretewBeta.h
+      ConcreteZBH_fitted.h
+      ConcreteZBH_original.h
+      ConcreteZBH_smoothed.h
       ConfinedConcrete01.h
       ContinuumUniaxial.h
       CubicSpline.h
@@ -227,6 +235,7 @@ target_sources(OPS_Material
       HyperbolicGapMaterial.h
       HystereticAsym.h
       HystereticMaterial.h
+      HystereticSMMaterial.h
       HystereticPoly.h
       HystereticSmooth.h
       ImpactMaterial.h
@@ -280,6 +289,7 @@ target_sources(OPS_Material
       ViscousMaterial.h
       WrapperUniaxialMaterial.h
       pyUCLA.h
+      CoulombDamperMaterial.h
 
       TriMatrix.h  # move to SRC/matrix ?
       DuctileFracture.h

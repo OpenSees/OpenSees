@@ -217,7 +217,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	// Update loading / unloading stiffness at load reversals
 	if (Reversal_Flag == 1) {
 		Rintrsct_K = Rreversal - Mreversal / K_j_1;
-		DISP_Rev = Energy_total - Energy_Excrsni_1 - 0.5*Mreversal *(Rintrsct_K - Rreversal);
+		DISP_Rev = fmax(0, Energy_total - Energy_Excrsni_1 - 0.5*Mreversal *(Rintrsct_K - Rreversal));
 		beta_K_j = pow((DISP_Rev / (2 * Ref_Energy_K - Energy_total + 0.5*Mreversal * (Rintrsct_K - Rreversal))), c_K);
 
 		K_j = K_j_1 * (1 - beta_K_j);

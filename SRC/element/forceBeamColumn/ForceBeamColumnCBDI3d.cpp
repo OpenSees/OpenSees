@@ -3500,7 +3500,7 @@ ForceBeamColumnCBDI3d::setResponse(const char **argv, int argc, OPS_Stream &outp
     theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
   
   else if (strcmp(argv[0],"cbdiDisplacements") == 0)
-    theResponse = new ElementResponse(this, 112, Matrix(20,3));
+    theResponse = new ElementResponse(this, 112, Matrix(1,3));
   
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
@@ -3822,11 +3822,10 @@ ForceBeamColumnCBDI3d::getResponse(int responseID, Information &eleInfo)
     double ipts[maxNumSections];
     beamIntegr->getSectionLocations(numSections, L, ipts);
     // CBDI influence matrix
-    double pts[20];
-    for (int i = 0; i < 20; i++)
-      pts[i] = 1.0/(20-1)*i;
-    Matrix ls(20, numSections);
-    getCBDIinfluenceMatrix(20, pts, numSections, ipts, L, ls);
+    double pts[1];
+    pts[0] = eleInfo.theDouble;
+    Matrix ls(1, numSections);
+    getCBDIinfluenceMatrix(1, pts, numSections, ipts, L, ls);
     // Curvature vector
     Vector kappaz(numSections); // about section z
     Vector kappay(numSections); // about section y    
@@ -3842,23 +3841,22 @@ ForceBeamColumnCBDI3d::getResponse(int responseID, Information &eleInfo)
       }
     }
     // Displacement vector
-    Vector dispsy(20); // along local y
-    Vector dispsz(20); // along local z    
+    Vector dispsy(1); // along local y
+    Vector dispsz(1); // along local z    
     dispsy.addMatrixVector(0.0, ls, kappaz,  1.0);
     dispsz.addMatrixVector(0.0, ls, kappay,  1.0);    
     static Vector uxb(3);
     static Vector uxg(3);
-    Matrix disps(20,3);
+    Matrix disps(1,3);
     vp = crdTransf->getBasicTrialDisp();
-    for (int i = 0; i < 20; i++) {
-      uxb(0) = pts[i]*vp(0); // linear shape function
-      uxb(1) = dispsy(i);
-      uxb(2) = dispsz(i);      
-      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
-      disps(i,0) = uxg(0);
-      disps(i,1) = uxg(1);
-      disps(i,2) = uxg(2);            
-    }
+    uxb(0) = pts[0]*vp(0); // linear shape function
+    uxb(1) = dispsy(0);
+    uxb(2) = dispsz(0);      
+    uxg = crdTransf->getPointGlobalDisplFromBasic(pts[0],uxb);
+    disps(0,0) = uxg(0);
+    disps(0,1) = uxg(1);
+    disps(0,2) = uxg(2);            
+
     return eleInfo.setMatrix(disps);
   }
 

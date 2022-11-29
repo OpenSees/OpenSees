@@ -80,6 +80,7 @@ void* OPS_CorotTrussSectionElement();
 void* OPS_ZeroLengthContactNTS2D();
 void* OPS_ZeroLengthInterface2D();
 void* OPS_ComponentElement2d();
+void* OPS_ComponentElement3d();
 void* OPS_ZeroLengthImpact3D();
 void* OPS_ModElasticBeam2d();
 void* OPS_ElasticTimoshenkoBeam2d();
@@ -301,6 +302,16 @@ namespace {
 	    return OPS_ElasticForceBeamColumn2d();
 	} else {
 	    return OPS_ElasticForceBeamColumn3d();
+	}
+    }
+
+  static void* OPS_ComponentElement()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    return OPS_ComponentElement2d();
+	} else {
+	    return OPS_ComponentElement3d();
 	}
     }
 
@@ -634,7 +645,8 @@ namespace {
 	functionMap.insert(std::make_pair("CorotTrussSection", &OPS_CorotTrussSectionElement));
 	functionMap.insert(std::make_pair("zeroLengthContactNTS2D", &OPS_ZeroLengthContactNTS2D));
 	functionMap.insert(std::make_pair("zeroLengthInterface2D", &OPS_ZeroLengthInterface2D));
-	functionMap.insert(std::make_pair("componentElement2d", &OPS_ComponentElement2d));
+	functionMap.insert(std::make_pair("componentElement2d", &OPS_ComponentElement));
+	functionMap.insert(std::make_pair("componentElement", &OPS_ComponentElement));	
 	functionMap.insert(std::make_pair("zeroLengthImpact3D", &OPS_ZeroLengthImpact3D));
 	functionMap.insert(std::make_pair("ModElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("modElasticBeam2d", &OPS_ModElasticBeam2d));
