@@ -7,18 +7,19 @@
 int main(void)
 {
 
-    double H_scalar = 1;
+    double H_scalar = 0;
     double k = 1.0;
     LinearHardeningScalar_EV kH(H_scalar, k);
 
-    double H_tensor = 0;
+    double H_tensor = 1;
     VoigtVector alpha01(0,0,0,0,0,0);
-    VoigtVector alpha02(0,0,0,1,1,1);
+    VoigtVector alpha02(0.,0,0.5,0,0,0);
 
-    LinearHardeningTensor_EV alphaH1(H_tensor, alpha01);
-    LinearHardeningTensor_EV alphaH2(H_tensor, alpha02);
+    LinearHardeningTensor_EV alphaH1(H_tensor, alpha01.deviator()); //alpha should be deviatoric
+    LinearHardeningTensor_EV alphaH2(H_tensor, alpha02.deviator());
 
     VonMises_YF yf1(alphaH1, kH);
+    VonMises_YF yf2(alphaH2, kH);
 
 
     std::vector<VoigtVector> stresses;
@@ -51,14 +52,19 @@ int main(void)
         cout << "\nat sigma (" << index << ") = " << sigma.transpose() << endl;
 
         double yf1_val = yf1(sigma);
-        // VoigtVector m2 = pf2(depsilon, sigma);
         cout << "   yf1_val = " << yf1_val << endl;
+        double yf2_val = yf2(sigma);
+        cout << "   yf2_val = " << yf2_val << endl;
 
         auto yf1_der = yf1.df_dsigma_ij(sigma);
         cout << "   yf1_der = " << yf1_der.transpose() << endl;
+        auto yf2_der = yf2.df_dsigma_ij(sigma);
+        cout << "   yf2_der = " << yf2_der.transpose() << endl;
 
-        auto xi_star_h_star = yf1.xi_star_h_star(depsilon, yf1_der, sigma);
-        cout << "   xi_star_h_star = " << xi_star_h_star << endl;
+        auto xi_star_h_star1 = yf1.xi_star_h_star(depsilon, yf1_der, sigma);
+        cout << "   xi_star_h_star1 = " << xi_star_h_star1 << endl;
+        auto xi_star_h_star2 = yf2.xi_star_h_star(depsilon, yf1_der, sigma);
+        cout << "   xi_star_h_star2 = " << xi_star_h_star2 << endl;
 
 
     }
