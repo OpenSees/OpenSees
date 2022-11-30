@@ -50,7 +50,6 @@
 
 void* OPS_TenNodeTetrahedron()
 {
-	// opserr << "OPS_TenNodeTetrahedron START" << endln;
 	if (OPS_GetNumRemainingInputArgs() < 12)
 	{
 		opserr << "WARNING insufficient arguments\n";
@@ -1730,7 +1729,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 	output.tag("ElementOutput");
 	output.attr("eleType", "TenNodeTetrahedron");
 	output.attr("eleTag", this->getTag());
-	for (int i = 1; i <= 4; i++)
+	for (int i = 1; i <= 10; i++)
 	{
 		sprintf(outputData, "node%d", i);
 		output.attr(outputData, nodePointers[i - 1]->getTag());
@@ -1739,7 +1738,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 
 	if (strcmp(argv[0], "force") == 0 || strcmp(argv[0], "forces") == 0)
 	{
-		for (int i = 1; i <= 4; i++)
+		for (int i = 1; i <= 10; i++)
 		{
 			sprintf(outputData, "P1_%d", i);
 			output.tag("ResponseType", outputData);
@@ -1766,7 +1765,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 	}
 	else if (strcmp(argv[0], "stresses") == 0)
 	{
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			output.tag("GaussPoint");
 			output.attr("number", i + 1);
@@ -1789,7 +1788,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 	}
 	else if (strcmp(argv[0], "strains") == 0)
 	{
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			output.tag("GaussPoint");
 			output.attr("number", i + 1);
@@ -1828,7 +1827,7 @@ TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 
 		// Loop over the integration points
 		int cnt = 0;
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 4; i++) {
 
 			// Get material stress response
 			const Vector &sigma = materialPointers[i]->getStress();
@@ -1845,7 +1844,7 @@ TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 
 		// Loop over the integration points
 		int cnt = 0;
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 4; i++) {
 
 			// Get material stress response
 			const Vector &sigma = materialPointers[i]->getStrain();
