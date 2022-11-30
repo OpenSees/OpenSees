@@ -310,7 +310,7 @@ TenNodeTetrahedron::~TenNodeTetrahedron( )
 	if (Ki != 0)
 		delete Ki;
 
-	opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - END\n";
+	// opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - END\n";
 }
 
 
