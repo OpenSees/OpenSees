@@ -50,7 +50,7 @@
 
 void* OPS_TenNodeTetrahedron()
 {
-	opserr << "OPS_TenNodeTetrahedron START" << endln;
+	// opserr << "OPS_TenNodeTetrahedron START" << endln;
 	if (OPS_GetNumRemainingInputArgs() < 12)
 	{
 		opserr << "WARNING insufficient arguments\n";
@@ -92,7 +92,7 @@ void* OPS_TenNodeTetrahedron()
 
 
 
-	opserr << "OPS_TenNodeTetrahedron END" << endln;
+	// opserr << "OPS_TenNodeTetrahedron END" << endln;
 	return new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2]);
 }
 
@@ -252,7 +252,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	: Element(tag, ELE_TAG_TenNodeTetrahedron),
 	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
 {
-	opserr << "TenNodeTetrahedron::constructor - START\n";
+	// opserr << "TenNodeTetrahedron::constructor - START\n";
 	B.Zero();
 	do_update = 1;
 	connectedExternalNodes(0) = node1 ;
@@ -267,7 +267,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	connectedExternalNodes(9) = node10 ;
 
 
-	opserr << "TenNodeTetrahedron::constructor - material copy\n";
+	// opserr << "TenNodeTetrahedron::constructor - material copy\n";
 	for (int i = 0; i < NumGaussPoints; i++ )
 	{
 		materialPointers[i] = theMaterial.getCopy("ThreeDimensional") ;
@@ -284,14 +284,14 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 	b[1] = b2;
 	b[2] = b3;
 
-	opserr << "TenNodeTetrahedron::constructor - init disp\n";
+	// opserr << "TenNodeTetrahedron::constructor - init disp\n";
 
 	for (int i = 0; i < NumNodes; ++i)
 	{
 		initDisp[i] = Vector(3);
 		initDisp[i].Zero();
 	}
-	opserr << "TenNodeTetrahedron::constructor - END\n";
+	// opserr << "TenNodeTetrahedron::constructor - END\n";
 }
 //******************************************************************
 
@@ -300,7 +300,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 TenNodeTetrahedron::~TenNodeTetrahedron( )
 {
 
-	opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - START\n";
+	// opserr << "TenNodeTetrahedron::~TenNodeTetrahedron - START\n";
 	for (int i = 0 ; i < NumGaussPoints; i++ ) {
 		delete materialPointers[i] ;
 	} //end for i
@@ -318,7 +318,7 @@ TenNodeTetrahedron::~TenNodeTetrahedron( )
 //set domain
 void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 {
-	opserr << "TenNodeTetrahedron::setDomain( Domain *theDomain ) tag = " << this->getTag() << endln;
+	// opserr << "TenNodeTetrahedron::setDomain( Domain *theDomain ) tag = " << this->getTag() << endln;
 	int i ;
 
 	//node pointers
@@ -330,7 +330,7 @@ void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 
 	this->DomainComponent::setDomain(theDomain);
 
-	opserr << "TenNodeTetrahedron::setDomain - END\n";
+	// opserr << "TenNodeTetrahedron::setDomain - END\n";
 }
 
 
@@ -969,7 +969,7 @@ int
 TenNodeTetrahedron::update(void)
 {
 
-	opserr << "TenNodeTetrahedron::update -- START" << endln;
+	// opserr << "TenNodeTetrahedron::update -- START" << endln;
 	if (do_update == 0)
 	{
 		stiff.Zero();
@@ -979,7 +979,7 @@ TenNodeTetrahedron::update(void)
 		return 0;
 	}
 
-	opserr << "TenNodeTetrahedron::update -- 1" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 1" << endln;
 
 	//strains ordered : eps11, eps22, eps33, 2*eps12, 2*eps23, 2*eps31
 
@@ -1025,11 +1025,11 @@ TenNodeTetrahedron::update(void)
 	//-------------------------------------------------------
 
 
-	opserr << "TenNodeTetrahedron::update -- 2" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 2" << endln;
 	//compute basis vectors and local nodal coordinates
 	computeBasis( ) ;
 
-	opserr << "TenNodeTetrahedron::update -- 3" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 3" << endln;
 	//gauss loop to compute and save shape functions
 
 	int count = 0 ;
@@ -1065,13 +1065,13 @@ TenNodeTetrahedron::update(void)
 		} //end for j
 	} // end for i
 
-	opserr << "TenNodeTetrahedron::update -- 4" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 4" << endln;
 
 	//gauss loop
 	for ( i = 0; i < numberGauss; i++ )
 	{
 
-		opserr << "TenNodeTetrahedron::update -- 4.1 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.1 i = " << i << endln;
 		//extract shape functions from saved array
 		for ( p = 0; p < nShape; p++ )
 		{
@@ -1083,12 +1083,12 @@ TenNodeTetrahedron::update(void)
 
 		//zero the strains
 		strain.Zero( ) ;
-		opserr << "TenNodeTetrahedron::update -- 4.2 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.2 i = " << i << endln;
 
 		// j-node loop to compute strain
 		for ( j = 0; j < numberNodes; j++ )  {
 
-			opserr << "TenNodeTetrahedron::update -- 4.2.1 j = " << j << endln;
+			// opserr << "TenNodeTetrahedron::update -- 4.2.1 j = " << j << endln;
 			/**************** fmk - unwinding for performance
 			//compute B matrix
 			BJ = computeB( j, shp ) ;
@@ -1143,16 +1143,16 @@ TenNodeTetrahedron::update(void)
 			strain(5) += b50 * ul0 + b52 * ul2;
 
 		} // end for j
-		opserr << "TenNodeTetrahedron::update -- 4.3 i = " << i << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.3 i = " << i << endln;
 
 		//send the strain to the material
 		success = materialPointers[i]->setTrialStrain( strain ) ;
 
-		opserr << "TenNodeTetrahedron::update -- 4.4 i = " << i << "strain = " << strain << endln;
+		// opserr << "TenNodeTetrahedron::update -- 4.4 i = " << i << "strain = " << strain << endln;
 
 	} //end for i gauss loop
-	opserr << "TenNodeTetrahedron::update -- 5" << endln;
-	opserr << "TenNodeTetrahedron::update -- END" << endln;
+	// opserr << "TenNodeTetrahedron::update -- 5" << endln;
+	// opserr << "TenNodeTetrahedron::update -- END" << endln;
 	return 0;
 }
 
@@ -1927,14 +1927,14 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 		if (doit == 1)
 		{
 			Domain * mydomain = this->getDomain();
-			opserr << "TenNodeTetrahedron::updateParameter - ele tag = " << this->getTag()  << " - sets init disp ";
+			// opserr << "TenNodeTetrahedron::updateParameter - ele tag = " << this->getTag()  << " - sets init disp ";
 			for ( int i = 0; i < NumNodes; i++ )
 			{
 				nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
 				initDisp[i] = nodePointers[i]->getDisp();
-				opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+				// opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
 			}
-			opserr << endln;
+			// opserr << endln;
 		}
 		return 0;
 	}
@@ -1945,14 +1945,14 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 		{
 			do_update = 1;
 			Domain * mydomain = this->getDomain();
-			opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
+			// opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
 			for ( int i = 0; i < NumNodes; i++ )
 			{
 				nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
 				initDisp[i] = nodePointers[i]->getDisp();
-				opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+				// opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
 			}
-			opserr << endln;
+			// opserr << endln;
 		}
 		if (new_do_update == 0)
 		{
@@ -1979,98 +1979,137 @@ void
 TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumNodes], const double xl[3][NumNodes]   )
 {
 	// Mathematica formulation by Carlos Felippa.
+	// Modified by José Larenas so that it works when
+	// switching N9 with N10 (all modifications can be
+	// seen with a "*").
+
 	double zeta4 = 1 - zeta[0] - zeta[1] - zeta[2];
 
-	double x12 = xl[0][0] - xl[0][1];
-	double x13 = xl[0][0] - xl[0][2];
-	double x14 = xl[0][0] - xl[0][3];
-	double x23 = xl[0][1] - xl[0][2];
-	double x24 = xl[0][1] - xl[0][3];
-	double x34 = xl[0][2] - xl[0][3];
+	// double x12 = xl[0][0] - xl[0][1];
+	// double x13 = xl[0][0] - xl[0][2];
+	// double x14 = xl[0][0] - xl[0][3];
+	// double x23 = xl[0][1] - xl[0][2];
+	// double x24 = xl[0][1] - xl[0][3];
+	// double x34 = xl[0][2] - xl[0][3];
 
-	double x21 = -x12;
-	double x31 = -x13;
-	double x41 = -x14;
-	double x32 = -x23;
-	double x42 = -x24;
-	double x43 = -x34;
+	// double x21 = -x12;
+	// double x31 = -x13;
+	// double x41 = -x14;
+	// double x32 = -x23;
+	// double x42 = -x24;
+	// double x43 = -x34;
 
-	double y12 = xl[1][0] - xl[1][1];
-	double y13 = xl[1][0] - xl[1][2];
-	double y14 = xl[1][0] - xl[1][3];
-	double y23 = xl[1][1] - xl[1][2];
-	double y24 = xl[1][1] - xl[1][3];
-	double y34 = xl[1][2] - xl[1][3];
+	// double y12 = xl[1][0] - xl[1][1];
+	// double y13 = xl[1][0] - xl[1][2];
+	// double y14 = xl[1][0] - xl[1][3];
+	// double y23 = xl[1][1] - xl[1][2];
+	// double y24 = xl[1][1] - xl[1][3];
+	// double y34 = xl[1][2] - xl[1][3];
 
-	double y21 = -y12;
-	double y31 = -y13;
-	double y41 = -y14;
-	double y32 = -y23;
-	double y42 = -y24;
-	double y43 = -y34;
+	// double y21 = -y12;
+	// double y31 = -y13;
+	// double y41 = -y14;
+	// double y32 = -y23;
+	// double y42 = -y24;
+	// double y43 = -y34;
 
-	double z12 = xl[2][0] - xl[2][1];
-	double z13 = xl[2][0] - xl[2][2];
-	double z14 = xl[2][0] - xl[2][3];
-	double z23 = xl[2][1] - xl[2][2];
-	double z24 = xl[2][1] - xl[2][3];
-	double z34 = xl[2][2] - xl[2][3];
+	// double z12 = xl[2][0] - xl[2][1];
+	// double z13 = xl[2][0] - xl[2][2];
+	// double z14 = xl[2][0] - xl[2][3];
+	// double z23 = xl[2][1] - xl[2][2];
+	// double z24 = xl[2][1] - xl[2][3];
+	// double z34 = xl[2][2] - xl[2][3];
 
-	double z21 = -z12;
-	double z31 = -z13;
-	double z41 = -z14;
-	double z32 = -z23;
-	double z42 = -z24;
-	double z43 = -z34;
+	// double z21 = -z12;
+	// double z31 = -z13;
+	// double z41 = -z14;
+	// double z32 = -z23;
+	// double z42 = -z24;
+	// double z43 = -z34;
 
-	double a1 = y42 * z32 - y32 * z42; double b1 = x32 * z42 - x42 * z32; double c1 = x42 * y32 - x32 * y42;
-	double a2 = y31 * z43 - y34 * z13; double b2 = x43 * z31 - x13 * z34; double c2 = x31 * y43 - x34 * y13;
-	double a3 = y24 * z14 - y14 * z24; double b3 = x14 * z24 - x24 * z14; double c3 = x24 * y14 - x14 * y24;
-	double a4 = y13 * z21 - y12 * z31; double b4 = x21 * z13 - x31 * z12; double c4 = x13 * y21 - x12 * y31;
+	// *
+	double x1  = xl[0][0]; double y1  = xl[1][0] ; double z1  = xl[2][0]; // *
+	double x2  = xl[0][1]; double y2  = xl[1][1] ; double z2  = xl[2][1]; // *
+	double x3  = xl[0][2]; double y3  = xl[1][2] ; double z3  = xl[2][2]; // *
+	double x4  = xl[0][3]; double y4  = xl[1][3] ; double z4  = xl[2][3]; // *
+	double x5  = xl[0][4]; double y5  = xl[1][4] ; double z5  = xl[2][4]; // *
+	double x6  = xl[0][5]; double y6  = xl[1][5] ; double z6  = xl[2][5]; // *
+	double x7  = xl[0][6]; double y7  = xl[1][6] ; double z7  = xl[2][6]; // *
+	double x8  = xl[0][7]; double y8  = xl[1][7] ; double z8  = xl[2][7]; // *
+	double x9  = xl[0][8]; double y9  = xl[1][8] ; double z9  = xl[2][8]; // *
+	double x10 = xl[0][9]; double y10 = xl[1][9] ; double z10 = xl[2][9]; // *
+
+	// * 
+	double a1 = y2*(z4-z3)-y3*(z4-z2)+y4*(z3-z2) ; double b1 = -x2*(z4-z3)+x3*(z4-z2)-x4*(z3-z2); double c1 = x2*(y4-y3)-x3*(y4-y2)+x4*(y3-y2);
+	// double a1 = y42 * z32 - y32 * z42; double b1 = x32 * z42 - x42 * z32; double c1 = x42 * y32 - x32 * y42;
+	double a2 = -y1*(z4-z3)+y3*(z4-z1)-y4*(z3-z1); double b2 = x1*(z4-z3)-x3*(z4-z1)+x4*(z3-z1) ; double c2 = -x1*(y4-y3)+x3*(y4-y1)-x4*(y3-y1);
+	// double a2 = y31 * z43 - y34 * z13; double b2 = x43 * z31 - x13 * z34; double c2 = x31 * y43 - x34 * y13;
+	double a3 = y1*(z4-z2)-y2*(z4-z1)+y4*(z2-z1) ; double b3 = -x1*(z4-z2)+x2*(z4-z1)-x4*(z2-z1); double c3 = x1*(y4-y2)-x2*(y4-y1)+x4*(y2-y1);
+	// double a3 = y24 * z14 - y14 * z24; double b3 = x14 * z24 - x24 * z14; double c3 = x24 * y14 - x14 * y24;
+	double a4 = -y1*(z3-z2)+y2*(z3-z1)-y3*(z2-z1); double b4 = x1*(z3-z2)-x2*(z3-z1)+x3*(z2-z1) ; double c4 = -x1*(y3-y2)+x2*(y3-y1)-x3*(y2-y1);
+	// double a4 = y13 * z21 - y12 * z31; double b4 = x21 * z13 - x31 * z12; double c4 = x13 * y21 - x12 * y31;
 
 	// dNi/dzeta1
-	double dN1_dzeta1 = 4*zeta[0]-1; double dN2_dzeta1 = 0;
-	double dN3_dzeta1 = 0; double dN4_dzeta1 = 0;
-	double dN5_dzeta1 = 4*zeta[1]; double dN6_dzeta1 = 0;
-	double dN7_dzeta1 = 4*zeta[2]; double dN8_dzeta1 = 4*zeta4;
-	double dN9_dzeta1 = 0; double dN10_dzeta1 = 0;
+	double dN1_dzeta1  = 4*zeta[0]-1; double dN2_dzeta1 = 0;
+	double dN3_dzeta1  = 0          ; double dN4_dzeta1 = 0;
+	double dN5_dzeta1  = 4*zeta[1]  ; double dN6_dzeta1 = 0;
+	double dN7_dzeta1  = 4*zeta[2]  ; double dN8_dzeta1 = 4*zeta4;
+	double dN10_dzeta1 = 0          ; double dN9_dzeta1 = 0; // *
+	// double dN9_dzeta1 = 0; double dN10_dzeta1 = 0;
 
 	// dNi/dzeta2
-	double dN1_dzeta2 = 0; double dN2_dzeta2 = 4*zeta[1]-1;
-	double dN3_dzeta2 = 0; double dN4_dzeta2 = 0;
-	double dN5_dzeta2 = 4*zeta[0]; double dN6_dzeta2 = 4*zeta[2];
-	double dN7_dzeta2 = 0; double dN8_dzeta2 = 0;
-	double dN9_dzeta2 = 4*zeta4; double dN10_dzeta2 = 0;
+	double dN1_dzeta2  = 0        ; double dN2_dzeta2 = 4*zeta[1]-1;
+	double dN3_dzeta2  = 0        ; double dN4_dzeta2 = 0;
+	double dN5_dzeta2  = 4*zeta[0]; double dN6_dzeta2 = 4*zeta[2];
+	double dN7_dzeta2  = 0        ; double dN8_dzeta2 = 0;
+	double dN10_dzeta2 = 4*zeta4  ; double dN9_dzeta2 = 0; // *
+	// double dN9_dzeta2 = 4*zeta4; double dN10_dzeta2 = 0;
 
 	// dNi/dzeta3
-	double dN1_dzeta3 = 0; double dN2_dzeta3 = 0;
-	double dN3_dzeta3 = 4*zeta[2]-1; double dN4_dzeta3 = 0;
-	double dN5_dzeta3 = 0; double dN6_dzeta3 = 4*zeta[1];
-	double dN7_dzeta3 = 4*zeta[0]; double dN8_dzeta3 = 0;
-	double dN9_dzeta3 = 0; double dN10_dzeta3 = 4*zeta4;
+	double dN1_dzeta3  = 0          ; double dN2_dzeta3 = 0;
+	double dN3_dzeta3  = 4*zeta[2]-1; double dN4_dzeta3 = 0;
+	double dN5_dzeta3  = 0          ; double dN6_dzeta3 = 4*zeta[1];
+	double dN7_dzeta3  = 4*zeta[0]  ; double dN8_dzeta3 = 0;
+	double dN10_dzeta3 = 0          ; double dN9_dzeta3 = 4*zeta4; // *
+	// double dN9_dzeta3 = 0; double dN10_dzeta3 = 4*zeta4;
 
 	// dNi/dzeta3
-	double dN1_dzeta4 = 0; double dN2_dzeta4 = 0;
-	double dN3_dzeta4 = 0; double dN4_dzeta4 = 4*zeta4-1;
-	double dN5_dzeta4 = 0; double dN6_dzeta4 = 0;
-	double dN7_dzeta4 = 0; double dN8_dzeta4 = 4*zeta[0];
-	double dN9_dzeta4 = 4*zeta[1]; double dN10_dzeta4 = 4*zeta[2];
+	double dN1_dzeta4  = 0        ; double dN2_dzeta4 = 0;
+	double dN3_dzeta4  = 0        ; double dN4_dzeta4 = 4*zeta4-1;
+	double dN5_dzeta4  = 0        ; double dN6_dzeta4 = 0;
+	double dN7_dzeta4  = 0        ; double dN8_dzeta4 = 4*zeta[0];
+	double dN10_dzeta4 = 4*zeta[1]; double dN9_dzeta4 = 4*zeta[2]; // *
+	// double dN9_dzeta4 = 4*zeta[1]; double dN10_dzeta4 = 4*zeta[2];
 
+	// *
+	double Jx1 = x1*dN1_dzeta1 + x2*dN2_dzeta1 + x3*dN3_dzeta1 + x4*dN4_dzeta1 + x5*dN5_dzeta1 + x6*dN6_dzeta1 + x7*dN7_dzeta1 + x8*dN8_dzeta1 + x9*dN9_dzeta1 + x10*dN10_dzeta1; // *
+	double Jy1 = y1*dN1_dzeta1 + y2*dN2_dzeta1 + y3*dN3_dzeta1 + y4*dN4_dzeta1 + y5*dN5_dzeta1 + y6*dN6_dzeta1 + y7*dN7_dzeta1 + y8*dN8_dzeta1 + y9*dN9_dzeta1 + y10*dN10_dzeta1; // *
+	double Jz1 = z1*dN1_dzeta1 + z2*dN2_dzeta1 + z3*dN3_dzeta1 + z4*dN4_dzeta1 + z5*dN5_dzeta1 + z6*dN6_dzeta1 + z7*dN7_dzeta1 + z8*dN8_dzeta1 + z9*dN9_dzeta1 + z10*dN10_dzeta1; // *
 	// Terms in Jacobian Matrix (17.12)
-	double Jx1 = xl[0][0]*(4*zeta[0]-1) + 4*xl[0][4]*zeta[1] + 4*xl[0][6]*zeta[2] + 4*xl[0][7]*zeta4;
-	double Jx2 = xl[0][1]*(4*zeta[1]-1) + 4*xl[0][5]*zeta[2] + 4*xl[0][4]*zeta[0] + 4*xl[0][8]*zeta4;
-	double Jx3 = xl[0][2]*(4*zeta[2]-1) + 4*xl[0][6]*zeta[0] + 4*xl[0][5]*zeta[1] + 4*xl[0][9]*zeta4;
-	double Jx4 = xl[0][3]*(4*zeta4-1) + 4*xl[0][7]*zeta[0] + 4*xl[0][8]*zeta[1] + 4*xl[0][9]*zeta[2];
+	// double Jx1 = xl[0][0]*(4*zeta[0]-1) + 4*xl[0][4]*zeta[1] + 4*xl[0][6]*zeta[2] + 4*xl[0][7]*zeta4;
+	// double Jy1 = xl[1][0]*(4*zeta[0]-1) + 4*xl[1][4]*zeta[1] + 4*xl[1][6]*zeta[2] + 4*xl[1][7]*zeta4;
+	// double Jz1 = xl[2][0]*(4*zeta[0]-1) + 4*xl[2][4]*zeta[1] + 4*xl[2][6]*zeta[2] + 4*xl[2][7]*zeta4;
 
-	double Jy1 = xl[1][0]*(4*zeta[0]-1) + 4*xl[1][4]*zeta[1] + 4*xl[1][6]*zeta[2] + 4*xl[1][7]*zeta4;
-	double Jy2 = xl[1][1]*(4*zeta[1]-1) + 4*xl[1][5]*zeta[2] + 4*xl[1][4]*zeta[0] + 4*xl[1][8]*zeta4;
-	double Jy3 = xl[1][2]*(4*zeta[2]-1) + 4*xl[1][6]*zeta[0] + 4*xl[1][5]*zeta[1] + 4*xl[1][9]*zeta4;
-	double Jy4 = xl[1][3]*(4*zeta4-1) + 4*xl[1][7]*zeta[0] + 4*xl[1][8]*zeta[1] + 4*xl[1][9]*zeta[2];
+	double Jx2 = x1*dN1_dzeta2 + x2*dN2_dzeta2 + x3*dN3_dzeta2 + x4*dN4_dzeta2 + x5*dN5_dzeta2 + x6*dN6_dzeta2 + x7*dN7_dzeta2 + x8*dN8_dzeta2 + x9*dN9_dzeta2 + x10*dN10_dzeta2; // *
+	double Jy2 = y1*dN1_dzeta2 + y2*dN2_dzeta2 + y3*dN3_dzeta2 + y4*dN4_dzeta2 + y5*dN5_dzeta2 + y6*dN6_dzeta2 + y7*dN7_dzeta2 + y8*dN8_dzeta2 + y9*dN9_dzeta2 + y10*dN10_dzeta2; // *
+	double Jz2 = z1*dN1_dzeta2 + z2*dN2_dzeta2 + z3*dN3_dzeta2 + z4*dN4_dzeta2 + z5*dN5_dzeta2 + z6*dN6_dzeta2 + z7*dN7_dzeta2 + z8*dN8_dzeta2 + z9*dN9_dzeta2 + z10*dN10_dzeta2; // *
+	// double Jx2 = xl[0][1]*(4*zeta[1]-1) + 4*xl[0][5]*zeta[2] + 4*xl[0][4]*zeta[0] + 4*xl[0][8]*zeta4;
+	// double Jy2 = xl[1][1]*(4*zeta[1]-1) + 4*xl[1][5]*zeta[2] + 4*xl[1][4]*zeta[0] + 4*xl[1][8]*zeta4;
+	// double Jz2 = xl[2][1]*(4*zeta[1]-1) + 4*xl[2][5]*zeta[2] + 4*xl[2][4]*zeta[0] + 4*xl[2][8]*zeta4;
 
-	double Jz1 = xl[2][0]*(4*zeta[0]-1) + 4*xl[2][4]*zeta[1] + 4*xl[2][6]*zeta[2] + 4*xl[2][7]*zeta4;
-	double Jz2 = xl[2][1]*(4*zeta[1]-1) + 4*xl[2][5]*zeta[2] + 4*xl[2][4]*zeta[0] + 4*xl[2][8]*zeta4;
-	double Jz3 = xl[2][2]*(4*zeta[2]-1) + 4*xl[2][6]*zeta[0] + 4*xl[2][5]*zeta[1] + 4*xl[2][9]*zeta4;
-	double Jz4 = xl[2][3]*(4*zeta4-1) + 4*xl[2][7]*zeta[0] + 4*xl[2][8]*zeta[1] + 4*xl[2][9]*zeta[2];
+	double Jx3 = x1*dN1_dzeta3 + x2*dN2_dzeta3 + x3*dN3_dzeta3 + x4*dN4_dzeta3 + x5*dN5_dzeta3 + x6*dN6_dzeta3 + x7*dN7_dzeta3 + x8*dN8_dzeta3 + x9*dN9_dzeta3 + x10*dN10_dzeta3; // *
+	double Jy3 = y1*dN1_dzeta3 + y2*dN2_dzeta3 + y3*dN3_dzeta3 + y4*dN4_dzeta3 + y5*dN5_dzeta3 + y6*dN6_dzeta3 + y7*dN7_dzeta3 + y8*dN8_dzeta3 + y9*dN9_dzeta3 + y10*dN10_dzeta3; // *
+	double Jz3 = z1*dN1_dzeta3 + z2*dN2_dzeta3 + z3*dN3_dzeta3 + z4*dN4_dzeta3 + z5*dN5_dzeta3 + z6*dN6_dzeta3 + z7*dN7_dzeta3 + z8*dN8_dzeta3 + z9*dN9_dzeta3 + z10*dN10_dzeta3; // *
+	// double Jx3 = xl[0][2]*(4*zeta[2]-1) + 4*xl[0][6]*zeta[0] + 4*xl[0][5]*zeta[1] + 4*xl[0][9]*zeta4;
+	// double Jy3 = xl[1][2]*(4*zeta[2]-1) + 4*xl[1][6]*zeta[0] + 4*xl[1][5]*zeta[1] + 4*xl[1][9]*zeta4;
+	// double Jz3 = xl[2][2]*(4*zeta[2]-1) + 4*xl[2][6]*zeta[0] + 4*xl[2][5]*zeta[1] + 4*xl[2][9]*zeta4;
+
+	double Jx4 = x1*dN1_dzeta4 + x2*dN2_dzeta4 + x3*dN3_dzeta4 + x4*dN4_dzeta4 + x5*dN5_dzeta4 + x6*dN6_dzeta4 + x7*dN7_dzeta4 + x8*dN8_dzeta4 + x9*dN9_dzeta4 + x10*dN10_dzeta4; // *
+	double Jy4 = y1*dN1_dzeta4 + y2*dN2_dzeta4 + y3*dN3_dzeta4 + y4*dN4_dzeta4 + y5*dN5_dzeta4 + y6*dN6_dzeta4 + y7*dN7_dzeta4 + y8*dN8_dzeta4 + y9*dN9_dzeta4 + y10*dN10_dzeta4; // *
+	double Jz4 = z1*dN1_dzeta4 + z2*dN2_dzeta4 + z3*dN3_dzeta4 + z4*dN4_dzeta4 + z5*dN5_dzeta4 + z6*dN6_dzeta4 + z7*dN7_dzeta4 + z8*dN8_dzeta4 + z9*dN9_dzeta4 + z10*dN10_dzeta4; // *
+	// double Jx4 = xl[0][3]*(4*zeta4-1) + 4*xl[0][7]*zeta[0] + 4*xl[0][8]*zeta[1] + 4*xl[0][9]*zeta[2];
+	// double Jy4 = xl[1][3]*(4*zeta4-1) + 4*xl[1][7]*zeta[0] + 4*xl[1][8]*zeta[1] + 4*xl[1][9]*zeta[2];
+	// double Jz4 = xl[2][3]*(4*zeta4-1) + 4*xl[2][7]*zeta[0] + 4*xl[2][8]*zeta[1] + 4*xl[2][9]*zeta[2];
 
 	// Terms in simplified Jacobian Matrix (3x3)
 	double t1 = Jx2-Jx1; double t2 = Jx3-Jx1; double t3 = Jx4-Jx1;
@@ -2084,42 +2123,42 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 	xsj = Jdet;
 
 	// qx1 - qx10 (17.24)
-	shp[0][0] = 1/(6.0*Jdet)*(dN1_dzeta1*a1 + dN1_dzeta2*a2 + dN1_dzeta3*a3 + dN1_dzeta4*a4);
-	shp[0][1] = 1/(6.0*Jdet)*(dN2_dzeta1*a1 + dN2_dzeta2*a2 + dN2_dzeta3*a3 + dN2_dzeta4*a4);
-	shp[0][2] = 1/(6.0*Jdet)*(dN3_dzeta1*a1 + dN3_dzeta2*a2 + dN3_dzeta3*a3 + dN3_dzeta4*a4);
-	shp[0][3] = 1/(6.0*Jdet)*(dN4_dzeta1*a1 + dN4_dzeta2*a2 + dN4_dzeta3*a3 + dN4_dzeta4*a4);
-	shp[0][4] = 1/(6.0*Jdet)*(dN5_dzeta1*a1 + dN5_dzeta2*a2 + dN5_dzeta3*a3 + dN5_dzeta4*a4);
-	shp[0][5] = 1/(6.0*Jdet)*(dN6_dzeta1*a1 + dN6_dzeta2*a2 + dN6_dzeta3*a3 + dN6_dzeta4*a4);
-	shp[0][6] = 1/(6.0*Jdet)*(dN7_dzeta1*a1 + dN7_dzeta2*a2 + dN7_dzeta3*a3 + dN7_dzeta4*a4);
-	shp[0][7] = 1/(6.0*Jdet)*(dN8_dzeta1*a1 + dN8_dzeta2*a2 + dN8_dzeta3*a3 + dN8_dzeta4*a4);
-	shp[0][8] = 1/(6.0*Jdet)*(dN9_dzeta1*a1 + dN9_dzeta2*a2 + dN9_dzeta3*a3 + dN9_dzeta4*a4);
+	shp[0][0] = 1/(6.0*Jdet)*(dN1_dzeta1*a1  + dN1_dzeta2*a2  + dN1_dzeta3*a3  + dN1_dzeta4*a4);
+	shp[0][1] = 1/(6.0*Jdet)*(dN2_dzeta1*a1  + dN2_dzeta2*a2  + dN2_dzeta3*a3  + dN2_dzeta4*a4);
+	shp[0][2] = 1/(6.0*Jdet)*(dN3_dzeta1*a1  + dN3_dzeta2*a2  + dN3_dzeta3*a3  + dN3_dzeta4*a4);
+	shp[0][3] = 1/(6.0*Jdet)*(dN4_dzeta1*a1  + dN4_dzeta2*a2  + dN4_dzeta3*a3  + dN4_dzeta4*a4);
+	shp[0][4] = 1/(6.0*Jdet)*(dN5_dzeta1*a1  + dN5_dzeta2*a2  + dN5_dzeta3*a3  + dN5_dzeta4*a4);
+	shp[0][5] = 1/(6.0*Jdet)*(dN6_dzeta1*a1  + dN6_dzeta2*a2  + dN6_dzeta3*a3  + dN6_dzeta4*a4);
+	shp[0][6] = 1/(6.0*Jdet)*(dN7_dzeta1*a1  + dN7_dzeta2*a2  + dN7_dzeta3*a3  + dN7_dzeta4*a4);
+	shp[0][7] = 1/(6.0*Jdet)*(dN8_dzeta1*a1  + dN8_dzeta2*a2  + dN8_dzeta3*a3  + dN8_dzeta4*a4);
+	shp[0][8] = 1/(6.0*Jdet)*(dN9_dzeta1*a1  + dN9_dzeta2*a2  + dN9_dzeta3*a3  + dN9_dzeta4*a4);
 	shp[0][9] = 1/(6.0*Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
 
 	// qy1 - qy10 (17.24)
-	shp[1][0] = 1/(6.0*Jdet)*(dN1_dzeta1*b1 + dN1_dzeta2*b2 + dN1_dzeta3*b3 + dN1_dzeta4*b4);
-	shp[1][1] = 1/(6.0*Jdet)*(dN2_dzeta1*b1 + dN2_dzeta2*b2 + dN2_dzeta3*b3 + dN2_dzeta4*b4);
-	shp[1][2] = 1/(6.0*Jdet)*(dN3_dzeta1*b1 + dN3_dzeta2*b2 + dN3_dzeta3*b3 + dN3_dzeta4*b4);
-	shp[1][3] = 1/(6.0*Jdet)*(dN4_dzeta1*b1 + dN4_dzeta2*b2 + dN4_dzeta3*b3 + dN4_dzeta4*b4);
-	shp[1][4] = 1/(6.0*Jdet)*(dN5_dzeta1*b1 + dN5_dzeta2*b2 + dN5_dzeta3*b3 + dN5_dzeta4*b4);
-	shp[1][5] = 1/(6.0*Jdet)*(dN6_dzeta1*b1 + dN6_dzeta2*b2 + dN6_dzeta3*b3 + dN6_dzeta4*b4);
-	shp[1][6] = 1/(6.0*Jdet)*(dN7_dzeta1*b1 + dN7_dzeta2*b2 + dN7_dzeta3*b3 + dN7_dzeta4*b4);
-	shp[1][7] = 1/(6.0*Jdet)*(dN8_dzeta1*b1 + dN8_dzeta2*b2 + dN8_dzeta3*b3 + dN8_dzeta4*b4);
-	shp[1][8] = 1/(6.0*Jdet)*(dN9_dzeta1*b1 + dN9_dzeta2*b2 + dN9_dzeta3*b3 + dN9_dzeta4*b4);
+	shp[1][0] = 1/(6.0*Jdet)*(dN1_dzeta1*b1  + dN1_dzeta2*b2  + dN1_dzeta3*b3  + dN1_dzeta4*b4);
+	shp[1][1] = 1/(6.0*Jdet)*(dN2_dzeta1*b1  + dN2_dzeta2*b2  + dN2_dzeta3*b3  + dN2_dzeta4*b4);
+	shp[1][2] = 1/(6.0*Jdet)*(dN3_dzeta1*b1  + dN3_dzeta2*b2  + dN3_dzeta3*b3  + dN3_dzeta4*b4);
+	shp[1][3] = 1/(6.0*Jdet)*(dN4_dzeta1*b1  + dN4_dzeta2*b2  + dN4_dzeta3*b3  + dN4_dzeta4*b4);
+	shp[1][4] = 1/(6.0*Jdet)*(dN5_dzeta1*b1  + dN5_dzeta2*b2  + dN5_dzeta3*b3  + dN5_dzeta4*b4);
+	shp[1][5] = 1/(6.0*Jdet)*(dN6_dzeta1*b1  + dN6_dzeta2*b2  + dN6_dzeta3*b3  + dN6_dzeta4*b4);
+	shp[1][6] = 1/(6.0*Jdet)*(dN7_dzeta1*b1  + dN7_dzeta2*b2  + dN7_dzeta3*b3  + dN7_dzeta4*b4);
+	shp[1][7] = 1/(6.0*Jdet)*(dN8_dzeta1*b1  + dN8_dzeta2*b2  + dN8_dzeta3*b3  + dN8_dzeta4*b4);
+	shp[1][8] = 1/(6.0*Jdet)*(dN9_dzeta1*b1  + dN9_dzeta2*b2  + dN9_dzeta3*b3  + dN9_dzeta4*b4);
 	shp[1][9] = 1/(6.0*Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
 
 	// qz1 - qz10 (17.24)
-	shp[2][0] = 1/(6.0*Jdet)*(dN1_dzeta1*c1 + dN1_dzeta2*c2 + dN1_dzeta3*c3 + dN1_dzeta4*c4);
-	shp[2][1] = 1/(6.0*Jdet)*(dN2_dzeta1*c1 + dN2_dzeta2*c2 + dN2_dzeta3*c3 + dN2_dzeta4*c4);
-	shp[2][2] = 1/(6.0*Jdet)*(dN3_dzeta1*c1 + dN3_dzeta2*c2 + dN3_dzeta3*c3 + dN3_dzeta4*c4);
-	shp[2][3] = 1/(6.0*Jdet)*(dN4_dzeta1*c1 + dN4_dzeta2*c2 + dN4_dzeta3*c3 + dN4_dzeta4*c4);
-	shp[2][4] = 1/(6.0*Jdet)*(dN5_dzeta1*c1 + dN5_dzeta2*c2 + dN5_dzeta3*c3 + dN5_dzeta4*c4);
-	shp[2][5] = 1/(6.0*Jdet)*(dN6_dzeta1*c1 + dN6_dzeta2*c2 + dN6_dzeta3*c3 + dN6_dzeta4*c4);
-	shp[2][6] = 1/(6.0*Jdet)*(dN7_dzeta1*c1 + dN7_dzeta2*c2 + dN7_dzeta3*c3 + dN7_dzeta4*c4);
-	shp[2][7] = 1/(6.0*Jdet)*(dN8_dzeta1*c1 + dN8_dzeta2*c2 + dN8_dzeta3*c3 + dN8_dzeta4*c4);
-	shp[2][8] = 1/(6.0*Jdet)*(dN9_dzeta1*c1 + dN9_dzeta2*c2 + dN9_dzeta3*c3 + dN9_dzeta4*c4);
+	shp[2][0] = 1/(6.0*Jdet)*(dN1_dzeta1*c1  + dN1_dzeta2*c2  + dN1_dzeta3*c3  + dN1_dzeta4*c4);
+	shp[2][1] = 1/(6.0*Jdet)*(dN2_dzeta1*c1  + dN2_dzeta2*c2  + dN2_dzeta3*c3  + dN2_dzeta4*c4);
+	shp[2][2] = 1/(6.0*Jdet)*(dN3_dzeta1*c1  + dN3_dzeta2*c2  + dN3_dzeta3*c3  + dN3_dzeta4*c4);
+	shp[2][3] = 1/(6.0*Jdet)*(dN4_dzeta1*c1  + dN4_dzeta2*c2  + dN4_dzeta3*c3  + dN4_dzeta4*c4);
+	shp[2][4] = 1/(6.0*Jdet)*(dN5_dzeta1*c1  + dN5_dzeta2*c2  + dN5_dzeta3*c3  + dN5_dzeta4*c4);
+	shp[2][5] = 1/(6.0*Jdet)*(dN6_dzeta1*c1  + dN6_dzeta2*c2  + dN6_dzeta3*c3  + dN6_dzeta4*c4);
+	shp[2][6] = 1/(6.0*Jdet)*(dN7_dzeta1*c1  + dN7_dzeta2*c2  + dN7_dzeta3*c3  + dN7_dzeta4*c4);
+	shp[2][7] = 1/(6.0*Jdet)*(dN8_dzeta1*c1  + dN8_dzeta2*c2  + dN8_dzeta3*c3  + dN8_dzeta4*c4);
+	shp[2][8] = 1/(6.0*Jdet)*(dN9_dzeta1*c1  + dN9_dzeta2*c2  + dN9_dzeta3*c3  + dN9_dzeta4*c4);
 	shp[2][9] = 1/(6.0*Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
 
-	// N1 - N10
+	// N1 - N10 (notice N9 and N10 are switched up)
 	shp[3][0] = zeta[0]*(2*zeta[0]-1);
 	shp[3][1] = zeta[1]*(2*zeta[1]-1);
 	shp[3][2] = zeta[2]*(2*zeta[2]-1);
@@ -2128,8 +2167,10 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 	shp[3][5] = 4*zeta[1]*zeta[2];
 	shp[3][6] = 4*zeta[2]*zeta[0];
 	shp[3][7] = 4*zeta[0]*zeta4;
-	shp[3][8] = 4*zeta[1]*zeta4;
-	shp[3][9] = 4*zeta[2]*zeta4;
+	shp[3][9] = 4*zeta[1]*zeta4; // *
+	// shp[3][8] = 4*zeta[1]*zeta4;
+	shp[3][8] = 4*zeta[2]*zeta4; // *
+	// shp[3][9] = 4*zeta[2]*zeta4;
 
 	return ;
 }
