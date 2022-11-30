@@ -1753,7 +1753,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 	else if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "integrPoint") == 0)
 	{
 		int pointNum = atoi(argv[1]);
-		if (pointNum > 0 && pointNum <= 1)
+		if (pointNum > 0 && pointNum <= 4)
 		{
 			output.tag("GaussPoint");
 			output.attr("number", pointNum);
@@ -1783,7 +1783,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 			output.endTag(); // NdMaterialOutput
 			output.endTag(); // GaussPoint
 		}
-		theResponse =  new ElementResponse(this, 3, Vector(6));
+		theResponse =  new ElementResponse(this, 3, Vector(6*4));
 
 	}
 	else if (strcmp(argv[0], "strains") == 0)
@@ -1806,7 +1806,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 			output.endTag(); // NdMaterialOutput
 			output.endTag(); // GaussPoint
 		}
-		theResponse =  new ElementResponse(this, 4, Vector(6));
+		theResponse =  new ElementResponse(this, 4, Vector(6*4));
 	}
 	output.endTag(); // ElementOutput
 	return theResponse;
