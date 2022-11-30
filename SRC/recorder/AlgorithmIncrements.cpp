@@ -196,6 +196,15 @@ AlgorithmIncrements::restart(void)
 }
 
 int
+AlgorithmIncrements::flush(void)
+{
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}
+
+int
 AlgorithmIncrements::plotData(const Vector &X, const Vector &B)
 {
 

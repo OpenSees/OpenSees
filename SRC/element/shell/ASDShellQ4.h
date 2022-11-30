@@ -82,6 +82,7 @@
 #include <ID.h>
 #include <Vector.h>
 #include <Matrix.h>
+#include <Damping.h>
 
 class SectionForceDeformation;
 class ASDShellQ4Transformation;
@@ -101,11 +102,15 @@ public:
         int node3,
         int node4,
         SectionForceDeformation* section,
-        bool corotational = false);
+        bool corotational = false,
+        Damping *theDamping = 0);
     virtual ~ASDShellQ4();
 
+    const char *getClassType(void) const {return "ASDShellQ4";}
+    
     // domain
     void setDomain(Domain* theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // print
     void Print(OPS_Stream& s, int flag);
@@ -167,7 +172,7 @@ private:
 
     // nodal ids
     ID m_node_ids = ID(4);
-    Node* nodePointers[4];      //pointers to four nodes -ambaker1
+    Node* nodePointers[4] = { nullptr, nullptr, nullptr, nullptr }; //pointers to four nodes -ambaker1
 
     // coordinate transformation
     ASDShellQ4Transformation* m_transformation = nullptr;
@@ -193,6 +198,10 @@ private:
     Matrix m_KQQ_inv = Matrix(4, 4);
     Matrix m_KQU = Matrix(4, 24); // L = G'*C*B
     Matrix m_KUQ = Matrix(24, 4); // L^T = B'*C'*G
+    Damping *m_damping[4] = { nullptr, nullptr, nullptr, nullptr };
+
+    // initialization flag
+    bool m_initialized = false;
 };
 
 #endif // ASDShellQ4_h

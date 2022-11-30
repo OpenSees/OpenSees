@@ -1058,7 +1058,7 @@ Tri31::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 			theMaterial[i]->setDbTag(matDbTag);
 			res += theMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
 			if (res < 0) {
-				opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itself\n";
+				opserr << "Tri31::recvSelf() - material " << i << " failed to recv itself\n";
 				return res;
 			}
 		}

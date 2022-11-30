@@ -17,15 +17,16 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+          
+                                                             
 // $Revision: 1.2 $
 // $Date: 2008/12/10 00:05:21 $
 // $Source: /usr/local/cvs/OpenSees/PACKAGES/NewElement/cpp/Truss2D.h,v $
-
-// Written by: Gonzalo Torrisi, Universidad Nacional de Cuyo
-
+                                                                        
 #ifndef BeamGT_h
 #define BeamGT_h
+
+// Written by: Gonzalo Torrisi, Universidad Nacional de Cuyo 
 
 #include <Element.h>
 #include <Matrix.h>
@@ -40,7 +41,7 @@ class BeamGT : public Element
     BeamGT(int tag, 
               int Nd1, int Nd2,
              UniaxialMaterial &theMaterial, UniaxialMaterial &theMaterial2, UniaxialMaterial &theMaterial3,
-             double E,  double G, double A, double I, double LP1, double LP2, double LR, double FC);
+              double LP1, double LP2, double LR, double FC, int NITE, double TOL);
 
 
 
@@ -50,7 +51,7 @@ class BeamGT : public Element
     ~BeamGT();
 
     
-    // public methods to obtain information about dof & connectivity
+    // public methods to obtain inforrmation about dof & connectivity
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -103,10 +104,6 @@ class BeamGT : public Element
 	Matrix Stifloc;
 	Matrix Stif0;
 	Vector RR;
-	double E;
-	double A;
-	double G;
-	double I;
 	double LP1;
 	double LP2;
 	double LR;
@@ -125,6 +122,8 @@ class BeamGT : public Element
 	double dcur2c;
 	double dgamc;
 	double daxc;
+    int NITE;
+    double TOL;
 
 
 	Node *theNodes[2];  // node pointers

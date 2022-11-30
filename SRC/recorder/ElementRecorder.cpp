@@ -657,7 +657,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
 
   numEle = eleSize;
 
-  static Vector dData(2);
+  static Vector dData(3);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -959,4 +959,11 @@ double ElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 		return res;
 	res = (*data)(clmnId);
 	return res;
+}
+
+int ElementRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
 }

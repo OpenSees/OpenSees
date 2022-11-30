@@ -85,43 +85,64 @@ public:
 
     void setSOE(LinearSOE* soe);
     LinearSOE* getSOE() {return theSOE;}
+    LinearSOE** getSOEPointer() {return &theSOE;}
 
     void setNumberer(DOF_Numberer* numberer);
     DOF_Numberer* getNumberer() {return theNumberer;}
+    DOF_Numberer** getNumbererPointer() { return &theNumberer; }
 
     void setHandler(ConstraintHandler* handler);
     ConstraintHandler* getHandler() {return theHandler;}
+    ConstraintHandler** getHandlerPointer() {return &theHandler;}
 
     void setStaticIntegrator(StaticIntegrator* integrator);
     StaticIntegrator* getStaticIntegrator() {return theStaticIntegrator;}
+    StaticIntegrator** getStaticIntegratorPointer() {
+        return &theStaticIntegrator;
+    }
 
     void setTransientIntegrator(TransientIntegrator* integrator);
     TransientIntegrator* getTransientIntegrator() {return theTransientIntegrator;}
+    TransientIntegrator** getTransientIntegratorPointer() {
+        return &theTransientIntegrator;
+    }
 
     void setIntegrator(Integrator* inte, bool transient);
 
     void setAlgorithm(EquiSolnAlgo* algo);
     EquiSolnAlgo* getAlgorithm() {return theAlgorithm;}
+    EquiSolnAlgo** getAlgorithmPointer() {return &theAlgorithm;}
 
     void setCTest(ConvergenceTest* test);
     ConvergenceTest* getCTest() {return theTest;}
+    ConvergenceTest** getCTestPointer() { return &theTest; }
 
     void setStaticAnalysis(bool suppress);
     StaticAnalysis* getStaticAnalysis() {return theStaticAnalysis;}
+    StaticAnalysis** getStaticAnalysisPointer() {return &theStaticAnalysis;}
 
     int setPFEMAnalysis(bool suppress);
     PFEMAnalysis* getPFEMAnalysis() {return thePFEMAnalysis;}
 
     void setVariableAnalysis(bool suppress);
-    VariableTimeStepDirectIntegrationAnalysis*
-    getVariableAnalysis() {return theVariableTimeStepTransientAnalysis;}
+    VariableTimeStepDirectIntegrationAnalysis* getVariableAnalysis() {
+        return theVariableTimeStepTransientAnalysis;
+    }
+    VariableTimeStepDirectIntegrationAnalysis**
+    getVariableAnalysisPointer() {
+        return &theVariableTimeStepTransientAnalysis;
+    }
 
     void setTransientAnalysis(bool suppress);
     DirectIntegrationAnalysis* getTransientAnalysis() {return theTransientAnalysis;}
+    DirectIntegrationAnalysis** getTransientAnalysisPointer() {
+        return &theTransientAnalysis;
+    }
 
     void setNumEigen(int num) {numEigen = num;}
     int getNumEigen() {return numEigen;}
     EigenSOE* getEigenSOE() {return theEigenSOE;}
+    EigenSOE** getEigenSOEPointer() {return &theEigenSOE;}
 
     void setFileDatabase(const char* filename);
     FE_Datastore* getDatabase() {return theDatabase;}
@@ -259,6 +280,7 @@ int OPS_nodeAccel();
 int OPS_nodeResponse();
 int OPS_nodeCoord();
 int OPS_setNodeCoord();
+int OPS_getPatterns();
 int OPS_getFixedNodes();
 int OPS_getFixedDOFs();
 int OPS_getConstrainedNodes();
@@ -353,6 +375,8 @@ int OPS_partition();
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
 int OPS_getRVTags();
+int OPS_getRVParamTag();
+int OPS_getRVValue();
 int OPS_getRVMean();
 int OPS_getRVStdv();
 int OPS_getRVPDF();
@@ -361,6 +385,7 @@ int OPS_getRVInverseCDF();
 int OPS_getLSFTags();
 int OPS_addCorrelate();
 int OPS_performanceFunction(); // limit state function
+int OPS_gradPerformanceFunction(); // limit state function
 int OPS_probabilityTransformation();
 int OPS_transformUtoX();
 int OPS_startPoint();
@@ -445,6 +470,8 @@ int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();
 int OPS_ShallowFoundationGen();
 int OPS_Pressure_Constraint();
+int OPS_DomainModalProperties();
+int OPS_ResponseSpectrumAnalysis();
 
 void* OPS_TimeSeriesIntegrator();
 

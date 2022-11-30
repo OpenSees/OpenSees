@@ -602,7 +602,7 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(1);
+  static Vector dData(2);
   dData(1) = deltaT;
   dData(2) = relDeltaTTol;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
@@ -722,7 +722,7 @@ EnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   numEle = eleSize;
 
 
-  static Vector dData(1);
+  static Vector dData(2);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "EnvelopeElementRecorder::recvSelf() - failed to recv dData\n";
     return -1;
@@ -1034,4 +1034,11 @@ double EnvelopeElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool
 	if (reset)
 		first = true;
 	return res;
+}
+
+int EnvelopeElementRecorder::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
 }

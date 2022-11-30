@@ -149,6 +149,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   CrdTransf *theTransf2d = 0;
   CrdTransf *theTransf3d = 0;
   Element *theElement = 0;
+  int dampingTag = 0;
+  Damping *theDamping = 0;
 
   if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
     opserr << "WARNING invalid " << argv[1] << " eleTag" << endln;
@@ -309,6 +311,18 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	  return TCL_ERROR;
 	}
 	argi += 2;
+      } else if (strcmp(argv[argi],"-damp") == 0) {
+	if (argc < argi+2) {
+	  opserr << "WARNING not enough -damp args need -damp dampingTag?\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	if (Tcl_GetInt(interp, argv[argi+1], &dampingTag) != TCL_OK) {
+	  opserr << "WARNING invalid dampingTag\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	argi += 2;
       } else if ((strcmp(argv[argi],"-lMass") == 0) || (strcmp(argv[argi],"lMass") == 0)) {
           cMass = 0;
           argi++;
@@ -364,6 +378,18 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       }
     }
 
+    if (dampingTag)
+    {
+      theDamping = OPS_getDamping(dampingTag);
+      if (theDamping == 0)
+      {
+        opserr << "WARNING damping not found\n";
+        opserr << "damping: " << dampingTag;
+        opserr << argv[1] << " element: " << eleTag << endln;
+        return TCL_ERROR;
+      }
+    }
+      
     if (beamIntegr == 0) {
       if (strstr(argv[1],"ispBeam") == 0) {
         beamIntegr = new LobattoBeamIntegration();
@@ -379,7 +405,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
 	theElement = new TimoshenkoBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
-	theElement = new DispBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, cMass);
+	theElement = new DispBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, cMass, theDamping);
       else if (strcmp(argv[1],"dispBeamColumnNL") == 0)
 	theElement = new DispBeamColumnNL2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"forceBeamColumnCBDI") == 0)
@@ -397,13 +423,13 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn2dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else
-	theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, numIter, tol);
+	theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, numIter, tol, theDamping);
     }
     else {
       if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
 	theElement = new ElasticForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
-	theElement = new DispBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, cMass);
+	theElement = new DispBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, cMass, theDamping);
       else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
 	theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);      
       else if (strcmp(argv[1], "dispBeamColumnThermal") == 0)
@@ -411,7 +437,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn3dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else
-	theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol);
+	theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol, theDamping);
     }
 
     delete beamIntegr;

@@ -81,6 +81,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 //
 
 extern  void *OPS_ComponentElement2d(void);
+extern  void *OPS_ComponentElement3d(void);
 //extern  void *OPS_ComponentElementDamp2d(void);
 extern  void *OPS_TrussElement(void);
 extern  void *OPS_TrussSectionElement(void);
@@ -479,8 +480,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
 
-  } else if (strcmp(argv[1],"componentElement2d") == 0) {
-    void *theEle = OPS_ComponentElement2d();
+  } else if (strcmp(argv[1],"componentElement2d") == 0 || strcmp(argv[1],"componentElement") == 0) {
+    void *theEle = 0;
+    if (OPS_GetNDM() == 2)
+      theEle = OPS_ComponentElement2d();
+    if (OPS_GetNDM() == 3)
+      theEle = OPS_ComponentElement3d();    
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
