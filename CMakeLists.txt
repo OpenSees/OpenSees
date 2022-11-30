@@ -281,8 +281,11 @@ endif()
 
 find_package (Python COMPONENTS Interpreter Development)
 
+if((TARGET OpenSeesMP) OR (TARGET OpenSeesSP))
+  find_package(MPI)
+endif()
 
-find_package(MPI)
+
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -808,6 +811,7 @@ if(HDF5_FOUND)
    set(_hdf5_libs hdf5 hdf5_cpp)
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
          add_compile_definitions(_H5DRM)
+         add_compile_definitions(_HDF5)
          message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")    
    endif()
 else()
