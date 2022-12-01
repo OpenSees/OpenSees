@@ -602,3 +602,10 @@ FileStream::indent(void)
     for (int i=0; i<numIndent; i++)
       theFile << indentString;
 }
+
+int FileStream::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}

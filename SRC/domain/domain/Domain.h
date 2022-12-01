@@ -154,6 +154,7 @@ class Domain
 
     // methods to query the state of the domain
     virtual double  getCurrentTime(void) const;
+    virtual double  getDT(void) const;
     virtual int getCreep(void) const;
     virtual int     getCommitTag(void) const;    	
     virtual int getNumElements(void) const;
@@ -218,6 +219,7 @@ class Domain
     virtual int  removeRecorders(void);
     virtual int  removeRecorder(int tag);
     virtual int  record(bool fromAnalysis=true);
+    virtual int flushRecorders();
 
     virtual int  addRegion(MeshRegion &theRegion);    	
     virtual MeshRegion *getRegion(int region);    	

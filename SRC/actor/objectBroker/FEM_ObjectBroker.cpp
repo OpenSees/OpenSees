@@ -129,6 +129,12 @@ FEM_ObjectBroker::getNewCrdTransf(int classTag)
   return 0;
 }
 
+Damping*
+FEM_ObjectBroker::getNewDamping(int classTag)
+{
+  return 0;
+}
+
 BeamIntegration *
 FEM_ObjectBroker::getNewBeamIntegration(int classTag)
 {

@@ -97,6 +97,7 @@ void* OPS_SPSW02();
 void* OPS_Concrete01();
 void* OPS_Steel4();
 void* OPS_HystereticMaterial();
+void* OPS_HystereticSMMaterial();
 void* OPS_ReinforcingSteel();
 void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
@@ -202,6 +203,9 @@ void* OPS_IMKPeakOriented();
 void* OPS_SLModel();
 void* OPS_SMAMaterial();
 void* OPS_FRCC();
+void* OPS_ConcreteZBH_original();
+void* OPS_ConcreteZBH_fitted();
+void* OPS_ConcreteZBH_smoothed();
 
 void* OPS_ArctangentBackbone();
 void* OPS_BilinearBackbone();
@@ -292,6 +296,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Steel4", &OPS_Steel4));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hysteretic", &OPS_HystereticMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HystereticSM", &OPS_HystereticSMMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("ReinforcingSteel", &OPS_ReinforcingSteel));
   uniaxialMaterialsMap.insert(
@@ -542,7 +548,13 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("SMA", &OPS_SMAMaterial));
   uniaxialMaterialsMap.insert(
-      std::make_pair("FRCC", &OPS_FRCC));  
+      std::make_pair("FRCC", &OPS_FRCC));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteZBH_original", &OPS_ConcreteZBH_original));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteZBH_fitted", &OPS_ConcreteZBH_fitted));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ConcreteZBH_smoothed", &OPS_ConcreteZBH_smoothed));      
   uniaxialMaterialsMap.insert(std::make_pair(
       "HystereticPoly",
       &OPS_HystereticPoly));  // Salvatore Sessa 14-Jan-2021 Mail: salvatore.sessa2@unina.it

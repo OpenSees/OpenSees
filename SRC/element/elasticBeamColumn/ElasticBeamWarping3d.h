@@ -57,7 +57,7 @@ class ElasticBeamWarping3d : public Element
 
     ~ElasticBeamWarping3d();
 
-    const char *getClassType(void) const {return "ElasticBeam3d";};
+    const char *getClassType(void) const {return "ElasticBeamWarping3d";};
 
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
