@@ -347,6 +347,7 @@ private:
 	const Vector& getCrackPattern() const;
 	const Vector& getCrushPattern() const;
 	const Vector& getImplexError() const;
+	const Vector& getTimeIncrements() const;
 
 private:
 	// Young's modulus

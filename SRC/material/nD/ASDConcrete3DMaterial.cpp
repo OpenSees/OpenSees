@@ -1796,6 +1796,7 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 	static std::vector<std::string> lb_cw = { "cw" };
 	static std::vector<std::string> lb_crackpattern = { "Cx", "Cy", "Cz" };
 	static std::vector<std::string> lb_implex_error = { "Error" };
+	static std::vector<std::string> lb_time = { "dTime", "dTimeCommit", "dTimeInitial" };
 	static Vector Cinfo(2);
 
 	// check specific responses
@@ -1862,6 +1863,10 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 		if (strcmp(argv[0], "implexError") == 0 || strcmp(argv[0], "ImplexError") == 0) {
 			return make_resp(3000, getImplexError(), &lb_implex_error);
 		}
+		// 4000 - internal time
+		if (strcmp(argv[0], "time") == 0 || strcmp(argv[0], "Time") == 0) {
+			return make_resp(4000, getTimeIncrements(), &lb_time);
+		}
 	}
 
 	// otherwise return base-class response
@@ -1899,6 +1904,8 @@ int ASDConcrete3DMaterial::getResponse(int responseID, Information& matInformati
 		break;
 		// 3000 - implex error
 	case 3000: return matInformation.setVector(getImplexError());
+		// 4000 - internal time
+	case 4000: return matInformation.setVector(getTimeIncrements());
 	default:
 		break;
 	}
@@ -2243,6 +2250,15 @@ const Vector& ASDConcrete3DMaterial::getImplexError() const
 {
 	static Vector d(1);
 	d(0) = implex_error;
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getTimeIncrements() const
+{
+	static Vector d(3);
+	d(0) = dtime_n;
+	d(1) = dtime_n_commit;
+	d(2) = dtime_0;
 	return d;
 }
 
