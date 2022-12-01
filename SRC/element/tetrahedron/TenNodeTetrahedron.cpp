@@ -587,7 +587,7 @@ const Matrix&  TenNodeTetrahedron::getInitialStiff( )
 				} // end for p
 
 				//volume element to also be saved
-				dvol[count] = wg[count] * xsj ;
+				dvol[count] = wg[0] * xsj ;
 
 				volume += dvol[count] ;
 
@@ -886,7 +886,7 @@ void   TenNodeTetrahedron::formInertiaTerms( int tangFlag )
 				} // end for p
 
 				//volume element to also be saved
-				dvol[count] = wg[count] * xsj ;
+				dvol[count] = wg[0] * xsj ;
 
 				count++ ;
 
@@ -1058,7 +1058,7 @@ TenNodeTetrahedron::update(void)
 				} // end for p
 
 				//volume element to also be saved
-				dvol[count] = wg[count] * xsj ;
+				dvol[count] = wg[0] * xsj ;
 				count++ ;
 			} //end for k
 		} //end for j
@@ -1940,7 +1940,7 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 	else if (parameterID == 1414)
 	{
 		int new_do_update = info.theDouble;
-		if (do_update == 0 & new_do_update == 1)
+		if (do_update == 0 && new_do_update == 1)
 		{
 			do_update = 1;
 			Domain * mydomain = this->getDomain();
