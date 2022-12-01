@@ -340,6 +340,8 @@ private:
 	const Vector& getAvgStrainMeasure() const;
 	const Vector& getMaxDamage() const;
 	const Vector& getAvgDamage() const;
+	const Vector& getMaxEquivalentPlasticStrain() const;
+	const Vector& getAvgEquivalentPlasticStrain() const;
 	const Vector& getMaxCrackWidth() const;
 	const Vector& getAvgCrackWidth() const;
 	const Vector& getCrackPattern() const;

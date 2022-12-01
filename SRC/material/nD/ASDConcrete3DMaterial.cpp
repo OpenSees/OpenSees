@@ -1791,6 +1791,8 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 
 	// labels
 	static std::vector<std::string> lb_damage = { "d+", "d-" };
+	static std::vector<std::string> lb_eqpl_strain = { "PLE+", "PLE-" };
+	static std::vector<std::string> lb_tot_strain = { "TE+", "TE-" };
 	static std::vector<std::string> lb_cw = { "cw" };
 	static std::vector<std::string> lb_crackpattern = { "Cx", "Cy", "Cz" };
 	static std::vector<std::string> lb_implex_error = { "Error" };
@@ -1819,17 +1821,29 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 			else
 				return make_resp(2001, getMaxDamage(), &lb_damage);
 		}
+		if (strcmp(argv[0], "equivalentPlasticStrain") == 0 || strcmp(argv[0], "EquivalentPlasticStrain") == 0) {
+			if (argc > 1 && strcmp(argv[1], "-avg") == 0)
+				return make_resp(2002, getAvgEquivalentPlasticStrain(), &lb_eqpl_strain);
+			else
+				return make_resp(2003, getMaxEquivalentPlasticStrain(), &lb_eqpl_strain);
+		}
+		if (strcmp(argv[0], "equivalentTotalStrain") == 0 || strcmp(argv[0], "EquivalentTotalStrain") == 0) {
+			if (argc > 1 && strcmp(argv[1], "-avg") == 0)
+				return make_resp(2004, getAvgStrainMeasure(), &lb_tot_strain);
+			else
+				return make_resp(2005, getMaxStrainMeasure(), &lb_tot_strain);
+		}
 		if (strcmp(argv[0], "cw") == 0 || strcmp(argv[0], "crackWidth") == 0 || strcmp(argv[0], "CrackWidth") == 0) {
 			if (argc > 1 && strcmp(argv[1], "-avg") == 0)
-				return make_resp(2002, getAvgCrackWidth(), &lb_cw);
+				return make_resp(2006, getAvgCrackWidth(), &lb_cw);
 			else
-				return make_resp(2003, getMaxCrackWidth(), &lb_cw);
+				return make_resp(2007, getMaxCrackWidth(), &lb_cw);
 		}
 		if (strcmp(argv[0], "crackPattern") == 0 || strcmp(argv[0], "CrackPattern") == 0) {
-			return make_resp(2004, getCrackPattern(), &lb_crackpattern);
+			return make_resp(2008, getCrackPattern(), &lb_crackpattern);
 		}
 		if (strcmp(argv[0], "crushPattern") == 0 || strcmp(argv[0], "CrushPattern") == 0) {
-			return make_resp(2005, getCrushPattern(), &lb_crackpattern);
+			return make_resp(2009, getCrushPattern(), &lb_crackpattern);
 		}
 		if (strcmp(argv[0], "crackInfo") == 0 || strcmp(argv[0], "CrackInfo") == 0) {
 			if (argc > 3) {
@@ -1840,7 +1854,7 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 					std::size_t Npos = svt.getClosestNormal(N);
 					Cinfo(0) = static_cast<double>(Npos);
 					Cinfo(1) = svt.getEquivalentStrainAtNormal(Npos);
-					return make_resp(2006, Cinfo);
+					return make_resp(2010, Cinfo);
 				}
 			}
 		}
@@ -1868,11 +1882,15 @@ int ASDConcrete3DMaterial::getResponse(int responseID, Information& matInformati
 		// 2000 - damage variables
 	case 2000: return matInformation.setVector(getAvgDamage());
 	case 2001: return matInformation.setVector(getMaxDamage());
-	case 2002: return matInformation.setVector(getAvgCrackWidth());
-	case 2003: return matInformation.setVector(getMaxCrackWidth());
-	case 2004: return matInformation.setVector(getCrackPattern());
-	case 2005: return matInformation.setVector(getCrushPattern());
-	case 2006:
+	case 2002: return matInformation.setVector(getAvgEquivalentPlasticStrain());
+	case 2003: return matInformation.setVector(getMaxEquivalentPlasticStrain());
+	case 2004: return matInformation.setVector(getAvgStrainMeasure());
+	case 2005: return matInformation.setVector(getMaxStrainMeasure());
+	case 2006: return matInformation.setVector(getAvgCrackWidth());
+	case 2007: return matInformation.setVector(getMaxCrackWidth());
+	case 2008: return matInformation.setVector(getCrackPattern());
+	case 2009: return matInformation.setVector(getCrushPattern());
+	case 2010:
 		if (matInformation.theVector && matInformation.theVector->Size() == 2) {
 			std::size_t Npos = static_cast<std::size_t>(matInformation.theVector->operator()(0));
 			matInformation.theVector->operator()(1) = svt.getEquivalentStrainAtNormal(Npos);
@@ -2148,6 +2166,24 @@ const Vector& ASDConcrete3DMaterial::getAvgDamage() const
 	const Vector& x = getAvgStrainMeasure();
 	d(0) = ht.evaluateAt(x(0)).crackingDamage();
 	d(1) = hc.evaluateAt(x(1)).crackingDamage();
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getMaxEquivalentPlasticStrain() const
+{
+	static Vector d(2);
+	const Vector& x = getMaxStrainMeasure();
+	d(0) = ht.evaluateAt(x(0)).plasticStrain(E);
+	d(1) = hc.evaluateAt(x(1)).plasticStrain(E);
+	return d;
+}
+
+const Vector& ASDConcrete3DMaterial::getAvgEquivalentPlasticStrain() const
+{
+	static Vector d(2);
+	const Vector& x = getAvgStrainMeasure();
+	d(0) = ht.evaluateAt(x(0)).plasticStrain(E);
+	d(1) = hc.evaluateAt(x(1)).plasticStrain(E);
 	return d;
 }
 
