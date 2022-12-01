@@ -1255,7 +1255,7 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 				} // end for p
 
 				//volume element to also be saved
-				dvol[k] = wg[k] * xsj ;
+				dvol[k] = wg[0] * xsj ;
 				// opserr << "k = " << k << " gp = (" 
 				// << gaussPoint[0] << " " 
 				// << gaussPoint[1] << " " 
@@ -1357,7 +1357,7 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 				resid( jj + p ) += residJ(p)  ;
 				if (applyLoad == 0)
 				{
-					// resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+					resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
 				}
 				else
 				{
