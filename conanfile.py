@@ -12,9 +12,8 @@ class OpenSeesDependencies(ConanFile):
     default_options = {"mkl-static:threaded": False, "ipp-static:simcenter_backend": True}    
     generators = "cmake", "cmake_find_package"
     build_policy = "missing"
-    requires = "libmysqlclient/8.0.25", \
-        "hdf5/1.12.0", \
-        "tcl/8.6.11"
+    requires = "hdf5/1.12.0", \
+        "tcl/8.6.10"
     # Custom attributes for Bincrafters recipe conventions
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"

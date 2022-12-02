@@ -250,3 +250,9 @@ DamageRecorder::restart(void)
   return 0;
 }
 
+int DamageRecorder::flush(void) {
+  if (theOutput != 0) {
+    return theOutput->flush();
+  }
+  return 0;
+}

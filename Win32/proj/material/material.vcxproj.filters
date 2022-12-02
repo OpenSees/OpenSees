@@ -646,6 +646,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicMaterial.cpp">
+      <Filter>nD\wrappers</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
@@ -1865,6 +1868,9 @@
       <Filter>nD\soilModels</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial.h">
+      <Filter>nD\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicMaterial.h">
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h">

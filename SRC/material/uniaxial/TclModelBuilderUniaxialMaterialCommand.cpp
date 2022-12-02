@@ -64,7 +64,8 @@ extern void *OPS_FatigueMaterial(void);
 extern void *OPS_HardeningMaterial(void);
 extern void *OPS_UniaxialJ2Plasticity(void);
 extern void *OPS_SmoothPSConcrete(void);
-extern void *OPS_HystereticMaterial(void);
+extern void* OPS_HystereticMaterial(void);
+extern void* OPS_HystereticSMMaterial(void);
 extern void *OPS_CableMaterial(void);
 extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
@@ -147,6 +148,10 @@ extern void *OPS_ViscousMaterial(void);
 extern void *OPS_SteelMPF(void); // K Kolozvari                                
 extern void *OPS_ConcreteCM(void); // K Kolozvari
 extern void *OPS_Bond_SP01(void); // K Kolozvari
+extern void *OPS_FRCC(void); // Feras Khlef + Andre Barbosa
+extern void *OPS_ConcreteZBH_original(void);
+extern void *OPS_ConcreteZBH_fitted(void);
+extern void *OPS_ConcreteZBH_smoothed(void);
 extern void *OPS_Steel4(void);
 extern void *OPS_PySimple3(void);
 extern void *OPS_BoucWenMaterial(void);
@@ -449,7 +454,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     }
-    if ((strcmp(argv[1],"DamperMaterial") == 0)) {
+    if (strcmp(argv[1],"DamperMaterial") == 0 || strcmp(argv[1],"Damper") == 0) {
       void *theMat = OPS_DamperMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -473,6 +478,34 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;      
 
     }
+    if (strcmp(argv[1], "FRCC") == 0) {
+      void *theMat = OPS_FRCC();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1], "ConcreteZBH_original") == 0) {
+      void *theMat = OPS_ConcreteZBH_original();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1], "ConcreteZBH_fitted") == 0) {
+      void *theMat = OPS_ConcreteZBH_fitted();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1], "ConcreteZBH_smoothed") == 0) {
+      void *theMat = OPS_ConcreteZBH_smoothed();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }        
     if ((strcmp(argv[1],"Cast") == 0) || (strcmp(argv[1],"CastFuse") == 0)) {
       void *theMat = OPS_Cast();
       if (theMat != 0) 
@@ -953,13 +986,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
     }
-    if (strcmp(argv[1],"Hysteretic") == 0) {
+    if (strcmp(argv[1], "Hysteretic") == 0) {
 
-      void *theMat = OPS_HystereticMaterial();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
+        void* theMat = OPS_HystereticMaterial();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "HystereticSM") == 0) {
+
+        void* theMat = OPS_HystereticSMMaterial();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
     }
     if (strcmp(argv[1],"OOHysteretic") == 0) {
 

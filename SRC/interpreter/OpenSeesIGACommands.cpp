@@ -34,9 +34,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
                                                                         
-// Written: Minjie
-
-// Description: command to create timeseries
+// ============================================================================
+// 2022 By Jose Abell @ Universidad de los Andes, Chile
+// www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
+// ============================================================================
+// Implements commands for IGA analysis 
+//
+// ============================================================================
 
 #include <TimeSeries.h>
 #include <map>

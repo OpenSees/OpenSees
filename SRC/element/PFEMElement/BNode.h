@@ -27,9 +27,10 @@
 
 #include "BackgroundDef.h"
 
-// BACKGROUND_FLUID - a grid fluid node
-// BACKGROUND_STRUCTURE - a structural node
-// BACKGROUND_FIXED - a fixed grid fluid node
+// BACKGROUND_FLUID - a grid fluid node, tags[0] = f, tags.size = 1
+// BACKGROUND_STRUCTURE - structural nodes, tags[0] = s, tags.size = 1
+// BACKGROUND_FLUID_STRUCTURE - a structural node for SSI and a fluid node for FSI, tags[0] = s, tags[1] = f, tags.size = 2
+// BACKGROUND_FIXED - a temporary node, used to mark grids around structure, tags.size = 0
 class BNode {
    private:
     VInt tags;
@@ -39,14 +40,13 @@ class BNode {
     VDouble pn;
     VDouble dpn;
     BackgroundType type;
-    VInt sid;  // structure id, <0:fluid, >0:structure, =0:not in
-               // contact
+    VInt sid;  //  =0: fluid (internal use); < 0: only SSI; > 0: both
 
    public:
     BNode();
     void addNode(int tag, const VDouble& crds, const VDouble& v,
                  const VDouble& dv, double p, double dp, BackgroundType tp,
-                 int id = -1);
+                 int id = 0);
     void clear();
     void setType(BackgroundType t);
 

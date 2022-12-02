@@ -13,8 +13,9 @@
 
 target_sources(OPS_InterpTcl PRIVATE 
     "${OPS_SRC_DIR}/coordTransformation/TclGeomTransfCommand.cpp"
+    "${OPS_SRC_DIR}/damping/TclDampingCommand.cpp"
     "${OPS_SRC_DIR}/database/TclDatabaseCommands.cpp"
-    "${OPS_SRC_DIR}/database/TclMySQL.cpp"
+    #"${OPS_SRC_DIR}/database/TclMySQL.cpp"
     #"${OPS_SRC_DIR}/database/TclBerkeleyDB.cpp"
     "${OPS_SRC_DIR}/domain/component/TclParameterCommands.cpp"
     "${OPS_SRC_DIR}/domain/component/TclUpdateMaterialCommand.cpp"
@@ -88,12 +89,9 @@ target_sources(OPS_InterpTcl PRIVATE
     "${OPS_SRC_DIR}/recorder/TclRecorderCommands.cpp"
     "${OPS_SRC_DIR}/damage/TclModelBuilderDamageModelCommand.cpp"
     #"${OPS_SRC_DIR}/api/elementAPI_TCL.cpp"
-    "${OPS_SRC_DIR}/tcl/commands.cpp"
-  "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
-    
+    "${OPS_SRC_DIR}/tcl/TclFeViewer.cpp"
     #"${OPS_SRC_DIR}/interpreter/TclInterpreter.cpp"
     "${OPS_SRC_DIR}/interpreter/TclWrapper.cpp"
-
     #"${OPS_SRC_DIR}/reliability/analysis/gFunction/TclGFunEvaluator.cpp"
     #"${OPS_SRC_DIR}/reliability/analysis/gFunction/TclMatlabGFunEvaluator.cpp"
     #"${OPS_SRC_DIR}/reliability/domain/functionEvaluator/TclEvaluator.cpp"

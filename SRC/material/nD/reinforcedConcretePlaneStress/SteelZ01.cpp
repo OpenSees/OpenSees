@@ -1111,7 +1111,7 @@ UniaxialMaterial* SteelZ01::getCopy ()
 int SteelZ01::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(149);
+   static Vector data(150);
    data(0) = this->getTag();
 
    // Material properties
@@ -1179,7 +1179,7 @@ int SteelZ01::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(149);
+   static Vector data(150);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
    if (res < 0) {

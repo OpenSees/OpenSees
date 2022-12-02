@@ -109,8 +109,8 @@ struct cmp_str {
     }
 };
 
-std::map<char*, eleFunct, cmp_str>theEleFunctions;              // map of user added ele functions
-std::map<char*, eleFunct, cmp_str>theUniaxialMaterialFunctions; // map of user added material functions
+//std::map<char*, eleFunct, cmp_str>theEleFunctions;
+//std::map<char*, eleFunct, cmp_str>theUniaxialMaterialFunctions; 
 
 //std::map<int, UniaxialMaterial *>theUniaxialMaterials;           // map for UniaxialMaterial objects needed by user added ele functions'
 
@@ -243,6 +243,73 @@ int OPS_SetIntOutput(int* numData, int* data, bool scalar)
     return 0;
 }
 
+extern "C" int OPS_SetIntListsOutput(
+    std::vector<std::vector<int>>& data) {
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(data[i][j]);
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(theInterp, lists);
+
+    return 0;
+}
+
+extern "C" int OPS_SetIntDictOutput(
+    std::map<const char*, int>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)),
+            Tcl_NewIntObj(item.second));
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
+extern "C" int OPS_SetIntDictListOutput(
+    std::map<const char*, std::vector<int>>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(item.second[j]);
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
 extern "C"
 int OPS_GetDoubleInput(int* numData, double* data)
 {
@@ -268,6 +335,73 @@ int OPS_SetDoubleOutput(int* numData, double* data, bool scalar)
         sprintf(buffer, "%35.20f ", data[i]);
         Tcl_AppendResult(theInterp, buffer, NULL);
     }
+
+    return 0;
+}
+
+extern "C" int OPS_SetDoubleListsOutput(
+    std::vector<std::vector<double>>& data) {
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewDoubleObj(data[i][j]);
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(theInterp, lists);
+
+    return 0;
+}
+
+extern "C" int OPS_SetDoubleDictOutput(
+    std::map<const char*, double>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)),
+            Tcl_NewDoubleObj(item.second));
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
+extern "C" int OPS_SetDoubleDictListOutput(
+    std::map<const char*, std::vector<double>>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewDoubleObj(item.second[j]);
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
 
     return 0;
 }
@@ -310,6 +444,92 @@ int OPS_GetStringCopy(char** arrayData)
     strcpy(newData, currentArgv[currentArg]);
     *arrayData = newData;
     currentArg++;
+
+    return 0;
+}
+
+extern "C" int OPS_SetStringList(std::vector<const char*>& data) {
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each string
+    for (int i = 0; i < (int)data.size(); ++i) {
+        tclData[i] = Tcl_NewStringObj(data[i], strlen(data[i]));
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* list = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(theInterp, list);
+
+    return 0;
+}
+
+extern "C" int OPS_SetStringLists(
+    std::vector<std::vector<const char*>>& data) {
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewStringObj(data[i][j], strlen(data[i][j]));
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(theInterp, lists);
+
+    return 0;
+}
+
+extern "C" int OPS_SetStringDict(
+    std::map<const char*, const char*>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)),
+            Tcl_NewStringObj(item.second, strlen(item.second)));
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
+
+    return 0;
+}
+
+extern "C" int OPS_SetStringDictList(
+    std::map<const char*, std::vector<const char*>>& data) {
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewStringObj(item.second[j],
+                                          strlen(item.second[j]));
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            theInterp, dict,
+            Tcl_NewStringObj(item.first, strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(theInterp, dict);
 
     return 0;
 }

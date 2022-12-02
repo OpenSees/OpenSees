@@ -32,8 +32,6 @@
 #ifndef J2BeamFiber3d_h
 #define J2BeamFiber3d_h
 
-#define ND_TAG_J2BeamFiber3d 92516
-
 #include <NDMaterial.h>
 
 #include <Matrix.h>

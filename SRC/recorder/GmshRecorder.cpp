@@ -1436,3 +1436,10 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_ASDAbsorbingBoundary2D] = GMSH_QUAD;
     gmshtypes[ELE_TAG_ASDAbsorbingBoundary3D] = GMSH_HEXAHEDRON;
 }
+
+int GmshRecorder::flush() {
+    if (theFile.is_open() && theFile.good()) {
+        theFile.flush();
+    }
+    return 0;
+}
