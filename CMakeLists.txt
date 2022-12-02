@@ -281,11 +281,8 @@ endif()
 
 find_package (Python COMPONENTS Interpreter Development)
 
-if((TARGET OpenSeesMP) OR (TARGET OpenSeesSP))
-  find_package(MPI)
-endif()
 
-
+find_package(MPI)
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -594,10 +591,10 @@ if(MPI_FOUND)
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
     endif()
 
     target_link_libraries(OpenSeesSP 
@@ -653,14 +650,14 @@ if(MPI_FOUND)
     
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
-    endif()			    
+    endif()         
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 
