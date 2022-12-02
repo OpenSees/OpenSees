@@ -901,6 +901,24 @@ static int Tcl_ops_getEleTags(ClientData clientData, Tcl_Interp *interp, int arg
     return TCL_OK;
 }
 
+
+static int Tcl_ops_getRetainedNodes(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getRetainedNodes() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_getConstrainedNodes(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getConstrainedNodes() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+
 static int Tcl_ops_getCrdTransfTags(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1772,7 +1790,9 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"convertBinaryToText", &Tcl_ops_convertBinaryToText);
     addCommand(interp,"convertTextToBinary", &Tcl_ops_convertTextToBinary);
     addCommand(interp,"getEleTags", &Tcl_ops_getEleTags);
-    addCommand(interp,"getCrdTransfTags", &Tcl_ops_getCrdTransfTags);
+	addCommand(interp,"getRetainedNodes", &Tcl_ops_getRetainedNodes);
+	addCommand(interp,"getConstrainedNodes", &Tcl_ops_getConstrainedNodes);
+	addCommand(interp,"getCrdTransfTags", &Tcl_ops_getCrdTransfTags);
     addCommand(interp,"getNodeTags", &Tcl_ops_getNodeTags);
     addCommand(interp,"getParamTags", &Tcl_ops_getParamTags);
     addCommand(interp,"getParamValue", &Tcl_ops_getParamValue);
