@@ -29,6 +29,8 @@
 #include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
+#include <DummyStream.h>
+#include <MaterialResponse.h>
 #include <ID.h>
 #include <cmath>
 #include <string>
@@ -56,6 +58,7 @@ extern "C" int dgetrs_(char* TRANS, int* N, int* NRHS, double* A, int* LDA,
 // namespace for utilities
 namespace Series3DUtils {
 
+	// Solver wrapper to factorize once, and solve multiple times
 	class SolverWrapper {
 	private:
 		std::vector<double> A;
@@ -94,6 +97,33 @@ namespace Series3DUtils {
 		}
 	};
 
+	// a custom stream to store ResponseType
+	class CustomStream : public DummyStream {
+	public:
+		std::vector<std::string> components;
+		CustomStream() = default;
+		int tag(const char* name, const char* value) {
+			if (strcmp(name, "ResponseType") == 0)
+				components.push_back(value);
+			return 0;
+		};
+	};
+
+	// Response wrapper
+	class ResponseWrapper {
+	public:
+		std::string name;
+		std::vector<std::string> components;
+		std::vector<Response*> responses;
+		ResponseWrapper() = default;
+		ResponseWrapper(std::size_t n) : responses(n, nullptr) {}
+		~ResponseWrapper() {
+			for (Response* ires : responses) {
+				if (ires)
+					delete ires;
+			}
+		}
+	};
 }
 
 void *OPS_Series3DMaterial(void)
@@ -689,10 +719,107 @@ int Series3DMaterial::setParameter(const char** argv, int argc, Parameter& param
 	return res;
 }
 
-Response* Series3DMaterial::setResponse(const char** argv, int argc, OPS_Stream& s)
+Response* Series3DMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
-	// todo homogenized
-	return NDMaterial::setResponse(argv, argc, s);
+	if (argc > 0) {
+		if (strcmp(argv[0], "material") == 0) {
+			if (argc > 2) {
+				int imat = atoi(argv[1]) - 1;
+				if (imat >= 0 && imat < static_cast<int>(m_materials.size())) {
+					return m_materials[static_cast<std::size_t>(imat)]->setResponse(&argv[2], argc - 2, output);
+				}
+			}
+		}
+		else if (strcmp(argv[0], "homogenized") == 0 && m_materials.size() > 0) {
+			if (argc > 1) {
+				std::string name = argv[1];
+				std::shared_ptr<Series3DUtils::ResponseWrapper> wres;
+				int wres_id = 0;
+				// get from map ...
+				for (auto& item : m_response_map) {
+					if (item.second->name == name) {
+						wres = item.second;
+						wres_id = item.first;
+						break;
+					}
+				}
+				// ... or try make it and map it (generate id >= 1000)
+				if (wres == nullptr) {
+					wres = std::make_shared<Series3DUtils::ResponseWrapper>(m_materials.size());
+					wres_id = m_response_map.size() > 0 ? m_response_map.rbegin()->first + 1 : 1000;
+					wres->name = name;
+					int response_size = 0;
+					for (std::size_t i = 0; i < m_materials.size(); ++i) {
+						NDMaterial* imat = m_materials[i];
+						Series3DUtils::CustomStream ds;
+						Response* ires = imat->setResponse(&argv[1], argc - 1, ds);
+						if (ires) {
+							int ires_size = ires->getInformation().getData().Size();
+							if (response_size == 0)
+								response_size = ires_size;
+							if (ires_size == 0 || ires_size != response_size) {
+								// validity check
+								response_size = 0;
+								wres = nullptr;
+								break;
+							}
+							if (response_size > 0 && 
+								wres->components.size() == 0 && 
+								ds.components.size() == static_cast<std::size_t>(response_size)) {
+								wres->components = ds.components;
+							}
+							wres->responses[i] = ires;
+						}
+					}
+					// last validity check
+					if (response_size == 0)
+						wres = nullptr;
+					// map it
+					if (wres)
+						m_response_map[wres_id] = wres;
+				}
+				// go on if valid
+				if (wres) {
+					output.tag("NdMaterialOutput");
+					output.attr("matType", getClassType());
+					output.attr("matTag", getTag());
+					for (const auto& item : wres->components)
+						output.tag("ResponseType", item.c_str());
+					Vector data(static_cast<int>(wres->components.size()));
+					MaterialResponse* resp = new MaterialResponse(this, wres_id, data);
+					output.endTag();
+					return resp;
+				}
+			}
+		}
+	}
+	return NDMaterial::setResponse(argv, argc, output);
+}
+
+int Series3DMaterial::getResponse(int responseID, Information& matInformation)
+{
+	// check if it is a homogenized response
+	auto iter = m_response_map.find(responseID);
+	if (iter != m_response_map.end()) {
+		auto wres = iter->second;
+		if (matInformation.theVector) {
+			matInformation.theVector->Zero();
+			double wsum = 0.0;
+			for (std::size_t i = 0; i < m_materials.size(); ++i) {
+				if (wres->responses[i]->getResponse() < 0) continue;
+				const Vector& idata = wres->responses[i]->getInformation().getData();
+				if (idata.Size() == matInformation.theVector->Size()) {
+					matInformation.theVector->addVector(1.0, idata, m_weights[i]);
+				}
+				wsum += m_weights[i];
+			}
+			if (wsum > 0.0)
+				(*matInformation.theVector) /= wsum;
+			return 0;
+		}
+	}
+	// default
+	return NDMaterial::getResponse(responseID, matInformation);
 }
 
 bool Series3DMaterial::imposeIsoStressCondition(IterativeTangentType ittype)

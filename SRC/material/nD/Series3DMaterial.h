@@ -31,9 +31,12 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <vector>
+#include <map>
+#include <memory>
 
 namespace Series3DUtils {
 	class SolverWrapper;
+	class ResponseWrapper;
 }
 
 class Series3DMaterial : public NDMaterial
@@ -91,7 +94,8 @@ public:
 
 	// parameters and responses
 	int setParameter(const char** argv, int argc, Parameter& param);
-	Response* setResponse(const char** argv, int argc, OPS_Stream& s);
+	Response* setResponse(const char** argv, int argc, OPS_Stream& output);
+	int getResponse(int responseID, Information& matInformation);
 
 private:
 	bool imposeIsoStressCondition(IterativeTangentType ittype);
@@ -139,6 +143,7 @@ private:
 	// needed to restore the last committed stage on each material
 	// before solving for the iso-stress condition.
 	std::vector<Vector> m_mat_strain_commit;
-
+	// responses for homogenized outputs
+	std::map<int, std::shared_ptr<Series3DUtils::ResponseWrapper>> m_response_map;
 };
 #endif
