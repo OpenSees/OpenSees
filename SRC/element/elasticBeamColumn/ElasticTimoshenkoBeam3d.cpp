@@ -45,6 +45,7 @@
 #include <Parameter.h>
 #include <ElementResponse.h>
 #include <ElementalLoad.h>
+#include <SectionForceDeformation.h>
 #include <elementAPI.h>
 
 #include <math.h>
@@ -184,6 +185,72 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
     }
     */
     
+    // zero fixed end forces vector
+    ql0.Zero();
+}
+
+ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2, 
+						 SectionForceDeformation &section,
+						 CrdTransf &coordTransf, double r, int cm, int gnl)
+    : Element(tag, ELE_TAG_ElasticTimoshenkoBeam3d),
+    connectedExternalNodes(2), theCoordTransf(0), 
+    rho(r), cMass(cm), nlGeo(gnl), phiY(0.0),
+    phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12), kl(12,12), klgeo(12,12),
+    Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
+{
+  E = 1.0;
+  G = 1.0;
+
+  const Matrix &sectTangent = section.getInitialTangent();
+  const ID &sectCode = section.getType();
+  for (int i=0; i<sectCode.Size(); i++) {
+    int code = sectCode(i);
+    switch(code) {
+    case SECTION_RESPONSE_P:
+      A = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MZ:
+      Iz = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MY:
+      Iy = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_VY:
+      Avy = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_VZ:
+      Avz = sectTangent(i,i);
+      break;      
+    case SECTION_RESPONSE_T:
+      Jx = sectTangent(i,i);
+      break;
+    default:
+      break;
+    }
+  }
+  
+    // ensure the connectedExternalNode ID is of correct size & set values
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
+    }
+    
+    connectedExternalNodes(0) = Nd1;
+    connectedExternalNodes(1) = Nd2;
+    
+    // set node pointers to NULL
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
+    
+    // get a copy of the coordinate transformation
+    theCoordTransf = coordTransf.getCopy3d();
+    if (!theCoordTransf)  {
+        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - "
+            << "failed to get copy of coordinate transformation.\n";
+        exit(-1);
+    }
+
     // zero fixed end forces vector
     ql0.Zero();
 }
