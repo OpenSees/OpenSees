@@ -41,7 +41,7 @@ OPS_IMKBilin(void)
 {
 	if (numIMKBilinMaterials == 0) {
 		numIMKBilinMaterials++;
-		OPS_Error("Mod. IMK Bilinear Model - AE-Oct21\n", 1);
+		OPS_Error("Mod. IMK Bilinear Model - AE-Sep22\n", 1);
 	}
 
 	// Pointer to a uniaxial material that will be returned
@@ -125,21 +125,21 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%  MAIN CODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	Mpe_pos0 = Mpe_pos0;
+	Mmax_pos0 = MmaxMpe_pos0 * Mpe_pos0;
 	Theta_y_pos0 = Mpe_pos0 / Ke;
 	Theta_max_pos0 = Theta_y_pos0 + Theta_p_pos0;
 	slope_p_pos0 = (Mmax_pos0 - Mpe_pos0) / (Theta_p_pos0);
 	slope_pc_pos0 = Mmax_pos0 / (Theta_pc_pos0);
-	Mpe_pos0 = Mpe_pos0;
-	Mmax_pos0 = MmaxMpe_pos0 * Mpe_pos0;
 	MpeProject_pos0 = Mmax_pos0 - slope_p_pos0 * Theta_max_pos0;
 	MmaxProject_pos0 = Mmax_pos0 + slope_pc_pos0 * Theta_max_pos0;
 
+	Mpe_neg0 = Mpe_neg0;
+	Mmax_neg0 = MmaxMpe_neg0 * Mpe_neg0;
 	Theta_y_neg0 = Mpe_neg0 / Ke;
 	Theta_max_neg0 = Theta_y_neg0 + Theta_p_neg0;
 	slope_p_neg0 = (Mmax_neg0 - Mpe_neg0) / (Theta_p_neg0);
 	slope_pc_neg0 = Mmax_neg0 / (Theta_pc_neg0);
-	Mpe_neg0 = Mpe_neg0;
-	Mmax_neg0 = MmaxMpe_neg0 * Mpe_neg0;
 	MpeProject_neg0 = Mmax_neg0 - slope_p_neg0 * Theta_max_neg0;
 	MmaxProject_neg0 = Mmax_neg0 + slope_pc_neg0 * Theta_max_neg0;
 
@@ -217,7 +217,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	// Update loading / unloading stiffness at load reversals
 	if (Reversal_Flag == 1) {
 		Rintrsct_K = Rreversal - Mreversal / K_j_1;
-		DISP_Rev = Energy_total - Energy_Excrsni_1 + 0.5*Mreversal *(Rintrsct_K - Rreversal);
+		DISP_Rev = fmax(0, Energy_total - Energy_Excrsni_1 - 0.5*Mreversal *(Rintrsct_K - Rreversal));
 		beta_K_j = pow((DISP_Rev / (2 * Ref_Energy_K - Energy_total + 0.5*Mreversal * (Rintrsct_K - Rreversal))), c_K);
 
 		K_j = K_j_1 * (1 - beta_K_j);
@@ -228,6 +228,17 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	else {
 		beta_K_j = beta_K_j_1;
 		K_j = K_j_1;
+	}
+
+	// Fix for force overshooting at new excursions 
+	Mi_temp = Mi_1 + K_j * (Ri - Ri_1);
+	if (Mi_temp*Mi_1 < 0) {
+		Energy_Excrsn = max(0., Energy_total - Energy_Excrsni_1);
+		Energy_Excrsni_1 = Energy_total;
+		Excursion_Flag = 1;
+	}
+	else {
+		Excursion_Flag = 0;
 	}
 
 	//cout << " Ri_1=" << Ri_1 << " Ri=" << Ri << " Di=" << Di << endln;
@@ -387,8 +398,6 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 	else if (QuarterFlag == 3) {
 		if (fabs(Ri) <= Theta_maxi) {
 			Mi_boundary = -MpeProjecti + slope_pi * Ri;
-			//cout << "        MpeProjecti=" << MpeProjecti << " slope_pi=" << slope_pi << " Mbound=" << Mi_boundary << endln;
-
 		}
 		else if (fabs(Ri) > Theta_maxi) {
 			Mi_boundary = min(-Mr_neg0, -MmaxProjecti - slope_pci * Ri);
@@ -473,7 +482,7 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 
 	// Energy calculation at each new excursion
 	if (Mi / Mi_1 <= 0.0) {
-		Energy_Excrsn = Energy_total - Energy_Excrsni_1;	// total energy dissipated in current excursion
+		Energy_Excrsn = max(0., Energy_total - Energy_Excrsni_1);	// total energy dissipated in current excursion
 		Energy_Excrsni_1 = Energy_total;					// total energy dissipated in previous excursion
 		Excursion_Flag = 1;
 	}
@@ -497,6 +506,11 @@ int IMKBilin::setTrialStrain(double strain, double strainRate)
 		if (beta_K_j > 1) {
 			Energy_Flag = 1;
 		}
+	}
+
+	// if energy fail flag is reached in current step
+	if ((Energy_Flag == 1)) {
+		Mi = 0.0;
 	}
 
 	// %%%%%%%%%% PREPARE RETURN VALUES %%%%%%%%%%%%%
@@ -701,6 +715,13 @@ int IMKBilin::revertToStart(void)
 	/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\\
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ONE TIME CALCULATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\\
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+	if (ResM_pos0 == 0.0) {
+		ResM_pos0 = 0.01;
+	}
+	if (ResM_neg0 == 0.0) {
+		ResM_neg0 = 0.01;
+	}
 
 	Theta_y_pos0 = Mpe_pos0 / Ke;
 	Theta_max_pos0 = Theta_y_pos0 + Theta_p_pos0;

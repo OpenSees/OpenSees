@@ -18,14 +18,21 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.15 $
-// $Date: 2010-04-23 22:56:22 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/brick/FourNodeTetrahedron.h,v $
+// ============================================================================
+// 2018 By Jose Abell @ Universidad de los Andes, Chile
+// www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
+// ============================================================================
+// Implements a standard 4-node tetrahedron element.
+//
+// This element has one Gauss point of integration that represents the stress or
+// strain field in the whole element. This is a constant stress/strain element
+// because the displacement interpolation is linear. 
+//
+// This element is very succeptible to locking, so use with fine discretizations
+// requires care. 
+//
+// ============================================================================
 
-// Ed "C++" Love
-//
-// Eight node FourNodeTetrahedron element 
-//
 
 #ifndef FOURNODETETRAHEDRON_H
 #define FOURNODETETRAHEDRON_H

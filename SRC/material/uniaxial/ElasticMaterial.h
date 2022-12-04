@@ -85,8 +85,6 @@ class ElasticMaterial : public UniaxialMaterial
   private:
     double trialStrain;
     double trialStrainRate;
-    double committedStrain;
-    double committedStrainRate;
     double Epos;
     double Eneg;
     double eta;

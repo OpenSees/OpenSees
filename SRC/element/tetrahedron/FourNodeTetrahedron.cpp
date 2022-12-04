@@ -18,14 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.31 $
-// $Date: 2010-04-23 22:56:02 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/brick/FourNodeTetrahedron.cpp,v $
-
-// Ed "C++" Love
-//
-// Eight node FourNodeTetrahedron element
-//
+// ============================================================================
+// 2018 By Jose Abell @ Universidad de los Andes, Chile
+// www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
+// ============================================================================
+// Please read detailed description in FourNodeTetrahedron.h.
+// ============================================================================
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -453,8 +451,8 @@ void  FourNodeTetrahedron::Print(OPS_Stream &s, int flag)
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"FourNodeTetrahedron\", ";
-        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 2; i++)
+        s << "\"nodes\": [";
+        for (int i = 0; i < 3; i++)
             s << connectedExternalNodes(i) << ", ";
         s << connectedExternalNodes(3) << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
@@ -1316,7 +1314,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
         resid( jj + p ) += residJ(p)  ;
         if (applyLoad == 0)
         {
-          // resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+          resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
         }
         else
         {
@@ -1903,7 +1901,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     else if (parameterID == 1414)
     {
       int new_do_update = info.theDouble;
-      if (do_update == 0 & new_do_update == 1)
+      if (do_update == 0 && new_do_update == 1)
       {
         do_update = 1;
         Domain * mydomain = this->getDomain();
@@ -1936,19 +1934,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
 }
 
-/*
-      Inputs:
-         ss[4]     - Natural coordinates of point
-         xl[3][4]  - Nodal coordinates for element
 
-      Outputs:
-         xsj        - Jacobian determinant at point
-         shp[4][4]  - Shape functions and derivatives at point
-                     shp[0][i] = dN_i/dx
-                     shp[1][i] = dN_i/dy
-                     shp[2][i] = dN_i/dzc
-                     shp[3][i] =  N_i
-*/
 void  
 FourNodeTetrahedron::shp3d( const double ss[4], double &xsj, double shp[4][4], const double xl[3][4]   )
 {

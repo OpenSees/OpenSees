@@ -1294,3 +1294,13 @@ VTK_Recorder::initialize()
 
   return 0;
 }
+
+int VTK_Recorder::flush(void) {
+  if (thePVDFile.is_open() && thePVDFile.good()) {
+    thePVDFile.flush();
+  }
+  if (theVTUFile.is_open() && theVTUFile.good()) {
+    theVTUFile.flush();
+  }
+  return 0;
+}

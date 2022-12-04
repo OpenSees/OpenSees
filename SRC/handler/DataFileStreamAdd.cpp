@@ -892,3 +892,10 @@ DataFileStreamAdd::setOrder(const ID &orderData)
 
   return 0;
 }
+
+int DataFileStreamAdd::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}

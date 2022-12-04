@@ -41,6 +41,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -52,12 +53,46 @@
 #endif
 #endif
 
-#define DMP_ERR_INFO "( function: " << __func__ << ", file: \"" << __FILE__ << "\", line: " << __LINE__ << " )\n"
-#define DMP_ERR(X) opserr << "FATAL ERROR: " << X << DMP_ERR_INFO, exit(-1)
+namespace {
 
-#define DMP_DBL_LARGE 1.0e200
+	bool string_to_list_of_doubles(const std::string& text, char sep, std::vector<double>& out) {
+		auto to_double = [](const std::string& text, double& num) -> bool {
+			num = 0.0;
+			try {
+				num = std::stod(text);
+				return true;
+			}
+			catch (...) {
+				return false;
+			}
+		};
+		if (out.size() > 0) out.clear();
+		std::size_t start = 0, end = 0;
+		double value;
+		while (true) {
+			end = text.find(sep, start);
+			if (end == std::string::npos) {
+				if (start < text.size()) {
+					if (!to_double(text.substr(start), value))
+						return false;
+					out.push_back(value);
+				}
+				break;
+			}
+			std::string subs = text.substr(start, end - start);
+			if (subs.size() > 0) {
+				if (!to_double(subs, value))
+					return false;
+				out.push_back(value);
+			}
+			start = end + 1;
+		}
+		return true;
+	}
 
-void
+}
+
+int
 OPS_ResponseSpectrumAnalysis(void)
 {
 	// responseSpectrum $tsTag $dir <-scale $scale>
@@ -72,106 +107,222 @@ OPS_ResponseSpectrumAnalysis(void)
 	// get analysis model
 	AnalysisModel* theAnalysisModel = *OPS_GetAnalysisModel();
 	if (theAnalysisModel == nullptr) {
-		opserr << "modalProperties Error: no AnalysisModel available.\n";
-		exit(-1);
+		opserr << "ResponseSpectrumAnalysis Error: no AnalysisModel available.\n";
+		return -1;
 	}
 	if (theAnalysisModel->getDomainPtr() == nullptr) {
-		opserr << "modalProperties Error: no Domain available.\n";
-		exit(-1);
+		opserr << "ResponseSpectrumAnalysis Error: no Domain available.\n";
+		return -1;
 	}
 
 	// init default arguments
 	TimeSeries* ts = nullptr;
 	int dir = 1;
 	double scale = 1.0;
+	std::vector<double> Tn;
+	std::vector<double> Sa;
+	int mode_id = 0;
+	bool single_mode = false;
 
 	// make sure eigenvalue and modal properties have been called before
-	const auto& modal_props = theAnalysisModel->getDomainPtr()->getModalProperties();
+	DomainModalProperties modal_props;
+	if (theAnalysisModel->getDomainPtr()->getModalProperties(modal_props) < 0) {
+		opserr << "ResponseSpectrumAnalysis - eigen and modalProperties have not been called" << endln;
+		return -1;
+	}
 	int ndf = modal_props.totalMass().Size();
 
 	// parse
 	int nargs = OPS_GetNumRemainingInputArgs();
 	if (nargs < 2) {
-		opserr << "responseSpectrum $tsTag $dir <-scale $scale> <-damp $damp>\n"
+		opserr << "ResponseSpectrumAnalysis $tsTag $dir <-scale $scale> <-damp $damp>\n"
+			<< "or\n"
+			<< "ResponseSpectrumAnalysis $dir -Tn $TnValues -Sa $SaValues <-scale $scale> <-damp $damp>\n"
 			"Error: at least 2 arguments should be provided.\n";
-		exit(-1);
+		return -1;
 	}
+
+	// search for -Tn -Sa, if both found we use them as lists
+	// otherwise we fallback to the old implementation of the timeSeries
+	bool found_Tn = false;
+	bool found_Sa = false;
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* arg = OPS_GetString();
+		if (!found_Tn && strcmp(arg, "-Tn") == 0)
+			found_Tn = true;
+		if (!found_Sa && strcmp(arg, "-Sa") == 0)
+			found_Sa = true;
+	}
+	bool use_lists = found_Tn && found_Sa;
+	if (found_Tn && !found_Sa) {
+		opserr << "ResponseSpectrumAnalysis Error: found -Tn but not -Sa, please specify both of them or use a timeSeries\n";
+		return -1;
+	}
+	if (found_Sa && !found_Tn) {
+		opserr << "ResponseSpectrumAnalysis Error: found -Sa but not -Tn, please specify both of them or use a timeSeries\n";
+		return -1;
+	}
+	OPS_ResetCurrentInputArg(-nargs);
+
+	// num data
 	int numData = 1;
-	int tstag;
-	if (OPS_GetInt(&numData, &tstag) < 0) {
-		opserr << "responseSpectrum Error: Failed to get timeSeries tag.\n";
-		exit(-1);
+
+	// get time series
+	if (!use_lists) {
+		int tstag;
+		if (OPS_GetInt(&numData, &tstag) < 0) {
+			opserr << "ResponseSpectrumAnalysis Error: Failed to get timeSeries tag.\n";
+			return -1;
+		}
+		ts = OPS_getTimeSeries(tstag);
+		if (ts == nullptr) {
+			opserr << "ResponseSpectrumAnalysis Error: Failed to get timeSeries with tag = " << tstag << ".\n";
+			return -1;
+		}
 	}
-	ts = OPS_getTimeSeries(tstag);
-	if (ts == nullptr) {
-		opserr << "responseSpectrum Error: Failed to get timeSeries with tag = " << tstag << ".\n";
-		exit(-1);
-	}
+
+	// get direction
 	if (OPS_GetInt(&numData, &dir) < 0) {
-		opserr << "responseSpectrum Error: Failed to get direction.\n";
-		exit(-1);
+		opserr << "ResponseSpectrumAnalysis Error: Failed to get direction.\n";
+		return -1;
 	}
 	if (dir < 1 || dir > ndf) {
-		opserr << "responseSpectrum Error: provided direction (" << dir << ") should be in the range 1-" << ndf << ".\n";
-		exit(-1);
+		opserr << "ResponseSpectrumAnalysis Error: provided direction (" << dir << ") should be in the range 1-" << ndf << ".\n";
+		return -1;
 	}
 
 	// parse optional data
-	nargs = OPS_GetNumRemainingInputArgs();
-	int loc = 0;
-	int mode_id = 0;
-	bool single_mode = false;
-	while (loc < nargs) {
+	while (OPS_GetNumRemainingInputArgs() > 0) {
 		const char* value = OPS_GetString();
 		if (strcmp(value, "-scale") == 0) {
-			if (loc < nargs - 1) {
+			if (OPS_GetNumRemainingInputArgs() > 0) {
 				if (OPS_GetDouble(&numData, &scale) < 0) {
-					opserr << "responseSpectrum Error: Failed to get scale factor.\n";
-					exit(-1);
+					opserr << "ResponseSpectrumAnalysis Error: Failed to get scale factor.\n";
+					return -1;
 				}
-				++loc;
 			}
 			else {
-				opserr << "responseSpectrum Error: scale factor requested but not provided.\n";
-				exit(-1);
+				opserr << "ResponseSpectrumAnalysis Error: scale factor requested but not provided.\n";
+				return -1;
 			}
 		}
 		else if (strcmp(value, "-mode") == 0) {
-			if (loc < nargs - 1) {
+			if (OPS_GetNumRemainingInputArgs() > 0) {
 				if (OPS_GetInt(&numData, &mode_id) < 0) {
-					opserr << "responseSpectrum Error: Failed to get the mode_id.\n";
-					exit(-1);
+					opserr << "ResponseSpectrumAnalysis Error: Failed to get the mode_id.\n";
+					return -1;
 				}
 				--mode_id; // make it 0-based
 				single_mode = true;
-				++loc;
 			}
 			else {
-				opserr << "responseSpectrum Error: mode_id requested but not provided.\n";
-				exit(-1);
+				opserr << "ResponseSpectrumAnalysis Error: mode_id requested but not provided.\n";
+				return -1;
 			}
 		}
-		++loc;
+		else if (strcmp(value, "-Tn") == 0) {
+			// first try expanded list like {*}$the_list,
+			// also used in python like *the_list
+			Tn.clear();
+			while (OPS_GetNumRemainingInputArgs() > 0) {
+				double item;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
+				if (OPS_GetDoubleInput(&numData, &item) < 0) {
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
+					break;
+				}
+				Tn.push_back(item);
+			}
+			// try Tcl list (it's a string after all...)
+			if (Tn.size() == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+				std::string list_string = OPS_GetString();
+				if (!string_to_list_of_doubles(list_string, ' ', Tn)) {
+					opserr << "ResponseSpectrumAnalysis Error: cannot parse the Tn list.\n";
+					return -1;
+				}
+			}
+		}
+		else if (strcmp(value, "-Sa") == 0) {
+			// first try expanded list like {*}$the_list,
+			// also used in python like *the_list
+			Sa.clear();
+			while (OPS_GetNumRemainingInputArgs() > 0) {
+				double item;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
+				if (OPS_GetDoubleInput(&numData, &item) < 0) {
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
+					break;
+				}
+				Sa.push_back(item);
+			}
+			// try Tcl list (it's a string after all...)
+			if (Sa.size() == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+				std::string list_string = OPS_GetString();
+				if (!string_to_list_of_doubles(list_string, ' ', Sa)) {
+					opserr << "ResponseSpectrumAnalysis Error: cannot parse the Sa list.\n";
+					return -1;
+				}
+			}
+		}
+	}
+
+	// check Tn and Sa vectors
+	if (use_lists) {
+		if (Tn.size() != Sa.size()) {
+			opserr << "ResponseSpectrumAnalysis Error: Sa and Tn lists must have the same length\n";
+			opserr << (int)Tn.size() << " != " << (int)Sa.size() << "\n";
+			return -1;
+		}
+		if (Tn.size() == 0) {
+			opserr << "ResponseSpectrumAnalysis Error: Sa and Tn lists cannot be empty\n";
+			return -1;
+		}
+		for (std::size_t i = 0; i < Tn.size(); ++i) {
+			if (Tn[i] < 0.0) {
+				opserr << "ResponseSpectrumAnalysis Error: Tn values must be positive (found " << Tn[i] << ")\n";
+				return -1;
+			}
+			if (i > 0 && Tn[i] <= Tn[i - 1]) {
+				opserr << "ResponseSpectrumAnalysis Error: Tn values must be monotonically increasing (found " << Tn[i] << " after " << Tn[i - 1] << ")\n";
+				return -1;
+			}
+		}
+		for (double item : Sa) {
+			if (item < 0.0) {
+				opserr << "ResponseSpectrumAnalysis Error: Sa values must be positive (found " << item << ")\n";
+				return -1;
+			}
+		}
 	}
 
 	// ok, create the response spectrum analysis and run it here... 
 	// no need to store it
-	ResponseSpectrumAnalysis rsa(theAnalysisModel, ts, dir, scale);
+	ResponseSpectrumAnalysis rsa(theAnalysisModel, ts, Tn, Sa, dir, scale);
+	int result;
 	if (single_mode)
-		rsa.analyze(mode_id);
+		result = rsa.analyze(mode_id);
 	else
-		rsa.analyze();
+		result = rsa.analyze();
 
+	return result;
 }
 
 ResponseSpectrumAnalysis::ResponseSpectrumAnalysis(
 	AnalysisModel* theModel,
 	TimeSeries* theFunction,
+	const std::vector<double>& Tn,
+	const std::vector<double>& Sa,
 	int theDirection,
 	double scale
 )
 	: m_model(theModel)
 	, m_function(theFunction)
+	, m_Tn(Tn)
+	, m_Sa(Sa)
 	, m_direction(theDirection)
 	, m_scale(scale)
 	, m_current_mode(0)
@@ -183,19 +334,25 @@ ResponseSpectrumAnalysis::~ResponseSpectrumAnalysis()
 {
 }
 
-void ResponseSpectrumAnalysis::analyze()
+int ResponseSpectrumAnalysis::analyze()
 {
 	// get the domain
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+		opserr << "ResponseSpectrumAnalysis::analyze() - failed to get modal properties" << endln;
+		return -1;
+	}
 
 	// size info
 	int num_eigen = domain->getEigenvalues().Size();
 
 	// check consistency
-	check();
+	int error_code;
+	error_code = check();
+	if (error_code < 0) return error_code;
 
 	// loop over all required eigen-modes, compute the modal displacement
 	// and save the results.
@@ -207,61 +364,87 @@ void ResponseSpectrumAnalysis::analyze()
 	for (m_current_mode = 0; m_current_mode < num_eigen; ++m_current_mode)
 	{
 		// init the new step
-		beginMode();
+		error_code = beginMode();
+		if (error_code < 0) return error_code;
 
 		// compute modal acceleration for this mode using the 
 		// provided response spectrum function (time series)
-		solveMode();
+		error_code = solveMode();
+		if (error_code < 0) return error_code;
 
 		// done with the current step.
 		// here the modal displacements will be recorded (and all other results
 		// if requested via recorders...)
-		endMode();
+		error_code = endMode();
+		if (error_code < 0) return error_code;
 	}
+
+	return 0;
 }
 
-void ResponseSpectrumAnalysis::analyze(int mode_id)
+int ResponseSpectrumAnalysis::analyze(int mode_id)
 {
 	// get the domain
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+		opserr << "ResponseSpectrumAnalysis::analyze(mode_id) - failed to get modal properties" << endln;
+		return -1;
+	}
 
 	// size info
 	int num_eigen = domain->getEigenvalues().Size();
-	if (mode_id < 0 || mode_id >= num_eigen)
-		DMP_ERR("The provided mode_id (" << mode_id + 1 << ") is out of range (1, " << num_eigen << ")");
+	if (mode_id < 0 || mode_id >= num_eigen) {
+		opserr << "ResponseSpectrumAnalysis::analyze(mode_id) - The provided mode_id (" << mode_id + 1 << ") is out of range (1, " << num_eigen << ")\n";
+		return -1;
+	}
 	m_current_mode = mode_id;
 
 	// check consistency
-	check();
+	int error_code;
+	error_code = check();
+	if (error_code < 0) return error_code;
 
 	// init the new step
-	beginMode();
+	error_code = beginMode();
+	if (error_code < 0) return error_code;
 
 	// compute modal acceleration for this mode using the 
 	// provided response spectrum function (time series)
-	solveMode();
+	error_code = solveMode();
+	if (error_code < 0) return error_code;
 
 	// done with the current step.
 	// here the modal displacements will be recorded (and all other results
 	// if requested via recorders...)
-	endMode();
+	error_code = endMode();
+	if (error_code < 0) return error_code;
+
+	return 0;
 }
 
-void ResponseSpectrumAnalysis::check()
+int ResponseSpectrumAnalysis::check()
 {
 	// get the domain
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+		opserr << "ResponseSpectrumAnalysis::check() - failed to get modal properties" << endln;
+		return -1;
+	}
 
 	// number of eigen-modes
 	int num_eigen = domain->getEigenvalues().Size();
-	if (num_eigen < 1)
-		DMP_ERR("No Eigenvalue provided.\n");
+	if (num_eigen < 1) {
+		opserr << "ResponseSpectrumAnalysis::check() - No Eigenvalue provided.\n";
+		return -1;
+	}
 
 	// check consistency
 	auto check_eigen = [&mp, domain]() -> bool {
@@ -277,49 +460,59 @@ void ResponseSpectrumAnalysis::check()
 		}
 		return true;
 	};
-	if (!check_eigen())
-		DMP_ERR("Eigenvalues stored in DomainModalProperties are not equal to the eigenvalues in the model.\n"
+	if (!check_eigen()) {
+		opserr << "ResponseSpectrumAnalysis::check() - Eigenvalues stored in DomainModalProperties are not equal to the eigenvalues in the model.\n"
 			"Make sure to call the 'modalProperties' command\n"
-			"after the 'eigen' command, and right before the 'responseSpectrum' command.\n");
+			"after the 'eigen' command, and right before the 'responseSpectrum' command.\n";
+		return -1;
+	}
+
+	return 0;
 }
 
-void ResponseSpectrumAnalysis::beginMode()
+int ResponseSpectrumAnalysis::beginMode()
 {
 	// new step... (do nothing)
 	if (m_model->analysisStep() < 0) {
-		DMP_ERR(
-			"ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed"
-			" at mode " << m_current_mode << "\n"
-		);
+		opserr << "ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed"
+			" at mode " << m_current_mode << "\n";
+		return -1;
 	}
+
+	return 0;
 }
 
-void ResponseSpectrumAnalysis::endMode()
+int ResponseSpectrumAnalysis::endMode()
 {
 	// update domain
 	if (m_model->updateDomain() < 0) {
-		DMP_ERR(
-			"ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed in updateDomain"
-			" at mode " << m_current_mode << "\n"
-		);
+		opserr << "ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed in updateDomain"
+			" at mode " << m_current_mode << "\n";
+		return -1;
 	}
 
 	// commit domain
 	if (m_model->commitDomain() < 0) {
-		DMP_ERR(
-			"ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed in commitDomain"
-			" at mode " << m_current_mode << "\n"
-		);
+		opserr << "ResponseSpectrumAnalysis::analyze() - the AnalysisModel failed in commitDomain"
+			" at mode " << m_current_mode << "\n";
+		return -1;
 	}
+
+	return 0;
 }
 
-void ResponseSpectrumAnalysis::solveMode()
+int ResponseSpectrumAnalysis::solveMode()
 {
 	// get the domain
 	Domain* domain = m_model->getDomainPtr();
 
 	// get the modal properties
-	const DomainModalProperties& mp = domain->getModalProperties();
+	//const DomainModalProperties& mp = domain->getModalProperties();
+	DomainModalProperties mp;
+	if (domain->getModalProperties(mp) < 0) {
+		opserr << "ResponseSpectrumAnalysis::solveMode() - failed to get modal properties" << endln;
+		return -1;
+	}
 
 	// size info
 	int ndf = mp.totalMass().Size();
@@ -336,7 +529,7 @@ void ResponseSpectrumAnalysis::solveMode()
 	double omega = std::sqrt(lambda);
 	double freq = omega / 2.0 / M_PI;
 	double period = 1.0 / freq;
-	double mga = m_function->getFactor(period);
+	double mga = getSa(period);
 	double Vscale = mp.eigenVectorScaleFactors()(m_current_mode);
 	double MPF = mp.modalParticipationFactors()(m_current_mode, exdof);
 
@@ -371,5 +564,41 @@ void ResponseSpectrumAnalysis::solveMode()
 		}
 
 	}
+
+	return 0;
+}
+
+double ResponseSpectrumAnalysis::getSa(double T) const
+{
+	// use the time series if provided
+	if (m_function)
+		return m_function->getFactor(T);
+	// otherwise use the vectors
+	std::size_t n = m_Tn.size();
+	// check empty
+	if (n < 1)
+		return 0.0;
+	// check constant
+	if (n == 1)
+		return m_Sa[0];
+	// check bounds
+	if (T <= m_Tn.front())
+		return m_Sa.front();
+	if (T >= m_Tn.back())
+		return m_Sa.back();
+	// interpolate
+	for (std::size_t i = 1; i < n; ++i) {
+		double t1 = m_Tn[i];
+		if (T <= t1) {
+			double t0 = m_Tn[i - 1];
+			double s1 = m_Sa[i];
+			double s0 = m_Sa[i - 1];
+			double dT = t1 - t0;
+			double dS = s1 - s0;
+			double scale = dT > 0.0 ? (T - t0) / dT : 0.5;
+			return s0 + scale * dS;
+		}
+	}
+	return m_Sa.back();
 }
 

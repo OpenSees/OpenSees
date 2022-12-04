@@ -26,8 +26,12 @@ OBJS       = ForceBeamColumn2d.o ForceBeamColumn3d.o \
 	FixedLocationBeamIntegration.o \
 	LowOrderBeamIntegration.o \
 	MidDistanceBeamIntegration.o \
+	MidDistanceBeamIntegration.o \
+	MidDistanceBeamIntegration.o \
 	GaussQBeamIntegration.o \
 	ChebyshevBeamIntegration.o \
+	ConcentratedPlasticityBeamIntegration.o \
+	ConcentratedCurvatureBeamIntegration.o \
 	gaussq.o d1mach.o
 
 # Compilation control

@@ -246,7 +246,7 @@
 #define iincsort	__iincsort
 #define idecsort	__idecsort
 #define errexit		__errexit
-
+/*
 #ifndef METISLIB
 #define cleartimer	__cleartimer
 #define starttimer	__startimer
@@ -262,6 +262,6 @@
 #define gettimer(a)		;
 #define seconds(a)		;
 #endif
-
+*/
 
 #endif

@@ -49,7 +49,7 @@ OPS_ElasticPPMaterial(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs < 3 || numArgs > 5) {
-    opserr << "Invalid #args,  want: uniaxialMaterial ElasticPP $tag $E $epsP <$epsN $eps0>\n";
+    opserr << "Invalid #args,  want: uniaxialMaterial ElasticPP $tag $E $epsP <$epsN $eps0>" << endln;
     return 0;
   }
   
@@ -75,7 +75,7 @@ OPS_ElasticPPMaterial(void)
   // Parsing was successful, allocate the material
     theMaterial = new ElasticPPMaterial(iData[0], dData[0], dData[1], dData[2], dData[3]);
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type ElasticPP\n";
+    opserr << "WARNING could not create uniaxialMaterial of type ElasticPP" << endln;
     return 0;
   }
 
@@ -87,9 +87,8 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp)
 :UniaxialMaterial(tag,MAT_TAG_ElasticPPMaterial),
  ezero(0.0), E(e), ep(0.0),
  trialStrain(0.0), trialStress(0.0), trialTangent(E),
- commitStrain(0.0), commitStress(0.0), commitTangent(E)
+ commitStrain(0.0), commitStress(0.0), EnergyP(0.0)
 {
-	EnergyP = 0;	//by SAJalali
 	fyp = E*eyp;
   fyn = -fyp;
 }
@@ -99,17 +98,16 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp,
 :UniaxialMaterial(tag,MAT_TAG_ElasticPPMaterial),
  ezero(ez), E(e), ep(0.0),
  trialStrain(0.0), trialStress(0.0), trialTangent(E),
- commitStrain(0.0), commitStress(0.0), commitTangent(E)
+ commitStrain(0.0), commitStress(0.0), EnergyP(0.0)
 {
     if (eyp < 0) {
 	opserr << "ElasticPPMaterial::ElasticPPMaterial() - eyp < 0, setting > 0\n";
-	eyp *= -1.;
+	eyp = -eyp;
     }
     if (eyn > 0) {
 	opserr << "ElasticPPMaterial::ElasticPPMaterial() - eyn > 0, setting < 0\n";
-	eyn *= -1.;
+	eyn = -eyn;
     }    
-	EnergyP = 0;	//by SAJalali
 
     fyp = E*eyp;
     fyn = E*eyn;
@@ -119,9 +117,8 @@ ElasticPPMaterial::ElasticPPMaterial()
 :UniaxialMaterial(0,MAT_TAG_ElasticPPMaterial),
  fyp(0.0), fyn(0.0), ezero(0.0), E(0.0), ep(0.0), 
  trialStrain(0.0), trialStress(0.0), trialTangent(0.0),
- commitStrain(0.0), commitStress(0.0), commitTangent(0.0)
+ commitStrain(0.0), commitStress(0.0), EnergyP(0.0)
 {
-	EnergyP = 0;	//by SAJalali
 
 }
 
@@ -225,7 +222,6 @@ ElasticPPMaterial::commitState(void)
 	EnergyP += 0.5*(commitStress + trialStress)*(trialStrain - commitStrain);
 
     commitStrain = trialStrain;
-    commitTangent=trialTangent;
     commitStress = trialStress;
 
     return 0;
@@ -236,7 +232,6 @@ int
 ElasticPPMaterial::revertToLastCommit(void)
 {
   trialStrain = commitStrain;
-  trialTangent = commitTangent;
   trialStress = commitStress;
 
   return 0;
@@ -247,7 +242,7 @@ int
 ElasticPPMaterial::revertToStart(void)
 {
   trialStrain = commitStrain = 0.0;
-  trialTangent = commitTangent = E;
+  trialTangent = E;
   trialStress = commitStress = 0.0;
 
   ep = 0.0;
@@ -263,6 +258,13 @@ ElasticPPMaterial::getCopy(void)
   ElasticPPMaterial *theCopy =
     new ElasticPPMaterial(this->getTag(),E,fyp/E,fyn/E,ezero);
   theCopy->ep = this->ep;
+
+  theCopy->trialStrain = trialStrain;
+  theCopy->trialStress = trialStress;
+  theCopy->trialTangent = trialTangent;
+  theCopy->commitStrain = commitStrain;
+  theCopy->commitStress = commitStress;
+  theCopy->EnergyP = EnergyP;      
   
   return theCopy;
 }
@@ -272,7 +274,7 @@ int
 ElasticPPMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(9);
+  static Vector data(8);
   data(0) = this->getTag();
   data(1) = ep;
   data(2) = E;
@@ -281,11 +283,10 @@ ElasticPPMaterial::sendSelf(int cTag, Channel &theChannel)
   data(5) = fyn;
   data(6) = commitStrain;
   data(7) = commitStress;
-  data(8) = commitTangent;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ElasticPPMaterial::sendSelf() - failed to send data\n";
+    opserr << "ElasticPPMaterial::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -295,10 +296,10 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
 				 FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(9);
+  static Vector data(8);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "ElasticPPMaterial::recvSelf() - failed to recv data\n";
+    opserr << "ElasticPPMaterial::recvSelf() - failed to recv data" << endln;
   else {
     this->setTag(int(data(0)));
     ep    = data(1);
@@ -308,9 +309,7 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
     fyn   = data(5);  
     commitStrain=data(6);
     commitStress=data(7);
-    commitTangent=data(8);
     trialStrain = commitStrain;
-    trialTangent = commitTangent;
     trialStress = commitStress;
   }
 
@@ -346,14 +345,27 @@ ElasticPPMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(fyp);
     return param.addObject(1, this);
   }
+  if (strcmp(argv[0],"sigmaYp") == 0 || strcmp(argv[0],"fyp") == 0 || strcmp(argv[0],"Fyp") == 0) {
+    param.setValue(fyp);
+    return param.addObject(5, this);
+  }
+  if (strcmp(argv[0],"sigmaYn") == 0 || strcmp(argv[0],"fyn") == 0 || strcmp(argv[0],"Fyn") == 0) {
+    param.setValue(fyn);
+    return param.addObject(6, this);
+  }    
   if (strcmp(argv[0],"E") == 0) {
     param.setValue(E);
     return param.addObject(2, this);
   }
-  if (strcmp(argv[0],"epsP") == 0 || strcmp(argv[0],"ep") == 0) {
-    param.setValue(ep);
-    return param.addObject(3, this);
-  }
+  // Should not be able to update a history variable!
+  //if (strcmp(argv[0],"epsP") == 0 || strcmp(argv[0],"ep") == 0) {
+  //  param.setValue(ep);
+  //  return param.addObject(3, this);
+  //}
+  if (strcmp(argv[0],"epsZero") == 0 || strcmp(argv[0],"ezero") == 0) {
+    param.setValue(ezero);
+    return param.addObject(4, this);
+  }  
 
   return -1;
 }
@@ -368,12 +380,21 @@ ElasticPPMaterial::updateParameter(int parameterID, Information &info)
     this->fyp = info.theDouble;
     this->fyn = -fyp;
     break;
+  case 5:
+    this->fyp = info.theDouble;
+    break;
+  case 6:
+    this->fyn = info.theDouble;
+    break;        
   case 2:
     this->E = info.theDouble;
     trialTangent = E;
     break;
-  case 3:
-    this->ep = info.theDouble;
+    //case 3:
+    //this->ep = info.theDouble;
+    //break;
+  case 4:
+    this->ezero = info.theDouble;
     break;
   default:
     return -1;

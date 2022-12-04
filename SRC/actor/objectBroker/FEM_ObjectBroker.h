@@ -69,6 +69,7 @@ class DomainDecompositionAnalysis;
 class PartitionedModelBuilder;
 
 class CrdTransf;
+class Damping;
 class GraphNumberer;
 
 class BeamIntegration;
@@ -79,6 +80,7 @@ class SectionForceDeformation;
 class NDMaterial;
 class Fiber;
 class FrictionModel;
+class HystereticBackbone;
 
 class ConvergenceTest;
 class GroundMotion;
@@ -114,6 +116,7 @@ class FEM_ObjectBroker
     virtual ElementalLoad *getNewElementalLoad(int classTag);
     
     virtual CrdTransf *getNewCrdTransf(int classTag);
+    virtual Damping *getNewDamping(int classTag);
 
     virtual BeamIntegration *getNewBeamIntegration(int classTag);
     virtual SectionIntegration *getNewSectionIntegration(int classTag);
@@ -124,6 +127,8 @@ class FEM_ObjectBroker
     virtual Fiber *getNewFiber(int classTag);
     virtual FrictionModel *getNewFrictionModel(int classTag);
 
+  virtual HystereticBackbone *getNewHystereticBackbone(int classTag);
+  
     virtual ConvergenceTest *getNewConvergenceTest(int classTag);
     virtual LoadPattern *getNewLoadPattern(int classTag);
     virtual GroundMotion *getNewGroundMotion(int classTag);
