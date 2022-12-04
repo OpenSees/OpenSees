@@ -816,24 +816,34 @@ int ElasticTimoshenkoBeam2d::setParameter(const char **argv,
         return -1;
     
     // E of the beam
-    if (strcmp(argv[0],"E") == 0)
-        return param.addObject(1, this);
+    if (strcmp(argv[0],"E") == 0) {
+      param.setValue(E);
+      return param.addObject(1, this);
+    }
     
     // G of the beam
-    if (strcmp(argv[0],"G") == 0)
-        return param.addObject(2, this);
+    if (strcmp(argv[0],"G") == 0) {
+      param.setValue(G);
+      return param.addObject(2, this);
+    }
     
     // A of the beam
-    if (strcmp(argv[0],"A") == 0)
-        return param.addObject(3, this);
+    if (strcmp(argv[0],"A") == 0) {
+      param.setValue(A);
+      return param.addObject(3, this);
+    }
     
     // Iz of the beam
-    if (strcmp(argv[0],"Iz") == 0)
-        return param.addObject(4, this);
+    if (strcmp(argv[0],"Iz") == 0) {
+      param.setValue(Iz);
+      return param.addObject(4, this);
+    }
     
     // Avy of the beam
-    if (strcmp(argv[0],"Avy") == 0)
-        return param.addObject(5, this);
+    if (strcmp(argv[0],"Avy") == 0) {
+      param.setValue(Avy);
+      return param.addObject(5, this);
+    }
     
     return -1;
 }
@@ -847,22 +857,27 @@ int ElasticTimoshenkoBeam2d::updateParameter (int parameterID,
         return -1;
     case 1:
         E = info.theDouble;
-        return 0;
+        break;
     case 2:
         G = info.theDouble;
-        return 0;
+	break;
     case 3:
         A = info.theDouble;
-        return 0;
+	break;
     case 4:
         Iz = info.theDouble;
-        return 0;
+	break;
     case 5:
         Avy = info.theDouble;
-        return 0;
+	break;
     default:
         return -1;
     }
+
+    // Re-calculate matrices
+    this->setUp();
+
+    return 0;
 }
 
 
