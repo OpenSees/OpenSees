@@ -773,6 +773,9 @@
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp">
       <Filter>tetrahedron</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.cpp">
+      <Filter>tetrahedron</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
@@ -1520,6 +1523,9 @@
       <Filter>surfaceLoad</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h">
+      <Filter>tetrahedron</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.h">
       <Filter>tetrahedron</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h">

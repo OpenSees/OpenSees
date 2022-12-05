@@ -46,6 +46,7 @@ target_sources(OPS_Material
     PlateRebarMaterial.cpp
     PlaneStressRebarMaterial.cpp
     OrthotropicMaterial.cpp
+    Series3DMaterial.cpp
     CycLiqCP.cpp
     CycLiqCP3D.cpp
     CycLiqCPPlaneStrain.cpp
@@ -119,6 +120,7 @@ target_sources(OPS_Material
     PlateRebarMaterial.h
     PlaneStressRebarMaterial.h
     OrthotropicMaterial.h
+    Series3DMaterial.h
     CycLiqCP.h
     CycLiqCP3D.h
     CycLiqCPPlaneStrain.h
