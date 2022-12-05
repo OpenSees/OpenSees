@@ -450,6 +450,7 @@
 #define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_BeamFiberMaterial2dPS		2005
 #define ND_TAG_OrthotropicMaterial		2006
+#define ND_TAG_Series3DMaterial		2007
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -835,6 +836,7 @@
 #define ELE_TAG_IGAKLShell       	  253 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
 #define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
 #define ELE_TAG_PFEMContact3D             255
+#define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
 
 #define ELE_TAG_ExternalElement           99990
 

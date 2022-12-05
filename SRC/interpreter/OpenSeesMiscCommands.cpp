@@ -1941,7 +1941,7 @@ int OPS_sdfResponse()
 	}
 	if (fabs(a) > amax) {
 	    amax = fabs(a);
-	    tamax = iter*dt;
+	    tamax = i*dt;
 	}
     }
   
