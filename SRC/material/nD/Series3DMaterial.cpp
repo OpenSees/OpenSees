@@ -134,8 +134,8 @@ void *OPS_Series3DMaterial(void)
 	// utility for parsing
 	static std::vector<char> my_buffer(1024);
 	auto get_string_input = []() -> std::string {
-		opserr << "new input\n";
-		return OPS_GetString();
+		OPS_GetStringFromAll(my_buffer.data(), static_cast<int>(my_buffer.size()));
+		return my_buffer.data();
 	};
 
 	// convert string to int
