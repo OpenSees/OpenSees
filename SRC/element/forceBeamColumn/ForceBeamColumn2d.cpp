@@ -523,7 +523,7 @@ OPS_BeamWithHinges(void)
     opserr << "ERROR beamWithHinges - sectionI not found" << endln;
     return 0;
   }
-  sections[numSections-1] = OPS_getSectionForceDeformation(iData[3]);
+  sections[numSections-1] = OPS_getSectionForceDeformation(iData[4]);
   if (sections[numSections-1] == 0) {
     opserr << "ERROR beamWithHinges - sectionJ not found" << endln;
     return 0;
