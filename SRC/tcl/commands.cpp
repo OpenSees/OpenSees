@@ -10551,9 +10551,17 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       argLoc += 3;
     }
 
-    ElementStateParameter theParameter(newValue, &argv[argLoc], argc-argLoc, flag, &eleIDs);
-
+    int tempParamId = 0;
+    Parameter* tempParam;
+    ParameterIter& tempParamIter = theDomain.getParameters();
+    while ((tempParam = tempParamIter()) != 0) {
+        if (tempParam->getTag() > tempParamId)
+            tempParamId = tempParam->getTag();
+    }
+    ++tempParamId;
+    ElementStateParameter theParameter(tempParamId, newValue, &argv[argLoc], argc-argLoc, flag, &eleIDs);
     theDomain.addParameter(&theParameter);
+    theDomain.removeParameter(tempParamId);
   }
 
   return TCL_OK;
