@@ -76,7 +76,7 @@ int OPS_BgMesh() {
     if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 1) {
         opserr << "WARNING: basicsize? lower? upper? <-tol tol? "
                   "-wave wavefilename? numl? locs? -numsub numsub? "
-                  "-dispon? "
+                  "-dispon? -recordRange range? "
                   "-structure sid? ?numnodes? structuralNodes? "
                   "-alphaS sid? alphaS? ";
         if (ndm == 2) {
@@ -170,6 +170,32 @@ int OPS_BgMesh() {
                 }
                 bgmesh.setLocs(locs);
             }
+
+        } else if (strcmp(opt, "-recordRange") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need recordRange\n";
+                return -1;
+            }
+            double range = -1.0;
+            num = 1;
+            if (OPS_GetDoubleInput(&num, &range) < 0) {
+                opserr << "WARNING: failed to read range\n";
+                return -1;
+            }
+            bgmesh.setRecordRange(range);
+
+        } else if (strcmp(opt, "-numave") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need numave\n";
+                return -1;
+            }
+            int numave = 2;
+            num = 1;
+            if (OPS_GetIntInput(&num, &numave) < 0) {
+                opserr << "WARNING: failed to read numave\n";
+                return -1;
+            }
+            bgmesh.setNumAve(numave);
 
         } else if (strcmp(opt, "-numsub") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -296,6 +322,7 @@ BackgroundMesh::BackgroundMesh()
       numsub(4),
       recorders(),
       locs(),
+      recordRange(-1.0),
       currentTime(0.0),
       theFile(),
       structuralNodes(),
@@ -420,6 +447,48 @@ void BackgroundMesh::getCorners(const VInt& index, int num,
                     indices[counter][2] = k;
                     ++counter;
                 }
+            }
+        }
+    }
+}
+
+// get corners to the left and right, to the bottom and top
+// 2D: x - index - x
+// 3D: x -    x   - x
+//     x - index  - x
+//     x -    x   - x
+void BackgroundMesh::getCorners(const VInt& index, int num, int dim,
+                                VVInt& indices) const {
+    int ndm = OPS_GetNDM();
+    int counter = 0;
+
+    if (ndm == 2) {
+        indices.resize(2 * num + 1);
+        int dim2 = dim + 1;
+        if (dim2 >= ndm) {
+            dim2 -= ndm;
+        }
+        for (int j = -num; j <= num; ++j) {
+            indices[counter] = index;
+            indices[counter][dim2] += j;
+            ++counter;
+        }
+    } else if (ndm == 3) {
+        indices.resize((2 * num + 1) * (2 * num + 1));
+        int dim2 = dim + 1;
+        if (dim2 >= ndm) {
+            dim2 -= ndm;
+        }
+        int dim3 = dim + 2;
+        if (dim3 >= ndm) {
+            dim3 -= ndm;
+        }
+        for (int j = -num; j <= num; ++j) {
+            for (int k = -num; k <= num; ++k) {
+                indices[counter] = index;
+                indices[counter][dim2] += j;
+                indices[counter][dim3] += k;
+                ++counter;
             }
         }
     }
@@ -1264,7 +1333,7 @@ int BackgroundMesh::gridNodes() {
             double q = normVDouble(dist) / (bsize * numave);
 
             // weight for the particle
-            double w = QuinticKernel(q, bsize, ndm);
+            double w = QuinticKernel(q, bsize * numave, ndm);
 
             // check velocity
             const VDouble& pvel = pts[i]->getVel();
@@ -2905,55 +2974,69 @@ int BackgroundMesh::record(bool init) {
     }
     theFile << timestamp << " ";
 
+    // record range
+    int numRange = 1;
+    if (recordRange > 0) {
+        numRange = (int)ceil(recordRange / bsize);
+    }
+
     // record wave height and velocity
     for (int i = 0; i < (int)locs.size(); i += ndm) {
-        // lower index
+        // particles in range
         VDouble crds(ndm);
         for (int j = 0; j < ndm; ++j) {
             crds[j] = locs[i + j];
         }
 
         VInt index;
-        this->lowerIndex(crds, index);
-
-        // shape function
-        VDouble N;
-        double hh = bsize;
-        if (ndm == 2) {
-            getNForRect(index[0] * bsize, index[1] * bsize, hh, hh,
-                        crds[0], crds[1], N);
-        } else if (ndm == 3) {
-            getNForRect(index[0] * bsize, index[1] * bsize,
-                        index[2] * bsize, hh, hh, hh, crds[0],
-                        crds[1], crds[2], N);
-        }
+        VInt minind = index, maxind = index;
+        minind -= numRange;
+        maxind -= numRange;
+        VParticle pts;
+        gatherParticles(minind, maxind, pts);
 
         // velocity
         VDouble vel(ndm);
+        double wt = 0.0;
 
-        // get corners
-        VVInt indices;
-        getCorners(index, 1, indices);
-        for (int k = 0; k < (int)indices.size(); ++k) {
-            // get crds
-            getCrds(indices[k], crds);
-
-            // check bnode
-            std::map<VInt, BNode>::iterator bit =
-                bnodes.find(indices[k]);
-            if (bit == bnodes.end()) continue;
-
-            // get bnode
-            BNode& bnode = bit->second;
-            auto& vn = bnode.getVel();
-            if (vn.empty()) {
+        // get information
+        for (int i = 0; i < (int)pts.size(); ++i) {
+            // get particle
+            if (pts[i] == 0) {
                 continue;
             }
 
-            // get vel
-            for (int j = 0; j < ndm; ++j) {
-                vel[j] += N[k] * vn[0][j];
+            // particle coordinates
+            const VDouble& pcrds = pts[i]->getCrds();
+
+            // distance from particle to current location
+            VDouble dist = pcrds;
+            dist -= crds;
+            double distvalue = normVDouble(dist);
+            if (distvalue > recordRange) {
+                // too far
+                continue;
             }
+            double q = distvalue / (bsize * numRange);
+
+            // weight for the particle
+            double w = QuinticKernel(q, bsize * numRange, ndm);
+
+            // check velocity
+            const VDouble& pvel = pts[i]->getVel();
+
+            // add velocity
+            for (int k = 0; k < ndm; k++) {
+                vel[k] += w * pvel[k];
+            }
+
+            // add weights
+            wt += w;
+        }
+
+        // get velocity
+        if (wt > 0) {
+            vel /= wt;
         }
 
         // wave heights in all directions
@@ -2961,64 +3044,43 @@ int BackgroundMesh::record(bool init) {
         VDouble heights(2 * ndm);
 
         for (int i = 0; i < ndm; ++i) {
-            bool find = false;
-            // min
-            heights[2 * i] = 0.0;
+            // for different dimensions
+            bool first = true;
             for (int j = lower[i]; j <= upper[i]; ++j) {
+                // dimension i from low to up
                 VInt ind = index;
                 ind[i] = j;
-                auto it = bcells.find(ind);
-                if (it != bcells.end()) {
-                    const auto& particles = it->second.getPts();
-                    if (!particles.empty()) {
-                        for (const auto* p : particles) {
-                            if (p != 0) {
-                                const auto& pcrds = p->getCrds();
-                                if (!find ||
-                                    pcrds[i] < heights[2 * i]) {
-                                    if (pcrds[i] > j * bsize) {
-                                        heights[2 * i] = pcrds[i];
-                                        find = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (find) {
-                    break;
-                }
-            }
 
-            // max
-            find = false;
-            for (int j = upper[i]; j >= lower[i]; --j) {
-                VInt ind = index;
-                ind[i] = j;
-                auto it = bcells.find(ind);
-                if (it != bcells.end()) {
-                    const auto& particles = it->second.getPts();
-                    if (!particles.empty()) {
+                // get corners
+                VVInt indices;
+                getCorners(ind, numRange, i, indices);
+
+                // min and max
+                double& min = heights[2*i];
+                double& max = heights[2 * i + 1];
+
+                // loop all particles
+                for (const auto& indi: indices) {
+                    auto it = bcells.find(indi);
+                    if (it != bcells.end()) {
+                        const auto& particles = it->second.getPts();
                         for (const auto* p : particles) {
                             if (p != 0) {
                                 const auto& pcrds = p->getCrds();
-                                if (!find ||
-                                    pcrds[i] > heights[2 * i + 1]) {
-                                    if (pcrds[i] > j * bsize) {
-                                        heights[2 * i + 1] = pcrds[i];
-                                    } else {
-                                        std::cout
-                                            << "particle crds not "
-                                               "in cell\n";
+                                if (first) {
+                                    min = pcrds[i];
+                                    max = pcrds[i];
+                                } else {
+                                    if (pcrds[i] < min) {
+                                        min = pcrds[i];
                                     }
-                                    find = true;
+                                    if (pcrds[i] > max) {
+                                        max = pcrds[i];
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (find) {
-                    break;
                 }
             }
         }
