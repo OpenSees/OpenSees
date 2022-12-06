@@ -2976,8 +2976,10 @@ int BackgroundMesh::record(bool init) {
 
     // record range
     int numRange = 1;
+    double range = bsize;
     if (recordRange > 0) {
         numRange = (int)ceil(recordRange / bsize);
+        range = recordRange;
     }
 
     // record wave height and velocity
@@ -2989,9 +2991,12 @@ int BackgroundMesh::record(bool init) {
         }
 
         VInt index;
+        lowerIndex(crds, index);
+
         VInt minind = index, maxind = index;
         minind -= numRange;
         maxind -= numRange;
+
         VParticle pts;
         gatherParticles(minind, maxind, pts);
 
@@ -3013,7 +3018,7 @@ int BackgroundMesh::record(bool init) {
             VDouble dist = pcrds;
             dist -= crds;
             double distvalue = normVDouble(dist);
-            if (distvalue > recordRange) {
+            if (distvalue > range) {
                 // too far
                 continue;
             }
