@@ -49,6 +49,7 @@
 #include <Parameter.h>
 #include <ElementResponse.h>
 #include <ElementalLoad.h>
+#include <SectionForceDeformation.h>
 #include <elementAPI.h>
 
 #include <math.h>
@@ -186,6 +187,63 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
     }
     */
     
+    // zero fixed end forces vector
+    ql0.Zero();
+}
+
+ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, 
+						 SectionForceDeformation &section,
+						 CrdTransf &coordTransf,
+						 double r, int cm, int gnl)
+    : Element(tag, ELE_TAG_ElasticTimoshenkoBeam2d),
+    connectedExternalNodes(2), theCoordTransf(0), 
+    rho(r), cMass(cm), nlGeo(gnl), phi(0.0), L(0.0), ul(6), ql(6),
+    ql0(6), kl(6,6), klgeo(6,6), Tgl(6,6), Ki(6,6), M(6,6), theLoad(6)
+{
+  E = 1.0;
+  G = 1.0;
+
+  const Matrix &sectTangent = section.getInitialTangent();
+  const ID &sectCode = section.getType();
+  for (int i=0; i<sectCode.Size(); i++) {
+    int code = sectCode(i);
+    switch(code) {
+    case SECTION_RESPONSE_P:
+      A = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MZ:
+      Iz = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_VY:
+      Avy = sectTangent(i,i);
+      break;      
+    default:
+      break;
+    }
+  }
+  
+    // ensure the connectedExternalNode ID is of correct size & set values
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
+    }
+    
+    connectedExternalNodes(0) = Nd1;
+    connectedExternalNodes(1) = Nd2;
+    
+    // set node pointers to NULL
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
+    
+    // get a copy of the coordinate transformation
+    theCoordTransf = coordTransf.getCopy2d();
+    if (!theCoordTransf)  {
+        opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - "
+            << "failed to get copy of coordinate transformation.\n";
+        exit(-1);
+    }
+
     // zero fixed end forces vector
     ql0.Zero();
 }
@@ -727,7 +785,10 @@ Response* ElasticTimoshenkoBeam2d::setResponse(const char **argv, int argc,
     }
     
     output.endTag(); // ElementOutput
-    
+
+    if (theResponse == 0)
+      theResponse = theCoordTransf->setResponse(argv, argc, output);
+      
     return theResponse;
 }
 
@@ -758,24 +819,34 @@ int ElasticTimoshenkoBeam2d::setParameter(const char **argv,
         return -1;
     
     // E of the beam
-    if (strcmp(argv[0],"E") == 0)
-        return param.addObject(1, this);
+    if (strcmp(argv[0],"E") == 0) {
+      param.setValue(E);
+      return param.addObject(1, this);
+    }
     
     // G of the beam
-    if (strcmp(argv[0],"G") == 0)
-        return param.addObject(2, this);
+    if (strcmp(argv[0],"G") == 0) {
+      param.setValue(G);
+      return param.addObject(2, this);
+    }
     
     // A of the beam
-    if (strcmp(argv[0],"A") == 0)
-        return param.addObject(3, this);
+    if (strcmp(argv[0],"A") == 0) {
+      param.setValue(A);
+      return param.addObject(3, this);
+    }
     
     // Iz of the beam
-    if (strcmp(argv[0],"Iz") == 0)
-        return param.addObject(4, this);
+    if (strcmp(argv[0],"Iz") == 0) {
+      param.setValue(Iz);
+      return param.addObject(4, this);
+    }
     
     // Avy of the beam
-    if (strcmp(argv[0],"Avy") == 0)
-        return param.addObject(5, this);
+    if (strcmp(argv[0],"Avy") == 0) {
+      param.setValue(Avy);
+      return param.addObject(5, this);
+    }
     
     return -1;
 }
@@ -789,22 +860,27 @@ int ElasticTimoshenkoBeam2d::updateParameter (int parameterID,
         return -1;
     case 1:
         E = info.theDouble;
-        return 0;
+        break;
     case 2:
         G = info.theDouble;
-        return 0;
+	break;
     case 3:
         A = info.theDouble;
-        return 0;
+	break;
     case 4:
         Iz = info.theDouble;
-        return 0;
+	break;
     case 5:
         Avy = info.theDouble;
-        return 0;
+	break;
     default:
         return -1;
     }
+
+    // Re-calculate matrices
+    this->setUp();
+
+    return 0;
 }
 
 

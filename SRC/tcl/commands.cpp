@@ -1025,17 +1025,17 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "getParamValue", &getParamValue, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
               
-    Tcl_CreateCommand(interp, "fixedNodes", &fixedNodes,
+    Tcl_CreateCommand(interp, "getFixedNodes", &fixedNodes,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "fixedDOFs", &fixedDOFs,
+    Tcl_CreateCommand(interp, "getFixedDOFs", &fixedDOFs,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "constrainedNodes", &constrainedNodes,
+    Tcl_CreateCommand(interp, "getConstrainedNodes", &constrainedNodes,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "constrainedDOFs", &constrainedDOFs,
+    Tcl_CreateCommand(interp, "getConstrainedDOFs", &constrainedDOFs,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "retainedNodes", &retainedNodes,
+    Tcl_CreateCommand(interp, "getRetainedNodes", &retainedNodes,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
-    Tcl_CreateCommand(interp, "retainedDOFs", &retainedDOFs,
+    Tcl_CreateCommand(interp, "getRetainedDOFs", &retainedDOFs,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
 
     Tcl_CreateCommand(interp, "getNumElements", &getNumElements,
@@ -10551,9 +10551,17 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       argLoc += 3;
     }
 
-    ElementStateParameter theParameter(newValue, &argv[argLoc], argc-argLoc, flag, &eleIDs);
-
+    int tempParamId = 0;
+    Parameter* tempParam;
+    ParameterIter& tempParamIter = theDomain.getParameters();
+    while ((tempParam = tempParamIter()) != 0) {
+        if (tempParam->getTag() > tempParamId)
+            tempParamId = tempParam->getTag();
+    }
+    ++tempParamId;
+    ElementStateParameter theParameter(tempParamId, newValue, &argv[argLoc], argc-argLoc, flag, &eleIDs);
     theDomain.addParameter(&theParameter);
+    theDomain.removeParameter(tempParamId);
   }
 
   return TCL_OK;
