@@ -1859,6 +1859,19 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 				}
 			}
 		}
+		if (strcmp(argv[0], "crushInfo") == 0 || strcmp(argv[0], "CrushInfo") == 0) {
+			if (argc > 3) {
+				Vector3 N;
+				if (string_to_double(argv[1], N.x) &&
+					string_to_double(argv[2], N.y) &&
+					string_to_double(argv[3], N.z)) {
+					std::size_t Npos = svc.getClosestNormal(N);
+					Cinfo(0) = static_cast<double>(Npos);
+					Cinfo(1) = svc.getEquivalentStrainAtNormal(Npos);
+					return make_resp(2011, Cinfo);
+				}
+			}
+		}
 		// 3000 - implex error
 		if (strcmp(argv[0], "implexError") == 0 || strcmp(argv[0], "ImplexError") == 0) {
 			return make_resp(3000, getImplexError(), &lb_implex_error);
@@ -1899,6 +1912,13 @@ int ASDConcrete3DMaterial::getResponse(int responseID, Information& matInformati
 		if (matInformation.theVector && matInformation.theVector->Size() == 2) {
 			std::size_t Npos = static_cast<std::size_t>(matInformation.theVector->operator()(0));
 			matInformation.theVector->operator()(1) = svt.getEquivalentStrainAtNormal(Npos);
+			return 0;
+		}
+		break;
+	case 2011:
+		if (matInformation.theVector && matInformation.theVector->Size() == 2) {
+			std::size_t Npos = static_cast<std::size_t>(matInformation.theVector->operator()(0));
+			matInformation.theVector->operator()(1) = svc.getEquivalentStrainAtNormal(Npos);
 			return 0;
 		}
 		break;
