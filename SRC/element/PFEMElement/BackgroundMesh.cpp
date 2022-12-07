@@ -2995,7 +2995,7 @@ int BackgroundMesh::record(bool init) {
 
         VInt minind = index, maxind = index;
         minind -= numRange;
-        maxind -= numRange;
+        maxind += numRange + 1;
 
         VParticle pts;
         gatherParticles(minind, maxind, pts);
@@ -3005,14 +3005,14 @@ int BackgroundMesh::record(bool init) {
         double wt = 0.0;
 
         // get information
-        for (int i = 0; i < (int)pts.size(); ++i) {
+        for (int j = 0; j < (int)pts.size(); ++j) {
             // get particle
-            if (pts[i] == 0) {
+            if (pts[j] == 0) {
                 continue;
             }
 
             // particle coordinates
-            const VDouble& pcrds = pts[i]->getCrds();
+            const VDouble& pcrds = pts[j]->getCrds();
 
             // distance from particle to current location
             VDouble dist = pcrds;
@@ -3028,7 +3028,7 @@ int BackgroundMesh::record(bool init) {
             double w = QuinticKernel(q, bsize * numRange, ndm);
 
             // check velocity
-            const VDouble& pvel = pts[i]->getVel();
+            const VDouble& pvel = pts[j]->getVel();
 
             // add velocity
             for (int k = 0; k < ndm; k++) {
@@ -3048,24 +3048,24 @@ int BackgroundMesh::record(bool init) {
         // xmin, xmax, ymin, ymax, <zmin, zmax>
         VDouble heights(2 * ndm);
 
-        for (int i = 0; i < ndm; ++i) {
+        for (int k = 0; k < ndm; ++k) {
             // for different dimensions
             bool first = true;
-            for (int j = lower[i]; j <= upper[i]; ++j) {
-                // dimension i from low to up
+            for (int j = lower[k]; j <= upper[k]; ++j) {
+                // dimension k from low to up
                 VInt ind = index;
-                ind[i] = j;
+                ind[k] = j;
 
                 // get corners
                 VVInt indices;
-                getCorners(ind, numRange, i, indices);
+                getCorners(ind, numRange, k, indices);
 
                 // min and max
-                double& min = heights[2*i];
-                double& max = heights[2 * i + 1];
+                double& min = heights[2 * k];
+                double& max = heights[2 * k + 1];
 
                 // loop all particles
-                for (const auto& indi: indices) {
+                for (const auto& indi : indices) {
                     auto it = bcells.find(indi);
                     if (it != bcells.end()) {
                         const auto& particles = it->second.getPts();
@@ -3073,14 +3073,15 @@ int BackgroundMesh::record(bool init) {
                             if (p != 0) {
                                 const auto& pcrds = p->getCrds();
                                 if (first) {
-                                    min = pcrds[i];
-                                    max = pcrds[i];
+                                    min = pcrds[k];
+                                    max = pcrds[k];
+                                    first = false;
                                 } else {
-                                    if (pcrds[i] < min) {
-                                        min = pcrds[i];
+                                    if (pcrds[k] < min) {
+                                        min = pcrds[k];
                                     }
-                                    if (pcrds[i] > max) {
-                                        max = pcrds[i];
+                                    if (pcrds[k] > max) {
+                                        max = pcrds[k];
                                     }
                                 }
                             }
