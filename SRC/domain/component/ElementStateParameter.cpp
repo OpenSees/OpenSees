@@ -27,12 +27,12 @@
 #include <Channel.h>
 #include <Message.h>
 
-ElementStateParameter::ElementStateParameter(double value, 
+ElementStateParameter::ElementStateParameter(int tag, double value, 
 					     const char **Argv, 
 					     int Argc, 
 					     int Flag, 
 					     ID *theEle)
-  :Parameter(0,PARAMETER_TAG_ElementStateParameter),
+  :Parameter(tag,PARAMETER_TAG_ElementStateParameter),
    currentValue(value),
    flag(Flag),
    argc(Argc), fromFree(1)
@@ -149,13 +149,14 @@ ElementStateParameter::setDomain(Domain *theDomain)
 int 
 ElementStateParameter::sendSelf(int commitTag, Channel &theChannel)
 {
-  static ID iData(3);
+  static ID iData(4);
   iData(0) = flag;
   iData(1) = argc;
   if (theEleIDs != 0)
     iData(2) = theEleIDs->Size();
   else
     iData(2) = 0;
+  iData(3) = getTag();
 
   theChannel.sendID(commitTag, 0, iData);
 
@@ -183,12 +184,12 @@ ElementStateParameter::sendSelf(int commitTag, Channel &theChannel)
 int 
 ElementStateParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  static ID iData(3);
+  static ID iData(4);
   theChannel.recvID(commitTag, 0, iData);
   flag = iData(0);
   argc = iData(1);
   int numEle = iData(2);
-
+  setTag(iData(3));
 
   static Vector dData(1);
   theChannel.recvVector(commitTag, 0, dData);
