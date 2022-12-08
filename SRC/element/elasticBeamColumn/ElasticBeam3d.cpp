@@ -164,7 +164,7 @@ void* OPS_ElasticBeam3d(void)
     }
     
     if (theSection != 0) {
-      return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
+      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
 				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
@@ -401,7 +401,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
     theNodes[i] = 0;      
 }
 
-ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section,  
+ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
 			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
@@ -409,35 +409,33 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
-  if (section != 0) {
-    E = 1.0;
-    G = 1.0;
-    Jx = 0.0;
-    rho = r;
-    cMass = cm;
-
-    const Matrix &sectTangent = section->getInitialTangent();
-    const ID &sectCode = section->getType();
-    for (int i=0; i<sectCode.Size(); i++) {
-      int code = sectCode(i);
-      switch(code) {
-      case SECTION_RESPONSE_P:
-	A = sectTangent(i,i);
-	break;
-      case SECTION_RESPONSE_MZ:
-	Iz = sectTangent(i,i);
-	break;
-      case SECTION_RESPONSE_MY:
-	Iy = sectTangent(i,i);
-	break;
-      case SECTION_RESPONSE_T:
-	Jx = sectTangent(i,i);
-	break;
-      default:
-	break;
-      }
+  E = 1.0;
+  G = 1.0;
+  Jx = 0.0;
+  rho = r;
+  cMass = cm;
+  
+  const Matrix &sectTangent = section.getInitialTangent();
+  const ID &sectCode = section.getType();
+  for (int i=0; i<sectCode.Size(); i++) {
+    int code = sectCode(i);
+    switch(code) {
+    case SECTION_RESPONSE_P:
+      A = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MZ:
+      Iz = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MY:
+      Iy = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_T:
+      Jx = sectTangent(i,i);
+      break;
+    default:
+      break;
     }
-  }    
+  }
   
   if (Jx == 0.0) {
     opserr << "ElasticBeam3d::ElasticBeam3d -- no torsion in section -- continuing with GJ = 0\n";

@@ -18,19 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision$
-// $Date$
-// $URL$
-                                                                        
-                                                                        
-// Written: fmk 11/95
+// Written: fmk 09/15, MHS 11/22 for 3d
 // Revised:
 //
-// Purpose: This file contains the class definition for ElasticBeam3d.
-// ElasticBeam3d is a plane frame member.
+// Purpose: This file contains the class definition for ComponentElement3d.
+// ComponentElement3d is an elastic element with hinges at the ends. It uses
+// static condensation to deal with the internal dof
 
-#ifndef ElasticBeam3d_h
-#define ElasticBeam3d_h
+#ifndef ComponentElement3d_h
+#define ComponentElement3d_h
 
 #include <Element.h>
 #include <Node.h>
@@ -40,38 +36,35 @@
 class Channel;
 class Information;
 class CrdTransf;
-class Damping;
 class Response;
 class Renderer;
-class SectionForceDeformation;
+class UniaxialMaterial;
 
-class ElasticBeam3d : public Element
+class ComponentElement3d : public Element
 {
   public:
-    ElasticBeam3d();        
-    ElasticBeam3d(int tag, double A, double E, double G, 
-		  double Jx, double Iy, double Iz,
-          int Nd1, int Nd2, CrdTransf &theTransf,
-          double rho = 0.0, int cMass = 0,
-		  int releasez = 0, int releasey = 0,
-		      Damping *theDamping = 0);
+    ComponentElement3d();        
+    ComponentElement3d(int tag, double A, double E, double Iz,
+		       double Iy, double G, double J,
+		       int Nd1, int Nd2, CrdTransf &theTransf, 
+		       UniaxialMaterial *end1z, UniaxialMaterial *end2z,
+		       UniaxialMaterial *end1y, UniaxialMaterial *end2y,		       
+		       double rho = 0.0, int cMass = 0);
+    ComponentElement3d(int tag, double A, double E, double Iz,
+		       double Iy, double G, double J,
+		       int Nd1, int Nd2, CrdTransf &theTransf, 
+		       double kzI, double kzJ, double kyI, double kyJ,
+		       double rho = 0.0, int cMass = 0);  
+    ~ComponentElement3d();
 
-    ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
-		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
-		  int releasez = 0, int releasey = 0,
-		  Damping *theDamping = 0);
-
-    ~ElasticBeam3d();
-
-    const char *getClassType(void) const {return "ElasticBeam3d";};
-
+    const char *getClassType(void) const {return "ComponentElement3d";};
+    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
-
+    
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
-    int setDamping(Domain *theDomain, Damping *theDamping);
     
     int commitState(void);
     int revertToLastCommit(void);        
@@ -87,13 +80,12 @@ class ElasticBeam3d : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Vector &getResistingForce(void);
-    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
     
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag =0);    
+    void Print(OPS_Stream &s, int flag = 0);    
     int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes = 0, int numModes = 0);
 
     Response *setResponse (const char **argv, int argc, OPS_Stream &s);
@@ -103,34 +95,49 @@ class ElasticBeam3d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
-    double A,E,G,Jx,Iy,Iz;
+  double A,E,Iz,Iy,G,J;     // area, elastic modulus, moment of inertia
+    double rho;       // mass per unit length
+    int cMass;        // consistent mass flag
 
-    double rho;
-    int cMass;
-
-    int releasez; // moment release for bending about z-axis 0=none, 1=I, 2=J, 3=I,J
-    int releasey; // same for y-axis
-    
-    static Matrix K;
-    static Vector P;
     Vector Q;
     
-    static Matrix kb;
     Vector q;
-    double q0[5];  // Fixed end forces in basic system (no torsion)
-    double p0[5];  // Reactions in basic system (no torsion)
- 
-    double wx;
-    double wy;
-    double wz;
+    double q0[5];  // Fixed end forces in basic system
+    double p0[5];  // Reactions in basic system
     
     Node *theNodes[2];
-
     ID  connectedExternalNodes;    
-
     CrdTransf *theCoordTransf;
 
-    Damping *theDamping;
+    UniaxialMaterial *end1zHinge;
+    UniaxialMaterial *end2zHinge;
+    UniaxialMaterial *end1yHinge;
+    UniaxialMaterial *end2yHinge;  
+  //double cD1z, cD2z, tD1z, tD2z; // committed and trial interior dof displacements
+  //double cD1y, cD2y, tD1y, tD2y;
+    Matrix kzTrial;
+  //Vector Rz;
+    Vector uzTrial;
+    Vector uzCommit;
+    Matrix kyTrial;
+  //Vector Ry;
+    Vector uyTrial;
+    Vector uyCommit;  
+  //Vector rTrial;
+  //Vector rCommit;
+    Matrix kb;
+
+    static Vector P;
+    static Matrix K;
+    bool init;
+
+  double L;
+  double EAoverL;		// EA/L
+  double EIzoverL2;		// 2EIz/L
+  double EIzoverL4;		// 4EIz/L
+  double EIyoverL2;		// 2EIy/L
+  double EIyoverL4;		// 4EIy/L
+  double GJoverL;               // GJ/L
 };
 
 #endif

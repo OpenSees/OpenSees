@@ -827,6 +827,9 @@
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp">
       <Filter>tetrahedron</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.cpp">
+      <Filter>tetrahedron</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp">
       <Filter>UWelements</Filter>
     </ClCompile>
@@ -1028,11 +1031,17 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMContact3D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement3d.cpp">
+      <Filter>componentElement</Filter>
+    </ClCompile>      
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BeamDisk.cpp">
+      <Filter>pfem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1643,6 +1652,9 @@
       <Filter>surfaceLoad</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h">
+      <Filter>tetrahedron</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.h">
       <Filter>tetrahedron</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h">

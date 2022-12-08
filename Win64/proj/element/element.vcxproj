@@ -204,6 +204,7 @@
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
     <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.cpp" />
@@ -251,6 +252,7 @@
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BCell.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BeamBrick.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BeamDisk.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BNode.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\Flume.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
@@ -288,6 +290,7 @@
     <ClCompile Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\InertiaTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\Inerter.cpp" />
@@ -577,6 +580,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGT.h" />
     <ClInclude Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h" />
+    <ClInclude Include="..\..\..\SRC\element\tetrahedron\TenNodeTetrahedron.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\InertiaTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\Inerter.h" />

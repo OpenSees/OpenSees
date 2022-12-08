@@ -553,6 +553,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/ConstantPressureVolumeQuad.o \
 	$(FE)/element/fourNodeQuad/EnhancedQuad.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
+	$(FE)/element/componentElement/ComponentElement3d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
 	$(FE)/element/fourNodeQuad/EightNodeQuad.o \
@@ -659,6 +660,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
 	$(FE)/element/catenaryCable/CatenaryCable.o \
 	$(FE)/element/tetrahedron/FourNodeTetrahedron.o \
+	$(FE)/element/tetrahedron/TenNodeTetrahedron.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
@@ -987,6 +989,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ElasticOrthotropicMaterial.o \
 	$(FE)/material/nD/ElasticOrthotropicThreeDimensional.o \
 	$(FE)/material/nD/OrthotropicMaterial.o \
+	$(FE)/material/nD/Series3DMaterial.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
