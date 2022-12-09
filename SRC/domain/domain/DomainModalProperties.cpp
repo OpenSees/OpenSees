@@ -183,8 +183,8 @@ namespace
             if (ndm != trial)
                 DMP_ERR("Cannot mix nodes with different dimensions\n");
         }
-        if ((ndm != 2) && (ndm != 3))
-            DMP_ERR("DomainModalProperties can be calculated only when NDM is 2 or 3, not " << ndm << "\n");
+        if ((ndm != 1) && (ndm != 2) && (ndm != 3))
+            DMP_ERR("DomainModalProperties can be calculated only when NDM is 1, 2 or 3, not " << ndm << "\n");
         return ndm;
     }
 
@@ -367,7 +367,7 @@ namespace
 
 }
 
-void
+int
 OPS_DomainModalProperties(void)
 {
     // modalProperties <-print> <-file $fileName> <-unorm>
@@ -383,13 +383,14 @@ OPS_DomainModalProperties(void)
     AnalysisModel* theAnalysisModel = *OPS_GetAnalysisModel();
     if (theAnalysisModel == nullptr) {
         opserr << "modalProperties Error: no AnalysisModel available.\n";
-        exit(-1);
+        return -1;
     }
 
     // init default values
     bool unorm = false; // by default do not displacement-normalize eigenvectors 
     bool print_on_console = false; // by default do not print on console
     bool print_on_file = false; // by default do no print on file
+    bool print_to_dict = false;
     std::string fname;
 
     // check options
@@ -402,6 +403,9 @@ OPS_DomainModalProperties(void)
         }
         else if (strcmp(iarg, "-print") == 0) {
             print_on_console = true;
+        }
+        else if (strcmp(iarg, "-return") == 0) {
+            print_to_dict = true;
         }
         else if (strcmp(iarg, "-file") == 0) {
             print_on_file = true;
@@ -429,6 +433,11 @@ OPS_DomainModalProperties(void)
         modal_props.print();
     if (print_on_file)
         modal_props.print(fname);
+    if (print_to_dict) {
+        modal_props.printDict();
+    }
+
+    return 0;
 }
 
 DomainModalProperties::DomainModalProperties(bool unorm)
@@ -458,7 +467,14 @@ bool DomainModalProperties::compute(Domain* domain)
     // number of dimensions
     int ndm = domainSize(domain);
     // max number of DOFs per node, translational and rotational only
-    int ndf = ndm == 2 ? 3 : 6;
+    int ndf;
+    switch (ndm)
+    {
+    case 1: ndf = 1; break;
+    case 2: ndf = 3; break;
+    case 3: ndf = 6; break;
+    default: ndf = 0; break;
+    }
     // number of nodes
     int num_nodes = domain->getNumNodes();
     // number of equations (not the real one, include rotational dofs even if not present)
@@ -705,8 +721,10 @@ bool DomainModalProperties::compute(Domain* domain)
             }
         }
     };
-    compute_extra_rotary_mass(ML);
-    compute_extra_rotary_mass(MLfree);
+    if (ndf == 3 || ndf == 6) {
+        compute_extra_rotary_mass(ML);
+        compute_extra_rotary_mass(MLfree);
+    }
 
     // compute the total mass of the domain (total and free-only)
     m_total_mass.Zero();
@@ -762,7 +780,7 @@ bool DomainModalProperties::compute(Domain* domain)
             for (int inode = 0; inode < num_nodes; ++inode) {
                 int index = inode * ndf;
                 R(index + i) = 1.0; // one at the current DOF for direct translational or rotational effects
-                if (i >= ndm) {
+                if (i >= ndm && (ndf == 3 || ndf == 6)) {
                     const Vector& pos = nodemap.nodes[static_cast<size_t>(inode)]->getCrds();
                     double dx = pos(0) - m_center_of_mass(0);
                     double dy = pos(1) - m_center_of_mass(1);
@@ -882,12 +900,16 @@ namespace
 
         // labels
         static std::vector<std::string> lab_freq = { "MODE", "LAMBDA", "OMEGA", "FREQUENCY", "PERIOD" };
+        static std::vector<std::string> lab_mass_1d = { "MX" };
         static std::vector<std::string> lab_mass_2d = { "MX", "MY", "RMZ" };
         static std::vector<std::string> lab_mass_3d = { "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_efmass_1d = { "MODE", "MX" };
         static std::vector<std::string> lab_efmass_2d = { "MODE", "MX", "MY", "RMZ" };
         static std::vector<std::string> lab_efmass_3d = { "MODE", "MX", "MY", "MZ", "RMX", "RMY", "RMZ" };
+        static std::vector<std::string> lab_pos_1d = { "X" };
         static std::vector<std::string> lab_pos_2d = { "X", "Y" };
         static std::vector<std::string> lab_pos_3d = { "X", "Y", "Z" };
+        static std::vector<std::string> lab_sep_1 = { DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_2 = { DMP_OUT_HLINE, DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_3 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
         static std::vector<std::string> lab_sep_4 = { DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE, DMP_OUT_HLINE };
@@ -901,7 +923,7 @@ namespace
         // problem size
         int ndm = dmp.centerOfMass().Size();
         out << DMP_OUT_RECORD << " 1. DOMAIN SIZE:\n"
-            << DMP_OUT_COMMENT << " This is the size of the problem: 2 for 2D problems, 3 for 3D problems.\n"
+            << DMP_OUT_COMMENT << " This is the size of the problem: 1 for 1D problems, 2 for 2D problems, 3 for 3D problems.\n"
             << ndm << "\n\n\n";
         
         // eigenvalues and derived quantities
@@ -926,23 +948,23 @@ namespace
         out << DMP_OUT_RECORD << " 3. TOTAL MASS OF THE STRUCTURE:\n"
             << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
             << DMP_OUT_COMMENT << " including the masses at fixed DOFs (if any).\n";
-        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_mass_1d : (ndm == 2 ? lab_mass_2d : lab_mass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_3 : lab_sep_6), DMP_OUT_COMMENT);
         print_vec(dmp.totalMass());
         out << "\n\n";
         out << DMP_OUT_RECORD << " 4. TOTAL FREE MASS OF THE STRUCTURE:\n"
             << DMP_OUT_COMMENT << " The total masses (translational and rotational) of the structure\n"
             << DMP_OUT_COMMENT << " including only the masses at free DOFs.\n";
-        print_svec(ndm == 2 ? lab_mass_2d : lab_mass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_3 : lab_sep_6, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_mass_1d : (ndm == 2 ? lab_mass_2d : lab_mass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_3 : lab_sep_6), DMP_OUT_COMMENT);
         print_vec(dmp.totalFreeMass());
         out << "\n\n";
 
         // center of mass
         out << DMP_OUT_RECORD << " 5. CENTER OF MASS:\n"
             << DMP_OUT_COMMENT << " The center of mass of the structure, calculated from free masses.\n";
-        print_svec(ndm == 2 ? lab_pos_2d : lab_pos_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_2 : lab_sep_3, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_pos_1d : (ndm == 2 ? lab_pos_2d : lab_pos_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_1 : (ndm == 2 ? lab_sep_2 : lab_sep_3), DMP_OUT_COMMENT);
         print_vec(dmp.centerOfMass());
         out << "\n\n";
 
@@ -951,40 +973,40 @@ namespace
             << DMP_OUT_COMMENT << " The participation factor for a certain mode 'a' in a certain direction 'i'\n"
             << DMP_OUT_COMMENT << " indicates how strongly displacement along (or rotation about)\n"
             << DMP_OUT_COMMENT << " the global axes is represented in the eigenvector of that mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationFactors());
         out << "\n\n";
 
         // modal participation masses
         out << DMP_OUT_RECORD << " 7. MODAL PARTICIPATION MASSES:\n"
             << DMP_OUT_COMMENT << " The modal participation masses for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMasses());
         out << "\n\n";
 
         // modal participation masses (cumulative)
         out << DMP_OUT_RECORD << " 8. MODAL PARTICIPATION MASSES (cumulative):\n"
             << DMP_OUT_COMMENT << " The cumulative modal participation masses for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassesCumulative());
         out << "\n\n";
 
         // modal participation masses
         out << DMP_OUT_RECORD << " 9. MODAL PARTICIPATION MASS RATIOS (%):\n"
             << DMP_OUT_COMMENT << " The modal participation mass ratios (%) for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassRatios(), 100.0);
         out << "\n\n";
 
         // modal participation masses (cumulative)
         out << DMP_OUT_RECORD << " 10. MODAL PARTICIPATION MASS RATIOS (%) (cumulative):\n"
             << DMP_OUT_COMMENT << " The cumulative modal participation mass ratios (%) for each mode.\n";
-        print_svec(ndm == 2 ? lab_efmass_2d : lab_efmass_3d, DMP_OUT_COMMENT);
-        print_svec(ndm == 2 ? lab_sep_4 : lab_sep_7, DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_efmass_1d : (ndm == 2 ? lab_efmass_2d : lab_efmass_3d), DMP_OUT_COMMENT);
+        print_svec(ndm == 1 ? lab_sep_2 : (ndm == 2 ? lab_sep_4 : lab_sep_7), DMP_OUT_COMMENT);
         print_mat(dmp.modalParticipationMassRatiosCumulative(), 100.0);
         out << "\n\n";
     }
@@ -1007,4 +1029,156 @@ void DomainModalProperties::print(const std::string& file_name)
     ss.close();
 }
 
+void DomainModalProperties::printDict() {
+    // output data
+    std::map<const char*, std::vector<double>> data;
 
+    // 1. domain size
+    auto& dmp = *this;
+    int ndm = dmp.centerOfMass().Size();
+    data["domainSize"].push_back(ndm);
+
+    // 2. EIGENVALUE ANALYSIS
+    for (int i = 0; i < dmp.eigenvalues().Size(); ++i) {
+        double lambda = dmp.eigenvalues()(i);
+        double omega = std::sqrt(lambda);
+        double freq = omega / 2.0 / M_PI;
+        double period = 1.0 / freq;
+        data["eigenLambda"].push_back(lambda);
+        data["eigenOmega"].push_back(omega);
+        data["eigenFrequency"].push_back(freq);
+        data["eigenPeriod"].push_back(period);
+    }
+
+    // 3. TOTAL MASS OF THE STRUCTURE
+    for (int i = 0; i < dmp.totalMass().Size(); ++i) {
+        double mass = dmp.totalMass()(i);
+        data["totalMass"].push_back(mass);
+    }
+
+    // 4. TOTAL FREE MASS OF THE STRUCTURE
+    for (int i = 0; i < dmp.totalFreeMass().Size(); ++i) {
+        double mass = dmp.totalFreeMass()(i);
+        data["totalFreeMass"].push_back(mass);
+    }
+
+    // 5. CENTER OF MASS
+    for (int i = 0; i < dmp.centerOfMass().Size(); ++i) {
+        double x = dmp.centerOfMass()(i);
+        data["centerOfMass"].push_back(x);
+    }
+
+    // 6. MODAL PARTICIPATION FACTORS
+    const auto& factors = dmp.modalParticipationFactors();
+    for (int i = 0; i < factors.noRows(); ++i) {
+        data["partiFactorMX"].push_back(factors(i, 0));
+        if (factors.noCols() > 1) {
+            data["partiFactorMY"].push_back(factors(i, 1));
+        }
+        if (factors.noCols() == 3) {
+            data["partiFactorRMZ"].push_back(factors(i, 2));
+        } else if (factors.noCols() == 6) {
+            data["partiFactorMZ"].push_back(factors(i, 2));
+            data["partiFactorRMX"].push_back(factors(i, 3));
+            data["partiFactorRMY"].push_back(factors(i, 4));
+            data["partiFactorRMZ"].push_back(factors(i, 5));
+        }
+    }
+
+    // 7. MODAL PARTICIPATION MASSES
+    const auto& partiMasses = dmp.modalParticipationMasses();
+    for (int i = 0; i < partiMasses.noRows(); ++i) {
+        data["partiMassMX"].push_back(partiMasses(i, 0));
+        if (partiMasses.noCols() > 1) {
+            data["partiMassMY"].push_back(partiMasses(i, 1));
+        }
+        if (partiMasses.noCols() == 3) {
+            data["partiMassRMZ"].push_back(partiMasses(i, 2));
+        } else if (partiMasses.noCols() == 6) {
+            data["partiMassMZ"].push_back(partiMasses(i, 2));
+            data["partiMassRMX"].push_back(partiMasses(i, 3));
+            data["partiMassRMY"].push_back(partiMasses(i, 4));
+            data["partiMassRMZ"].push_back(partiMasses(i, 5));
+        }
+    }
+
+    // 8. MODAL PARTICIPATION MASSES (cumulative)
+    const auto& partiMassesCumu =
+        dmp.modalParticipationMassesCumulative();
+    for (int i = 0; i < partiMassesCumu.noRows(); ++i) {
+        data["partiMassesCumuMX"].push_back(partiMassesCumu(i, 0));
+        if (partiMassesCumu.noCols() > 1) {
+            data["partiMassesCumuMY"].push_back(
+                partiMassesCumu(i, 1));
+        }
+        if (partiMassesCumu.noCols() == 3) {
+            data["partiMassesCumuRMZ"].push_back(
+                partiMassesCumu(i, 2));
+        } else if (partiMassesCumu.noCols() == 6) {
+            data["partiMassesCumuMZ"].push_back(
+                partiMassesCumu(i, 2));
+            data["partiMassesCumuRMX"].push_back(
+                partiMassesCumu(i, 3));
+            data["partiMassesCumuRMY"].push_back(
+                partiMassesCumu(i, 4));
+            data["partiMassesCumuRMZ"].push_back(
+                partiMassesCumu(i, 5));
+        }
+    }
+
+    // 9. MODAL PARTICIPATION MASS RATIOS (%)
+    const auto& partiMassRatios = dmp.modalParticipationMassRatios();
+    double scale = 100.0;
+    for (int i = 0; i < partiMassRatios.noRows(); ++i) {
+        data["partiMassRatiosMX"].push_back(partiMassRatios(i, 0) *
+                                            scale);
+        if (partiMassRatios.noCols() > 1) {
+            data["partiMassRatiosMY"].push_back(
+                partiMassRatios(i, 1) * scale);
+        }
+        if (partiMassRatios.noCols() == 3) {
+            data["partiMassRatiosRMZ"].push_back(
+                partiMassRatios(i, 2) * scale);
+        } else if (partiMassRatios.noCols() == 6) {
+            data["partiMassRatiosMZ"].push_back(
+                partiMassRatios(i, 2) * scale);
+            data["partiMassRatiosRMX"].push_back(
+                partiMassRatios(i, 3) * scale);
+            data["partiMassRatiosRMY"].push_back(
+                partiMassRatios(i, 4) * scale);
+            data["partiMassRatiosRMZ"].push_back(
+                partiMassRatios(i, 5) * scale);
+        }
+    }
+
+    // 10. MODAL PARTICIPATION MASS RATIOS (%) (cumulative)
+    const auto& partiMassRatiosCumu =
+        dmp.modalParticipationMassRatiosCumulative();
+    for (int i = 0; i < partiMassRatiosCumu.noRows(); ++i) {
+        data["partiMassRatiosCumuMX"].push_back(
+            partiMassRatiosCumu(i, 0) * scale);
+        if (partiMassRatiosCumu.noCols() > 1) {
+            data["partiMassRatiosCumuMY"].push_back(
+                partiMassRatiosCumu(i, 1) * scale);
+        }
+        if (partiMassRatiosCumu.noCols() == 3) {
+            data["partiMassRatiosCumuRMZ"].push_back(
+                partiMassRatiosCumu(i, 2) * scale);
+        } else if (partiMassRatiosCumu.noCols() == 6) {
+            data["partiMassRatiosCumuMZ"].push_back(
+                partiMassRatiosCumu(i, 2) * scale);
+            data["partiMassRatiosCumuRMX"].push_back(
+                partiMassRatiosCumu(i, 3) * scale);
+            data["partiMassRatiosCumuRMY"].push_back(
+                partiMassRatiosCumu(i, 4) * scale);
+            data["partiMassRatiosCumuRMZ"].push_back(
+                partiMassRatiosCumu(i, 5) * scale);
+        }
+    }
+
+    // set outputs
+    if (OPS_SetDoubleDictListOutput(data) < 0) {
+        opserr
+            << "WARNING: failed to set outputs for modalProperties\n";
+    }
+}

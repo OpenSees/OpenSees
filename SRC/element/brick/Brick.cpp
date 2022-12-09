@@ -123,6 +123,9 @@ Brick::Brick( )
   b[0] = 0.0;
   b[1] = 0.0;
   b[2] = 0.0;
+
+  for (int i = 0 ;  i < 8; i++ ) 
+    theDamping[i] = 0;
 }
 
 
@@ -138,7 +141,8 @@ Brick::Brick(int tag,
 	     int node7,
 	     int node8,
 	     NDMaterial &theMaterial,
-	     double b1, double b2, double b3)
+	     double b1, double b2, double b3,
+       Damping *damping)
   :Element(tag, ELE_TAG_Brick),
    connectedExternalNodes(8), applyLoad(0), load(0), Ki(0)
 {
@@ -167,6 +171,23 @@ Brick::Brick(int tag,
   b[0] = b1;
   b[1] = b2;
   b[2] = b3;
+
+  if (damping)
+  {
+    for (int i = 0; i < 8; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "FourNodeQuad::FourNodeQuad -- failed to get copy of damping\n";
+        exit(-1);
+      }
+    }
+  }
+  else
+  {
+    for (int i = 0; i < 8; i++) theDamping[i] = 0;
+  }
 }
 //******************************************************************
 
@@ -184,6 +205,15 @@ Brick::~Brick( )
 
   if (Ki != 0)
     delete Ki;
+
+  for (int i = 0; i < 8; i++)
+  {
+    if (theDamping[i])
+    {
+      delete theDamping[i];
+      theDamping[i] = 0;
+    }
+  }
   
 }
 
@@ -198,10 +228,44 @@ void  Brick::setDomain( Domain *theDomain )
   for ( i=0; i<8; i++ ) 
      nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
 
+    
+  for (int i = 0; i < 8; i++)
+  {
+    if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
+      opserr << "Brick::setDomain -- Error initializing damping\n";
+      return;
+    }
+  }
+
   this->DomainComponent::setDomain(theDomain);
 
 }
 
+
+int
+Brick::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 8; i++)
+    {
+      if (theDamping[i]) delete theDamping[i];
+
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "Brick::setDamping -- failed to get copy of damping\n";
+        return -1;
+      }
+      if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
+        opserr << "Brick::setDamping -- Error initializing damping\n";
+        return -2;
+      }
+    }
+  }
+  
+  return 0;
+}
 
 //get the number of external nodes
 int  Brick::getNumExternalNodes( ) const
@@ -242,6 +306,10 @@ int  Brick::commitState( )
 
   for (int i=0; i<8; i++ ) 
     success += materialPointers[i]->commitState( ) ;
+
+  for (int i = 0; i < 8; i++ )
+    if (theDamping[i]) success += theDamping[i]->commitState();
+
   
   return success ;
 }
@@ -256,6 +324,9 @@ int  Brick::revertToLastCommit( )
 
   for ( i=0; i<8; i++ ) 
     success += materialPointers[i]->revertToLastCommit( ) ;
+
+  for (int i = 0; i < 8; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToLastCommit();
   
   return success ;
 }
@@ -269,6 +340,9 @@ int  Brick::revertToStart( )
 
   for ( i=0; i<8; i++ ) 
     success += materialPointers[i]->revertToStart( ) ;
+
+  for (int i = 0; i < 8; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToStart();
   
   return success ;
 }
@@ -471,6 +545,7 @@ const Matrix&  Brick::getInitialStiff( )
 
 
     dd = materialPointers[i]->getInitialTangent( ) ;
+    if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
     dd *= dvol[i] ;
     
     jj = 0;
@@ -1000,6 +1075,8 @@ void  Brick::formResidAndTangent( int tang_flag )
 
   static Vector stress(nstress) ;  //stress
 
+  static Vector dampingStress(nstress) ;  //damping stress
+
   static Matrix dd(nstress,nstress) ;  //material tangent
 
 
@@ -1071,12 +1148,19 @@ void  Brick::formResidAndTangent( int tang_flag )
     //compute the stress
     stress = materialPointers[i]->getStress( ) ;
 
+    if (theDamping[i])
+    {
+      theDamping[i]->update(stress);
+      dampingStress = theDamping[i]->getDampingForce();
+      dampingStress *= dvol[i];
+    }
 
     //multiply by volume element
     stress  *= dvol[i] ;
 
     if ( tang_flag == 1 ) {
       dd = materialPointers[i]->getTangent( ) ;
+      if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
       dd *= dvol[i] ;
     } //end if tang_flag
 
@@ -1126,6 +1210,10 @@ void  Brick::formResidAndTangent( int tang_flag )
       residJ(0) = b00 * stress0 + b30 * stress3 + b50 * stress5;
       residJ(1) = b11 * stress1 + b31 * stress3 + b41 * stress4;
       residJ(2) = b22 * stress2 + b42 * stress4 + b52 * stress5;
+
+      residJ(0) += b00 * dampingStress[0] + b30 * dampingStress[3] + b50 * dampingStress[5];
+      residJ(1) += b11 * dampingStress[1] + b31 * dampingStress[3] + b41 * dampingStress[4];
+      residJ(2) += b22 * dampingStress[2] + b42 * dampingStress[4] + b52 * dampingStress[5];
       
       BJ = computeB( j, shp ) ;
    
@@ -1275,7 +1363,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(26);
+  static ID idData(28);
 
   idData(24) = this->getTag();
   if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
@@ -1306,6 +1394,20 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   idData(22) = connectedExternalNodes(6);
   idData(23) = connectedExternalNodes(7);
 
+  idData(26) = 0;
+  idData(27) = 0;
+  if (theDamping[0]) {
+    idData(26) = theDamping[0]->getClassTag();
+    int dbTag = theDamping[0]->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+        for (i = 0 ;  i < 8; i++)
+	        theDamping[i]->setDbTag(dbTag);
+	  }
+    idData(27) = dbTag;
+  }
+
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING Brick::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -1335,6 +1437,17 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
     }
   }
   
+  // Ask the Damping to send itself
+  if (theDamping[0]) {
+    for (i = 0 ;  i < 8; i++) {
+      res += theDamping[i]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+        opserr << "Brick::sendSelf -- could not send Damping\n";
+        return res;
+      }
+    }
+  }
+
   return res;
 
 }
@@ -1347,7 +1460,7 @@ int  Brick::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(26);
+  static ID idData(28);
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING Brick::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1426,6 +1539,49 @@ int  Brick::recvSelf (int commitTag,
     }
   }
 
+  int dmpTag = (int)idData(26);
+  if (dmpTag) {
+    for (int i = 0 ;  i < 8; i++) {
+      // Check if the Damping is null; if so, get a new one
+      if (theDamping[i] == 0) {
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
+        if (theDamping[i] == 0) {
+          opserr << "Brick::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Check that the Damping is of the right type; if not, delete
+      // the current one and get a new one of the right type
+      if (theDamping[i]->getClassTag() != dmpTag) {
+        delete theDamping[i];
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
+        if (theDamping[i] == 0) {
+          opserr << "Brick::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Now, receive the Damping
+      theDamping[i]->setDbTag((int)idData(27));
+      res += theDamping[i]->recvSelf(commitTag, theChannel, theBroker);
+      if (res < 0) {
+        opserr << "Brick::recvSelf -- could not receive Damping\n";
+        return res;
+      }
+    }
+  }
+  else {
+    for (int i = 0; i < 8; i++)
+    {
+      if (theDamping[i])
+      {
+        delete theDamping[i];
+        theDamping[i] = 0;
+      }
+    }
+  }
+    
   return res;
 }
 //**************************************************************************
@@ -1580,6 +1736,28 @@ Brick::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.endTag(); // GaussPoint
     }
     theResponse =  new ElementResponse(this, 4, Vector(48));
+    
+  } else if (strcmp(argv[0],"dampingStresses") ==0) {
+
+    for (int i=0; i<8; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.tag("NdMaterialOutput");
+      output.attr("classType", materialPointers[i]->getClassTag());
+      output.attr("tag", materialPointers[i]->getTag());
+
+      output.tag("ResponseType","sigma11");
+      output.tag("ResponseType","sigma22");
+      output.tag("ResponseType","sigma33");
+      output.tag("ResponseType","sigma12");
+      output.tag("ResponseType","sigma23");
+      output.tag("ResponseType","sigma13");      
+
+      output.endTag(); // NdMaterialOutput
+      output.endTag(); // GaussPoint
+    }
+    theResponse =  new ElementResponse(this, 5, Vector(48));
+
   }
 
   
@@ -1631,6 +1809,24 @@ Brick::getResponse(int responseID, Information &eleInfo)
       stresses(cnt++) = sigma(5);
     }
     return eleInfo.setVector(stresses);
+  }
+  else if (responseID == 5) {
+    
+    // Loop over the integration points
+    int cnt = 0;
+    for (int i = 0; i < 8; i++) {
+      
+      // Get material stress response
+      const Vector &sigma = theDamping[i]->getDampingForce();
+      stresses(cnt++) = sigma(0);
+      stresses(cnt++) = sigma(1);
+      stresses(cnt++) = sigma(2);
+      stresses(cnt++) = sigma(3);
+      stresses(cnt++) = sigma(4);
+      stresses(cnt++) = sigma(5);
+    }
+    return eleInfo.setVector(stresses);
+
   }
 
   else

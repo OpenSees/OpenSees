@@ -28,6 +28,7 @@ all:
 	@$(CD) $(FE)/actor; $(MAKE);
 	@$(CD) $(FE)/machine; $(MAKE);
 	@$(CD) $(FE)/element; $(MAKE);
+	@$(CD) $(FE)/damping; $(MAKE);
 	@$(CD) $(FE)/coordTransformation; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
@@ -88,6 +89,7 @@ all:
 	@$(CD) $(FE)/actor; $(MAKE);
 	@$(CD) $(FE)/machine; $(MAKE);
 	@$(CD) $(FE)/element; $(MAKE);
+	@$(CD) $(FE)/damping; $(MAKE);
 	@$(CD) $(FE)/coordTransformation; $(MAKE);
 	@$(CD) $(FE)/api; $(MAKE);
 	@$(CD) $(FE)/damage; $(MAKE);
@@ -136,6 +138,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
+	$(FE)/damping/TclDampingCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
 	$(FE)/element/joint/TclBeamColumnJointCommand.o \
@@ -241,6 +244,8 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/FixedLocationBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LowOrderBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/ChebyshevBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/ConcentratedPlasticityBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/ConcentratedCurvatureBeamIntegration.o \
 	$(FE)/coordTransformation/CrdTransf.o \
 	$(FE)/coordTransformation/LinearCrdTransf2d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf2d.o \
@@ -515,6 +520,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/feap/fElmt02.o \
 	$(FE)/element/dispBeamColumn/AxEqDispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/TimoshenkoBeamColumn2d.o \
+	$(FE)/element/dispBeamColumn/TimoshenkoBeamColumn3d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumnNL2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
@@ -535,8 +541,6 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
 	$(FE)/element/elasticBeamColumn/WheelRail.o \
-	$(FE)/element/elasticBeamColumn/WheelRail.o \
-	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.o \
 	$(FE)/element/gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.o \
 	$(FE)/element/gradientInelasticBeamColumn/TclGradientInelasticBeamColumnCommand.o \
@@ -549,6 +553,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/ConstantPressureVolumeQuad.o \
 	$(FE)/element/fourNodeQuad/EnhancedQuad.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
+	$(FE)/element/componentElement/ComponentElement3d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/fourNodeQuad/NineNodeQuad.o \
 	$(FE)/element/fourNodeQuad/EightNodeQuad.o \
@@ -636,8 +641,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/HigherOrder.o \
 	$(FE)/element/PFEMElement/Mesh.o \
 	$(FE)/element/PFEMElement/PFEMContact2D.o \
+	$(FE)/element/PFEMElement/PFEMContact3D.o \
 	$(FE)/element/PFEMElement/BNode.o \
 	$(FE)/element/PFEMElement/BCell.o \
+	$(FE)/element/PFEMElement/Flume.o \
+	$(FE)/element/PFEMElement/BeamBrick.o \
+	$(FE)/element/PFEMElement/BeamDisk.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -651,6 +660,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
 	$(FE)/element/catenaryCable/CatenaryCable.o \
 	$(FE)/element/tetrahedron/FourNodeTetrahedron.o \
+	$(FE)/element/tetrahedron/TenNodeTetrahedron.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
@@ -666,7 +676,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
 	$(FE)/element/masonry/BeamGT.o \
-	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o
+	$(FE)/element/CEqElement/ASDEmbeddedNodeElement.o \
+	$(FE)/damping/Damping.o \
+	$(FE)/damping/SecStifDamping.o \
+	$(FE)/damping/URDDamping.o \
+	$(FE)/damping/URDDampingbeta.o \
+	$(FE)/damping/UniformDamping.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -791,6 +806,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/AxialSp.o \
 	$(FE)/material/uniaxial/ECC01.o \
 	$(FE)/material/uniaxial/HystereticMaterial.o \
+	$(FE)/material/uniaxial/HystereticSMMaterial.o \
 	$(FE)/material/uniaxial/OOHystereticMaterial.o \
 	$(FE)/material/uniaxial/EPPGapMaterial.o \
 	$(FE)/material/uniaxial/ViscousMaterial.o \
@@ -826,6 +842,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
 	$(FE)/material/uniaxial/Bond_SP01.o \
+        $(FE)/material/uniaxial/FRCC.o \
+        $(FE)/material/uniaxial/ConcreteZBH_original.o \
+        $(FE)/material/uniaxial/ConcreteZBH_fitted.o \
+        $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
@@ -844,6 +864,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HystereticAsym.o \
 	$(FE)/material/uniaxial/SLModel.o \
 	$(FE)/material/uniaxial/MaterialState.o \
+	$(FE)/material/uniaxial/CoulombDamperMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \
@@ -967,6 +988,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/IncrementalElasticIsotropicThreeDimensional.o \
 	$(FE)/material/nD/ElasticOrthotropicMaterial.o \
 	$(FE)/material/nD/ElasticOrthotropicThreeDimensional.o \
+	$(FE)/material/nD/OrthotropicMaterial.o \
+	$(FE)/material/nD/Series3DMaterial.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
@@ -1006,6 +1029,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressUserMaterial.o $(PLAINCONCRETE) $(FILIP)\
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o \
+	$(FE)/material/nD/ASDConcrete3DMaterial.o \
 	$(FE)/material/nD/stressDensityModel/stressDensity.o \
 	$(FE)/material/nD/stressDensityModel/SDM-UC.o
 
@@ -1053,6 +1077,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/ElasticSection3d.o \
 	$(FE)/material/section/ElasticShearSection2d.o \
 	$(FE)/material/section/ElasticShearSection3d.o \
+	$(FE)/material/section/ElasticBDShearSection2d.o \
 	$(FE)/material/section/ElasticWarpingShearSection2d.o \
 	$(FE)/material/section/ElasticTubeSection3d.o \
 	$(FE)/material/section/FiberSection2d.o \
@@ -1486,6 +1511,7 @@ wipe: spotless
 	@$(CD) $(FE)/interpreter; $(MAKE) wipe;
 	@$(CD) $(FE)/damage; $(MAKE) wipe;
 	@$(CD) $(FE)/string; $(MAKE) wipe;
+	@$(CD) $(FE)/damping; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

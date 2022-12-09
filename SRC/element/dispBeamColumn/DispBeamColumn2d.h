@@ -41,6 +41,7 @@
 #include <Vector.h>
 #include <ID.h>
 #include <BeamIntegration.h>
+#include <Damping.h>
 
 class Node;
 class SectionForceDeformation;
@@ -53,7 +54,8 @@ class DispBeamColumn2d : public Element
     DispBeamColumn2d(int tag, int nd1, int nd2,
 		     int numSections, SectionForceDeformation **s,
 		     BeamIntegration &bi, CrdTransf &coordTransf,
-		     double rho = 0.0, int cMass = 0);
+		     double rho = 0.0, int cMass = 0,
+		     Damping *theDamping = 0);
     DispBeamColumn2d();
     ~DispBeamColumn2d();
 
@@ -65,6 +67,7 @@ class DispBeamColumn2d : public Element
 
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
+    int setDamping(Domain *theDomain, Damping *theDamping);
 
     // public methods to set the state of the element    
     int commitState(void);
@@ -82,6 +85,7 @@ class DispBeamColumn2d : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Vector &getResistingForce(void);
+    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
 
     // public methods for element output
@@ -109,13 +113,12 @@ class DispBeamColumn2d : public Element
   protected:
     
   private:
-    const Matrix &getInitialBasicStiff(void);
     void getBasicStiff(Matrix &kb, int initial = 0);
 
 	int numSections;
 	SectionForceDeformation** theSections; // pointer to the ND material objects
-	BeamIntegration* beamInt;
 	CrdTransf* crdTransf;        // pointer to coordinate transformation object
+	BeamIntegration* beamInt;
 
     ID connectedExternalNodes; // Tags of quad nodes
 
@@ -131,6 +134,8 @@ class DispBeamColumn2d : public Element
 
     double rho;	   // Mass density per unit length
     int cMass;     // consistent mass flag
+
+    Damping *theDamping;
 
     enum {maxNumSections = 20};
 

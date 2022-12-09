@@ -2907,7 +2907,7 @@ Response *SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "My_l");
 		s.tag("ResponseType", "Mz_l");
 
-		return theResponse = new ElementResponse(this, 1, Vector(24));
+		theResponse = new ElementResponse(this, 1, Vector(24));
 
 	}
 	// Nodal forces in local cs
@@ -2939,7 +2939,7 @@ Response *SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "My_l");
 		s.tag("ResponseType", "Mz_l");
 
-		return theResponse = new ElementResponse(this, 2, Vector(24));
+		theResponse = new ElementResponse(this, 2, Vector(24));
 
 	}
 
@@ -2948,7 +2948,7 @@ Response *SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "Dsh");
 
-		return theResponse = new ElementResponse(this, 3, 0.0);
+		theResponse = new ElementResponse(this, 3, 0.0);
 
 	}
 
@@ -2957,12 +2957,13 @@ Response *SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "fi");
 
-		return theResponse = new ElementResponse(this, 4, 0.0);
+		theResponse = new ElementResponse(this, 4, 0.0);
 	}
 
 	// Material output
-	else if (strcmp(argv[0], "RCpanel") == 0 || strcmp(argv[0], "RCPanel")
-		|| strcmp(argv[0], "RC_panel") || strcmp(argv[0], "RC_Panel") == 0)
+	else if (strcmp(argv[0], "RCpanel") == 0 || strcmp(argv[0], "RCPanel") == 0
+		|| strcmp(argv[0], "RC_panel") == 0 || strcmp(argv[0], "RC_Panel") == 0
+		|| strcmp(argv[0], "material") == 0)
 	{
 
 		// Check if correct # of arguments passed
@@ -2972,17 +2973,21 @@ Response *SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		}
 
 		int matNum = atoi(argv[1]);
+		if (matNum > 0 && matNum <= m) {
 
-		s.tag("Material");
-		s.attr("number", matNum);
+			s.tag("GaussPointOutput");
+			s.attr("number", matNum);
+			s.attr("eta", x[matNum - 1] / Lw * 2.0);
+			s.attr("weight", b[matNum - 1] / Lw * 2.0);
 
-		return theResponse = theMaterial[matNum - 1]->setResponse(&argv[argc - 1], argc - 2, s);
+			theResponse = theMaterial[matNum - 1]->setResponse(&argv[argc - 1], argc - 2, s);
+		}
 
 	}
 
 	s.endTag();
 
-	return 0;
+	return theResponse;
 }
 
 // Get shear deformation

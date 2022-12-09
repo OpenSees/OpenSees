@@ -55,6 +55,8 @@ OBJS       = NDMaterial.o \
 	J2BeamFiber2d.o \
 	J2BeamFiber3d.o \
 	J2ThreeDimensional.o \
+	OrthotropicMaterial.o \
+	Series3DMaterial.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
 	PlaneStressUserMaterial.o \
@@ -93,7 +95,8 @@ OBJS       = NDMaterial.o \
 	PlateRebarMaterialThermal.o \
 	ElasticPlaneStress.o \
 	ElasticOrthotropicPlaneStress.o \
-	VonPapaDamage.o
+	VonPapaDamage.o \
+	ASDConcrete3DMaterial.o
 
 
 all: $(OBJS) 
@@ -105,6 +108,12 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE);
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
+
+test: $(OBJS) main.o
+	$(LINKER) $(LINKFLAGS) main.o ../../../SRC/api/elementAPI_Dummy.o $(FE_LIBRARY) \
+	$(MACHINE_LINKLIBS) \
+	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
+	-o material_test
 
 # Miscellaneous
 

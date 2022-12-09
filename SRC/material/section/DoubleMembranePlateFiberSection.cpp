@@ -730,10 +730,10 @@ DoubleMembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(2*numFibers+1);
+  static ID idData(4*numFibers+1);
   
   int i;
-  for (i = 0; i < numFibers; i++) {
+  for (i = 0; i < 2*numFibers; i++) {
     idData(i) = theFibers[i]->getClassTag();
     matDbTag = theFibers[i]->getDbTag();
     // NOTE: we do have to ensure that the material has a database
@@ -743,10 +743,10 @@ DoubleMembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
 			if (matDbTag != 0)
 			  theFibers[i]->setDbTag(matDbTag);
     }
-    idData(i+numFibers) = matDbTag;
+    idData(i+2*numFibers) = matDbTag;
   }
   
-  idData(2*numFibers) = this->getTag();
+  idData(4*numFibers) = this->getTag();
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -755,8 +755,17 @@ DoubleMembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }
 
+  static Vector vecData(2);
+  vecData(0) = h;
+  vecData(1) = d;
+  res += theChannel.sendVector(dataTag, commitTag, vecData);
+  if (res < 0) {
+      opserr << "WARNING DoubleMembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+      return res;
+  }
+
   // Finally, quad asks its material objects to send themselves
-  for (i = 0; i < numFibers; i++) {
+  for (i = 0; i < 2*numFibers; i++) {
     res += theFibers[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
       opserr << "WARNING DoubleMembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send its Material\n";
@@ -775,7 +784,7 @@ DoubleMembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FE
   
   int dataTag = this->getDbTag();
 
-  static ID idData(2*numFibers+1);
+  static ID idData(4*numFibers+1);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -783,14 +792,23 @@ DoubleMembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FE
     return res;
   }
 
-  this->setTag(idData(2*numFibers));
+  this->setTag(idData(4*numFibers));
+
+  static Vector vecData(2);
+  res += theChannel.recvVector(dataTag, commitTag, vecData);
+  if (res < 0) {
+      opserr << "WARNING DoubleMembranePlateFiberSection::recvSelf() - " << this->getTag() << " failed to receive Vector\n";
+      return res;
+  }
+  h = vecData(0);
+  d = vecData(1);
 
   int i;
 
   if (theFibers[0] == 0) {
-    for (i = 0; i < numFibers; i++) {
+    for (i = 0; i < 2*numFibers; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+numFibers);
+      int matDbTag = idData(i+2*numFibers);
       // Allocate new material with the sent class tag
       theFibers[i] = theBroker.getNewNDMaterial(matClassTag);
       if (theFibers[i] == 0) {
@@ -810,9 +828,9 @@ DoubleMembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FE
   }
   // Number of materials is the same, receive materials into current space
   else {
-    for (i = 0; i < numFibers; i++) {
+    for (i = 0; i < 2*numFibers; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+numFibers);
+      int matDbTag = idData(i+2*numFibers);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (theFibers[i]->getClassTag() != matClassTag) {

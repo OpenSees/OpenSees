@@ -129,6 +129,12 @@ FEM_ObjectBroker::getNewCrdTransf(int classTag)
   return 0;
 }
 
+Damping*
+FEM_ObjectBroker::getNewDamping(int classTag)
+{
+  return 0;
+}
+
 BeamIntegration *
 FEM_ObjectBroker::getNewBeamIntegration(int classTag)
 {
@@ -141,6 +147,11 @@ FEM_ObjectBroker::getNewSectionIntegration(int classTag)
   return 0;
 }
 
+HystereticBackbone *
+FEM_ObjectBroker::getNewHystereticBackbone(int classTag)
+{
+  return 0;
+}
 
 UniaxialMaterial *
 FEM_ObjectBroker::getNewUniaxialMaterial(int classTag)

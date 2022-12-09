@@ -23,9 +23,9 @@
 // Jarrod Cook, University of Canterbury, Christchurch, New Zealand
 
 //	^
-//  |
+//      |
 //	|                ________(3)________
-//  |               /                  /
+//      |               /                  /
 //	F              /                  /
 //	O             /                  /
 //	R            /                  /
@@ -64,6 +64,7 @@
 //Added when trying to add args to eleResponse
 #include <MaterialResponse.h>
 #include <Information.h>
+#include <Parameter.h>
 #include <string.h>
 #include <ID.h>
 #include <FEM_ObjectBroker.h>
@@ -88,7 +89,7 @@ void* OPS_GNGMaterial()
 	
 	if (numGNGMaterials == 0) {
 		numGNGMaterials++;
-		opserr << "Grip 'n' Grab device installed in this structure!\n";
+		//opserr << "Grip 'n' Grab device installed in this structure!" << endln;
     }
 	
     // Pointer to a uniaxial material that will be returned
@@ -96,7 +97,7 @@ void* OPS_GNGMaterial()
 
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs < 4) {
-	opserr << "Invalid #args,  want: uniaxialMaterial GNG tag E sigY P <eta>\n";
+      opserr << "Invalid #args,  want: uniaxialMaterial GNG tag E sigY P <eta>" << endln;
 	return 0;
     }
   
@@ -113,14 +114,14 @@ void* OPS_GNGMaterial()
     numData = OPS_GetNumRemainingInputArgs();
     if(numData > 4) numData = 4;
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
-	opserr << "Invalid data for uniaxial GNG \n";
+      opserr << "Invalid data for uniaxial GNG" << endln;
 	return 0;	
     }
 
     // Parsing was successful, allocate the material
     theMaterial = new GNGMaterial(tag, dData[0], dData[1], dData[2], dData[3]);
     if (theMaterial == 0) {
-	opserr << "WARNING could not create uniaxialMaterial of type GNG\n";
+      opserr << "WARNING could not create uniaxialMaterial of type GNG" << endln;
 	return 0;
     }
 
@@ -130,19 +131,15 @@ void* OPS_GNGMaterial()
 //full constructor
 GNGMaterial::GNGMaterial(int tag, double e, double sigY0, double p, double eta0)//, int accum)
 :UniaxialMaterial(tag,MAT_TAG_GNG),
- commitStrain(0.0), trialStrain(0.0), E(e), sigY(sigY0), P(p), eta(eta0), epsE(0.0)
+ commitStrain(0.0), trialStrain(0.0), E(e), sigY(sigY0), P(p), eta(eta0), epsE(0.0),
+ epsP(0.0), sigP(0.0), pdemand(0.0), nratchet(0)
 {
-	epsP = 0.0;
-	sigP = 0.0;
-	pdemand = 0.0; //cumulative plastic demand
-	nratchet = 0; //ratchet count
-	
 	if (E == 0.0) {
-	  opserr << "GNGMaterial::GNGMaterial -- E is zero, continuing with E = sigY/0.002\n";
+	  opserr << "GNGMaterial::GNGMaterial -- E is zero, continuing with E = sigY/0.002" << endln;
 	  if (sigY != 0.0)
 	    E = fabs(sigY)/0.002;
 	  else {
-	    opserr << "GNGMaterial::GNGMaterial -- E and sigY are zero\n";
+	    opserr << "GNGMaterial::GNGMaterial -- E and sigY are zero" << endln;
 	    exit(-1);
 	  }
 	}
@@ -151,11 +148,11 @@ GNGMaterial::GNGMaterial(int tag, double e, double sigY0, double p, double eta0)
 	  epsY = epsE + sigY/E;
 
 	if (sigY*P<0) { // To Remove...
-	  opserr << "GNGMaterial::GNGMaterial -- Alternate signs on sigY and E encountered, continuing anyway\n";
+	  opserr << "GNGMaterial::GNGMaterial -- Alternate signs on sigY and E encountered, continuing anyway" << endln;
 	}
         
         if ( (eta >= 1) || (eta <= -1) ) {
-          opserr << "GNGMaterial::GNGMaterial -- value of eta must be -1 <= eta <= 1, setting eta to 0\n";
+          opserr << "GNGMaterial::GNGMaterial -- value of eta must be -1 <= eta <= 1, setting eta to 0" << endln;
           eta = 0;
         }
         
@@ -164,11 +161,10 @@ GNGMaterial::GNGMaterial(int tag, double e, double sigY0, double p, double eta0)
 //null constructor
 GNGMaterial::GNGMaterial()
 :UniaxialMaterial(0,MAT_TAG_GNG),
- E(0.0), sigY(0.0), P(0.0), eta(0.0), epsE(0.0)
+ commitStrain(0.0), trialStrain(0.0),
+ E(0.0), sigY(0.0), P(0.0), eta(0.0), epsY(0.0), epsE(0.0),
+ epsP(0.0), sigP(0.0), pdemand(0.0), nratchet(0.0)
 {
-
-pdemand = 0.0;
-nratchet = 0;
 
 }
 
@@ -385,15 +381,19 @@ UniaxialMaterial *
 GNGMaterial::getCopy(void)
 {
     GNGMaterial *theCopy = new GNGMaterial(this->getTag(),E,sigY,P,eta);
-    theCopy->trialStrain = trialStrain;
+
+    theCopy->commitStrain = commitStrain;
+    theCopy->trialStrain = trialStrain;	
 	
-	theCopy-> epsP = epsP;
-	theCopy-> sigP = sigP;
+	theCopy->epsP = epsP;
+	theCopy->sigP = sigP;
     theCopy-> epsE = epsE;
-	theCopy-> sigY = sigY;
-	theCopy-> epsY = epsY;
-	theCopy-> pdemand = pdemand;
-	theCopy-> nratchet = nratchet;
+	theCopy->epsY = epsY;
+	theCopy->pdemand = pdemand;
+	theCopy->nratchet = nratchet;
+
+	theCopy->trialStress = trialStress;
+	theCopy->trialTangent = trialTangent;	
 	
     return theCopy;
 }
@@ -411,7 +411,6 @@ GNGMaterial::sendSelf(int cTag, Channel &theChannel)
 {
 	//we place all the data needed to define the material and its state
 	//into a vector object
-  int res = 0;
   static Vector data(12);
   data(0) = this->getTag();
   data(1) = commitStrain;
@@ -427,11 +426,12 @@ GNGMaterial::sendSelf(int cTag, Channel &theChannel)
   data(11) = nratchet;
 
   //send the vector object to the channel
-  res = theChannel.sendVector(this->getDbTag(), cTag, data);
-  if (res < 0) 
-    opserr << "GNGMaterial::sendSelf() - failed to send data\n";
-
-  return res;
+  if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << "GNGMaterial::sendSelf() - failed to send data" << endln;
+    return -1;
+  }
+  
+  return 0;
 }
 
 int 
@@ -440,11 +440,11 @@ GNGMaterial::recvSelf(int cTag, Channel &theChannel,
 {
 	//receive the vector object from the channel which defines material
 	//parameters and state
-  int res = 0;
   static Vector data(12);
-  res = theChannel.recvVector(this->getDbTag(), cTag, data);
-  if (res < 0)
-    opserr << "GNGMaterial::recvSelf() - failed to recv data\n";
+  if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << "GNGMaterial::recvSelf() - failed to recv data" << endln;
+    return -1;
+  }
   else {
     this->setTag((int)data(0));
     commitStrain = data(1);
@@ -462,7 +462,7 @@ GNGMaterial::recvSelf(int cTag, Channel &theChannel,
 	
   }
 
-  return res;
+  return 0;
 }
 
 //Methods Dealing With Output
@@ -501,51 +501,72 @@ GNGMaterial::Print(OPS_Stream &s, int flag)
 Response* 
 GNGMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
 {
-	
-  	if (strcmp(argv[0],"demand") == 0) {
-		 
-		return new MaterialResponse(this, 11, this->getStrain());
+  //by default, See if the response is one of the defaults
+  Response *res =  UniaxialMaterial::setResponse(argv, argc, theOutput);
+  if (res != 0)
+    return res;
 
-	  }
-	else if (strcmp(argv[0],"ratchetCount") == 0) {
-	 
-		return new MaterialResponse(this, 12, this->getStrain());
+  if (strcmp(argv[0],"demand") == 0) {
+    return new MaterialResponse(this, 11, 0.0);
+  }
+  else if (strcmp(argv[0],"ratchetCount") == 0) {
+    return new MaterialResponse(this, 12, 0.0);
+  } 	
 
-	  } 	
-	  
-	  	  //by default, See if the response is one of the defaults
-	  Response *res =  UniaxialMaterial::setResponse(argv, argc, theOutput);
-
-	  if (res != 0)      return res;
-	  else { 
-		  opserr<<"error in GNGMaterial::setResponse"<<endln;
-		  return 0;
-	  }
-	  
+  return 0;
 }
 
 int 
 GNGMaterial::getResponse(int responseID, Information &matInfo)
 {
-	
-	if (responseID==11) {
-		
-		return matInfo.setDouble(pdemand);
-		
-	}
-	else if (responseID==12) {
-		
-		return matInfo.setDouble(nratchet);
-		
-	}
+  if (responseID==11) {
+    return matInfo.setDouble(pdemand);
+  }
+  else if (responseID==12) {
+    return matInfo.setDouble(nratchet);
+  }
+  
+  // Just call the base class method ... don't need to define
+  // this function, but keeping it here just for clarity
+  return UniaxialMaterial::getResponse(responseID, matInfo);
+}
 
-	else {
+int
+GNGMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"E") == 0 || strcmp(argv[0],"k") == 0) {
+    param.setValue(E);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"Fy") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"sigY") == 0) {
+    param.setValue(sigY);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"eta") == 0) {
+    param.setValue(eta);
+    return param.addObject(4, this);
+  }
+  
+  return 0;
+}
 
-	  // Just call the base class method ... don't need to define
-	  // this function, but keeping it here just for clarity
-	  return UniaxialMaterial::getResponse(responseID, matInfo);
-	  
-	}
-	
+int
+GNGMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    E = info.theDouble;
+    break;
+  case 2:
+    sigY = info.theDouble;
+    break;
+  case 4:
+    eta = info.theDouble;
+    break;    
+  default:
+    return -1;
+  }
+
+  return 0;
 }
 

@@ -253,11 +253,11 @@ InitStressMaterial::recvSelf(int cTag, Channel &theChannel,
     opserr << "InitStressMaterial::recvSelf() - failed to get the ID\n";
     return -1;
   }
-  this->setTag(int(dataID(0)));
+  this->setTag(dataID(0));
 
   // as no way to change material, don't have to check classTag of the material 
   if (theMaterial == 0) {
-    int matClassTag = int(dataID(1));
+    int matClassTag = dataID(1);
     theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "InitStressMaterial::recvSelf() - failed to create Material with classTag " 

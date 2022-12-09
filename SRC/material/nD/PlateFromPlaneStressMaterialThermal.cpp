@@ -38,6 +38,48 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
+#include <elementAPI.h>
+
+void* OPS_PlateFromPlaneStressMaterialThermal()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlateFromPlaneStressThermal tag? matTag? gmod?" << endln;
+	return 0;
+    }
+
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid nDMaterial PlateFromPlaneStressThermal tag and matTag" << endln;
+	return 0;
+    }
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(tag[1]);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << tag[1];
+	opserr << "\nPlateFromplanestressThermal nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+
+    double gmod;
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata,&gmod)<0) {
+	opserr << "WARNING invalid gmod" << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlateFromPlaneStressMaterialThermal( tag[0], *threeDMaterial, gmod);
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlateFromplanestressThemral material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //static vector and matrices
 Vector  PlateFromPlaneStressMaterialThermal::stress(5) ;

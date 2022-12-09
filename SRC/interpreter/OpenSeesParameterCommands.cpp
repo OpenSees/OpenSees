@@ -636,12 +636,23 @@ int OPS_setParameter() {
 
   if (argv.empty()) return 0;
 
-  ElementStateParameter theParameter(newValue, &argv[0], (int)argv.size(),
+  Domain* theDomain = OPS_GetDomain();
+  if (theDomain == 0) return 0;
+
+  int tempParamId = 0;
+  Parameter* tempParam;
+  ParameterIter& tempParamIter = theDomain->getParameters();
+  while ((tempParam = tempParamIter()) != 0) {
+      if (tempParam->getTag() > tempParamId)
+          tempParamId = tempParam->getTag();
+  }
+  ++tempParamId;
+  ElementStateParameter theParameter(tempParamId, newValue, &argv[0], (int)argv.size(),
                                      flag, &eleIDs);
 
-  Domain *theDomain = OPS_GetDomain();
-  if (theDomain == 0) return 0;
+  
   theDomain->addParameter(&theParameter);
+  theDomain->removeParameter(tempParamId);
 
   return 0;
 }

@@ -1170,6 +1170,13 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
     if (strcmp(argv[0],"zaxis") == 0) {
       theResponse = new ElementResponse(this, 22, Vector(3));
     }
+
+    if (strcmp(argv[0],"materials") == 0) {
+      theResponse = new ElementResponse(this, 23, ID(numDIR));
+    }
+    if (strcmp(argv[0],"directions") == 0) {
+      theResponse = new ElementResponse(this, 24, ID(numDIR));
+    }
     
     output.endTag(); // ElementOutput
     
@@ -1181,6 +1188,7 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
 {
     Vector defoAndForce(numDIR*2);
     Vector &theVec = *(eleInfo.theVector);
+    ID &theID = *(eleInfo.theID);    
 	
     switch (responseID)  {
     case 1:  // global forces
@@ -1226,6 +1234,15 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
       theVec(0) = trans(2,0);
       theVec(1) = trans(2,1);
       theVec(2) = trans(2,2);
+      return 0;
+
+    case 23:
+      for (int i = 0; i < numDIR; i++)
+	theID(i) = theMaterials[i]->getTag();
+      return 0;
+    case 24:
+      for (int i = 0; i < numDIR; i++)
+	theID(i) = (*dir)(i) + 1; // Add one to match user input
       return 0;
       
     default:

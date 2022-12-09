@@ -53,11 +53,12 @@ PythonEvaluator::PythonEvaluator(
     : FunctionEvaluator(),
       theReliabilityDomain(passedReliabilityDomain),
       theOpenSeesDomain(passedOpenSeesDomain),
-      current_val(0) {
-  theExpression = 0;
-  int exprLen = strlen(passed_fileName);
-  fileName = new char[exprLen + 1];
-  strcpy(fileName, passed_fileName);
+      current_val(0),
+      moduleName() {
+    theExpression = 0;
+    int exprLen = strlen(passed_fileName);
+    fileName = new char[exprLen + 1];
+    strcpy(fileName, passed_fileName);
 }
 
 PythonEvaluator::PythonEvaluator(
@@ -66,545 +67,534 @@ PythonEvaluator::PythonEvaluator(
     : FunctionEvaluator(),
       theReliabilityDomain(passedReliabilityDomain),
       theOpenSeesDomain(passedOpenSeesDomain),
-      current_val(0) {
-  theExpression = 0;
-  fileName = 0;
+      current_val(0),
+      moduleName() {
+    theExpression = 0;
+    fileName = 0;
 }
 
 PythonEvaluator::~PythonEvaluator() {
-  if (theExpression != 0) delete[] theExpression;
-  if (fileName != 0) delete[] fileName;
+    if (theExpression != 0) delete[] theExpression;
+    if (fileName != 0) delete[] fileName;
 }
 
 int PythonEvaluator::setVariables() {
-  // get module object
-  PyObject *name = PyUnicode_FromString("opensees");
-  PyObject *pymodule = PyImport_GetModule(name);
-
-  if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not "
-              "imported\n";
-    return -1;
-  }
-
-  // get module dict
-  PyObject *moduleDict = PyModule_GetDict(pymodule);
-  if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is "
-              "not available\n";
-    return -1;
-  }
-
-  // get parameter variable
-  PyObject *params =
-      PyDict_GetItemString(moduleDict, "OpenSeesParameter");
-  if (params == NULL) {
-    opserr << "WARNING: variable OpenSeesParameter "
-              "is not defined in "
-              "module opensees\n ";
-    return -1;
-  }
-
-  // clear parameter dict
-  PyDict_Clear(params);
-
-  // Set values of parameters in the Python
-  // interpreter
-  int nparam = theOpenSeesDomain->getNumParameters();
-  for (int i = 0; i < nparam; i++) {
-    Parameter *theParam =
-        theOpenSeesDomain->getParameterFromIndex(i);
-    int paramTag = theParam->getTag();
-
-    // now get parameter values directly
-    double xval = theParam->getValue();
-
-    // put existing parameters
-    PyObject *key = PyLong_FromLong(paramTag);
-    if (key == NULL) {
-      opserr << "WARNING: failed to create "
-                "parameter key\n";
-      return -1;
+    // get module dict
+    auto res = loadModuleDict();
+    auto *pymodule = res[0];
+    auto *moduleDict = res[1];
+    if (moduleDict == NULL) {
+        opserr << "WARNING: module opensees dict is "
+                  "not available\n";
+        return -1;
     }
-    PyObject *val = PyFloat_FromDouble(xval);
-    if (val == NULL) {
-      opserr << "WARNING: failed to create "
-                "parameter value\n";
-      return -1;
-    }
-    if (PyDict_SetItem(params, key, val) < 0) {
-      opserr << "WARNING: failed to set "
-                "parameter in Python\n";
-      Py_DECREF(key);
-      Py_DECREF(val);
-      return -1;
-    }
-    Py_DECREF(key);
-    Py_DECREF(val);
-  }
 
-  // clean up
-  Py_DECREF(name);
-  Py_DECREF(pymodule);
+    // get parameter variable
+    PyObject *params =
+        PyDict_GetItemString(moduleDict, "OpenSeesParameter");
+    if (params == NULL) {
+        opserr << "WARNING: variable OpenSeesParameter "
+                  "is not defined in "
+                  "module opensees\n ";
+        return -1;
+    }
 
-  return 0;
+    // clear parameter dict
+    PyDict_Clear(params);
+
+    // Set values of parameters in the Python
+    // interpreter
+    int nparam = theOpenSeesDomain->getNumParameters();
+    for (int i = 0; i < nparam; i++) {
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        int paramTag = theParam->getTag();
+
+        // now get parameter values directly
+        double xval = theParam->getValue();
+
+        // put existing parameters
+        PyObject *key = PyLong_FromLong(paramTag);
+        if (key == NULL) {
+            opserr << "WARNING: failed to create "
+                      "parameter key\n";
+            return -1;
+        }
+        PyObject *val = PyFloat_FromDouble(xval);
+        if (val == NULL) {
+            opserr << "WARNING: failed to create "
+                      "parameter value\n";
+            return -1;
+        }
+        if (PyDict_SetItem(params, key, val) < 0) {
+            opserr << "WARNING: failed to set "
+                      "parameter in Python\n";
+            Py_DECREF(key);
+            Py_DECREF(val);
+            return -1;
+        }
+        Py_DECREF(key);
+        Py_DECREF(val);
+    }
+
+    // clean up
+    Py_DECREF(pymodule);
+
+    return 0;
 }
 
-int PythonEvaluator::setExpression(
-    const char *passedExpression) {
-  if (theExpression != 0) delete[] theExpression;
+int PythonEvaluator::setExpression(const char *passedExpression) {
+    if (theExpression != 0) delete[] theExpression;
 
-  int exprLen = strlen(passedExpression);
-  theExpression = new char[exprLen + 1];
-  strcpy(theExpression, passedExpression);
+    int exprLen = strlen(passedExpression);
+    theExpression = new char[exprLen + 1];
+    strcpy(theExpression, passedExpression);
 
-  return 0;
+    return 0;
 }
 
-int PythonEvaluator::addToExpression(const char *in) {
-  return 0;
-}
+int PythonEvaluator::addToExpression(const char *in) { return 0; }
 
 double PythonEvaluator::evaluateExpression() {
-  if (theExpression == 0) {
-    opserr << "PythonEvaluator::evaluateExpression "
-              "-- must set the "
-              "expression before trying ";
-    opserr << "to evaluate" << endln;
-    return -1;
-  }
-
-  // add imports
-  PyRun_SimpleString("import opensees");
-  PyRun_SimpleString("import opensees as ops");
-  PyRun_SimpleString("from math import *");
-  PyRun_SimpleString("import math");
-  PyRun_SimpleString("par = opensees.OpenSeesParameter");
-
-  // run the string and get results
-  PyObject *py_main, *py_dict;
-  py_main = PyImport_AddModule("__main__");
-  if (py_main == NULL) {
-    opserr << "WARNING: cannot add module "
-              "__main__\n";
-    return -1;
-  }
-  py_dict = PyModule_GetDict(py_main);
-  if (py_main == NULL) {
-    opserr << "WARNING: cannot get dict of "
-              "module __main__\n";
-    return -1;
-  }
-  PyObject *PyRes = PyRun_String(theExpression, Py_eval_input,
-                                 py_dict, py_dict);
-
-  if (PyRes == NULL) {
-    opserr << "WARNING: "
-              "PythonEvaluator::"
-              "evaluateExpression -- "
-              "expression \""
-           << theExpression;
-    opserr << "\" had some errors.\n";
-    opserr << "Note: use par[paramTag] to access "
-              "to parameters\n";
-    opserr << "Note: all math.* functions are "
-              "directly available "
-              "with or "
-              "without prefix math.\n";
-    return -1;
-  }
-
-  // get results
-  if (PyLong_Check(PyRes)) {
-    current_val = PyLong_AsLong(PyRes);
-  } else if (PyFloat_Check(PyRes)) {
-    current_val = PyFloat_AsDouble(PyRes);
-  } else {
-    current_val = 0.0;
-  }
-
-  this->incrementEvaluations();
-  return current_val;
-}
-
-int PythonEvaluator::runAnalysis() {
-  // Let's just make a direct call since we have
-  // the pointer to OpenSees domain This replaces
-  // above call to Tcl command; however, in the
-  // reset command revertToStart() is also called
-  // on theTransientIntegrator -- MHS needs to
-  // check
-  if (theOpenSeesDomain->revertToStart() != 0) {
-    opserr << "ERROR PythonEvaluator -- error in "
-              "resetting Domain"
-           << endln;
-    return -1;
-  }
-
-  // Source the code file that the user has
-  // provided
-  if (fileName == 0) {
-    // no source file provided, this is akin to
-    // the basic evaluator of days gone by
-
-  } else {
-    // parse the filename
-    std::string parsedFileName(fileName);
+    if (theExpression == 0) {
+        opserr << "PythonEvaluator::evaluateExpression "
+                  "-- must set the "
+                  "expression before trying ";
+        opserr << "to evaluate" << endln;
+        return -1;
+    }
 
     // add imports
-    PyRun_SimpleString("import opensees");
-    PyRun_SimpleString("import opensees as ops");
+    if (moduleName == "opensees") {
+        PyRun_SimpleString("import opensees");
+        PyRun_SimpleString("import opensees as ops");
+    } else {
+        PyRun_SimpleString("import openseespy.opensees as ops");
+        PyRun_SimpleString("import openseespy.opensees as opensees");
+    }
     PyRun_SimpleString("from math import *");
     PyRun_SimpleString("import math");
     PyRun_SimpleString("par = opensees.OpenSeesParameter");
 
-    // add imports
+    // run the string and get results
+    PyObject *py_main, *py_dict;
+    py_main = PyImport_AddModule("__main__");
+    if (py_main == NULL) {
+        opserr << "WARNING: cannot add module "
+                  "__main__\n";
+        return -1;
+    }
+    py_dict = PyModule_GetDict(py_main);
+    if (py_main == NULL) {
+        opserr << "WARNING: cannot get dict of "
+                  "module __main__\n";
+        return -1;
+    }
+    PyObject *PyRes =
+        PyRun_String(theExpression, Py_eval_input, py_dict, py_dict);
 
-    if (PyRun_SimpleString(fileName) < 0) {
-      opserr << "WARNING: "
-                "PythonEvaluator::runAnalysis -- "
-                "fileName \""
-             << fileName;
-      opserr << "\" had some errors.\n";
-      opserr << "Note: use par[paramTag] to "
-                "access to parameters\n";
-      opserr << "Note: all math.* functions are "
-                "directly available "
-                "with or "
-                "without prefix math.\n";
-      return -1;
+    if (PyRes == NULL) {
+        opserr << "WARNING: "
+                  "PythonEvaluator::"
+                  "evaluateExpression -- "
+                  "expression \""
+               << theExpression;
+        opserr << "\" had some errors.\n";
+        opserr << "Note: use par[paramTag] to access "
+                  "to parameters\n";
+        opserr << "Note: all math.* functions are "
+                  "directly available "
+                  "with or "
+                  "without prefix math.\n";
+        return -1;
     }
 
-    // make sure the parameter variables in the
-    // namespace update to reflect the results of
-    // above analysis
-    Parameter *theParam;
-
-    // Set values of parameters in the Tcl
-    // interpreter
-    int nparam = theOpenSeesDomain->getNumParameters();
-
-    for (int i = 0; i < nparam; i++) {
-      theParam = theOpenSeesDomain->getParameterFromIndex(i);
-      if (theParam->isImplicit()) theParam->update(0.0);
+    // get results
+    if (PyLong_Check(PyRes)) {
+        current_val = PyLong_AsLong(PyRes);
+    } else if (PyFloat_Check(PyRes)) {
+        current_val = PyFloat_AsDouble(PyRes);
+    } else {
+        current_val = 0.0;
     }
-    this->setVariables();
-  }
 
-  return 0;
+    this->incrementEvaluations();
+    return current_val;
 }
 
-int PythonEvaluator::setResponseVariable(const char *label,
-                                         int lsfTag, int rvTag,
-                                         double value) {
-  // get module object
-  PyObject *name = PyUnicode_FromString("opensees");
-  PyObject *pymodule = PyImport_GetModule(name);
-
-  if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not "
-              "imported\n";
-    return -1;
-  }
-
-  // get module dict
-  PyObject *moduleDict = PyModule_GetDict(pymodule);
-  if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is "
-              "not available\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
-
-  // get response variable
-  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
-  bool newDict = false;
-  if (resVar == NULL) {
-    // create a new dict
-    resVar = PyDict_New();
-    newDict = true;
-    if (resVar == NULL) {
-      opserr << "WARNING: failed to create response variable "
-             << label << "\n";
-      Py_DECREF(name);
-      Py_DECREF(pymodule);
-      return -1;
+int PythonEvaluator::runAnalysis() {
+    // Let's just make a direct call since we have
+    // the pointer to OpenSees domain This replaces
+    // above call to Tcl command; however, in the
+    // reset command revertToStart() is also called
+    // on theTransientIntegrator -- MHS needs to
+    // check
+    if (theOpenSeesDomain->revertToStart() != 0) {
+        opserr << "ERROR PythonEvaluator -- error in "
+                  "resetting Domain"
+               << endln;
+        return -1;
     }
-  }
 
-  // create tuple key
-  PyObject *key = PyTuple_New(2);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // Source the code file that the user has
+    // provided
+    if (fileName == 0) {
+        // no source file provided, this is akin to
+        // the basic evaluator of days gone by
 
-  PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
-  PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
+    } else {
+        // parse the filename
+        std::string parsedFileName(fileName);
 
-  // create value
-  PyObject *pyvalue = PyFloat_FromDouble(value);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    Py_DECREF(key);
-    return -1;
-  }
+        // add imports
+        if (moduleName == "opensees") {
+            PyRun_SimpleString("import opensees");
+            PyRun_SimpleString("import opensees as ops");
+        } else {
+            PyRun_SimpleString("import openseespy.opensees as ops");
+            PyRun_SimpleString("import openseespy.opensees as opensees");
+        }
+        PyRun_SimpleString("from math import *");
+        PyRun_SimpleString("import math");
+        PyRun_SimpleString("par = opensees.OpenSeesParameter");
 
-  // set the key
-  if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
-    opserr << "WARNING: failed to set response variable\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
+        // add imports
+
+        if (PyRun_SimpleString(fileName) < 0) {
+            opserr << "WARNING: "
+                      "PythonEvaluator::runAnalysis -- "
+                      "fileName \""
+                   << fileName;
+            opserr << "\" had some errors.\n";
+            opserr << "Note: use par[paramTag] to "
+                      "access to parameters\n";
+            opserr << "Note: all math.* functions are "
+                      "directly available "
+                      "with or "
+                      "without prefix math.\n";
+            return -1;
+        }
+
+        // Minjie -- no need to update parameters to previous values
+        // either DDM or FDM
+
+        // make sure the parameter variables in the
+        // namespace update to reflect the results of
+        // above analysis
+        // Parameter *theParam;
+
+        // Set values of parameters in the Tcl
+        // interpreter
+        // int nparam = theOpenSeesDomain->getNumParameters();
+
+        // for (int i = 0; i < nparam; i++) {
+        //     theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        //     if (theParam->isImplicit()) theParam->update(0.0);
+        // }
+        this->setVariables();
+    }
+
+    return 0;
+}
+
+int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
+                                         int rvTag, double value) {
+    // get module dict
+    auto res = loadModuleDict();
+    auto *pymodule = res[0];
+    auto *moduleDict = res[1];
+    if (moduleDict == NULL) {
+        opserr << "WARNING: module opensees dict is "
+                  "not available\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
+
+    // get response variable
+    PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+    bool newDict = false;
+    if (resVar == NULL) {
+        // create a new dict
+        resVar = PyDict_New();
+        newDict = true;
+        if (resVar == NULL) {
+            opserr << "WARNING: failed to create response variable "
+                   << label << "\n";
+            Py_DECREF(pymodule);
+            return -1;
+        }
+    }
+
+    // create tuple key
+    PyObject *key = PyTuple_New(2);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
+
+    PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
+    PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
+
+    // create value
+    PyObject *pyvalue = PyFloat_FromDouble(value);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        return -1;
+    }
+
+    // set the key
+    if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
+        opserr << "WARNING: failed to set response variable\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        Py_DECREF(pyvalue);
+        return -1;
+    }
+
+    // add dictionary to python
+    if (newDict) {
+        if (PyModule_AddObject(pymodule, label, resVar) < 0) {
+            opserr << "WARNING: failed to add response variable\n";
+            Py_DECREF(pymodule);
+            Py_DECREF(key);
+            Py_DECREF(pyvalue);
+            return -1;
+        }
+    }
+
+    // clean up
     Py_DECREF(key);
     Py_DECREF(pyvalue);
-    return -1;
-  }
+    Py_DECREF(pymodule);
 
-  // add dictionary to python
-  if (newDict) {
-    if (PyModule_AddObject(pymodule, label, resVar) < 0) {
-      opserr << "WARNING: failed to add response variable\n";
-      Py_DECREF(name);
-      Py_DECREF(pymodule);
-      Py_DECREF(key);
-      Py_DECREF(pyvalue);
-      return -1;
-    }
-  }
-
-  // clean up
-  Py_DECREF(key);
-  Py_DECREF(pyvalue);
-  Py_DECREF(name);
-  Py_DECREF(pymodule);
-
-  return 0;
+    return 0;
 }
 
-int PythonEvaluator::setResponseVariable(const char *label,
-                                         int lsfTag,
+int PythonEvaluator::setResponseVariable(const char *label, int lsfTag,
                                          double value) {
-  // get module object
-  PyObject *name = PyUnicode_FromString("opensees");
-  PyObject *pymodule = PyImport_GetModule(name);
-
-  if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not "
-              "imported\n";
-    return -1;
-  }
-
-  // get module dict
-  PyObject *moduleDict = PyModule_GetDict(pymodule);
-  if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is "
-              "not available\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
-
-  // get response variable
-  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
-  bool newDict = false;
-  if (resVar == NULL) {
-    // create a new dict
-    resVar = PyDict_New();
-    newDict = true;
-    if (resVar == NULL) {
-      opserr << "WARNING: failed to create response variable "
-             << label << "\n";
-      Py_DECREF(name);
-      Py_DECREF(pymodule);
-      return -1;
+    auto res = loadModuleDict();
+    auto *pymodule = res[0];
+    auto *moduleDict = res[1];
+    if (moduleDict == NULL) {
+        opserr << "WARNING: module opensees dict is "
+                  "not available\n";
+        Py_DECREF(pymodule);
+        return -1;
     }
-  }
 
-  // create tuple key
-  PyObject *key = PyLong_FromLong(lsfTag);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // get response variable
+    PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+    bool newDict = false;
+    if (resVar == NULL) {
+        // create a new dict
+        resVar = PyDict_New();
+        newDict = true;
+        if (resVar == NULL) {
+            opserr << "WARNING: failed to create response variable "
+                   << label << "\n";
+            Py_DECREF(pymodule);
+            return -1;
+        }
+    }
 
-  // create value
-  PyObject *pyvalue = PyFloat_FromDouble(value);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    Py_DECREF(key);
-    return -1;
-  }
+    // create tuple key
+    PyObject *key = PyLong_FromLong(lsfTag);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  // set the key
-  if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
-    opserr << "WARNING: failed to set response variable\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
+    // create value
+    PyObject *pyvalue = PyFloat_FromDouble(value);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        return -1;
+    }
+
+    // set the key
+    if (PyDict_SetItem(resVar, key, pyvalue) < 0) {
+        opserr << "WARNING: failed to set response variable\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        Py_DECREF(pyvalue);
+        return -1;
+    }
+
+    // add dictionary to python
+    if (newDict) {
+        if (PyModule_AddObject(pymodule, label, resVar) < 0) {
+            opserr << "WARNING: failed to add response variable\n";
+            Py_DECREF(pymodule);
+            Py_DECREF(key);
+            Py_DECREF(pyvalue);
+            return -1;
+        }
+    }
+
+    // clean up
     Py_DECREF(key);
     Py_DECREF(pyvalue);
-    return -1;
-  }
+    Py_DECREF(pymodule);
 
-  // add dictionary to python
-  if (newDict) {
-    if (PyModule_AddObject(pymodule, label, resVar) < 0) {
-      opserr << "WARNING: failed to add response variable\n";
-      Py_DECREF(name);
-      Py_DECREF(pymodule);
-      Py_DECREF(key);
-      Py_DECREF(pyvalue);
-      return -1;
-    }
-  }
-
-  // clean up
-  Py_DECREF(key);
-  Py_DECREF(pyvalue);
-  Py_DECREF(name);
-  Py_DECREF(pymodule);
-
-  return 0;
+    return 0;
 }
 
-double PythonEvaluator::getResponseVariable(const char *label,
-                                            int lsfTag,
+double PythonEvaluator::getResponseVariable(const char *label, int lsfTag,
                                             int rvTag) {
-  // get module object
-  PyObject *name = PyUnicode_FromString("opensees");
-  PyObject *pymodule = PyImport_GetModule(name);
+    auto res = loadModuleDict();
+    auto *pymodule = res[0];
+    auto *moduleDict = res[1];
+    if (moduleDict == NULL) {
+        opserr << "WARNING: module opensees dict is "
+                  "not available\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not "
-              "imported\n";
-    return -1;
-  }
+    // get response variable
+    PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+    if (resVar == NULL) {
+        opserr << "WARNING: variable  " << resVar
+               << "is not defined in "
+                  "module opensees\n ";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  // get module dict
-  PyObject *moduleDict = PyModule_GetDict(pymodule);
-  if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is "
-              "not available\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // create tuple key
+    PyObject *key = PyTuple_New(2);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  // get response variable
-  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
-  if (resVar == NULL) {
-    opserr << "WARNING: variable  " << resVar
-           << "is not defined in "
-              "module opensees\n ";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
+    PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
 
-  // create tuple key
-  PyObject *key = PyTuple_New(2);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // get value
+    PyObject *value = PyDict_GetItem(resVar, key);
+    if (value == NULL) {
+        opserr << "WARNING: cannot find key " << lsfTag << "," << rvTag
+               << " in variable " << label << "\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        return -1;
+    }
 
-  PyTuple_SetItem(key, 0, PyLong_FromLong(lsfTag));
-  PyTuple_SetItem(key, 1, PyLong_FromLong(rvTag));
+    double result = PyFloat_AsDouble(value);
 
-  // get value
-  PyObject *value = PyDict_GetItem(resVar, key);
-  if (value == NULL) {
-    opserr << "WARNING: cannot find key " << lsfTag << ","
-           << rvTag << " in variable " << label << "\n";
-    Py_DECREF(name);
     Py_DECREF(pymodule);
     Py_DECREF(key);
-    return -1;
-  }
 
-  double result = PyFloat_AsDouble(value);
-
-  Py_DECREF(name);
-  Py_DECREF(pymodule);
-  Py_DECREF(key);
-
-  return result;
+    return result;
 }
 
 double PythonEvaluator::getResponseVariable(const char *label,
                                             int lsfTag) {
-  // get module object
-  PyObject *name = PyUnicode_FromString("opensees");
-  PyObject *pymodule = PyImport_GetModule(name);
+    auto res = loadModuleDict();
+    auto *pymodule = res[0];
+    auto *moduleDict = res[1];
+    if (moduleDict == NULL) {
+        opserr << "WARNING: module opensees dict is "
+                  "not available\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  if (pymodule == NULL) {
-    opserr << "WARNING: module opensees is not "
-              "imported\n";
-    return -1;
-  }
+    // get response variable
+    PyObject *resVar = PyDict_GetItemString(moduleDict, label);
+    if (resVar == NULL) {
+        opserr << "WARNING: variable  " << resVar
+               << "is not defined in "
+                  "module opensees\n ";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  // get module dict
-  PyObject *moduleDict = PyModule_GetDict(pymodule);
-  if (moduleDict == NULL) {
-    opserr << "WARNING: module opensees dict is "
-              "not available\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // create tuple key
+    PyObject *key = PyLong_FromLong(lsfTag);
+    if (key == NULL) {
+        opserr << "WARNING: failed to create response variable key\n";
+        Py_DECREF(pymodule);
+        return -1;
+    }
 
-  // get response variable
-  PyObject *resVar = PyDict_GetItemString(moduleDict, label);
-  if (resVar == NULL) {
-    opserr << "WARNING: variable  " << resVar
-           << "is not defined in "
-              "module opensees\n ";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    // get value
+    PyObject *value = PyDict_GetItem(resVar, key);
+    if (value == NULL) {
+        opserr << "WARNING: cannot find key " << lsfTag << " in variable "
+               << label << "\n";
+        Py_DECREF(pymodule);
+        Py_DECREF(key);
+        return -1;
+    }
 
-  // create tuple key
-  PyObject *key = PyLong_FromLong(lsfTag);
-  if (key == NULL) {
-    opserr
-        << "WARNING: failed to create response variable key\n";
-    Py_DECREF(name);
-    Py_DECREF(pymodule);
-    return -1;
-  }
+    double result = PyFloat_AsDouble(value);
 
-  // get value
-  PyObject *value = PyDict_GetItem(resVar, key);
-  if (value == NULL) {
-    opserr << "WARNING: cannot find key " << lsfTag
-           << " in variable " << label << "\n";
-    Py_DECREF(name);
     Py_DECREF(pymodule);
     Py_DECREF(key);
-    return -1;
-  }
 
-  double result = PyFloat_AsDouble(value);
+    return result;
+}
 
-  Py_DECREF(name);
-  Py_DECREF(pymodule);
-  Py_DECREF(key);
+std::vector<PyObject *> PythonEvaluator::loadModuleDict() {
+    std::vector<PyObject *> res(2, NULL);
 
-  return result;
+    if (moduleName.empty()) {
+        // get current dict
+        auto *dict = PyImport_GetModuleDict();
+        if (dict == NULL || !PyDict_Check(dict)) {
+            return res;
+        }
+
+        // get all keys
+        auto *keys = PyDict_Keys(dict);
+        if (keys == NULL) {
+            return res;
+        }
+
+        // loop over the keys
+        auto keysize = PyList_GET_SIZE(keys);
+        for (decltype(keysize) i = 0; i < keysize; ++i) {
+            auto *key = PyList_GET_ITEM(keys, i);
+            const char *s = PyUnicode_AsUTF8(key);
+            if (strcmp(s, "opensees") == 0 ||
+                strcmp(s, "openseespy.opensees") == 0) {
+                moduleName = s;
+                break;
+            }
+        }
+
+        // clean up
+        Py_DECREF(keys);
+
+        // not found
+        if (moduleName.empty()) {
+            opserr << "WARNING: not found any opensees module\n";
+            return res;
+        }
+    }
+
+    // get module object
+    PyObject *name = PyUnicode_FromString(moduleName.c_str());
+    res[0] = PyImport_GetModule(name);
+
+    if (res[0] == NULL) {
+        opserr << "WARNING: opensees module is not found\n";
+        return res;
+    }
+
+    // get module dict
+    res[1] = PyModule_GetDict(res[0]);
+
+    // clean up
+    Py_DECREF(name);
+
+    return res;
 }

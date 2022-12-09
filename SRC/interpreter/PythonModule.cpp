@@ -253,7 +253,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     // Py_DECREF(space);
     // Py_DECREF(empty);
 
-    int lenres = strlen(res) + 1;
+    int lenres = int(strlen(res)) + 1;
     if (lenres > len) {
         lenres = len;
     }
@@ -287,6 +287,21 @@ PythonModule::setInt(int *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setInt(std::vector<std::vector<int>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, int>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, std::vector<int>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     wrapper.setOutputs(data, numArgs, scalar);
@@ -294,10 +309,47 @@ PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setDouble(std::vector<std::vector<double>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, double>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, std::vector<double>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setString(const char *str) {
     wrapper.setOutputs(str);
 
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
     return 0;
 }
 
@@ -402,7 +454,7 @@ initopensees(void)
     PyModule_AddObject(pymodule, "OpenSeesError", st->error);
 
     // add OpenSeesParameter dict
-    PyObject *par = PyDict_New();
+    auto *par = PyDict_New();
     if (par == NULL) {
       INITERROR;
     }
@@ -410,16 +462,6 @@ initopensees(void)
         Py_DECREF(par);
         INITERROR;
     }
-
-    // char version[10];
-    // const char *py_version = ".6";
-    // for (int i = 0; i < 5; ++i) {
-    //     version[i] = OPS_VERSION[i];
-    // }
-    // for (int i = 0; i < 3; ++i) {
-    //     version[5 + i] = py_version[i];
-    // }
-    // PyModule_AddStringConstant(pymodule, "__version__", version);
 
     sserr.setError(st->error);
 
