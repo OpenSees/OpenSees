@@ -114,6 +114,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete02.cpp
       FatigueMaterial.cpp
       #FedeasMaterial.cpp
+      FlagShapeMaterial.cpp
       GNGMaterial.cpp
       HardeningMaterial.cpp
       #HardeningMaterial2.cpp
@@ -228,6 +229,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete02.h
       FatigueMaterial.h
       #FedeasMaterial.h
+      FlagShapeMaterial.h
       GNGMaterial.h
       HardeningMaterial.h
       #HardeningMaterial2.h
