@@ -2910,8 +2910,8 @@ int OPS_modalDamping()
 
     int numModes = OPS_GetNumRemainingInputArgs();
     if (numModes != 1 && numModes != numEigen) {
-      opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
-      opserr << "                     - same damping ratio will be applied to all modes\n";
+      opserr << "WARNING modalDamping - fewer damping factors than modes were specified\n";
+      opserr << "                     - zero damping will be applied to un-specified modes\n";
     }
 
     double factor;
@@ -2921,14 +2921,16 @@ int OPS_modalDamping()
     //
     // read in values and set factors
     //
-    if (numModes == numEigen) {
-      for (int i = 0; i < numEigen; i++) {
+    if (numModes <= numEigen) {
+      for (int i = 0; i < numModes; i++) {
 	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
 	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
 	  return -1;
 	}
 	modalDampingValues(i) = factor;
       }
+      for (int i = numModes; i < numEigen; i++)
+	modalDampingValues(i) = 0.0;
     } else {
       if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
 	opserr << "WARNING modalDamping - could not read factor for all modes \n";
