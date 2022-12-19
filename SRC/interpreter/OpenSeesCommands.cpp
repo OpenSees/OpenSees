@@ -2909,10 +2909,14 @@ int OPS_modalDamping()
     }
 
     int numModes = OPS_GetNumRemainingInputArgs();
-    if (numModes != 1 && numModes != numEigen) {
+    if (numModes != 1 && numModes < numEigen) {
       opserr << "WARNING modalDamping - fewer damping factors than modes were specified\n";
-      opserr << "                     - zero damping will be applied to un-specified modes\n";
+      opserr << "                     - zero damping will be applied to un-specified modes" << endln;
     }
+    if (numModes > numEigen) {
+      opserr << "WARNING modalDamping - more damping factors than modes were specifed\n";
+      opserr << "                     - ignoring additional damping factors" << endln;
+    }    
 
     double factor;
     Vector modalDampingValues(numEigen);
@@ -2921,7 +2925,15 @@ int OPS_modalDamping()
     //
     // read in values and set factors
     //
-    if (numModes <= numEigen) {
+    if (numModes == 1) {
+      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	opserr << "WARNING modalDamping - could not read factor for all modes \n";
+	return -1;
+      }
+      for (int i = 0; i < numEigen; i++)
+	modalDampingValues(i) = factor;
+    }
+    else {
       for (int i = 0; i < numModes; i++) {
 	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
 	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
@@ -2931,13 +2943,6 @@ int OPS_modalDamping()
       }
       for (int i = numModes; i < numEigen; i++)
 	modalDampingValues(i) = 0.0;
-    } else {
-      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING modalDamping - could not read factor for all modes \n";
-	return -1;
-      }
-      for (int i = 0; i < numEigen; i++)
-	modalDampingValues(i) = factor;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -2952,7 +2957,7 @@ int OPS_modalDampingQ()
 {
     if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
+	opserr << "WARNING modalDampingQ ?factor - not enough arguments to command\n";
 	return -1;
     }
 
@@ -2960,20 +2965,45 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDampingQ - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
+    int numModes = OPS_GetNumRemainingInputArgs();
+    if (numModes != 1 && numModes < numEigen) {
+      opserr << "WARNING modalDampingQ - fewer damping factors than modes were specified\n";
+      opserr << "                      - zero damping will be applied to un-specified modes" << endln;
+    }
+    if (numModes > numEigen) {
+      opserr << "WARNING modalDampingQ - more damping factors than modes were specifed\n";
+      opserr << "                      - ignoring additional damping factors" << endln;
+    }
+    
     double factor;
-    int numdata = 1;
-    if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING modalDamping - could not read factor for all modes \n";
-	return -1;
-    }
-
     Vector modalDampingValues(numEigen);
-    for (int i=0; i<numEigen; i++) {
+    int numdata = 1;
+
+    //
+    // read in values and set factors
+    //
+    if (numModes == 1) {
+      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	opserr << "WARNING modalDampingQ - could not read factor for all modes \n";
+	return -1;
+      }
+      for (int i = 0; i < numEigen; i++)
 	modalDampingValues(i) = factor;
+    }
+    else {
+      for (int i = 0; i < numModes; i++) {
+	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	  opserr << "WARNING modalDampingQ - could not read factor for mode " << i+1 << endln;
+	  return -1;
+	}
+	modalDampingValues(i) = factor;
+      }
+      for (int i = numModes; i < numEigen; i++)
+	modalDampingValues(i) = 0.0;
     }
 
     Domain* theDomain = OPS_GetDomain();
