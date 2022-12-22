@@ -597,7 +597,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 		tag, 
 		E, v, rho, eta, 
 		implex, implex_control, implex_error_tolerance, implex_time_redution_limit, implex_alpha,
-		tangent, auto_regularization,
+		tangent, auto_regularization, lch_ref,
 		HT, HC,
 		nct, ncc, smoothing_angle);
 	if (instance == nullptr) {
