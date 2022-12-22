@@ -753,20 +753,21 @@ ASDConcrete3DMaterial::HardeningLaw::HardeningLaw(
 	HardeningLawStorage::instance().store(*this);
 }
 
-void ASDConcrete3DMaterial::HardeningLaw::regularize(double lch)
+void ASDConcrete3DMaterial::HardeningLaw::regularize(double lch, double lch_ref)
 {
 	// quick return if not valid
 	if (!m_valid)
 		return;
 	// quick return if un-bounded (inf fracture energy), or invalid lch
-	if (!m_fracture_energy_is_bounded || lch <= 0.0 || lch == 1.0) 
+	double lch_scale = lch > 0.0 ? lch_ref / lch : 0.0;
+	if (!m_fracture_energy_is_bounded || lch_scale <= 0.0 || lch_scale == 1.0)
 		return;
 	// back to original
 	deRegularize();
 	// the initial fracture energy has been computed in the full constructor, and we
 	// are back to it after deRegularize...
 	// compute the required specific fracture energy
-	double gnew = m_fracture_energy / lch;
+	double gnew = m_fracture_energy * lch_scale;
 	// compute the minimum fracture energy (in case lch is too large)
 	const auto& peak = m_points[m_softening_begin];
 	double gmin = (peak.y * peak.x / 2.0) * 1.01; // make it 1% larger to ensure a monotonically increasing abscissa
@@ -1275,6 +1276,7 @@ ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	double _implex_alpha,
 	bool _tangent,
 	bool _auto_regularize,
+	double _lch_ref,
 	const HardeningLaw& _ht,
 	const HardeningLaw& _hc,
 	int _nct,
@@ -1292,6 +1294,7 @@ ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	, implex_alpha(_implex_alpha)
 	, tangent(_tangent)
 	, auto_regularize(_auto_regularize)
+	, lch_ref(_lch_ref)
 	, ht(_ht)
 	, hc(_hc)
 	, nct(std::max(0, _nct))
@@ -1337,8 +1340,8 @@ int ASDConcrete3DMaterial::setTrialStrain(const Vector& v)
 			lch = ops_TheActiveElement->getCharacteristicLength();
 		regularization_done = true;
 		if (auto_regularize) {
-			ht.regularize(lch);
-			hc.regularize(lch);
+			ht.regularize(lch, lch_ref);
+			hc.regularize(lch, lch_ref);
 		}
 	}
 
@@ -1590,7 +1593,7 @@ int ASDConcrete3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	int counter;
 
 	// variable DBL data size
-	int nv_dbl = 127 +
+	int nv_dbl = 128 +
 		ht.serializationDataSize() +
 		hc.serializationDataSize() +
 		svt.serializationDataSize() +
@@ -1630,6 +1633,7 @@ int ASDConcrete3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = implex_time_redution_limit;
 	ddata(counter++) = implex_alpha;
 	ddata(counter++) = lch;
+	ddata(counter++) = lch_ref;
 	ddata(counter++) = smoothing_angle;
 	ddata(counter++) = dtime_n;
 	ddata(counter++) = dtime_n_commit;
@@ -1710,6 +1714,7 @@ int ASDConcrete3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_Obj
 	implex_time_redution_limit = ddata(counter++);
 	implex_alpha = ddata(counter++);
 	lch = ddata(counter++);
+	lch_ref = ddata(counter++);
 	smoothing_angle = ddata(counter++);
 	dtime_n = ddata(counter++);
 	dtime_n_commit = ddata(counter++);

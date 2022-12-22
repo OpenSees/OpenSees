@@ -129,8 +129,9 @@ public:
 			const std::vector<double>& d);
 
 		// regularizes the hardening curve according to the 'lch'
-		// characteristic length of the parent element
-		void regularize(double lch);
+		// characteristic length of the parent element, and the 'lch_ref'
+		// characteristic length of the input hardening curve
+		void regularize(double lch, double lch_ref);
 		// nullify previous regularization
 		void deRegularize();
 		// evaluate the hardening law at a certain strain
@@ -281,6 +282,7 @@ public:
 		double _implex_alpha,
 		bool _tangent,
 		bool _auto_regularize,
+		double _lch_ref,
 		const HardeningLaw& _ht,
 		const HardeningLaw& _hc,
 		int _nct,
@@ -373,7 +375,8 @@ private:
 	// True = automatically regularize the fracture energy using the element's characteristic length
 	bool auto_regularize = true;
 	bool regularization_done = false;
-	double lch = 1.0;
+	double lch = 1.0; // the parent-element's characteristic length
+	double lch_ref = 1.0; // the reference characteristic length (i.e. the size the specific-fracture-energy in the hardening-law is referred to)
 	// The hardening law for the tensile response
 	HardeningLaw ht;
 	// The hardening law for the compressive response
