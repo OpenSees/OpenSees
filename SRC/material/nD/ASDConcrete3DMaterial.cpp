@@ -362,7 +362,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 			"<-rho $rho> "
 			"<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
 			"<-crackPlanes $nct $ncc $smoothingAngle>"
-			"<-eta $eta> <-tangent> <-autoRegularization>\n";
+			"<-eta $eta> <-tangent> <-autoRegularization $lch_ref>\n";
 		return nullptr;
 	}
 
@@ -382,6 +382,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 	double eta = 0.0;
 	bool tangent = false;
 	bool auto_regularization = false;
+	double lch_ref = 1.0;
 	std::vector<double> Te, Ts, Td, Ce, Cs, Cd;
 	int nct = 0;
 	int ncc = 0;
@@ -494,6 +495,12 @@ void *OPS_ASDConcrete3DMaterial(void)
 		}
 		else if (strcmp(value, "-autoRegularization") == 0) {
 			auto_regularization = true;
+			if (OPS_GetNumRemainingInputArgs() < 1) {
+				opserr << "nDMaterial ASDConcrete3D Error: '-autoRegularization' given without the next 1 argument $lch_ref.\n";
+				return nullptr;
+			}
+			if (!lam_optional_double("lch_ref", lch_ref))
+				return nullptr;
 		}
 		else if (strcmp(value, "-Te") == 0) {
 			if (!lam_optional_list("Te", Te))
