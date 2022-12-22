@@ -527,7 +527,7 @@ IncrementalIntegrator::addModalDampingForce(const Vector *modalDampingValues)
   for (int i=0; i<numModes; i++) {
 
     double eigenvalue = (*eigenValues)(i);
-    if (eigenvalue > 0) {
+    if (eigenvalue > 0 && fabs((*modalDampingValues)(i)) > 0.0) {
       double wn = sqrt(eigenvalue);
 
       double *eigenVectorI = &eigenVectors[numDOF*i];
@@ -589,7 +589,7 @@ IncrementalIntegrator::addModalDampingMatrix(const Vector *modalDampingValues) {
     for (int i=0; i<numModes; i++) {
 
       double eigenvalue = (*eigenValues)(i);
-      if (eigenvalue > 0) {
+      if (eigenvalue > 0 && fabs((*modalDampingValues)(i)) > 0.0) {
 	double wn = sqrt(eigenvalue);
 	double *eigenVectorI = &eigenVectors[numDOF*i];
 	double ei_dof = eigenVectors[numDOF*i+dof];
