@@ -301,6 +301,46 @@ namespace {
 		pjj(5, 5) = 2.0 * A1 * A3;
 	}
 
+	/**
+	global parameters storage
+	*/
+	class GlobalParameters {
+	private:
+		double max_error = 0.0;
+		double avg_error = 0.0;
+		int avg_counter = 0;
+	private:
+		GlobalParameters() = default;
+		GlobalParameters(const GlobalParameters&) = delete;
+		GlobalParameters& operator = (const GlobalParameters&) = delete;
+	public:
+		static GlobalParameters& instance() {
+			static GlobalParameters _instance;
+			return _instance;
+		}
+		inline double getMaxError() const { 
+			return max_error; 
+		}
+		inline void setMaxError(double x) { 
+			max_error = x; 
+		}
+		inline double getAverageError() {
+			if (avg_counter > 0) {
+				avg_error /= static_cast<double>(avg_counter);
+				avg_counter = 0;
+			}
+			return avg_error;
+		}
+		inline void accumulateAverageError(double x) {
+			avg_error += x; 
+			++avg_counter; 
+		}
+		inline void setAverageError(double x) { 
+			avg_error = x; 
+			avg_counter = 0; 
+		}
+	};
+
 }
 
 void *OPS_ASDConcrete3DMaterial(void)
@@ -1437,6 +1477,8 @@ int ASDConcrete3DMaterial::commitState(void)
 		double dt_implicit = dt_bar;
 		double dc_implicit = dc_bar;
 		implex_error = std::max(std::abs(dt - dt_implicit), std::abs(dc - dc_implicit));
+		GlobalParameters::instance().setMaxError(std::max(implex_error, GlobalParameters::instance().getMaxError()));
+		GlobalParameters::instance().accumulateAverageError(implex_error);
 	}
 	// store the previously committed variables for next move from n to n - 1
 	svt_commit_old = svt_commit;
@@ -1735,6 +1777,16 @@ int ASDConcrete3DMaterial::setParameter(const char** argv, int argc, Parameter& 
 		return param.addObject(2002, this);
 	}
 	
+	// 3000 - globals
+	if (strcmp(argv[0], "implexError") == 0 || strcmp(argv[0], "ImplexError") == 0) {
+		param.setValue(GlobalParameters::instance().getMaxError());
+		return param.addObject(3000, this);
+	}
+	if (strcmp(argv[0], "avgImplexError") == 0 || strcmp(argv[0], "AvgImplexError") == 0) {
+		param.setValue(GlobalParameters::instance().getAverageError());
+		return param.addObject(3001, this);
+	}
+
 	// default
 	return -1;
 }
@@ -1765,6 +1817,13 @@ int ASDConcrete3DMaterial::updateParameter(int parameterID, Information& info)
 	case 2002:
 		dtime_0 = info.theDouble;
 		dtime_is_user_defined = true;
+		return 0;
+
+	case 3000:
+		GlobalParameters::instance().setMaxError(info.theDouble);
+		return 0;
+	case 3001:
+		GlobalParameters::instance().setAverageError(info.theDouble);
 		return 0;
 
 		// default
