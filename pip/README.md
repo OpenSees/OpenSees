@@ -2,6 +2,8 @@
 
 Pip Package for OpenSeesPy
 
+OpenSeesPy is free for research, education, and internal use. Commercial redistribution of OpenSeesPy, such as, but not limited to, an application or cloud-based service that uses ``import openseespy``, requires a license similar to that required for commercial redistribution of OpenSees.exe. Contact Dr. Minjie Zhu (zhum@oregonstate.edu) for commercial licensing details.
+
 ## Installation
 
 ```bash
