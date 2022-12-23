@@ -75,7 +75,7 @@ OPS_ComponentElement2d(void)
 
   numData = 1;
   if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
-    opserr << "WARNING componentElement - invalids second transformation tag" << endln;
+    opserr << "WARNING componentElement - invalid second transformation tag" << endln;
     return 0;
   }
 
