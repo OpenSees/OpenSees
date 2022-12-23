@@ -55,7 +55,7 @@ OPS_ComponentElement2d(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs < 3) {
-    opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
+    opserr << "Invalid #args,  want: element componentElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
     return 0;
   }
   
@@ -63,19 +63,19 @@ OPS_ComponentElement2d(void)
   double dData[3];  
   int numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids ints" << endln;
+    opserr << "WARNING componentElement - invalid ints" << endln;
     return 0;
   }
 
   numData = 3;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids double" << endln;
+    opserr << "WARNING componentElement - invalid doubles" << endln;
     return 0;
   }
 
   numData = 1;
   if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids second set ints" << endln;
+    opserr << "WARNING componentElement - invalids second transformation tag" << endln;
     return 0;
   }
 
@@ -86,7 +86,7 @@ OPS_ComponentElement2d(void)
   if (flag == "-stiffness" || flag == "-k") {
     numData = 2;
     if (OPS_GetDoubleInput(&numData, k) != 0) {
-      opserr << "WARNING ElasticComponent2d - invalid stiffness values" << endln;
+      opserr << "WARNING componentElement - invalid stiffness values" << endln;
       return 0;
     }
     useK = true;
@@ -95,7 +95,7 @@ OPS_ComponentElement2d(void)
     OPS_ResetCurrentInputArg(-1);
     numData = 2;
     if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
-      opserr << "WARNING ElasticComponent2d - invalids second material tags" << endln;
+      opserr << "WARNING componentElement - invalid material tags" << endln;
       return 0;
     }    
   }
@@ -134,7 +134,7 @@ OPS_ComponentElement2d(void)
   }  
 
   if (theElement == 0) {
-    opserr << "WARNING could not create element of type ComponentElement2d\n";
+    opserr << "WARNING could not create element of type componentElement\n";
     return 0;
   }
   
