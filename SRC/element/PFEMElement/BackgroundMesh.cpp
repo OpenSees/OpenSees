@@ -3424,7 +3424,8 @@ int BackgroundMesh::interpolate(
                             (ndm == 3 && num_equal[k] >= 4);
                 if (num_svel > 0 && fixk && fabs(svel[k]) < tol) {
                     // k is fixed structure
-                    pvel[k] += N[j] * svel[k];
+                    pvel[k] += N[j] * (alphas * svel[k] +
+                                       (1.0 - alphas) * vels[j][k]);
                 } else if (num_svel > 0 &&
                            fabs(svel[k]) > fabs(vels[j][k])) {
                     // k is faster structure
