@@ -93,10 +93,8 @@ OPS_InitStressNDMaterial(void)
 
 InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigini, int ndim)
   :NDMaterial(tag,ND_TAG_InitStressNDMaterial), theMaterial(0),
-   epsInit(3*ndim-3), sigInit(sigini)
+   epsInit(3*ndim-3), sigInit(sigini), numDim(ndim)
 {
-
-  numDim = ndim;
   // get copy of the main material
   if (numDim == 2) {
     theMaterial = material.getCopy("PlaneStrain");
@@ -211,7 +209,7 @@ InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, double
 
 InitStressNDMaterial::InitStressNDMaterial()
   :NDMaterial(0,ND_TAG_InitStressNDMaterial), theMaterial(0),
-   epsInit(6), sigInit(6)
+   epsInit(6), sigInit(6), numDim(0)
 {
 
 }
@@ -333,9 +331,14 @@ InitStressNDMaterial::getType(void) const
 int 
 InitStressNDMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "InitStressNDMaterial::sendSelf() - theMaterial is null, nothing to send" << endln;
+    return -1;
+  }
+    
   int dbTag = this->getDbTag();
 
-  static ID dataID(3);
+  static ID dataID(5);
   dataID(0) = this->getTag();
   dataID(1) = theMaterial->getClassTag();
   int matDbTag = theMaterial->getDbTag();
@@ -348,9 +351,15 @@ InitStressNDMaterial::sendSelf(int cTag, Channel &theChannel)
     opserr << "InitStressNDMaterial::sendSelf() - failed to send the ID\n";
     return -1;
   }
-
-  static Vector dataVec(1);
-  //dataVec(0) = epsInit;
+  dataID(3) = numDim;
+  int order = theMaterial->getOrder();
+  dataID(4) = order;
+  
+  Vector dataVec(2*order);
+  for (int i = 0; i < order; i++) {
+    dataVec(i) = sigInit(i);
+    dataVec(i+order) = epsInit(i);
+  }
 
   if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStressNDMaterial::sendSelf() - failed to send the Vector\n";
@@ -371,32 +380,39 @@ InitStressNDMaterial::recvSelf(int cTag, Channel &theChannel,
 {
   int dbTag = this->getDbTag();
 
-  static ID dataID(3);
+  static ID dataID(5);
   if (theChannel.recvID(dbTag, cTag, dataID) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the ID\n";
     return -1;
   }
-  this->setTag(int(dataID(0)));
+  this->setTag(dataID(0));
 
   // as no way to change material, don't have to check classTag of the material 
   if (theMaterial == 0) {
-    int matClassTag = int(dataID(1));
+    int matClassTag = dataID(1);
     theMaterial = theBroker.getNewNDMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "InitStressNDMaterial::recvSelf() - failed to create Material with classTag " 
-	   << dataID(0) << endln;
+	   << matClassTag << endln;
       return -2;
     }
   }
   theMaterial->setDbTag(dataID(2));
-
-  static Vector dataVec(1);
+  numDim = dataID(3);
+  int order = dataID(4);
+  
+  Vector dataVec(2*order);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the Vector\n";
     return -3;
   }
 
-  //epsInit = dataVec(0);
+  sigInit.resize(order);
+  epsInit.resize(order);  
+  for (int i = 0; i < order; i++) {
+    sigInit(i) = dataVec(i);
+    epsInit(i) = dataVec(i+order);
+  }
   
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the Material\n";
