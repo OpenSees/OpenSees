@@ -56,19 +56,19 @@ OPS_InitStressNDMaterial(void)
   int    dim;
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid nDMaterial InitStressND $tag $otherTag $sig0" << endln;
+    opserr << "WARNING invalid nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;
   }
 
   theOtherMaterial = OPS_getNDMaterial(iData[1]);
   if (theOtherMaterial == 0) {
-    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStressND $tag $otherTag $sig0" << endln;
+    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &sig) != 0) {
-    opserr << "Invalid Args want: nDMaterial InitStressND $tag $otherTag $sig0" << endln;
+    opserr << "Invalid Args want: nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
@@ -76,14 +76,14 @@ OPS_InitStressNDMaterial(void)
     if (OPS_GetIntInput(&numData, &dim) != 0) {
         return 0;
     }
-    opserr << "nDMaterial InitStressND -- not using input value dim = " << dim << endln;
+    opserr << "nDMaterial InitStress -- not using input value dim = " << dim << endln;
   }
 
   // Parsing was successful, allocate the material
   theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig);
 
   if (theMaterial == 0) {
-    opserr << "WARNING could not create NDMaterial of type InitStressND\n";
+    opserr << "WARNING could not create NDMaterial of type InitStress\n";
     return 0;
   }
 
