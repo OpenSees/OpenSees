@@ -38,9 +38,8 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_InitStressNDMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
@@ -53,56 +52,38 @@ OPS_InitStressNDMaterial(void)
   }
 
   int    iData[2];
-  double dData[1];
-  int    dim[1];
+  double sig;
+  int    dim;
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid nDMaterial InitStressNDMaterial $tag $otherTag $nDim" << endln;
+    opserr << "WARNING invalid nDMaterial InitStressND $tag $otherTag $sig0" << endln;
     return 0;
   }
 
   theOtherMaterial = OPS_getNDMaterial(iData[1]);
   if (theOtherMaterial == 0) {
-    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStress $tag $otherTag $nDim $sig0" << endln;
+    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStressND $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
   numData = 1;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid Args want: nDMaterial InitStress $tag $otherTag $nDim $sig0" << endln;
+  if (OPS_GetDoubleInput(&numData, &sig) != 0) {
+    opserr << "Invalid Args want: nDMaterial InitStressND $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
-  if (numArgs == 4) {
-    if (OPS_GetIntInput(&numData, dim) != 0) {
+  if (numArgs > 3) {
+    if (OPS_GetIntInput(&numData, &dim) != 0) {
         return 0;
     }
-  } else {
-    dim[0] = 3;
-  }
-
-  Vector sig0(3*dim[0]-3);
-  if (dim[0] == 3) {
-    sig0(0) = dData[0];
-    sig0(1) = dData[0];
-    sig0(2) = dData[0];
-  } else if (dim[0] == 2) {
-    sig0(0) = dData[0];
-    sig0(1) = dData[0];
-  } else {
-    opserr << "nDMaterial InitStress - Invalid number of dimensions: want 2 or 3" << endln;
-    return 0;
+    opserr << "nDMaterial InitStressND -- not using input value dim = " << dim << endln;
   }
 
   // Parsing was successful, allocate the material
-  if (numArgs == 4) {
-    theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig0, dim[0]);
-  } else {
-    theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig0);
-  }
+  theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig);
 
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type InitStressNDMaterial\n";
+    opserr << "WARNING could not create NDMaterial of type InitStressND\n";
     return 0;
   }
 
@@ -122,7 +103,7 @@ InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const 
   } else if (numDim == 3) {
     theMaterial = material.getCopy("ThreeDimensional");
   } else {
-    opserr << "nDMaterial InitStress - Invalid number of dimensions: want 2 or 3" << endln;
+    opserr << "nDMaterial InitStress - Invalid number of dimensions " << numDim << " -- want 2 or 3" << endln;
   }
 
   if (theMaterial == 0) {
@@ -132,6 +113,71 @@ InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const 
 
   // determine the initial strain
   int mDim = 3*numDim-3;
+  double tol=1e-12;
+  Vector dSig(sigInit);
+  Vector dStrain(mDim);
+  Vector tStrain(mDim);
+  Vector tStress(mDim);
+  Matrix K(mDim,mDim);
+  int count = 0;
+
+  do {
+    count++;
+    K = theMaterial->getTangent();
+    K.Solve(dSig,dStrain);
+    tStrain += dStrain;
+    theMaterial->setTrialStrain(tStrain);
+    tStress = theMaterial->getStress();
+    dSig = sigInit-tStress;
+    dStrain = tStress-sigInit;
+  } while (dStrain.Norm() > tol && (count <= 100));
+
+  epsInit = tStrain;
+
+  if (dStrain.Norm() < tol) 
+    theMaterial->setTrialStrain(epsInit);
+  else {
+    opserr << "WARNING: InitStressNDMaterial - could not find initStrain to within tol for material: " << tag;
+    opserr << " wanted sigInit: " << sigInit << " using tStress: " << theMaterial->getStress() << endln;
+  }
+
+  theMaterial->commitState();
+}
+
+InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, double sig0)
+  :NDMaterial(tag,ND_TAG_InitStressNDMaterial), theMaterial(0),
+   epsInit(material.getOrder()), sigInit(material.getOrder()), numDim(0)
+{
+
+  theMaterial = material.getCopy();
+  if (theMaterial == 0) {
+    opserr <<  "InitStressNDMaterial::InitStressNDMaterial -- failed to get copy of material\n";
+    exit(-1);
+  }
+
+  sigInit.Zero();
+  if (strcmp(theMaterial->getType(),"ThreeDimensional") == 0) {
+    sigInit(0) = sig0;
+    sigInit(1) = sig0;
+    sigInit(2) = sig0;
+  }
+  if (strcmp(theMaterial->getType(),"PlateFiber") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStress") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStress2D") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStrain") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStrain2D") == 0) {    
+    sigInit(0) = sig0;
+    sigInit(1) = sig0;
+  }
+  if (strcmp(theMaterial->getType(),"BeamFiber") == 0 ||
+      strcmp(theMaterial->getType(),"TimoshenkoFiber") == 0 ||
+      strcmp(theMaterial->getType(),"BeamFiber2d") == 0 ||
+      strcmp(theMaterial->getType(),"TimoshenkoFiber2d") == 0) {
+    sigInit(0) = sig0;
+  }    
+
+  // determine the initial strain
+  int mDim = theMaterial->getOrder();
   double tol=1e-12;
   Vector dSig(sigInit);
   Vector dStrain(mDim);
@@ -258,7 +304,7 @@ NDMaterial *
 InitStressNDMaterial::getCopy(void)
 {
   InitStressNDMaterial *theCopy = 
-    new InitStressNDMaterial(this->getTag(), *theMaterial, sigInit, numDim);
+    new InitStressNDMaterial(this->getTag(), *theMaterial, sigInit(0));
         
   return theCopy;
 }
