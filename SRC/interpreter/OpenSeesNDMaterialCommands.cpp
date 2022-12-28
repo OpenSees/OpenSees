@@ -110,6 +110,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ReinforceConcretePlaneStress", &OPS_ReinforcedConcretePlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStressNDMaterial", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStressND", &OPS_InitStressNDMaterial));
+	nDMaterialsMap.insert(std::make_pair("InitStress", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("J2BeamFiber", &J2BeamFiber2Dor3D));
 	nDMaterialsMap.insert(std::make_pair("J2PlateFibre", &OPS_J2PlateFibreMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAReinforcedConcretePlaneStress", &OPS_FAReinforcedConcretePlaneStressMaterial));
