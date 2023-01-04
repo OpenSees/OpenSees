@@ -126,7 +126,7 @@ double VuggyLimestone::getStress(double strain) {
     return 0.8 * diameter * shearStrength +
            100.0 * shearStrength * (strain - 0.0004 * diameter);
   }
-  return 0.0;
+  return diameter * shearStrength;
 }
 
 double VuggyLimestone::getEnergy(double strain) { return 0.0; }
