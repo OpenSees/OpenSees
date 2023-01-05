@@ -69,9 +69,19 @@ void *OPS_ReeseStiffClayAboveWS() {
     return 0;
   }
 
+  double hl = 0.1;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    numData = 1;
+    if (OPS_GetDoubleInput(&numData, &hl) < 0) {
+        opserr << "WARNING: invalid data for hystereticBackbone "
+                  "ReeseStiffClayAboveWS\n";
+        return 0;
+    }
+  }
+
   // create object
   ReeseStiffClayAboveWS *theBackbone =
-      new ReeseStiffClayAboveWS(tag, data[0], data[1]);
+      new ReeseStiffClayAboveWS(tag, data[0], data[1], hl);
 
   return theBackbone;
 }
@@ -82,13 +92,14 @@ void *OPS_ReeseStiffClayAboveWS() {
  * @param tag backbone tag
  * @param pu the ultimate soil resistance per unit length of shaft
  * @param y50 the deflection at one-half the ultimate soil resistance
+ * @param hl fraction of y50 that if y < hl*y50, the curve is straight line
  */
 ReeseStiffClayAboveWS::ReeseStiffClayAboveWS(int tag, double pu,
-                                             double y50)
+                                             double y50, double hl)
     : HystereticBackbone(tag, BACKBONE_TAG_ReeseStiffClayAboveWS),
       pu(pu),
       y50(y50),
-      hl(0.001) {}
+      hl(hl) {}
 
 /**
  * @brief Default Construct
@@ -98,7 +109,7 @@ ReeseStiffClayAboveWS::ReeseStiffClayAboveWS()
     : HystereticBackbone(0, BACKBONE_TAG_ReeseStiffClayAboveWS),
       pu(0.0),
       y50(0.0),
-      hl(0.001) {}
+      hl(0.1) {}
 
 ReeseStiffClayAboveWS::~ReeseStiffClayAboveWS() {}
 
@@ -116,10 +127,11 @@ double ReeseStiffClayAboveWS::getTangent(double strain) {
   }
 
   if (strain > 16.0 * y50) {
-    return hl * k0;
+    // return hl * k0;
+    return 0.0;
   }
 
-  return pu * pow(strain / y50, -0.75) / 8.0 / y50;
+  return pu * pow(strain / y50, -0.75) *0.125 / y50;
 }
 
 /**
@@ -147,7 +159,7 @@ double ReeseStiffClayAboveWS::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *ReeseStiffClayAboveWS::getCopy(void) {
   ReeseStiffClayAboveWS *theCopy =
-      new ReeseStiffClayAboveWS(this->getTag(), pu, y50);
+      new ReeseStiffClayAboveWS(this->getTag(), pu, y50, hl);
 
   return theCopy;
 }
