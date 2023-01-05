@@ -131,7 +131,7 @@ double WeakRock::getTangent(double strain) {
     return pur / (8 * yrm) * pow(strain / yrm, -0.75);
   }
 
-  return 0.001 * Kir;
+  return 0;
 }
 
 /**
@@ -149,7 +149,7 @@ double WeakRock::getStress(double strain) {
   }
 
   if (strain < yu) {
-    return pur / 2 * pow(strain / yrm, 0.25);
+    return pur * 0.5 * pow(strain / yrm, 0.25);
   }
 
   return pur;

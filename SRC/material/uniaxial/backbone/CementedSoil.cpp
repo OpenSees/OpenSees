@@ -139,23 +139,28 @@ double CementedSoil::getTangent(double strain) {
   double ym = diameter / 60.0;
   double yu = diameter * 3.0 / 80.0;
   double m = (pu - pm) / (yu - ym);
-  double n = pm / (m * ym);
+  double n = pm / (fabs(m) * ym);
   double C = pm / pow(ym, 1.0 / n);
   double yk = pow(C / (kpy * depth), n / (n - 1));
+  double hl = 0.8;
 
   if (strain < yk) {
     return kpy * depth;
   }
 
   if (strain < ym) {
-    return C / n * pow(strain, (1 - n) / n);
+    if (strain < yk*(1+hl)) {
+      return kpy * depth;
+    } else {
+      return C / n * pow(strain, (1 - n) / n);
+    }
   }
 
   if (strain < yu) {
     return m;
   }
 
-  return 0.001 * kpy * depth;
+  return 0;
 }
 
 /**
@@ -168,16 +173,21 @@ double CementedSoil::getStress(double strain) {
   double ym = diameter / 60.0;
   double yu = diameter * 3.0 / 80.0;
   double m = (pu - pm) / (yu - ym);
-  double n = pm / (m * ym);
+  double n = pm / (fabs(m) * ym);
   double C = pm / pow(ym, 1.0 / n);
   double yk = pow(C / (kpy * depth), n / (n - 1));
+  double hl = 0.8;
 
   if (strain < yk) {
     return kpy * depth * strain;
   }
 
   if (strain < ym) {
-    return C * pow(strain, 1.0 / n);
+    if (strain < yk*(1+hl)) {
+      return kpy * depth* strain;
+    } else {
+      return C * pow(strain, 1.0 / n);
+    }
   }
 
   if (strain < yu) {
