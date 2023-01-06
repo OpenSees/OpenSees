@@ -60,8 +60,8 @@ OPS_ReeseSandBackbone(void)
     return 0;
   }  
 
-  theBackbone = new RaynorBackbone(matTag, dData[0], dData[1], dData[2],
-				   dData[3], dData[4]);
+  theBackbone = new ReeseSandBackbone(matTag, dData[0], dData[1], dData[2],
+				      dData[3], dData[4]);
   if (theBackbone == 0) {
     opserr << "WARNING could not create ReeseSandBackbone\n";
     return 0;
