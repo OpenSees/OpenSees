@@ -14,7 +14,7 @@ OPS_RaynorBackbone(void)
   HystereticBackbone *theBackbone = 0;
 
   if (OPS_GetNumRemainingInputArgs() < 8) {
-    opserr << "Invalid number of args, want: hystereticBackbone Raynor tag? bbTag? Es? fy? fsu? epssh? epssm? C1? Ey?" << endln;
+    opserr << "Invalid number of args, want: hystereticBackbone Raynor tag? Es? fy? fsu? epssh? epssm? C1? Ey?" << endln;
     return 0;
   }
 
@@ -35,7 +35,7 @@ OPS_RaynorBackbone(void)
   theBackbone = new RaynorBackbone(matTag, dData[0], dData[1], dData[2],
 				   dData[3], dData[4], dData[5], dData[6]);
   if (theBackbone == 0) {
-    opserr << "WARNING could not create RyaynorBackbone\n";
+    opserr << "WARNING could not create RaynorBackbone\n";
     return 0;
   }
 
