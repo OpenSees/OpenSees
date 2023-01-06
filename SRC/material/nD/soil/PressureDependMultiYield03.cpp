@@ -1015,7 +1015,7 @@ NDMaterial * PressureDependMultiYield03::getCopy (const char *code)
     return copy;
   }
   else {
-    opserr << "ERROR PressureDependMultiYield02::getCopy -- cannot make copy for type " << code << endln;
+    opserr << "ERROR PressureDependMultiYield03::getCopy -- cannot make copy for type " << code << endln;
     return 0;
   }
 
