@@ -37,6 +37,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 
 #include <string.h>
 
+#include <HystereticBackbone.h>
+
 extern void *OPS_ArctangentBackbone(void);
 extern void *OPS_ManderBackbone(void);
 extern void *OPS_TrilinearBackbone(void);
