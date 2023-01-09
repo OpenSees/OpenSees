@@ -78,7 +78,7 @@ int OPS_BgMesh() {
                   "-wave wavefilename? numl? locs? -numsub numsub? "
                   "-dispon? -recordRange range? "
                   "-structure sid? ?numnodes? structuralNodes? "
-                  "-alphaS sid? alphaS? ";
+                  "-alphaS alphaS? ";
         if (ndm == 2) {
             opserr << "-contact kdoverAd? thk? mu? beta? Dc? alpha? "
                       "E? rho?>\n";
@@ -274,17 +274,11 @@ int OPS_BgMesh() {
             }
 
         } else if (strcmp(opt, "-alphaS") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 2) {
-                opserr << "WARNING: need sid alphaS\n";
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need alphaS\n";
                 return -1;
             }
             num = 1;
-            int sid;
-            if (OPS_GetIntInput(&num, &sid) < 0) {
-                opserr << "WARNING: failed to get sid\n";
-                return -1;
-            }
-
             double alpha = 0.0;
             if (OPS_GetDoubleInput(&num, &alpha) < 0) {
                 opserr << "WARNING: failed to get alphaS\n";
@@ -295,7 +289,7 @@ int OPS_BgMesh() {
             } else if (alpha > 1) {
                 alpha = 1.0;
             }
-            bgmesh.setAlphaS(sid, alpha);
+            bgmesh.setAlphaS(alpha);
 
         } else if (strcmp(opt, "-dispOn") == 0) {
             bgmesh.setDispOn(true);
@@ -329,7 +323,7 @@ BackgroundMesh::BackgroundMesh()
       contactData(),
       contactEles(),
       dispon(true),
-      alphaS() {}
+      alphaS(0.0) {}
 
 BackgroundMesh::~BackgroundMesh() {
     for (int i = 0; i < (int)recorders.size(); ++i) {
@@ -760,7 +754,7 @@ void BackgroundMesh::clearAll() {
     }
     contactEles.clear();
     dispon = true;
-    alphaS.clear();
+    alphaS = 0.0;
 }
 
 int BackgroundMesh::clearBackground() {
@@ -3234,7 +3228,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index,
             }
 
             // get corner coordinates, types, and velocities
-            // pressures, alphas for structural damping
+            // pressures for structural damping
             ndtags.assign(indices.size(), VInt());
             crds.assign(indices.size(), VDouble());
             types.assign(indices.size(), BACKGROUND_FIXED);
@@ -3358,84 +3352,27 @@ int BackgroundMesh::interpolate(
 
         // interpolate
         if (types[j] == BACKGROUND_FLUID) {
-            // check surrounding nodes
+
+            // check surrounding cells
             VInt ind = index[j];
             VVInt indices;
             ind -= 1;
-            getCorners(ind, 2, indices);
-
-            VDouble svel(ndm);
-            double alphas = 0.0;
-            int num_svel = 0, num_sid = 0;
-            for (auto& indi : indices) {
-                auto it = bnodes.find(indi);
-                int size = 0;
-                if (it != bnodes.end()) {
-                    size = it->second.size();
-                }
-                for (int i = 0; i < size; ++i) {
-                    auto& v = it->second.getVel();
-                    svel += v[i];
-                    ++num_svel;
-
-                    auto& sid = it->second.getSid();
-                    auto it_alpha = alphaS.find(sid[i]);
-                    if (it_alpha != alphaS.end()) {
-                        alphas += it_alpha->second;
-                        ++num_sid;
-                    }
-                }
-            }
-            if (num_svel > 0) {
-                svel /= num_svel;
-            }
-            if (num_sid > 0) {
-                alphas /= num_sid;
-            }
-
-            // check surrounding cells
             getCorners(ind, 1, indices);
-            VVInt sindices;
+            bool closeToStructure = false;
             for (int k = 0; k < (int)indices.size(); ++k) {
                 auto it = bcells.find(indices[k]);
                 if (it != bcells.end() &&
                     it->second.getType() == BACKGROUND_STRUCTURE) {
-                    sindices.push_back(indices[k]);
-                }
-            }
-            VInt num_equal(ndm);
-            for (int k = 0; k < ndm; ++k) {
-                for (int m = 0; m < (int)sindices.size(); ++m) {
-                    int num = 0;
-                    for (int n = 0; n < (int)sindices.size(); ++n) {
-                        if (sindices[m][k] == sindices[n][k]) {
-                            num += 1;
-                        }
-                    }
-                    if (num_equal[k] < num) {
-                        num_equal[k] = num;
-                    }
+                        closeToStructure = true;
+                        break;
                 }
             }
 
             // interpolate
             for (int k = 0; k < ndm; ++k) {
-                bool fixk = (ndm == 2 && num_equal[k] >= 2) ||
-                            (ndm == 3 && num_equal[k] >= 4);
-                if (num_svel > 0 && fixk && fabs(svel[k]) < tol) {
-                    // k is fixed structure
-                    pvel[k] += N[j] * svel[k];
-                } else if (num_svel > 0 &&
-                           fabs(svel[k]) > fabs(vels[j][k])) {
-                    // k is faster structure
-                    pvel[k] += N[j] * svel[k];
-                } else if (num_svel > 0 &&
-                           fabs(svel[k]) < fabs(vels[j][k])) {
-                    // k is slower structure
-                    pvel[k] += N[j] * (alphas * svel[k] +
-                                       (1.0 - alphas) * vels[j][k]);
+                if (closeToStructure) {
+                    pvel[k] += N[j] * (1 - alphaS) * vels[j][k];
                 } else {
-                    // all others
                     pvel[k] += N[j] * vels[j][k];
                 }
                 if (pt->isUpdated() == false) {
