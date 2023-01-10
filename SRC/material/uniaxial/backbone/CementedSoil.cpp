@@ -73,11 +73,6 @@ void *OPS_CementedSoil() {
               "CementedSoil -- pU <= 0\n";
     return 0;
   }
-  if (data[0] <= data[1]) {
-    opserr << "WARNING: hystereticBackbone "
-              "CementedSoil -- pM <= pU\n";
-    return 0;
-  }
   if (data[2] <= 0.0) {
     opserr << "WARNING: hystereticBackbone "
               "CementedSoil -- Kpy <= 0\n";
@@ -205,7 +200,7 @@ double CementedSoil::getStress(double strain) {
 
   if (Ks > pm / ym) {
     // yk is in the 1st curve
-    double yk = pow(C / (kpy * depth), n / (n - 1));
+    double yk = pow(C / Ks, n / (n - 1));
     if (strain < yk) {
       stress = Ks * strain;
     } else if (strain < ym) {
