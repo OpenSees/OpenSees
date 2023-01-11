@@ -136,28 +136,45 @@ CementedSoil::~CementedSoil() {}
  * @return double
  */
 double CementedSoil::getTangent(double strain) {
+  strain = fabs(strain);
+
   double ym = diameter / 60.0;
   double yu = diameter * 3.0 / 80.0;
   double m = (pu - pm) / (yu - ym);
   double n = pm / (fabs(m) * ym);
   double C = pm / pow(ym, 1.0 / n);
-  double yk = pow(C / (kpy * depth), n / (n - 1));
-  double hl = 0.8;
+  double Ks = kpy * depth;
 
-  if (strain < yk) {
-    return kpy * depth;
-  }
-
-  if (strain < ym) {
-    if (strain < yk*(1+hl)) {
-      return kpy * depth;
-    } else {
+  if (Ks > pm/ym) {
+    // yk is in the 1st curve
+    double yk = pow(C / (kpy * depth), n / (n - 1));
+    if (strain < yk) {
+      return Ks;
+    } else if (strain < ym) {
       return C / n * pow(strain, (1 - n) / n);
+    } else if (strain < yu) {
+      return m;
+    } else {
+      return 0;
     }
-  }
-
-  if (strain < yu) {
-    return m;
+  } else if (Ks > pu / yu) {
+    // yk is in the 2nd line
+    double yk = (pm-m*ym)/(Ks-m);
+    if (strain < yk) {
+      return Ks;
+    } else if (strain < yu) {
+      return m;
+    } else {
+      return 0;
+    }
+  } else {
+    // yk is in the 3rd line
+    double yk = pu / Ks;
+    if (strain < yk) {
+      return Ks;
+    } else {
+      return 0.0;
+    }
   }
 
   return 0;
@@ -175,26 +192,45 @@ double CementedSoil::getStress(double strain) {
   double m = (pu - pm) / (yu - ym);
   double n = pm / (fabs(m) * ym);
   double C = pm / pow(ym, 1.0 / n);
-  double yk = pow(C / (kpy * depth), n / (n - 1));
-  double hl = 0.8;
+  double Ks = kpy * depth;
 
-  if (strain < yk) {
-    return kpy * depth * strain;
-  }
+  int signStrain = (strain > 0.0) ? 1 : -1;
+  strain = signStrain * strain;
+  double stress = 0.0;
 
-  if (strain < ym) {
-    if (strain < yk*(1+hl)) {
-      return kpy * depth* strain;
+  if (Ks > pm / ym) {
+    // yk is in the 1st curve
+    double yk = pow(C / Ks, n / (n - 1));
+    if (strain < yk) {
+      stress = Ks * strain;
+    } else if (strain < ym) {
+      stress = C * pow(strain, 1.0 / n);
+    } else if (strain < yu) {
+      stress = pm + m * (strain - ym);
     } else {
-      return C * pow(strain, 1.0 / n);
+      stress = pu;
+    }
+  } else if (Ks > pu / yu) {
+    // yk is in the 2nd line
+    double yk = (pm-m*ym)/(Ks-m);
+    if (strain < yk) {
+      stress = Ks * strain;
+    } else if (strain < yu) {
+      stress = pm + m * (strain - ym);
+    } else {
+      stress = pu;
+    }
+  } else {
+    // yk is in the 3rd line
+    double yk = pu / Ks;
+    if (strain < yk) {
+      stress = Ks * strain;
+    } else {
+      stress = pu;
     }
   }
 
-  if (strain < yu) {
-    return pm + m * (strain - ym);
-  }
-
-  return pu;
+  return signStrain * stress;
 }
 
 double CementedSoil::getEnergy(double strain) { return 0.0; }

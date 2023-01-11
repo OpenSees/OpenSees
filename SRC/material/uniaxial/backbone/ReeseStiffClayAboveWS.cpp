@@ -77,6 +77,10 @@ void *OPS_ReeseStiffClayAboveWS() {
                   "ReeseStiffClayAboveWS\n";
         return 0;
     }
+    if (hl < 0 || hl > 1.0) {
+      opserr << "WARNING: hl must be >0 and <1\n";
+      return 0;
+    }
   }
 
   // create object
@@ -122,7 +126,7 @@ ReeseStiffClayAboveWS::~ReeseStiffClayAboveWS() {}
 double ReeseStiffClayAboveWS::getTangent(double strain) {
   double yhl = hl * y50;
   double k0 = getStress(yhl) / yhl;
-  if (strain < yhl) {
+  if (strain < yhl*0.999 && strain > -yhl*0.999) {
     return k0;
   }
 
@@ -131,7 +135,19 @@ double ReeseStiffClayAboveWS::getTangent(double strain) {
     return 0.0;
   }
 
-  return pu * pow(strain / y50, -0.75) *0.125 / y50;
+  if (strain < -16.0 * y50) {
+    return 0.0;
+  }
+
+  if (strain > 0) {
+    return pu * pow(strain / y50, -0.75) *0.125 / y50;
+  }
+
+  if (strain < 0) {
+    return pu * pow(-strain / y50, -0.75) *0.125 / y50;
+  }
+
+  return k0;
 }
 
 /**
@@ -142,7 +158,7 @@ double ReeseStiffClayAboveWS::getTangent(double strain) {
  */
 double ReeseStiffClayAboveWS::getStress(double strain) {
   double yhl = hl * y50;
-  if (strain < yhl) {
+  if (strain < yhl*0.999 && strain > -yhl*0.999) {
     return strain * getStress(yhl) / yhl;
   }
 
@@ -150,7 +166,19 @@ double ReeseStiffClayAboveWS::getStress(double strain) {
     return pu;
   }
 
-  return 0.5 * pu * pow(strain / y50, 0.25);
+  if (strain < -16.0 * y50) {
+    return -pu;
+  }
+
+  if (strain > 0) {
+    return 0.5 * pu * pow(strain / y50, 0.25);
+  } 
+  
+  if (strain < 0) {
+    return -0.5 * pu * pow(-strain / y50, 0.25);
+  }
+
+  return 0.0;
 }
 
 double ReeseStiffClayAboveWS::getEnergy(double strain) { return 0.0; }
